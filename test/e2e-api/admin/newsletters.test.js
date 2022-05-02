@@ -1,4 +1,5 @@
 const DatabaseInfo = require('@tryghost/database-info');
+const {any} = require('@tryghost/express-test').snapshot;
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyEtag, anyObjectId, anyUuid, anyISODateTime, anyLocationFor} = matchers;
 const configUtils = require('../../utils/configUtils');
@@ -19,6 +20,14 @@ const newsletterSnapshot = {
     uuid: anyUuid,
     created_at: anyISODateTime,
     updated_at: anyISODateTime
+};
+
+const newsletterSnapshotWithoutSortOrder = {
+    id: anyObjectId,
+    uuid: anyUuid,
+    created_at: anyISODateTime,
+    updated_at: anyISODateTime,
+    sort_order: any(Number)
 };
 
 let agent;
@@ -384,7 +393,7 @@ describe('Newsletters API', function () {
             .body({newsletters: [firstNewsletter]})
             .expectStatus(201)
             .matchBodySnapshot({
-                newsletters: [newsletterSnapshot]
+                newsletters: [newsletterSnapshotWithoutSortOrder]
             })
             .matchHeaderSnapshot({
                 etag: anyEtag,

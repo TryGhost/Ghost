@@ -874,7 +874,7 @@ Object {
       "show_header_name": true,
       "show_header_title": true,
       "slug": "duplicate-newsletter",
-      "sort_order": 8,
+      "sort_order": Any<Number>,
       "status": "active",
       "subscribe_on_signup": true,
       "title_alignment": "center",
