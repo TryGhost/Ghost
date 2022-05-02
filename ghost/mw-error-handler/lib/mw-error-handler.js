@@ -129,8 +129,8 @@ const jsonErrorRendererV2 = (err, req, res, next) => { // eslint-disable-line no
             property: err.property || null,
             help: err.help || null,
             code: err.code || null,
-            id: err.id || null,
-            ghostErrorCode: err.ghostErrorCode || null
+            id: err.id || null
+            // @TODO: add ghostErrorCode here in a major (I thought V2 was for the V2 api, but it's actually the newer/correct handler)
         }]
     });
 };
