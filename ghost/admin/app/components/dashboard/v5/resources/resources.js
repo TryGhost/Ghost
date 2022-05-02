@@ -21,10 +21,22 @@ export default class Resources extends Component {
         this.loading = true;
         this.fetch.perform().then(() => {
             this.loading = false;
-        }, (error) => {
+        }).catch((error) => {
             this.error = error;
             this.loading = false;
         });
+    }
+
+    get tag() {
+        // Depending on the state of the site, we might want to show resources from different tags.
+        if (this.areMembersEnabled && this.hasPaidTiers) {
+            return 'business';
+        }
+
+        if (this.areMembersEnabled) {
+            return 'growth';
+        }
+        return 'building';
     }
 
     @task
@@ -32,7 +44,8 @@ export default class Resources extends Component {
         const order = encodeURIComponent('published_at DESC');
         const key = encodeURIComponent(API_KEY);
         const limit = encodeURIComponent(RESOURCE_COUNT);
-        let response = yield fetch(`${API_URL}/ghost/api/content/posts/?limit=${limit}&order=${order}&key=${key}&include=none`);
+        const filter = encodeURIComponent('tag:'+this.tag);
+        let response = yield fetch(`${API_URL}/ghost/api/content/posts/?limit=${limit}&order=${order}&key=${key}&include=none&filter=${filter}`);
         if (!response.ok) {
             // eslint-disable-next-line
             console.error('Failed to fetch resources', {response});
