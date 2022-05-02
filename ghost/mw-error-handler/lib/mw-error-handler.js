@@ -129,7 +129,8 @@ const jsonErrorRendererV2 = (err, req, res, next) => { // eslint-disable-line no
             property: err.property || null,
             help: err.help || null,
             code: err.code || null,
-            id: err.id || null
+            id: err.id || null,
+            ghostErrorCode: err.ghostErrorCode || null
         }]
     });
 };
@@ -193,9 +194,9 @@ module.exports.resourceNotFound = (req, res, next) => {
             semver.coerce(res.locals.safeVersion)
         );
 
-        let errorOptions;
+        let notAcceptableError;
         if (versionComparison === 1) {
-            errorOptions = {
+            notAcceptableError = new errors.RequestNotAcceptableError({
                 message: tpl(
                     messages.methodNotAcceptableVersionAhead.message
                 ),
@@ -205,9 +206,9 @@ module.exports.resourceNotFound = (req, res, next) => {
                 }),
                 help: tpl(messages.methodNotAcceptableVersionAhead.help),
                 code: 'UPDATE_GHOST'
-            };
+            });
         } else {
-            errorOptions = {
+            notAcceptableError = new errors.RequestNotAcceptableError({
                 message: tpl(
                     messages.methodNotAcceptableVersionBehind.message
                 ),
@@ -217,10 +218,10 @@ module.exports.resourceNotFound = (req, res, next) => {
                 }),
                 help: tpl(messages.methodNotAcceptableVersionBehind.help),
                 code: 'UPDATE_CLIENT'
-            };
+            });
         }
 
-        next(new errors.RequestNotAcceptableError(errorOptions));
+        next(notAcceptableError);
     } else {
         next(new errors.NotFoundError({message: tpl(messages.resourceNotFound)}));
     }
@@ -267,4 +268,3 @@ module.exports.handleHTMLResponse = sentry => [
     // Format the stack for the user
     module.exports.prepareStack
 ];
-
