@@ -32,48 +32,58 @@ describe('Canary Schedules API', function () {
 
         resources.push(testUtils.DataGenerator.forKnex.createPost({
             created_by: testUtils.getExistingData().users[0].id,
-            author_id: testUtils.getExistingData().users[0].id,
             published_by: testUtils.getExistingData().users[0].id,
             published_at: moment().add(30, 'seconds').toDate(),
             status: 'scheduled',
-            slug: 'first'
+            slug: 'first',
+            authors: [{
+                id: testUtils.getExistingData().users[0].id
+            }]
         }));
 
         resources.push(testUtils.DataGenerator.forKnex.createPost({
             created_by: testUtils.getExistingData().users[0].id,
-            author_id: testUtils.getExistingData().users[0].id,
             published_by: testUtils.getExistingData().users[0].id,
             published_at: moment().subtract(30, 'seconds').toDate(),
             status: 'scheduled',
-            slug: 'second'
+            slug: 'second',
+            authors: [{
+                id: testUtils.getExistingData().users[0].id
+            }]
         }));
 
         resources.push(testUtils.DataGenerator.forKnex.createPost({
             created_by: testUtils.getExistingData().users[0].id,
-            author_id: testUtils.getExistingData().users[0].id,
             published_by: testUtils.getExistingData().users[0].id,
             published_at: moment().add(10, 'minute').toDate(),
             status: 'scheduled',
-            slug: 'third'
+            slug: 'third',
+            authors: [{
+                id: testUtils.getExistingData().users[0].id
+            }]
         }));
 
         resources.push(testUtils.DataGenerator.forKnex.createPost({
             created_by: testUtils.getExistingData().users[0].id,
-            author_id: testUtils.getExistingData().users[0].id,
             published_by: testUtils.getExistingData().users[0].id,
             published_at: moment().subtract(10, 'minute').toDate(),
             status: 'scheduled',
-            slug: 'fourth'
+            slug: 'fourth',
+            authors: [{
+                id: testUtils.getExistingData().users[0].id
+            }]
         }));
 
         resources.push(testUtils.DataGenerator.forKnex.createPost({
             created_by: testUtils.getExistingData().users[0].id,
-            author_id: testUtils.getExistingData().users[0].id,
             published_by: testUtils.getExistingData().users[0].id,
             published_at: moment().add(30, 'seconds').toDate(),
             status: 'scheduled',
             slug: 'fifth',
-            type: 'page'
+            type: 'page',
+            authors: [{
+                id: testUtils.getExistingData().users[0].id
+            }]
         }));
 
         const result = await Promise.mapSeries(resources, function (post) {
