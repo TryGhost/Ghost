@@ -26,6 +26,8 @@ module.exports = function setupApiApp() {
         res.redirect(307, versionlessURL);
     });
 
+    apiApp.use(APIVersionCompatibilityService.contentVersion);
+
     apiApp.lazyUse('/content/', require('./canary/content/app'));
     apiApp.lazyUse('/admin/', require('./canary/admin/app'));
 
