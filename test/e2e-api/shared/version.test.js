@@ -183,6 +183,34 @@ describe('API Versioning', function () {
                 })
                 .expectEmptyBody();
         });
+
+        it('responds with 406 for an unknown version with accept-version set ahead', async function () {
+            await agentAdminAPI
+                .get('/site/', {baseUrl: '/ghost/api/v99/admin/'})
+                .header('Accept-Version', 'v99.0')
+                .expectStatus(406)
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({errors: [{
+                    context: stringMatching(/Provided client version v99\.0 is ahead of current Ghost instance version v\d+\.\d+/),
+                    id: anyErrorId
+                }]});
+        });
+
+        it('responds with 406 for an unknown version with accept-version set behind', async function () {
+            await agentAdminAPI
+                .get('/site/', {baseUrl: '/ghost/api/v1/admin/'})
+                .header('Accept-Version', 'v1.0')
+                .expectStatus(406)
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({errors: [{
+                    context: stringMatching(/Provided client version v1\.0 is outdated and is behind current Ghost version v\d+\.\d+/),
+                    id: anyErrorId
+                }]});
+        });
     });
 
     describe('Content API', function () {
