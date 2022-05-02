@@ -35,7 +35,7 @@
     "c8": "7.11.2",
     "jsdom": "18.1.1",
     "mocha": "9.2.0",
-    "rollup": "2.70.2",
+    "rollup": "2.71.1",
     "rollup-plugin-babel": "4.4.0",
     "should": "13.2.3",
     "sinon": "13.0.1"
