@@ -88,7 +88,7 @@ data.posts = [
         slug: 'first-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
         featured: false,
-        author_id: data.users[0].id,
+        authors: [{id: data.users[0].id}],
         tags: [data.tags[0].id]
     },
     {
@@ -97,7 +97,7 @@ data.posts = [
         slug: 'second-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
         featured: false,
-        author_id: data.users[1].id,
+        authors: [{id: data.users[1].id}],
         tags: [data.tags[1].id, data.tags[2].id, data.tags[3].id, data.tags[5].id]
     },
     {
@@ -106,7 +106,7 @@ data.posts = [
         slug: 'third-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
         featured: false,
-        author_id: data.users[0].id,
+        authors: [{id: data.users[0].id}],
         tags: [data.tags[1].id]
     },
     {
@@ -115,7 +115,7 @@ data.posts = [
         slug: 'fourth-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
         featured: false,
-        author_id: data.users[0].id,
+        authors: [{id: data.users[0].id}],
         tags: [data.tags[2].id]
     },
     {
@@ -124,7 +124,7 @@ data.posts = [
         slug: 'fifth-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
         featured: true,
-        author_id: data.users[1].id,
+        authors: [{id: data.users[1].id}],
         tags: [data.tags[5].id]
     },
     {
@@ -133,7 +133,7 @@ data.posts = [
         slug: 'sixth-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
         featured: false,
-        author_id: data.users[1].id,
+        authors: [{id: data.users[1].id}],
         feature_image: 'some/image/path.jpg',
         tags: [data.tags[0].id, data.tags[3].id, data.tags[5].id]
     },
@@ -143,7 +143,7 @@ data.posts = [
         slug: 'seventh-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
         featured: false,
-        author_id: data.users[0].id,
+        authors: [{id: data.users[0].id}],
         feature_image: 'some/image/path.jpg',
         tags: [data.tags[0].id, data.tags[2].id]
     },
@@ -153,7 +153,7 @@ data.posts = [
         slug: 'eighth-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
         featured: true,
-        author_id: data.users[0].id,
+        authors: [{id: data.users[0].id}],
         tags: [data.tags[0].id, data.tags[2].id, data.tags[3].id]
     },
     {
@@ -162,7 +162,7 @@ data.posts = [
         slug: 'ninth-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
         featured: false,
-        author_id: data.users[0].id,
+        authors: [{id: data.users[0].id}],
         tags: [data.tags[1].id, data.tags[3].id]
     },
     {
@@ -171,7 +171,7 @@ data.posts = [
         slug: 'tenth-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
         featured: false,
-        author_id: data.users[0].id,
+        authors: [{id: data.users[0].id}],
         tags: [data.tags[2].id]
     },
     {
@@ -180,7 +180,7 @@ data.posts = [
         slug: 'eleventh-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
         featured: false,
-        author_id: data.users[0].id,
+        authors: [{id: data.users[0].id}],
         feature_image: 'some/image/path.jpg',
         tags: [data.tags[1].id]
     },
@@ -190,7 +190,7 @@ data.posts = [
         slug: 'twelfth-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
         featured: false,
-        author_id: data.users[0].id,
+        authors: [{id: data.users[0].id}],
         tags: [data.tags[3].id]
     },
     {
@@ -199,7 +199,7 @@ data.posts = [
         slug: 'thirteenth-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
         featured: false,
-        author_id: data.users[0].id,
+        authors: [{id: data.users[0].id}],
         tags: []
     },
     {
@@ -208,7 +208,7 @@ data.posts = [
         slug: 'fourteenth-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
         featured: true,
-        author_id: data.users[0].id,
+        authors: [{id: data.users[0].id}],
         tags: [data.tags[3].id]
     },
     {
@@ -218,7 +218,7 @@ data.posts = [
         mobiledoc: markdownToMobiledoc('Hello World! I am a featured page'),
         featured: true,
         page: 1,
-        author_id: data.users[0].id,
+        authors: [{id: data.users[0].id}],
         tags: []
     },
     {
@@ -227,7 +227,7 @@ data.posts = [
         slug: 'sixteenth-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
         featured: false,
-        author_id: data.users[0].id,
+        authors: [{id: data.users[0].id}],
         tags: []
     },
     {
@@ -236,7 +236,7 @@ data.posts = [
         slug: 'seventeenth-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
         featured: false,
-        author_id: data.users[0].id,
+        authors: [{id: data.users[0].id}],
         tags: []
     },
     {
@@ -245,7 +245,7 @@ data.posts = [
         slug: 'eighteenth-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
         featured: false,
-        author_id: data.users[0].id,
+        authors: [{id: data.users[0].id}],
         tags: []
     },
     {
@@ -255,7 +255,7 @@ data.posts = [
         mobiledoc: markdownToMobiledoc('Hello World!'),
         featured: false,
         status: 'draft',
-        author_id: data.users[0].id,
+        authors: [{id: data.users[0].id}],
         tags: [data.tags[0].id, data.tags[1].id, data.tags[2].id, data.tags[3].id]
     },
     {
@@ -264,7 +264,7 @@ data.posts = [
         slug: 'twentieth-post',
         mobiledoc: markdownToMobiledoc('Hello World!'),
         featured: false,
-        author_id: data.users[0].id,
+        authors: [{id: data.users[0].id}],
         tags: []
     },
     {
@@ -274,7 +274,7 @@ data.posts = [
         mobiledoc: markdownToMobiledoc('About Me!'),
         featured: false,
         page: 1,
-        author_id: data.users[0].id,
+        authors: [{id: data.users[0].id}],
         tags: [data.tags[0].id, data.tags[1].id, data.tags[2].id, data.tags[3].id]
     }
 ];
@@ -337,11 +337,15 @@ function createPosts(knex, DataGenerator) {
     });
 
     _.each(data.posts, function (post) {
-        postsAuthors.push({
-            id: ObjectId().toHexString(),
-            post_id: post.id,
-            author_id: post.author_id
-        });
+        if (post.authors) {
+            _.each(post.authors, function (author) {
+                postsAuthors.push({
+                    id: ObjectId().toHexString(),
+                    post_id: post.id,
+                    author_id: author.id
+                });
+            });
+        }
     });
 
     // Next, insert it into the database & return the correctly indexed data
