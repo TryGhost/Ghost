@@ -1,6 +1,7 @@
 const debug = require('@tryghost/debug')('web:api:default:app');
 const config = require('../../../shared/config');
 const express = require('../../../shared/express');
+const urlUtils = require('../../../shared/url-utils');
 const sentry = require('../../../shared/sentry');
 const errorHandler = require('@tryghost/mw-error-handler');
 const APIVersionCompatibilityService = require('../../services/api-version-compatibility');
@@ -14,16 +15,27 @@ module.exports = function setupApiApp() {
     }
 
     // If there is a version in the URL, and this is a valid API URL containing admin/content
-    // Then 307 redirect (preserves the HTTP method) to a versionless URL with `accept-version` set.
-    apiApp.all('/:version(v2|v3|v4|canary)/:api(admin|content)/*', (req, res) => {
-        const {version} = req.params;
-        const versionlessURL = req.originalUrl.replace(`${version}/`, '');
-        if (version.startsWith('v')) {
-            res.header('accept-version', `${version}.0`);
-        } else {
-            res.header('accept-version', version);
+    // Rewrite the URL and add the accept-version & deprecated headers
+    apiApp.all('/:version(v2|v3|v4|canary)/:api(admin|content)/*', (req, res, next) => {
+        let {version} = req.params;
+        const versionlessUrl = req.url.replace(`${version}/`, '');
+
+        // Always send the explicit, numeric version in headers
+        if (version === 'canary') {
+            version = 'v4';
         }
-        res.redirect(307, versionlessURL);
+
+        // Rewrite the url
+        req.url = versionlessUrl;
+
+        // Add the accept-version header so our internal systems will act as if it was set on the request
+        req.headers['accept-version'] = req.headers['accept-version'] || `${version}.0`;
+
+        res.header('Deprecation', `version="${version}"`);
+        // @TODO: fix this missing case in urlFor
+        res.header('Link', `<${urlUtils.urlFor('admin', true)}api${versionlessUrl}>; rel="latest-version"`);
+
+        next();
     });
 
     apiApp.use(APIVersionCompatibilityService.contentVersion);
