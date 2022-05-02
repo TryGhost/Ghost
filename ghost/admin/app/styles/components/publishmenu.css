@@ -466,7 +466,7 @@
 }
 
 .gh-publish-title {
-    margin: 2px 0 4.6rem;
+    margin: 2px 0 6.4rem;
     color: var(--black);
     font-size: 4.8rem;
     font-weight: 700;
@@ -489,22 +489,29 @@
     display: flex;
     flex-direction: column;
     margin-bottom: 1.6rem;
+    padding-bottom: 1.6rem;
+    border-bottom: 1px solid var(--whitegrey-d1);
 }
 
-.gh-publish-setting.disabled {
-    opacity: .3;
-    cursor: default;
+.gh-publish-setting.last {
+    border-bottom: 0;
 }
 
 .gh-publish-setting-title {
+    position: relative;
     display: flex;
     align-items: center;
 }
 
+.gh-publish-setting-title.disabled {
+    opacity: .3;
+    cursor: default;
+}
+
 .gh-publish-setting-title svg {
-    width: 2rem;
-    height: 2rem;
-    margin-right: 1.6rem;
+    width: 1.65rem;
+    height: 1.65rem;
+    margin-right: 1.4rem;
 }
 
 .gh-publish-setting-title svg path {
@@ -512,12 +519,24 @@
     stroke-width: 2px;
 }
 
+.gh-publish-setting-title .icon-expand {
+    position: absolute;
+    right: 0;
+    width: 1rem;
+    height: auto;
+    margin: 0;
+    fill: var(--midlightgrey);
+}
+
+.gh-publish-setting-title .icon-expand path {
+    stroke: var(--midlightgrey);
+}
+
 .gh-publish-setting-trigger {
     width: max-content;
-    border-bottom: 1.5px solid var(--black);
     color: var(--black);
-    font-size: 2rem;
-    font-weight: 500;
+    font-size: 1.8rem;
+    font-weight: 400;
     line-height: 1.35em;
     cursor: pointer;
 }
@@ -527,7 +546,7 @@
 }
 
 .gh-publish-setting-form {
-    margin: 2.4rem 0 2rem 3.6rem;
+    margin: 2.4rem 0 2rem;
     background-color: var(--white);
 }
 
