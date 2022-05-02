@@ -33,7 +33,7 @@ module.exports = function setupApiApp() {
     // Error handling for requests to non-existent API versions
     apiApp.use(errorHandler.resourceNotFound);
     apiApp.use(versionMissmatchHandler(APIVersionCompatibilityServiceInstance));
-    apiApp.use(errorHandler.handleJSONResponse(sentry));
+    apiApp.use(errorHandler.handleJSONResponseV2(sentry));
 
     debug('Parent API setup end');
     return apiApp;
