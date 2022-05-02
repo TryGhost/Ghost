@@ -288,6 +288,8 @@ module.exports = class MemberBREADService {
             delete data.newsletters;
         }
 
+        delete data.last_seen_at;
+
         let model;
 
         try {
