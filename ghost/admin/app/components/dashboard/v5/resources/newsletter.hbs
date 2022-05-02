@@ -4,7 +4,6 @@
             <h4>Latest from the newsletter</h4>
         </div>
         <div class="gh-dashboard5-resource-body">
-
             {{#if (not (or this.loading this.error))}}
                 <div class="gh-dashboard5-resource-bigarticle">
                     {{#each this.newsletters as |entry|}}
@@ -18,7 +17,6 @@
                     {{/each}}
                 </div>
             {{/if}}
-    
         </div>
         <div class="gh-dashboard5-resource-footer">
             <a href="https://ghost.org/resources/newsletter/" target="_blank" class="gh-dashboard5-subscribe-button" rel="noopener noreferrer">Subscribe to the newsletter &rarr;</a>

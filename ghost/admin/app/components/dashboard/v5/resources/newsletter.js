@@ -18,7 +18,7 @@ export default class Newsletter extends Component {
         this.loading = true;
         this.fetch.perform().then(() => {
             this.loading = false;
-        }, (error) => {
+        }).catch((error) => {
             this.error = error;
             this.loading = false;
         });
@@ -40,5 +40,6 @@ export default class Newsletter extends Component {
 
         let result = yield response.json();
         this.newsletters = result.posts || [];
+        console.log(this.newsletters);
     }
 }
