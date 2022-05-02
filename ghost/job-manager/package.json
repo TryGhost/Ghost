@@ -23,9 +23,9 @@
     "c8": "7.11.2",
     "date-fns": "2.28.0",
     "delay": "5.0.0",
-    "mocha": "9.2.2",
+    "mocha": "10.0.0",
     "should": "13.2.3",
-    "sinon": "11.1.2"
+    "sinon": "13.0.2"
   },
   "dependencies": {
     "@breejs/later": "^4.0.2",
