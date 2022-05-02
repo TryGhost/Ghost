@@ -51,6 +51,7 @@ module.exports = {
         feature_image: {type: 'string', maxlength: 2000, nullable: true},
         featured: {type: 'bool', nullable: false, defaultTo: false},
         type: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'post', validations: {isIn: [['post', 'page']]}},
+        // @TODO: add isIn validation here to control for all possible status values (published, draft, scheduled, sent)
         status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'draft'},
         // NOTE: unused at the moment and reserved for future features
         locale: {type: 'string', maxlength: 6, nullable: true},
@@ -109,6 +110,7 @@ module.exports = {
         feature_image_caption: {type: 'text', maxlength: 65535, nullable: true},
         email_only: {type: 'bool', nullable: false, defaultTo: false}
     },
+    // NOTE: this is the staff table
     users: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         name: {type: 'string', maxlength: 191, nullable: false},
@@ -123,7 +125,7 @@ module.exports = {
         facebook: {type: 'string', maxlength: 2000, nullable: true},
         twitter: {type: 'string', maxlength: 2000, nullable: true},
         accessibility: {type: 'text', maxlength: 65535, nullable: true},
-        // TODO: would be good to add validation here to control for all possible status values.
+        // @TODO: add isIn validation here to control for all possible status values.
         //       The ones that come up by reviewing the user model are:
         //       'active', 'inactive', 'locked', 'warn-1', 'warn-2', 'warn-3', 'warn-4'
         status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'active'},
@@ -145,6 +147,7 @@ module.exports = {
         updated_at: {type: 'dateTime', nullable: true},
         updated_by: {type: 'string', maxlength: 24, nullable: true}
     },
+    // @deprecated: oauth prototype needs to be removed so we can reimplement
     oauth: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         provider: {type: 'string', maxlength: 50, nullable: false},
@@ -337,12 +340,13 @@ module.exports = {
         target_url: {type: 'string', maxlength: 2000, nullable: false},
         name: {type: 'string', maxlength: 191, nullable: true},
         secret: {type: 'string', maxlength: 191, nullable: true},
-        // NOTE: the defaultTo does not make sense to set on DB layer as it leads to unnecessary maintenance every major release
-        //       it might make sense to introduce "isIn" validation checking if it's a valid version e.g: 'v3', 'v4', 'canary'
+        // @NOTE: the defaultTo does not make sense to set on DB layer as it leads to unnecessary maintenance every major release
+        //       would be ideal if we can remove the default and instead have "isIn" validation checking if it's a valid version e.g: 'v3', 'v4', 'canary'
         api_version: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'v2'},
         // NOTE: integration_id column needs "nullable: true" -> "nullable: false" migration (recreate table with nullable: false)
         // CASE: Ghost instances initialized pre 4.0 will have this column set to nullable: true in db schema
         integration_id: {type: 'string', maxlength: 24, nullable: false, references: 'integrations.id', cascadeDelete: true},
+        // @TODO: add isIn validation
         status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'available'},
         last_triggered_at: {type: 'dateTime', nullable: true},
         last_triggered_status: {type: 'string', maxlength: 50, nullable: true},
@@ -397,6 +401,7 @@ module.exports = {
         name: {type: 'string', maxlength: 191, nullable: true},
         note: {type: 'string', maxlength: 2000, nullable: true},
         geolocation: {type: 'string', maxlength: 2000, nullable: true},
+        // @deprecated: unused in 5.0 use newsletter.status:active or newsletter.status:-active
         subscribed: {type: 'bool', nullable: true, defaultTo: true},
         email_count: {type: 'integer', unsigned: true, nullable: false, defaultTo: 0},
         email_opened_count: {type: 'integer', unsigned: true, nullable: false, defaultTo: 0},
@@ -407,10 +412,12 @@ module.exports = {
         updated_at: {type: 'dateTime', nullable: true},
         updated_by: {type: 'string', maxlength: 24, nullable: true}
     },
+    // NOTE: this is the tiers table
     products: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         name: {type: 'string', maxlength: 191, nullable: false},
         slug: {type: 'string', maxlength: 191, nullable: false, unique: true},
+        // @deprecated: use a status enum with isIn validation, not aan ctive boolean
         active: {type: 'boolean', nullable: false, defaultTo: true},
         welcome_page_url: {type: 'string', maxlength: 2000, nullable: true},
         visibility: {
@@ -429,6 +436,7 @@ module.exports = {
     },
     offers: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        // @deprecated: use a status enum with isIn validation, not aan ctive boolean
         active: {type: 'boolean', nullable: false, defaultTo: true},
         name: {type: 'string', maxlength: 191, nullable: false, unique: true},
         code: {type: 'string', maxlength: 191, nullable: false, unique: true},
@@ -720,6 +728,7 @@ module.exports = {
         updated_at: {type: 'dateTime', nullable: true},
         updated_by: {type: 'string', maxlength: 24, nullable: true}
     },
+    // @TODO: this experiment can be cleaned up and removed
     temp_member_analytic_events: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         event_name: {type: 'string', maxlength: 50, nullable: false},
