@@ -3,9 +3,6 @@
     "description": "The default personal blogging theme for Ghost. Beautiful, minimal and responsive.",
     "demo": "https://demo.ghost.io",
     "version": "2.4.2",
-    "engines": {
-        "ghost-api": "v4"
-    },
     "license": "MIT",
     "screenshots": {
         "desktop": "assets/screenshot-desktop.jpg",
