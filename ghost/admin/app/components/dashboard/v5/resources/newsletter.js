@@ -40,6 +40,5 @@ export default class Newsletter extends Component {
 
         let result = yield response.json();
         this.newsletters = result.posts || [];
-        console.log(this.newsletters);
     }
 }
