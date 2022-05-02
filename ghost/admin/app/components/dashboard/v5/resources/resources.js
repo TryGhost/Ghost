@@ -44,7 +44,7 @@ export default class Resources extends Component {
         const order = encodeURIComponent('published_at DESC');
         const key = encodeURIComponent(API_KEY);
         const limit = encodeURIComponent(RESOURCE_COUNT);
-        const filter = encodeURIComponent('tag:'+this.tag);
+        const filter = encodeURIComponent('tag:' + this.tag);
         let response = yield fetch(`${API_URL}/ghost/api/content/posts/?limit=${limit}&order=${order}&key=${key}&include=none&filter=${filter}`);
         if (!response.ok) {
             // eslint-disable-next-line
