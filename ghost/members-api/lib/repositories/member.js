@@ -168,6 +168,10 @@ module.exports = class MemberRepository {
     }
 
     async create(data, options) {
+        if (!options) {
+            options = {};
+        }
+
         const {labels} = data;
 
         if (labels) {
@@ -207,11 +211,19 @@ module.exports = class MemberRepository {
             memberData.newsletters = await this.getSubscribeOnSignupNewsletters(browseOptions);
         }
 
+        const withRelated = options.withRelated ? options.withRelated : [];
+        if (!withRelated.includes('labels')) {
+            withRelated.push('labels');
+        }
+        if (!withRelated.includes('newsletters')) {
+            withRelated.push('newsletters');
+        }
+
         const member = await this._Member.add({
             ...memberData,
             ...memberStatusData,
             labels
-        }, options);
+        }, {...options, withRelated});
 
         for (const product of member.related('products').models) {
             await this._MemberProductEvent.add({
@@ -286,6 +298,18 @@ module.exports = class MemberRepository {
             transacting: options.transacting
         };
 
+        if (!options) {
+            options = {};
+        }
+
+        const withRelated = options.withRelated ? options.withRelated : [];
+        if (!withRelated.includes('labels')) {
+            withRelated.push('labels');
+        }
+        if (!withRelated.includes('newsletters')) {
+            withRelated.push('newsletters');
+        }
+
         const initialMember = await this._Member.findOne({
             id: options.id
         }, {...sharedOptions, withRelated: ['products', 'newsletters']});
@@ -301,7 +325,8 @@ module.exports = class MemberRepository {
             'labels',
             'geolocation',
             'products',
-            'newsletters'
+            'newsletters',
+            'last_seen_at'
         ]);
 
         const memberStatusData = {};
@@ -375,7 +400,7 @@ module.exports = class MemberRepository {
         const member = await this._Member.edit({
             ...memberData,
             ...memberStatusData
-        }, options);
+        }, {...options, withRelated});
 
         for (const productToAdd of productsToAdd) {
             await this._MemberProductEvent.add({
