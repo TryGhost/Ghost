@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/express-dynamic-redirects",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "repository": "https://github.com/TryGhost/Members/tree/main/packages/express-dynamic-redirects",
   "author": "Ghost Foundation",
   "license": "MIT",
