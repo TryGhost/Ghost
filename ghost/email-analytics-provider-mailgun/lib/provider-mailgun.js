@@ -109,8 +109,9 @@ class EmailAnalyticsProviderMailgun {
                 break pagesLoop;
             }
 
-            debug(`_fetchPages: starting fetching next page ${page.paging.next.replace('https://api.mailgun.net/v3', '')}`);
-            page = await mailgun.get(page.paging.next.replace('https://api.mailgun.net/v3', ''));
+            const nextPageUrl = page.paging.next.replace(/https:\/\/api\.(eu\.)?mailgun\.net\/v3/, '');
+            debug(`_fetchPages: starting fetching next page ${nextPageUrl}`);
+            page = await mailgun.get(nextPageUrl);
             events = page && page.items && page.items.map(this.normalizeEvent) || [];
             debug(`_fetchPages: finished fetching next page with ${events.length} events`);
         }
