@@ -72,7 +72,8 @@ describe('API Versioning', function () {
                 .header('Accept-Version', 'v999.1')
                 .expectStatus(406)
                 .matchHeaderSnapshot({
-                    etag: anyEtag
+                    etag: anyEtag,
+                    'content-version': stringMatching(/v\d+\.\d+/)
                 })
                 .matchBodySnapshot({
                     errors: [{
@@ -90,7 +91,8 @@ describe('API Versioning', function () {
                 .header('User-Agent', 'Zapier 1.3')
                 .expectStatus(406)
                 .matchHeaderSnapshot({
-                    etag: anyEtag
+                    etag: anyEtag,
+                    'content-version': stringMatching(/v\d+\.\d+/)
                 })
                 .matchBodySnapshot({
                     errors: [{
@@ -114,7 +116,8 @@ describe('API Versioning', function () {
                 .header('User-Agent', 'Zapier 1.4')
                 .expectStatus(406)
                 .matchHeaderSnapshot({
-                    etag: anyEtag
+                    etag: anyEtag,
+                    'content-version': stringMatching(/v\d+\.\d+/)
                 })
                 .matchBodySnapshot({
                     errors: [{
@@ -136,7 +139,8 @@ describe('API Versioning', function () {
                 .header('User-Agent', 'Zapier 1.4')
                 .expectStatus(406)
                 .matchHeaderSnapshot({
-                    etag: anyEtag
+                    etag: anyEtag,
+                    'content-version': stringMatching(/v\d+\.\d+/)
                 })
                 .matchBodySnapshot({
                     errors: [{
@@ -155,7 +159,8 @@ describe('API Versioning', function () {
                 .header('Accept-Version', 'v4.1')
                 .expectStatus(404)
                 .matchHeaderSnapshot({
-                    etag: anyEtag
+                    etag: anyEtag,
+                    'content-version': stringMatching(/v\d+\.\d+/)
                 })
                 .matchBodySnapshot({
                     errors: [{
@@ -170,7 +175,8 @@ describe('API Versioning', function () {
                 .header('Accept-Version', 'v99.0')
                 .expectStatus(406)
                 .matchHeaderSnapshot({
-                    etag: anyEtag
+                    etag: anyEtag,
+                    'content-version': stringMatching(/v\d+\.\d+/)
                 })
                 .matchBodySnapshot({errors: [{
                     context: stringMatching(/Provided client version v99\.0 is ahead of current Ghost instance version v\d+\.\d+/)
@@ -184,7 +190,8 @@ describe('API Versioning', function () {
                 .header('Accept-Version', 'v1.0')
                 .expectStatus(406)
                 .matchHeaderSnapshot({
-                    etag: anyEtag
+                    etag: anyEtag,
+                    'content-version': stringMatching(/v\d+\.\d+/)
                 })
                 .matchBodySnapshot({errors: [{
                     context: stringMatching(/Provided client version v1\.0 is outdated and is behind current Ghost version v\d+\.\d+/)
