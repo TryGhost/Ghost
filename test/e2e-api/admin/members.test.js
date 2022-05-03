@@ -1141,11 +1141,32 @@ describe('Members API', function () {
         });
     });
 
-    it('Cannot edit a non-existing id', async function () {
+    // Internally a different error is thrown for newsletters/products changes
+    it('Cannot edit a non-existing id with newsletters', async function () {
         const memberChanged = {
             name: 'changed',
             email: 'just-a-member@test.com',
             newsletters: []
+        };
+
+        await agent
+            .put(`/members/${ObjectId().toHexString()}/`)
+            .body({members: [memberChanged]})
+            .expectStatus(404)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyUuid
+                }]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
+
+    it('Cannot edit a non-existing id', async function () {
+        const memberChanged = {
+            name: 'changed',
+            email: 'just-a-member@test.com'
         };
 
         await agent
