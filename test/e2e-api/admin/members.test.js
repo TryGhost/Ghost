@@ -1,5 +1,6 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyEtag, anyObjectId, anyUuid, anyISODateTime, anyISODate, anyString, anyArray, anyLocationFor, anyErrorId} = matchers;
+const ObjectId = require('bson-objectid');
 
 const assert = require('assert');
 const nock = require('nock');
@@ -1138,6 +1139,27 @@ describe('Members API', function () {
                 }
             ]
         });
+    });
+
+    it('Cannot edit a non-existing id', async function () {
+        const memberChanged = {
+            name: 'changed',
+            email: 'just-a-member@test.com',
+            newsletters: []
+        };
+
+        await agent
+            .put(`/members/${ObjectId().toHexString()}/`)
+            .body({members: [memberChanged]})
+            .expectStatus(404)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyUuid
+                }]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
     });
 
     it('Can subscribe to a newsletter', async function () {
