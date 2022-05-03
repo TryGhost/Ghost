@@ -13,6 +13,10 @@ module.exports = {
         return require('./default');
     },
 
+    get backups() {
+        return require('./backups');
+    },
+
     get authentication() {
         return require('./authentication');
     },
