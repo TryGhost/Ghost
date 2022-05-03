@@ -8,25 +8,20 @@ const fs = require('fs-extra');
  */
 
 class BackupsExporter {
-
-
     getDirectories() {
         return {
             images: config.getContentPath('images'),
             backups: config.getContentPath('backups')
         };
     }
-
     /**
      * 
      * @TODO: Perhaps let it multithread to avoid http timeouts and memory issues on big requests?
      * Maybe add cases later for other types for backups?
      */
-
     serve() {
         const self = this;
         return function downloadBackup(req, res, next) {
-            console.log('running dlbk')
             const backupsPath = self.getDirectories().backups;
             const imagesPath = self.getDirectories().images;
             const zipPath = path.join(backupsPath, 'images.zip');
