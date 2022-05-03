@@ -5,11 +5,13 @@ const tpl = require('@tryghost/tpl');
 const DomainEvents = require('@tryghost/domain-events');
 const {SubscriptionCreatedEvent, MemberSubscribeEvent} = require('@tryghost/member-events');
 const ObjectId = require('bson-objectid');
+const {NotFoundError} = require('@tryghost/errors');
 
 const messages = {
     noStripeConnection: 'Cannot {action} without a Stripe Connection',
     moreThanOneProduct: 'A member cannot have more than one Product',
     existingSubscriptions: 'Cannot modify Products for a Member with active Subscriptions',
+    memberNotFound: 'Could not find Member {id}',
     subscriptionNotFound: 'Could not find Subscription {id}',
     productNotFound: 'Could not find Product {id}',
     bulkActionRequiresFilter: 'Cannot perform {action} without a filter or all=true',
@@ -310,13 +312,6 @@ module.exports = class MemberRepository {
             withRelated.push('newsletters');
         }
 
-        const initialMember = await this._Member.findOne({
-            id: options.id
-        }, {...sharedOptions, withRelated: ['products', 'newsletters']});
-
-        const existingProducts = initialMember.related('products').models;
-        const existingNewsletters = initialMember.related('newsletters').models;
-
         const memberData = _.pick(data, [
             'email',
             'name',
@@ -329,11 +324,38 @@ module.exports = class MemberRepository {
             'last_seen_at'
         ]);
 
+        // Determine if we need to fetch the initial member with relations
+        const needsProducts = this._stripeAPIService.configured && data.products;
+        const needsNewsletters = memberData.newsletters || typeof memberData.subscribed === 'boolean';
+
+        // Build list for withRelated
+        const requiredRelations = [];
+        if (needsProducts) {
+            requiredRelations.push('products');
+        }
+        if (needsNewsletters) {
+            requiredRelations.push('newsletters');
+        }
+
+        // Fetch the member with relations if required
+        let initialMember = null;
+        if (requiredRelations.length > 0) {
+            initialMember = await this._Member.findOne({
+                id: options.id
+            }, {...sharedOptions, withRelated: requiredRelations});
+
+            // Make sure we throw the right error if it doesn't exist
+            if (!initialMember) {
+                throw new NotFoundError({message: tpl(messages.memberNotFound, {id: options.id})});
+            }
+        }
+
         const memberStatusData = {};
 
         let productsToAdd = [];
         let productsToRemove = [];
-        if (this._stripeAPIService.configured && data.products) {
+        if (needsProducts) {
+            const existingProducts = initialMember.related('products').models;
             const existingProductIds = existingProducts.map(product => product.id);
             const incomingProductIds = data.products.map(product => product.id);
 
@@ -376,25 +398,30 @@ module.exports = class MemberRepository {
             }
         }
 
-        // This maps the old susbcribed property to the new newsletters field
-        if (!memberData.newsletters) {
-            if (memberData.subscribed === false) {
-                memberData.newsletters = [];
-            } else if (memberData.subscribed === true && !existingNewsletters.find(n => n.status === 'active')) {
-                const browseOptions = _.pick(options, 'transacting');
-                memberData.newsletters = await this.getSubscribeOnSignupNewsletters(browseOptions);
-            }
-        }
-
         // Keep track of the newsletters that were added and removed of a member so we can generate the corresponding events
         let newslettersToAdd = [];
         let newslettersToRemove = [];
-        if (memberData.newsletters) {
-            const existingNewsletterIds = existingNewsletters.map(newsletter => newsletter.id);
-            const incomingNewsletterIds = memberData.newsletters.map(newsletter => newsletter.id);
 
-            newslettersToAdd = _.differenceWith(incomingNewsletterIds, existingNewsletterIds);
-            newslettersToRemove = _.differenceWith(existingNewsletterIds, incomingNewsletterIds);
+        if (needsNewsletters) {
+            const existingNewsletters = initialMember.related('newsletters').models;
+
+            // This maps the old susbcribed property to the new newsletters field
+            if (!memberData.newsletters) {
+                if (memberData.subscribed === false) {
+                    memberData.newsletters = [];
+                } else if (memberData.subscribed === true && !existingNewsletters.find(n => n.status === 'active')) {
+                    const browseOptions = _.pick(options, 'transacting');
+                    memberData.newsletters = await this.getSubscribeOnSignupNewsletters(browseOptions);
+                }
+            }
+            
+            if (memberData.newsletters) {
+                const existingNewsletterIds = existingNewsletters.map(newsletter => newsletter.id);
+                const incomingNewsletterIds = memberData.newsletters.map(newsletter => newsletter.id);
+
+                newslettersToAdd = _.differenceWith(incomingNewsletterIds, existingNewsletterIds);
+                newslettersToRemove = _.differenceWith(existingNewsletterIds, incomingNewsletterIds);
+            }
         }
 
         const member = await this._Member.edit({
