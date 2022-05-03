@@ -1155,7 +1155,8 @@ describe('Members API', function () {
             .expectStatus(404)
             .matchBodySnapshot({
                 errors: [{
-                    id: anyUuid
+                    id: anyUuid,
+                    context: anyString
                 }]
             })
             .matchHeaderSnapshot({
