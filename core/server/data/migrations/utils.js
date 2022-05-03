@@ -3,6 +3,7 @@ const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const commands = require('../schema').commands;
+const DatabaseInfo = require('@tryghost/database-info');
 
 const MIGRATION_USER = 1;
 
@@ -454,6 +455,9 @@ function createSetNullableMigration(table, column, options = {}) {
             await commands.setNullable(table, column, knex);
         },
         async function down(knex) {
+            if (DatabaseInfo.isSQLite(knex)) {
+                options.disableForeignKeyChecks = false;
+            }
             logging.info(`Dropping nullable:  ${table}.${column}${options.disableForeignKeyChecks ? ' with foreign keys disabled' : ''}`);
 
             if (options.disableForeignKeyChecks) {
@@ -479,6 +483,9 @@ function createSetNullableMigration(table, column, options = {}) {
 function createDropNullableMigration(table, column, options = {}) {
     return createTransactionalMigration(
         async function up(knex) {
+            if (DatabaseInfo.isSQLite(knex)) {
+                options.disableForeignKeyChecks = false;
+            }
             logging.info(`Dropping nullable: ${table}.${column}${options.disableForeignKeyChecks ? ' with foreign keys disabled' : ''}`);
 
             if (options.disableForeignKeyChecks) {
