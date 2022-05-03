@@ -101,12 +101,11 @@ describe('API Versioning', function () {
                     }]
                 });
 
-            // temporarily disable email sending
-            mockManager.assert.sentEmailCount(0);
-            // mockManager.assert.sentEmail({
-            //     subject: 'Attention required: Your Zapier 1.3 integration has failed',
-            //     to: 'jbloggs@example.com'
-            // });
+            mockManager.assert.sentEmailCount(1);
+            mockManager.assert.sentEmail({
+                subject: 'Attention required: Your Zapier 1.3 integration has failed',
+                to: 'jbloggs@example.com'
+            });
         });
 
         it('responds with error and sends email ONCE when requested version is BEHIND and CANNOT respond multiple times', async function () {
@@ -126,12 +125,11 @@ describe('API Versioning', function () {
                     }]
                 });
 
-            // temporarily disable email sending
-            mockManager.assert.sentEmailCount(0);
-            // mockManager.assert.sentEmail({
-            //     subject: 'Attention required: Your Zapier 1.4 integration has failed',
-            //     to: 'jbloggs@example.com'
-            // });
+            mockManager.assert.sentEmailCount(1);
+            mockManager.assert.sentEmail({
+                subject: 'Attention required: Your Zapier 1.4 integration has failed',
+                to: 'jbloggs@example.com'
+            });
 
             await agentAdminAPI
                 .get('removed_endpoint')
@@ -149,8 +147,7 @@ describe('API Versioning', function () {
                     }]
                 });
 
-            // temporarily disable email sending
-            mockManager.assert.sentEmailCount(0);
+            mockManager.assert.sentEmailCount(1);
         });
 
         it('responds with 404 error when the resource cannot be found', async function () {
