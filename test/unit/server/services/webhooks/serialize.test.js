@@ -35,8 +35,7 @@ describe('WebhookService - Serialize', function () {
                 await serialize('fake.hook');
             },
             (error) => {
-                assert.strictEqual(error.name, 'TypeError');
-                assert.strictEqual(error.message, 'Cannot read properties of undefined (reading \'attributes\')');
+                assert.equal(error.name, 'TypeError');
                 return true;
             }
         );
