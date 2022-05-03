@@ -1698,6 +1698,83 @@ describe('Post Model', function () {
             // 2 own and 2 reassigned from the other author
             postReassignOwnerWithPosts.length.should.equal(4);
         });
+
+        it('can reassign posts with mixed primary and secondary authors', async function () {
+            const authorData = {
+                id: testUtils.DataGenerator.Content.users[2].id,
+                slug: testUtils.DataGenerator.Content.users[2].slug
+            };
+            const ownerData = {
+                id: testUtils.DataGenerator.Content.users[0].id,
+                slug: testUtils.DataGenerator.Content.users[0].slug
+            };
+            const otherAuthorDate = {
+                id: testUtils.DataGenerator.Content.users[3].id,
+                slug: testUtils.DataGenerator.Content.users[3].slug
+            };
+
+            await testUtils.fixtures.insertPosts([{
+                title: 'primary_author',
+                authors: [{
+                    id: authorData.id
+                }, {
+                    id: ownerData.id
+                }]
+            }, {
+                title: 'secondary_author',
+                authors: [{
+                    id: ownerData.id
+                }, {
+                    id: authorData.id
+                }]
+            }, {
+                title: 'multiple_authors',
+                authors: [{
+                    id: ownerData.id
+                }, {
+                    id: authorData.id
+                }, {
+                    id: otherAuthorDate.id
+                }]
+            }]);
+
+            const preReassignAuthorWithPosts = await models.Post.findAll({
+                filter: `authors:${authorData.slug}`,
+                context: {internal: true}
+            });
+            // 2 from 'posts:mu' fixtures and 3 inserted in the test case
+            preReassignAuthorWithPosts.length.should.equal(5);
+
+            const preReassignOtherAuthorWithPosts = await models.Post.findAll({
+                filter: `authors:${otherAuthorDate.slug}`,
+                context: {internal: true}
+            });
+            // 2 from 'posts:mu' fixtures and 1 inserted in the test case
+            preReassignOtherAuthorWithPosts.length.should.equal(3);
+
+            await models.Post.reassignByAuthor(authorData);
+
+            const postReassignAuthorWithPosts = await models.Post.findAll({
+                filter: `authors:${authorData.slug}`,
+                context: {internal: true}
+            });
+            // author under test should own nothing after reassignment
+            postReassignAuthorWithPosts.length.should.equal(0);
+
+            const postReassignOtherAuthorWithPosts = await models.Post.findAll({
+                filter: `authors:${otherAuthorDate.slug}`,
+                context: {internal: true}
+            });
+            // should stay the same as preassignment for another author
+            postReassignOtherAuthorWithPosts.length.should.equal(3);
+
+            const postReassignOwnerWithPosts = await models.Post.findAll({
+                filter: `authors:${ownerData.slug}`,
+                context: {internal: true}
+            });
+            // 5 from this test case's author under test + 4 from the test above (if executed exclusively will fail)
+            postReassignOwnerWithPosts.length.should.equal(9);
+        });
     });
 
     describe('Post tag handling edge cases', function () {
