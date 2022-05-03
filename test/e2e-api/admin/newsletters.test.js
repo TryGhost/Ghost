@@ -1,4 +1,5 @@
 const DatabaseInfo = require('@tryghost/database-info');
+const {any} = require('@tryghost/express-test').snapshot;
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyEtag, anyObjectId, anyUuid, anyISODateTime, anyLocationFor} = matchers;
 const configUtils = require('../../utils/configUtils');
@@ -19,6 +20,14 @@ const newsletterSnapshot = {
     uuid: anyUuid,
     created_at: anyISODateTime,
     updated_at: anyISODateTime
+};
+
+const newsletterSnapshotWithoutSortOrder = {
+    id: anyObjectId,
+    uuid: anyUuid,
+    created_at: anyISODateTime,
+    updated_at: anyISODateTime,
+    sort_order: any(Number)
 };
 
 let agent;
@@ -370,5 +379,62 @@ describe('Newsletters API', function () {
             subject: 'Verify email address',
             to: 'test@example.com'
         });
+    });
+
+    it(`Can't add multiple newsletters with same name`, async function () {
+        const firstNewsletter = {
+            name: 'Duplicate newsletter'
+        };
+
+        const secondNewsletter = {...firstNewsletter};
+
+        await agent
+            .post(`newsletters/`)
+            .body({newsletters: [firstNewsletter]})
+            .expectStatus(201)
+            .matchBodySnapshot({
+                newsletters: [newsletterSnapshotWithoutSortOrder]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag,
+                location: anyLocationFor('newsletters')
+            });
+
+        await agent
+            .post(`newsletters/`)
+            .body({newsletters: [secondNewsletter]})
+            .expectStatus(422)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyUuid,
+                    message: 'Validation error, cannot save newsletter.',
+                    context: 'A newsletter with the same name already exists'
+                }]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
+
+    it(`Can't edit multiple newsletters to existing name`, async function () {
+        const id = fixtureManager.get('newsletters', 0).id;
+
+        await agent.put(`newsletters/${id}`)
+            .body({
+                newsletters: [{
+                    name: 'Duplicate newsletter'
+                }]
+            })
+            .expectStatus(422)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyUuid,
+                    message: 'Validation error, cannot edit newsletter.',
+                    context: 'A newsletter with the same name already exists'
+                }]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
     });
 });
