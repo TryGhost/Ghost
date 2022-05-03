@@ -20,7 +20,7 @@
                 <div class="gh-members-activity-icon">{{svg-jar event.icon}}</div>
                 <div class="gh-members-activity-event">
                     <span class="gh-members-activity-description">
-                        {{event.action}}
+                        {{capitalize-first-letter event.action}}
                         {{event.object}}
                     </span>
                     {{#if event.email}}

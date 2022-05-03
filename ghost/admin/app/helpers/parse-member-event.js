@@ -127,6 +127,9 @@ function getAction(event) {
 
 function getObject(event) {
     if (event.type === 'newsletter_event') {
+        if (event.data.newsletter && event.data.newsletter.name) {
+            return 'emails from '+event.data.newsletter.name;
+        }
         return 'emails';
     }
 
