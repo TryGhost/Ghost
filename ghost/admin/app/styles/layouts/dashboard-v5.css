@@ -539,7 +539,7 @@ Dashboard v5 Metric */
 
 .gh-dashboard5-metric-label {
     align-items: center;
-    font-size: 1.5rem;
+    font-size: 1.55rem;
     font-weight: 700;
     line-height: 1em;
     margin: 0 0 8px;
@@ -1088,7 +1088,7 @@ Dashboard v5 What's New */
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    font-size: 1.65rem;
+    font-size: 1.45rem;
     font-weight: 600;
     line-height: 1.4em;
     margin-bottom: 8px;
@@ -1298,7 +1298,7 @@ Dashboard v5 Staff Picks */
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    font-size: 1.65rem;
+    font-size: 1.45rem;
     font-weight: 600;
     line-height: 1.4em;
     margin-bottom: 8px;
@@ -1308,15 +1308,15 @@ Dashboard v5 Staff Picks */
 }
 
 .gh-dashboard5-staff-picks .gh-dashboard5-list-body {
-    color: #7c8b9a;
+    color: var(--midlightgrey);
     font-size: 1.4rem;
     padding: 0 32px 0 0;
     transition: all .3s ease-in-out;
 }
 
-.gh-dashboard5-staff-picks .gh-dashboard5-resource-body,
-.gh-dashboard5-staff-picks .gh-dashboard5-resource-footer {
-    border-color: #dcdfe1;
+.gh-dashboard5-staff-picks .gh-dashboard5-resource-body {
+    border-top: 1px solid var(--whitegrey);
+    padding-top: 12px;
 }
 
 .gh-dashboard5-staff-picks .gh-dashboard5-resource-footer a {
@@ -1401,7 +1401,7 @@ Dashboard v5 Community */
     color: #fff;
 }
 
-.gh-dashboard5-community .gh-dashboard5-resource-title h4 {
+.gh-dashboard5-community .gh-dashboard5-resource-title:not(.large) h4 {
     color: #fff;
 }
 
@@ -1467,6 +1467,7 @@ Dashboard v5 Resources */
 .gh-dashboard5-resource {
     display: flex;
 }
+
 .gh-dashboard5-resource-box {
     flex: 1;
     border: 1px solid var(--whitegrey);
@@ -1479,20 +1480,38 @@ Dashboard v5 Resources */
     background: var(--white);
 }
 
+.gh-dashboard-box.gh-dashboard5-box.is-secondary .gh-dashboard5-resource-box.link {
+    border: none;
+    box-shadow: 0 2px 4px rgb(0 0 0 / 7%);
+    transition: all .3s ease-in-out;
+}
+
 .gh-dashboard5-resource-box.is-secondary {
     border: none;
     box-shadow: none;
 }
 
-.gh-dashboard5-resource-title h4 {
+.gh-dashboard5-resource-title:not(.large) h4 {
     font-size: 1.1rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.3px;
-    color: var(--darkgrey);
+    color: var(--middarkgrey);
     margin: 0 0 8px;
     padding: 0;
     transition: color .3s;
+}
+
+.gh-dashboard5-resource-title.large h4 {
+    align-items: center;
+    font-size: 1.55rem;
+    font-weight: 700;
+    line-height: 1em;
+    margin: 0 0 8px;
+    padding: 0;
+    color: var(--black);
+    white-space: nowrap;
+    letter-spacing: -.3px;
 }
 
 .gh-dashboard5-resource-title p {
@@ -1531,7 +1550,8 @@ Dashboard v5 Resources */
 .gh-dashboard5-resource-bigarticle {
     display: flex;
     flex-direction: row;
-    padding: 0 0 24px;
+    margin: 0 0 24px;
+    padding: 0;
 }
 
 .gh-dashboard5-resource-bigarticle .gh-dashboard5-resource-thumbnail {
@@ -1542,7 +1562,7 @@ Dashboard v5 Resources */
 }
 
 .gh-dashboard5-resource-bigarticle h3 {
-    font-size: 2.2rem;
+    font-size: 1.8rem;
     font-weight: 700;
 }
 
@@ -1554,6 +1574,8 @@ Dashboard v5 Resources */
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;  
     overflow: hidden;
+    margin: 0;
+    padding: 0;
 }
 
 .gh-dashboard5-resource-smallarticles {
@@ -1585,7 +1607,7 @@ Dashboard v5 Resources */
     line-height: 1.5em;
     font-weight: 400;
     color: var(--midlightgrey);
-    padding: 3px 0 0 0;
+    padding: 0;
     white-space: nowrap;
 }
 
