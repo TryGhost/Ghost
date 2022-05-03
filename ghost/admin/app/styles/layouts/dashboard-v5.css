@@ -1060,15 +1060,9 @@ Dashboard v5 Recents */
 }
 
 .gh-dashboard5-recents-activity .gh-dashboard5-list-item-sub:nth-child(2) > span {
-    text-transform: lowercase;
     color: #626d79;
     font-weight: 500;
 }
-
-.gh-dashboard5-recents-activity .gh-dashboard5-list-item-sub:nth-child(2) > span:first-letter {
-    text-transform: uppercase;
-}
-
 
 /* --------------------------------- 
 Dashboard v5 What's New */

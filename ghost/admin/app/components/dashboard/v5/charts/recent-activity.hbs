@@ -27,7 +27,7 @@
                                             <GhMemberAvatar @member={{parsedEvent.member}} @containerClass="w8 h8 mr3 flex-shrink-0" />
                                             {{parsedEvent.subject}}
                                             <span>
-                                                {{parsedEvent.action}}
+                                                {{capitalize-first-letter parsedEvent.action}}
                                                 {{parsedEvent.object}}
                                                 {{parsedEvent.info}}
                                             </span>
