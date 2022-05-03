@@ -232,7 +232,7 @@ Dashboard v5 Layout */
 .gh-dashboard5-minichart {
     flex: 1;
     border-left: 1px solid var(--whitegrey);
-    padding: 4px 24px;
+    padding: 4px 24px 0;
     position: relative;
 }
 
@@ -271,7 +271,7 @@ Dashboard v5 Layout */
 }
 
 .gh-dashboard5-minichart .gh-dashboard5-chart-box {
-    height: 110px;
+    height: 94px;
 }
 
 .gh-dashboard5-legend {
@@ -483,7 +483,7 @@ Dashboard v5 Chart */
 
 .gh-dashboard5-minicharts .gh-dashboard5-chart {
     width: 100%;
-    height: 110px;
+    height: 94px;
     padding: 0 0 0 30%;
 }
 
@@ -756,7 +756,7 @@ Dashboard v5 Anchor */
 }
 
 .gh-dashboard5-anchor .gh-dashboard5-box {
-    padding-bottom: 8px;
+    padding-bottom: 24px;
 }
 
 .gh-dashboard5-anchor .gh-dashboard5-stats {
