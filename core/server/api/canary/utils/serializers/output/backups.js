@@ -1,4 +1,4 @@
-const debug = require('@tryghost/debug')('api:canary:utils:serializers:output:backups');
+const debug = require('@tryghost/debug');
 
 module.exports = {
     all(data, apiConfig, frame) {

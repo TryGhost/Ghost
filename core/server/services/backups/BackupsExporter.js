@@ -25,7 +25,8 @@ class BackupsExporter {
 
     serve() {
         const self = this;
-        return function downloadbackups(req, res, next) {
+        return function downloadBackup(req, res, next) {
+            console.log('running dlbk')
             const backupsPath = self.getDirectories().backups;
             const imagesPath = self.getDirectories().images;
             const zipPath = path.join(backupsPath, 'images.zip');
