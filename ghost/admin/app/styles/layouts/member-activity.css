@@ -119,13 +119,8 @@
 
 .gh-members-activity-description {
     display: inline-block;
-    text-transform: lowercase;
     color: var(--middarkgrey);
     font-weight: 500;
-}
-
-.gh-members-activity-description:first-letter {
-    text-transform: uppercase;
 }
 
 .gh-members-activity-icon {
