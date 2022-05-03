@@ -3,6 +3,7 @@ const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const commands = require('../schema').commands;
+const DatabaseInfo = require('@tryghost/database-info');
 
 const MIGRATION_USER = 1;
 
@@ -443,18 +444,32 @@ function createDropColumnMigration(table, column, columnDefinition) {
 /**
  * @param {string} table
  * @param {string} column
- *
+ * @param {Object} options
+ * @param {boolean} options.disableForeignKeyChecks Disable foreign key checks for the down operation (when dropping nullable)
  * @returns {Migration}
  */
-function createSetNullableMigration(table, column) {
-    return createNonTransactionalMigration(
+function createSetNullableMigration(table, column, options = {}) {
+    return createTransactionalMigration(
         async function up(knex) {
             logging.info(`Setting nullable: ${table}.${column}`);
             await commands.setNullable(table, column, knex);
         },
         async function down(knex) {
-            logging.info(`Dropping nullable:  ${table}.${column}`);
-            await commands.dropNullable(table, column, knex);
+            if (DatabaseInfo.isSQLite(knex)) {
+                options.disableForeignKeyChecks = false;
+            }
+            logging.info(`Dropping nullable:  ${table}.${column}${options.disableForeignKeyChecks ? ' with foreign keys disabled' : ''}`);
+            if (options.disableForeignKeyChecks) {
+                await knex.raw('SET FOREIGN_KEY_CHECKS=0;').transacting(knex);
+            }
+
+            try {
+                await commands.dropNullable(table, column, knex);
+            } finally {
+                if (options.disableForeignKeyChecks) {
+                    await knex.raw('SET FOREIGN_KEY_CHECKS=1;').transacting(knex);
+                }
+            }            
         }
     );
 }
@@ -462,14 +477,29 @@ function createSetNullableMigration(table, column) {
 /**
  * @param {string} table
  * @param {string} column
- *
+ * @param {Object} options
+ * @param {boolean} options.disableForeignKeyChecks Disable foreign key checks for the up operation (when dropping nullable)
  * @returns {Migration}
  */
-function createDropNullableMigration(table, column) {
-    return createNonTransactionalMigration(
+function createDropNullableMigration(table, column, options = {}) {
+    return createTransactionalMigration(
         async function up(knex) {
-            logging.info(`Dropping nullable: ${table}.${column}`);
-            await commands.dropNullable(table, column, knex);
+            if (DatabaseInfo.isSQLite(knex)) {
+                options.disableForeignKeyChecks = false;
+            }
+            logging.info(`Dropping nullable: ${table}.${column}${options.disableForeignKeyChecks ? ' with foreign keys disabled' : ''}`);
+
+            if (options.disableForeignKeyChecks) {
+                await knex.raw('SET FOREIGN_KEY_CHECKS=0;').transacting(knex);
+            }
+
+            try {
+                await commands.dropNullable(table, column, knex);
+            } finally {
+                if (options.disableForeignKeyChecks) {
+                    await knex.raw('SET FOREIGN_KEY_CHECKS=1;').transacting(knex);
+                }
+            }
         },
         async function down(knex) {
             logging.info(`Setting nullable: ${table}.${column}`);
