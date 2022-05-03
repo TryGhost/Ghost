@@ -261,6 +261,10 @@ module.exports = function apiRoutes() {
         http(api.files.upload)
     );
 
+    // ## backups
+    // @TODO make images dynamic to allow multiple use cases in futurex
+    router.get('/backups/images/download', mw.authAdminApi, http(api.backups.download));
+    
     // ## Invites
     router.get('/invites', mw.authAdminApi, http(api.invites.browse));
     router.get('/invites/:id', mw.authAdminApi, http(api.invites.read));
