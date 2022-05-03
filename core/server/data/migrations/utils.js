@@ -459,16 +459,17 @@ function createSetNullableMigration(table, column, options = {}) {
                 options.disableForeignKeyChecks = false;
             }
             logging.info(`Dropping nullable:  ${table}.${column}${options.disableForeignKeyChecks ? ' with foreign keys disabled' : ''}`);
-
             if (options.disableForeignKeyChecks) {
                 await knex.raw('SET FOREIGN_KEY_CHECKS=0;').transacting(knex);
             }
 
-            await commands.dropNullable(table, column, knex);
-
-            if (options.disableForeignKeyChecks) {
-                await knex.raw('SET FOREIGN_KEY_CHECKS=1;').transacting(knex);
-            }
+            try {
+                await commands.dropNullable(table, column, knex);
+            } finally {
+                if (options.disableForeignKeyChecks) {
+                    await knex.raw('SET FOREIGN_KEY_CHECKS=1;').transacting(knex);
+                }
+            }            
         }
     );
 }
@@ -492,10 +493,12 @@ function createDropNullableMigration(table, column, options = {}) {
                 await knex.raw('SET FOREIGN_KEY_CHECKS=0;').transacting(knex);
             }
 
-            await commands.dropNullable(table, column, knex);
-            
-            if (options.disableForeignKeyChecks) {
-                await knex.raw('SET FOREIGN_KEY_CHECKS=1;').transacting(knex);
+            try {
+                await commands.dropNullable(table, column, knex);
+            } finally {
+                if (options.disableForeignKeyChecks) {
+                    await knex.raw('SET FOREIGN_KEY_CHECKS=1;').transacting(knex);
+                }
             }
         },
         async function down(knex) {
