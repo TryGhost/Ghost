@@ -6,6 +6,7 @@ const fs = require('fs-extra');
 const uuid = require('uuid');
 const ObjectId = require('bson-objectid');
 const KnexMigrator = require('knex-migrator');
+const {sequence} = require('@tryghost/promise');
 const knexMigrator = new KnexMigrator();
 
 // Ghost Internals
@@ -26,9 +27,11 @@ let postsInserted = 0;
 /** TEST FIXTURES **/
 const fixtures = {
     insertPosts: function insertPosts(posts) {
-        return Promise.map(posts, function (post) {
+        const tasks = posts.map(post => () => {
             return models.Post.add(post, context.internal);
         });
+
+        return sequence(tasks);
     },
 
     insertPostsAndTags: function insertPostsAndTags() {
