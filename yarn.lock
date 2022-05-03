@@ -1948,10 +1948,10 @@
     utils-copy-error "^1.0.1"
     uuid "^8.3.2"
 
-"@tryghost/express-dynamic-redirects@0.2.9":
-  version "0.2.9"
-  resolved "https://registry.yarnpkg.com/@tryghost/express-dynamic-redirects/-/express-dynamic-redirects-0.2.9.tgz#62094c67bce0c5e6918a292e8a7e0d8d4c72aa16"
-  integrity sha512-BguBNvq+E/wEiJ+FJv5C5g0Q9Xj4PZEwy5Zs7GWkqUFGiDB3Evfpsj02MucNyuC1ysxz1FwpEyr2NRxk65ZkQg==
+"@tryghost/express-dynamic-redirects@0.2.11":
+  version "0.2.11"
+  resolved "https://registry.yarnpkg.com/@tryghost/express-dynamic-redirects/-/express-dynamic-redirects-0.2.11.tgz#7b2906c21d40923e0431d1ba98bb613a8f1caad3"
+  integrity sha512-JzodLoRxNXjBT3zdBfiagpgOkLooa1houoskU8NqEIsfMfrszb468jon5EALVOS9y57Hff0V7x8ulf2gTjPy1g==
 
 "@tryghost/express-test@0.10.0":
   version "0.10.0"
