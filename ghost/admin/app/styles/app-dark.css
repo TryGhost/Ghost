@@ -1149,7 +1149,8 @@ kbd {
 }
 
 .gh-dashboard5-staff-picks .gh-dashboard5-resource-body,
-.gh-dashboard5-resource-box.is-secondary .gh-dashboard5-resource-footer {
+.gh-dashboard5-resource-box.is-secondary .gh-dashboard5-resource-footer,
+.gh-dashboard5-whats-new .gh-dashboard5-resource-body {
     border-color: #2c2e32;
 }
 
