@@ -75,7 +75,7 @@
                         {{else}}
                             {{#if eventsFetcher.data}}
                                 {{#each eventsFetcher.data as |event|}}
-                                    {{#let (parse-member-event event) as |parsedEvent|}}
+                                    {{#let (parse-member-event event eventsFetcher.hasMultipleNewsletters) as |parsedEvent|}}
                                         <div class="gh-dashboard5-list-item" data-test-dashboard-member-activity-item> 
                                             <div class="gh-dashboard5-list-item-sub">
                                                 <LinkTo class="member-details" @route="member" @model="{{parsedEvent.memberId}}">

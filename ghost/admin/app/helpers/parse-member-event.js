@@ -1,11 +1,11 @@
 import moment from 'moment';
 import {getNonDecimal, getSymbol} from 'ghost-admin/utils/currency';
 
-export default function parseMemberEvent(event) {
+export default function parseMemberEvent(event, hasMultipleNewsletters) {
     let subject = event.data.member.name || event.data.member.email;
     let icon = getIcon(event);
     let action = getAction(event);
-    let object = getObject(event);
+    let object = getObject(event, hasMultipleNewsletters);
     let info = getInfo(event);
     let timestamp = moment(event.data.created_at);
 
@@ -125,12 +125,12 @@ function getAction(event) {
     }
 }
 
-function getObject(event) {
+function getObject(event, hasMultipleNewsletters) {
     if (event.type === 'newsletter_event') {
-        if (event.data.newsletter && event.data.newsletter.name) {
+        if (hasMultipleNewsletters && event.data.newsletter && event.data.newsletter.name) {
             return 'newsletter – ' + event.data.newsletter.name;
         }
-        return 'emails';
+        return 'newsletter';
     }
 
     if (event.type === 'subscription_event') {
