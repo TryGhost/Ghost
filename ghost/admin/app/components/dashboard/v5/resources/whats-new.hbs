@@ -13,9 +13,6 @@
                                 <LinkTo @route="whatsnew" @query={{hash entry=entry.slug}}>
                                     <span class="gh-dashboard5-list-link">{{entry.title}}</span>
                                     <div class="gh-dashboard5-resource-secondary">{{moment-format entry.published_at "D MMM YYYY"}}</div>
-                                    {{!-- {{#if entry.custom_excerpt}}
-                                        <p>{{entry.custom_excerpt}}</p>
-                                    {{/if}} --}}
                                 </LinkTo>    
                             </div>
                         {{/each}}
