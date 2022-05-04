@@ -1,5 +1,6 @@
 import Service, {inject as service} from '@ember/service';
 import moment from 'moment';
+import {action} from '@ember/object';
 import {ghPluralize} from 'ghost-admin/helpers/gh-pluralize';
 import {task} from 'ember-concurrency';
 
@@ -9,20 +10,27 @@ export default class MembersCountCacheService extends Service {
 
     cache = {};
 
-    async count(filter) {
-        const cachedValue = this.cache[filter];
+    @action
+    async count(query) {
+        if (typeof query === 'string') {
+            query = {filter: query};
+        }
+
+        const cacheKey = JSON.stringify(query);
+        const cachedValue = this.cache[cacheKey];
 
         if (cachedValue && moment().diff(cachedValue.time, 'seconds') <= 60) {
             return cachedValue.count;
         }
 
-        const count = this._countMembersTask.perform(filter);
+        const count = this._countMembersTask.perform(query);
 
-        this.cache[filter] = {count, time: moment()};
+        this.cache[cacheKey] = {count, time: moment()};
 
         return count;
     }
 
+    @action
     async countString(filter = '', {knownCount} = {}) {
         const user = this.session.user;
 
@@ -61,14 +69,19 @@ export default class MembersCountCacheService extends Service {
         return ghPluralize(recipientCount, 'member');
     }
 
+    @action
+    clear() {
+        this.cache = {};
+    }
+
     @task
-    *_countMembersTask(filter) {
-        if (!filter) {
+    *_countMembersTask(query) {
+        if (!query) {
             return 0;
         }
 
         try {
-            const result = yield this.store.query('member', {filter, limit: 1, page: 1});
+            const result = yield this.store.query('member', {...query, limit: 1, page: 1});
             return result.meta.pagination.total;
         } catch (e) {
             console.error(e); // eslint-disable-line
