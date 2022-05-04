@@ -63,7 +63,7 @@
     "@tryghost/bootstrap-socket": "0.2.18",
     "@tryghost/color-utils": "0.1.13",
     "@tryghost/config-url-helpers": "0.1.6",
-    "@tryghost/constants": "1.0.3",
+    "@tryghost/constants": "1.0.4",
     "@tryghost/custom-theme-settings-service": "0.3.2",
     "@tryghost/database-info": "0.3.3",
     "@tryghost/debug": "0.1.16",
