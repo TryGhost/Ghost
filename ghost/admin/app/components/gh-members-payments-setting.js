@@ -213,10 +213,10 @@ export default Component.extend({
         if (!this.stripeConnectAccountId) {
             return;
         }
-        const url = this.get('ghostPaths.url').api('/members/hasActiveStripeSubscriptions');
+        const url = this.ghostPaths.url.api('/members/') + '?filter=status:paid&limit=0';
         const response = yield this.ajax.request(url);
 
-        if (response.hasActiveStripeSubscriptions) {
+        if (response?.meta?.pagination?.total !== 0) {
             this.set('hasActiveStripeSubscriptions', true);
             return;
         }
