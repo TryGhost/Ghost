@@ -546,7 +546,7 @@ export default class EditorController extends Controller {
 
             // re-throw if we have a general server error
             if (error && !isInvalidError(error)) {
-                this.error(error);
+                this.send('error', error);
                 return;
             }
 
