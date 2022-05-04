@@ -1930,6 +1930,13 @@
     "@tryghost/debug" "^0.1.9"
     lodash "^4.17.20"
 
+"@tryghost/email-content-generator@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/email-content-generator/-/email-content-generator-0.1.0.tgz#cb8233ce70f416cce5f91964e953889580ea815a"
+  integrity sha512-/WXpNA4HgmCA+TEnWg4jwQS9KJOt4cGQNNFuANtt8z//mdbV1IKRK9IamLT/zWGlzYCaw/lLWy/j/UjghPaqtQ==
+  dependencies:
+    html-to-text "^5.1.1"
+
 "@tryghost/errors@1.2.10":
   version "1.2.10"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.10.tgz#b01b16744986005784ffd6916eec48a3e93976a9"
@@ -6709,7 +6716,7 @@ html-escaper@^2.0.0:
   resolved "https://registry.yarnpkg.com/html-escaper/-/html-escaper-2.0.2.tgz#dfd60027da36a36dfcbe236262c00a5822681453"
   integrity sha512-H2iMtd0I4Mt5eYiapRdIDjp+XzelXQ0tFE4JS7YFwFevXXMmOp9myNrUvCg0D6ws8iqkRPBfKHgbwig1SmlLfg==
 
-html-to-text@5.1.1:
+html-to-text@5.1.1, html-to-text@^5.1.1:
   version "5.1.1"
   resolved "https://registry.yarnpkg.com/html-to-text/-/html-to-text-5.1.1.tgz#2d89db7bf34bc7bcb7d546b1b228991a16926e87"
   integrity sha512-Bci6bD/JIfZSvG4s0gW/9mMKwBRoe/1RWLxUME/d6WUSZCdY7T60bssf/jFf7EYXRyqU4P5xdClVqiYU0/ypdA==
