@@ -1152,3 +1152,7 @@ kbd {
 .gh-dashboard5-resource-box.is-secondary .gh-dashboard5-resource-footer {
     border-color: #2c2e32;
 }
+
+.gh-dashboard5-list-item:hover {
+    background: #1c1e21;
+}

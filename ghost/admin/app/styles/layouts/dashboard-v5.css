@@ -608,6 +608,8 @@ Dashboard v5 Metric */
 .gh-dashboard5-metric-minivalue {
     font-size: 1.5rem;
     font-weight: 700;
+    color: var(--darkgrey);
+    text-decoration: none;
 }
 
 .gh-dashboard5-metric-extra {
@@ -673,18 +675,35 @@ Dashboard v5 List */
     border-bottom: 0;
 }
 
-.gh-dashboard5-list-item a {
+
+.gh-dashboard5-list-item:hover {
+    background: linear-gradient(315deg,#fafafb 60%,#fff);
+}
+
+.gh-dashboard5-list-text {
     font-weight: 600;
     font-size: 1.5rem;
     color: var(--darkgrey);
     padding: 0 64px 0 0;
     display: flex;
     align-items: center;
+    text-decoration: none;
+}
+
+.gh-dashboard5-list-subtext {
+    font-weight: 500;
+    font-size: 1.4rem;
+    color: var(--middarkgrey);
+    text-decoration: none;
+    padding: 0 64px 0 0;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
 }
 
 .gh-dashboard5-list-item svg {
-    width: 26px;
-    height: 26px;
+    width: 20px;
+    height: 20px;
     margin: 0 0.5rem 0 -4px;
 }
 
@@ -991,8 +1010,15 @@ Dashboard v5 Recents */
     margin-bottom: 24px;
 }
 
+.gh-dashboard5-recents .gh-dashboard5-list-body {
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
 .gh-dashboard5-recents .gh-dashboard5-list-item {
     height: 100%;
+    padding-top: 6px;
+    padding-bottom: 6px;
 }
 
 .gh-dashboard5-recents .gh-dashboard5-list-item a > span {
@@ -1038,7 +1064,7 @@ Dashboard v5 Recents */
 }
 
 .gh-dashboard5-recents .gh-dashboard5-list-loading {
-    min-height: 200px;
+    min-height: 220px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1059,10 +1085,6 @@ Dashboard v5 Recents */
     margin-left: -4px; /* grid layout adjustments */
 }
 
-.gh-dashboard5-recents-activity .gh-dashboard5-list-item-sub:nth-child(2) > span {
-    color: #626d79;
-    font-weight: 500;
-}
 
 /* --------------------------------- 
 Dashboard v5 What's New */
