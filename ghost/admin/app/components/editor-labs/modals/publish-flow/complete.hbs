@@ -1,0 +1,50 @@
+{{#let @publishOptions.post as |post|}}
+    <div class="gh-publish-title">
+        Your {{post.displayName}} is
+        {{#if post.isScheduled}}
+            scheduled
+        {{else if post.emailOnly}}
+            emailed
+        {{else}}
+            live
+        {{~/if~}}
+        !
+    </div>
+
+    <p>
+        {{#if post.isScheduled}}
+            {{#let (moment-site-tz post.publishedAtUTC) as |scheduledAt|}}
+                On
+                <strong>
+                    {{moment-format scheduledAt "D MMM YYYY"}}
+                    at
+                    {{moment-format scheduledAt "HH:mm"}}
+                </strong>
+                your
+            {{/let}}
+        {{else}}
+            Your
+        {{/if}}
+
+        {{post.displayName}} was
+
+        {{#if post.email}}
+            delivered to
+
+            <strong>{{pluralize post.email.emailCount "member"}}</strong>
+
+            {{#if post.emailOnly}}
+                and was <strong>not</strong>
+            {{else}}
+                and was
+            {{/if}}
+        {{/if}}
+
+        published on your site.
+    </p>
+
+    <div class="gh-publish-cta">
+        <button type="button" class="gh-btn gh-btn-primary gh-btn-large" {{on "click" @close}}><span>Close</span></button>
+        <a href={{post.url}} class="gh-btn gh-btn-link gh-btn-large" target="_blank" rel="noopener noreferrer">Open {{post.displayName}} in new tab</a>
+    </div>
+{{/let}}

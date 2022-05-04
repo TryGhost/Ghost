@@ -12,6 +12,7 @@
                 at
                 {{moment-format scheduledAt "HH:mm"}}
             </strong>
+            your
         {{/let}}
     {{else}}
         Your
@@ -41,6 +42,12 @@
 </p>
 
 <div class="gh-publish-cta">
-    <button type="button" class="gh-btn gh-btn-green gh-btn-large" {{on "click" @confirm}}><span>{{@publishOptions.selectedPublishTypeOption.confirmButton}}</span></button>
+    <GhTaskButton
+        @task={{@saveTask}}
+        @buttonText={{@publishOptions.selectedPublishTypeOption.confirmButton}}
+        @runningText={{if @publishOptions.willOnlyEmail "Sending" "Publishing"}}
+        @successText={{if @publishOptions.willOnlyEmail "Sent" "Published"}}
+        @class="gh-btn gh-btn-icon gh-btn-green gh-btn-large"
+    />
     <button type="button" class="gh-btn gh-btn-link gh-btn-large" {{on "click" @cancel}}><span>Back to publish settings</span></button>
 </div>
