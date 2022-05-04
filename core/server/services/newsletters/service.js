@@ -7,7 +7,8 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 
 const messages = {
-    nameAlreadyExists: 'A newsletter with the same name already exists'
+    nameAlreadyExists: 'A newsletter with the same name already exists',
+    newsletterNotFound: 'Newsletter not found.'
 };
 
 class NewslettersService {
@@ -81,6 +82,23 @@ class NewslettersService {
 
     /**
      * @public
+     * @param {Object} options data (id, uuid, slug...)
+     * @param {Object} [options] options
+     * @returns {Promise<object>} JSONified Newsletter models
+     */
+    async read(data, options = {}) {
+        const newsletter = await this.NewsletterModel.findOne(data, options);
+
+        if (!newsletter) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.newsletterNotFound)
+            });
+        }
+        return newsletter;
+    }
+
+    /**
+     * @public
      * @param {Object} [options] options
      * @returns {Promise<object>} JSONified Newsletter models
      */
@@ -89,6 +107,7 @@ class NewslettersService {
 
         return newsletters.toJSON();
     }
+
     /**
      * @public
      * @param {object} attrs model properties
@@ -129,6 +148,9 @@ class NewslettersService {
             throw error;
         }
 
+        // Load relations correctly
+        newsletter = await this.NewsletterModel.findOne({id: newsletter.id}, {...options, require: true});
+
         // subscribe existing members if opt_in_existing=true
         if (options.opt_in_existing) {
             debug(`Subscribing members to newsletter '${newsletter.get('name')}'`);
@@ -153,12 +175,13 @@ class NewslettersService {
     /**
      * @public
      * @param {object} attrs model properties
-     * @param {Object} [options] options
+     * @param {Object} options options
+     * @param {string} options.id Newsletter id to edit
      * @returns {Promise<{object}>} Newsetter Model with verification metadata
      */
-    async edit(attrs, options = {}) {
+    async edit(attrs, options) {
         // fetch newsletter first so we can compare changed emails
-        const originalNewsletter = await this.NewsletterModel.findOne(options, {require: true});
+        const originalNewsletter = await this.NewsletterModel.findOne({id: options.id}, {...options, require: true});
 
         const {cleanedAttrs, emailsToVerify} = await this.prepAttrsForEmailVerification(attrs, originalNewsletter);
 
@@ -176,8 +199,12 @@ class NewslettersService {
 
             throw error;
         }
+
+        // Load relations correctly in the response
+        updatedNewsletter = await this.NewsletterModel.findOne({id: updatedNewsletter.id}, {...options, require: true});
         
-        return this.respondWithEmailVerification(updatedNewsletter, emailsToVerify);
+        await this.respondWithEmailVerification(updatedNewsletter, emailsToVerify);
+        return updatedNewsletter;
     }
 
     /**

@@ -127,6 +127,36 @@ describe('Newsletters API', function () {
             });
     });
 
+    it('Can include members & posts counts when adding a newsletter', async function () {
+        const newsletter = {
+            uuid: uuid.v4(),
+            name: 'My test newsletter 2',
+            sender_name: 'Test',
+            sender_email: null,
+            sender_reply_to: 'newsletter',
+            status: 'active',
+            subscribe_on_signup: true,
+            title_font_category: 'serif',
+            body_font_category: 'serif',
+            show_header_icon: true,
+            show_header_title: true,
+            show_badge: true,
+            sort_order: 0
+        };
+
+        await agent
+            .post(`newsletters/?include=count.members,count.posts`)
+            .body({newsletters: [newsletter]})
+            .expectStatus(201)
+            .matchBodySnapshot({
+                newsletters: [newsletterSnapshot]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag,
+                location: anyLocationFor('newsletters')
+            });
+    });
+
     it('Can add multiple newsletters', async function () {
         const firstNewsletter = {
             name: 'My first test newsletter'
@@ -238,6 +268,23 @@ describe('Newsletters API', function () {
             .body({
                 newsletters: [{
                     name: 'Updated newsletter name'
+                }]
+            })
+            .expectStatus(200)
+            .matchBodySnapshot({
+                newsletters: [newsletterSnapshot]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
+
+    it('Can include members & posts counts when editing newsletters', async function () {
+        const id = fixtureManager.get('newsletters', 0).id;
+        await agent.put(`newsletters/${id}/?include=count.members,count.posts`)
+            .body({
+                newsletters: [{
+                    name: 'Updated newsletter name 2'
                 }]
             })
             .expectStatus(200)
