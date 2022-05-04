@@ -36,13 +36,8 @@ class MembersConfigProvider {
     }
 
     getEmailFromAddress() {
-        const fromAddress = this._settingsCache.get('members_from_address') || 'noreply';
-
-        // Any fromAddress without domain uses site domain, like default setting `noreply`
-        if (fromAddress.indexOf('@') < 0) {
-            return `${fromAddress}@${this._getDomain()}`;
-        }
-        return fromAddress;
+        // Individual from addresses are set per newsletter - this is the fallback address
+        return `noreply@${this._getDomain()}`;
     }
 
     getEmailSupportAddress() {
