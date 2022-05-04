@@ -2432,10 +2432,10 @@
   dependencies:
     "@tryghost/errors" "^1.2.1"
 
-"@tryghost/settings-path-manager@0.1.5":
-  version "0.1.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/settings-path-manager/-/settings-path-manager-0.1.5.tgz#dee0d3562c22b47c7dd685edfbb35ea6fb154a0d"
-  integrity sha512-FodIzyn5OxL+Sb6TYjqp/2AF+k1APnC5S2BHLMGkOSZX9S+kHhkfTWpg0Px/lWs3HJ5nFDgJvmD25prPNJaHCA==
+"@tryghost/settings-path-manager@0.1.6":
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/settings-path-manager/-/settings-path-manager-0.1.6.tgz#0ddd1c6af9ccaef5645374a495c3468e42518eac"
+  integrity sha512-aMklNgqmHHwOC0XMqoHUYsTE4sKn+xWZ5y04W/DlM5unkNZlaPUs3GK9m3iEJ8hO57ciWCbhKKqfyjsP8GFj8A==
   dependencies:
     date-fns "^2.24.0"
     tpl "^0.3.0"
