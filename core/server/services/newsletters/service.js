@@ -120,7 +120,10 @@ class NewslettersService {
             newsletter = await this.NewsletterModel.add(cleanedAttrs, options);
         } catch (error) {
             if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
-                throw new errors.ValidationError({message: tpl(messages.nameAlreadyExists)});
+                throw new errors.ValidationError({
+                    message: tpl(messages.nameAlreadyExists),
+                    property: 'name'
+                });
             }
 
             throw error;
@@ -165,7 +168,10 @@ class NewslettersService {
             updatedNewsletter = await this.NewsletterModel.edit(cleanedAttrs, options);
         } catch (error) {
             if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
-                throw new errors.ValidationError({message: tpl(messages.nameAlreadyExists)});
+                throw new errors.ValidationError({
+                    message: tpl(messages.nameAlreadyExists),
+                    property: 'name'
+                });
             }
 
             throw error;
