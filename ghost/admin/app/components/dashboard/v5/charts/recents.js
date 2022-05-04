@@ -53,7 +53,10 @@ export default class Recents extends Component {
     }
 
     get areMembersEnabled() {
-        const enabled = this.dashboardStats.siteStatus?.membersEnabled;
-        return enabled;
+        return this.dashboardStats.siteStatus?.membersEnabled;
+    }
+
+    get areNewslettersEnabled() {
+        return this.dashboardStats.siteStatus?.newslettersEnabled;
     }
 }

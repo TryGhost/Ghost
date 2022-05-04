@@ -13,11 +13,15 @@
             {{/if}}
         </div>
         {{#if this.postsTabSelected}}
-            <div class="gh-dashboard5-recents-posts gh-dashboard5-list">
+            <div class="gh-dashboard5-recents-posts gh-dashboard5-list {{unless this.areNewslettersEnabled 'is-single'}}">
                 <div class="gh-dashboard5-list-header">  
                     <div class="gh-dashboard5-list-title">Title</div>
-                    <div class="gh-dashboard5-list-title">Sends</div>
-                    <div class="gh-dashboard5-list-title">Open rate</div>
+                    {{#if this.areNewslettersEnabled}}
+                        <div class="gh-dashboard5-list-title">Sends</div>
+                        <div class="gh-dashboard5-list-title">Open rate</div>
+                    {{else}}
+                        <div class="gh-dashboard5-list-title">Published</div>
+                    {{/if}}
                 </div>
                 <div class="gh-dashboard5-list-body">
                     {{#each this.posts as |post|}}
@@ -25,18 +29,31 @@
                             <div class="gh-dashboard5-list-item-sub">
                                 <span class="gh-dashboard5-list-text">{{post.title}}</span>
                             </div>
-                            <div class="gh-dashboard5-list-item-sub">
-                                {{!-- DEMO <span class="gh-dashboard5-metric-minivalue">{{format-number 3294}}</span> --}}
-                                <span class="gh-dashboard5-metric-minivalue">{{format-number post.email.emailCount}}</span>
-                            </div>
-                            <div class="gh-dashboard5-list-item-sub">
-                                <span class="gh-dashboard5-rate-bar">
-                                    {{!-- DEMO <span class="gh-dashboard5-metric-minivalue">75%</span> --}}
-                                    {{!-- DEMO <span class="gh-dashboard5-rate-amount"><span style={{html-safe (concat "width: " 75 "%;")}}/></span> --}}
-                                    <span class="gh-dashboard5-metric-minivalue">{{post.email.openRate}}%</span>
-                                    <span class="gh-dashboard5-rate-amount"><span style={{html-safe (concat "width: " post.email.openRate "%;")}}/></span>
-                                </span>
-                            </div>
+                            {{#if this.areNewslettersEnabled}}
+                                <div class="gh-dashboard5-list-item-sub">
+                                    <span class="gh-dashboard5-metric-minivalue">
+                                        {{#if post.email}}
+                                            {{format-number post.email.emailCount}}
+                                        {{else}}
+                                            &mdash;
+                                        {{/if}}
+                                    </span>
+                                </div>
+                                <div class="gh-dashboard5-list-item-sub">
+                                    <span class="gh-dashboard5-rate-bar">  
+                                        {{#if post.email}}          
+                                            <span class="gh-dashboard5-metric-minivalue">{{post.email.openRate}}%</span>
+                                            <span class="gh-dashboard5-rate-amount"><span style={{html-safe (concat "width: " post.email.openRate "%;")}}/></span>
+                                        {{else}}
+                                            <span class="gh-dashboard5-metric-minivalue">&mdash;</span>
+                                        {{/if}}
+                                    </span>
+                                </div>
+                            {{else}}
+                                <div class="gh-dashboard5-list-item-sub">
+                                    <span class="gh-dashboard5-list-subtext">{{moment-format post.published_at "D MMM YYYY HH:mm"}}</span>
+                                </div>
+                            {{/if}}
                         </LinkTo>
                     {{else}}
                         <div class="gh-dashboard5-list-empty">

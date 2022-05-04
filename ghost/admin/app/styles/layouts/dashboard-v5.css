@@ -1092,6 +1092,11 @@ Dashboard v5 Recents */
     margin-left: -4px; /* grid layout adjustments */
 }
 
+.gh-dashboard5-recents-posts.is-single .gh-dashboard5-list-header,
+.gh-dashboard5-recents-posts.is-single .gh-dashboard5-list-item {
+    grid-template-columns: 70% 30%;
+}
+
 
 /* --------------------------------- 
 Dashboard v5 What's New */
@@ -1469,17 +1474,15 @@ Dashboard v5 Misc */
 }
 
 .gh-dashboard5-rate-amount > span {
-    /* background: var(--purple); */
-
     background: rgb(213,184,255);
     background: linear-gradient(90deg, rgba(213,184,255,1) 0%, rgba(142,66,255,1) 100%);
-
     border-top-right-radius: 2.5px;
     border-bottom-right-radius: 2.5px;
     position: absolute;
     left: 0;
     top: 0;
     bottom: 0;
+    min-width: 2px;
 }
 
 
