@@ -2425,10 +2425,10 @@
     "@tryghost/debug" "^0.1.10"
     "@tryghost/logging" "^2.0.1"
 
-"@tryghost/session-service@0.1.40":
-  version "0.1.40"
-  resolved "https://registry.yarnpkg.com/@tryghost/session-service/-/session-service-0.1.40.tgz#9fb695157ad930a4d9fc6f40453bc404e06ef647"
-  integrity sha512-IZ0Gokbq80G9F5866gXwqgP9BXmx7rep0gNjQol456LNDNiIIcprhlU5OJWv1yIDNd5uWfSKC3kUNuXusRs8Ng==
+"@tryghost/session-service@0.1.41":
+  version "0.1.41"
+  resolved "https://registry.yarnpkg.com/@tryghost/session-service/-/session-service-0.1.41.tgz#87ccee71200e37cf85b3f4779cd12710eb581961"
+  integrity sha512-2xhbvvFKv3d0LM3fTU5PFBjrIf2o8QfGyBvBPCvRzKqfpTXHcHSQbdwWzLCVp3iaKxOcF7RYgvj0bBCj+qKZcg==
   dependencies:
     "@tryghost/errors" "^1.2.1"
 
