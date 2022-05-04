@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/mw-error-handler",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "repository": "https://github.com/TryGhost/Utils/tree/main/packages/mw-error-handler",
   "author": "Ghost Foundation",
   "license": "MIT",
