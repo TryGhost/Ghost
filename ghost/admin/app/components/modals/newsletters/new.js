@@ -39,23 +39,34 @@ export default class NewNewsletterModal extends Component {
 
     @task
     *saveTask() {
+        const newsletter = this.args.data.newsletter;
         try {
-            yield this.args.data.newsletter.validate({});
+            yield newsletter.validate({});
 
-            const result = yield this.args.data.newsletter.save({
+            const result = yield newsletter.save({
                 adapterOptions: {optInExisting: this.optInExisting}
             });
 
             this.args.data.afterSave?.(result);
 
             return result;
-        } catch (e) {
-            if (e === undefined) {
+        } catch (error) {
+            if (error === undefined) {
                 // Validation error
                 return;
             }
 
-            throw e;
+            // Do we have an error that we can show inline?
+            if (error.payload && error.payload.errors) {
+                for (const payloadError of error.payload.errors) {
+                    if (payloadError.type === 'ValidationError' && payloadError.property && (payloadError.context || payloadError.message)) {
+                        // Context has a better error message for validation errors
+                        newsletter.errors.add(payloadError.property, payloadError.context || payloadError.message);
+                    }
+                }
+            }
+
+            throw error;
         }
     }
 }
