@@ -1,7 +1,7 @@
 const path = require('path');
 const urlUtils = require('../../../shared/url-utils');
 const settingsCache = require('../../../shared/settings-cache');
-const EmailContentGenerator = require('./EmailContentGenerator');
+const EmailContentGenerator = require('@tryghost/email-content-generator');
 
 const emailContentGenerator = new EmailContentGenerator({
     getSiteUrl: () => urlUtils.urlFor('home', true),
