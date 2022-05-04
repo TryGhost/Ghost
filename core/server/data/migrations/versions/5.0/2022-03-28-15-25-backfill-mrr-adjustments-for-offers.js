@@ -76,8 +76,6 @@ module.exports = createTransactionalMigration(
 
             const mrr = calculateMRR(firstEvent, redemption);
 
-            firstEvent.used = true;
-
             updatedEvents.push({
                 id: firstEvent.id,
                 member_id: firstEvent.member_id,
