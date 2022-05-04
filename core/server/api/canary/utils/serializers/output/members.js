@@ -142,7 +142,7 @@ function serializeMember(member, options) {
         }
         // override the `subscribed` param to mean "subscribed to any active newsletter"
         serialized.subscribed = false;
-        if (serialized.newsletters.length > 0) {
+        if (Array.isArray(serialized.newsletters) && serialized.newsletters.length > 0) {
             serialized.subscribed = true;
         }
     }
