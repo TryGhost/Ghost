@@ -1,12 +1,16 @@
 import Component from '@glimmer/component';
+import EmailFailedError from 'ghost-admin/errors/email-failed-error';
 import PublishFlowModal from './modals/publish-flow';
 import PublishOptionsResource from 'ghost-admin/helpers/publish-options';
 import moment from 'moment';
 import {action, get} from '@ember/object';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency';
+import {task, timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 import {use} from 'ember-could-get-used-to-this';
+
+const CONFIRM_EMAIL_POLL_LENGTH = 1000;
+const CONFIRM_EMAIL_MAX_POLL_LENGTH = 15 * 1000;
 
 export class PublishOptions {
     // passed in services
@@ -18,6 +22,8 @@ export class PublishOptions {
     post = null;
     user = null;
 
+    @tracked totalMemberCount = 0;
+
     get isLoading() {
         return this.setupTask.isRunning;
     }
@@ -28,6 +34,10 @@ export class PublishOptions {
 
     get willPublish() {
         return this.publishType !== 'send';
+    }
+
+    get willOnlyEmail() {
+        return this.publishType === 'send';
     }
 
     // publish date ------------------------------------------------------------
@@ -75,10 +85,10 @@ export class PublishOptions {
 
     get publishTypeOptions() {
         return [{
-            value: 'publish+send',
-            label: 'Publish and email',
-            display: 'Publish and email',
-            confirmButton: 'Publish and send',
+            value: 'publish+send', // internal
+            label: 'Publish and email', // shown in expanded options
+            display: 'Publish and email', // shown in option title
+            confirmButton: 'Publish and send', // shown in confirm step
             disabled: this.emailDisabled
         }, {
             value: 'publish',
@@ -108,13 +118,14 @@ export class PublishOptions {
 
     // publish type dropdown is shown but email options are disabled
     get emailDisabled() {
-        const mailgunConfigured = get(this.settings, 'mailgunIsConfigured')
-            || get(this.config, 'mailgunIsConfigured');
+        const mailgunIsNotConfigured = !get(this.settings, 'mailgunIsConfigured')
+            && !get(this.config, 'mailgunIsConfigured');
 
-        // TODO: check members count
+        const hasNoMembers = this.totalMemberCount === 0;
+
         // TODO: check email limit
 
-        return !mailgunConfigured;
+        return mailgunIsNotConfigured || hasNoMembers;
     }
 
     @action
@@ -157,7 +168,7 @@ export class PublishOptions {
         this.store = store;
         this.user = user;
 
-        // these need to be set here rather than class-level properties because
+        // this needs to be set here rather than a class-level property because
         // unlike Ember-based classes the services are not injected so can't be
         // used until after they are assigned above
         this.allNewsletters = this.store.peekAll('newsletter');
@@ -181,7 +192,9 @@ export class PublishOptions {
     @task
     *fetchRequiredDataTask() {
         // total # of members - used to enable/disable email
-        const countTotalMembers = this.store.query('member', {limit: 1}).then(res => res.meta.pagination.total);
+        const countTotalMembers = this.store.query('member', {limit: 1}).then((res) => {
+            this.totalMemberCount = res.meta.pagination.total;
+        });
 
         // email limits
         // TODO: query limit service
@@ -193,10 +206,64 @@ export class PublishOptions {
     }
 
     // saving ------------------------------------------------------------------
+
+    revertableModelProperties = ['status', 'publishedAtUTC', 'emailOnly'];
+
+    @task({drop: true})
+    *saveTask() {
+        this._applyModelChanges();
+
+        const adapterOptions = {};
+
+        if (this.willEmail) {
+            adapterOptions.newsletterId = this.newsletter.id;
+            // TODO: replace with real filter
+            adapterOptions.emailRecipientFilter = 'status:free,status:-free';
+        }
+
+        try {
+            return yield this.post.save({adapterOptions});
+        } catch (e) {
+            this._revertModelChanges();
+            throw e;
+        }
+    }
+
+    // Publishing/scheduling is a side-effect of changing model properties.
+    // We don't want to get into a situation where we've applied these changes
+    // but they haven't been saved because that would result in confusing UI.
+    //
+    // Here we apply those changes from the selected publish options but keep
+    // track of the previous values in case saving fails. We can't use ED's
+    // rollbackAttributes() because it would also rollback any other unsaved edits
+    _applyModelChanges() {
+        // store backup of original values in case we need to revert
+        this._originalModelValues = {};
+        this.revertableModelProperties.forEach((property) => {
+            this._originalModelValues[property] = this.post[property];
+        });
+
+        this.post.status = this.isScheduled ? 'scheduled' : 'published';
+
+        if (this.post.isScheduled) {
+            this.post.publishedAtUTC = this.scheduledAtUTC;
+        }
+
+        this.post.emailOnly = this.publishType === 'email';
+    }
+
+    _revertModelChanges() {
+        this.revertableModelProperties.forEach((property) => {
+            this.post[property] = this._originalModelValues[property];
+        });
+    }
 }
 
+/* Component -----------------------------------------------------------------*/
+
 // This component exists for the duration of the editor screen being open.
-// It's used to store the selected publish options and control the publishing flow.
+// It's used to store the selected publish options and control the
+// publishing flow modal.
 export default class PublishManagement extends Component {
     @service modals;
 
@@ -218,8 +285,56 @@ export default class PublishManagement extends Component {
             this.publishOptions.resetPastScheduledAt();
 
             this.publishFlowModal = this.modals.open(PublishFlowModal, {
-                publishOptions: this.publishOptions
+                publishOptions: this.publishOptions,
+                saveTask: this.saveTask
             });
         }
+    }
+
+    @task
+    *saveTask() {
+        // clean up blank editor cards
+        // apply cloned mobiledoc
+        // apply scratch values
+        // generate slug if needed (should never happen - publish flow can't be opened on new posts)
+        yield this.args.beforeSave();
+
+        // apply publish options (with undo on failure)
+        // save with the required query params for emailing
+        const result = yield this.publishOptions.saveTask.perform();
+
+        // perform any post-save cleanup for the editor
+        yield this.args.afterSave(result);
+
+        // if emailed, wait until it has been submitted so we can show a failure message if needed
+        if (this.publishOptions.post.email) {
+            yield this.confirmEmailTask.perform();
+        }
+
+        return result;
+    }
+
+    @task
+    *confirmEmailTask() {
+        const post = this.publishOptions.post;
+
+        let pollTimeout = 0;
+        if (post.email && post.email.status !== 'submitted') {
+            while (pollTimeout < CONFIRM_EMAIL_MAX_POLL_LENGTH) {
+                yield timeout(CONFIRM_EMAIL_POLL_LENGTH);
+                pollTimeout += CONFIRM_EMAIL_POLL_LENGTH;
+
+                yield post.reload();
+
+                if (post.email.status === 'submitted') {
+                    break;
+                }
+                if (post.email.status === 'failed') {
+                    throw new EmailFailedError(post.email.error);
+                }
+            }
+        }
+
+        return true;
     }
 }
