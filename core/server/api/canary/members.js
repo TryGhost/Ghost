@@ -34,18 +34,6 @@ const allowedIncludes = ['email_recipients', 'products'];
 module.exports = {
     docName: 'members',
 
-    hasActiveStripeSubscriptions: {
-        permissions: {
-            method: 'browse'
-        },
-        async query() {
-            const hasActiveStripeSubscriptions = await membersService.api.hasActiveStripeSubscriptions();
-            return {
-                hasActiveStripeSubscriptions
-            };
-        }
-    },
-
     browse: {
         options: [
             'limit',

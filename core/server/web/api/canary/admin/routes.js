@@ -123,8 +123,6 @@ module.exports = function apiRoutes() {
         http(api.members.importCSV)
     );
 
-    router.get('/members/hasActiveStripeSubscriptions', mw.authAdminApi, http(api.members.hasActiveStripeSubscriptions));
-
     router.get('/members/stripe_connect', mw.authAdminApi, http(api.membersStripeConnect.auth));
 
     router.get('/members/:id', mw.authAdminApi, http(api.members.read));

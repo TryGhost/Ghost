@@ -4,8 +4,6 @@ const {unparse} = require('@tryghost/members-csv');
 const labsService = require('../../../../../../shared/labs');
 
 module.exports = {
-    hasActiveStripeSubscriptions: createSerializer('hasActiveStripeSubscriptions', passthrough),
-
     browse: createSerializer('browse', paginatedMembers),
     read: createSerializer('read', singleMember),
     edit: createSerializer('edit', singleMember),
