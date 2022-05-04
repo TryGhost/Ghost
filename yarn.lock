@@ -2115,19 +2115,10 @@
     json-stringify-safe "^5.0.1"
     lodash "^4.17.21"
 
-"@tryghost/magic-link@1.0.22":
-  version "1.0.22"
-  resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-1.0.22.tgz#1bfa1fa93efb0d493f242ed400e8b663fc0c7e60"
-  integrity sha512-d+uut21jb3iW6x7yqMvNcd7nBT5Y2VMTu4pFVA+eXkFQSQxFY+AD3qSeJxkSXp5KxFpKOZRRJycrG2Ppsh8TaA==
-  dependencies:
-    bluebird "^3.5.5"
-    jsonwebtoken "^8.5.1"
-    lodash "^4.17.15"
-
-"@tryghost/magic-link@^1.0.23":
-  version "1.0.23"
-  resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-1.0.23.tgz#2784fe62e3a0d00c03a1e348ed351596af79fea2"
-  integrity sha512-y/12pAhxy+RbUg5tgHtU6fCZ1ajzMvJsdJOATsfMVjUPXAzBxZzof+ZCd9mPMZWM6/8NVCUiSiMI8/RScAComQ==
+"@tryghost/magic-link@1.0.24", "@tryghost/magic-link@^1.0.23":
+  version "1.0.24"
+  resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-1.0.24.tgz#6cbcb46640cd7d0b327e442d60837dbc5c4ddd80"
+  integrity sha512-BmN+jFgBgpawZs/sj95fW9skrDjGoOYB55xMrMwkAlPVZRXBIwceI2Lrecn5doQgi5eDzkgWqsBomuV9dP40Mw==
   dependencies:
     bluebird "^3.5.5"
     jsonwebtoken "^8.5.1"
