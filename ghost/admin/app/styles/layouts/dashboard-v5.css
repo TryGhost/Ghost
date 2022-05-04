@@ -688,6 +688,9 @@ Dashboard v5 List */
     display: flex;
     align-items: center;
     text-decoration: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .gh-dashboard5-list-subtext {
@@ -699,6 +702,9 @@ Dashboard v5 List */
     display: flex;
     align-items: center;
     text-decoration: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .gh-dashboard5-list-item svg {
@@ -713,6 +719,7 @@ Dashboard v5 List */
     align-items: center;
     justify-content: flex-start;
     min-height: 32px;
+    min-width: 0;
 }
 
 .gh-dashboard5-list-footer {
@@ -1106,6 +1113,10 @@ Dashboard v5 What's New */
     grid-template-columns: 100%;
 }
 
+.gh-dashboard5-whats-new .gh-dashboard5-list-item {
+    padding: 0;
+}
+
 .gh-dashboard5-whats-new .gh-dashboard5-list-item a {
     display: flex;
     flex-direction: column;
@@ -1113,7 +1124,7 @@ Dashboard v5 What's New */
     font-size: 1.45rem;
     font-weight: 600;
     line-height: 1.4em;
-    margin-bottom: 8px;
+    padding: 12px 32px 12px 0;
     color: var(--black);
 }
 
@@ -1143,7 +1154,7 @@ Dashboard v5 What's New */
     line-height: 1;
     border-radius: 2px;
     margin-left: 8px;
-    margin-top: 3px;
+    margin-top: 1px;
     padding: 3px 4px;
     height: 18px;
 }
@@ -1304,16 +1315,7 @@ Dashboard v5 Staff Picks */
 }
 
 .gh-dashboard5-staff-picks .gh-dashboard5-list-item {
-    padding-top: 8px;
-    padding-bottom: 8px;
-}
-
-.gh-dashboard5-staff-picks .gh-dashboard5-list-item:first-child {
-    padding-top: 8px;
-}
-
-.gh-dashboard5-staff-picks .gh-dashboard5-list-item:last-child {
-    padding-bottom: 0;
+    padding: 0;
 }
 
 .gh-dashboard5-staff-picks .gh-dashboard5-list-item a {
@@ -1323,16 +1325,14 @@ Dashboard v5 Staff Picks */
     font-size: 1.45rem;
     font-weight: 600;
     line-height: 1.4em;
-    margin-bottom: 8px;
     color: var(--black);
-    padding: 0;
+    padding: 12px 32px 12px 0;
     min-width: 0;
 }
 
 .gh-dashboard5-staff-picks .gh-dashboard5-list-body {
     color: var(--midlightgrey);
     font-size: 1.4rem;
-    padding: 0 32px 0 0;
     transition: all .3s ease-in-out;
 }
 
