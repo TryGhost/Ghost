@@ -9,8 +9,13 @@
         {{#if this.isConfirming}}
             <EditorLabs::Modals::PublishFlow::Confirm
                 @publishOptions={{@data.publishOptions}}
-                @confirm={{noop}}
+                @saveTask={{this.saveTask}}
                 @cancel={{this.toggleConfirm}}
+                @close={{@close}}
+            />
+        {{else if this.isComplete}}
+            <EditorLabs::Modals::PublishFlow::Complete
+                @publishOptions={{@data.publishOptions}}
                 @close={{@close}}
             />
         {{else}}

@@ -6,9 +6,11 @@ export default class Post extends ApplicationAdapter {
         const url = this.buildURL(modelName, id, snapshot, requestType, query);
         const parsedUrl = new URL(url);
 
-        if (snapshot?.adapterOptions?.sendEmailWhenPublished) {
-            let emailRecipientFilter = snapshot.adapterOptions.sendEmailWhenPublished;
+        // TODO: cleanup sendEmailWhenPublished when removing publishingFlow flag
+        let emailRecipientFilter = snapshot?.adapterOptions?.emailRecipientFilter
+            || snapshot?.adapterOptions?.sendEmailWhenPublished;
 
+        if (emailRecipientFilter) {
             if (emailRecipientFilter === 'status:free,status:-free') {
                 emailRecipientFilter = 'all';
             }

@@ -46,7 +46,11 @@
                                 data-test-contributor-save />
                         {{else}}
                             {{#if (feature "publishingFlow")}}
-                                <EditorLabs::PublishManagement @post={{this.post}} />
+                                <EditorLabs::PublishManagement
+                                    @post={{this.post}}
+                                    @beforeSave={{perform this.beforeSaveTask}}
+                                    @afterSave={{this.afterSave}}
+                                />
                             {{else}}
                                 <GhPublishmenu
                                     @post={{this.post}}
