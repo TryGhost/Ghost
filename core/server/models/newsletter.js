@@ -1,6 +1,7 @@
 const ghostBookshelf = require('./base');
 const ObjectID = require('bson-objectid');
 const uuid = require('uuid');
+const urlUtils = require('../../shared/url-utils');
 
 const Newsletter = ghostBookshelf.Model.extend({
     tableName: 'newsletters',
@@ -74,6 +75,28 @@ const Newsletter = ghostBookshelf.Model.extend({
         }
 
         return query;
+    },
+
+    formatOnWrite(attrs) {
+        ['header_image'].forEach((attr) => {
+            if (attrs[attr]) {
+                attrs[attr] = urlUtils.toTransformReady(attrs[attr]);
+            }
+        });
+
+        return attrs;
+    },
+
+    parse() {
+        const attrs = ghostBookshelf.Model.prototype.parse.apply(this, arguments);
+
+        ['header_image'].forEach((attr) => {
+            if (attrs[attr]) {
+                attrs[attr] = urlUtils.transformReadyToAbsolute(attrs[attr]);
+            }
+        });
+
+        return attrs;
     }
 }, {
     orderDefaultRaw: function () {
