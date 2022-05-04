@@ -360,7 +360,6 @@ describe('Newsletters API', function () {
     });
 
     it('Can add a newsletter - with custom sender_email and subscribe existing members', async function () {
-        const db = require('../../../core/server/data/db');
         if (DatabaseInfo.isSQLite(db.knex)) {
             return;
         }
