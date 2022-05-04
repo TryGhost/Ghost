@@ -1822,10 +1822,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-transaction-events/-/bookshelf-transaction-events-0.1.13.tgz#01d35d843b5ddbf49ea6963584b1d00b2aea7ead"
   integrity sha512-d7f9QCIcbJtUxbzJooZyUiIirwBO5hxQd13VUi12zJ4kyV+fWpqq0xda6lbn9m0rv+BQ1vbBHOpDzcJ9LmfDDA==
 
-"@tryghost/bootstrap-socket@0.2.18":
-  version "0.2.18"
-  resolved "https://registry.yarnpkg.com/@tryghost/bootstrap-socket/-/bootstrap-socket-0.2.18.tgz#3fe172a3b1c07faba5c54c70b426a3d278572cd6"
-  integrity sha512-ee+V/ktCBeI0zFS30lZMOxZDIb27OWq2MgAgACl6xy4V6ORZiFEwCKFMVHgDgMzL7hcrgS+D72iNRUxiQTSR4Q==
+"@tryghost/bootstrap-socket@0.2.19":
+  version "0.2.19"
+  resolved "https://registry.yarnpkg.com/@tryghost/bootstrap-socket/-/bootstrap-socket-0.2.19.tgz#fdc0bfab617de3e9296c82f21ebeaabe52e01cb0"
+  integrity sha512-lkULl5ZniP4zxm3rv1laGluTOjOS6MdbjCOFFYzHy3HLOvcBOJ8FK33P7QdSqq8ThDoeOnlkWzFshaZG9QgkGw==
   dependencies:
     "@tryghost/logging" "^2.0.0"
 
