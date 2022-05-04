@@ -26,5 +26,7 @@
     "should": "13.2.3",
     "sinon": "13.0.2"
   },
-  "dependencies": {}
+  "dependencies": {
+    "html-to-text": "^5.1.1"
+  }
 }
