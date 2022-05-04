@@ -109,10 +109,10 @@ export default class GhLaunchWizardConnectStripeComponent extends Component {
     *openDisconnectStripeConnectModalTask() {
         this.hasActiveStripeSubscriptions = false;
 
-        const url = this.ghostPaths.url.api('/members/hasActiveStripeSubscriptions');
+        const url = this.ghostPaths.url.api('/members/') + '?filter=status:paid&limit=0';
         const response = yield this.ajax.request(url);
 
-        if (response.hasActiveStripeSubscriptions) {
+        if (response?.meta?.pagination?.total !== 0) {
             this.hasActiveStripeSubscriptions = true;
             return;
         }
