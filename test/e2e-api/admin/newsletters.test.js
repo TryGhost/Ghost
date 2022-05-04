@@ -4,6 +4,10 @@ const {agentProvider, mockManager, fixtureManager, matchers} = require('../../ut
 const {anyEtag, anyObjectId, anyUuid, anyISODateTime, anyLocationFor} = matchers;
 const configUtils = require('../../utils/configUtils');
 const uuid = require('uuid');
+const urlUtils = require('../../../core/shared/url-utils');
+const db = require('../../../core/server/data/db');
+const knex = db.knex;
+require('should');
 
 const assert = require('assert');
 
@@ -98,6 +102,10 @@ describe('Newsletters API', function () {
     });
 
     it('Can add a newsletter', async function () {
+        const siteUrl = urlUtils.getSiteUrl();
+        const relativePath = 'content/images/2022/05/cover-image.jpg';
+        const absolutePath = siteUrl + relativePath;
+        const transformReadyPath = '__GHOST_URL__/' + relativePath;
         const newsletter = {
             uuid: uuid.v4(),
             name: 'My test newsletter',
@@ -111,20 +119,31 @@ describe('Newsletters API', function () {
             show_header_icon: true,
             show_header_title: true,
             show_badge: true,
-            sort_order: 0
+            sort_order: 0,
+            header_image: absolutePath
         };
 
-        await agent
+        const {body: body2} = await agent
             .post(`newsletters/`)
             .body({newsletters: [newsletter]})
             .expectStatus(201)
             .matchBodySnapshot({
                 newsletters: [newsletterSnapshot]
             })
+            .expect(({body}) => {
+                // Should still be absolute
+                body.newsletters[0].header_image.should.equal(absolutePath);
+            })
             .matchHeaderSnapshot({
                 etag: anyEtag,
                 location: anyLocationFor('newsletters')
             });
+
+        const id = body2.newsletters[0].id;
+
+        // Check with a database query if the header_image is saved correctly with a 'transformReady' path
+        const [header_image] = await knex('newsletters').where('id', id).pluck('header_image');
+        header_image.should.equal(transformReadyPath);
     });
 
     it('Can add multiple newsletters', async function () {
@@ -341,7 +360,6 @@ describe('Newsletters API', function () {
     });
 
     it('Can add a newsletter - with custom sender_email and subscribe existing members', async function () {
-        const db = require('../../../core/server/data/db');
         if (DatabaseInfo.isSQLite(db.knex)) {
             return;
         }
