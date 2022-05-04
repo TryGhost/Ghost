@@ -114,7 +114,7 @@
     "@tryghost/validator": "0.1.24",
     "@tryghost/verification-trigger": "0.2.1",
     "@tryghost/version": "0.1.14",
-    "@tryghost/version-notifications-data-service": "0.1.0",
+    "@tryghost/version-notifications-data-service": "0.1.1",
     "@tryghost/vhost-middleware": "1.0.24",
     "@tryghost/zip": "1.1.23",
     "amperize": "0.6.1",
