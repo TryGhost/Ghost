@@ -35,20 +35,19 @@ class EmailContentGenerator {
         const data = _.defaults(defaults, options.data);
 
         // read the proper email body template
-        return fs.readFile(path.join(this.templatesDir, options.template + '.html'), 'utf8')
-            .then(function (content) {
-                // insert user-specific data into the email
-                const compiled = _.template(content);
-                const htmlContent = compiled(data);
+        const content = await fs.readFile(path.join(this.templatesDir, options.template + '.html'), 'utf8');
 
-                // generate a plain-text version of the same email
-                const textContent = htmlToText.fromString(htmlContent);
+        // insert user-specific data into the email
+        const compiled = _.template(content);
+        const htmlContent = compiled(data);
 
-                return {
-                    html: htmlContent,
-                    text: textContent
-                };
-            });
+        // generate a plain-text version of the same email
+        const textContent = htmlToText.fromString(htmlContent);
+
+        return {
+            html: htmlContent,
+            text: textContent
+        };
     }
 }
 
