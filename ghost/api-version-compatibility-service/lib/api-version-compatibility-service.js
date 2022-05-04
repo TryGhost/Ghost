@@ -16,15 +16,16 @@ class APIVersionCompatibilityService {
 
     async handleMismatch({acceptVersion, contentVersion, userAgent = ''}) {
         if (!await this.fetchHandled(acceptVersion)) {
+            const trimmedUseAgent = userAgent.split('/')[0];
             const emailTemplate = `
-                ${userAgent} integration expected Ghost version: ${acceptVersion}
+                ${trimmedUseAgent} integration expected Ghost version: ${acceptVersion}
                 Current Ghost version: ${contentVersion}
             `;
 
             const emails = await this.fetchEmailsToNotify();
             for (const email of emails) {
                 await this.sendEmail({
-                    subject: `Attention required: Your ${userAgent} integration has failed`,
+                    subject: `Attention required: Your ${trimmedUseAgent} integration has failed`,
                     to: email,
                     html: emailTemplate
                 });
