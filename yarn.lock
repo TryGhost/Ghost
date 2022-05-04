@@ -1892,10 +1892,15 @@
     "@tryghost/root-utils" "^0.3.14"
     debug "^4.3.1"
 
-"@tryghost/domain-events@0.1.11", "@tryghost/domain-events@^0.1.11":
+"@tryghost/domain-events@0.1.11":
   version "0.1.11"
   resolved "https://registry.yarnpkg.com/@tryghost/domain-events/-/domain-events-0.1.11.tgz#947c27c2ed9ef7c7daaecf038a30d1bd61dd8ce4"
   integrity sha512-MaJyZprT1+yqk71Q+nkuIMGjUZDFPRztgOiRkmlFMmaZpAReMoF8xXnUCJwcD9KSpUmt7Ca04+zQQNtQGplTtQ==
+
+"@tryghost/domain-events@^0.1.11", "@tryghost/domain-events@^0.1.12":
+  version "0.1.12"
+  resolved "https://registry.yarnpkg.com/@tryghost/domain-events/-/domain-events-0.1.12.tgz#a6f59d0d7aeb7d8f0a7493e055ed3b795e783232"
+  integrity sha512-DY70kL0x+/VEJsqmjZ4Q3UJPOFJ8m+sT8443E+AEgTGFiERfSVuTsVVlYtQm0hQV5faowQJtGcXQqtG1Lka0ig==
 
 "@tryghost/elasticsearch-bunyan@0.1.1":
   version "0.1.1"
@@ -2149,10 +2154,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/member-events/-/member-events-0.4.2.tgz#d1266abad38aa0b8f9b9f3395b083971e85221bf"
   integrity sha512-4VlGlB9uq3xxgeW3OXx9//Yb1kiRm7HbVVGiBJ9LMMjeoKZnpUQA9zHyY5FUK4Aolvz/wyxjb4Ci7JNjvoMrJg==
 
-"@tryghost/member-events@^0.4.3":
-  version "0.4.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/member-events/-/member-events-0.4.3.tgz#e60c3387a1cecab84f5432a49895b2dbc4724d54"
-  integrity sha512-4opQfxsV1Blf0qMpCdpvskZ74Sdt7OnUykVNMG82x/R3tm9IH0TPj9c9SqSeJzg8NBTkIHTv+jeOmV8A75CxbQ==
+"@tryghost/member-events@^0.4.3", "@tryghost/member-events@^0.4.4":
+  version "0.4.4"
+  resolved "https://registry.yarnpkg.com/@tryghost/member-events/-/member-events-0.4.4.tgz#8185d7924d0e341bb93084d6b3e97f1cadd3dac6"
+  integrity sha512-p/KlP0EzXeR2AE134kh+TnPgUcnnh+3QoVWmIYOunayJVv177HBaHu7a9yX5PYJ9RxQcCJn4UmuAPloW+3mjnw==
 
 "@tryghost/members-analytics-ingress@^0.1.14":
   version "0.1.14"
@@ -2201,13 +2206,13 @@
     papaparse "^5.3.2"
     pump "^3.0.0"
 
-"@tryghost/members-events-service@0.4.0":
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-events-service/-/members-events-service-0.4.0.tgz#7c16f3e337df6df32dd72638d4162179834d3095"
-  integrity sha512-Qg8kePVbnTKFnTEQDPnt5RD5ppjIFmdtK2abZ9uPlGsrAdM/89P4sAIrsM1A7eAAbMaVeJNmvnPw63hpnHTlDQ==
+"@tryghost/members-events-service@0.4.1":
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-events-service/-/members-events-service-0.4.1.tgz#8f61119bce1341f8cc13189b166988814ad32acb"
+  integrity sha512-WA7FCfD6vtSGqiKnPwR0t5HdZFIC7nTTqj4Wcar6ZMtQK1ImgZ6fAxxX/pU/GZJ4/FFMcFcS2DNuO9qcw0kdUw==
   dependencies:
-    "@tryghost/domain-events" "^0.1.11"
-    "@tryghost/member-events" "^0.4.3"
+    "@tryghost/domain-events" "^0.1.12"
+    "@tryghost/member-events" "^0.4.4"
     moment-timezone "^0.5.34"
 
 "@tryghost/members-importer@0.5.10":
