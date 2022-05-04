@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/package-json",
-  "version": "1.0.19",
+  "version": "1.0.20",
   "repository": "https://github.com/TryGhost/Utils/tree/main/packages/package-json",
   "author": "Ghost Foundation",
   "license": "MIT",
