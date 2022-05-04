@@ -3,7 +3,7 @@
 require('./utils');
 const fs = require('fs');
 const path = require('path');
-const apiSchema = require('@tryghost/admin-api-schema');
+const apiSchema = require('../lib/admin-api-schema');
 
 describe('Exposes a correct API', function () {
     it('Has all expected methods defined', function () {
