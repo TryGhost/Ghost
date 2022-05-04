@@ -1,41 +1,38 @@
-const should = require('should');
-const sinon = require('sinon');
-const mail = require('../../../../../core/server/services/mail');
-const configUtils = require('../../../../utils/configUtils');
+const assert = require('assert');
+const path = require('path');
 
-describe('Mail: Utils', function () {
-    const scope = {ghostMailer: null};
+const EmailContentGenerator = require('../../../../../core/server/services/mail/EmailContentGenerator');
 
-    beforeEach(function () {
-        configUtils.set({mail: {transport: 'stub'}});
-        scope.ghostMailer = new mail.GhostMailer();
-    });
+describe('Mail: EmailContentGenerator', function () {
+    it('generate welcome', async function () {
+        const emailContentGenerator = new EmailContentGenerator({
+            getSiteTitle: () => 'The Ghost Blog',
+            getSiteUrl: () => 'http://myblog.com',
+            templatesDir: path.resolve(__dirname, '../../../../../core/server/services/mail/templates/')
+        });
 
-    afterEach(function () {
-        sinon.restore();
-        configUtils.restore();
-    });
-
-    it('generate welcome', function (done) {
-        mail.utils.generateContent({
+        const content = await emailContentGenerator.getContent({
             template: 'welcome',
             data: {
                 ownerEmail: 'test@example.com'
             }
-        }).then(function (result) {
-            return scope.ghostMailer.send({
-                to: 'test@example.com',
-                subject: 'lol',
-                html: result.html,
-                text: result.text
-            });
-        }).then(function () {
-            done();
-        }).catch(done);
+        });
+
+        assert.match(content.html, /<title>Welcome to Ghost<\/title>/);
+        assert.match(content.html, /This email was sent from <a href="http:\/\/myblog.com" style="color: #738A94;">http:\/\/myblog.com<\/a> to <a href="mailto:test@example.com" style="color: #738A94;">test@example.com<\/a><\/p>/);
+
+        assert.match(content.text, /Email Address: test@example.com \[test@example.com\]/);
+        assert.match(content.text, /This email was sent from http:\/\/myblog.com/);
     });
 
-    it('generates newsletter template', function (done) {
-        mail.utils.generateContent({
+    it('generates newsletter template', async function () {
+        const emailContentGenerator = new EmailContentGenerator({
+            getSiteTitle: () => 'The Ghost Blog',
+            getSiteUrl: () => 'http://myblog.com',
+            templatesDir: path.resolve(__dirname, '../../../../../core/server/services/mail/templates/')
+        });
+
+        const content = await emailContentGenerator.getContent({
             template: 'newsletter',
             data: {
                 blog: {
@@ -93,15 +90,13 @@ describe('Mail: Utils', function () {
                     date: 'june, 9th 2016'
                 }
             }
-        }).then(function (result) {
-            return scope.ghostMailer.send({
-                to: 'jbloggs@example.com',
-                subject: 'The Newsletter Blog',
-                html: result.html,
-                text: result.text
-            });
-        }).then(function () {
-            done();
-        }).catch(done);
+        });
+
+        assert.match(content.html, /<title>The Ghost Blog<\/title>/);
+        assert.match(content.html, /<span style="text-transform:capitalize">monthly<\/span> digest/);
+        assert.match(content.html, /<span style="text-transform:capitalize">june, 9th 2016<\/span><\/h3>/);
+
+        assert.match(content.text, /MONTHLY DIGEST — JUNE, 9TH 2016/);
+        assert.match(content.text, /SECOND BLOG POST \[HTTP:\/\/MYBLOG.COM\/SECOND-BLOG-POST\]/);
     });
 });
