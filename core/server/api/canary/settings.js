@@ -128,7 +128,7 @@ module.exports = {
             method: 'edit'
         },
         async query(frame) {
-            const paidMembers = await membersService.api.members.browse({limit: 0, filter: 'status:paid'});
+            const paidMembers = await membersService.api.memberBREADService.browse({limit: 0, filter: 'status:paid'});
             if (_.get(paidMembers, 'meta.pagination.total') !== 0) {
                 throw new BadRequestError({
                     message: 'Cannot disconnect Stripe whilst you have active subscriptions.'
