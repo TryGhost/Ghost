@@ -1,4 +1,4 @@
-{{#let (parse-member-event @event) as |event|}}
+{{#let (parse-member-event @event @hasMultipleNewsletters) as |event|}}
     <tr>  
         {{#unless @hideMemberColumn}}
             <div class="gh-list-data">
