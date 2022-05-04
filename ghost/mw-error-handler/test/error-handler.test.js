@@ -138,9 +138,9 @@ describe('Resource Not Found', function () {
 
         resourceNotFound(req, res, (error) => {
             should.equal(error.statusCode, 406);
-            should.equal(error.message, 'Request not acceptable for provided Accept-Version header.');
-            should.equal(error.context, 'Provided client version v3.9 is outdated and is behind current Ghost version v4.3.');
-            should.equal(error.help, 'Upgrade your Ghost API client.');
+            should.equal(error.message, 'Request could not be served, the endpoint was not found.');
+            should.equal(error.context, 'Provided client accept-version v3.9 is behind current Ghost version v4.3.');
+            should.equal(error.help, 'Try upgrading your Ghost API client.');
             done();
         });
     });
@@ -160,9 +160,9 @@ describe('Resource Not Found', function () {
 
         resourceNotFound(req, res, (error) => {
             should.equal(error.statusCode, 406);
-            should.equal(error.message, 'Request not acceptable for provided Accept-Version header.');
-            should.equal(error.context, 'Provided client version v4.8 is ahead of current Ghost instance version v4.3.');
-            should.equal(error.help, 'Upgrade your Ghost instance.');
+            should.equal(error.message, 'Request could not be served, the endpoint was not found.');
+            should.equal(error.context, 'Provided client accept-version v4.8 is ahead of current Ghost version v4.3.');
+            should.equal(error.help, 'Try upgrading your Ghost install.');
             done();
         });
     });
