@@ -28,7 +28,6 @@ module.exports = createTransactionalMigration(
                 mrr: subscription.plan_interval === 'year' ? discountedAmount / 12 : discountedAmount
             };
 
-            delete newSubscription.offer_interval;
             delete newSubscription.offer_type;
             delete newSubscription.offer_amount;
 
