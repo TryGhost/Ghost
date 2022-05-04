@@ -167,6 +167,9 @@ module.exports = {
         await emailBatchModel.save({status: 'submitting'}, knexOptions);
 
         try {
+            // Load newsletter data on email
+            await emailBatchModel.relations.email.related('newsletter').fetch(Object.assign({}, {require: false}, knexOptions));
+
             // send the email
             const sendResponse = await this.send(emailBatchModel.relations.email.toJSON(), recipientRows, memberSegment);
 
@@ -217,11 +220,12 @@ module.exports = {
 
         // collate static and dynamic data for each recipient ready for provider
         const recipientData = {};
+        const newsletterUuid = emailData.newsletter ? emailData.newsletter.uuid : null;
         recipients.forEach((recipient) => {
             // static data for every recipient
             const data = {
                 unique_id: recipient.member_uuid,
-                unsubscribe_url: postEmailSerializer.createUnsubscribeUrl(recipient.member_uuid)
+                unsubscribe_url: postEmailSerializer.createUnsubscribeUrl(recipient.member_uuid, newsletterUuid)
             };
 
             // computed properties on recipients - TODO: better way of handling these
