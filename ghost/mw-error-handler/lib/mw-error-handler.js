@@ -9,14 +9,14 @@ const messages = {
     pageNotFound: 'Page not found',
     resourceNotFound: 'Resource not found',
     methodNotAcceptableVersionAhead: {
-        message: 'Request not acceptable for provided Accept-Version header.',
-        context: 'Provided client version {acceptVersion} is ahead of current Ghost instance version {ghostVersion}.',
-        help: 'Upgrade your Ghost instance.'
+        message: 'Request could not be served, the endpoint was not found.',
+        context: 'Provided client accept-version {acceptVersion} is ahead of current Ghost version {ghostVersion}.',
+        help: 'Try upgrading your Ghost install.'
     },
     methodNotAcceptableVersionBehind: {
-        message: 'Request not acceptable for provided Accept-Version header.',
-        context: 'Provided client version {acceptVersion} is outdated and is behind current Ghost version {ghostVersion}.',
-        help: 'Upgrade your Ghost API client.'
+        message: 'Request could not be served, the endpoint was not found.',
+        context: 'Provided client accept-version {acceptVersion} is behind current Ghost version {ghostVersion}.',
+        help: 'Try upgrading your Ghost API client.'
     },
     actions: {
         images: {
