@@ -116,7 +116,7 @@
     "@tryghost/version": "0.1.14",
     "@tryghost/version-notifications-data-service": "0.1.0",
     "@tryghost/vhost-middleware": "1.0.24",
-    "@tryghost/zip": "1.1.23",
+    "@tryghost/zip": "1.1.24",
     "amperize": "0.6.1",
     "analytics-node": "6.0.0",
     "bluebird": "3.7.2",

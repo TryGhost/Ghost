@@ -2538,12 +2538,12 @@
     extract-zip "^2.0.1"
     fs-extra "^10.0.0"
 
-"@tryghost/zip@1.1.23":
-  version "1.1.23"
-  resolved "https://registry.yarnpkg.com/@tryghost/zip/-/zip-1.1.23.tgz#4fd628b41c2e0ed9298b5a57186b40c81fdd5c48"
-  integrity sha512-o64FL9myUK+ZAd9LqIiKkpjqGtvRstRFQsp4QVoWcDtxrI1vMr3tzxD8slSdvxmFyC5Hjcrc88G/AgXGvx1BLQ==
+"@tryghost/zip@1.1.24":
+  version "1.1.24"
+  resolved "https://registry.yarnpkg.com/@tryghost/zip/-/zip-1.1.24.tgz#85fe4131ab95cb569a5a0ad12a53e06474672a3d"
+  integrity sha512-45Ra+fWUVIfAXyvxmqQQjX4OkdTLHGYKcBcBV6gJBEh4VIsyciKD2ztoXmNglJwLSXf1IGD4lyvpClApEg+/2Q==
   dependencies:
-    archiver "^4.0.2"
+    archiver "^5.0.0"
     bluebird "^3.7.2"
     extract-zip "^2.0.1"
     fs-extra "^10.0.0"
@@ -2996,13 +2996,13 @@ archiver@^4.0.2:
     tar-stream "^2.1.2"
     zip-stream "^3.0.1"
 
-archiver@^5.1.0:
-  version "5.3.0"
-  resolved "https://registry.yarnpkg.com/archiver/-/archiver-5.3.0.tgz#dd3e097624481741df626267564f7dd8640a45ba"
-  integrity sha512-iUw+oDwK0fgNpvveEsdQ0Ase6IIKztBJU2U0E9MzszMfmVVUyv1QJhS2ITW9ZCqx8dktAxVAjWWkKehuZE8OPg==
+archiver@^5.0.0, archiver@^5.1.0:
+  version "5.3.1"
+  resolved "https://registry.yarnpkg.com/archiver/-/archiver-5.3.1.tgz#21e92811d6f09ecfce649fbefefe8c79e57cbbb6"
+  integrity sha512-8KyabkmbYrH+9ibcTScQ1xCJC/CGcugdVIwB+53f5sZziXgwUh3iXlAlANMxcZyDEfTHMe6+Z5FofV8nopXP7w==
   dependencies:
     archiver-utils "^2.1.0"
-    async "^3.2.0"
+    async "^3.2.3"
     buffer-crc32 "^0.2.1"
     readable-stream "^3.6.0"
     readdir-glob "^1.0.0"
