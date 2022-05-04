@@ -9,12 +9,18 @@ import {tracked} from '@glimmer/tracking';
 export default class MembersEventsFetcher extends Resource {
     @service ajax;
     @service ghostPaths;
+    @service store;
 
     @tracked data = new TrackedArray([]);
     @tracked isLoading = false;
     @tracked isError = false;
     @tracked errorMessage = null;
     @tracked hasReachedEnd = false;
+
+    /** 
+     * Keep track whether we have multiple newsletters (required for parsing events)
+    */
+    @tracked hasMultipleNewsletters = null;
 
     cursor = null;
 
@@ -25,7 +31,8 @@ export default class MembersEventsFetcher extends Resource {
             errorMessage: this.errorMessage,
             data: this.data,
             loadNextPage: this.loadNextPage,
-            hasReachedEnd: this.hasReachedEnd
+            hasReachedEnd: this.hasReachedEnd,
+            hasMultipleNewsletters: this.hasMultipleNewsletters
         };
     }
 
@@ -37,7 +44,9 @@ export default class MembersEventsFetcher extends Resource {
             filter += `+${this.args.named.filter}`;
         }
 
-        return this.loadEventsTask.perform({filter});
+        // Can't get this working with Promise.all, somehow results in an infinite loop
+        await this.loadEventsTask.perform({filter});
+        await this.loadMultipleNewslettersTask.perform();
     }
 
     @action
@@ -65,6 +74,22 @@ export default class MembersEventsFetcher extends Resource {
         }
 
         this.loadEventsTask.perform({filter});
+    }
+
+    /**
+     * We need to know whether we have multiple newsletters so we can hide/show the newsletter name
+     */
+    @task
+    *loadMultipleNewslettersTask() {
+        try {
+            const res = yield this.store.query('newsletter', {filter: 'status:active', include: 'none', limit: 1});
+            const newsletterCount = res.meta.pagination.total;
+            this.hasMultipleNewsletters = newsletterCount > 1;
+        } catch (e) {
+            // Default to true (harms the least)
+            this.hasMultipleNewsletters = true;
+            console.error(e); // eslint-disable-line
+        }
     }
 
     @task

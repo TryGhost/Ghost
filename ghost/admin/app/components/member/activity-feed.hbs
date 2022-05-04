@@ -15,7 +15,7 @@
                             <div class="relative h17"><GhLoadingSpinner class="h30" /></div>
                         {{else if eventsFetcher.data}}
                             {{#each eventsFetcher.data as |rawEvent|}}
-                                {{#let (parse-member-event rawEvent) as |event|}}
+                                {{#let (parse-member-event rawEvent eventsFetcher.hasMultipleNewsletters) as |event|}}
                                     <div class="gh-member-feed-row">
                                         <div class="gh-member-feed-container">
                                             <div class="gh-member-feed-icon">

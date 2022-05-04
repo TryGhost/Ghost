@@ -10,7 +10,7 @@
     </thead>
     <tbody>
         {{#each @events as |event|}}
-            <MembersActivity::TableRow @hideMemberColumn={{@hideMemberColumn}} @event={{event}} />
+            <MembersActivity::TableRow @hideMemberColumn={{@hideMemberColumn}} @event={{event}} @hasMultipleNewsletters={{@hasMultipleNewsletters}} />
         {{/each}}
     </tbody>
 </table>

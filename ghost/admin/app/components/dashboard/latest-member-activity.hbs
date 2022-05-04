@@ -25,7 +25,7 @@
                         {{#if eventsFetcher.data}}
                             <ul class="gh-dashboard-activity-list">
                                 {{#each eventsFetcher.data as |event|}}
-                                    {{#let (parse-member-event event) as |parsedEvent|}}
+                                    {{#let (parse-member-event event eventsFetcher.hasMultipleNewsletters) as |parsedEvent|}}
                                         <li class="gh-dashboard-activity-item" data-test-dashboard-member-activity-item>
                                             <LinkTo class="member-details" @route="member" @model="{{parsedEvent.memberId}}">
                                                 <div class="gh-dashboard-activity-container">
