@@ -21,11 +21,9 @@
                 </div>
                 <div class="gh-dashboard5-list-body">
                     {{#each this.posts as |post|}}
-                        <div class="gh-dashboard5-list-item">
+                        <LinkTo class="gh-dashboard5-list-item permalink" @route="editor.edit" @models={{array post.displayName post.id}}>
                             <div class="gh-dashboard5-list-item-sub">
-                                <LinkTo class="gh-dashboard5-list-post permalink" @route="editor.edit" @models={{array post.displayName post.id}}>
-                                {{post.title}}
-                                </LinkTo>
+                                <span class="gh-dashboard5-list-text">{{post.title}}</span>
                             </div>
                             <div class="gh-dashboard5-list-item-sub">
                                 {{!-- DEMO <span class="gh-dashboard5-metric-minivalue">{{format-number 3294}}</span> --}}
@@ -39,7 +37,7 @@
                                     <span class="gh-dashboard5-rate-amount"><span style={{html-safe (concat "width: " post.email.openRate "%;")}}/></span>
                                 </span>
                             </div>
-                        </div>
+                        </LinkTo>
                     {{else}}
                         <div class="gh-dashboard5-list-empty">
                             <p>No published posts yet.</p>
@@ -76,26 +74,23 @@
                             {{#if eventsFetcher.data}}
                                 {{#each eventsFetcher.data as |event|}}
                                     {{#let (parse-member-event event eventsFetcher.hasMultipleNewsletters) as |parsedEvent|}}
-                                        <div class="gh-dashboard5-list-item" data-test-dashboard-member-activity-item> 
+                                        <LinkTo class="gh-dashboard5-list-item member-details" @route="member" @model="{{parsedEvent.memberId}}" data-test-dashboard-member-activity-item> 
                                             <div class="gh-dashboard5-list-item-sub">
-                                                <LinkTo class="member-details" @route="member" @model="{{parsedEvent.memberId}}">
-                                                    <GhMemberAvatar @member={{parsedEvent.member}} @containerClass="w8 h8 mr3 flex-shrink-0" />
-                                                    {{parsedEvent.subject}}
-                                                </LinkTo>
+                                                <GhMemberAvatar @member={{parsedEvent.member}} @containerClass="w8 h8 mr3 flex-shrink-0" />
+                                                <span class="gh-dashboard5-list-text">{{parsedEvent.subject}}</span>
                                             </div>
                                             <div class="gh-dashboard5-list-item-sub">
-                                                {{!-- ICON {{svg-jar parsedEvent.icon}} --}}
-                                                <span>
+                                                {{svg-jar parsedEvent.icon}}
+                                                <span class="gh-dashboard5-list-subtext">
                                                     {{capitalize-first-letter parsedEvent.action}}
                                                     {{parsedEvent.object}}
                                                     {{parsedEvent.info}}
                                                 </span>
                                             </div>
                                             <div class="gh-dashboard5-list-item-sub">
-                                                {{!-- FROM TIME <span class="gh-dashboard5-list-date">{{moment-from-now parsedEvent.timestamp}}</span> --}}
-                                                {{moment-format event.timestamp "D MMM YYYY HH:mm"}}
+                                                <span class="gh-dashboard5-list-subtext">{{moment-format event.timestamp "D MMM YYYY HH:mm"}}</span>
                                             </div>
-                                        </div>
+                                        </LinkTo>
                                     {{/let}}
                                 {{/each}}
                             {{else}}
