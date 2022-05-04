@@ -134,7 +134,7 @@ export default class DashboardStatsService extends Service {
      * @type {number|'all'}
      * Amount of days to load for member count and MRR related charts
      */
-    @tracked chartDays = 7;
+    @tracked chartDays = 30;
 
     /**
      * Filter last seen by this status
