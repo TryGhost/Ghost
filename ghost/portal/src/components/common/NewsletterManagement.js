@@ -128,7 +128,7 @@ export default function NewsletterManagement({
                         disabled={isDisabled}
                         brandColor={brandColor}
                         isPrimary={false}
-                        label='Unsubscribe from all'
+                        label='Unsubscribe from all emails'
                         isDestructive={true}
                         style={{width: '100%'}}
                     />
