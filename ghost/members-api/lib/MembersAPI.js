@@ -167,42 +167,6 @@ module.exports = function MembersAPI({
         tokenService
     });
 
-    async function hasActiveStripeSubscriptions() {
-        const firstActiveSubscription = await StripeCustomerSubscription.findOne({
-            status: 'active'
-        });
-
-        if (firstActiveSubscription) {
-            return true;
-        }
-
-        const firstTrialingSubscription = await StripeCustomerSubscription.findOne({
-            status: 'trialing'
-        });
-
-        if (firstTrialingSubscription) {
-            return true;
-        }
-
-        const firstUnpaidSubscription = await StripeCustomerSubscription.findOne({
-            status: 'unpaid'
-        });
-
-        if (firstUnpaidSubscription) {
-            return true;
-        }
-
-        const firstPastDueSubscription = await StripeCustomerSubscription.findOne({
-            status: 'past_due'
-        });
-
-        if (firstPastDueSubscription) {
-            return true;
-        }
-
-        return false;
-    }
-
     const users = memberRepository;
 
     async function sendEmailWithMagicLink({email, requestedType, tokenData, options = {forceEmailType: false}, requestSrc = ''}) {
@@ -334,7 +298,6 @@ module.exports = function MembersAPI({
         bus,
         sendEmailWithMagicLink,
         getMagicLink,
-        hasActiveStripeSubscriptions,
         members: users,
         memberBREADService,
         events: eventRepository,
