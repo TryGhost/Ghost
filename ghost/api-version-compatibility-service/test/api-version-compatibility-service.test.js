@@ -113,4 +113,29 @@ describe('APIVersionCompatibilityService', function () {
         assert.match(sendEmail.args[2][0].html, /Elaborate Fox integration expected Ghost version: v4.8/);
         assert.match(sendEmail.args[2][0].html, /Current Ghost version: v5.1/);
     });
+
+    it('Trims down the name of the integration when a lot of meta information is present in user-agent header', async function (){
+        const sendEmail = sinon.spy();
+        const fetchHandled = sinon.spy();
+        const saveHandled = sinon.spy();
+
+        const compatibilityService = new APIVersionCompatibilityService({
+            sendEmail,
+            fetchEmailsToNotify: async () => ['test_env@example.com'],
+            fetchHandled,
+            saveHandled
+        });
+
+        await compatibilityService.handleMismatch({
+            acceptVersion: 'v4.5',
+            contentVersion: 'v5.1',
+            userAgent: 'Zapier/2.3 GhostAdminSDK/2.4.0'
+        });
+
+        assert.equal(sendEmail.called, true);
+        assert.equal(sendEmail.args[0][0].to, 'test_env@example.com');
+        assert.equal(sendEmail.args[0][0].subject, `Attention required: Your Zapier integration has failed`);
+        assert.match(sendEmail.args[0][0].html, /Zapier integration expected Ghost version: v4.5/);
+        assert.match(sendEmail.args[0][0].html, /Current Ghost version: v5.1/);
+    });
 });
