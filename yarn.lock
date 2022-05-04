@@ -1727,10 +1727,10 @@
     "@tryghost/errors" "^1.0.0"
     lodash "^4.17.11"
 
-"@tryghost/api-version-compatibility-service@0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/api-version-compatibility-service/-/api-version-compatibility-service-0.1.1.tgz#037ec31a745f59577d531abc0e67558fb83b287e"
-  integrity sha512-NLpSqTQIP4be8keF8L9vwXtoFeiwldH/WNyieMlqjBWVnAEHVpdGqQzEpltDVkIrkti1T6jT2NP0OIddM3GMYQ==
+"@tryghost/api-version-compatibility-service@0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/api-version-compatibility-service/-/api-version-compatibility-service-0.1.2.tgz#b07d0b3e74dadb4c9898ab2a2312f9a16f1f3dea"
+  integrity sha512-mRPK6PEu6N1fAZwSngYuPECGeikmFNRvoiSNOp2ESB4Z8Jj9Mm3uyVzihwdGnhfqtZQlgACjNYeL3IFk5QbDvQ==
 
 "@tryghost/bookshelf-collision@^0.1.22":
   version "0.1.22"
