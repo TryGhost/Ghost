@@ -157,12 +157,12 @@ module.exports = {
         });
 
         new LastSeenAtUpdater({
-            models: {
-                Member: models.Member
-            },
             services: {
                 domainEvents: DomainEvents,
                 settingsCache
+            },
+            async getMembersApi() {
+                return membersApi;
             }
         });
 
