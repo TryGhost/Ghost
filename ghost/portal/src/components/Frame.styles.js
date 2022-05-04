@@ -650,6 +650,16 @@ const FrameStyles = `
     padding: 8px;
 }
 
+.gh-portal-publication-title {
+    text-align: center;
+    font-size: 1.6rem;
+    letter-spacing: -.1px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #15212a;
+    margin-top: 12px;
+}
+
 /* Icons
 /* ----------------------------------------------------- */
 .gh-portal-icon {
@@ -764,8 +774,7 @@ const MobileStyles = `
 
     button[class="gh-portal-btn"],
     .gh-portal-btn-main,
-    .gh-portal-btn-primary,
-    .gh-portal-btn-branded {
+    .gh-portal-btn-primary {
         height: 42px;
     }
 }
@@ -1039,6 +1048,32 @@ const MultipleProductsGlobalStyles = `
 
 .gh-portal-popup-container.preview * {
     pointer-events: none !important;
+}
+
+.gh-portal-unsubscribe-logo {
+    width: 60px;
+    height: 60px;
+    border-radius: 2px;
+    margin-top: 12px;
+}
+
+@media (max-width: 480px) {
+    .gh-portal-unsubscribe-logo {
+        width: 48px;
+        height: 48px;
+    }
+}
+
+.gh-portal-unsubscribe .gh-portal-main-title {
+    margin-bottom: 16px;
+}
+
+.gh-portal-btn-inline {
+    display: inline-block;
+    margin-left: 4px;
+    font-size: 1.5rem;
+    font-weight: 600;
+    cursor: pointer;
 }
 `;
 

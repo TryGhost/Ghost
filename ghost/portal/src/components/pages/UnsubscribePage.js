@@ -8,20 +8,34 @@ import CloseButton from '../common/CloseButton';
 
 const React = require('react');
 
-// function AccountHeader() {
-//     return (
-//         <header className='gh-portal-detail-header'>
-//             <h3 className='gh-portal-main-title'>Publication title</h3>
-//         </header>
-//     );
-// }
+function SiteLogo() {
+    const {site} = useContext(AppContext);
+    const siteLogo = site.icon;
+
+    if (siteLogo) {
+        return (
+            <img className='gh-portal-unsubscribe-logo' src={siteLogo} alt={site.title} />
+        );
+    }
+    return (null);
+}
+
+function AccountHeader() {
+    const {site} = useContext(AppContext);
+    const siteTitle = site.title || '';
+    return (
+        <header className='gh-portal-header'>
+            <SiteLogo />
+            <h2 className="gh-portal-publication-title">{siteTitle}</h2>
+        </header>
+    );
+}
 
 export default function UnsubscribePage() {
     const {site, pageData, onAction} = useContext(AppContext);
     const api = setupGhostApi({siteUrl: site.url});
     const [member, setMember] = useState();
     const siteNewsletters = getSiteNewsletters({site});
-    const siteTitle = site.title || '';
     const defaultNewsletters = siteNewsletters.filter((d) => {
         return d.subscribe_on_signup;
     });
@@ -48,16 +62,11 @@ export default function UnsubscribePage() {
     // Case: Email not found
     if (member === null) {
         return (
-            <div className='gh-portal-content with-footer'>
+            <div className='gh-portal-content gh-portal-unsubscribe with-footer'>
                 <CloseButton />
-                {/* <AccountHeader /> */}
-                {/* The header below should be in AccountHeader */}
-                <header className='gh-portal-signup-header'>
-                    <img className='gh-portal-signup-logo' src="https://static.ghost.org/v4.0.0/images/ghost-orb-1.png" alt="fdfkld" />
-                    <h1 className="gh-portal-main-title">{siteTitle}</h1>
-                </header>
-                <h4 className="gh-portal-text-center gh-portal-text-large" style={{marginBottom: '8px', fontSize: '2rem'}}>Unsubscribe failed</h4>
-                <div className='gh-portal-section'>
+                <AccountHeader />
+                <h1 className="gh-portal-main-title">Unsubscribe failed</h1>
+                <div>
                     <p className="gh-portal-text-center">Email address not found.</p>
                 </div>
             </div>
@@ -67,33 +76,20 @@ export default function UnsubscribePage() {
     // Case: Single active newsletter
     if (siteNewsletters?.length === 1 && !showPrefs) {
         return (
-            <div className='gh-portal-content with-footer'>
+            <div className='gh-portal-content gh-portal-unsubscribe with-footer'>
                 <CloseButton />
-                {/* <AccountHeader /> */}
-                <header className='gh-portal-signup-header'>
-                    <img className='gh-portal-signup-logo' src="https://static.ghost.org/v4.0.0/images/ghost-orb-1.png" alt="fdfkld" />
-                    <h1 className="gh-portal-main-title">{siteTitle}</h1>
-                </header>
-                <h4 className="gh-portal-text-center gh-portal-text-large" style={{marginBottom: '8px', fontSize: '2rem'}}>Successfully unsubscribed</h4>
-                <div className='gh-portal-section'>
-                    <p className='gh-portal-text-center'><strong>{member?.email}</strong> will no longer receive this newsletter.</p>
-                    <p className='gh-portal-text-center'>
-                        Didn't mean to do this? Manage your preferences
+                <AccountHeader />
+                <h1 className="gh-portal-main-title">Successfully unsubscribed</h1>
+                <div>
+                    <p className='gh-portal-text-center'><strong>{member?.email}</strong> will no longer receive this newsletter. Didn't mean to do this? Manage your preferences
                         <button
-                            className="gh-portal-btn-link"
-                            style={{
-                                display: 'inlineBlock',
-                                marginLeft: '4px',
-                                fontSize: '1.5rem',
-                                fontWeight: '600',
-                                cursor: 'pointer'
-                            }}
+                            className="gh-portal-btn-link gh-portal-btn-branded gh-portal-btn-inline"
                             onClick={() => {
                                 setShowPrefs(true);
                             }}
                         >
-                            here
-                        </button>
+                        here
+                        </button>.
                     </p>
                 </div>
             </div>
