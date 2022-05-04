@@ -1,14 +1,14 @@
 const assert = require('assert');
 const path = require('path');
 
-const EmailContentGenerator = require('../../../../../core/server/services/mail/EmailContentGenerator');
+const EmailContentGenerator = require('../index');
 
 describe('Mail: EmailContentGenerator', function () {
     it('generate welcome', async function () {
         const emailContentGenerator = new EmailContentGenerator({
             getSiteTitle: () => 'The Ghost Blog',
             getSiteUrl: () => 'http://myblog.com',
-            templatesDir: path.resolve(__dirname, '../../../../../core/server/services/mail/templates/')
+            templatesDir: path.resolve(__dirname, './fixtures/templates/')
         });
 
         const content = await emailContentGenerator.getContent({
@@ -29,7 +29,7 @@ describe('Mail: EmailContentGenerator', function () {
         const emailContentGenerator = new EmailContentGenerator({
             getSiteTitle: () => 'The Ghost Blog',
             getSiteUrl: () => 'http://myblog.com',
-            templatesDir: path.resolve(__dirname, '../../../../../core/server/services/mail/templates/')
+            templatesDir: path.resolve(__dirname, './fixtures/templates/')
         });
 
         const content = await emailContentGenerator.getContent({
