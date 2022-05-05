@@ -73,6 +73,17 @@ export function getProductCurrency({product}) {
     return product.monthlyPrice.currency;
 }
 
+export function getNewsletterFromUuid({site, uuid}) {
+    if (!uuid) {
+        return null;
+    }
+
+    const newsletters = getSiteNewsletters({site});
+    return newsletters?.find((newsletter) => {
+        return newsletter.uuid = uuid;
+    });
+}
+
 export function getUpgradeProducts({site, member}) {
     const activePrice = getMemberActivePrice({member});
     const activePriceCurrency = activePrice?.currency;
