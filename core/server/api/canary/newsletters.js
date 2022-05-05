@@ -1,11 +1,6 @@
 const models = require('../../models');
-const tpl = require('@tryghost/tpl');
-const errors = require('@tryghost/errors');
 const allowedIncludes = ['count.posts', 'count.members'];
 
-const messages = {
-    newsletterNotFound: 'Newsletter not found.'
-};
 const newslettersService = require('../../services/newsletters');
 
 module.exports = {
@@ -56,14 +51,7 @@ module.exports = {
         },
         permissions: true,
         async query(frame) {
-            const newsletter = models.Newsletter.findOne(frame.data, frame.options);
-
-            if (!newsletter) {
-                throw new errors.NotFoundError({
-                    message: tpl(messages.newsletterNotFound)
-                });
-            }
-            return newsletter;
+            return newslettersService.read(frame.data, frame.options);
         }
     },
 
