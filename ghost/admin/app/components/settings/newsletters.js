@@ -6,7 +6,7 @@ import {tracked} from '@glimmer/tracking';
 const US = {flag: '🇺🇸', name: 'US', baseUrl: 'https://api.mailgun.net/v3'};
 const EU = {flag: '🇪🇺', name: 'EU', baseUrl: 'https://api.eu.mailgun.net/v3'};
 
-export default class MembersEmailLabs extends Component {
+export default class Newsletters extends Component {
     @service config;
     @service settings;
 
