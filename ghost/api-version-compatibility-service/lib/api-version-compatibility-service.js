@@ -31,7 +31,14 @@ class APIVersionCompatibilityService {
             const emails = await this.fetchEmailsToNotify();
 
             for (const email of emails) {
-                const template = 'generic-mismatch';
+                const template = (trimmedUseAgent === 'Zapier')
+                    ? 'zapier-mismatch'
+                    : 'generic-mismatch';
+
+                const subject = (trimmedUseAgent === 'Zapier')
+                    ? 'Attention required: One of your Zaps has failed'
+                    : `Attention required: Your ${trimmedUseAgent} integration has failed`;
+
                 const {html, text} = await this.emailContentGenerator.getContent({
                     template,
                     data: {
@@ -43,7 +50,7 @@ class APIVersionCompatibilityService {
                 });
 
                 await this.sendEmail({
-                    subject: `Attention required: Your ${trimmedUseAgent} integration has failed`,
+                    subject,
                     to: email,
                     html,
                     text
