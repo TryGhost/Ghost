@@ -75,7 +75,8 @@ const htmlToPlaintext = (html) => {
 const createUnsubscribeUrl = (uuid, newsletterUuid) => {
     const siteUrl = urlUtils.getSiteUrl();
     const unsubscribeUrl = new URL(siteUrl);
-    unsubscribeUrl.pathname = `${unsubscribeUrl.pathname}/unsubscribe/`.replace('//', '/');
+    unsubscribeUrl.pathname = `${unsubscribeUrl.pathname}/`.replace('//', '/');
+    unsubscribeUrl.searchParams.set('action', 'unsubscribe');
     if (uuid) {
         unsubscribeUrl.searchParams.set('uuid', uuid);
     } else {

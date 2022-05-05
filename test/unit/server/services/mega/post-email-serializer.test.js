@@ -98,19 +98,19 @@ describe('Post Email Serializer', function () {
         it('generates unsubscribe url for preview', function () {
             sinon.stub(urlUtils, 'getSiteUrl').returns('https://site.com/blah');
             const unsubscribeUrl = createUnsubscribeUrl(null);
-            unsubscribeUrl.should.eql('https://site.com/blah/unsubscribe/?preview=1');
+            unsubscribeUrl.should.eql('https://site.com/blah/?action=unsubscribe&preview=1');
         });
 
         it('generates unsubscribe url with only post uuid', function () {
             sinon.stub(urlUtils, 'getSiteUrl').returns('https://site.com/blah');
             const unsubscribeUrl = createUnsubscribeUrl('post-abcd');
-            unsubscribeUrl.should.eql('https://site.com/blah/unsubscribe/?uuid=post-abcd');
+            unsubscribeUrl.should.eql('https://site.com/blah/?action=unsubscribe&uuid=post-abcd');
         });
 
         it('generates unsubscribe url with both post and newsletter uuid', function () {
             sinon.stub(urlUtils, 'getSiteUrl').returns('https://site.com/blah');
             const unsubscribeUrl = createUnsubscribeUrl('post-abcd', 'newsletter-abcd');
-            unsubscribeUrl.should.eql('https://site.com/blah/unsubscribe/?uuid=post-abcd&newsletter=newsletter-abcd');
+            unsubscribeUrl.should.eql('https://site.com/blah/?action=unsubscribe&uuid=post-abcd&newsletter=newsletter-abcd');
         });
     });
 
