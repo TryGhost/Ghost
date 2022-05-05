@@ -377,6 +377,10 @@
     right: 10px;
 }
 
+.gh-publishmenu-newsletter-dropdown {
+    z-index: 99999;
+}
+
 .gh-publishmenu-newsletter-dropdown .ember-power-select-option[aria-selected="true"] {
     color: var(--black);
     font-weight: 600;

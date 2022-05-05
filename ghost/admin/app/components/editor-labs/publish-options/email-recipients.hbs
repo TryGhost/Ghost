@@ -1,0 +1,32 @@
+{{#if (eq @publishOptions.totalMemberCount 0)}}
+    <p class="gh-box gh-content-box">
+        <LinkTo @route="members">Add members</LinkTo>
+        to start sending newsletters!
+    </p>
+{{else}}
+    <div class="form-group">
+        {{#if (gt @publishOptions.newsletters.length 1)}}
+            <div class="mb3">
+                Newsletter:
+                <PowerSelect
+                    @selected={{@publishOptions.newsletter}}
+                    @options={{@publishOptions.newsletters}}
+                    @onChange={{@publishOptions.setNewsletter}}
+                    @triggerComponent="gh-power-select/trigger"
+                    @triggerClass="gh-publishmenu-newsletter-trigger"
+                    @dropdownClass="gh-publishmenu-newsletter-dropdown"
+                    as |newsletter|
+                >
+                    {{newsletter.name}}
+                </PowerSelect>
+            </div>
+        {{/if}}
+
+        <GhMembersRecipientSelect
+            @filter={{@publishOptions.recipientFilter}}
+            @onChange={{@publishOptions.setRecipientFilter}}
+            @renderInPlace={{false}}
+            @dropdownClass="gh-publishmenu-newsletter-dropdown"
+        />
+    </div>
+{{/if}}
