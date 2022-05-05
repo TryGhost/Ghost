@@ -31,8 +31,9 @@ class APIVersionCompatibilityService {
             const emails = await this.fetchEmailsToNotify();
 
             for (const email of emails) {
+                const template = 'generic-mismatch';
                 const {html, text} = await this.emailContentGenerator.getContent({
-                    template: 'generic-mismatch',
+                    template,
                     data: {
                         acceptVersion,
                         contentVersion,
