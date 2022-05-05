@@ -71,10 +71,24 @@ function dropNullable(tableName, column, transaction = db.knex) {
     });
 }
 
-function addColumn(tableName, column, transaction = db.knex, columnSpec) {
-    return transaction.schema.table(tableName, function (table) {
+async function addColumn(tableName, column, transaction = db.knex, columnSpec) {
+    let sql = transaction.schema.table(tableName, function (table) {
         addTableColumn(tableName, table, column, columnSpec);
-    });
+    }).toSQL()[0].sql;
+
+    // Use the default flow for SQLite because .toSQL() is tricky with SQLite when
+    // it does the table dance
+    if (DatabaseInfo.isSQLite(transaction)) {
+        await transaction.raw(sql);
+        return;
+    }
+
+    if (DatabaseInfo.isMySQL(transaction)) {
+        // Guard against an ending semicolon
+        sql = sql.replace(/;\s*$/, '') + ', algorithm=copy';
+    }
+
+    await transaction.raw(sql);
 }
 
 async function dropColumn(tableName, column, transaction = db.knex, columnSpec = {}) {
@@ -83,9 +97,23 @@ async function dropColumn(tableName, column, transaction = db.knex, columnSpec =
         await dropForeign({fromTable: tableName, fromColumn: column, toTable, toColumn, transaction});
     }
 
-    return transaction.schema.table(tableName, function (table) {
+    let sql = transaction.schema.table(tableName, function (table) {
         table.dropColumn(column);
-    });
+    }).toSQL()[0].sql;
+
+    // Use the default flow for SQLite because .toSQL() is tricky with SQLite when
+    // it does the table dance
+    if (DatabaseInfo.isSQLite(transaction)) {
+        await transaction.raw(sql);
+        return;
+    }
+
+    if (DatabaseInfo.isMySQL(transaction)) {
+        // Guard against an ending semicolon
+        sql = sql.replace(/;\s*$/, '') + ', algorithm=copy';
+    }
+
+    await transaction.raw(sql);
 }
 
 /**
