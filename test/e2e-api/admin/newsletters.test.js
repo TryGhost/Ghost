@@ -387,9 +387,45 @@ describe('Newsletters API', function () {
         });
     });
 
+    it(`Can't add multiple newsletters with same name`, async function () {
+        const firstNewsletter = {
+            name: 'Duplicate newsletter'
+        };
+
+        const secondNewsletter = {...firstNewsletter};
+
+        await agent
+            .post(`newsletters/`)
+            .body({newsletters: [firstNewsletter]})
+            .expectStatus(201)
+            .matchBodySnapshot({
+                newsletters: [newsletterSnapshotWithoutSortOrder]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag,
+                location: anyLocationFor('newsletters')
+            });
+
+        await agent
+            .post(`newsletters/`)
+            .body({newsletters: [secondNewsletter]})
+            .expectStatus(422)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyUuid,
+                    message: 'Validation error, cannot save newsletter.',
+                    context: 'A newsletter with the same name already exists'
+                }]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
+
     it('Can add a newsletter - with custom sender_email and subscribe existing members', async function () {
         const db = require('../../../core/server/data/db');
         if (DatabaseInfo.isSQLite(db.knex)) {
+            // This breaks snapshot tests if you don't update snapshot tests on MySQL + make sure this is the last ADD test
             return;
         }
         const newsletter = {
@@ -426,41 +462,6 @@ describe('Newsletters API', function () {
             subject: 'Verify email address',
             to: 'test@example.com'
         });
-    });
-
-    it(`Can't add multiple newsletters with same name`, async function () {
-        const firstNewsletter = {
-            name: 'Duplicate newsletter'
-        };
-
-        const secondNewsletter = {...firstNewsletter};
-
-        await agent
-            .post(`newsletters/`)
-            .body({newsletters: [firstNewsletter]})
-            .expectStatus(201)
-            .matchBodySnapshot({
-                newsletters: [newsletterSnapshotWithoutSortOrder]
-            })
-            .matchHeaderSnapshot({
-                etag: anyEtag,
-                location: anyLocationFor('newsletters')
-            });
-
-        await agent
-            .post(`newsletters/`)
-            .body({newsletters: [secondNewsletter]})
-            .expectStatus(422)
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyUuid,
-                    message: 'Validation error, cannot save newsletter.',
-                    context: 'A newsletter with the same name already exists'
-                }]
-            })
-            .matchHeaderSnapshot({
-                etag: anyEtag
-            });
     });
 
     it(`Can't edit multiple newsletters to existing name`, async function () {
