@@ -73,7 +73,7 @@
     "@tryghost/email-content-generator": "0.1.0",
     "@tryghost/errors": "1.2.12",
     "@tryghost/express-dynamic-redirects": "0.2.11",
-    "@tryghost/helpers": "1.1.64",
+    "@tryghost/helpers": "1.1.65",
     "@tryghost/image-transform": "1.0.30",
     "@tryghost/job-manager": "0.8.22",
     "@tryghost/kg-card-factory": "3.1.3",
