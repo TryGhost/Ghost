@@ -11608,6 +11608,17 @@ sqlite3@5.0.6:
   optionalDependencies:
     node-gyp "8.x"
 
+sqlite3@5.0.7:
+  version "5.0.7"
+  resolved "https://registry.yarnpkg.com/sqlite3/-/sqlite3-5.0.7.tgz#0fbab153782c7f286d0f1e9d68ab4580238f0ae7"
+  integrity sha512-9PUfvpol1/5SI3WZawFINwpRz6qhUeJJtFNG6rr0CvDWMXN75PJPv+3b0aVEOOx5rAZIPcXW2zVasH8foqw7Gg==
+  dependencies:
+    "@mapbox/node-pre-gyp" "^1.0.0"
+    node-addon-api "^4.2.0"
+    tar "^6.1.11"
+  optionalDependencies:
+    node-gyp "8.x"
+
 sqlstring@^2.3.2:
   version "2.3.3"
   resolved "https://registry.yarnpkg.com/sqlstring/-/sqlstring-2.3.3.tgz#2ddc21f03bce2c387ed60680e739922c65751d0c"
