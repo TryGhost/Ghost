@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 const routeMatch = require('path-match')();
 const APIVersionCompatibilityService = require('@tryghost/api-version-compatibility-service');
 const VersionNotificationsDataService = require('@tryghost/version-notifications-data-service');
