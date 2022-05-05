@@ -1,10 +1,21 @@
-<button
-    type="button"
-    class="gh-btn gh-btn-editor darkgrey gh-publishmenu-trigger"
-    {{on "click" this.openPublishFlow}}
-    {{on-key "cmd+shift+p"}}
-    disabled={{this.publishOptions.isLoading}}
-    data-test-button="publish-flow"
->
-    <span>Publish</span>
-</button>
+{{#if @post.isDraft}}
+    <button
+        type="button"
+        class="gh-btn gh-btn-editor darkgrey gh-publishmenu-trigger"
+        {{on "click" this.openPublishFlow}}
+        {{on-key "cmd+shift+p"}}
+        disabled={{this.publishOptions.isLoading}}
+        data-test-button="publish-flow"
+    >
+        <span>Publish</span>
+    </button>
+{{else}}
+    <button
+        type="button"
+        class="gh-btn gh-btn-editor darkgrey gh-publishmenu-trigger"
+        {{on "click" this.openUpdateFlow}}
+        data-test-button="update-flow"
+    >
+        <span>Update</span>
+    </button>
+{{/if}}

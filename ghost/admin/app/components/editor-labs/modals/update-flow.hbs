@@ -1,0 +1,77 @@
+<div class="flex flex-column h-100 items-center overflow-auto">
+    <header class="gh-publish-header" data-test-modal="update-flow">
+        <button class="gh-publish-back-button" title="Close" type="button" {{on "click" @close}}>
+            <span>{{svg-jar "close-stroke"}} Close</span>
+        </button>
+    </header>
+
+    {{#let @data.publishOptions.post as |post|}}
+        <div class="gh-publish-settings-container">
+            <div class="gh-publish-title">
+                This {{post.displayName}} is
+                <span>{{post.status}}</span>
+            </div>
+
+            <p>
+                {{#let (moment-site-tz post.publishedAtUTC) as |publishedAt|}}
+                    On
+                    <strong>
+                        {{moment-format publishedAt "D MMM YYYY"}}
+                        at
+                        {{moment-format publishedAt "HH:mm"}}
+                    </strong>
+                    your
+                {{/let}}
+
+                {{post.displayName}}
+
+                {{if post.isScheduled "will be" "was"}}
+
+                {{#if (or post.isPublished (and post.isScheduled post.emailRecipientFilter (not post.email)))}}
+                    {{#if post.emailOnly}}
+                        sent to
+                    {{else}}
+                        published and sent to
+                    {{/if}}
+
+                    <strong>{{pluralize post.email.emailCount "member"}}</strong>.
+                {{else}}
+                    published.
+                {{/if}}
+            </p>
+
+            {{#if (and post.isScheduled post.email)}}
+                <p>
+                    This post was previously emailed to
+                    <strong>{{pluralize post.email.emailCount "member"}}</strong> on
+
+                    {{#let (moment-site-tz post.email.createdAtUTC) as |sentAt|}}
+                        <strong>
+                            {{moment-format sentAt "D MMM YYYY"}}
+                            at
+                            {{moment-format sentAt "HH:mm"}}.
+                        </strong>
+                    {{/let}}
+                </p>
+            {{/if}}
+
+            <div class="gh-publish-cta">
+                <GhTaskButton
+                    @task={{this.saveTask}}
+                    @buttonText="Save changes"
+                    @runningText="Saving"
+                    @successText="Saved"
+                    @class="gh-btn gh-btn-icon gh-btn-primary gh-btn-large mr4"
+                />
+
+                <GhTaskButton
+                    @task={{this.revertToDraftTask}}
+                    @buttonText="Revert to draft"
+                    @runningText="Reverting"
+                    @successText="Reverted"
+                    @class="gh-btn gh-btn-icon gh-btn-secondary gh-btn-large"
+                />
+            </div>
+        </div>
+    {{/let}}
+</div>

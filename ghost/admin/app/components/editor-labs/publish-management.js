@@ -2,6 +2,7 @@ import Component from '@glimmer/component';
 import EmailFailedError from 'ghost-admin/errors/email-failed-error';
 import PublishFlowModal from './modals/publish-flow';
 import PublishOptionsResource from 'ghost-admin/helpers/publish-options';
+import UpdateFlowModal from './modals/update-flow';
 import moment from 'moment';
 import {action, get} from '@ember/object';
 import {inject as service} from '@ember/service';
@@ -29,7 +30,10 @@ export class PublishOptions {
     }
 
     get willEmail() {
-        return this.publishType !== 'publish' && this.recipientFilter;
+        return this.publishType !== 'publish'
+            && this.recipientFilter
+            && this.post.isDraft
+            && !this.post.email;
     }
 
     get willPublish() {
@@ -225,8 +229,6 @@ export class PublishOptions {
 
     // saving ------------------------------------------------------------------
 
-    revertableModelProperties = ['status', 'publishedAtUTC', 'emailOnly'];
-
     @task({drop: true})
     *saveTask() {
         this._applyModelChanges();
@@ -246,6 +248,26 @@ export class PublishOptions {
         }
     }
 
+    @task({drop: true})
+    *revertToDraftTask() {
+        const originalStatus = this.post.status;
+        const originalPublishedAtUTC = this.post.publishedAtUTC;
+
+        try {
+            if (this.post.isScheduled) {
+                this.post.publishedAtUTC = null;
+            }
+
+            this.post.status = 'draft';
+
+            return yield this.post.save();
+        } catch (e) {
+            this.post.status = originalStatus;
+            this.post.publishedAtUTC = originalPublishedAtUTC;
+            throw e;
+        }
+    }
+
     // Publishing/scheduling is a side-effect of changing model properties.
     // We don't want to get into a situation where we've applied these changes
     // but they haven't been saved because that would result in confusing UI.
@@ -256,21 +278,31 @@ export class PublishOptions {
     _applyModelChanges() {
         // store backup of original values in case we need to revert
         this._originalModelValues = {};
-        this.revertableModelProperties.forEach((property) => {
+
+        // this only applies to the full publish flow which is only available for drafts
+        if (!this.post.isDraft) {
+            return;
+        }
+
+        const revertableModelProperties = ['status', 'publishedAtUTC', 'emailOnly'];
+
+        revertableModelProperties.forEach((property) => {
             this._originalModelValues[property] = this.post[property];
         });
 
         this.post.status = this.isScheduled ? 'scheduled' : 'published';
 
-        if (this.post.isScheduled) {
+        if (this.isScheduled) {
             this.post.publishedAtUTC = this.scheduledAtUTC;
         }
 
-        this.post.emailOnly = this.publishType === 'email';
+        if (this.willEmail) {
+            this.post.emailOnly = this.publishType === 'email';
+        }
     }
 
     _revertModelChanges() {
-        this.revertableModelProperties.forEach((property) => {
+        Object.keys(this._originalModelValues).forEach((property) => {
             this.post[property] = this._originalModelValues[property];
         });
     }
@@ -279,8 +311,9 @@ export class PublishOptions {
 /* Component -----------------------------------------------------------------*/
 
 // This component exists for the duration of the editor screen being open.
-// It's used to store the selected publish options and control the
-// publishing flow modal.
+// It's used to store the selected publish options, control the publishing flow
+// modal display, and provide an editor-specific save behaviour wrapper around
+// PublishOptions saving.
 export default class PublishManagement extends Component {
     @service modals;
 
@@ -288,6 +321,7 @@ export default class PublishManagement extends Component {
     @use publishOptions = new PublishOptionsResource(() => [this.args.post]);
 
     publishFlowModal = null;
+    updateFlowModal = null;
 
     willDestroy() {
         super.willDestroy(...arguments);
@@ -297,6 +331,8 @@ export default class PublishManagement extends Component {
     @action
     openPublishFlow(event) {
         event?.preventDefault();
+
+        this.updateFlowModal?.close();
 
         if (!this.publishFlowModal || this.publishFlowModal.isClosing) {
             this.publishOptions.resetPastScheduledAt();
@@ -308,8 +344,25 @@ export default class PublishManagement extends Component {
         }
     }
 
+    @action
+    openUpdateFlow(event) {
+        event?.preventDefault();
+
+        this.publishFlowModal?.close();
+
+        if (!this.updateFlowModal || this.updateFlowModal.isClosing) {
+            this.updateFlowModal = this.modals.open(UpdateFlowModal, {
+                publishOptions: this.publishOptions,
+                saveTask: this.saveTask,
+                revertToDraftTask: this.revertToDraftTask
+            });
+        }
+    }
+
     @task
-    *saveTask() {
+    *saveTask({taskName = 'saveTask'} = {}) {
+        const willEmail = this.publishOptions.willEmail;
+
         // clean up blank editor cards
         // apply cloned mobiledoc
         // apply scratch values
@@ -318,13 +371,13 @@ export default class PublishManagement extends Component {
 
         // apply publish options (with undo on failure)
         // save with the required query params for emailing
-        const result = yield this.publishOptions.saveTask.perform();
+        const result = yield this.publishOptions[taskName].perform();
 
         // perform any post-save cleanup for the editor
         yield this.args.afterSave(result);
 
         // if emailed, wait until it has been submitted so we can show a failure message if needed
-        if (this.publishOptions.post.email) {
+        if (willEmail && this.publishOptions.post.email) {
             yield this.confirmEmailTask.perform();
         }
 
@@ -353,5 +406,10 @@ export default class PublishManagement extends Component {
         }
 
         return true;
+    }
+
+    @task
+    *revertToDraftTask() {
+        return yield this.saveTask.perform({taskName: 'revertToDraftTask'});
     }
 }
