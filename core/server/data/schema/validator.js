@@ -45,6 +45,8 @@ function validateSchema(tableName, model, options) {
         // check nullable
         if (Object.prototype.hasOwnProperty.call(schema[tableName][columnKey], 'nullable') &&
             schema[tableName][columnKey].nullable !== true &&
+            Object.prototype.hasOwnProperty.call(schema[tableName][columnKey], 'type') &&
+            schema[tableName][columnKey].type !== 'text' &&
             !Object.prototype.hasOwnProperty.call(schema[tableName][columnKey], 'defaultTo')
         ) {
             if (validator.isEmpty(strVal)) {
