@@ -51,7 +51,6 @@ describe('Exporter', function () {
                 'migrations_lock',
                 'mobiledoc_revisions',
                 'newsletters',
-                'oauth',
                 'offers',
                 'offer_redemptions',
                 'permissions',
