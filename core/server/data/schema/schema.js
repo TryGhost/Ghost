@@ -397,8 +397,6 @@ module.exports = {
         name: {type: 'string', maxlength: 191, nullable: true},
         note: {type: 'string', maxlength: 2000, nullable: true},
         geolocation: {type: 'string', maxlength: 2000, nullable: true},
-        // @deprecated: unused in 5.0 use newsletter.status:active or newsletter.status:-active
-        subscribed: {type: 'bool', nullable: true, defaultTo: true},
         email_count: {type: 'integer', unsigned: true, nullable: false, defaultTo: 0},
         email_opened_count: {type: 'integer', unsigned: true, nullable: false, defaultTo: 0},
         email_open_rate: {type: 'integer', unsigned: true, nullable: true, index: true},
