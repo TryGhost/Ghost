@@ -24,7 +24,7 @@ class EmailContentGenerator {
      * @param {Object} options
      * @param {string} options.template - HTML template name to use for generation
      * @param {Object} [options.data] - variable data to use during HTML template compilation
-     * @returns {Promise} resolves with an object containing html and text properties
+     * @returns {Promise<{html: String, text: String}>} resolves with an object containing html and text properties
      */
     async getContent(options) {
         const defaults = {
