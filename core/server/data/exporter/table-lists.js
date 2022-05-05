@@ -16,7 +16,6 @@ const BACKUP_TABLES = [
     'migrations',
     'migrations_lock',
     'newsletters',
-    'oauth',
     'permissions',
     'permissions_roles',
     'permissions_users',
