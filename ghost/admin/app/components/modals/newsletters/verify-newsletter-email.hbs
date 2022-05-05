@@ -12,7 +12,7 @@
         {{else if this.newsletter}}
             <p>
                 Success! From address for newsletter
-                "<LinkTo @route="settings.members-email-labs.edit-newsletter" @model={{this.newsletter.id}}>{{this.newsletter.name}}</LinkTo>"
+                "<LinkTo @route="settings.newsletters.edit-newsletter" @model={{this.newsletter.id}}>{{this.newsletter.name}}</LinkTo>"
                 changed to <strong>{{this.newsletter.senderEmail}}</strong>
             </p>
         {{else if this.error}}

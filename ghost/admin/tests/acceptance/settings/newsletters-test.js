@@ -1,12 +1,12 @@
 import {authenticateSession} from 'ember-simple-auth/test-support';
 import {click, currentURL, fillIn, find, findAll} from '@ember/test-helpers';
-import {disableLabsFlag, enableLabsFlag} from '../../helpers/labs-flag';
+import {enableLabsFlag} from '../../helpers/labs-flag';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
 
-describe('Acceptance: Settings - Members email (multipleNewsletters)', function () {
+describe('Acceptance: Settings - Newsletters (multipleNewsletters)', function () {
     const hooks = setupApplicationTest();
     setupMirage(hooks);
 
@@ -19,12 +19,6 @@ describe('Acceptance: Settings - Members email (multipleNewsletters)', function 
         enableLabsFlag(this.server, 'multipleNewsletters');
 
         return await authenticateSession();
-    });
-
-    it('without flag - redirects labs to original', async function () {
-        disableLabsFlag(this.server, 'multipleNewsletters');
-        await visit('/settings/newsletters');
-        expect(currentURL()).to.equal('/settings/members-email');
     });
 
     it('with flag - redirects original to labs', async function () {
@@ -47,7 +41,7 @@ describe('Acceptance: Settings - Members email (multipleNewsletters)', function 
     });
 });
 
-describe('Acceptance: Settings - Members email (multipleNewslettersUI)', function () {
+describe('Acceptance: Settings - Newsletters (multipleNewslettersUI)', function () {
     const hooks = setupApplicationTest();
     setupMirage(hooks);
 

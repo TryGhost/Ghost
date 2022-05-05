@@ -19,14 +19,6 @@ export default class MembersEmailLabsRoute extends AdminRoute {
     confirmModal = null;
     hasConfirmed = false;
 
-    beforeModel() {
-        super.beforeModel(...arguments);
-
-        if (!this.feature.multipleNewsletters) {
-            return this.transitionTo('settings.members-email');
-        }
-    }
-
     model() {
         return this.settings.reload();
     }
@@ -39,7 +31,7 @@ export default class MembersEmailLabsRoute extends AdminRoute {
 
             // clear query param so it doesn't linger and cause problems re-entering route
             transition.abort();
-            return this.transitionTo('settings.members-email-labs', {queryParams: {verifyEmail: null}});
+            return this.transitionTo('settings.newsletters', {queryParams: {verifyEmail: null}});
         }
     }
 

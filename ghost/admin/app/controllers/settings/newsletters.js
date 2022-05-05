@@ -3,7 +3,7 @@ import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
-export default class MembersEmailLabsController extends Controller {
+export default class NewslettersController extends Controller {
     @service settings;
 
     queryParams = ['verifyEmail'];

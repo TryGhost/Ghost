@@ -28,7 +28,7 @@ export default class NewNewsletterRoute extends AdminRoute {
 
     @action
     afterSave() {
-        this.router.transitionTo('settings.members-email-labs');
+        this.router.transitionTo('settings.newsletters');
     }
 
     deactivate() {
@@ -40,7 +40,7 @@ export default class NewNewsletterRoute extends AdminRoute {
     @action
     async beforeModalClose() {
         if (!this.isLeaving) {
-            this.router.transitionTo('settings.members-email-labs');
+            this.router.transitionTo('settings.newsletters');
         }
     }
 }
