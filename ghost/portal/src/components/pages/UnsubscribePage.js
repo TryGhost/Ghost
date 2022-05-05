@@ -31,6 +31,14 @@ function AccountHeader() {
     );
 }
 
+async function updateMemberNewsletters({api, memberUuid, newsletters}) {
+    try {
+        return await api.member.updateNewsletters({uuid: memberUuid, newsletters});
+    } catch (e) {
+        // ignore auto unsubscribe error
+    }
+}
+
 export default function UnsubscribePage() {
     const {site, pageData, onAction} = useContext(AppContext);
     const api = setupGhostApi({siteUrl: site.url});
@@ -48,16 +56,27 @@ export default function UnsubscribePage() {
             const memberData = await ghostApi.member.newsletters({uuid: pageData.uuid});
 
             setMember(memberData);
-            setSubscribedNewsletters(memberData?.newsletters || []);
+            const memberNewsletters = memberData?.newsletters || [];
+            setSubscribedNewsletters(memberNewsletters);
             if (siteNewsletters?.length === 1) {
-                try {
-                    await ghostApi.member.updateNewsletters({uuid: pageData.uuid, newsletters: []});
-                } catch (e) {
-                    // ignore auto unsubscribe error
-                }
+                const updatedData = await updateMemberNewsletters({
+                    api: ghostApi,
+                    memberUuid: pageData.uuid,
+                    newsletters: []
+                });
+                setSubscribedNewsletters(updatedData.newsletters);
+            } else if (pageData.newsletterUuid) {
+                const updatedData = await updateMemberNewsletters({
+                    api: ghostApi,
+                    memberUuid: pageData.uuid,
+                    newsletters: memberNewsletters?.filter((d) => {
+                        return d.uuid !== pageData.newsletterUuid;
+                    })
+                });
+                setSubscribedNewsletters(updatedData.newsletters);
             }
         })();
-    }, [pageData.uuid, site.url, siteNewsletters?.length]);
+    }, [pageData.uuid, pageData.newsletterUuid, site.url, siteNewsletters?.length]);
 
     // Case: Email not found
     if (member === null) {

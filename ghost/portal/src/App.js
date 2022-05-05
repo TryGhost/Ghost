@@ -399,7 +399,8 @@ export default class App extends React.Component {
                 showPopup: true,
                 page: 'unsubscribe',
                 pageData: {
-                    uuid: qParams.get('uuid')
+                    uuid: qParams.get('uuid'),
+                    newsletterUuid: qParams.get('newsletter')
                 }
             };
         }
