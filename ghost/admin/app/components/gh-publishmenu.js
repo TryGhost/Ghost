@@ -401,7 +401,7 @@ export default Component.extend({
                 post: this.post,
                 emailOnly: this.emailOnly,
                 sendEmailWhenPublished: this.sendEmailWhenPublished,
-                newsletterId: this.newsletterId,
+                newsletter: this.selectedNewsletter,
                 isScheduled: saveType === 'schedule',
                 confirm: this.saveWithConfirmedPublish.perform,
                 retryEmailSend: this.retryEmailSendTask.perform
@@ -449,17 +449,15 @@ export default Component.extend({
     }),
 
     fetchNewslettersTask: task(function* () {
-        if (this.feature.multipleNewsletters) {
-            const newsletters = yield this.store.query('newsletter', {
-                filter: 'status:active',
-                order: 'sort_order ASC'
-            });
+        const newsletters = yield this.store.query('newsletter', {
+            filter: 'status:active',
+            order: 'sort_order ASC'
+        });
 
-            const defaultNewsletter = newsletters.toArray()[0];
+        const defaultNewsletter = newsletters.toArray()[0];
 
-            this.defaultNewsletter = defaultNewsletter;
-            this.set('selectedNewsletter', defaultNewsletter);
-        }
+        this.defaultNewsletter = defaultNewsletter;
+        this.set('selectedNewsletter', defaultNewsletter);
     }),
 
     _saveTask: task(function* () {
