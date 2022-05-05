@@ -878,8 +878,7 @@ describe('Acceptance: Editor', function () {
             // Enable stripe to also show paid members breakdown
             enableStripe(this.server);
 
-            // Note: we need to set the ID of a newsletter to some string value because of how NQL filters work.
-            const newsletter = this.server.create('newsletter', {status: 'active', name: 'test newsletter', id: 'test-newsletter'});
+            const newsletter = this.server.create('newsletter', {status: 'active', name: 'test newsletter', slug: 'test-newsletter'});
             this.server.createList('member', 4, {status: 'free', newsletters: [newsletter]});
             this.server.createList('member', 2, {status: 'paid', newsletters: [newsletter]});
 
