@@ -680,9 +680,12 @@ Dashboard v5 List */
     border-bottom: 0;
 }
 
-
-.gh-dashboard5-list-item:hover {
+.gh-dashboard5-recents .gh-dashboard5-list-item:hover {
     background: linear-gradient(315deg,#fafafb 60%,#fff);
+}
+
+.gh-dashboard5-resource .gh-dashboard5-list-item:hover {
+    background: linear-gradient(315deg,rgba(249, 249, 250, 0.5) 60%,rgba(255, 255, 255, 0.5));
 }
 
 .gh-dashboard5-list-text {
@@ -1258,7 +1261,7 @@ Dashboard v5 Latest Newsletters */
     padding: 0 32px 0 0;
 }
 
-.gh-dashboard5-subscribe-button {
+.gh-dashboard5-resource-footer .gh-dashboard5-subscribe-button {
     display: flex;
     padding: 8px 12px;
     align-items: center;
@@ -1266,6 +1269,10 @@ Dashboard v5 Latest Newsletters */
     background: var(--black);
     color: var(--white);
     border-radius: 4px;
+}
+
+.gh-dashboard5-resource-footer .gh-dashboard5-subscribe-button:hover {
+    color: var(--white);
 }
 
 @media screen and (max-width: 1400px) {
@@ -1325,11 +1332,6 @@ Dashboard v5 Misc */
 
 .gh-dashboard5 .gh-list-header {
     border-bottom: 0;
-}
-
-.gh-dashboard5-list-footer a,
-.gh-dashboard5-articles-footer a {
-    font-weight: 600;
 }
 
 .gh-dashboard5-rate-bar {
@@ -1445,8 +1447,15 @@ Dashboard v5 Resource */
     padding: 20px 0 0;
 }
 
+.gh-dashboard5-list-footer a,
 .gh-dashboard5-resource-footer a {
     font-weight: 500;
+    color: #2bba3c;
+}
+
+.gh-dashboard5-list-footer a:hover,
+.gh-dashboard5-resource-footer a:hover {
+    color: #269a34;
 }
 
 .gh-dashboard5-resource-thumbnail {
@@ -1599,6 +1608,10 @@ Dashboard v5 Resource */
     font-weight: 500;
 }
 
+.gh-dashboard5-staff-picks .gh-dashboard5-resource-footer a:hover {
+    color: #1788ce;
+}
+
 .gh-dashboard5-staff-picks .gh-dashboard5-resource-footer svg {
     width: 20px;
     height: 20px;
@@ -1673,7 +1686,7 @@ Dashboard v5 Tooltips */
 }
 
 @media screen and (max-width: 1320px) {
-    .gh-dashboard5-minicharts .gh-dashboard5-chart {
+    .gh-dashboard5-minicharts .gh-dashboard5-minichart:not(.gh-dashboard5-mrr) .gh-dashboard5-chart {
         padding-left: 0;
     }
 
@@ -1708,7 +1721,7 @@ Dashboard v5 Tooltips */
     }
 
     .gh-dashboard5-minichart .gh-dashboard5-select {
-        top: 0;
+        top: 4px;
     }
 
     .gh-dashboard5-columns {
