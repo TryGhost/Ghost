@@ -1,0 +1,12 @@
+#!/bin/bash
+yarn lint
+lintStatus=$?
+
+if [ $lintStatus -eq 0 ]
+then
+  echo "linting succeeded"
+  exit 0
+else
+  echo "linting failed"
+  exit 1
+fi

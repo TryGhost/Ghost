@@ -1,15 +1,4 @@
 #!/bin/bash
-yarn lint
-lintStatus=$?
-
-if [ $lintStatus -eq 0 ]
-then
-  echo "linting succeeded"
-else
-  echo "linting failed"
-  exit 1
-fi
-
 # Modified from https://github.com/chaitanyagupta/gitutils
 
 green='\033[0;32m'
