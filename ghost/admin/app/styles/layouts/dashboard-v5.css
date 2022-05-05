@@ -1698,3 +1698,7 @@ Dashboard v5 Tooltips */
 .gh-dashboard5-totals .gh-dashboard5-chart-container {
     height: 200px;
 }
+
+.gh-dashboard5-totals .gh-dashboard5-chart-container {
+    margin-right: -10px; /* fix 99% width ChartJS hack */
+}
