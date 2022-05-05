@@ -192,22 +192,22 @@ describe('APIVersionCompatibilityService', function () {
         await compatibilityService.handleMismatch({
             acceptVersion: 'v4.5',
             contentVersion: 'v5.1',
-            userAgent: 'Zapier/2.3 GhostAdminSDK/2.4.0'
+            userAgent: 'Fancy Pants/2.3 GhostAdminSDK/2.4.0'
         });
 
         assert.equal(sendEmail.called, true);
         assert.equal(sendEmail.args[0][0].to, 'test_env@example.com');
-        assert.equal(sendEmail.args[0][0].subject, `Attention required: Your Zapier integration has failed`);
+        assert.equal(sendEmail.args[0][0].subject, `Attention required: Your Fancy Pants integration has failed`);
 
-        assert.match(sendEmail.args[0][0].html, /Ghost has noticed that your <strong style="font-weight: 600;">Zapier<\/strong> is no longer working as expected\./);
-        assert.match(sendEmail.args[0][0].html, /Zapier integration expected Ghost version:<\/strong>&nbsp; v4.5/);
+        assert.match(sendEmail.args[0][0].html, /Ghost has noticed that your <strong style="font-weight: 600;">Fancy Pants<\/strong> is no longer working as expected\./);
+        assert.match(sendEmail.args[0][0].html, /Fancy Pants integration expected Ghost version:<\/strong>&nbsp; v4.5/);
         assert.match(sendEmail.args[0][0].html, /Current Ghost version:<\/strong>&nbsp; v5.1/);
 
         assert.match(sendEmail.args[0][0].html, /This email was sent from <a href="https:\/\/amazeballsghostsite.com"/);
         assert.match(sendEmail.args[0][0].html, /to <a href="mailto:test_env@example.com"/);
 
-        assert.match(sendEmail.args[0][0].text, /Ghost has noticed that your Zapier is no longer working as expected\./);
-        assert.match(sendEmail.args[0][0].text, /Zapier integration expected Ghost version:v4.5/);
+        assert.match(sendEmail.args[0][0].text, /Ghost has noticed that your Fancy Pants is no longer working as expected\./);
+        assert.match(sendEmail.args[0][0].text, /Fancy Pants integration expected Ghost version:v4.5/);
         assert.match(sendEmail.args[0][0].text, /Current Ghost version:v5.1/);
 
         assert.match(sendEmail.args[0][0].text, /This email was sent from https:\/\/amazeballsghostsite.com/);
