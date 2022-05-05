@@ -145,7 +145,7 @@ export class PublishOptions {
 
     // both of these are set to site defaults in `setupTask`
     @tracked newsletter = null;
-    @tracked recipientFilter = 'status:free,status:-free';
+    @tracked selectedRecipientFilter = undefined;
 
     get newsletters() {
         return this.allNewsletters
@@ -159,6 +159,40 @@ export class PublishOptions {
 
     get onlyDefaultNewsletter() {
         return this.newsletters.length === 1;
+    }
+
+    get recipientFilter() {
+        return this.selectedRecipientFilter === undefined ? this.defaultRecipientFilter : this.selectedRecipientFilter;
+    }
+
+    get defaultRecipientFilter() {
+        const defaultEmailRecipients = this.settings.get('editorDefaultEmailRecipients');
+
+        if (defaultEmailRecipients === 'disabled') {
+            return null;
+        }
+
+        if (defaultEmailRecipients === 'visibility') {
+            if (this.post.visibility === 'public') {
+                return 'status:free,status:-free';
+            }
+
+            if (this.post.visibility === 'members') {
+                return 'status:free,status:-free';
+            }
+
+            if (this.post.visibility === 'paid') {
+                return 'status:-free';
+            }
+
+            if (this.post.visibility === 'tiers') {
+                return this.post.visibilitySegment;
+            }
+
+            return this.post.visibility;
+        }
+
+        return this.settings.get('editorDefaultEmailRecipientsFilter');
     }
 
     get fullRecipientFilter() {
@@ -178,7 +212,7 @@ export class PublishOptions {
 
     @action
     setRecipientFilter(newFilter) {
-        this.recipientFilter = newFilter;
+        this.selectedRecipientFilter = newFilter;
     }
 
     // setup -------------------------------------------------------------------
