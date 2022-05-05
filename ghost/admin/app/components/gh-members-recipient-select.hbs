@@ -1,5 +1,10 @@
-<div class="gh-publishmenu-send-to-option" {{did-update this.onUpdateNewsletter @newsletter }}>
-    <p>Free members <span class="gh-publishmenu-emailcount" data-test-email-count="free-members">{{this.freeMemberCountLabel}}</span></p>
+<div class="gh-publishmenu-send-to-option">
+    <p>
+        Free members
+        {{#let (members-count-fetcher query=(hash filter=(concat @newsletter.recipientFilter "+status:free"))) as |countFetcher|}}
+            <span class="gh-publishmenu-emailcount" data-test-email-count="free-members">({{countFetcher.count}})</span>
+        {{/let}}
+    </p>
     <div class="for-switch x-small {{if @disabled "disabled"}}">
         <label class="switch" for="send-email-to-free">
             <input
@@ -18,7 +23,12 @@
 </div>
 {{#if this.isPaidAvailable}}
     <div class="gh-publishmenu-send-to-option">
-        <p>Paid members <span class="gh-publishmenu-emailcount" data-test-email-count="paid-members">{{this.paidMemberCountLabel}}</span></p>
+        <p>
+            Paid members
+            {{#let (members-count-fetcher query=(hash filter=(concat @newsletter.recipientFilter "+status:-free"))) as |countFetcher|}}
+                <span class="gh-publishmenu-emailcount" data-test-email-count="paid-members">({{countFetcher.count}})</span>
+            {{/let}}
+        </p>
         <div class="for-switch x-small {{if @disabled "disabled"}}">
             <label class="switch" for="send-email-to-paid">
                 <input
