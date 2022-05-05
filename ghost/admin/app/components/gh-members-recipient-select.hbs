@@ -58,13 +58,14 @@
     {{#if this.isSpecificChecked}}
         <GhTokenInput
             @class="select-members select-members-recipient"
+            @dropdownClass={{@dropdownClass}}
             @options={{this.specificOptions}}
             @selected={{this.selectedSpecificOptions}}
             @disabled={{@disabled}}
             @searchMessage="All labels selected"
             @optionsComponent="power-select/options"
             @allowCreation={{false}}
-            @renderInPlace={{true}}
+            @renderInPlace={{this.renderInPlace}}
             @onChange={{this.selectSpecificOptions}}
             as |option|
         >

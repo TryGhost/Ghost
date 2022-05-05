@@ -24,21 +24,36 @@
     <div class="gh-publish-setting">
         <div class="gh-publish-setting-title {{if (eq @publishOptions.publishType "publish") "disabled"}}">
             {{svg-jar "member"}}
-            <div class="gh-publish-setting-trigger">
-                {{#if (not-eq @publishOptions.publishType "publish")}}
-                    {{#let (members-count-fetcher query=(hash filter=@publishOptions.recipientFilter)) as |countFetcher|}}
+            {{#if @publishOptions.willEmail}}
+                <button type="button" class="gh-publish-setting-trigger" {{on "click" (fn this.toggleSection "emailRecipients")}}>
+                    {{#let (members-count-fetcher query=(hash filter=@publishOptions.fullRecipientFilter)) as |countFetcher|}}
                         {{countFetcher.count}}
                     {{/let}}
                     {{#unless @publishOptions.onlyDefaultNewsletter}}
                         <span>{{@publishOptions.newsletter.name}}</span>
                     {{/unless}}
                     subscribers
+                </button>
+            {{else}}
+                {{#if (eq @publishOptions.publishType "publish")}}
+                    <div class="gh-publish-setting-trigger">
+                        Not sent to any members
+                    </div>
                 {{else}}
-                    Not sent to any members
+                    <button type="button" class="gh-publish-setting-trigger" {{on "click" (fn this.toggleSection "emailRecipients")}}>
+                        Not sent to any members
+                    </button>
                 {{/if}}
-            </div>
+            {{/if}}
             {{svg-jar "arrow-down" class="icon-expand"}}
         </div>
+        {{#liquid-if (eq this.openSection "emailRecipients")}}
+            <div class="gh-publish-setting-form">
+                <EditorLabs::PublishOptions::EmailRecipients
+                    @publishOptions={{@publishOptions}}
+                />
+            </div>
+        {{/liquid-if}}
     </div>
 
     <div class="gh-publish-setting last">
