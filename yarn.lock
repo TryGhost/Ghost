@@ -2475,10 +2475,10 @@
   dependencies:
     lodash.template "^4.5.0"
 
-"@tryghost/update-check-service@0.3.2":
-  version "0.3.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/update-check-service/-/update-check-service-0.3.2.tgz#748ce1a57aad8b1d2457ffe44098977cbd273203"
-  integrity sha512-pvQJLUF/WA3I28Hsh1x/v7kwQIlu0XMR+PY6dXJsP/I1L+YWEg7PKI2b+wK4I7zox7SNzj8ZmhbPe4i9tkj/Ow==
+"@tryghost/update-check-service@0.3.3":
+  version "0.3.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/update-check-service/-/update-check-service-0.3.3.tgz#50a85114eb30dd6350913b616ec95d7bdfaa522e"
+  integrity sha512-HEOlfgb6NGjQ2+fiPKccKwOzMSQqPhCZ4XtSdsI/Yyti/G5xku7wRLAgh9gLlMD1LausepZroL1stL1gS6nZjQ==
   dependencies:
     "@tryghost/debug" "^0.1.5"
     "@tryghost/errors" "^1.0.0"
