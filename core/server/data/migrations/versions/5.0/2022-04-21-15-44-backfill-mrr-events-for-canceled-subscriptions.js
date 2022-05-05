@@ -5,15 +5,8 @@ const {createTransactionalMigration} = require('../../utils');
 
 module.exports = createTransactionalMigration(
     async function up(knex) {
-        const subscriptions = await knex('members_stripe_customers_subscriptions')
-            .leftJoin('members_paid_subscription_events', 'members_stripe_customers_subscriptions.id', '=', 'members_paid_subscription_events.subscription_id')
-            .join('members_stripe_customers', 'members_stripe_customers_subscriptions.customer_id', '=', 'members_stripe_customers.customer_id')
-            .join('members', 'members_stripe_customers.member_id', '=', 'members.id')
-            .where('members_stripe_customers_subscriptions.cancel_at_period_end', '=', true)
-            .where('members_stripe_customers_subscriptions.mrr', '!=', 0)
-            .where(knex.raw(`(members_paid_subscription_events.type = 'canceled' OR members_paid_subscription_events.type is null)`))
+        const canceledSubscriptions = await knex('members_stripe_customers_subscriptions')
             .select(
-                'members_paid_subscription_events.id AS event_id',
                 'members_stripe_customers_subscriptions.id',
                 'members_stripe_customers_subscriptions.updated_at',
                 'members_stripe_customers_subscriptions.mrr',
@@ -21,29 +14,41 @@ module.exports = createTransactionalMigration(
                 'members_stripe_customers_subscriptions.plan_currency',
                 'members_stripe_customers.member_id'
             )
-            .orderBy('members_paid_subscription_events.created_at', 'asc');
+            .join('members_stripe_customers', 'members_stripe_customers_subscriptions.customer_id', '=', 'members_stripe_customers.customer_id')
+            .join('members', 'members_stripe_customers.member_id', '=', 'members.id')
+            .where('cancel_at_period_end', '=', true)
+            .where('mrr', '!=', 0);
 
-        if (subscriptions.length === 0) {
+        const canceledEvents = await knex('members_paid_subscription_events')
+            .select(
+                'id'
+            )
+            .where('type', '=', 'canceled')
+            .whereIn('subscription_id', canceledSubscriptions.map(x => x.id))
+            .orderBy('created_at', 'desc');
+
+        if (canceledSubscriptions.length === 0) {
             logging.info('No canceled subscriptions found, skipping migration.');
             return;
         } else {
-            logging.info(`Found ${subscriptions.length} canceled subscriptions, inserting MRR events.`);
+            logging.info(`Found ${canceledSubscriptions.length} canceled subscriptions, updated MRR events.`);
         }
 
-        const toUpdate = {};
-        const toInsert = {};
+        const toUpdate = [];
+        const toInsert = [];
 
         // eslint-disable-next-line no-restricted-syntax
-        subscriptions.forEach((subscription) => {
-            if (subscription.event_id) {
+        for (const subscription of canceledSubscriptions) {
+            const event = canceledEvents.find(event => event.subscription_id === subscription.id);
+            if (event) {
                 // if an event exists, update it
                 // we always update the latest event for a subscription due to the orderBy ASC
-                toUpdate[subscription.id] = {
-                    id: subscription.event_id,
+                toUpdate.push({
+                    id: event.id,
                     mrr_delta: -subscription.mrr
-                };
+                });
             } else {
-                toInsert[subscription.id] = {
+                toInsert.push({
                     id: ObjectID().toHexString(),
                     type: 'canceled',
                     source: 'migration',
@@ -54,14 +59,16 @@ module.exports = createTransactionalMigration(
                     member_id: subscription.member_id,
                     currency: subscription.plan_currency,
                     mrr_delta: -subscription.mrr
-                };
+                });
             }
-        });
+        }
 
-        await knex.batchInsert('members_paid_subscription_events', Object.values(toInsert));
+        logging.info(`Inserting ${toInsert.length} MRR events for canceled subscriptions`);
+        await knex.batchInsert('members_paid_subscription_events', toInsert);
 
+        logging.info(`Updating ${toUpdate.length} MRR events for canceled subscriptions`);
         // eslint-disable-next-line no-restricted-syntax
-        for (const event of Object.values(toUpdate)) {
+        for (const event of toUpdate) {
             await knex('members_paid_subscription_events').update('mrr_delta', event.mrr_delta).where('id', event.id);
         }
     },
