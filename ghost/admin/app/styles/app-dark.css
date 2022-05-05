@@ -175,6 +175,11 @@ input:focus,
     .gh-mobile-nav-bar {
         background: #191b1f;
     }
+
+    .gh-mobile-nav-bar a.active {
+        background: #111213;
+        color: #fff;
+    }   
 }
 
 .gh-nav-search .ember-power-select-trigger {
@@ -1156,4 +1161,8 @@ kbd {
 
 .gh-dashboard5-list-item:hover {
     background: #1c1e21;
+}
+
+.gh-dashboard5-community .gh-dashboard5-resource-footer {
+    color: #fff;
 }

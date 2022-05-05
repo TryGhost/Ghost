@@ -1730,3 +1730,25 @@ Dashboard v5 Tooltips */
         padding-bottom: 0;
     }
 }
+
+
+@media screen and (max-width: 600px) {
+    .gh-dashboard5-box.gh-dashboard5-split {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto;
+    }
+
+    .gh-dashboard5-box.gh-dashboard5-split section {
+        margin-left: 24px !important;
+        margin-right: 24px !important;
+    }
+
+    .gh-dashboard5-split {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+    }
+
+    .gh-dashboard5-community {
+        grid-column: 1;
+    }
+}
