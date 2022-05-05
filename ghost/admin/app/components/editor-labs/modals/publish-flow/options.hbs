@@ -82,6 +82,9 @@
 </div>
 
 <div class="gh-publish-cta">
-    <button type="button" class="gh-btn gh-btn-black gh-btn-large" {{on "click" @confirm}}><span>Continue &rarr;</span></button>
-    <button type="button" class="gh-btn gh-btn-link gh-btn-large" {{on "click" @close}}><span>Back to edit</span></button>
+    <button type="button" class="gh-btn gh-btn-black gh-btn-large" {{on "click" @confirm}}><span>Looks good, next &rarr;</span></button>
+    <div class="gh-publish-cta-secondary">
+        Or 
+        <button type="button" class="gh-btn gh-btn-link gh-btn-large" {{on "click" @close}}>continue editing</button>
+    </div>
 </div>

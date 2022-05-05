@@ -479,13 +479,11 @@
 }
 
 .gh-publish-title span {
-    background: linear-gradient(135deg,#34b743 5%,#24db39);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--green);
 }
 
 .gh-publish-settings {
-    margin-bottom: 6rem;
+    margin-bottom: 5.2rem;
     width: 100%;
 }
 
@@ -572,9 +570,67 @@
 
 .gh-publish-cta {
     display: flex;
-    width: 100%;
+    flex-direction: column;
+    width: max-content;
 }
 
-.gh-publish-cta .gh-btn-black {
-    margin-right: 1.2rem;
+.gh-publish-cta .gh-btn {
+    width: max-content;
+}
+
+.gh-publish-cta .gh-btn-gradient {
+    color: #fff;
+    fill: #fff;
+    background: rgba(0, 0, 0, 0) linear-gradient(94.75deg, 
+                #a7f500 0%, 
+                #60d20d 36.66%,
+                #30cf43 56.66%,  
+                #1dc32e 78.76%, 
+                #009b7f 100%) 
+                repeat scroll 98% 0% / 200% 100%;
+    font-weight: 500;
+    transition: background-color 200ms ease 0s, background-position-x 400ms ease-in-out 0s;
+}
+
+.gh-publish-cta .gh-btn-gradient:hover {
+    color: #fff !important;
+    background-position-x: 20%;
+    transition: background-color 200ms ease 0s, background-position-x 400ms ease-in-out 0s;
+}
+
+.gh-publish-cta .gh-btn-gradient:active,
+.gh-publish-cta .gh-btn-gradient:focus {
+    background-position-x: 20%;
+    transition: background-color 200ms ease 0s, background-position-x 400ms ease-in-out 0s;
+}
+
+.gh-publish-cta-secondary {
+    display: block;
+    overflow: hidden;
+    margin-top: 1rem;
+    height: 40px;
+    color: var(--midgrey);
+    font-size: 1.4rem;
+    font-weight: 400;
+    line-height: 40px;
+    letter-spacing: .4px;
+    text-align: left;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.gh-publish-cta-secondary .gh-btn-link {
+    display: inline;
+    padding: 0;
+    color: var(--darkgrey);
+    font-size: 1.45rem;
+    text-align: left;
+}
+
+.gh-publish-confirmation {
+    margin-bottom: 5.2rem;
+    color: var(--black);
+    font-size: 1.9rem;
+    font-weight: 400;
+    line-height: 1.35em;
 }
