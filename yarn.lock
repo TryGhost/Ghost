@@ -1719,10 +1719,10 @@
   dependencies:
     "@tryghost/errors" "^1.2.1"
 
-"@tryghost/admin-api-schema@2.14.0":
-  version "2.14.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-2.14.0.tgz#9e95358b8dae4fbf71d4668b7b8fbcaeedd46a14"
-  integrity sha512-sZ6f1udiFNdhZOg0eoMBDnldJNwnd6+mi/Kob2Zh4ZyNQjWBpdVZDOdeGfYO8G8ZzcRejspUrSVQX5W7k+S5Wg==
+"@tryghost/admin-api-schema@2.14.1":
+  version "2.14.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-2.14.1.tgz#cc9485847671014b8e86b31b73ef7b96f7d22e83"
+  integrity sha512-VnrwzOlIjIIIYJi64iQzINMqBNQe1wbafe4yXQsL0leaHlBCrucEGYZVMpq25pISkBpCg8kGqYksuJdyfIQ4KA==
   dependencies:
     "@tryghost/errors" "^1.0.0"
     lodash "^4.17.11"
