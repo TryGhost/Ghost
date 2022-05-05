@@ -7,7 +7,7 @@ module.exports = createTransactionalMigration(
     async function up(knex) {
         logging.info('Adjusting MRR based on Offer Redemptions');
         const offerRedemptions = await knex
-            .select('or.*', 'o.discount_type', 'o.discount_amount', 'o.interval AS discount_interval', 's.mrr AS mrr', 'p.amount AS amount', 'p.interval AS interval')
+            .select('or.*', 'o.discount_type', 'o.discount_amount', 'o.interval AS discount_interval', 's.mrr AS mrr', 's.id AS subscription_id', 'p.amount AS amount', 'p.interval AS interval')
             .from('offer_redemptions AS or')
             .join('offers AS o', 'or.offer_id', '=', 'o.id')
             .join('members_stripe_customers_subscriptions AS s', 'or.subscription_id', '=', 's.id')
@@ -26,9 +26,10 @@ module.exports = createTransactionalMigration(
 
         const memberIds = uniq(offerRedemptions.map(redemption => redemption.member_id));
 
-        const mrrEvents = await knex
+        const mrrCreatedEvents = await knex
             .select('*')
             .from('members_paid_subscription_events')
+            .where('type', 'created')
             .whereIn('member_id', memberIds);
 
         function storeEventOnMemberId(storage, event) {
@@ -38,7 +39,7 @@ module.exports = createTransactionalMigration(
             };
         }
 
-        const mrrEventsByMemberId = mrrEvents.reduce(storeEventOnMemberId, {});
+        const mrrCreatedEventsByMemberId = mrrCreatedEvents.reduce(storeEventOnMemberId, {});
 
         const updatedEvents = [];
 
@@ -66,8 +67,9 @@ module.exports = createTransactionalMigration(
         }
 
         offerRedemptions.forEach((redemption) => {
-            const memberEvents = mrrEventsByMemberId[redemption.member_id];
+            const memberEvents = mrrCreatedEventsByMemberId[redemption.member_id];
 
+            // If a member has had multiple subscriptions we ignore because we cannot easily work out which event is correct.
             if (memberEvents.length !== 1) {
                 return;
             }
@@ -78,6 +80,8 @@ module.exports = createTransactionalMigration(
 
             updatedEvents.push({
                 id: firstEvent.id,
+                type: 'created',
+                subscription_id: redemption.subscription_id,
                 member_id: firstEvent.member_id,
                 from_plan: firstEvent.from_plan,
                 to_plan: firstEvent.to_plan,
