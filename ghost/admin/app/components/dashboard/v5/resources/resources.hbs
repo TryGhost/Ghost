@@ -1,13 +1,12 @@
 <section class="gh-dashboard5-resource gh-dashboard5-resources" {{did-insert this.load}}>
     <article class="gh-dashboard5-resource-box">
-
         {{#if (not (or this.loading this.error))}}
-            <a href="{{this.resource.url}}" target="_blank" class="gh-dashboard5-resource-thumbnail" rel="noopener noreferrer" style={{html-safe (concat "background-image: url(" this.resource.feature_image ")")}} aria-label="Resource link"></a>
-            <div class="gh-dashboard5-resource-body">
-                <div>
-                    <div class="gh-dashboard5-resource-title">
-                        <h4>Resources</h4>
-                    </div>
+            <a href="{{this.resource.url}}" target="_blank" class="gh-dashboard5-resource-thumbnail" rel="noopener noreferrer" style={{html-safe (concat "background-image: url(" this.resource.feature_image ")")}} aria-label="Resource link"></a>        
+            <div class="gh-dashboard5-resource-contents">
+                <div class="gh-dashboard5-resource-title">
+                    <h4>Resources</h4>
+                </div>
+                <div class="gh-dashboard5-resource-body">
                     <a href="{{this.resource.url}}" target="_blank" class="gh-dashboard5-resource-bigarticle" rel="noopener noreferrer">
                         <div class="gh-dashboard5-resource-text">
                             <h3>{{this.resource.title}}</h3>
@@ -20,6 +19,5 @@
                 </div>
             </div>
         {{/if}}
-
     </article>
 </section>
