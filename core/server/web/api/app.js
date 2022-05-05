@@ -13,19 +13,7 @@ module.exports = function setupApiApp() {
         apiApp.use(require('./testmode')());
     }
 
-    // If there is a version in the URL, and this is a valid API URL containing admin/content
-    // Then 307 redirect (preserves the HTTP method) to a versionless URL with `accept-version` set.
-    apiApp.all('/:version(v2|v3|v4|canary)/:api(admin|content)/*', (req, res) => {
-        const {version} = req.params;
-        const versionlessURL = req.originalUrl.replace(`${version}/`, '');
-        if (version.startsWith('v')) {
-            res.header('accept-version', `${version}.0`);
-        } else {
-            res.header('accept-version', version);
-        }
-        res.redirect(307, versionlessURL);
-    });
-
+    apiApp.use(APIVersionCompatibilityService.versionRewrites);
     apiApp.use(APIVersionCompatibilityService.contentVersion);
 
     apiApp.lazyUse('/content/', require('./canary/content/app'));

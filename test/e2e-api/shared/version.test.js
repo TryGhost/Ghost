@@ -1,5 +1,5 @@
 const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
-const {anyErrorId, stringMatching, anyEtag} = matchers;
+const {anyErrorId, stringMatching, anyObjectId, anyLocationFor, anyISODateTime, anyEtag} = matchers;
 
 describe('API Versioning', function () {
     describe('Admin API', function () {
@@ -53,6 +53,22 @@ describe('API Versioning', function () {
             await agentAdminAPI
                 .get('site/')
                 .header('Accept-Version', 'v999.5')
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    site: {
+                        version: stringMatching(/\d+\.\d+/)
+                    }
+                })
+                .matchHeaderSnapshot({
+                    etag: anyEtag,
+                    'content-version': stringMatching(/v\d+\.\d+/)
+                });
+        });
+
+        it('allows invalid accept-version header', async function () {
+            await agentAdminAPI
+                .get('site/')
+                .header('Accept-Version', 'canary')
                 .expectStatus(200)
                 .matchBodySnapshot({
                     site: {
@@ -166,24 +182,38 @@ describe('API Versioning', function () {
                 });
         });
 
-        it('307 redirects GET with accept version set when version is included in the URL', async function () {
+        it('Does an internal rewrite for canary URLs with accept version set', async function () {
             await agentAdminAPI
                 .get('/site/', {baseUrl: '/ghost/api/canary/admin/'})
-                .expectStatus(307)
+                .expectStatus(200)
                 .matchHeaderSnapshot({
-                    location: stringMatching(/^\/ghost\/api\/admin\/site\/$/)
+                    etag: anyEtag,
+                    'content-version': stringMatching(/v\d+\.\d+/)
                 })
-                .expectEmptyBody();
+                .matchBodySnapshot({site: {
+                    version: stringMatching(/\d+\.\d+/)
+                }});
         });
 
-        it('307 redirects POST with accept version set when version is included in the URL', async function () {
+        it('Does an internal rewrite for v3 URL + POST with accept version set', async function () {
             await agentAdminAPI
-                .post('/session/', {baseUrl: '/ghost/api/v3/admin/'})
-                .expectStatus(307)
-                .matchHeaderSnapshot({
-                    location: stringMatching(/^\/ghost\/api\/admin\/session\/$/)
+                .post('/tags/', {baseUrl: '/ghost/api/v3/admin/'})
+                .body({
+                    tags: [{name: 'version tag'}]
                 })
-                .expectEmptyBody();
+                .expectStatus(201)
+                .matchHeaderSnapshot({
+                    etag: anyEtag,
+                    location: anyLocationFor('tags'),
+                    'content-version': stringMatching(/v\d+\.\d+/)
+                })
+                .matchBodySnapshot({
+                    tags: [{
+                        id: anyObjectId,
+                        created_at: anyISODateTime,
+                        updated_at: anyISODateTime
+                    }]
+                });
         });
 
         it('responds with 406 for an unknown version with accept-version set ahead', async function () {
@@ -243,14 +273,19 @@ describe('API Versioning', function () {
                 .matchBodySnapshot();
         });
 
-        it('307 redirects with accept version set when version is included in the URL', async function () {
+        it('Does an internal rewrite with accept version set when version is included in the URL', async function () {
             await agentContentAPI
-                .get('/posts/', {baseUrl: '/ghost/api/canary/content/'})
-                .expectStatus(307)
+                .get('/tags/?limit=1', {baseUrl: '/ghost/api/canary/content/'})
+                .expectStatus(200)
                 .matchHeaderSnapshot({
-                    location: stringMatching(/^\/ghost\/api\/content\/posts\//)
+                    etag: anyEtag,
+                    'content-version': stringMatching(/v\d+\.\d+/)
                 })
-                .expectEmptyBody();
+                .matchBodySnapshot({
+                    tags: [{
+                        id: anyObjectId
+                    }]
+                });
         });
     });
 });
