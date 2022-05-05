@@ -181,7 +181,7 @@ class NewslettersService {
      */
     async edit(attrs, options) {
         // fetch newsletter first so we can compare changed emails
-        const originalNewsletter = await this.NewsletterModel.findOne({id: options.id}, {...options, require: true});
+        const originalNewsletter = await this.NewsletterModel.findOne({id: options.id}, {require: true});
 
         const {cleanedAttrs, emailsToVerify} = await this.prepAttrsForEmailVerification(attrs, originalNewsletter);
 
