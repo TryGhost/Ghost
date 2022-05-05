@@ -22,7 +22,7 @@ module.exports = createTransactionalMigration(
         await knex('newsletters')
             .update({
                 // CASE: members_from_address is 'noreply' - we leave it as null to maintain fallback behaviour
-                sender_email: !fromAddress || fromAddress.value === 'noreply' ? undefined : fromAddress.value,
+                sender_email: !fromAddress || fromAddress.value === 'noreply' ? null : fromAddress.value,
                 sender_reply_to: replyTo ? replyTo.value : undefined
             })
             .whereNull('sender_email')
