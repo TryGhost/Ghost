@@ -52,16 +52,12 @@ function createSettingsInstance(config) {
             return updateEmailTemplate({url, email, siteTitle});
         },
         getSigninURL(token, type) {
-            const signinURL = new URL(getApiUrl({version: 'v4', type: 'admin'}));
+            const signinURL = new URL(urlUtils.urlFor('api', {type: 'admin'}, true));
             signinURL.pathname = path.join(signinURL.pathname, '/settings/members/email/');
             signinURL.searchParams.set('token', token);
             signinURL.searchParams.set('action', type);
             return signinURL.href;
         }
-    };
-
-    const getApiUrl = ({version, type}) => {
-        return urlUtils.urlFor('api', {version: version, versionType: type}, true);
     };
 
     const magicLinkService = new MagicLink({

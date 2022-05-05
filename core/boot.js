@@ -288,7 +288,7 @@ async function initServices({config}) {
         appService.init(),
         apiVersionCompatibility.init(),
         scheduling.init({
-            apiUrl: urlUtils.urlFor('api', {version: defaultApiVersion, versionType: 'admin'}, true)
+            apiUrl: urlUtils.urlFor('api', {type: 'admin'}, true)
         })
     ]);
     debug('End: Services');
