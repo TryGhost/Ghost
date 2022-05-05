@@ -274,8 +274,8 @@ function addPermissionWithRoles(config, roles) {
 }
 
 /**
- * @param {(connection: import('knex')) => Promise<void>} up
- * @param {(connection: import('knex')) => Promise<void>} down
+ * @param {(connection: import('knex').Knex) => Promise<void>} up
+ * @param {(connection: import('knex').Knex) => Promise<void>} down
  *
  * @returns {Migration}
  */
@@ -294,7 +294,7 @@ function createNonTransactionalMigration(up, down) {
 }
 
 /**
- * @param {(connection: import('knex')) => Promise<void>} up
+ * @param {(connection: import('knex').Knex) => Promise<void>} up
  *
  * @returns {Migration}
  */
@@ -313,8 +313,8 @@ function createIrreversibleMigration(up) {
 }
 
 /**
- * @param {(connection: import('knex')) => Promise<void>} up
- * @param {(connection: import('knex')) => Promise<void>} down
+ * @param {(connection: import('knex').Knex) => Promise<void>} up
+ * @param {(connection: import('knex').Knex) => Promise<void>} down
  *
  * @returns {Migration}
  */
@@ -601,7 +601,7 @@ module.exports = {
 /**
  * @typedef {Object} TransactionalMigrationFunctionOptions
  *
- * @prop {import('knex')} transacting
+ * @prop {import('knex').Knex} transacting
  */
 
 /**
