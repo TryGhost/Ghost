@@ -23,7 +23,7 @@
     {{#if @publishOptions.willEmail}}
         will be delivered to
 
-        {{#let (members-count-fetcher query=(hash filter=@publishOptions.recipientFilter)) as |countFetcher|}}
+        {{#let (members-count-fetcher query=(hash filter=@publishOptions.fullRecipientFilter)) as |countFetcher|}}
             <strong>{{pluralize countFetcher.count "member"}}</strong>
         {{/let}}
 

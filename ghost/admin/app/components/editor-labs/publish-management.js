@@ -29,7 +29,7 @@ export class PublishOptions {
     }
 
     get willEmail() {
-        return this.publishType !== 'publish';
+        return this.publishType !== 'publish' && this.recipientFilter;
     }
 
     get willPublish() {
@@ -139,7 +139,9 @@ export class PublishOptions {
     // set in constructor because services are not injected
     allNewsletters = [];
 
-    @tracked newsletter = null; // set to default in constructor
+    // both of these are set to site defaults in `setupTask`
+    @tracked newsletter = null;
+    @tracked recipientFilter = 'status:free,status:-free';
 
     get newsletters() {
         return this.allNewsletters
@@ -155,8 +157,24 @@ export class PublishOptions {
         return this.newsletters.length === 1;
     }
 
-    get recipientFilter() {
-        return `newsletters:${this.newsletter.slug}`;
+    get fullRecipientFilter() {
+        let filter = `newsletters:${this.newsletter.slug}`;
+
+        if (this.recipientFilter) {
+            filter += `+(${this.recipientFilter})`;
+        }
+
+        return filter;
+    }
+
+    @action
+    setNewsletter(newsletter) {
+        this.newsletter = newsletter;
+    }
+
+    @action
+    setRecipientFilter(newFilter) {
+        this.recipientFilter = newFilter;
     }
 
     // setup -------------------------------------------------------------------
@@ -217,8 +235,7 @@ export class PublishOptions {
 
         if (this.willEmail) {
             adapterOptions.newsletterId = this.newsletter.id;
-            // TODO: replace with real filter
-            adapterOptions.emailRecipientFilter = 'status:free,status:-free';
+            adapterOptions.emailRecipientFilter = this.recipientFilter;
         }
 
         try {

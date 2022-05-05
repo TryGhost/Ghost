@@ -27,6 +27,10 @@ export default class GhMembersRecipientSelect extends Component {
         this.fetchMemberCountsTask.perform();
     }
 
+    get renderInPlace() {
+        return this.args.renderInPlace === undefined ? true : this.args.renderInPlace;
+    }
+
     get baseFilters() {
         const filterItems = (this.args.filter || '').split(',');
         const filterItemsArray = filterItems.filter(item => BASE_FILTERS.includes(item?.trim()));
