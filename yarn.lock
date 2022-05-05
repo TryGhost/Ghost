@@ -2098,10 +2098,10 @@
   dependencies:
     semver "^7.3.5"
 
-"@tryghost/limit-service@1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-1.1.0.tgz#12af2d0b8242212871be8cf893e2563466c25ec2"
-  integrity sha512-CC0/Ly1KIVIiYMKwqWfgKPkFoGssyyPjwcdS4XzJ3KyqdwEckzPX1e2jZMzptZlMqDuAa4uZ0xSf5VH4YZ71+Q==
+"@tryghost/limit-service@1.1.2":
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-1.1.2.tgz#248f5b1c5383d302a6e29e8bcd2948ff9eb9ab4f"
+  integrity sha512-aOUVnNvhYDANqtx+2pS0c0RADG39QDQ5tB7CLPjpcz2B6Nsc1fg4dEJeXU8fI1JT0YpMDRSliiNRh0/MMkozbA==
   dependencies:
     "@tryghost/errors" "^1.2.1"
     lodash "^4.17.21"

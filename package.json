@@ -81,7 +81,7 @@
     "@tryghost/kg-default-cards": "5.16.2",
     "@tryghost/kg-markdown-html-renderer": "5.1.5",
     "@tryghost/kg-mobiledoc-html-renderer": "5.3.5",
-    "@tryghost/limit-service": "1.1.0",
+    "@tryghost/limit-service": "1.1.2",
     "@tryghost/logging": "2.1.8",
     "@tryghost/magic-link": "1.0.24",
     "@tryghost/member-events": "0.4.4",
