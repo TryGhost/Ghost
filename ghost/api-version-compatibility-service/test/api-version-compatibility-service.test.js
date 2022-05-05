@@ -213,4 +213,41 @@ describe('APIVersionCompatibilityService', function () {
         assert.match(sendEmail.args[0][0].text, /This email was sent from https:\/\/amazeballsghostsite.com/);
         assert.match(sendEmail.args[0][0].text, /to test_env@example.com/);
     });
+
+    it('Sends Zapier-specific email when userAgent is a Zapier client', async function (){
+        const sendEmail = sinon.spy();
+        const fetchHandled = sinon.spy();
+        const saveHandled = sinon.spy();
+
+        const compatibilityService = new APIVersionCompatibilityService({
+            sendEmail,
+            fetchEmailsToNotify: async () => ['test_env@example.com'],
+            fetchHandled,
+            saveHandled,
+            getSiteUrl,
+            getSiteTitle
+        });
+
+        await compatibilityService.handleMismatch({
+            acceptVersion: 'v4.5',
+            contentVersion: 'v5.1',
+            userAgent: 'Zapier/4.20 GhostAdminSDK/2.4.0'
+        });
+
+        assert.equal(sendEmail.called, true);
+        assert.equal(sendEmail.args[0][0].to, 'test_env@example.com');
+        assert.equal(sendEmail.args[0][0].subject, `Attention required: One of your Zaps has failed`);
+
+        assert.match(sendEmail.args[0][0].html, /Ghost has noticed that one of the Zaps in your Zapier integration has <span style="font-weight: 600;">stopped working<\/span>\./);
+        assert.match(sendEmail.args[0][0].html, /To get this resolved as quickly as possible, please log in to your Zapier account to view any failing Zaps and recreate them using the most recent Ghost-supported versions. Zap errors can be found <a href="https:\/\/zapier.com\/app\/history\/usage" style="color: #738A94;">here<\/a> in your “Zap history”\./);
+
+        assert.match(sendEmail.args[0][0].html, /This email was sent from <a href="https:\/\/amazeballsghostsite.com"/);
+        assert.match(sendEmail.args[0][0].html, /to <a href="mailto:test_env@example.com"/);
+
+        assert.match(sendEmail.args[0][0].text, /Ghost has noticed that one of the Zaps in your Zapier integration has stopped/);
+        assert.match(sendEmail.args[0][0].text, /To get this resolved as quickly as possible, please log in to your Zapier/);
+
+        assert.match(sendEmail.args[0][0].text, /This email was sent from https:\/\/amazeballsghostsite.com/);
+        assert.match(sendEmail.args[0][0].text, /to test_env@example.com/);
+    });
 });
