@@ -1,17 +1,10 @@
 {{#let @publishOptions.post as |post|}}
     <div class="gh-publish-title">
-        Your {{post.displayName}} is
-        {{#if post.isScheduled}}
-            scheduled
-        {{else if post.emailOnly}}
-            emailed
-        {{else}}
-            live
-        {{~/if~}}
-        !
+        <span>...aand it's out there.</span>
+        Now that's something to smile about.
     </div>
 
-    <p>
+    <p class="gh-publish-confirmation">
         {{#if post.isScheduled}}
             {{#let (moment-site-tz post.publishedAtUTC) as |scheduledAt|}}
                 On
@@ -26,10 +19,10 @@
             Your
         {{/if}}
 
-        {{post.displayName}} was
+        {{post.displayName}} is
 
         {{#if post.email}}
-            delivered to
+            on its way to
 
             <strong>{{pluralize post.email.emailCount "member"}}</strong>
 
@@ -44,7 +37,11 @@
     </p>
 
     <div class="gh-publish-cta">
-        <button type="button" class="gh-btn gh-btn-primary gh-btn-large" {{on "click" @close}}><span>Close</span></button>
-        <a href={{post.url}} class="gh-btn gh-btn-link gh-btn-large" target="_blank" rel="noopener noreferrer">Open {{post.displayName}} in new tab</a>
+        <button type="button" class="gh-btn gh-btn-black gh-btn-large" {{on "click" @close}}><span>Back to {{post.displayName}}</span></button>
+        {{#unless post.emailOnly}}
+            <div class="gh-publish-cta-secondary">
+                <a href={{post.url}} class="gh-btn gh-btn-link gh-btn-large" target="_blank" rel="noopener noreferrer">View published post on site</a>
+            </div>
+        {{/unless}}
     </div>
 {{/let}}
