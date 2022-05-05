@@ -27,7 +27,8 @@ describe('APIVersionCompatibilityService', function () {
         await compatibilityService.handleMismatch({
             acceptVersion: 'v4.5',
             contentVersion: 'v5.1',
-            userAgent: 'Elaborate Fox'
+            userAgent: 'Elaborate Fox',
+            requestURL: 'https://amazeballsghostsite.com/ghost/api/admin/posts/dew023d9203se4'
         });
 
         assert.equal(sendEmail.called, true);
@@ -37,6 +38,7 @@ describe('APIVersionCompatibilityService', function () {
         assert.match(sendEmail.args[0][0].html, /Ghost has noticed that your <strong style="font-weight: 600;">Elaborate Fox<\/strong> is no longer working as expected\./);
         assert.match(sendEmail.args[0][0].html, /Elaborate Fox integration expected Ghost version:<\/strong>&nbsp; v4.5/);
         assert.match(sendEmail.args[0][0].html, /Current Ghost version:<\/strong>&nbsp; v5.1/);
+        assert.match(sendEmail.args[0][0].html, /Failed request URL:<\/strong>&nbsp; https:\/\/amazeballsghostsite.com\/ghost\/api\/admin\/posts\/dew023d9203se4/);
 
         assert.match(sendEmail.args[0][0].html, /This email was sent from <a href="https:\/\/amazeballsghostsite.com"/);
         assert.match(sendEmail.args[0][0].html, /to <a href="mailto:test_env@example.com"/);
@@ -44,6 +46,8 @@ describe('APIVersionCompatibilityService', function () {
         assert.match(sendEmail.args[0][0].text, /Ghost has noticed that your Elaborate Fox is no longer working as expected\./);
         assert.match(sendEmail.args[0][0].text, /Elaborate Fox integration expected Ghost version:v4.5/);
         assert.match(sendEmail.args[0][0].text, /Current Ghost version:v5.1/);
+        assert.match(sendEmail.args[0][0].text, /Failed request URL:/);
+        assert.match(sendEmail.args[0][0].text, /https:\/\/amazeballsghostsite.com\/ghost\/api\/admin\/posts\/dew023d9203se4/);
 
         assert.match(sendEmail.args[0][0].text, /This email was sent from https:\/\/amazeballsghostsite.com/);
         assert.match(sendEmail.args[0][0].text, /to test_env@example.com/);
@@ -69,7 +73,8 @@ describe('APIVersionCompatibilityService', function () {
         await compatibilityService.handleMismatch({
             acceptVersion: 'v4.5',
             contentVersion: 'v5.1',
-            userAgent: 'Elaborate Fox'
+            userAgent: 'Elaborate Fox',
+            requestURL: 'https://amazeballsghostsite.com/ghost/api/admin/posts/dew023d9203se4'
         });
 
         assert.equal(sendEmail.called, true);
@@ -79,6 +84,7 @@ describe('APIVersionCompatibilityService', function () {
         assert.match(sendEmail.args[0][0].html, /Ghost has noticed that your <strong style="font-weight: 600;">Elaborate Fox<\/strong> is no longer working as expected\./);
         assert.match(sendEmail.args[0][0].html, /Elaborate Fox integration expected Ghost version:<\/strong>&nbsp; v4.5/);
         assert.match(sendEmail.args[0][0].html, /Current Ghost version:<\/strong>&nbsp; v5.1/);
+        assert.match(sendEmail.args[0][0].html, /Failed request URL:<\/strong>&nbsp; https:\/\/amazeballsghostsite.com\/ghost\/api\/admin\/posts\/dew023d9203se4/);
 
         assert.match(sendEmail.args[0][0].html, /This email was sent from <a href="https:\/\/amazeballsghostsite.com"/);
         assert.match(sendEmail.args[0][0].html, /to <a href="mailto:test_env@example.com"/);
@@ -86,6 +92,8 @@ describe('APIVersionCompatibilityService', function () {
         assert.match(sendEmail.args[0][0].text, /Ghost has noticed that your Elaborate Fox is no longer working as expected\./);
         assert.match(sendEmail.args[0][0].text, /Elaborate Fox integration expected Ghost version:v4.5/);
         assert.match(sendEmail.args[0][0].text, /Current Ghost version:v5.1/);
+        assert.match(sendEmail.args[0][0].text, /Failed request URL:/);
+        assert.match(sendEmail.args[0][0].text, /https:\/\/amazeballsghostsite.com\/ghost\/api\/admin\/posts\/dew023d9203se4/);
 
         assert.match(sendEmail.args[0][0].text, /This email was sent from https:\/\/amazeballsghostsite.com/);
         assert.match(sendEmail.args[0][0].text, /to test_env@example.com/);
@@ -93,7 +101,8 @@ describe('APIVersionCompatibilityService', function () {
         await compatibilityService.handleMismatch({
             acceptVersion: 'v4.5',
             contentVersion: 'v5.1',
-            userAgent: 'Elaborate Fox'
+            userAgent: 'Elaborate Fox',
+            requestURL: 'does not matter'
         });
 
         assert.equal(sendEmail.calledTwice, false);
@@ -119,7 +128,8 @@ describe('APIVersionCompatibilityService', function () {
         await compatibilityService.handleMismatch({
             acceptVersion: 'v4.5',
             contentVersion: 'v5.1',
-            userAgent: 'Elaborate Fox'
+            userAgent: 'Elaborate Fox',
+            requestURL: 'https://amazeballsghostsite.com/ghost/api/admin/posts/dew023d9203se4'
         });
 
         assert.equal(sendEmail.calledTwice, true);
@@ -129,6 +139,7 @@ describe('APIVersionCompatibilityService', function () {
         assert.match(sendEmail.args[0][0].html, /Ghost has noticed that your <strong style="font-weight: 600;">Elaborate Fox<\/strong> is no longer working as expected\./);
         assert.match(sendEmail.args[0][0].html, /Elaborate Fox integration expected Ghost version:<\/strong>&nbsp; v4.5/);
         assert.match(sendEmail.args[0][0].html, /Current Ghost version:<\/strong>&nbsp; v5.1/);
+        assert.match(sendEmail.args[0][0].html, /Failed request URL:<\/strong>&nbsp; https:\/\/amazeballsghostsite.com\/ghost\/api\/admin\/posts\/dew023d9203se4/);
 
         assert.match(sendEmail.args[0][0].html, /This email was sent from <a href="https:\/\/amazeballsghostsite.com"/);
         assert.match(sendEmail.args[0][0].html, /to <a href="mailto:test_env@example.com"/);
@@ -136,6 +147,8 @@ describe('APIVersionCompatibilityService', function () {
         assert.match(sendEmail.args[0][0].text, /Ghost has noticed that your Elaborate Fox is no longer working as expected\./);
         assert.match(sendEmail.args[0][0].text, /Elaborate Fox integration expected Ghost version:v4.5/);
         assert.match(sendEmail.args[0][0].text, /Current Ghost version:v5.1/);
+        assert.match(sendEmail.args[0][0].text, /Failed request URL:/);
+        assert.match(sendEmail.args[0][0].text, /https:\/\/amazeballsghostsite.com\/ghost\/api\/admin\/posts\/dew023d9203se4/);
 
         assert.match(sendEmail.args[0][0].text, /This email was sent from https:\/\/amazeballsghostsite.com/);
         assert.match(sendEmail.args[0][0].text, /to test_env@example.com/);
@@ -147,6 +160,7 @@ describe('APIVersionCompatibilityService', function () {
         assert.match(sendEmail.args[1][0].html, /Ghost has noticed that your <strong style="font-weight: 600;">Elaborate Fox<\/strong> is no longer working as expected\./);
         assert.match(sendEmail.args[1][0].html, /Elaborate Fox integration expected Ghost version:<\/strong>&nbsp; v4.5/);
         assert.match(sendEmail.args[1][0].html, /Current Ghost version:<\/strong>&nbsp; v5.1/);
+        assert.match(sendEmail.args[1][0].html, /Failed request URL:<\/strong>&nbsp; https:\/\/amazeballsghostsite.com\/ghost\/api\/admin\/posts\/dew023d9203se4/);
 
         assert.match(sendEmail.args[1][0].html, /This email was sent from <a href="https:\/\/amazeballsghostsite.com"/);
         assert.match(sendEmail.args[1][0].html, /to <a href="mailto:test_env2@example.com"/);
@@ -154,6 +168,8 @@ describe('APIVersionCompatibilityService', function () {
         assert.match(sendEmail.args[1][0].text, /Ghost has noticed that your Elaborate Fox is no longer working as expected\./);
         assert.match(sendEmail.args[1][0].text, /Elaborate Fox integration expected Ghost version:v4.5/);
         assert.match(sendEmail.args[1][0].text, /Current Ghost version:v5.1/);
+        assert.match(sendEmail.args[1][0].text, /Failed request URL:/);
+        assert.match(sendEmail.args[1][0].text, /https:\/\/amazeballsghostsite.com\/ghost\/api\/admin\/posts\/dew023d9203se4/);
 
         assert.match(sendEmail.args[1][0].text, /This email was sent from https:\/\/amazeballsghostsite.com/);
         assert.match(sendEmail.args[1][0].text, /to test_env2@example.com/);
@@ -161,7 +177,8 @@ describe('APIVersionCompatibilityService', function () {
         await compatibilityService.handleMismatch({
             acceptVersion: 'v4.8',
             contentVersion: 'v5.1',
-            userAgent: 'Elaborate Fox'
+            userAgent: 'Elaborate Fox',
+            requestURL: 'https://amazeballsghostsite.com/ghost/api/admin/posts/dew023d9203se4'
         });
 
         assert.equal(sendEmail.callCount, 4);
@@ -170,9 +187,13 @@ describe('APIVersionCompatibilityService', function () {
         assert.match(sendEmail.args[2][0].html, /Ghost has noticed that your <strong style="font-weight: 600;">Elaborate Fox<\/strong> is no longer working as expected\./);
         assert.match(sendEmail.args[2][0].html, /Elaborate Fox integration expected Ghost version:<\/strong>&nbsp; v4.8/);
         assert.match(sendEmail.args[2][0].html, /Current Ghost version:<\/strong>&nbsp; v5.1/);
+        assert.match(sendEmail.args[2][0].html, /Failed request URL:<\/strong>&nbsp; https:\/\/amazeballsghostsite.com\/ghost\/api\/admin\/posts\/dew023d9203se4/);
+
         assert.match(sendEmail.args[2][0].text, /Ghost has noticed that your Elaborate Fox is no longer working as expected\./);
         assert.match(sendEmail.args[2][0].text, /Elaborate Fox integration expected Ghost version:v4.8/);
         assert.match(sendEmail.args[2][0].text, /Current Ghost version:v5.1/);
+        assert.match(sendEmail.args[2][0].text, /Failed request URL:/);
+        assert.match(sendEmail.args[2][0].text, /https:\/\/amazeballsghostsite.com\/ghost\/api\/admin\/posts\/dew023d9203se4/);
     });
 
     it('Trims down the name of the integration when a lot of meta information is present in user-agent header', async function (){
@@ -192,7 +213,8 @@ describe('APIVersionCompatibilityService', function () {
         await compatibilityService.handleMismatch({
             acceptVersion: 'v4.5',
             contentVersion: 'v5.1',
-            userAgent: 'Fancy Pants/2.3 GhostAdminSDK/2.4.0'
+            userAgent: 'Fancy Pants/2.3 GhostAdminSDK/2.4.0',
+            requestURL: 'https://amazeballsghostsite.com/ghost/api/admin/posts/dew023d9203se4'
         });
 
         assert.equal(sendEmail.called, true);
@@ -202,6 +224,7 @@ describe('APIVersionCompatibilityService', function () {
         assert.match(sendEmail.args[0][0].html, /Ghost has noticed that your <strong style="font-weight: 600;">Fancy Pants<\/strong> is no longer working as expected\./);
         assert.match(sendEmail.args[0][0].html, /Fancy Pants integration expected Ghost version:<\/strong>&nbsp; v4.5/);
         assert.match(sendEmail.args[0][0].html, /Current Ghost version:<\/strong>&nbsp; v5.1/);
+        assert.match(sendEmail.args[0][0].html, /Failed request URL:<\/strong>&nbsp; https:\/\/amazeballsghostsite.com\/ghost\/api\/admin\/posts\/dew023d9203se4/);
 
         assert.match(sendEmail.args[0][0].html, /This email was sent from <a href="https:\/\/amazeballsghostsite.com"/);
         assert.match(sendEmail.args[0][0].html, /to <a href="mailto:test_env@example.com"/);
@@ -209,6 +232,8 @@ describe('APIVersionCompatibilityService', function () {
         assert.match(sendEmail.args[0][0].text, /Ghost has noticed that your Fancy Pants is no longer working as expected\./);
         assert.match(sendEmail.args[0][0].text, /Fancy Pants integration expected Ghost version:v4.5/);
         assert.match(sendEmail.args[0][0].text, /Current Ghost version:v5.1/);
+        assert.match(sendEmail.args[0][0].text, /Failed request URL:/);
+        assert.match(sendEmail.args[0][0].text, /https:\/\/amazeballsghostsite.com\/ghost\/api\/admin\/posts\/dew023d9203se4/);
 
         assert.match(sendEmail.args[0][0].text, /This email was sent from https:\/\/amazeballsghostsite.com/);
         assert.match(sendEmail.args[0][0].text, /to test_env@example.com/);
@@ -231,7 +256,8 @@ describe('APIVersionCompatibilityService', function () {
         await compatibilityService.handleMismatch({
             acceptVersion: 'v4.5',
             contentVersion: 'v5.1',
-            userAgent: 'Zapier/4.20 GhostAdminSDK/2.4.0'
+            userAgent: 'Zapier/4.20 GhostAdminSDK/2.4.0',
+            requestURL: 'https://amazeballsghostsite.com/ghost/api/admin/posts/dew023d9203se4'
         });
 
         assert.equal(sendEmail.called, true);

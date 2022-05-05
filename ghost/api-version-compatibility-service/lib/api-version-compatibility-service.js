@@ -25,7 +25,15 @@ class APIVersionCompatibilityService {
         });
     }
 
-    async handleMismatch({acceptVersion, contentVersion, userAgent = ''}) {
+    /**
+     * Version mismatch handler doing the logic of picking a template and sending a notification email
+     * @param {Object} options
+     * @param {string} options.acceptVersion - client's accept-version header value
+     * @param {string} options.contentVersion - server's content-version header value
+     * @param {string} options.requestURL - url that was requested and failed compatibility test
+     * @param {string} [options.userAgent] - client's user-agent header value
+     */
+    async handleMismatch({acceptVersion, contentVersion, requestURL, userAgent = ''}) {
         if (!await this.fetchHandled(acceptVersion)) {
             const trimmedUseAgent = userAgent.split('/')[0];
             const emails = await this.fetchEmailsToNotify();
@@ -45,7 +53,8 @@ class APIVersionCompatibilityService {
                         acceptVersion,
                         contentVersion,
                         clientName: trimmedUseAgent,
-                        recipientEmail: email
+                        recipientEmail: email,
+                        requestURL: requestURL
                     }
                 });
 
