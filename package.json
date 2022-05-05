@@ -93,7 +93,7 @@
     "@tryghost/members-stripe-service": "0.10.3",
     "@tryghost/metrics": "1.0.11",
     "@tryghost/minifier": "0.1.13",
-    "@tryghost/mw-api-version-mismatch": "0.1.1",
+    "@tryghost/mw-api-version-mismatch": "0.1.2",
     "@tryghost/mw-error-handler": "0.2.4",
     "@tryghost/mw-session-from-token": "0.1.30",
     "@tryghost/nodemailer": "0.3.22",

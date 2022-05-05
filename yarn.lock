@@ -2296,10 +2296,10 @@
   dependencies:
     lodash "^4.17.11"
 
-"@tryghost/mw-api-version-mismatch@0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/mw-api-version-mismatch/-/mw-api-version-mismatch-0.1.1.tgz#913c8941ebe274eac4c3ac872fbe6268534f0003"
-  integrity sha512-N1H3P/ua7MCJTQrhFd6RjBFL95pjB+y3Ih1ZyKToBzicU3RShLUsgVlBC7YNaJVGFG/RYCImzlm09QCV8qwgpg==
+"@tryghost/mw-api-version-mismatch@0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/mw-api-version-mismatch/-/mw-api-version-mismatch-0.1.2.tgz#0a2350ff107b70b6a01aae77c6e0308ecf34a76f"
+  integrity sha512-tqC+4jAwT647UdSt9M2qh3NflFbewkVtF6y0gifGtMrDefGmHfllMZ5D/E4qDYeY1H/9Et9Uy0Mo198i3keGvw==
 
 "@tryghost/mw-error-handler@0.2.4":
   version "0.2.4"
