@@ -66,12 +66,13 @@ const htmlToPlaintext = (html) => {
 /**
  * createUnsubscribeUrl
  *
- * Takes a member uuid and returns the url that should be used to unsubscribe
+ * Takes a member and newsletter uuid. Returns the url that should be used to unsubscribe
  * In case of no member uuid, generates the preview unsubscribe url - `?preview=1`
  *
- * @param {string} uuid
+ * @param {string} uuid post uuid
+ * @param {string} newsletterUuid newsletter uuid
  */
-const createUnsubscribeUrl = (uuid) => {
+const createUnsubscribeUrl = (uuid, newsletterUuid) => {
     const siteUrl = urlUtils.getSiteUrl();
     const unsubscribeUrl = new URL(siteUrl);
     unsubscribeUrl.pathname = `${unsubscribeUrl.pathname}/unsubscribe/`.replace('//', '/');
@@ -79,6 +80,9 @@ const createUnsubscribeUrl = (uuid) => {
         unsubscribeUrl.searchParams.set('uuid', uuid);
     } else {
         unsubscribeUrl.searchParams.set('preview', '1');
+    }
+    if (newsletterUuid) {
+        unsubscribeUrl.searchParams.set('newsletter', newsletterUuid);
     }
 
     return unsubscribeUrl.href;
