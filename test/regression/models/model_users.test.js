@@ -231,21 +231,6 @@ describe('User Model', function run() {
             });
         });
 
-        it('can invite user', function (done) {
-            const userData = testUtils.DataGenerator.forModel.users[4];
-
-            UserModel.add(_.extend({}, userData, {status: 'invited'}), context).then(function (createdUser) {
-                should.exist(createdUser);
-                createdUser.attributes.password.should.not.equal(userData.password, 'password was hashed');
-                createdUser.attributes.email.should.eql(userData.email, 'email address correct');
-
-                Object.keys(eventsTriggered).length.should.eql(1);
-                should.exist(eventsTriggered['user.added']);
-
-                done();
-            }).catch(done);
-        });
-
         it('can add active user', function (done) {
             const userData = testUtils.DataGenerator.forModel.users[4];
 
@@ -330,91 +315,6 @@ describe('User Model', function run() {
                     (err instanceof errors.ValidationError).should.eql(true);
                     done();
                 });
-        });
-
-        it('can edit invited user', function (done) {
-            const userData = testUtils.DataGenerator.forModel.users[4];
-            let userId;
-
-            UserModel.add(_.extend({}, userData, {status: 'invited'}), context).then(function (createdUser) {
-                should.exist(createdUser);
-                createdUser.attributes.password.should.not.equal(userData.password, 'password was hashed');
-                createdUser.attributes.email.should.eql(userData.email, 'email address correct');
-                createdUser.attributes.status.should.equal('invited');
-
-                userId = createdUser.attributes.id;
-
-                Object.keys(eventsTriggered).length.should.eql(1);
-                should.exist(eventsTriggered['user.added']);
-
-                return UserModel.edit({website: 'http://some.newurl.com'}, {id: userId});
-            }).then(function (createdUser) {
-                createdUser.attributes.status.should.equal('invited');
-
-                Object.keys(eventsTriggered).length.should.eql(2);
-                should.exist(eventsTriggered['user.edited']);
-
-                done();
-            }).catch(done);
-        });
-
-        it('can activate invited user', function (done) {
-            const userData = testUtils.DataGenerator.forModel.users[4];
-            let userId;
-
-            UserModel.add(_.extend({}, userData, {status: 'invited'}), context).then(function (createdUser) {
-                should.exist(createdUser);
-                createdUser.attributes.password.should.not.equal(userData.password, 'password was hashed');
-                createdUser.attributes.email.should.eql(userData.email, 'email address correct');
-                createdUser.attributes.status.should.equal('invited');
-
-                userId = createdUser.attributes.id;
-
-                Object.keys(eventsTriggered).length.should.eql(1);
-                should.exist(eventsTriggered['user.added']);
-
-                return UserModel.edit({status: 'active'}, {id: userId});
-            }).then(function (createdUser) {
-                createdUser.attributes.status.should.equal('active');
-
-                Object.keys(eventsTriggered).length.should.eql(3);
-                should.exist(eventsTriggered['user.activated']);
-                should.exist(eventsTriggered['user.edited']);
-
-                done();
-            }).catch(done);
-        });
-
-        it('can destroy invited user', function (done) {
-            const userData = testUtils.DataGenerator.forModel.users[4];
-            let userId;
-
-            UserModel.add(_.extend({}, userData, {status: 'invited'}), context).then(function (createdUser) {
-                should.exist(createdUser);
-                createdUser.attributes.password.should.not.equal(userData.password, 'password was hashed');
-                createdUser.attributes.email.should.eql(userData.email, 'email address correct');
-                createdUser.attributes.status.should.equal('invited');
-
-                userId = {id: createdUser.attributes.id};
-
-                Object.keys(eventsTriggered).length.should.eql(1);
-                should.exist(eventsTriggered['user.added']);
-
-                // Destroy the user
-                return UserModel.destroy(userId);
-            }).then(function (response) {
-                response.toJSON().should.be.empty();
-
-                Object.keys(eventsTriggered).length.should.eql(2);
-                should.exist(eventsTriggered['user.deleted']);
-
-                // Double check we can't find the user again
-                return UserModel.findOne(userId);
-            }).then(function (newResults) {
-                should.equal(newResults, null);
-
-                done();
-            }).catch(done);
         });
     });
 
