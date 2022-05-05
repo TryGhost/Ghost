@@ -27,7 +27,7 @@
 
                 {{if post.isScheduled "will be" "was"}}
 
-                {{#if (or post.isPublished (and post.isScheduled post.emailRecipientFilter (not post.email)))}}
+                {{#if (or (and post.isPublished post.email) (and post.isScheduled post.emailRecipientFilter (not post.email)))}}
                     {{#if post.emailOnly}}
                         sent to
                     {{else}}
