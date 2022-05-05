@@ -3,6 +3,9 @@ const sinon = require('sinon');
 const APIVersionCompatibilityService = require('../index');
 
 describe('APIVersionCompatibilityService', function () {
+    const getSiteUrl = () => 'https://amazeballsghostsite.com';
+    const getSiteTitle = () => 'Tahini and chickpeas';
+
     afterEach(function () {
         sinon.reset();
     });
@@ -16,7 +19,9 @@ describe('APIVersionCompatibilityService', function () {
             sendEmail,
             fetchEmailsToNotify: async () => ['test_env@example.com'],
             fetchHandled,
-            saveHandled
+            saveHandled,
+            getSiteUrl,
+            getSiteTitle
         });
 
         await compatibilityService.handleMismatch({
@@ -28,8 +33,20 @@ describe('APIVersionCompatibilityService', function () {
         assert.equal(sendEmail.called, true);
         assert.equal(sendEmail.args[0][0].to, 'test_env@example.com');
         assert.equal(sendEmail.args[0][0].subject, `Attention required: Your Elaborate Fox integration has failed`);
-        assert.match(sendEmail.args[0][0].html, /Elaborate Fox integration expected Ghost version: v4.5/);
-        assert.match(sendEmail.args[0][0].html, /Current Ghost version: v5.1/);
+
+        assert.match(sendEmail.args[0][0].html, /Ghost has noticed that your <strong style="font-weight: 600;">Elaborate Fox<\/strong> is no longer working as expected\./);
+        assert.match(sendEmail.args[0][0].html, /Elaborate Fox integration expected Ghost version:<\/strong>&nbsp; v4.5/);
+        assert.match(sendEmail.args[0][0].html, /Current Ghost version:<\/strong>&nbsp; v5.1/);
+
+        assert.match(sendEmail.args[0][0].html, /This email was sent from <a href="https:\/\/amazeballsghostsite.com"/);
+        assert.match(sendEmail.args[0][0].html, /to <a href="mailto:test_env@example.com"/);
+
+        assert.match(sendEmail.args[0][0].text, /Ghost has noticed that your Elaborate Fox is no longer working as expected\./);
+        assert.match(sendEmail.args[0][0].text, /Elaborate Fox integration expected Ghost version:v4.5/);
+        assert.match(sendEmail.args[0][0].text, /Current Ghost version:v5.1/);
+
+        assert.match(sendEmail.args[0][0].text, /This email was sent from https:\/\/amazeballsghostsite.com/);
+        assert.match(sendEmail.args[0][0].text, /to test_env@example.com/);
     });
 
     it('Does NOT send an email to the instance owner when previously handled accept-version header mismatch is detected', async function () {
@@ -44,7 +61,9 @@ describe('APIVersionCompatibilityService', function () {
             sendEmail,
             fetchEmailsToNotify: async () => ['test_env@example.com'],
             fetchHandled,
-            saveHandled
+            saveHandled,
+            getSiteUrl,
+            getSiteTitle
         });
 
         await compatibilityService.handleMismatch({
@@ -53,11 +72,23 @@ describe('APIVersionCompatibilityService', function () {
             userAgent: 'Elaborate Fox'
         });
 
-        assert.equal(sendEmail.calledOnce, true);
+        assert.equal(sendEmail.called, true);
         assert.equal(sendEmail.args[0][0].to, 'test_env@example.com');
         assert.equal(sendEmail.args[0][0].subject, `Attention required: Your Elaborate Fox integration has failed`);
-        assert.match(sendEmail.args[0][0].html, /Elaborate Fox integration expected Ghost version: v4.5/);
-        assert.match(sendEmail.args[0][0].html, /Current Ghost version: v5.1/);
+
+        assert.match(sendEmail.args[0][0].html, /Ghost has noticed that your <strong style="font-weight: 600;">Elaborate Fox<\/strong> is no longer working as expected\./);
+        assert.match(sendEmail.args[0][0].html, /Elaborate Fox integration expected Ghost version:<\/strong>&nbsp; v4.5/);
+        assert.match(sendEmail.args[0][0].html, /Current Ghost version:<\/strong>&nbsp; v5.1/);
+
+        assert.match(sendEmail.args[0][0].html, /This email was sent from <a href="https:\/\/amazeballsghostsite.com"/);
+        assert.match(sendEmail.args[0][0].html, /to <a href="mailto:test_env@example.com"/);
+
+        assert.match(sendEmail.args[0][0].text, /Ghost has noticed that your Elaborate Fox is no longer working as expected\./);
+        assert.match(sendEmail.args[0][0].text, /Elaborate Fox integration expected Ghost version:v4.5/);
+        assert.match(sendEmail.args[0][0].text, /Current Ghost version:v5.1/);
+
+        assert.match(sendEmail.args[0][0].text, /This email was sent from https:\/\/amazeballsghostsite.com/);
+        assert.match(sendEmail.args[0][0].text, /to test_env@example.com/);
 
         await compatibilityService.handleMismatch({
             acceptVersion: 'v4.5',
@@ -80,7 +111,9 @@ describe('APIVersionCompatibilityService', function () {
             sendEmail,
             fetchEmailsToNotify: async () => ['test_env@example.com', 'test_env2@example.com'],
             fetchHandled,
-            saveHandled
+            saveHandled,
+            getSiteUrl,
+            getSiteTitle
         });
 
         await compatibilityService.handleMismatch({
@@ -92,14 +125,38 @@ describe('APIVersionCompatibilityService', function () {
         assert.equal(sendEmail.calledTwice, true);
         assert.equal(sendEmail.args[0][0].to, 'test_env@example.com');
         assert.equal(sendEmail.args[0][0].subject, `Attention required: Your Elaborate Fox integration has failed`);
-        assert.match(sendEmail.args[0][0].html, /Elaborate Fox integration expected Ghost version: v4.5/);
-        assert.match(sendEmail.args[0][0].html, /Current Ghost version: v5.1/);
+
+        assert.match(sendEmail.args[0][0].html, /Ghost has noticed that your <strong style="font-weight: 600;">Elaborate Fox<\/strong> is no longer working as expected\./);
+        assert.match(sendEmail.args[0][0].html, /Elaborate Fox integration expected Ghost version:<\/strong>&nbsp; v4.5/);
+        assert.match(sendEmail.args[0][0].html, /Current Ghost version:<\/strong>&nbsp; v5.1/);
+
+        assert.match(sendEmail.args[0][0].html, /This email was sent from <a href="https:\/\/amazeballsghostsite.com"/);
+        assert.match(sendEmail.args[0][0].html, /to <a href="mailto:test_env@example.com"/);
+
+        assert.match(sendEmail.args[0][0].text, /Ghost has noticed that your Elaborate Fox is no longer working as expected\./);
+        assert.match(sendEmail.args[0][0].text, /Elaborate Fox integration expected Ghost version:v4.5/);
+        assert.match(sendEmail.args[0][0].text, /Current Ghost version:v5.1/);
+
+        assert.match(sendEmail.args[0][0].text, /This email was sent from https:\/\/amazeballsghostsite.com/);
+        assert.match(sendEmail.args[0][0].text, /to test_env@example.com/);
 
         assert.equal(sendEmail.calledTwice, true);
         assert.equal(sendEmail.args[1][0].to, 'test_env2@example.com');
         assert.equal(sendEmail.args[1][0].subject, `Attention required: Your Elaborate Fox integration has failed`);
-        assert.match(sendEmail.args[1][0].html, /Elaborate Fox integration expected Ghost version: v4.5/);
-        assert.match(sendEmail.args[1][0].html, /Current Ghost version: v5.1/);
+
+        assert.match(sendEmail.args[1][0].html, /Ghost has noticed that your <strong style="font-weight: 600;">Elaborate Fox<\/strong> is no longer working as expected\./);
+        assert.match(sendEmail.args[1][0].html, /Elaborate Fox integration expected Ghost version:<\/strong>&nbsp; v4.5/);
+        assert.match(sendEmail.args[1][0].html, /Current Ghost version:<\/strong>&nbsp; v5.1/);
+
+        assert.match(sendEmail.args[1][0].html, /This email was sent from <a href="https:\/\/amazeballsghostsite.com"/);
+        assert.match(sendEmail.args[1][0].html, /to <a href="mailto:test_env2@example.com"/);
+
+        assert.match(sendEmail.args[1][0].text, /Ghost has noticed that your Elaborate Fox is no longer working as expected\./);
+        assert.match(sendEmail.args[1][0].text, /Elaborate Fox integration expected Ghost version:v4.5/);
+        assert.match(sendEmail.args[1][0].text, /Current Ghost version:v5.1/);
+
+        assert.match(sendEmail.args[1][0].text, /This email was sent from https:\/\/amazeballsghostsite.com/);
+        assert.match(sendEmail.args[1][0].text, /to test_env2@example.com/);
 
         await compatibilityService.handleMismatch({
             acceptVersion: 'v4.8',
@@ -109,9 +166,13 @@ describe('APIVersionCompatibilityService', function () {
 
         assert.equal(sendEmail.callCount, 4);
         assert.equal(sendEmail.args[2][0].to, 'test_env@example.com');
-        assert.equal(sendEmail.args[2][0].subject, `Attention required: Your Elaborate Fox integration has failed`);
-        assert.match(sendEmail.args[2][0].html, /Elaborate Fox integration expected Ghost version: v4.8/);
-        assert.match(sendEmail.args[2][0].html, /Current Ghost version: v5.1/);
+
+        assert.match(sendEmail.args[2][0].html, /Ghost has noticed that your <strong style="font-weight: 600;">Elaborate Fox<\/strong> is no longer working as expected\./);
+        assert.match(sendEmail.args[2][0].html, /Elaborate Fox integration expected Ghost version:<\/strong>&nbsp; v4.8/);
+        assert.match(sendEmail.args[2][0].html, /Current Ghost version:<\/strong>&nbsp; v5.1/);
+        assert.match(sendEmail.args[2][0].text, /Ghost has noticed that your Elaborate Fox is no longer working as expected\./);
+        assert.match(sendEmail.args[2][0].text, /Elaborate Fox integration expected Ghost version:v4.8/);
+        assert.match(sendEmail.args[2][0].text, /Current Ghost version:v5.1/);
     });
 
     it('Trims down the name of the integration when a lot of meta information is present in user-agent header', async function (){
@@ -123,7 +184,9 @@ describe('APIVersionCompatibilityService', function () {
             sendEmail,
             fetchEmailsToNotify: async () => ['test_env@example.com'],
             fetchHandled,
-            saveHandled
+            saveHandled,
+            getSiteUrl,
+            getSiteTitle
         });
 
         await compatibilityService.handleMismatch({
@@ -135,7 +198,19 @@ describe('APIVersionCompatibilityService', function () {
         assert.equal(sendEmail.called, true);
         assert.equal(sendEmail.args[0][0].to, 'test_env@example.com');
         assert.equal(sendEmail.args[0][0].subject, `Attention required: Your Zapier integration has failed`);
-        assert.match(sendEmail.args[0][0].html, /Zapier integration expected Ghost version: v4.5/);
-        assert.match(sendEmail.args[0][0].html, /Current Ghost version: v5.1/);
+
+        assert.match(sendEmail.args[0][0].html, /Ghost has noticed that your <strong style="font-weight: 600;">Zapier<\/strong> is no longer working as expected\./);
+        assert.match(sendEmail.args[0][0].html, /Zapier integration expected Ghost version:<\/strong>&nbsp; v4.5/);
+        assert.match(sendEmail.args[0][0].html, /Current Ghost version:<\/strong>&nbsp; v5.1/);
+
+        assert.match(sendEmail.args[0][0].html, /This email was sent from <a href="https:\/\/amazeballsghostsite.com"/);
+        assert.match(sendEmail.args[0][0].html, /to <a href="mailto:test_env@example.com"/);
+
+        assert.match(sendEmail.args[0][0].text, /Ghost has noticed that your Zapier is no longer working as expected\./);
+        assert.match(sendEmail.args[0][0].text, /Zapier integration expected Ghost version:v4.5/);
+        assert.match(sendEmail.args[0][0].text, /Current Ghost version:v5.1/);
+
+        assert.match(sendEmail.args[0][0].text, /This email was sent from https:\/\/amazeballsghostsite.com/);
+        assert.match(sendEmail.args[0][0].text, /to test_env@example.com/);
     });
 });
