@@ -1727,10 +1727,12 @@
     "@tryghost/errors" "^1.0.0"
     lodash "^4.17.11"
 
-"@tryghost/api-version-compatibility-service@0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/api-version-compatibility-service/-/api-version-compatibility-service-0.1.1.tgz#037ec31a745f59577d531abc0e67558fb83b287e"
-  integrity sha512-NLpSqTQIP4be8keF8L9vwXtoFeiwldH/WNyieMlqjBWVnAEHVpdGqQzEpltDVkIrkti1T6jT2NP0OIddM3GMYQ==
+"@tryghost/api-version-compatibility-service@0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/api-version-compatibility-service/-/api-version-compatibility-service-0.2.0.tgz#439cb89ab09f5af276ed2649ba9924122a960ffd"
+  integrity sha512-/i0zqxNhZ2yao0EtUiAdgOeEggXJDs+yyGwBP2Kzmt8cpe3hB7FnMvSSPfJDVGowhCEXWsKn4/SWwLB2AY1W3g==
+  dependencies:
+    "@tryghost/email-content-generator" "^0.1.1"
 
 "@tryghost/bookshelf-collision@^0.1.22":
   version "0.1.22"
@@ -1934,6 +1936,13 @@
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@tryghost/email-content-generator/-/email-content-generator-0.1.0.tgz#cb8233ce70f416cce5f91964e953889580ea815a"
   integrity sha512-/WXpNA4HgmCA+TEnWg4jwQS9KJOt4cGQNNFuANtt8z//mdbV1IKRK9IamLT/zWGlzYCaw/lLWy/j/UjghPaqtQ==
+  dependencies:
+    html-to-text "^5.1.1"
+
+"@tryghost/email-content-generator@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/email-content-generator/-/email-content-generator-0.1.1.tgz#95bf2eb1cc8e3eb1c3c0e5d7d4950de30aa30811"
+  integrity sha512-FWtIrmCs3EU+RptoTCElTSoxf/HiAfdVe15tGJIQNArJ7OVAA9dQgHGIgXIiK6cvUYoE6KqxGKX15TJsyXc2rQ==
   dependencies:
     html-to-text "^5.1.1"
 
@@ -2296,10 +2305,10 @@
   dependencies:
     lodash "^4.17.11"
 
-"@tryghost/mw-api-version-mismatch@0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/mw-api-version-mismatch/-/mw-api-version-mismatch-0.1.1.tgz#913c8941ebe274eac4c3ac872fbe6268534f0003"
-  integrity sha512-N1H3P/ua7MCJTQrhFd6RjBFL95pjB+y3Ih1ZyKToBzicU3RShLUsgVlBC7YNaJVGFG/RYCImzlm09QCV8qwgpg==
+"@tryghost/mw-api-version-mismatch@0.1.3":
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/mw-api-version-mismatch/-/mw-api-version-mismatch-0.1.3.tgz#64304d65d6cf6c92cae270801be466c154932283"
+  integrity sha512-+J/s4KGnSGZ4LBQCzx2fvkkeyTqeOEJBcfUHOF5726r1L32wQnwJ+WVIS7KHNNPevGSXyZupG4jmyLZub9RGsw==
 
 "@tryghost/mw-error-handler@0.2.4":
   version "0.2.4"

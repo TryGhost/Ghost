@@ -1,12 +1,13 @@
+const routeMatch = require('path-match')();
 const APIVersionCompatibilityService = require('@tryghost/api-version-compatibility-service');
 const VersionNotificationsDataService = require('@tryghost/version-notifications-data-service');
 const versionMismatchHandler = require('@tryghost/mw-api-version-mismatch');
 const ghostVersion = require('@tryghost/version');
 const {GhostMailer} = require('../mail');
 const settingsService = require('../../services/settings');
-const urlUtils = require('../../../shared/url-utils');
 const models = require('../../models');
-const routeMatch = require('path-match')();
+const urlUtils = require('../../../shared/url-utils');
+const settingsCache = require('../../../shared/settings-cache');
 
 let serviceInstance;
 
@@ -24,7 +25,9 @@ const init = () => {
         },
         fetchEmailsToNotify: versionNotificationsDataService.getNotificationEmails.bind(versionNotificationsDataService),
         fetchHandled: versionNotificationsDataService.fetchNotification.bind(versionNotificationsDataService),
-        saveHandled: versionNotificationsDataService.saveNotification.bind(versionNotificationsDataService)
+        saveHandled: versionNotificationsDataService.saveNotification.bind(versionNotificationsDataService),
+        getSiteUrl: () => urlUtils.urlFor('home', true),
+        getSiteTitle: () => settingsCache.get('title')
     });
 };
 
