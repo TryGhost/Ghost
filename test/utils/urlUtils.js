@@ -45,8 +45,6 @@ const stubUrlUtils = (options, sandbox) => {
 // Method for regressions tests must be used with restore method
 const stubUrlUtilsFromConfig = () => {
     const options = {
-        apiVersions: config.get('api:versions'),
-        defaultApiVersion: 'canary',
         slugs: config.get('slugs').protected,
         redirectCacheMaxAge: config.get('caching:301:maxAge'),
         baseApiPath: '/ghost/api'
