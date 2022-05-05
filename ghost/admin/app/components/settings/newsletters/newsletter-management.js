@@ -65,7 +65,7 @@ export default class NewsletterManagementComponent extends Component {
         // an explicit tracked filteredNewsletters property rather than using a reactive
         // getter that automatically displays newly added newsletters
 
-        if (transition.from.name === 'settings.members-email-labs.new-newsletter') {
+        if (transition.from.name === 'settings.newsletters.new-newsletter') {
             this.updateFilteredNewsletters();
         }
     }

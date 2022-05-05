@@ -28,7 +28,7 @@ export default class EditNewsletterRoute extends AdminRoute {
 
     @action
     afterSave() {
-        this.router.transitionTo('settings.members-email-labs');
+        this.router.transitionTo('settings.newsletters');
     }
 
     deactivate() {
@@ -88,7 +88,7 @@ export default class EditNewsletterRoute extends AdminRoute {
         const shouldLeave = await this.confirmUnsavedChanges();
 
         if (shouldLeave && !this.isLeaving) {
-            this.router.transitionTo('settings.members-email-labs');
+            this.router.transitionTo('settings.newsletters');
             return true;
         }
 
