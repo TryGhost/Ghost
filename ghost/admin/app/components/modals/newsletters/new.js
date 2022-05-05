@@ -44,7 +44,7 @@ export default class NewNewsletterModal extends Component {
             yield newsletter.validate({});
 
             const result = yield newsletter.save({
-                adapterOptions: {optInExisting: this.optInExisting}
+                adapterOptions: {optInExisting: this.optInExisting, include: 'count.members,count.posts'}
             });
 
             this.args.data.afterSave?.(result);

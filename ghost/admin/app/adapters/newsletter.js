@@ -9,6 +9,10 @@ export default class Newsletter extends ApplicationAdapter {
             parsedUrl.searchParams.append('opt_in_existing', 'true');
         }
 
+        if (snapshot?.adapterOptions?.include) {
+            parsedUrl.searchParams.append('include', snapshot?.adapterOptions?.include);
+        }
+
         return parsedUrl.toString();
     }
 }

@@ -49,7 +49,11 @@ export default class EditNewsletterModal extends Component {
 
             const newEmail = newsletter.senderEmail;
 
-            const result = yield newsletter.save();
+            const result = yield newsletter.save({
+                adapterOptions: {
+                    include: 'count.members,count.posts'
+                }
+            });
 
             if (result._meta?.sent_email_verification) {
                 yield this.modals.open(ConfirmNewsletterEmailModal, {
