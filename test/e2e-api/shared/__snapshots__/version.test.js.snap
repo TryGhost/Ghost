@@ -165,11 +165,11 @@ Object {
   "errors": Array [
     Object {
       "code": "UPDATE_GHOST",
-      "context": StringMatching /Provided client version v99\\\\\\.0 is ahead of current Ghost instance version v\\\\d\\+\\\\\\.\\\\d\\+/,
+      "context": StringMatching /Provided client accept-version v99\\\\\\.0 is ahead of current Ghost version v\\\\d\\+\\\\\\.\\\\d\\+/,
       "details": null,
-      "help": "Upgrade your Ghost instance.",
+      "help": "Try upgrading your Ghost install.",
       "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      "message": "Request not acceptable for provided Accept-Version header.",
+      "message": "Request could not be served, the endpoint was not found.",
       "property": null,
       "type": "RequestNotAcceptableError",
     },
@@ -180,7 +180,7 @@ Object {
 exports[`API Versioning Admin API responds with 406 for an unknown version with accept-version set ahead 2: [headers] 1`] = `
 Object {
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "347",
+  "content-length": "348",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -194,11 +194,11 @@ Object {
   "errors": Array [
     Object {
       "code": "UPDATE_CLIENT",
-      "context": StringMatching /Provided client version v1\\\\\\.0 is outdated and is behind current Ghost version v\\\\d\\+\\\\\\.\\\\d\\+/,
+      "context": StringMatching /Provided client accept-version v1\\\\\\.0 is behind current Ghost version v\\\\d\\+\\\\\\.\\\\d\\+/,
       "details": null,
-      "help": "Upgrade your Ghost API client.",
+      "help": "Try upgrading your Ghost API client.",
       "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      "message": "Request not acceptable for provided Accept-Version header.",
+      "message": "Request could not be served, the endpoint was not found.",
       "property": null,
       "type": "RequestNotAcceptableError",
     },
@@ -209,7 +209,7 @@ Object {
 exports[`API Versioning Admin API responds with 406 for an unknown version with accept-version set behind 2: [headers] 1`] = `
 Object {
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "354",
+  "content-length": "349",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -277,11 +277,11 @@ Object {
   "errors": Array [
     Object {
       "code": "UPDATE_CLIENT",
-      "context": StringMatching /Provided client version v3\\.5 is outdated and is behind current Ghost version v\\\\d\\+\\\\\\.\\\\d\\+/,
+      "context": StringMatching /Provided client accept-version v3\\.5 is behind current Ghost version v\\\\d\\+\\\\\\.\\\\d\\+/,
       "details": null,
-      "help": "Upgrade your Ghost API client.",
+      "help": "Try upgrading your Ghost API client.",
       "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      "message": "Request not acceptable for provided Accept-Version header.",
+      "message": "Request could not be served, the endpoint was not found.",
       "property": null,
       "type": "RequestNotAcceptableError",
     },
@@ -293,7 +293,7 @@ exports[`API Versioning Admin API responds with error and sends email ONCE when 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "354",
+  "content-length": "349",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -307,11 +307,11 @@ Object {
   "errors": Array [
     Object {
       "code": "UPDATE_CLIENT",
-      "context": StringMatching /Provided client version v3\\.5 is outdated and is behind current Ghost version v\\\\d\\+\\\\\\.\\\\d\\+/,
+      "context": StringMatching /Provided client accept-version v3\\.5 is behind current Ghost version v\\\\d\\+\\\\\\.\\\\d\\+/,
       "details": null,
-      "help": "Upgrade your Ghost API client.",
+      "help": "Try upgrading your Ghost API client.",
       "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      "message": "Request not acceptable for provided Accept-Version header.",
+      "message": "Request could not be served, the endpoint was not found.",
       "property": null,
       "type": "RequestNotAcceptableError",
     },
@@ -323,7 +323,7 @@ exports[`API Versioning Admin API responds with error and sends email ONCE when 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "354",
+  "content-length": "349",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -337,11 +337,11 @@ Object {
   "errors": Array [
     Object {
       "code": "UPDATE_GHOST",
-      "context": StringMatching /Provided client version v999\\\\\\.1 is ahead of current Ghost instance version v\\\\d\\+\\\\\\.\\\\d\\+/,
+      "context": StringMatching /Provided client accept-version v999\\\\\\.1 is ahead of current Ghost version v\\\\d\\+\\\\\\.\\\\d\\+/,
       "details": null,
-      "help": "Upgrade your Ghost instance.",
+      "help": "Try upgrading your Ghost install.",
       "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      "message": "Request not acceptable for provided Accept-Version header.",
+      "message": "Request could not be served, the endpoint was not found.",
       "property": null,
       "type": "RequestNotAcceptableError",
     },
@@ -353,7 +353,7 @@ exports[`API Versioning Admin API responds with error requested version is AHEAD
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "348",
+  "content-length": "349",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -367,11 +367,11 @@ Object {
   "errors": Array [
     Object {
       "code": "UPDATE_CLIENT",
-      "context": StringMatching /Provided client version v3\\.1 is outdated and is behind current Ghost version v\\\\d\\+\\\\\\.\\\\d\\+/,
+      "context": StringMatching /Provided client accept-version v3\\.1 is behind current Ghost version v\\\\d\\+\\\\\\.\\\\d\\+/,
       "details": null,
-      "help": "Upgrade your Ghost API client.",
+      "help": "Try upgrading your Ghost API client.",
       "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      "message": "Request not acceptable for provided Accept-Version header.",
+      "message": "Request could not be served, the endpoint was not found.",
       "property": null,
       "type": "RequestNotAcceptableError",
     },
@@ -383,7 +383,7 @@ exports[`API Versioning Admin API responds with error when requested version is 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "354",
+  "content-length": "349",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

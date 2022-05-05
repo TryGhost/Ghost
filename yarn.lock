@@ -2301,10 +2301,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/mw-api-version-mismatch/-/mw-api-version-mismatch-0.1.1.tgz#913c8941ebe274eac4c3ac872fbe6268534f0003"
   integrity sha512-N1H3P/ua7MCJTQrhFd6RjBFL95pjB+y3Ih1ZyKToBzicU3RShLUsgVlBC7YNaJVGFG/RYCImzlm09QCV8qwgpg==
 
-"@tryghost/mw-error-handler@0.2.2":
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/mw-error-handler/-/mw-error-handler-0.2.2.tgz#ab507e8b9079b6cbcbef2ac3fee4266342188165"
-  integrity sha512-9J6d1gce+PzdLkSGxap5oWjG3INb3J9QLoC4NHXOqIGZ+7GERlao3q6AFVBo5xUBoUzkd+Q7+3ZQfeLarNEwUA==
+"@tryghost/mw-error-handler@0.2.4":
+  version "0.2.4"
+  resolved "https://registry.yarnpkg.com/@tryghost/mw-error-handler/-/mw-error-handler-0.2.4.tgz#9384be3f880c502a93e019b711cebe7ddb7c4abb"
+  integrity sha512-KN6s2npnFXrFG6DnHpblrGHmwtV2soS2d7YQsEFoXksXQZZrwp60aoY5hFuBcjemchszHQA4C6efwjmE1BacKw==
   dependencies:
     "@tryghost/debug" "^0.1.9"
     "@tryghost/errors" "1.2.12"
