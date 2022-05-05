@@ -19,20 +19,21 @@ module.exports = createTransactionalMigration(
             .where('cancel_at_period_end', '=', true)
             .where('mrr', '!=', 0);
 
-        const canceledEvents = await knex('members_paid_subscription_events')
-            .select(
-                'id'
-            )
-            .where('type', '=', 'canceled')
-            .whereIn('subscription_id', canceledSubscriptions.map(x => x.id))
-            .orderBy('created_at', 'desc');
-
         if (canceledSubscriptions.length === 0) {
             logging.info('No canceled subscriptions found, skipping migration.');
             return;
         } else {
-            logging.info(`Found ${canceledSubscriptions.length} canceled subscriptions, updated MRR events.`);
+            logging.info(`Found ${canceledSubscriptions.length} canceled subscriptions, updating MRR events`);
         }
+
+        const canceledEvents = await knex('members_paid_subscription_events')
+            .select(
+                'id',
+                'subscription_id'
+            )
+            .where('type', '=', 'canceled')
+            .whereIn('subscription_id', canceledSubscriptions.map(x => x.id))
+            .orderBy('created_at', 'desc');
 
         const toUpdate = [];
         const toInsert = [];
@@ -42,7 +43,7 @@ module.exports = createTransactionalMigration(
             const event = canceledEvents.find(event => event.subscription_id === subscription.id);
             if (event) {
                 // if an event exists, update it
-                // we always update the latest event for a subscription due to the orderBy ASC
+                // we always update the latest event for a subscription due to the orderBy DESC
                 toUpdate.push({
                     id: event.id,
                     mrr_delta: -subscription.mrr
