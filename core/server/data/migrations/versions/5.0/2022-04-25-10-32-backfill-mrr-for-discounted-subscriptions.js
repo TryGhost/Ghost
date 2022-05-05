@@ -7,7 +7,7 @@ module.exports = createTransactionalMigration(
         const subscriptionsToUpdate = await knex('members_stripe_customers_subscriptions AS s')
             .join('offers AS o', 's.offer_id', '=', 'o.id')
             .where('o.duration', '=', 'forever')
-            .andWhere('s.mrr', '!=', '0')
+            .andWhere('s.mrr', '!=', 0)
             .select('s.*', 'o.discount_type AS offer_type', 'o.discount_amount AS offer_amount');
 
         if (!subscriptionsToUpdate.length) {
