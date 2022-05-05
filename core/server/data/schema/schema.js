@@ -119,10 +119,23 @@ module.exports = {
         facebook: {type: 'string', maxlength: 2000, nullable: true},
         twitter: {type: 'string', maxlength: 2000, nullable: true},
         accessibility: {type: 'text', maxlength: 65535, nullable: true},
-        // @TODO: add isIn validation here to control for all possible status values.
-        //       The ones that come up by reviewing the user model are:
-        //       'active', 'inactive', 'locked', 'warn-1', 'warn-2', 'warn-3', 'warn-4'
-        status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'active'},
+        status: {
+            type: 'string',
+            maxlength: 50,
+            nullable: false,
+            defaultTo: 'active',
+            validations: {
+                isIn: [[
+                    'active',
+                    'inactive',
+                    'locked',
+                    'warn-1',
+                    'warn-2',
+                    'warn-3',
+                    'warn-4'
+                ]]
+            }
+        },
         // NOTE: unused at the moment and reserved for future features
         locale: {type: 'string', maxlength: 6, nullable: true},
         visibility: {
