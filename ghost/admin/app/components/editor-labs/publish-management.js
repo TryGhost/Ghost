@@ -162,7 +162,7 @@ export class PublishOptions {
     }
 
     get fullRecipientFilter() {
-        let filter = `newsletters:${this.newsletter.slug}`;
+        let filter = this.newsletter.recipientFilter;
 
         if (this.recipientFilter) {
             filter += `+(${this.recipientFilter})`;

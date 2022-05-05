@@ -13,7 +13,6 @@ export default class Newsletter extends Model.extend(ValidationEngine) {
     @attr({defaultValue: 'newsletter'}) senderReplyTo;
 
     @attr({defaultValue: 'active'}) status;
-    @attr({defaultValue: ''}) recipientFilter;
     @attr({defaultValue: true}) subscribeOnSignup;
     @attr({defaultValue: 'members'}) visibility;
     @attr({defaultValue: 0}) sortOrder;
@@ -34,4 +33,15 @@ export default class Newsletter extends Model.extend(ValidationEngine) {
     // HACK - not a real model attribute but a workaround for Ember Data not
     //        exposing meta from save responses
     @attr _meta;
+
+    /**
+     * The filter that we should use to filter out members that are subscribed to this newsletter
+     */
+    get recipientFilter() {
+        const idFilter = 'newsletters.id:' + this.id;
+        if (this.visibility === 'paid') {
+            return idFilter + '+status:-free';
+        }
+        return idFilter;
+    }
 }

@@ -79,6 +79,11 @@ export default class GhMembersRecipientSelect extends Component {
     }
 
     @action
+    onUpdateNewsletter() {
+        this.fetchMemberCountsTask.perform();
+    }
+
+    @action
     toggleFilter(filter) {
         if (this.args.disabled) {
             return;
@@ -202,15 +207,15 @@ export default class GhMembersRecipientSelect extends Component {
     *fetchMemberCountsTask() {
         const user = yield this.session.user;
 
-        if (!user.isAdmin) {
+        if (!user.isAdmin || !this.args.newsletter) {
             return;
         }
 
         yield Promise.all([
-            this.store.query('member', {filter: 'newsletters.status:active+status:free', limit: 1}).then((res) => {
+            this.store.query('member', {filter: this.args.newsletter.recipientFilter + '+status:free', limit: 1}).then((res) => {
                 this.freeMemberCount = res.meta.pagination.total;
             }),
-            this.store.query('member', {filter: 'newsletters.status:active+status:-free', limit: 1}).then((res) => {
+            this.store.query('member', {filter: this.args.newsletter.recipientFilter + '+status:-free', limit: 1}).then((res) => {
                 this.paidMemberCount = res.meta.pagination.total;
             })
         ]);

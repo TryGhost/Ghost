@@ -6,6 +6,7 @@ import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-sup
 import {beforeEach, describe, it} from 'mocha';
 import {blur, click, currentRouteName, currentURL, fillIn, find, findAll, triggerEvent} from '@ember/test-helpers';
 import {datepickerSelect} from 'ember-power-datepicker/test-support';
+import {enableLabsFlag} from '../helpers/labs-flag';
 import {enableMailgun} from '../helpers/mailgun';
 import {enableNewsletters} from '../helpers/newsletters';
 import {enableStripe} from '../helpers/stripe';
@@ -845,6 +846,7 @@ describe('Acceptance: Editor', function () {
             const role = this.server.create('role', {name: 'Administrator'});
             user = this.server.create('user', {roles: [role]});
             this.server.loadFixtures('settings');
+            enableLabsFlag(this.server, 'multipleNewsletters');
             return await authenticateSession();
         });
 
@@ -876,7 +878,8 @@ describe('Acceptance: Editor', function () {
             // Enable stripe to also show paid members breakdown
             enableStripe(this.server);
 
-            const newsletter = this.server.create('newsletter', {status: 'active'});
+            // Note: we need to set the ID of a newsletter to some string value because of how NQL filters work.
+            const newsletter = this.server.create('newsletter', {status: 'active', name: 'test newsletter', id: 'test-newsletter'});
             this.server.createList('member', 4, {status: 'free', newsletters: [newsletter]});
             this.server.createList('member', 2, {status: 'paid', newsletters: [newsletter]});
 
@@ -889,8 +892,8 @@ describe('Acceptance: Editor', function () {
             await selectChoose('[data-test-distribution-action-select]', 'send');
             await click('[data-test-publishmenu-scheduled-option]');
             await datepickerSelect('[data-test-publishmenu-draft] [data-test-date-time-picker-datepicker]', new Date(scheduledTime.format().replace(/\+.*$/, '')));
-            
-            // Expect 4 free and 2 paid recipients here
+                        
+            // Expect 4 free and 2 paid recipients here 
             expect(find('[data-test-email-count="free-members"]')).to.contain.text('4');
             expect(find('[data-test-email-count="paid-members"]')).to.contain.text('2');
             

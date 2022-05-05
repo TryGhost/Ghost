@@ -1,4 +1,4 @@
-<div class="gh-publishmenu-send-to-option">
+<div class="gh-publishmenu-send-to-option" {{did-update this.onUpdateNewsletter @newsletter }}>
     <p>Free members <span class="gh-publishmenu-emailcount" data-test-email-count="free-members">{{this.freeMemberCountLabel}}</span></p>
     <div class="for-switch x-small {{if @disabled "disabled"}}">
         <label class="switch" for="send-email-to-free">
