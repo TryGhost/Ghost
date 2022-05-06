@@ -908,10 +908,20 @@
 
 .gh-newsletters .gh-expandable-block {
     padding: 24px;
+
+    /* Correct last card margin by reducing bottom padding */
+    padding-bottom: 12px;
+}
+
+.gh-newsletter-card-container {
+    margin-left: -24px;
+    padding-left: 24px;
+    position: relative;
 }
 
 .gh-newsletters .gh-main-content-card:last-of-type {
-    margin-bottom: 0;
+    /* Note that we need to keep the margin of the cards consistent, or they'll jump when we drag the cards to sort them */
+    margin-bottom: 12px;
 }
 
 .gh-newsletter-card {
@@ -919,48 +929,56 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    transition: margin 125ms ease-in-out, padding 125ms ease-in-out;
 }
 
-.gh-newsletter-card[draggable="true"] {
-    /* required to avoid background being picked up when dragging */
+.gh-newsletter-card-container[draggable="true"] {
+    /* required to avoid background being picked up when dragging (Chrome only) */
     z-index: 1;
 }
 
-.gh-newsletter-card-draggable:hover {
-    margin-left: 4px;
-    padding-left: 20px;
-}
-.gh-newsletter-card .grab-newsletter {
-    display: none;
-}
-.gh-newsletter-card-draggable .grab-newsletter {
-    display: inline-block;
-}
-
-@media (max-width: 980px) {
-    .gh-newsletter-card {
-        padding: 4vmin 48px;
-    }
-}
-
-.gh-newsletter-card .grab-newsletter {
+.gh-newsletter-card-container .grab-newsletter {
     visibility: hidden;
     position: absolute;
     top: 0;
-    left: -20px;
+    left: 8px;
     width: 2rem;
     height: 100%;
     padding-right: 2px;
     fill: var(--lightgrey-d2);
     cursor: move;
     opacity: 0;
-    transition: visibility 0s, opacity 200ms ease-in-out;
+    transition: visibility 200ms step-end, opacity 200ms ease-in-out;
 }
 
-.gh-newsletter-card.multiple:hover .grab-newsletter {
+.gh-newsletter-card {
+    transition: margin 125ms ease-in-out, padding 125ms ease-in-out;
+}
+
+/*
+    When dragging, the :hover selector could be on the wrong element. So we explicitly ignore :hover when we are dragging and switch to the .is-dragging-object
+*/
+body:not([data-user-is-dragging]) .gh-newsletter-card-draggable:hover .gh-newsletter-card, .gh-newsletter-card-draggable.is-dragging-object .gh-newsletter-card {
+    margin-left: 4px;
+    padding-left: 20px;
+}
+
+body:not([data-user-is-dragging]) .gh-newsletter-card-draggable:hover .grab-newsletter, .gh-newsletter-card-draggable.is-dragging-object .grab-newsletter {
     visibility: visible;
     opacity: 1;
+
+    /* 
+        To make sure the grab handler also fades out correctly and only change visibility after the animation, 
+        we need to update the animation curve for visibility to step-start at the start of the animation 
+    */
+    transition: visibility 200ms step-start, opacity 200ms ease-in-out;
+}
+
+.gh-newsletter-card-container .grab-newsletter {
+    display: none;
+}
+
+.gh-newsletter-card-draggable .grab-newsletter {
+    display: inline-block;
 }
 
 .gh-newsletter-card-block.title-block {
