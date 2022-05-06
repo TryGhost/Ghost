@@ -310,9 +310,6 @@ export default class DashboardStatsService extends Service {
     }
 
     loadSubscriptionCountStats() {
-        if (this.paidMembersByCadence && this.paidMembersByTier && this.subscriptionCountStats) {
-            return;
-        }
         if (this._loadSubscriptionCountStats.isRunning) {
             // We need to explicitly wait for the already running task instead of dropping it and returning immediately
             return this._loadSubscriptionCountStats.last;
@@ -676,6 +673,7 @@ export default class DashboardStatsService extends Service {
 
         this.loadMrrStats();
         this.loadMemberCountStats();
+        this.loadSubscriptionCountStats();
         this.loadLastSeen();
         this.loadPaidMembersByCadence();
         this.loadPaidMembersByTier();
