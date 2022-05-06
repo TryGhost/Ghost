@@ -1,25 +1,23 @@
 <div class="flex flex-column h-100 items-center overflow-auto">
     <header class="gh-publish-header" data-test-modal="update-flow">
         <button class="gh-publish-back-button" title="Close" type="button" {{on "click" @close}}>
-            <span>{{svg-jar "close-stroke"}} Close</span>
+            <span>{{svg-jar "close-stroke"}}</span>
         </button>
     </header>
 
     {{#let @data.publishOptions.post as |post|}}
-        <div class="gh-publish-settings-container">
+        <div class="gh-publish-settings-container gh-update-flow">
             <div class="gh-publish-title">
                 This {{post.displayName}} is
-                <span>{{post.status}}</span>
+                <span class="green">{{post.status}}</span>
             </div>
 
-            <p>
+            <p class="gh-publish-confirmation">
                 {{#let (moment-site-tz post.publishedAtUTC) as |publishedAt|}}
                     On
-                    <strong>
                         {{moment-format publishedAt "D MMM YYYY"}}
                         at
                         {{moment-format publishedAt "HH:mm"}}
-                    </strong>
                     your
                 {{/let}}
 

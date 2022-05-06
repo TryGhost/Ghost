@@ -461,10 +461,10 @@
 .gh-publish-title {
     margin: 2px 0 4rem;
     color: var(--black);
-    font-size: 4.8rem;
+    font-size: 4.6rem;
     font-weight: 700;
     letter-spacing: -.017em;
-    line-height: 1.1em;
+    line-height: 1.2em;
 }
 
 .gh-publish-settings {
@@ -553,12 +553,39 @@
 }
 
 .gh-publish-setting-form.last fieldset {
+    display: flex;
     margin-bottom: 0;
+}
+
+.gh-publish-newsletter-trigger {
+    padding: 8px 16px;
+    font-size: 1.45rem;
+}
+
+.gh-publish-newsletter-trigger svg {
+    position: absolute;
+    top: 50%;
+    right: 16px;
+}
+
+.gh-publish-newsletter-dropdown {
+    z-index: 99999;
+    padding: 4px 0;
+}
+
+.gh-publish-newsletter-dropdown .ember-power-select-option {
+    padding: 8px 16px;
+}
+
+.gh-publish-newsletter-dropdown .ember-power-select-option[aria-selected="true"] {
+    color: var(--black);
+    font-weight: 600;
 }
 
 .gh-publish-types,
 .gh-publish-schedule {
     display: flex;
+    flex-shrink: 0;
     margin: 0;
 }
 
@@ -598,35 +625,54 @@
     color: var(--middarkgrey-d1);
 }
 
-.gh-publish-newsletter-trigger {
-    padding: 8px 16px;
-    font-size: 1.45rem;
+.gh-publish-schedule .gh-radio {
+    margin: 0;
 }
 
-.gh-publish-newsletter-trigger svg {
-    position: absolute;
-    top: 50%;
-    right: 16px;
+.gh-publish-setting-form .gh-date-time-picker {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 12px;
 }
 
-.gh-publish-newsletter-dropdown {
-    z-index: 99999;
-    padding: 4px 0;
+.gh-publish-setting-form .gh-date-time-picker-date {
+    height: 40px;
+    margin: 0;
+    padding: 8px 12px;
+    font-size: 1.4rem;
 }
 
-.gh-publish-newsletter-dropdown .ember-power-select-option {
-    padding: 8px 16px;
+.gh-publish-setting-form .gh-date-time-picker-date svg path,
+.gh-publish-setting-form .gh-date-time-picker-date svg rect {
+    fill: none;
+    stroke: var(--midgrey);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2px
 }
 
-.gh-publish-newsletter-dropdown .ember-power-select-option[aria-selected="true"] {
-    color: var(--black);
-    font-weight: 600;
+.gh-publish-setting-form .gh-date-time-picker-time {
+    width: unset;
+    height: 40px;
+    margin: 0;
+    padding: 8px 12px;
+    font-size: 1.4rem;
+}
+
+.gh-publish-setting-form .gh-date-time-picker-timezone {
+    margin: 0;
+    color: var(--midgrey);
+    font-weight: 500;
 }
 
 .gh-publish-cta {
     display: flex;
     flex-direction: column;
     width: max-content;
+}
+
+.gh-update-flow .gh-publish-cta {
+    flex-direction: row;
 }
 
 .gh-publish-cta .gh-btn {
