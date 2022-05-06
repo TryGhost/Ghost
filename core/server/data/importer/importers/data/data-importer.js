@@ -9,6 +9,7 @@ const PostsImporter = require('./posts');
 const TagsImporter = require('./tags');
 const SettingsImporter = require('./settings');
 const UsersImporter = require('./users');
+const NewslettersImporter = require('./newsletters');
 const RolesImporter = require('./roles');
 let importers = {};
 let DataImporter;
@@ -26,6 +27,7 @@ DataImporter = {
         importers.roles = new RolesImporter(importData.data);
         importers.tags = new TagsImporter(importData.data);
         importers.posts = new PostsImporter(importData.data);
+        importers.newsletters = new NewslettersImporter(importData.data);
         importers.settings = new SettingsImporter(importData.data);
 
         return importData;
