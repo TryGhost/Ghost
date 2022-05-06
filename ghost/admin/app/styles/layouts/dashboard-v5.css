@@ -285,6 +285,7 @@ Dashboard v5 Layout */
     flex-direction: column;
     align-items: flex-start;
     justify-content: flex-end;
+    padding: 0 0 8px;
 }
 
 .gh-dashboard5-legend-item {
