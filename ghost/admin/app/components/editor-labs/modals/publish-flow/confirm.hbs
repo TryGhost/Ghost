@@ -1,5 +1,7 @@
-<div class="gh-publish-title"><span>Ready, set, publish.</span> Share it with the world.</div>
-
+<div class="gh-publish-title">
+    <div class="green">Ready, set, publish.</div> 
+    <div>Share it with the world.</div>
+</div>
 <p class="gh-publish-confirmation">
     {{#if @publishOptions.isScheduled}}
         {{#let (moment-site-tz @publishOptions.scheduledAtUTC) as |scheduledAt|}}
@@ -58,7 +60,7 @@
         @buttonText={{@publishOptions.selectedPublishTypeOption.confirmButton}}
         @runningText={{if @publishOptions.willOnlyEmail "Sending" "Publishing"}}
         @successText={{if @publishOptions.willOnlyEmail "Sent" "Published"}}
-        @class="gh-btn gh-btn-gradient gh-btn-large"
+        @class="gh-btn gh-btn-pulse gh-btn-large"
     />
     <div class="gh-publish-cta-secondary">
         Or
