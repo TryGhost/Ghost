@@ -699,7 +699,8 @@
                     "email": "all",
                     "snippet": "all",
                     "product": ["browse", "read", "add", "edit"],
-                    "offer": ["browse", "read", "add", "edit"]
+                    "offer": ["browse", "read", "add", "edit"],
+                    "newsletter": ["browse", "read", "add", "edit"]
                 },
                 "Editor": {
                     "notification": "all",
