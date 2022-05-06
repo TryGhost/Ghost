@@ -13,6 +13,28 @@ export default class PublishModalComponent extends Component {
     @tracked isConfirming = false;
     @tracked isComplete = false;
 
+    get recipientType() {
+        const filter = this.args.data.publishOptions.recipientFilter;
+
+        if (!filter) {
+            return 'none';
+        }
+
+        if (filter === 'status:free') {
+            return 'free';
+        }
+
+        if (filter === 'status:-free') {
+            return 'paid';
+        }
+
+        if (filter.includes('status:free') && filter.includes('status:-free')) {
+            return 'all';
+        }
+
+        return 'specific';
+    }
+
     @action
     toggleConfirm() {
         // TODO: validate?

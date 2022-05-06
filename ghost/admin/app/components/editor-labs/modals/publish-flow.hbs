@@ -9,6 +9,7 @@
         {{#if this.isConfirming}}
             <EditorLabs::Modals::PublishFlow::Confirm
                 @publishOptions={{@data.publishOptions}}
+                @recipientType={{this.recipientType}}
                 @saveTask={{this.saveTask}}
                 @cancel={{this.toggleConfirm}}
                 @close={{@close}}
@@ -21,6 +22,7 @@
         {{else}}
             <EditorLabs::Modals::PublishFlow::Options
                 @publishOptions={{@data.publishOptions}}
+                @recipientType={{this.recipientType}}
                 @confirm={{this.toggleConfirm}}
                 @close={{@close}}
             />
