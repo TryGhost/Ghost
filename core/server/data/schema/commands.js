@@ -72,16 +72,18 @@ function dropNullable(tableName, column, transaction = db.knex) {
 }
 
 async function addColumn(tableName, column, transaction = db.knex, columnSpec) {
-    let sql = transaction.schema.table(tableName, function (table) {
+    const addColumnBuilder = transaction.schema.table(tableName, function (table) {
         addTableColumn(tableName, table, column, columnSpec);
-    }).toSQL()[0].sql;
+    });
 
     // Use the default flow for SQLite because .toSQL() is tricky with SQLite when
     // it does the table dance
     if (DatabaseInfo.isSQLite(transaction)) {
-        await transaction.raw(sql);
+        await addColumnBuilder;
         return;
     }
+
+    let sql = addColumnBuilder.toSQL()[0].sql;
 
     if (DatabaseInfo.isMySQL(transaction)) {
         // Guard against an ending semicolon
@@ -97,16 +99,18 @@ async function dropColumn(tableName, column, transaction = db.knex, columnSpec =
         await dropForeign({fromTable: tableName, fromColumn: column, toTable, toColumn, transaction});
     }
 
-    let sql = transaction.schema.table(tableName, function (table) {
+    const dropTableBuilder = transaction.schema.table(tableName, function (table) {
         table.dropColumn(column);
-    }).toSQL()[0].sql;
+    });
 
     // Use the default flow for SQLite because .toSQL() is tricky with SQLite when
     // it does the table dance
     if (DatabaseInfo.isSQLite(transaction)) {
-        await transaction.raw(sql);
+        await dropTableBuilder;
         return;
     }
+
+    let sql = dropTableBuilder.toSQL()[0].sql;
 
     if (DatabaseInfo.isMySQL(transaction)) {
         // Guard against an ending semicolon
