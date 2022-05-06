@@ -77,32 +77,6 @@
     "maintenance": {
         "enabled": false
     },
-    "api": {
-        "versions": {
-            "all": ["v2", "v3", "v4", "v5", "canary"],
-            "default": "v4",
-            "canary": {
-                "admin": "canary/admin",
-                "content": "canary/content"
-            },
-            "v5": {
-                "admin": "admin",
-                "content": "content"
-            },
-            "v4": {
-                "admin": "v4/admin",
-                "content": "v4/content"
-            },
-            "v3": {
-                "admin": "v3/admin",
-                "content": "v3/content"
-            },
-            "v2": {
-                "admin": "v2/admin",
-                "content": "v2/content"
-            }
-        }
-    },
     "imageOptimization": {
         "defaultMaxWidth": 2000,
         "contentImageSizes": {

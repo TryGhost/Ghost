@@ -252,9 +252,6 @@ async function initDynamicRouting() {
 async function initServices({config}) {
     debug('Begin: initServices');
 
-    const defaultApiVersion = config.get('api:versions:default');
-    debug(`Default API Version: ${defaultApiVersion}`);
-
     debug('Begin: Services');
     const stripe = require('./server/services/stripe');
     const members = require('./server/services/members');
