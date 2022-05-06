@@ -87,5 +87,20 @@ describe('PostsImporter', function () {
             should.exist(pageTrueTypePost);
             pageTrueTypePost.type.should.equal('post', 'pageTrueTypePost.type');
         });
+
+        it('Removes the newsletter_id column', function () {
+            const fakePosts = [{
+                slug: 'post-with-newsletter',
+                newsletter_id: 'bananas'
+            }];
+
+            const importer = new PostsImporter({posts: fakePosts});
+
+            importer.beforeImport();
+
+            const postWithoutNewsletter = find(importer.dataToImport, {slug: 'post-with-newsletter'});
+            should.exist(postWithoutNewsletter);
+            should.not.exist(postWithoutNewsletter.newsletter_id);
+        });
     });
 });
