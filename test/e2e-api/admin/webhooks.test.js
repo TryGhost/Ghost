@@ -1,9 +1,9 @@
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyErrorId, anyObjectId, anyISODate} = matchers;
-const API_VERSION = 'canary';
+const {anyEtag, anyErrorId, anyObjectId, anyISODate, stringMatching} = matchers;
 
 const webhookMatcher = {
     id: anyObjectId,
+    api_version: stringMatching(/v\d+\.\d+/),
     integration_id: anyObjectId,
     created_at: anyISODate,
     updated_at: anyISODate
@@ -25,7 +25,6 @@ describe('Webhooks API', function () {
             target_url: 'http://example.com/webhooks/test/extra/1',
             name: 'test',
             secret: 'thisissecret',
-            api_version: API_VERSION,
             integration_id: fixtureManager.get('integrations', 0).id
         };
     });
@@ -69,7 +68,6 @@ describe('Webhooks API', function () {
                 target_url: 'http://example.com/webhooks/test/extra/10',
                 name: 'test',
                 secret: 'thisissecret',
-                api_version: API_VERSION,
                 integration_id: `fake-integration`
             }]})
             .expectStatus(422)
