@@ -459,7 +459,7 @@
 }
 
 .gh-publish-title {
-    margin: 2px 0 6.4rem;
+    margin: 2px 0 4rem;
     color: var(--black);
     font-size: 4.8rem;
     font-weight: 700;
@@ -467,12 +467,8 @@
     line-height: 1.1em;
 }
 
-.gh-publish-title span {
-    color: var(--green);
-}
-
 .gh-publish-settings {
-    margin-bottom: 5.2rem;
+    margin: 1rem 0 5.2rem;
     width: 100%;
 }
 
@@ -637,30 +633,30 @@
     width: max-content;
 }
 
-.gh-publish-cta .gh-btn-gradient {
-    color: #fff;
+.gh-publish-cta .gh-btn-pulse {
     fill: #fff;
-    background: rgba(0, 0, 0, 0) linear-gradient(94.75deg, 
-                #a7f500 0%, 
-                #60d20d 36.66%,
-                #30cf43 56.66%,  
-                #1dc32e 78.76%, 
-                #009b7f 100%) 
-                repeat scroll 98% 0% / 200% 100%;
+    background: linear-gradient(90deg,#4dd831,#1DC32E);
+    color: #fff;
     font-weight: 500;
-    transition: background-color 200ms ease 0s, background-position-x 400ms ease-in-out 0s;
+    box-shadow: 0 0 0 0 rgba(48, 207, 67, 1);
+	animation: pulse-green 2s infinite;
 }
 
-.gh-publish-cta .gh-btn-gradient:hover {
-    color: #fff !important;
-    background-position-x: 20%;
-    transition: background-color 200ms ease 0s, background-position-x 400ms ease-in-out 0s;
-}
-
-.gh-publish-cta .gh-btn-gradient:active,
-.gh-publish-cta .gh-btn-gradient:focus {
-    background-position-x: 20%;
-    transition: background-color 200ms ease 0s, background-position-x 400ms ease-in-out 0s;
+@keyframes pulse-green {
+	0% {
+		transform: scale(0.98);
+		box-shadow: 0 0 0 0 rgba(48, 207, 67, 0.7);
+	}
+	
+	70% {
+		transform: scale(1);
+		box-shadow: 0 0 0 8px rgba(48, 207, 67, 0);
+	}
+	
+	100% {
+		transform: scale(0.98);
+		box-shadow: 0 0 0 0 rgba(48, 207, 67, 0);
+	}
 }
 
 .gh-publish-cta-secondary {
