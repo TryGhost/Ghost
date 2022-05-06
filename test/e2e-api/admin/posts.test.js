@@ -22,6 +22,11 @@ describe('Posts API', function () {
          * can't be overwritten after an email record is created.
          */
         await localUtils.doAuth(request, 'users:extra', 'posts', 'emails', 'newsletters', 'members');
+
+        // Assign a newsletter to one of the posts
+        const newsletterId = testUtils.DataGenerator.Content.newsletters[0].id;
+        const postId = testUtils.DataGenerator.Content.posts[0].id;
+        await models.Post.edit({newsletter_id: newsletterId}, {id: postId});
     });
 
     afterEach(function () {
@@ -60,6 +65,13 @@ describe('Posts API', function () {
         jsonResponse.posts[2].authors.length.should.eql(1);
         jsonResponse.posts[2].tags[0].url.should.eql(`${config.get('url')}/tag/getting-started/`);
         jsonResponse.posts[2].authors[0].url.should.eql(`${config.get('url')}/author/ghost/`);
+
+        jsonResponse.posts[12].id.should.eql(testUtils.DataGenerator.Content.posts[0].id);
+        jsonResponse.posts[12].newsletter.id.should.eql(testUtils.DataGenerator.Content.newsletters[0].id);
+        should(jsonResponse.posts[12].newsletter_id).not.exist;
+
+        should(jsonResponse.posts[0].newsletter).be.null;
+        should(jsonResponse.posts[0].newsletter_id).not.exist;
     });
 
     it('Can retrieve multiple post formats', async function () {
