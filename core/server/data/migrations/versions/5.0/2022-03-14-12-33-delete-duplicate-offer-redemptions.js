@@ -8,7 +8,7 @@ module.exports = createTransactionalMigration(
             DELETE
                 duplicate_redemptions
             FROM
-                offer_redemptions duplicate_redemptions,
+                offer_redemptions AS duplicate_redemptions,
                 offer_redemptions
             WHERE
                 duplicate_redemptions.subscription_id = offer_redemptions.subscription_id

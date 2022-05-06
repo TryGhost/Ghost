@@ -46,7 +46,6 @@ module.exports = createTransactionalMigration(
         function calculateMRR(subscription, redemption) {
             if (redemption && subscription.interval !== redemption.discount_interval) {
                 logging.error('Found invalid price & redemption pair');
-                logging.info(redemption.subscription_id);
                 return calculateMRR(subscription);
             }
 
@@ -81,7 +80,6 @@ module.exports = createTransactionalMigration(
                 interval: redemption.interval,
                 amount: redemption.amount
             }, redemption);
-            logging.info(mrr);
             updatedEvents.push({
                 id: firstEvent.id,
                 type: 'created',
@@ -103,7 +101,7 @@ module.exports = createTransactionalMigration(
         const idsToDelete = updatedEvents.map(event => event.id);
 
         await knex('members_paid_subscription_events').whereIn('id', idsToDelete).del();
-        await knex('members_paid_subscription_events').insert(updatedEvents);
+        await knex.batchInsert('members_paid_subscription_events', updatedEvents);
     },
     async function down() {}
 );
