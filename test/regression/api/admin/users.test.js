@@ -49,7 +49,8 @@ describe('User API', function () {
                             'property',
                             'help',
                             'code',
-                            'id'
+                            'id',
+                            'ghostErrorCode'
                         ]);
                         done();
                     });
@@ -79,7 +80,8 @@ describe('User API', function () {
                             'property',
                             'help',
                             'code',
-                            'id'
+                            'id',
+                            'ghostErrorCode'
                         ]);
                         done();
                     });
