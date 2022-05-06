@@ -18,14 +18,14 @@ module.exports = createTransactionalMigration(
             return;
         }
 
-        // Set newsletter ID on email and related post records
+        // Set newsletter ID only on posts with related email records without a newsletter assigned
+        await knex('posts')
+            .update('newsletter_id', newsletter.id)
+            .whereIn('id', knex.raw('SELECT post_id FROM emails WHERE emails.newsletter_id IS NULL'));
+
         await knex('emails')
-            .join('posts', 'emails.post_id', '=', 'posts.id')
-            .update({
-                ['emails.newsletter_id']: newsletter.id,
-                ['posts.newsletter_id']: newsletter.id
-            })
-            .where('emails.newsletter_id', null);
+            .update('newsletter_id', newsletter.id)
+            .whereNull('newsletter_id');
     },
     async function down() {
         // Not required
