@@ -49,5 +49,6 @@ module.exports.contentVersion = (req, res, next) => {
 };
 
 module.exports.versionRewrites = require('./mw-version-rewrites');
+module.exports.legacyApiPathMatch = require('./legacy-api-path-match');
 
 module.exports.init = init;

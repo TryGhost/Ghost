@@ -1,4 +1,4 @@
-const routeMatch = require('path-match')();
+const legacyApiPathMatch = require('./legacy-api-path-match');
 const urlUtils = require('../../../shared/url-utils');
 
 /**
@@ -9,7 +9,7 @@ const urlUtils = require('../../../shared/url-utils');
  * @param {import('express').NextFunction} next
  */
 module.exports = (req, res, next) => {
-    let {version} = routeMatch('/:version(v2|v3|v4|canary)/:api(admin|content)/*')(req.url);
+    let {version} = legacyApiPathMatch(req.url);
 
     // If we don't match a valid version, carry on
     if (!version) {

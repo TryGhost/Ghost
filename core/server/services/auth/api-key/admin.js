@@ -3,7 +3,7 @@ const url = require('url');
 const models = require('../../../models');
 const errors = require('@tryghost/errors');
 const limitService = require('../../../services/limits');
-const config = require('../../../../shared/config');
+const {legacyApiPathMatch} = require('../../../services/api-version-compatibility');
 const tpl = require('@tryghost/tpl');
 const _ = require('lodash');
 
@@ -139,19 +139,20 @@ const authenticateWithToken = async (req, res, next, {token, JWT_OPTIONS}) => {
         // https://github.com/auth0/node-jsonwebtoken/issues/208#issuecomment-231861138
         const secret = Buffer.from(apiKey.get('secret'), 'hex');
 
-        const {pathname} = url.parse(req.originalUrl);
-        const [hasMatch, version, api] = pathname.match(/ghost\/api\/([^/]+)\/([^/]+)\/(.+)*/); // eslint-disable-line no-unused-vars
+        // Using req.originalUril means we get the right url even if version-rewrites have happened
+        const {version, api} = legacyApiPathMatch(req.originalUrl);
 
         // ensure the token was meant for this api
         let options;
-        if (!config.get('api:versions:all').includes(version)) {
-            // CASE: non-versioned api request
+
+        if (version) {
+            // CASE: legacy versioned api request
             options = Object.assign({
-                audience: new RegExp(`\/?${version}\/?$`) // eslint-disable-line no-useless-escape
+                audience: new RegExp(`/?${version}/${api}/?$`)
             }, JWT_OPTIONS);
         } else {
             options = Object.assign({
-                audience: new RegExp(`\/?${version}\/${api}\/?$`) // eslint-disable-line no-useless-escape
+                audience: new RegExp(`/?${api}/?$`)
             }, JWT_OPTIONS);
         }
 
