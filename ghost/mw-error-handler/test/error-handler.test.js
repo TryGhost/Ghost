@@ -6,10 +6,10 @@ const {InternalServerError} = require('@tryghost/errors');
 const {
     prepareError,
     handleJSONResponse,
-    handleJSONResponseV2,
     handleHTMLResponse,
     prepareStack,
-    resourceNotFound
+    resourceNotFound,
+    pageNotFound
 } = require('../');
 
 describe('Prepare Error', function () {
@@ -20,6 +20,45 @@ describe('Prepare Error', function () {
             err.statusCode.should.eql(500);
             err.name.should.eql('InternalServerError');
             err.stack.should.startWith('Error: test!');
+            done();
+        });
+    });
+
+    it('Correctly prepares a 404 error', function (done) {
+        let error = {message: 'Oh dear', statusCode: 404};
+
+        prepareError(error, {}, {
+            set: () => {}
+        }, (err) => {
+            err.statusCode.should.eql(404);
+            err.name.should.eql('NotFoundError');
+            err.stack.should.startWith('NotFoundError: Resource could not be found');
+            err.hideStack.should.eql(true);
+            done();
+        });
+    });
+
+    it('Correctly prepares an error array', function (done) {
+        prepareError([new Error('test!')], {}, {
+            set: () => {}
+        }, (err) => {
+            err.statusCode.should.eql(500);
+            err.name.should.eql('InternalServerError');
+            err.stack.should.startWith('Error: test!');
+            done();
+        });
+    });
+
+    it('Correctly prepares a handlebars errpr', function (done) {
+        let error = new Error('obscure handlebars message!');
+        error.stack += '\nnode_modules/handlebars/something';
+
+        prepareError(error, {}, {
+            set: () => {}
+        }, (err) => {
+            err.statusCode.should.eql(400);
+            err.name.should.eql('IncorrectUsageError');
+            err.stack.should.startWith('Error: obscure handlebars message!');
             done();
         });
     });
@@ -50,22 +89,8 @@ describe('Error renderers', function () {
         }, () => {});
     });
 
-    it('Renders JSON for v2', function (done) {
-        const errorRenderer = handleJSONResponseV2({
-            errorHandler: () => {}
-        })[3];
-
-        errorRenderer(new Error('test!'), {}, {
-            json: (data) => {
-                data.errors.length.should.eql(1);
-                data.errors[0].message.should.eql('test!');
-                done();
-            }
-        }, () => {});
-    });
-
     it('Handles unknown errors when preparing user message', function (done) {
-        const errorRenderer = handleJSONResponseV2({
+        const errorRenderer = handleJSONResponse({
             errorHandler: () => {}
         })[3];
 
@@ -85,7 +110,7 @@ describe('Error renderers', function () {
     });
 
     it('Uses templates when required', function (done) {
-        const errorRenderer = handleJSONResponseV2({
+        const errorRenderer = handleJSONResponse({
             errorHandler: () => {}
         })[3];
 
@@ -100,6 +125,30 @@ describe('Error renderers', function () {
             json: (data) => {
                 data.errors.length.should.eql(1);
                 data.errors[0].message.should.eql('Internal server error, cannot list blog.');
+                data.errors[0].context.should.eql('test!');
+                done();
+            }
+        }, () => {});
+    });
+
+    it('Uses defined message + context when available', function (done) {
+        const errorRenderer = handleJSONResponse({
+            errorHandler: () => {}
+        })[3];
+
+        errorRenderer(new InternalServerError({
+            message: 'test!',
+            context: 'Image was too large.'
+        }), {
+            frameOptions: {
+                docName: 'images',
+                method: 'upload'
+            }
+        }, {
+            json: (data) => {
+                data.errors.length.should.eql(1);
+                data.errors[0].message.should.eql('Internal server error, cannot upload image.');
+                data.errors[0].context.should.eql('test! Image was too large.');
                 done();
             }
         }, () => {});
@@ -184,6 +233,24 @@ describe('Resource Not Found', function () {
             should.equal(error.statusCode, 404);
             should.equal(error.message, 'Resource not found');
             done();
+        });
+    });
+
+    describe('pageNotFound', function () {
+        it('returns 404 with special message when message not set', function (done) {
+            pageNotFound({}, {}, (error) => {
+                should.equal(error.statusCode, 404);
+                should.equal(error.message, 'Page not found');
+                done();
+            });
+        });
+
+        it('returns 404 with special message even if message is set', function (done) {
+            pageNotFound({message: 'uh oh'}, {}, (error) => {
+                should.equal(error.statusCode, 404);
+                should.equal(error.message, 'Page not found');
+                done();
+            });
         });
     });
 });
