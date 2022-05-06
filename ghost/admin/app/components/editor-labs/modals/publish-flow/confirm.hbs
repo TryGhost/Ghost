@@ -21,7 +21,21 @@
         will be delivered to
 
         {{#let (members-count-fetcher query=(hash filter=@publishOptions.fullRecipientFilter)) as |countFetcher|}}
-            <strong>{{pluralize countFetcher.count "member"}}</strong>
+            <strong>
+                {{if (eq @recipientType "all") "all"}}
+
+                {{countFetcher.count}}
+
+                {{!-- @recipientType = none/free/paid/all/specific --}}
+                {{if (not-eq @recipientType "all") @recipientType}}
+            </strong>
+
+            {{#if @publishOptions.onlyDefaultNewsletter}}
+                <strong>{{gh-pluralize countFetcher.count "member" without-count=true}}</strong>
+            {{else}}
+                <strong>{{gh-pluralize countFetcher.count "subscriber" without-count=true}}</strong>
+                of <strong>{{@publishOptions.newsletter.name}}</strong>
+            {{/if}}
         {{/let}}
 
         {{#if @publishOptions.willPublish}}
@@ -47,7 +61,7 @@
         @class="gh-btn gh-btn-gradient gh-btn-large"
     />
     <div class="gh-publish-cta-secondary">
-        Or 
-        <button type="button" class="gh-btn gh-btn-link gh-btn-large" {{on "click" @close}}>change settings</button>
+        Or
+        <button type="button" class="gh-btn gh-btn-link gh-btn-large" {{on "click" @cancel}}>change settings</button>
     </div>
 </div>

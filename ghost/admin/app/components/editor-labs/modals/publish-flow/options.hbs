@@ -32,12 +32,20 @@
                 {{svg-jar "member"}}
                 <div class="gh-publish-setting-trigger">
                     {{#let (members-count-fetcher query=(hash filter=@publishOptions.fullRecipientFilter)) as |countFetcher|}}
+                        {{if (eq @recipientType "all") "All"}}
+
                         {{countFetcher.count}}
+
+                        {{!-- @recipientType = none/free/paid/all/specific --}}
+                        {{if (not-eq @recipientType "all") @recipientType}}
+
+                        {{#if @publishOptions.onlyDefaultNewsletter}}
+                            {{gh-pluralize countFetcher.count "member" without-count=true}}
+                        {{else}}
+                            {{gh-pluralize countFetcher.count "subscriber" without-count=true}}
+                            of <span class="gh-selected-newsletter">{{@publishOptions.newsletter.name}}</span>
+                        {{/if}}
                     {{/let}}
-                    {{#unless @publishOptions.onlyDefaultNewsletter}}
-                        <span class="gh-selected-newsletter">{{@publishOptions.newsletter.name}}</span>
-                    {{/unless}}
-                    subscribers
                 </div>
                 <span class="{{if (eq this.openSection "emailRecipients") "expanded"}}">
                     {{svg-jar "arrow-down" class="icon-expand"}}
@@ -99,7 +107,7 @@
 <div class="gh-publish-cta">
     <button type="button" class="gh-btn gh-btn-black gh-btn-large" {{on "click" @confirm}}><span>Looks good, next &rarr;</span></button>
     <div class="gh-publish-cta-secondary">
-        Or 
+        Or
         <button type="button" class="gh-btn gh-btn-link gh-btn-large" {{on "click" @close}}>continue editing</button>
     </div>
 </div>
