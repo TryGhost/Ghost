@@ -1,22 +1,11 @@
-const DatabaseInfo = require('@tryghost/database-info');
-const {any} = require('@tryghost/express-test').snapshot;
-const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyObjectId, anyUuid, anyISODateTime, anyLocationFor} = matchers;
-const configUtils = require('../../utils/configUtils');
-const uuid = require('uuid');
-const urlUtils = require('../../../core/shared/url-utils');
-const db = require('../../../core/server/data/db');
-const knex = db.knex;
-require('should');
-
 const assert = require('assert');
-
-const models = require('../../../core/server/models');
+const {agentProvider, mockManager, fixtureManager, configUtils, dbUtils, matchers} = require('../../utils/e2e-framework');
+const {anyEtag, anyObjectId, anyUuid, anyISODateTime, anyLocationFor, anyNumber} = matchers;
 
 const assertMemberRelationCount = async (newsletterId, expectedCount) => {
-    const newsletter = await models.Newsletter.findOne({id: newsletterId}, {withRelated: 'members'});
+    const relations = await dbUtils.knex('members_newsletters').where({newsletter_id: newsletterId}).pluck('id');
 
-    assert.equal(newsletter.related('members').length, expectedCount);
+    assert.equal(relations.length, expectedCount);
 };
 
 const newsletterSnapshot = {
@@ -31,12 +20,11 @@ const newsletterSnapshotWithoutSortOrder = {
     uuid: anyUuid,
     created_at: anyISODateTime,
     updated_at: anyISODateTime,
-    sort_order: any(Number)
+    sort_order: anyNumber
 };
 
-let agent;
-
 describe('Newsletters API', function () {
+    let agent;
     let mailMocks;
 
     before(async function () {
@@ -102,12 +90,11 @@ describe('Newsletters API', function () {
     });
 
     it('Can add a newsletter', async function () {
-        const siteUrl = urlUtils.getSiteUrl();
+        const siteUrl = configUtils.config.getSiteUrl();
         const relativePath = 'content/images/2022/05/cover-image.jpg';
         const absolutePath = siteUrl + relativePath;
         const transformReadyPath = '__GHOST_URL__/' + relativePath;
         const newsletter = {
-            uuid: uuid.v4(),
             name: 'My test newsletter',
             sender_name: 'Test',
             sender_email: null,
@@ -132,7 +119,7 @@ describe('Newsletters API', function () {
             })
             .expect(({body}) => {
                 // Should still be absolute
-                body.newsletters[0].header_image.should.equal(absolutePath);
+                assert.equal(body.newsletters[0].header_image, absolutePath);
             })
             .matchHeaderSnapshot({
                 etag: anyEtag,
@@ -142,13 +129,12 @@ describe('Newsletters API', function () {
         const id = body2.newsletters[0].id;
 
         // Check with a database query if the header_image is saved correctly with a 'transformReady' path
-        const [header_image] = await knex('newsletters').where('id', id).pluck('header_image');
-        header_image.should.equal(transformReadyPath);
+        const [header_image] = await dbUtils.knex('newsletters').where('id', id).pluck('header_image');
+        assert.equal(header_image, transformReadyPath);
     });
 
     it('Can include members & posts counts when adding a newsletter', async function () {
         const newsletter = {
-            uuid: uuid.v4(),
             name: 'My test newsletter 2',
             sender_name: 'Test',
             sender_email: null,
@@ -212,7 +198,6 @@ describe('Newsletters API', function () {
 
     it('Can add a newsletter - with custom sender_email', async function () {
         const newsletter = {
-            uuid: uuid.v4(),
             name: 'My test newsletter with custom sender_email',
             sender_name: 'Test',
             sender_email: 'test@example.com',
@@ -250,7 +235,6 @@ describe('Newsletters API', function () {
 
     it('Can add a newsletter - and subscribe existing members', async function () {
         const newsletter = {
-            uuid: uuid.v4(),
             name: 'New newsletter with existing members subscribed',
             sender_name: 'Test',
             sender_email: null,
@@ -442,10 +426,11 @@ describe('Newsletters API', function () {
     });
 
     it('Can add a newsletter - with custom sender_email and subscribe existing members', async function () {
-        if (DatabaseInfo.isSQLite(db.knex)) {
+        if (dbUtils.isSQLite()) {
             // This breaks snapshot tests if you don't update snapshot tests on MySQL + make sure this is the last ADD test
             return;
         }
+
         const newsletter = {
             name: 'My test newsletter with custom sender_email and subscribe existing',
             sender_name: 'Test',

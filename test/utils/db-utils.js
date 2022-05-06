@@ -213,3 +213,5 @@ module.exports.initData = async () => {
     await urlServiceUtils.init();
     await urlServiceUtils.isFinished();
 };
+
+module.exports.knex = db.knex;

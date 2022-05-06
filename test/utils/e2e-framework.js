@@ -279,6 +279,7 @@ module.exports = {
     matchers: {
         anyString: any(String),
         anyArray: any(Array),
+        anyNumber: any(Number),
         anyISODateTime: stringMatching(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z/),
         anyISODate: stringMatching(/\d{4}-\d{2}-\d{2}/),
         anyISODateTimeWithTZ: stringMatching(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000\+\d{2}:\d{2}/),
@@ -290,5 +291,10 @@ module.exports = {
             return stringMatching(new RegExp(`https?://.*?/${resource}/[a-f0-9]{24}/`));
         },
         stringMatching
-    }
+    },
+
+    // utilities
+    configUtils: require('./configUtils'),
+    dbUtils: require('./db-utils'),
+    urlUtils: require('./urlUtils')
 };
