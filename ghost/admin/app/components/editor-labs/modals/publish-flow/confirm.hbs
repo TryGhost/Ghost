@@ -1,5 +1,5 @@
 <div class="gh-publish-title">
-    <div class="green">Ready, set, publish.</div> 
+    <div class="green">Ready, set, publish.</div>
     <div>Share it with the world.</div>
 </div>
 <p class="gh-publish-confirmation">
@@ -57,7 +57,7 @@
 <div class="gh-publish-cta">
     <GhTaskButton
         @task={{@saveTask}}
-        @buttonText={{@publishOptions.selectedPublishTypeOption.confirmButton}}
+        @buttonText={{this.confirmButtonText}}
         @runningText={{if @publishOptions.willOnlyEmail "Sending" "Publishing"}}
         @successText={{if @publishOptions.willOnlyEmail "Sent" "Published"}}
         @class="gh-btn gh-btn-pulse gh-btn-large"

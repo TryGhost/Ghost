@@ -92,18 +92,15 @@ export class PublishOptions {
             value: 'publish+send', // internal
             label: 'Publish and email', // shown in expanded options
             display: 'Publish and email', // shown in option title
-            confirmButton: 'Yes, publish and send', // shown in confirm step
             disabled: this.emailDisabled
         }, {
             value: 'publish',
             label: 'Publish only',
-            display: 'Publish',
-            confirmButton: 'Yes, publish on site'
+            display: 'Publish'
         }, {
             value: 'send',
             label: 'Email only',
             display: 'Email',
-            confirmButton: 'Yes, send by email',
             disabled: this.emailDisabled
         }];
     }
