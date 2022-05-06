@@ -19,8 +19,14 @@
 
     {{@publishOptions.post.displayName}}
 
+    {{#if @publishOptions.willPublish}}
+        will be published on your site{{#if @publishOptions.willEmail}}, and delivered to{{else}}.{{/if}}
+    {{/if}}
+
     {{#if @publishOptions.willEmail}}
-        will be delivered to
+        {{#unless @publishOptions.willPublish}}
+            will be delivered to
+        {{/unless}}
 
         {{#let (members-count-fetcher query=(hash filter=@publishOptions.fullRecipientFilter)) as |countFetcher|}}
             <strong>
@@ -36,22 +42,16 @@
                 <strong>{{gh-pluralize countFetcher.count "member" without-count=true}}</strong>
             {{else}}
                 <strong>{{gh-pluralize countFetcher.count "subscriber" without-count=true}}</strong>
-                of <strong>{{@publishOptions.newsletter.name}}</strong>
+                of <strong>{{@publishOptions.newsletter.name}}</strong>{{#if @publishOptions.willPublish}}.{{else}},{{/if}}
             {{/if}}
         {{/let}}
 
-        {{#if @publishOptions.willPublish}}
-            and
-        {{else}}
+        {{#unless @publishOptions.willPublish}}
             and will <strong>not</strong> be published on your site.
-        {{/if}}
+        {{/unless}}
     {{/if}}
 
-    {{#if @publishOptions.willPublish}}
-        will be published on your site.
-    {{/if}}
-
-    Are you good to go?
+     This is it.
 </p>
 
 <div class="gh-publish-cta">
@@ -62,8 +62,5 @@
         @successText={{if @publishOptions.willOnlyEmail "Sent" "Published"}}
         @class="gh-btn gh-btn-pulse gh-btn-large"
     />
-    <div class="gh-publish-cta-secondary">
-        Or
-        <button type="button" class="gh-btn gh-btn-link gh-btn-large" {{on "click" @cancel}}>change settings</button>
-    </div>
+    <button type="button" class="gh-btn gh-btn-link gh-btn-large gh-publish-cta-secondary" {{on "click" @cancel}}>Back to publish settings</button>
 </div>
