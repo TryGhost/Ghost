@@ -20,6 +20,14 @@ export default class Overview extends Component {
         return this.dashboardStats.memberCounts?.total ?? 0;
     }
 
+    get isTotalMembersZero() {
+        return this.dashboardStats.memberCounts && this.totalMembers === 0;
+    }
+
+    get isTotalMembersMoreThanZero() {
+        return this.dashboardStats.memberCounts && this.totalMembers > 0;
+    }
+
     get paidMembers() {
         return this.dashboardStats.memberCounts?.paid ?? 0;
     }

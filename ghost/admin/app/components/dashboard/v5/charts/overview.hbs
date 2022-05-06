@@ -1,6 +1,5 @@
-<section class="gh-dashboard5-section gh-dashboard5-overview">
+<section class="gh-dashboard5-section gh-dashboard5-overview {{unless this.isTotalMembersMoreThanZero 'is-hidden'}}">
     <article {{did-insert this.loadCharts}} class="gh-dashboard5-box is-secondary">
-
         <div class="gh-dashboard5-columns">
             <div class="gh-dashboard5-column">
                 <Dashboard::v5::Parts::Metric
@@ -27,6 +26,5 @@
                     @large={{true}} /> 
             </div>
         </div>
-
     </article>
 </section>

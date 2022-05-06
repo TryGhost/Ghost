@@ -14,6 +14,10 @@ export default class DashboardDashboardV5Component extends Component {
         return this.dashboardStats.siteStatus === null;
     }
 
+    get totalMembers() {
+        return this.dashboardStats.memberCounts?.total ?? 0;
+    }
+
     get hasPaidTiers() {
         return this.dashboardStats.siteStatus?.hasPaidTiers;
     }
