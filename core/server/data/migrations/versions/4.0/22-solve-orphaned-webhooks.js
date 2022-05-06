@@ -1,13 +1,7 @@
 const {createIrreversibleMigration} = require('../../utils');
 const logging = require('@tryghost/logging');
 const ObjectID = require('bson-objectid');
-const crypto = require('crypto');
-
-// createSecret is copied from core/server/models/api-key.js
-const createSecret = (type) => {
-    const bytes = type === 'content' ? 13 : 32;
-    return crypto.randomBytes(bytes).toString('hex');
-};
+const security = require('@tryghost/security');
 
 module.exports = createIrreversibleMigration(
     async function up(knex) {
@@ -54,7 +48,7 @@ module.exports = createIrreversibleMigration(
         const contentKey = {
             id: ObjectID().toHexString(),
             type: 'content',
-            secret: createSecret('content'),
+            secret: security.secret.create('content'),
             role_id: null,
             integration_id: integration.id,
             created_at: now,
@@ -67,7 +61,7 @@ module.exports = createIrreversibleMigration(
         const adminKey = {
             id: ObjectID().toHexString(),
             type: 'admin',
-            secret: createSecret('admin'),
+            secret: security.secret.create('admin'),
             role_id: role.id,
             integration_id: integration.id,
             created_at: now,
