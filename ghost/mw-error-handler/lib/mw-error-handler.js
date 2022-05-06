@@ -105,32 +105,19 @@ module.exports.prepareStack = (err, req, res, next) => { // eslint-disable-line 
 };
 
 const jsonErrorRenderer = (err, req, res, next) => { // eslint-disable-line no-unused-vars
-    res.json({
-        errors: [{
-            message: err.message,
-            context: err.context,
-            help: err.help,
-            errorType: err.errorType,
-            errorDetails: err.errorDetails,
-            ghostErrorCode: err.ghostErrorCode
-        }]
-    });
-};
-
-const jsonErrorRendererV2 = (err, req, res, next) => { // eslint-disable-line no-unused-vars
     const userError = prepareUserMessage(err, req);
 
     res.json({
         errors: [{
-            message: userError.message || null,
+            message: userError.message,
             context: userError.context || null,
             type: err.errorType || null,
             details: err.errorDetails || null,
             property: err.property || null,
             help: err.help || null,
             code: err.code || null,
-            id: err.id || null
-            // @TODO: add ghostErrorCode here in a major (I thought V2 was for the V2 api, but it's actually the newer/correct handler)
+            id: err.id || null,
+            ghostErrorCode: err.ghostErrorCode || null
         }]
     });
 };
@@ -231,9 +218,6 @@ module.exports.pageNotFound = (req, res, next) => {
     next(new errors.NotFoundError({message: tpl(messages.pageNotFound)}));
 };
 
-/**
- * @deprecated: not used as of Ghost v5 and should be removed in a major bump
- */
 module.exports.handleJSONResponse = sentry => [
     // Make sure the error can be served
     module.exports.prepareError,
@@ -243,21 +227,6 @@ module.exports.handleJSONResponse = sentry => [
     module.exports.prepareStack,
     // Render the error using JSON format
     jsonErrorRenderer
-];
-
-/**
- * @deprecated with above
- * @TODO: rename this without the v2 in a major bump
- */
-module.exports.handleJSONResponseV2 = sentry => [
-    // Make sure the error can be served
-    module.exports.prepareError,
-    // Handle the error in Sentry
-    sentry.errorHandler,
-    // Format the stack for the user
-    module.exports.prepareStack,
-    // Render the error using JSON format
-    jsonErrorRendererV2
 ];
 
 module.exports.handleHTMLResponse = sentry => [
