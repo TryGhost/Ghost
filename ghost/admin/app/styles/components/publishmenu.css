@@ -373,12 +373,6 @@
     right: 10px;
 }
 
-.gh-publishmenu-newsletter-trigger svg {
-    position: absolute;
-    top: 50%;
-    right: 10px;
-}
-
 .gh-publishmenu-newsletter-dropdown {
     z-index: 99999;
 }
@@ -458,7 +452,7 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    width: 740px;
+    width: 640px;
     margin: 0 auto 8rem;
     padding-top: 11vw;
     margin-bottom: 11vw;
@@ -554,20 +548,31 @@
 }
 
 .gh-publish-setting-form {
-    margin: 1rem 0 3.6rem;
+    margin: 1.6rem 0 4rem;
     background-color: var(--white);
 }
 
-.gh-publish-setting-form .gh-publish-types {
+.gh-publish-setting-form.last {
+    margin-bottom: 0;
+}
+
+.gh-publish-setting-form.last fieldset {
+    margin-bottom: 0;
+}
+
+.gh-publish-types,
+.gh-publish-schedule {
     display: flex;
     margin: 0;
 }
 
-.gh-publish-types .gh-radio-button {
+.gh-publish-types .gh-radio-button,
+.gh-publish-schedule .gh-radio-button {
     display: none;
 }
 
-.gh-publish-types label {
+.gh-publish-types label,
+.gh-publish-schedule label {
     display: block;
     height: 40px;
     margin-right: 1.2rem;
@@ -583,7 +588,8 @@
     border-radius: 21px;
 }
 
-.gh-publish-types .gh-radio-button:checked + label {
+.gh-publish-types .gh-radio-button:checked + label,
+.gh-publish-schedule .gh-radio.active label {
     padding: 0 19px;
     border: 2px solid var(--black);
     color: var(--black);
@@ -591,8 +597,34 @@
     background: var(--whitegrey-l2);
 }
 
-.gh-publish-types label:hover {
+.gh-publish-types label:hover,
+.gh-publish-schedule label:hover {
     color: var(--middarkgrey-d1);
+}
+
+.gh-publish-newsletter-trigger {
+    padding: 8px 16px;
+    font-size: 1.45rem;
+}
+
+.gh-publish-newsletter-trigger svg {
+    position: absolute;
+    top: 50%;
+    right: 16px;
+}
+
+.gh-publish-newsletter-dropdown {
+    z-index: 99999;
+    padding: 4px 0;
+}
+
+.gh-publish-newsletter-dropdown .ember-power-select-option {
+    padding: 8px 16px;
+}
+
+.gh-publish-newsletter-dropdown .ember-power-select-option[aria-selected="true"] {
+    color: var(--black);
+    font-weight: 600;
 }
 
 .gh-publish-cta {
@@ -655,9 +687,9 @@
 }
 
 .gh-publish-confirmation {
-    margin-bottom: 5.2rem;
+    margin-bottom: 7rem;
     color: var(--black);
-    font-size: 1.9rem;
+    font-size: 1.8rem;
     font-weight: 400;
     line-height: 1.35em;
 }

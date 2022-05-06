@@ -1,25 +1,24 @@
 {{!-- template-lint-disable no-invalid-interactive --}}
 <fieldset>
-    <div class="gh-publishmenu-radio {{unless @publishOptions.isScheduled "active"}}" {{on "click" (fn @publishOptions.toggleScheduled false)}}>
-        <div class="gh-publishmenu-radio-button" data-test-publishmenu-published-option></div>
-        <div class="gh-publishmenu-radio-content">
-            <div class="gh-publishmenu-radio-label">Set it live now</div>
+    <div class="gh-publish-schedule">
+        <div class="gh-radio {{unless @publishOptions.isScheduled "active"}}" {{on "click" (fn @publishOptions.toggleScheduled false)}}>
+            <div class="gh-radio-button" data-test-publishmenu-published-option></div>
+            <label>Set it live now</label>
+        </div>
+        <div class="gh-radio {{if @publishOptions.isScheduled "active"}}" {{on "click" (fn @publishOptions.toggleScheduled true)}}>
+            <div class="gh-radio-button" data-test-publishmenu-scheduled-option></div>
+            <label>Schedule it for later</label>
         </div>
     </div>
-    <div class="gh-publishmenu-radio {{if @publishOptions.isScheduled "active"}}" {{on "click" (fn @publishOptions.toggleScheduled true)}}>
-        <div class="gh-publishmenu-radio-button" data-test-publishmenu-scheduled-option></div>
-        <div class="gh-publishmenu-radio-content">
-            <div class="gh-publishmenu-radio-label">Schedule it for later</div>
-            <GhDateTimePicker
-                @date={{moment-format (moment-site-tz @publishOptions.scheduledAtUTC) "YYYY-MM-DD"}}
-                @time={{moment-format (moment-site-tz @publishOptions.scheduledAtUTC) "HH:mm"}}
-                @setDate={{this.setDate}}
-                @setTime={{this.setTime}}
-                @minDate={{@publishOptions.minScheduledAt}}
-                @isActive={{@publishOptions.isScheduled}}
-                @renderInPlace={{false}}
-            />
-            <div class="gh-publishmenu-radio-desc">Set automatic future publish date</div>
-        </div>
-    </div>
+    {{#if @publishOptions.isScheduled}}
+        <GhDateTimePicker
+            @date={{moment-format (moment-site-tz @publishOptions.scheduledAtUTC) "YYYY-MM-DD"}}
+            @time={{moment-format (moment-site-tz @publishOptions.scheduledAtUTC) "HH:mm"}}
+            @setDate={{this.setDate}}
+            @setTime={{this.setTime}}
+            @minDate={{@publishOptions.minScheduledAt}}
+            @isActive={{@publishOptions.isScheduled}}
+            @renderInPlace={{false}}
+        />
+    {{/if}}
 </fieldset>
