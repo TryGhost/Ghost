@@ -20,43 +20,52 @@ function AccountHeader() {
     );
 }
 
+function SuccessIcon({show}) {
+    if (!show) {
+        return null;
+    }
+    return (
+        <div style={{marginRight: '4px'}}>
+            ✅
+        </div>
+    );
+}
+
 function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribedNewsletters}) {
     const isChecked = subscribedNewsletters.some((d) => {
         return d.id === newsletter?.id;
     });
-    const [description, setDescription] = useState(newsletter?.description || '');
+
+    const [showUpdated, setShowUpdated] = useState(false);
     const [timeoutId, setTimeoutId] = useState(null);
-    let finalDescription = description;
-    if (!description) {
-        finalDescription = isChecked ? 'Subscribed' : 'Unsubscribed';
-    }
     return (
         <section className='gh-portal-list-toggle-wrapper'>
             <div className='gh-portal-list-detail'>
                 <h3>{newsletter.name}</h3>
-                <p>{finalDescription}</p>
+                <p>{newsletter?.description}</p>
             </div>
-            <div>
+            <div style={{display: 'flex', alignItems: 'center'}}>
+                <SuccessIcon show={showUpdated} />
                 <Switch id={newsletter.id} onToggle={(e, checked) => {
                     let updatedNewsletters = [];
                     if (!checked) {
                         updatedNewsletters = subscribedNewsletters.filter((d) => {
                             return d.id !== newsletter.id;
                         });
-                        setDescription('Unsubscribed');
+                        setShowUpdated(true);
                         clearTimeout(timeoutId);
                         let newTimeoutId = setTimeout(() => {
-                            setDescription(newsletter?.description);
+                            setShowUpdated(false);
                         }, 3000);
                         setTimeoutId(newTimeoutId);
                     } else {
                         updatedNewsletters = subscribedNewsletters.filter((d) => {
                             return d.id !== newsletter.id;
                         }).concat(newsletter);
-                        setDescription('Subscribed');
+                        setShowUpdated(true);
                         clearTimeout(timeoutId);
                         let newTimeoutId = setTimeout(() => {
-                            setDescription(newsletter?.description);
+                            setShowUpdated(false);
                         }, 3000);
                         setTimeoutId(newTimeoutId);
                     }
