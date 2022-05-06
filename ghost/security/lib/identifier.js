@@ -1,6 +1,5 @@
 let _private = {};
 
-// @TODO: replace with crypto.randomBytes
 _private.getRandomInt = function (min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 };
@@ -8,9 +7,9 @@ _private.getRandomInt = function (min, max) {
 /**
  * Return a unique identifier with the given `len`.
  *
+ * @deprecated use secret.create() instead
  * @param {Number} maxLength
  * @return {String}
- * @api private
  */
 module.exports.uid = function uid(maxLength) {
     const buf = [];

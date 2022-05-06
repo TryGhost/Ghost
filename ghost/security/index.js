@@ -17,5 +17,9 @@ module.exports = {
 
     get password() {
         return require('./lib/password');
+    },
+
+    get secret() {
+        return require('./lib/secret');
     }
 };
