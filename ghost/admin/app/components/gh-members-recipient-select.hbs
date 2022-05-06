@@ -5,7 +5,7 @@
             <span class="gh-publishmenu-emailcount" data-test-email-count="free-members">({{countFetcher.count}})</span>
         {{/let}}
     </p>
-    <div class="for-switch x-small {{if @disabled "disabled"}}">
+    <div class="for-switch small {{if @disabled "disabled"}}">
         <label class="switch" for="send-email-to-free">
             <input
                 id="send-email-to-free"
@@ -29,7 +29,7 @@
                 <span class="gh-publishmenu-emailcount" data-test-email-count="paid-members">({{countFetcher.count}})</span>
             {{/let}}
         </p>
-        <div class="for-switch x-small {{if @disabled "disabled"}}">
+        <div class="for-switch small {{if @disabled "disabled"}}">
             <label class="switch" for="send-email-to-paid">
                 <input
                     id="send-email-to-paid"
@@ -49,7 +49,7 @@
 {{#if this.specificOptions}}
     <div class="gh-publishmenu-send-to-option">
         <p>Specific people</p>
-        <div class="for-switch x-small {{if @disabled "disabled"}}">
+        <div class="for-switch small {{if @disabled "disabled"}}">
             <label class="switch" for="send-email-to-specific">
                 <input
                     id="send-email-to-specific"
