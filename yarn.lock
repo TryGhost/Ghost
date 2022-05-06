@@ -1873,11 +1873,6 @@
     "@tryghost/tpl" "^0.1.4"
     lodash "^4.17.21"
 
-"@tryghost/database-info@0.3.3":
-  version "0.3.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/database-info/-/database-info-0.3.3.tgz#dbe27b1fd8d97d5ac4a867eb0accd6d7229048b0"
-  integrity sha512-nEJYo2RLS7FJoXIaWWpgT3h6N/4FsTtAz2Wm5wvMxk6dVx8LKbZ0D25H069IsrVqqEItJ9kBYcCLmv+6qoPSmw==
-
 "@tryghost/database-info@0.3.4":
   version "0.3.4"
   resolved "https://registry.yarnpkg.com/@tryghost/database-info/-/database-info-0.3.4.tgz#86f7e9da0766534a0f48ea65f7052523806a2a35"
@@ -8097,12 +8092,12 @@ kind-of@^6.0.0, kind-of@^6.0.2:
   resolved "https://registry.yarnpkg.com/kind-of/-/kind-of-6.0.3.tgz#07c05034a6c349fa06e24fa35aa76db4580ce4dd"
   integrity sha512-dcS1ul+9tmeD95T+x28/ehLgd9mENa3LsvDTtzm3vyBEO7RPptvAD+t44WVXaUjTBRcrpFeFlC8WCruUR456hw==
 
-knex-migrator@4.2.8:
-  version "4.2.8"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-4.2.8.tgz#ef797def311f265ca4bc873494d711ce75469da2"
-  integrity sha512-KUMS9DU95pE56w+8NOSZlQKYeSgW/7XqWQnzviyDhejGEbYqXw2IHWQWat8asqs4WWZLregWeqoL8L0KcYAljQ==
+knex-migrator@4.2.9:
+  version "4.2.9"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-4.2.9.tgz#1cfe532641ec3cd8871ef9d58b1b9ba06a369fae"
+  integrity sha512-Nsol+U65QSPR/SOVq/UbJiMDQFcg1RPVNRx73mlIxK/LOil2We9cLMoxBJHhfiqY/erp8j5FjhBKcdBm41tmBg==
   dependencies:
-    "@tryghost/database-info" "0.3.3"
+    "@tryghost/database-info" "0.3.4"
     "@tryghost/logging" "2.1.8"
     bluebird "3.7.2"
     commander "5.1.0"
@@ -8116,7 +8111,7 @@ knex-migrator@4.2.8:
     nconf "0.12.0"
     resolve "1.22.0"
   optionalDependencies:
-    sqlite3 "5.0.6"
+    sqlite3 "5.0.8"
 
 knex@2.0.0:
   version "2.0.0"
@@ -11614,17 +11609,6 @@ sprintf-js@~1.0.2:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/sprintf-js/-/sprintf-js-1.0.3.tgz#04e6926f662895354f3dd015203633b857297e2c"
   integrity sha1-BOaSb2YolTVPPdAVIDYzuFcpfiw=
-
-sqlite3@5.0.6:
-  version "5.0.6"
-  resolved "https://registry.yarnpkg.com/sqlite3/-/sqlite3-5.0.6.tgz#1b50a36e528fe650f79da9ed7adde6468d597aa9"
-  integrity sha512-uT1dC6N3ReF+jchY01zvl1wVFFJ5xO86wSnCpK39uA/zmAHBDm6TiAq1v876QKv8JgiijxQ7/fb5C2LPm7ZAJA==
-  dependencies:
-    "@mapbox/node-pre-gyp" "^1.0.0"
-    node-addon-api "^4.2.0"
-    tar "^6.1.11"
-  optionalDependencies:
-    node-gyp "8.x"
 
 sqlite3@5.0.8:
   version "5.0.8"
