@@ -36,7 +36,15 @@ export default class PaidMix extends Component {
 
     get hasMultipleTiers() {
         return this.dashboardStats.siteStatus?.hasMultipleTiers;
-    }    
+    } 
+
+    get totalMembers() {
+        return this.dashboardStats.memberCounts?.total ?? 0;
+    }
+
+    get isTotalMembersZero() {
+        return this.dashboardStats.memberCounts && this.totalMembers === 0;
+    }
 
     @action 
     onSwitchMode(selected) {
@@ -64,6 +72,24 @@ export default class PaidMix extends Component {
         const monthlyPercentage = Math.round(this.dashboardStats.paidMembersByCadence.month / totalCadence * 100);
         const annualPercentage = Math.round(this.dashboardStats.paidMembersByCadence.year / totalCadence * 100);
         const barThickness = 5;
+
+        // fake empty data
+        if (this.isTotalMembersZero) {
+            return {
+                labels: ['Cadence'],
+                datasets: [{
+                    label: 'Monthly',
+                    data: [60],
+                    backgroundColor: '#8E42FF',
+                    barThickness
+                }, {
+                    label: 'Annual',
+                    data: [40],
+                    backgroundColor: '#FB76B4',
+                    barThickness
+                }]
+            };
+        }
 
         if (this.mode === 'cadence') {
             return {

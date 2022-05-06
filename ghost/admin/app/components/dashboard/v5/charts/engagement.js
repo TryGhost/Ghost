@@ -48,6 +48,11 @@ export default class Engagement extends Component {
     }
     
     get data30Days() {
+        // fake empty data
+        if (this.isTotalMembersZero) {
+            return '30%';
+        }
+
         if (this.loading) {
             return '- %';
         }
@@ -63,6 +68,11 @@ export default class Engagement extends Component {
     }
 
     get data7Days() {
+        // fake empty data
+        if (this.isTotalMembersZero) {
+            return '60%';
+        }
+
         if (this.loading) {
             return '- %';
         }
@@ -78,6 +88,11 @@ export default class Engagement extends Component {
     }
 
     get dataSubscribers() {
+        // fake empty data
+        if (this.isTotalMembersZero) {
+            return '123';
+        }
+
         if (!this.dashboardStats.newsletterSubscribers) {
             return '-';
         }
@@ -91,5 +106,13 @@ export default class Engagement extends Component {
 
     get hasPaidTiers() {
         return this.dashboardStats.siteStatus?.hasPaidTiers;
+    }
+
+    get totalMembers() {
+        return this.dashboardStats.memberCounts?.total ?? 0;
+    }
+
+    get isTotalMembersZero() {
+        return this.dashboardStats.memberCounts && this.totalMembers === 0;
     }
 }
