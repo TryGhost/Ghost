@@ -1,17 +1,22 @@
 <div class="gh-publish-title"><span>Ready, set, publish.</span> Share it with the world.</div>
 <div class="gh-publish-settings">
     <div class="gh-publish-setting">
-        <div class="gh-publish-setting-title">
-            {{svg-jar "send-email"}}
-            {{#if @publishOptions.emailUnavailable}}
+        {{#if @publishOptions.emailUnavailable}}
+            <div class="gh-publish-setting-title">
+                {{svg-jar "send-email"}}
                 <span>Publish on site</span>
-            {{else}}
-                <button type="button" class="gh-publish-setting-trigger" {{on "click" (fn this.toggleSection "publishType")}}>
+            </div>
+        {{else}}
+            <button type="button" class="gh-publish-setting-title" {{on "click" (fn this.toggleSection "publishType")}}>
+                {{svg-jar "send-email"}}
+                <div class="gh-publish-setting-trigger">
                     <span>{{@publishOptions.selectedPublishTypeOption.display}}</span>
-                </button>
-                {{svg-jar "arrow-down" class="icon-expand"}}
-            {{/if}}
-        </div>
+                </div>
+                <span class="{{if (eq this.openSection "publishType") "expanded"}}">
+                    {{svg-jar "arrow-down" class="icon-expand"}}
+                </span>
+            </button>
+        {{/if}}
         {{#liquid-if (eq this.openSection "publishType")}}
             <div class="gh-publish-setting-form">
                 <EditorLabs::PublishOptions::PublishType
@@ -22,19 +27,25 @@
     </div>
 
     <div class="gh-publish-setting">
-        <div class="gh-publish-setting-title {{if (eq @publishOptions.publishType "publish") "disabled"}}">
-            {{svg-jar "member"}}
-            {{#if @publishOptions.willEmail}}
-                <button type="button" class="gh-publish-setting-trigger" {{on "click" (fn this.toggleSection "emailRecipients")}}>
+        {{#if @publishOptions.willEmail}}
+            <button type="button" class="gh-publish-setting-title {{if (eq @publishOptions.publishType "publish") "disabled"}}" {{on "click" (fn this.toggleSection "emailRecipients")}}>
+                {{svg-jar "member"}}
+                <div class="gh-publish-setting-trigger">
                     {{#let (members-count-fetcher query=(hash filter=@publishOptions.fullRecipientFilter)) as |countFetcher|}}
                         {{countFetcher.count}}
                     {{/let}}
                     {{#unless @publishOptions.onlyDefaultNewsletter}}
-                        <span>{{@publishOptions.newsletter.name}}</span>
+                        <span class="gh-selected-newsletter">{{@publishOptions.newsletter.name}}</span>
                     {{/unless}}
                     subscribers
-                </button>
-            {{else}}
+                </div>
+                <span class="{{if (eq this.openSection "emailRecipients") "expanded"}}">
+                    {{svg-jar "arrow-down" class="icon-expand"}}
+                </span>
+            </button>
+        {{else}}
+            <div type="button" class="gh-publish-setting-title {{if (eq @publishOptions.publishType "publish") "disabled"}}">
+                {{svg-jar "member"}}
                 {{#if (eq @publishOptions.publishType "publish")}}
                     <div class="gh-publish-setting-trigger">
                         Not sent to any members
@@ -44,9 +55,11 @@
                         Not sent to any members
                     </button>
                 {{/if}}
-            {{/if}}
-            {{svg-jar "arrow-down" class="icon-expand"}}
-        </div>
+                <span class="{{if (eq this.openSection "emailRecipients") "expanded"}}">
+                    {{svg-jar "arrow-down" class="icon-expand"}}
+                </span>
+            </div>
+        {{/if}}
         {{#liquid-if (eq this.openSection "emailRecipients")}}
             <div class="gh-publish-setting-form">
                 <EditorLabs::PublishOptions::EmailRecipients
@@ -57,9 +70,9 @@
     </div>
 
     <div class="gh-publish-setting last">
-        <div class="gh-publish-setting-title">
+        <button type="button" class="gh-publish-setting-title" {{on "click" (fn this.toggleSection "publishAt")}}>
             {{svg-jar "clock"}}
-            <button type="button" class="gh-publish-setting-trigger" {{on "click" (fn this.toggleSection "publishAt")}}>
+            <div class="gh-publish-setting-trigger">
                 <span>
                     {{#if @publishOptions.isScheduled}}
                         {{capitalize (gh-format-post-time @publishOptions.scheduledAtUTC draft=true)}}
@@ -67,9 +80,11 @@
                         Right now
                     {{/if}}
                 </span>
-            </button>
-            {{svg-jar "arrow-down" class="icon-expand"}}
-        </div>
+            </div>
+            <span class="{{if (eq this.openSection "publishAt") "expanded"}}">
+                {{svg-jar "arrow-down" class="icon-expand"}}
+            </span>
+        </button>
         {{#liquid-if (eq this.openSection "publishAt")}}
             <div class="gh-publish-setting-form">
                 <EditorLabs::PublishOptions::PublishAt
