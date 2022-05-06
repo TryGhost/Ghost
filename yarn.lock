@@ -5532,10 +5532,10 @@ express-hbs@2.4.0:
   optionalDependencies:
     js-beautify "^1.13.11"
 
-express-jwt@7.6.2:
-  version "7.6.2"
-  resolved "https://registry.yarnpkg.com/express-jwt/-/express-jwt-7.6.2.tgz#fb82d46ab58c14be65efb9df3629b6b6472b7e9a"
-  integrity sha512-qvsvbr4oMhBAuSq/0I/CVzQWcXGuGZAxBGEI++kq4PaxEMgYCjYfHhUFtJQQlekiAL9CJtGgMFTEVIZegaKgEA==
+express-jwt@7.7.0:
+  version "7.7.0"
+  resolved "https://registry.yarnpkg.com/express-jwt/-/express-jwt-7.7.0.tgz#f4b98e6c4c5bc94a88c7b7db316f3bb6799bbf0b"
+  integrity sha512-4W1N/wD1buyg5F1/IFi4hWMRwerHd1wl17PhfBrNnzMAb1MbAVDJiSoNByVrz2+NGThChIC+vuNaDwVLprkQzQ==
   dependencies:
     express-unless "^1.0.0"
     jsonwebtoken "^8.5.1"
