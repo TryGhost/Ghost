@@ -18,6 +18,10 @@ export default class DashboardDashboardV5Component extends Component {
         return this.dashboardStats.memberCounts?.total ?? 0;
     }
 
+    get isTotalMembersZero() {
+        return this.dashboardStats.memberCounts && this.totalMembers === 0;
+    }
+
     get hasPaidTiers() {
         return this.dashboardStats.siteStatus?.hasPaidTiers;
     }

@@ -1163,6 +1163,22 @@ kbd {
     background: #1c1e21;
 }
 
+.gh-dashboard5-recents .gh-dashboard5-list-item:hover {
+    background: rgba(28, 30, 33, 0.7);
+}
+
+.gh-dashboard5-resource .gh-dashboard5-list-item:hover {
+    background: rgba(28, 30, 33, 0.3);
+}
+
 .gh-dashboard5-community .gh-dashboard5-resource-footer {
     color: #fff;
+}
+
+.gh-dashboard5-zero {
+    background: rgb(21, 23, 25, 0.8);
+}
+
+.gh-dashboard5-zero-message {
+    background-color: #1c1e21;
 }
