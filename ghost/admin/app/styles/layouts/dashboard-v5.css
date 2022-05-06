@@ -757,6 +757,10 @@ Dashboard v5 Overview */
     position: relative;
 }
 
+.gh-dashboard5-overview.is-hidden {
+    display: none;
+}
+
 .gh-dashboard5-overview .gh-dashboard5-area {
     flex-direction: row;
     padding: 24px;
@@ -872,6 +876,58 @@ Dashboard v5 Anchor */
 .gh-dashboard5-mix .gh-dashboard5-select {
     top: -11px;
     right: -18px;
+}
+
+.gh-dashboard5-anchor-empty {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    width: calc(100% - 32px);
+    height: calc(100% - 32px);
+    background: rgba(255,255,255,0.8);
+
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gh-dashboard5-anchor-empty-message {
+    background: #ffffff;
+    width: 416px;
+    padding: 32px 48px 48px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.075);
+}
+
+.gh-dashboard5-anchor-empty-message svg {
+    width: 48px;
+    height: auto;
+    margin: 0 0 16px;
+    fill: red;
+}
+
+.gh-dashboard5-anchor-empty-message h4 {
+    font-size: 1.55rem;
+    font-weight: 700;
+    line-height: 1em;
+    margin: 0 0 12px;
+    padding: 0;
+    color: var(--black);
+    white-space: nowrap;
+    letter-spacing: -.3px;
+}
+
+.gh-dashboard5-anchor-empty-message p {
+    font-size: 1.2rem;
+    font-weight: 600;
+    line-height: 1.4em;
+    color: var(--black);
+    letter-spacing: -.1px;
+    margin: 0;
+    padding: 0;
 }
 
 

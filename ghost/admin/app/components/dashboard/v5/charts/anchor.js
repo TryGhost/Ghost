@@ -65,6 +65,7 @@ export default class Anchor extends Component {
     @service dashboardStats;
     @service feature;
     @tracked chartDisplay = 'total';
+    @tracked totalMembersOverall = null;
 
     daysOptions = DAYS_OPTIONS;
     displayOptions = DISPLAY_OPTIONS;
@@ -80,6 +81,8 @@ export default class Anchor extends Component {
     @action
     loadCharts() {
         this.dashboardStats.loadMemberCountStats();
+
+        console.log('this.dashboardStats.memberCounts', this.dashboardStats.memberCounts);
 
         if (this.hasPaidTiers) {
             this.dashboardStats.loadMrrStats();
@@ -110,6 +113,14 @@ export default class Anchor extends Component {
 
     get totalMembers() {
         return this.dashboardStats.memberCounts?.total ?? 0;
+    }
+
+    get isTotalMembersZero() {
+        return this.dashboardStats.memberCounts && this.totalMembers === 0;
+    }
+
+    get isTotalMembersMoreThanZero() {
+        return this.dashboardStats.memberCounts && this.totalMembers > 0;
     }
 
     get paidMembers() {
@@ -179,6 +190,13 @@ export default class Anchor extends Component {
             data = stats.map(stat => stat.paid + stat.free + stat.comped);
         }
 
+        // with no members yet, let's show empty state with dummy data
+        if (this.isTotalMembersZero) {
+            stats = this.emptyData.stats;
+            labels = this.emptyData.labels;
+            data = this.emptyData.data;
+        }
+
         // gradient for line
         const canvasLine = document.createElement('canvas');
         const ctxLine = canvasLine.getContext('2d');
@@ -192,6 +210,11 @@ export default class Anchor extends Component {
         const gradientFill = ctxFill.createLinearGradient(0, 0, 1000, 0);
         gradientFill.addColorStop(0, 'rgba(250, 45, 142, 0.2');   
         gradientFill.addColorStop(1, 'rgba(143, 66, 255, 0.02');
+
+        // fake data
+        console.log('stats', stats);
+        console.log('labels', labels);
+        console.log('data', data);
         
         return {
             labels: labels,
@@ -343,6 +366,378 @@ export default class Anchor extends Component {
 
     get chartHeightSmall() {
         return 180;
+    }
+
+    // used for empty state
+    get emptyData() {
+        return {
+            stats: [
+                {
+                    "date": "2022-04-07",
+                    "free": 2610,
+                    "tier1": 295,
+                    "tier2": 20,
+                    "paid": 315,
+                    "comped": 0,
+                    "paidSubscribed": 2,
+                    "paidCanceled": 1
+                },
+                {
+                    "date": "2022-04-08",
+                    "free": 2765,
+                    "tier1": 298,
+                    "tier2": 24,
+                    "paid": 322,
+                    "comped": 0,
+                    "paidSubscribed": 7,
+                    "paidCanceled": 0
+                },
+                {
+                    "date": "2022-04-09",
+                    "free": 3160,
+                    "tier1": 299,
+                    "tier2": 28,
+                    "paid": 327,
+                    "comped": 0,
+                    "paidSubscribed": 5,
+                    "paidCanceled": 0
+                },
+                {
+                    "date": "2022-04-10",
+                    "free": 3580,
+                    "tier1": 300,
+                    "tier2": 30,
+                    "paid": 330,
+                    "comped": 0,
+                    "paidSubscribed": 4,
+                    "paidCanceled": 1
+                },
+                {
+                    "date": "2022-04-11",
+                    "free": 3583,
+                    "tier1": 301,
+                    "tier2": 31,
+                    "paid": 332,
+                    "comped": 0,
+                    "paidSubscribed": 2,
+                    "paidCanceled": 0
+                },
+                {
+                    "date": "2022-04-12",
+                    "free": 3857,
+                    "tier1": 303,
+                    "tier2": 36,
+                    "paid": 339,
+                    "comped": 0,
+                    "paidSubscribed": 8,
+                    "paidCanceled": 1
+                },
+                {
+                    "date": "2022-04-13",
+                    "free": 4223,
+                    "tier1": 304,
+                    "tier2": 39,
+                    "paid": 343,
+                    "comped": 0,
+                    "paidSubscribed": 4,
+                    "paidCanceled": 0
+                },
+                {
+                    "date": "2022-04-14",
+                    "free": 4289,
+                    "tier1": 306,
+                    "tier2": 42,
+                    "paid": 348,
+                    "comped": 0,
+                    "paidSubscribed": 6,
+                    "paidCanceled": 1
+                },
+                {
+                    "date": "2022-04-15",
+                    "free": 4458,
+                    "tier1": 307,
+                    "tier2": 49,
+                    "paid": 356,
+                    "comped": 0,
+                    "paidSubscribed": 8,
+                    "paidCanceled": 0
+                },
+                {
+                    "date": "2022-04-16",
+                    "free": 4752,
+                    "tier1": 307,
+                    "tier2": 49,
+                    "paid": 356,
+                    "comped": 0,
+                    "paidSubscribed": 1,
+                    "paidCanceled": 1
+                },
+                {
+                    "date": "2022-04-17",
+                    "free": 4947,
+                    "tier1": 310,
+                    "tier2": 50,
+                    "paid": 360,
+                    "comped": 0,
+                    "paidSubscribed": 5,
+                    "paidCanceled": 1
+                },
+                {
+                    "date": "2022-04-18",
+                    "free": 5047,
+                    "tier1": 312,
+                    "tier2": 49,
+                    "paid": 361,
+                    "comped": 0,
+                    "paidSubscribed": 2,
+                    "paidCanceled": 1
+                },
+                {
+                    "date": "2022-04-19",
+                    "free": 5430,
+                    "tier1": 314,
+                    "tier2": 55,
+                    "paid": 369,
+                    "comped": 0,
+                    "paidSubscribed": 8,
+                    "paidCanceled": 0
+                },
+                {
+                    "date": "2022-04-20",
+                    "free": 5760,
+                    "tier1": 316,
+                    "tier2": 57,
+                    "paid": 373,
+                    "comped": 0,
+                    "paidSubscribed": 4,
+                    "paidCanceled": 0
+                },
+                {
+                    "date": "2022-04-21",
+                    "free": 6022,
+                    "tier1": 318,
+                    "tier2": 63,
+                    "paid": 381,
+                    "comped": 0,
+                    "paidSubscribed": 9,
+                    "paidCanceled": 1
+                },
+                {
+                    "date": "2022-04-22",
+                    "free": 6294,
+                    "tier1": 319,
+                    "tier2": 64,
+                    "paid": 383,
+                    "comped": 0,
+                    "paidSubscribed": 2,
+                    "paidCanceled": 0
+                },
+                {
+                    "date": "2022-04-23",
+                    "free": 6664,
+                    "tier1": 320,
+                    "tier2": 69,
+                    "paid": 389,
+                    "comped": 0,
+                    "paidSubscribed": 6,
+                    "paidCanceled": 0
+                },
+                {
+                    "date": "2022-04-24",
+                    "free": 6721,
+                    "tier1": 320,
+                    "tier2": 70,
+                    "paid": 390,
+                    "comped": 0,
+                    "paidSubscribed": 1,
+                    "paidCanceled": 0
+                },
+                {
+                    "date": "2022-04-25",
+                    "free": 6841,
+                    "tier1": 321,
+                    "tier2": 80,
+                    "paid": 401,
+                    "comped": 0,
+                    "paidSubscribed": 11,
+                    "paidCanceled": 0
+                },
+                {
+                    "date": "2022-04-26",
+                    "free": 6880,
+                    "tier1": 323,
+                    "tier2": 89,
+                    "paid": 412,
+                    "comped": 0,
+                    "paidSubscribed": 11,
+                    "paidCanceled": 0
+                },
+                {
+                    "date": "2022-04-27",
+                    "free": 7179,
+                    "tier1": 325,
+                    "tier2": 92,
+                    "paid": 417,
+                    "comped": 0,
+                    "paidSubscribed": 5,
+                    "paidCanceled": 0
+                },
+                {
+                    "date": "2022-04-28",
+                    "free": 7288,
+                    "tier1": 325,
+                    "tier2": 100,
+                    "paid": 425,
+                    "comped": 0,
+                    "paidSubscribed": 9,
+                    "paidCanceled": 1
+                },
+                {
+                    "date": "2022-04-29",
+                    "free": 7430,
+                    "tier1": 325,
+                    "tier2": 101,
+                    "paid": 426,
+                    "comped": 0,
+                    "paidSubscribed": 2,
+                    "paidCanceled": 1
+                },
+                {
+                    "date": "2022-04-30",
+                    "free": 7458,
+                    "tier1": 326,
+                    "tier2": 102,
+                    "paid": 428,
+                    "comped": 0,
+                    "paidSubscribed": 2,
+                    "paidCanceled": 0
+                },
+                {
+                    "date": "2022-05-01",
+                    "free": 7621,
+                    "tier1": 327,
+                    "tier2": 117,
+                    "paid": 444,
+                    "comped": 0,
+                    "paidSubscribed": 17,
+                    "paidCanceled": 1
+                },
+                {
+                    "date": "2022-05-02",
+                    "free": 7721,
+                    "tier1": 328,
+                    "tier2": 123,
+                    "paid": 451,
+                    "comped": 0,
+                    "paidSubscribed": 8,
+                    "paidCanceled": 1
+                },
+                {
+                    "date": "2022-05-03",
+                    "free": 7897,
+                    "tier1": 327,
+                    "tier2": 137,
+                    "paid": 464,
+                    "comped": 0,
+                    "paidSubscribed": 14,
+                    "paidCanceled": 1
+                },
+                {
+                    "date": "2022-05-04",
+                    "free": 7937,
+                    "tier1": 327,
+                    "tier2": 143,
+                    "paid": 470,
+                    "comped": 0,
+                    "paidSubscribed": 6,
+                    "paidCanceled": 0
+                },
+                {
+                    "date": "2022-05-05",
+                    "free": 7961,
+                    "tier1": 328,
+                    "tier2": 158,
+                    "paid": 486,
+                    "comped": 0,
+                    "paidSubscribed": 16,
+                    "paidCanceled": 0
+                },
+                {
+                    "date": "2022-05-06",
+                    "free": 8006,
+                    "tier1": 328,
+                    "tier2": 162,
+                    "paid": 490,
+                    "comped": 0,
+                    "paidSubscribed": 5,
+                    "paidCanceled": 1
+                }
+            ],
+            labels: [
+                "2022-04-07",
+                "2022-04-08",
+                "2022-04-09",
+                "2022-04-10",
+                "2022-04-11",
+                "2022-04-12",
+                "2022-04-13",
+                "2022-04-14",
+                "2022-04-15",
+                "2022-04-16",
+                "2022-04-17",
+                "2022-04-18",
+                "2022-04-19",
+                "2022-04-20",
+                "2022-04-21",
+                "2022-04-22",
+                "2022-04-23",
+                "2022-04-24",
+                "2022-04-25",
+                "2022-04-26",
+                "2022-04-27",
+                "2022-04-28",
+                "2022-04-29",
+                "2022-04-30",
+                "2022-05-01",
+                "2022-05-02",
+                "2022-05-03",
+                "2022-05-04",
+                "2022-05-05",
+                "2022-05-06"
+            ],
+            data: [
+                2925,
+                3087,
+                3487,
+                3910,
+                3915,
+                4196,
+                4566,
+                4637,
+                4814,
+                5108,
+                5307,
+                5408,
+                5799,
+                6133,
+                6403,
+                6677,
+                7053,
+                7111,
+                7242,
+                7292,
+                7596,
+                7713,
+                7856,
+                7886,
+                8065,
+                8172,
+                8361,
+                8407,
+                8447,
+                8496
+            ]
+        }
     }
 
     calculatePercentage(from, to) {
