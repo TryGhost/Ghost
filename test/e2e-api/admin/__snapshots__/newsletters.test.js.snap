@@ -1009,6 +1009,7 @@ Object {
       "code": null,
       "context": "A newsletter with the same name already exists",
       "details": null,
+      "ghostErrorCode": null,
       "help": null,
       "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       "message": "Validation error, cannot save newsletter.",
@@ -1023,7 +1024,7 @@ exports[`Newsletters API Can't add multiple newsletters with same name 4: [heade
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "253",
+  "content-length": "275",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -1038,6 +1039,7 @@ Object {
       "code": null,
       "context": "A newsletter with the same name already exists",
       "details": null,
+      "ghostErrorCode": null,
       "help": null,
       "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       "message": "Validation error, cannot edit newsletter.",
@@ -1052,7 +1054,7 @@ exports[`Newsletters API Can't edit multiple newsletters to existing name 2: [he
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "253",
+  "content-length": "275",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -1069,6 +1071,7 @@ Object {
       "details": Object {
         "name": "newsletters",
       },
+      "ghostErrorCode": null,
       "help": "https://ghost.org/help/",
       "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       "message": "Host Limit error, cannot save newsletter.",

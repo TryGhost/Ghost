@@ -54,7 +54,7 @@ describe('Content API key authentication', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(403);
 
-            response.body.errors[0].errorType.should.equal('HostLimitError');
+            response.body.errors[0].type.should.equal('HostLimitError');
             response.body.errors[0].message.should.equal('Custom limit error message');
         });
     });

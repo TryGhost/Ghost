@@ -72,6 +72,7 @@ Object {
       "code": null,
       "context": "Unable to determine the authenticated user or integration. Check that cookies are being passed through if using session authentication.",
       "details": null,
+      "ghostErrorCode": null,
       "help": null,
       "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       "message": "Authorization failed",
@@ -86,7 +87,7 @@ exports[`Sessions API errors when reading session again now owner is not logged 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "321",
+  "content-length": "343",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",

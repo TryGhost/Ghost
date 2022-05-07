@@ -978,7 +978,8 @@ describe('Settings API (canary)', function () {
                         'property',
                         'help',
                         'code',
-                        'id'
+                        'id',
+                        'ghostErrorCode'
                     ]);
                     done();
                 });
@@ -1067,7 +1068,8 @@ describe('Settings API (canary)', function () {
                                 'property',
                                 'help',
                                 'code',
-                                'id'
+                                'id',
+                                'ghostErrorCode'
                             ]);
                         });
                 });
@@ -1327,7 +1329,8 @@ describe('Settings API (canary)', function () {
                                 'property',
                                 'help',
                                 'code',
-                                'id'
+                                'id',
+                                'ghostErrorCode'
                             ]);
                         });
                 });
@@ -1379,7 +1382,8 @@ describe('Settings API (canary)', function () {
                                 'property',
                                 'help',
                                 'code',
-                                'id'
+                                'id',
+                                'ghostErrorCode'
                             ]);
                         });
                 });

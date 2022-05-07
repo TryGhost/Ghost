@@ -36,7 +36,8 @@ describe('Email Preview API', function () {
                 'property',
                 'help',
                 'code',
-                'id'
+                'id',
+                'ghostErrorCode'
             ]);
         });
 
