@@ -20,6 +20,10 @@ module.exports = {
         return shared.pipeline(require('./identities'), localUtils);
     },
 
+    get backups() {
+        return shared.pipeline(require('./backups'), localUtils);
+    },
+
     get integrations() {
         return shared.pipeline(require('./integrations'), localUtils);
     },
