@@ -5,6 +5,7 @@ const databaseInfo = require('../../data/db/info');
 const ghostVersion = require('@tryghost/version');
 
 module.exports = function getConfigProperties() {
+    console.log(config)
     const configProperties = {
         version: ghostVersion.full,
         environment: config.get('env'),
