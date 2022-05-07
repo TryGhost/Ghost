@@ -275,7 +275,8 @@ describe('Posts API (canary)', function () {
                         'property',
                         'help',
                         'code',
-                        'id'
+                        'id',
+                        'ghostErrorCode'
                     ]);
                     done();
                 });
@@ -1173,7 +1174,8 @@ describe('Posts API (canary)', function () {
                         'property',
                         'help',
                         'code',
-                        'id'
+                        'id',
+                        'ghostErrorCode'
                     ]);
                 });
         });

@@ -85,6 +85,7 @@ Object {
       "code": null,
       "context": "Target URL has already been used for this event.",
       "details": null,
+      "ghostErrorCode": null,
       "help": null,
       "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       "message": "Validation error, cannot save webhook.",
@@ -99,7 +100,7 @@ exports[`Webhooks API Fails nicely when adding a duplicate webhook 2: [headers] 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "250",
+  "content-length": "272",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -114,6 +115,7 @@ Object {
       "code": null,
       "context": "Validation failed for 'integration_id'. 'integration_id' value does not match any existing integration.",
       "details": null,
+      "ghostErrorCode": null,
       "help": "Provide the 'integration_id' of an existing integration.",
       "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       "message": "Validation error, cannot save webhook.",
@@ -128,7 +130,7 @@ exports[`Webhooks API Fails nicely when creating an orphaned webhook 2: [headers
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "359",
+  "content-length": "381",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",

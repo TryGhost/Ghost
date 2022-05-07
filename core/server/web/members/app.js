@@ -55,11 +55,11 @@ module.exports = function setupMembersApp() {
 
     // API error handling
     membersApp.use('/api', errorHandler.resourceNotFound);
-    membersApp.use('/api', errorHandler.handleJSONResponseV2(sentry));
+    membersApp.use('/api', errorHandler.handleJSONResponse(sentry));
 
     // Webhook error handling
     membersApp.use('/webhooks', errorHandler.resourceNotFound);
-    membersApp.use('/webhooks', errorHandler.handleJSONResponseV2(sentry));
+    membersApp.use('/webhooks', errorHandler.handleJSONResponse(sentry));
 
     debug('Members App setup end');
 
