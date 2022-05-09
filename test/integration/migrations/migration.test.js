@@ -147,10 +147,10 @@ describe('Database Migration (special functions)', function () {
             permissions.should.havePermission('Add Members');
             permissions.should.havePermission('Delete Members');
 
-            permissions.should.havePermission('Browse offers', ['Administrator']);
-            permissions.should.havePermission('Read offers', ['Administrator']);
-            permissions.should.havePermission('Edit offers', ['Administrator']);
-            permissions.should.havePermission('Add offers', ['Administrator']);
+            permissions.should.havePermission('Browse offers', ['Administrator', 'Admin Integration']);
+            permissions.should.havePermission('Read offers', ['Administrator', 'Admin Integration']);
+            permissions.should.havePermission('Edit offers', ['Administrator', 'Admin Integration']);
+            permissions.should.havePermission('Add offers', ['Administrator', 'Admin Integration']);
 
             permissions.should.havePermission('Browse Products', ['Administrator', 'Editor', 'Author', 'Admin Integration']);
             permissions.should.havePermission('Read Products', ['Administrator', 'Editor', 'Author', 'Admin Integration']);
@@ -162,11 +162,6 @@ describe('Database Migration (special functions)', function () {
 
             permissions.should.havePermission('Browse custom theme settings', ['Administrator']);
             permissions.should.havePermission('Edit custom theme settings', ['Administrator']);
-
-            permissions.should.havePermission('Browse offers', ['Administrator', 'Admin Integration']);
-            permissions.should.havePermission('Read offers', ['Administrator', 'Admin Integration']);
-            permissions.should.havePermission('Edit offers', ['Administrator', 'Admin Integration']);
-            permissions.should.havePermission('Add offers', ['Administrator', 'Admin Integration']);
 
             permissions.should.havePermission('Browse newsletters', ['Administrator', 'Admin Integration']);
             permissions.should.havePermission('Read newsletters', ['Administrator', 'Admin Integration']);
