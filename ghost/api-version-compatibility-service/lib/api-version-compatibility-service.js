@@ -1,22 +1,24 @@
 const path = require('path');
+const VersionNotificationsDataService = require('@tryghost/version-notifications-data-service');
 const EmailContentGenerator = require('@tryghost/email-content-generator');
 
 class APIVersionCompatibilityService {
     /**
      *
      * @param {Object} options
+     * @param {Object} options.UserModel - ghost user model
+     * @param {Object} options.settingsService - ghost settings service
      * @param {(Object: {subject: String, to: String, text: String, html: String}) => Promise<any>} options.sendEmail - email sending function
-     * @param {() => Promise<any>} options.fetchEmailsToNotify - email address to receive notifications
-     * @param {(acceptVersion: String) => Promise<any>} options.fetchHandled - retrives already handled compatibility notifications
-     * @param {(acceptVersion: String) => Promise<any>} options.saveHandled - persists already handled compatibility notifications
      * @param {Function} options.getSiteUrl
      * @param {Function} options.getSiteTitle
     */
-    constructor({sendEmail, fetchEmailsToNotify, fetchHandled, saveHandled, getSiteUrl, getSiteTitle}) {
+    constructor({UserModel, settingsService, sendEmail, getSiteUrl, getSiteTitle}) {
         this.sendEmail = sendEmail;
-        this.fetchEmailsToNotify = fetchEmailsToNotify;
-        this.fetchHandled = fetchHandled;
-        this.saveHandled = saveHandled;
+
+        this.versionNotificationsDataService = new VersionNotificationsDataService({
+            UserModel,
+            settingsService
+        });
 
         this.emailContentGenerator = new EmailContentGenerator({
             getSiteUrl,
@@ -34,9 +36,9 @@ class APIVersionCompatibilityService {
      * @param {string} [options.userAgent] - client's user-agent header value
      */
     async handleMismatch({acceptVersion, contentVersion, requestURL, userAgent = ''}) {
-        if (!await this.fetchHandled(acceptVersion)) {
+        if (!await this.versionNotificationsDataService.fetchNotification(acceptVersion)) {
             const trimmedUseAgent = userAgent.split('/')[0];
-            const emails = await this.fetchEmailsToNotify();
+            const emails = await this.versionNotificationsDataService.getNotificationEmails();
 
             for (const email of emails) {
                 const template = (trimmedUseAgent === 'Zapier')
@@ -66,7 +68,7 @@ class APIVersionCompatibilityService {
                 });
             }
 
-            await this.saveHandled(acceptVersion);
+            await this.versionNotificationsDataService.saveNotification(acceptVersion);
         }
     }
 }
