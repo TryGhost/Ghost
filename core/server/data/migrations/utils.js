@@ -56,7 +56,7 @@ function dropTables(names) {
                 const exists = await connection.schema.hasTable(name);
 
                 if (!exists) {
-                    logging.warn(`Failed to drop table: ${name} - table does not exist`);
+                    logging.warn(`Skipping dropping table: ${name} - table does not exist`);
                 } else {
                     logging.info(`Dropping table: ${name}`);
                     await commands.deleteTable(name, connection);
@@ -80,7 +80,7 @@ function recreateTable(name, tableSpec) {
             const exists = await connection.schema.hasTable(name);
 
             if (!exists) {
-                logging.warn(`Failed to drop table: ${name} - table does not exist`);
+                logging.warn(`Skipping dropping table: ${name} - table does not exist`);
             } else {
                 logging.info(`Dropping table: ${name}`);
                 await commands.deleteTable(name, connection);
