@@ -156,7 +156,7 @@
     "knex": "2.0.0",
     "knex-migrator": "4.2.9",
     "lodash": "4.17.21",
-    "luxon": "2.3.2",
+    "luxon": "2.4.0",
     "mailgun-js": "0.22.0",
     "metascraper": "5.29.3",
     "metascraper-author": "5.29.3",
