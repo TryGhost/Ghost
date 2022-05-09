@@ -65,7 +65,6 @@ export default class Anchor extends Component {
     @service dashboardStats;
     @service feature;
     @tracked chartDisplay = 'total';
-    @tracked totalMembersOverall = null;
 
     daysOptions = DAYS_OPTIONS;
     displayOptions = DISPLAY_OPTIONS;
@@ -115,10 +114,6 @@ export default class Anchor extends Component {
 
     get isTotalMembersZero() {
         return this.dashboardStats.memberCounts && this.totalMembers === 0;
-    }
-
-    get isTotalMembersMoreThanZero() {
-        return this.dashboardStats.memberCounts && this.totalMembers > 0;
     }
 
     get paidMembers() {
