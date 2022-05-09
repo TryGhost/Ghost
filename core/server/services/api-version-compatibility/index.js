@@ -1,5 +1,4 @@
 const APIVersionCompatibilityService = require('@tryghost/api-version-compatibility-service');
-const VersionNotificationsDataService = require('@tryghost/version-notifications-data-service');
 const versionMismatchHandler = require('@tryghost/mw-api-version-mismatch');
 const ghostVersion = require('@tryghost/version');
 const {GhostMailer} = require('../mail');
@@ -12,19 +11,14 @@ let serviceInstance;
 
 const init = () => {
     const ghostMailer = new GhostMailer();
-    const versionNotificationsDataService = new VersionNotificationsDataService({
-        UserModel: models.User,
-        settingsService: settingsService.getSettingsBREADServiceInstance()
-    });
 
     serviceInstance = new APIVersionCompatibilityService({
+        UserModel: models.User,
+        settingsService: settingsService.getSettingsBREADServiceInstance(),
         sendEmail: (options) => {
             // NOTE: not using bind here because mockMailer is having trouble mocking bound methods
             return ghostMailer.send(options);
         },
-        fetchEmailsToNotify: versionNotificationsDataService.getNotificationEmails.bind(versionNotificationsDataService),
-        fetchHandled: versionNotificationsDataService.fetchNotification.bind(versionNotificationsDataService),
-        saveHandled: versionNotificationsDataService.saveNotification.bind(versionNotificationsDataService),
         getSiteUrl: () => urlUtils.urlFor('home', true),
         getSiteTitle: () => settingsCache.get('title')
     });
