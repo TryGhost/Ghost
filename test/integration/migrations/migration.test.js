@@ -152,10 +152,10 @@ describe('Database Migration (special functions)', function () {
             permissions.should.havePermission('Edit offers', ['Administrator']);
             permissions.should.havePermission('Add offers', ['Administrator']);
 
-            permissions.should.havePermission('Browse Products', ['Administrator', 'Editor', 'Author']);
-            permissions.should.havePermission('Read Products', ['Administrator', 'Editor', 'Author']);
-            permissions.should.havePermission('Edit Products', ['Administrator']);
-            permissions.should.havePermission('Add Products', ['Administrator']);
+            permissions.should.havePermission('Browse Products', ['Administrator', 'Editor', 'Author', 'Admin Integration']);
+            permissions.should.havePermission('Read Products', ['Administrator', 'Editor', 'Author', 'Admin Integration']);
+            permissions.should.havePermission('Edit Products', ['Administrator', 'Admin Integration']);
+            permissions.should.havePermission('Add Products', ['Administrator', 'Admin Integration']);
             permissions.should.havePermission('Delete Products', ['Administrator']);
 
             permissions.should.havePermission('Reset all passwords', ['Administrator']);
@@ -163,10 +163,15 @@ describe('Database Migration (special functions)', function () {
             permissions.should.havePermission('Browse custom theme settings', ['Administrator']);
             permissions.should.havePermission('Edit custom theme settings', ['Administrator']);
 
-            permissions.should.havePermission('Browse newsletters', ['Administrator']);
-            permissions.should.havePermission('Read newsletters', ['Administrator']);
-            permissions.should.havePermission('Edit newsletters', ['Administrator']);
-            permissions.should.havePermission('Add newsletters', ['Administrator']);
+            permissions.should.havePermission('Browse offers', ['Administrator', 'Admin Integration']);
+            permissions.should.havePermission('Read offers', ['Administrator', 'Admin Integration']);
+            permissions.should.havePermission('Edit offers', ['Administrator', 'Admin Integration']);
+            permissions.should.havePermission('Add offers', ['Administrator', 'Admin Integration']);
+
+            permissions.should.havePermission('Browse newsletters', ['Administrator', 'Admin Integration']);
+            permissions.should.havePermission('Read newsletters', ['Administrator', 'Admin Integration']);
+            permissions.should.havePermission('Edit newsletters', ['Administrator', 'Admin Integration']);
+            permissions.should.havePermission('Add newsletters', ['Administrator', 'Admin Integration']);
         });
 
         describe('Populate', function () {
