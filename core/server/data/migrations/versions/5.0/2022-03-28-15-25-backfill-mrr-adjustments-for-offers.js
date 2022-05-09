@@ -66,6 +66,7 @@ module.exports = createTransactionalMigration(
             });
         }
 
+        // eslint-disable-next-line no-restricted-syntax
         offerRedemptions.forEach((redemption) => {
             const memberEvents = mrrCreatedEventsByMemberId[redemption.member_id];
 

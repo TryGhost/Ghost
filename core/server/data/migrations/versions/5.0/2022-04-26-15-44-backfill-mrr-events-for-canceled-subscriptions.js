@@ -5,6 +5,7 @@ const {createTransactionalMigration} = require('../../utils');
 
 module.exports = createTransactionalMigration(
     async function up(knex) {
+        // eslint-disable-next-line no-restricted-syntax
         const canceledSubscriptions = await knex('members_stripe_customers_subscriptions')
             .select(
                 'members_stripe_customers_subscriptions.id',
