@@ -3,6 +3,11 @@ const internalContext = {
 };
 
 class VersionNotificationsDataService {
+    /**
+     * @param {Object} options
+     * @param {Object} options.UserModel - ghost user model
+     * @param {Object} options.settingsService - ghost settings service
+    */
     constructor({UserModel, settingsService}) {
         this.UserModel = UserModel;
         this.settingsService = settingsService;
