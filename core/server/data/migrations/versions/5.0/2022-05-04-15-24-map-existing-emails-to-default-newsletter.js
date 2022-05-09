@@ -6,15 +6,24 @@ module.exports = createTransactionalMigration(
         logging.info('Linking existing emails and related posts to the default newsletter');
 
         // Get the default newsletter
-        const newsletter = await knex('newsletters')
-            .where('status', 'active')
-            .orderBy('sort_order', 'asc')
-            .orderBy('created_at', 'asc')
-            .orderBy('id', 'asc')
+        // Note we intentionally use the default newsletter slug instead of the usual orderBy logic
+        let newsletter = await knex('newsletters')
+            .where('slug', 'default-newsletter')
             .first('id');
 
         if (!newsletter) {
-            logging.error(`Default newsletter not found - skipping`);
+            // Fall back to orderBy - just in case
+            logging.warn(`Original default newsletter not found - using first in sort order`);
+            newsletter = await knex('newsletters')
+                .where('status', 'active')
+                .orderBy('sort_order', 'asc')
+                .orderBy('created_at', 'asc')
+                .orderBy('id', 'asc')
+                .first('id');
+        }
+
+        if (!newsletter) {
+            logging.error(`Newsletter not found - skipping`);
             return;
         }
 
