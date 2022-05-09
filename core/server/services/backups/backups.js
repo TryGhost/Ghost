@@ -10,5 +10,8 @@ const getStorage = () => {
 module.exports = {
     getZip: async () => {
         return await getStorage().serve();
+    },
+    initialize: () => {
+        return getStorage().startBackupProcess();
     }
 };

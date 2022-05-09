@@ -2,6 +2,7 @@ const {compress} = require('@tryghost/zip');
 const path = require('path');
 const config = require('../../../shared/config');
 const fs = require('fs-extra');
+const models = require('../../models');
 
 /**
  * Prototype for exporting images in bulk
@@ -14,27 +15,52 @@ class BackupsExporter {
             backups: config.getContentPath('backups')
         };
     }
-    /**
-     * 
-     * @TODO: Perhaps let it multithread to avoid http timeouts and memory issues on big requests?
-     * Maybe add cases later for other types for backups?
-     */
+    getModel() {
+        return {
+            ImageBackupsModel: models.ImageBackups
+        }
+    }
+    // create backup in a new thread
+    async createBackupWorker(id) {
+        const self = this;
+        const imagesPath = self.getDirectories().images;
+        const backupsPath = self.getDirectories().backups;
+        const zipPath = path.join(backupsPath, 'images.zip');
+
+        fs.ensureDir(backupsPath)
+            .then(async function(){
+                return await compress(imagesPath, zipPath);
+            }).then(async function(result){
+                if(result.size > 0){
+                   const backupInstance = await self.getModel().ImageBackupsModel.findOne({id: id});
+                    if(backupInstance){
+                        backupInstance.set('backup_completed', true);
+                        backupInstance.save();
+                       return
+                    }
+                }  
+            })
+    }
+
+    startBackupProcess() {
+        const self = this;
+        self.getModel().ImageBackupsModel.add({created_at: new Date(), backup_completed: false}).then((entry) => {
+            self.createBackupWorker(entry.attributes.id);
+        });
+        return {'backupStarted': true};
+    }
+        
     serve() {
         const self = this;
         return function downloadBackup(req, res, next) {
             const backupsPath = self.getDirectories().backups;
-            const imagesPath = self.getDirectories().images;
             const zipPath = path.join(backupsPath, 'images.zip');
             let stream;
             fs.ensureDir(backupsPath)
-                .then(async function () {
-                    return await compress(imagesPath, zipPath);
-                })
-                .then(function (result) {
+                .then(function () {
                     res.set({
                         'Content-disposition': 'attachment; filename={backups}.zip'.replace('{backups}', 'images'),
                         'Content-Type': 'application/zip',
-                        'Content-Length': result.size
                     });
                     stream = fs.createReadStream(zipPath);
                     stream.pipe(res);
