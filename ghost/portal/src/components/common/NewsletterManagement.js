@@ -21,12 +21,18 @@ function AccountHeader() {
     );
 }
 
-function SuccessIcon({show}) {
-    if (!show) {
-        return null;
+function SuccessIcon({show, checked}) {
+    let classNames = [];
+    if (show) {
+        classNames.push('gh-portal-show');
     }
+
+    if (checked) {
+        classNames.push('gh-portal-toggle-checked');
+    }
+
     return (
-        <div style={{marginRight: '8px', display: 'flex', transition: 'all ease 1s'}}>
+        <div style={{marginRight: '8px', display: 'flex', transition: 'all ease 1s'}} className={classNames.join(' ')}>
             <CheckmarkIcon className='gh-portal-checkmark-icon' alt='' style={{height: '24px', color: '#30cf43'}} />
         </div>
     );
@@ -46,7 +52,7 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
                 <p>{newsletter?.description}</p>
             </div>
             <div style={{display: 'flex', alignItems: 'center'}}>
-                <SuccessIcon show={showUpdated} />
+                <SuccessIcon show={showUpdated} checked={isChecked} />
                 <Switch id={newsletter.id} onToggle={(e, checked) => {
                     let updatedNewsletters = [];
                     if (!checked) {
