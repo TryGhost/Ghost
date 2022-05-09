@@ -77,6 +77,7 @@ const post = (attrs, frame) => {
         // delete attrs.page;
         delete attrs.status;
         delete attrs.email_only;
+        delete attrs.newsletter;
 
         // We are standardising on returning null from the Content API for any empty values
         if (attrs.twitter_title === '') {
@@ -124,6 +125,7 @@ const post = (attrs, frame) => {
     delete attrs.locale;
     delete attrs.author;
     delete attrs.type;
+    delete attrs.newsletter_id;
 
     return attrs;
 };
