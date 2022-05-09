@@ -665,6 +665,37 @@
     font-weight: 500;
 }
 
+.publish-flow-datepicker {
+    width: 100%;
+    max-width: 310px;
+    padding: 16px;
+    box-shadow: var(--box-shadow-m);
+}
+
+.publish-flow-datepicker .ember-power-calendar-nav {
+    align-items: center;
+    height: 40px;
+    padding: 0 12px 12px;
+}
+
+.publish-flow-datepicker .ember-power-calendar-nav-control {
+    bottom: unset;
+}
+
+.publish-flow-datepicker .ember-power-calendar-day {
+    height: 28px;
+}
+
+.publish-flow-datepicker .ember-power-calendar-day--selected {
+    color: var(--white);
+    background: var(--black);
+}
+
+.publish-flow-datepicker .ember-power-calendar-day--selected:hover {
+    color: var(--white);
+    background: color-mod(var(--black) l(-20%));
+}
+
 .gh-publish-cta {
     display: flex;
     flex-direction: column;
