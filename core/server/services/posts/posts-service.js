@@ -29,6 +29,8 @@ class PostsService {
             }
         } else {
             // Set the newsletter_id if it isn't passed to the API
+            // NOTE: this option is ignored if the newsletter_id is already set on the post.
+            // Never use frame.options.newsletter_id to do actual logic. Use model.newsletter_id after the edit.
             const newsletters = await this.models.Newsletter.findPage({filter: 'status:active', limit: 1, columns: ['id']}, {transacting: frame.options.transacting});
             if (newsletters.data.length > 0) {
                 frame.options.newsletter_id = newsletters.data[0].id;
@@ -84,7 +86,7 @@ class PostsService {
                 let postEmail = model.relations.email;
 
                 if (!postEmail) {
-                    const email = await this.mega.addEmail(model, Object.assign({}, frame.options));
+                    const email = await this.mega.addEmail(model, frame.options);
                     model.set('email', email);
                 } else if (postEmail && postEmail.get('status') === 'failed') {
                     const email = await this.mega.retryFailedEmail(postEmail);
