@@ -907,7 +907,7 @@ Dashboard v5 Zero */
     background: #fff url(icons/analytics.svg) no-repeat 50% 36px;
     background-size: 48px 48px;
     min-width: 400px;
-    padding: 96px 64px 48px;
+    padding: 96px 48px 48px;
     border-radius: 8px;
     text-align: center;
     box-shadow: 0 4px 24px rgba(0,0,0,0.066);
@@ -1817,8 +1817,15 @@ Dashboard v5 Tooltips */
         border-bottom: 0 none;
         padding-bottom: 0;
     }
-}
 
+    .is-zero .gh-dashboard5-mrr,
+    .is-zero .gh-dashboard5-breakdown,
+    .is-zero .gh-dashboard5-mix,
+    .is-zero .gh-dashboard5-engagement-30days,
+    .is-zero .gh-dashboard5-engagement-7days {
+        display: none;
+    }
+}
 
 @media screen and (max-width: 600px) {
     .gh-dashboard5-box.gh-dashboard5-split {

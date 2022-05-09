@@ -4,21 +4,21 @@
             @label="Engagement" /> 
 
         <div class="gh-dashboard5-columns">
-            <div class="gh-dashboard5-column">
+            <div class="gh-dashboard5-column gh-dashboard5-engagement-30days">
                 <Dashboard::v5::Parts::Metric
                     @label="Engaged in the last 30 days"
                     @value={{this.data30Days}}
                     @secondary={{true}}
                     />
             </div>
-            <div class="gh-dashboard5-column">
+            <div class="gh-dashboard5-column gh-dashboard5-engagement-7days">
                 <Dashboard::v5::Parts::Metric
                     @label="Engaged in the last 7 days"
                     @value={{this.data7Days}}
                     @secondary={{true}}
                     />
             </div>
-            <div class="gh-dashboard5-column">
+            <div class="gh-dashboard5-column gh-dashboard5-engagement-subscribers">
                 <Dashboard::v5::Parts::Metric
                     @label="Newsletter subscribers"
                     @value={{this.dataSubscribers}}
