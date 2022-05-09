@@ -92,7 +92,11 @@ jobs:
           node index.js &
           sleep 20 && { kill $! && wait $!; } 2>/dev/null
 
-      - run: yarn knex-migrator rollback --v 4.0 --force
+      - run: sqlite3 ${{ env.database__connection__filename }} "DELETE FROM migrations WHERE version LIKE '5.%';"
+        if: matrix.env.DB == 'sqlite3'
+      - run: mysql -h127.0.0.1 -uroot -proot ghost_testing -e "DELETE FROM migrations WHERE version LIKE '5.%';"
+        if: matrix.env.DB == 'mysql5' || matrix.env.DB == 'mysql8'
+
       - run: yarn knex-migrator migrate --force
 
   unit-tests:
@@ -246,7 +250,7 @@ jobs:
           node-version: '14.17.0'
           cache: yarn
       - run: npm install -g ghost-cli@latest
-      - run: npm --no-git-tag-version version minor # We need to artificially bump the minor version to get migrations to run
+      - run: npm --no-git-tag-version version major # We need to artificially bump the major version to get migrations to run
 
       - run: zip -r ghost.zip .
 
@@ -260,18 +264,6 @@ jobs:
           DIR=$(mktemp -d)
           ghost install local -d $DIR
           ghost update -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
-
-      #- name: Update from latest v1
-          #run: |
-          #DIR=$(mktemp -d)
-          #ghost install v1 --local -d $DIR
-          #ghost update -f -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
-
-      #- name: Update from latest v2
-          #run: |
-          #DIR=$(mktemp -d)
-          #ghost install v2 --local -d $DIR
-          #ghost update -f -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
 
       - name: Update from latest v3
         run: |
