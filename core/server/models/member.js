@@ -2,7 +2,7 @@ const ghostBookshelf = require('./base');
 const uuid = require('uuid');
 const _ = require('lodash');
 const config = require('../../shared/config');
-const crypto = require('crypto');
+const {gravatar} = require('../lib/image');
 
 const Member = ghostBookshelf.Model.extend({
     tableName: 'members',
@@ -311,8 +311,7 @@ const Member = ghostBookshelf.Model.extend({
         // Will not use gravatar if privacy.useGravatar is false in config
         attrs.avatar_image = null;
         if (attrs.email && !config.isPrivacyDisabled('useGravatar')) {
-            const emailHash = crypto.createHash('md5').update(attrs.email.toLowerCase().trim()).digest('hex');
-            attrs.avatar_image = `https://gravatar.com/avatar/${emailHash}?s=250&d=blank`;
+            attrs.avatar_image = gravatar.url(attrs.email, {size: 250, default: 'blank'});
         }
 
         return attrs;
