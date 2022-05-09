@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/session-service",
-  "version": "0.1.41",
+  "version": "0.1.42",
   "repository": "https://github.com/TryGhost/Utils/tree/main/packages/session-service",
   "author": "Ghost Foundation",
   "license": "MIT",

@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/promise",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "repository": "https://github.com/TryGhost/Utils/tree/main/packages/promise",
   "author": "Ghost Foundation",
   "license": "MIT",

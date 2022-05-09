@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/update-check-service",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "repository": "https://github.com/TryGhost/Utils/tree/main/packages/update-check-service",
   "author": "Ghost Foundation",
   "license": "MIT",

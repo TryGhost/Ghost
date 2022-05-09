@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/email-content-generator",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "repository": "https://github.com/TryGhost/Utils/tree/main/packages/email-content-generator",
   "author": "Ghost Foundation",
   "license": "MIT",
