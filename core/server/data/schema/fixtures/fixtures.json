@@ -627,6 +627,13 @@
                     "description": "Internal Scheduler integration",
                     "type": "internal",
                     "api_keys": [{"type": "admin", "role": "Scheduler Integration"}]
+                },
+                {
+                    "slug": "ghost-internal-frontend",
+                    "name": "Ghost Internal Frontend",
+                    "description": "Internal frontend integration",
+                    "type": "internal",
+                    "api_keys": [{"type": "content"}]
                 }
             ]
         }
