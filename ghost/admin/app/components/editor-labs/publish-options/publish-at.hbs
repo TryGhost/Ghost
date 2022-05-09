@@ -12,6 +12,7 @@
     </div>
     {{#if @publishOptions.isScheduled}}
         <GhDateTimePicker
+            @datePickerClass="publish-flow-datepicker"
             @date={{moment-format (moment-site-tz @publishOptions.scheduledAtUTC) "YYYY-MM-DD"}}
             @time={{moment-format (moment-site-tz @publishOptions.scheduledAtUTC) "HH:mm"}}
             @setDate={{this.setDate}}
