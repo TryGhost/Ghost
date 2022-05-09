@@ -7,7 +7,7 @@
                 <Dashboard::V5::Charts::Overview />
             {{/if}}
 
-            <div class="gh-dashboard5-group">
+            <div class="gh-dashboard5-group {{if this.isTotalMembersZero 'is-zero'}}">
                 <Dashboard::V5::Charts::Anchor />
 
                 {{#if this.areNewslettersEnabled}}
