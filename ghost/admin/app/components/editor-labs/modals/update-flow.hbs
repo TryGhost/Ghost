@@ -32,7 +32,13 @@
                         published and sent to
                     {{/if}}
 
-                    <strong>{{pluralize post.email.emailCount "member"}}</strong>.
+                    {{#if post.isScheduled}}
+                        {{#let (members-count-fetcher query=(hash filter=(concat "newsletters:" post.newsletter.slug "+" post.emailRecipientFilter))) as |countFetcher|}}
+                            <strong>{{gh-pluralize countFetcher.count "member"}}</strong>.
+                        {{/let}}
+                    {{else}}
+                        <strong>{{pluralize post.email.emailCount "member"}}</strong>.
+                    {{/if}}
                 {{else}}
                     published.
                 {{/if}}
