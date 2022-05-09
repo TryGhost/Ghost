@@ -5,7 +5,7 @@ import moment from 'moment';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
-const DATE_FORMAT = 'D MMM';
+const DATE_FORMAT = 'D MMM, YYYY';
 
 // custom ChartJS draw function
 Chart.defaults.hoverBar = Chart.defaults.bar;
