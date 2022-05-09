@@ -5,7 +5,7 @@ const versionMismatchHandler = (APIVersionCompatibilityService) => {
                 await APIVersionCompatibilityService.handleMismatch({
                     acceptVersion: req.headers['accept-version'],
                     contentVersion: `v${res.locals.safeVersion}`,
-                    requestURL: req.originalURL,
+                    requestURL: req.originalUrl,
                     userAgent: req.headers['user-agent']
                 });
             }
