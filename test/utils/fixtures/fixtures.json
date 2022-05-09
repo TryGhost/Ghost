@@ -870,7 +870,10 @@
                     "label": "all",
                     "email_preview": "all",
                     "email": "all",
-                    "snippet": "all"
+                    "snippet": "all",
+                    "product": ["browse", "read", "add", "edit"],
+                    "offer": ["browse", "read", "add", "edit"],
+                    "newsletter": ["browse", "read", "add", "edit"]
                 },
                 "Editor": {
                     "notification": "all",
