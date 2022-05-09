@@ -67,6 +67,7 @@ export default class DashboardStatsService extends Service {
     @service ghostPaths;
     @service membersCountCache;
     @service settings;
+    @service membersUtils;
 
     /**
      * @type {?SiteStatus} Contains information on what graphs need to be shown
@@ -291,13 +292,17 @@ export default class DashboardStatsService extends Service {
             return;
         }
 
-        yield this.loadPaidProducts();
+        if (this.membersUtils.isStripeEnabled) {
+            yield this.loadPaidProducts();
+        }
+
+        const hasPaidTiers = this.membersUtils.isStripeEnabled && this.paidProducts && this.paidProducts.length > 0;
 
         this.siteStatus = {
-            hasPaidTiers: this.paidProducts && this.paidProducts.length > 0,
-            hasMultipleTiers: this.paidProducts && this.paidProducts.length > 1,
+            hasPaidTiers,
+            hasMultipleTiers: hasPaidTiers && this.paidProducts.length > 1,
             newslettersEnabled: this.settings.get('editorDefaultEmailRecipients') !== 'disabled',
-            membersEnabled: this.settings.get('membersSignupAccess') !== 'none'
+            membersEnabled: this.membersUtils.isMembersEnabled
         };
     }
 
