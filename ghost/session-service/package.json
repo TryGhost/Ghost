@@ -23,7 +23,7 @@
     "express": "4.18.1",
     "mocha": "10.0.0",
     "should": "13.2.3",
-    "sinon": "13.0.2"
+    "sinon": "14.0.0"
   },
   "dependencies": {
     "@tryghost/errors": "^1.2.1"
