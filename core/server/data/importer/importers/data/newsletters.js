@@ -17,8 +17,8 @@ class NewslettersImporter extends BaseImporter {
     */
     sanitizeValues() {
         _.each(this.dataToImport, (obj) => {
-            _.each(_.pick(obj, ignoredColumns), (value, key) => {
-                delete obj[key];
+            ignoredColumns.forEach((column) => {
+                delete obj[column];
             });
         });
     }
