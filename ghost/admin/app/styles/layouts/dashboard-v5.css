@@ -907,7 +907,7 @@ Dashboard v5 Zero */
     background: #fff url(icons/analytics.svg) no-repeat 50% 36px;
     background-size: 48px 48px;
     min-width: 400px;
-    padding: 96px 48px 48px;
+    padding: 96px 64px 48px;
     border-radius: 8px;
     text-align: center;
     box-shadow: 0 4px 24px rgba(0,0,0,0.066);
@@ -928,10 +928,24 @@ Dashboard v5 Zero */
     font-size: 1.2rem;
     font-weight: 600;
     line-height: 1.5em;
-    color: var(--black);
+    color: var(--middarkgrey);
     letter-spacing: -.1px;
     padding: 0;
-    margin: 0;
+    margin: 0 0 8px;
+}
+
+.gh-dashboard5-zero-message a {
+    background: rgb(174,90,239);
+    background: linear-gradient(90deg, rgba(174,90,239,1) 0%, rgba(233,84,179,1) 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    transition: filter 100ms linear;
+    filter: brightness(1);
+}
+
+.gh-dashboard5-zero-message a:hover {
+    filter: brightness(0.8);
 }
 
 
