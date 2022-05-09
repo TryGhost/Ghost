@@ -1879,6 +1879,11 @@
   resolved "https://registry.yarnpkg.com/@tryghost/database-info/-/database-info-0.3.4.tgz#86f7e9da0766534a0f48ea65f7052523806a2a35"
   integrity sha512-UXstzJtIMZuy+OhVg5IC6I9OlFD9Ws3DPgyW5j/DlJpNG6reysHwqlLt97iQ3VpW2IW1DQS5uxQKcJReXOnA/w==
 
+"@tryghost/database-info@0.3.5":
+  version "0.3.5"
+  resolved "https://registry.yarnpkg.com/@tryghost/database-info/-/database-info-0.3.5.tgz#81b77dc976142a8bbbec81f58d56e89c05a1ecdc"
+  integrity sha512-pRWpmQmdg/KOQdkEHDpOAwYvNNc4nrhQ5X8HEVmvqC5ALEKMS6ghKavQGXSnCfUn6Bu8+GXEZ789mE7YOk32jQ==
+
 "@tryghost/debug@0.1.11":
   version "0.1.11"
   resolved "https://registry.yarnpkg.com/@tryghost/debug/-/debug-0.1.11.tgz#cc21e55ac610190426c366a7c69067c5d53117ad"
