@@ -1087,3 +1087,4 @@ add|ember-template-lint|no-action|4|11|4|11|831dd12209c22868d0614c65417281fda799
 add|ember-template-lint|require-valid-alt-text|3|44|3|44|a7f0566c430150bae4153e0dfb489a218bdeb8a4|1652054400000|1662422400000|1665014400000|lib/koenig-editor/addon/components/koenig-card-embed/nft.hbs
 add|ember-template-lint|require-valid-alt-text|8|20|8|20|9d0c591086dc9139ff38a7b385c3367a83438786|1652054400000|1662422400000|1665014400000|lib/koenig-editor/addon/components/koenig-card-embed/nft.hbs
 add|ember-template-lint|require-input-label|10|12|10|12|8c3c0ea315ff4da828363989a45fa11256a78796|1652054400000|1662422400000|1665014400000|lib/koenig-editor/addon/components/koenig-card-image/selector-tenor.hbs
+remove|ember-template-lint|require-valid-alt-text|5|4|5|4|527936d4c6b3d34855a99669f0b8ae690094bc8e|1652054400000|1662422400000|1665014400000|app/components/gh-member-avatar.hbs
