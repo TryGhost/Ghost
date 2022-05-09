@@ -262,11 +262,15 @@ export class PublishOptions {
 
     @task({drop: true})
     *saveTask() {
+        // willEmail can change after model changes are applied because the post
+        // can leave draft status - grab it now before that happens
+        const willEmail = this.willEmail;
+
         this._applyModelChanges();
 
         const adapterOptions = {};
 
-        if (this.willEmail) {
+        if (willEmail) {
             adapterOptions.newsletterId = this.newsletter.id;
             adapterOptions.emailRecipientFilter = this.recipientFilter;
         }
