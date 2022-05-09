@@ -147,10 +147,10 @@ describe('Database Migration (special functions)', function () {
             permissions.should.havePermission('Add Members');
             permissions.should.havePermission('Delete Members');
 
-            permissions.should.havePermission('Browse offers', ['Administrator', 'Admin Integration']);
-            permissions.should.havePermission('Read offers', ['Administrator', 'Admin Integration']);
-            permissions.should.havePermission('Edit offers', ['Administrator', 'Admin Integration']);
-            permissions.should.havePermission('Add offers', ['Administrator', 'Admin Integration']);
+            permissions.should.havePermission('Browse offers');
+            permissions.should.havePermission('Read offers');
+            permissions.should.havePermission('Edit offers');
+            permissions.should.havePermission('Add offers');
 
             permissions.should.havePermission('Browse Products', ['Administrator', 'Editor', 'Author', 'Admin Integration']);
             permissions.should.havePermission('Read Products', ['Administrator', 'Editor', 'Author', 'Admin Integration']);
