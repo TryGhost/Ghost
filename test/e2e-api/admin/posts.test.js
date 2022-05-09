@@ -640,7 +640,7 @@ describe('Posts API', function () {
     });
 
     it('Defaults to the default newsletter when publishing without a newsletter_id', async function () {
-        const defaultNewsletter = await models.Newsletter.findOne({}, testUtils.context.internal);
+        const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
 
         const post = {
             title: 'My post without newsletter_id',
