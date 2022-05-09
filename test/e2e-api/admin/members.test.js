@@ -1543,7 +1543,7 @@ describe('Members API', function () {
 
     it('Can export CSV', async function () {
         const res = await agent
-            .get(`/members/upload/`)
+            .get(`/members/upload/?limit=all`)
             .expectStatus(200)
             .expectEmptyBody() // express-test body parsing doesn't support CSV
             .matchHeaderSnapshot({

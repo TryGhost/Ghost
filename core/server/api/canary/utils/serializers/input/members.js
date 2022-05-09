@@ -47,6 +47,12 @@ module.exports = {
         this.browse(...arguments);
     },
 
+    exportCSV() {
+        debug('exportCSV');
+
+        this.browse(...arguments);
+    },
+
     add(apiConfig, frame) {
         debug('add');
         if (frame.data.members[0].labels) {
