@@ -100,8 +100,6 @@ export default class Mrr extends Component {
         let labels = stats.map(stat => stat.date);
         let data = stats.map(stat => stat.mrr);
 
-        console.log('this.isTotalMembersZero', this.isTotalMembersZero);
-
         // with no members yet, let's show empty state with dummy data
         if (this.isTotalMembersZero) {
             stats = this.emptyData.stats;
@@ -245,187 +243,187 @@ export default class Mrr extends Component {
         return {
             stats: [
                 {
-                    "date": "2022-04-07",
-                    "mrr": 0,
-                    "currency": "usd"
+                    date: '2022-04-07',
+                    mrr: 0,
+                    currency: 'usd'
                 },
                 {
-                    "date": "2022-04-08",
-                    "mrr": 0,
-                    "currency": "usd"
+                    date: '2022-04-08',
+                    mrr: 0,
+                    currency: 'usd'
                 },
                 {
-                    "date": "2022-04-09",
-                    "mrr": 1500,
-                    "currency": "usd"
+                    date: '2022-04-09',
+                    mrr: 1500,
+                    currency: 'usd'
                 },
                 {
-                    "date": "2022-04-10",
-                    "mrr": 2000,
-                    "currency": "usd"
+                    date: '2022-04-10',
+                    mrr: 2000,
+                    currency: 'usd'
                 },
                 {
-                    "date": "2022-04-11",
-                    "mrr": 4500,
-                    "currency": "usd"
+                    date: '2022-04-11',
+                    mrr: 4500,
+                    currency: 'usd'
                 },
                 {
-                    "date": "2022-04-12",
-                    "mrr": 7500,
-                    "currency": "usd"
+                    date: '2022-04-12',
+                    mrr: 7500,
+                    currency: 'usd'
                 },
                 {
-                    "date": "2022-04-13",
-                    "mrr": 11000,
-                    "currency": "usd"
+                    date: '2022-04-13',
+                    mrr: 11000,
+                    currency: 'usd'
                 },
                 {
-                    "date": "2022-04-14",
-                    "mrr": 12500,
-                    "currency": "usd"
+                    date: '2022-04-14',
+                    mrr: 12500,
+                    currency: 'usd'
                 },
                 {
-                    "date": "2022-04-15",
-                    "mrr": 14500,
-                    "currency": "usd"
+                    date: '2022-04-15',
+                    mrr: 14500,
+                    currency: 'usd'
                 },
                 {
-                    "date": "2022-04-16",
-                    "mrr": 18000,
-                    "currency": "usd"
+                    date: '2022-04-16',
+                    mrr: 18000,
+                    currency: 'usd'
                 },
                 {
-                    "date": "2022-04-17",
-                    "mrr": 21500,
-                    "currency": "usd"
+                    date: '2022-04-17',
+                    mrr: 21500,
+                    currency: 'usd'
                 },
                 {
-                    "date": "2022-04-18",
-                    "mrr": 25000,
-                    "currency": "usd"
+                    date: '2022-04-18',
+                    mrr: 25000,
+                    currency: 'usd'
                 },
                 {
-                    "date": "2022-04-19",
-                    "mrr": 28000,
-                    "currency": "usd"
+                    date: '2022-04-19',
+                    mrr: 28000,
+                    currency: 'usd'
                 },
                 {
-                    "date": "2022-04-20",
-                    "mrr": 30000,
-                    "currency": "usd"
+                    date: '2022-04-20',
+                    mrr: 30000,
+                    currency: 'usd'
                 },
                 {
-                    "date": "2022-04-21",
-                    "mrr": 34000,
-                    "currency": "usd"
+                    date: '2022-04-21',
+                    mrr: 34000,
+                    currency: 'usd'
                 },
                 {
-                    "date": "2022-04-22",
-                    "mrr": 35000,
-                    "currency": "usd"
+                    date: '2022-04-22',
+                    mrr: 35000,
+                    currency: 'usd'
                 },
                 {
-                    "date": "2022-04-23",
-                    "mrr": 35500,
-                    "currency": "usd"
+                    date: '2022-04-23',
+                    mrr: 35500,
+                    currency: 'usd'
                 },
                 {
-                    "date": "2022-04-24",
-                    "mrr": 37000,
-                    "currency": "usd"
+                    date: '2022-04-24',
+                    mrr: 37000,
+                    currency: 'usd'
                 },
                 {
-                    "date": "2022-04-25",
-                    "mrr": 38000,
-                    "currency": "usd"
+                    date: '2022-04-25',
+                    mrr: 38000,
+                    currency: 'usd'
                 },
                 {
-                    "date": "2022-04-26",
-                    "mrr": 40500,
-                    "currency": "usd"
+                    date: '2022-04-26',
+                    mrr: 40500,
+                    currency: 'usd'
                 },
                 {
-                    "date": "2022-04-27",
-                    "mrr": 43500,
-                    "currency": "usd"
+                    date: '2022-04-27',
+                    mrr: 43500,
+                    currency: 'usd'
                 },
                 {
-                    "date": "2022-04-28",
-                    "mrr": 47000,
-                    "currency": "usd"
+                    date: '2022-04-28',
+                    mrr: 47000,
+                    currency: 'usd'
                 },
                 {
-                    "date": "2022-04-29",
-                    "mrr": 48000,
-                    "currency": "usd"
+                    date: '2022-04-29',
+                    mrr: 48000,
+                    currency: 'usd'
                 },
                 {
-                    "date": "2022-04-30",
-                    "mrr": 50500,
-                    "currency": "usd"
+                    date: '2022-04-30',
+                    mrr: 50500,
+                    currency: 'usd'
                 },
                 {
-                    "date": "2022-05-01",
-                    "mrr": 53500,
-                    "currency": "usd"
+                    date: '2022-05-01',
+                    mrr: 53500,
+                    currency: 'usd'
                 },
                 {
-                    "date": "2022-05-02",
-                    "mrr": 55000,
-                    "currency": "usd"
+                    date: '2022-05-02',
+                    mrr: 55000,
+                    currency: 'usd'
                 },
                 {
-                    "date": "2022-05-03",
-                    "mrr": 56500,
-                    "currency": "usd"
+                    date: '2022-05-03',
+                    mrr: 56500,
+                    currency: 'usd'
                 },
                 {
-                    "date": "2022-05-04",
-                    "mrr": 57000,
-                    "currency": "usd"
+                    date: '2022-05-04',
+                    mrr: 57000,
+                    currency: 'usd'
                 },
                 {
-                    "date": "2022-05-05",
-                    "mrr": 58000,
-                    "currency": "usd"
+                    date: '2022-05-05',
+                    mrr: 58000,
+                    currency: 'usd'
                 },
                 {
-                    "date": "2022-05-06",
-                    "mrr": 58500,
-                    "currency": "usd"
+                    date: '2022-05-06',
+                    mrr: 58500,
+                    currency: 'usd'
                 }
             ],
             labels: [
-                "2022-04-07",
-                "2022-04-08",
-                "2022-04-09",
-                "2022-04-10",
-                "2022-04-11",
-                "2022-04-12",
-                "2022-04-13",
-                "2022-04-14",
-                "2022-04-15",
-                "2022-04-16",
-                "2022-04-17",
-                "2022-04-18",
-                "2022-04-19",
-                "2022-04-20",
-                "2022-04-21",
-                "2022-04-22",
-                "2022-04-23",
-                "2022-04-24",
-                "2022-04-25",
-                "2022-04-26",
-                "2022-04-27",
-                "2022-04-28",
-                "2022-04-29",
-                "2022-04-30",
-                "2022-05-01",
-                "2022-05-02",
-                "2022-05-03",
-                "2022-05-04",
-                "2022-05-05",
-                "2022-05-06"
+                '2022-04-07',
+                '2022-04-08',
+                '2022-04-09',
+                '2022-04-10',
+                '2022-04-11',
+                '2022-04-12',
+                '2022-04-13',
+                '2022-04-14',
+                '2022-04-15',
+                '2022-04-16',
+                '2022-04-17',
+                '2022-04-18',
+                '2022-04-19',
+                '2022-04-20',
+                '2022-04-21',
+                '2022-04-22',
+                '2022-04-23',
+                '2022-04-24',
+                '2022-04-25',
+                '2022-04-26',
+                '2022-04-27',
+                '2022-04-28',
+                '2022-04-29',
+                '2022-04-30',
+                '2022-05-01',
+                '2022-05-02',
+                '2022-05-03',
+                '2022-05-04',
+                '2022-05-05',
+                '2022-05-06'
             ],
             data: [
                 0,
@@ -459,7 +457,7 @@ export default class Mrr extends Component {
                 63500,
                 63500
             ]
-        }
+        };
     }
 
     calculatePercentage(from, to) {
