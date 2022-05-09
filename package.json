@@ -70,7 +70,7 @@
     "@tryghost/domain-events": "0.1.12",
     "@tryghost/email-analytics-provider-mailgun": "1.0.8",
     "@tryghost/email-analytics-service": "1.0.6",
-    "@tryghost/email-content-generator": "0.1.1",
+    "@tryghost/email-content-generator": "0.1.2",
     "@tryghost/errors": "1.2.12",
     "@tryghost/express-dynamic-redirects": "0.2.11",
     "@tryghost/helpers": "1.1.66",
