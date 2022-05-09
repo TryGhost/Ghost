@@ -19,6 +19,7 @@ export default Model.extend(ValidationEngine, {
     emailCount: attr('number', {defaultValue: 0}),
     emailOpenedCount: attr('number', {defaultValue: 0}),
     emailOpenRate: attr('number'),
+    avatarImage: attr('string'),
 
     products: attr('member-product'),
     newsletters: hasMany('newsletter', {embedded: 'always', async: false}),
