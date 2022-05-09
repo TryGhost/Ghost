@@ -69,7 +69,7 @@ class PostsService {
             if (emailRecipientFilter !== 'all') {
                 // check filter is valid
                 try {
-                    await this.models.Member.findPage({filter: `subscribed:true+${emailRecipientFilter}`, limit: 1});
+                    await this.models.Member.findPage({filter: emailRecipientFilter, limit: 1});
                 } catch (err) {
                     return Promise.reject(new BadRequestError({
                         message: tpl(messages.invalidEmailRecipientFilter),
