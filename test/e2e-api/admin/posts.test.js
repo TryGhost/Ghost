@@ -175,6 +175,33 @@ describe('Posts API', function () {
         _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
 
         testUtils.API.isISO8601(jsonResponse.posts[0].created_at).should.be.true();
+
+        // Check if the newsletter relation is loaded by default and newsletter_id is not returned
+        jsonResponse.posts[0].newsletter.id.should.eql(testUtils.DataGenerator.Content.newsletters[0].id);
+        should.not.exist(jsonResponse.posts[0].newsletter_id);
+    });
+
+    it('Can request a post by id without newsletter', async function () {
+        const res = await request.get(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[1].id + '/'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        should.not.exist(res.headers['x-cache-invalidate']);
+        const jsonResponse = res.body;
+        should.exist(jsonResponse);
+        should.exist(jsonResponse.posts);
+        localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+        jsonResponse.posts[0].id.should.equal(testUtils.DataGenerator.Content.posts[1].id);
+
+        _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
+
+        testUtils.API.isISO8601(jsonResponse.posts[0].created_at).should.be.true();
+
+        // Newsletter should be returned as null
+        should(jsonResponse.posts[0].newsletter).be.null();
+        should.not.exist(jsonResponse.posts[0].newsletter_id);
     });
 
     it('Can retrieve a post by slug', async function () {
@@ -192,6 +219,10 @@ describe('Posts API', function () {
         jsonResponse.posts[0].slug.should.equal('welcome');
 
         _.isBoolean(jsonResponse.posts[0].featured).should.eql(true);
+
+        // Newsletter should be returned as null
+        should(jsonResponse.posts[0].newsletter).be.null();
+        should.not.exist(jsonResponse.posts[0].newsletter_id);
     });
 
     it('Can include relations for a single post', async function () {
@@ -217,6 +248,9 @@ describe('Posts API', function () {
 
         jsonResponse.posts[0].email.should.be.an.Object();
         localUtils.API.checkResponse(jsonResponse.posts[0].email, 'email');
+
+        jsonResponse.posts[0].newsletter.id.should.eql(testUtils.DataGenerator.Content.newsletters[0].id);
+        should.not.exist(jsonResponse.posts[0].newsletter_id);
     });
 
     it('Can add a post', async function () {
@@ -247,6 +281,10 @@ describe('Posts API', function () {
 
         should.exist(res.headers.location);
         res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
+
+        // Newsletter should be returned as null
+        should(res.body.posts[0].newsletter).be.null();
+        should.not.exist(res.body.posts[0].newsletter_id);
 
         const model = await models.Post.findOne({
             id: res.body.posts[0].id,
@@ -365,6 +403,10 @@ describe('Posts API', function () {
             .expect(200);
 
         res2.headers['x-cache-invalidate'].should.eql('/p/' + res2.body.posts[0].uuid + '/');
+
+        // Newsletter should be returned as null
+        should(res2.body.posts[0].newsletter).be.null();
+        should.not.exist(res2.body.posts[0].newsletter_id);
     });
 
     it('Can update and force re-render', async function () {
@@ -461,10 +503,7 @@ describe('Posts API', function () {
             .send({posts: [post]})
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
-
-        should(res2.body.posts[0].newsletter).eql(null);
-        should.not.exist(res2.body.posts[0].newsletter_id);
+            .expect(422);
 
         const model = await models.Post.findOne({
             id: postId
@@ -493,6 +532,10 @@ describe('Posts API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(201);
 
+        // Check newsletter relation is loaded, but null in response.
+        should(res.body.posts[0].newsletter).eql(null);
+        should.not.exist(res.body.posts[0].newsletter_id);
+
         const id = res.body.posts[0].id;
 
         const updatedPost = res.body.posts[0];
@@ -505,10 +548,13 @@ describe('Posts API', function () {
             .put(localUtils.API.getApiQuery('posts/' + id + '/?email_recipient_filter=all&newsletter_id=' + newsletterId))
             .set('Origin', config.get('url'))
             .send({posts: [updatedPost]})
-            .expect(console.log)
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
+
+        // Check newsletter relation is loaded in response
+        should(finalPost.body.posts[0].newsletter.id).eql(newsletterId);
+        should.not.exist(finalPost.body.posts[0].newsletter_id);
 
         const model = await models.Post.findOne({
             id
@@ -518,6 +564,8 @@ describe('Posts API', function () {
     });
 
     it('Defaults to the default newsletter when publishing without a newsletter_id', async function () {
+        const defaultNewsletter = await models.Newsletter.findOne({}, testUtils.context.internal);
+
         const post = {
             title: 'My post without newsletter_id',
             status: 'draft',
@@ -544,7 +592,7 @@ describe('Posts API', function () {
             updated_at: res.body.posts[0].updated_at
         };
 
-        await request
+        const finalPost = await request
             .put(localUtils.API.getApiQuery('posts/' + id + '/?email_recipient_filter=all'))
             .set('Origin', config.get('url'))
             .send({posts: [updatedPost]})
@@ -552,12 +600,12 @@ describe('Posts API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
+        // Check newsletter relation is loaded in response
+        should(finalPost.body.posts[0].newsletter.id).eql(defaultNewsletter.get('id'));
+        should.not.exist(finalPost.body.posts[0].newsletter_id);
+
         const model = await models.Post.findOne({
             id
-        }, testUtils.context.internal);
-
-        const defaultNewsletter = await models.Newsletter.findOne({
-            sort_order: 0
         }, testUtils.context.internal);
 
         should(model.get('newsletter_id')).eql(defaultNewsletter.get('id'));
@@ -601,6 +649,10 @@ describe('Posts API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
+        // Check newsletter relation is loaded in response
+        should(res2.body.posts[0].newsletter.id).eql(newsletterId);
+        should.not.exist(res2.body.posts[0].newsletter_id);
+
         model = await models.Post.findOne({
             id: id,
             status: 'published'
@@ -620,6 +672,10 @@ describe('Posts API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
+        // Check newsletter relation is loaded in response
+        should(res3.body.posts[0].newsletter).eql(null);
+        should.not.exist(res3.body.posts[0].newsletter_id);
+
         model = await models.Post.findOne({
             id: id,
             status: 'draft'
@@ -634,13 +690,18 @@ describe('Posts API', function () {
             updated_at: res3.body.posts[0].updated_at
         };
 
-        await request
+        const res4 = await request
             .put(localUtils.API.getApiQuery('posts/' + id + '/?email_recipient_filter=all&newsletter_id=' + newsletterId2))
             .set('Origin', config.get('url'))
             .send({posts: [republished]})
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
+
+        // Check newsletter relation is loaded in response
+        // + did update the newsletter id
+        should(res4.body.posts[0].newsletter.id).eql(newsletterId2);
+        should.not.exist(res4.body.posts[0].newsletter_id);
 
         model = await models.Post.findOne({
             id: id,
@@ -649,13 +710,18 @@ describe('Posts API', function () {
         should(model.get('newsletter_id')).eql(newsletterId2);
 
         // Should not change if status remains published
-        await request
+        const res5 = await request
             .put(localUtils.API.getApiQuery('posts/' + id + '/?email_recipient_filter=all&newsletter_id=' + newsletterId))
             .set('Origin', config.get('url'))
             .send({posts: [republished]})
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
+
+        // Check newsletter relation is loaded in response
+        // + did not update the newsletter id
+        should(res5.body.posts[0].newsletter.id).eql(newsletterId2);
+        should.not.exist(res5.body.posts[0].newsletter_id);
 
         model = await models.Post.findOne({
             id: id,
