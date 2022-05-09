@@ -27,10 +27,7 @@ module.exports = createTransactionalMigration(
         }
 
         const canceledEvents = await knex('members_paid_subscription_events')
-            .select(
-                'id',
-                'subscription_id'
-            )
+            .select('*')
             .where('type', '=', 'canceled')
             .whereIn('subscription_id', canceledSubscriptions.map(x => x.id))
             .orderBy('created_at', 'desc');
@@ -45,7 +42,7 @@ module.exports = createTransactionalMigration(
                 // if an event exists, update it
                 // we always update the latest event for a subscription due to the orderBy DESC
                 toUpdate.push({
-                    id: event.id,
+                    ...event,
                     mrr_delta: -subscription.mrr
                 });
             } else {
@@ -68,10 +65,8 @@ module.exports = createTransactionalMigration(
         await knex.batchInsert('members_paid_subscription_events', toInsert);
 
         logging.info(`Updating ${toUpdate.length} MRR events for canceled subscriptions`);
-        // eslint-disable-next-line no-restricted-syntax
-        for (const event of toUpdate) {
-            await knex('members_paid_subscription_events').update('mrr_delta', event.mrr_delta).where('id', event.id);
-        }
+        await knex('members_paid_subscription_events').whereIn('id', toUpdate.map(row => row.id)).del();
+        await knex.batchInsert('members_paid_subscription_events', toUpdate);
     },
     async function down() {}
 );
