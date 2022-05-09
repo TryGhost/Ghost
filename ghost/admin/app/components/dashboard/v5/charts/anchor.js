@@ -7,7 +7,7 @@ import {getSymbol} from 'ghost-admin/utils/currency';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
-const DATE_FORMAT = 'D MMM';
+const DATE_FORMAT = 'D MMM, YYYY';
 
 const DAYS_OPTIONS = [{
     name: '7 Days',
