@@ -191,7 +191,7 @@
         "frontmatter": {
           "strip": true
         },
-        "newsletter_id": {
+        "newsletter": {
           "strip": true
         }
       }
