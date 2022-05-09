@@ -214,12 +214,10 @@ const addEmail = async (postModel, options) => {
     }
 
     const knexOptions = _.pick(options, ['transacting', 'forUpdate']);
-    const filterOptions = Object.assign({}, knexOptions, {limit: 1});
+    const filterOptions = {...knexOptions, limit: 1};
 
-    let newsletter;
-    if (labsService.isSet('multipleNewsletters')) {
-        newsletter = await postModel.related('newsletter').fetch(Object.assign({}, {require: false}, _.pick(options, ['transacting'])));
-    }
+    const newsletter = await postModel.related('newsletter').fetch({require: true, ..._.pick(options, ['transacting'])});
+
     const emailRecipientFilter = postModel.get('email_recipient_filter');
     filterOptions.filter = transformEmailRecipientFilter(emailRecipientFilter, {errorProperty: 'email_recipient_filter'}, newsletter);
 
@@ -257,7 +255,7 @@ const addEmail = async (postModel, options) => {
             submitted_at: moment().toDate(),
             track_opens: !!settingsCache.get('email_track_opens'),
             recipient_filter: emailRecipientFilter,
-            newsletter_id: options.newsletter_id
+            newsletter_id: newsletter.id
         }, knexOptions);
     } else {
         return existing;
