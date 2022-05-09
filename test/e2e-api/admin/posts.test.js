@@ -512,6 +512,82 @@ describe('Posts API', function () {
         should(model.get('newsletter_id')).eql(null);
     });
 
+    it(`Can't change the newsletter of a post from the post body`, async function () {
+        const post = {
+            newsletter: {
+                id: testUtils.DataGenerator.Content.newsletters[0].id
+            }
+        };
+
+        const postId = testUtils.DataGenerator.Content.posts[2].id;
+
+        const modelBefore = await models.Post.findOne({
+            id: postId
+        }, testUtils.context.internal);
+
+        should(modelBefore.get('newsletter_id')).eql(null, 'This test requires the initial post to not have a newsletter');
+
+        const res = await request
+            .get(localUtils.API.getApiQuery(`posts/${postId}/?`))
+            .set('Origin', config.get('url'))
+            .expect(200);
+
+        post.updated_at = res.body.posts[0].updated_at;
+
+        const res2 = await request
+            .put(localUtils.API.getApiQuery('posts/' + postId + '/'))
+            .set('Origin', config.get('url'))
+            .send({posts: [post]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        const model = await models.Post.findOne({
+            id: postId
+        }, testUtils.context.internal);
+
+        should(model.get('newsletter_id')).eql(null);
+    });
+
+    it('Cannot change the newsletter via body when adding', async function () {
+        const post = {
+            title: 'My newsletter post',
+            status: 'draft',
+            feature_image_alt: 'Testing newsletter',
+            feature_image_caption: 'Testing <b>feature image caption</b>',
+            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+            created_at: moment().subtract(2, 'days').toDate(),
+            updated_at: moment().subtract(2, 'days').toDate(),
+            created_by: ObjectId().toHexString(),
+            updated_by: ObjectId().toHexString(),
+            newsletter: {
+                // This should be ignored, the default one should be used instead
+                id: testUtils.DataGenerator.Content.newsletters[0].id
+            }
+        };
+
+        const res = await request.post(localUtils.API.getApiQuery('posts'))
+            .set('Origin', config.get('url'))
+            .send({posts: [post]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201);
+
+        // Check that the default newsletter is used instead of the one in body (not allowed)
+        should(res.body.posts[0].status).eql('draft');
+        should(res.body.posts[0].newsletter).eql(null);
+        should.not.exist(res.body.posts[0].newsletter_id);
+
+        const id = res.body.posts[0].id;
+
+        const model = await models.Post.findOne({
+            id,
+            status: 'draft' // Fix for default filter
+        }, testUtils.context.internal);
+
+        should(model.get('newsletter_id')).eql(null);
+    });
+
     it('Can change the newsletter_id of a post when publishing', async function () {
         const post = {
             title: 'My newsletter_id post',
