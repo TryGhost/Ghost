@@ -5,6 +5,7 @@ import {useContext, useState} from 'react';
 import Switch from '../common/Switch';
 import {getSiteNewsletters} from '../../utils/helpers';
 import ActionButton from '../common/ActionButton';
+import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark-circle.svg';
 
 const React = require('react');
 
@@ -25,8 +26,8 @@ function SuccessIcon({show}) {
         return null;
     }
     return (
-        <div style={{marginRight: '4px'}}>
-            ✅
+        <div style={{marginRight: '8px', display: 'flex', transition: 'all ease 1s'}}>
+            <CheckmarkIcon className='gh-portal-checkmark-icon' alt='' style={{height: '24px', color: '#30cf43'}} />
         </div>
     );
 }
