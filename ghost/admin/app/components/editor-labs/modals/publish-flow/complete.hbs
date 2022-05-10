@@ -34,6 +34,10 @@
         {{/if}}
     </div>
 
+    {{#unless post.emailOnly}}
+        <GhPostBookmark @post={{post}} />
+    {{/unless}}
+
     <div class="gh-publish-cta">
         <button type="button" class="gh-btn gh-btn-black gh-btn-large" {{on "click" @close}}><span>Back to {{post.displayName}}</span></button>
         {{#unless post.emailOnly}}

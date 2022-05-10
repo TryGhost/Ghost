@@ -11,10 +11,6 @@ export default class GhPostsListItemComponent extends Component {
 
     @tracked isHovered = false;
 
-    get authorNames() {
-        return this.args.post.authors.map(author => author.name || author.email).join(', ');
-    }
-
     get sendEmailWhenPublished() {
         let {post} = this.args;
         return post.emailRecipientFilter && post.emailRecipientFilter !== 'none';
