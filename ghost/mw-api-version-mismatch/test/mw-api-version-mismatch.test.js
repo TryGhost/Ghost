@@ -26,10 +26,65 @@ describe('mw-api-version-mismatch', function () {
             code: 'UPDATE_CLIENT'
         }), req, res, () => {
             assert.equal(APIVersionCompatibilityService.handleMismatch.called, true);
+            assert.deepEqual(Object.keys(APIVersionCompatibilityService.handleMismatch.args[0][0]), [
+                'acceptVersion',
+                'contentVersion',
+                'requestURL',
+                'userAgent',
+                'apiKeyValue',
+                'apiKeyType'
+            ], 'handleMismatch called with wrong arguments');
+
             assert.equal(APIVersionCompatibilityService.handleMismatch.args[0][0].acceptVersion, 'v3.28');
             assert.equal(APIVersionCompatibilityService.handleMismatch.args[0][0].contentVersion, 'v4.46');
             assert.equal(APIVersionCompatibilityService.handleMismatch.args[0][0].requestURL, '/api/admin/posts/1');
             assert.equal(APIVersionCompatibilityService.handleMismatch.args[0][0].userAgent, 'Zapier/2.1 GhostAdminSDK/3.28');
+            assert.equal(APIVersionCompatibilityService.handleMismatch.args[0][0].apiKeyValue, null);
+            assert.equal(APIVersionCompatibilityService.handleMismatch.args[0][0].apiKeyType, null);
+
+            done();
+        });
+    });
+
+    it('Does call handle mismatch when with correct API key values when identification information is in the request', function (done) {
+        const APIVersionCompatibilityService = {
+            handleMismatch: sinon.stub().resolves()
+        };
+        const req = {
+            originalUrl: '/api/admin/posts/1',
+            query: {
+                key: 'content_api_key_secret'
+            },
+            headers: {
+                'accept-version': 'v3.28',
+                'user-agent': 'Zapier/2.1 GhostAdminSDK/3.28'
+            }
+        };
+        const res = {
+            locals: {
+                safeVersion: '4.46'
+            }
+        };
+
+        versionMismatchMW(APIVersionCompatibilityService)(new errors.RequestNotAcceptableError({
+            code: 'UPDATE_CLIENT'
+        }), req, res, () => {
+            assert.equal(APIVersionCompatibilityService.handleMismatch.called, true);
+            assert.deepEqual(Object.keys(APIVersionCompatibilityService.handleMismatch.args[0][0]), [
+                'acceptVersion',
+                'contentVersion',
+                'requestURL',
+                'userAgent',
+                'apiKeyValue',
+                'apiKeyType'
+            ], 'handleMismatch called with wrong arguments');
+
+            assert.equal(APIVersionCompatibilityService.handleMismatch.args[0][0].acceptVersion, 'v3.28');
+            assert.equal(APIVersionCompatibilityService.handleMismatch.args[0][0].contentVersion, 'v4.46');
+            assert.equal(APIVersionCompatibilityService.handleMismatch.args[0][0].requestURL, '/api/admin/posts/1');
+            assert.equal(APIVersionCompatibilityService.handleMismatch.args[0][0].userAgent, 'Zapier/2.1 GhostAdminSDK/3.28');
+            assert.equal(APIVersionCompatibilityService.handleMismatch.args[0][0].apiKeyValue, 'content_api_key_secret');
+            assert.equal(APIVersionCompatibilityService.handleMismatch.args[0][0].apiKeyType, 'content');
 
             done();
         });
