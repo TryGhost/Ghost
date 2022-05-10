@@ -59,6 +59,23 @@ describe('Update User Last Seen', function () {
         should(ownerAfter.get('last_seen')).not.eql(lastSeen);
     });
 
+    it('Should only update last seen after 1 hour', async function () {
+        const user = await models.User.findOne({id: userId});
+        const lastSeen = user.get('last_seen');
+        should.exist(lastSeen);
+
+        clock.tick(1000 * 60 * 30);
+
+        // Fetching should work fine
+        await agent
+            .get(`posts/`)
+            .expectStatus(200);
+
+        const ownerAfter = await models.User.findOne({id: userId});
+        should.exist(ownerAfter);
+        should(ownerAfter.get('last_seen')).eql(lastSeen);
+    });
+
     it('Should not update last seen for suspended users', async function () {
         // Fetching should work fine
         await agent
