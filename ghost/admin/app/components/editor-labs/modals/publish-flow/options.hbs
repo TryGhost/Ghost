@@ -55,7 +55,7 @@
                 </span>
             </button>
         {{else}}
-            <div type="button" class="gh-publish-setting-title {{if (eq @publishOptions.publishType "publish") "disabled"}}">
+            <div class="gh-publish-setting-title {{if (eq @publishOptions.publishType "publish") "disabled"}}">
                 {{svg-jar "member"}}
                 {{#if (eq @publishOptions.publishType "publish")}}
                     <div class="gh-publish-setting-trigger">
