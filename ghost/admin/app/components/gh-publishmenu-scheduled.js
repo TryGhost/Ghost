@@ -27,7 +27,7 @@ export default class GhPublishmenuScheduledComponent extends Component {
     }
 
     get selectedNewsletter() {
-        return this.args.availableNewsletters.find(n => n.id === this.args.post.newsletterId);
+        return this.args.availableNewsletters.find(n => n.id === this.args.post.newsletter?.id);
     }
 
     constructor() {
