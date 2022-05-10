@@ -314,6 +314,8 @@ export class PublishOptions {
     // track of the previous values in case saving fails. We can't use ED's
     // rollbackAttributes() because it would also rollback any other unsaved edits
     _applyModelChanges() {
+        const willEmail = this.willEmail;
+
         // store backup of original values in case we need to revert
         this._originalModelValues = {};
 
@@ -334,8 +336,8 @@ export class PublishOptions {
             this.post.publishedAtUTC = this.scheduledAtUTC;
         }
 
-        if (this.willEmail) {
-            this.post.emailOnly = this.publishType === 'email';
+        if (willEmail) {
+            this.post.emailOnly = this.publishType === 'send';
         }
     }
 
