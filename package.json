@@ -198,7 +198,7 @@
     "cssnano": "5.1.7",
     "eslint": "8.15.0",
     "eslint-plugin-ghost": "2.13.0",
-    "grunt": "1.5.2",
+    "grunt": "1.5.3",
     "grunt-bg-shell": "2.3.3",
     "grunt-contrib-clean": "2.0.1",
     "grunt-contrib-compress": "2.0.0",
