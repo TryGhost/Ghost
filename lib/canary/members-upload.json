@@ -20,6 +20,9 @@
         "maxLength": 191,
         "pattern": "^([^,]|$)"
       },
+      "avatar_image": {
+        "strip": true
+      },
       "note": {
         "type": ["string", "null"],
         "minLength": 0,
