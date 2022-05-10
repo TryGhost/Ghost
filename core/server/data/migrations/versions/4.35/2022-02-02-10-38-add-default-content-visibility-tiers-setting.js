@@ -1,4 +1,4 @@
-const {addSetting} = require('../../utils.js');
+const {addSetting} = require('../../utils');
 
 module.exports = addSetting({
     key: 'default_content_visibility_tiers',
