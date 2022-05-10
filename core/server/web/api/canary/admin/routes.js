@@ -259,13 +259,12 @@ module.exports = function apiRoutes() {
         http(api.files.upload)
     );
 
-    // ## backups
+    // ## image backups
     // @TODO make images dynamic to allow multiple use cases in future
     router.get('/backups/images/download', mw.authAdminApi, http(api.backups.downloadBackup));
     router.get('/backups/images/init', mw.authAdminApi, http(api.backups.initialize));
     router.get('/backups/images/status', mw.authAdminApi, http(api.backups.zippingStatus));
 
-    
     // ## Invites
     router.get('/invites', mw.authAdminApi, http(api.invites.browse));
     router.get('/invites/:id', mw.authAdminApi, http(api.invites.read));

@@ -4,7 +4,7 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 
 const messages = {
-    backupsNotFound: 'No Backups Found',
+    backupsNotFound: 'No Backups Found'
 };
 
 module.exports = {

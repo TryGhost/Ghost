@@ -18,7 +18,7 @@ class BackupsExporter {
     getModel() {
         return {
             ImageBackupsModel: models.ImageBackups
-        }
+        };
     }
     // create backup in a new thread
     async createBackupWorker(id) {
@@ -26,26 +26,25 @@ class BackupsExporter {
         const imagesPath = self.getDirectories().images;
         const backupsPath = self.getDirectories().backups;
         const zipPath = path.join(backupsPath, 'images.zip');
+        const backupInstance = await self.getModel().ImageBackupsModel.findOne({id: id});
 
         fs.ensureDir(backupsPath)
-            .then(async function(){
+            .then(async function () {
                 return await compress(imagesPath, zipPath);
-            }).then(async function(result){
-                if(result.size > 0){
-                   const backupInstance = await self.getModel().ImageBackupsModel.findOne({id: id});
-                    if(backupInstance){
+            }).then(async function (result) {
+                if (result.size > 0){
+                    if (backupInstance){
                         backupInstance.set('backup_completed', true);
                         backupInstance.save();
-                       return
+                        return;
                     }
                 }  
-            }).catch(function(err){
+            }).catch(function (err){
                 //  Just destroying the db instance if an error occured, so it can be retried again. 
                 //  Will find a better way to handle errors.
-                const backupInstance = await self.getModel().ImageBackupsModel.findOne({id: id});
                 backupInstance.destroy();
                 throw err;
-            }
+            });
     }
 
     startBackupProcess() {
@@ -53,7 +52,7 @@ class BackupsExporter {
         self.getModel().ImageBackupsModel.add({created_at: new Date(), backup_completed: false}).then((entry) => {
             self.createBackupWorker(entry.attributes.id);
         });
-        return {'backupStarted': true};
+        return {backupStarted: true};
     }
         
     serve() {
@@ -66,7 +65,7 @@ class BackupsExporter {
                 .then(function () {
                     res.set({
                         'Content-disposition': 'attachment; filename={backups}.zip'.replace('{backups}', 'images'),
-                        'Content-Type': 'application/zip',
+                        'Content-Type': 'application/zip'
                     });
                     stream = fs.createReadStream(zipPath);
                     stream.pipe(res);
