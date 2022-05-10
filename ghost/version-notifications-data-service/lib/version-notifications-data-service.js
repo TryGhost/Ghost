@@ -6,10 +6,12 @@ class VersionNotificationsDataService {
     /**
      * @param {Object} options
      * @param {Object} options.UserModel - ghost user model
+     * @param {Object} options.ApiKeyModel -  ghost api key model
      * @param {Object} options.settingsService - ghost settings service
     */
-    constructor({UserModel, settingsService}) {
+    constructor({UserModel, ApiKeyModel, settingsService}) {
         this.UserModel = UserModel;
+        this.ApiKeyModel = ApiKeyModel;
         this.settingsService = settingsService;
     }
 
@@ -48,6 +50,26 @@ class VersionNotificationsDataService {
             .map(user => user.email);
 
         return adminEmails;
+    }
+
+    /**
+     *
+     * @param {String} key - api key identification value, it's "secret" in case of Content API key and "id" for Admin API
+     * @param {String} type - one of "content" or "admin" values
+     * @returns
+     */
+    async getIntegrationName(key, type) {
+        let queryOptions = null;
+
+        if (type === 'content') {
+            queryOptions = {secret: key};
+        } else if (type === 'admin') {
+            queryOptions = {id: key};
+        }
+
+        const apiKey = await this.ApiKeyModel.findOne(queryOptions, {withRelated: ['integration']});
+
+        return apiKey.relations.integration.get('name');
     }
 }
 
