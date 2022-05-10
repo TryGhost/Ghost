@@ -370,12 +370,14 @@ export default class PublishManagement extends Component {
     }
 
     @action
-    openPublishFlow(event) {
+    async openPublishFlow(event) {
         event?.preventDefault();
 
         this.updateFlowModal?.close();
 
-        if (!this.publishFlowModal || this.publishFlowModal.isClosing) {
+        const isValid = await this._validatePost();
+
+        if (isValid && !this.publishFlowModal || this.publishFlowModal.isClosing) {
             this.publishOptions.resetPastScheduledAt();
 
             this.publishFlowModal = this.modals.open(PublishFlowModal, {
@@ -391,7 +393,9 @@ export default class PublishManagement extends Component {
 
         this.publishFlowModal?.close();
 
-        if (!this.updateFlowModal || this.updateFlowModal.isClosing) {
+        const isValid = await this._validatePost();
+
+        if (isValid && !this.updateFlowModal || this.updateFlowModal.isClosing) {
             this.updateFlowModal = this.modals.open(UpdateFlowModal, {
                 publishOptions: this.publishOptions,
                 saveTask: this.publishTask
@@ -403,6 +407,26 @@ export default class PublishManagement extends Component {
                 await timeout(160); // wait for modal animation to finish
                 this[result.afterTask].perform();
             }
+        }
+    }
+
+    async _validatePost() {
+        this.notifications.closeAlerts('post.save');
+
+        try {
+            await this.publishOptions.post.validate();
+            return true;
+        } catch (e) {
+            if (e === undefined && this.publishOptions.post.errors.length !== 0) {
+                // validation error
+                const validationError = this.publishOptions.post.errors.messages[0];
+                const errorMessage = `Validation failed: ${validationError}`;
+
+                this.notifications.showAlert(errorMessage, {type: 'error', key: 'post.save'});
+                return false;
+            }
+
+            this.notifications.showAPIError(e);
         }
     }
 
