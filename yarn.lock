@@ -1825,10 +1825,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/bookshelf-transaction-events/-/bookshelf-transaction-events-0.1.13.tgz#01d35d843b5ddbf49ea6963584b1d00b2aea7ead"
   integrity sha512-d7f9QCIcbJtUxbzJooZyUiIirwBO5hxQd13VUi12zJ4kyV+fWpqq0xda6lbn9m0rv+BQ1vbBHOpDzcJ9LmfDDA==
 
-"@tryghost/bootstrap-socket@0.2.19":
-  version "0.2.19"
-  resolved "https://registry.yarnpkg.com/@tryghost/bootstrap-socket/-/bootstrap-socket-0.2.19.tgz#fdc0bfab617de3e9296c82f21ebeaabe52e01cb0"
-  integrity sha512-lkULl5ZniP4zxm3rv1laGluTOjOS6MdbjCOFFYzHy3HLOvcBOJ8FK33P7QdSqq8ThDoeOnlkWzFshaZG9QgkGw==
+"@tryghost/bootstrap-socket@0.2.20":
+  version "0.2.20"
+  resolved "https://registry.yarnpkg.com/@tryghost/bootstrap-socket/-/bootstrap-socket-0.2.20.tgz#f236dc8e10a89d2be0cffc36f2bf6b612b07b148"
+  integrity sha512-+YTsOdC+0/7yRLIHtEu/tZig6CiCBjByRqOp2MQNR0VxG8CGiFRvTTybnq35IKSA6VDRQQK+/02xiv9V2CmvmA==
   dependencies:
     "@tryghost/logging" "^2.0.0"
 
@@ -2462,17 +2462,10 @@
   dependencies:
     moment "^2.29.3"
 
-"@tryghost/string@0.1.25":
+"@tryghost/string@0.1.25", "@tryghost/string@^0.1.17", "@tryghost/string@^0.1.20":
   version "0.1.25"
   resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.25.tgz#59fd8dffeb98da532309cb94c99c2ad5f42df4b5"
   integrity sha512-9Y4T4GjLF2kwtOHKt9nANI7N0jGblgLK4GIFk/HB3immFFq2CJgD24+pli6P7Xw750hfgV2z72T9Vh7qgoU3fw==
-  dependencies:
-    unidecode "^0.1.8"
-
-"@tryghost/string@^0.1.17", "@tryghost/string@^0.1.20":
-  version "0.1.24"
-  resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.24.tgz#f71b86e6ee878eddeaf8ae96aa2aa899e7577ae6"
-  integrity sha512-OEZ2fFWpGKcWxYSPCuzcdpclz2gOFBjd79aVy0kQF3CbsY35ULnNx/+Dto4QjrtlBA2J8SjPiQUH6dFIyOqF9Q==
   dependencies:
     unidecode "^0.1.8"
 
