@@ -21,5 +21,7 @@
     "access": "public"
   },
   "devDependencies": {},
-  "dependencies": {}
+  "dependencies": {
+    "jsonwebtoken": "^8.5.1"
+  }
 }
