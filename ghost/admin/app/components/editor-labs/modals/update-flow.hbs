@@ -33,7 +33,7 @@
                     {{/if}}
 
                     {{#if post.isScheduled}}
-                        {{#let (members-count-fetcher query=(hash filter=(concat "newsletters:" post.newsletter.slug "+" post.emailRecipientFilter))) as |countFetcher|}}
+                        {{#let (members-count-fetcher query=(hash filter=post.fullRecipientFilter)) as |countFetcher|}}
                             <strong>{{gh-pluralize countFetcher.count "member"}}</strong>.
                         {{/let}}
                     {{else}}

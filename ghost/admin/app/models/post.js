@@ -200,6 +200,14 @@ export default Model.extend(Comparable, ValidationEngine, {
         }
     }),
 
+    fullRecipientFilter: computed('newsletter.recipientFilter', 'emailRecipientFilter', function () {
+        if (!this.newsletter) {
+            return this.emailRecipientFilter;
+        }
+
+        return `${this.newsletter.recipientFilter}+(${this.emailRecipientFilter})`;
+    }),
+
     // check every second to see if we're past the scheduled time
     // will only re-compute if this property is being observed elsewhere
     pastScheduledTime: computed('isScheduled', 'publishedAtUTC', 'clock.second', function () {
