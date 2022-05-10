@@ -5,6 +5,9 @@ module.exports = {
         es6: true,
         node: true
     },
+    parserOptions: {
+        ecmaVersion: 2020
+    },
     plugins: ['ghost'],
     extends: [
         'plugin:ghost/node'
