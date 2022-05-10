@@ -63,7 +63,7 @@ export default class ConfirmPublishModal extends Component {
         const filter = `${newsletter.recipientFilter}+(${sendEmailWhenPublished})`;
 
         this.memberCount = sendEmailWhenPublished ? (yield this.membersCountCache.count(filter)) : 0;
-        this.memberCountString = sendEmailWhenPublished ? (yield this.membersCountCache.countString(filter)) : '0 members';
+        this.memberCountString = sendEmailWhenPublished ? (yield this.membersCountCache.countString(filter, {newsletter})) : '0 members';
     }
 
     @task

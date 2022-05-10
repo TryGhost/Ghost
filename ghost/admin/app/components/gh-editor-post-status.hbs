@@ -7,7 +7,7 @@
         Scheduled
         {{#if this.isHovered}}
             <time datetime="{{@post.publishedAtUTC}}" class="ml1 green f8" data-test-schedule-countdown>
-                to be sent to <GhRecipientFilterCount @filter={{@post.fullRecipientFilter}} />
+                to be sent to <GhRecipientFilterCount @filter={{@post.fullRecipientFilter}} @newsletter={{@post.newsletter}} />
                 {{this.scheduledTime}}
             </time>
         {{/if}}
@@ -24,7 +24,7 @@
             {{#if this.isHovered}}
                 to be published
                 {{#if (and @post.emailRecipientFilter (not @post.email))}}
-                    and sent to <GhRecipientFilterCount @filter={{@post.fullRecipientFilter}} />
+                    and sent to <GhRecipientFilterCount @filter={{@post.fullRecipientFilter}} @newsletter={{@post.newsletter}} />
                 {{/if}}
                 {{this.scheduledTime}}
             {{/if}}

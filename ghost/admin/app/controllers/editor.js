@@ -1071,7 +1071,8 @@ export default class EditorController extends Controller {
             publishedAtUTC,
             emailRecipientFilter,
             previewUrl,
-            emailOnly
+            emailOnly,
+            newsletter
         } = this.post;
         let publishedAtBlogTZ = moment.tz(publishedAtUTC, this.settings.get('timezone'));
 
@@ -1079,7 +1080,7 @@ export default class EditorController extends Controller {
         let description = emailOnly ? ['Will be sent'] : ['Will be published'];
 
         if (emailRecipientFilter && emailRecipientFilter !== 'none') {
-            const recipientCount = await this.membersCountCache.countString(this.post.fullRecipientFilter);
+            const recipientCount = await this.membersCountCache.countString(this.post.fullRecipientFilter, {newsletter});
             description.push(`${!emailOnly ? 'and delivered ' : ''}to <span><strong>${recipientCount}</strong></span>`);
         }
 
