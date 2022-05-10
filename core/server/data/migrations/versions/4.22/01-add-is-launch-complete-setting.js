@@ -1,4 +1,4 @@
-const {addSetting} = require('../../utils.js');
+const {addSetting} = require('../../utils');
 
 module.exports = addSetting({
     key: 'editor_is_launch_complete',

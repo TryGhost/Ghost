@@ -1,4 +1,4 @@
-const {addSetting} = require('../../utils.js');
+const {addSetting} = require('../../utils');
 
 module.exports = addSetting({
     key: 'version_notifications',
