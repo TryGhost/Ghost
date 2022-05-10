@@ -766,3 +766,8 @@
     font-weight: 400;
     line-height: 1.35em;
 }
+
+.gh-revert-to-draft {
+    color: var(--green-d1);
+    font-weight: 500;
+}

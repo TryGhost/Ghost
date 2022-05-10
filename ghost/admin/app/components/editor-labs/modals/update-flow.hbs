@@ -8,7 +8,7 @@
     {{#let @data.publishOptions.post as |post|}}
         <div class="gh-publish-settings-container gh-update-flow">
             <div class="gh-publish-title">
-                This {{post.displayName}} is
+                This {{post.displayName}} has been
                 <span class="green">{{post.status}}</span>
             </div>
 
@@ -42,6 +42,14 @@
                 {{else}}
                     published.
                 {{/if}}
+                To change this,
+                <button
+                    type="button"
+                    class="gh-revert-to-draft"
+                    {{on "click" (fn @close (hash afterTask="revertToDraftTask"))}}
+                >
+                    <span>revert post to a private draft</span>
+                </button>.
             </p>
 
             {{#if (and post.isScheduled post.email)}}
@@ -58,24 +66,6 @@
                     {{/let}}
                 </p>
             {{/if}}
-
-            <div class="gh-publish-cta">
-                <GhTaskButton
-                    @task={{this.saveTask}}
-                    @buttonText="Save changes"
-                    @runningText="Saving"
-                    @successText="Saved"
-                    @class="gh-btn gh-btn-icon gh-btn-primary gh-btn-large mr4"
-                />
-
-                <button
-                    type="button"
-                    class="gh-btn gh-btn-icon gh-btn-secondary gh-btn-large"
-                    {{on "click" (fn @close (hash afterTask="revertToDraftTask"))}}
-                >
-                    <span>Revert to draft</span>
-                </button>
-            </div>
         </div>
     {{/let}}
 </div>
