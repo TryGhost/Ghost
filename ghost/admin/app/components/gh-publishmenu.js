@@ -476,7 +476,7 @@ export default Component.extend({
 
         try {
             // will show alert for non-date related failed validations
-            post = yield this.saveTask.perform({sendEmailWhenPublished, newsletterId: this.selectedNewsletter?.id, emailOnly});
+            post = yield this.saveTask.perform({sendEmailWhenPublished, newsletter: this.selectedNewsletter?.id, emailOnly});
 
             this._cachePublishedAtBlogTZ();
 

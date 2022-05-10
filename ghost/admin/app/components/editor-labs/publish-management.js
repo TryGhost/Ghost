@@ -274,7 +274,7 @@ export class PublishOptions {
         const adapterOptions = {};
 
         if (willEmail) {
-            adapterOptions.newsletterId = this.newsletter.id;
+            adapterOptions.newsletter = this.newsletter.id;
             adapterOptions.emailRecipientFilter = this.recipientFilter;
         }
 

@@ -18,8 +18,9 @@ export default class Post extends ApplicationAdapter {
             parsedUrl.searchParams.append('email_recipient_filter', emailRecipientFilter);
         }
 
-        if (snapshot?.adapterOptions?.newsletterId) {
-            const newsletterId = snapshot.adapterOptions.newsletterId;
+        if (snapshot?.adapterOptions?.newsletter) {
+            // TODO: rename newsletter_id to newsletter once changed in the backend
+            const newsletterId = snapshot.adapterOptions.newsletter;
             parsedUrl.searchParams.append('newsletter_id', newsletterId);
         }
 

@@ -110,10 +110,8 @@ export default class ModalPostPreviewEmailComponent extends Component {
         let {post} = this.args;
 
         // Fetch newsletter
-        if (!this.newsletter && post.newsletterId) {
-            const newsletters = (await this.store.query('newsletter', {filter: 'status:active+id:' + post.newsletterId, limit: 1})).toArray();
-            const defaultNewsletter = newsletters[0];
-            this.newsletter = defaultNewsletter;   
+        if (!this.newsletter && post.newsletter) {
+            this.newsletter = post.newsletter;   
         }
             
         if (!this.newsletter) {
