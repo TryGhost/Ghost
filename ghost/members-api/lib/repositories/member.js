@@ -238,14 +238,12 @@ module.exports = class MemberRepository {
         const context = options && options.context || {};
         let source;
 
-        if (context.import) {
+        if (context.import || context.importer) {
             source = 'import';
         } else if (context.internal) {
             source = 'system';
         } else if (context.user) {
             source = 'admin';
-        } else if (context.importer) {
-            source = 'importer';
         } else if (context.api_key) {
             source = 'api';
         } else {
@@ -414,7 +412,7 @@ module.exports = class MemberRepository {
                     memberData.newsletters = await this.getSubscribeOnSignupNewsletters(browseOptions);
                 }
             }
-            
+
             if (memberData.newsletters) {
                 const existingNewsletterIds = existingNewsletters.map(newsletter => newsletter.id);
                 const incomingNewsletterIds = memberData.newsletters.map(newsletter => newsletter.id);
