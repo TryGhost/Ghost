@@ -14,6 +14,7 @@ const init = () => {
 
     serviceInstance = new APIVersionCompatibilityService({
         UserModel: models.User,
+        ApiKeyModel: models.ApiKey,
         settingsService: settingsService.getSettingsBREADServiceInstance(),
         sendEmail: (options) => {
             // NOTE: not using bind here because mockMailer is having trouble mocking bound methods
