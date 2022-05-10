@@ -2442,10 +2442,10 @@
   dependencies:
     "@tryghost/errors" "^1.2.1"
 
-"@tryghost/settings-path-manager@0.1.6":
-  version "0.1.6"
-  resolved "https://registry.yarnpkg.com/@tryghost/settings-path-manager/-/settings-path-manager-0.1.6.tgz#0ddd1c6af9ccaef5645374a495c3468e42518eac"
-  integrity sha512-aMklNgqmHHwOC0XMqoHUYsTE4sKn+xWZ5y04W/DlM5unkNZlaPUs3GK9m3iEJ8hO57ciWCbhKKqfyjsP8GFj8A==
+"@tryghost/settings-path-manager@0.1.7":
+  version "0.1.7"
+  resolved "https://registry.yarnpkg.com/@tryghost/settings-path-manager/-/settings-path-manager-0.1.7.tgz#26a16b70533b8ee622691a581d82e6ea6e0ea59d"
+  integrity sha512-j9CDVG5Vo0WlgF0ji4WRZ3M0/drO8Yt0BeLwKUyg/EyuLIf8zSC6U6XLSkWf0Sd99t7y/6fMMwS6I8DNgnjIkg==
   dependencies:
     date-fns "^2.24.0"
     tpl "^0.3.0"
@@ -2462,17 +2462,10 @@
   dependencies:
     moment "^2.29.3"
 
-"@tryghost/string@0.1.25":
+"@tryghost/string@0.1.25", "@tryghost/string@^0.1.17", "@tryghost/string@^0.1.20":
   version "0.1.25"
   resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.25.tgz#59fd8dffeb98da532309cb94c99c2ad5f42df4b5"
   integrity sha512-9Y4T4GjLF2kwtOHKt9nANI7N0jGblgLK4GIFk/HB3immFFq2CJgD24+pli6P7Xw750hfgV2z72T9Vh7qgoU3fw==
-  dependencies:
-    unidecode "^0.1.8"
-
-"@tryghost/string@^0.1.17", "@tryghost/string@^0.1.20":
-  version "0.1.24"
-  resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.24.tgz#f71b86e6ee878eddeaf8ae96aa2aa899e7577ae6"
-  integrity sha512-OEZ2fFWpGKcWxYSPCuzcdpclz2gOFBjd79aVy0kQF3CbsY35ULnNx/+Dto4QjrtlBA2J8SjPiQUH6dFIyOqF9Q==
   dependencies:
     unidecode "^0.1.8"
 
