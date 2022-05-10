@@ -5,6 +5,11 @@ import {inject as service} from '@ember/service';
 export default class PublishFlowOptions extends Component {
     @service settings;
 
+    // store any derived state from PublishOptions on creation so the copy
+    // doesn't change whilst the post is saving
+    willEmail = this.args.publishOptions.willEmail;
+    willPublish = this.args.publishOptions.willPublish;
+
     get confirmButtonText() {
         const publishType = this.args.publishOptions.publishType;
 

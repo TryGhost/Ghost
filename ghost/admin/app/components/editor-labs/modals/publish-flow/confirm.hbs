@@ -19,12 +19,12 @@
 
     {{@publishOptions.post.displayName}}
 
-    {{#if @publishOptions.willPublish}}
-        will be published on your site{{#if @publishOptions.willEmail}}, and delivered to{{else}}.{{/if}}
+    {{#if this.willPublish}}
+        will be published on your site{{#if this.willEmail}}, and delivered to{{else}}.{{/if}}
     {{/if}}
 
-    {{#if @publishOptions.willEmail}}
-        {{#unless @publishOptions.willPublish}}
+    {{#if this.willEmail}}
+        {{#unless this.willPublish}}
             will be delivered to
         {{/unless}}
 
@@ -42,11 +42,11 @@
                 <strong>{{gh-pluralize countFetcher.count "member" without-count=true}}</strong>
             {{else}}
                 <strong>{{gh-pluralize countFetcher.count "subscriber" without-count=true}}</strong>
-                of <strong>{{@publishOptions.newsletter.name}}</strong>{{#if @publishOptions.willPublish}}.{{else}},{{/if}}
+                of <strong>{{@publishOptions.newsletter.name}}</strong>{{#if this.willPublish}}.{{else}},{{/if}}
             {{/if}}
         {{/let}}
 
-        {{#unless @publishOptions.willPublish}}
+        {{#unless this.willPublish}}
             and will <strong>not</strong> be published on your site.
         {{/unless}}
     {{/if}}
