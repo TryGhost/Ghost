@@ -139,7 +139,7 @@ const authenticateWithToken = async (req, res, next, {token, JWT_OPTIONS}) => {
         // https://github.com/auth0/node-jsonwebtoken/issues/208#issuecomment-231861138
         const secret = Buffer.from(apiKey.get('secret'), 'hex');
 
-        // Using req.originalUril means we get the right url even if version-rewrites have happened
+        // Using req.originalUrl means we get the right url even if version-rewrites have happened
         const {version, api} = legacyApiPathMatch(req.originalUrl);
 
         // ensure the token was meant for this api
