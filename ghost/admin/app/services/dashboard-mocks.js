@@ -395,7 +395,7 @@ export default class DashboardMocksService extends Service {
         this.mrrStats = stats.map((s) => {
             return {
                 date: s.date,
-                mrr: s.tier1 * 500 + s.tier2 * 2500,
+                mrr: s.tier1 * 501 + s.tier2 * 2500,
                 currency: 'usd'
             };
         });

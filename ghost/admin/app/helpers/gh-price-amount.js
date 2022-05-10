@@ -1,9 +1,9 @@
 import {formatNumber} from './format-number';
 import {helper} from '@ember/component/helper';
 
-export function ghPriceAmount(amount) {
+export function ghPriceAmount(amount, {cents = true} = {}) {
     if (amount) {
-        let price = amount / 100;
+        let price = cents ? amount / 100 : Math.round(amount / 100);
         if (price % 1 === 0) {
             return formatNumber(price);
         } else {
@@ -14,6 +14,6 @@ export function ghPriceAmount(amount) {
 }
 
 // like {{pluralize}} but formats the number according to current locale
-export default helper(function ([amount]) {
-    return ghPriceAmount(amount);
+export default helper(function ([amount], options = {}) {
+    return ghPriceAmount(amount, options);
 });

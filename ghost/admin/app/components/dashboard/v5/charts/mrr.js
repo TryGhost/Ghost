@@ -78,7 +78,7 @@ export default class Mrr extends Component {
             return '-';
         }
 
-        const valueText = ghPriceAmount(this.currentMRR);
+        const valueText = ghPriceAmount(this.currentMRR, {cents: false});
         return `${this.mrrCurrencySymbol}${valueText}`;
     }
 
