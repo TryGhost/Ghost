@@ -194,7 +194,7 @@ module.exports = {
             // update all email recipients with a processed_at
             await models.EmailRecipient
                 .where({batch_id: emailBatchId})
-                .save({processed_at: moment()}, Object.assign({}, knexOptions, {patch: true}));
+                .save({processed_at: moment()}, Object.assign({}, knexOptions, {autoRefresh: false, patch: true}));
         }
     },
 
