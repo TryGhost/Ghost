@@ -492,6 +492,8 @@ Object {
     "lang": "en",
     "locale": "en",
     "logo": null,
+    "members_enabled": true,
+    "members_invite_only": false,
     "members_support_address": "noreply",
     "meta_description": null,
     "meta_title": null,
@@ -520,6 +522,7 @@ Object {
     "og_description": null,
     "og_image": null,
     "og_title": null,
+    "paid_members_enabled": true,
     "secondary_navigation": Array [
       Object {
         "label": "Data & privacy",
@@ -549,10 +552,10 @@ exports[`API Versioning Content API responds with current content version header
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "942",
+  "content-length": "1021",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": "W/\\"3ae-FBGPtlUjSvGtTGLOj2sW5Rbn33s\\"",
+  "etag": "W/\\"3fd-PXBX1gYn1ftAeK+GoVbEnAsmVAE\\"",
   "vary": "Accept-Encoding",
   "x-powered-by": "Express",
 }
@@ -572,6 +575,8 @@ Object {
     "lang": "en",
     "locale": "en",
     "logo": null,
+    "members_enabled": true,
+    "members_invite_only": false,
     "members_support_address": "noreply",
     "meta_description": null,
     "meta_title": null,
@@ -600,6 +605,7 @@ Object {
     "og_description": null,
     "og_image": null,
     "og_title": null,
+    "paid_members_enabled": true,
     "secondary_navigation": Array [
       Object {
         "label": "Data & privacy",
@@ -629,9 +635,9 @@ exports[`API Versioning Content API responds with no content version header when
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "942",
+  "content-length": "1021",
   "content-type": "application/json; charset=utf-8",
-  "etag": "W/\\"3ae-FBGPtlUjSvGtTGLOj2sW5Rbn33s\\"",
+  "etag": "W/\\"3fd-PXBX1gYn1ftAeK+GoVbEnAsmVAE\\"",
   "vary": "Accept-Encoding",
   "x-powered-by": "Express",
 }
