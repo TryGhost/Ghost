@@ -55,10 +55,8 @@ export default class EmailPreviewModal extends Component {
         let {html, subject} = this;
 
         // Fetch newsletter
-        if (!this.newsletter && this.args.data.newsletterId) {
-            const newsletters = (await this.store.query('newsletter', {filter: 'status:active+id:' + this.args.data.newsletterId, limit: 1})).toArray();
-            const defaultNewsletter = newsletters[0];
-            this.newsletter = defaultNewsletter;   
+        if (!this.newsletter && this.args.data.newsletter) {
+            this.newsletter = this.args.data.newsletter;
         }
             
         if (!this.newsletter) {
