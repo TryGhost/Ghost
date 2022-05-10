@@ -112,7 +112,7 @@
     "@tryghost/update-check-service": "0.3.3",
     "@tryghost/url-utils": "3.0.1",
     "@tryghost/validator": "0.1.24",
-    "@tryghost/verification-trigger": "0.2.3",
+    "@tryghost/verification-trigger": "0.2.4",
     "@tryghost/version": "0.1.14",
     "@tryghost/vhost-middleware": "1.0.25",
     "@tryghost/zip": "1.1.24",
