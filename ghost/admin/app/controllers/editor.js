@@ -492,7 +492,7 @@ export default class EditorController extends Controller {
             if (options.sendEmailWhenPublished && (isPublishing || isScheduling)) {
                 options.adapterOptions = Object.assign({}, options.adapterOptions, {
                     sendEmailWhenPublished: options.sendEmailWhenPublished,
-                    newsletterId: options.newsletterId
+                    newsletter: options.newsletter
                 });
             }
         }
