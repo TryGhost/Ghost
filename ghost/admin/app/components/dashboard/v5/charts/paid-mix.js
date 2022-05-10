@@ -183,7 +183,7 @@ export default class PaidMix extends Component {
                     label: (tooltipItems, data) => {
                         const tooltipTextEl = document.querySelector('#gh-dashboard5-mix-tooltip .gh-dashboard5-tooltip-value');
                         if (this.isTotalMembersZero) {
-                            tooltipTextEl.innerHTML = "Currently has no data";
+                            tooltipTextEl.innerHTML = 'Currently has no data';
                         } else {
                             const label = data.datasets[tooltipItems.datasetIndex].label || '';
                             const value = data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index] || 0;
