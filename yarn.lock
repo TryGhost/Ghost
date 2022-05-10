@@ -1846,10 +1846,10 @@
   dependencies:
     color "^3.2.1"
 
-"@tryghost/config-url-helpers@0.1.7":
-  version "0.1.7"
-  resolved "https://registry.yarnpkg.com/@tryghost/config-url-helpers/-/config-url-helpers-0.1.7.tgz#197c9c5d25e201cdede4e5f5c2bb84a4e773c33e"
-  integrity sha512-cKYbXDk/6efbK+maMy3bBigs1ERWZKcpzy8tYXDhoKyJ0xfnjeX51T0PVaWgP70TWZWz46iAs3jbqVJG8pR+2A==
+"@tryghost/config-url-helpers@0.1.8":
+  version "0.1.8"
+  resolved "https://registry.yarnpkg.com/@tryghost/config-url-helpers/-/config-url-helpers-0.1.8.tgz#85b3f525cb10dcf5ed63612468371b01276639ef"
+  integrity sha512-YrmCegHLFUzutJn17UhNGAgYItrTEKmIdO5Qaa6TnKekNnLPSI3I8af/xKI1KUPp4wPqErVCYeihQYshPYYsdg==
 
 "@tryghost/config@0.2.2":
   version "0.2.2"
@@ -2462,17 +2462,10 @@
   dependencies:
     moment "^2.29.3"
 
-"@tryghost/string@0.1.25":
+"@tryghost/string@0.1.25", "@tryghost/string@^0.1.17", "@tryghost/string@^0.1.20":
   version "0.1.25"
   resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.25.tgz#59fd8dffeb98da532309cb94c99c2ad5f42df4b5"
   integrity sha512-9Y4T4GjLF2kwtOHKt9nANI7N0jGblgLK4GIFk/HB3immFFq2CJgD24+pli6P7Xw750hfgV2z72T9Vh7qgoU3fw==
-  dependencies:
-    unidecode "^0.1.8"
-
-"@tryghost/string@^0.1.17", "@tryghost/string@^0.1.20":
-  version "0.1.24"
-  resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.24.tgz#f71b86e6ee878eddeaf8ae96aa2aa899e7577ae6"
-  integrity sha512-OEZ2fFWpGKcWxYSPCuzcdpclz2gOFBjd79aVy0kQF3CbsY35ULnNx/+Dto4QjrtlBA2J8SjPiQUH6dFIyOqF9Q==
   dependencies:
     unidecode "^0.1.8"
 

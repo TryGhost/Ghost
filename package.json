@@ -62,7 +62,7 @@
     "@tryghost/bookshelf-plugins": "0.4.1",
     "@tryghost/bootstrap-socket": "0.2.19",
     "@tryghost/color-utils": "0.1.16",
-    "@tryghost/config-url-helpers": "0.1.7",
+    "@tryghost/config-url-helpers": "0.1.8",
     "@tryghost/constants": "1.0.4",
     "@tryghost/custom-theme-settings-service": "0.3.2",
     "@tryghost/database-info": "0.3.4",
