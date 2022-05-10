@@ -33,6 +33,11 @@ const doGet = (key, options) => {
 
     // Default behaviour is to try to resolve the value and return that
     try {
+        // CASE: handle literal false
+        if (settingsCache[key].value === false || settingsCache[key].value === 'false') {
+            return false;
+        }
+
         // CASE: if a string contains a number e.g. "1", JSON.parse will auto convert into integer
         if (!isNaN(Number(settingsCache[key].value))) {
             return settingsCache[key].value || null;
@@ -99,7 +104,7 @@ module.exports = {
         let settings = {};
 
         _.each(publicSettings, (key, newKey) => {
-            settings[newKey] = doGet(key) || null;
+            settings[newKey] = doGet(key) ?? null;
         });
 
         return settings;
@@ -110,7 +115,7 @@ module.exports = {
      * Optionally takes a collection of settings & can populate the cache with these.
      *
      * @param {EventEmitter} events
-     * @param {Bookshelf.Collection<Settings>} [settingsCollection]
+     * @param {Bookshelf.Collection<Settings>} settingsCollection
      * @return {object}
      */
     init(events, settingsCollection) {

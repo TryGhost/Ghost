@@ -11,7 +11,7 @@ should.equal(true, true);
 
 describe('UNIT: settings cache', function () {
     beforeEach(function () {
-        cache.init(events);
+        cache.init(events, {});
     });
 
     afterEach(function () {
@@ -64,7 +64,7 @@ describe('UNIT: settings cache', function () {
         should(cache.get('nan')).eql(null);
 
         should(cache.get('true')).eql(true);
-        should(cache.get('false')).eql(null); // EEEK! this is falsy but should be false
+        should(cache.get('false')).eql(false);
         should(cache.get('object')).eql({});
         should(cache.get('array')).eql([]);
 
@@ -81,7 +81,7 @@ describe('UNIT: settings cache', function () {
         should(cache.get('stringnull')).eql(null);
         should(cache.get('stringnan')).eql('NaN');
         should(cache.get('stringtrue')).eql(true);
-        should(cache.get('stringfalse')).eql(null); // EEEK! this is falsy but should be false
+        should(cache.get('stringfalse')).eql(false);
         should(cache.get('stringobj')).eql({});
         should(cache.get('stringarr')).eql([]);
     });
@@ -96,16 +96,19 @@ describe('UNIT: settings cache', function () {
         cache.set('key1', {value: 'something'});
         cache.set('title', {value: 'hello world'});
         cache.set('timezone', {value: 'PST'});
+        cache.set('secondary_navigation', {value: false});
 
         cache.getAll().should.eql({
             key1: {value: 'something'},
             title: {value: 'hello world'},
-            timezone: {value: 'PST'}
+            timezone: {value: 'PST'},
+            secondary_navigation: {value: false}
         });
 
         let values = _.zipObject(_.keys(publicSettings), _.fill(Array(_.size(publicSettings)), null));
         values.title = 'hello world';
         values.timezone = 'PST';
+        values.secondary_navigation = false;
 
         cache.getPublic().should.eql(values);
     });
