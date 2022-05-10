@@ -51,8 +51,7 @@ module.exports = {
         feature_image: {type: 'string', maxlength: 2000, nullable: true},
         featured: {type: 'bool', nullable: false, defaultTo: false},
         type: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'post', validations: {isIn: [['post', 'page']]}},
-        // @TODO: add isIn validation here to control for all possible status values (published, draft, scheduled, sent)
-        status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'draft'},
+        status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'draft', validations: {isIn: [['published', 'draft', 'scheduled', 'sent']]}},
         // NOTE: unused at the moment and reserved for future features
         locale: {type: 'string', maxlength: 6, nullable: true},
         visibility: {
