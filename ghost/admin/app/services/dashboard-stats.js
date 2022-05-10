@@ -344,7 +344,10 @@ export default class DashboardStatsService extends Service {
         let statsUrl = this.ghostPaths.url.api('stats/subscriptions');
         let result = yield this.ajax.request(statsUrl);
 
-        const paidMembersByCadence = {};
+        const paidMembersByCadence = {
+            month: 0,
+            year: 0
+        };
 
         for (const cadence of result.meta.cadences) {
             paidMembersByCadence[cadence] = result.meta.totals.reduce((sum, total) => {
