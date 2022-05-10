@@ -400,6 +400,7 @@ export default class PublishManagement extends Component {
             const result = await this.updateFlowModal;
 
             if (result?.afterTask && this[result?.afterTask]) {
+                await timeout(160); // wait for modal animation to finish
                 this[result.afterTask].perform();
             }
         }
