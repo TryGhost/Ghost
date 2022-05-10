@@ -1719,10 +1719,10 @@
   dependencies:
     "@tryghost/errors" "^1.2.1"
 
-"@tryghost/admin-api-schema@2.15.0":
-  version "2.15.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-2.15.0.tgz#fb2a14af9dd5d418d3a2f5a7ce89b349ac092b2b"
-  integrity sha512-zh1aod5J3DwKuhiJ1JbkMT8ybs0DfHjs7ubwSc+GUkWaa6w8yyDFukzDC59P3PPV3DMTyKwzJlEqv2S86QQmOw==
+"@tryghost/admin-api-schema@2.16.0":
+  version "2.16.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-2.16.0.tgz#a83fef005d695fac41af42433f9f4a6fc8a257ff"
+  integrity sha512-9xodTbVIlfLZuErWWCkeriPShqU2tlYyRusY0vWuhfct3EDmDNoHyxGpmmsoX4bD2z7EUn/IYDtDl3b7moe+6Q==
   dependencies:
     "@tryghost/errors" "^1.0.0"
     lodash "^4.17.11"
@@ -1839,10 +1839,10 @@
   dependencies:
     long-timeout "^0.1.1"
 
-"@tryghost/color-utils@0.1.15":
-  version "0.1.15"
-  resolved "https://registry.yarnpkg.com/@tryghost/color-utils/-/color-utils-0.1.15.tgz#814f082ae4ee65c96b0429ab196af2772b7b25c4"
-  integrity sha512-LI8UKboknIwCewL3z1l5FS4V0W84Nfc4snA1n62F3a8casS6V+imtqdGb1qgu+Y/0IhVxLbMSM5/qOpJzZoPiQ==
+"@tryghost/color-utils@0.1.16":
+  version "0.1.16"
+  resolved "https://registry.yarnpkg.com/@tryghost/color-utils/-/color-utils-0.1.16.tgz#62f0df8a4d6b0717c9d6a8011500ba09d234f733"
+  integrity sha512-Jb5ZXaoLjPdL0mvGSFjvHvoouJZzC8eO+i7iW+l54pKpp8IdNOT7oqsV4oPI7Fj3fr5sopn4XURZlC+M9ud06A==
   dependencies:
     color "^3.2.1"
 
@@ -1979,10 +1979,10 @@
     cookiejar "^2.1.3"
     reqresnext "^1.7.0"
 
-"@tryghost/helpers@1.1.66":
-  version "1.1.66"
-  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.66.tgz#dcd485975209e4aff78d4f0ae598855852c7b9e1"
-  integrity sha512-GizIDYroVSLKxSTTMZ2OSrljB5eze59ZkkJM8pvabedrdV+km2uL0dubOiOtpJKcXzNj6UU7KEhoip6f4BoAnA==
+"@tryghost/helpers@1.1.67":
+  version "1.1.67"
+  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.67.tgz#cbfcf2d6b2c1d0a64b18d859992c3a98f591a441"
+  integrity sha512-Yyk+6yGwkkce5jB4nSqFhXpx9DSK5XfbnYZ1/vBCaTPjCh/HLne32zmhPNruAL+Vpsd4+h3Xhh9+6e+xlMG4DQ==
   dependencies:
     lodash-es "^4.17.11"
 
@@ -2450,10 +2450,10 @@
     date-fns "^2.24.0"
     tpl "^0.3.0"
 
-"@tryghost/social-urls@0.1.30":
-  version "0.1.30"
-  resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.30.tgz#a73f263aa59662effc27930f85a8392d4d915734"
-  integrity sha512-rlnSa0wFAy0Y49slv407rjMwtJT1q6EQvcrfuYq70kpItOaMUWgvYldGofMKE/5BTTXvqcAUNpc8uOBnkrHysQ==
+"@tryghost/social-urls@0.1.31":
+  version "0.1.31"
+  resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.31.tgz#7cc8802ddf0d220e9e042ac97a248e96f220ee0d"
+  integrity sha512-lZefx8agws/7lRI3CFvBNl7yyJmDYpP+UQ7qd504qozLJZJKfUIQb8v24p+eDuoN72/hXCkE8uB2dyCAHpIzkw==
 
 "@tryghost/stats-service@0.2.1":
   version "0.2.1"
@@ -2462,7 +2462,14 @@
   dependencies:
     moment "^2.29.3"
 
-"@tryghost/string@0.1.24", "@tryghost/string@^0.1.17", "@tryghost/string@^0.1.20":
+"@tryghost/string@0.1.25":
+  version "0.1.25"
+  resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.25.tgz#59fd8dffeb98da532309cb94c99c2ad5f42df4b5"
+  integrity sha512-9Y4T4GjLF2kwtOHKt9nANI7N0jGblgLK4GIFk/HB3immFFq2CJgD24+pli6P7Xw750hfgV2z72T9Vh7qgoU3fw==
+  dependencies:
+    unidecode "^0.1.8"
+
+"@tryghost/string@^0.1.17", "@tryghost/string@^0.1.20":
   version "0.1.24"
   resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.24.tgz#f71b86e6ee878eddeaf8ae96aa2aa899e7577ae6"
   integrity sha512-OEZ2fFWpGKcWxYSPCuzcdpclz2gOFBjd79aVy0kQF3CbsY35ULnNx/+Dto4QjrtlBA2J8SjPiQUH6dFIyOqF9Q==
@@ -2489,10 +2496,10 @@
     lodash "^4.17.21"
     moment "^2.24.0"
 
-"@tryghost/url-utils@3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-3.0.0.tgz#b289e7011cd80e4b6078392841410ea22aac26dc"
-  integrity sha512-+wo9/WMOZjUNM9rD1GWkFlTIzz8ia8kBI7kc9xDazw9V9xizqikQElnO8o+V/McbpK0xSUSLYwklJDGj1IKZkQ==
+"@tryghost/url-utils@3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-3.0.1.tgz#3a8fa7c03f69acec23d8322767cfed912e0cd123"
+  integrity sha512-/ELG4/rfTXV3cstLhihxVTmb30OIkmFVN9nDOs1cl0x+vF5QxdQqxgIFqNUQWI5Ha7XH7wVa8UGhmXUAAKxGig==
   dependencies:
     cheerio "^0.22.0"
     moment "^2.27.0"
