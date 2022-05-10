@@ -1,5 +1,3 @@
-const MIGRATION_USER = 1;
-
 module.exports = {
     ...require('./migrations'),
     ...require('./permissions'),
@@ -7,6 +5,6 @@ module.exports = {
     ...require('./settings'),
     ...require('./tables'),
     meta: {
-        MIGRATION_USER
+        MIGRATION_USER: require('./constants').MIGRATION_USER
     }
 };
