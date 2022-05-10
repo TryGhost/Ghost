@@ -14,7 +14,7 @@ const models = require('../../core/server/models');
 const {fixtureManager} = require('../../core/server/data/schema/fixtures');
 const emailAnalyticsService = require('../../core/server/services/email-analytics');
 const permissions = require('../../core/server/services/permissions');
-const settingsService = require('../../core/server/services/settings');
+const settingsService = require('../../core/server/services/settings/settings-service');
 const labsService = require('../../core/shared/labs');
 
 // Other Test Utilities

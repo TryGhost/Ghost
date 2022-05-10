@@ -4,7 +4,7 @@ const models = require('../../models');
 const routeSettings = require('../../services/route-settings');
 const tpl = require('@tryghost/tpl');
 const {BadRequestError} = require('@tryghost/errors');
-const settingsService = require('../../services/settings');
+const settingsService = require('../../services/settings/settings-service');
 const membersService = require('../../services/members');
 const stripeService = require('../../services/stripe');
 
@@ -12,7 +12,7 @@ const settingsBREADService = settingsService.getSettingsBREADServiceInstance();
 
 const messages = {
     failedSendingEmail: 'Failed Sending Email'
-    
+
 };
 
 module.exports = {

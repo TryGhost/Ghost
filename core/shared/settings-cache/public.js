@@ -1,8 +1,4 @@
 /**
- * The settings with type "site" were originally meant to be public
- * This has been misused - unsplash and slack are incorrectly stored there
- * https://github.com/TryGhost/Ghost/issues/10318
- *
  * This file acts as an allowlist for "public" settings
  */
 

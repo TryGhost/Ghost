@@ -33,7 +33,7 @@ const ContentAPITestAgent = require('./content-api-test-agent');
 const db = require('./db-utils');
 
 // Services that need resetting
-const settingsService = require('../../core/server/services/settings');
+const settingsService = require('../../core/server/services/settings/settings-service');
 
 /**
  * @param {Object} [options={}]
