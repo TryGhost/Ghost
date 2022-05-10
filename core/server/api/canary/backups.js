@@ -24,19 +24,13 @@ module.exports = {
     zippingStatus: {
         permissions: false,
         async query() {
-            console.log('status')
-            return models.ImageBackups.query((model)=> {
-                console.log(model);
-                if (!model) {
-                    throw new errors.NotFoundError({
-                        message: tpl(messages.emailNotFound)
-                    });
-                }
-
-                return model;
-
-            // return backupsServices.api.getZippingStatus();
-        });
+            const backupInstance = await models.ImageBackups.forge().orderBy('created_at', 'DESC').fetch();
+            if (!backupInstance) {
+                throw new errors.NotFoundError({
+                    message: tpl(messages.backupsNotFound)
+                });
+            }
+            return backupInstance;
+        }
     }
-}
 };

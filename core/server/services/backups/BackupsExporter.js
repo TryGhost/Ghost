@@ -39,7 +39,13 @@ class BackupsExporter {
                        return
                     }
                 }  
-            })
+            }).catch(function(err){
+                //  Just destroying the db instance if an error occured, so it can be retried again. 
+                //  Will find a better way to handle errors.
+                const backupInstance = await self.getModel().ImageBackupsModel.findOne({id: id});
+                backupInstance.destroy();
+                throw err;
+            }
     }
 
     startBackupProcess() {
