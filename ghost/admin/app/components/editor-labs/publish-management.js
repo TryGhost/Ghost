@@ -3,13 +3,15 @@ import EmailFailedError from 'ghost-admin/errors/email-failed-error';
 import PublishFlowModal from './modals/publish-flow';
 import PublishOptionsResource from 'ghost-admin/helpers/publish-options';
 import UpdateFlowModal from './modals/update-flow';
+import envConfig from 'ghost-admin/config/environment';
 import moment from 'moment';
 import {action, get} from '@ember/object';
 import {inject as service} from '@ember/service';
-import {task, timeout} from 'ember-concurrency';
+import {task, taskGroup, timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 import {use} from 'ember-could-get-used-to-this';
 
+const SHOW_SAVE_STATUS_DURATION = 3000;
 const CONFIRM_EMAIL_POLL_LENGTH = 1000;
 const CONFIRM_EMAIL_MAX_POLL_LENGTH = 15 * 1000;
 
@@ -374,7 +376,7 @@ export default class PublishManagement extends Component {
 
             this.publishFlowModal = this.modals.open(PublishFlowModal, {
                 publishOptions: this.publishOptions,
-                saveTask: this.saveTask
+                saveTask: this.publishTask
             });
         }
     }
@@ -388,28 +390,28 @@ export default class PublishManagement extends Component {
         if (!this.updateFlowModal || this.updateFlowModal.isClosing) {
             this.updateFlowModal = this.modals.open(UpdateFlowModal, {
                 publishOptions: this.publishOptions,
-                saveTask: this.saveTask,
+                saveTask: this.publishTask,
                 revertToDraftTask: this.revertToDraftTask
             });
         }
     }
 
     @task
-    *saveTask({taskName = 'saveTask'} = {}) {
+    *publishTask({taskName = 'saveTask'} = {}) {
         const willEmail = this.publishOptions.willEmail;
 
         // clean up blank editor cards
         // apply cloned mobiledoc
         // apply scratch values
         // generate slug if needed (should never happen - publish flow can't be opened on new posts)
-        yield this.args.beforeSave();
+        yield this.args.beforePublish();
 
         // apply publish options (with undo on failure)
         // save with the required query params for emailing
         const result = yield this.publishOptions[taskName].perform();
 
         // perform any post-save cleanup for the editor
-        yield this.args.afterSave(result);
+        yield this.args.afterPublish(result);
 
         // if emailed, wait until it has been submitted so we can show a failure message if needed
         if (willEmail && this.publishOptions.post.email) {
@@ -418,6 +420,21 @@ export default class PublishManagement extends Component {
 
         return result;
     }
+
+    // used by the non-publish "Save" button shown for scheduled/published posts
+    @task({group: 'saveButtonTaskGroup'})
+    *saveTask() {
+        yield this.args.saveTask.perform();
+        this.saveButtonTimeoutTask.perform();
+        return true;
+    }
+
+    @task({group: 'saveButtonTaskGroup'})
+    *saveButtonTimeoutTask() {
+        yield timeout(envConfig.environment === 'test' ? 1 : SHOW_SAVE_STATUS_DURATION);
+    }
+
+    @taskGroup saveButtonTaskGroup;
 
     @task
     *confirmEmailTask() {
