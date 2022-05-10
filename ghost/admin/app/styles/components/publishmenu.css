@@ -389,7 +389,7 @@
 .gh-publish-header {
     position: absolute;
     top: 0;
-    right: 3.2rem;
+    left: 4.2rem;
     display: flex;
     align-items: center;
     height: 36px;
@@ -428,7 +428,11 @@
     letter-spacing: 0.2px;
     white-space: nowrap;
     cursor: pointer;
-    border-radius: 3px;
+    border-radius: var(--border-radius);
+}
+
+.gh-publish-back-button:hover {
+    background: var(--whitegrey);
 }
 
 .gh-publish-back-button span {
@@ -438,14 +442,11 @@
 }
 
 .gh-publish-back-button svg {
-    width: 1em;
-    height: 1em;
+    width: .8em;
+    height: .8em;
+    margin-right: .5em;
     padding-top: 2px;
-}
-
-.gh-publish-back-button svg path {
-    stroke-width: 2.4;
-    stroke: var(--darkgrey);
+    fill: var(--darkgrey);
 }
 
 .gh-publish-settings-container {
@@ -532,7 +533,6 @@
     font-size: 1.8rem;
     font-weight: 400;
     line-height: 1.35em;
-    cursor: pointer;
 }
 
 .gh-publish-setting-trigger .gh-selected-newsletter {
@@ -770,4 +770,69 @@
 .gh-revert-to-draft {
     color: var(--green-d1);
     font-weight: 500;
+}
+
+.gh-post-bookmark {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 640px;
+    margin-top: 1.6rem;
+    background: var(--white);
+    box-shadow: 0 0 0 1px rgba(0,0,0,.03), 0px 2px 5px rgba(0, 0, 0, 0.07);
+    border-radius: var(--border-radius);
+    transition: all 0.3s ease-in-out;
+}
+
+.gh-post-bookmark:hover {
+    box-shadow:
+        0px 54px 80px rgba(0, 0, 0, 0.07),
+        0px 19.7109px 29.2013px rgba(0, 0, 0, 0.0482987),
+        0px 9.56927px 14.1767px rgba(0, 0, 0, 0.0389404),
+        0px 4.69103px 6.94968px rgba(0, 0, 0, 0.0310596),
+        0px 1.85484px 2.74791px rgba(0, 0, 0, 0.0217013),
+        0 0 0 1px rgba(0,0,0,.03);
+    transition: all 0.3s ease-in-out;
+    transform: translateY(-4px);
+}
+
+.gh-post-bookmark-image {
+    max-width: 33%;
+    max-height: 152px;
+    display: inherit;
+}
+
+.gh-post-bookmark-image img {
+    width: 100%;
+    object-fit: cover;
+    border-radius: var(--border-radius) 0 0 var(--border-radius);
+}
+
+.gh-post-bookmark-content {
+    max-width: 67%;
+    padding: 2rem;
+}
+
+.gh-post-bookmark-title {
+    margin-bottom: .4rem;
+    color: var(--darkgrey);
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.4em;
+}
+
+.gh-post-bookmark-text {
+    margin-bottom: 1.6rem;
+    color: var(--midgrey);
+    font-size: 1.4rem;
+    font-weight: 400;
+}
+
+.gh-post-bookmark-details {
+    display: flex;
+    color: var(--midgrey);
+    font-size: 1.4rem;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }

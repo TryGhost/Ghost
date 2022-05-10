@@ -1,19 +1,21 @@
-<div class="gh-post-bookmark flex flex-row">
-    {{#if @post.featureImage}}
-        <div class="gh-post-bookmark-image">
-            <img src={{@post.featureImage}} alt="" role="presentation" />
-        </div>
-    {{/if}}
-    <div class="flex flex-column">
-        <div class="gh-post-bookmark-title">{{@post.title}}</div>
-        <div class="gh-post-bookmark-text">{{@post.excerpt}}</div>
-        <div class="gh-post-bookmark-details flex flex-row">
-            {{#if @post.primaryAuthor.profileImage}}
-                <div class="gh-post-bookmark-author-image">
-                    <img src={{@post.primaryAuthor.profileImage}} alt="" role="presentation" />
-                </div>
-            {{/if}}
-            <div class="gh-post-bookmark-authors">{{post-author-names @post}}</div>
+<div class="gh-post-bookmark-container">
+    <div class="gh-post-bookmark">
+        {{#if @post.featureImage}}
+            <div class="gh-post-bookmark-image">
+                <img src={{@post.featureImage}} alt="" role="presentation" />
+            </div>
+        {{/if}}
+        <div class="gh-post-bookmark-content">
+            <div class="gh-post-bookmark-title">{{@post.title}}</div>
+            <div class="gh-post-bookmark-text truncate">{{@post.excerpt}}</div>
+            <div class="gh-post-bookmark-details">
+                {{#if @post.primaryAuthor.profileImage}}
+                    <div class="gh-post-bookmark-author-image">
+                        <img src={{@post.primaryAuthor.profileImage}} alt="" role="presentation" />
+                    </div>
+                {{/if}}
+                <div class="gh-post-bookmark-authors">{{post-author-names @post}}</div>
+            </div>
         </div>
     </div>
 </div>
