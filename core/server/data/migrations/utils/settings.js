@@ -2,8 +2,7 @@ const ObjectId = require('bson-objectid').default;
 const logging = require('@tryghost/logging');
 
 const {createTransactionalMigration} = require('./migrations');
-
-const MIGRATION_USER = 1;
+const {MIGRATION_USER} = require('./constants');
 
 /**
  * Creates a migration which will insert a new setting in settings table
