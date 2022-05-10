@@ -8,7 +8,10 @@ class EmailPreview {
      * @returns {Promise<Object>}
      */
     async generateEmailContent(post, memberSegment) {
-        const newsletter = await models.Newsletter.getDefaultNewsletter();
+        let newsletter = await post.related('newsletter').fetch();
+        if (!newsletter) {
+            newsletter = await models.Newsletter.getDefaultNewsletter();
+        }
 
         let emailContent = await postEmailSerializer.serialize(post, newsletter, {
             isBrowserPreview: true
