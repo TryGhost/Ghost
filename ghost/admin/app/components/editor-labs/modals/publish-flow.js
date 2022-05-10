@@ -1,5 +1,6 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
+import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
@@ -10,8 +11,11 @@ export default class PublishModalComponent extends Component {
         ignoreBackdropClick: true
     };
 
+    @service store;
+
     @tracked isConfirming = false;
     @tracked isComplete = false;
+    @tracked postCount = null;
 
     get recipientType() {
         const filter = this.args.data.publishOptions.recipientFilter;
@@ -37,8 +41,11 @@ export default class PublishModalComponent extends Component {
 
     @action
     toggleConfirm() {
-        // TODO: validate?
         this.isConfirming = !this.isConfirming;
+
+        if (this.isConfirming) {
+            this.fetchPostCountTask.perform();
+        }
     }
 
     @task
@@ -47,5 +54,24 @@ export default class PublishModalComponent extends Component {
 
         this.isConfirming = false;
         this.isComplete = true;
+    }
+
+    // we fetch the new post count in advance when reaching the confirm step
+    // to avoid a copy flash when reaching the complete step
+    @task
+    *fetchPostCountTask() {
+        const publishOptions = this.args.data.publishOptions;
+
+        // no count is shown for pages, scheduled posts, or email-only posts
+        if (publishOptions.post.isPage || publishOptions.isScheduled || !publishOptions.willPublish) {
+            return;
+        }
+
+        const result = yield this.store.query('post', {limit: 1});
+        let count = result.meta.pagination.total;
+
+        count += 1; // account for the new post
+
+        this.postCount = count;
     }
 }

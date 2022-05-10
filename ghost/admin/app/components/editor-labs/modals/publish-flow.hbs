@@ -17,6 +17,7 @@
         {{else if this.isComplete}}
             <EditorLabs::Modals::PublishFlow::Complete
                 @publishOptions={{@data.publishOptions}}
+                @postCount={{this.postCount}}
                 @close={{@close}}
             />
         {{else}}
