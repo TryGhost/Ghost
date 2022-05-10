@@ -1079,8 +1079,7 @@ export default class EditorController extends Controller {
         let description = emailOnly ? ['Will be sent'] : ['Will be published'];
 
         if (emailRecipientFilter && emailRecipientFilter !== 'none') {
-            // TODO: replace active filter with newsletter.recipientFilter (requires https://github.com/TryGhost/Team/issues/1569)
-            const recipientCount = await this.membersCountCache.countString(`newsletters.status:active+(${emailRecipientFilter})`);
+            const recipientCount = await this.membersCountCache.countString(this.post.fullRecipientFilter);
             description.push(`${!emailOnly ? 'and delivered ' : ''}to <span><strong>${recipientCount}</strong></span>`);
         }
 
