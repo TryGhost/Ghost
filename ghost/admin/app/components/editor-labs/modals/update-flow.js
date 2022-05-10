@@ -14,11 +14,4 @@ export default class UpdateFlowModalComponent extends Component {
         this.args.close();
         return true;
     }
-
-    @task
-    *revertToDraftTask() {
-        yield this.args.data.revertToDraftTask.perform();
-        this.args.close();
-        return true;
-    }
 }

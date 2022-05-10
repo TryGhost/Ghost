@@ -68,13 +68,13 @@
                     @class="gh-btn gh-btn-icon gh-btn-primary gh-btn-large mr4"
                 />
 
-                <GhTaskButton
-                    @task={{this.revertToDraftTask}}
-                    @buttonText="Revert to draft"
-                    @runningText="Reverting"
-                    @successText="Reverted"
-                    @class="gh-btn gh-btn-icon gh-btn-secondary gh-btn-large"
-                />
+                <button
+                    type="button"
+                    class="gh-btn gh-btn-icon gh-btn-secondary gh-btn-large"
+                    {{on "click" (fn @close (hash afterTask="revertToDraftTask"))}}
+                >
+                    <span>Revert to draft</span>
+                </button>
             </div>
         </div>
     {{/let}}
