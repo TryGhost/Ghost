@@ -36,7 +36,7 @@ module.exports = {
         {
             files: 'core/server/data/migrations/versions/**',
             rules: {
-                'no-restricted-syntax': ['warn', {
+                'no-restricted-syntax': ['error', {
                     selector: 'ForStatement',
                     message: 'For statements can perform badly in migrations'
                 }, {
