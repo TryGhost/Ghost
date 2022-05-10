@@ -97,7 +97,7 @@ async function initCore({ghostServer, config, bootLogger, frontend}) {
 
     // Settings are a core concept we use settings to store key-value pairs used in critical pathways as well as public data like the site title
     debug('Begin: settings');
-    const settings = require('./server/services/settings');
+    const settings = require('./server/services/settings/settings-service');
     await settings.init();
     await settings.syncEmailSettings(config.get('hostSettings:emailVerification:verified'));
     debug('End: settings');
@@ -235,7 +235,7 @@ async function initDynamicRouting() {
     routing.routerManager.start(routeSettings);
     const getRoutesHash = () => routeSettingsService.api.getCurrentHash();
 
-    const settings = require('./server/services/settings');
+    const settings = require('./server/services/settings/settings-service');
     await settings.syncRoutesHash(getRoutesHash);
 
     debug('End: Dynamic Routing');

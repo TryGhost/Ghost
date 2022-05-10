@@ -38,7 +38,7 @@ if (parentPort) {
     const permissions = require('./services/permissions');
     await permissions.init();
 
-    const settings = require('./services/settings');
+    const settings = require('./services/settings/settings-service');
     await settings.init();
     // Finished INIT
 
