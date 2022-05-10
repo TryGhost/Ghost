@@ -100,7 +100,8 @@ export default function UnsubscribePage() {
                 <AccountHeader />
                 <h1 className="gh-portal-main-title">Successfully unsubscribed</h1>
                 <div>
-                    <p className='gh-portal-text-center'><strong>{member?.email}</strong> will no longer receive this newsletter. Didn't mean to do this? Manage your preferences
+                    <p className='gh-portal-text-center'><strong>{member?.email}</strong> will no longer receive this newsletter.</p>
+                    <p className='gh-portal-text-center'>Didn't mean to do this? Manage your preferences
                         <button
                             className="gh-portal-btn-link gh-portal-btn-branded gh-portal-btn-inline"
                             onClick={() => {
