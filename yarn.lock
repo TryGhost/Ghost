@@ -1727,13 +1727,13 @@
     "@tryghost/errors" "^1.0.0"
     lodash "^4.17.11"
 
-"@tryghost/api-version-compatibility-service@0.3.1":
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/api-version-compatibility-service/-/api-version-compatibility-service-0.3.1.tgz#b7a656c18fdd31131f74d450aa70897f9ed47742"
-  integrity sha512-LioWdzPbouxHQ+btLz+XpbLvTonF31x2EkbDmjxqoe2V751RMdJHG226HlqQP5vnrC0Jew7gKLMmQzsUSrLkEA==
+"@tryghost/api-version-compatibility-service@0.4.0":
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/api-version-compatibility-service/-/api-version-compatibility-service-0.4.0.tgz#336585ec9a368e9192dd1c6d990d9bfb4dd72d38"
+  integrity sha512-YSABkGY9vaTxlX7WmfV6q+xqlnYST0qwJICKVPkhQHiBA7CQwvcGE/PAzHZ3K7azuAGo3Oa0+FnkwI0bp9WeRA==
   dependencies:
     "@tryghost/email-content-generator" "^0.1.2"
-    "@tryghost/version-notifications-data-service" "^0.1.2"
+    "@tryghost/version-notifications-data-service" "^0.2.0"
 
 "@tryghost/bookshelf-collision@^0.1.22":
   version "0.1.22"
@@ -1978,6 +1978,13 @@
     "@tryghost/jest-snapshot" "^0.3.13"
     cookiejar "^2.1.3"
     reqresnext "^1.7.0"
+
+"@tryghost/extract-api-key@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/extract-api-key/-/extract-api-key-0.1.0.tgz#d54963bc1836b582db735b01105807a6d2b90619"
+  integrity sha512-MkVfY/GmIEPuNDaNrKQupK2yW0TV6Vd9v43ZloXAE/PPIAS2K/w/ImmI1CGNxpVJi1fGzXJY5cU7T+C1UK0fWQ==
+  dependencies:
+    jsonwebtoken "^8.5.1"
 
 "@tryghost/helpers@1.1.67":
   version "1.1.67"
@@ -2306,10 +2313,12 @@
   dependencies:
     lodash "^4.17.11"
 
-"@tryghost/mw-api-version-mismatch@0.1.4":
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/mw-api-version-mismatch/-/mw-api-version-mismatch-0.1.4.tgz#0a8cd94572a6fd45bc327d7bc871b1f8de02c8ec"
-  integrity sha512-V50d2nP3Z+HUialKef9of8UIKEjmTo8ogszgqDy2DH08aNYWUYDRFEWWjUiqdcTXGJMhhPzYlR6cAaYhPj8YwA==
+"@tryghost/mw-api-version-mismatch@0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/mw-api-version-mismatch/-/mw-api-version-mismatch-0.2.0.tgz#d4e3a757200c0c949c79766e30a5871e00d2f948"
+  integrity sha512-xu45flNJgpPzLWi1I5nrDsmnPHjkPwAamuaVHKB14pkr4WsDDfQm8q8M6HCHDMo4dt5VJWZ87Xtbk1CXiWp7zA==
+  dependencies:
+    "@tryghost/extract-api-key" "^0.1.0"
 
 "@tryghost/mw-error-handler@1.0.0":
   version "1.0.0"
@@ -2539,10 +2548,10 @@
     "@tryghost/domain-events" "^0.1.12"
     "@tryghost/member-events" "^0.4.4"
 
-"@tryghost/version-notifications-data-service@^0.1.2":
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/version-notifications-data-service/-/version-notifications-data-service-0.1.2.tgz#2a99315a721b74a945fc88615f57db1f54483dfb"
-  integrity sha512-NjGqYYsZUrT82GAmvGWPWWQ2Z2XJDuFDz0Ep8j1jk/xxhty0Qas6uweQFn9HvbTOF3W7kvbVSEvmevyBWiQfJQ==
+"@tryghost/version-notifications-data-service@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/version-notifications-data-service/-/version-notifications-data-service-0.2.0.tgz#e528ce7450b4cd31c035fa5a47f131cc6e8925d9"
+  integrity sha512-Yz9e98kYaW7pb+QnaY0IONTSa4QjiZqGdnawkkCmECuHWIXx2cRnwCrGvhJ0+g3SxZGv5IB9ZBJQzAVrsHxjNA==
 
 "@tryghost/version@0.1.14", "@tryghost/version@^0.1.14":
   version "0.1.14"
