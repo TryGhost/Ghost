@@ -24,6 +24,7 @@ describe('Version Notification Data Service', function () {
 
             const versionNotificationsDataService = new VersionNotificationsDataService({
                 UserModel: {},
+                ApiKeyModel: {},
                 settingsService
             });
 
@@ -52,6 +53,7 @@ describe('Version Notification Data Service', function () {
 
             const versionNotificationsDataService = new VersionNotificationsDataService({
                 UserModel: {},
+                ApiKeyModel: {},
                 settingsService
             });
 
@@ -110,6 +112,7 @@ describe('Version Notification Data Service', function () {
 
             const versionNotificationsDataService = new VersionNotificationsDataService({
                 UserModel,
+                ApiKeyModel: {},
                 settingsService: {}
             });
 
@@ -117,6 +120,66 @@ describe('Version Notification Data Service', function () {
 
             assert.equal(UserModel.findAll.called, true);
             assert.deepEqual(emails, ['simon@example.com', 'bob@example.com']);
+        });
+    });
+
+    describe('getIntegrationName', function () {
+        it('Queries for Content API key when such is provided', async function () {
+            const ApiKeyModel = {
+                findOne: sinon
+                    .stub()
+                    .withArgs({
+                        secret: 'super_secret'
+                    }, {
+                        withRelated: ['integration']
+                    })
+                    .resolves({
+                        relations: {
+                            integration: {
+                                get: () => 'live fast die young'
+                            }
+                        }
+                    })
+            };
+
+            const versionNotificationsDataService = new VersionNotificationsDataService({
+                UserModel: {},
+                ApiKeyModel,
+                settingsService: {}
+            });
+
+            const integrationName = await versionNotificationsDataService.getIntegrationName('super_secret', 'content');
+
+            assert.equal(integrationName, 'live fast die young');
+        });
+
+        it('Queries for Admin API key when such is provided', async function () {
+            const ApiKeyModel = {
+                findOne: sinon
+                    .stub()
+                    .withArgs({
+                        id: 'key_id'
+                    }, {
+                        withRelated: ['integration']
+                    })
+                    .resolves({
+                        relations: {
+                            integration: {
+                                get: () => 'Tri Hita Karana'
+                            }
+                        }
+                    })
+            };
+
+            const versionNotificationsDataService = new VersionNotificationsDataService({
+                UserModel: {},
+                ApiKeyModel,
+                settingsService: {}
+            });
+
+            const integrationName = await versionNotificationsDataService.getIntegrationName('key_id', 'admin');
+
+            assert.equal(integrationName, 'Tri Hita Karana');
         });
     });
 });
