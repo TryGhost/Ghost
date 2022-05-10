@@ -32,7 +32,7 @@ const sessionService = createSessionService({
     getOriginOfRequest,
     getSession: expressSession.getSession,
     findUserById({id}) {
-        return models.User.findOne({id});
+        return models.User.findOne({id, status: 'active'});
     }
 });
 
