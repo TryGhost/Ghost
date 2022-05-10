@@ -13,7 +13,7 @@
             {{#unless @hideAuthor }}
                 <p>
                     <span class="gh-content-entry-meta">
-                        By <span class="midgrey-l2 fw5">{{this.authorNames}}</span>
+                        By <span class="midgrey-l2 fw5">{{post-author-names @post}}</span>
 
                         {{#if @post.primaryTag}}
                             in <span class="midgrey-l2 fw5">{{@post.primaryTag.name}}</span>
@@ -33,7 +33,7 @@
             {{#unless @hideAuthor }}
                 <p>
                     <span class="gh-content-entry-meta">
-                        By <span class="midgrey-l2 fw5">{{this.authorNames}}</span>
+                        By <span class="midgrey-l2 fw5">{{post-author-names @post}}</span>
 
                         {{#if @post.primaryTag}}
                             in <span class="midgrey-l2 fw5">{{@post.primaryTag.name}}</span>
