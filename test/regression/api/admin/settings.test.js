@@ -441,6 +441,8 @@ const defaultSettingsKeyTypes = [
     }
 ];
 
+const calculatedSettingsTypes = ['members_enabled', 'members_invite_only', 'paid_members_enabled'];
+
 describe('Settings API (canary)', function () {
     let request;
 
@@ -467,7 +469,7 @@ describe('Settings API (canary)', function () {
                     jsonResponse.settings.should.be.an.Object();
                     const settings = jsonResponse.settings;
 
-                    should.equal(settings.length, defaultSettingsKeyTypes.length);
+                    should.equal(settings.length, (defaultSettingsKeyTypes.length + calculatedSettingsTypes.length));
                     for (const defaultSetting of defaultSettingsKeyTypes) {
                         should.exist(settings.find((setting) => {
                             return (setting.key === defaultSetting.key)
@@ -500,7 +502,7 @@ describe('Settings API (canary)', function () {
                     jsonResponse.settings.should.be.an.Object();
                     const settings = jsonResponse.settings;
                     // Returns all settings
-                    should.equal(settings.length, defaultSettingsKeyTypes.length);
+                    should.equal(settings.length, (defaultSettingsKeyTypes.length + calculatedSettingsTypes.length));
                     for (const defaultSetting of defaultSettingsKeyTypes) {
                         should.exist(settings.find((setting) => {
                             return setting.key === defaultSetting.key && setting.type === defaultSetting.type;
@@ -553,7 +555,7 @@ describe('Settings API (canary)', function () {
                     jsonResponse.settings.should.be.an.Object();
                     const settings = jsonResponse.settings;
 
-                    Object.keys(settings).length.should.equal(defaultSettingsKeyTypes.length);
+                    Object.keys(settings).length.should.equal((defaultSettingsKeyTypes.length + calculatedSettingsTypes.length));
 
                     localUtils.API.checkResponse(jsonResponse, 'settings');
                 });

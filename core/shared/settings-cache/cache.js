@@ -3,6 +3,7 @@
 // circular dependency bugs.
 const debug = require('@tryghost/debug')('settings:cache');
 const _ = require('lodash');
+
 const publicSettings = require('./public');
 
 // Local function, only ever used for initializing
@@ -10,6 +11,13 @@ const publicSettings = require('./public');
 const updateSettingFromModel = function updateSettingFromModel(settingModel) {
     debug('Auto updating', settingModel.get('key'));
     module.exports.set(settingModel.get('key'), settingModel.toJSON());
+};
+
+const updateCalculatedField = function updateCalculatedField(field) {
+    return () => {
+        debug('Auto updating', field.key);
+        module.exports.set(field.key, field.getSetting());
+    };
 };
 
 /**
@@ -20,6 +28,7 @@ const updateSettingFromModel = function updateSettingFromModel(settingModel) {
  * @type {{}} - object of objects
  */
 let settingsCache = {};
+let _calculatedFields = [];
 
 const doGet = (key, options) => {
     if (!settingsCache[key]) {
@@ -116,10 +125,11 @@ module.exports = {
      *
      * @param {EventEmitter} events
      * @param {Bookshelf.Collection<Settings>} settingsCollection
+     * @param {Array} calculatedFields
      * @return {object}
      */
-    init(events, settingsCollection) {
-        // First, reset the cache and listeners
+    init(events, settingsCollection, calculatedFields) {
+        // First, reset the cache and
         this.reset(events);
 
         // // if we have been passed a collection of settings, use this to populate the cache
@@ -127,10 +137,20 @@ module.exports = {
             _.each(settingsCollection.models, updateSettingFromModel);
         }
 
+        _calculatedFields = Array.isArray(calculatedFields) ? calculatedFields : [];
+
         // Bind to events to automatically keep up-to-date
         events.on('settings.edited', updateSettingFromModel);
         events.on('settings.added', updateSettingFromModel);
         events.on('settings.deleted', updateSettingFromModel);
+
+        // set and bind calculated fields
+        _calculatedFields.forEach((field) => {
+            updateCalculatedField(field)();
+            field.dependents.forEach((dependent) => {
+                events.on(`settings.${dependent}.edited`, updateCalculatedField(field));
+            });
+        });
 
         return settingsCache;
     },
@@ -145,5 +165,14 @@ module.exports = {
         events.removeListener('settings.edited', updateSettingFromModel);
         events.removeListener('settings.added', updateSettingFromModel);
         events.removeListener('settings.deleted', updateSettingFromModel);
+
+        //unbind calculated fields
+        _calculatedFields.forEach((field) => {
+            field.dependents.forEach((dependent) => {
+                events.removeListener(`settings.${dependent}.edited`, updateCalculatedField(field));
+            });
+        });
+
+        _calculatedFields = [];
     }
 };

@@ -26,5 +26,8 @@ module.exports = {
     twitter_image: 'twitter_image',
     twitter_title: 'twitter_title',
     twitter_description: 'twitter_description',
-    members_support_address: 'members_support_address'
+    members_support_address: 'members_support_address',
+    members_enabled: 'members_enabled',
+    members_invite_only: 'members_invite_only',
+    paid_members_enabled: 'paid_members_enabled'
 };
