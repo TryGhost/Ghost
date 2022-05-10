@@ -6,6 +6,7 @@ describe('APIVersionCompatibilityService', function () {
     const getSiteUrl = () => 'https://amazeballsghostsite.com';
     const getSiteTitle = () => 'Tahini and chickpeas';
     let UserModel;
+    let ApiKeyModel;
     let settingsService;
 
     beforeEach(function () {
@@ -27,6 +28,24 @@ describe('APIVersionCompatibilityService', function () {
                     }]
                 })
         };
+
+        ApiKeyModel = {
+            findOne: sinon
+                .stub()
+                .withArgs({
+                    secret: 'super_secret'
+                }, {
+                    withRelated: ['integration']
+                })
+                .resolves({
+                    relations: {
+                        integration: {
+                            get: () => 'Elaborate Fox'
+                        }
+                    }
+                })
+        };
+
         settingsService = {
             read: sinon.stub().resolves({
                 version_notifications: {
@@ -48,6 +67,7 @@ describe('APIVersionCompatibilityService', function () {
         const sendEmail = sinon.spy();
         const compatibilityService = new APIVersionCompatibilityService({
             UserModel,
+            ApiKeyModel,
             settingsService,
             sendEmail,
             getSiteUrl,
@@ -58,7 +78,9 @@ describe('APIVersionCompatibilityService', function () {
             acceptVersion: 'v4.5',
             contentVersion: 'v5.1',
             userAgent: 'Elaborate Fox',
-            requestURL: 'https://amazeballsghostsite.com/ghost/api/admin/posts/dew023d9203se4'
+            requestURL: 'https://amazeballsghostsite.com/ghost/api/admin/posts/dew023d9203se4',
+            apiKeyValue: 'secret',
+            apiKeyType: 'content'
         });
 
         assert.equal(sendEmail.called, true);
@@ -109,6 +131,7 @@ describe('APIVersionCompatibilityService', function () {
 
         const compatibilityService = new APIVersionCompatibilityService({
             sendEmail,
+            ApiKeyModel,
             UserModel,
             settingsService,
             getSiteUrl,
@@ -119,7 +142,9 @@ describe('APIVersionCompatibilityService', function () {
             acceptVersion: 'v4.5',
             contentVersion: 'v5.1',
             userAgent: 'Elaborate Fox',
-            requestURL: 'https://amazeballsghostsite.com/ghost/api/admin/posts/dew023d9203se4'
+            requestURL: 'https://amazeballsghostsite.com/ghost/api/admin/posts/dew023d9203se4',
+            apiKeyValue: 'secret',
+            apiKeyType: 'content'
         });
 
         assert.equal(sendEmail.called, true);
@@ -147,7 +172,9 @@ describe('APIVersionCompatibilityService', function () {
             acceptVersion: 'v4.5',
             contentVersion: 'v5.1',
             userAgent: 'Elaborate Fox',
-            requestURL: 'does not matter'
+            requestURL: 'does not matter',
+            apiKeyValue: 'secret',
+            apiKeyType: 'content'
         });
 
         assert.equal(sendEmail.calledOnce, true);
@@ -211,6 +238,7 @@ describe('APIVersionCompatibilityService', function () {
         const compatibilityService = new APIVersionCompatibilityService({
             sendEmail,
             UserModel,
+            ApiKeyModel,
             settingsService,
             getSiteUrl,
             getSiteTitle
@@ -220,7 +248,9 @@ describe('APIVersionCompatibilityService', function () {
             acceptVersion: 'v4.5',
             contentVersion: 'v5.1',
             userAgent: 'Elaborate Fox',
-            requestURL: 'https://amazeballsghostsite.com/ghost/api/admin/posts/dew023d9203se4'
+            requestURL: 'https://amazeballsghostsite.com/ghost/api/admin/posts/dew023d9203se4',
+            apiKeyValue: 'secret',
+            apiKeyType: 'content'
         });
 
         assert.equal(sendEmail.calledTwice, true);
@@ -269,7 +299,9 @@ describe('APIVersionCompatibilityService', function () {
             acceptVersion: 'v4.8',
             contentVersion: 'v5.1',
             userAgent: 'Elaborate Fox',
-            requestURL: 'https://amazeballsghostsite.com/ghost/api/admin/posts/dew023d9203se4'
+            requestURL: 'https://amazeballsghostsite.com/ghost/api/admin/posts/dew023d9203se4',
+            apiKeyValue: 'secret',
+            apiKeyType: 'content'
         });
 
         assert.equal(sendEmail.callCount, 4);
@@ -287,52 +319,13 @@ describe('APIVersionCompatibilityService', function () {
         assert.match(sendEmail.args[2][0].text, /https:\/\/amazeballsghostsite.com\/ghost\/api\/admin\/posts\/dew023d9203se4/);
     });
 
-    it('Trims down the name of the integration when a lot of meta information is present in user-agent header', async function (){
-        const sendEmail = sinon.spy();
-
-        const compatibilityService = new APIVersionCompatibilityService({
-            sendEmail,
-            UserModel,
-            settingsService,
-            getSiteUrl,
-            getSiteTitle
-        });
-
-        await compatibilityService.handleMismatch({
-            acceptVersion: 'v4.5',
-            contentVersion: 'v5.1',
-            userAgent: 'Fancy Pants/2.3 GhostAdminSDK/2.4.0',
-            requestURL: 'https://amazeballsghostsite.com/ghost/api/admin/posts/dew023d9203se4'
-        });
-
-        assert.equal(sendEmail.called, true);
-        assert.equal(sendEmail.args[0][0].to, 'simon@example.com');
-        assert.equal(sendEmail.args[0][0].subject, `Attention required: Your Fancy Pants integration has failed`);
-
-        assert.match(sendEmail.args[0][0].html, /Ghost has noticed that your <strong style="font-weight: 600;">Fancy Pants<\/strong> is no longer working as expected\./);
-        assert.match(sendEmail.args[0][0].html, /Fancy Pants integration expected Ghost version:<\/strong>&nbsp; v4.5/);
-        assert.match(sendEmail.args[0][0].html, /Current Ghost version:<\/strong>&nbsp; v5.1/);
-        assert.match(sendEmail.args[0][0].html, /Failed request URL:<\/strong>&nbsp; https:\/\/amazeballsghostsite.com\/ghost\/api\/admin\/posts\/dew023d9203se4/);
-
-        assert.match(sendEmail.args[0][0].html, /This email was sent from <a href="https:\/\/amazeballsghostsite.com"/);
-        assert.match(sendEmail.args[0][0].html, /to <a href="mailto:simon@example.com"/);
-
-        assert.match(sendEmail.args[0][0].text, /Ghost has noticed that your Fancy Pants is no longer working as expected\./);
-        assert.match(sendEmail.args[0][0].text, /Fancy Pants integration expected Ghost version:v4.5/);
-        assert.match(sendEmail.args[0][0].text, /Current Ghost version:v5.1/);
-        assert.match(sendEmail.args[0][0].text, /Failed request URL:/);
-        assert.match(sendEmail.args[0][0].text, /https:\/\/amazeballsghostsite.com\/ghost\/api\/admin\/posts\/dew023d9203se4/);
-
-        assert.match(sendEmail.args[0][0].text, /This email was sent from https:\/\/amazeballsghostsite.com/);
-        assert.match(sendEmail.args[0][0].text, /to simon@example.com/);
-    });
-
     it('Sends Zapier-specific email when userAgent is a Zapier client', async function (){
         const sendEmail = sinon.spy();
 
         const compatibilityService = new APIVersionCompatibilityService({
             sendEmail,
             UserModel,
+            ApiKeyModel,
             settingsService,
             getSiteUrl,
             getSiteTitle
@@ -342,7 +335,9 @@ describe('APIVersionCompatibilityService', function () {
             acceptVersion: 'v4.5',
             contentVersion: 'v5.1',
             userAgent: 'Zapier/4.20 GhostAdminSDK/2.4.0',
-            requestURL: 'https://amazeballsghostsite.com/ghost/api/admin/posts/dew023d9203se4'
+            requestURL: 'https://amazeballsghostsite.com/ghost/api/admin/posts/dew023d9203se4',
+            apiKeyValue: 'secret',
+            apiKeyType: 'content'
         });
 
         assert.equal(sendEmail.called, true);
