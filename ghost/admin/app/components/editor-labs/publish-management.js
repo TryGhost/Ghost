@@ -477,7 +477,7 @@ export default class PublishManagement extends Component {
 
             return true;
         } catch (e) {
-            this.notifications.showAPIError(error);
+            this.notifications.showAPIError(e);
         }
     }
 }
