@@ -361,8 +361,9 @@ describe('Acceptance: Editor', function () {
             ).to.not.exist;
 
             // expect countdown to show warning that post is scheduled to be published
+            await triggerEvent('[data-test-editor-post-status]', 'mouseover');
             expect(find('[data-test-schedule-countdown]').textContent.trim(), 'notification countdown')
-                .to.match(/Will be published\s+in (4|5) minutes/);
+                .to.match(/to be published\s+in (4|5) minutes/);
 
             expect(
                 find('[data-test-publishmenu-trigger]').textContent.trim(),
@@ -372,7 +373,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 find('[data-test-editor-post-status]').textContent.trim(),
                 'scheduled post status'
-            ).to.match(/Will be published\s+in (4|5) minutes/);
+            ).to.match(/to be published\s+in (4|5) minutes/);
 
             // Re-schedule
             await click('[data-test-publishmenu-trigger]');
@@ -399,7 +400,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 find('[data-test-editor-post-status]').textContent.trim(),
                 'scheduled status text'
-            ).to.match(/Will be published\s+in (4|5) minutes/);
+            ).to.match(/to be published\s+in (4|5) minutes/);
 
             // unschedule
             await click('[data-test-publishmenu-trigger]');
@@ -556,8 +557,9 @@ describe('Acceptance: Editor', function () {
             expect(find('[data-test-publishmenu-trigger]').textContent.trim(), 'text in save button for scheduled post')
                 .to.equal('Scheduled');
             // expect countdown to show warning, that post is scheduled to be published
+            await triggerEvent('[data-test-editor-post-status]', 'mouseover');
             expect(find('[data-test-schedule-countdown]').textContent.trim(), 'notification countdown')
-                .to.match(/Will be published\s+in (4|5) minutes/);
+                .to.match(/to be published\s+in (4|5) minutes/);
         });
 
         it('shows author token input and allows changing of authors in PSM', async function () {
@@ -891,11 +893,11 @@ describe('Acceptance: Editor', function () {
             await selectChoose('[data-test-distribution-action-select]', 'send');
             await click('[data-test-publishmenu-scheduled-option]');
             await datepickerSelect('[data-test-publishmenu-draft] [data-test-date-time-picker-datepicker]', new Date(scheduledTime.format().replace(/\+.*$/, '')));
-                        
-            // Expect 4 free and 2 paid recipients here 
+
+            // Expect 4 free and 2 paid recipients here
             expect(find('[data-test-email-count="free-members"]')).to.contain.text('4');
             expect(find('[data-test-email-count="paid-members"]')).to.contain.text('2');
-            
+
             await click('[data-test-publishmenu-save]');
             await click('[data-test-button="confirm-schedule"]');
 

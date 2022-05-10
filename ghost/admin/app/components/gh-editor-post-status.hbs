@@ -1,13 +1,16 @@
-<div data-test-editor-post-status ...attributes>
-    {{#if this.isSaving}}
+<div role="tooltip" {{on "mouseover" this.onMouseover}} {{on "mouseleave" this.onMouseleave}} data-test-editor-post-status ...attributes>
+    {{#if (and this.isSaving @post.isDraft)}}
         Saving...
     {{else if @post.isSent}}
         Sent to {{gh-pluralize @post.email.emailCount "member"}}
     {{else if (and @post.emailOnly @post.isScheduled)}}
-        <time datetime="{{@post.publishedAtUTC}}" class="ml1 green f8" data-test-schedule-countdown>
-            Will be sent to <GhRecipientFilterCount @filter={{@post.emailRecipientFilter}} />
-            {{this.scheduledTime}}
-        </time>
+        Scheduled
+        {{#if this.isHovered}}
+            <time datetime="{{@post.publishedAtUTC}}" class="ml1 green f8" data-test-schedule-countdown>
+                to be sent to <GhRecipientFilterCount @filter={{@post.emailRecipientFilter}} />
+                {{this.scheduledTime}}
+            </time>
+        {{/if}}
     {{else if (or @post.isPublished @post.pastScheduledTime)}}
         Published
         {{#if (or (eq @post.email.status "submitting") (eq @post.email.status "submitting"))}}
@@ -17,11 +20,14 @@
         {{/if}}
     {{else if @post.isScheduled}}
         <time datetime="{{@post.publishedAtUTC}}" class="ml1 green f8" data-test-schedule-countdown>
-            Will be published
-            {{#if (and @post.emailRecipientFilter (not @post.email))}}
-                and sent to <GhRecipientFilterCount @filter={{@post.emailRecipientFilter}} />
+            Scheduled
+            {{#if this.isHovered}}
+                to be published
+                {{#if (and @post.emailRecipientFilter (not @post.email))}}
+                    and sent to <GhRecipientFilterCount @filter={{@post.emailRecipientFilter}} />
+                {{/if}}
+                {{this.scheduledTime}}
             {{/if}}
-            {{this.scheduledTime}}
         </time>
     {{else if @post.isNew}}
         New
