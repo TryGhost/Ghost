@@ -4,6 +4,7 @@ const BACKUP_TABLES = [
     'api_keys',
     'brute',
     'emails',
+    'image_backups',
     'integrations',
     'invites',
     'labels',
