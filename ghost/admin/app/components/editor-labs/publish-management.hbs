@@ -10,6 +10,19 @@
         <span>Publish</span>
     </button>
 {{else}}
+    {{#if (or @hasUnsavedChanges this.saveButtonTaskGroup.isRunning)}}
+        <GhTaskButton
+            @task={{this.saveTask}}
+            @runningText="Saving..."
+            @class="gh-btn gh-btn-editor gh-publishmenu-trigger"
+            @idleClass="green"
+            @runningClass="midlightgrey"
+            @successClass="midlightgrey"
+            @failureClass="red"
+            @showIcon={{false}}
+        />
+    {{/if}}
+
     <button
         type="button"
         class="gh-btn gh-btn-editor darkgrey gh-publishmenu-trigger"

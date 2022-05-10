@@ -48,8 +48,10 @@
                             {{#if (feature "publishingFlow")}}
                                 <EditorLabs::PublishManagement
                                     @post={{this.post}}
-                                    @beforeSave={{perform this.beforeSaveTask}}
-                                    @afterSave={{this.afterSave}}
+                                    @hasUnsavedChanges={{this.hasDirtyAttributes}}
+                                    @beforePublish={{perform this.beforeSaveTask}}
+                                    @afterPublish={{this.afterSave}}
+                                    @saveTask={{this.saveTask}}
                                 />
                             {{else}}
                                 <GhPublishmenu
