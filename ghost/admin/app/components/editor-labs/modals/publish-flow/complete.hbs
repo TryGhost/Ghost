@@ -1,6 +1,37 @@
 {{#let @publishOptions.post as |post|}}
     <div class="gh-publish-title">
-        <span class="green">Boom. It’s out there.</span> That’s 391 posts published, keep going!
+        {{#if post.isScheduled}}
+            <span class="green">All set!</span>
+
+            Your {{if post.emailOnly "email" post.displayName}} will be
+
+            {{#if post.emailOnly}}
+                sent
+            {{else if post.willEmail}}
+                published and sent
+            {{else}}
+                published
+            {{/if}}
+
+            {{#let (moment-site-tz post.publishedAtUTC) as |scheduledAt|}}
+                {{#if (is-moment-today scheduledAt)}}
+                    today
+                {{else}}
+                    on {{moment-format scheduledAt "MMMM Do"}}
+                {{/if}}
+                at {{moment-format scheduledAt "HH:mm"}}
+            {{/let}}
+        {{else}}
+            <span class="green">Boom. It’s out there.</span>
+
+            {{#if post.emailOnly}}
+                Your email has been sent.
+            {{else if (and post.isPost @postCount)}}
+                That’s {{@postCount}} posts published, keep going!
+            {{else}}
+                Your {{post.displayName}} has been published.
+            {{/if}}
+        {{/if}}
     </div>
 
     <div class="gh-publish-cta">
