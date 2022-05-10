@@ -7,16 +7,18 @@ class APIVersionCompatibilityService {
      *
      * @param {Object} options
      * @param {Object} options.UserModel - ghost user model
+     * @param {Object} options.ApiKeyModel -  ghost api key model
      * @param {Object} options.settingsService - ghost settings service
      * @param {(Object: {subject: String, to: String, text: String, html: String}) => Promise<any>} options.sendEmail - email sending function
      * @param {Function} options.getSiteUrl
      * @param {Function} options.getSiteTitle
     */
-    constructor({UserModel, settingsService, sendEmail, getSiteUrl, getSiteTitle}) {
+    constructor({UserModel, ApiKeyModel, settingsService, sendEmail, getSiteUrl, getSiteTitle}) {
         this.sendEmail = sendEmail;
 
         this.versionNotificationsDataService = new VersionNotificationsDataService({
             UserModel,
+            ApiKeyModel,
             settingsService
         });
 
@@ -32,11 +34,14 @@ class APIVersionCompatibilityService {
      * @param {Object} options
      * @param {string} options.acceptVersion - client's accept-version header value
      * @param {string} options.contentVersion - server's content-version header value
+     * @param {string} options.apiKeyValue - key value (secret for Content API and kid for Admin API) used to access the API
+     * @param {string} options.apiKeyType - key type used to access the API
      * @param {string} options.requestURL - url that was requested and failed compatibility test
      * @param {string} [options.userAgent] - client's user-agent header value
      */
-    async handleMismatch({acceptVersion, contentVersion, requestURL, userAgent = ''}) {
+    async handleMismatch({acceptVersion, contentVersion, apiKeyValue, apiKeyType, requestURL, userAgent = ''}) {
         if (!await this.versionNotificationsDataService.fetchNotification(acceptVersion)) {
+            const integrationName = await this.versionNotificationsDataService.getIntegrationName(apiKeyValue, apiKeyType);
             const trimmedUseAgent = userAgent.split('/')[0];
             const emails = await this.versionNotificationsDataService.getNotificationEmails();
 
@@ -54,7 +59,7 @@ class APIVersionCompatibilityService {
                     data: {
                         acceptVersion,
                         contentVersion,
-                        clientName: trimmedUseAgent,
+                        clientName: integrationName,
                         recipientEmail: email,
                         requestURL: requestURL
                     }
