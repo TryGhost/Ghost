@@ -657,7 +657,7 @@ const FrameStyles = `
     font-weight: 700;
     text-transform: uppercase;
     color: #15212a;
-    margin-top: 12px;
+    margin-top: 6px;
 }
 
 /* Icons
@@ -1055,6 +1055,7 @@ const MultipleProductsGlobalStyles = `
     height: 60px;
     border-radius: 2px;
     margin-top: 12px;
+    margin-bottom: 6px;
 }
 
 @media (max-width: 480px) {
@@ -1066,6 +1067,15 @@ const MultipleProductsGlobalStyles = `
 
 .gh-portal-unsubscribe .gh-portal-main-title {
     margin-bottom: 16px;
+    font-size: 2.6rem;
+}
+
+.gh-portal-unsubscribe p {
+    margin-bottom: 16px;
+}
+
+.gh-portal-unsubscribe p:last-of-type {
+    margin-bottom: 0;
 }
 
 .gh-portal-btn-inline {
