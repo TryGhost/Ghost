@@ -1,6 +1,6 @@
 const logging = require('@tryghost/logging');
 const {chunk: chunkArray} = require('lodash');
-const {createTransactionalMigration} = require('../../utils.js');
+const {createTransactionalMigration} = require('../../utils');
 
 module.exports = createTransactionalMigration(
     async function up(knex) {

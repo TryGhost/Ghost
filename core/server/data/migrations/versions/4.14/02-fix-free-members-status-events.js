@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const logging = require('@tryghost/logging');
-const {createTransactionalMigration} = require('../../utils.js');
+const {createTransactionalMigration} = require('../../utils');
 
 module.exports = createTransactionalMigration(
     async function up(knex) {
