@@ -462,6 +462,6 @@ export default class PublishManagement extends Component {
 
     @task
     *revertToDraftTask() {
-        return yield this.saveTask.perform({taskName: 'revertToDraftTask'});
+        return yield this.publishTask.perform({taskName: 'revertToDraftTask'});
     }
 }
