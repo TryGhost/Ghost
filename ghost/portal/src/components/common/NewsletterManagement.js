@@ -5,7 +5,7 @@ import {useContext, useState} from 'react';
 import Switch from '../common/Switch';
 import {getSiteNewsletters} from '../../utils/helpers';
 import ActionButton from '../common/ActionButton';
-import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark-circle.svg';
+import {ReactComponent as CheckmarkIcon} from '../../images/icons/check-circle.svg';
 
 const React = require('react');
 
@@ -24,16 +24,18 @@ function AccountHeader() {
 function SuccessIcon({show, checked}) {
     let classNames = [];
     if (show) {
-        classNames.push('gh-portal-show');
+        classNames.push('gh-portal-checkmark-show');
     }
 
     if (checked) {
         classNames.push('gh-portal-toggle-checked');
     }
 
+    classNames.push('gh-portal-checkmark-container');
+
     return (
-        <div style={{marginRight: '8px', display: 'flex', transition: 'all ease 1s'}} className={classNames.join(' ')}>
-            <CheckmarkIcon className='gh-portal-checkmark-icon' alt='' style={{height: '24px', color: '#30cf43'}} />
+        <div className={classNames.join(' ')}>
+            <CheckmarkIcon className='gh-portal-checkmark-icon' alt='' />
         </div>
     );
 }
@@ -63,7 +65,7 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
                         clearTimeout(timeoutId);
                         let newTimeoutId = setTimeout(() => {
                             setShowUpdated(false);
-                        }, 3000);
+                        }, 2000);
                         setTimeoutId(newTimeoutId);
                     } else {
                         updatedNewsletters = subscribedNewsletters.filter((d) => {
@@ -73,7 +75,7 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
                         clearTimeout(timeoutId);
                         let newTimeoutId = setTimeout(() => {
                             setShowUpdated(false);
-                        }, 3000);
+                        }, 2000);
                         setTimeoutId(newTimeoutId);
                     }
                     setSubscribedNewsletters(updatedNewsletters);
