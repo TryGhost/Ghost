@@ -1,24 +1,16 @@
 /**
- * @typedef {object} ApiKey
- * @prop {string} key
- * @prop {string} type
- */
-
-/**
  *
  * @param {import('express').Request} req
- * @returns {ApiKey}
+ * @returns {string}
  */
 const extractAPIKey = (req) => {
-    let key = null;
-    let type = null;
+    let keyValue = null;
 
     if (req.query && req.query.key) {
-        type = 'content';
-        key = req.query.key;
+        keyValue = req.query.key;
     }
 
-    return {key, type};
+    return keyValue;
 };
 
 module.exports = extractAPIKey;
