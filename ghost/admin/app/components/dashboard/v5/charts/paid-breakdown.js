@@ -60,7 +60,13 @@ export default class PaidBreakdown extends Component {
         const labels = stats.map(stat => stat.date);
         const newData = stats.map(stat => stat.positiveDelta);
         const canceledData = stats.map(stat => -stat.negativeDelta);
-        const barThickness = 5;
+        let barThickness = 5;
+
+        if (newData.length > 30) {
+            barThickness = 2;
+        } else if (newData.length > 90) {   
+            barThickness = 1;
+        }
 
         return {
             labels: labels,
@@ -162,7 +168,6 @@ export default class PaidBreakdown extends Component {
                     },
                     ticks: {
                         display: false,
-                        maxTicksLimit: 5,
                         fontColor: '#7C8B9A',
                         padding: 8,
                         precision: 0

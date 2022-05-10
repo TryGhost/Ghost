@@ -225,6 +225,7 @@ export default class Anchor extends Component {
     }
 
     get chartOptions() {
+        let isAllTime = (this.days === 'all');
         let barColor = this.feature.nightShift ? 'rgba(200, 204, 217, 0.25)' : 'rgba(200, 204, 217, 0.65)';
 
         return {
@@ -315,15 +316,20 @@ export default class Anchor extends Component {
                     },
                     ticks: {
                         display: false,
-                        beginAtZero: true,
+                        autoSkip: false,
                         callback: function (value, index, values) {
                             if (index === 0) {
                                 document.getElementById('gh-dashboard5-anchor-date-start').innerHTML = moment(value).format(DATE_FORMAT);
+                                return value;
                             }
-                            if (index === values.length - 1) {
+                            if (index === (values.length - 1)) {
                                 document.getElementById('gh-dashboard5-anchor-date-end').innerHTML = moment(value).format(DATE_FORMAT);
+                                return value;
                             }
-                            return value;
+                            if (!isAllTime) {
+                                return value;
+                            }
+                            return null;
                         }
                     }
                 }]
