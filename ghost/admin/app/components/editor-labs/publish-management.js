@@ -6,6 +6,7 @@ import UpdateFlowModal from './modals/update-flow';
 import envConfig from 'ghost-admin/config/environment';
 import moment from 'moment';
 import {action, get} from '@ember/object';
+import {capitalize} from '@ember/string';
 import {inject as service} from '@ember/service';
 import {task, taskGroup, timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -353,6 +354,7 @@ export class PublishOptions {
 // PublishOptions saving.
 export default class PublishManagement extends Component {
     @service modals;
+    @service notifications;
 
     // ensure we get a new PublishOptions instance when @post is replaced
     @use publishOptions = new PublishOptionsResource(() => [this.args.post]);
@@ -382,7 +384,7 @@ export default class PublishManagement extends Component {
     }
 
     @action
-    openUpdateFlow(event) {
+    async openUpdateFlow(event) {
         event?.preventDefault();
 
         this.publishFlowModal?.close();
@@ -390,9 +392,14 @@ export default class PublishManagement extends Component {
         if (!this.updateFlowModal || this.updateFlowModal.isClosing) {
             this.updateFlowModal = this.modals.open(UpdateFlowModal, {
                 publishOptions: this.publishOptions,
-                saveTask: this.publishTask,
-                revertToDraftTask: this.revertToDraftTask
+                saveTask: this.publishTask
             });
+
+            const result = await this.updateFlowModal;
+
+            if (result?.afterTask && this[result?.afterTask]) {
+                this[result.afterTask].perform();
+            }
         }
     }
 
@@ -462,6 +469,15 @@ export default class PublishManagement extends Component {
 
     @task
     *revertToDraftTask() {
-        return yield this.publishTask.perform({taskName: 'revertToDraftTask'});
+        try {
+            yield this.publishTask.perform({taskName: 'revertToDraftTask'});
+
+            const postType = capitalize(this.args.post.displayName);
+            this.notifications.showNotification(`${postType} successfully reverted to a draft.`, {type: 'success'});
+
+            return true;
+        } catch (e) {
+            this.notifications.showAPIError(error);
+        }
     }
 }
