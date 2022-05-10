@@ -17,7 +17,7 @@ export default class GhMembersFilterCountComponent extends Component {
     *getMembersCountTask() {
         this.memberCount = yield this.membersCountCache.countString(
             this.args.filter,
-            {knownCount: this.args.knownCount}
+            {knownCount: this.args.knownCount, newsletter: this.args.newsletter}
         );
     }
 }
