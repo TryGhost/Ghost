@@ -24,5 +24,8 @@
     "c8": "7.11.2",
     "mocha": "10.0.0",
     "sinon": "14.0.0"
+  },
+  "dependencies": {
+    "@tryghost/extract-api-key": "^0.1.0"
   }
 }
