@@ -2489,10 +2489,10 @@
     lodash "^4.17.21"
     moment "^2.24.0"
 
-"@tryghost/url-utils@3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-3.0.0.tgz#b289e7011cd80e4b6078392841410ea22aac26dc"
-  integrity sha512-+wo9/WMOZjUNM9rD1GWkFlTIzz8ia8kBI7kc9xDazw9V9xizqikQElnO8o+V/McbpK0xSUSLYwklJDGj1IKZkQ==
+"@tryghost/url-utils@3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-3.0.1.tgz#3a8fa7c03f69acec23d8322767cfed912e0cd123"
+  integrity sha512-/ELG4/rfTXV3cstLhihxVTmb30OIkmFVN9nDOs1cl0x+vF5QxdQqxgIFqNUQWI5Ha7XH7wVa8UGhmXUAAKxGig==
   dependencies:
     cheerio "^0.22.0"
     moment "^2.27.0"
