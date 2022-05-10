@@ -11,7 +11,7 @@ should.equal(true, true);
 
 describe('UNIT: settings cache', function () {
     beforeEach(function () {
-        cache.init(events, {});
+        cache.init(events, {}, []);
     });
 
     afterEach(function () {
