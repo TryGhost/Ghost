@@ -34,7 +34,6 @@ const BETA_FEATURES = [
 
 const ALPHA_FEATURES = [
     'oauthLogin',
-    'membersActivity',
     'urlCache',
     'beforeAfterCard',
     'tweetGridCard',
