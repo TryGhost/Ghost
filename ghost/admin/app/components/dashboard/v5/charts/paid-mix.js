@@ -67,6 +67,10 @@ export default class PaidMix extends Component {
         return 'horizontalBar';
     }
 
+    get hasData() {
+        return (this.dashboardStats.paidMembersByCadence.month + this.dashboardStats.paidMembersByCadence.year) > 0;
+    }
+
     get chartData() {
         const totalCadence = this.dashboardStats.paidMembersByCadence.month + this.dashboardStats.paidMembersByCadence.year;
         const monthlyPercentage = Math.round(this.dashboardStats.paidMembersByCadence.month / totalCadence * 100);
@@ -78,14 +82,9 @@ export default class PaidMix extends Component {
             return {
                 labels: ['Cadence'],
                 datasets: [{
-                    label: 'Monthly',
-                    data: [60],
-                    backgroundColor: '#8E42FF',
-                    barThickness
-                }, {
-                    label: 'Annual',
-                    data: [40],
-                    backgroundColor: '#FB76B4',
+                    label: 'All',
+                    data: [100],
+                    backgroundColor: '#EBEEF0',
                     barThickness
                 }]
             };
@@ -182,9 +181,14 @@ export default class PaidMix extends Component {
                 },
                 callbacks: {
                     label: (tooltipItems, data) => {
-                        const label = data.datasets[tooltipItems.datasetIndex].label || '';
-                        const value = data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index] || 0;
-                        document.querySelector('#gh-dashboard5-mix-tooltip .gh-dashboard5-tooltip-value').innerHTML = `${label} ${value}%`;
+                        const tooltipTextEl = document.querySelector('#gh-dashboard5-mix-tooltip .gh-dashboard5-tooltip-value');
+                        if (this.isTotalMembersZero) {
+                            tooltipTextEl.innerHTML = "Currently has no data";
+                        } else {
+                            const label = data.datasets[tooltipItems.datasetIndex].label || '';
+                            const value = data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index] || 0;
+                            tooltipTextEl.innerHTML = `${label} ${value}%`;
+                        }
                     },
                     title: () => {
                         return null;
