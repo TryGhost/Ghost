@@ -35,7 +35,7 @@ Chart.controllers.hoverLine = Chart.controllers.line.extend({
     }
 });
 
-export default class Mrr extends Component {
+export default class PaidMrr extends Component {
     @service dashboardStats;
     @service feature;
 
