@@ -13,15 +13,20 @@ export default class WhatsNewController extends Controller {
         return date.getFullYear();
     }
 
-    get showDatabaseWarning() {
-        const isProduction = !!this.config.get('environment').match?.(/production/i);
+    get showSystemInfo() {
         const isPro = !!this.config.get('hostSettings')?.siteId;
-        const database = this.config.get('database');
 
-        // Don't show any warnings for Pro
+        // Don't show any system info for Pro
         if (isPro) {
             return false;
         }
+
+        return true;
+    }
+
+    get showDatabaseWarning() {
+        const isProduction = !!this.config.get('environment').match?.(/production/i);
+        const database = this.config.get('database');
 
         // Show a warning if we're in production and not using MySQL 8
         if (isProduction && database !== 'mysql8') {

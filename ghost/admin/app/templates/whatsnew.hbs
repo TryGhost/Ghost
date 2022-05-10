@@ -51,15 +51,17 @@
 
                 <ul class="gh-env-list">
                     <li><strong>Version:</strong> {{this.config.version}}</li>
+                    {{#if this.showSystemInfo}}
                     <li><strong>Environment:</strong> <span class="ttc">{{this.config.environment}}</span></li>
                     <li class="gh-env-list-database-type"><strong>Database:</strong> {{this.config.database}}</li>
                     <li><strong>Mail:</strong> {{#if this.config.mail}}{{this.config.mail}}{{else}}Native{{/if}}</li>
+                    {{/if}}
                     {{#if (enable-developer-experiments)}}
                     <li><strong>Developer experiments:</strong> <span class="gh-badge">Enabled</span></li>
                     {{/if}}
                 </ul>
 
-                {{#if this.showDatabaseWarning}}
+                {{#if (and this.showSystemInfo this.showDatabaseWarning)}}
                     <section class="gh-upgrade-notification">
                         <p>
                             <strong>Warning:</strong> MySQL 8 will be the required database in the next major release of Ghost. Make sure your database is up to date to ensure forwards compatibility.
