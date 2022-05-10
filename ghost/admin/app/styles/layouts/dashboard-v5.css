@@ -1431,6 +1431,7 @@ Dashboard v5 Misc */
     display: block;
     flex-grow: 1;
     margin-left: 20px;
+    margin-right: 8px;
 }
 
 .gh-dashboard5-rate-amount + span {
