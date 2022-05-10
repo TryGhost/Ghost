@@ -1075,6 +1075,27 @@ const MultipleProductsGlobalStyles = `
     font-weight: 600;
     cursor: pointer;
 }
+
+.gh-portal-toggle-checked {
+    transition: all 0.3s;
+    transition-delay: 2s;
+}
+
+.gh-portal-checkmark-container {
+    display: flex;
+    opacity: 0;
+    margin-right: 8px;
+    transition: opacity ease 0.4s 0.2s;
+}
+
+.gh-portal-checkmark-show {
+    opacity: 1;
+}
+
+.gh-portal-checkmark-icon {
+    height: 22px;
+    color: #30cf43;
+}
 `;
 
 export function getFrameStyles({site}) {
