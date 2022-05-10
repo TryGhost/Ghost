@@ -1895,10 +1895,15 @@
     "@tryghost/root-utils" "^0.3.14"
     debug "^4.3.1"
 
-"@tryghost/domain-events@0.1.12", "@tryghost/domain-events@^0.1.12":
+"@tryghost/domain-events@0.1.12":
   version "0.1.12"
   resolved "https://registry.yarnpkg.com/@tryghost/domain-events/-/domain-events-0.1.12.tgz#a6f59d0d7aeb7d8f0a7493e055ed3b795e783232"
   integrity sha512-DY70kL0x+/VEJsqmjZ4Q3UJPOFJ8m+sT8443E+AEgTGFiERfSVuTsVVlYtQm0hQV5faowQJtGcXQqtG1Lka0ig==
+
+"@tryghost/domain-events@^0.1.12", "@tryghost/domain-events@^0.1.13":
+  version "0.1.13"
+  resolved "https://registry.yarnpkg.com/@tryghost/domain-events/-/domain-events-0.1.13.tgz#a668cf39e808b51d6a5bc4f0f4e9b681047a4c59"
+  integrity sha512-0L1UNk4NROfQTqXnBo/LSU2QIUq1jnwGUBLDhkRYeBZ1qXw6wzdmvTt4mTc8J9E4BzG6rHr0ZSwrshwDpS7tSw==
 
 "@tryghost/elasticsearch-bunyan@0.1.1":
   version "0.1.1"
@@ -2152,10 +2157,15 @@
     "@tryghost/tpl" "^0.1.4"
     bson-objectid "^2.0.1"
 
-"@tryghost/member-events@0.4.4", "@tryghost/member-events@^0.4.4":
+"@tryghost/member-events@0.4.4":
   version "0.4.4"
   resolved "https://registry.yarnpkg.com/@tryghost/member-events/-/member-events-0.4.4.tgz#8185d7924d0e341bb93084d6b3e97f1cadd3dac6"
   integrity sha512-p/KlP0EzXeR2AE134kh+TnPgUcnnh+3QoVWmIYOunayJVv177HBaHu7a9yX5PYJ9RxQcCJn4UmuAPloW+3mjnw==
+
+"@tryghost/member-events@^0.4.4", "@tryghost/member-events@^0.4.5":
+  version "0.4.5"
+  resolved "https://registry.yarnpkg.com/@tryghost/member-events/-/member-events-0.4.5.tgz#b6929c2a13bf24be5382015975fc3db7f01eede4"
+  integrity sha512-SOfoHY7ib9jVqtNqXjv6AXHh3hckcce+7RzevXbqD0a4jUyB8Vc9RxJ8vTIJxq5BYxbpecJZulu9rLNuykno2A==
 
 "@tryghost/members-analytics-ingress@^0.1.15":
   version "0.1.15"
@@ -2252,16 +2262,16 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.11"
 
-"@tryghost/members-stripe-service@0.10.3", "@tryghost/members-stripe-service@^0.10.3":
-  version "0.10.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-stripe-service/-/members-stripe-service-0.10.3.tgz#4a4609736e89ed831e118e480c28fa176f85a04e"
-  integrity sha512-EdFxlqM696PSF/V9Qup4FEzCnIe5/2SbZnm2Nmg/7hxSuT/IBx9JxzxyOI+aup3Qp0Un4oVLWEhRCYJgdp42ng==
+"@tryghost/members-stripe-service@0.10.4", "@tryghost/members-stripe-service@^0.10.3":
+  version "0.10.4"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-stripe-service/-/members-stripe-service-0.10.4.tgz#6b3740a99c2136d58d3c17222474c0326d8055bb"
+  integrity sha512-QFQcvOtLxDmh+XnEpZN226FGQugV99TTUV4LbeRGkcnV+PceZkOuZSbpkYboQzG7PGO2olc5pAQxeJercHrn+A==
   dependencies:
     "@tryghost/debug" "^0.1.4"
-    "@tryghost/domain-events" "^0.1.12"
+    "@tryghost/domain-events" "^0.1.13"
     "@tryghost/errors" "^1.2.5"
     "@tryghost/logging" "^2.0.5"
-    "@tryghost/member-events" "^0.4.4"
+    "@tryghost/member-events" "^0.4.5"
     leaky-bucket "^2.2.0"
     lodash "^4.17.21"
     stripe "^8.174.0"

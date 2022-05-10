@@ -90,7 +90,7 @@
     "@tryghost/members-importer": "0.5.12",
     "@tryghost/members-offers": "0.11.4",
     "@tryghost/members-ssr": "1.0.26",
-    "@tryghost/members-stripe-service": "0.10.3",
+    "@tryghost/members-stripe-service": "0.10.4",
     "@tryghost/metrics": "1.0.11",
     "@tryghost/minifier": "0.1.14",
     "@tryghost/mw-api-version-mismatch": "0.2.0",
