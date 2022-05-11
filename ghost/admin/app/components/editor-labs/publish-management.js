@@ -258,7 +258,7 @@ export class PublishOptions {
         // TODO: query limit service
 
         // newsletters
-        const fetchNewsletters = this.store.query('newsletter', {status: 'active', limit: 'all'});
+        const fetchNewsletters = this.store.query('newsletter', {status: 'active', limit: 'all', include: 'count.members'});
 
         yield Promise.all([countTotalMembers, fetchNewsletters]);
     }

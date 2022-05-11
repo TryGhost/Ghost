@@ -16,7 +16,7 @@
                     @dropdownClass="gh-publish-newsletter-dropdown"
                     as |newsletter|
                 >
-                    {{newsletter.name}}
+                    {{newsletter.name}} <span>({{newsletter.count.members}})</span>
                 </PowerSelect>
             </div>
         {{/if}}
