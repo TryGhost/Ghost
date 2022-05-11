@@ -5,7 +5,13 @@ const config = require('../../shared/config');
 // Require from the handlebars framework
 const {SafeString} = require('./handlebars');
 
+let _dataService = {};
+
 module.exports = {
+    getFrontendKey: () => {
+        return _dataService.getFrontendKey();
+    },
+
     /**
      * Section two: data manipulation
      * Stuff that modifies API data (SDK layer)
@@ -46,4 +52,8 @@ module.exports = {
     // URGH... Yuk (unhelpful comment :D)
     urlService: require('../../server/services/url'),
     urlUtils: require('../../shared/url-utils')
+};
+
+module.exports.init = ({dataService}) => {
+    _dataService = dataService;
 };
