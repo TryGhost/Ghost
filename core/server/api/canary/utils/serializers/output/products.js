@@ -24,7 +24,6 @@ module.exports = {
 function paginatedProducts(page, _apiConfig, frame) {
     const requestedQueryIncludes = frame.original && frame.original.query && frame.original.query.include && frame.original.query.include.split(',') || [];
     const requestedOptionsIncludes = utils.options.trimAndLowerCase(frame.original && frame.original.options && frame.original.options.include || []);
-
     return {
         products: page.data.map((model) => {
             return cleanIncludes(
