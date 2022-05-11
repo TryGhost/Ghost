@@ -9,18 +9,6 @@ import {tracked} from '@glimmer/tracking';
 
 const DATE_FORMAT = 'D MMM, YYYY';
 
-// Options 30 and 90 need an extra day to be able to distribute ticks/gridlines evenly
-const DAYS_OPTIONS = [{
-    name: '7 Days',
-    value: 7
-}, {
-    name: '30 Days',
-    value: 30 + 1
-}, {
-    name: '90 Days',
-    value: 90 + 1
-}];
-
 const DISPLAY_OPTIONS = [{
     name: 'Total members',
     value: 'total'
@@ -64,16 +52,7 @@ export default class Anchor extends Component {
     @service feature;
     @tracked chartDisplay = 'total';
 
-    daysOptions = DAYS_OPTIONS;
     displayOptions = DISPLAY_OPTIONS;
-
-    get days() {
-        return this.dashboardStats.chartDays;
-    }
-
-    set days(days) {
-        this.dashboardStats.chartDays = days;
-    }
 
     @action
     loadCharts() {
@@ -87,15 +66,6 @@ export default class Anchor extends Component {
     @action 
     onDisplayChange(selected) {
         this.chartDisplay = selected.value;
-    }
-
-    @action 
-    onDaysChange(selected) {
-        this.days = selected.value;
-    }
-
-    get selectedDaysOption() {
-        return this.daysOptions.find(d => d.value === this.days);
     }
 
     get selectedDisplayOption() {

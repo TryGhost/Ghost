@@ -66,6 +66,7 @@ Dashboard v5 Layout */
 }
 
 .gh-dashboard5-layout {
+    position: relative;
     max-width: 1230px;
     margin: 0 auto;
 }
@@ -396,6 +397,12 @@ Dashboard v5 Layout */
 
 .gh-dashboard5 .ember-power-select-trigger {
     transition: none;
+}
+
+.gh-dashboard5-layout > .gh-dashboard5-select {
+    top: -62px;
+    right: -8px;
+    z-index: 999;
 }
 
 .gh-dashboard5-triple {
