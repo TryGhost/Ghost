@@ -203,8 +203,14 @@ const FrameStyles = `
     z-index: 10000;
 }
 
-.gh-portal-btn-site-title-back:hover {
-    transform: translateX(-6px);
+.gh-portal-btn-site-title-back span {
+    margin-right: 4px;
+    transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
+}
+
+
+.gh-portal-btn-site-title-back:hover span {
+    transform: translateX(-3px);
 }
 
 @media (max-width: 960px) {
@@ -534,7 +540,6 @@ const FrameStyles = `
 }
 
 .gh-portal-newsletter-selection {
-    transition: opacity 1s linear;
     max-width: 460px;
     margin: 0 auto;
 }
@@ -1105,6 +1110,29 @@ const MultipleProductsGlobalStyles = `
 .gh-portal-checkmark-icon {
     height: 22px;
     color: #30cf43;
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.gh-portal-newsletter-selection {
+    animation: 0.5s ease-in-out fadeIn;
+}
+
+.gh-portal-signup {
+    animation: 0.5s ease-in-out fadeIn;
+}
+
+.gh-portal-btn-different-plan {
+    margin: 0 auto 24px;
+    color: var(--grey6);
+    font-weight: 400;
 }
 `;
 
