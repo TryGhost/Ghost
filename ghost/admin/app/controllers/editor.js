@@ -1109,7 +1109,7 @@ export default class EditorController extends Controller {
         }
 
         if (isServerUnreachableError(error)) {
-            errorMessage = 'Unable to connect, please check your connection and try again';
+            errorMessage = 'Unable to connect, please check your internet connection and try again';
         } else if (error && isString(error)) {
             errorMessage = error;
         } else if (error && isEmberArray(error)) {

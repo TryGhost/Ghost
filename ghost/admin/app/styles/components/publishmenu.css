@@ -264,7 +264,7 @@
     height: 14px;
 }
 
-.gh-date-time-picker-date svg path, 
+.gh-date-time-picker-date svg path,
 .gh-date-time-picker-date svg rect {
     fill: none;
     stroke: var(--midgrey);
@@ -398,8 +398,10 @@
     position: absolute;
     top: 0;
     left: 4.2rem;
+    width: calc(100% - 4.2rem * 2);
     display: flex;
     align-items: center;
+    justify-content: space-between;
     height: 36px;
     padding: 0;
     margin: 30px 0;

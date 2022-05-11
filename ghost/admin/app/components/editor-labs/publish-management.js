@@ -1,5 +1,6 @@
 import Component from '@glimmer/component';
 import EmailFailedError from 'ghost-admin/errors/email-failed-error';
+import PreviewModal from './modals/preview';
 import PublishFlowModal from './modals/publish-flow';
 import PublishOptionsResource from 'ghost-admin/helpers/publish-options';
 import UpdateFlowModal from './modals/update-flow';
@@ -46,7 +47,8 @@ export default class PublishManagement extends Component {
 
             this.publishFlowModal = this.modals.open(PublishFlowModal, {
                 publishOptions: this.publishOptions,
-                saveTask: this.publishTask
+                saveTask: this.publishTask,
+                togglePreviewPublish: this.togglePreviewPublish
             });
         }
     }
@@ -71,6 +73,38 @@ export default class PublishManagement extends Component {
                 await timeout(160); // wait for modal animation to finish
                 this[result.afterTask].perform();
             }
+        }
+    }
+
+    @action
+    openPreview(event) {
+        event?.preventDefault();
+
+        if (!this.previewModal || this.previewModal.isClosing) {
+            // open publish flow modal underneath to offer quick switching
+            // without restarting the flow or causing flicker
+
+            this.previewModal = this.modals.open(PreviewModal, {
+                post: this.publishOptions.post,
+                hasDirtyAttributes: this.args.hasUnsavedChanges,
+                saveTask: this.saveTask,
+                togglePreviewPublish: this.togglePreviewPublish
+            });
+        }
+    }
+
+    @action
+    async togglePreviewPublish(event) {
+        event?.preventDefault();
+
+        if (this.previewModal && !this.previewModal.isClosing) {
+            this.openPublishFlow();
+            await timeout(160);
+            this.previewModal.close();
+        } else if (this.publishFlowModal && !this.publishFlowModal.isClosing) {
+            this.openPreview();
+            await timeout(160);
+            this.publishFlowModal.close();
         }
     }
 

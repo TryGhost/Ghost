@@ -68,7 +68,7 @@ export default class PublishFlowOptions extends Component {
             let errorMessage = '';
 
             if (isServerUnreachableError(e)) {
-                errorMessage = 'Unable to connect, please check your connection and try again';
+                errorMessage = 'Unable to connect, please check your internet connection and try again';
             } else if (e && isString(e)) {
                 errorMessage = e;
             } else if (e && isArray(e)) {

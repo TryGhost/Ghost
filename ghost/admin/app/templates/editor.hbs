@@ -30,7 +30,7 @@
 
                 <section class="flex" style="pointer-events: auto">
                     {{#unless this.post.isNew}}
-                        {{#if this.post.isDraft}}
+                        {{#if (and this.post.isDraft (not (feature "publishingFlow")))}}
                             <div>
                                 <button type="button" class="gh-btn gh-editor-preview-trigger" {{on "click" (action "openPostPreviewModal")}}>
                                     <span>Preview</span>
