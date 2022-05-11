@@ -262,7 +262,15 @@
 .gh-date-time-picker-date svg {
     width: 14px;
     height: 14px;
-    fill: color-mod(var(--midgrey) l(+15%));
+}
+
+.gh-date-time-picker-date svg path, 
+.gh-date-time-picker-date svg rect {
+    fill: none;
+    stroke: var(--midgrey);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2px
 }
 
 .gh-date-time-picker-timezone {
@@ -640,15 +648,6 @@
     margin: 0;
     padding: 8px 12px;
     font-size: 1.4rem;
-}
-
-.gh-publish-setting-form .gh-date-time-picker-date svg path,
-.gh-publish-setting-form .gh-date-time-picker-date svg rect {
-    fill: none;
-    stroke: var(--midgrey);
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-width: 2px
 }
 
 .gh-publish-setting-form .gh-date-time-picker-time {
