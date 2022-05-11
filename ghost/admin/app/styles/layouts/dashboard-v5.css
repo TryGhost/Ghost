@@ -351,6 +351,7 @@ Dashboard v5 Layout */
     position: absolute;
     top: 14px;
     right: 4px;
+    z-index: 99;
 }
 
 .gh-dashboard5-select .gh-dashboard5-select {
@@ -367,10 +368,19 @@ Dashboard v5 Layout */
     white-space: nowrap;
 }
 
+.gh-contentfilter-menu-dropdown.is-narrow {
+    width: auto;
+}
+
+.gh-contentfilter-menu-dropdown.is-narrow .ember-power-select-option {
+    padding-right: 32px;
+}
+
 .gh-dashboard5-select-title {
     display: flex;
     justify-content: flex-start;
     margin: -12px 0 -12px -13px;
+    z-index: 1;
 }
 
 .gh-dashboard5-select-title .ember-power-select-selected-item {
