@@ -88,11 +88,13 @@
             <div class="gh-publish-setting-title disabled">
                 {{svg-jar "member"}}
                 <div class="gh-publish-setting-trigger">
-                    {{#if @publishOptions.onlyDefaultNewsletter}}
-                        Already sent as email
-                    {{else}}
-                        Already sent to {{@publishOptions.post.newsletter.name}}
-                    {{/if}}
+                    Already sent to
+                    {{@publishOptions.post.email.emailCount}}
+                    {{if (not-eq @recipientType "all") @recipientType}} {{!-- free/paid/specific --}}
+                    {{gh-pluralize @publishOptions.post.email.emailCount (if @publishOptions.onlyDefaultNewsletter "member" "subscriber") without-count=true}}
+                    {{#unless @publishOptions.onlyDefaultNewsletter}}
+                        of {{@publishOptions.post.newsletter.name}}
+                    {{/unless}}
                 </div>
             </div>
         </div>
