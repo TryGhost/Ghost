@@ -3,11 +3,8 @@ const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-frame
 const newsletterSnapshot = {
     id: matchers.anyObjectId,
     uuid: matchers.anyUuid,
-    name: matchers.anyString,
-    slug: matchers.anyString,
     created_at: matchers.anyISODateTime,
-    updated_at: matchers.anyISODateTime,
-    sort_order: matchers.anyNumber
+    updated_at: matchers.anyISODateTime
 };
 
 describe('Newsletters Content API', function () {
