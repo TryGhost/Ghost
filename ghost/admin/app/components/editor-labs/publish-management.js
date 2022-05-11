@@ -90,8 +90,7 @@ export class PublishOptions {
     // publish type ------------------------------------------------------------
 
     @tracked publishType = 'publish+send';
-    // @tracked emailDisabledError;
-    @tracked emailDisabledError = 'Email sending is temporarily disabled because your account is currently in review. You should have an email about this from us already, but you can also reach us any time at support@ghost.org.';
+    @tracked emailDisabledError;
 
     get publishTypeOptions() {
         return [{
