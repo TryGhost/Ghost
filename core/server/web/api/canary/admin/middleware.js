@@ -31,6 +31,7 @@ const notImplemented = function (req, res, next) {
         members: ['GET', 'PUT', 'DELETE', 'POST'],
         tiers: ['GET', 'PUT', 'POST'],
         offers: ['GET', 'PUT', 'POST'],
+        newsletters: ['GET', 'PUT', 'POST'],
         config: ['GET'],
         schedules: ['PUT'],
         files: ['POST'],
