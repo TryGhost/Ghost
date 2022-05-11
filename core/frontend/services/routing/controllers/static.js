@@ -60,11 +60,6 @@ module.exports = function staticController(req, res, next) {
                 });
             }
 
-            // @TODO: See renderer/secure for more context.
-            _.each(response.data, function (data) {
-                renderer.secure(req, data);
-            });
-
             renderer.renderer(req, res, renderer.formatResponse.entries(response));
         })
         .catch(renderer.handleError(next));

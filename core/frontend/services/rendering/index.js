@@ -19,10 +19,6 @@ module.exports = {
         return require('./templates');
     },
 
-    get secure() {
-        return require('./secure');
-    },
-
     get handleError() {
         return require('./error');
     },

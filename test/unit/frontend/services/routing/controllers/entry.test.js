@@ -13,7 +13,6 @@ describe('Unit - services/routing/controllers/entry', function () {
     let req;
     let res;
     let entryLookUpStub;
-    let secureStub;
     let renderStub;
     let post;
     let page;
@@ -24,16 +23,11 @@ describe('Unit - services/routing/controllers/entry', function () {
 
         page = testUtils.DataGenerator.forKnex.createPost({page: 1});
 
-        secureStub = sinon.stub();
         entryLookUpStub = sinon.stub();
         renderStub = sinon.stub();
 
         sinon.stub(dataService, 'entryLookup').get(function () {
             return entryLookUpStub;
-        });
-
-        sinon.stub(renderer, 'secure').get(function () {
-            return secureStub;
         });
 
         sinon.stub(renderer, 'renderEntry').get(function () {
@@ -94,7 +88,6 @@ describe('Unit - services/routing/controllers/entry', function () {
             });
 
         controllers.entry(req, res, function () {
-            secureStub.calledOnce.should.be.true();
             done();
         }).catch(done);
     });
