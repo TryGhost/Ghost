@@ -14,7 +14,7 @@ const models = require('../../../core/server/models');
 async function assertMemberEvents({eventType, memberId, asserts}) {
     const events = await models[eventType].where('member_id', memberId).fetchAll();
     const eventsJSON = events.map(e => e.toJSON());
-    
+
     // Order shouldn't matter here
     for (const a of asserts) {
         eventsJSON.should.matchAny(a);
@@ -75,6 +75,11 @@ const memberMatcherShallowIncludes = {
     subscriptions: anyArray,
     labels: anyArray,
     newsletters: anyArray
+};
+
+const memberMatcherShallowIncludesWithTiers = {
+    ...memberMatcherShallowIncludes,
+    tiers: anyArray
 };
 
 let agent;
@@ -313,6 +318,18 @@ describe('Members API', function () {
             .expectStatus(200)
             .matchBodySnapshot({
                 members: new Array(1).fill(memberMatcherShallowIncludes)
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
+
+    it('Can read and include tiers', async function () {
+        await agent
+            .get(`/members/${testUtils.DataGenerator.Content.members[0].id}/?include=tiers`)
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: new Array(1).fill(memberMatcherShallowIncludesWithTiers)
             })
             .matchHeaderSnapshot({
                 etag: anyEtag
@@ -1229,7 +1246,7 @@ describe('Members API', function () {
 
         const after = new Date();
         after.setMilliseconds(0);
-       
+
         await agent
             .put(`/members/${newMember.id}/`)
             .body({members: [memberChanged]})
