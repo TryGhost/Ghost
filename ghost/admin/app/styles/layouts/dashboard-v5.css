@@ -452,12 +452,11 @@ Dashboard v5 Chart */
     font-size: 1.2rem;
     text-transform: none;
     font-weight: 500;
-    letter-spacing: .2px;
+    letter-spacing: 0;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     font-size: 1.1rem;
-    letter-spacing: .2px;
     color: var(--midgrey);
     line-height: 1em;
 }
@@ -492,6 +491,10 @@ Dashboard v5 Chart */
     width: 100%;
     height: 94px;
     padding: 0 0 0 30%;
+}
+
+.gh-dashboard5-mrr .gh-dashboard5-chart {
+    padding-left: 35%;
 }
 
 
@@ -1712,7 +1715,7 @@ Dashboard v5 Tooltips */
     background: var(--white);
     border-radius: 9px;
     padding: 12px;
-    box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.17), 0px 100px 80px rgba(0, 0, 0, 0.04), 0px 41.7776px 33.4221px rgba(0, 0, 0, 0.0287542), 0px 22.3363px 17.869px rgba(0, 0, 0, 0.0238443), 0px 12.5216px 10.0172px rgba(0, 0, 0, 0.02), 0px 6.6501px 5.32008px rgba(0, 0, 0, 0.0161557), 0px 2.76726px 2.21381px rgba(0, 0, 0, 0.0112458);
+    box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.18), 0px 45px 80px rgba(0, 0, 0, 0.04), 0px 18.7999px 33.4221px rgba(0, 0, 0, 0.0287542), 0px 10.0513px 17.869px rgba(0, 0, 0, 0.0238443), 0px 5.6347px 10.0172px rgba(0, 0, 0, 0.02), 0px 2.99255px 5.32008px rgba(0, 0, 0, 0.0161557), 0px 1.24527px 2.21381px rgba(0, 0, 0, 0.0112458);
     border-radius: 9px;
     z-index: 9999;
     pointer-events: none;
@@ -1727,29 +1730,51 @@ Dashboard v5 Tooltips */
     font-size: 1.2rem;
     font-weight: 500;
     line-height: 1em;
+    letter-spacing: 0;
     color: var(--midlightgrey);
     white-space: nowrap;
     margin: 0 0 8px;
 }
 
 .gh-dashboard5-tooltip-value {
-    font-size: 2rem;
+    font-size: 1.5rem;
     font-weight: 700;
-    letter-spacing: -.1px;
+    letter-spacing: 0;
     line-height: 1em;
     white-space: nowrap;
     color: var(--black);
 }
 
-.gh-dashboard5-breakdown .gh-dashboard5-tooltip-value {
-    letter-spacing: 0;
+.gh-dashboard5-mrr .gh-dashboard5-tooltip-value {
+    display: flex;
+    align-items: baseline;
+}
+
+.gh-dashboard5-mrr .gh-dashboard5-tooltip-value::before {
+    display: block;
+    content: "";
+    width: 11px;
+    height: 11px;
+    border-radius: 999px;
+    margin: 0 6px 1px 0;
+    border: 2px solid #8E42FF;
+}
+
+.gh-dashboard5-mrr .gh-dashboard5-tooltip-value .value {
+    font-size: 1.5rem;
+}
+
+.gh-dashboard5-mrr .gh-dashboard5-tooltip-value .label {
+    margin-left: 6px;
+    font-size: 1.4rem;
+    font-weight: 400;
+    color: var(--midgrey);
 }
 
 .gh-dashboard5-breakdown .gh-dashboard5-tooltip-value {
     display: grid;
     grid-template-columns: auto auto;
-    font-size: 1.4rem;
-    grid-column-gap: 12px;
+    grid-column-gap: 8px;
 }
 
 .gh-dashboard5-breakdown .gh-dashboard5-tooltip-value-1 {
