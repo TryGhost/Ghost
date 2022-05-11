@@ -211,4 +211,51 @@ describe('Unit: utils/serializers/output/mappers', function () {
             });
         });
     });
+
+    describe('Newsletter Mapper', function () {
+        let newsletterModel;
+
+        beforeEach(function () {
+            newsletterModel = (data) => {
+                return Object.assign(data, {toJSON: sinon.stub().returns(data)});
+            };
+        });
+
+        it('returns only allowed keys for content API', function () {
+            const frame = {
+                apiType: 'content'
+            };
+
+            const newsletter = newsletterModel(testUtils.DataGenerator.forKnex.createNewsletter({
+                name: 'Basic newsletter',
+                slug: 'basic-newsletter'
+            }));
+
+            const mapped = mappers.newsletters(newsletter, frame);
+
+            mapped.should.eql({
+                id: newsletter.id,
+                uuid: newsletter.uuid,
+                name: newsletter.name,
+                description: newsletter.description,
+                slug: newsletter.slug,
+                visibility: newsletter.visibility,
+                sort_order: newsletter.sort_order,
+                created_at: newsletter.created_at,
+                updated_at: newsletter.updated_at
+            });
+        });
+
+        it('returns all keys for admin API', function () {
+            const frame = {};
+
+            const newsletter = newsletterModel(testUtils.DataGenerator.forKnex.createNewsletter({
+                name: 'Full newsletter',
+                slug: 'full-newsletter'
+            }));
+
+            const mapped = mappers.newsletters(newsletter, frame);
+            mapped.should.eql(newsletter.toJSON());
+        });
+    });
 });
