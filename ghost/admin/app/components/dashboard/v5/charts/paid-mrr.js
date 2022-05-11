@@ -190,8 +190,8 @@ export default class PaidMrr extends Component {
                 },
                 callbacks: {
                     label: (tooltipItems, data) => {
-                        const value = `${that.mrrCurrencySymbol}${ghPriceAmount(data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index])}`;
-                        document.querySelector('#gh-dashboard5-mrr-tooltip .gh-dashboard5-tooltip-value').innerHTML = value;
+                        const value = `${that.mrrCurrencySymbol}${ghPriceAmount(data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index], {cents: false})}`;
+                        document.querySelector('#gh-dashboard5-mrr-tooltip .gh-dashboard5-tooltip-value .value').innerHTML = value;
                     },
                     title: (tooltipItems) => {
                         const value = moment(tooltipItems[0].xLabel).format(DATE_FORMAT);
