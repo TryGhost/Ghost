@@ -20,7 +20,7 @@
             "defaultValue": "[]",
             "type": "array"
         },
-        "session_secret": {
+        "admin_session_secret": {
             "defaultValue": null,
             "type": "string"
         },
@@ -98,7 +98,7 @@
             },
             "type": "string"
         },
-        "lang": {
+        "locale": {
             "defaultValue": "en",
             "validations": {
                 "isEmpty": false
