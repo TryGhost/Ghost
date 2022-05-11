@@ -200,7 +200,7 @@ describe('Unit: services/url/UrlService', function () {
             urlService.urls.getByResourceId.withArgs(1).returns(null);
             urlService.getUrlByResourceId(1, {absolute: true});
 
-            urlService.utils.createUrl.calledWith('/404/', true, undefined).should.be.true();
+            urlService.utils.createUrl.calledWith('/404/', true).should.be.true();
         });
 
         it('found', function () {
@@ -214,16 +214,7 @@ describe('Unit: services/url/UrlService', function () {
 
             urlService.urls.getByResourceId.withArgs(1).returns({url: '/post/'});
             urlService.getUrlByResourceId(1, {absolute: true});
-            urlService.utils.createUrl.calledWith('/post/', true, undefined).should.be.true();
-        });
-
-        it('found: absolute + secure', function () {
-            urlService.utils = sinon.stub();
-            urlService.utils.createUrl = sinon.stub();
-
-            urlService.urls.getByResourceId.withArgs(1).returns({url: '/post/'});
-            urlService.getUrlByResourceId(1, {absolute: true, secure: true});
-            urlService.utils.createUrl.calledWith('/post/', true, true).should.be.true();
+            urlService.utils.createUrl.calledWith('/post/', true).should.be.true();
         });
 
         it('not found: withSubdirectory', function () {
@@ -232,25 +223,16 @@ describe('Unit: services/url/UrlService', function () {
 
             urlService.urls.getByResourceId.withArgs(1).returns(null);
             urlService.getUrlByResourceId(1, {withSubdirectory: true});
-            urlService.utils.createUrl.calledWith('/404/', false, undefined).should.be.true();
+            urlService.utils.createUrl.calledWith('/404/', false).should.be.true();
         });
 
-        it('not found: withSubdirectory + secure', function () {
+        it('not found: withSubdirectory + absolute', function () {
             urlService.utils = sinon.stub();
             urlService.utils.createUrl = sinon.stub();
 
             urlService.urls.getByResourceId.withArgs(1).returns(null);
-            urlService.getUrlByResourceId(1, {withSubdirectory: true, secure: true});
-            urlService.utils.createUrl.calledWith('/404/', false, true).should.be.true();
-        });
-
-        it('not found: withSubdirectory + secure + absolute', function () {
-            urlService.utils = sinon.stub();
-            urlService.utils.createUrl = sinon.stub();
-
-            urlService.urls.getByResourceId.withArgs(1).returns(null);
-            urlService.getUrlByResourceId(1, {withSubdirectory: true, secure: true, absolute: true});
-            urlService.utils.createUrl.calledWith('/404/', true, true).should.be.true();
+            urlService.getUrlByResourceId(1, {withSubdirectory: true, absolute: true});
+            urlService.utils.createUrl.calledWith('/404/', true).should.be.true();
         });
 
         it('found: withSubdirectory', function () {
@@ -259,25 +241,16 @@ describe('Unit: services/url/UrlService', function () {
 
             urlService.urls.getByResourceId.withArgs(1).returns({url: '/post/'});
             urlService.getUrlByResourceId(1, {withSubdirectory: true});
-            urlService.utils.createUrl.calledWith('/post/', false, undefined).should.be.true();
+            urlService.utils.createUrl.calledWith('/post/', false).should.be.true();
         });
 
-        it('found: withSubdirectory + secure', function () {
+        it('found: withSubdirectory + absolute', function () {
             urlService.utils = sinon.stub();
             urlService.utils.createUrl = sinon.stub();
 
             urlService.urls.getByResourceId.withArgs(1).returns({url: '/post/'});
-            urlService.getUrlByResourceId(1, {withSubdirectory: true, secure: true});
-            urlService.utils.createUrl.calledWith('/post/', false, true).should.be.true();
-        });
-
-        it('found: withSubdirectory + secure + absolute', function () {
-            urlService.utils = sinon.stub();
-            urlService.utils.createUrl = sinon.stub();
-
-            urlService.urls.getByResourceId.withArgs(1).returns({url: '/post/'});
-            urlService.getUrlByResourceId(1, {withSubdirectory: true, secure: true, absolute: true});
-            urlService.utils.createUrl.calledWith('/post/', true, true).should.be.true();
+            urlService.getUrlByResourceId(1, {withSubdirectory: true, absolute: true});
+            urlService.utils.createUrl.calledWith('/post/', true).should.be.true();
         });
     });
 });

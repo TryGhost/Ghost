@@ -16,7 +16,6 @@ function failTest(done) {
 describe('Unit - services/routing/controllers/static', function () {
     let req;
     let res;
-    let secureStub;
     let renderStub;
     let handleErrorStub;
     let formatResponseStub;
@@ -26,7 +25,6 @@ describe('Unit - services/routing/controllers/static', function () {
     beforeEach(function () {
         postsPerPage = 5;
 
-        secureStub = sinon.stub();
         renderStub = sinon.stub();
         handleErrorStub = sinon.stub();
         formatResponseStub = sinon.stub();
@@ -37,10 +35,6 @@ describe('Unit - services/routing/controllers/static', function () {
             return {
                 read: tagsReadStub
             };
-        });
-
-        sinon.stub(renderer, 'secure').get(function () {
-            return secureStub;
         });
 
         sinon.stub(renderer, 'handleError').get(function () {
@@ -85,7 +79,6 @@ describe('Unit - services/routing/controllers/static', function () {
         renderer.renderer.callsFake(function () {
             renderer.formatResponse.entries.calledOnce.should.be.true();
             tagsReadStub.called.should.be.false();
-            renderer.secure.called.should.be.false();
             done();
         });
 
@@ -109,7 +102,6 @@ describe('Unit - services/routing/controllers/static', function () {
         renderer.renderer.callsFake(function () {
             tagsReadStub.called.should.be.true();
             renderer.formatResponse.entries.calledOnce.should.be.true();
-            renderer.secure.calledOnce.should.be.true();
             done();
         });
 

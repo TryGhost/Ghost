@@ -218,6 +218,8 @@ class UrlService {
      *
      * @param {String} id
      * @param {Object} options
+     * @param {Object} [options.absolute]
+     * @param {Object} [options.withSubdirectory]
      * @returns {String}
      */
     getUrlByResourceId(id, options) {
@@ -227,22 +229,22 @@ class UrlService {
 
         if (obj) {
             if (options.absolute) {
-                return this.utils.createUrl(obj.url, options.absolute, options.secure);
+                return this.utils.createUrl(obj.url, options.absolute);
             }
 
             if (options.withSubdirectory) {
-                return this.utils.createUrl(obj.url, false, options.secure, true);
+                return this.utils.createUrl(obj.url, false, true);
             }
 
             return obj.url;
         }
 
         if (options.absolute) {
-            return this.utils.createUrl('/404/', options.absolute, options.secure);
+            return this.utils.createUrl('/404/', options.absolute);
         }
 
         if (options.withSubdirectory) {
-            return this.utils.createUrl('/404/', false, options.secure);
+            return this.utils.createUrl('/404/', false);
         }
 
         return '/404/';

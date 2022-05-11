@@ -35,7 +35,7 @@ function getPaginatedUrl(page, data, absolute) {
     // baseUrl can be undefined, if there was nothing preceding the pagePath (e.g. first page of the index channel)
     newRelativeUrl = baseUrl ? urlUtils.urlJoin(baseUrl, newRelativeUrl) : newRelativeUrl;
 
-    return urlUtils.urlFor({relativeUrl: newRelativeUrl, secure: data.secure}, absolute);
+    return urlUtils.urlFor({relativeUrl: newRelativeUrl}, absolute);
 }
 
 module.exports = getPaginatedUrl;
