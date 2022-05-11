@@ -11,16 +11,16 @@ export default class PublishFlowOptions extends Component {
     willPublish = this.args.publishOptions.willPublish;
 
     get confirmButtonText() {
-        const publishType = this.args.publishOptions.publishType;
+        const publishOptions = this.args.publishOptions;
 
         let buttonText = '';
 
-        if (publishType === 'publish+send') {
+        if (publishOptions.willPublish && publishOptions.willEmail) {
             buttonText = 'Publish & send';
-        } else if (publishType === 'publish') {
-            buttonText = `Publish ${this.args.publishOptions.post.displayName}`;
-        } else if (publishType === 'send') {
+        } else if (publishOptions.willOnlyEmail) {
             buttonText = 'Send email';
+        } else {
+            buttonText = `Publish ${this.args.publishOptions.post.displayName}`;
         }
 
         if (this.args.publishOptions.isScheduled) {
