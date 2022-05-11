@@ -29,7 +29,7 @@ const messages = {
     resourceNotFound: '{resource} not found.'
 };
 
-const allowedIncludes = ['email_recipients', 'products'];
+const allowedIncludes = ['email_recipients', 'products', 'tiers'];
 
 module.exports = {
     docName: 'members',
