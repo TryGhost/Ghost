@@ -94,4 +94,18 @@ describe('Unit: canary/utils/serializers/output/members', function () {
         memberSerializer.read(ctrlResponse, apiConfig, frame);
         should.not.exist(frame.response.members[0].newsletters);
     });
+
+    it('read: includes tiers data', function () {
+        const apiConfig = {docName: 'members'};
+        const frame = {
+            options: {
+                context: {}
+            }
+        };
+
+        const ctrlResponse = memberModel(testUtils.DataGenerator.forKnex.createMemberWithProducts());
+        memberSerializer.read(ctrlResponse, apiConfig, frame);
+
+        should.exist(frame.response.members[0].tiers);
+    });
 });
