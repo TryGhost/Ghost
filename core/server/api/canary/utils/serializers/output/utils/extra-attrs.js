@@ -40,24 +40,6 @@ module.exports.forSettings = (attrs, frame) => {
     if (_.isArray(attrs)) {
         // CASE: read single setting
         if (frame.original.params && frame.original.params.key) {
-            if (frame.original.params.key === 'active_timezone') {
-                attrs[0].key = 'active_timezone';
-                return;
-            }
-
-            if (frame.original.params.key === 'default_locale') {
-                attrs[0].key = 'default_locale';
-                return;
-            }
-
-            if (frame.original.params.key === 'timezone') {
-                return;
-            }
-
-            if (frame.original.params.key === 'lang') {
-                return;
-            }
-
             if (frame.original.params.key === 'slack_url'
                 || frame.original.params.key === 'slack_username') {
                 return;
@@ -66,16 +48,7 @@ module.exports.forSettings = (attrs, frame) => {
         // CASE: edit
         if (frame.original.body && frame.original.body.settings) {
             frame.original.body.settings.forEach((setting) => {
-                if (setting.key === 'active_timezone') {
-                    const target = _.find(attrs, {key: 'timezone'});
-                    target.key = 'active_timezone';
-                } else if (setting.key === 'default_locale') {
-                    const target = _.find(attrs, {key: 'lang'});
-                    target.key = 'default_locale';
-                } else if (setting.key === 'locale') {
-                    const target = _.find(attrs, {key: 'lang'});
-                    target.key = 'locale';
-                } else if (setting.key === 'slack') {
+                if (setting.key === 'slack') {
                     const slackURL = _.cloneDeep(_.find(attrs, {key: 'slack_url'}));
                     const slackUsername = _.cloneDeep(_.find(attrs, {key: 'slack_username'}));
 
@@ -96,21 +69,8 @@ module.exports.forSettings = (attrs, frame) => {
         }
 
         // CASE: browse all settings, add extra keys and keep deprecated
-        const timezone = _.cloneDeep(_.find(attrs, {key: 'timezone'}));
-        const lang = _.cloneDeep(_.find(attrs, {key: 'lang'}));
         const slackURL = _.cloneDeep(_.find(attrs, {key: 'slack_url'}));
         const slackUsername = _.cloneDeep(_.find(attrs, {key: 'slack_username'}));
-        const locale = _.cloneDeep(_.find(attrs, {key: 'lang'}));
-
-        if (timezone) {
-            timezone.key = 'active_timezone';
-            attrs.push(timezone);
-        }
-
-        if (lang) {
-            lang.key = 'default_locale';
-            attrs.push(lang);
-        }
 
         if (slackURL || slackUsername) {
             const slack = slackURL || slackUsername;
@@ -121,11 +81,6 @@ module.exports.forSettings = (attrs, frame) => {
             }]);
 
             attrs.push(slack);
-        }
-
-        if (locale) {
-            locale.key = 'locale';
-            attrs.push(locale);
         }
     }
 };
