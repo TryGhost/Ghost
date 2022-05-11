@@ -1062,6 +1062,360 @@ Object {
 }
 `;
 
+exports[`Newsletters API Host Settings: newsletter limits Max limit Adding a newsletter now doesn't fail 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "opted_in_member_count": 6,
+  },
+  "newsletters": Array [
+    Object {
+      "body_font_category": "sans_serif",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "footer_content": null,
+      "header_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Naughty newsletter",
+      "sender_email": null,
+      "sender_name": null,
+      "sender_reply_to": "newsletter",
+      "show_badge": true,
+      "show_feature_image": true,
+      "show_header_icon": true,
+      "show_header_name": true,
+      "show_header_title": true,
+      "slug": "naughty-newsletter",
+      "sort_order": 3,
+      "status": "active",
+      "subscribe_on_signup": true,
+      "title_alignment": "center",
+      "title_font_category": "sans_serif",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "members",
+    },
+  ],
+}
+`;
+
+exports[`Newsletters API Host Settings: newsletter limits Max limit Adding a newsletter now doesn't fail 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "695",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/newsletters\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
+  "vary": "Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Newsletters API Host Settings: newsletter limits Max limit Adding an archived newsletter doesn't fail 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "opted_in_member_count": 6,
+  },
+  "newsletters": Array [
+    Object {
+      "body_font_category": "sans_serif",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "footer_content": null,
+      "header_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Archived newsletter",
+      "sender_email": null,
+      "sender_name": null,
+      "sender_reply_to": "newsletter",
+      "show_badge": true,
+      "show_feature_image": true,
+      "show_header_icon": true,
+      "show_header_name": true,
+      "show_header_title": true,
+      "slug": "archived-newsletter",
+      "sort_order": 3,
+      "status": "archived",
+      "subscribe_on_signup": true,
+      "title_alignment": "center",
+      "title_font_category": "sans_serif",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "members",
+    },
+  ],
+}
+`;
+
+exports[`Newsletters API Host Settings: newsletter limits Max limit Adding an archived newsletter doesn't fail 2: [body] 1`] = `
+Object {
+  "meta": Object {
+    "opted_in_member_count": 6,
+  },
+  "newsletters": Array [
+    Object {
+      "body_font_category": "sans_serif",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "footer_content": null,
+      "header_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Archived newsletter",
+      "sender_email": null,
+      "sender_name": null,
+      "sender_reply_to": "newsletter",
+      "show_badge": true,
+      "show_feature_image": true,
+      "show_header_icon": true,
+      "show_header_name": true,
+      "show_header_title": true,
+      "slug": "archived-newsletter",
+      "sort_order": 3,
+      "status": "archived",
+      "subscribe_on_signup": true,
+      "title_alignment": "center",
+      "title_font_category": "sans_serif",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "members",
+    },
+  ],
+}
+`;
+
+exports[`Newsletters API Host Settings: newsletter limits Max limit Adding an archived newsletter doesn't fail 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "699",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/newsletters\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
+  "vary": "Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Newsletters API Host Settings: newsletter limits Max limit Adding an archived newsletter doesn't fail 3: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "699",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/newsletters\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
+  "vary": "Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Newsletters API Host Settings: newsletter limits Max limit Adding newsletter fails 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Your plan supports up to 3 newsletters. Please upgrade to add more.",
+      "details": Object {
+        "limit": 3,
+        "name": "newsletters",
+        "total": 3,
+      },
+      "ghostErrorCode": null,
+      "help": "https://ghost.org/help/",
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Host Limit error, cannot save newsletter.",
+      "property": null,
+      "type": "HostLimitError",
+    },
+  ],
+}
+`;
+
+exports[`Newsletters API Host Settings: newsletter limits Max limit Adding newsletter fails without transaction 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Your plan supports up to 3 newsletters. Please upgrade to add more.",
+      "details": Object {
+        "limit": 3,
+        "name": "newsletters",
+        "total": 3,
+      },
+      "ghostErrorCode": null,
+      "help": "https://ghost.org/help/",
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Host Limit error, cannot save newsletter.",
+      "property": null,
+      "type": "HostLimitError",
+    },
+  ],
+}
+`;
+
+exports[`Newsletters API Host Settings: newsletter limits Max limit Archiving a newsletter doesn't fail 1: [body] 1`] = `
+Object {
+  "newsletters": Array [
+    Object {
+      "body_font_category": "sans_serif",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "footer_content": null,
+      "header_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Default Newsletter",
+      "sender_email": null,
+      "sender_name": null,
+      "sender_reply_to": "newsletter",
+      "show_badge": true,
+      "show_feature_image": true,
+      "show_header_icon": true,
+      "show_header_name": true,
+      "show_header_title": true,
+      "slug": "default-newsletter",
+      "sort_order": 0,
+      "status": "archived",
+      "subscribe_on_signup": true,
+      "title_alignment": "center",
+      "title_font_category": "sans_serif",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "members",
+    },
+  ],
+}
+`;
+
+exports[`Newsletters API Host Settings: newsletter limits Max limit Archiving a newsletter doesn't fail 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "662",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Newsletters API Host Settings: newsletter limits Max limit Editing an archived newsletter doesn't fail 1: [body] 1`] = `
+Object {
+  "newsletters": Array [
+    Object {
+      "body_font_category": "serif",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "footer_content": null,
+      "header_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Updated archived newsletter name",
+      "sender_email": "jamie@example.com",
+      "sender_name": "Jamie",
+      "sender_reply_to": "newsletter",
+      "show_badge": true,
+      "show_feature_image": true,
+      "show_header_icon": true,
+      "show_header_name": true,
+      "show_header_title": true,
+      "slug": "old-newsletter",
+      "sort_order": 2,
+      "status": "archived",
+      "subscribe_on_signup": true,
+      "title_alignment": "center",
+      "title_font_category": "serif",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "members",
+    },
+  ],
+}
+`;
+
+exports[`Newsletters API Host Settings: newsletter limits Max limit Editing an archived newsletter doesn't fail 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "680",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Newsletters API Host Settings: newsletter limits Max limit Editing an archived newsletter doesn't fails 1: [body] 1`] = `
+Object {
+  "newsletters": Array [
+    Object {
+      "body_font_category": "serif",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "footer_content": null,
+      "header_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Updated archived newsletter name",
+      "sender_email": "jamie@example.com",
+      "sender_name": "Jamie",
+      "sender_reply_to": "newsletter",
+      "show_badge": true,
+      "show_feature_image": true,
+      "show_header_icon": true,
+      "show_header_name": true,
+      "show_header_title": true,
+      "slug": "old-newsletter",
+      "sort_order": 2,
+      "status": "archived",
+      "subscribe_on_signup": true,
+      "title_alignment": "center",
+      "title_font_category": "serif",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "members",
+    },
+  ],
+}
+`;
+
+exports[`Newsletters API Host Settings: newsletter limits Max limit Editing an archived newsletter doesn't fails 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "680",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Newsletters API Host Settings: newsletter limits Max limit Unarchiving a newsletter fails 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Your plan supports up to 3 newsletters. Please upgrade to add more.",
+      "details": Object {
+        "limit": 3,
+        "name": "newsletters",
+        "total": 3,
+      },
+      "ghostErrorCode": null,
+      "help": "https://ghost.org/help/",
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Host Limit error, cannot edit newsletter.",
+      "property": null,
+      "type": "HostLimitError",
+    },
+  ],
+}
+`;
+
 exports[`Newsletters API Host Settings: newsletter limits Request fails when newsletter limit is in place 1: [body] 1`] = `
 Object {
   "errors": Array [

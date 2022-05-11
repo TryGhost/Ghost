@@ -112,10 +112,18 @@ class NewslettersService {
      * @public
      * @param {object} attrs model properties
      * @param {Object} [options] options
-     * @param {Object} [options] options.transacting
+     * @param {Object} [options] options.transacting Don't use this option outside of the service unless you also update the limit checking.
      * @returns {Promise<{object}>} Newsetter Model with verification metadata
      */
     async add(attrs, options = {}) {
+        // We need to make sure we always check the limits outside of transactions
+        // Or we'll get a deadlock in SQLite
+        if (!options.transacting) {
+            if (!attrs.status || attrs.status === 'active') {
+                await this.limitService.errorIfWouldGoOverLimit('newsletters');
+            }
+        }
+
         // create newsletter and assign members in the same transaction
         if (options.opt_in_existing && !options.transacting) {
             return this.NewsletterModel.transaction((transacting) => {
@@ -123,8 +131,6 @@ class NewslettersService {
                 return this.add(attrs, options);
             });
         }
-
-        await this.limitService.errorIfWouldGoOverLimit('newsletters');
 
         // remove any email properties that are not allowed to be set without verification
         const {cleanedAttrs, emailsToVerify} = await this.prepAttrsForEmailVerification(attrs);
@@ -184,6 +190,10 @@ class NewslettersService {
         const originalNewsletter = await this.NewsletterModel.findOne({id: options.id}, {require: true});
 
         const {cleanedAttrs, emailsToVerify} = await this.prepAttrsForEmailVerification(attrs, originalNewsletter);
+
+        if (originalNewsletter.status !== 'active' && cleanedAttrs.status === 'active') {
+            await this.limitService.errorIfWouldGoOverLimit('newsletters');
+        }
 
         let updatedNewsletter;
         
