@@ -2320,10 +2320,10 @@
   dependencies:
     "@tryghost/extract-api-key" "^0.1.0"
 
-"@tryghost/mw-error-handler@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/mw-error-handler/-/mw-error-handler-1.0.0.tgz#982ed8a30723b5a200ca2faacc34d67d5a42c6fe"
-  integrity sha512-kSvrzi2ZUFwOYAxKXnnocE91nULdUVofX4vrcGGG1y6iJPjDDKgGAPX8m7kxBdL77VR3KM0hffjG60eCwkGG/g==
+"@tryghost/mw-error-handler@1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/mw-error-handler/-/mw-error-handler-1.0.1.tgz#e15aa25d7ffaa9f0e5979c1ca20b6975c24559bd"
+  integrity sha512-rK3VlVMw14v0S37NrUKDP1xRAfq3TYa5TapbMd+VpaHmFndH/BDRSfdIqSAsPWGCjKqpOrjVY6Y7c3P44vqDWA==
   dependencies:
     "@tryghost/debug" "^0.1.9"
     "@tryghost/errors" "1.2.12"
