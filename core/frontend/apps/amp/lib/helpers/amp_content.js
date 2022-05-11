@@ -6,8 +6,6 @@
 //
 // Converts normal HTML into AMP HTML with Amperize module and uses a cache to return it from
 // there if available. The cacheId is a combination of `updated_at` and the `slug`.
-const Promise = require('bluebird');
-
 const {DateTime, Interval} = require('luxon');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
@@ -170,19 +168,16 @@ function getAmperizeHTML(html, post) {
     return Promise.resolve(amperizeCache[post.id].amp);
 }
 
-function ampContent() {
+module.exports = async function amp_content() { // eslint-disable-line camelcase
     let sanitizeHtml = require('sanitize-html');
     let cheerio = require('cheerio');
 
-    let amperizeHTML = {
-        amperize: getAmperizeHTML(this.html, this)
-    };
-
-    return Promise.props(amperizeHTML).then((result) => {
+    try {
+        const response = await getAmperizeHTML(this.html, this);
         let $ = null;
 
         // our Amperized HTML
-        ampHTML = result.amperize || '';
+        ampHTML = response ?? '';
 
         // Use cheerio to traverse through HTML and make little clean-ups
         $ = cheerio.load(ampHTML);
@@ -208,9 +203,12 @@ function ampContent() {
         });
 
         return new SafeString(cleanHTML);
-    });
-}
+    } catch (error) {
+        logging.error(error);
 
-module.exports = ampContent;
+        // Return an empty safe string
+        return new SafeString('');
+    }
+};
 
 module.exports.async = true;

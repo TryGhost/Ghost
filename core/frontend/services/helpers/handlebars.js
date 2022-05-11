@@ -1,4 +1,3 @@
-const Promise = require('bluebird');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 
@@ -6,31 +5,31 @@ const {hbs} = require('../handlebars');
 
 // Register an async handlebars helper for a given handlebars instance
 function asyncHelperWrapper(hbsInstance, name, fn) {
-    hbsInstance.registerAsyncHelper(name, function returnAsync(context, options, cb) {
+    hbsInstance.registerAsyncHelper(name, async function returnAsync(context, options, cb) {
         // Handle the case where we only get context and cb
         if (!cb) {
             cb = options;
             options = undefined;
         }
 
-        // Wrap the function passed in with a Promise.resolve so it can return either a promise or a value
-        Promise.resolve(fn.call(this, context, options)).then(function asyncHelperSuccess(result) {
-            cb(result);
-        }).catch(function asyncHelperError(err) {
-            const wrappedErr = errors.utils.isGhostError(err) ? err : new errors.IncorrectUsageError({
-                err: err,
+        try {
+            const response = await fn.call(this, context, options);
+            cb(response);
+        } catch (error) {
+            const wrappedErr = errors.utils.isGhostError(error) ? error : new errors.IncorrectUsageError({
+                err: error,
                 context: 'registerAsyncThemeHelper: ' + name,
                 errorDetails: {
-                    originalError: err
+                    originalError: error
                 }
             });
 
-            const result = process.env.NODE_ENV === 'development' ? wrappedErr : '';
+            const response = process.env.NODE_ENV === 'development' ? wrappedErr : '';
 
             logging.error(wrappedErr);
 
-            cb(new hbsInstance.SafeString(result));
-        });
+            cb(new hbsInstance.SafeString(response));
+        }
     });
 }
 

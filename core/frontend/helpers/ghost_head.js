@@ -96,7 +96,7 @@ function getMembersHelper(data) {
  *  Also see how the root object gets created, https://github.com/wycats/handlebars.js/blob/v4.0.6/lib/handlebars/runtime.js#L259
  */
 // We use the name ghost_head to match the helper for consistency:
-module.exports = function ghost_head(options) { // eslint-disable-line camelcase
+module.exports = async function ghost_head(options) { // eslint-disable-line camelcase
     debug('begin');
 
     // if server error page do nothing
@@ -118,128 +118,126 @@ module.exports = function ghost_head(options) { // eslint-disable-line camelcase
 
     debug('preparation complete, begin fetch');
 
-    /**
-     * @TODO:
-     *   - getMetaData(dataRoot, dataRoot) -> yes that looks confusing!
-     *   - there is a very mixed usage of `data.context` vs. `root.context` vs `root._locals.context` vs. `this.context`
-     *   - NOTE: getMetaData won't live here anymore soon, see https://github.com/TryGhost/Ghost/issues/8995
-     *   - therefore we get rid of using `getMetaData(this, dataRoot)`
-     *   - dataRoot has access to *ALL* locals, see function description
-     *   - it should not break anything
-     */
-    return getMetaData(dataRoot, dataRoot)
-        .then(function handleMetaData(meta) {
-            debug('end fetch');
+    try {
+        /**
+         * @TODO:
+         *   - getMetaData(dataRoot, dataRoot) -> yes that looks confusing!
+         *   - there is a very mixed usage of `data.context` vs. `root.context` vs `root._locals.context` vs. `this.context`
+         *   - NOTE: getMetaData won't live here anymore soon, see https://github.com/TryGhost/Ghost/issues/8995
+         *   - therefore we get rid of using `getMetaData(this, dataRoot)`
+         *   - dataRoot has access to *ALL* locals, see function description
+         *   - it should not break anything
+         */
+        const meta = await getMetaData(dataRoot, dataRoot);
+        debug('end fetch');
 
-            if (context) {
-                // head is our main array that holds our meta data
-                if (meta.metaDescription && meta.metaDescription.length > 0) {
-                    head.push('<meta name="description" content="' + escapeExpression(meta.metaDescription) + '" />');
-                }
-
-                // no output in head if a publication icon is not set
-                if (settingsCache.get('icon')) {
-                    head.push('<link rel="icon" href="' + favicon + '" type="image/' + iconType + '" />');
-                }
-
-                head.push('<link rel="canonical" href="' +
-                    escapeExpression(meta.canonicalUrl) + '" />');
-                head.push('<meta name="referrer" content="' + referrerPolicy + '" />');
-
-                // don't allow indexing of preview URLs!
-                if (_.includes(context, 'preview')) {
-                    head.push(writeMetaTag('robots', 'noindex,nofollow', 'name'));
-                }
-
-                // show amp link in post when 1. we are not on the amp page and 2. amp is enabled
-                if (_.includes(context, 'post') && !_.includes(context, 'amp') && settingsCache.get('amp')) {
-                    head.push('<link rel="amphtml" href="' +
-                        escapeExpression(meta.ampUrl) + '" />');
-                }
-
-                if (meta.previousUrl) {
-                    head.push('<link rel="prev" href="' +
-                        escapeExpression(meta.previousUrl) + '" />');
-                }
-
-                if (meta.nextUrl) {
-                    head.push('<link rel="next" href="' +
-                        escapeExpression(meta.nextUrl) + '" />');
-                }
-
-                if (!_.includes(context, 'paged') && useStructuredData) {
-                    head.push('');
-                    head.push.apply(head, finaliseStructuredData(meta));
-                    head.push('');
-
-                    if (meta.schema) {
-                        head.push('<script type="application/ld+json">\n' +
-                            JSON.stringify(meta.schema, null, '    ') +
-                            '\n    </script>\n');
-                    }
-                }
+        if (context) {
+            // head is our main array that holds our meta data
+            if (meta.metaDescription && meta.metaDescription.length > 0) {
+                head.push('<meta name="description" content="' + escapeExpression(meta.metaDescription) + '" />');
             }
 
-            head.push('<meta name="generator" content="Ghost ' +
-                escapeExpression(safeVersion) + '" />');
-
-            // Ghost analytics tag
-            if (labs.isSet('membersActivity')) {
-                const postId = (dataRoot && dataRoot.post) ? dataRoot.post.id : '';
-                head.push(writeMetaTag('ghost-analytics-id', postId, 'name'));
+            // no output in head if a publication icon is not set
+            if (settingsCache.get('icon')) {
+                head.push('<link rel="icon" href="' + favicon + '" type="image/' + iconType + '" />');
             }
 
-            head.push('<link rel="alternate" type="application/rss+xml" title="' +
-                escapeExpression(meta.site.title) + '" href="' +
-                escapeExpression(meta.rssUrl) + '" />');
+            head.push('<link rel="canonical" href="' + escapeExpression(meta.canonicalUrl) + '" />');
+            head.push('<meta name="referrer" content="' + referrerPolicy + '" />');
 
-            // no code injection for amp context!!!
-            if (!_.includes(context, 'amp')) {
-                head.push(getMembersHelper(options.data));
-
-                // @TODO do this in a more "frameworky" way
-                if (cardAssetService.hasFile('js')) {
-                    head.push(`<script defer src="${getAssetUrl('public/cards.min.js')}"></script>`);
-                }
-                if (cardAssetService.hasFile('css')) {
-                    head.push(`<link rel="stylesheet" type="text/css" href="${getAssetUrl('public/cards.min.css')}">`);
-                }
-
-                if (!_.isEmpty(globalCodeinjection)) {
-                    head.push(globalCodeinjection);
-                }
-
-                if (!_.isEmpty(postCodeInjection)) {
-                    head.push(postCodeInjection);
-                }
-
-                if (!_.isEmpty(tagCodeInjection)) {
-                    head.push(tagCodeInjection);
-                }
+            // don't allow indexing of preview URLs!
+            if (_.includes(context, 'preview')) {
+                head.push(writeMetaTag('robots', 'noindex,nofollow', 'name'));
             }
 
-            // AMP template has style injected directly because there can only be one <style amp-custom> tag
-            if (options.data.site.accent_color && !_.includes(context, 'amp')) {
-                const accentColor = escapeExpression(options.data.site.accent_color);
-                const styleTag = `<style>:root {--ghost-accent-color: ${accentColor};}</style>`;
-                const existingScriptIndex = _.findLastIndex(head, str => str.match(/<\/(style|script)>/));
-
-                if (existingScriptIndex !== -1) {
-                    head[existingScriptIndex] = head[existingScriptIndex] + styleTag;
-                } else {
-                    head.push(styleTag);
-                }
+            // show amp link in post when 1. we are not on the amp page and 2. amp is enabled
+            if (_.includes(context, 'post') && !_.includes(context, 'amp') && settingsCache.get('amp')) {
+                head.push('<link rel="amphtml" href="' +
+                    escapeExpression(meta.ampUrl) + '" />');
             }
 
-            debug('end');
-            return new SafeString(head.join('\n    ').trim());
-        })
-        .catch(function handleError(err) {
-            logging.error(err);
+            if (meta.previousUrl) {
+                head.push('<link rel="prev" href="' +
+                    escapeExpression(meta.previousUrl) + '" />');
+            }
 
-            // Return what we have so far (currently nothing)
-            return new SafeString(head.join('\n    ').trim());
-        });
+            if (meta.nextUrl) {
+                head.push('<link rel="next" href="' +
+                    escapeExpression(meta.nextUrl) + '" />');
+            }
+
+            if (!_.includes(context, 'paged') && useStructuredData) {
+                head.push('');
+                head.push.apply(head, finaliseStructuredData(meta));
+                head.push('');
+
+                if (meta.schema) {
+                    head.push('<script type="application/ld+json">\n' +
+                        JSON.stringify(meta.schema, null, '    ') +
+                        '\n    </script>\n');
+                }
+            }
+        }
+
+        head.push('<meta name="generator" content="Ghost ' +
+            escapeExpression(safeVersion) + '" />');
+
+        // Ghost analytics tag
+        if (labs.isSet('membersActivity')) {
+            const postId = (dataRoot && dataRoot.post) ? dataRoot.post.id : '';
+            head.push(writeMetaTag('ghost-analytics-id', postId, 'name'));
+        }
+
+        head.push('<link rel="alternate" type="application/rss+xml" title="' +
+            escapeExpression(meta.site.title) + '" href="' +
+            escapeExpression(meta.rssUrl) + '" />');
+
+        // no code injection for amp context!!!
+        if (!_.includes(context, 'amp')) {
+            head.push(getMembersHelper(options.data));
+
+            // @TODO do this in a more "frameworky" way
+            if (cardAssetService.hasFile('js')) {
+                head.push(`<script defer src="${getAssetUrl('public/cards.min.js')}"></script>`);
+            }
+            if (cardAssetService.hasFile('css')) {
+                head.push(`<link rel="stylesheet" type="text/css" href="${getAssetUrl('public/cards.min.css')}">`);
+            }
+
+            if (!_.isEmpty(globalCodeinjection)) {
+                head.push(globalCodeinjection);
+            }
+
+            if (!_.isEmpty(postCodeInjection)) {
+                head.push(postCodeInjection);
+            }
+
+            if (!_.isEmpty(tagCodeInjection)) {
+                head.push(tagCodeInjection);
+            }
+        }
+
+        // AMP template has style injected directly because there can only be one <style amp-custom> tag
+        if (options.data.site.accent_color && !_.includes(context, 'amp')) {
+            const accentColor = escapeExpression(options.data.site.accent_color);
+            const styleTag = `<style>:root {--ghost-accent-color: ${accentColor};}</style>`;
+            const existingScriptIndex = _.findLastIndex(head, str => str.match(/<\/(style|script)>/));
+
+            if (existingScriptIndex !== -1) {
+                head[existingScriptIndex] = head[existingScriptIndex] + styleTag;
+            } else {
+                head.push(styleTag);
+            }
+        }
+
+        debug('end');
+        return new SafeString(head.join('\n    ').trim());
+    } catch (error) {
+        logging.error(error);
+
+        // Return what we have so far (currently nothing)
+        return new SafeString(head.join('\n    ').trim());
+    }
 };
 
 module.exports.async = true;
