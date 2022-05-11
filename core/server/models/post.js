@@ -21,7 +21,8 @@ const messages = {
     isAlreadyPublished: 'Your post is already published, please reload your page.',
     valueCannotBeBlank: 'Value in {key} cannot be blank.',
     expectedPublishedAtInFuture: 'Date must be at least {cannotScheduleAPostBeforeInMinutes} minutes in the future.',
-    untitled: '(Untitled)'
+    untitled: '(Untitled)',
+    notEnoughPermission: 'You do not have permission to perform this action'
 };
 
 const MOBILEDOC_REVISIONS_COUNT = 10;
