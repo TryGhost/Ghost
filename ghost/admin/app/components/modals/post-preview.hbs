@@ -18,15 +18,6 @@
                     <button type="button" class="gh-btn {{if (eq this.tab "social") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changeTab "social")}}><span>{{svg-jar "twitter"}}</span></button>
                 </div>
             </div>
-
-            {{#unless this.session.user.isContributor}}
-                <GhPublishmenu
-                    @post={{@data.post}}
-                    @postStatus={{@data.post.status}}
-                    @saveTask={{@data.saveTask}}
-                    @setSaveType={{@data.setEditorSaveType}}
-                    @uiContext="preview" />
-            {{/unless}}
         </header>
 
         {{#if this.saveFirstTask.isRunning}}
