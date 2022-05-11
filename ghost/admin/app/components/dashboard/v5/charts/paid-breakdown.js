@@ -142,11 +142,11 @@ export default class PaidBreakdown extends Component {
                     label: (tooltipItems, data) => {
                         // new data
                         let newValue = parseInt(data.datasets[0].data[tooltipItems.index].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ','));
-                        document.querySelector('#gh-dashboard5-breakdown-tooltip .gh-dashboard5-tooltip-value-1').innerHTML = `New ${newValue}`;
+                        document.querySelector('#gh-dashboard5-breakdown-tooltip .gh-dashboard5-tooltip-value-1 .value').innerHTML = `${newValue}`;
 
                         // canceld data
                         let canceledValue = Math.abs(parseInt(data.datasets[1].data[tooltipItems.index].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')));
-                        document.querySelector('#gh-dashboard5-breakdown-tooltip .gh-dashboard5-tooltip-value-2').innerHTML = `Canceled ${canceledValue}`;
+                        document.querySelector('#gh-dashboard5-breakdown-tooltip .gh-dashboard5-tooltip-value-2 .value').innerHTML = `${canceledValue}`;
                     },
                     title: (tooltipItems) => {
                         const value = moment(tooltipItems[0].xLabel).format(DATE_FORMAT);
