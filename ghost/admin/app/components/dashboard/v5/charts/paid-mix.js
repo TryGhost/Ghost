@@ -187,7 +187,7 @@ export default class PaidMix extends Component {
                         } else {
                             const label = data.datasets[tooltipItems.datasetIndex].label || '';
                             const value = data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index] || 0;
-                            tooltipTextEl.innerHTML = `<span class="indicator solid" style="background-color: ${data.datasets[tooltipItems.datasetIndex].backgroundColor}"></span><span class="value">${value}%</span><span class="label">${label}</span>`;
+                            tooltipTextEl.innerHTML = `<span class="indicator solid" style="background-color: ${data.datasets[tooltipItems.datasetIndex].backgroundColor}"></span><span class="value">${value}%</span><span class="metric">${label}</span>`;
                         }
                     },
                     title: () => {

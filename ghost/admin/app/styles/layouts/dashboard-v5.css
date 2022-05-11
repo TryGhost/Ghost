@@ -1770,11 +1770,38 @@ Dashboard v5 Tooltips */
     margin-right: 8px;
 }
 
-.gh-dashboard5-tooltip-value .label {
+.gh-dashboard5-tooltip-value .metric {
     font-size: 1.4rem;
     font-weight: 400;
-    color: var(--midgrey);
+    color: var(--middarkgrey);
     padding: 0;
+}
+
+.gh-dashboard5-totals .indicator {
+    position: relative;
+    border: none !important;
+    background: linear-gradient(225deg, #8E42FF 0%, #FB2D8D 100%);
+    width: 12px;
+    height: 12px;
+}
+
+.gh-dashboard5-totals .indicator::before {
+    position: absolute;
+    background: var(--main-bg-color);
+    content: "";
+    top: 2px;
+    right: 2px;
+    bottom: 2px;
+    left: 2px;
+    border-radius: 999px;
+}
+
+.gh-dashboard5-totals .value {
+    font-size: 1.7rem;
+}
+
+.gh-dashboard5-totals .metric {
+    font-size: 1.45rem;
 }
 
 .gh-dashboard5-mrr .indicator {
@@ -1790,14 +1817,9 @@ Dashboard v5 Tooltips */
     margin-bottom: 4px;
 }
 
-.gh-dashboard5-breakdown .gh-dashboard5-tooltip-value-1 .label,
-.gh-dashboard5-breakdown .gh-dashboard5-tooltip-value-2 .label {
+.gh-dashboard5-breakdown .gh-dashboard5-tooltip-value-1 .metric,
+.gh-dashboard5-breakdown .gh-dashboard5-tooltip-value-2 .metric {
     font-size: 1.3rem;
-    font-weight: 500;
-    line-height: 1em;
-    color: var(--midgrey);
-    padding: 0;
-    text-align: left;
 }
 
 .gh-dashboard5-breakdown .gh-dashboard5-tooltip-value-1 .value,
@@ -1814,8 +1836,7 @@ Dashboard v5 Tooltips */
     background: #FB76B4;
 }
 
-.gh-dashboard5-mix .gh-dashboard5-tooltip-value .label {
-    color: var(--midgrey);
+.gh-dashboard5-mix .gh-dashboard5-tooltip-value .metric {
     font-size: 1.3rem;
 }
 
