@@ -8,8 +8,28 @@ export default class NewNewsletterRoute extends AdminRoute {
     @service router;
     @service settings;
     @service store;
+    @service limit;
 
     newsletterModal = null;
+
+    /**
+     * Before we allow the creation of a new newsletter, we should check the limits and return to the newsletters page if required.
+     */
+    async beforeModel() {
+        try {
+            await this.limit.limiter.errorIfWouldGoOverLimit('newsletters');
+        } catch (error) {
+            if (error.errorType === 'HostLimitError') {
+                // Not allowed: we reached the limit here
+                this.modals.open('modals/limits/multiple-newsletters', {
+                    message: error.message
+                });
+                return this.replaceWith('settings.newsletters');
+            }
+
+            throw error;
+        }
+    }
 
     model() {
         return this.store.createRecord('newsletter');
