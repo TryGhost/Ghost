@@ -72,12 +72,6 @@ describe('Config URL Helpers', function () {
 
             nconf.getSiteUrl().should.eql('http://example.com/');
         });
-
-        it('returns https if secure=true', function () {
-            fakeConfig.url = 'http://example.com/';
-
-            nconf.getSiteUrl(true).should.eql('https://example.com/');
-        });
     });
 
     describe('getAdminUrl', function () {
