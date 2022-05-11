@@ -9,12 +9,15 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "id": {
+          "strip": true
+        },
         "name": {
           "type": "string",
           "maxLength": 191
         },
         "description": {
-          "type": "string",
+          "type": ["string", "null"],
           "maxLength": 191
         },
         "slug": {
