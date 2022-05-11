@@ -1727,10 +1727,10 @@
     "@tryghost/errors" "^1.0.0"
     lodash "^4.17.11"
 
-"@tryghost/api-version-compatibility-service@0.4.0":
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/api-version-compatibility-service/-/api-version-compatibility-service-0.4.0.tgz#336585ec9a368e9192dd1c6d990d9bfb4dd72d38"
-  integrity sha512-YSABkGY9vaTxlX7WmfV6q+xqlnYST0qwJICKVPkhQHiBA7CQwvcGE/PAzHZ3K7azuAGo3Oa0+FnkwI0bp9WeRA==
+"@tryghost/api-version-compatibility-service@0.4.1":
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/api-version-compatibility-service/-/api-version-compatibility-service-0.4.1.tgz#1709f7237d012eaf2e142902ba60c08f012538d7"
+  integrity sha512-pV3UpdoaqLkEosNNEIXwieUJc18eNmMA4bFRlzWziamB8Bscs1zRJX2hjQZVqJb2iQ5o5n98wlWxddJ4spvz3A==
   dependencies:
     "@tryghost/email-content-generator" "^0.1.2"
     "@tryghost/version-notifications-data-service" "^0.2.0"
@@ -2313,10 +2313,10 @@
   dependencies:
     lodash "^4.17.11"
 
-"@tryghost/mw-api-version-mismatch@0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/mw-api-version-mismatch/-/mw-api-version-mismatch-0.2.0.tgz#d4e3a757200c0c949c79766e30a5871e00d2f948"
-  integrity sha512-xu45flNJgpPzLWi1I5nrDsmnPHjkPwAamuaVHKB14pkr4WsDDfQm8q8M6HCHDMo4dt5VJWZ87Xtbk1CXiWp7zA==
+"@tryghost/mw-api-version-mismatch@0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/mw-api-version-mismatch/-/mw-api-version-mismatch-0.2.1.tgz#1ce29738a67f5c0f9270df29bca04a611d8a6798"
+  integrity sha512-IqKL8ve0C3F1GWM72MVzaCKjk/57kvQnrO2MgCC1nTCZOeIYCJm6AjlnS3cV21ZR9oIuOjH/LkAEiw4p6Odjhw==
   dependencies:
     "@tryghost/extract-api-key" "^0.1.0"
 
