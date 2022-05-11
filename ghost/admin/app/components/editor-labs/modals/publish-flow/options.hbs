@@ -82,7 +82,7 @@
         </div>
     {{/unless}}
 
-    {{#if @publishOptions.post.email}}
+    {{#if (and @publishOptions.post.email (not @publishOptions.emailDisabledInSettings))}}
         <div class="gh-publish-setting">
             <div class="gh-publish-setting-title disabled">
                 {{svg-jar "member"}}
