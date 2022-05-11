@@ -1846,10 +1846,10 @@
   dependencies:
     color "^3.2.1"
 
-"@tryghost/config-url-helpers@0.1.7":
-  version "0.1.7"
-  resolved "https://registry.yarnpkg.com/@tryghost/config-url-helpers/-/config-url-helpers-0.1.7.tgz#197c9c5d25e201cdede4e5f5c2bb84a4e773c33e"
-  integrity sha512-cKYbXDk/6efbK+maMy3bBigs1ERWZKcpzy8tYXDhoKyJ0xfnjeX51T0PVaWgP70TWZWz46iAs3jbqVJG8pR+2A==
+"@tryghost/config-url-helpers@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/config-url-helpers/-/config-url-helpers-1.0.0.tgz#29482570d5d89061f2b0e31774bb749b13e8d393"
+  integrity sha512-zObMS4LkPz8nZweOK6j1lKMPMzNpkqncPTA+e0UusSd8hjfgVgPFPT3qTmD7r/8o9moA+tw+F/guAO2nL/OYYA==
 
 "@tryghost/config@0.2.2":
   version "0.2.2"
@@ -2498,10 +2498,10 @@
     lodash "^4.17.21"
     moment "^2.24.0"
 
-"@tryghost/url-utils@3.0.1":
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-3.0.1.tgz#3a8fa7c03f69acec23d8322767cfed912e0cd123"
-  integrity sha512-/ELG4/rfTXV3cstLhihxVTmb30OIkmFVN9nDOs1cl0x+vF5QxdQqxgIFqNUQWI5Ha7XH7wVa8UGhmXUAAKxGig==
+"@tryghost/url-utils@4.0.0":
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-4.0.0.tgz#5b68409e8edaa687235f1e9d11ea28292b8e6505"
+  integrity sha512-ASaQQTDPmFFWS4Futfum6ZxMrcqkLoxYe0uERGROOElTwFie3q6M2jdcnJdWTnU3Kpy5yOPRmZcP/rNnejs9Yw==
   dependencies:
     cheerio "^0.22.0"
     moment "^2.27.0"

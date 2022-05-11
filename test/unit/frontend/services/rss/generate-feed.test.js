@@ -92,7 +92,7 @@ describe('RSS: Generate Feed', function () {
             data.posts = posts;
 
             _.each(data.posts, function (post) {
-                routerManager.getUrlByResourceId.withArgs(post.id, {secure: undefined, absolute: true}).returns('http://my-ghost-blog.com/' + post.slug + '/');
+                routerManager.getUrlByResourceId.withArgs(post.id, {absolute: true}).returns('http://my-ghost-blog.com/' + post.slug + '/');
             });
 
             generateFeed(baseUrl, data).then(function (xmlData) {
@@ -204,7 +204,7 @@ describe('RSS: Generate Feed', function () {
             data.posts = [posts[0]];
 
             _.each(data.posts, function (post) {
-                routerManager.getUrlByResourceId.withArgs(post.id, {secure: undefined, absolute: true}).returns('http://my-ghost-blog.com/' + post.slug + '/');
+                routerManager.getUrlByResourceId.withArgs(post.id, {absolute: true}).returns('http://my-ghost-blog.com/' + post.slug + '/');
             });
 
             generateFeed(baseUrl, data).then(function (xmlData) {

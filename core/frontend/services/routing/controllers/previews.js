@@ -55,9 +55,6 @@ module.exports = function previewController(req, res, next) {
 
             post.access = !!post.html;
 
-            // @TODO: See renderer/secure
-            renderer.secure(req, post);
-
             return renderer.renderEntry(req, res)(post);
         })
         .catch(renderer.handleError(next));

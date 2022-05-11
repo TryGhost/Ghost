@@ -17,10 +17,10 @@ const generateTags = function generateTags(data) {
     return [];
 };
 
-const generateItem = function generateItem(post, secure) {
+const generateItem = function generateItem(post) {
     const cheerio = require('cheerio');
 
-    const itemUrl = routerManager.getUrlByResourceId(post.id, {secure, absolute: true});
+    const itemUrl = routerManager.getUrlByResourceId(post.id, {absolute: true});
     const htmlContent = cheerio.load(post.html || '');
     const item = {
         title: post.title,
@@ -35,7 +35,7 @@ const generateItem = function generateItem(post, secure) {
     };
 
     if (post.feature_image) {
-        const imageUrl = urlUtils.urlFor('image', {image: post.feature_image, secure}, true);
+        const imageUrl = urlUtils.urlFor('image', {image: post.feature_image}, true);
 
         // Add a media content tag
         item.custom_elements.push({
@@ -67,17 +67,15 @@ const generateItem = function generateItem(post, secure) {
  * Data is an object which contains the res.locals + results from fetching a collection, but without related data.
  *
  * @param {string} baseUrl
- * @param {{title, description, safeVersion, secure, posts}} data
+ * @param {{title, description, safeVersion, posts}} data
  */
 const generateFeed = function generateFeed(baseUrl, data) {
-    const {secure} = data;
-
     const feed = new RSS({
         title: data.title,
         description: data.description,
         generator: 'Ghost ' + data.safeVersion,
-        feed_url: urlUtils.urlFor({relativeUrl: baseUrl, secure}, true),
-        site_url: urlUtils.urlFor('home', {secure}, true),
+        feed_url: urlUtils.urlFor({relativeUrl: baseUrl}, true),
+        site_url: urlUtils.urlFor('home', true),
         image_url: urlUtils.urlFor({relativeUrl: 'favicon.png'}, true),
         ttl: '60',
         custom_namespaces: {
@@ -88,7 +86,7 @@ const generateFeed = function generateFeed(baseUrl, data) {
 
     return data.posts.reduce((feedPromise, post) => {
         return feedPromise.then(() => {
-            const item = generateItem(post, secure);
+            const item = generateItem(post);
             return feed.item(item);
         });
     }, Promise.resolve()).then(() => {

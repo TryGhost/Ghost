@@ -80,15 +80,6 @@ module.exports = function collectionController(req, res, next) {
                 debug(`'${post.slug}' is not owned by this collection`);
             });
 
-            // Format data 1
-            // @TODO: See renderer/secure for explanation.
-            renderer.secure(req, result.posts);
-
-            // @TODO: See renderer/secure for explanation.
-            _.each(result.data, function (data) {
-                renderer.secure(req, data);
-            });
-
             return renderer.renderEntries(req, res)(result);
         })
         .catch(renderer.handleError(next));

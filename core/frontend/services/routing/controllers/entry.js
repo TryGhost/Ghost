@@ -84,8 +84,6 @@ module.exports = function entryController(req, res, next) {
                 }));
             }
 
-            renderer.secure(req, entry);
-
             return renderer.renderEntry(req, res)(entry);
         })
         .catch(renderer.handleError(next));

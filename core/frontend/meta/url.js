@@ -27,18 +27,18 @@ function getUrl(data, absolute) {
          * A long term solution should be part of the final version of Dynamic Routing.
          */
         if (data.status !== 'published' && urlService.getUrlByResourceId(data.id) === '/404/') {
-            return urlUtils.urlFor({relativeUrl: urlUtils.urlJoin('/p', data.uuid, '/'), secure: data.secure}, null, absolute);
+            return urlUtils.urlFor({relativeUrl: urlUtils.urlJoin('/p', data.uuid, '/')}, null, absolute);
         }
 
-        return urlService.getUrlByResourceId(data.id, {secure: data.secure, absolute: absolute, withSubdirectory: true});
+        return urlService.getUrlByResourceId(data.id, {absolute: absolute, withSubdirectory: true});
     }
 
     if (checks.isTag(data) || checks.isUser(data)) {
-        return urlService.getUrlByResourceId(data.id, {secure: data.secure, absolute: absolute, withSubdirectory: true});
+        return urlService.getUrlByResourceId(data.id, {absolute: absolute, withSubdirectory: true});
     }
 
     if (checks.isNav(data)) {
-        return urlUtils.urlFor('nav', {nav: data, secure: data.secure}, absolute);
+        return urlUtils.urlFor('nav', {nav: data}, absolute);
     }
 
     // sanitize any trailing `/amp` in the url

@@ -10,7 +10,6 @@ const urlService = require('../../../../../../core/server/services/url');
 const urlUtils = require('../../../../../../core/shared/url-utils');
 
 describe('Unit - services/routing/controllers/previews', function () {
-    let secureStub;
     let renderStub;
     let req;
     let res;
@@ -56,15 +55,9 @@ describe('Unit - services/routing/controllers/previews', function () {
             set: sinon.spy()
         };
 
-        secureStub = sinon.stub();
-
         sinon.stub(urlUtils, 'redirectToAdmin');
         sinon.stub(urlUtils, 'redirect301');
         sinon.stub(urlService, 'getUrlByResourceId');
-
-        sinon.stub(renderer, 'secure').get(function () {
-            return secureStub;
-        });
 
         renderStub = sinon.stub();
         sinon.stub(renderer, 'renderEntry').get(function () {
@@ -90,7 +83,6 @@ describe('Unit - services/routing/controllers/previews', function () {
     it('should render post', function (done) {
         controllers.previews(req, res, failTest(done)).then(function () {
             renderStub.called.should.be.true();
-            secureStub.called.should.be.true();
             done();
         }).catch(done);
     });

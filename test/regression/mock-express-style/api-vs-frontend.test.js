@@ -10,7 +10,7 @@ const urlUtils = require('../../utils/urlUtils');
 const routeSettingsService = require('../../../core/server/services/route-settings');
 const themeEngine = require('../../../core/frontend/services/theme-engine');
 
-describe('Integration - Web - Site canary', function () {
+describe('Frontend behaviour tests', function () {
     let app;
 
     before(localUtils.urlService.resetGenerators);
@@ -52,7 +52,6 @@ describe('Integration - Web - Site canary', function () {
         describe('behaviour: default cases', function () {
             it('serve post', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/html-ipsum/',
                     host: 'example.com'
@@ -69,7 +68,6 @@ describe('Integration - Web - Site canary', function () {
                 it('serve amp', function () {
                     localUtils.defaultMocks(sinon, {amp: true});
                     const req = {
-                        secure: true,
                         method: 'GET',
                         url: '/html-ipsum/amp/',
                         host: 'example.com'
@@ -88,7 +86,6 @@ describe('Integration - Web - Site canary', function () {
                 it('serve amp', function () {
                     localUtils.defaultMocks(sinon, {amp: false});
                     const req = {
-                        secure: true,
                         method: 'GET',
                         url: '/html-ipsum/amp/',
                         host: 'example.com'
@@ -103,7 +100,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('post not found', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/not-found/',
                     host: 'example.com'
@@ -118,7 +114,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve static page', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/static-page-test/',
                     host: 'example.com'
@@ -133,7 +128,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve author', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/author/joe-bloggs/',
                     host: 'example.com'
@@ -152,7 +146,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve tag', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/tag/bacon/',
                     host: 'example.com'
@@ -171,7 +164,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve tag rss', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/tag/bacon/rss/',
                     host: 'example.com'
@@ -185,7 +177,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve collection', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/',
                     host: 'example.com'
@@ -205,14 +196,12 @@ describe('Integration - Web - Site canary', function () {
                         should.exist(response.res.locals.safeVersion);
                         should.exist(response.res.locals.safeVersion);
                         should.exist(response.res.locals.relativeUrl);
-                        should.exist(response.res.locals.secure);
                         should.exist(response.res.routerOptions);
                     });
             });
 
             it('serve collection: page 2', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/page/2/',
                     host: 'example.com'
@@ -230,10 +219,7 @@ describe('Integration - Web - Site canary', function () {
             });
 
             it('serve theme asset', function () {
-                //configUtils.set('url', 'https://example.com');
-
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/assets/built/screen.css',
                     host: 'example.com'
@@ -300,7 +286,7 @@ describe('Integration - Web - Site canary', function () {
         });
     });
 
-    describe('https', function () {
+    describe('https site: http requests redirect to https', function () {
         before(function () {
             configUtils.set('url', 'https://example.com');
             urlUtils.stubUrlUtilsFromConfig();
@@ -423,7 +409,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve static route', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/',
                     host: 'example.com'
@@ -438,7 +423,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve rss', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/podcast/rss/',
                     host: 'example.com'
@@ -452,7 +436,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve post', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/something/html-ipsum/',
                     host: 'example.com'
@@ -467,7 +450,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve collection: podcast with default template', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/podcast/',
                     host: 'example.com'
@@ -486,7 +468,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve collection: something with custom template', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/something/',
                     host: 'example.com'
@@ -535,7 +516,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve route', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/something/',
                     host: 'example.com'
@@ -589,7 +569,7 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve post', function () {
                 const req = {
-                    secure: true,
+
                     method: 'GET',
                     url: '/featured/',
                     host: 'example.com'
@@ -605,7 +585,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve post', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/html-ipsum/',
                     host: 'example.com'
@@ -620,7 +599,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve author', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/author/joe-bloggs/',
                     host: 'example.com'
@@ -635,7 +613,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve tag', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/tag/bacon/',
                     host: 'example.com'
@@ -684,7 +661,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve post', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/joe-bloggs/html-ipsum/',
                     host: 'example.com'
@@ -699,7 +675,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('post without author', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/html-ipsum/',
                     host: 'example.com'
@@ -714,7 +689,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('page', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/static-page-test/',
                     host: 'example.com'
@@ -763,7 +737,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve post', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/something/kitchen-sink/html-ipsum/',
                     host: 'example.com'
@@ -778,7 +751,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('post without tag', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/something/html-ipsum/',
                     host: 'example.com'
@@ -793,7 +765,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('post without tag', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/html-ipsum/',
                     host: 'example.com'
@@ -808,7 +779,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('page', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/static-page-test/',
                     host: 'example.com'
@@ -914,7 +884,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve /food/', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/food/',
                     host: 'example.com'
@@ -929,7 +898,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve bacon tag', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/categories/bacon/',
                     host: 'example.com'
@@ -943,7 +911,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve /sport/', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/sport/',
                     host: 'example.com'
@@ -958,7 +925,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve chorizo tag', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/categories/chorizo/',
                     host: 'example.com'
@@ -972,7 +938,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve my-page', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/my-page/',
                     host: 'example.com'
@@ -1021,7 +986,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve collection', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/',
                     host: 'example.com'
@@ -1036,7 +1000,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve second collectiom', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/magic/',
                     host: 'example.com'
@@ -1084,7 +1047,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve collection', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/',
                     host: 'example.com'
@@ -1133,7 +1095,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve collection', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/',
                     host: 'example.com'
@@ -1148,7 +1109,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve second page collection: should use index.hbs', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/magic/',
                     host: 'example.com'
@@ -1313,7 +1273,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve channel 1', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/channel1/',
                     host: 'example.com'
@@ -1332,7 +1291,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve channel 1: rss', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/channel1/rss/',
                     host: 'example.com'
@@ -1347,7 +1305,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve channel 2', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/channel2/',
                     host: 'example.com'
@@ -1367,7 +1324,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve channel 3', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/channel3/',
                     host: 'example.com'
@@ -1384,7 +1340,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve channel 4', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/channel4/',
                     host: 'example.com'
@@ -1403,7 +1358,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve channel 5', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/channel5/',
                     host: 'example.com'
@@ -1422,7 +1376,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve channel 6', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/channel6/',
                     host: 'example.com'
@@ -1441,7 +1394,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve kitching-sink: redirect', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/tag/kitchen-sink/',
                     host: 'example.com'
@@ -1456,7 +1408,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve html-ipsum: redirect', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/html-ipsum/',
                     host: 'example.com'
@@ -1471,7 +1422,6 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve chorizo: no redirect', function () {
                 const req = {
-                    secure: true,
                     method: 'GET',
                     url: '/tag/chorizo/',
                     host: 'example.com'
@@ -1485,7 +1435,7 @@ describe('Integration - Web - Site canary', function () {
 
             it('serve joe-bloggs', function () {
                 const req = {
-                    secure: true,
+
                     method: 'GET',
                     url: '/author/joe-bloggs/',
                     host: 'example.com'
@@ -1556,7 +1506,6 @@ describe('Integration - Web - Site canary', function () {
 
         it('serve /rss/', function () {
             const req = {
-                secure: true,
                 method: 'GET',
                 url: '/rss/',
                 host: 'example.com'
@@ -1570,7 +1519,6 @@ describe('Integration - Web - Site canary', function () {
 
         it('serve /music/rss/', function () {
             const req = {
-                secure: true,
                 method: 'GET',
                 url: '/music/rss/',
                 host: 'example.com'
@@ -1584,7 +1532,6 @@ describe('Integration - Web - Site canary', function () {
 
         it('serve /cooking/rss/', function () {
             const req = {
-                secure: true,
                 method: 'GET',
                 url: '/cooking/rss/',
                 host: 'example.com'
@@ -1598,7 +1545,6 @@ describe('Integration - Web - Site canary', function () {
 
         it('serve /flat/rss/', function () {
             const req = {
-                secure: true,
                 method: 'GET',
                 url: '/flat/rss/',
                 host: 'example.com'
@@ -1612,7 +1558,6 @@ describe('Integration - Web - Site canary', function () {
 
         it('serve /podcast/rss/', function () {
             const req = {
-                secure: true,
                 method: 'GET',
                 url: '/podcast/rss/',
                 host: 'example.com'
@@ -1629,7 +1574,6 @@ describe('Integration - Web - Site canary', function () {
 
         it('serve /podcast/', function () {
             const req = {
-                secure: true,
                 method: 'GET',
                 url: '/podcast/',
                 host: 'example.com'
@@ -1639,7 +1583,7 @@ describe('Integration - Web - Site canary', function () {
                 .then(function (response) {
                     const $ = cheerio.load(response.body);
                     response.statusCode.should.eql(200);
-                    $('head link')[1].attribs.href.should.eql('https://127.0.0.1:2369/rss/');
+                    $('head link')[1].attribs.href.should.eql('http://127.0.0.1:2369/rss/');
                 });
         });
     });

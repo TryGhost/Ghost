@@ -7,11 +7,11 @@ function getAuthorUrl(data, absolute) {
     const contextObject = getContextObject(data, context);
 
     if (data.author) {
-        return urlService.getUrlByResourceId(data.author.id, {absolute: absolute, secure: data.author.secure, withSubdirectory: true});
+        return urlService.getUrlByResourceId(data.author.id, {absolute: absolute, withSubdirectory: true});
     }
 
     if (contextObject && contextObject.primary_author) {
-        return urlService.getUrlByResourceId(contextObject.primary_author.id, {absolute: absolute, secure: contextObject.secure, withSubdirectory: true});
+        return urlService.getUrlByResourceId(contextObject.primary_author.id, {absolute: absolute, withSubdirectory: true});
     }
 
     return null;

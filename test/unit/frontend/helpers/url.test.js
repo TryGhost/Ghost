@@ -45,7 +45,7 @@ describe('{{url}} helper', function () {
                 url: '/slug/'
             });
 
-            urlService.getUrlByResourceId.withArgs(post.id, {absolute: undefined, secure: undefined, withSubdirectory: true}).returns('/slug/');
+            urlService.getUrlByResourceId.withArgs(post.id, {absolute: undefined, withSubdirectory: true}).returns('/slug/');
 
             rendered = url.call(post);
             should.exist(rendered);
@@ -62,29 +62,11 @@ describe('{{url}} helper', function () {
                 created_at: new Date(0)
             });
 
-            urlService.getUrlByResourceId.withArgs(post.id, {absolute: true, secure: undefined, withSubdirectory: true}).returns('http://localhost:65535/slug/');
+            urlService.getUrlByResourceId.withArgs(post.id, {absolute: true, withSubdirectory: true}).returns('http://localhost:65535/slug/');
 
             rendered = url.call(post, {hash: {absolute: 'true'}});
             should.exist(rendered);
             rendered.string.should.equal('http://localhost:65535/slug/');
-        });
-
-        it('should output an absolute URL with https if the option is present and secure', function () {
-            const post = testUtils.DataGenerator.forKnex.createPost({
-                html: 'content',
-                mobiledoc: markdownToMobiledoc('ff'),
-                title: 'title',
-                slug: 'slug',
-                url: '/slug/',
-                created_at: new Date(0),
-                secure: true
-            });
-
-            urlService.getUrlByResourceId.withArgs(post.id, {absolute: true, secure: true, withSubdirectory: true}).returns('https://localhost:65535/slug/');
-
-            rendered = url.call(post, {hash: {absolute: 'true'}});
-            should.exist(rendered);
-            rendered.string.should.equal('https://localhost:65535/slug/');
         });
 
         it('should return the slug with a prefixed /tag/ if the context is a tag', function () {
@@ -95,7 +77,7 @@ describe('{{url}} helper', function () {
                 parent: null
             });
 
-            urlService.getUrlByResourceId.withArgs(tag.id, {absolute: undefined, secure: undefined, withSubdirectory: true}).returns('/tag/the-tag/');
+            urlService.getUrlByResourceId.withArgs(tag.id, {absolute: undefined, withSubdirectory: true}).returns('/tag/the-tag/');
 
             rendered = url.call(tag);
             should.exist(rendered);
@@ -111,7 +93,7 @@ describe('{{url}} helper', function () {
                 slug: 'some-author'
             });
 
-            urlService.getUrlByResourceId.withArgs(user.id, {absolute: undefined, secure: undefined, withSubdirectory: true}).returns('/author/some-author/');
+            urlService.getUrlByResourceId.withArgs(user.id, {absolute: undefined, withSubdirectory: true}).returns('/author/some-author/');
 
             rendered = url.call(user);
             should.exist(rendered);
@@ -139,14 +121,6 @@ describe('{{url}} helper', function () {
             rendered.string.should.equal('http://localhost:65535/bar');
         });
 
-        it('should return an absolute url with https if context is secure', function () {
-            rendered = url.call(
-                {url: '/bar', label: 'Bar', slug: 'bar', current: true, secure: true},
-                {hash: {absolute: 'true'}});
-            should.exist(rendered);
-            rendered.string.should.equal('https://localhost:65535/bar');
-        });
-
         it('external urls should be retained in a nav context', function () {
             rendered = url.call(
                 {url: 'http://casper.website/baz', label: 'Baz', slug: 'baz', current: true},
@@ -161,28 +135,6 @@ describe('{{url}} helper', function () {
                 {hash: {absolute: 'true'}});
             should.exist(rendered);
             rendered.string.should.equal('http://localhost:65535/qux');
-        });
-
-        it('should handle hosted urls in a nav context with secure', function () {
-            rendered = url.call(
-                {
-                    url: 'http://localhost:65535/qux', label: 'Qux', slug: 'qux', current: true,
-                    secure: true
-                },
-                {hash: {absolute: 'true'}});
-            should.exist(rendered);
-            rendered.string.should.equal('https://localhost:65535/qux');
-        });
-
-        it('should handle hosted https urls in a nav context with secure', function () {
-            rendered = url.call(
-                {
-                    url: 'https://localhost:65535/qux', label: 'Qux', slug: 'qux', current: true,
-                    secure: true
-                },
-                {hash: {absolute: 'true'}});
-            should.exist(rendered);
-            rendered.string.should.equal('https://localhost:65535/qux');
         });
 
         it('should handle hosted urls with the wrong protocol in a nav context', function () {

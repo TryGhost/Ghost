@@ -21,7 +21,7 @@ describe('getAuthorUrl', function () {
             }
         };
 
-        urlService.getUrlByResourceId.withArgs(post.primary_author.id, {absolute: undefined, secure: undefined, withSubdirectory: true})
+        urlService.getUrlByResourceId.withArgs(post.primary_author.id, {absolute: undefined, withSubdirectory: true})
             .returns('author url');
 
         should.exist(getAuthorUrl({
@@ -38,7 +38,7 @@ describe('getAuthorUrl', function () {
             }
         };
 
-        urlService.getUrlByResourceId.withArgs(post.primary_author.id, {absolute: true, secure: undefined, withSubdirectory: true})
+        urlService.getUrlByResourceId.withArgs(post.primary_author.id, {absolute: true, withSubdirectory: true})
             .returns('absolute author url');
 
         should.exist(getAuthorUrl({
@@ -55,7 +55,7 @@ describe('getAuthorUrl', function () {
             }
         };
 
-        urlService.getUrlByResourceId.withArgs(post.primary_author.id, {absolute: undefined, secure: undefined, withSubdirectory: true})
+        urlService.getUrlByResourceId.withArgs(post.primary_author.id, {absolute: undefined, withSubdirectory: true})
             .returns('author url');
 
         should.exist(getAuthorUrl({
@@ -70,7 +70,7 @@ describe('getAuthorUrl', function () {
             slug: 'test-author'
         };
 
-        urlService.getUrlByResourceId.withArgs(author.id, {absolute: undefined, secure: undefined, withSubdirectory: true})
+        urlService.getUrlByResourceId.withArgs(author.id, {absolute: undefined, withSubdirectory: true})
             .returns('author url');
 
         should.exist(getAuthorUrl({

@@ -19,7 +19,6 @@ describe('Unit - services/routing/controllers/channel', function () {
     let req;
     let res;
     let fetchDataStub;
-    let secureStub;
     let renderStub;
     let posts;
     let postsPerPage;
@@ -31,7 +30,6 @@ describe('Unit - services/routing/controllers/channel', function () {
             testUtils.DataGenerator.forKnex.createPost()
         ];
 
-        secureStub = sinon.stub();
         fetchDataStub = sinon.stub();
         renderStub = sinon.stub();
 
@@ -40,10 +38,6 @@ describe('Unit - services/routing/controllers/channel', function () {
         });
 
         sinon.stub(security.string, 'safe').returns('safe');
-
-        sinon.stub(renderer, 'secure').get(function () {
-            return secureStub;
-        });
 
         sinon.stub(themeEngine, 'getActive').returns({
             updateTemplateOptions: sinon.stub(),
@@ -87,7 +81,6 @@ describe('Unit - services/routing/controllers/channel', function () {
             themeEngine.getActive.calledOnce.should.be.true();
             security.string.safe.calledOnce.should.be.false();
             fetchDataStub.calledOnce.should.be.true();
-            secureStub.calledOnce.should.be.true();
             done();
         }).catch(done);
     });
@@ -109,7 +102,6 @@ describe('Unit - services/routing/controllers/channel', function () {
             themeEngine.getActive.calledOnce.should.be.true();
             security.string.safe.calledOnce.should.be.false();
             fetchDataStub.calledOnce.should.be.true();
-            secureStub.calledOnce.should.be.true();
             done();
         }).catch(done);
     });
@@ -133,7 +125,6 @@ describe('Unit - services/routing/controllers/channel', function () {
             themeEngine.getActive().updateTemplateOptions.withArgs({data: {config: {posts_per_page: 3}}}).calledOnce.should.be.true();
             security.string.safe.calledOnce.should.be.false();
             fetchDataStub.calledOnce.should.be.true();
-            secureStub.calledOnce.should.be.true();
             done();
         }).catch(done);
     });
@@ -158,7 +149,6 @@ describe('Unit - services/routing/controllers/channel', function () {
             security.string.safe.calledOnce.should.be.false();
             fetchDataStub.calledOnce.should.be.true();
             renderStub.calledOnce.should.be.false();
-            secureStub.calledOnce.should.be.false();
             done();
         });
     });
@@ -180,7 +170,6 @@ describe('Unit - services/routing/controllers/channel', function () {
             themeEngine.getActive.calledOnce.should.be.true();
             security.string.safe.calledOnce.should.be.true();
             fetchDataStub.calledOnce.should.be.true();
-            secureStub.calledOnce.should.be.true();
             done();
         }).catch(done);
     });
@@ -202,30 +191,6 @@ describe('Unit - services/routing/controllers/channel', function () {
             themeEngine.getActive.calledOnce.should.be.true();
             security.string.safe.calledOnce.should.be.false();
             fetchDataStub.calledOnce.should.be.true();
-            secureStub.calledOnce.should.be.true();
-            done();
-        }).catch(done);
-    });
-
-    it('ensure secure helper get\'s called for data object', function (done) {
-        fetchDataStub.withArgs({page: 1, slug: undefined, limit: postsPerPage}, res.routerOptions)
-            .resolves({
-                posts: posts,
-                data: {
-                    tag: [testUtils.DataGenerator.forKnex.createTag()]
-                },
-                meta: {
-                    pagination: {
-                        pages: 5
-                    }
-                }
-            });
-
-        controllers.channel(req, res, failTest(done)).then(function () {
-            themeEngine.getActive.calledOnce.should.be.true();
-            security.string.safe.calledOnce.should.be.false();
-            fetchDataStub.calledOnce.should.be.true();
-            secureStub.calledTwice.should.be.true();
             done();
         }).catch(done);
     });

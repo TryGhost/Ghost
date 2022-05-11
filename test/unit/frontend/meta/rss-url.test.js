@@ -20,11 +20,9 @@ describe('getRssUrl', function () {
         should.equal(rssUrl, '/rss/');
     });
 
-    it('forwards absolute/secure flags', function () {
-        const rssUrl = getRssUrl({
-            secure: false
-        }, true);
+    it('forwards absolute flags', function () {
+        const rssUrl = getRssUrl({}, true);
 
-        routing.registry.getRssUrl.calledWith({secure: false, absolute: true}).should.be.true();
+        routing.registry.getRssUrl.calledWith({absolute: true}).should.be.true();
     });
 });

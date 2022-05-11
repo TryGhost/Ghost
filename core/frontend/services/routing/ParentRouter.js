@@ -192,7 +192,7 @@ class ParentRouter {
     getRoute(options) {
         options = options || {};
 
-        return urlUtils.createUrl(this.route.value, options.absolute, options.secure);
+        return urlUtils.createUrl(this.route.value, options.absolute);
     }
 
     /**
