@@ -116,20 +116,16 @@ class NewslettersService {
      * @returns {Promise<{object}>} Newsetter Model with verification metadata
      */
     async add(attrs, options = {}) {
-        // We need to make sure we always check the limits outside of transactions
-        // Or we'll get a deadlock in SQLite
-        if (!options.transacting) {
-            if (!attrs.status || attrs.status === 'active') {
-                await this.limitService.errorIfWouldGoOverLimit('newsletters');
-            }
-        }
-
         // create newsletter and assign members in the same transaction
         if (options.opt_in_existing && !options.transacting) {
             return this.NewsletterModel.transaction((transacting) => {
                 options.transacting = transacting;
                 return this.add(attrs, options);
             });
+        }
+
+        if (!attrs.status || attrs.status === 'active') {
+            await this.limitService.errorIfWouldGoOverLimit('newsletters', options.transacting ? {transacting: options.transacting} : {});
         }
 
         // remove any email properties that are not allowed to be set without verification
@@ -317,7 +313,7 @@ class NewslettersService {
 
 /**
  * @typedef {object} ILimitService
- * @prop {(name: string) => Promise<void>} errorIfWouldGoOverLimit
+ * @prop {(name: string, options?: {transacting?: Object}) => Promise<void>} errorIfWouldGoOverLimit
  **/
 
 module.exports = NewslettersService;
