@@ -22,13 +22,15 @@ const GA_FEATURES = [
     'membersTableStatus',
     'improvedOnboarding',
     'multipleNewsletters',
-    'membersActivityFeed'
+    'multipleNewslettersUI',
+    'membersActivityFeed',
+    'publishingFlow',
+    'dashboardV5'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
 //       input for the "labs" setting value
 const BETA_FEATURES = [
-    'multipleNewslettersUI',
     'activitypub'
 ];
 
@@ -36,9 +38,7 @@ const ALPHA_FEATURES = [
     'oauthLogin',
     'urlCache',
     'beforeAfterCard',
-    'tweetGridCard',
-    'dashboardV5',
-    'publishingFlow'
+    'tweetGridCard'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
