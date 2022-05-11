@@ -1,6 +1,5 @@
 import Component from '@glimmer/component';
 import moment from 'moment';
-import {action} from '@ember/object';
 import {htmlSafe} from '@ember/template';
 import {isArray} from '@ember/array';
 import {isServerUnreachableError} from 'ghost-admin/services/ajax';
