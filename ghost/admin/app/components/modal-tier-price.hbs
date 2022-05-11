@@ -8,7 +8,7 @@
 <form>
 <div class="modal-body">
     <div class="gh-main-section-block">
-        <div class="gh-main-section-content grey gh-product-priceform-block">
+        <div class="gh-main-section-content grey gh-tier-priceform-block">
             <GhFormGroup @errors={{this.errors}} @property="name">
                 <label for="name" class="fw6">Name</label>
                 <GhTextInput
@@ -29,7 +29,7 @@
                     @class="gh-input" />
                 <GhErrorMessage @errors={{this.errors}} @property="description" />
             </GhFormGroup>
-            <div class="gh-product-priceform-pricecurrency">
+            <div class="gh-tier-priceform-pricecurrency">
                 <GhFormGroup @errors={{this.errors}} @property="amount">
                     <label for="amount" class="fw6">Price</label>
                     <div class="flex items-center justify-center gh-labs-price-label">
@@ -61,7 +61,7 @@
             </div>
             <GhFormGroup @errors={{this.price.errors}} @hasValidated={{this.price.hasValidated}} @property="billing-period">
                 <label for="billing-period" class="fw6">Billing period</label>
-                <GhProductsPriceBillingperiod
+                <GhTiersPriceBillingperiod
                     @updatePeriod={{action "updatePeriod"}}
                     @triggerId="period-input"
                     @value={{this.price.interval}} @disabled={{this.isExistingPrice}}

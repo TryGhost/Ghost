@@ -18,7 +18,7 @@ const FILTER_PROPERTIES = [
     {label: 'Created', name: 'created_at', group: 'Basic', valueType: 'date'},
 
     // Member subscription
-    {label: 'Membership tier', name: 'product', group: 'Subscription', valueType: 'array', feature: 'multipleProducts'},
+    {label: 'Membership tier', name: 'tier', group: 'Subscription', valueType: 'array', feature: 'multipleProducts'},
     {label: 'Member status', name: 'status', group: 'Subscription'},
     {label: 'Billing period', name: 'subscriptions.plan_interval', group: 'Subscription'},
     {label: 'Stripe subscription status', name: 'subscriptions.status', group: 'Subscription'},
@@ -71,7 +71,7 @@ const FILTER_RELATIONS_OPTIONS = {
     name: CONTAINS_RELATION_OPTIONS,
     email: CONTAINS_RELATION_OPTIONS,
     label: MATCH_RELATION_OPTIONS,
-    product: MATCH_RELATION_OPTIONS,
+    tier: MATCH_RELATION_OPTIONS,
     subscribed: MATCH_RELATION_OPTIONS,
     last_seen_at: DATE_RELATION_OPTIONS,
     created_at: DATE_RELATION_OPTIONS,
@@ -155,7 +155,7 @@ export default class MembersFilter extends Component {
 
     get availableFilterProperties() {
         let availableFilters = FILTER_PROPERTIES;
-        const hasMultipleProducts = this.store.peekAll('product').length > 1;
+        const hasMultipleTiers = this.store.peekAll('tier').length > 1;
 
         // exclude any filters that are behind disabled feature flags
         availableFilters = availableFilters.filter(prop => !prop.feature || this.feature[prop.feature]);
@@ -163,7 +163,7 @@ export default class MembersFilter extends Component {
         // exclude tiers filter if site has only single tier
         availableFilters = availableFilters
             .filter((filter) => {
-                return filter.name === 'product' ? hasMultipleProducts : true;
+                return filter.name === 'tier' ? hasMultipleTiers : true;
             });
 
         // exclude subscription filters if Stripe isn't connected
@@ -190,7 +190,7 @@ export default class MembersFilter extends Component {
             this.parseNqlFilter(this.args.defaultFilterParam);
         }
 
-        this.fetchProducts.perform();
+        this.fetchTiers.perform();
     }
 
     @action
@@ -436,7 +436,7 @@ export default class MembersFilter extends Component {
             this.applySoftFilter();
         }
 
-        if (newType !== 'product' && defaultValue) {
+        if (newType !== 'tier' && defaultValue) {
             this.applySoftFilter();
         }
     }
@@ -459,7 +459,7 @@ export default class MembersFilter extends Component {
             if (filter.type === 'label') {
                 return filter.value?.length;
             }
-            if (filter.type === 'product') {
+            if (filter.type === 'tier') {
                 return filter.value?.length;
             }
             return filter.value;
@@ -471,7 +471,7 @@ export default class MembersFilter extends Component {
     @action
     applyFilter() {
         const validFilters = this.filters.filter((filter) => {
-            if (['label', 'product'].includes(filter.type)) {
+            if (['label', 'tier'].includes(filter.type)) {
                 return filter.value?.length;
             }
             return filter.value;
@@ -497,8 +497,8 @@ export default class MembersFilter extends Component {
     }
 
     @task({drop: true})
-    *fetchProducts() {
-        const response = yield this.store.query('product', {filter: 'type:paid'});
-        this.productsList = response;
+    *fetchTiers() {
+        const response = yield this.store.query('tier', {filter: 'type:paid'});
+        this.tiersList = response;
     }
 }

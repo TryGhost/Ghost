@@ -177,7 +177,7 @@ export default [
         id: 23,
         group: 'members',
         key: 'members_subscription_settings',
-        value: '{"allowSelfSignup":true,"fromAddress":"noreply","paymentProcessors":[{"adapter":"stripe","config":{"secret_token":"","public_token":"","product":{"name":"Ghost Subscription"},"plans":[{"name":"Monthly","currency":"usd","interval":"month","amount":""},{"name":"Yearly","currency":"usd","interval":"year","amount":""}]}}]}',
+        value: '{"allowSelfSignup":true,"fromAddress":"noreply","paymentProcessors":[{"adapter":"stripe","config":{"secret_token":"","public_token":"","tier":{"name":"Ghost Subscription"},"plans":[{"name":"Monthly","currency":"usd","interval":"month","amount":""},{"name":"Yearly","currency":"usd","interval":"year","amount":""}]}}]}',
         created_at: '2019-10-09T09:49:00.000Z',
         created_by: 1,
         updated_at: '2019-10-09T09:49:00.000Z',

@@ -194,7 +194,7 @@ export default class MemberController extends Controller {
 
         this.member = yield this.store.queryRecord('member', {
             id: memberId,
-            include: 'products'
+            include: 'tiers'
         });
 
         this.isLoading = false;

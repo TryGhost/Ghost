@@ -1,10 +1,10 @@
 import {Factory} from 'miragejs';
 
 export default Factory.extend({
-    name(i) { return `Product ${i}`; },
-    description(i) { return `Description for product ${i}`; },
+    name(i) { return `Tier ${i}`; },
+    description(i) { return `Description for tier ${i}`; },
     active: true,
-    slug(i) { return `product-${i}`;},
+    slug(i) { return `tier-${i}`;},
     type: 'paid',
     visibility: 'none',
     monthly_price() {

@@ -81,8 +81,8 @@ export default function mockMembers(server) {
                             replacement: 'labels.slug'
                         },
                         {
-                            key: 'product',
-                            replacement: 'products.slug'
+                            key: 'tier',
+                            replacement: 'tiers.slug'
                         }
                     ]
                 });
@@ -97,7 +97,7 @@ export default function mockMembers(server) {
                     });
 
                     // similar deal for associated models
-                    ['labels', 'products', 'subscriptions', 'newsletters'].forEach((association) => {
+                    ['labels', 'tiers', 'subscriptions', 'newsletters'].forEach((association) => {
                         serializedMember[association] = [];
 
                         member[association].models.forEach((associatedModel) => {
@@ -177,22 +177,22 @@ export default function mockMembers(server) {
         });
     });
 
-    server.put('/members/:id/', function ({members, products, subscriptions}, {params}) {
+    server.put('/members/:id/', function ({members, tiers, subscriptions}, {params}) {
         const attrs = this.normalizedRequestAttrs();
         const member = members.find(params.id);
 
-        // API accepts `products: [{id: 'x'}]` which isn't handled natively by mirage
-        if (attrs.products.length > 0) {
-            attrs.products.forEach((p) => {
-                const product = products.find(p.id);
+        // API accepts `tiers: [{id: 'x'}]` which isn't handled natively by mirage
+        if (attrs.tiers.length > 0) {
+            attrs.tiers.forEach((p) => {
+                const tier = tiers.find(p.id);
 
-                if (!member.products.includes(product)) {
-                    // TODO: serialize products through _active_ subscriptions
-                    member.products.add(product);
+                if (!member.tiers.includes(tier)) {
+                    // TODO: serialize tiers through _active_ subscriptions
+                    member.tiers.add(tier);
 
                     subscriptions.create({
                         member,
-                        product,
+                        tier,
                         comped: true,
                         plan: {
                             id: '',
@@ -215,9 +215,9 @@ export default function mockMembers(server) {
                             interval: 'year',
                             type: 'recurring',
                             currency: 'USD',
-                            product: {
+                            tier: {
                                 id: '',
-                                product_id: product.id
+                                tier_id: tier.id
                             }
                         },
                         offer: null
@@ -228,20 +228,20 @@ export default function mockMembers(server) {
             });
         }
 
-        const productIds = (attrs.products || []).map(p => p.id);
+        const tierIds = (attrs.tiers || []).map(p => p.id);
 
-        member.products.models.forEach((product) => {
-            if (!productIds.includes(product.id)) {
-                member.subscriptions.models.filter(sub => sub.product.id === product.id).forEach((sub) => {
+        member.tiers.models.forEach((tier) => {
+            if (!tierIds.includes(tier.id)) {
+                member.subscriptions.models.filter(sub => sub.tier.id === tier.id).forEach((sub) => {
                     member.subscriptions.remove(sub);
                 });
 
-                member.products.remove(product);
+                member.tiers.remove(tier);
             }
         });
 
         // these are read-only properties so make sure we don't overwrite data
-        delete attrs.products;
+        delete attrs.tiers;
         delete attrs.subscriptions;
 
         return member.update(attrs);

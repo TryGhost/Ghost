@@ -81,17 +81,17 @@ export default class GhLaunchWizardConnectStripeComponent extends Component {
     }
 
     @task({drop: true})
-    *saveProduct() {
+    *saveTier() {
         let pollTimeout = 0;
         while (pollTimeout < RETRY_PRODUCT_SAVE_MAX_POLL) {
             yield timeout(RETRY_PRODUCT_SAVE_POLL_LENGTH);
 
             try {
-                const updatedProduct = yield this.product.save();
+                const updatedTier = yield this.tier.save();
 
                 yield this.settings.save();
 
-                return updatedProduct;
+                return updatedTier;
             } catch (error) {
                 if (error.payload?.errors && error.payload.errors[0].code === 'STRIPE_NOT_CONFIGURED') {
                     pollTimeout += RETRY_PRODUCT_SAVE_POLL_LENGTH;
@@ -102,7 +102,7 @@ export default class GhLaunchWizardConnectStripeComponent extends Component {
                 }
             }
         }
-        return this.product;
+        return this.tier;
     }
 
     @task({drop: true})
@@ -161,12 +161,12 @@ export default class GhLaunchWizardConnectStripeComponent extends Component {
         try {
             yield this.settings.save();
 
-            const products = yield this.store.query('product', {filter: 'type:paid', include: 'monthly_price,yearly_price'});
-            this.product = products.firstObject;
+            const tiers = yield this.store.query('tier', {filter: 'type:paid', include: 'monthly_price,yearly_price'});
+            this.tier = tiers.firstObject;
 
-            if (this.product) {
+            if (this.tier) {
                 const yearlyDiscount = this.calculateDiscount(5, 50);
-                this.product.set('monthlyPrice', {
+                this.tier.set('monthlyPrice', {
                     nickname: 'Monthly',
                     amount: 500,
                     active: 1,
@@ -175,7 +175,7 @@ export default class GhLaunchWizardConnectStripeComponent extends Component {
                     interval: 'month',
                     type: 'recurring'
                 });
-                this.product.set('yearlyPrice', {
+                this.tier.set('yearlyPrice', {
                     nickname: 'Yearly',
                     amount: 5000,
                     active: 1,
@@ -184,7 +184,7 @@ export default class GhLaunchWizardConnectStripeComponent extends Component {
                     interval: 'year',
                     type: 'recurring'
                 });
-                yield this.saveProduct.perform();
+                yield this.saveTier.perform();
                 this.settings.set('portalPlans', ['free', 'monthly', 'yearly']);
                 yield this.settings.save();
             }

@@ -15,10 +15,10 @@ export default class GhLaunchWizardFinaliseComponent extends Component {
         this.settings.rollbackAttributes();
     }
 
-    async saveProduct() {
+    async saveTier() {
         const data = this.args.getData();
-        this.product = data?.product;
-        if (this.product) {
+        this.tier = data?.tier;
+        if (this.tier) {
             const monthlyAmount = Math.round(data.monthlyAmount * 100);
             const yearlyAmount = Math.round(data.yearlyAmount * 100);
             const currency = data.currency;
@@ -38,18 +38,18 @@ export default class GhLaunchWizardFinaliseComponent extends Component {
                 interval: 'year',
                 type: 'recurring'
             };
-            this.product.set('monthlyPrice', monthlyPrice);
-            this.product.set('yearlyPrice', yearlyPrice);
-            const savedProduct = await this.product.save();
-            return savedProduct;
+            this.tier.set('monthlyPrice', monthlyPrice);
+            this.tier.set('yearlyPrice', yearlyPrice);
+            const savedTier = await this.tier.save();
+            return savedTier;
         }
     }
 
     @task
     *finaliseTask() {
         const data = this.args.getData();
-        if (data?.product) {
-            yield this.saveProduct();
+        if (data?.tier) {
+            yield this.saveTier();
             this.settings.set('editorIsLaunchComplete', true);
             yield this.settings.save();
         }

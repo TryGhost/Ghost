@@ -7,19 +7,19 @@ export default class UnarchiveTierModal extends Component {
     @service router;
 
     get isActive() {
-        const {product} = this.args.data;
-        return !!product.active;
+        const {tier} = this.args.data;
+        return !!tier.active;
     }
 
     @task({drop: true})
     *unarchiveTask() {
-        const {product, onUnarchive} = this.args.data;
-        product.active = true;
+        const {tier, onUnarchive} = this.args.data;
+        tier.active = true;
 
         try {
-            yield product.save();
+            yield tier.save();
             onUnarchive?.();
-            return product;
+            return tier;
         } catch (error) {
             if (error) {
                 this.notifications.showAPIError(error, {key: 'tier.unarchive.failed'});

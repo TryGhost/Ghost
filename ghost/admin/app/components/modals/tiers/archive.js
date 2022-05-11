@@ -7,20 +7,20 @@ export default class ArchiveTierModal extends Component {
     @service router;
 
     get isActive() {
-        const {product} = this.args.data;
-        return !!product.active;
+        const {tier} = this.args.data;
+        return !!tier.active;
     }
 
     @task({drop: true})
     *archiveTierTask() {
-        const {product, onArchive} = this.args.data;
-        product.active = false;
-        product.visibility = 'none';
+        const {tier, onArchive} = this.args.data;
+        tier.active = false;
+        tier.visibility = 'none';
 
         try {
-            yield product.save();
+            yield tier.save();
             onArchive?.();
-            return product;
+            return tier;
         } catch (error) {
             if (error) {
                 this.notifications.showAPIError(error, {key: 'tier.archive.failed'});

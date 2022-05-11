@@ -1,6 +1,6 @@
 import EmberObject from '@ember/object';
 
 export default EmberObject.extend({
-    name: 'Name of the product',
-    slug: 'Slug for the product'
+    name: 'Name of the tier',
+    slug: 'Slug for the tier'
 });

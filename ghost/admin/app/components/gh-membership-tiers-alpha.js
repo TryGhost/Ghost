@@ -18,16 +18,16 @@ export default class extends Component {
     @service store;
     @service config;
 
-    @tracked showProductModal = false;
-    @tracked productModel = null;
+    @tracked showTierModal = false;
+    @tracked tierModel = null;
     @tracked type = 'active';
 
-    get products() {
-        return this.args.products.filter((product) => {
+    get tiers() {
+        return this.args.tiers.filter((tier) => {
             if (this.type === 'active') {
-                return !!product.active;
+                return !!tier.active;
             } else if (this.type === 'archived') {
-                return !product.active;
+                return !tier.active;
             }
         });
     }
@@ -43,7 +43,7 @@ export default class extends Component {
     }
 
     get isEmptyList() {
-        return this.products.length === 0;
+        return this.tiers.length === 0;
     }
 
     @action
@@ -52,9 +52,9 @@ export default class extends Component {
     }
 
     @action
-    async openEditProduct(product) {
-        this.productModel = product;
-        this.showProductModal = true;
+    async openEditTier(tier) {
+        this.tierModel = tier;
+        this.showTierModal = true;
     }
 
     @action
@@ -69,18 +69,18 @@ export default class extends Component {
     }
 
     @action
-    async openNewProduct() {
-        this.productModel = this.store.createRecord('product');
-        this.showProductModal = true;
+    async openNewTier() {
+        this.tierModel = this.store.createRecord('tier');
+        this.showTierModal = true;
     }
 
     @action
-    closeProductModal() {
-        this.showProductModal = false;
+    closeTierModal() {
+        this.showTierModal = false;
     }
 
     @action
-    confirmProductSave() {
-        this.args.confirmProductSave();
+    confirmTierSave() {
+        this.args.confirmTierSave();
     }
 }

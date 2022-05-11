@@ -145,7 +145,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     ogTitleScratch: boundOneWay('ogTitle'),
     twitterDescriptionScratch: boundOneWay('twitterDescription'),
     twitterTitleScratch: boundOneWay('twitterTitle'),
-    tiers: attr('member-product'),
+    tiers: attr('member-tier'),
     emailSubjectScratch: boundOneWay('emailSubject'),
 
     isPublished: equal('status', 'published'),
@@ -192,7 +192,7 @@ export default Model.extend(Comparable, ValidationEngine, {
             }
             if (this.visibility === 'tiers' && this.tiers) {
                 let filter = this.tiers.map((tier) => {
-                    return `product:${tier.slug}`;
+                    return `tier:${tier.slug}`;
                 }).join(',');
                 return filter;
             }

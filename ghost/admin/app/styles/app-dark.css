@@ -70,7 +70,7 @@
 @import "layouts/post-preview.css";
 @import "layouts/dashboard.css";
 @import "layouts/dashboard-v5.css";
-@import "layouts/products.css";
+@import "layouts/tiers.css";
 @import "layouts/offers.css";
 
 
@@ -179,7 +179,7 @@ input:focus,
     .gh-mobile-nav-bar a.active {
         background: #111213;
         color: #fff;
-    }   
+    }
 }
 
 .gh-nav-search .ember-power-select-trigger {
@@ -856,12 +856,12 @@ input:focus,
     background: var(--pink-d1);
 }
 
-.token-segment-product {
+.token-segment-tier {
     background: var(--darkgrey);
     color: var(--white);
 }
 
-.token-segment-product svg path {
+.token-segment-tier svg path {
     stroke: var(--lightgrey);
     fill: var(--lightgrey);
 }

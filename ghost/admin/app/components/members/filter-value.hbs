@@ -32,11 +32,11 @@
         @allowEdit={{true}}
     />
 
-{{else if (eq @filter.type 'product')}}
+{{else if (eq @filter.type 'tier')}}
     <div class="relative">
         <Tiers::SegmentSelect
-            @onChange={{fn this.setProductsFilterValue @filter}}
-            @tiers={{this.productFilterValue}}
+            @onChange={{fn this.setTiersFilterValue @filter}}
+            @tiers={{this.tierFilterValue}}
             @renderInPlace={{true}}
             @hideOptionsWhenAllSelected={{true}}
         />

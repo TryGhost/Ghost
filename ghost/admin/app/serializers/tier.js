@@ -1,6 +1,6 @@
 import ApplicationSerializer from './application';
 
-export default class ProductSerializer extends ApplicationSerializer {
+export default class TierSerializer extends ApplicationSerializer {
     serialize() {
         let json = super.serialize(...arguments);
 

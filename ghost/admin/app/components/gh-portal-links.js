@@ -17,8 +17,8 @@ export default class GhPortalLinks extends Component {
     prices = null;
     copiedPrice = null;
     copiedSignupInterval = null;
-    selectedProduct = null;
-    products = null;
+    selectedTier = null;
+    tiers = null;
 
     @computed('isLink')
     get toggleValue() {
@@ -30,22 +30,22 @@ export default class GhPortalLinks extends Component {
         return this.isLink ? 'Link' : 'Data attribute';
     }
 
-    @computed('selectedProduct')
-    get selectedProductIdPath() {
-        const selectedProduct = this.selectedProduct;
-        if (selectedProduct) {
-            return `/${selectedProduct.name}`;
+    @computed('selectedTier')
+    get selectedTierIdPath() {
+        const selectedTier = this.selectedTier;
+        if (selectedTier) {
+            return `/${selectedTier.name}`;
         }
         return '';
     }
 
-    @computed('products.[]')
-    get productOptions() {
-        if (this.products) {
-            return this.products.map((product) => {
+    @computed('tiers.[]')
+    get tierOptions() {
+        if (this.tiers) {
+            return this.tiers.map((tier) => {
                 return {
-                    label: product.name,
-                    name: product.id
+                    label: tier.name,
+                    name: tier.id
                 };
             });
         }
@@ -63,21 +63,21 @@ export default class GhPortalLinks extends Component {
     }
 
     @action
-    setSelectedProduct(product) {
-        this.set('selectedProduct', product);
+    setSelectedTier(tier) {
+        this.set('selectedTier', tier);
     }
 
     @task(function* () {
-        const products = yield this.store.query('product', {filter: 'type:paid', include: 'monthly_price,yearly_price'}) || [];
-        this.set('products', products);
-        if (products.length > 0) {
-            this.set('selectedProduct', {
-                name: products.firstObject.id,
-                label: products.firstObject.name
+        const tiers = yield this.store.query('tier', {filter: 'type:paid', include: 'monthly_price,yearly_price'}) || [];
+        this.set('tiers', tiers);
+        if (tiers.length > 0) {
+            this.set('selectedTier', {
+                name: tiers.firstObject.id,
+                label: tiers.firstObject.name
             });
         }
     })
-        fetchProducts;
+        fetchTiers;
 
     @task(function* (id) {
         this.set('copiedPrice', id);
@@ -97,13 +97,13 @@ export default class GhPortalLinks extends Component {
         this.set('copiedSignupInterval', interval);
         let data = '';
         if (this.isLink) {
-            data = `#/portal/signup${this.selectedProductIdPath}/${interval}`;
+            data = `#/portal/signup${this.selectedTierIdPath}/${interval}`;
             data = this.siteUrl + `/` + data;
         } else {
-            data = `data-portal="signup${this.selectedProductIdPath}/${interval}"`;
+            data = `data-portal="signup${this.selectedTierIdPath}/${interval}"`;
         }
         copyTextToClipboard(data);
         yield timeout(this.isTesting ? 50 : 3000);
     })
-        copyProductSignupLink;
+        copyTierSignupLink;
 }

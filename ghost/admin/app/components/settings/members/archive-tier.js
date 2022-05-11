@@ -8,19 +8,19 @@ export default class ArchiveTierComponent extends Component {
     @service modals;
 
     get isActive() {
-        const {product} = this.args;
-        return !!product.active;
+        const {tier} = this.args;
+        return !!tier.active;
     }
 
-    get product() {
-        return this.args.product;
+    get tier() {
+        return this.args.tier;
     }
 
     @action
     handleArchiveTier() {
-        if (!this.product.isNew) {
+        if (!this.tier.isNew) {
             this.modals.open('modals/tiers/archive', {
-                product: this.product,
+                tier: this.tier,
                 onArchive: this.args.onArchive
             }, {
                 className: 'fullscreen-modal fullscreen-modal-action fullscreen-modal-wide'
@@ -30,9 +30,9 @@ export default class ArchiveTierComponent extends Component {
 
     @action
     handleUnarchiveTier() {
-        if (!this.product.isNew) {
+        if (!this.tier.isNew) {
             this.modals.open('modals/tiers/unarchive', {
-                product: this.product,
+                tier: this.tier,
                 onUnarchive: this.args.onUnarchive
             }, {
                 className: 'fullscreen-modal fullscreen-modal-action fullscreen-modal-wide'

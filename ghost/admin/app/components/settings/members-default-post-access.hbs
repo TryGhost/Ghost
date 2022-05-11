@@ -26,7 +26,7 @@
     {{#if this.hasVisibilityFilter}}
         <div class="mt2" data-test-default-post-access-tiers>
             <GhPostSettingsMenu::VisibilitySegmentSelect
-                @selectDefaultProduct={{true}}
+                @selectDefaultTier={{true}}
                 @tiers={{this.visibilityTiers}}
                 @onChange={{action "setVisibility"}}
                 @renderInPlace={{true}}

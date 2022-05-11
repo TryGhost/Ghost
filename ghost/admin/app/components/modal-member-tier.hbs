@@ -1,4 +1,4 @@
-<header class="modal-header" data-test-modal="member-product" {{did-insert this.setup}}>
+<header class="modal-header" data-test-modal="member-tier" {{did-insert this.setup}}>
     <h1>Add subscription</h1>
 </header>
 <button type="button" class="close" title="Close" {{on "click" this.close}}>
@@ -16,23 +16,23 @@
                 Adding a complimentary subscription cancels all existing subscriptions of this member.
             </p>
         {{/if}}
-        {{#if this.loadingProducts}}
+        {{#if this.loadingTiers}}
             <div class="flex justify-center flex-auto">
                 <div class="gh-loading-spinner"> </div>
             </div>
         {{else}}
             <div class="form-rich-radio">
-                {{#each this.products as |product|}}
+                {{#each this.tiers as |tier|}}
                     <div
-                        class="gh-radio {{if (eq this.selectedProduct product.id) "active"}}"
-                        {{on "click" (fn this.setProduct product.id)}}
-                        data-test-tier-option={{product.id}}
+                        class="gh-radio {{if (eq this.selectedTier tier.id) "active"}}"
+                        {{on "click" (fn this.setTier tier.id)}}
+                        data-test-tier-option={{tier.id}}
                     >
                         <div class="gh-radio-content">
                             <div class="gh-radio-label">
                                 <div class="description" data-test-text="tier-desc">
-                                    <h4>{{product.name}}</h4>
-                                    <p>{{product.description}}</p>
+                                    <h4>{{tier.name}}</h4>
+                                    <p>{{tier.description}}</p>
                                 </div>
                                 {{svg-jar "check" class="check"}}
                             </div>
@@ -61,7 +61,7 @@
 
     <GhTaskButton @buttonText="Add subscription"
         @successText={{"Added"}}
-        @task={{this.addProduct}}
-        @class="gh-btn gh-btn-green gh-btn-icon gh-btn-add-memberproduct"
-        data-test-button="save-comp-product" />
+        @task={{this.addTier}}
+        @class="gh-btn gh-btn-green gh-btn-icon gh-btn-add-membertier"
+        data-test-button="save-comp-tier" />
 </div>

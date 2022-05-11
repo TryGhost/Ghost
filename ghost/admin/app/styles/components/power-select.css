@@ -316,17 +316,17 @@
     fill: var(--middarkgrey);
 }
 
-.token-segment-product {
+.token-segment-tier {
     background: var(--black);
     color: var(--white);
 }
 
 .token-segment-status-free svg path,
 .token-segment-status-paid svg path,
-.token-segment-product svg path {
+.token-segment-tier svg path {
     stroke: var(--white);
     fill: var(--white);
-}   
+}
 
 /* Inline input */
 .ember-power-select-inline {

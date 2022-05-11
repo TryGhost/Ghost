@@ -13,7 +13,7 @@ describe('Acceptance: Member details', function () {
     setupMirage(hooks);
 
     let clock;
-    let product;
+    let tier;
 
     beforeEach(async function () {
         this.server.loadFixtures('configs');
@@ -25,8 +25,8 @@ describe('Acceptance: Member details', function () {
         enableStripe(this.server);
         enableNewsletters(this.server, true);
 
-        // add a default product that complimentary plans can be assigned to
-        product = this.server.create('product', {
+        // add a default tier that complimentary plans can be assigned to
+        tier = this.server.create('tier', {
             id: '6213b3f6cb39ebdb03ebd810',
             name: 'Ghost Subscription',
             slug: 'ghost-subscription',
@@ -82,17 +82,17 @@ describe('Acceptance: Member details', function () {
                         interval: 'month',
                         type: 'recurring',
                         currency: 'USD',
-                        product: {
+                        tier: {
                             id: 'prod_LFmAAmCnnbzrvL',
                             name: 'Ghost Subscription',
-                            product_id: product.id
+                            tier_id: tier.id
                         }
                     },
                     offer: null
                 }),
                 this.server.create('subscription', {
                     id: 'sub_1KZGi6EGb07FFvyNDjZq98g8',
-                    product,
+                    tier,
                     customer: {
                         id: 'cus_LFmGicpX4BkQKH',
                         name: '123',
@@ -119,17 +119,17 @@ describe('Acceptance: Member details', function () {
                         interval: 'month',
                         type: 'recurring',
                         currency: 'USD',
-                        product: {
+                        tier: {
                             id: 'prod_LFmAAmCnnbzrvL',
                             name: 'Ghost Subscription',
-                            product_id: product.id
+                            tier_id: tier.id
                         }
                     },
                     offer: null
                 })
             ],
-            products: [
-                product
+            tiers: [
+                tier
             ]
         });
 
@@ -149,7 +149,7 @@ describe('Acceptance: Member details', function () {
             subscriptions: [
                 this.server.create('subscription', {
                     id: 'sub_1KZGcmEGb07FFvyN9jwrwbKu',
-                    product,
+                    tier,
                     customer: {
                         id: 'cus_LFmBWoSkB84lnr',
                         name: 'test',
@@ -176,16 +176,16 @@ describe('Acceptance: Member details', function () {
                         interval: 'month',
                         type: 'recurring',
                         currency: 'USD',
-                        product: {
+                        tier: {
                             id: 'prod_LFmAAmCnnbzrvL',
                             name: 'Ghost Subscription',
-                            product_id: '6213b3f6cb39ebdb03ebd810'
+                            tier_id: '6213b3f6cb39ebdb03ebd810'
                         }
                     },
                     offer: null
                 })
             ],
-            products: []
+            tiers: []
         });
 
         await visit(`/members/${member.id}`);
@@ -205,17 +205,17 @@ describe('Acceptance: Member details', function () {
             .to.equal(1);
 
         await click('[data-test-button="add-complimentary"]');
-        expect(find('[data-test-modal="member-product"]'), 'select product modal').to.exist;
+        expect(find('[data-test-modal="member-tier"]'), 'select tier modal').to.exist;
         expect(find('[data-test-text="select-tier-desc"]')).to.contain.text('Comp Member Test');
         expect(find('[data-test-tier-option="6213b3f6cb39ebdb03ebd810"]')).to.have.exist;
         expect(find('[data-test-tier-option="6213b3f6cb39ebdb03ebd810"]')).to.have.class('active');
-        await click('[data-test-button="save-comp-product"]');
+        await click('[data-test-button="save-comp-tier"]');
 
         expect(findAll('[data-test-subscription]').length, '# of subscription blocks - after add comped')
             .to.equal(1);
 
-        await click('[data-test-product="6213b3f6cb39ebdb03ebd810"] [data-test-button="subscription-actions"]');
-        await click('[data-test-product="6213b3f6cb39ebdb03ebd810"] [data-test-button="remove-complimentary"]');
+        await click('[data-test-tier="6213b3f6cb39ebdb03ebd810"] [data-test-button="subscription-actions"]');
+        await click('[data-test-tier="6213b3f6cb39ebdb03ebd810"] [data-test-button="remove-complimentary"]');
 
         expect(findAll('[data-test-subscription]').length, '# of subscription blocks - after remove comped')
             .to.equal(0);
@@ -226,13 +226,13 @@ describe('Acceptance: Member details', function () {
             name: 'Comped for canceled sub test',
             subscriptions: [
                 this.server.create('subscription', {
-                    // product, // _Not_ included as `tier` when subscription is canceled
+                    // tier, // _Not_ included as `tier` when subscription is canceled
                     status: 'canceled',
                     price: {
                         id: 'price_1',
-                        product: {
+                        tier: {
                             id: 'prod_1',
-                            product_id: product.id
+                            tier_id: tier.id
                         }
                     }
                 })
@@ -245,7 +245,7 @@ describe('Acceptance: Member details', function () {
             .to.equal(1);
 
         await click('[data-test-button="add-complimentary"]');
-        await click('[data-test-button="save-comp-product"]');
+        await click('[data-test-button="save-comp-tier"]');
 
         expect(findAll('[data-test-subscription]').length, '# of subscription blocks - after add comped')
             .to.equal(2);
@@ -253,10 +253,10 @@ describe('Acceptance: Member details', function () {
             .to.equal(0);
     });
 
-    it('handles multiple products', async function () {
-        const product2 = this.server.create('product', {
-            name: 'Second product',
-            slug: 'second-product',
+    it('handles multiple tiers', async function () {
+        const tier2 = this.server.create('tier', {
+            name: 'Second tier',
+            slug: 'second-tier',
             created_at: '2022-02-21T16:47:02.000Z',
             updated_at: '2022-03-03T15:37:02.000Z',
             description: null,
@@ -267,32 +267,32 @@ describe('Acceptance: Member details', function () {
             welcome_page_url: '/'
         });
 
-        const member = this.server.create('member', {name: 'Multiple product test'});
+        const member = this.server.create('member', {name: 'Multiple tier test'});
 
-        this.server.create('subscription', {member, product, status: 'canceled', price: {id: '1', product: {product_id: product.id}}});
-        this.server.create('subscription', {member, product, status: 'canceled', price: {id: '1', product: {product_id: product.id}}});
-        this.server.create('subscription', {member, product: product2, status: 'canceled', price: {id: '1', product: {product_id: product2.id}}});
+        this.server.create('subscription', {member, tier, status: 'canceled', price: {id: '1', tier: {tier_id: tier.id}}});
+        this.server.create('subscription', {member, tier, status: 'canceled', price: {id: '1', tier: {tier_id: tier.id}}});
+        this.server.create('subscription', {member, tier: tier2, status: 'canceled', price: {id: '1', tier: {tier_id: tier2.id}}});
 
         await visit(`/members/${member.id}`);
 
-        // all products and subscriptions are shown
-        expect(findAll('[data-test-product]').length, '# of product blocks').to.equal(2);
+        // all tiers and subscriptions are shown
+        expect(findAll('[data-test-tier]').length, '# of tier blocks').to.equal(2);
 
-        const p1 = `[data-test-product="${product.id}"]`;
-        const p2 = `[data-test-product="${product2.id}"]`;
+        const p1 = `[data-test-tier="${tier.id}"]`;
+        const p2 = `[data-test-tier="${tier2.id}"]`;
 
-        expect(find(`${p1} [data-test-text="product-name"]`)).to.contain.text('Ghost Subscription');
-        expect(findAll(`${p1} [data-test-subscription]`).length, '# of product 1 subscription blocks').to.equal(2);
+        expect(find(`${p1} [data-test-text="tier-name"]`)).to.contain.text('Ghost Subscription');
+        expect(findAll(`${p1} [data-test-subscription]`).length, '# of tier 1 subscription blocks').to.equal(2);
 
-        expect(find(`${p2} [data-test-text="product-name"]`)).to.contain.text('Second product');
-        expect(findAll(`${p2} [data-test-subscription]`).length, '# of product 2 subscription blocks').to.equal(1);
+        expect(find(`${p2} [data-test-text="tier-name"]`)).to.contain.text('Second tier');
+        expect(findAll(`${p2} [data-test-subscription]`).length, '# of tier 2 subscription blocks').to.equal(1);
 
         // can add complimentary
         expect(findAll('[data-test-button="add-complimentary"]').length, '# of add-complimentary buttons').to.equal(1);
         await click('[data-test-button="add-complimentary"]');
-        await click(`[data-test-tier-option="${product2.id}"]`);
-        await click('[data-test-button="save-comp-product"]');
+        await click(`[data-test-tier-option="${tier2.id}"]`);
+        await click('[data-test-button="save-comp-tier"]');
 
-        expect(findAll(`${p2} [data-test-subscription]`).length, '# of product 2 subscription blocks after comp added').to.equal(2);
+        expect(findAll(`${p2} [data-test-subscription]`).length, '# of tier 2 subscription blocks after comp added').to.equal(2);
     });
 });

@@ -12,8 +12,6 @@ import NavItemValidator from 'ghost-admin/validators/nav-item';
 import NewsletterValidator from 'ghost-admin/validators/newsletter';
 import OfferValidator from 'ghost-admin/validators/offer';
 import PostValidator from 'ghost-admin/validators/post';
-import ProductBenefitItemValidator from 'ghost-admin/validators/product-benefit-item';
-import ProductValidator from 'ghost-admin/validators/product';
 import RSVP from 'rsvp';
 import ResetValidator from 'ghost-admin/validators/reset';
 import SettingValidator from 'ghost-admin/validators/setting';
@@ -23,6 +21,8 @@ import SignupValidator from 'ghost-admin/validators/signup';
 import SlackIntegrationValidator from 'ghost-admin/validators/slack-integration';
 import SnippetValidator from 'ghost-admin/validators/snippet';
 import TagSettingsValidator from 'ghost-admin/validators/tag-settings';
+import TierBenefitItemValidator from 'ghost-admin/validators/tier-benefit-item';
+import TierValidator from 'ghost-admin/validators/tier';
 import UserValidator from 'ghost-admin/validators/user';
 import WebhookValidator from 'ghost-admin/validators/webhook';
 import {A as emberA, isArray as isEmberArray} from '@ember/array';
@@ -60,7 +60,7 @@ export default Mixin.create({
             customView: CustomViewValidator,
             inviteUser: InviteUserValidator,
             navItem: NavItemValidator,
-            productBenefitItem: ProductBenefitItemValidator,
+            tierBenefitItem: TierBenefitItemValidator,
             post: PostValidator,
             reset: ResetValidator,
             setting: SettingValidator,
@@ -75,7 +75,7 @@ export default Mixin.create({
             webhook: WebhookValidator,
             label: LabelValidator,
             snippet: SnippetValidator,
-            product: ProductValidator,
+            tier: TierValidator,
             offer: OfferValidator,
             newsletter: NewsletterValidator
         };

@@ -7,13 +7,13 @@ export default BaseSerializer.extend({
     include(/*request*/) {
         let includes = [];
 
-        includes.push('productBenefits');
+        includes.push('tierBenefits');
 
         return includes;
     },
 
     keyForEmbeddedRelationship(relationshipName) {
-        if (relationshipName === 'productBenefits') {
+        if (relationshipName === 'tierBenefits') {
             return 'benefits';
         }
 
