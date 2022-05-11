@@ -204,7 +204,7 @@ export default class Anchor extends Component {
     }
 
     get chartOptions() {
-        let activeDays = this.days;
+        let activeDays = this.dashboardStats.chartDays;
         let barColor = this.feature.nightShift ? 'rgba(200, 204, 217, 0.25)' : 'rgba(200, 204, 217, 0.65)';
 
         return {
