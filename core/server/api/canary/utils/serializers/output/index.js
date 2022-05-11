@@ -125,6 +125,10 @@ module.exports = {
         return require('./offers');
     },
 
+    get newsletters() {
+        return require('./newsletters');
+    },
+
     get members_stripe_connect() {
         return require('./members-stripe-connect');
     }
