@@ -46,7 +46,7 @@ class BackupsExporter {
                 throw err;
             });
     }
-
+    // Initialises the zipping process
     startBackupProcess() {
         const self = this;
         self.getModel().ImageBackupsModel.add({created_at: new Date(), backup_completed: false}).then((entry) => {
@@ -54,7 +54,8 @@ class BackupsExporter {
         });
         return {backupStarted: true};
     }
-        
+    
+    // Serves the zip file to the client
     serve() {
         const self = this;
         return function downloadBackup(req, res, next) {
