@@ -32,7 +32,11 @@
     {{#unless @publishOptions.emailUnavailable}}
         <div class="gh-publish-setting">
             {{#if @publishOptions.willEmail}}
-                <button type="button" class="gh-publish-setting-title {{if (eq @publishOptions.publishType "publish") "disabled"}}" {{on "click" (fn this.toggleSection "emailRecipients")}}>
+                <button
+                    type="button"
+                    class="gh-publish-setting-title"
+                    {{on "click" (fn this.toggleSection "emailRecipients")}}
+                >
                     {{svg-jar "member"}}
                     <div class="gh-publish-setting-trigger">
                         {{#let (members-count-fetcher query=(hash filter=@publishOptions.fullRecipientFilter)) as |countFetcher|}}
@@ -56,21 +60,18 @@
                     </span>
                 </button>
             {{else}}
-                <div class="gh-publish-setting-title {{if (eq @publishOptions.publishType "publish") "disabled"}}">
+                <button
+                    type="button"
+                    class="gh-publish-setting-title disabled"
+                >
                     {{svg-jar "member"}}
-                    {{#if (eq @publishOptions.publishType "publish")}}
-                        <div class="gh-publish-setting-trigger">
-                            Not sent to any members
-                        </div>
-                    {{else}}
-                        <button type="button" class="gh-publish-setting-trigger" {{on "click" (fn this.toggleSection "emailRecipients")}}>
-                            Not sent to any members
-                        </button>
-                    {{/if}}
-                    <span class="{{if (eq this.openSection "emailRecipients") "expanded"}}">
+                    <div class="gh-publish-setting-trigger">
+                        Not sent to any members
+                    </div>
+                    <span>
                         {{svg-jar "arrow-down" class="icon-expand"}}
                     </span>
-                </div>
+                </button>
             {{/if}}
             {{#liquid-if (eq this.openSection "emailRecipients")}}
                 <div class="gh-publish-setting-form">
