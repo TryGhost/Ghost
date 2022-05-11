@@ -1737,6 +1737,8 @@ Dashboard v5 Tooltips */
 }
 
 .gh-dashboard5-tooltip-value {
+    display: flex;
+    align-items: baseline;
     font-size: 1.5rem;
     font-weight: 700;
     letter-spacing: 0;
@@ -1745,36 +1747,43 @@ Dashboard v5 Tooltips */
     color: var(--black);
 }
 
-.gh-dashboard5-mrr .gh-dashboard5-tooltip-value {
-    display: flex;
-    align-items: baseline;
+.gh-dashboard5-tooltip-value .indicator {
+    display: inline-block;
+    border-radius: 999px;
+    margin-right: 6px;
 }
 
-.gh-dashboard5-mrr .gh-dashboard5-tooltip-value::before {
-    display: block;
-    content: "";
+.gh-dashboard5-tooltip-value .indicator.solid {
+    width: 9px;
+    height: 9px;
+}
+
+.gh-dashboard5-tooltip-value .indicator.line {
     width: 11px;
     height: 11px;
-    border-radius: 999px;
-    margin: 0 6px 1px 0;
-    border: 2px solid #8E42FF;
+    border-width: 2px;
+    border-style: solid;
 }
 
-.gh-dashboard5-mrr .gh-dashboard5-tooltip-value .value {
+.gh-dashboard5-tooltip-value .value {
     font-size: 1.5rem;
+    margin-right: 8px;
 }
 
-.gh-dashboard5-mrr .gh-dashboard5-tooltip-value .label {
-    margin-left: 6px;
+.gh-dashboard5-tooltip-value .label {
     font-size: 1.4rem;
     font-weight: 400;
     color: var(--midgrey);
+    padding: 0;
+}
+
+.gh-dashboard5-mrr .indicator {
+    border-color: #8E42FF;
 }
 
 .gh-dashboard5-breakdown .gh-dashboard5-tooltip-value {
     display: grid;
     grid-template-columns: auto auto;
-    grid-column-gap: 8px;
 }
 
 .gh-dashboard5-breakdown .gh-dashboard5-tooltip-value-1 {
@@ -1797,26 +1806,17 @@ Dashboard v5 Tooltips */
     align-items: baseline;
 }
 
-.gh-dashboard5-breakdown .gh-dashboard5-tooltip-value-1 .value::before,
-.gh-dashboard5-breakdown .gh-dashboard5-tooltip-value-2 .value::before {
-    display: block;
-    content: "";
-    width: 9px;
-    height: 9px;
-    border-radius: 999px;
-    margin: 0 6px 0 0;
-}
-
-.gh-dashboard5-breakdown .gh-dashboard5-tooltip-value-1 .value::before {
+.gh-dashboard5-breakdown .gh-dashboard5-tooltip-value-1 .indicator {
     background: #8E42FF;
 }
 
-.gh-dashboard5-breakdown .gh-dashboard5-tooltip-value-2 .value::before {
+.gh-dashboard5-breakdown .gh-dashboard5-tooltip-value-2 .indicator {
     background: #FB76B4;
 }
 
-.gh-dashboard5-mix .gh-dashboard5-tooltip-value {
-    font-size: 1.4rem;
+.gh-dashboard5-mix .gh-dashboard5-tooltip-value .label {
+    color: var(--midgrey);
+    font-size: 1.3rem;
 }
 
 .gh-dashboard5-totals {
