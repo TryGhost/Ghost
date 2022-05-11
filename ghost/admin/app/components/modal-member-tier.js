@@ -4,24 +4,24 @@ import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
-export default class ModalMemberProduct extends ModalComponent {
+export default class ModalMemberTier extends ModalComponent {
     @service store;
     @service ghostPaths;
     @service ajax;
 
     @tracked price;
-    @tracked product;
-    @tracked products = [];
-    @tracked selectedProduct = null;
-    @tracked loadingProducts = false;
+    @tracked tier;
+    @tracked tiers = [];
+    @tracked selectedTier = null;
+    @tracked loadingTiers = false;
 
     @task({drop: true})
-    *fetchProducts() {
-        this.products = yield this.store.query('product', {filter: 'type:paid+active:true', include: 'monthly_price,yearly_price,benefits'});
+    *fetchTiers() {
+        this.tiers = yield this.store.query('tier', {filter: 'type:paid+active:true', include: 'monthly_price,yearly_price,benefits'});
 
-        this.loadingProducts = false;
-        if (this.products.length > 0) {
-            this.selectedProduct = this.products.firstObject.id;
+        this.loadingTiers = false;
+        if (this.tiers.length > 0) {
+            this.selectedTier = this.tiers.firstObject.id;
         }
     }
 
@@ -42,13 +42,13 @@ export default class ModalMemberProduct extends ModalComponent {
 
     @action
     setup() {
-        this.loadingProducts = true;
-        this.fetchProducts.perform();
+        this.loadingTiers = true;
+        this.fetchTiers.perform();
     }
 
     @action
-    setProduct(productId) {
-        this.selectedProduct = productId;
+    setTier(tierId) {
+        this.selectedTier = tierId;
     }
 
     @action
@@ -58,7 +58,7 @@ export default class ModalMemberProduct extends ModalComponent {
 
     @action
     confirmAction() {
-        return this.addProduct.perform();
+        return this.addTier.perform();
     }
 
     @action
@@ -68,8 +68,8 @@ export default class ModalMemberProduct extends ModalComponent {
     }
 
     @task({drop: true})
-    *addProduct() {
-        const url = `${this.ghostPaths.url.api(`members/${this.member.get('id')}`)}?include=products`;
+    *addTier() {
+        const url = `${this.ghostPaths.url.api(`members/${this.member.get('id')}`)}?include=tiers`;
 
         // Cancel existing active subscriptions for member
         for (let i = 0; i < this.activeSubscriptions.length; i++) {
@@ -87,8 +87,8 @@ export default class ModalMemberProduct extends ModalComponent {
                 members: [{
                     id: this.member.get('id'),
                     email: this.member.get('email'),
-                    products: [{
-                        id: this.selectedProduct
+                    tiers: [{
+                        id: this.selectedTier
                     }]
                 }]
             }

@@ -26,11 +26,11 @@ export default class MembersAccessController extends Controller {
     @tracked showLeaveRouteModal = false;
     @tracked showPortalSettings = false;
     @tracked showStripeConnect = false;
-    @tracked showProductModal = false;
+    @tracked showTierModal = false;
 
-    @tracked product = null;
-    @tracked products = null;
-    @tracked productModel = null;
+    @tracked tier = null;
+    @tracked tiers = null;
+    @tracked tierModel = null;
     @tracked paidSignupRedirect;
     @tracked freeSignupRedirect;
     @tracked welcomePageURL;
@@ -45,12 +45,12 @@ export default class MembersAccessController extends Controller {
 
     queryParams = ['showPortalSettings'];
 
-    get freeProduct() {
-        return this.products?.find(product => product.type === 'free');
+    get freeTier() {
+        return this.tiers?.find(tier => tier.type === 'free');
     }
 
-    get paidProducts() {
-        return this.products?.filter(product => product.type === 'paid');
+    get paidTiers() {
+        return this.tiers?.filter(tier => tier.type === 'paid');
     }
 
     get allCurrencies() {
@@ -71,9 +71,9 @@ export default class MembersAccessController extends Controller {
     }
 
     get hasChangedPrices() {
-        if (this.product) {
-            const monthlyPrice = this.product.get('monthlyPrice');
-            const yearlyPrice = this.product.get('yearlyPrice');
+        if (this.tier) {
+            const monthlyPrice = this.tier.get('monthlyPrice');
+            const yearlyPrice = this.tier.get('yearlyPrice');
 
             if (monthlyPrice?.amount && parseFloat(this.stripeMonthlyAmount) !== (monthlyPrice.amount / 100)) {
                 return true;
@@ -88,7 +88,7 @@ export default class MembersAccessController extends Controller {
 
     @action
     setup() {
-        this.fetchProducts.perform();
+        this.fetchTiers.perform();
         this.updatePortalPreview();
     }
 
@@ -169,9 +169,9 @@ export default class MembersAccessController extends Controller {
 
         if (this.welcomePageURL.href.startsWith(siteUrl)) {
             const path = this.welcomePageURL.href.replace(siteUrl, '');
-            this.freeProduct.welcomePageURL = path;
+            this.freeTier.welcomePageURL = path;
         } else {
-            this.freeProduct.welcomePageURL = this.welcomePageURL.href;
+            this.freeTier.welcomePageURL = this.welcomePageURL.href;
         }
     }
 
@@ -210,20 +210,20 @@ export default class MembersAccessController extends Controller {
     }
 
     @action
-    async openEditProduct(product) {
-        this.productModel = product;
-        this.showProductModal = true;
+    async openEditTier(tier) {
+        this.tierModel = tier;
+        this.showTierModal = true;
     }
 
     @action
-    async openNewProduct() {
-        this.productModel = this.store.createRecord('product');
-        this.showProductModal = true;
+    async openNewTier() {
+        this.tierModel = this.store.createRecord('tier');
+        this.showTierModal = true;
     }
 
     @action
-    closeProductModal() {
-        this.showProductModal = false;
+    closeTierModal() {
+        this.showTierModal = false;
     }
 
     @action
@@ -266,20 +266,20 @@ export default class MembersAccessController extends Controller {
         let isMonthlyChecked = portalPlans.includes('monthly');
         let isYearlyChecked = portalPlans.includes('yearly');
 
-        const products = this.store.peekAll('product');
-        const portalProducts = products?.filter((product) => {
-            return product.get('visibility') === 'public'
-                && product.get('active') === true
-                && product.get('type') === 'paid';
-        }).map((product) => {
-            return product.id;
+        const tiers = this.store.peekAll('tier');
+        const portalTiers = tiers?.filter((tier) => {
+            return tier.get('visibility') === 'public'
+                && tier.get('active') === true
+                && tier.get('type') === 'paid';
+        }).map((tier) => {
+            return tier.id;
         });
 
         const newUrl = new URL(this.membersUtils.getPortalPreviewUrl({
             button: false,
             monthlyPrice,
             yearlyPrice,
-            portalProducts,
+            portalTiers,
             currency: this.currency,
             isMonthlyChecked,
             isYearlyChecked,
@@ -325,9 +325,9 @@ export default class MembersAccessController extends Controller {
     }
 
     @action
-    confirmProductSave() {
+    confirmTierSave() {
         this.updatePortalPreview({forceRefresh: true});
-        return this.fetchProducts.perform();
+        return this.fetchTiers.perform();
     }
 
     @task
@@ -335,10 +335,10 @@ export default class MembersAccessController extends Controller {
         return yield this.saveSettingsTask.perform({forceRefresh: true});
     }
 
-    setupPortalProduct(product) {
-        if (product) {
-            const monthlyPrice = product.get('monthlyPrice');
-            const yearlyPrice = product.get('yearlyPrice');
+    setupPortalTier(tier) {
+        if (tier) {
+            const monthlyPrice = tier.get('monthlyPrice');
+            const yearlyPrice = tier.get('yearlyPrice');
             if (monthlyPrice && monthlyPrice.amount) {
                 this.stripeMonthlyAmount = (monthlyPrice.amount / 100);
                 this.currency = monthlyPrice.currency;
@@ -351,12 +351,12 @@ export default class MembersAccessController extends Controller {
     }
 
     @task({drop: true})
-    *fetchProducts() {
-        this.products = yield this.store.query('product', {
+    *fetchTiers() {
+        this.tiers = yield this.store.query('tier', {
             include: 'monthly_price,yearly_price,benefits'
         });
-        this.product = this.paidProducts.firstObject;
-        this.setupPortalProduct(this.product);
+        this.tier = this.paidTiers.firstObject;
+        this.setupPortalTier(this.tier);
     }
 
     @task({drop: true})
@@ -372,7 +372,7 @@ export default class MembersAccessController extends Controller {
                 return;
             }
 
-            yield this.saveProduct();
+            yield this.saveTier();
             const result = yield this.settings.save();
 
             this.updatePortalPreview(options);
@@ -387,19 +387,19 @@ export default class MembersAccessController extends Controller {
                 return;
             }
             const result = yield this.settings.save();
-            yield this.freeProduct.save();
+            yield this.freeTier.save();
             this.updatePortalPreview(options);
             return result;
         }
     }
 
-    async saveProduct() {
+    async saveTier() {
         const isStripeConnected = this.settings.get('stripeConnectAccountId');
-        if (this.product && isStripeConnected) {
+        if (this.tier && isStripeConnected) {
             const monthlyAmount = Math.round(this.stripeMonthlyAmount * 100);
             const yearlyAmount = Math.round(this.stripeYearlyAmount * 100);
 
-            this.product.set('monthlyPrice', {
+            this.tier.set('monthlyPrice', {
                 nickname: 'Monthly',
                 amount: monthlyAmount,
                 active: true,
@@ -407,7 +407,7 @@ export default class MembersAccessController extends Controller {
                 interval: 'month',
                 type: 'recurring'
             });
-            this.product.set('yearlyPrice', {
+            this.tier.set('yearlyPrice', {
                 nickname: 'Yearly',
                 amount: yearlyAmount,
                 active: true,
@@ -416,14 +416,14 @@ export default class MembersAccessController extends Controller {
                 type: 'recurring'
             });
 
-            const savedProduct = await this.product.save();
-            return savedProduct;
+            const savedTier = await this.tier.save();
+            return savedTier;
         }
     }
 
     resetPrices() {
-        const monthlyPrice = this.product.get('monthlyPrice');
-        const yearlyPrice = this.product.get('yearlyPrice');
+        const monthlyPrice = this.tier.get('monthlyPrice');
+        const yearlyPrice = this.tier.get('yearlyPrice');
 
         this.stripeMonthlyAmount = monthlyPrice ? (monthlyPrice.amount / 100) : 5;
         this.stripeYearlyAmount = yearlyPrice ? (yearlyPrice.amount / 100) : 50;

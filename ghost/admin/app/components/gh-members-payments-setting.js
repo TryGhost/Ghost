@@ -250,12 +250,12 @@ export default Component.extend({
         });
     },
 
-    saveProduct: task(function* () {
-        const products = yield this.store.query('product', {filter: 'type:paid', include: 'monthly_price, yearly_price'});
-        this.product = products.firstObject;
-        if (this.product) {
+    saveTier: task(function* () {
+        const tiers = yield this.store.query('tier', {filter: 'type:paid', include: 'monthly_price, yearly_price'});
+        this.tier = tiers.firstObject;
+        if (this.tier) {
             const yearlyDiscount = this.calculateDiscount(5, 50);
-            this.product.set('monthlyPrice', {
+            this.tier.set('monthlyPrice', {
                 nickname: 'Monthly',
                 amount: 500,
                 active: 1,
@@ -264,7 +264,7 @@ export default Component.extend({
                 interval: 'month',
                 type: 'recurring'
             });
-            this.product.set('yearlyPrice', {
+            this.tier.set('yearlyPrice', {
                 nickname: 'Yearly',
                 amount: 5000,
                 active: 1,
@@ -275,13 +275,13 @@ export default Component.extend({
             });
 
             let pollTimeout = 0;
-            /** To allow Stripe config to be ready in backend, we poll the save product request */
+            /** To allow Stripe config to be ready in backend, we poll the save tier request */
             while (pollTimeout < RETRY_PRODUCT_SAVE_MAX_POLL) {
                 yield timeout(RETRY_PRODUCT_SAVE_POLL_LENGTH);
 
                 try {
-                    const updatedProduct = yield this.product.save();
-                    return updatedProduct;
+                    const updatedTier = yield this.tier.save();
+                    return updatedTier;
                 } catch (error) {
                     if (error.payload?.errors && error.payload.errors[0].code === 'STRIPE_NOT_CONFIGURED') {
                         pollTimeout += RETRY_PRODUCT_SAVE_POLL_LENGTH;
@@ -293,7 +293,7 @@ export default Component.extend({
                 }
             }
         }
-        return this.product;
+        return this.tier;
     }),
 
     saveStripeSettings: task(function* () {
@@ -303,7 +303,7 @@ export default Component.extend({
             try {
                 let response = yield this.settings.save();
 
-                yield this.saveProduct.perform();
+                yield this.saveTier.perform();
                 this.settings.set('portalPlans', ['free', 'monthly', 'yearly']);
 
                 response = yield this.settings.save();

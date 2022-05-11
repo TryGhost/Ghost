@@ -116,11 +116,11 @@
     margin: 2px !important;
 }
 
-.gh-filter-block .token-segment-product {
+.gh-filter-block .token-segment-tier {
     margin: 2px !important;
 }
 
-.gh-filter-block .token-segment-product .ember-power-select-multiple-remove-btn svg {
+.gh-filter-block .token-segment-tier .ember-power-select-multiple-remove-btn svg {
     margin-right: 0!important;
 }
 

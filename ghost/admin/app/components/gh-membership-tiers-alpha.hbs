@@ -18,37 +18,37 @@
         </div>
     </div>
 </div>
-<div class="gh-product-cards">
+<div class="gh-tier-cards">
     {{#if this.isEmptyList}}
-    <div class="gh-main-content-card gh-product-card-empty-state">
+    <div class="gh-main-content-card gh-tier-card-empty-state">
         <p>You have no {{this.selectedType.value}} tiers.</p>
     </div>
     {{/if}}
 
-    {{#each this.products as |product|}}
-        <GhProductCard
-            @product={{product}}
-            @openEditProduct={{this.openEditProduct}}
+    {{#each this.tiers as |tier|}}
+        <GhTierCard
+            @tier={{tier}}
+            @openEditTier={{this.openEditTier}}
             @onUnarchive={{this.onUnarchive}}
             @onArchive={{this.onArchive}}
         />
     {{/each}}
     {{#if (eq this.type "active" )}}
-        <div class="gh-product-cards-footer">
-            <button class="gh-btn gh-btn-link gh-btn-text gh-btn-icon gh-btn-add-product green" type="button" {{action "openNewProduct" this.product}}>
+        <div class="gh-tier-cards-footer">
+            <button class="gh-btn gh-btn-link gh-btn-text gh-btn-icon gh-btn-add-tier green" type="button" {{action "openNewTier" this.tier}}>
                 <span>{{svg-jar "add-stroke" class="stroke-green"}}Add tier</span>
             </button>
         </div>
     {{/if}}
 </div>
 
-{{#if this.showProductModal}}
+{{#if this.showTierModal}}
     <GhFullscreenModal
-        @modal="product"
+        @modal="tier"
         @model={{hash
-            product=this.productModel
+            tier=this.tierModel
         }}
-        @confirm={{this.confirmProductSave}}
-        @close={{this.closeProductModal}}
-        @modifier="edit-product action wide" />
+        @confirm={{this.confirmTierSave}}
+        @close={{this.closeTierModal}}
+        @modifier="edit-tier action wide" />
 {{/if}}

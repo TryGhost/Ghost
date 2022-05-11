@@ -23,7 +23,7 @@ export default class OffersController extends Controller {
     @service notifications;
 
     @tracked cadences = [];
-    @tracked products = [];
+    @tracked tiers = [];
     @tracked portalPreviewUrl = '';
     @tracked showUnsavedChangesModal = false;
 
@@ -84,11 +84,11 @@ export default class OffersController extends Controller {
 
     get cadence() {
         if (this.offer.tier && this.offer.cadence) {
-            const product = this.products.findBy('id', this.offer.tier.id);
-            return `${this.offer.tier.id}-${this.offer.cadence}-${product?.monthlyPrice?.currency}`;
+            const tier = this.tiers.findBy('id', this.offer.tier.id);
+            return `${this.offer.tier.id}-${this.offer.cadence}-${tier?.monthlyPrice?.currency}`;
         } else if (this.defaultProps) {
-            const product = this.products.findBy('id', this.defaultProps.tier.id);
-            return `${this.defaultProps.tier.id}-${this.defaultProps.cadence}-${product?.monthlyPrice?.currency}`;
+            const tier = this.tiers.findBy('id', this.defaultProps.tier.id);
+            return `${this.defaultProps.tier.id}-${this.defaultProps.cadence}-${tier?.monthlyPrice?.currency}`;
         }
         return '';
     }
@@ -100,33 +100,33 @@ export default class OffersController extends Controller {
     // Tasks -------------------------------------------------------------------
 
     @task({drop: true})
-    *fetchProducts() {
-        this.products = yield this.store.query('product', {filter: 'type:paid+active:true', include: 'monthly_price,yearly_price'});
-        this.products = this.products.filter((d) => {
+    *fetchTiers() {
+        this.tiers = yield this.store.query('tier', {filter: 'type:paid+active:true', include: 'monthly_price,yearly_price'});
+        this.tiers = this.tiers.filter((d) => {
             return d.monthlyPrice && d.yearlyPrice;
         });
         const cadences = [];
-        this.products.forEach((product) => {
+        this.tiers.forEach((tier) => {
             let monthlyLabel;
             let yearlyLabel;
-            const productCurrency = product.monthlyPrice.currency;
-            const productCurrencySymbol = productCurrency.toUpperCase();
+            const tierCurrency = tier.monthlyPrice.currency;
+            const tierCurrencySymbol = tierCurrency.toUpperCase();
             if (this.feature.get('multipleProducts')) {
-                monthlyLabel = `${product.name} - Monthly (${ghPriceAmount(product.monthlyPrice.amount)} ${productCurrencySymbol})`;
-                yearlyLabel = `${product.name} - Yearly (${ghPriceAmount(product.yearlyPrice.amount)} ${productCurrencySymbol})`;
+                monthlyLabel = `${tier.name} - Monthly (${ghPriceAmount(tier.monthlyPrice.amount)} ${tierCurrencySymbol})`;
+                yearlyLabel = `${tier.name} - Yearly (${ghPriceAmount(tier.yearlyPrice.amount)} ${tierCurrencySymbol})`;
             } else {
-                monthlyLabel = `Monthly (${ghPriceAmount(product.monthlyPrice.amount)} ${productCurrencySymbol})`;
-                yearlyLabel = `Yearly (${ghPriceAmount(product.yearlyPrice.amount)} ${productCurrencySymbol})`;
+                monthlyLabel = `Monthly (${ghPriceAmount(tier.monthlyPrice.amount)} ${tierCurrencySymbol})`;
+                yearlyLabel = `Yearly (${ghPriceAmount(tier.yearlyPrice.amount)} ${tierCurrencySymbol})`;
             }
 
             cadences.push({
                 label: monthlyLabel,
-                name: `${product.id}-month-${productCurrency}`
+                name: `${tier.id}-month-${tierCurrency}`
             });
 
             cadences.push({
                 label: yearlyLabel,
-                name: `${product.id}-year-${productCurrency}`
+                name: `${tier.id}-year-${tierCurrency}`
             });
         });
         this.cadences = cadences;
@@ -286,7 +286,7 @@ export default class OffersController extends Controller {
 
     @action
     setup() {
-        this.fetchProducts.perform();
+        this.fetchTiers.perform();
     }
 
     @action
@@ -378,9 +378,9 @@ export default class OffersController extends Controller {
         if (!tierId) {
             return '$';
         }
-        const product = this.products.findBy('id', tierId);
-        const productCurrency = product?.monthlyPrice?.currency || 'usd';
-        return getSymbol(productCurrency);
+        const tier = this.tiers.findBy('id', tierId);
+        const tierCurrency = tier?.monthlyPrice?.currency || 'usd';
+        return getSymbol(tierCurrency);
     }
 
     get currencyLength() {

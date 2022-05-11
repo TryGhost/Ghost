@@ -9,7 +9,7 @@ export default class TiersSegmentSelect extends Component {
     @service feature;
 
     @tracked _options = [];
-    @tracked products = [];
+    @tracked tiers = [];
 
     get renderInPlace() {
         return this.args.renderInPlace === undefined ? false : this.args.renderInPlace;
@@ -41,9 +41,9 @@ export default class TiersSegmentSelect extends Component {
     }
 
     get selectedOptions() {
-        const tierList = (this.args.tiers || []).map((product) => {
-            return this.products.find((p) => {
-                return p.id === product.id || p.slug === product.slug;
+        const tierList = (this.args.tiers || []).map((tier) => {
+            return this.tiers.find((p) => {
+                return p.id === tier.id || p.slug === tier.slug;
             });
         }).filter(d => !!d);
         const tierIdList = tierList.map(d => d.id);
@@ -53,13 +53,13 @@ export default class TiersSegmentSelect extends Component {
     @action
     setSegment(options) {
         let ids = options.mapBy('id').map((id) => {
-            let product = this.products.find((p) => {
+            let tier = this.tiers.find((p) => {
                 return p.id === id;
             });
             return {
-                id: product.id,
-                slug: product.slug,
-                name: product.name
+                id: tier.id,
+                slug: tier.slug,
+                name: tier.name
             };
         }) || [];
         this.args.onChange?.(ids);
@@ -70,29 +70,29 @@ export default class TiersSegmentSelect extends Component {
         const options = yield [];
 
         if (this.feature.get('multipleProducts')) {
-            // fetch all products with count
+            // fetch all tiers with count
             // TODO: add `include: 'count.members` to query once API supports
-            const products = yield this.store.query('product', {filter: 'type:paid', limit: 'all', include: 'monthly_price,yearly_price,benefits'});
-            this.products = products;
+            const tiers = yield this.store.query('tier', {filter: 'type:paid', limit: 'all', include: 'monthly_price,yearly_price,benefits'});
+            this.tiers = tiers;
 
-            if (products.length > 0) {
-                const productsGroup = {
+            if (tiers.length > 0) {
+                const tiersGroup = {
                     groupName: 'Tiers',
                     options: []
                 };
 
-                products.forEach((product) => {
-                    productsGroup.options.push({
-                        name: product.name,
-                        id: product.id,
-                        count: product.count?.members,
-                        class: 'segment-product'
+                tiers.forEach((tier) => {
+                    tiersGroup.options.push({
+                        name: tier.name,
+                        id: tier.id,
+                        count: tier.count?.members,
+                        class: 'segment-tier'
                     });
                 });
 
-                options.push(productsGroup);
-                if (this.args.selectDefaultProduct && !this.args.tiers) {
-                    this.setSegment([productsGroup.options[0]]);
+                options.push(tiersGroup);
+                if (this.args.selectDefaultTier && !this.args.tiers) {
+                    this.setSegment([tiersGroup.options[0]]);
                 }
             }
         }

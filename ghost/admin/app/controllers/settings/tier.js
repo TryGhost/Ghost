@@ -4,7 +4,7 @@ import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
-export default class ProductController extends Controller {
+export default class TierController extends Controller {
     @service config;
     @service membersUtils;
     @service settings;
@@ -20,7 +20,7 @@ export default class ProductController extends Controller {
         this.siteUrl = this.config.get('blogUrl');
     }
 
-    get product() {
+    get tier() {
         return this.model;
     }
 
@@ -41,7 +41,7 @@ export default class ProductController extends Controller {
     }
 
     get noOfPrices() {
-        return (this.product.stripePrices || []).length;
+        return (this.tier.stripePrices || []).length;
     }
 
     @action
@@ -71,7 +71,7 @@ export default class ProductController extends Controller {
 
     @action
     leaveScreen() {
-        this.product.rollbackAttributes();
+        this.tier.rollbackAttributes();
         return this.leaveScreenTransition.retry();
     }
 
@@ -126,7 +126,7 @@ export default class ProductController extends Controller {
 
     @action
     savePrice(price) {
-        const stripePrices = this.product.stripePrices.map((d) => {
+        const stripePrices = this.tier.stripePrices.map((d) => {
             if (d.id === price.id) {
                 return EmberObject.create({
                     ...price,
@@ -144,7 +144,7 @@ export default class ProductController extends Controller {
                 active: !!price.active
             }));
         }
-        this.product.set('stripePrices', stripePrices);
+        this.tier.set('stripePrices', stripePrices);
         this.saveTask.perform();
     }
 
@@ -166,15 +166,15 @@ export default class ProductController extends Controller {
     @task({restartable: true})
     *saveTask() {
         this.send('validatePaidSignupRedirect');
-        this.product.validate();
-        if (this.product.get('errors').length !== 0) {
+        this.tier.validate();
+        if (this.tier.get('errors').length !== 0) {
             return;
         }
         if (this.settings.get('errors').length !== 0) {
             return;
         }
         yield this.settings.save();
-        const response = yield this.product.save();
+        const response = yield this.tier.save();
         if (this.showPriceModal) {
             this.closePriceModal();
         }

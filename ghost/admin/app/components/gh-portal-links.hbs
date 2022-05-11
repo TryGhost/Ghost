@@ -1,4 +1,4 @@
-<div class="gh-portal-links-container" {{did-insert (perform this.fetchProducts)}}>
+<div class="gh-portal-links-container" {{did-insert (perform this.fetchTiers)}}>
     <div class="gh-portal-links-main">
         <h2>Links</h2>
         <p>Use these {{if this.isLink "links" "data attributes"}} in your theme to show pages of Portal.</p>
@@ -24,14 +24,14 @@
                         <div class="gh-portal-page-url-container">
                             {{#if this.isLink}}
                                 <input class="gh-input page-url-field"
-                                    type="text" 
-                                    value="{{this.siteUrl}}/#/portal" 
+                                    type="text"
+                                    value="{{this.siteUrl}}/#/portal"
                                     disabled="true"
                                     aria-label="Default Portal link">
                             {{else}}
                                 <input class="gh-input page-url-field"
-                                    type="text" 
-                                    value="data-portal" 
+                                    type="text"
+                                    value="data-portal"
                                     disabled="true"
                                     aria-label="Default Portal data attribute">
                             {{/if}}
@@ -55,13 +55,13 @@
                         <div class="gh-portal-page-url-container">
                             {{#if this.isLink}}
                                 <input class="gh-input page-url-field"
-                                    type="text" 
-                                    value="{{this.siteUrl}}/#/portal/signin" 
+                                    type="text"
+                                    value="{{this.siteUrl}}/#/portal/signin"
                                     disabled="true"
                                     aria-label="Sign in Portal link">
                             {{else}}
                                 <input class="gh-input page-url-field"
-                                    type="text" 
+                                    type="text"
                                     value='data-portal="signin"'
                                     disabled="true"
                                     aria-label="Sign in Portal data attribute">
@@ -82,13 +82,13 @@
                         <div class="gh-portal-page-url-container">
                             {{#if this.isLink}}
                                 <input class="gh-input page-url-field"
-                                    type="text" 
-                                    value="{{this.siteUrl}}/#/portal/signup" 
+                                    type="text"
+                                    value="{{this.siteUrl}}/#/portal/signup"
                                     disabled="true"
                                     aria-label="Sign up Portal link">
                             {{else}}
                                 <input class="gh-input page-url-field"
-                                    type="text" 
+                                    type="text"
                                     value='data-portal="signup"'
                                     disabled="true"
                                     aria-label="Sign up Portal data attribute">
@@ -103,7 +103,7 @@
                         </div>
                     </td>
                 </tr>
-                {{#if (and (feature "multipleProducts") (gt this.products.length 1))}}
+                {{#if (and (feature "multipleProducts") (gt this.tiers.length 1))}}
                     <tr>
                         <td colspan="2"><hr class="gh-portal-links-group-divider" /></td>
                     </tr>
@@ -116,13 +116,13 @@
                                     tabindex="0"
                                 >
                                     <OneWaySelect
-                                        @id="portal-product-link"
-                                        @name="portal[product-link]"
-                                        @options={{this.productOptions}}
+                                        @id="portal-tier-link"
+                                        @name="portal[tier-link]"
+                                        @options={{this.tierOptions}}
                                         @optionValuePath="name"
                                         @optionLabelPath="label"
-                                        @value={{this.selectedProduct}}
-                                        @update={{action "setSelectedProduct"}}
+                                        @value={{this.selectedTier}}
+                                        @update={{action "setSelectedTier"}}
                                     />
                                     {{svg-jar "arrow-down-small"}}
                                 </span>
@@ -134,19 +134,19 @@
                             <div class="gh-portal-page-url-container">
                                 {{#if this.isLink}}
                                 <input class="gh-input page-url-field"
-                                    type="text" 
-                                    value="{{this.siteUrl}}/#/portal/signup{{this.selectedProductIdPath}}/monthly" 
+                                    type="text"
+                                    value="{{this.siteUrl}}/#/portal/signup{{this.selectedTierIdPath}}/monthly"
                                     disabled="true"
                                     aria-label="Monthly sign up Portal link">
                                 {{else}}
                                     <input class="gh-input page-url-field"
-                                        type="text" 
-                                        value='data-portal="signup{{this.selectedProductIdPath}}/monthly"'
+                                        type="text"
+                                        value='data-portal="signup{{this.selectedTierIdPath}}/monthly"'
                                         disabled="true"
                                         aria-label="Monthly sign up Portal data attribute">
                                 {{/if}}
-                                <button type="button" {{action (perform this.copyProductSignupLink "monthly")}} class="gh-portal-setting-copy">
-                                    {{#if (and this.copyProductSignupLink.isRunning (eq this.copiedSignupInterval "monthly"))}}
+                                <button type="button" {{action (perform this.copyTierSignupLink "monthly")}} class="gh-portal-setting-copy">
+                                    {{#if (and this.copyTierSignupLink.isRunning (eq this.copiedSignupInterval "monthly"))}}
                                         {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-darkgrey"}} Copied
                                     {{else}}
                                         <span data-tooltip="Copy">{{svg-jar "copy" class="w4 v-mid fill-darkgrey"}}</span>
@@ -161,19 +161,19 @@
                             <div class="gh-portal-page-url-container">
                                 {{#if this.isLink}}
                                 <input class="gh-input page-url-field"
-                                    type="text" 
-                                    value="{{this.siteUrl}}/#/portal/signup{{this.selectedProductIdPath}}/yearly" 
+                                    type="text"
+                                    value="{{this.siteUrl}}/#/portal/signup{{this.selectedTierIdPath}}/yearly"
                                     disabled="true"
                                     aria-label="Yearly sign up Portal link">
                                 {{else}}
                                     <input class="gh-input page-url-field"
-                                        type="text" 
-                                        value='data-portal="signup{{this.selectedProductIdPath}}/yearly"'
+                                        type="text"
+                                        value='data-portal="signup{{this.selectedTierIdPath}}/yearly"'
                                         disabled="true"
                                         aria-label="Yearly sign up Portal data attribute">
                                 {{/if}}
-                                <button type="button" {{action (perform this.copyProductSignupLink "yearly")}} class="gh-portal-setting-copy">
-                                    {{#if (and this.copyProductSignupLink.isRunning (eq this.copiedSignupInterval "yearly"))}}
+                                <button type="button" {{action (perform this.copyTierSignupLink "yearly")}} class="gh-portal-setting-copy">
+                                    {{#if (and this.copyTierSignupLink.isRunning (eq this.copiedSignupInterval "yearly"))}}
                                         {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-darkgrey"}} Copied
                                     {{else}}
                                         <span data-tooltip="Copy">{{svg-jar "copy" class="w4 v-mid fill-darkgrey"}}</span>
@@ -188,13 +188,13 @@
                             <div class="gh-portal-page-url-container">
                                 {{#if this.isLink}}
                                 <input class="gh-input page-url-field"
-                                    type="text" 
-                                    value="{{this.siteUrl}}/#/portal/signup/free" 
+                                    type="text"
+                                    value="{{this.siteUrl}}/#/portal/signup/free"
                                     disabled="true"
                                     aria-label="Free sign up Portal link">
                                 {{else}}
                                     <input class="gh-input page-url-field"
-                                        type="text" 
+                                        type="text"
                                         value='data-portal="signup/free"'
                                         disabled="true"
                                         aria-label="Free sign up Portal data attribute">
@@ -216,13 +216,13 @@
                             <div class="gh-portal-page-url-container">
                                 {{#if this.isLink}}
                                 <input class="gh-input page-url-field"
-                                    type="text" 
-                                    value="{{this.siteUrl}}/#/portal/signup/monthly" 
+                                    type="text"
+                                    value="{{this.siteUrl}}/#/portal/signup/monthly"
                                     disabled="true"
                                     aria-label="Monthly sign up Portal link">
                                 {{else}}
                                     <input class="gh-input page-url-field"
-                                        type="text" 
+                                        type="text"
                                         value='data-portal="signup/monthly"'
                                         disabled="true"
                                         aria-label="Monthly sign up Portal data attribute">
@@ -243,13 +243,13 @@
                             <div class="gh-portal-page-url-container">
                                 {{#if this.isLink}}
                                 <input class="gh-input page-url-field"
-                                    type="text" 
-                                    value="{{this.siteUrl}}/#/portal/signup/yearly" 
+                                    type="text"
+                                    value="{{this.siteUrl}}/#/portal/signup/yearly"
                                     disabled="true"
                                     aria-label="Yearly sign up Portal link">
                                 {{else}}
                                     <input class="gh-input page-url-field"
-                                        type="text" 
+                                        type="text"
                                         value='data-portal="signup/yearly"'
                                         disabled="true"
                                         aria-label="Yearly sign up Portal data attribute">
@@ -270,13 +270,13 @@
                             <div class="gh-portal-page-url-container">
                                 {{#if this.isLink}}
                                 <input class="gh-input page-url-field"
-                                    type="text" 
-                                    value="{{this.siteUrl}}/#/portal/signup/free" 
+                                    type="text"
+                                    value="{{this.siteUrl}}/#/portal/signup/free"
                                     disabled="true"
                                     aria-label="Free sign up Portal link">
                                 {{else}}
                                     <input class="gh-input page-url-field"
-                                        type="text" 
+                                        type="text"
                                         value='data-portal="signup/free"'
                                         disabled="true"
                                         aria-label="Free sign up Portal data attribute">
@@ -301,13 +301,13 @@
                         <div class="gh-portal-page-url-container">
                             {{#if this.isLink}}
                             <input class="gh-input page-url-field"
-                                type="text" 
-                                value="{{this.siteUrl}}/#/portal/account" 
+                                type="text"
+                                value="{{this.siteUrl}}/#/portal/account"
                                 disabled="true"
                                 aria-label="Account Portal link">
                             {{else}}
                                 <input class="gh-input page-url-field"
-                                    type="text" 
+                                    type="text"
                                     value='data-portal="account"'
                                     disabled="true"
                                     aria-label="Account Portal data attribute">
@@ -328,13 +328,13 @@
                         <div class="gh-portal-page-url-container">
                             {{#if this.isLink}}
                             <input class="gh-input page-url-field"
-                                type="text" 
-                                value="{{this.siteUrl}}/#/portal/account/plans" 
+                                type="text"
+                                value="{{this.siteUrl}}/#/portal/account/plans"
                                 disabled="true"
                                 aria-label="Account/Plans Portal link">
                             {{else}}
                                 <input class="gh-input page-url-field"
-                                    type="text" 
+                                    type="text"
                                     value='data-portal="account/plans"'
                                     disabled="true"
                                     aria-label="Account/Plans Portal data attribute">
@@ -355,13 +355,13 @@
                         <div class="gh-portal-page-url-container">
                             {{#if this.isLink}}
                             <input class="gh-input page-url-field"
-                                type="text" 
-                                value="{{this.siteUrl}}/#/portal/account/profile" 
+                                type="text"
+                                value="{{this.siteUrl}}/#/portal/account/profile"
                                 disabled="true"
                                 aria-label="Account/Profile Portal link">
                             {{else}}
                                 <input class="gh-input page-url-field"
-                                    type="text" 
+                                    type="text"
                                     value='data-portal="account/profile"'
                                     disabled="true"
                                     aria-label="Account/Profile Portal data attribute">

@@ -1,15 +1,15 @@
-import ProductBenefitItem from '../models/product-benefit-item';
+import TierBenefitItem from '../models/tier-benefit-item';
 import Transform from '@ember-data/serializer/transform';
 import {A as emberA, isArray as isEmberArray} from '@ember/array';
 
-export default class ProductBenefits extends Transform {
+export default class TierBenefits extends Transform {
     deserialize(serialized) {
         let benefitsItems, benefitsArray;
 
         benefitsArray = serialized || [];
 
         benefitsItems = benefitsArray.map((itemDetails) => {
-            return ProductBenefitItem.create(itemDetails);
+            return TierBenefitItem.create(itemDetails);
         });
 
         return emberA(benefitsItems);

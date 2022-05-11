@@ -116,11 +116,11 @@ describe('Acceptance: Members filtering', function () {
         it('can filter by tier', async function () {
             // add some labels to test the selection dropdown
             const newsletter = this.server.create('newsletter', {status: 'active'});
-            this.server.createList('product', 4);
+            this.server.createList('tier', 4);
 
             // add a labelled member so we can test the filter includes correctly
-            const product = this.server.create('product');
-            this.server.createList('member', 3, {products: [product], newsletters: [newsletter]});
+            const tier = this.server.create('tier');
+            this.server.createList('member', 3, {tiers: [tier], newsletters: [newsletter]});
 
             // add some non-labelled members so we can see the filter excludes correctly
             this.server.createList('member', 4, {newsletters: [newsletter]});
@@ -133,7 +133,7 @@ describe('Acceptance: Members filtering', function () {
 
             const filterSelector = `[data-test-members-filter="0"]`;
 
-            await fillIn(`${filterSelector} [data-test-select="members-filter"]`, 'product');
+            await fillIn(`${filterSelector} [data-test-select="members-filter"]`, 'tier');
 
             // has the right operators
             const operatorOptions = findAll(`${filterSelector} [data-test-select="members-filter-operator"] option`);
@@ -146,14 +146,14 @@ describe('Acceptance: Members filtering', function () {
             expect(findAll(`${filterSelector} [data-test-tiers-segment]`).length, '# of label options').to.equal(5);
 
             // selecting a value updates table
-            await selectChoose(`${filterSelector} .gh-tier-token-input`, product.name);
+            await selectChoose(`${filterSelector} .gh-tier-token-input`, tier.name);
 
-            expect(findAll('[data-test-list="members-list-item"]').length, `# of filtered member rows - ${product.name}`)
+            expect(findAll('[data-test-list="members-list-item"]').length, `# of filtered member rows - ${tier.name}`)
                 .to.equal(3);
             // table shows labels column+data
-            expect(find('[data-test-table-column="product"]')).to.exist;
-            expect(findAll('[data-test-table-data="product"]').length).to.equal(3);
-            expect(find('[data-test-table-data="product"]')).to.contain.text(product.name);
+            expect(find('[data-test-table-column="tier"]')).to.exist;
+            expect(findAll('[data-test-table-data="tier"]').length).to.equal(3);
+            expect(find('[data-test-table-data="tier"]')).to.contain.text(tier.name);
 
             // can delete filter
             await click('[data-test-delete-members-filter="0"]');

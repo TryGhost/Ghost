@@ -16,7 +16,7 @@
     >
         <GhTrimFocusInput
             @shouldFocus={{this.benefitItem.last}}
-            @placeholder={{if this.isFreeProduct "Access to all public posts" "Expert analysis"}}
+            @placeholder={{if this.isFreeTier "Access to all public posts" "Expert analysis"}}
             @value={{readonly this.name}}
             @input={{action "updateLabel" value="target.value"}}
             @keyPress={{action "clearLabelErrors"}}
