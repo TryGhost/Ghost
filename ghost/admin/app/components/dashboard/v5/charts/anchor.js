@@ -287,7 +287,7 @@ export default class Anchor extends Component {
                 callbacks: {
                     label: (tooltipItems, data) => {
                         const value = data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-                        document.querySelector('#gh-dashboard5-anchor-tooltip .gh-dashboard5-tooltip-value').innerHTML = value;
+                        document.querySelector('#gh-dashboard5-anchor-tooltip .gh-dashboard5-tooltip-value .value').innerHTML = value;
                     },
                     title: (tooltipItems) => {
                         const value = moment(tooltipItems[0].xLabel).format(DATE_FORMAT);
