@@ -33,21 +33,23 @@
         </div>
     {{/if}}
 
-    <div class="gh-dashboard5-select">
-        <PowerSelect
-            @selected={{this.selectedDaysOption}}
-            @options={{this.daysOptions}}
-            @searchEnabled={{false}}
-            @onChange={{this.onDaysChange}}
-            @triggerComponent="gh-power-select/trigger"
-            @triggerClass="gh-contentfilter-menu-trigger"
-            @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
-            @matchTriggerWidth={{false}}
-            as |option|
-        >
-            {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
-        </PowerSelect>
-    </div>
+    {{#unless this.isTotalMembersZero}}
+        <div class="gh-dashboard5-select">
+            <PowerSelect
+                @selected={{this.selectedDaysOption}}
+                @options={{this.daysOptions}}
+                @searchEnabled={{false}}
+                @onChange={{this.onDaysChange}}
+                @triggerComponent="gh-power-select/trigger"
+                @triggerClass="gh-contentfilter-menu-trigger"
+                @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
+                @matchTriggerWidth={{false}}
+                as |option|
+            >
+                {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
+            </PowerSelect>
+        </div>
+    {{/unless}}
 </section>
 
 {{#if (enable-developer-experiments)}}
