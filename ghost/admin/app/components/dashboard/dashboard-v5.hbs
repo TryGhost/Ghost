@@ -34,4 +34,6 @@
     {{/if}}
 </section>
 
-<Dashboard::V5::Prototype::ControlPanel />
+{{#if (enable-developer-experiments)}}
+    <Dashboard::V5::Prototype::ControlPanel />
+{{/if}}
