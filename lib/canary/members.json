@@ -48,6 +48,9 @@
         "products": {
           "$ref": "#/definitions/member-products"
         },
+        "tiers": {
+          "$ref": "#/definitions/member-products"
+        },
         "newsletters": {
           "$ref": "#/definitions/member-newsletters"
         },

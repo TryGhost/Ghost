@@ -48,6 +48,9 @@
           "products": {
             "$ref": "members.canary#/definitions/member-products"
           },
+          "tiers": {
+            "$ref": "members.canary#/definitions/member-products"
+          },
           "newsletters": {
             "$ref": "members.canary#/definitions/member-newsletters"
           },
