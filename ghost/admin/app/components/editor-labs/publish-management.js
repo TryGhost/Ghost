@@ -19,6 +19,7 @@ const CONFIRM_EMAIL_MAX_POLL_LENGTH = 15 * 1000;
 export class PublishOptions {
     // passed in services
     config = null;
+    limit = null;
     settings = null;
     store = null;
 
@@ -89,6 +90,8 @@ export class PublishOptions {
     // publish type ------------------------------------------------------------
 
     @tracked publishType = 'publish+send';
+    // @tracked emailDisabledError;
+    @tracked emailDisabledError = 'Email sending is temporarily disabled because your account is currently in review. You should have an email about this from us already, but you can also reach us any time at support@ghost.org.';
 
     get publishTypeOptions() {
         return [{
@@ -124,14 +127,14 @@ export class PublishOptions {
 
     // publish type dropdown is shown but email options are disabled
     get emailDisabled() {
-        const mailgunIsNotConfigured = !get(this.settings, 'mailgunIsConfigured')
-            && !get(this.config, 'mailgunIsConfigured');
-
         const hasNoMembers = this.totalMemberCount === 0;
 
-        // TODO: check email limit
+        return !this.mailgunIsConfigured || hasNoMembers || this.emailDisabledError;
+    }
 
-        return mailgunIsNotConfigured || hasNoMembers;
+    get mailgunIsConfigured() {
+        return get(this.settings, 'mailgunIsConfigured')
+            || get(this.config, 'mailgunIsConfigured');
     }
 
     @action
@@ -219,8 +222,9 @@ export class PublishOptions {
 
     // setup -------------------------------------------------------------------
 
-    constructor({config, post, settings, store, user} = {}) {
+    constructor({config, limit, post, settings, store, user} = {}) {
         this.config = config;
+        this.limit = limit;
         this.post = post;
         this.settings = settings;
         this.store = store;
@@ -255,12 +259,12 @@ export class PublishOptions {
         });
 
         // email limits
-        // TODO: query limit service
+        const checkSendingLimit = this._checkSendingLimit();
 
         // newsletters
         const fetchNewsletters = this.store.query('newsletter', {status: 'active', limit: 'all', include: 'count.members'});
 
-        yield Promise.all([countTotalMembers, fetchNewsletters]);
+        yield Promise.all([countTotalMembers, checkSendingLimit, fetchNewsletters]);
     }
 
     // saving ------------------------------------------------------------------
@@ -347,6 +351,20 @@ export class PublishOptions {
         Object.keys(this._originalModelValues).forEach((property) => {
             this.post[property] = this._originalModelValues[property];
         });
+    }
+
+    async _checkSendingLimit() {
+        await this.settings.reload();
+
+        try {
+            if (this.limit.limiter && this.limit.limiter.isLimited('emails')) {
+                await this.limit.limiter.errorIfWouldGoOverLimit('emails');
+            } else if (get(this.settings, 'emailVerificationRequired')) {
+                this.emailDisabledError = 'Email sending is temporarily disabled because your account is currently in review. You should have an email about this from us already, but you can also reach us any time at support@ghost.org.';
+            }
+        } catch (e) {
+            this.emailDisabledError = e.message;
+        }
     }
 }
 
