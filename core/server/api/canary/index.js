@@ -215,5 +215,9 @@ module.exports = {
 
     get tiersPublic() {
         return shared.pipeline(require('./tiers-public'), localUtils, 'content');
+    },
+
+    get newslettersPublic() {
+        return shared.pipeline(require('./newsletters-public'), localUtils, 'content');
     }
 };
