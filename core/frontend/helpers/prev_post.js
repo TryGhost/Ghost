@@ -9,7 +9,6 @@ const {checks} = require('../services/data');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const get = require('lodash/get');
-const Promise = require('bluebird');
 const moment = require('moment');
 
 const messages = {
@@ -55,29 +54,25 @@ const buildApiOptions = function buildApiOptions(options, post) {
  * @param {*} data
  * @returns {Promise<any>}
  */
-const fetch = function fetch(options, data) {
+const fetch = async function fetch(options, data) {
     const self = this;
     const apiOptions = buildApiOptions(options, this);
 
-    // @TODO: https://github.com/TryGhost/Ghost/issues/10548
-    const controller = api.postsPublic || api.posts;
+    try {
+        const response = await api.postsPublic.browse(apiOptions);
 
-    return controller
-        .browse(apiOptions)
-        .then(function handleSuccess(result) {
-            const related = result.posts[0];
+        const related = response.posts[0];
 
-            if (related) {
-                return options.fn(related, {data: data});
-            } else {
-                return options.inverse(self, {data: data});
-            }
-        })
-        .catch(function handleError(err) {
-            logging.error(err);
-            data.error = err.message;
+        if (related) {
+            return options.fn(related, {data: data});
+        } else {
             return options.inverse(self, {data: data});
-        });
+        }
+    } catch (error) {
+        logging.error(error);
+        data.error = error.message;
+        return options.inverse(self, {data: data});
+    }
 };
 
 // If prevNext method is called without valid post data then we must return a promise, if there is valid post data
@@ -87,7 +82,7 @@ const fetch = function fetch(options, data) {
  * @param {*} options
  * @returns {Promise<any>}
  */
-module.exports = function prevNext(options) {
+module.exports = async function prevNext(options) {
     options = options || {};
 
     const data = createFrame(options.data);
@@ -97,16 +92,16 @@ module.exports = function prevNext(options) {
     if (!options.fn || !options.inverse) {
         data.error = tpl(messages.mustBeCalledAsBlock, {helperName: options.name});
         logging.warn(data.error);
-        return Promise.resolve();
+        return;
     }
 
     if (context.includes('preview')) {
-        return Promise.resolve(options.inverse(this, {data: data}));
+        return options.inverse(this, {data: data});
     }
 
     // Guard against trying to execute prev/next on pages, or other resources
     if (!checks.isPost(this) || this.page) {
-        return Promise.resolve(options.inverse(this, {data: data}));
+        return options.inverse(this, {data: data});
     }
 
     // With the guards out of the way, attempt to build the apiOptions, and then fetch the data
