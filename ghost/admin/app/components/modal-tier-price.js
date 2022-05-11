@@ -8,7 +8,7 @@ import {tracked} from '@glimmer/tracking';
 
 // TODO: update modals to work fully with Glimmer components
 @classic
-export default class ModalProductPrice extends ModalBase {
+export default class ModalTierPrice extends ModalBase {
     @tracked model;
     @tracked price;
     @tracked currencyVal;

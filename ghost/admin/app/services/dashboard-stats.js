@@ -143,8 +143,8 @@ export default class DashboardStatsService extends Service {
      */
     @tracked lastSeenFilterStatus = 'total';
 
-    paidProducts = null;
- 
+    paidTiers = null;
+
     /**
      * @type {?MemberCounts}
      */
@@ -193,7 +193,7 @@ export default class DashboardStatsService extends Service {
                     paid: stat.paid + stat.comped,
                     free: stat.free
                 };
-            }            
+            }
         }
 
         // We don't have any statistic from more than x days ago.
@@ -221,7 +221,7 @@ export default class DashboardStatsService extends Service {
             const stat = this.mrrStats[index];
             if (stat.date <= searchDate) {
                 return stat.mrr;
-            }            
+            }
         }
 
         // We don't have any statistic from more than x days ago.
@@ -293,14 +293,14 @@ export default class DashboardStatsService extends Service {
         }
 
         if (this.membersUtils.isStripeEnabled) {
-            yield this.loadPaidProducts();
+            yield this.loadPaidTiers();
         }
 
-        const hasPaidTiers = this.membersUtils.isStripeEnabled && this.paidProducts && this.paidProducts.length > 0;
+        const hasPaidTiers = this.membersUtils.isStripeEnabled && this.paidTiers && this.paidTiers.length > 0;
 
         this.siteStatus = {
             hasPaidTiers,
-            hasMultipleTiers: hasPaidTiers && this.paidProducts.length > 1,
+            hasMultipleTiers: hasPaidTiers && this.paidTiers.length > 1,
             newslettersEnabled: this.settings.get('editorDefaultEmailRecipients') !== 'disabled',
             membersEnabled: this.membersUtils.isMembersEnabled
         };
@@ -358,15 +358,15 @@ export default class DashboardStatsService extends Service {
             }, 0);
         }
 
-        yield this.loadPaidProducts();
+        yield this.loadPaidTiers();
 
         const paidMembersByTier = [];
 
         for (const tier of result.meta.tiers) {
-            const product = this.paidProducts.find(x => x.id === tier);
+            const _tier = this.paidTiers.find(x => x.id === tier);
             paidMembersByTier.push({
                 tier: {
-                    name: product.name
+                    name: _tier.name
                 },
                 members: result.meta.totals.reduce((sum, total) => {
                     if (total.tier !== tier) {
@@ -536,24 +536,24 @@ export default class DashboardStatsService extends Service {
         this.membersLastSeen7d = result7d;
     }
 
-    loadPaidProducts() {
-        if (this.paidProducts !== null) {
+    loadPaidTiers() {
+        if (this.paidTiers !== null) {
             return;
         }
-        if (this._loadPaidProducts.isRunning) {
+        if (this._loadPaidTiers.isRunning) {
             // We need to explicitly wait for the already running task instead of dropping it and returning immediately
-            return this._loadPaidProducts.last;
+            return this._loadPaidTiers.last;
         }
-        return this._loadPaidProducts.perform();
+        return this._loadPaidTiers.perform();
     }
 
     @task
-    *_loadPaidProducts() {
-        const data = yield this.store.query('product', {
+    *_loadPaidTiers() {
+        const data = yield this.store.query('tier', {
             filter: 'type:paid+active:true',
             limit: 'all'
         });
-        this.paidProducts = data.toArray();
+        this.paidTiers = data.toArray();
     }
 
     loadNewsletterSubscribers() {
@@ -573,7 +573,7 @@ export default class DashboardStatsService extends Service {
             this.newsletterSubscribers = this.dashboardMocks.newsletterSubscribers;
             return;
         }
-        
+
         const [paid, free] = yield Promise.all([
             this.membersCountCache.count('newsletters.status:active+status:-free'),
             this.membersCountCache.count('newsletters.status:active+status:free')
@@ -603,7 +603,7 @@ export default class DashboardStatsService extends Service {
             this.emailsSent30d = this.dashboardMocks.emailsSent30d;
             return;
         }
-        
+
         const start30d = new Date(Date.now() - 30 * 86400 * 1000);
         const result = yield this.store.query('email', {limit: 100, filter: 'submitted_at:>' + start30d.toISOString()});
         this.emailsSent30d = result.reduce((c, email) => c + email.emailCount, 0);

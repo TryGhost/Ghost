@@ -12,9 +12,9 @@ export default class GhMembersListItemColumn extends Component {
         return labelData.map(label => label.name).join(', ');
     }
 
-    get products() {
-        const productData = get(this.args.member, 'products') || [];
-        return productData.map(product => product.name).join(', ');
+    get tiers() {
+        const tierData = get(this.args.member, 'tiers') || [];
+        return tierData.map(tier => tier.name).join(', ');
     }
 
     get mostRecentSubscription() {

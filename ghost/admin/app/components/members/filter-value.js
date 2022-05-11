@@ -36,8 +36,8 @@ export default class MembersFilterValue extends Component {
         this.filterValue = this.args.filter.value;
     }
 
-    get productFilterValue() {
-        if (this.args.filter?.type === 'product') {
+    get tierFilterValue() {
+        if (this.args.filter?.type === 'tier') {
             const tiers = this.args.filter?.value || [];
             return tiers.map((tier) => {
                 return {
@@ -75,7 +75,7 @@ export default class MembersFilterValue extends Component {
     }
 
     @action
-    setProductsFilterValue(filter, tiers) {
+    setTiersFilterValue(filter, tiers) {
         this.args.setFilterValue(filter, tiers.map(tier => tier.slug));
     }
 }

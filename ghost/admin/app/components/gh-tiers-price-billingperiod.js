@@ -7,7 +7,7 @@ const PERIODS = [
     {label: 'Yearly', period: 'year'}
 ];
 
-export default class GhProductsPriceBillingPeriodComponent extends Component {
+export default class GhTiersPriceBillingPeriodComponent extends Component {
     @service feature;
     @service session;
     @service settings;

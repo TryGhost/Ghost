@@ -92,10 +92,10 @@
                         {{#liquid-if this.freeOpen}}
                         <div class="gh-setting-content-extended" data-test-free-settings-expanded>
                             {{#if (feature "multipleProducts")}}
-                                <GhProductCard
-                                    @product={{this.freeProduct}}
-                                    @products={{this.products}}
-                                    @openEditProduct={{this.openEditProduct}}
+                                <GhTierCard
+                                    @tier={{this.freeTier}}
+                                    @tiers={{this.tiers}}
+                                    @openEditTier={{this.openEditTier}}
                                 />
                             {{/if}}
                             {{#if (or (not (feature "tierWelcomePages")) (not (feature "multipleProducts")))}}
@@ -121,7 +121,7 @@
                                     <label for="welcomePage" class="fw6">Welcome page</label>
                                     <GhUrlInput
                                         @id="welcomePage"
-                                        @value={{readonly this.freeProduct.welcomePageURL}}
+                                        @value={{readonly this.freeTier.welcomePageURL}}
                                         @baseUrl={{readonly this.siteUrl}}
                                         @setResult={{this.setWelcomePageURL}}
                                         @validateUrl={{this.validateWelcomePageURL}}
@@ -164,14 +164,14 @@
                     <div class="gh-expandable-content">
                         {{#liquid-if this.paidOpen}}
                         <div class="gh-setting-content-extended">
-                            {{#if this.fetchDefaultProduct.isRunning}}
+                            {{#if this.fetchDefaultTier.isRunning}}
                                 Loading...
                             {{else}}
                                 {{#if (feature "multipleProducts")}}
-                                    <GhMembershipProductsAlpha
+                                    <GhMembershipTiersAlpha
                                         @updatePortalPreview={{this.updatePortalPreview}}
-                                        @products={{this.paidProducts}}
-                                        @confirmProductSave={{this.confirmProductSave}}
+                                        @tiers={{this.paidTiers}}
+                                        @confirmTierSave={{this.confirmTierSave}}
                                     />
                                 {{else}}
                                     <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="prices">
@@ -266,7 +266,7 @@
             @model={{hash
                 preloadTask=this.saveSettingsTask
                 openStripeSettings=this.openStripeConnect
-                products=this.products
+                tiers=this.tiers
             }}
             @close={{this.closePortalSettings}}
             @modifier="full-overlay portal-settings" />
@@ -287,15 +287,15 @@
             @close={{this.closeStripeConnect}}
             @modifier="action wide stripe-connect" />
     {{/if}}
-    {{#if this.showProductModal}}
+    {{#if this.showTierModal}}
         <GhFullscreenModal
-            @modal="product"
+            @modal="tier"
             @model={{hash
-                product=this.productModel
-                products=this.products
+                tier=this.tierModel
+                tiers=this.tiers
             }}
-            @confirm={{this.confirmProductSave}}
-            @close={{this.closeProductModal}}
-            @modifier="edit-product action wide" />
+            @confirm={{this.confirmTierSave}}
+            @close={{this.closeTierModal}}
+            @modifier="edit-tier action wide" />
     {{/if}}
 </section>

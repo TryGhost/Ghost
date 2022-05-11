@@ -103,9 +103,9 @@
             {{#if this.isStripeConnected}}
                 <h4 class="gh-main-section-header small bn">Subscriptions</h4>
 
-                {{#unless this.products}}
+                {{#unless this.tiers}}
                     <div class="gh-main-section-content grey">
-                        <div class="gh-cp-memberproduct-noproduct">
+                        <div class="gh-cp-membertier-notier">
                             {{#unless this.isCreatingComplimentary}}
                                 <div class="gh-members-no-data gh-members-no-subs">
                                     <span class="lightgrey">{{svg-jar "no-data-subscription"}}</span>
@@ -119,8 +119,8 @@
                                 {{else}}
                                     <button
                                         type="button"
-                                        class="gh-btn gh-btn-text green gh-btn-icon gh-btn-addproduct"
-                                        {{on "click" (toggle-action "showMemberProductModal" this)}}
+                                        class="gh-btn gh-btn-text green gh-btn-icon gh-btn-addtier"
+                                        {{on "click" (toggle-action "showMemberTierModal" this)}}
                                         data-test-button="add-complimentary"
                                     >
                                         <span>{{svg-jar "add"}} Add complimentary subscription</span>
@@ -131,39 +131,39 @@
                     </div>
                 {{/unless}}
 
-                {{#each this.products as |product|}}
-                    <div class="gh-main-section-content grey gh-member-product-container" data-test-product={{product.id}}>
-                        <div class="gh-main-content-card gh-cp-memberproduct {{if (gt product.subscriptions.length 1) "multiple-subs" ""}}">
-                            <h3 class="gh-memberproduct-name" data-test-text="product-name">
-                                {{product.name}}
-                                {{#if (gt product.subscriptions.length 1)}}
-                                    <span class="gh-memberproduct-subcount">{{product.subscriptions.length}} subscriptions</span>
+                {{#each this.tiers as |tier|}}
+                    <div class="gh-main-section-content grey gh-member-tier-container" data-test-tier={{tier.id}}>
+                        <div class="gh-main-content-card gh-cp-membertier {{if (gt tier.subscriptions.length 1) "multiple-subs" ""}}">
+                            <h3 class="gh-membertier-name" data-test-text="tier-name">
+                                {{tier.name}}
+                                {{#if (gt tier.subscriptions.length 1)}}
+                                    <span class="gh-membertier-subcount">{{tier.subscriptions.length}} subscriptions</span>
                                 {{/if}}
                             </h3>
 
-                            {{#each product.subscriptions as |sub index|}}
-                                <div class="gh-memberproduct-subscription" data-test-subscription={{index}}>
+                            {{#each tier.subscriptions as |sub index|}}
+                                <div class="gh-membertier-subscription" data-test-subscription={{index}}>
                                     <div>
                                         <div>
-                                            <span class="gh-cp-memberproduct-pricelabel">{{sub.price.nickname}}</span>
+                                            <span class="gh-cp-membertier-pricelabel">{{sub.price.nickname}}</span>
                                             &ndash;
                                             {{#if (eq sub.status "canceled")}}
-                                                <span class="gh-cp-memberproduct-renewal">Ended {{sub.validUntil}}</span>
+                                                <span class="gh-cp-membertier-renewal">Ended {{sub.validUntil}}</span>
                                                 <span class="gh-badge archived" data-test-text="member-subscription-status">Cancelled</span>
                                             {{else if sub.cancel_at_period_end}}
-                                                <span class="gh-cp-memberproduct-renewal">Has access until {{sub.validUntil}}</span>
+                                                <span class="gh-cp-membertier-renewal">Has access until {{sub.validUntil}}</span>
                                                 <span class="gh-badge archived" data-test-text="member-subscription-status">Cancelled</span>
                                             {{else}}
-                                                <span class="gh-cp-memberproduct-renewal">Renews {{sub.validUntil}}</span>
+                                                <span class="gh-cp-membertier-renewal">Renews {{sub.validUntil}}</span>
                                                 <span class="gh-badge active" data-test-text="member-subscription-status">Active</span>
                                             {{/if}}
                                         </div>
                                         {{#if sub.cancellationReason}}
-                                            <div class="gh-memberproduct-cancelreason"><span class="fw6">Cancellation reason:</span> {{sub.cancellationReason}}</div>
+                                            <div class="gh-membertier-cancelreason"><span class="fw6">Cancellation reason:</span> {{sub.cancellationReason}}</div>
                                         {{/if}}
                                         {{#if sub.offer}}
                                             <div>
-                                                <span class="gh-cp-memberproduct-pricelabel"> {{sub.offer.name}} </span>
+                                                <span class="gh-cp-membertier-pricelabel"> {{sub.offer.name}} </span>
                                                 offer
                                                 {{#if (eq sub.offer.type 'fixed')}}
                                                     ({{currency-symbol sub.offer.currency}}{{gh-price-amount sub.offer.amount}} off)
@@ -173,13 +173,13 @@
                                                 applied to subscription
                                             </div>
                                         {{/if}}
-                                        <div class="gh-memberproduct-created">
+                                        <div class="gh-membertier-created">
                                             Created on {{sub.startDate}}
                                         </div>
                                     </div>
 
-                                    <div class="gh-memberproduct-price-container">
-                                        <div class="gh-product-card-price">
+                                    <div class="gh-membertier-price-container">
+                                        <div class="gh-tier-card-price">
                                             <div class="flex items-start">
                                                 <span class="currency-symbol">{{sub.price.currencySymbol}}</span>
                                                 <span class="amount">{{sub.price.nonDecimalAmount}}</span>
@@ -203,12 +203,12 @@
                                                 <GhDropdown
                                                     @name="subscription-menu-complimentary"
                                                     @tagName="ul"
-                                                    @classNames="product-actions-menu dropdown-menu dropdown-align-right"
+                                                    @classNames="tier-actions-menu dropdown-menu dropdown-align-right"
                                                 >
                                                     <li>
                                                         <button
                                                             type="button"
-                                                            {{on "click" (fn this.removeComplimentary (or product.id product.product_id))}}
+                                                            {{on "click" (fn this.removeComplimentary (or tier.id tier.tier_id))}}
                                                             data-test-button="remove-complimentary"
                                                         >
                                                             <span class="red">Remove complimentary subscription</span>
@@ -224,7 +224,7 @@
                                                         <span class="hidden">Subscription menu</span>
                                                     </span>
                                                 </GhDropdownButton>
-                                                <GhDropdown @name="subscription-menu-{{sub.id}}" @tagName="ul" @classNames="product-actions-menu dropdown-menu dropdown-align-right">
+                                                <GhDropdown @name="subscription-menu-{{sub.id}}" @tagName="ul" @classNames="tier-actions-menu dropdown-menu dropdown-align-right">
                                                     <li>
                                                         <a href="https://dashboard.stripe.com/customers/{{sub.customer.id}}" target="_blank" rel="noopener noreferrer">
                                                             View Stripe customer
@@ -256,17 +256,17 @@
                                 </div>
                             {{/each}}
 
-                            {{#if (eq product.subscriptions.length 0)}}
-                                <div class="gh-memberproduct-subscription">
+                            {{#if (eq tier.subscriptions.length 0)}}
+                                <div class="gh-membertier-subscription">
                                     <div>
                                         <div>
-                                            <span class="gh-cp-memberproduct-pricelabel">Complimentary</span>
+                                            <span class="gh-cp-membertier-pricelabel">Complimentary</span>
                                             <span class="gh-badge active">Active</span>
                                         </div>
-                                        <div class="gh-memberproduct-created">Created on</div>
+                                        <div class="gh-membertier-created">Created on</div>
                                     </div>
                                     <div class="flex items-center">
-                                        <div class="gh-product-card-price">
+                                        <div class="gh-tier-card-price">
                                             <div class="flex items-start">
                                                 <span class="currency-symbol">$</span>
                                                 <span class="amount">0</span>
@@ -280,9 +280,9 @@
                                                     <span class="hidden">Subscription menu</span>
                                                 </span>
                                             </GhDropdownButton>
-                                            <GhDropdown @name="subscription-menu-complimentary" @tagName="ul" @classNames="product-actions-menu dropdown-menu dropdown-align-right">
+                                            <GhDropdown @name="subscription-menu-complimentary" @tagName="ul" @classNames="tier-actions-menu dropdown-menu dropdown-align-right">
                                                 <li>
-                                                    <button type="button" {{on "click" (fn this.removeComplimentary product.id)}}>
+                                                    <button type="button" {{on "click" (fn this.removeComplimentary tier.id)}}>
                                                         <span class="red">Remove complimentary subscription</span>
                                                     </button>
                                                 </li>
@@ -295,15 +295,15 @@
                     </div>
                 {{/each}}
 
-                {{#if (and this.products this.isAddComplimentaryAllowed)}}
-                    <div class="gh-memberproduct-list-footer {{if this.isCreatingComplimentary "min-height" ""}}">
+                {{#if (and this.tiers this.isAddComplimentaryAllowed)}}
+                    <div class="gh-membertier-list-footer {{if this.isCreatingComplimentary "min-height" ""}}">
                         {{#if this.isCreatingComplimentary}}
                             <GhLoadingSpinner />
                         {{else}}
                             <button
                                 type="button"
-                                class="gh-btn gh-btn-text green gh-btn-icon gh-btn-addproduct"
-                                {{on "click" (toggle-action "showMemberProductModal" this)}}
+                                class="gh-btn gh-btn-text green gh-btn-icon gh-btn-addtier"
+                                {{on "click" (toggle-action "showMemberTierModal" this)}}
                                 data-test-button="add-complimentary"
                             >
                                 <span>{{svg-jar "add"}} Add complimentary subscription</span>
@@ -320,11 +320,11 @@
 
 </div>
 
-{{#if this.showMemberProductModal}}
-<GhFullscreenModal @modifier="action wide member-product">
-    <ModalMemberProduct
+{{#if this.showMemberTierModal}}
+<GhFullscreenModal @modifier="action wide member-tier">
+    <ModalMemberTier
         @model={{this.member}}
-        @confirm={{this.addProduct}}
-        @closeModal={{this.closeMemberProductModal}} />
+        @confirm={{this.addTier}}
+        @closeModal={{this.closeMemberTierModal}} />
 </GhFullscreenModal>
 {{/if}}

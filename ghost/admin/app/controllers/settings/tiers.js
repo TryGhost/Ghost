@@ -4,7 +4,7 @@ import {htmlSafe} from '@ember/template';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
-export default class ProductsController extends Controller {
+export default class TiersController extends Controller {
     @service settings;
     @service config;
 
@@ -16,7 +16,7 @@ export default class ProductsController extends Controller {
         this.iconStyle = this.setIconStyle();
     }
 
-    get products() {
+    get tiers() {
         return this.model.sortBy('name');
     }
 

@@ -1,12 +1,12 @@
-/* Product list */
-.gh-product-list {
+/* Tier list */
+.gh-tier-list {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     grid-gap: 32px;
 }
 
 @media (max-width: 980px) {
-    .gh-product-list {
+    .gh-tier-list {
         grid-template-columns: repeat(1, 1fr);
     }
 }
@@ -21,11 +21,11 @@
     color: #394047 !important;
 }
 
-.gh-product-cards {
+.gh-tier-cards {
     margin: 0 0 24px;
 }
 
-.gh-product-card {
+.gh-tier-card {
     position:relative;
     display: flex;
     align-items: flex-start;
@@ -33,28 +33,28 @@
 }
 
 @media (max-width: 980px) {
-    .gh-product-card {
+    .gh-tier-card {
         padding: 4vmin 48px;
     }
 }
 
-.gh-product-card-button-container {
+.gh-tier-card-button-container {
     position: absolute;
     right: 24px;
     top: 24px;
     margin-right: 0;
 }
 
-.gh-product-card-actions-button, .gh-product-card-edit-button {
+.gh-tier-card-actions-button, .gh-tier-card-edit-button {
     margin-right: 0;
     cursor: pointer;
 }
 
-.gh-product-card-actions-button.gh-btn span, .gh-product-card-edit-button.gh-btn span {
+.gh-tier-card-actions-button.gh-btn span, .gh-tier-card-edit-button.gh-btn span {
     height: 24px;
 }
 
-.gh-product-card-edit-button svg {
+.gh-tier-card-edit-button svg {
     fill: #15171a;
     color: transparent;
 }
@@ -65,64 +65,64 @@
     right: 0;
 }
 
-.gh-product-card-block {
+.gh-tier-card-block {
     flex-basis: 30%;
 }
 
-.gh-product-card-block:not(:first-of-type) {
+.gh-tier-card-block:not(:first-of-type) {
     padding-left: 16px;
 }
 
-.gh-product-card-block h4 {
+.gh-tier-card-block h4 {
     font-size: 1.3rem;
     font-weight: 500;
 }
 
-.gh-product-card-block h4 .counter {
+.gh-tier-card-block h4 .counter {
     font-weight: 400;
     color: var(--midgrey);
 }
 
-.gh-product-card-name {
+.gh-tier-card-name {
     font-size: 1.8rem;
     font-weight: 600;
     margin: 0;
 }
 
-.gh-product-card-empty-state {
+.gh-tier-card-empty-state {
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-.gh-product-card-empty-state p {
+.gh-tier-card-empty-state p {
     margin-bottom: 0;
     padding: 3.2rem;
     color: var(--midgrey);
 }
 
-.gh-product-card-description {
+.gh-tier-card-description {
     font-size: 1.3rem;
     line-height: 1.45em;
     margin: 4px 20px 4px 0;
     color: var(--midgrey);
 }
 
-.gh-product-card-block.title-block {
+.gh-tier-card-block.title-block {
     flex-basis: 40%;
 }
 
-.gh-product-card-block.benefits-block .gh-product-card-description {
+.gh-tier-card-block.benefits-block .gh-tier-card-description {
     margin-top: 9px;
 }
 
-.gh-product-card-block ul.benefits {
+.gh-tier-card-block ul.benefits {
     list-style: none;
     margin: 10px 0 0;
     padding: 0;
 }
 
-.gh-product-card-block ul.benefits li {
+.gh-tier-card-block ul.benefits li {
     display: flex;
     align-items: flex-start;
     font-size: 1.3rem;
@@ -130,7 +130,7 @@
     color: var(--middarkgrey);
 }
 
-.gh-product-card-block ul.benefits li svg {
+.gh-tier-card-block ul.benefits li svg {
     flex-basis: 18px;
     width: 14px;
     height: 14px;
@@ -140,17 +140,17 @@
     color: var(--black);
 }
 
-.gh-product-card-block ul.benefits li span {
+.gh-tier-card-block ul.benefits li span {
     flex-grow: 1;
 }
 
-.gh-product-price-container {
+.gh-tier-price-container {
     display: flex;
     margin: 0 60px 0 20px;
     justify-content: flex-end;
 }
 
-.gh-product-card-price {
+.gh-tier-card-price {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -165,19 +165,19 @@
     min-height: 66px;
 }
 
-.gh-product-card-price .currency-symbol,
-.gh-product-card-price .amount,
-.gh-product-card-price .currency,
-.gh-product-card-price .currency-code {
+.gh-tier-card-price .currency-symbol,
+.gh-tier-card-price .amount,
+.gh-tier-card-price .currency,
+.gh-tier-card-price .currency-code {
     font-weight: 600;
     color: var(--darkgrey);
 }
 
-.gh-product-card-price .currency-symbol {
+.gh-tier-card-price .currency-symbol {
     margin-top: -3px;
 }
 
-.gh-product-card-price .amount {
+.gh-tier-card-price .amount {
     letter-spacing: -.2px;
     line-height: 1;
     margin-right: 2px;
@@ -185,7 +185,7 @@
     letter-spacing: 0.1px;
 }
 
-.gh-product-card-price .currency {
+.gh-tier-card-price .currency {
     text-transform: uppercase;
     position: relative;
     top: 2px;
@@ -194,7 +194,7 @@
     line-height: 1;
 }
 
-.gh-product-card-price .currency-code {
+.gh-tier-card-price .currency-code {
     text-transform: uppercase;
     position: relative;
     top: 0;
@@ -204,14 +204,14 @@
     letter-spacing: -.2px;
 }
 
-.gh-product-card-price .period {
+.gh-tier-card-price .period {
     font-size: 1.25rem;
     text-transform: lowercase;
     line-height: 1.2em;
     margin-top: 2px;
 }
 
-.gh-product-cards-footer {
+.gh-tier-cards-footer {
     display: flex;
     align-items: center;
     margin-top: -7px;
@@ -219,23 +219,23 @@
     font-size: 1.35rem;
 }
 
-.gh-btn-add-product,
-.gh-btn-add-product:hover {
+.gh-btn-add-tier,
+.gh-btn-add-tier:hover {
     margin-right: 5px;
 }
 
-.gh-btn-add-product svg {
+.gh-btn-add-tier svg {
     width: 1rem;
     height: 1rem;
     margin: 1px 4px 0 0;
 }
 
-.gh-btn-icon.gh-btn-add-product svg path {
+.gh-btn-icon.gh-btn-add-tier svg path {
     stroke: var(--green-d1);
     stroke-width: 3;
 }
 
-.gh-product-list-icon {
+.gh-tier-list-icon {
     display: flex;
     align-items: flex-end;
     justify-content: center;
@@ -244,12 +244,12 @@
     height: 72px;
 }
 
-.gh-product-list-icon svg {
+.gh-tier-list-icon svg {
     width: 60px;
     height: 60px;
 }
 
-.gh-product-list-siteicon {
+.gh-tier-list-siteicon {
     width: 54px;
     height: 54px;
     background-color: transparent;
@@ -258,32 +258,32 @@
     margin-bottom: 6px;
 }
 
-.gh-product-list-icon svg circle,
-.gh-product-list-icon svg path {
+.gh-tier-list-icon svg circle,
+.gh-tier-list-icon svg path {
     stroke-width: 1px !important;
 }
 
-/* Product details */
-.gh-product-details {
+/* Tier details */
+.gh-tier-details {
     display: grid;
     grid-template-columns: 1fr;
     grid-gap: 32px;
     margin-bottom: 3vw;
 }
 
-.gh-product-details-form {
+.gh-tier-details-form {
     display: flex;
     align-items: flex-start;
     padding-top: 20px !important;
 }
 
-.gh-product-icon-container {
+.gh-tier-icon-container {
     width: unset;
     padding-bottom: 0;
     margin-bottom: 0;
 }
 
-.gh-product-icon {
+.gh-tier-icon {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -295,32 +295,32 @@
     border-radius: 3px;
 }
 
-.gh-product-details-fields {
+.gh-tier-details-fields {
     width: 100%;
 }
 
-.gh-product-details-fields .max-width {
+.gh-tier-details-fields .max-width {
     max-width: 840px;
 }
 
-.gh-product-details-fields .form-group:last-of-type {
+.gh-tier-details-fields .form-group:last-of-type {
     padding-bottom: 0;
     margin-bottom: 0;
 }
 
-.gh-product-details section {
+.gh-tier-details section {
     display: flex;
     flex-direction: column;
     justify-content: stretch;
 }
 
-/* Product stats */
-.gh-product-stat-container {
+/* Tier stats */
+.gh-tier-stat-container {
     display: flex;
     flex-direction: column;
 }
 
-.gh-product-stat-details .data {
+.gh-tier-stat-details .data {
     white-space: nowrap;
     font-size: 3.1rem;
     line-height: 1em;
@@ -330,13 +330,13 @@
     padding: 0;
 }
 
-.gh-product-stat-details .info {
+.gh-tier-stat-details .info {
     color: var(--midgrey);
     margin: 0 0 10px;
     padding: 0;
 }
 
-.gh-product-chart {
+.gh-tier-chart {
     color: var(--whitegrey);
     border: 1px solid var(--whitegrey);
     border-top-color: transparent;
@@ -428,67 +428,67 @@
     width: 80px;
 }
 
-.product-actions-menu.fade-out {
+.tier-actions-menu.fade-out {
     animation-duration: 0.01s;
     pointer-events: none;
 }
 
-/* Add/edit product modal */
-.fullscreen-modal-edit-product {
+/* Add/edit tier modal */
+.fullscreen-modal-edit-tier {
     max-width: 1080px;
 }
 
-.gh-product-modal-content {
+.gh-tier-modal-content {
     margin: -32px -32px 0;
     padding: 32px 32px 0;
     max-height: calc(100vh - 16vw);
     overflow-y: auto;
 }
 
-.gh-form-edit-product .gh-main-section {
+.gh-form-edit-tier .gh-main-section {
     margin-bottom: 32px;
     grid-template-columns: 1fr 0.8fr 1.2fr;
 }
 
-.gh-form-edit-product .gh-main-section-block {
+.gh-form-edit-tier .gh-main-section-block {
     display: flex;
     flex-direction: column;
     margin-bottom: 0;
 }
 
-.gh-form-edit-product .gh-main-section-content {
+.gh-form-edit-tier .gh-main-section-content {
     padding-top: 16px;
     margin-bottom: 0;
 }
 
-.gh-product-priceform-block {
+.gh-tier-priceform-block {
     margin-bottom: 32px;
 }
 
-.gh-product-priceform-block .form-group:last-of-type {
+.gh-tier-priceform-block .form-group:last-of-type {
     margin-bottom: 0;
 }
 
-.gh-product-priceform-pricecurrency {
+.gh-tier-priceform-pricecurrency {
     display: grid;
     grid-template-columns: 1fr 2fr;
     grid-gap: 20px;
 }
 
-.gh-form-edit-product .gh-main-section-content.gh-product-form-benefits {
+.gh-form-edit-tier .gh-main-section-content.gh-tier-form-benefits {
     padding-left: 8px;
     margin-bottom: 0;
 }
 
-.gh-product-benefits .gh-input {
+.gh-tier-benefits .gh-input {
     padding: 6px 28px 6px 30px;
 }
 
-.gh-product-benefits .gh-blognav-line {
+.gh-tier-benefits .gh-blognav-line {
     position: relative;
 }
 
-.gh-product-benefits .gh-blognav-line svg {
+.gh-tier-benefits .gh-blognav-line svg {
     position: absolute;
     width: 12px;
     height: 12px;
@@ -496,20 +496,20 @@
     left: 11px;
 }
 
-.gh-product-benefits .gh-blognav-line.placeholder {
+.gh-tier-benefits .gh-blognav-line.placeholder {
     color: var(--midlightgrey);
 }
 
-.gh-product-benefits .gh-blognav-line svg path {
+.gh-tier-benefits .gh-blognav-line svg path {
     stroke-width: 3px;
 }
 
-.gh-product-benefits .gh-blognav-item {
+.gh-tier-benefits .gh-blognav-item {
     position: relative;
     align-items: center;
 }
 
-.gh-product-benefits .gh-blognav-item.gh-blognav-item--error {
+.gh-tier-benefits .gh-blognav-item.gh-blognav-item--error {
     align-items: flex-start;
 }
 
@@ -517,42 +517,42 @@
     margin-top: 12px;
 }
 
-.gh-product-benefits .gh-blognav-label {
+.gh-tier-benefits .gh-blognav-label {
     margin-right: 0;
 }
 
-.gh-product-benefits .gh-blognav-label .response {
+.gh-tier-benefits .gh-blognav-label .response {
     position: relative;
     font-size: 1.25rem;
     margin: 2px 0 6px;
 }
 
-.gh-product-benefits .gh-blognav-delete {
+.gh-tier-benefits .gh-blognav-delete {
     position: absolute;
     top: 4px;
     right: 8px;
     opacity: 0;
 }
 
-.gh-product-benefits .gh-blognav-add {
+.gh-tier-benefits .gh-blognav-add {
     margin-top: 2px;
 }
 
-.gh-product-benefits .gh-blognav-grab {
+.gh-tier-benefits .gh-blognav-grab {
     text-indent: 0px;
     opacity: 0;
 }
 
-.gh-product-benefits .gh-blognav-item:hover .gh-blognav-delete,
-.gh-product-benefits .gh-blognav-item:hover .gh-blognav-grab {
+.gh-tier-benefits .gh-blognav-item:hover .gh-blognav-delete,
+.gh-tier-benefits .gh-blognav-item:hover .gh-blognav-grab {
     opacity: 1;
 }
 
-.gh-product-benefits .gh-blognav-item:not(.gh-blognav-item--sortable):not(:last-of-type) {
+.gh-tier-benefits .gh-blognav-item:not(.gh-blognav-item--sortable):not(:last-of-type) {
     margin-bottom: 16px;
 }
 
-.gh-product-benefit-hint {
+.gh-tier-benefit-hint {
     color: var(--midgrey-d2);
     font-size: 1.25rem !important;
     font-weight: 400;
@@ -560,13 +560,13 @@
     margin-top: -12px;
 }
 
-.gh-product-form-tierpreview-content {
+.gh-tier-form-tierpreview-content {
     position: sticky;
     top: 45px;
     height: max-content;
 }
 
-.gh-product-form-tierpreview .gh-main-section-content {
+.gh-tier-form-tierpreview .gh-main-section-content {
     flex: 1;
     max-width: 420px;
     min-width: 320px;
@@ -583,12 +583,12 @@
     letter-spacing: normal;
 }
 
-.gh-portal-product-card-header {
+.gh-portal-tier-card-header {
     width: 100%;
     min-height: 56px;
 }
 
-.gh-product-form-tierpreview .gh-main-section-content .gh-portal-product-name {
+.gh-tier-form-tierpreview .gh-main-section-content .gh-portal-tier-name {
     font-size: 1.8rem;
     font-weight: 600;
     line-height: 1.3em;
@@ -599,7 +599,7 @@
     width: 100%;
 }
 
-.gh-product-form-tierpreview .gh-main-section-content .gh-portal-product-description {
+.gh-tier-form-tierpreview .gh-main-section-content .gh-portal-tier-description {
     font-size: 1.55rem;
     font-weight: 600;
     line-height: 1.4em;
@@ -608,7 +608,7 @@
     color: #3d3d3d;
 }
 
-.gh-portal-product-card-pricecontainer {
+.gh-portal-tier-card-pricecontainer {
     display: flex;
     flex-direction: row;
     align-items: flex-end;
@@ -620,38 +620,38 @@
     margin-top: 16px;
 }
 
-.gh-portal-product-price {
+.gh-portal-tier-price {
     display: flex;
     justify-content: center;
     color: #1d1d1d;
 }
 
-.gh-portal-product-card-details {
+.gh-portal-tier-card-details {
     flex: 1;
     display: flex;
     flex-direction: column;
     width: 100%;
 }
 
-.gh-portal-product-card-detaildata {
+.gh-portal-tier-card-detaildata {
     flex: 1;
 }
 
-.gh-portal-product-price .amount {
+.gh-portal-tier-price .amount {
     font-size: 3.4rem;
     font-weight: 700;
     line-height: 1em;
     letter-spacing: -1.3px;
 }
 
-.gh-product-form-tierpreivew-cadence {
+.gh-tier-form-tierpreivew-cadence {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
 }
 
-.gh-product-form-tierpreivew-cadence .gh-btn,
-.gh-product-form-tierpreivew-cadence .gh-btn span {
+.gh-tier-form-tierpreivew-cadence .gh-btn,
+.gh-tier-form-tierpreivew-cadence .gh-btn span {
     background: transparent !important;
     padding: 0;
     line-height: 1em;
@@ -663,16 +663,16 @@
     overflow: unset;
 }
 
-.gh-product-form-tierpreivew-cadence .gh-btn:hover span {
+.gh-tier-form-tierpreivew-cadence .gh-btn:hover span {
     color: var(--middarkgrey);
 }
 
-.gh-product-form-tierpreivew-cadence .gh-btn.selected span {
+.gh-tier-form-tierpreivew-cadence .gh-btn.selected span {
     font-weight: 500;
     color: var(--darkgrey);
 }
 
-.gh-product-form-tierpreview .monthly-price {
+.gh-tier-form-tierpreview .monthly-price {
     display: flex;
     align-items: baseline;
     font-size: 3.3rem;
@@ -681,7 +681,7 @@
     color: #3d3d3d;
 }
 
-.gh-product-form-tierpreview .currency-sign {
+.gh-tier-form-tierpreview .currency-sign {
     align-self: flex-start;
     font-size: 2.7rem;
     font-weight: 700;
@@ -689,7 +689,7 @@
     text-transform: uppercase;
 }
 
-.gh-product-form-tierpreview .billing-period {
+.gh-tier-form-tierpreview .billing-period {
     align-self: flex-end;
     font-size: 1.5rem;
     line-height: 1.4em;
@@ -727,21 +727,21 @@
     opacity: 0.2;
 }
 
-.gh-product-form-tierpreview .gh-portal-product-benefits {
+.gh-tier-form-tierpreview .gh-portal-tier-benefits {
     font-size: 1.5rem;
     line-height: 1.4em;
     width: 100%;
     margin-top: 16px;
 }
 
-.gh-product-form-tierpreview .gh-portal-product-benefit {
+.gh-tier-form-tierpreview .gh-portal-tier-benefit {
     display: flex;
     align-items: flex-start;
     margin-bottom: 10px;
     color: #3d3d3d;
 }
 
-.gh-portal-product-benefit svg {
+.gh-portal-tier-benefit svg {
     width: 14px;
     height: 14px;
     min-width: 14px;
@@ -749,16 +749,16 @@
     overflow: visible;
 }
 
-.gh-product-form-tierpreview .gh-portal-product-benefit polyline,
-.gh-product-form-tierpreview .gh-portal-product-benefit g,
-.gh-product-form-tierpreview .gh-portal-product-benefit path {
+.gh-tier-form-tierpreview .gh-portal-tier-benefit polyline,
+.gh-tier-form-tierpreview .gh-portal-tier-benefit g,
+.gh-tier-form-tierpreview .gh-portal-tier-benefit path {
     stroke-width: 3px;
 }
 
-.gh-product-form-tierpreview .gh-portal-benefit-title {
+.gh-tier-form-tierpreview .gh-portal-benefit-title {
     letter-spacing: normal;
 }
 
-.gh-product-form-tierpreview .placeholder {
+.gh-tier-form-tierpreview .placeholder {
     opacity: 0.35;
 }

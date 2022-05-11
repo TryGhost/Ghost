@@ -69,26 +69,26 @@
                                                         <p>Free</p>
                                                     </label>
                                                 </div>
-                                                {{#each this.products as |product|}}
+                                                {{#each this.tiers as |tier|}}
                                                     <div class="form-group mb0 for-checkbox">
                                                         <label
                                                             class="checkbox"
-                                                            for={{product.id}}
+                                                            for={{tier.id}}
                                                         >
                                                             <input
                                                                 type="checkbox"
-                                                                id={{product.id}}
-                                                                name={{product.id}}
-                                                                checked={{product.checked}}
+                                                                id={{tier.id}}
+                                                                name={{tier.id}}
+                                                                checked={{tier.checked}}
                                                                 disabled={{or
                                                                     (not this.membersUtils.isStripeEnabled)
                                                                     (not-eq this.settings.membersSignupAccess "all")
                                                                 }}
                                                                 class="gh-input post-settings-featured"
-                                                                {{on "click" (action "toggleProduct" product.id)}}
+                                                                {{on "click" (action "toggleTier" tier.id)}}
                                                             >
                                                             <span class="input-toggle-component"></span>
-                                                            <p>{{product.name}}</p>
+                                                            <p>{{tier.name}}</p>
                                                         </label>
                                                     </div>
                                                 {{/each}}

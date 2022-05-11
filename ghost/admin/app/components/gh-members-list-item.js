@@ -9,12 +9,12 @@ export default class GhMembersListItem extends Component {
         super(...args);
     }
 
-    get hasMultipleProducts() {
-        return this.store.peekAll('product')?.length > 1;
+    get hasMultipleTiers() {
+        return this.store.peekAll('tier')?.length > 1;
     }
 
-    get products() {
-        const productData = get(this.args.member, 'products') || [];
-        return productData.map(product => product.name).join(', ');
+    get tiers() {
+        const tierData = get(this.args.member, 'tiers') || [];
+        return tierData.map(tier => tier.name).join(', ');
     }
 }

@@ -3,9 +3,9 @@
         <span class="gh-members-list-labels">{{this.labels}}</span>
     </LinkTo>
 
-{{else if (eq @filterColumn 'product')}}
+{{else if (eq @filterColumn 'tier')}}
     <LinkTo @route="member" @model={{@member}} class="gh-list-data wrap middarkgrey f8" data-test-table-data={{@filterColumn}}>
-        <span class="gh-members-list-labels">{{this.products}}</span>
+        <span class="gh-members-list-labels">{{this.tiers}}</span>
     </LinkTo>
 
 {{else if (eq @filterColumn 'status')}}

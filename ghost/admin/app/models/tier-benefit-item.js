@@ -6,7 +6,7 @@ export default EmberObject.extend(ValidationEngine, {
     name: '',
     isNew: false,
 
-    validationType: 'productBenefitItem',
+    validationType: 'tierBenefitItem',
 
     isComplete: computed('name', function () {
         let {name} = this;

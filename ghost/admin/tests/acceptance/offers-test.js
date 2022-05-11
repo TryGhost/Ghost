@@ -33,7 +33,7 @@ describe('Acceptance: Offers', function () {
 
     describe('as owner', function () {
         beforeEach(async function () {
-            this.server.loadFixtures('products');
+            this.server.loadFixtures('tiers');
 
             let role = this.server.create('role', {name: 'Owner'});
             this.server.create('user', {roles: [role]});
@@ -42,9 +42,9 @@ describe('Acceptance: Offers', function () {
         });
 
         it('it renders, can be navigated, can edit offer', async function () {
-            const product = this.server.create('product');
-            let offer1 = this.server.create('offer', {tier: {id: product.id}, createdAt: moment.utc().subtract(1, 'day').valueOf()});
-            this.server.create('offer', {tier: {id: product.id}, createdAt: moment.utc().subtract(2, 'day').valueOf()});
+            const tier = this.server.create('tier');
+            let offer1 = this.server.create('offer', {tier: {id: tier.id}, createdAt: moment.utc().subtract(1, 'day').valueOf()});
+            this.server.create('offer', {tier: {id: tier.id}, createdAt: moment.utc().subtract(2, 'day').valueOf()});
 
             await visit('/offers');
 

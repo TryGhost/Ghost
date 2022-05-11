@@ -7,9 +7,9 @@ export default function mockOffers(server) {
 
     server.get('/offers/:id/', function ({offers}, {params}) {
         let {id} = params;
-        let product = offers.find(id);
+        let tier = offers.find(id);
 
-        return product || new Response(404, {}, {
+        return tier || new Response(404, {}, {
             errors: [{
                 type: 'NotFoundError',
                 message: 'Offer not found.'

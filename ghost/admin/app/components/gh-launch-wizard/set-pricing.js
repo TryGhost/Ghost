@@ -29,8 +29,8 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
     @tracked isMonthlyChecked = true;
     @tracked isYearlyChecked = true;
     @tracked stripePlanError = '';
-    @tracked product;
-    @tracked loadingProduct = false;
+    @tracked tier;
+    @tracked loadingTier = false;
 
     get selectedCurrency() {
         return this.currencies.findBy('value', this.currency);
@@ -62,17 +62,17 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
 
     @action
     setup() {
-        this.fetchDefaultProduct.perform();
+        this.fetchDefaultTier.perform();
         this.updatePreviewUrl();
     }
 
     @action
     backStep() {
-        const product = this.product;
+        const tier = this.tier;
         const data = this.args.getData() || {};
         this.args.storeData({
             ...data,
-            product,
+            tier,
             isFreeChecked: this.isFreeChecked,
             isMonthlyChecked: this.isMonthlyChecked,
             isYearlyChecked: this.isYearlyChecked,
@@ -136,11 +136,11 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
             if (this.stripePlanError) {
                 return false;
             }
-            const product = this.product;
+            const tier = this.tier;
             const data = this.args.getData() || {};
             this.args.storeData({
                 ...data,
-                product,
+                tier,
                 isFreeChecked: this.isFreeChecked,
                 isMonthlyChecked: this.isMonthlyChecked,
                 isYearlyChecked: this.isYearlyChecked,
@@ -153,10 +153,10 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
     }
 
     @task({drop: true})
-    *fetchDefaultProduct() {
+    *fetchDefaultTier() {
         const storedData = this.args.getData();
-        if (storedData?.product) {
-            this.product = storedData.product;
+        if (storedData?.tier) {
+            this.tier = storedData.tier;
 
             if (storedData.isMonthlyChecked !== undefined) {
                 this.isMonthlyChecked = storedData.isMonthlyChecked;
@@ -173,8 +173,8 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
             this.stripeMonthlyAmount = storedData.monthlyAmount;
             this.stripeYearlyAmount = storedData.yearlyAmount;
         } else {
-            const products = yield this.store.query('product', {filter: 'type:paid', include: 'monthly_price,yearly_price'});
-            this.product = products.firstObject;
+            const tiers = yield this.store.query('tier', {filter: 'type:paid', include: 'monthly_price,yearly_price'});
+            this.tier = tiers.firstObject;
 
             let portalPlans = this.settings.get('portalPlans') || [];
 
@@ -182,8 +182,8 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
             this.isYearlyChecked = portalPlans.includes('yearly');
             this.isFreeChecked = portalPlans.includes('free');
 
-            const monthlyPrice = this.product.get('monthlyPrice');
-            const yearlyPrice = this.product.get('yearlyPrice');
+            const monthlyPrice = this.tier.get('monthlyPrice');
+            const yearlyPrice = this.tier.get('yearlyPrice');
             if (monthlyPrice && monthlyPrice.amount) {
                 this.stripeMonthlyAmount = (monthlyPrice.amount / 100);
                 this.currency = monthlyPrice.currency;

@@ -1,6 +1,6 @@
 import EmberObject, {action} from '@ember/object';
 import ModalBase from 'ghost-admin/components/modal-base';
-import ProductBenefitItem from '../models/product-benefit-item';
+import TierBenefitItem from '../models/tier-benefit-item';
 import classic from 'ember-classic-decorator';
 import {currencies, getCurrencyOptions, getSymbol} from 'ghost-admin/utils/currency';
 import {A as emberA} from '@ember/array';
@@ -20,11 +20,11 @@ const CURRENCIES = currencies.map((currency) => {
 
 // TODO: update modals to work fully with Glimmer components
 @classic
-export default class ModalProductPrice extends ModalBase {
+export default class ModalTierPrice extends ModalBase {
     @service settings;
     @service config;
     @tracked model;
-    @tracked product;
+    @tracked tier;
     @tracked periodVal;
     @tracked stripeMonthlyAmount = 5;
     @tracked stripeYearlyAmount = 50;
@@ -41,22 +41,22 @@ export default class ModalProductPrice extends ModalBase {
 
     confirm() {}
 
-    get isFreeProduct() {
-        return this.product.type === 'free';
+    get isFreeTier() {
+        return this.tier.type === 'free';
     }
 
     get allCurrencies() {
         return getCurrencyOptions();
     }
 
-    get productCurrency() {
-        if (this.isFreeProduct) {
-            const firstPaidProduct = this.model.products?.find((product) => {
-                return product.type === 'paid';
+    get tierCurrency() {
+        if (this.isFreeTier) {
+            const firstPaidTier = this.model.tiers?.find((tier) => {
+                return tier.type === 'paid';
             });
-            return firstPaidProduct?.monthlyPrice?.currency || 'usd';
+            return firstPaidTier?.monthlyPrice?.currency || 'usd';
         } else {
-            return this.product?.monthlyPrice?.currency;
+            return this.tier?.monthlyPrice?.currency;
         }
     }
 
@@ -66,18 +66,18 @@ export default class ModalProductPrice extends ModalBase {
 
     init() {
         super.init(...arguments);
-        this.product = this.model.product;
-        const monthlyPrice = this.product.get('monthlyPrice');
-        const yearlyPrice = this.product.get('yearlyPrice');
+        this.tier = this.model.tier;
+        const monthlyPrice = this.tier.get('monthlyPrice');
+        const yearlyPrice = this.tier.get('yearlyPrice');
         if (monthlyPrice) {
             this.stripeMonthlyAmount = (monthlyPrice.amount / 100);
         }
         if (yearlyPrice) {
             this.stripeYearlyAmount = (yearlyPrice.amount / 100);
         }
-        this.currency = this.productCurrency || 'usd';
-        this.benefits = this.product.get('benefits') || emberA([]);
-        this.newBenefit = ProductBenefitItem.create({
+        this.currency = this.tierCurrency || 'usd';
+        this.benefits = this.tier.get('benefits') || emberA([]);
+        this.newBenefit = TierBenefitItem.create({
             isNew: true,
             name: ''
         });
@@ -97,9 +97,9 @@ export default class ModalProductPrice extends ModalBase {
 
         if (this.welcomePageURL.href.startsWith(siteUrl)) {
             const path = this.welcomePageURL.href.replace(siteUrl, '');
-            this.model.product.welcomePageURL = path;
+            this.model.tier.welcomePageURL = path;
         } else {
-            this.model.product.welcomePageURL = this.welcomePageURL.href;
+            this.model.tier.welcomePageURL = this.welcomePageURL.href;
         }
     }
 
@@ -109,12 +109,12 @@ export default class ModalProductPrice extends ModalBase {
 
     // eslint-disable-next-line no-dupe-class-members
     get welcomePageURL() {
-        return this.model.product.welcomePageURL;
+        return this.model.tier.welcomePageURL;
     }
 
     get title() {
-        if (this.isExistingProduct) {
-            if (this.isFreeProduct) {
+        if (this.isExistingTier) {
+            if (this.isFreeTier) {
                 return `Edit free membership`;
             }
             return `Edit tier`;
@@ -122,8 +122,8 @@ export default class ModalProductPrice extends ModalBase {
         return 'New tier';
     }
 
-    get isExistingProduct() {
-        return !this.model.product.isNew;
+    get isExistingTier() {
+        return !this.model.tier.isNew;
     }
 
     @action
@@ -143,13 +143,13 @@ export default class ModalProductPrice extends ModalBase {
     }
 
     reset() {
-        this.newBenefit = ProductBenefitItem.create({isNew: true, name: ''});
-        const savedBenefits = this.product.benefits?.filter(benefit => !!benefit.id) || emberA([]);
-        this.product.set('benefits', savedBenefits);
+        this.newBenefit = TierBenefitItem.create({isNew: true, name: ''});
+        const savedBenefits = this.tier.benefits?.filter(benefit => !!benefit.id) || emberA([]);
+        this.tier.set('benefits', savedBenefits);
     }
 
     @task({drop: true})
-    *saveProduct() {
+    *saveTier() {
         this.validatePrices();
         if (!isEmpty(this.errors) && Object.keys(this.errors).length > 0) {
             return;
@@ -162,10 +162,10 @@ export default class ModalProductPrice extends ModalBase {
             yield this.send('addBenefit', this.newBenefit);
         }
 
-        if (!this.isFreeProduct) {
+        if (!this.isFreeTier) {
             const monthlyAmount = Math.round(this.stripeMonthlyAmount * 100);
             const yearlyAmount = Math.round(this.stripeYearlyAmount * 100);
-            this.product.set('monthlyPrice', {
+            this.tier.set('monthlyPrice', {
                 nickname: 'Monthly',
                 amount: monthlyAmount,
                 active: true,
@@ -173,7 +173,7 @@ export default class ModalProductPrice extends ModalBase {
                 interval: 'month',
                 type: 'recurring'
             });
-            this.product.set('yearlyPrice', {
+            this.tier.set('yearlyPrice', {
                 nickname: 'Yearly',
                 amount: yearlyAmount,
                 active: true,
@@ -182,8 +182,8 @@ export default class ModalProductPrice extends ModalBase {
                 type: 'recurring'
             });
         }
-        this.product.set('benefits', this.benefits.filter(benefit => !benefit.get('isBlank')));
-        yield this.product.save();
+        this.tier.set('benefits', this.benefits.filter(benefit => !benefit.get('isBlank')));
+        yield this.tier.save();
 
         yield this.confirm();
         this.send('closeModal');
@@ -208,7 +208,7 @@ export default class ModalProductPrice extends ModalBase {
         item.set('isNew', false);
         this.benefits.pushObject(item);
 
-        this.newBenefit = ProductBenefitItem.create({isNew: true, name: ''});
+        this.newBenefit = TierBenefitItem.create({isNew: true, name: ''});
     }
 
     calculateDiscount() {
@@ -254,7 +254,7 @@ export default class ModalProductPrice extends ModalBase {
             this.benefits.removeObject(item);
         },
         reorderItems() {
-            this.product.set('benefits', this.benefits);
+            this.tier.set('benefits', this.benefits);
         },
         updateLabel(label, benefitItem) {
             if (!benefitItem) {

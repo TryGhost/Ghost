@@ -89,14 +89,14 @@ export default class MembersUtilsService extends Service {
             monthlyPrice,
             yearlyPrice,
             portalPlans = this.settings.get('portalPlans'),
-            portalProducts,
+            portalTiers,
             currency,
             membersSignupAccess = this.settings.get('membersSignupAccess')
         } = overrides;
 
-        const tiers = this.store.peekAll('product') || [];
+        const tiers = this.store.peekAll('tier') || [];
 
-        portalProducts = portalProducts || tiers.filter((t) => {
+        portalTiers = portalTiers || tiers.filter((t) => {
             return t.visibility === 'public' && t.type === 'paid';
         }).map(t => t.id);
 
@@ -121,8 +121,8 @@ export default class MembersUtilsService extends Service {
             settingsParam.append('portalPrices', encodeURIComponent(portalPlans));
         }
 
-        if (portalProducts && this.feature.get('multipleProducts')) {
-            settingsParam.append('portalProducts', encodeURIComponent(portalProducts));
+        if (portalTiers && this.feature.get('multipleProducts')) {
+            settingsParam.append('portalProducts', encodeURIComponent(portalTiers));
         }
 
         if (this.settings.get('accentColor') === '' || this.settings.get('accentColor')) {

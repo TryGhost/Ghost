@@ -62,11 +62,11 @@ export default class SettingsMembersDefaultPostAccess extends Component {
     @action
     setVisibility(segment) {
         if (segment) {
-            const productIds = segment?.map((product) => {
-                return product.id;
+            const tierIds = segment?.map((tier) => {
+                return tier.id;
             });
             this.settings.set('defaultContentVisibility', 'tiers');
-            this.settings.set('defaultContentVisibilityTiers', productIds);
+            this.settings.set('defaultContentVisibilityTiers', tierIds);
             this.showSegmentError = false;
         } else {
             this.settings.set('defaultContentVisibility', '');
