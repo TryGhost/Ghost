@@ -34,6 +34,23 @@ describe('Unit: canary/utils/serializers/output/members', function () {
         should.exist(frame.response.members[0].newsletters);
     });
 
+    it('browse: includes tiers data', function () {
+        const apiConfig = {docName: 'members'};
+        const frame = {
+            options: {
+                context: {}
+            }
+        };
+
+        const ctrlResponse = memberModel(testUtils.DataGenerator.forKnex.createMemberWithProducts());
+        memberSerializer.browse({
+            data: [ctrlResponse],
+            meta: null
+        }, apiConfig, frame);
+
+        should.exist(frame.response.members[0].tiers);
+    });
+
     it('browse: removes newsletter data when flag is disabled', function () {
         labsStub.returns(false);
         const apiConfig = {docName: 'members'};
