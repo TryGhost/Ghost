@@ -9,15 +9,16 @@ import {tracked} from '@glimmer/tracking';
 
 const DATE_FORMAT = 'D MMM, YYYY';
 
+// Options 30 and 90 need an extra day to be able to distribute ticks/gridlines evenly
 const DAYS_OPTIONS = [{
     name: '7 Days',
     value: 7
 }, {
     name: '30 Days',
-    value: 30
+    value: 30 + 1
 }, {
     name: '90 Days',
-    value: 90
+    value: 90 + 1
 }];
 
 const DISPLAY_OPTIONS = [{
@@ -233,6 +234,7 @@ export default class Anchor extends Component {
     }
 
     get chartOptions() {
+        let activeDays = this.days;
         let barColor = this.feature.nightShift ? 'rgba(200, 204, 217, 0.25)' : 'rgba(200, 204, 217, 0.65)';
 
         return {
@@ -338,7 +340,18 @@ export default class Anchor extends Component {
                             if (index === (values.length - 1)) {
                                 document.getElementById('gh-dashboard5-anchor-date-end').innerHTML = moment(value).format(DATE_FORMAT);
                             }
-                            return value;
+
+                            if (activeDays === (30 + 1)) {
+                                if (!(index % 2)) {
+                                    return value;
+                                }
+                            } else if (activeDays === (90 + 1)) {
+                                if (!(index % 3)) {
+                                    return value;
+                                }
+                            } else {
+                                return value;
+                            }
                         }
                     }
                 }]
