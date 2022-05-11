@@ -40,11 +40,6 @@ const defaultSettingsKeyTypes = [
         group: 'site'
     },
     {
-        key: 'locale',
-        type: 'string',
-        group: 'site'
-    },
-    {
         key: 'timezone',
         type: 'string',
         group: 'site'
@@ -340,16 +335,6 @@ const defaultSettingsKeyTypes = [
         group: 'views'
     },
     {
-        key: 'active_timezone',
-        type: 'string',
-        group: 'site'
-    },
-    {
-        key: 'default_locale',
-        type: 'string',
-        group: 'site'
-    },
-    {
         key: 'accent_color',
         type: 'string',
         group: 'site'
@@ -469,7 +454,6 @@ describe('Settings API (canary)', function () {
                     jsonResponse.settings.should.be.an.Object();
                     const settings = jsonResponse.settings;
 
-                    should.equal(settings.length, (defaultSettingsKeyTypes.length + calculatedSettingsTypes.length));
                     for (const defaultSetting of defaultSettingsKeyTypes) {
                         should.exist(settings.find((setting) => {
                             return (setting.key === defaultSetting.key)
@@ -477,6 +461,8 @@ describe('Settings API (canary)', function () {
                                 && (setting.group === defaultSetting.group);
                         }), `Expected to find a setting with key ${defaultSetting.key}, type ${defaultSetting.type}, and group ${defaultSetting.group}`);
                     }
+
+                    should.equal(settings.length, (defaultSettingsKeyTypes.length + calculatedSettingsTypes.length));
 
                     const unsplash = settings.find(s => s.key === 'unsplash');
                     should.exist(unsplash);
@@ -693,69 +679,6 @@ describe('Settings API (canary)', function () {
             jsonResponse.settings[0].value.should.match(jsonObjectRegex);
         });
 
-        it('Can read deprecated default_locale', function (done) {
-            request.get(localUtils.API.getApiQuery('settings/default_locale/'))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-
-                    should.not.exist(res.headers['x-cache-invalidate']);
-                    const jsonResponse = res.body;
-
-                    should.exist(jsonResponse);
-                    should.exist(jsonResponse.settings);
-
-                    jsonResponse.settings.length.should.eql(1);
-
-                    testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'group', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
-                    jsonResponse.settings[0].key.should.eql('default_locale');
-                    done();
-                });
-        });
-
-        it('Can edit deprecated default_locale setting', function () {
-            return request.get(localUtils.API.getApiQuery('settings/default_locale/'))
-                .set('Origin', config.get('url'))
-                .set('Accept', 'application/json')
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .then(function (res) {
-                    let jsonResponse = res.body;
-                    const newValue = 'new value';
-                    should.exist(jsonResponse);
-                    should.exist(jsonResponse.settings);
-                    jsonResponse.settings = [{key: 'default_locale', value: 'ua'}];
-
-                    return jsonResponse;
-                })
-                .then((editedSetting) => {
-                    return request.put(localUtils.API.getApiQuery('settings/'))
-                        .set('Origin', config.get('url'))
-                        .send(editedSetting)
-                        .expect('Content-Type', /json/)
-                        .expect('Cache-Control', testUtils.cacheRules.private)
-                        .expect(200)
-                        .then(function (res) {
-                            should.exist(res.headers['x-cache-invalidate']);
-                            const jsonResponse = res.body;
-
-                            should.exist(jsonResponse);
-                            should.exist(jsonResponse.settings);
-
-                            jsonResponse.settings.length.should.eql(1);
-
-                            testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'group', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
-                            jsonResponse.settings[0].key.should.eql('default_locale');
-                            jsonResponse.settings[0].value.should.eql('ua');
-                        });
-                });
-        });
-
         it('Can edit deprecated lang setting', function () {
             return request.get(localUtils.API.getApiQuery('settings/lang/'))
                 .set('Origin', config.get('url'))
@@ -793,42 +716,43 @@ describe('Settings API (canary)', function () {
                 });
         });
 
-        it('Can edit newly introduced locale setting', function () {
-            return request.get(localUtils.API.getApiQuery('settings/locale/'))
-                .set('Origin', config.get('url'))
-                .set('Accept', 'application/json')
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .then(function (res) {
-                    let jsonResponse = res.body;
-                    should.exist(jsonResponse);
-                    should.exist(jsonResponse.settings);
-                    jsonResponse.settings = [{key: 'locale', value: 'ge'}];
+        // @TODO: swap this test for the one above when renaming the setting is in place
+        // it('Can edit newly introduced locale setting', function () {
+        //     return request.get(localUtils.API.getApiQuery('settings/locale/'))
+        //         .set('Origin', config.get('url'))
+        //         .set('Accept', 'application/json')
+        //         .expect('Content-Type', /json/)
+        //         .expect('Cache-Control', testUtils.cacheRules.private)
+        //         .then(function (res) {
+        //             let jsonResponse = res.body;
+        //             should.exist(jsonResponse);
+        //             should.exist(jsonResponse.settings);
+        //             jsonResponse.settings = [{key: 'locale', value: 'ge'}];
 
-                    return jsonResponse;
-                })
-                .then((editedSetting) => {
-                    return request.put(localUtils.API.getApiQuery('settings/'))
-                        .set('Origin', config.get('url'))
-                        .send(editedSetting)
-                        .expect('Content-Type', /json/)
-                        .expect('Cache-Control', testUtils.cacheRules.private)
-                        .expect(200)
-                        .then(function (res) {
-                            should.exist(res.headers['x-cache-invalidate']);
-                            const jsonResponse = res.body;
+        //             return jsonResponse;
+        //         })
+        //         .then((editedSetting) => {
+        //             return request.put(localUtils.API.getApiQuery('settings/'))
+        //                 .set('Origin', config.get('url'))
+        //                 .send(editedSetting)
+        //                 .expect('Content-Type', /json/)
+        //                 .expect('Cache-Control', testUtils.cacheRules.private)
+        //                 .expect(200)
+        //                 .then(function (res) {
+        //                     should.exist(res.headers['x-cache-invalidate']);
+        //                     const jsonResponse = res.body;
 
-                            should.exist(jsonResponse);
-                            should.exist(jsonResponse.settings);
+        //                     should.exist(jsonResponse);
+        //                     should.exist(jsonResponse.settings);
 
-                            jsonResponse.settings.length.should.eql(1);
+        //                     jsonResponse.settings.length.should.eql(1);
 
-                            testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'group', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
-                            jsonResponse.settings[0].key.should.eql('locale');
-                            jsonResponse.settings[0].value.should.eql('ge');
-                        });
-                });
-        });
+        //                     testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'group', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
+        //                     jsonResponse.settings[0].key.should.eql('locale');
+        //                     jsonResponse.settings[0].value.should.eql('ge');
+        //                 });
+        //         });
+        // });
 
         it('Can read timezone', function (done) {
             request.get(localUtils.API.getApiQuery('settings/timezone/'))
@@ -851,56 +775,6 @@ describe('Settings API (canary)', function () {
 
                     testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'group', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
                     jsonResponse.settings[0].key.should.eql('timezone');
-                    done();
-                });
-        });
-
-        it('Can read active_timezone', function (done) {
-            request.get(localUtils.API.getApiQuery('settings/active_timezone/'))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-
-                    should.not.exist(res.headers['x-cache-invalidate']);
-                    const jsonResponse = res.body;
-
-                    should.exist(jsonResponse);
-                    should.exist(jsonResponse.settings);
-
-                    jsonResponse.settings.length.should.eql(1);
-
-                    testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'group', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
-                    jsonResponse.settings[0].key.should.eql('active_timezone');
-                    done();
-                });
-        });
-
-        it('Can read deprecated active_timezone', function (done) {
-            request.get(localUtils.API.getApiQuery('settings/active_timezone/'))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-
-                    should.not.exist(res.headers['x-cache-invalidate']);
-                    const jsonResponse = res.body;
-
-                    should.exist(jsonResponse);
-                    should.exist(jsonResponse.settings);
-
-                    jsonResponse.settings.length.should.eql(1);
-
-                    testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'group', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
-                    jsonResponse.settings[0].key.should.eql('active_timezone');
                     done();
                 });
         });

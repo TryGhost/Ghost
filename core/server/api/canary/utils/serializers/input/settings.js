@@ -70,20 +70,6 @@ module.exports = {
         }
     },
 
-    read(apiConfig, frame) {
-        if (frame.options.key === 'active_timezone') {
-            frame.options.key = 'timezone';
-        }
-
-        if (frame.options.key === 'default_locale') {
-            frame.options.key = 'lang';
-        }
-
-        if (frame.options.key === 'locale') {
-            frame.options.key = 'lang';
-        }
-    },
-
     edit(apiConfig, frame) {
         // CASE: allow shorthand syntax where a single key and value are passed to edit instead of object and options
         if (_.isString(frame.data)) {
@@ -131,18 +117,6 @@ module.exports = {
             // CASE: Ensure we won't forward strings, otherwise model events or model interactions can fail
             if (settingType === 'boolean' && (setting.value === 'false' || setting.value === 'true')) {
                 setting.value = setting.value === 'true';
-            }
-
-            if (setting.key === 'active_timezone') {
-                setting.key = 'timezone';
-            }
-
-            if (setting.key === 'default_locale') {
-                setting.key = 'lang';
-            }
-
-            if (setting.key === 'locale') {
-                setting.key = 'lang';
             }
 
             if (setting.key === 'labs') {
