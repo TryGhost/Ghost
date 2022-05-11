@@ -77,6 +77,11 @@ module.exports = {
                 }
             });
         }
+
+        if (frame.data.members[0].tiers) {
+            frame.data.members[0].products = frame.data.members[0].tiers;
+        }
+
         defaultRelations(frame);
     },
 

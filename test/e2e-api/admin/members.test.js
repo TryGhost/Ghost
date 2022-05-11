@@ -594,7 +594,7 @@ describe('Members API', function () {
         const compedPayload = {
             id: newMember.id,
             email: newMember.email,
-            products: [
+            tiers: [
                 {
                     id: product.id
                 }
@@ -609,6 +609,7 @@ describe('Members API', function () {
         const updatedMember = body2.members[0];
         assert.equal(updatedMember.status, 'comped', 'A comped member should have the comped status');
         assert.equal(updatedMember.products.length, 1, 'The member should have one product');
+        assert.equal(updatedMember.tiers.length, 1, 'The member should have one product');
 
         await assertMemberEvents({
             eventType: 'MemberStatusEvent',
@@ -648,7 +649,7 @@ describe('Members API', function () {
             name: 'Name',
             email: 'compedtest3@test.com',
             newsletters: [newsletters[0]],
-            products: [
+            tiers: [
                 {
                     id: product.id
                 }
@@ -662,13 +663,13 @@ describe('Members API', function () {
 
         const newMember = body.members[0];
         assert.equal(newMember.status, 'comped', 'The new member should have the comped status');
-        assert.equal(newMember.products.length, 1, 'The member should have 1 product');
+        assert.equal(newMember.tiers.length, 1, 'The member should have 1 product');
 
         // Remove it
         const removePayload = {
             id: newMember.id,
             email: newMember.email,
-            products: []
+            tiers: []
         };
 
         const {body: body2} = await agent
@@ -679,6 +680,7 @@ describe('Members API', function () {
         const updatedMember = body2.members[0];
         assert.equal(updatedMember.status, 'free', 'The member should have the free status');
         assert.equal(updatedMember.products.length, 0, 'The member should have 0 products');
+        assert.equal(updatedMember.tiers.length, 0, 'The member should have 0 products');
 
         await assertMemberEvents({
             eventType: 'MemberStatusEvent',
@@ -721,7 +723,7 @@ describe('Members API', function () {
             email: 'compedtest4@test.com',
             subscribed: true,
             newsletters: [newsletters[0]],
-            products: [
+            tiers: [
                 {
                     id: product.id
                 }
@@ -741,6 +743,13 @@ describe('Members API', function () {
                     labels: anyArray,
                     subscriptions: anyArray,
                     products: new Array(1).fill({
+                        id: anyObjectId,
+                        monthly_price_id: anyObjectId,
+                        yearly_price_id: anyObjectId,
+                        created_at: anyISODateTime,
+                        updated_at: anyISODateTime
+                    }),
+                    tiers: new Array(1).fill({
                         id: anyObjectId,
                         monthly_price_id: anyObjectId,
                         yearly_price_id: anyObjectId,
@@ -862,6 +871,7 @@ describe('Members API', function () {
                     labels: anyArray,
                     subscriptions: anyArray,
                     products: anyArray,
+                    tiers: anyArray,
                     newsletters: new Array(1).fill(newsletterSnapshot)
                 })
             })
@@ -990,6 +1000,7 @@ describe('Members API', function () {
                     labels: anyArray,
                     subscriptions: anyArray,
                     products: anyArray,
+                    tiers: anyArray,
                     newsletters: new Array(1).fill(newsletterSnapshot)
                 })
             })
@@ -1063,7 +1074,7 @@ describe('Members API', function () {
         const readMember = readBody.members[0];
 
         // Note that we explicitly need to ask to include products while browsing
-        const {body: browseBody} = await agent.get(`/members/?search=${memberWithPaidSubscription.email}&include=products`);
+        const {body: browseBody} = await agent.get(`/members/?search=${memberWithPaidSubscription.email}&include=tiers`);
         assert.equal(browseBody.members.length, 1, 'The member was not found in browse');
         const browseMember = browseBody.members[0];
 
