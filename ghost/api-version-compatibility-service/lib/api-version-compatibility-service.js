@@ -52,7 +52,7 @@ class APIVersionCompatibilityService {
 
                 const subject = (trimmedUseAgent === 'Zapier')
                     ? 'Attention required: One of your Zaps has failed'
-                    : `Attention required: Your ${trimmedUseAgent} integration has failed`;
+                    : `Attention required: Your ${integrationName} integration has failed`;
 
                 const {html, text} = await this.emailContentGenerator.getContent({
                     template,

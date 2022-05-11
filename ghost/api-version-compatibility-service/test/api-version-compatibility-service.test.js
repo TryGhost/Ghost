@@ -77,7 +77,7 @@ describe('APIVersionCompatibilityService', function () {
         await compatibilityService.handleMismatch({
             acceptVersion: 'v4.5',
             contentVersion: 'v5.1',
-            userAgent: 'Elaborate Fox',
+            userAgent: 'GhostAdminSDK/2.4.0',
             requestURL: 'https://amazeballsghostsite.com/ghost/api/admin/posts/dew023d9203se4',
             apiKeyValue: 'secret',
             apiKeyType: 'content'
@@ -141,7 +141,7 @@ describe('APIVersionCompatibilityService', function () {
         await compatibilityService.handleMismatch({
             acceptVersion: 'v4.5',
             contentVersion: 'v5.1',
-            userAgent: 'Elaborate Fox',
+            userAgent: 'GhostAdminSDK/2.4.0',
             requestURL: 'https://amazeballsghostsite.com/ghost/api/admin/posts/dew023d9203se4',
             apiKeyValue: 'secret',
             apiKeyType: 'content'
@@ -171,7 +171,7 @@ describe('APIVersionCompatibilityService', function () {
         await compatibilityService.handleMismatch({
             acceptVersion: 'v4.5',
             contentVersion: 'v5.1',
-            userAgent: 'Elaborate Fox',
+            userAgent: 'GhostAdminSDK/2.4.0',
             requestURL: 'does not matter',
             apiKeyValue: 'secret',
             apiKeyType: 'content'
@@ -247,7 +247,7 @@ describe('APIVersionCompatibilityService', function () {
         await compatibilityService.handleMismatch({
             acceptVersion: 'v4.5',
             contentVersion: 'v5.1',
-            userAgent: 'Elaborate Fox',
+            userAgent: 'GhostAdminSDK/2.4.0',
             requestURL: 'https://amazeballsghostsite.com/ghost/api/admin/posts/dew023d9203se4',
             apiKeyValue: 'secret',
             apiKeyType: 'content'
@@ -298,7 +298,7 @@ describe('APIVersionCompatibilityService', function () {
         await compatibilityService.handleMismatch({
             acceptVersion: 'v4.8',
             contentVersion: 'v5.1',
-            userAgent: 'Elaborate Fox',
+            userAgent: 'GhostAdminSDK/2.4.0',
             requestURL: 'https://amazeballsghostsite.com/ghost/api/admin/posts/dew023d9203se4',
             apiKeyValue: 'secret',
             apiKeyType: 'content'
