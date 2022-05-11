@@ -8,6 +8,41 @@ const forceActiveFilter = (frame) => {
     }
 };
 
+function convertTierInput(input) {
+    const converted = {
+        id: input.id,
+        name: input.name,
+        description: input.description,
+        slug: input.slug,
+        active: input.active,
+        type: input.type,
+        welcome_page_url: input.welcome_page_url,
+        created_at: input.created_at,
+        updated_at: input.updated_at,
+        visibility: input.visibility
+    };
+
+    if (input.monthly_price && input.currency) {
+        converted.monthly_price = {
+            amount: input.monthly_price,
+            currency: input.currency
+        };
+    }
+
+    if (input.yearly_price && input.currency) {
+        converted.yearly_price = {
+            amount: input.yearly_price,
+            currency: input.currency
+        };
+    }
+
+    if (input.benefits) {
+        converted.benefits = input.benefits.map(name => ({name}));
+    }
+
+    return converted;
+}
+
 module.exports = {
     all(_apiConfig, frame) {
         if (!frame.options.withRelated) {
@@ -37,17 +72,17 @@ module.exports = {
 
     add(_apiConfig, frame) {
         if (frame.data.products) {
-            frame.data = frame.data.products[0];
+            frame.data = convertTierInput(frame.data.products[0]);
             return;
         }
-        frame.data = frame.data.tiers[0];
+        frame.data = convertTierInput(frame.data.tiers[0]);
     },
 
     edit(_apiConfig, frame) {
         if (frame.data.products) {
-            frame.data = frame.data.products[0];
+            frame.data = convertTierInput(frame.data.products[0]);
             return;
         }
-        frame.data = frame.data.tiers[0];
+        frame.data = convertTierInput(frame.data.tiers[0]);
     }
 };
