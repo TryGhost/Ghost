@@ -2,12 +2,43 @@ import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
+// Options 30 and 90 need an extra day to be able to distribute ticks/gridlines evenly
+const DAYS_OPTIONS = [{
+    name: '7 Days',
+    value: 7
+}, {
+    name: '30 Days',
+    value: 30 + 1
+}, {
+    name: '90 Days',
+    value: 90 + 1
+}];
+
 export default class DashboardDashboardV5Component extends Component {
     @service dashboardStats;
+
+    daysOptions = DAYS_OPTIONS;
 
     @action
     onInsert() {
         this.dashboardStats.loadSiteStatus();
+    }
+
+    @action 
+    onDaysChange(selected) {
+        this.days = selected.value;
+    }
+
+    get days() {
+        return this.dashboardStats.chartDays;
+    }
+
+    set days(days) {
+        this.dashboardStats.chartDays = days;
+    }
+
+    get selectedDaysOption() {
+        return this.daysOptions.find(d => d.value === this.days);
     }
 
     get isLoading() {
