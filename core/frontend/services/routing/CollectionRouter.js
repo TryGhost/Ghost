@@ -140,7 +140,7 @@ class CollectionRouter extends ParentRouter {
     getRoute(options) {
         options = options || {};
 
-        return urlUtils.createUrl(this.route.value, options.absolute, options.secure);
+        return urlUtils.createUrl(this.route.value, options.absolute);
     }
 
     /**
@@ -153,7 +153,7 @@ class CollectionRouter extends ParentRouter {
             return null;
         }
 
-        return urlUtils.createUrl(urlUtils.urlJoin(this.route.value, this.rssRouter.route.value), options.absolute, options.secure);
+        return urlUtils.createUrl(urlUtils.urlJoin(this.route.value, this.rssRouter.route.value), options.absolute);
     }
 }
 

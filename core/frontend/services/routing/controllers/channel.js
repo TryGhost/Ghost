@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const debug = require('@tryghost/debug')('services:routing:controllers:channel');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
@@ -59,15 +58,6 @@ module.exports = function channelController(req, res, next) {
                     message: tpl(messages.pageNotFound)
                 }));
             }
-
-            // Format data 1
-            // @TODO: See renderer/secure for explanation.
-            renderer.secure(req, result.posts);
-
-            // @TODO: See renderer/secure for explanation.
-            _.each(result.data, function (data) {
-                renderer.secure(req, data);
-            });
 
             return renderer.renderEntries(req, res)(result);
         })

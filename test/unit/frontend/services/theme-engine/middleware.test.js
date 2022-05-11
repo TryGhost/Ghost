@@ -135,22 +135,6 @@ describe('Themes middleware', function () {
         });
     });
 
-    it('Sets res.locals.secure to the value of req.secure', function (done) {
-        req.secure = Math.random() < 0.5;
-
-        executeMiddleware(middleware, req, res, function next(err) {
-            try {
-                should.not.exist(err);
-
-                should.equal(res.locals.secure, req.secure);
-
-                done();
-            } catch (error) {
-                done(error);
-            }
-        });
-    });
-
     describe('updateTemplateOptions', function () {
         it('is called with correct data', function (done) {
             const themeDataExpectedProps = ['posts_per_page', 'image_sizes'];
