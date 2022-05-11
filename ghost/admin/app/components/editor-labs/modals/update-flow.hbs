@@ -26,7 +26,7 @@
 
                     {{if post.isScheduled "will be" "was"}}
 
-                    {{#if (or (and post.isPublished post.email) (and post.isScheduled post.emailRecipientFilter (not post.email)))}}
+                    {{#if (or post.isSent (and post.isPublished post.email) (and post.isScheduled post.emailRecipientFilter (not post.email)))}}
                         {{#if post.emailOnly}}
                             sent to
                         {{else}}
@@ -44,6 +44,17 @@
                         published.
                     {{/if}}
                     {{#if post.isScheduled}}
+                        {{#if (and post.isScheduled post.email)}}
+                            This post was previously emailed to
+                            <strong>{{pluralize post.email.emailCount "member"}}</strong> on
+
+                            {{#let (moment-site-tz post.email.createdAtUTC) as |sentAt|}}
+                                {{moment-format sentAt "D MMM YYYY"}}
+                                at
+                                {{moment-format sentAt "HH:mm"}}.
+                            {{/let}}
+                        {{/if}}
+                        <br><br>
                         Need to make a change?
                         <button
                             type="button"
@@ -52,7 +63,7 @@
                         >
                             <span>Unschedule and revert to draft &rarr;</span>
                         </button>
-                    {{else}}
+                    {{else if (not post.emailOnly)}}
                         <button
                             type="button"
                             class="gh-revert-to-draft"
@@ -61,20 +72,7 @@
                             <span>Unpublish and revert to private draft &rarr;</span>
                         </button>
                     {{/if}}
-
                 </p>
-                {{#if (and post.isScheduled post.email)}}
-                    <p>
-                        This post was previously emailed to
-                        <strong>{{pluralize post.email.emailCount "member"}}</strong> on
-
-                        {{#let (moment-site-tz post.email.createdAtUTC) as |sentAt|}}
-                            {{moment-format sentAt "D MMM YYYY"}}
-                            at
-                            {{moment-format sentAt "HH:mm"}}.
-                        {{/let}}
-                    </p>
-                {{/if}}
             </div>
         </div>
     {{/let}}
