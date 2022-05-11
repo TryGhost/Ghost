@@ -89,7 +89,6 @@ export default class PaidBreakdown extends Component {
 
     get chartOptions() {
         const barColor = this.feature.nightShift ? 'rgba(200, 204, 217, 0.25)' : 'rgba(200, 204, 217, 0.65)';
-        let maxWidth = 0;
 
         return {
             responsive: true,
