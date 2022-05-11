@@ -67,7 +67,7 @@ export default class PublishModalComponent extends Component {
             return;
         }
 
-        const result = yield this.store.query('post', {limit: 1});
+        const result = yield this.store.query('post', {status: 'published', limit: 1});
         let count = result.meta.pagination.total;
 
         count += 1; // account for the new post
