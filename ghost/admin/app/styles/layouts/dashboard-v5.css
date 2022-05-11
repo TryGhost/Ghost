@@ -770,6 +770,10 @@ Dashboard v5 List */
     white-space: nowrap;
 }
 
+.gh-dashboard5-list-empty {
+    flex: 1;
+}
+
 
 /* --------------------------------- 
 Dashboard v5 Overview */
