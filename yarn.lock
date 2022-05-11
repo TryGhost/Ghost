@@ -2278,10 +2278,10 @@
   optionalDependencies:
     promise.allsettled "^1.0.5"
 
-"@tryghost/minifier@0.1.14":
-  version "0.1.14"
-  resolved "https://registry.yarnpkg.com/@tryghost/minifier/-/minifier-0.1.14.tgz#62b5a4649b2131e9c1a2c5b2ad0c733cac0aec50"
-  integrity sha512-P7Dr4co8fLNWNFFHVtFIuCwnCfJF4k9o9DDff+y+OzEnsyjOnIPLguFhjTsmNA/a1Rjpt2yKlJOhKukgExLgVA==
+"@tryghost/minifier@0.1.15":
+  version "0.1.15"
+  resolved "https://registry.yarnpkg.com/@tryghost/minifier/-/minifier-0.1.15.tgz#28f94c2d234d8475ad50708b5491564b35bae62e"
+  integrity sha512-7ke5QCh0oBy0qk6tU9ptKYxH016toVvmFJMAY6iwNzKuKfmdocjst8V5qcqVy+Z5l6Jb/1mhO+D6wcDRjAJAcg==
   dependencies:
     "@tryghost/debug" "^0.1.8"
     "@tryghost/errors" "^1.2.1"
