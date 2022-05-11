@@ -10,6 +10,7 @@ export default class NewsletterManagementComponent extends Component {
     @service modals;
     @service router;
     @service store;
+    @service limit;
 
     @tracked statusFilter = 'active';
     @tracked filteredNewsletters = [];
@@ -91,7 +92,21 @@ export default class NewsletterManagementComponent extends Component {
     }
 
     @action
-    unarchiveNewsletter(newsletter) {
+    async unarchiveNewsletter(newsletter) {
+        try {
+            await this.limit.limiter.errorIfWouldGoOverLimit('newsletters');
+        } catch (error) {
+            if (error.errorType === 'HostLimitError') {
+                // Not allowed: we reached the limit here
+                this.modals.open('modals/limits/multiple-newsletters', {
+                    message: error.message
+                });
+                return;
+            }
+
+            throw error;
+        }
+
         this.confirmUnarchiveModal = this.modals.open(ConfirmUnarchiveModal, {
             newsletter,
             unarchiveNewsletterTask: this.unarchiveNewsletterTask
