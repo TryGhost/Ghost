@@ -1859,10 +1859,10 @@
     "@tryghost/root-utils" "^0.3.8"
     nconf "^0.11.3"
 
-"@tryghost/constants@1.0.4":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/constants/-/constants-1.0.4.tgz#fe8c6b4234a4f7cb0389ab3e6e72b0380fcbf0f6"
-  integrity sha512-IwtFCuQJeNvCJ0DXXL2O3gFAQeQTpZMh7SBA/kiB8UTgChaEf+gwuSNYT1xH6GH06+D5jbB59aV+S7A+oWd+3A==
+"@tryghost/constants@1.0.5":
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/@tryghost/constants/-/constants-1.0.5.tgz#b601179c0210b83f76e59a23dc84b7170c8678ae"
+  integrity sha512-h7naC5yTJRpIISerIbCjilA6mHYEWlg5Q7TdX4ufQuFsSPetBd5uK2brVJ1pMElwe4PCSX/Hm1E9cf1iHIIu2w==
 
 "@tryghost/custom-theme-settings-service@0.3.2":
   version "0.3.2"
