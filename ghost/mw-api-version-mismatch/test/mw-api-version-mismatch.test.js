@@ -51,7 +51,7 @@ describe('mw-api-version-mismatch', function () {
             handleMismatch: sinon.stub().resolves()
         };
         const req = {
-            originalUrl: '/api/admin/posts/1',
+            originalUrl: '/api/admin/posts/1?tim_me=please',
             query: {
                 key: 'content_api_key_secret'
             },
@@ -81,7 +81,7 @@ describe('mw-api-version-mismatch', function () {
 
             assert.equal(APIVersionCompatibilityService.handleMismatch.args[0][0].acceptVersion, 'v3.28');
             assert.equal(APIVersionCompatibilityService.handleMismatch.args[0][0].contentVersion, 'v4.46');
-            assert.equal(APIVersionCompatibilityService.handleMismatch.args[0][0].requestURL, '/api/admin/posts/1');
+            assert.equal(APIVersionCompatibilityService.handleMismatch.args[0][0].requestURL, '/api/admin/posts/1', 'trims query string');
             assert.equal(APIVersionCompatibilityService.handleMismatch.args[0][0].userAgent, 'Zapier/2.1 GhostAdminSDK/3.28');
             assert.equal(APIVersionCompatibilityService.handleMismatch.args[0][0].apiKeyValue, 'content_api_key_secret');
             assert.equal(APIVersionCompatibilityService.handleMismatch.args[0][0].apiKeyType, 'content');
