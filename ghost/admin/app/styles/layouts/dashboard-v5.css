@@ -1398,12 +1398,20 @@ Dashboard v5 Community */
 .gh-dashboard5-community .gh-dashboard5-resource-box {
     background: transparent;
     background-repeat: no-repeat;
-    background-position: center;
-    background-size: cover;
+    background-position: 50% 50%;
+    background-size: auto 105%;
     background-image: url(img/community-background.jpg);
     color: var(--white);
     padding-top: 32px;
+    transition: all .5s ease-in-out;
+    border: 0 none;
 }   
+
+.gh-dashboard5-community .gh-dashboard5-resource-box:hover {
+    box-shadow: 0 54px 80px rgb(0 0 0 / 7%), 0 19.7109px 29.2013px rgb(0 0 0 / 5%), 0 9.56927px 14.1767px rgb(0 0 0 / 4%), 0 4.69103px 6.94968px rgb(0 0 0 / 3%), 0 1.85484px 2.74791px rgb(0 0 0 / 2%);
+    transform: translateY(-4px);
+    background-size: auto 108%;
+}
 
 .gh-dashboard5-community .gh-dashboard5-list-body p {
     font-size: 4.0rem;
