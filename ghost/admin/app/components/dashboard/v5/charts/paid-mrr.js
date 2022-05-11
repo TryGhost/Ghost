@@ -173,19 +173,25 @@ export default class PaidMrr extends Component {
                 custom: function (tooltip) {
                     // get tooltip element
                     const tooltipEl = document.getElementById('gh-dashboard5-mrr-tooltip');
+                    const chartContainerEl = tooltipEl.parentElement;
+                    const chartWidth = chartContainerEl.offsetWidth;
+                    const tooltipWidth = tooltipEl.offsetWidth;
 
                     // only show tooltip when active
                     if (tooltip.opacity === 0) {
-                        tooltipEl.style.display = 'none';
                         tooltipEl.style.opacity = 0;
                         return; 
                     }
 
+                    let offsetX = 0;
+                    if (tooltip.x > chartWidth - tooltipWidth) {
+                        offsetX = tooltipWidth - 10;
+                    }
+
                     // update tooltip styles
-                    tooltipEl.style.display = 'block';
                     tooltipEl.style.opacity = 1;
                     tooltipEl.style.position = 'absolute';
-                    tooltipEl.style.left = tooltip.x + 'px';
+                    tooltipEl.style.left = tooltip.x - offsetX + 'px';
                     tooltipEl.style.top = tooltip.y + 'px';    
                 },
                 callbacks: {

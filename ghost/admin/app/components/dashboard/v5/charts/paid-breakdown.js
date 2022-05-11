@@ -123,6 +123,7 @@ export default class PaidBreakdown extends Component {
                 custom: function (tooltip) {
                     // get tooltip element
                     const tooltipEl = document.getElementById('gh-dashboard5-breakdown-tooltip');
+                    const tooltipWidth = tooltipEl.offsetWidth;
 
                     // only show tooltip when active
                     if (tooltip.opacity === 0) {
@@ -135,7 +136,7 @@ export default class PaidBreakdown extends Component {
                     tooltipEl.style.display = 'block';
                     tooltipEl.style.opacity = 1;
                     tooltipEl.style.position = 'absolute';
-                    tooltipEl.style.left = tooltip.x + 'px';
+                    tooltipEl.style.left = tooltip.x - (tooltipWidth / 2) + 'px';
                     tooltipEl.style.top = '70px';    
                 },
                 callbacks: {
