@@ -1,4 +1,4 @@
-import {PublishOptions} from '../components/editor-labs/publish-management';
+import PublishOptions from '../utils/publish-options';
 import {Resource} from 'ember-could-get-used-to-this';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
