@@ -119,7 +119,7 @@ describe('API Versioning', function () {
 
             mockManager.assert.sentEmailCount(1);
             mockManager.assert.sentEmail({
-                subject: 'Attention required: Your Zapier 1.3 integration has failed',
+                subject: 'Attention required: Your Zapier integration has failed',
                 to: 'jbloggs@example.com'
             });
         });
@@ -143,7 +143,7 @@ describe('API Versioning', function () {
 
             mockManager.assert.sentEmailCount(1);
             mockManager.assert.sentEmail({
-                subject: 'Attention required: Your Zapier 1.4 integration has failed',
+                subject: 'Attention required: Your Zapier integration has failed',
                 to: 'jbloggs@example.com'
             });
 
