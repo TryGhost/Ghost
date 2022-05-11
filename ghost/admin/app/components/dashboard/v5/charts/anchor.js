@@ -275,13 +275,11 @@ export default class Anchor extends Component {
 
                     // only show tooltip when active
                     if (tooltip.opacity === 0) {
-                        tooltipEl.style.display = 'none';
                         tooltipEl.style.opacity = 0;
                         return; 
                     }
 
                     // update tooltip styles
-                    tooltipEl.style.display = 'block';
                     tooltipEl.style.opacity = 1;
                     tooltipEl.style.position = 'absolute';
 
