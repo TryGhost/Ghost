@@ -566,24 +566,11 @@ module.exports = class MemberRepository {
             });
         }
 
-        const filterOptions = {};
-
-        if (options.transacting) {
-            filterOptions.transacting = options.transacting;
-        }
-
-        if (options.context) {
-            filterOptions.context = options.context;
-        }
+        const filterOptions = _.pick(options, ['transacting', 'context']);
 
         if (all !== true) {
-            if (filter) {
-                filterOptions.filter = filter;
-            }
-
-            if (search) {
-                filterOptions.search = search;
-            }
+            // Include mongoTransformer to apply subscribed:{true|false} => newsletter relation mapping
+            Object.assign(filterOptions, _.pick(options, ['filter', 'search', 'mongoTransformer']));
         }
 
         const memberRows = await this._Member.getFilteredCollectionQuery(filterOptions)
@@ -616,24 +603,11 @@ module.exports = class MemberRepository {
             });
         }
 
-        const filterOptions = {};
-
-        if (options.transacting) {
-            filterOptions.transacting = options.transacting;
-        }
-
-        if (options.context) {
-            filterOptions.context = options.context;
-        }
+        const filterOptions = _.pick(options, ['transacting', 'context']);
 
         if (all !== true) {
-            if (filter) {
-                filterOptions.filter = filter;
-            }
-
-            if (search) {
-                filterOptions.search = search;
-            }
+            // Include mongoTransformer to apply subscribed:{true|false} => newsletter relation mapping
+            Object.assign(filterOptions, _.pick(options, ['filter', 'search', 'mongoTransformer']));
         }
 
         const memberRows = await this._Member.getFilteredCollectionQuery(filterOptions)
