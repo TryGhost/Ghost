@@ -134,7 +134,7 @@ describe('Settings API', function () {
                 value: 'twitter description'
             },
             {
-                key: 'lang',
+                key: 'locale',
                 value: 'ua'
             },
             {
