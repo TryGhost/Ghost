@@ -920,6 +920,7 @@ Dashboard v5 Zero */
     background: rgba(255,255,255,0.8);
     border: 1px solid var(--whitegrey);
     border-radius: 6px;
+    z-index: 99;
 
     -webkit-backdrop-filter: blur(3px);
     backdrop-filter: blur(3px);
