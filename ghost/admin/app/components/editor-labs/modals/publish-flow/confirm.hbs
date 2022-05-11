@@ -54,13 +54,38 @@
      This is it.
 </p>
 
+{{#if this.errorMessage}}
+    <p class="error gh-box gh-box-error mt3 mb3">
+        {{svg-jar "warning"}}
+        {{this.errorMessage}}
+    </p>
+{{/if}}
+
+{{#if this.emailErrorMessage}}
+    <p class="error gh-box gh-box-error mt3 mb3">
+        {{svg-jar "warning"}}
+
+        {{#if @publishOptions.willOnlyEmail}}
+            Your post has been created but the email failed to send.
+        {{else}}
+            Your post has been published but the email failed to send.
+        {{/if}}
+
+        Please verify your email settings if the error persists.
+        <br><br>
+        Email error: {{this.emailErrorMessage}}
+    </p>
+{{/if}}
+
 <div class="gh-publish-cta">
     <GhTaskButton
-        @task={{@saveTask}}
+        @task={{this.confirmTask}}
         @buttonText={{this.confirmButtonText}}
         @runningText={{if @publishOptions.willOnlyEmail "Sending" "Publishing"}}
         @successText={{if @publishOptions.willOnlyEmail "Sent" "Published"}}
-        @class="gh-btn gh-btn-pulse gh-btn-large"
+        @class="gh-btn gh-btn-large"
+        @idleClass="gh-btn-pulse"
+        @showIcon={{false}}
     />
     <button type="button" class="gh-btn gh-btn-link gh-btn-large gh-publish-cta-secondary" {{on "click" @cancel}}>Back to settings</button>
 </div>
