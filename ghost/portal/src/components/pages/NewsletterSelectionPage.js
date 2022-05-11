@@ -99,7 +99,7 @@ export default function NewsletterSelectionPage({pageData}) {
             </div>
             <footer className='gh-portal-action-footer'>
                 <div style={{width: '100%'}}>
-                    <div style={{marginBottom: '12px'}}>
+                    <div style={{marginBottom: '20px'}}>
                         <ActionButton
                             isRunning={isRunning}
                             retry={retry}
@@ -117,6 +117,19 @@ export default function NewsletterSelectionPage({pageData}) {
                             label={label}
                             style={{width: '100%'}}
                         />
+                    </div>
+                    <div>
+                        <button
+                            className='gh-portal-btn gh-portal-btn-link gh-portal-btn-different-plan'
+                            onClick = {() => {
+                                if (this.props.onBack) {
+                                    this.props.onBack();
+                                } else {
+                                    this.context.onAction('closePopup');
+                                }
+                            }}>
+                            <span>Choose a different plan</span>
+                        </button>
                     </div>
                 </div>
             </footer>
