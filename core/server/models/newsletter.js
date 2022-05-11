@@ -40,7 +40,7 @@ const Newsletter = ghostBookshelf.Model.extend({
 
     // Force active newsletters for content API
     enforcedFilters: function enforcedFilters(options) {
-        return options.context && options.context.public ? 'status:active' : null;
+        return (options.context && options.context.public) ? 'status:active' : null;
     },
 
     async onSaving(model, _attr, options) {
