@@ -240,9 +240,17 @@ export default class PublishOptions {
     @task
     *fetchRequiredDataTask() {
         // total # of members - used to enable/disable email
-        const countTotalMembers = this.store.query('member', {limit: 1}).then((res) => {
-            this.totalMemberCount = res.meta.pagination.total;
-        });
+        let countTotalMembers = Promise.resolve();
+
+        // only Admins/Owners have permission to browse members and get a count
+        // for Editors/Authors set member count to 1 so email isn't disabled for not having any members
+        if (this.user.isAdmin) {
+            countTotalMembers = this.store.query('member', {limit: 1}).then((res) => {
+                this.totalMemberCount = res.meta.pagination.total;
+            });
+        } else {
+            this.totalMemberCount = 1;
+        }
 
         // email limits
         const checkSendingLimit = this._checkSendingLimit();

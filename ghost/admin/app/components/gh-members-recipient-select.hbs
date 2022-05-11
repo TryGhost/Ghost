@@ -2,7 +2,9 @@
     <p>
         Free subscribers
         {{#let (members-count-fetcher query=(hash filter=(concat @newsletter.recipientFilter "+status:free"))) as |countFetcher|}}
-            <span class="gh-publishmenu-emailcount" data-test-email-count="free-members">({{countFetcher.count}})</span>
+            {{#if (not (is-empty countFetcher.count))}}
+                <span class="gh-publishmenu-emailcount" data-test-email-count="free-members">({{countFetcher.count}})</span>
+            {{/if}}
         {{/let}}
     </p>
     <div class="for-switch small {{if @disabled "disabled"}}">
@@ -26,7 +28,9 @@
         <p>
             Paid subscribers
             {{#let (members-count-fetcher query=(hash filter=(concat @newsletter.recipientFilter "+status:-free"))) as |countFetcher|}}
-                <span class="gh-publishmenu-emailcount" data-test-email-count="paid-members">({{countFetcher.count}})</span>
+                {{#if (not (is-empty countFetcher.count))}}
+                    <span class="gh-publishmenu-emailcount" data-test-email-count="paid-members">({{countFetcher.count}})</span>
+                {{/if}}
             {{/let}}
         </p>
         <div class="for-switch small {{if @disabled "disabled"}}">
