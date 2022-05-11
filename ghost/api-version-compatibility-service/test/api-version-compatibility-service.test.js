@@ -87,16 +87,16 @@ describe('APIVersionCompatibilityService', function () {
         assert.equal(sendEmail.args[0][0].to, 'simon@example.com');
         assert.equal(sendEmail.args[0][0].subject, `Attention required: Your Elaborate Fox integration has failed`);
 
-        assert.match(sendEmail.args[0][0].html, /Ghost has noticed that your <strong style="font-weight: 600;">Elaborate Fox<\/strong> integration is no longer working as expected\./);
-        assert.match(sendEmail.args[0][0].html, /Elaborate Fox integration expected Ghost version:<\/strong>&nbsp; v4.5/);
+        assert.match(sendEmail.args[0][0].html, /Your <strong style="font-weight: 600;">Elaborate Fox<\/strong> integration is no longer working as expected\./);
+        assert.match(sendEmail.args[0][0].html, /Integration expected Ghost version:<\/strong>&nbsp; v4.5/);
         assert.match(sendEmail.args[0][0].html, /Current Ghost version:<\/strong>&nbsp; v5.1/);
         assert.match(sendEmail.args[0][0].html, /Failed request URL:<\/strong>&nbsp; \/ghost\/api\/admin\/posts\/dew023d9203se4/);
 
         assert.match(sendEmail.args[0][0].html, /This email was sent from <a href="https:\/\/amazeballsghostsite.com"/);
         assert.match(sendEmail.args[0][0].html, /to <a href="mailto:simon@example.com"/);
 
-        assert.match(sendEmail.args[0][0].text, /Ghost has noticed that your Elaborate Fox integration is no longer working/);
-        assert.match(sendEmail.args[0][0].text, /Elaborate Fox integration expected Ghost version:v4.5/);
+        assert.match(sendEmail.args[0][0].text, /Your Elaborate Fox integration is no longer working/);
+        assert.match(sendEmail.args[0][0].text, /Integration expected Ghost version:v4.5/);
         assert.match(sendEmail.args[0][0].text, /Current Ghost version:v5.1/);
         assert.match(sendEmail.args[0][0].text, /Failed request URL:/);
         assert.match(sendEmail.args[0][0].text, /\/ghost\/api\/admin\/posts\/dew023d9203se4/);
@@ -151,16 +151,16 @@ describe('APIVersionCompatibilityService', function () {
         assert.equal(sendEmail.args[0][0].to, 'simon@example.com');
         assert.equal(sendEmail.args[0][0].subject, `Attention required: Your Elaborate Fox integration has failed`);
 
-        assert.match(sendEmail.args[0][0].html, /Ghost has noticed that your <strong style="font-weight: 600;">Elaborate Fox<\/strong> integration is no longer working as expected\./);
-        assert.match(sendEmail.args[0][0].html, /Elaborate Fox integration expected Ghost version:<\/strong>&nbsp; v4.5/);
+        assert.match(sendEmail.args[0][0].html, /Your <strong style="font-weight: 600;">Elaborate Fox<\/strong> integration is no longer working as expected\./);
+        assert.match(sendEmail.args[0][0].html, /Integration expected Ghost version:<\/strong>&nbsp; v4.5/);
         assert.match(sendEmail.args[0][0].html, /Current Ghost version:<\/strong>&nbsp; v5.1/);
         assert.match(sendEmail.args[0][0].html, /Failed request URL:<\/strong>&nbsp; https:\/\/amazeballsghostsite.com\/ghost\/api\/admin\/posts\/dew023d9203se4/);
 
         assert.match(sendEmail.args[0][0].html, /This email was sent from <a href="https:\/\/amazeballsghostsite.com"/);
         assert.match(sendEmail.args[0][0].html, /to <a href="mailto:simon@example.com"/);
 
-        assert.match(sendEmail.args[0][0].text, /Ghost has noticed that your Elaborate Fox integration is no longer working/);
-        assert.match(sendEmail.args[0][0].text, /Elaborate Fox integration expected Ghost version:v4.5/);
+        assert.match(sendEmail.args[0][0].text, /Your Elaborate Fox integration is no longer working/);
+        assert.match(sendEmail.args[0][0].text, /Integration expected Ghost version:v4.5/);
         assert.match(sendEmail.args[0][0].text, /Current Ghost version:v5.1/);
         assert.match(sendEmail.args[0][0].text, /Failed request URL:/);
         assert.match(sendEmail.args[0][0].text, /https:\/\/amazeballsghostsite.com\/ghost\/api\/admin\/posts\/dew023d9203se4/);
@@ -257,16 +257,16 @@ describe('APIVersionCompatibilityService', function () {
         assert.equal(sendEmail.args[0][0].to, 'simon@example.com');
         assert.equal(sendEmail.args[0][0].subject, `Attention required: Your Elaborate Fox integration has failed`);
 
-        assert.match(sendEmail.args[0][0].html, /Ghost has noticed that your <strong style="font-weight: 600;">Elaborate Fox<\/strong> integration is no longer working as expected\./);
-        assert.match(sendEmail.args[0][0].html, /Elaborate Fox integration expected Ghost version:<\/strong>&nbsp; v4.5/);
+        assert.match(sendEmail.args[0][0].html, /Your <strong style="font-weight: 600;">Elaborate Fox<\/strong> integration is no longer working as expected\./);
+        assert.match(sendEmail.args[0][0].html, /Integration expected Ghost version:<\/strong>&nbsp; v4.5/);
         assert.match(sendEmail.args[0][0].html, /Current Ghost version:<\/strong>&nbsp; v5.1/);
         assert.match(sendEmail.args[0][0].html, /Failed request URL:<\/strong>&nbsp; https:\/\/amazeballsghostsite.com\/ghost\/api\/admin\/posts\/dew023d9203se4/);
 
         assert.match(sendEmail.args[0][0].html, /This email was sent from <a href="https:\/\/amazeballsghostsite.com"/);
         assert.match(sendEmail.args[0][0].html, /to <a href="mailto:simon@example.com"/);
 
-        assert.match(sendEmail.args[0][0].text, /Ghost has noticed that your Elaborate Fox integration is no longer working/);
-        assert.match(sendEmail.args[0][0].text, /Elaborate Fox integration expected Ghost version:v4.5/);
+        assert.match(sendEmail.args[0][0].text, /Your Elaborate Fox integration is no longer working/);
+        assert.match(sendEmail.args[0][0].text, /Integration expected Ghost version:v4.5/);
         assert.match(sendEmail.args[0][0].text, /Current Ghost version:v5.1/);
         assert.match(sendEmail.args[0][0].text, /Failed request URL:/);
         assert.match(sendEmail.args[0][0].text, /https:\/\/amazeballsghostsite.com\/ghost\/api\/admin\/posts\/dew023d9203se4/);
@@ -278,16 +278,16 @@ describe('APIVersionCompatibilityService', function () {
         assert.equal(sendEmail.args[1][0].to, 'sam@example.com');
         assert.equal(sendEmail.args[1][0].subject, `Attention required: Your Elaborate Fox integration has failed`);
 
-        assert.match(sendEmail.args[1][0].html, /Ghost has noticed that your <strong style="font-weight: 600;">Elaborate Fox<\/strong> integration is no longer working as expected\./);
-        assert.match(sendEmail.args[1][0].html, /Elaborate Fox integration expected Ghost version:<\/strong>&nbsp; v4.5/);
+        assert.match(sendEmail.args[1][0].html, /Your <strong style="font-weight: 600;">Elaborate Fox<\/strong> integration is no longer working as expected\./);
+        assert.match(sendEmail.args[1][0].html, /Integration expected Ghost version:<\/strong>&nbsp; v4.5/);
         assert.match(sendEmail.args[1][0].html, /Current Ghost version:<\/strong>&nbsp; v5.1/);
         assert.match(sendEmail.args[1][0].html, /Failed request URL:<\/strong>&nbsp; https:\/\/amazeballsghostsite.com\/ghost\/api\/admin\/posts\/dew023d9203se4/);
 
         assert.match(sendEmail.args[1][0].html, /This email was sent from <a href="https:\/\/amazeballsghostsite.com"/);
         assert.match(sendEmail.args[1][0].html, /to <a href="mailto:sam@example.com"/);
 
-        assert.match(sendEmail.args[1][0].text, /Ghost has noticed that your Elaborate Fox integration is no longer working/);
-        assert.match(sendEmail.args[1][0].text, /Elaborate Fox integration expected Ghost version:v4.5/);
+        assert.match(sendEmail.args[1][0].text, /Your Elaborate Fox integration is no longer working/);
+        assert.match(sendEmail.args[1][0].text, /Integration expected Ghost version:v4.5/);
         assert.match(sendEmail.args[1][0].text, /Current Ghost version:v5.1/);
         assert.match(sendEmail.args[1][0].text, /Failed request URL:/);
         assert.match(sendEmail.args[1][0].text, /https:\/\/amazeballsghostsite.com\/ghost\/api\/admin\/posts\/dew023d9203se4/);
@@ -307,13 +307,13 @@ describe('APIVersionCompatibilityService', function () {
         assert.equal(sendEmail.callCount, 4);
         assert.equal(sendEmail.args[2][0].to, 'simon@example.com');
 
-        assert.match(sendEmail.args[2][0].html, /Ghost has noticed that your <strong style="font-weight: 600;">Elaborate Fox<\/strong> integration is no longer working as expected\./);
-        assert.match(sendEmail.args[2][0].html, /Elaborate Fox integration expected Ghost version:<\/strong>&nbsp; v4.8/);
+        assert.match(sendEmail.args[2][0].html, /Your <strong style="font-weight: 600;">Elaborate Fox<\/strong> integration is no longer working as expected\./);
+        assert.match(sendEmail.args[2][0].html, /Integration expected Ghost version:<\/strong>&nbsp; v4.8/);
         assert.match(sendEmail.args[2][0].html, /Current Ghost version:<\/strong>&nbsp; v5.1/);
         assert.match(sendEmail.args[2][0].html, /Failed request URL:<\/strong>&nbsp; https:\/\/amazeballsghostsite.com\/ghost\/api\/admin\/posts\/dew023d9203se4/);
 
-        assert.match(sendEmail.args[2][0].text, /Ghost has noticed that your Elaborate Fox integration is no longer working/);
-        assert.match(sendEmail.args[2][0].text, /Elaborate Fox integration expected Ghost version:v4.8/);
+        assert.match(sendEmail.args[2][0].text, /Your Elaborate Fox integration is no longer working/);
+        assert.match(sendEmail.args[2][0].text, /Integration expected Ghost version:v4.8/);
         assert.match(sendEmail.args[2][0].text, /Current Ghost version:v5.1/);
         assert.match(sendEmail.args[2][0].text, /Failed request URL:/);
         assert.match(sendEmail.args[2][0].text, /https:\/\/amazeballsghostsite.com\/ghost\/api\/admin\/posts\/dew023d9203se4/);
@@ -344,13 +344,13 @@ describe('APIVersionCompatibilityService', function () {
         assert.equal(sendEmail.args[0][0].to, 'simon@example.com');
         assert.equal(sendEmail.args[0][0].subject, `Attention required: One of your Zaps has failed`);
 
-        assert.match(sendEmail.args[0][0].html, /Ghost has noticed that one of the Zaps in your Zapier integration has <span style="font-weight: 600;">stopped working<\/span>\./);
+        assert.match(sendEmail.args[0][0].html, /One of the Zaps in your Zapier integration has <span style="font-weight: 600;">stopped working<\/span>\./);
         assert.match(sendEmail.args[0][0].html, /To get this resolved as quickly as possible, please log in to your Zapier account to view any failing Zaps and recreate them using the most recent Ghost-supported versions. Zap errors can be found <a href="https:\/\/zapier.com\/app\/history\/usage" style="color: #738A94;">here<\/a> in your “Zap history”\./);
 
         assert.match(sendEmail.args[0][0].html, /This email was sent from <a href="https:\/\/amazeballsghostsite.com"/);
         assert.match(sendEmail.args[0][0].html, /to <a href="mailto:simon@example.com"/);
 
-        assert.match(sendEmail.args[0][0].text, /Ghost has noticed that one of the Zaps in your Zapier integration has stopped/);
+        assert.match(sendEmail.args[0][0].text, /One of the Zaps in your Zapier integration has stopped/);
         assert.match(sendEmail.args[0][0].text, /To get this resolved as quickly as possible, please log in to your Zapier/);
 
         assert.match(sendEmail.args[0][0].text, /This email was sent from https:\/\/amazeballsghostsite.com/);
