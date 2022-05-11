@@ -43,14 +43,25 @@
                     {{else}}
                         published.
                     {{/if}}
-                    To change this,
-                    <button
-                        type="button"
-                        class="gh-revert-to-draft"
-                        {{on "click" (fn @close (hash afterTask="revertToDraftTask"))}}
-                    >
-                        <span>revert post to a private draft</span>
-                    </button>.
+                    {{#if post.isScheduled}}
+                        Need to make a change?
+                        <button
+                            type="button"
+                            class="gh-revert-to-draft"
+                            {{on "click" (fn @close (hash afterTask="revertToDraftTask"))}}
+                        >
+                            <span>Unschedule and revert to draft &rarr;</span>
+                        </button>
+                    {{else}}
+                        <button
+                            type="button"
+                            class="gh-revert-to-draft"
+                            {{on "click" (fn @close (hash afterTask="revertToDraftTask"))}}
+                        >
+                            <span>Unpublish and revert to private draft &rarr;</span>
+                        </button>
+                    {{/if}}
+
                 </p>
                 {{#if (and post.isScheduled post.email)}}
                     <p>
