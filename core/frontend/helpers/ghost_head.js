@@ -2,7 +2,7 @@
 // Usage: `{{ghost_head}}`
 //
 // Outputs scripts and other assets at the top of a Ghost theme
-const {metaData, settingsCache, config, blogIcon, urlUtils, labs} = require('../services/proxy');
+const {metaData, settingsCache, config, blogIcon, urlUtils, labs, getFrontendKey} = require('../services/proxy');
 const {escapeExpression, SafeString} = require('../services/handlebars');
 
 // BAD REQUIRE
@@ -43,7 +43,7 @@ function finaliseStructuredData(meta) {
     return head;
 }
 
-function getMembersHelper(data) {
+function getMembersHelper(data, frontendKey) {
     if (settingsCache.get('members_signup_access') === 'none') {
         return '';
     }
@@ -52,8 +52,7 @@ function getMembersHelper(data) {
     const stripeDirectPublishableKey = settingsCache.get('stripe_publishable_key');
     const stripeConnectAccountId = settingsCache.get('stripe_connect_account_id');
     const colorString = _.has(data, 'site._preview') && data.site.accent_color ? ` data-accent-color="${data.site.accent_color}"` : '';
-    const portalUrl = config.get('portal:url');
-    let membersHelper = `<script defer src="${portalUrl}" data-ghost="${urlUtils.getSiteUrl()}"${colorString} crossorigin="anonymous"></script>`;
+    let membersHelper = `<script defer src="${config.get('portal:url')}" data-ghost="${urlUtils.getSiteUrl()}"${colorString} data-key="${frontendKey}" data-api="${urlUtils.urlFor('api', {type: 'content'}, true)}" crossorigin="anonymous"></script>`;
     membersHelper += (`<style id="gh-members-styles">${templateStyles}</style>`);
     if ((!!stripeDirectSecretKey && !!stripeDirectPublishableKey) || !!stripeConnectAccountId) {
         membersHelper += '<script async src="https://js.stripe.com/v3/"></script>';
@@ -129,6 +128,8 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
          *   - it should not break anything
          */
         const meta = await getMetaData(dataRoot, dataRoot);
+        const frontendKey = await getFrontendKey();
+
         debug('end fetch');
 
         if (context) {
@@ -194,7 +195,7 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
 
         // no code injection for amp context!!!
         if (!_.includes(context, 'amp')) {
-            head.push(getMembersHelper(options.data));
+            head.push(getMembersHelper(options.data, frontendKey));
 
             // @TODO do this in a more "frameworky" way
             if (cardAssetService.hasFile('js')) {

@@ -13,13 +13,16 @@ const routing = require('../../../../core/frontend/services/routing');
 const urlService = require('../../../../core/server/services/url');
 
 const ghost_head = require('../../../../core/frontend/helpers/ghost_head');
-const {settingsCache} = require('../../../../core/frontend/services/proxy');
+const proxy = require('../../../../core/frontend/services/proxy');
+const {settingsCache} = proxy;
 
 describe('{{ghost_head}} helper', function () {
     let posts = [];
     let tags = [];
     let authors = [];
     let users = [];
+
+    let keyStub;
 
     const makeFixtures = () => {
         const {createPost, createUser, createTag} = testUtils.DataGenerator.forKnex;
@@ -278,6 +281,12 @@ describe('{{ghost_head}} helper', function () {
     before(function () {
         // @TODO: remove when visibility is refactored out of models
         models.init();
+
+        keyStub = sinon.stub().resolves('xyz');
+        const dataService = {
+            getFrontendKey: keyStub
+        };
+        proxy.init({dataService});
     });
 
     beforeEach(function () {
@@ -1657,6 +1666,7 @@ describe('{{ghost_head}} helper', function () {
             })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.containEql('<script defer src="https://unpkg.com/@tryghost/portal');
+                rendered.string.should.containEql('data-ghost="http://127.0.0.1:2369/" data-key="xyz" data-api="http://127.0.0.1:2369/ghost/api/content/"');
                 rendered.string.should.containEql('<style id="gh-members-styles">');
                 done();
             }).catch(done);
@@ -1674,6 +1684,7 @@ describe('{{ghost_head}} helper', function () {
             })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.containEql('<script defer src="https://unpkg.com/@tryghost/portal');
+                rendered.string.should.containEql('data-ghost="http://127.0.0.1:2369/" data-key="xyz" data-api="http://127.0.0.1:2369/ghost/api/content/"');
                 rendered.string.should.containEql('<style id="gh-members-styles">');
                 done();
             }).catch(done);
@@ -1694,6 +1705,7 @@ describe('{{ghost_head}} helper', function () {
             })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.containEql('<script defer src="https://unpkg.com/@tryghost/portal');
+                rendered.string.should.containEql('data-ghost="http://127.0.0.1:2369/" data-key="xyz" data-api="http://127.0.0.1:2369/ghost/api/content/"');
                 rendered.string.should.containEql('<style id="gh-members-styles">');
                 rendered.string.should.containEql('<script async src="https://js.stripe.com');
                 done();
@@ -1715,6 +1727,7 @@ describe('{{ghost_head}} helper', function () {
             })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.containEql('<script defer src="https://unpkg.com/@tryghost/portal');
+                rendered.string.should.containEql('data-ghost="http://127.0.0.1:2369/" data-key="xyz" data-api="http://127.0.0.1:2369/ghost/api/content/"');
                 rendered.string.should.containEql('<style id="gh-members-styles">');
                 rendered.string.should.containEql('<script async src="https://js.stripe.com');
                 done();
@@ -1734,6 +1747,7 @@ describe('{{ghost_head}} helper', function () {
             })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.not.containEql('<script defer src="https://unpkg.com/@tryghost/portal');
+                rendered.string.should.not.containEql('data-ghost="http://127.0.0.1:2369/" data-key="xyz" data-api="http://127.0.0.1:2369/ghost/api/content/"');
                 rendered.string.should.not.containEql('<style id="gh-members-styles">');
                 rendered.string.should.not.containEql('<script async src="https://js.stripe.com');
                 done();
@@ -1755,6 +1769,7 @@ describe('{{ghost_head}} helper', function () {
             })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.containEql('<script defer src="https://unpkg.com/@tryghost/portal');
+                rendered.string.should.containEql('data-ghost="http://127.0.0.1:2369/" data-key="xyz" data-api="http://127.0.0.1:2369/ghost/api/content/"');
                 rendered.string.should.containEql('<style id="gh-members-styles">');
                 rendered.string.should.not.containEql('<script async src="https://js.stripe.com');
                 done();

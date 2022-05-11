@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const limitService = require('../services/limits');
 const ghostBookshelf = require('./base');
 const {NoPermissionError} = require('@tryghost/errors');
@@ -64,6 +65,14 @@ const Integration = ghostBookshelf.Model.extend({
         return options;
     },
 
+    defaultRelations: function defaultRelations(methodName, options) {
+        if (['edit', 'add', 'destroy'].indexOf(methodName) !== -1) {
+            options.withRelated = _.union(['api_keys'], options.withRelated || []);
+        }
+
+        return options;
+    },
+
     async permissible(integrationModel, action, context, attrs, loadedPerms, hasUserPermission, hasApiKeyPermission) {
         const isAdd = (action === 'add');
 
@@ -76,6 +85,14 @@ const Integration = ghostBookshelf.Model.extend({
         if (!hasUserPermission || !hasApiKeyPermission) {
             throw new NoPermissionError();
         }
+    },
+
+    async getInternalFrontendKey(options) {
+        options = options || {};
+
+        options.withRelated = ['api_keys'];
+
+        return this.findOne({slug: 'ghost-internal-frontend'}, options);
     }
 });
 

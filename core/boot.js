@@ -168,14 +168,21 @@ async function initServicesForFrontend({bootLogger}) {
     await offers.init();
     debug('End: Offers');
 
+    const frontendDataService = require('./server/services/frontend-data-service');
+    let dataService = await frontendDataService.init();
+
     debug('End: initServicesForFrontend');
+    return {dataService};
 }
 
 /**
  * Frontend is intended to be just Ghost's frontend
  */
-async function initFrontend() {
+async function initFrontend(dataService) {
     debug('Begin: initFrontend');
+
+    const proxyService = require('./frontend/services/proxy');
+    proxyService.init({dataService});
 
     const helperService = require('./frontend/services/helpers');
     await helperService.init();
@@ -414,10 +421,10 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         // Step 4 - Load Ghost with all its services
         debug('Begin: Load Ghost Services & Apps');
         await initCore({ghostServer, config, bootLogger, frontend});
-        await initServicesForFrontend({bootLogger});
+        const {dataService} = await initServicesForFrontend({bootLogger});
 
         if (frontend) {
-            await initFrontend();
+            await initFrontend(dataService);
         }
         const ghostApp = await initExpressApps({frontend, backend, config});
 
