@@ -89,6 +89,7 @@ export default class PaidBreakdown extends Component {
 
     get chartOptions() {
         const barColor = this.feature.nightShift ? 'rgba(200, 204, 217, 0.25)' : 'rgba(200, 204, 217, 0.65)';
+        let maxWidth = 0;
 
         return {
             responsive: true,
@@ -123,6 +124,8 @@ export default class PaidBreakdown extends Component {
                 custom: function (tooltip) {
                     // get tooltip element
                     const tooltipEl = document.getElementById('gh-dashboard5-breakdown-tooltip');
+                    const chartContainerEl = tooltipEl.parentElement;
+                    const chartWidth = chartContainerEl.offsetWidth;
                     const tooltipWidth = tooltipEl.offsetWidth;
 
                     // only show tooltip when active
@@ -132,11 +135,16 @@ export default class PaidBreakdown extends Component {
                         return; 
                     }
 
+                    let offsetX = 0;
+                    if (tooltip.x > chartWidth - tooltipWidth) {
+                        offsetX = tooltipWidth - 10;
+                    }
+
                     // update tooltip styles
                     tooltipEl.style.display = 'block';
                     tooltipEl.style.opacity = 1;
                     tooltipEl.style.position = 'absolute';
-                    tooltipEl.style.left = tooltip.x - (tooltipWidth / 2) + 'px';
+                    tooltipEl.style.left = tooltip.x - offsetX + 'px';
                     tooltipEl.style.top = '70px';    
                 },
                 callbacks: {

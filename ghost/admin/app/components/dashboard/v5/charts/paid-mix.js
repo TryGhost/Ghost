@@ -183,7 +183,7 @@ export default class PaidMix extends Component {
                     tooltipEl.style.opacity = 1;
                     tooltipEl.style.position = 'absolute';
                     tooltipEl.style.left = tooltip.x - offsetX + 'px';
-                    tooltipEl.style.top = '30px';    
+                    tooltipEl.style.top = '30px';
                 },
                 callbacks: {
                     label: (tooltipItems, data) => {
