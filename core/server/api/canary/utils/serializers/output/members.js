@@ -128,6 +128,7 @@ function serializeMember(member, options) {
 
     if (json.products) {
         serialized.products = json.products;
+        serialized.tiers = json.products;
     }
 
     if (labsService.isSet('multipleNewsletters')) {

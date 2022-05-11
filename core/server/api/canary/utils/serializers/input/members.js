@@ -16,6 +16,19 @@ function defaultRelations(frame) {
 }
 
 module.exports = {
+    all(_apiConfig, frame) {
+        if (!frame.options.withRelated) {
+            return;
+        }
+
+        frame.options.withRelated = frame.options.withRelated.map((relation) => {
+            if (relation === 'tiers') {
+                return 'products';
+            }
+            return relation;
+        });
+    },
+
     browse(apiConfig, frame) {
         debug('browse');
         defaultRelations(frame);
@@ -64,6 +77,11 @@ module.exports = {
                 }
             });
         }
+
+        if (frame.data.members[0].tiers) {
+            frame.data.members[0].products = frame.data.members[0].tiers;
+        }
+
         defaultRelations(frame);
     },
 
