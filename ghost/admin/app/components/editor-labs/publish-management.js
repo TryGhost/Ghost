@@ -112,12 +112,14 @@ export class PublishOptions {
         return this.publishTypeOptions.find(pto => pto.value === this.publishType);
     }
 
+    get emailDisabledInSettings() {
+        return get(this.settings, 'editorDefaultEmailRecipients') === 'disabled'
+            || get(this.settings, 'membersSignupAccess') === 'none';
+    }
+
     // publish type dropdown is not shown at all
     get emailUnavailable() {
-        const emailDisabled = get(this.settings, 'editorDefaultEmailRecipients') === 'disabled'
-            || get(this.settings, 'membersSignupAccess') === 'none';
-
-        return this.post.isPage || this.post.email || !this.user.canEmail || emailDisabled;
+        return this.post.isPage || this.post.email || !this.user.canEmail || this.emailDisabledInSettings;
     }
 
     // publish type dropdown is shown but email options are disabled
