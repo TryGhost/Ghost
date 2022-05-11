@@ -1,0 +1,50 @@
+<div class="flex flex-column h-100">
+    <header class="modal-header gh-post-preview-header gh-post-preview-header-border" data-test-modal="preview-email">
+        <div>
+            <button class="gh-editor-back-button" title="Close" type="button" {{on "click" @close}}>
+                <span>{{svg-jar "arrow-left"}} Editor</span>
+            </button>
+        </div>
+        <div class="gh-post-preview-btn-group">
+            <div class="gh-contentfilter gh-btn-group">
+                <button type="button" class="gh-btn {{if (eq this.tab "browser") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changeTab "browser")}}><span>{{svg-jar "desktop"}}</span></button>
+                <button type="button" class="gh-btn {{if (eq this.tab "mobile") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changeTab "mobile")}}><span>{{svg-jar "mobile-phone"}}</span></button>
+                {{#if (and (not-eq this.settings.membersSignupAccess "none") (not-eq this.settings.editorDefaultEmailRecipients "disabled"))}}
+                    {{#if @data.post.isPost}}
+                        <button type="button" class="gh-btn {{if (eq this.tab "email") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changeTab "email")}}><span>{{svg-jar "email-unread"}}</span></button>
+                    {{/if}}
+                {{/if}}
+                <button type="button" class="gh-btn {{if (eq this.tab "social") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changeTab "social")}}><span>{{svg-jar "twitter"}}</span></button>
+            </div>
+        </div>
+        <div>
+             <button
+                type="button"
+                class="gh-btn gh-btn-editor darkgrey gh-publishmenu-trigger"
+                {{on "click" @data.togglePreviewPublish}}
+            >
+                <span>Publish</span>
+            </button>
+        </div>
+    </header>
+
+    {{#if this.saveFirstTask.isRunning}}
+        <GhLoadingSpinner />
+    {{else}}
+        {{#if (eq this.tab "browser")}}
+            <Modals::PostPreview::Browser @post={{@data.post}} />
+        {{/if}}
+
+        {{#if (and (eq this.tab "mobile"))}}
+            <Modals::PostPreview::Mobile @post={{@data.post}} />
+        {{/if}}
+
+        {{#if (and (eq this.tab "email") @data.post.isPost)}}
+            <Modals::PostPreview::Email @post={{@data.post}} />
+        {{/if}}
+
+        {{#if (eq this.tab "social")}}
+            <Modals::PostPreview::Social @post={{@data.post}} />
+        {{/if}}
+    {{/if}}
+</div>

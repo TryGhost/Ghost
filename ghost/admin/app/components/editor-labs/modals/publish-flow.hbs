@@ -3,6 +3,16 @@
         <button class="gh-publish-back-button" title="Close" type="button" {{on "click" @close}}>
             <span>{{svg-jar "arrow-left"}} Editor</span>
         </button>
+
+        {{#unless this.isComplete}}
+            <button
+                type="button"
+                class="gh-btn gh-btn-editor darkgrey gh-publishmenu-trigger"
+                {{on "click" @data.togglePreviewPublish}}
+            >
+                <span>Preview</span>
+            </button>
+        {{/unless}}
     </header>
 
     <div class="gh-publish-settings-container">
