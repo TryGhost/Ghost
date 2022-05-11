@@ -1808,9 +1808,13 @@ Dashboard v5 Tooltips */
     border-color: #8E42FF;
 }
 
+.gh-dashboard5-breakdown .gh-dashboard5-tooltip {
+    min-width: 140px;
+}
+
 .gh-dashboard5-breakdown .gh-dashboard5-tooltip-value {
     display: grid;
-    grid-template-columns: auto auto;
+    grid-template-columns: auto 1fr;
 }
 
 .gh-dashboard5-breakdown .gh-dashboard5-tooltip-value-1 {
