@@ -27,15 +27,10 @@ function getSubdir() {
  * Imagine Ghost runs with http, but nginx allows SSL connections.
  *
  * @callback getSiteUrlFn
- * @param {boolean} [secure] optionally force the url to be secure
  * @return {string} returns the url as defined in config, but always with a trailing `/`
  */
-function getSiteUrl(secure = false) {
+function getSiteUrl() {
     let siteUrl = this.get('url');
-
-    if (secure) {
-        siteUrl = siteUrl.replace('http://', 'https://');
-    }
 
     if (!siteUrl.match(/\/$/)) {
         siteUrl += '/';
