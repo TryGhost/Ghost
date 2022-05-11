@@ -178,7 +178,6 @@ const expectedProperties = {
         'secret',
         'api_version',
         'integration_id',
-        'status',
         'last_triggered_at',
         'last_triggered_status',
         'last_triggered_error',

@@ -341,8 +341,6 @@ module.exports = {
         // NOTE: integration_id column needs "nullable: true" -> "nullable: false" migration (recreate table with nullable: false)
         // CASE: Ghost instances initialized pre 4.0 will have this column set to nullable: true in db schema
         integration_id: {type: 'string', maxlength: 24, nullable: false, references: 'integrations.id', cascadeDelete: true},
-        // @TODO: add isIn validation
-        status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'available'},
         last_triggered_at: {type: 'dateTime', nullable: true},
         last_triggered_status: {type: 'string', maxlength: 50, nullable: true},
         last_triggered_error: {type: 'string', maxlength: 50, nullable: true},
