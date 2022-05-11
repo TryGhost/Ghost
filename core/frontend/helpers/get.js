@@ -9,7 +9,6 @@ const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 
 const _ = require('lodash');
-const Promise = require('bluebird');
 const jsonpath = require('jsonpath');
 
 const messages = {
@@ -46,7 +45,6 @@ const pathAliases = {
 /**
  * ## Is Browse
  * Is this a Browse request or a Read request?
- * @param {Object} resource
  * @param {Object} options
  * @returns {boolean}
  */
@@ -123,9 +121,9 @@ function parseOptions(globals, data, options) {
  * ## Get
  * @param {Object} resource
  * @param {Object} options
- * @returns {Promise}
+ * @returns {Promise<any>}
  */
-module.exports = function get(resource, options) {
+module.exports = async function get(resource, options) {
     options = options || {};
     options.hash = options.hash || {};
     options.data = options.data || {};
@@ -141,13 +139,13 @@ module.exports = function get(resource, options) {
     if (!options.fn) {
         data.error = tpl(messages.mustBeCalledAsBlock, {helperName: 'get'});
         logging.warn(data.error);
-        return Promise.resolve();
+        return;
     }
 
     if (!RESOURCES[resource]) {
         data.error = tpl(messages.invalidResource);
         logging.warn(data.error);
-        return Promise.resolve(options.inverse(self, {data: data}));
+        return options.inverse(self, {data: data});
     }
 
     const controllerName = RESOURCES[resource].alias;
@@ -158,34 +156,35 @@ module.exports = function get(resource, options) {
     apiOptions = parseOptions(ghostGlobals, this, apiOptions);
     apiOptions.context = {member: data.member};
 
-    // @TODO: https://github.com/TryGhost/Ghost/issues/10548
-    return controller[action](apiOptions).then(function success(result) {
+    try {
+        const response = await controller[action](apiOptions);
+
         // prepare data properties for use with handlebars
-        if (result[resource] && result[resource].length) {
-            result[resource].forEach(prepareContextResource);
+        if (response[resource] && response[resource].length) {
+            response[resource].forEach(prepareContextResource);
         }
 
         // used for logging details of slow requests
-        returnedRowsCount = result[resource] && result[resource].length;
+        returnedRowsCount = response[resource] && response[resource].length;
 
         // block params allows the theme developer to name the data using something like
         // `{{#get "posts" as |result pageInfo|}}`
-        const blockParams = [result[resource]];
-        if (result.meta && result.meta.pagination) {
-            result.pagination = result.meta.pagination;
-            blockParams.push(result.meta.pagination);
+        const blockParams = [response[resource]];
+        if (response.meta && response.meta.pagination) {
+            response.pagination = response.meta.pagination;
+            blockParams.push(response.meta.pagination);
         }
 
         // Call the main template function
-        return options.fn(result, {
+        return options.fn(response, {
             data: data,
             blockParams: blockParams
         });
-    }).catch(function error(err) {
-        logging.error(err);
-        data.error = err.message;
+    } catch (error) {
+        logging.error(error);
+        data.error = error.message;
         return options.inverse(self, {data: data});
-    }).finally(function () {
+    } finally {
         const totalMs = Date.now() - start;
         const logLevel = config.get('logging:slowHelper:level');
         const threshold = config.get('logging:slowHelper:threshold');
@@ -200,7 +199,7 @@ module.exports = function get(resource, options) {
                 }
             }));
         }
-    });
+    }
 };
 
 module.exports.async = true;
