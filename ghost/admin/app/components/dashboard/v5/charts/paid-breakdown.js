@@ -7,15 +7,197 @@ import {inject as service} from '@ember/service';
 
 const DATE_FORMAT = 'D MMM, YYYY';
 
-// custom ChartJS draw function
+// Custom ChartJS rounded rectangle
+Chart.elements.RoundedRectangle = Chart.elements.Rectangle.extend({
+    draw: function () {
+        var ctx = this._chart.ctx;
+        var vm = this._view;
+        var left, right, top, bottom, signX, signY, borderSkipped, radius;
+        var borderWidth = vm.borderWidth;
+
+        // If radius is less than 0 or is large enough to cause drawing errors a max
+        // radius is imposed. If cornerRadius is not defined set it to 0.
+        var cornerRadius = this._chart.config.options.cornerRadius;
+        var fullCornerRadius = this._chart.config.options.fullCornerRadius;
+        var stackedRounded = this._chart.config.options.stackedRounded;
+
+        if (cornerRadius < 0) {
+            cornerRadius = 0;
+        }
+        if (typeof cornerRadius === 'undefined') {
+            cornerRadius = 0;
+        }
+        if (typeof fullCornerRadius === 'undefined') {
+            fullCornerRadius = true;
+        }
+        if (typeof stackedRounded === 'undefined') {
+            stackedRounded = false;
+        }
+
+        if (!vm.horizontal) {
+            // bar
+            left = vm.x - vm.width / 2;
+            right = vm.x + vm.width / 2;
+            top = vm.y;
+            bottom = vm.base;
+            signX = 1;
+            signY = bottom > top ? 1 : -1;
+            borderSkipped = vm.borderSkipped || 'bottom';
+        } else {
+            // horizontal bar
+            left = vm.base;
+            right = vm.x;
+            top = vm.y - vm.height / 2;
+            bottom = vm.y + vm.height / 2;
+            signX = right > left ? 1 : -1;
+            signY = 1;
+            borderSkipped = vm.borderSkipped || 'left';
+        }
+
+        // Canvas doesn't allow us to stroke inside the width so we can
+        // adjust the sizes to fit if we're setting a stroke on the line
+        if (borderWidth) {
+            // borderWidth shold be less than bar width and bar height.
+            var barSize = Math.min(Math.abs(left - right), Math.abs(top - bottom));
+            borderWidth = borderWidth > barSize ? barSize : borderWidth;
+            var halfStroke = borderWidth / 2;
+            // Adjust borderWidth when bar top position is near vm.base(zero).
+            var borderLeft = left + (borderSkipped !== 'left' ? halfStroke * signX : 0);
+            var borderRight = right + (borderSkipped !== 'right' ? -halfStroke * signX : 0);
+            var borderTop = top + (borderSkipped !== 'top' ? halfStroke * signY : 0);
+            var borderBottom = bottom + (borderSkipped !== 'bottom' ? -halfStroke * signY : 0);
+            // not become a vertical line?
+            if (borderLeft !== borderRight) {
+                top = borderTop;
+                bottom = borderBottom;
+            }
+            // not become a horizontal line?
+            if (borderTop !== borderBottom) {
+                left = borderLeft;
+                right = borderRight;
+            }
+        }
+
+        ctx.beginPath();
+        ctx.fillStyle = vm.backgroundColor;
+        ctx.strokeStyle = vm.borderColor;
+        ctx.lineWidth = borderWidth;
+
+        // Corner points, from bottom-left to bottom-right clockwise
+        // | 1 2 |
+        // | 0 3 |
+        var corners = [
+            [left, bottom],
+            [left, top],
+            [right, top],
+            [right, bottom]
+        ];
+
+        // Find first (starting) corner with fallback to 'bottom'
+        var borders = ['bottom', 'left', 'top', 'right'];
+        var startCorner = borders.indexOf(borderSkipped, 0);
+        if (startCorner === -1) {
+            startCorner = 0;
+        }
+
+        function cornerAt(index) {
+            return corners[(startCorner + index) % 4];
+        }
+
+        // Draw rectangle from 'startCorner'
+        var corner = cornerAt(0);
+        ctx.moveTo(corner[0], corner[1]);
+
+        var nextCornerId, width, height, x, y;
+        for (var i = 1; i < 4; i++) {
+            corner = cornerAt(i);
+            nextCornerId = i + 1;
+            if (nextCornerId === 4) {
+                nextCornerId = 0;
+            }
+
+            width = corners[2][0] - corners[1][0];
+            height = corners[0][1] - corners[1][1];
+            x = corners[1][0];
+            y = corners[1][1];
+
+            radius = cornerRadius;
+            // Fix radius being too large
+            if (radius > Math.abs(height) / 2) {
+                radius = Math.floor(Math.abs(height) / 2);
+            }
+            if (radius > Math.abs(width) / 2) {
+                radius = Math.floor(Math.abs(width) / 2);
+            }
+
+            var xTL, xTR, yTL, yTR, xBL, xBR, yBL, yBR;
+            if (height < 0) {
+                // Negative values in a standard bar chart
+                xTL = x;
+                xTR = x + width;
+                yTL = y + height;
+                yTR = y + height;
+
+                xBL = x;
+                xBR = x + width;
+                yBL = y;
+                yBR = y;
+
+                // Draw
+                ctx.moveTo(xBL + radius, yBL);
+                ctx.lineTo(xBR - radius, yBR);
+
+                // bottom right
+                ctx.quadraticCurveTo(xBR, yBR, xBR, yBR - radius);
+                ctx.lineTo(xTR, yTR + radius);
+
+                // top right
+                ctx.lineTo(xTR, yTR, xTR - radius, yTR);
+                ctx.lineTo(xTL + radius, yTL);
+
+                // top left
+                ctx.lineTo(xTL, yTL, xTL, yTL + radius);
+                ctx.lineTo(xBL, yBL - radius);
+
+                //  bottom left
+                ctx.quadraticCurveTo(xBL, yBL, xBL + radius, yBL);
+            } else {
+                // Positive values in a standard bar chart
+                ctx.moveTo(x + radius, y);
+                ctx.lineTo(x + width - radius, y);
+
+                // top right
+                ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+                ctx.lineTo(x + width, y + height - radius);
+
+                // bottom right
+                ctx.lineTo(x + width, y + height, x + width - radius, y + height);
+
+                ctx.lineTo(x + radius, y + height);
+                ctx.lineTo(x, y + height, x, y + height - radius);
+                ctx.lineTo(x, y + radius);
+
+                // top left
+                ctx.quadraticCurveTo(x, y, x + radius, y);
+            }
+        }
+
+        ctx.fill();
+        if (borderWidth) {
+            ctx.stroke();
+        }
+    }
+});
+
 Chart.defaults.hoverBar = Chart.defaults.bar;
 Chart.controllers.hoverBar = Chart.controllers.bar.extend({
     draw: function (ease) {
-        Chart.controllers.line.prototype.draw.call(this, ease);
+        Chart.controllers.bar.prototype.draw.call(this, ease);
+
+        var ctx = this.chart.ctx;
 
         if (this.chart.tooltip._active && this.chart.tooltip._active.length) {
             let activePoint = this.chart.tooltip._active[0],
-                ctx = this.chart.ctx,
                 x = activePoint.tooltipPosition().x,
                 topY = this.chart.legend.bottom,
                 bottomY = this.chart.chartArea.bottom;
@@ -31,7 +213,8 @@ Chart.controllers.hoverBar = Chart.controllers.bar.extend({
             ctx.stroke();
             ctx.restore();
         }
-    }
+    },
+    dataElementType: Chart.elements.RoundedRectangle
 });
 
 export default class PaidBreakdown extends Component {
@@ -92,6 +275,8 @@ export default class PaidBreakdown extends Component {
 
         return {
             responsive: true,
+            cornerRadius: 50,
+            fullCornerRadius: false,
             maintainAspectRatio: false,
             title: {
                 display: false
