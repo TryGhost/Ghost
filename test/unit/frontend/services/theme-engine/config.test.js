@@ -13,9 +13,7 @@ describe('Themes', function () {
 
             config.should.eql({
                 posts_per_page: 5,
-                card_assets: {
-                    exclude: ['bookmark', 'gallery']
-                }
+                card_assets: true
             });
         });
 
@@ -24,9 +22,7 @@ describe('Themes', function () {
 
             config.should.eql({
                 posts_per_page: 5,
-                card_assets: {
-                    exclude: ['bookmark', 'gallery']
-                }
+                card_assets: true
             });
         });
 
@@ -44,9 +40,7 @@ describe('Themes', function () {
 
             config.should.eql({
                 posts_per_page: 5,
-                card_assets: {
-                    exclude: ['bookmark', 'gallery']
-                }
+                card_assets: true
             });
         });
     });
