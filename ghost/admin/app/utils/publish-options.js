@@ -239,26 +239,30 @@ export default class PublishOptions {
 
     @task
     *fetchRequiredDataTask() {
-        // total # of members - used to enable/disable email
-        let countTotalMembers = Promise.resolve();
+        const promises = [];
 
-        // only Admins/Owners have permission to browse members and get a count
+        // total # of members - used to enable/disable email
+        // Only Admins/Owners have permission to browse members and get a count
         // for Editors/Authors set member count to 1 so email isn't disabled for not having any members
         if (this.user.isAdmin) {
-            countTotalMembers = this.store.query('member', {limit: 1}).then((res) => {
+            promises.push(this.store.query('member', {limit: 1}).then((res) => {
                 this.totalMemberCount = res.meta.pagination.total;
-            });
+            }));
         } else {
             this.totalMemberCount = 1;
         }
 
-        // email limits
-        const checkSendingLimit = this._checkSendingLimit();
+        // only perform limit checks and newsletter fetches if the
+        // current user is allowed to email, otherwise we can hit API
+        // permission errors
+        if (this.user.canEmail) {
+            // email limits
+            promises.push(this._checkSendingLimit());
+            // newsletters
+            promises.push(this.store.query('newsletter', {status: 'active', limit: 'all', include: 'count.members'}));
+        }
 
-        // newsletters
-        const fetchNewsletters = this.store.query('newsletter', {status: 'active', limit: 'all', include: 'count.members'});
-
-        yield Promise.all([countTotalMembers, checkSendingLimit, fetchNewsletters]);
+        yield Promise.all(promises);
     }
 
     // saving ------------------------------------------------------------------
