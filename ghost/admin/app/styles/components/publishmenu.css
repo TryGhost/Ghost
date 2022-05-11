@@ -633,6 +633,10 @@
     color: var(--middarkgrey-d1);
 }
 
+.gh-publish-types + .gh-box {
+    margin-top: 12px;
+}
+
 .gh-publish-schedule .gh-radio {
     margin: 0;
 }
@@ -723,12 +727,12 @@
 		transform: scale(0.98);
 		box-shadow: 0 0 0 0 rgba(48, 207, 67, 0.7);
 	}
-	
+
 	70% {
 		transform: scale(1);
 		box-shadow: 0 0 0 8px rgba(48, 207, 67, 0);
 	}
-	
+
 	100% {
 		transform: scale(0.98);
 		box-shadow: 0 0 0 0 rgba(48, 207, 67, 0);
