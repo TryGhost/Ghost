@@ -238,11 +238,12 @@ Dashboard v5 Layout */
 .gh-dashboard5-minichart {
     flex: 1;
     border-left: 1px solid var(--whitegrey);
-    padding: 4px 16px 0;
+    padding: 4px 16px 0 24px;
     position: relative;
 }
 
 .gh-dashboard5-minichart .gh-dashboard5-data {
+    position: absolute;
     pointer-events: none;
     height: 100%;
     display: flex;
@@ -251,6 +252,33 @@ Dashboard v5 Layout */
     align-items: flex-start;
     margin-right: 16px;
     min-height: 88px;
+}
+
+.gh-dashboard5-minicharts .gh-dashboard5-chart {
+    flex: auto;
+    padding: 0;
+    height: 88px;
+    padding: 0;
+    padding-left: 45%;
+    width: 100%;
+}
+
+@media screen and (max-width: 1400px) {
+    .gh-dashboard5-minicharts .gh-dashboard5-chart {
+        padding-left: 50%;
+    }
+}
+
+@media screen and (max-width: 1320px) {
+    .gh-dashboard5-minicharts .gh-dashboard5-chart {
+        padding-left: 60%;
+    }
+}
+
+@media screen and (max-width: 1120px) {
+    .gh-dashboard5-minicharts .gh-dashboard5-chart {
+        padding-left: 0%;
+    }
 }
 
 .gh-dashboard5-minichart:first-child .gh-dashboard5-data {
@@ -502,14 +530,6 @@ Dashboard v5 Chart */
     height: 100% !important;
 }
 
-.gh-dashboard5-minicharts .gh-dashboard5-chart {
-    flex: auto;
-    padding: 0;
-    width: 100%;
-    height: 88px;
-    padding: 0;
-}
-
 .gh-dashboard5-minichart .gh-dashboard5-content {
     display: flex;
 }
@@ -526,13 +546,9 @@ Dashboard v5 Chart */
 
 .gh-dashboard5-mix .gh-dashboard5-data {
     position: absolute;
-    top: 0;
+    top: 4px;
     bottom: 0;
     left: 24px;
-}
-
-.gh-dashboard5-mix .gh-dashboard5-metric {
-    margin-top: 4px;
 }
 
 .gh-dashboard5-mix .gh-dashboard5-chart.narrow {

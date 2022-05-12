@@ -254,10 +254,8 @@ export default class PaidBreakdown extends Component {
                     e.target.style.cursor = 'pointer';
                 }
             },
-            animation: {
-                duration: 0
-            },
-            responsiveAnimationDuration: 0,
+            animation: false,
+            responsiveAnimationDuration: 1,
             tooltips: {
                 enabled: false,
                 intersect: false,
