@@ -488,6 +488,7 @@ Object {
     "cover_image": "https://static.ghost.org/v4.0.0/images/publication-cover.jpg",
     "description": "Thoughts, stories and ideas",
     "facebook": "ghost",
+    "firstpromoter_account": null,
     "icon": null,
     "lang": "en",
     "locale": "en",
@@ -523,6 +524,14 @@ Object {
     "og_image": null,
     "og_title": null,
     "paid_members_enabled": true,
+    "portal_button": true,
+    "portal_button_icon": null,
+    "portal_button_signup_text": "Subscribe",
+    "portal_button_style": "icon-and-text",
+    "portal_name": true,
+    "portal_plans": Array [
+      "free",
+    ],
     "secondary_navigation": Array [
       Object {
         "label": "Data & privacy",
@@ -544,6 +553,7 @@ Object {
     "twitter_image": null,
     "twitter_title": null,
     "url": "http://127.0.0.1:2369/",
+    "version": Any<String>,
   },
 }
 `;
@@ -552,10 +562,10 @@ exports[`API Versioning Content API responds with current content version header
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1021",
+  "content-length": "1235",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": "W/\\"3fd-PXBX1gYn1ftAeK+GoVbEnAsmVAE\\"",
+  "etag": "W/\\"4d3-mq2QrkgGnMZ8/BMmziwONEMrvLM\\"",
   "vary": "Accept-Encoding",
   "x-powered-by": "Express",
 }
@@ -571,6 +581,7 @@ Object {
     "cover_image": "https://static.ghost.org/v4.0.0/images/publication-cover.jpg",
     "description": "Thoughts, stories and ideas",
     "facebook": "ghost",
+    "firstpromoter_account": null,
     "icon": null,
     "lang": "en",
     "locale": "en",
@@ -606,6 +617,14 @@ Object {
     "og_image": null,
     "og_title": null,
     "paid_members_enabled": true,
+    "portal_button": true,
+    "portal_button_icon": null,
+    "portal_button_signup_text": "Subscribe",
+    "portal_button_style": "icon-and-text",
+    "portal_name": true,
+    "portal_plans": Array [
+      "free",
+    ],
     "secondary_navigation": Array [
       Object {
         "label": "Data & privacy",
@@ -627,6 +646,7 @@ Object {
     "twitter_image": null,
     "twitter_title": null,
     "url": "http://127.0.0.1:2369/",
+    "version": Any<String>,
   },
 }
 `;
@@ -635,9 +655,9 @@ exports[`API Versioning Content API responds with no content version header when
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1021",
+  "content-length": "1235",
   "content-type": "application/json; charset=utf-8",
-  "etag": "W/\\"3fd-PXBX1gYn1ftAeK+GoVbEnAsmVAE\\"",
+  "etag": "W/\\"4d3-mq2QrkgGnMZ8/BMmziwONEMrvLM\\"",
   "vary": "Accept-Encoding",
   "x-powered-by": "Express",
 }

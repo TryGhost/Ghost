@@ -1,5 +1,11 @@
 const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
-const {anyErrorId, stringMatching, anyObjectId, anyLocationFor, anyISODateTime, anyEtag} = matchers;
+const {anyErrorId, stringMatching, anyObjectId, anyLocationFor, anyISODateTime, anyEtag, anyString} = matchers;
+
+const settingsMatcher = {
+    settings: {
+        version: anyString
+    }
+};
 
 describe('API Versioning', function () {
     describe('Admin API', function () {
@@ -260,7 +266,7 @@ describe('API Versioning', function () {
             await agentContentAPI.get('settings/')
                 .expectStatus(200)
                 .matchHeaderSnapshot()
-                .matchBodySnapshot();
+                .matchBodySnapshot(settingsMatcher);
         });
 
         it('responds with current content version header when requested version is BEHIND current version and CAN respond', async function () {
@@ -270,7 +276,7 @@ describe('API Versioning', function () {
                 .matchHeaderSnapshot({
                     'content-version': stringMatching(/v\d+\.\d+/)
                 })
-                .matchBodySnapshot();
+                .matchBodySnapshot(settingsMatcher);
         });
 
         it('Does an internal rewrite with accept version set when version is included in the URL', async function () {

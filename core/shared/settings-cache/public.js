@@ -29,5 +29,12 @@ module.exports = {
     members_support_address: 'members_support_address',
     members_enabled: 'members_enabled',
     members_invite_only: 'members_invite_only',
-    paid_members_enabled: 'paid_members_enabled'
+    paid_members_enabled: 'paid_members_enabled',
+    firstpromoter_account: 'firstpromoter_account',
+    portal_button_style: 'portal_button_style',
+    portal_button_signup_text: 'portal_button_signup_text',
+    portal_button_icon: 'portal_button_icon',
+    portal_plans: 'portal_plans',
+    portal_name: 'portal_name',
+    portal_button: 'portal_button'
 };
