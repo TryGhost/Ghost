@@ -192,11 +192,6 @@ Chart.elements.Rectangle.prototype.draw = function () {
     ctx.fill();
 };
 
-// Chart.defaults.roundedBar = Chart.defaults.bar;
-// Chart.controllers.roundedBar = Chart.controllers.bar.extend({
-//     dataElementType: Chart.elements.RoundedRectangle
-// });
-
 export default class PaidMix extends Component {
     @service dashboardStats;
 
