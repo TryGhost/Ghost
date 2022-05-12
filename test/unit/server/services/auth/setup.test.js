@@ -1,4 +1,4 @@
-const {doProductAndNewsletter} = require('../../../../../core/server/services/auth/setup');
+const {doProductAndNewsletter: doTierAndNewsletter} = require('../../../../../core/server/services/auth/setup');
 const sinon = require('sinon');
 
 describe('Auth Service: setup', function () {
@@ -8,10 +8,10 @@ describe('Auth Service: setup', function () {
 
     describe('doProductAndNewsletter', function () {
         it('updates default product and newsletter name', async function () {
-            const productEditStub = sinon.stub().resolves();
+            const tierEditStub = sinon.stub().resolves();
             const newsletterEditStub = sinon.stub().resolves();
-            const productBrowseStub = sinon.stub().resolves({
-                products: [
+            const tierBrowseStub = sinon.stub().resolves({
+                tiers: [
                     {
                         id: 'product-1',
                         slug: 'free'
@@ -34,16 +34,16 @@ describe('Auth Service: setup', function () {
                     }
                 ]
             });
-            let productsApi = {
-                browse: productBrowseStub,
-                edit: productEditStub
+            let tiersAPI = {
+                browse: tierBrowseStub,
+                edit: tierEditStub
             };
             let newslettersApi = {
                 browse: newsletterBrowseStub,
                 edit: newsletterEditStub
             };
             const api = {
-                products: productsApi,
+                tiers: tiersAPI,
                 newsletters: newslettersApi
             };
             let data = {
@@ -54,10 +54,10 @@ describe('Auth Service: setup', function () {
                     blogTitle: 'Test Blog'
                 }
             };
-            await doProductAndNewsletter(data, api);
+            await doTierAndNewsletter(data, api);
             sinon.assert.calledOnceWithExactly(
-                productEditStub,
-                {products: [{name: 'Test Blog'}]},
+                tierEditStub,
+                {tiers: [{name: 'Test Blog'}]},
                 {context: {user: 'user-1'}, id: 'product-2'}
             );
             sinon.assert.calledOnceWithExactly(

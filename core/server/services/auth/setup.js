@@ -108,8 +108,8 @@ async function doSettings(data, settingsAPI) {
 }
 
 // Update names for default product and newsletter to site title
-async function doProductAndNewsletter(data, api) {
-    const {products: productsAPI, newsletters: newslettersAPI} = api;
+async function doTiersAndNewsletter(data, api) {
+    const {tiers: tiersAPI, newsletters: newslettersAPI} = api;
     const context = {context: {user: data.user.id}};
     const user = data.user;
     const blogTitle = data.userData.blogTitle;
@@ -118,16 +118,16 @@ async function doProductAndNewsletter(data, api) {
         return user;
     }
     try {
-        const productPage = await productsAPI.browse({limit: 'all'});
+        const tierPage = await tiersAPI.browse({limit: 'all'});
         const newsletterPage = await newslettersAPI.browse({limit: 'all'});
 
-        const defaultProduct = productPage.products.find(p => p.slug === 'default-product');
+        const defaultTier = tierPage.tiers.find(p => p.slug === 'default-product');
         const defaultNewsletter = newsletterPage.newsletters.find(p => p.slug === 'default-newsletter');
 
-        if (defaultProduct) {
-            await productsAPI.edit({products: [{
+        if (defaultTier) {
+            await tiersAPI.edit({tiers: [{
                 name: blogTitle.trim()
-            }]}, {context: context.context, id: defaultProduct.id});
+            }]}, {context: context.context, id: defaultTier.id});
         }
 
         if (defaultNewsletter) {
@@ -231,7 +231,7 @@ module.exports = {
     assertSetupCompleted: assertSetupCompleted,
     setupUser: setupUser,
     doSettings: doSettings,
-    doProductAndNewsletter: doProductAndNewsletter,
+    doProductAndNewsletter: doTiersAndNewsletter,
     installTheme: installTheme,
     doFixtures: doFixtures,
     sendWelcomeEmail: sendWelcomeEmail
