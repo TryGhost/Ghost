@@ -910,6 +910,7 @@
                     "email_preview": "read",
                     "email": "read",
                     "snippet": ["browse", "read"],
+                    "label": ["browse", "read"],
                     "product": ["browse", "read"],
                     "newsletter": ["browse", "read"]
                 },
