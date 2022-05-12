@@ -65,8 +65,7 @@ When used from Ghost core in validation layer:
 const jsonSchema = require('@tryghost/admin-api-schema');
 const validate = async (apiConfig, frame) => await jsonSchema.validate({
     data: frame.data,
-    schema: `${apiConfig.docName}-${apiConfig.method}`,
-    version: 'canary'
+    schema: `${apiConfig.docName}-${apiConfig.method}`
 });
 ```
 
