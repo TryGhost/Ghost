@@ -506,7 +506,7 @@ class SignupPage extends React.Component {
         const sticky = !showOnlyFree && (freeBenefits.length || freeDescription);
 
         return (
-            <section class="gh-portal-signup">
+            <section className="gh-portal-signup">
                 <div className='gh-portal-section'>
                     <div className='gh-portal-logged-out-form-container'>
                         <InputForm
