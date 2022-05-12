@@ -329,32 +329,91 @@
     color: var(--midgrey);
 }
 
-.gh-publishmenu-send-to-option {
+.gh-publish-send-to {
+    display: flex;
+    height: 38px;
+}
+
+.gh-publish-send-to-option {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    margin-bottom: 8px;
+    height: 40px;
+    margin-right: 1.2rem;
 }
 
-.gh-publishmenu-send-to-option p {
+.gh-publish-send-to-option p {
     margin: 0;
     color: var(--darkgrey);
-    font-size: 1.45rem;
-    font-weight: 400;
+    font-size: 1.4rem;
+    font-weight: 500;
+    letter-spacing: .4px;
+    line-height: 36px;
+    white-space: nowrap;
 }
 
-.gh-publishmenu-send-to-option .for-switch {
-    line-height: 1;
+.gh-publish-send-to-option .for-checkbox {
+    height: 40px;
+    position: relative;
 }
 
-.gh-publishmenu-send-to-option .for-switch label {
+.gh-publish-send-to-option .for-checkbox .input-toggle-component {
+    position: absolute;
+    top: calc(50%-9px);
+    left: 14px;
     margin: 0;
-    width: 38px !important;
-    height: 22px !important;
+    border-color: var(--white);
+    background: var(--white);
 }
 
-.gh-publishmenu-emailcount {
-    color: var(--midlightgrey);
+.gh-publish-send-to-option label p {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 38px;
+    padding: 0 14px 0 38px;
+    border: 1px solid var(--lightgrey-l1);
+    color: var(--middarkgrey);
+    font-size: 1.4rem;
+    font-weight: 500;
+    line-height: 36px;
+    letter-spacing: .2px;
+    cursor: pointer;
+    background: none;
+    overflow: unset;
+    border-radius: 21px;
+}
+
+.gh-publish-send-to-option .for-checkbox input:checked + .flex p {
+    padding: 0 13px 0 37px;
+    border: 2px solid var(--black);
+    background: var(--whitegrey-l2);
+    color: var(--black);
+    line-height: 34px;
+}
+
+.gh-publish-send-to-option .for-checkbox input:checked + .flex .input-toggle-component {
+    border: 1px solid var(--white);
+    background: var(--white);
+}
+
+.gh-publish-send-to-option .for-checkbox .input-toggle-component::before {
+    opacity: 1 !important;
+    border-color: var(--midlightgrey);
+}
+
+.gh-publish-send-to-option .for-checkbox input:checked + .flex .input-toggle-component::before {
+    opacity: 1;
+    border-color: var(--black);
+}
+
+.gh-publish-send-to .ember-power-select-multiple-trigger {
+    flex-grow: 1;
+    padding: 3px;
+}
+
+.gh-publish-emailcount {
+    margin-left: 4px;
+    font-size: 1.3rem;
 }
 
 .gh-publishmenu-checkbox-disabled {
@@ -381,11 +440,11 @@
     right: 10px;
 }
 
-.gh-publishmenu-newsletter-dropdown {
+.gh-publish-newsletter-dropdown {
     z-index: 99999;
 }
 
-.gh-publishmenu-newsletter-dropdown .ember-power-select-option[aria-selected="true"] {
+.gh-publish-newsletter-dropdown .ember-power-select-option[aria-selected="true"] {
     color: var(--black);
     font-weight: 600;
 }
@@ -572,14 +631,22 @@
 }
 
 .gh-publish-newsletter-trigger {
+    margin-top: 2px;
     padding: 8px 16px;
-    font-size: 1.45rem;
+    font-size: 1.4rem;
+    line-height: 1.65;
 }
 
 .gh-publish-newsletter-trigger svg {
     position: absolute;
     top: 50%;
     right: 16px;
+    transform: scaleX(1.1);
+}
+
+.gh-publish-newsletter-trigger svg path {
+    stroke: var(--midlightgrey) !important;
+    stroke-width: 4;
 }
 
 .gh-publish-newsletter-dropdown {
@@ -611,15 +678,15 @@
 .gh-publish-types label,
 .gh-publish-schedule label {
     display: block;
-    height: 40px;
+    height: 38px;
     margin-right: 1.2rem;
-    padding: 0 20px;
+    padding: 0 18px;
     border: 1px solid var(--lightgrey-l1);
     color: var(--middarkgrey);
     font-size: 1.4rem;
     font-weight: 500;
-    line-height: 38px;
-    letter-spacing: .4px;
+    line-height: 36px;
+    letter-spacing: .2px;
     cursor: pointer;
     background: none;
     border-radius: 21px;
@@ -627,10 +694,10 @@
 
 .gh-publish-types .gh-radio-button:checked + label,
 .gh-publish-schedule .gh-radio.active label {
-    padding: 0 19px;
+    padding: 0 17px;
     border: 2px solid var(--black);
     color: var(--black);
-    line-height: 36px;
+    line-height: 34px;
     background: var(--whitegrey-l2);
 }
 
@@ -656,7 +723,7 @@
 }
 
 .gh-publish-setting-form .gh-date-time-picker-date {
-    height: 40px;
+    height: 38px;
     margin: 0;
     padding: 8px 12px;
     font-size: 1.4rem;
