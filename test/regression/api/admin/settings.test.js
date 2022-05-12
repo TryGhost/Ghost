@@ -265,6 +265,16 @@ const defaultSettingsKeyTypes = [
         group: 'portal'
     },
     {
+        key: 'firstpromoter',
+        type: 'boolean',
+        group: 'firstpromoter'
+    },
+    {
+        key: 'firstpromoter_id',
+        type: 'string',
+        group: 'firstpromoter'
+    },
+    {
         key: 'portal_button_icon',
         type: 'string',
         group: 'portal'
@@ -385,16 +395,6 @@ const defaultSettingsKeyTypes = [
         group: 'newsletter'
     },
     {
-        key: 'firstpromoter',
-        type: 'boolean',
-        group: 'firstpromoter'
-    },
-    {
-        key: 'firstpromoter_id',
-        type: 'string',
-        group: 'firstpromoter'
-    },
-    {
         key: 'oauth_client_id',
         type: 'string',
         group: 'oauth'
@@ -426,7 +426,7 @@ const defaultSettingsKeyTypes = [
     }
 ];
 
-const calculatedSettingsTypes = ['members_enabled', 'members_invite_only', 'paid_members_enabled'];
+const calculatedSettingsTypes = ['members_enabled', 'members_invite_only', 'paid_members_enabled', 'firstpromoter_account'];
 
 describe('Settings API (canary)', function () {
     let request;
