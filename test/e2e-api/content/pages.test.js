@@ -108,11 +108,11 @@ describe('Pages Content API', function () {
 
     it('Can include specific tier for page with tiers visibility', async function () {
         const res = await agent
-            .get(`products/`)
+            .get(`tiers/`)
             .expectStatus(200);
 
         const jsonResponse = res.body;
-        const paidTier = jsonResponse.products.find(p => p.type === 'paid');
+        const paidTier = jsonResponse.tiers.find(p => p.type === 'paid');
 
         const tiersPage = testUtils.DataGenerator.forKnex.createPost({
             slug: 'thou-shalt-be-for-specific-tiers',

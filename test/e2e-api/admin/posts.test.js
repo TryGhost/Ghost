@@ -354,7 +354,7 @@ describe('Posts API', function () {
     });
 
     it('Can include specific tier for post with tiers visibility', async function () {
-        const res = await request.get(localUtils.API.getApiQuery('products/'))
+        const res = await request.get(localUtils.API.getApiQuery('tiers/'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -362,7 +362,7 @@ describe('Posts API', function () {
 
         const jsonResponse = res.body;
 
-        const paidTier = jsonResponse.products.find(p => p.type === 'paid');
+        const paidTier = jsonResponse.tiers.find(p => p.type === 'paid');
 
         const tiersPost = testUtils.DataGenerator.forKnex.createPost({
             slug: 'thou-shalt-be-for-specific-tiers',
