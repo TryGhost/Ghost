@@ -219,5 +219,9 @@ module.exports = {
 
     get newslettersPublic() {
         return shared.pipeline(require('./newsletters-public'), localUtils, 'content');
+    },
+
+    get offersPublic() {
+        return shared.pipeline(require('./offers-public'), localUtils, 'content');
     }
 };
