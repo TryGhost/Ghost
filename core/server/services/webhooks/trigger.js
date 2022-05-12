@@ -1,5 +1,6 @@
 const debug = require('@tryghost/debug')('services:webhooks:trigger');
 const logging = require('@tryghost/logging');
+const ghostVersion = require('@tryghost/version');
 
 class WebhookTrigger {
     /**
@@ -88,7 +89,8 @@ class WebhookTrigger {
                 body: reqPayload,
                 headers: {
                     'Content-Length': Buffer.byteLength(reqPayload),
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Content-Version': `v${ghostVersion.safe}`
                 },
                 timeout: 2 * 1000,
                 retry: 5
