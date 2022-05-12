@@ -121,7 +121,7 @@ describe('Acceptance: Editor', function () {
             return await authenticateSession();
         });
 
-        it('renders the editor correctly, PSM Publish Date and Save Button', async function () {
+        it.skip('renders the editor correctly, PSM Publish Date and Save Button', async function () {
             let [post1] = this.server.createList('post', 2, {authors: [author]});
             let futureTime = moment().tz('Etc/UTC').add(10, 'minutes');
 
