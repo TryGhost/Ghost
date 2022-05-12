@@ -17,14 +17,22 @@
                 <button type="button" class="gh-btn {{if (eq this.tab "social") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changeTab "social")}}><span>{{svg-jar "twitter"}}</span></button>
             </div>
         </div>
-        <div>
+        <div class="flex">
+            <button
+                type="button"
+                class="gh-btn gh-btn-editor darkgrey gh-publish-trigger"
+                {{on "click" @close}}
+            >
+                <span>Preview</span>
+            </button>
              <button
                 type="button"
-                class="gh-btn gh-btn-editor darkgrey gh-publishmenu-trigger"
+                class="gh-btn gh-btn-editor darkgrey gh-publish-trigger"
                 {{on "click" @data.togglePreviewPublish}}
             >
                 <span>Publish</span>
             </button>
+            <div class="settings-menu-toggle-spacer"></div>
         </div>
     </header>
 

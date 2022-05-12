@@ -344,12 +344,12 @@ input:focus,
     background: var(--dark-main-bg-color) !important;
 }
 
-.gh-publishmenu-trigger {
+.gh-publish-trigger {
     color: var(--blue);
     border: none !important;
 }
 
-.gh-publishmenu-trigger svg path {
+.gh-publish-trigger svg path {
     stroke-width: 2px;
 }
 

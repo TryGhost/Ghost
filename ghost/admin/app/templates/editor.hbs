@@ -8,14 +8,12 @@
             <header class="gh-editor-header br2 pe-none">
                 <div class="flex items-center pe-auto h-100">
                     {{#if this.ui.isFullScreen}}
-                        <div class="ml3 mobile flex items-center">
-                            <LinkTo @route={{pluralize this.post.displayName }} class="gh-editor-back-button" data-test-link={{pluralize this.post.displayName}}>
-                                <span>
-                                    {{svg-jar "arrow-left"}}
-                                    {{capitalize (pluralize this.post.displayName)}}
-                                </span>
-                            </LinkTo>
-                        </div>
+                        <LinkTo @route={{pluralize this.post.displayName }} class="gh-editor-back-button" data-test-link={{pluralize this.post.displayName}}>
+                            <span>
+                                {{svg-jar "arrow-left"}}
+                                {{capitalize (pluralize this.post.displayName)}}
+                            </span>
+                        </LinkTo>
                     {{/if}}
                     <div class="gh-editor-post-status">
                         <span>
