@@ -1,4 +1,4 @@
-<div class="gh-publish-send-to">
+<div class="gh-publish-send-to {{if this.isSpecificChecked "mb4"}}">
     <div class="gh-publish-send-to-option">
         <div class="for-checkbox {{if @disabled "disabled"}}">
             <label class="checkbox" for="send-email-to-free">
@@ -71,27 +71,27 @@
                     >
                     <div class="flex">
                         <span class="input-toggle-component"></span>
-                        <p>Other</p>
+                        <p>Specific people</p>
                     </div>
                 </label>
             </div>
         </div>
-        {{#if this.isSpecificChecked}}
-            <GhTokenInput
-                @class="select-members select-members-recipient"
-                @dropdownClass={{@dropdownClass}}
-                @options={{this.specificOptions}}
-                @selected={{this.selectedSpecificOptions}}
-                @disabled={{@disabled}}
-                @searchMessage="All labels selected"
-                @optionsComponent="power-select/options"
-                @allowCreation={{false}}
-                @renderInPlace={{this.renderInPlace}}
-                @onChange={{this.selectSpecificOptions}}
-                as |option|
-            >
-                {{option.name}}
-            </GhTokenInput>
-        {{/if}}
     {{/if}}
 </div>
+{{#if this.isSpecificChecked}}
+    <GhTokenInput
+        @class="select-members select-members-recipient"
+        @dropdownClass={{@dropdownClass}}
+        @options={{this.specificOptions}}
+        @selected={{this.selectedSpecificOptions}}
+        @disabled={{@disabled}}
+        @searchMessage="All labels selected"
+        @optionsComponent="power-select/options"
+        @allowCreation={{false}}
+        @renderInPlace={{this.renderInPlace}}
+        @onChange={{this.selectSpecificOptions}}
+        as |option|
+    >
+        {{option.name}}
+    </GhTokenInput>
+{{/if}}
