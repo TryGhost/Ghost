@@ -25,7 +25,7 @@ export default class GhLaunchWizardFinaliseComponent extends Component {
             const monthlyPrice = {
                 nickname: 'Monthly',
                 amount: monthlyAmount,
-                active: 1,
+                active: true,
                 currency: currency,
                 interval: 'month',
                 type: 'recurring'
@@ -33,7 +33,7 @@ export default class GhLaunchWizardFinaliseComponent extends Component {
             const yearlyPrice = {
                 nickname: 'Yearly',
                 amount: yearlyAmount,
-                active: 1,
+                active: true,
                 currency: currency,
                 interval: 'year',
                 type: 'recurring'
