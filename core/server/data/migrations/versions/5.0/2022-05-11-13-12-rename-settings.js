@@ -34,7 +34,7 @@ module.exports = createTransactionalMigration(
                     .del();
             } else if (_.find(settings, {key: renameMapping.from})) {
                 // CASE: old settings exist, update them
-                logging.info(`Updating ${renameMapping.from} with new key ${renameMapping.to}`);
+                logging.info(`Renaming ${renameMapping.from} to ${renameMapping.to}`);
                 await knex('settings')
                     .where('key', renameMapping.from)
                     .update('key', renameMapping.to);
