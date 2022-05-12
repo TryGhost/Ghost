@@ -58,22 +58,6 @@
     </p>
 {{/if}}
 
-{{#if this.emailErrorMessage}}
-    <p class="error gh-box gh-box-error mt3 mb3">
-        {{svg-jar "warning"}}
-
-        {{#if @publishOptions.willOnlyEmail}}
-            Your post has been created but the email failed to send.
-        {{else}}
-            Your post has been published but the email failed to send.
-        {{/if}}
-
-        Please verify your email settings if the error persists.
-        <br><br>
-        Email error: {{this.emailErrorMessage}}
-    </p>
-{{/if}}
-
 <div class="gh-publish-cta">
     <GhTaskButton
         @task={{this.confirmTask}}

@@ -4,7 +4,7 @@
             <span>{{svg-jar "arrow-left"}} Editor</span>
         </button>
 
-        {{#unless this.isComplete}}
+        {{#if (and (not this.emailErrorMessage) (not this.isComplete))}}
             <div class="flex">
                 <div>
                     <button
@@ -20,11 +20,18 @@
                 </button>
                 <div class="settings-menu-toggle-spacer"></div>
             </div>
-        {{/unless}}
+        {{/if}}
     </header>
 
     <div class="gh-publish-settings-container">
-        {{#if this.isConfirming}}
+        {{#if this.emailErrorMessage}}
+            <EditorLabs::Modals::PublishFlow::CompleteWithEmailError
+                @emailErrorMessage={{this.emailErrorMessage}}
+                @publishOptions={{@data.publishOptions}}
+                @posCount={{this.posCount}}
+                @close={{@close}}
+            />
+        {{else if this.isConfirming}}
             <EditorLabs::Modals::PublishFlow::Confirm
                 @publishOptions={{@data.publishOptions}}
                 @recipientType={{this.recipientType}}

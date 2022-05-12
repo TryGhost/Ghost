@@ -1,0 +1,46 @@
+{{#let @publishOptions.post as |post|}}
+    <div class="gh-publish-title">
+        <span class="green">Boom. It’s out there.</span>
+
+        {{#if post.emailOnly}}
+            Your email has been created.
+        {{else if (and post.isPost @postCount)}}
+            That’s {{@postCount}} posts published, keep going!
+        {{else}}
+            Your {{post.displayName}} has been published.
+        {{/if}}
+    </div>
+
+    <p class="error gh-box gh-box-error mt3 mb3">
+        {{svg-jar "warning"}}
+
+        {{#if @publishOptions.willOnlyEmail}}
+            Your post has been created but the email failed to send.
+        {{else}}
+            Your post has been published but the email failed to send.
+        {{/if}}
+
+        Please verify your email settings if the error persists.
+        <br><br>
+        Email error: {{this.emailErrorMessage}}
+    </p>
+
+    {{#if this.retryErrorMessage}}
+        <p class="error gh-box gh-box-error mt3 mb3">
+            {{svg-jar "warning"}}
+            {{this.retryErrorMessage}}
+        </p>
+    {{/if}}
+
+    <div class="gh-publish-cta">
+        <GhTaskButton
+            @task={{this.retryEmailTask}}
+            @buttonText="Retry sending email"
+            @runningText="Sending"
+            @successText="Sent"
+            @class="gh-btn gh-btn-large"
+            @showIcon={{false}}
+        />
+    </div>
+{{/let}}
+
