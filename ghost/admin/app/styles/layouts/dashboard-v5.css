@@ -567,7 +567,7 @@ Dashboard v5 Percentage */
     line-height: 1;
     font-weight: 500;
     letter-spacing: 0;
-    color: var(--midgrey);
+    color: var(--midgrey-l2);
     padding: 0;
     margin: 5px 0 3px 0;
 }
