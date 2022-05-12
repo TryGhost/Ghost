@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/email-analytics-provider-mailgun",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "repository": "https://github.com/TryGhost/Publishing/tree/main/packages/email-analytics-provider-mailgun",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -25,7 +25,7 @@
     "sinon": "14.0.0"
   },
   "dependencies": {
-    "@tryghost/email-analytics-service": "^1.0.6",
+    "@tryghost/email-analytics-service": "^1.0.7",
     "@tryghost/logging": "^2.0.0",
     "mailgun-js": "^0.22.0",
     "moment": "^2.29.1"
