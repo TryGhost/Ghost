@@ -131,8 +131,8 @@ describe('Database Migration (special functions)', function () {
             permissions.should.havePermission('Add snippets', ['Administrator', 'Editor', 'Admin Integration']);
             permissions.should.havePermission('Delete snippets', ['Administrator', 'Editor', 'Admin Integration']);
 
-            permissions.should.havePermission('Browse labels', ['Administrator', 'Editor', 'Admin Integration']);
-            permissions.should.havePermission('Read labels', ['Administrator', 'Editor', 'Admin Integration']);
+            permissions.should.havePermission('Browse labels', ['Administrator', 'Editor', 'Author', 'Admin Integration']);
+            permissions.should.havePermission('Read labels', ['Administrator', 'Editor', 'Author', 'Admin Integration']);
             permissions.should.havePermission('Edit labels', ['Administrator', 'Admin Integration']);
             permissions.should.havePermission('Add labels', ['Administrator', 'Admin Integration']);
             permissions.should.havePermission('Delete labels', ['Administrator', 'Admin Integration']);
