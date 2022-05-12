@@ -37,7 +37,7 @@
         >
         <small class="gh-date-time-picker-timezone" data-test-date-time-picker-timezone>{{this.timezone}}</small>
     </div>
+    {{#if this.hasError}}
+        <div class="gh-date-time-picker-error" data-test-date-time-picker-error>{{this.dateError}}{{this.timeError}}</div>
+    {{/if}}
 </div>
-{{#if this.hasError}}
-    <div class="gh-date-time-picker-error" data-test-date-time-picker-error>{{this.dateError}}{{this.timeError}}</div>
-{{/if}}
