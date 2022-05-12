@@ -156,13 +156,13 @@ export default class GhDateTimePicker extends Component {
     }
 
     @action
-    setTimeInternal(time) {
+    setTimeInternal(time, event) {
         if (time.match(/^\d:\d\d$/)) {
             time = `0${time}`;
         }
 
         if (time !== this._previousTime) {
-            this.setTime(time);
+            this.setTime(time, event);
             this.set('_previousTime', time);
 
             if (isBlank(this.date)) {
