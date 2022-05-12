@@ -204,6 +204,7 @@
 }
 
 .gh-date-time-picker {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -724,7 +725,7 @@
 .gh-publish-setting-form .gh-date-time-picker {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-gap: 12px;
+    grid-column-gap: 12px;
 }
 
 .gh-publish-setting-form .gh-date-time-picker-date {
@@ -736,7 +737,7 @@
 
 .gh-publish-setting-form .gh-date-time-picker-time {
     width: unset;
-    height: 40px;
+    height: 38px;
     margin: 0;
     padding: 8px 12px;
     font-size: 1.4rem;
@@ -746,6 +747,13 @@
     margin: 0;
     color: var(--midgrey);
     font-weight: 500;
+}
+
+.gh-publish-setting-form .gh-date-time-picker-error {
+    grid-column: span 2;
+    margin-top: 4px;
+    font-size: 1.25rem;
+    font-weight: 400;
 }
 
 .publish-flow-datepicker {
@@ -847,7 +855,7 @@
     color: var(--black);
     font-size: 1.8rem;
     font-weight: 400;
-    line-height: 1.35em;
+    line-height: 1.6em;
 }
 
 .gh-publish-confirmation + .gh-box-error {
