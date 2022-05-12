@@ -14,7 +14,7 @@ describe('Webhook Service', function () {
         }
     };
 
-    const payload = sinon.stub().resolves(null);
+    let payload = sinon.stub().resolves(null);
 
     afterEach(function () {
         sinon.restore();
@@ -35,6 +35,47 @@ describe('Webhook Service', function () {
 
             should.equal(models.Webhook.findAllByEvent.called, true);
             should.equal(payload.called, false);
+        });
+
+        it('Does triggers payload handler and request when event when model has a registered hook', async function () {
+            const postModelStub = sinon.stub();
+            const webhookModelStub = {
+                get: () => {}
+            };
+            sinon.stub(webhookModelStub, 'get')
+                .withArgs('event').returns('post.added')
+                .withArgs('target_url').returns('http://example.com');
+
+            const requestStub = sinon.stub().resolves({});
+
+            sinon.stub(models.Webhook, 'findAllByEvent')
+                .withArgs('post.added', {context: {internal: true}})
+                .resolves({models: [webhookModelStub]});
+
+            payload = sinon.stub().resolves({data: [1]});
+
+            const webhookTrigger = new WebhookTrigger({
+                models,
+                payload,
+                request: requestStub
+            });
+
+            sinon.stub(webhookTrigger, 'onSuccess').callsFake(function () {
+                return Promise.resolve();
+            });
+            sinon.stub(webhookTrigger, 'onError').callsFake(function () {
+                return Promise.resolve();
+            });
+            await webhookTrigger.trigger('post.added', postModelStub);
+
+            should.equal(models.Webhook.findAllByEvent.called, true);
+            should.equal(payload.called, true);
+
+            should.equal(requestStub.called, true);
+            should.equal(requestStub.args[0][0], 'http://example.com');
+            should.deepEqual(requestStub.args[0][1].body, '{"data":[1]}');
+            should.equal(requestStub.args[0][1].headers['Content-Length'], 12);
+            should.equal(requestStub.args[0][1].headers['Content-Length'], 'application/json');
         });
     });
 });
