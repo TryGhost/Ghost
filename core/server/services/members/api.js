@@ -170,9 +170,6 @@ function createApiInstance(config) {
                 }
             }
         },
-        paymentConfig: {
-            stripe: config.getStripePaymentConfig()
-        },
         models: {
             EmailRecipient: models.EmailRecipient,
             StripeCustomer: models.MemberStripeCustomer,
