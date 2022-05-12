@@ -338,10 +338,9 @@ export default class PaidMix extends Component {
                 for (let i = 0; i < data.length; i++) {
                     data[i] = equalPercentageData;
                 }
-            }
-            else {
-                labels[0] = "Tier 1";
-                labels[1] = "Tier 2";
+            } else {
+                labels[0] = 'Tier 1';
+                labels[1] = 'Tier 2';
                 data[0] = 50;
                 data[1] = 50;
             }
