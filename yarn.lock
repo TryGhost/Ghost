@@ -8025,10 +8025,10 @@ jwa@^1.4.1:
     ecdsa-sig-formatter "1.0.11"
     safe-buffer "^5.0.1"
 
-jwks-rsa@2.1.1:
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/jwks-rsa/-/jwks-rsa-2.1.1.tgz#8e33d1d2458887cf7ebf8ad915a0c96e48bdae9f"
-  integrity sha512-NdtZuf1pvlnWgbCU2c9oRFdi+u8uWpwL6EMiordpasrNFNrGrQGNs7WQ9UiMT0/RG7vt4ElwyObNy04pIbsGCA==
+jwks-rsa@2.1.2:
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/jwks-rsa/-/jwks-rsa-2.1.2.tgz#9ab21b5f4874e2c00a6e1353a6fb364b3a089084"
+  integrity sha512-QW2SNEUVvMqULiBJVsIJXSuX73Qj9il/DMCsJZsmCI8AQFZ6BjXgQW6h9wOlPr1LswQBNDdyFT2LPogwMRr1ew==
   dependencies:
     "@types/express" "^4.17.13"
     debug "^4.3.4"
