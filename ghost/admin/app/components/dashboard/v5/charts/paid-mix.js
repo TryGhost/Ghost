@@ -367,32 +367,52 @@ export default class PaidMix extends Component {
 
     get chartOptions() {
         let that = this;
-        let ticksY;
+        let ticksY = {display: false};
         let totalCadence = this.dashboardStats.paidMembersByCadence.month + this.dashboardStats.paidMembersByCadence.year;
         let minTickValue = -(Math.round(this.dashboardStats.paidMembersByCadence.month / totalCadence * 100));
         let maxTickValue = Math.round(this.dashboardStats.paidMembersByCadence.year / totalCadence * 100);
 
+        // this is for cadence...
         if (this.mode === 'cadence') {
             // for when it's empty
             if (totalCadence === 0) {
                 minTickValue = -50;
                 maxTickValue = 50;
-                ticksY = {
-                    display: false,
-                    min: minTickValue,
-                    max: maxTickValue
-                };
-            // when it does have data
-            } else {
-                ticksY = {
-                    display: false,
-                    min: minTickValue,
-                    max: maxTickValue
-                };
             }
-        } else {
+
             ticksY = {
-                display: false
+                display: false,
+                min: minTickValue,
+                max: maxTickValue
+            };
+
+        // this is for tiers...
+        } else {
+            let tierPercentages = [];
+            let data = this.dashboardStats.paidMembersByTier.map(stat => stat.members);
+            let totalTiersAmount = 0;
+
+            for (let i = 0; i < data.length; i++) {
+                totalTiersAmount += data[i];
+            }
+
+            for (let i = 0; i < data.length; i++) {
+                let tierPercentage = Math.round(data[i] / totalTiersAmount * 100);
+                if (i === 0) { 
+                    tierPercentage = -tierPercentage;
+                }
+                tierPercentages.push(tierPercentage);
+            }
+
+            // sorting to ensure smallest to largest values in order always
+            tierPercentages.sort(function (a, b) {
+                return a - b;
+            });
+
+            ticksY = {
+                display: false,
+                min: tierPercentages[0],
+                max: tierPercentages[tierPercentages.length - 1] // get the last (biggest) in array
             };
         }
 
