@@ -128,7 +128,7 @@ describe('Pages API', function () {
     });
 
     it('Can include specific tier for page with tiers visibility', async function () {
-        const res = await request.get(localUtils.API.getApiQuery('products/'))
+        const res = await request.get(localUtils.API.getApiQuery('tiers/'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -136,7 +136,7 @@ describe('Pages API', function () {
 
         const jsonResponse = res.body;
 
-        const paidTier = jsonResponse.products.find(p => p.type === 'paid');
+        const paidTier = jsonResponse.tiers.find(p => p.type === 'paid');
 
         const tiersPage = testUtils.DataGenerator.forKnex.createPost({
             type: 'page',
@@ -199,15 +199,15 @@ describe('Pages API', function () {
             .set('Origin', config.get('url'))
             .expect(200);
 
-        const resProducts = await request
-            .get(localUtils.API.getApiQuery(`products/`))
+        const resTiers = await request
+            .get(localUtils.API.getApiQuery(`tiers/`))
             .set('Origin', config.get('url'))
             .expect(200);
 
-        const products = resProducts.body.products;
+        const tiers = resTiers.body.tiers;
         page.updated_at = res.body.pages[0].updated_at;
         page.visibility = 'tiers';
-        const paidTiers = products.filter((p) => {
+        const paidTiers = tiers.filter((p) => {
             return p.type === 'paid';
         }).map((product) => {
             return product;

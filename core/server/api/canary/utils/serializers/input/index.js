@@ -39,10 +39,6 @@ module.exports = {
         return require('./media');
     },
 
-    get products() {
-        return require('./products');
-    },
-
     get tiers() {
         return require('./tiers');
     },
