@@ -439,10 +439,10 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
     };
 
     api.init = async () => {
-        let [{site}, member] = await Promise.all([
-            api.site.read(),
+        let [member] = await Promise.all([
             api.member.sessionData()
         ]);
+        let site = {};
         let newsletters = [];
         let tiers = [];
         let settings = {};
@@ -456,13 +456,13 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             site = {
                 ...settings,
                 newsletters,
-                products: tiers
+                tiers
             };
-            site = transformApiSiteData({site});
         } catch (e) {
             // Ignore
         }
-        return {site, member, newsletters, tiers};
+        site = transformApiSiteData({site});
+        return {site, member};
     };
 
     return api;
