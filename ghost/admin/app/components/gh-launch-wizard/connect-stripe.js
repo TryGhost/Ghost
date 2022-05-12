@@ -169,7 +169,7 @@ export default class GhLaunchWizardConnectStripeComponent extends Component {
                 this.tier.set('monthlyPrice', {
                     nickname: 'Monthly',
                     amount: 500,
-                    active: 1,
+                    active: true,
                     description: 'Full access',
                     currency: 'usd',
                     interval: 'month',
@@ -178,7 +178,7 @@ export default class GhLaunchWizardConnectStripeComponent extends Component {
                 this.tier.set('yearlyPrice', {
                     nickname: 'Yearly',
                     amount: 5000,
-                    active: 1,
+                    active: true,
                     currency: 'usd',
                     description: yearlyDiscount > 0 ? `${yearlyDiscount}% discount` : 'Full access',
                     interval: 'year',
