@@ -144,7 +144,7 @@
     font-weight: 600;
 }
 
-.fullscreen-modal-email-preview .gh-pe-mobile-container {
+.fullscreen-modal-total-overlay .gh-pe-mobile-container {
     display: flex;
     flex-direction: column;
     flex-grow: 1;
