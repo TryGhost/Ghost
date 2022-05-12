@@ -31,7 +31,7 @@
 
     {{#unless @publishOptions.emailUnavailable}}
         <div class="gh-publish-setting">
-            {{#if @publishOptions.willEmail}}
+            {{#if (not-eq @publishOptions.publishType "publish")}}
                 <button
                     type="button"
                     class="gh-publish-setting-title"
@@ -39,23 +39,27 @@
                 >
                     {{svg-jar "member"}}
                     <div class="gh-publish-setting-trigger">
-                        {{#let (members-count-fetcher query=(hash filter=@publishOptions.fullRecipientFilter)) as |countFetcher|}}
-                            {{#if (gt countFetcher.count 1)}}
-                                {{if (eq @recipientType "all") "All"}}
-                            {{/if}}
+                        {{#if @publishOptions.recipientFilter}}
+                            {{#let (members-count-fetcher query=(hash filter=@publishOptions.fullRecipientFilter)) as |countFetcher|}}
+                                {{#if (gt countFetcher.count 1)}}
+                                    {{if (eq @recipientType "all") "All"}}
+                                {{/if}}
 
-                            {{countFetcher.count}}
+                                {{countFetcher.count}}
 
-                            {{!-- @recipientType = none/free/paid/all/specific --}}
-                            {{if (not-eq @recipientType "all") @recipientType}}
+                                {{!-- @recipientType = none/free/paid/all/specific --}}
+                                {{if (not-eq @recipientType "all") @recipientType}}
 
-                            {{#if @publishOptions.onlyDefaultNewsletter}}
-                                {{gh-pluralize countFetcher.count "subscriber" without-count=true}}
-                            {{else}}
-                                {{gh-pluralize countFetcher.count "subscriber" without-count=true}}
-                                of <span class="gh-selected-newsletter">{{@publishOptions.newsletter.name}}</span>
-                            {{/if}}
-                        {{/let}}
+                                {{#if @publishOptions.onlyDefaultNewsletter}}
+                                    {{gh-pluralize countFetcher.count "subscriber" without-count=true}}
+                                {{else}}
+                                    {{gh-pluralize countFetcher.count "subscriber" without-count=true}}
+                                    of <span class="gh-selected-newsletter">{{@publishOptions.newsletter.name}}</span>
+                                {{/if}}
+                            {{/let}}
+                        {{else}}
+                            Not sent as newsletter
+                        {{/if}}
                     </div>
                     <span class="{{if (eq this.openSection "emailRecipients") "expanded"}}">
                         {{svg-jar "arrow-down" class="icon-expand"}}
