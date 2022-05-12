@@ -3,7 +3,7 @@
         {{#if @secondary}}
             {{#if @value}}
                 <div class="gh-dashboard5-metric-value {{if @secondary 'is-secondary'}}">
-                    {{@value}}
+                    <span class="value">{{@value}}</span>
                     {{#if @trends}}
                     <Dashboard::v5::Parts::Percentage @percentage={{@percentage}}/>
                 {{/if}}
@@ -16,7 +16,7 @@
             {{#if @reverse}}
                 {{#if @value}}
                     <div class="gh-dashboard5-metric-value">
-                        {{@value}}
+                        <span class="value">{{@value}}</span>
                         {{#if @trends}}
                         <Dashboard::v5::Parts::Percentage @percentage={{@percentage}}/>
                     {{/if}}
@@ -31,7 +31,7 @@
                 </h5>
                 {{#if @value}}
                     <div class="gh-dashboard5-metric-value">
-                        {{@value}}
+                        <span class="value">{{@value}}</span>
                         {{#if @trends}}
                             <Dashboard::v5::Parts::Percentage @percentage={{@percentage}}/>
                         {{/if}}

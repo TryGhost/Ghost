@@ -120,7 +120,7 @@ export default class PaidMrr extends Component {
                 data: data,
                 tension: 0,
                 cubicInterpolationMode: 'monotone',
-                fill: true,
+                fill: false,
                 fillColor: gradient,
                 backgroundColor: gradient,
                 pointRadius: 0,
