@@ -19,12 +19,17 @@
 
             <div class="gh-publish-confirmation">
                 <p>
-                    Your 
+                    Your
                     {{post.displayName}}
 
                     {{if post.isScheduled "will be" "was"}}
 
-                    {{#if (or post.isSent (and post.isPublished post.email) (and post.isScheduled post.emailRecipientFilter (not post.email)))}}
+                    {{#if
+                        (or post.isSent
+                            (and post.isPublished post.email)
+                            (and post.isScheduled post.emailRecipientFilter (not post.email))
+                        )
+                    }}
                         {{#if post.emailOnly}}
                             sent to
                         {{else}}
@@ -33,25 +38,39 @@
 
                         {{#if post.isScheduled}}
                             {{#let (members-count-fetcher query=(hash filter=post.fullRecipientFilter)) as |countFetcher|}}
-                                <strong>{{gh-pluralize countFetcher.count "member"}}</strong>
+                                {{#if this.showNewsletterName}}
+                                    <strong>{{gh-pluralize countFetcher.count "subscriber"}}</strong> of <strong>{{post.newsletter.name}}</strong>
+                                {{else}}
+                                    <strong>{{gh-pluralize countFetcher.count "member"}}</strong>
+                                {{/if}}
                             {{/let}}
                         {{else}}
-                            <strong>{{pluralize post.email.emailCount "member"}}</strong>
+                            {{#if this.showNewsletterName}}
+                                <strong>{{gh-pluralize post.email.emailCount "subscriber"}}</strong> of <strong>{{post.newsletter.name}}</strong>
+                            {{else}}
+                                <strong>{{gh-pluralize post.email.emailCount "member"}}</strong>
+                            {{/if}}
                         {{/if}}
                     {{else}}
                         published on your site
                     {{/if}}
+
                     {{#let (moment-site-tz post.publishedAtUTC) as |publishedAt|}}
                         on
-                            {{moment-format publishedAt "D MMM YYYY"}}
-                            at
-                            {{moment-format publishedAt "HH:mm"}}.
+                        {{moment-format publishedAt "D MMM YYYY"}}
+                        at
+                        {{moment-format publishedAt "HH:mm"}}.
                     {{/let}}
 
                     {{#if post.isScheduled}}
                         {{#if (and post.isScheduled post.email)}}
                             This post was previously emailed to
-                            <strong>{{pluralize post.email.emailCount "member"}}</strong> on
+
+                            {{#if this.showNewsletterName}}
+                                <strong>{{pluralize post.email.emailCount "subscriber"}}</strong> of <strong>{{post.newsletter.name}}</strong> on
+                            {{else}}
+                                <strong>{{pluralize post.email.emailCount "member"}}</strong> on
+                            {{/if}}
 
                             {{#let (moment-site-tz post.email.createdAtUTC) as |sentAt|}}
                                 {{moment-format sentAt "D MMM YYYY"}}
@@ -59,6 +78,7 @@
                                 {{moment-format sentAt "HH:mm"}}.
                             {{/let}}
                         {{/if}}
+
                         <br><br>
                         Need to make a change?
                         <button
