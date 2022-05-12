@@ -32,10 +32,9 @@ module.exports = function apiRoutes() {
     // ## Settings
     router.get('/settings', mw.authenticatePublic, http(api.publicSettings.browse));
 
-    router.get('/products', mw.authenticatePublic, http(api.productsPublic.browse));
-    router.get('/tiers', mw.authenticatePublic, http(api.tiersPublic.browse));
+    // ## Members
     router.get('/newsletters', mw.authenticatePublic, http(api.newslettersPublic.browse));
-
+    router.get('/tiers', mw.authenticatePublic, http(api.tiersPublic.browse));
     router.get('/offers/:id', mw.authenticatePublic, http(api.offersPublic.read));
 
     return router;

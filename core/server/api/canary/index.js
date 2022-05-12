@@ -85,10 +85,6 @@ module.exports = {
         return shared.pipeline(require('./offers'), localUtils);
     },
 
-    get products() {
-        return shared.pipeline(require('./products'), localUtils);
-    },
-
     get tiers() {
         return shared.pipeline(require('./tiers'), localUtils);
     },
@@ -207,10 +203,6 @@ module.exports = {
 
     get authorsPublic() {
         return shared.pipeline(require('./authors-public'), localUtils, 'content');
-    },
-
-    get productsPublic() {
-        return shared.pipeline(require('./products-public'), localUtils, 'content');
     },
 
     get tiersPublic() {
