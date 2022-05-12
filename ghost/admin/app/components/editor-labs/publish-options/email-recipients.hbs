@@ -1,6 +1,15 @@
 <div class="form-group max-width mb0">
+    <GhMembersRecipientSelect
+        @filter={{@publishOptions.recipientFilter}}
+        @newsletter={{@publishOptions.newsletter}}
+        @onChange={{@publishOptions.setRecipientFilter}}
+        @renderInPlace={{false}}
+        @dropdownClass="gh-publish-newsletter-dropdown"
+    />
+    
     {{#if (gt @publishOptions.newsletters.length 1)}}
-        <div class="mb4">
+        <div class="mt4">
+            <label class="gh-main-section-header small bn">Newsletter</label>
             <PowerSelect
                 @selected={{@publishOptions.newsletter}}
                 @options={{@publishOptions.newsletters}}
@@ -14,12 +23,4 @@
             </PowerSelect>
         </div>
     {{/if}}
-
-    <GhMembersRecipientSelect
-        @filter={{@publishOptions.recipientFilter}}
-        @newsletter={{@publishOptions.newsletter}}
-        @onChange={{@publishOptions.setRecipientFilter}}
-        @renderInPlace={{false}}
-        @dropdownClass="gh-publishmenu-newsletter-dropdown"
-    />
 </div>
