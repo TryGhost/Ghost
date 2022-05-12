@@ -94,11 +94,6 @@ describe('Front-end members behaviour', function () {
                 .expect(204);
         });
 
-        it('should serve member site endpoint', async function () {
-            await request.get('/members/api/site')
-                .expect(200);
-        });
-
         it('should error for invalid data on member magic link endpoint', async function () {
             await request.post('/members/api/send-magic-link')
                 .expect(400);

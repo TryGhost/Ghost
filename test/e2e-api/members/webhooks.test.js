@@ -53,11 +53,6 @@ describe('Members API', function () {
         mockManager.restore();
     });
 
-    it('Can communicate with the frontend Members API', async function () {
-        await membersAgent.get('/api/site/')
-            .expectStatus(200);
-    });
-
     // @todo: Test what happens when a complementary subscription ends (should create comped -> free event)
     // @todo: Test what happens when a complementary subscription starts a paid subscription
 
