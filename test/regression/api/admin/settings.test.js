@@ -35,7 +35,7 @@ const defaultSettingsKeyTypes = [
         group: 'site'
     },
     {
-        key: 'lang',
+        key: 'locale',
         type: 'string',
         group: 'site'
     },
@@ -679,8 +679,8 @@ describe('Settings API (canary)', function () {
             jsonResponse.settings[0].value.should.match(jsonObjectRegex);
         });
 
-        it('Can edit deprecated lang setting', function () {
-            return request.get(localUtils.API.getApiQuery('settings/lang/'))
+        it('Can edit newly introduced locale setting', function () {
+            return request.get(localUtils.API.getApiQuery('settings/locale/'))
                 .set('Origin', config.get('url'))
                 .set('Accept', 'application/json')
                 .expect('Content-Type', /json/)
@@ -689,7 +689,7 @@ describe('Settings API (canary)', function () {
                     let jsonResponse = res.body;
                     should.exist(jsonResponse);
                     should.exist(jsonResponse.settings);
-                    jsonResponse.settings = [{key: 'lang', value: 'ua'}];
+                    jsonResponse.settings = [{key: 'locale', value: 'ge'}];
 
                     return jsonResponse;
                 })
@@ -710,49 +710,11 @@ describe('Settings API (canary)', function () {
                             jsonResponse.settings.length.should.eql(1);
 
                             testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'group', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
-                            jsonResponse.settings[0].key.should.eql('lang');
-                            jsonResponse.settings[0].value.should.eql('ua');
+                            jsonResponse.settings[0].key.should.eql('locale');
+                            jsonResponse.settings[0].value.should.eql('ge');
                         });
                 });
         });
-
-        // @TODO: swap this test for the one above when renaming the setting is in place
-        // it('Can edit newly introduced locale setting', function () {
-        //     return request.get(localUtils.API.getApiQuery('settings/locale/'))
-        //         .set('Origin', config.get('url'))
-        //         .set('Accept', 'application/json')
-        //         .expect('Content-Type', /json/)
-        //         .expect('Cache-Control', testUtils.cacheRules.private)
-        //         .then(function (res) {
-        //             let jsonResponse = res.body;
-        //             should.exist(jsonResponse);
-        //             should.exist(jsonResponse.settings);
-        //             jsonResponse.settings = [{key: 'locale', value: 'ge'}];
-
-        //             return jsonResponse;
-        //         })
-        //         .then((editedSetting) => {
-        //             return request.put(localUtils.API.getApiQuery('settings/'))
-        //                 .set('Origin', config.get('url'))
-        //                 .send(editedSetting)
-        //                 .expect('Content-Type', /json/)
-        //                 .expect('Cache-Control', testUtils.cacheRules.private)
-        //                 .expect(200)
-        //                 .then(function (res) {
-        //                     should.exist(res.headers['x-cache-invalidate']);
-        //                     const jsonResponse = res.body;
-
-        //                     should.exist(jsonResponse);
-        //                     should.exist(jsonResponse.settings);
-
-        //                     jsonResponse.settings.length.should.eql(1);
-
-        //                     testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'group', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
-        //                     jsonResponse.settings[0].key.should.eql('locale');
-        //                     jsonResponse.settings[0].value.should.eql('ge');
-        //                 });
-        //         });
-        // });
 
         it('Can read timezone', function (done) {
             request.get(localUtils.API.getApiQuery('settings/timezone/'))
