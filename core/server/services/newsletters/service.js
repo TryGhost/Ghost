@@ -112,7 +112,8 @@ class NewslettersService {
      * @public
      * @param {object} attrs model properties
      * @param {Object} [options] options
-     * @param {Object} [options] options.transacting
+     * @param {boolean} [options.opt_in_existing] Opt in existing members
+     * @param {Object} [options.transacting]
      * @returns {Promise<{object}>} Newsetter Model with verification metadata
      */
     async add(attrs, options = {}) {
@@ -124,7 +125,9 @@ class NewslettersService {
             });
         }
 
-        await this.limitService.errorIfWouldGoOverLimit('newsletters');
+        if (!attrs.status || attrs.status === 'active') {
+            await this.limitService.errorIfWouldGoOverLimit('newsletters', options.transacting ? {transacting: options.transacting} : {});
+        }
 
         // remove any email properties that are not allowed to be set without verification
         const {cleanedAttrs, emailsToVerify} = await this.prepAttrsForEmailVerification(attrs);
@@ -177,13 +180,20 @@ class NewslettersService {
      * @param {object} attrs model properties
      * @param {Object} options options
      * @param {string} options.id Newsletter id to edit
+     * @param {Object} [options.transacting]
      * @returns {Promise<{object}>} Newsetter Model with verification metadata
      */
     async edit(attrs, options) {
+        const sharedOptions = _.pick(options, 'transacting');
+
         // fetch newsletter first so we can compare changed emails
-        const originalNewsletter = await this.NewsletterModel.findOne({id: options.id}, {require: true});
+        const originalNewsletter = await this.NewsletterModel.findOne({id: options.id}, {...sharedOptions, require: true});
 
         const {cleanedAttrs, emailsToVerify} = await this.prepAttrsForEmailVerification(attrs, originalNewsletter);
+
+        if (originalNewsletter.status !== 'active' && cleanedAttrs.status === 'active') {
+            await this.limitService.errorIfWouldGoOverLimit('newsletters', sharedOptions);
+        }
 
         let updatedNewsletter;
         
@@ -307,7 +317,7 @@ class NewslettersService {
 
 /**
  * @typedef {object} ILimitService
- * @prop {(name: string) => Promise<void>} errorIfWouldGoOverLimit
+ * @prop {(name: string, options?: {transacting?: Object}) => Promise<void>} errorIfWouldGoOverLimit
  **/
 
 module.exports = NewslettersService;
