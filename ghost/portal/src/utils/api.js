@@ -133,7 +133,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
         },
 
         offer({offerId}) {
-            const url = endpointFor({type: 'members', resource: 'offers'}) + offerId + '/';
+            const url = contentEndpointFor({resource: `offers/${offerId}`});
             return makeRequest({
                 url,
                 method: 'GET',
