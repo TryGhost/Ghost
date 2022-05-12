@@ -1264,6 +1264,12 @@ Dashboard v5 Resources */
     gap: 28px;
 }
 
+.gh-dashboard5-resources .gh-dashboard5-resource-box,
+.gh-dashboard5-newsletter .gh-dashboard5-resource-box {
+    box-shadow: 0 1px 4px -1px rgb(0 0 0 / 10%);
+    border: none;
+}
+
 @media screen and (max-width: 1320px) {
     .gh-dashboard5-resources .gh-dashboard5-resource-box {
         grid-template-columns: 1fr;
