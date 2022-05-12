@@ -216,6 +216,34 @@ export function transformApiSiteData({site}) {
         };
     });
 
+    site.is_stripe_configured = !!site.paid_members_enabled;
+    site.members_signup_access = 'all';
+
+    if (!site.members_enabled) {
+        site.members_signup_access = 'none';
+    }
+
+    if (site.members_invite_only) {
+        site.members_signup_access = 'invite';
+    }
+
+    site.allow_self_signup = false;
+
+    if (site.members_signup_access !== 'all') {
+        site.allow_self_signup = false;
+    }
+
+    // if stripe is not connected then selected plans mean nothing.
+    // disabling signup would be done by switching to "invite only" mode
+    if (site.paid_members_enabled) {
+        site.allow_self_signup = true;
+    }
+
+    // self signup must be available for free plan signup to work
+    if (site.portal_plans.includes('free')) {
+        site.allow_self_signup = true;
+    }
+
     // Map tier visibility to old settings
     if (site.products?.[0]?.visibility) {
         // Map paid tier visibility to portal products
