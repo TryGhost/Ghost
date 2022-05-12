@@ -896,7 +896,8 @@
                     "email": "all",
                     "snippet": "all",
                     "label": ["browse", "read"],
-                    "product": ["browse", "read"]
+                    "product": ["browse", "read"],
+                    "newsletter": ["browse", "read"]
                 },
                 "Author": {
                     "post": ["browse", "read", "add"],
@@ -909,7 +910,8 @@
                     "email_preview": "read",
                     "email": "read",
                     "snippet": ["browse", "read"],
-                    "product": ["browse", "read"]
+                    "product": ["browse", "read"],
+                    "newsletter": ["browse", "read"]
                 },
                 "Contributor": {
                     "post": ["browse", "read", "add"],
