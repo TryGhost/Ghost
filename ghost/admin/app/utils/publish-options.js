@@ -108,7 +108,7 @@ export default class PublishOptions {
 
     // publish type dropdown is not shown at all
     get emailUnavailable() {
-        return this.post.isPage || this.post.email || !this.user.canEmail || this.emailDisabledInSettings;
+        return this.post.isPage || this.post.email || this.emailDisabledInSettings;
     }
 
     // publish type dropdown is shown but email options are disabled
@@ -252,15 +252,10 @@ export default class PublishOptions {
             this.totalMemberCount = 1;
         }
 
-        // only perform limit checks and newsletter fetches if the
-        // current user is allowed to email, otherwise we can hit API
-        // permission errors
-        if (this.user.canEmail) {
-            // email limits
-            promises.push(this._checkSendingLimit());
-            // newsletters
-            promises.push(this.store.query('newsletter', {status: 'active', limit: 'all', include: 'count.members'}));
-        }
+        // email limits
+        promises.push(this._checkSendingLimit());
+        // newsletters
+        promises.push(this.store.query('newsletter', {status: 'active', limit: 'all', include: 'count.members'}));
 
         yield Promise.all(promises);
     }
