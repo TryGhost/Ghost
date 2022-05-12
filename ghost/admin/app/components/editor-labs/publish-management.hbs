@@ -7,7 +7,7 @@
 
     <button
         type="button"
-        class="gh-btn gh-btn-editor darkgrey gh-publishmenu-trigger"
+        class="gh-btn gh-btn-editor darkgrey gh-publish-trigger"
         {{on "click" this.openPublishFlow}}
         {{on-key "cmd+shift+p"}}
         disabled={{this.publishOptions.isLoading}}
@@ -20,7 +20,7 @@
         <GhTaskButton
             @task={{this.saveTask}}
             @runningText="Saving..."
-            @class="gh-btn gh-btn-editor gh-publishmenu-trigger"
+            @class="gh-btn gh-btn-editor gh-publish-trigger"
             @idleClass="green"
             @runningClass="midlightgrey"
             @successClass="midlightgrey"
@@ -32,7 +32,7 @@
 
     <button
         type="button"
-        class="gh-btn gh-btn-editor darkgrey gh-publishmenu-trigger"
+        class="gh-btn gh-btn-editor darkgrey gh-publish-trigger"
         {{on "click" this.openUpdateFlow}}
         data-test-button="update-flow"
     >

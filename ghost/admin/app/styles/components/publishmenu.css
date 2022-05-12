@@ -1,24 +1,25 @@
 /* Publish Menu
 /* ---------------------------------------------------------- */
 
-.gh-publishmenu-trigger {
+.gh-publish-trigger {
     height: max-content;
     cursor: pointer;
 }
 
-.gh-publishmenu-trigger svg {
+.gh-publish-trigger svg {
     height: 8px;
     width: 8px;
 }
 
-.gh-publishmenu-trigger svg path {
+.gh-publish-trigger svg path {
     stroke: var(--darkgrey);
     stroke-width: 2px;
 }
 
-.gh-publishmenu-trigger:focus {
+.gh-publish-trigger:focus {
     outline: 0;
 }
+
 
 .gh-publishmenu {
     position: relative;
@@ -450,14 +451,14 @@
 .gh-publish-header {
     position: absolute;
     top: 0;
-    left: 4.2rem;
-    width: calc(100% - 4.2rem * 2);
+    right: 0;
+    left: 0;
     display: flex;
-    align-items: center;
+    flex-wrap: wrap;
     justify-content: space-between;
-    height: 36px;
+    height: 34px;
     padding: 0;
-    margin: 30px 0;
+    margin: 30px;
     z-index: 799;
 }
 
@@ -480,8 +481,8 @@
 }
 
 .gh-publish-back-button {
-    height: 33px;
-    padding: 5px 12px 6px;
+    height: 34px;
+    padding: 0 12px;
     outline: none;
     border: none;
     background: var(--white);
@@ -489,6 +490,7 @@
     font-size: 1.35rem;
     font-weight: 500;
     letter-spacing: 0.2px;
+    line-height: 34px;
     white-space: nowrap;
     cursor: pointer;
     border-radius: var(--border-radius);
