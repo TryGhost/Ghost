@@ -3,6 +3,12 @@
         <button class="gh-publish-back-button" title="Close" type="button" {{on "click" @close}}>
             <span>{{svg-jar "arrow-left"}} Editor</span>
         </button>
+        <div class="flex">
+            <button class="gh-btn gh-btn-editor darkgrey gh-publish-trigger active" title="Close" type="button" {{on "click" @close}}>
+                <span>Update</span>
+            </button>
+            <div class="settings-menu-toggle-spacer"></div>
+        </div>
     </header>
 
     {{#let @data.publishOptions.post as |post|}}
