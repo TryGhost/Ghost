@@ -503,7 +503,7 @@ describe('Posts API', function () {
             .send({posts: [post]})
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(422);
+            .expect(200);
 
         const model = await models.Post.findOne({
             id: postId
@@ -687,7 +687,7 @@ describe('Posts API', function () {
             .expect(200);
 
         const scheduledPost = scheduledRes.body.posts[0];
-        
+
         scheduledPost.newsletter.id.should.eql(newsletterId);
         should.not.exist(scheduledPost.newsletter_id);
 
@@ -716,7 +716,7 @@ describe('Posts API', function () {
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
-        
+
         const publishedPost = publishedRes.body.posts[0];
 
         model = await models.Post.findOne({
@@ -786,7 +786,7 @@ describe('Posts API', function () {
     });
 
     it('Can\'t change the newsletter_id once it has been set', async function () {
-        // Note: this test only works if there are members subscribed to the initial newsletter 
+        // Note: this test only works if there are members subscribed to the initial newsletter
         // (so it won't get reset when changing the post status to draft again)
 
         let model;
