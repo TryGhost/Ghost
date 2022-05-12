@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('assert');
 const sinon = require('sinon');
 
 const WebhookTrigger = require('../../../../../core/server/services/webhooks/trigger');
@@ -33,8 +33,8 @@ describe('Webhook Service', function () {
 
             await webhookTrigger.trigger('post.added');
 
-            should.equal(models.Webhook.findAllByEvent.called, true);
-            should.equal(payload.called, false);
+            assert.equal(models.Webhook.findAllByEvent.called, true);
+            assert.equal(payload.called, false);
         });
 
         it('Does triggers payload handler and request when event when model has a registered hook', async function () {
@@ -68,14 +68,14 @@ describe('Webhook Service', function () {
             });
             await webhookTrigger.trigger('post.added', postModelStub);
 
-            should.equal(models.Webhook.findAllByEvent.called, true);
-            should.equal(payload.called, true);
+            assert.equal(models.Webhook.findAllByEvent.called, true);
+            assert.equal(payload.called, true);
 
-            should.equal(requestStub.called, true);
-            should.equal(requestStub.args[0][0], 'http://example.com');
-            should.deepEqual(requestStub.args[0][1].body, '{"data":[1]}');
-            should.equal(requestStub.args[0][1].headers['Content-Length'], 12);
-            should.equal(requestStub.args[0][1].headers['Content-Length'], 'application/json');
+            assert.equal(requestStub.called, true);
+            assert.equal(requestStub.args[0][0], 'http://example.com');
+            assert.deepEqual(requestStub.args[0][1].body, '{"data":[1]}');
+            assert.equal(requestStub.args[0][1].headers['Content-Length'], 12);
+            assert.equal(requestStub.args[0][1].headers['Content-Type'], 'application/json');
         });
     });
 });
