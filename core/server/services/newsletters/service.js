@@ -112,7 +112,8 @@ class NewslettersService {
      * @public
      * @param {object} attrs model properties
      * @param {Object} [options] options
-     * @param {Object} [options] options.transacting Don't use this option outside of the service unless you also update the limit checking.
+     * @param {boolean} [options.opt_in_existing] Opt in existing members
+     * @param {Object} [options.transacting]
      * @returns {Promise<{object}>} Newsetter Model with verification metadata
      */
     async add(attrs, options = {}) {
@@ -179,16 +180,19 @@ class NewslettersService {
      * @param {object} attrs model properties
      * @param {Object} options options
      * @param {string} options.id Newsletter id to edit
+     * @param {Object} [options.transacting]
      * @returns {Promise<{object}>} Newsetter Model with verification metadata
      */
     async edit(attrs, options) {
+        const sharedOptions = _.pick(options, 'transacting');
+
         // fetch newsletter first so we can compare changed emails
-        const originalNewsletter = await this.NewsletterModel.findOne({id: options.id}, {require: true});
+        const originalNewsletter = await this.NewsletterModel.findOne({id: options.id}, {...sharedOptions, require: true});
 
         const {cleanedAttrs, emailsToVerify} = await this.prepAttrsForEmailVerification(attrs, originalNewsletter);
 
         if (originalNewsletter.status !== 'active' && cleanedAttrs.status === 'active') {
-            await this.limitService.errorIfWouldGoOverLimit('newsletters');
+            await this.limitService.errorIfWouldGoOverLimit('newsletters', sharedOptions);
         }
 
         let updatedNewsletter;
