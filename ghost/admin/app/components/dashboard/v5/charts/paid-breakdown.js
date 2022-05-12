@@ -202,10 +202,10 @@ export default class PaidBreakdown extends Component {
         const canceledData = stats.map(stat => -stat.negativeDelta);
         let barThickness = 5;
 
-        if (newData.length >= 30 + 1) {
+        if (newData.length >= 30 + 1 && newData.length < 90) {
             barThickness = 3.5;
-        } else if (newData.length >= 90 + 1) {   
-            barThickness = 1;
+        } else if (newData.length >= 90) {   
+            barThickness = 1.5;
         }
 
         return {
