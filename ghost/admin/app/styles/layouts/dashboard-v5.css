@@ -526,9 +526,13 @@ Dashboard v5 Chart */
 
 .gh-dashboard5-mix .gh-dashboard5-data {
     position: absolute;
-    top: 4px;
+    top: 0;
     bottom: 0;
     left: 24px;
+}
+
+.gh-dashboard5-mix .gh-dashboard5-metric {
+    margin-top: 4px;
 }
 
 .gh-dashboard5-mix .gh-dashboard5-chart.narrow {
@@ -1937,6 +1941,10 @@ Dashboard v5 Tooltips */
 
     .gh-dashboard5-mix .gh-dashboard5-chart.narrow {
         padding: 0;
+    }
+
+    .gh-dashboard5-mix .gh-dashboard5-metric {
+        margin-top: 0;
     }
 
     .gh-dashboard5-minichart .gh-dashboard5-select {
