@@ -42,7 +42,7 @@ export default [
     },
     {
         id: 5,
-        key: 'lang',
+        key: 'locale',
         value: 'en',
         group: 'site',
         created_at: '2013-11-25T14:48:11.000Z',

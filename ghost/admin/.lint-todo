@@ -1156,3 +1156,9 @@ add|ember-template-lint|require-input-label|170|36|170|36|0ba8ec96b755e459805e0c
 add|ember-template-lint|require-input-label|186|36|186|36|9522267520f8fbe733b544cd6f204b57efea84ea|1652227200000|1662595200000|1667782800000|app/components/editor-labs/modals/preview/social.hbs
 add|ember-template-lint|require-input-label|222|20|222|20|6ac7c49ee511b196817761756e03a7697e8dc448|1652227200000|1662595200000|1667782800000|app/components/editor-labs/modals/preview/social.hbs
 add|ember-template-lint|require-input-label|240|20|240|20|d3cc7e4d3b13fae817a60cd3c3e388988bdb8ec0|1652227200000|1662595200000|1667782800000|app/components/editor-labs/modals/preview/social.hbs
+add|ember-template-lint|no-action|95|39|95|39|ba45af3e814e72ad4d95a8f317bb9cc9ad9215c8|1652313600000|1662681600000|1667865600000|app/templates/settings/general.hbs
+add|ember-template-lint|no-action|96|43|96|43|2c1cc5f0c3aeddb4838344241fd5ad1706fa7f98|1652313600000|1662681600000|1667865600000|app/templates/settings/general.hbs
+add|ember-template-lint|no-passed-in-event-handlers|95|32|95|32|c34c2e482b61c7ccd2b1103b5dee4b291eb2ec47|1652313600000|1662681600000|1667865600000|app/templates/settings/general.hbs
+remove|ember-template-lint|no-action|95|39|95|39|3832366e419f440aded929f1573d476b8435f6ff|1652054400000|1662422400000|1665014400000|app/templates/settings/general.hbs
+remove|ember-template-lint|no-action|96|43|96|43|659c404406f04b8153690817989630ae36f37989|1652054400000|1662422400000|1665014400000|app/templates/settings/general.hbs
+remove|ember-template-lint|no-passed-in-event-handlers|95|32|95|32|50acf938ca8cb3c5633b20e7050d7750211b12f4|1652054400000|1662422400000|1665014400000|app/templates/settings/general.hbs
