@@ -331,7 +331,6 @@
 
 .gh-publish-send-to {
     display: flex;
-    height: 38px;
 }
 
 .gh-publish-send-to-option {
@@ -361,8 +360,8 @@
     top: calc(50%-9px);
     left: 14px;
     margin: 0;
-    border-color: var(--white);
-    background: var(--white);
+    border-color: transparent;
+    background: transparent;
 }
 
 .gh-publish-send-to-option label p {
@@ -392,8 +391,8 @@
 }
 
 .gh-publish-send-to-option .for-checkbox input:checked + .flex .input-toggle-component {
-    border: 1px solid var(--white);
-    background: var(--white);
+    border-color: transparent;
+    background: transparent;
 }
 
 .gh-publish-send-to-option .for-checkbox .input-toggle-component::before {
@@ -404,11 +403,6 @@
 .gh-publish-send-to-option .for-checkbox input:checked + .flex .input-toggle-component::before {
     opacity: 1;
     border-color: var(--black);
-}
-
-.gh-publish-send-to .ember-power-select-multiple-trigger {
-    flex-grow: 1;
-    padding: 3px;
 }
 
 .gh-publish-emailcount {
