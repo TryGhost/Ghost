@@ -350,51 +350,6 @@ const defaultSettingsKeyTypes = [
         group: 'site'
     },
     {
-        key: 'newsletter_show_badge',
-        type: 'boolean',
-        group: 'newsletter'
-    },
-    {
-        key: 'newsletter_header_image',
-        type: 'string',
-        group: 'newsletter'
-    },
-    {
-        key: 'newsletter_show_header_icon',
-        type: 'boolean',
-        group: 'newsletter'
-    },
-    {
-        key: 'newsletter_show_header_title',
-        type: 'boolean',
-        group: 'newsletter'
-    },
-    {
-        key: 'newsletter_title_alignment',
-        type: 'string',
-        group: 'newsletter'
-    },
-    {
-        key: 'newsletter_title_font_category',
-        type: 'string',
-        group: 'newsletter'
-    },
-    {
-        key: 'newsletter_show_feature_image',
-        type: 'boolean',
-        group: 'newsletter'
-    },
-    {
-        key: 'newsletter_body_font_category',
-        type: 'string',
-        group: 'newsletter'
-    },
-    {
-        key: 'newsletter_footer_content',
-        type: 'string',
-        group: 'newsletter'
-    },
-    {
         key: 'oauth_client_id',
         type: 'string',
         group: 'oauth'
