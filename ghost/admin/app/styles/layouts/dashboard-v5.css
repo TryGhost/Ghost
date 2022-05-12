@@ -238,21 +238,19 @@ Dashboard v5 Layout */
 .gh-dashboard5-minichart {
     flex: 1;
     border-left: 1px solid var(--whitegrey);
-    padding: 4px 24px 0;
+    padding: 4px 16px 0;
     position: relative;
 }
 
 .gh-dashboard5-minichart .gh-dashboard5-data {
     pointer-events: none;
-    position: absolute;
-    top: 0;
-    left: 24px;
-    width: 100%;
     height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     align-items: flex-start;
+    margin-right: 16px;
+    min-height: 88px;
 }
 
 .gh-dashboard5-minichart:first-child .gh-dashboard5-data {
@@ -277,7 +275,7 @@ Dashboard v5 Layout */
 }
 
 .gh-dashboard5-minichart .gh-dashboard5-chart-box {
-    height: 94px;
+    height: 88px;
 }
 
 .gh-dashboard5-legend {
@@ -505,13 +503,37 @@ Dashboard v5 Chart */
 }
 
 .gh-dashboard5-minicharts .gh-dashboard5-chart {
+    flex: auto;
+    padding: 0;
     width: 100%;
-    height: 94px;
-    padding: 0 0 0 30%;
+    height: 88px;
+    padding: 0;
 }
 
-.gh-dashboard5-mrr .gh-dashboard5-chart {
-    padding-left: 35%;
+.gh-dashboard5-minichart .gh-dashboard5-content {
+    display: flex;
+}
+
+.gh-dashboard5-mrr .gh-dashboard5-metric-value {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 0;
+}
+
+.gh-dashboard5-mrr .gh-dashboard5-percentage {
+    margin-top: 15px;
+}
+
+.gh-dashboard5-mix .gh-dashboard5-data {
+    position: absolute;
+    top: 4px;
+    bottom: 0;
+    left: 24px;
+}
+
+.gh-dashboard5-mix .gh-dashboard5-chart.narrow {
+    /* margin-left: -80px; */
+    padding-left: 30%;
 }
 
 
@@ -520,25 +542,22 @@ Dashboard v5 Percentage */
 
 .gh-dashboard5-percentage {
     flex: 0;
-    background: var(--whitegrey-d1);
     border-radius: 3px;
-    font-size: 1.2rem;
+    font-size: 1.5rem;
     line-height: 1;
     font-weight: 500;
     letter-spacing: 0;
     color: var(--midgrey);
-    padding: 2px 4px;
+    padding: 0;
     margin: 5px 0 3px 0;
 }
 
 .gh-dashboard5-percentage.is-positive {
-    background: color-mod(var(--green) a(13%));
-    color: color-mod(var(--green) l(-5%));
+    color: var(--green);
 }
 
 .gh-dashboard5-percentage.is-negative {
-    background: color-mod(var(--yellow) a(20%));
-    color: color-mod(var(--yellow) l(-8%));
+    color: var(--pink);
 }
 
 
@@ -601,8 +620,11 @@ Dashboard v5 Metric */
     line-height: 1em;
     white-space: nowrap;
     margin: 0 0 12px;
-    gap: 10px;
     color: var(--black);
+}
+
+.gh-dashboard5-metric-value .value {
+    margin-right: 8px;
 }
 
 .gh-dashboard5-metric.is-large .gh-dashboard5-metric-value {
@@ -899,7 +921,7 @@ Dashboard v5 Anchor */
 }
 
 .gh-dashboard5-mix .gh-dashboard5-select {
-    top: -11px;
+    top: -7px;
     right: -18px;
 }
 
@@ -1886,17 +1908,7 @@ Dashboard v5 Tooltips */
     margin-right: -10px; /* fix 99% width ChartJS hack */
 }
 
-@media screen and (max-width: 1320px) {
-    .gh-dashboard5-minicharts .gh-dashboard5-minichart:not(.gh-dashboard5-mrr) .gh-dashboard5-chart {
-        padding-left: 0;
-    }
-
-    .gh-dashboard5-minicharts .gh-dashboard5-legend {
-        display: none;
-    }
-}
-
-@media screen and (max-width: 1000px) {
+@media screen and (max-width: 1120px) {
     .gh-dashboard5-minicharts {
         flex-direction: column;
     }
@@ -1917,8 +1929,14 @@ Dashboard v5 Tooltips */
     }
 
     .gh-dashboard5-minichart .gh-dashboard5-data {
-        top: 16px;
+        position: relative;
+        width: 50%;
+        top: 0;
         left: 0;
+    }
+
+    .gh-dashboard5-mix .gh-dashboard5-chart.narrow {
+        padding: 0;
     }
 
     .gh-dashboard5-minichart .gh-dashboard5-select {
