@@ -994,6 +994,25 @@ DataGenerator.forKnex = (function () {
         });
     }
 
+    function createOffer(overrides) {
+        const newObj = _.cloneDeep(overrides);
+        return _.defaults(newObj, {
+            id: ObjectId().toHexString(),
+            name: 'Black Friday',
+            code: 'black-friday',
+            display_title: 'Black Friday Sale!',
+            display_description: '10% off on yearly plan',
+            discount_type: 'percent',
+            interval: 'year',
+            discount_amount: 12,
+            duration: 'once',
+            duration_in_months: null,
+            currency_restriction: false,
+            currency: null,
+            active: true
+        });
+    }
+
     function createMember(overrides) {
         const newObj = _.cloneDeep(overrides);
 
@@ -1554,6 +1573,7 @@ DataGenerator.forKnex = (function () {
         createCustomThemeSetting: createBasic,
         createProduct,
         createNewsletter,
+        createOffer,
 
         invites,
         posts,
