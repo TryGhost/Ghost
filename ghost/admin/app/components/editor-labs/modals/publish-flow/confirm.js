@@ -15,7 +15,6 @@ export default class PublishFlowOptions extends Component {
     @service settings;
 
     @tracked errorMessage;
-    @tracked emailErrorMessage;
 
     // store any derived state from PublishOptions on creation so the copy
     // doesn't change whilst the post is saving
@@ -48,7 +47,6 @@ export default class PublishFlowOptions extends Component {
     @task({drop: true})
     *confirmTask() {
         this.errorMessage = null;
-        this.emailErrorMessage = null;
 
         try {
             yield this.args.saveTask.perform();
@@ -57,11 +55,6 @@ export default class PublishFlowOptions extends Component {
                 // validation error
                 const validationError = this.args.publishOptions.post.errors.messages[0];
                 this.errorMessage = `Validation failed: ${validationError}`;
-                return false;
-            }
-
-            if (e?.name === 'EmailFailedError') {
-                this.emailErrorMessage = e.message;
                 return false;
             }
 

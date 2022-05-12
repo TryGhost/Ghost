@@ -12,8 +12,8 @@ import {task, taskGroup, timeout} from 'ember-concurrency';
 import {use} from 'ember-could-get-used-to-this';
 
 const SHOW_SAVE_STATUS_DURATION = 3000;
-const CONFIRM_EMAIL_POLL_LENGTH = 1000;
-const CONFIRM_EMAIL_MAX_POLL_LENGTH = 15 * 1000;
+export const CONFIRM_EMAIL_POLL_LENGTH = 1000;
+export const CONFIRM_EMAIL_MAX_POLL_LENGTH = 15 * 1000;
 
 // This component exists for the duration of the editor screen being open.
 // It's used to store the selected publish options, control the publishing flow
