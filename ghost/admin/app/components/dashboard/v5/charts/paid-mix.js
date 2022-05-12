@@ -200,6 +200,7 @@ export default class PaidMix extends Component {
      */
     @action
     loadCharts() {
+        this.dashboardStats.loadMemberCountStats();
         // The dashboard stats service will take care or reusing and limiting API-requests between charts
         if (this.mode === 'cadence') {
             this.dashboardStats.loadPaidMembersByCadence();
@@ -224,7 +225,7 @@ export default class PaidMix extends Component {
     }
 
     get isTotalMembersZero() {
-        return this.dashboardStats.memberCounts && this.totalMembers === 0;
+        return this.dashboardStats.memberCounts?.total === 0;
     }
 
     @action 
@@ -248,8 +249,15 @@ export default class PaidMix extends Component {
         return 'horizontalBar';
     }
 
-    get hasData() {
-        return (this.dashboardStats.paidMembersByCadence.month + this.dashboardStats.paidMembersByCadence.year) > 0;
+    get areTiersAllZero() {
+        const data = this.dashboardStats.paidMembersByTier.map(stat => stat.members);
+        let areAllTiersZero = true;
+        for (let i = 0; i < data.length; i++) {
+            if (data[i] > 0) {
+                areAllTiersZero = false;
+            }
+        }
+        return areAllTiersZero;
     }
 
     get chartData() {
@@ -258,21 +266,43 @@ export default class PaidMix extends Component {
         const annualPercentage = Math.round(this.dashboardStats.paidMembersByCadence.year / totalCadence * 100);
         const barThickness = 5;
 
-        // fake empty data
-        if (this.isTotalMembersZero) {
-            return {
-                labels: ['Cadence'],
-                datasets: [{
-                    label: 'All',
-                    data: [100],
-                    backgroundColor: '#EBEEF0',
-                    barThickness
-                }]
-            };
-        }
+        if (this.mode === 'cadence') {    
+            // there has to be negative values to make rounded corners work
+            // empty chart render when there is no data
+            if (totalCadence === 0 && !this.isTotalMembersZero) {
+                return {
+                    labels: ['Cadence'],
+                    datasets: [{
+                        label: 'Monthly',
+                        data: [-50],
+                        backgroundColor: '#F3F6F8',
+                        barThickness
+                    },{
+                        label: 'Annual',
+                        data: [50],
+                        backgroundColor: '#EBEEF0',
+                        barThickness
+                    }]
+                };
 
-        if (this.mode === 'cadence') {
-            // The first value has to be negative to make rounded corners work
+            // fake colorful data for underneath empty state
+            } else if (this.isTotalMembersZero) {
+                return {
+                    labels: ['Cadence'],
+                    datasets: [{
+                        label: 'Monthly',
+                        data: [-40],
+                        backgroundColor: '#8E42FF',
+                        barThickness
+                    },{
+                        label: 'Annual',
+                        data: [60],
+                        backgroundColor: '#FB76B4',
+                        barThickness
+                    }]
+                };
+            }
+
             return {
                 labels: ['Cadence'],
                 datasets: [{
@@ -289,16 +319,31 @@ export default class PaidMix extends Component {
             };
         }
 
+        // if it's for tiers...
         const labels = this.dashboardStats.paidMembersByTier.map(stat => stat.tier.name);
         const data = this.dashboardStats.paidMembersByTier.map(stat => stat.members);
         const colors = ['#853EED', '#CA3FED', '#E993CC', '#DB7777', '#EE9696', '#FEC7C0', '#853EED', '#CA3FED', '#E993CC', '#DB7777', '#EE9696', '#FEC7C0'];
+        const zeroColors = ['#E6E9EB', '#EEF1F2', '#F6F8FA', '#EEF1F2', '#E6E9EB', '#EEF1F2', '#F6F8FA', '#EEF1F2', '#E6E9EB', '#EEF1F2', '#F6F8FA', '#EEF1F2'];
+        let datasets = [];
+        let totalTiersAmount;
 
-        let totalTiersAmount = 0;
-        for (let i = 0; i < data.length; i++) {
-            totalTiersAmount += data[i];
+        // tiers all have 0 data
+        if (this.areTiersAllZero) {
+            let equalPercentageData = Math.round(100 / data.length);
+
+            totalTiersAmount = 100;
+            for (let i = 0; i < data.length; i++) {
+                data[i] = equalPercentageData;
+            }
+
+        // tiers have good data
+        } else {
+            totalTiersAmount = 0;
+            for (let i = 0; i < data.length; i++) {
+                totalTiersAmount += data[i];
+            }
         }
 
-        let datasets = [];
         for (let i = 0; i < data.length; i++) {
             let tierPercentage = Math.round(data[i] / totalTiersAmount * 100);
 
@@ -309,7 +354,7 @@ export default class PaidMix extends Component {
             datasets.push({
                 data: [tierPercentage],
                 label: labels[i],
-                backgroundColor: colors[i],
+                backgroundColor: this.areTiersAllZero ? zeroColors[i] : colors[i],
                 barThickness
             });
         }
@@ -321,17 +366,30 @@ export default class PaidMix extends Component {
     }
 
     get chartOptions() {
-        let minTickValue, maxTickValue, ticksY;
+        let that = this;
+        let ticksY;
+        let totalCadence = this.dashboardStats.paidMembersByCadence.month + this.dashboardStats.paidMembersByCadence.year;
+        let minTickValue = -(Math.round(this.dashboardStats.paidMembersByCadence.month / totalCadence * 100));
+        let maxTickValue = Math.round(this.dashboardStats.paidMembersByCadence.year / totalCadence * 100);
 
         if (this.mode === 'cadence') {
-            const totalCadence = this.dashboardStats.paidMembersByCadence.month + this.dashboardStats.paidMembersByCadence.year;
-            minTickValue = -(Math.round(this.dashboardStats.paidMembersByCadence.month / totalCadence * 100));
-            maxTickValue = Math.round(this.dashboardStats.paidMembersByCadence.year / totalCadence * 100);
-            ticksY = {
-                display: false,
-                min: minTickValue,
-                max: maxTickValue
-            };
+            // for when it's empty
+            if (totalCadence === 0) {
+                minTickValue = -50;
+                maxTickValue = 50;
+                ticksY = {
+                    display: false,
+                    min: minTickValue,
+                    max: maxTickValue
+                };
+            // when it does have data
+            } else {
+                ticksY = {
+                    display: false,
+                    min: minTickValue,
+                    max: maxTickValue
+                };
+            }
         } else {
             ticksY = {
                 display: false
@@ -392,16 +450,17 @@ export default class PaidMix extends Component {
                 callbacks: {
                     label: (tooltipItems, data) => {
                         const tooltipTextEl = document.querySelector('#gh-dashboard5-mix-tooltip .gh-dashboard5-tooltip-value');
-                        if (this.isTotalMembersZero) {
-                            tooltipTextEl.innerHTML = 'Currently has no data';
-                        } else {
-                            const label = data.datasets[tooltipItems.datasetIndex].label || '';
-                            var value = data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index] || 0;
-                            if (value < 0) {
-                                value = -value;
-                            }
-                            tooltipTextEl.innerHTML = `<span class="indicator solid" style="background-color: ${data.datasets[tooltipItems.datasetIndex].backgroundColor}"></span><span class="value">${value}%</span><span class="metric">${label}</span>`;
+                        const label = data.datasets[tooltipItems.datasetIndex].label || '';
+                        var value = data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index] || 0;
+                        if (value < 0) {
+                            value = -value;
                         }
+                        if (that.isTotalMembersZero || totalCadence === 0) {
+                            value = 0;
+                        } else {
+                            value += '%';
+                        }
+                        tooltipTextEl.innerHTML = `<span class="indicator solid" style="background-color: ${data.datasets[tooltipItems.datasetIndex].backgroundColor}"></span><span class="value">${value}</span><span class="metric">${label}</span>`;
                     },
                     title: () => {
                         return null;
