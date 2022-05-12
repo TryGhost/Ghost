@@ -14,6 +14,7 @@ function defaultRelations(frame) {
     frame.options.withRelated = ['labels'];
 }
 
+// @TODO: move this into the member repository in members-api
 function mapSubscribedFlagToNewsletterRelation(frame) {
     frame.options.mongoTransformer = mapNQLKeyValues({
         key: {
