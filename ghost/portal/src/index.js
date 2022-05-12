@@ -23,6 +23,20 @@ function getSiteUrl() {
     return '';
 }
 
+function getSiteData() {
+    /**
+     * @type {HTMLElement}
+     */
+    const scriptTag = document.querySelector('script[data-ghost]');
+    if (scriptTag) {
+        const siteUrl = scriptTag.dataset.ghost;
+        const apiKey = scriptTag.dataset.key;
+        const apiUrl = scriptTag.dataset.api;
+        return {siteUrl, apiKey, apiUrl};
+    }
+    return {};
+}
+
 function handleTokenUrl() {
     const url = new URL(window.location.href);
     if (url.searchParams.get('token')) {
@@ -46,12 +60,13 @@ function setup({siteUrl}) {
 }
 
 function init() {
-    const customSiteUrl = getSiteUrl();
+    // const customSiteUrl = getSiteUrl();
+    const {siteUrl: customSiteUrl, apiKey, apiUrl} = getSiteData();
     const siteUrl = customSiteUrl || window.location.origin;
     setup({siteUrl});
     ReactDOM.render(
         <React.StrictMode>
-            <App siteUrl={siteUrl} customSiteUrl={customSiteUrl} />
+            <App siteUrl={siteUrl} customSiteUrl={customSiteUrl} apiKey={apiKey} apiUrl={apiUrl} />
         </React.StrictMode>,
         document.getElementById(ROOT_DIV_ID)
     );
