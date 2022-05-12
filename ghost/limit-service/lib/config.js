@@ -4,14 +4,14 @@
 // 2. MaxLimit should contain a `currentCountQuery` function which would count the resources under limit
 module.exports = {
     members: {
-        currentCountQuery: async (db) => {
-            let result = await db.knex('members').count('id', {as: 'count'}).first();
+        currentCountQuery: async (knex) => {
+            let result = await knex('members').count('id', {as: 'count'}).first();
             return result.count;
         }
     },
     newsletters: {
-        currentCountQuery: async (db) => {
-            let result = await db.knex('newsletters')
+        currentCountQuery: async (knex) => {
+            let result = await knex('newsletters')
                 .count('id', {as: 'count'})
                 .where('status', '=', 'active')
                 .first();
@@ -20,8 +20,8 @@ module.exports = {
         }
     },
     emails: {
-        currentCountQuery: async (db, startDate) => {
-            let result = await db.knex('emails')
+        currentCountQuery: async (knex, startDate) => {
+            let result = await knex('emails')
                 .sum('email_count', {as: 'count'})
                 .where('created_at', '>=', startDate)
                 .first();
@@ -30,13 +30,13 @@ module.exports = {
         }
     },
     staff: {
-        currentCountQuery: async (db) => {
-            let result = await db.knex('users')
+        currentCountQuery: async (knex) => {
+            let result = await knex('users')
                 .select('users.id')
                 .leftJoin('roles_users', 'users.id', 'roles_users.user_id')
                 .leftJoin('roles', 'roles_users.role_id', 'roles.id')
                 .whereNot('roles.name', 'Contributor').andWhereNot('users.status', 'inactive').union([
-                    db.knex('invites')
+                    knex('invites')
                         .select('invites.id')
                         .leftJoin('roles', 'invites.role_id', 'roles.id')
                         .whereNot('roles.name', 'Contributor')
@@ -46,8 +46,8 @@ module.exports = {
         }
     },
     customIntegrations: {
-        currentCountQuery: async (db) => {
-            let result = await db.knex('integrations')
+        currentCountQuery: async (knex) => {
+            let result = await knex('integrations')
                 .count('id', {as: 'count'})
                 .whereNotIn('type', ['internal', 'builtin'])
                 .first();

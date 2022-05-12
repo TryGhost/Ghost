@@ -4,6 +4,7 @@ require('./utils');
 const should = require('should');
 const LimitService = require('../lib/limit-service');
 const {MaxLimit, MaxPeriodicLimit, FlagLimit} = require('../lib/limit');
+const sinon = require('sinon');
 
 const errors = require('./fixtures/errors');
 
@@ -338,6 +339,176 @@ describe('Limit Service', function () {
             } catch (err) {
                 err.message.should.eql(`Attempted to check an allowlist limit without a value`);
             }
+        });
+    });
+
+    describe('Metadata', function () {
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        it('passes options for checkIsOverLimit', async function () {
+            const limitService = new LimitService();
+
+            let limits = {
+                staff: {
+                    max: 2,
+                    currentCountQuery: () => 1
+                }
+            };
+
+            const maxSpy = sinon.spy(MaxLimit.prototype, 'errorIfIsOverLimit');
+
+            const subscription = {
+                interval: 'month',
+                startDate: '2021-09-18T19:00:52Z'
+            };
+
+            limitService.loadLimits({limits, errors, subscription});
+
+            const options = {
+                testData: 'true'
+            };
+
+            await limitService.checkIsOverLimit('staff', options);
+
+            sinon.assert.callCount(maxSpy, 1);
+            sinon.assert.alwaysCalledWithExactly(maxSpy, options);
+        });
+
+        it('passes options for checkWouldGoOverLimit', async function () {
+            const limitService = new LimitService();
+
+            let limits = {
+                staff: {
+                    max: 2,
+                    currentCountQuery: () => 1
+                }
+            };
+
+            const maxSpy = sinon.spy(MaxLimit.prototype, 'errorIfWouldGoOverLimit');
+
+            const subscription = {
+                interval: 'month',
+                startDate: '2021-09-18T19:00:52Z'
+            };
+
+            limitService.loadLimits({limits, errors, subscription});
+
+            const options = {
+                testData: 'true'
+            };
+
+            await limitService.checkWouldGoOverLimit('staff', options);
+
+            sinon.assert.callCount(maxSpy, 1);
+            sinon.assert.alwaysCalledWithExactly(maxSpy, options);
+        });
+
+        it('passes options for errorIfIsOverLimit', async function () {
+            const limitService = new LimitService();
+
+            let limits = {
+                staff: {
+                    max: 2,
+                    currentCountQuery: () => 1
+                }
+            };
+
+            const maxSpy = sinon.spy(MaxLimit.prototype, 'errorIfIsOverLimit');
+
+            const subscription = {
+                interval: 'month',
+                startDate: '2021-09-18T19:00:52Z'
+            };
+
+            limitService.loadLimits({limits, errors, subscription});
+
+            const options = {
+                testData: 'true'
+            };
+
+            await limitService.errorIfIsOverLimit('staff', options);
+
+            sinon.assert.callCount(maxSpy, 1);
+            sinon.assert.alwaysCalledWithExactly(maxSpy, options);
+        });
+
+        it('passes options for errorIfWouldGoOverLimit', async function () {
+            const limitService = new LimitService();
+
+            let limits = {
+                staff: {
+                    max: 2,
+                    currentCountQuery: () => 1
+                }
+            };
+
+            const maxSpy = sinon.spy(MaxLimit.prototype, 'errorIfWouldGoOverLimit');
+
+            const subscription = {
+                interval: 'month',
+                startDate: '2021-09-18T19:00:52Z'
+            };
+
+            limitService.loadLimits({limits, errors, subscription});
+
+            const options = {
+                testData: 'true'
+            };
+
+            await limitService.errorIfWouldGoOverLimit('staff', options);
+
+            sinon.assert.callCount(maxSpy, 1);
+            sinon.assert.alwaysCalledWithExactly(maxSpy, options);
+        });
+
+        it('passes options for checkIfAnyOverLimit', async function () {
+            const limitService = new LimitService();
+
+            let limits = {
+                staff: {
+                    max: 2,
+                    currentCountQuery: () => 2
+                },
+                members: {
+                    max: 100,
+                    currentCountQuery: () => 100
+                },
+                emails: {
+                    maxPeriodic: 3,
+                    currentCountQuery: () => 3
+                },
+                customIntegrations: {
+                    disabled: true
+                }
+            };
+
+            const flagSpy = sinon.spy(FlagLimit.prototype, 'errorIfIsOverLimit');
+            const maxSpy = sinon.spy(MaxLimit.prototype, 'errorIfIsOverLimit');
+            const maxPeriodSpy = sinon.spy(MaxPeriodicLimit.prototype, 'errorIfIsOverLimit');
+
+            const subscription = {
+                interval: 'month',
+                startDate: '2021-09-18T19:00:52Z'
+            };
+
+            limitService.loadLimits({limits, errors, subscription});
+
+            const options = {
+                testData: 'true'
+            };
+
+            (await limitService.checkIfAnyOverLimit(options)).should.be.false();
+
+            sinon.assert.callCount(flagSpy, 1);
+            sinon.assert.alwaysCalledWithExactly(flagSpy, options);
+
+            sinon.assert.callCount(maxSpy, 2);
+            sinon.assert.alwaysCalledWithExactly(maxSpy, options);
+
+            sinon.assert.callCount(maxPeriodSpy, 1);
+            sinon.assert.alwaysCalledWithExactly(maxPeriodSpy, options);
         });
     });
 });
