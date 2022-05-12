@@ -12,13 +12,20 @@ function getAnalyticsMetadata() {
     return null;
 }
 
-function setupGhostApi({siteUrl = window.location.origin}) {
+function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
     const apiPath = 'members/api';
 
     function endpointFor({type, resource}) {
         if (type === 'members') {
             return `${siteUrl.replace(/\/$/, '')}/${apiPath}/${resource}/`;
         }
+    }
+
+    function contentEndpointFor({resource, params = ''}) {
+        if (apiUrl && apiKey) {
+            return `${apiUrl.replace(/\/$/, '')}/${resource}/?key=${apiKey}&limit=all${params}`;
+        }
+        return '';
     }
 
     function makeRequest({url, method = 'GET', headers = {}, credentials = undefined, body = undefined}) {
@@ -59,6 +66,57 @@ function setupGhostApi({siteUrl = window.location.origin}) {
     api.site = {
         read() {
             const url = endpointFor({type: 'members', resource: 'site'});
+            return makeRequest({
+                url,
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(function (res) {
+                if (res.ok) {
+                    return res.json();
+                } else {
+                    throw new Error('Failed to fetch site data');
+                }
+            });
+        },
+
+        newsletters() {
+            const url = contentEndpointFor({resource: 'newsletters'});
+            return makeRequest({
+                url,
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(function (res) {
+                if (res.ok) {
+                    return res.json();
+                } else {
+                    throw new Error('Failed to fetch site data');
+                }
+            });
+        },
+
+        tiers() {
+            const url = contentEndpointFor({resource: 'tiers', params: '&include=monthly_price,yearly_price,benefits'});
+            return makeRequest({
+                url,
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(function (res) {
+                if (res.ok) {
+                    return res.json();
+                } else {
+                    throw new Error('Failed to fetch site data');
+                }
+            });
+        },
+
+        settings() {
+            const url = contentEndpointFor({resource: 'settings'});
             return makeRequest({
                 url,
                 method: 'GET',
@@ -385,8 +443,26 @@ function setupGhostApi({siteUrl = window.location.origin}) {
             api.site.read(),
             api.member.sessionData()
         ]);
-        site = transformApiSiteData({site});
-        return {site, member};
+        let newsletters = [];
+        let tiers = [];
+        let settings = {};
+
+        try {
+            [{settings}, {tiers}, {newsletters}] = await Promise.all([
+                api.site.settings(),
+                api.site.tiers(),
+                api.site.newsletters()
+            ]);
+            site = {
+                ...settings,
+                newsletters,
+                products: tiers
+            };
+            site = transformApiSiteData({site});
+        } catch (e) {
+            // Ignore
+        }
+        return {site, member, newsletters, tiers};
     };
 
     return api;
