@@ -354,10 +354,8 @@ export default class PaidMix extends Component {
                     right: 4
                 }
             },
-            animation: {
-                duration: 0
-            },
-            responsiveAnimationDuration: 0,
+            animation: false,
+            responsiveAnimationDuration: 1,
             hover: {
                 onHover: function (e) {
                     e.target.style.cursor = 'pointer';
