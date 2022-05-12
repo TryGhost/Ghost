@@ -872,10 +872,6 @@ input:focus,
     background: var(--main-color-content-greybg);
 }
 
-.gh-post-preview-header-border {
-    border-bottom: 1px solid var(--hairline-color-1);
-}
-
 .gh-post-preview-browser-footer {
     border-top: 1px solid var(--hairline-color-1);
 }
