@@ -12,7 +12,7 @@ module.exports = (attrs, frame) => {
     //      `forSettings` step. This logic can be rewritten once we get rid of deprecated
     //      fields completely.
     if (_.isArray(attrs)) {
-        const keysToFilter = [];
+        const keysToFilter = ['firstpromoter_id', 'firstpromoter'];
 
         // NOTE: to support edits of deprecated 'slack' setting artificial 'slack_url' and 'slack_username'
         //       were added to the request body in the input serializer. These should not be returned in response
