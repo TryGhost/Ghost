@@ -42,9 +42,7 @@ function updateLocalTemplateOptions(req, res, next) {
         data: {
             member: member,
             site: siteData,
-            custom: customData,
-            // @deprecated: a gscan warning for @blog was added before 3.0 which replaced it with @site
-            blog: siteData
+            custom: customData
         }
     }));
 

@@ -97,11 +97,9 @@ async function updateGlobalTemplateOptions(req, res, next) {
     }
 
     // @TODO: only do this if something changed?
-    // @TODO: remove blog in a major where we are happy to break more themes
     {
         hbs.updateTemplateOptions({
             data: {
-                blog: siteData,
                 site: siteData,
                 labs: labsData,
                 config: themeData,
