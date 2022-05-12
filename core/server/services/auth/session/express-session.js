@@ -15,7 +15,7 @@ function getExpressSessionMiddleware() {
     if (!unoExpressSessionMiddleware) {
         unoExpressSessionMiddleware = session({
             store: sessionStore,
-            secret: settingsCache.get('session_secret'),
+            secret: settingsCache.get('admin_session_secret'),
             resave: false,
             saveUninitialized: false,
             name: 'ghost-admin-api-session',

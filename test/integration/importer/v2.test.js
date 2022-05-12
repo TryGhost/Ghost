@@ -900,7 +900,7 @@ describe('Importer', function () {
                 });
         });
 
-        it('imports settings fields deprecated in v2 and removed in v3: slack hook, permalinks', function () {
+        it('can import default_locale and active_timezone', function () {
             // Prevent events from being fired to avoid side-effects
             const EventRegistry = require('../../../core/server/lib/common/events');
             sinon.stub(EventRegistry, 'emit').callsFake(() => {});
@@ -920,7 +920,7 @@ describe('Importer', function () {
             return dataImporter.doImport(exportData, importOptions)
                 .then(function (imported) {
                     imported.problems.length.should.eql(0);
-                    return models.Settings.findOne(_.merge({key: 'lang'}, testUtils.context.internal));
+                    return models.Settings.findOne(_.merge({key: 'locale'}, testUtils.context.internal));
                 })
                 .then(function (result) {
                     result.attributes.value.should.eql('ua');
@@ -930,6 +930,28 @@ describe('Importer', function () {
                 })
                 .then(function (result) {
                     result.attributes.value.should.eql('Pacific/Auckland');
+                });
+        });
+
+        it('can import lang', function () {
+            // Prevent events from being fired to avoid side-effects
+            const EventRegistry = require('../../../core/server/lib/common/events');
+            sinon.stub(EventRegistry, 'emit').callsFake(() => {});
+
+            const exportData = exportedBodyV2().db[0];
+
+            exportData.data.settings[0] = testUtils.DataGenerator.forKnex.createSetting({
+                key: 'lang',
+                value: 'ua'
+            });
+
+            return dataImporter.doImport(exportData, importOptions)
+                .then(function (imported) {
+                    imported.problems.length.should.eql(0);
+                    return models.Settings.findOne(_.merge({key: 'locale'}, testUtils.context.internal));
+                })
+                .then(function (result) {
+                    result.attributes.value.should.eql('ua');
                 });
         });
 
