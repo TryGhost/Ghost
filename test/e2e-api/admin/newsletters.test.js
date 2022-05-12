@@ -1,6 +1,7 @@
 const assert = require('assert');
 const {agentProvider, mockManager, fixtureManager, configUtils, dbUtils, matchers} = require('../../utils/e2e-framework');
 const {anyEtag, anyObjectId, anyUuid, anyISODateTime, anyLocationFor, anyNumber} = matchers;
+const models = require('../../../core/server/models');
 
 const assertMemberRelationCount = async (newsletterId, expectedCount) => {
     const relations = await dbUtils.knex('members_newsletters').where({newsletter_id: newsletterId}).pluck('id');
@@ -358,10 +359,10 @@ describe('Newsletters API', function () {
     });
 
     describe('Host Settings: newsletter limits', function () {
-        afterEach(function () {
+        after(function () {
             configUtils.set('hostSettings:limits', undefined);
         });
-
+        
         it('Request fails when newsletter limit is in place', async function () {
             configUtils.set('hostSettings:limits', {
                 newsletters: {
@@ -387,6 +388,187 @@ describe('Newsletters API', function () {
                         id: anyUuid
                     }]
                 });
+        });
+
+        describe('Max limit', function () {
+            before(async function () {
+                configUtils.set('hostSettings:limits', {
+                    newsletters: {
+                        max: 3,
+                        error: 'Your plan supports up to {{max}} newsletters. Please upgrade to add more.'
+                    }
+                });
+    
+                agent = await agentProvider.getAdminAPIAgent();
+                await fixtureManager.init('newsletters', 'members:newsletters');
+                await agent.loginAsOwner();
+            });
+
+            it('Adding newsletter fails', async function () {
+                const allNewsletters = await models.Newsletter.findAll();
+                const newsletterCount = allNewsletters.filter(n => n.get('status') === 'active').length;
+                assert.equal(newsletterCount, 3, 'This test expects to have 3 current active newsletters');
+    
+                const newsletter = {
+                    name: 'Naughty newsletter'
+                };
+    
+                await agent
+                    .post(`newsletters/?opt_in_existing=true`)
+                    .body({newsletters: [newsletter]})
+                    .expectStatus(403)
+                    .matchBodySnapshot({
+                        errors: [{
+                            id: anyUuid
+                        }]
+                    })
+                    .expect(({body}) => {
+                        assert.equal(body.errors[0].context, 'Your plan supports up to 3 newsletters. Please upgrade to add more.');
+                    });
+            });
+
+            it('Adding newsletter fails without transaction', async function () {
+                const allNewsletters = await models.Newsletter.findAll();
+                const newsletterCount = allNewsletters.filter(n => n.get('status') === 'active').length;
+                assert.equal(newsletterCount, 3, 'This test expects to have 3 current active newsletters');
+    
+                const newsletter = {
+                    name: 'Naughty newsletter'
+                };
+    
+                // Note that ?opt_in_existing=true will trigger a transaction, so we explicitly test here without a
+                // transaction
+                await agent
+                    .post(`newsletters/`)
+                    .body({newsletters: [newsletter]})
+                    .expectStatus(403)
+                    .matchBodySnapshot({
+                        errors: [{
+                            id: anyUuid
+                        }]
+                    })
+                    .expect(({body}) => {
+                        assert.equal(body.errors[0].context, 'Your plan supports up to 3 newsletters. Please upgrade to add more.');
+                    });
+            });
+
+            it('Adding an archived newsletter doesn\'t fail', async function () {
+                const allNewsletters = await models.Newsletter.findAll();
+                const newsletterCount = allNewsletters.filter(n => n.get('status') === 'active').length;
+                assert.equal(newsletterCount, 3, 'This test expects to have 3 current active newsletters');
+    
+                const newsletter = {
+                    name: 'Archived newsletter',
+                    status: 'archived'
+                };
+    
+                await agent
+                    .post(`newsletters/?opt_in_existing=true`)
+                    .body({newsletters: [newsletter]})
+                    .expectStatus(201)
+                    .matchBodySnapshot({
+                        newsletters: [newsletterSnapshot]
+                    })
+                    .matchHeaderSnapshot({
+                        etag: anyEtag,
+                        location: anyLocationFor('newsletters')
+                    });
+            });
+    
+            it('Editing an archived newsletter doesn\'t fail', async function () {
+                const allNewsletters = await models.Newsletter.findAll();
+                const newsletterCount = allNewsletters.filter(n => n.get('status') === 'active').length;
+                assert.equal(newsletterCount, 3, 'This test expects to have 3 current active newsletters');
+    
+                const archivedNewsletter = allNewsletters.find(n => n.get('status') !== 'active');
+                assert.ok(archivedNewsletter, 'This test expects to have an archived newsletter in the test fixtures');
+    
+                const id = archivedNewsletter.id;
+                await agent.put(`newsletters/${id}`)
+                    .body({
+                        newsletters: [{
+                            name: 'Updated archived newsletter name'
+                        }]
+                    })
+                    .expectStatus(200)
+                    .matchBodySnapshot({
+                        newsletters: [newsletterSnapshot]
+                    })
+                    .matchHeaderSnapshot({
+                        etag: anyEtag
+                    });
+            });
+    
+            it('Unarchiving a newsletter fails', async function () {
+                const allNewsletters = await models.Newsletter.findAll();
+                const newsletterCount = allNewsletters.filter(n => n.get('status') === 'active').length;
+                assert.equal(newsletterCount, 3, 'This test expects to have 3 current active newsletters');
+    
+                const archivedNewsletter = allNewsletters.find(n => n.get('status') !== 'active');
+                assert.ok(archivedNewsletter, 'This test expects to have an archived newsletter in the test fixtures');
+    
+                const id = archivedNewsletter.id;
+                await agent.put(`newsletters/${id}`)
+                    .body({
+                        newsletters: [{
+                            status: 'active'
+                        }]
+                    })
+                    .expectStatus(403)
+                    .matchBodySnapshot({
+                        errors: [{
+                            id: anyUuid
+                        }]
+                    })
+                    .expect(({body}) => {
+                        assert.equal(body.errors[0].context, 'Your plan supports up to 3 newsletters. Please upgrade to add more.');
+                    });
+            });
+
+            it('Archiving a newsletter doesn\'t fail', async function () {
+                const allNewsletters = await models.Newsletter.findAll();
+                const newsletterCount = allNewsletters.filter(n => n.get('status') === 'active').length;
+                assert.equal(newsletterCount, 3, 'This test expects to have 3 current active newsletters');
+    
+                const activeNewsletter = allNewsletters.find(n => n.get('status') === 'active');
+    
+                const id = activeNewsletter.id;
+                await agent.put(`newsletters/${id}`)
+                    .body({
+                        newsletters: [{
+                            status: 'archived'
+                        }]
+                    })
+                    .expectStatus(200)
+                    .matchBodySnapshot({
+                        newsletters: [newsletterSnapshot]
+                    })
+                    .matchHeaderSnapshot({
+                        etag: anyEtag
+                    });
+            });
+
+            it('Adding a newsletter now doesn\'t fail', async function () {
+                const allNewsletters = await models.Newsletter.findAll();
+                const newsletterCount = allNewsletters.filter(n => n.get('status') === 'active').length;
+                assert.equal(newsletterCount, 2, 'This test expects to have 2 current active newsletters');
+        
+                const newsletter = {
+                    name: 'Naughty newsletter'
+                };
+
+                await agent
+                    .post(`newsletters/?opt_in_existing=true`)
+                    .body({newsletters: [newsletter]})
+                    .expectStatus(201)
+                    .matchBodySnapshot({
+                        newsletters: [newsletterSnapshot]
+                    })
+                    .matchHeaderSnapshot({
+                        etag: anyEtag,
+                        location: anyLocationFor('newsletters')
+                    });
+            });
         });
     });
 
