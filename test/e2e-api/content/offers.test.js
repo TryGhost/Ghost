@@ -18,7 +18,7 @@ describe('Offers Content API', function () {
         agent.authenticate();
     });
 
-    it('Can request offer', async function () {
+    it('Can read offer details from id', async function () {
         const productModel = await models.Product.findOne({type: 'paid'}, testUtils.context.internal);
 
         const offerData = testUtils.DataGenerator.forKnex.createOffer({
