@@ -113,8 +113,8 @@ describe('Card Asset Service', function () {
             });
 
             cardAssets.generateGlobs().should.eql({
-                'cards.min.css': 'css/!(bookmark|gallery).css',
-                'cards.min.js': 'js/!(bookmark|gallery).js'
+                'cards.min.css': 'css/*.css',
+                'cards.min.js': 'js/*.js'
             });
         });
 
