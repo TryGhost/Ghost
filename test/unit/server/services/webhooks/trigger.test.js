@@ -73,7 +73,8 @@ describe('Webhook Service', function () {
 
             assert.equal(requestStub.called, true);
             assert.equal(requestStub.args[0][0], 'http://example.com');
-            assert.deepEqual(requestStub.args[0][1].body, '{"data":[1]}');
+            assert.equal(requestStub.args[0][1].body, '{"data":[1]}');
+            assert.deepEqual(Object.keys(requestStub.args[0][1].headers), ['Content-Length', 'Content-Type', 'Content-Version']);
             assert.equal(requestStub.args[0][1].headers['Content-Length'], 12);
             assert.equal(requestStub.args[0][1].headers['Content-Type'], 'application/json');
             assert.match(requestStub.args[0][1].headers['Content-Version'], /v\d+\.\d+/);
