@@ -250,6 +250,9 @@ export default class PaidMix extends Component {
     }
 
     get areTiersAllZero() {
+        if (this.dashboardStats.paidMembersByTier === null || this.dashboardStats.paidMembersByTier.length === 0) {
+            return true;
+        }
         const data = this.dashboardStats.paidMembersByTier.map(stat => stat.members);
         let areAllTiersZero = true;
         for (let i = 0; i < data.length; i++) {
@@ -329,13 +332,19 @@ export default class PaidMix extends Component {
 
         // tiers all have 0 data
         if (this.areTiersAllZero) {
-            let equalPercentageData = Math.round(100 / data.length);
-
             totalTiersAmount = 100;
-            for (let i = 0; i < data.length; i++) {
-                data[i] = equalPercentageData;
+            if (data.length > 0) {
+                let equalPercentageData = Math.round(100 / data.length);
+                for (let i = 0; i < data.length; i++) {
+                    data[i] = equalPercentageData;
+                }
             }
-
+            else {
+                labels[0] = "Tier 1";
+                labels[1] = "Tier 2";
+                data[0] = 50;
+                data[1] = 50;
+            }
         // tiers have good data
         } else {
             totalTiersAmount = 0;
