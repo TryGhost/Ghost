@@ -64,7 +64,7 @@
     "@tryghost/color-utils": "0.1.16",
     "@tryghost/config-url-helpers": "1.0.0",
     "@tryghost/constants": "1.0.4",
-    "@tryghost/custom-theme-settings-service": "0.3.2",
+    "@tryghost/custom-theme-settings-service": "0.3.3",
     "@tryghost/database-info": "0.3.4",
     "@tryghost/debug": "0.1.16",
     "@tryghost/domain-events": "0.1.13",
