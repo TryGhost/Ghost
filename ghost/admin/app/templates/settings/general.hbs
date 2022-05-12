@@ -89,14 +89,14 @@
                 <div class="gh-expandable-content">
                     {{#liquid-if this.langOpen}}
                     <div class="gh-setting-content-extended">
-                        <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="lang">
+                        <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="locale">
                             <GhTextInput
-                                @value={{readonly this.settings.lang}}
-                                @input={{action (mut this.settings.lang) value="target.value"}}
-                                @focus-out={{action "validate" "lang" target=this.settings}}
-                                data-test-input="lang"
+                                @value={{readonly this.settings.locale}}
+                                @input={{action (mut this.settings.locale) value="target.value"}}
+                                @focus-out={{action "validate" "locale" target=this.settings}}
+                                data-test-input="locale"
                             />
-                            <GhErrorMessage @errors={{this.settings.errors}} @property="lang" />
+                            <GhErrorMessage @errors={{this.settings.errors}} @property="locale" />
                             <p>Default: English (<strong>en</strong>); you can add translation files to your theme for <a href="https://ghost.org/docs/themes/helpers/translate/" target="_blank" rel="noopener noreferrer">any language</a></p>
                         </GhFormGroup>
                     </div>
