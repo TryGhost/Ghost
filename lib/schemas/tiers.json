@@ -60,7 +60,7 @@
     },
     "tier-price": {
       "description": "A Stripe Price associated with a Tier",
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
         "id": {
           "type": "string",
