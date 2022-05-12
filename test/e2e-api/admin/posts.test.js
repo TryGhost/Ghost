@@ -957,6 +957,82 @@ describe('Posts API', function () {
             .expect(404);
     });
 
+    describe('As Author', function () {
+        before(async function () {
+            const user = await testUtils.createUser({
+                user: testUtils.DataGenerator.forKnex.createUser({
+                    email: 'test+author@ghost.org'
+                }),
+                role: testUtils.DataGenerator.Content.roles[2].name
+            });
+
+            request.user = user;
+            await localUtils.doAuth(request);
+        });
+
+        it('Can publish a post and send as email', async function () {
+            const newsletterId = testUtils.DataGenerator.Content.newsletters[2].id;
+
+            const post = {
+                title: 'Author newsletter_id post',
+                status: 'draft',
+                authors: [{id: request.user.id}],
+                feature_image_alt: 'Testing newsletter_id',
+                feature_image_caption: 'Testing <b>feature image caption</b>',
+                mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+                created_at: moment().subtract(2, 'days').toDate(),
+                updated_at: moment().subtract(2, 'days').toDate(),
+                created_by: ObjectId().toHexString(),
+                updated_by: ObjectId().toHexString()
+            };
+
+            const res = await request.post(localUtils.API.getApiQuery('posts'))
+                .set('Origin', config.get('url'))
+                .send({posts: [post]})
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(201);
+
+            // Check newsletter relation is loaded, but null in response.
+            should(res.body.posts[0].newsletter).eql(null);
+            should.not.exist(res.body.posts[0].newsletter_id);
+
+            const id = res.body.posts[0].id;
+
+            const updatedPost = res.body.posts[0];
+
+            updatedPost.status = 'published';
+
+            const finalPost = await request
+                .put(localUtils.API.getApiQuery('posts/' + id + '/?email_recipient_filter=all&newsletter_id=' + newsletterId))
+                .set('Origin', config.get('url'))
+                .send({posts: [updatedPost]})
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200);
+
+            // Check newsletter relation is loaded in response
+            should(finalPost.body.posts[0].newsletter.id).eql(newsletterId);
+            should.not.exist(finalPost.body.posts[0].newsletter_id);
+
+            const model = await models.Post.findOne({
+                id
+            }, testUtils.context.internal);
+
+            should(model.get('newsletter_id')).eql(newsletterId);
+
+            // Check email
+            // Note: we only create an email if we have members susbcribed to the newsletter
+            const email = await models.Email.findOne({
+                post_id: id
+            }, testUtils.context.internal);
+
+            should.exist(email);
+            should(email.get('newsletter_id')).eql(newsletterId);
+            should(email.get('status')).eql('pending');
+        });
+    });
+
     describe('Host Settings: emails limits', function () {
         afterEach(function () {
             configUtils.set('hostSettings:limits', undefined);
