@@ -18,7 +18,6 @@ const jobsService = require('../jobs');
 const VerificationTrigger = require('@tryghost/verification-trigger');
 const DomainEvents = require('@tryghost/domain-events');
 const {LastSeenAtUpdater} = require('@tryghost/members-events-service');
-const events = require('../../lib/common/events');
 const DatabaseInfo = require('@tryghost/database-info');
 
 const messages = {
@@ -73,32 +72,6 @@ module.exports = {
         const stripeService = require('../stripe');
         const createMembersApiInstance = require('./api');
         const env = config.get('env');
-
-        events.on('settings.edited', async function (settingModel) {
-            if (labsService.isSet('multipleProducts')) {
-                return;
-            }
-
-            const key = settingModel.get('key');
-            const value = settingModel.get('value');
-
-            if (key === 'members_free_signup_redirect') {
-                try {
-                    await models.Product.forge().query().update('welcome_page_url', value).where('type', 'free');
-                } catch (err) {
-                    logging.error(err);
-                }
-                return;
-            }
-            if (key === 'members_paid_signup_redirect') {
-                try {
-                    await models.Product.forge().query().update('welcome_page_url', value).where('type', 'paid');
-                } catch (err) {
-                    logging.error(err);
-                }
-                return;
-            }
-        });
 
         // @TODO Move to stripe service
         if (env !== 'production') {

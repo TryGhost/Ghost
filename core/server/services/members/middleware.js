@@ -176,18 +176,10 @@ const createSessionFromMagicLink = async function (req, res, next) {
                 })
                 .find(sub => ['active', 'trialing'].includes(sub.status));
             if (mostRecentActiveSubscription) {
-                if (labsService.isSet('tierWelcomePages')) {
-                    customRedirect = mostRecentActiveSubscription.tier.welcome_page_url;
-                } else {
-                    customRedirect = settingsCache.get('members_paid_signup_redirect') || '';
-                }
+                customRedirect = mostRecentActiveSubscription.tier.welcome_page_url;
             } else {
-                if (labsService.isSet('tierWelcomePages')) {
-                    const freeTier = await models.Product.findOne({type: 'free'});
-                    customRedirect = freeTier && freeTier.get('welcome_page_url') || '';
-                } else {
-                    customRedirect = settingsCache.get('members_free_signup_redirect') || '';
-                }
+                const freeTier = await models.Product.findOne({type: 'free'});
+                customRedirect = freeTier && freeTier.get('welcome_page_url') || '';
             }
 
             if (customRedirect && customRedirect !== '/') {
