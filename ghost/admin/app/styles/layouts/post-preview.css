@@ -14,16 +14,15 @@
     background: var(--white);
 }
 
-.gh-post-preview-header h2 {
-    flex: 1;
-    margin: 0;
-    margin-right: auto;
+.gh-post-preview-header .left {
+    position: absolute;
+    left: 0;
 }
 
-.gh-post-preview-btn-group {
+.gh-post-preview-header .right {
+    position: absolute;
+    right: 0;
     display: flex;
-    flex-grow: 1;
-    justify-content: center;
 }
 
 .gh-post-preview-btn-group .gh-btn-group {

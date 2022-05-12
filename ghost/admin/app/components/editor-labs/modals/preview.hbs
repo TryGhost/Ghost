@@ -1,6 +1,6 @@
 <div class="flex flex-column h-100">
     <header class="modal-header gh-post-preview-header" data-test-modal="preview-email">
-        <div>
+        <div class="left">
             <button class="gh-editor-back-button" title="Close" type="button" {{on "click" @close}}>
                 <span>{{svg-jar "arrow-left"}} Editor</span>
             </button>
@@ -17,7 +17,7 @@
                 <button type="button" class="gh-btn {{if (eq this.tab "social") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changeTab "social")}}><span>{{svg-jar "twitter"}}</span></button>
             </div>
         </div>
-        <div class="flex">
+        <div class="right">
             <button
                 type="button"
                 class="gh-btn gh-editor-preview-trigger active"
