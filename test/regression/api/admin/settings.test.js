@@ -265,6 +265,16 @@ const defaultSettingsKeyTypes = [
         group: 'portal'
     },
     {
+        key: 'firstpromoter',
+        type: 'boolean',
+        group: 'firstpromoter'
+    },
+    {
+        key: 'firstpromoter_id',
+        type: 'string',
+        group: 'firstpromoter'
+    },
+    {
         key: 'portal_button_icon',
         type: 'string',
         group: 'portal'
