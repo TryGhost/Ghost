@@ -2106,10 +2106,10 @@
   dependencies:
     semver "^7.3.5"
 
-"@tryghost/limit-service@1.1.2":
-  version "1.1.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-1.1.2.tgz#248f5b1c5383d302a6e29e8bcd2948ff9eb9ab4f"
-  integrity sha512-aOUVnNvhYDANqtx+2pS0c0RADG39QDQ5tB7CLPjpcz2B6Nsc1fg4dEJeXU8fI1JT0YpMDRSliiNRh0/MMkozbA==
+"@tryghost/limit-service@1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-1.2.0.tgz#fea838bcb77e30b043f670c73237546bebfa4686"
+  integrity sha512-awO9ZANst25v5+udlkwAcVV3OivisiWEX4OcD4i1YlSqPqcc5ncYr0ozlNjMR3djY0gX+rfN+WUc20ybwWL0Xg==
   dependencies:
     "@tryghost/errors" "^1.2.1"
     lodash "^4.17.21"
