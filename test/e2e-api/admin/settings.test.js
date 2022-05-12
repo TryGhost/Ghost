@@ -169,7 +169,7 @@ describe('Settings API', function () {
             .post('settings/members/email/')
             .body({
                 email: 'test@test.com',
-                type: 'fromAddressUpdate'
+                type: 'supportAddressUpdate'
             })
             .expectStatus(204)
             .expectEmptyBody()
@@ -187,7 +187,7 @@ describe('Settings API', function () {
 
         // @TODO Fixing https://github.com/TryGhost/Team/issues/584 should result in this test changing
         await agent
-            .get(`settings/members/email/?token=${token}&action=fromAddressUpdate`)
+            .get(`settings/members/email/?token=${token}&action=supportAddressUpdate`)
             .expectStatus(302)
             .expectEmptyBody()
             .matchHeaderSnapshot();
@@ -197,7 +197,7 @@ describe('Settings API', function () {
         await agent.get('settings/')
             .expect(({body}) => {
                 const fromAddress = body.settings.find((setting) => {
-                    return setting.key === 'members_from_address';
+                    return setting.key === 'members_support_address';
                 });
                 assert.equal(fromAddress.value, 'test@test.com');
             });
