@@ -67,12 +67,6 @@ describe('Members - config', function () {
         sinon.restore();
     });
 
-    it('Does not export webhookHandlerUrl', function () {
-        const paymentConfig = membersConfig.getStripePaymentConfig();
-
-        assert.equal(paymentConfig.webhookHandlerUrl, undefined, 'webhookHandlerUrl should not exist');
-    });
-
     it('can get correct tokenConfig', function () {
         const {issuer, publicKey, privateKey} = membersConfig.getTokenConfig();
 
