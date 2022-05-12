@@ -444,6 +444,11 @@
     font-weight: 600;
 }
 
+.gh-publish-newsletter-dropdown .ember-power-select-option {
+    display: flex;
+    justify-content: space-between;
+}
+
 
 /* Publish Page (Labs)
 /* ---------------------------------------------------------- */
@@ -643,6 +648,10 @@
 .gh-publish-newsletter-trigger svg path {
     stroke: var(--midlightgrey) !important;
     stroke-width: 4;
+}
+
+.gh-publish-newsletter-trigger .gh-newsletter-count {
+    display: none;
 }
 
 .gh-publish-newsletter-dropdown {
