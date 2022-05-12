@@ -53,36 +53,6 @@ class MembersConfigProvider {
         return this.getEmailSupportAddress() || this.getEmailFromAddress();
     }
 
-    getPublicPlans() {
-        const defaultPriceData = {
-            monthly: 0,
-            yearly: 0,
-            currency: 'USD'
-        };
-
-        try {
-            const plans = this._settingsCache.get('stripe_plans') || [];
-
-            const priceData = plans.reduce((prices, plan) => {
-                const numberAmount = 0 + plan.amount;
-                const dollarAmount = numberAmount ? Math.round(numberAmount / 100) : 0;
-                return Object.assign(prices, {
-                    [plan.name.toLowerCase()]: dollarAmount
-                });
-            }, {});
-
-            priceData.currency = plans[0].currency || 'USD';
-
-            if (Number.isInteger(priceData.monthly) && Number.isInteger(priceData.yearly)) {
-                return priceData;
-            }
-
-            return defaultPriceData;
-        } catch (err) {
-            return defaultPriceData;
-        }
-    }
-
     /**
      * @param {'direct' | 'connect'} type - The "type" of keys to fetch from settings
      * @returns {{publicKey: string, secretKey: string} | null}
