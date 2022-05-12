@@ -208,6 +208,14 @@ export function transformApiSiteData({site}) {
         site.products = site.tiers;
     }
 
+    site.products = site.products?.map((product) => {
+        return {
+            ...product,
+            monthlyPrice: product.monthly_price,
+            yearlyPrice: product.yearly_price
+        };
+    });
+
     // Map tier visibility to old settings
     if (site.products?.[0]?.visibility) {
         // Map paid tier visibility to portal products
