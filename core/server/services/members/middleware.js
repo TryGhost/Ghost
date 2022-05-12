@@ -4,12 +4,9 @@ const membersService = require('./service');
 const models = require('../../models');
 const offersService = require('../offers/service');
 const urlUtils = require('../../../shared/url-utils');
-const ghostVersion = require('@tryghost/version');
 const settingsCache = require('../../../shared/settings-cache');
 const {formattedMemberResponse} = require('./utils');
 const labsService = require('../../../shared/labs');
-const config = require('../../../shared/config');
-const newslettersService = require('../newsletters');
 
 // @TODO: This piece of middleware actually belongs to the frontend, not to the member app
 // Need to figure a way to separate these things (e.g. frontend actually talks to members API)
@@ -149,114 +146,6 @@ const updateMemberData = async function (req, res) {
     }
 };
 
-const getPortalProductPrices = async function () {
-    const page = await membersService.api.productRepository.list({
-        withRelated: ['monthlyPrice', 'yearlyPrice', 'benefits']
-    });
-
-    const products = page.data.map((productModel) => {
-        const product = productModel.toJSON();
-        const productPrices = [];
-        if (product.monthlyPrice) {
-            productPrices.push(product.monthlyPrice);
-        }
-        if (product.yearlyPrice) {
-            productPrices.push(product.yearlyPrice);
-        }
-        return {
-            id: product.id,
-            name: product.name,
-            description: product.description || '',
-            monthlyPrice: product.monthlyPrice,
-            yearlyPrice: product.yearlyPrice,
-            benefits: product.benefits,
-            active: product.active,
-            type: product.type,
-            visibility: product.visibility,
-            prices: productPrices
-        };
-    }).filter((product) => {
-        return !!product.active;
-    });
-    const defaultProduct = products.find((product) => {
-        return product.type === 'paid';
-    });
-    const defaultPrices = defaultProduct ? defaultProduct.prices : [];
-    let portalProducts = defaultProduct ? [defaultProduct] : [];
-    if (labsService.isSet('multipleProducts')) {
-        portalProducts = products;
-    }
-
-    return {
-        prices: defaultPrices,
-        products: portalProducts
-    };
-};
-
-const getSiteNewsletters = async function () {
-    try {
-        return await newslettersService.browse({filter: 'status:active', limit: 'all'});
-    } catch (err) {
-        logging.warn('Failed to fetch site newsletters');
-        logging.warn(err.message);
-        return [];
-    }
-};
-
-const getMemberSiteData = async function (req, res) {
-    const isStripeConfigured = membersService.config.isStripeConnected();
-    const domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
-    const firstpromoterId = settingsCache.get('firstpromoter') ? settingsCache.get('firstpromoter_id') : '';
-    const blogDomain = domain && domain[1];
-    let supportAddress = settingsCache.get('members_support_address') || 'noreply';
-    if (!supportAddress.includes('@')) {
-        supportAddress = `${supportAddress}@${blogDomain}`;
-    }
-    const {products = [], prices = []} = await getPortalProductPrices() || {};
-    const portalVersion = config.get('portal:version');
-    const newsletters = await getSiteNewsletters();
-    const response = {
-        title: settingsCache.get('title'),
-        description: settingsCache.get('description'),
-        logo: settingsCache.get('logo'),
-        icon: settingsCache.get('icon'),
-        accent_color: settingsCache.get('accent_color'),
-        url: urlUtils.urlFor('home', true),
-        version: ghostVersion.safe,
-        portal_version: portalVersion,
-        free_price_name: settingsCache.get('members_free_price_name'),
-        free_price_description: settingsCache.get('members_free_price_description'),
-        allow_self_signup: membersService.config.getAllowSelfSignup(),
-        members_signup_access: settingsCache.get('members_signup_access'),
-        is_stripe_configured: isStripeConfigured,
-        portal_button: settingsCache.get('portal_button'),
-        portal_name: settingsCache.get('portal_name'),
-        portal_plans: settingsCache.get('portal_plans'),
-        portal_button_icon: settingsCache.get('portal_button_icon'),
-        portal_button_signup_text: settingsCache.get('portal_button_signup_text'),
-        portal_button_style: settingsCache.get('portal_button_style'),
-        firstpromoter_id: firstpromoterId,
-        members_support_address: supportAddress,
-        prices,
-        products
-    };
-
-    if (labsService.isSet('multipleNewsletters')) {
-        response.newsletters = newsletters;
-    }
-
-    if (labsService.isSet('multipleProducts')) {
-        response.portal_products = settingsCache.get('portal_products');
-    }
-    if (config.get('portal_sentry') && !config.get('portal_sentry').disabled) {
-        response.portal_sentry = {
-            dsn: config.get('portal_sentry').dsn,
-            env: config.get('env')
-        };
-    }
-    res.json({site: response});
-};
-
 const createSessionFromMagicLink = async function (req, res, next) {
     if (!req.url.includes('token=')) {
         return next();
@@ -334,6 +223,5 @@ module.exports = {
     getOfferData,
     updateMemberData,
     updateMemberNewsletters,
-    getMemberSiteData,
     deleteSession
 };
