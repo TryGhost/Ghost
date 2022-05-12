@@ -636,7 +636,9 @@
 }
 
 .gh-publish-types + .gh-box {
-    margin-top: 12px;
+    margin: 16px 0 0;
+    padding: 16px 20px;
+    font-size: 1.45rem;
 }
 
 .gh-publish-schedule .gh-radio {
@@ -770,6 +772,14 @@
     font-size: 1.8rem;
     font-weight: 400;
     line-height: 1.35em;
+}
+
+.gh-publish-confirmation + .gh-box-error {
+    margin: -4rem 0 4.8rem;
+    padding: 16px 20px;
+    border: 0;
+    background: rgba(245,11,35,.05);
+    font-size: 1.6rem;
 }
 
 .gh-revert-to-draft {
