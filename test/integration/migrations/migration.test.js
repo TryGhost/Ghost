@@ -163,8 +163,8 @@ describe('Database Migration (special functions)', function () {
             permissions.should.havePermission('Browse custom theme settings', ['Administrator']);
             permissions.should.havePermission('Edit custom theme settings', ['Administrator']);
 
-            permissions.should.havePermission('Browse newsletters', ['Administrator', 'Admin Integration']);
-            permissions.should.havePermission('Read newsletters', ['Administrator', 'Admin Integration']);
+            permissions.should.havePermission('Browse newsletters', ['Administrator', 'Editor', 'Author', 'Admin Integration']);
+            permissions.should.havePermission('Read newsletters', ['Administrator', 'Editor', 'Author', 'Admin Integration']);
             permissions.should.havePermission('Edit newsletters', ['Administrator', 'Admin Integration']);
             permissions.should.havePermission('Add newsletters', ['Administrator', 'Admin Integration']);
         });
