@@ -388,32 +388,22 @@ export default class PaidMix extends Component {
 
         // this is for tiers...
         } else {
-            let tierPercentages = [];
-            let data = this.dashboardStats.paidMembersByTier.map(stat => stat.members);
-            let totalTiersAmount = 0;
+            if (!this.areTiersAllZero) {
+                let data = this.dashboardStats.paidMembersByTier.map(stat => stat.members);
+                let totalTiersAmount = 0;
 
-            for (let i = 0; i < data.length; i++) {
-                totalTiersAmount += data[i];
-            }
-
-            for (let i = 0; i < data.length; i++) {
-                let tierPercentage = Math.round(data[i] / totalTiersAmount * 100);
-                if (i === 0) { 
-                    tierPercentage = -tierPercentage;
+                for (let i = 0; i < data.length; i++) {
+                    totalTiersAmount += data[i];
                 }
-                tierPercentages.push(tierPercentage);
+
+                let negativeTierPercentage = Math.round(data[0] / totalTiersAmount * 100);
+
+                ticksY = {
+                    display: false,
+                    min: -negativeTierPercentage,
+                    max: 100 - negativeTierPercentage // take the negative away from 100 to create a full width bar
+                };
             }
-
-            // sorting to ensure smallest to largest values in order always
-            tierPercentages.sort(function (a, b) {
-                return a - b;
-            });
-
-            ticksY = {
-                display: false,
-                min: tierPercentages[0],
-                max: tierPercentages[tierPercentages.length - 1] // get the last (biggest) in array
-            };
         }
 
         return {
