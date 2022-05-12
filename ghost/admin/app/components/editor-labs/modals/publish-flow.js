@@ -13,6 +13,7 @@ export default class PublishModalComponent extends Component {
 
     @service store;
 
+    @tracked emailErrorMessage;
     @tracked isConfirming = false;
     @tracked isComplete = false;
     @tracked postCount = null;
@@ -50,10 +51,18 @@ export default class PublishModalComponent extends Component {
 
     @task
     *saveTask() {
-        yield this.args.data.saveTask.perform();
+        try {
+            yield this.args.data.saveTask.perform();
 
-        this.isConfirming = false;
-        this.isComplete = true;
+            this.isConfirming = false;
+            this.isComplete = true;
+        } catch (e) {
+            if (e?.name === 'EmailFailedError') {
+                return this.emailErrorMessage = e.message;
+            }
+
+            throw e;
+        }
     }
 
     // we fetch the new post count in advance when reaching the confirm step
