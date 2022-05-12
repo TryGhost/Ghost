@@ -277,10 +277,6 @@
             "defaultValue": "/",
             "type": "string"
         },
-        "stripe_product_name": {
-            "defaultValue": "Ghost Subscription",
-            "type": "string"
-        },
         "stripe_secret_key": {
             "defaultValue": null,
             "type": "string"

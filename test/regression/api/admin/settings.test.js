@@ -195,11 +195,6 @@ const defaultSettingsKeyTypes = [
         group: 'members'
     },
     {
-        key: 'stripe_product_name',
-        type: 'string',
-        group: 'members'
-    },
-    {
         key: 'stripe_plans',
         type: 'array',
         group: 'members'

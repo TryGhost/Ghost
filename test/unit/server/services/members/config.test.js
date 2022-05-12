@@ -18,7 +18,6 @@ function createSettingsMock({setDirect, setConnect}) {
     getStub.withArgs('members_signup_access').returns('all');
     getStub.withArgs('stripe_secret_key').returns(setDirect ? 'direct_secret' : null);
     getStub.withArgs('stripe_publishable_key').returns(setDirect ? 'direct_publishable' : null);
-    getStub.withArgs('stripe_product_name').returns('Test');
     getStub.withArgs('stripe_plans').returns([{
         name: 'Monthly',
         currency: 'usd',
