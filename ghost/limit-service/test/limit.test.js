@@ -2,6 +2,7 @@
 // const testUtils = require('./utils');
 require('./utils');
 const should = require('should');
+const sinon = require('sinon');
 
 const errors = require('./fixtures/errors');
 const {MaxLimit, AllowlistLimit, FlagLimit, MaxPeriodicLimit} = require('../lib/limit');
@@ -278,6 +279,78 @@ describe('Limit Service', function () {
                 }
             });
         });
+
+        describe('Transactions', function () {
+            it('passes undefined if no db or transacting option passed', async function () {
+                const config = {
+                    max: 5,
+                    error: 'You have gone over the limit',
+                    currentCountQuery: sinon.stub()
+                };
+
+                config.currentCountQuery.resolves(0);
+
+                try {
+                    const limit = new MaxLimit({name: '', config, errors});
+                    await limit.errorIfIsOverLimit();
+                    await limit.errorIfWouldGoOverLimit();
+                } catch (error) {
+                    should.fail('Should have not errored', error);
+                }
+
+                sinon.assert.calledTwice(config.currentCountQuery);
+                sinon.assert.alwaysCalledWithExactly(config.currentCountQuery, undefined);
+            });
+
+            it('passes default db if no transacting option passed', async function () {
+                const config = {
+                    max: 5,
+                    error: 'You have gone over the limit',
+                    currentCountQuery: sinon.stub()
+                };
+
+                const db = {
+                    knex: 'This is our connection'
+                };
+                config.currentCountQuery.resolves(0);
+
+                try {
+                    const limit = new MaxLimit({name: '', config, db, errors});
+                    await limit.errorIfIsOverLimit();
+                    await limit.errorIfWouldGoOverLimit();
+                } catch (error) {
+                    should.fail('Should have not errored', error);
+                }
+
+                sinon.assert.calledTwice(config.currentCountQuery);
+                sinon.assert.alwaysCalledWithExactly(config.currentCountQuery, db.knex);
+            });
+
+            it('passes transacting option', async function () {
+                const config = {
+                    max: 5,
+                    error: 'You have gone over the limit',
+                    currentCountQuery: sinon.stub()
+                };
+
+                const db = {
+                    knex: 'This is our connection'
+                };
+                const transaction = 'Our transaction';
+                config.currentCountQuery.resolves(0);
+
+                try {
+                    const limit = new MaxLimit({name: '', config, db, errors});
+                    await limit.errorIfIsOverLimit({transacting: transaction});
+                    await limit.errorIfWouldGoOverLimit({transacting: transaction});
+                } catch (error) {
+                    should.fail('Should have not errored', error);
+                }
+
+                sinon.assert.calledTwice(config.currentCountQuery);
+                sinon.assert.alwaysCalledWithExactly(config.currentCountQuery, transaction);
+            });
+        });
     });
 
     describe('Periodic Max Limit', function () {
@@ -488,6 +561,84 @@ describe('Limit Service', function () {
 
                     currentCountyQueryMock.args[0][1].should.equal(startOfTheMonthDate);
                 }
+            });
+        });
+
+        describe('Transactions', function () {
+            it('passes undefined if no db or transacting option passed', async function () {
+                const config = {
+                    maxPeriodic: 5,
+                    error: 'You have exceeded the number of emails you can send within your billing period.',
+                    interval: 'month',
+                    startDate: '2021-01-01T00:00:00Z',
+                    currentCountQuery: sinon.stub()
+                };
+
+                config.currentCountQuery.resolves(0);
+
+                try {
+                    const limit = new MaxPeriodicLimit({name: 'mailguard', config, errors});
+                    await limit.errorIfIsOverLimit();
+                    await limit.errorIfWouldGoOverLimit();
+                } catch (error) {
+                    should.fail('Should have not errored', error);
+                }
+
+                sinon.assert.calledTwice(config.currentCountQuery);
+                sinon.assert.alwaysCalledWith(config.currentCountQuery, undefined);
+            });
+
+            it('passes default db if no transacting option passed', async function () {
+                const config = {
+                    maxPeriodic: 5,
+                    error: 'You have exceeded the number of emails you can send within your billing period.',
+                    interval: 'month',
+                    startDate: '2021-01-01T00:00:00Z',
+                    currentCountQuery: sinon.stub()
+                };
+
+                const db = {
+                    knex: 'This is our connection'
+                };
+                config.currentCountQuery.resolves(0);
+
+                try {
+                    const limit = new MaxPeriodicLimit({name: 'mailguard', config, db, errors});
+                    await limit.errorIfIsOverLimit();
+                    await limit.errorIfWouldGoOverLimit();
+                } catch (error) {
+                    should.fail('Should have not errored', error);
+                }
+
+                sinon.assert.calledTwice(config.currentCountQuery);
+                sinon.assert.alwaysCalledWith(config.currentCountQuery, db.knex);
+            });
+
+            it('passes transacting option', async function () {
+                const config = {
+                    maxPeriodic: 5,
+                    error: 'You have exceeded the number of emails you can send within your billing period.',
+                    interval: 'month',
+                    startDate: '2021-01-01T00:00:00Z',
+                    currentCountQuery: sinon.stub()
+                };
+
+                const db = {
+                    knex: 'This is our connection'
+                };
+                const transaction = 'Our transaction';
+                config.currentCountQuery.resolves(0);
+
+                try {
+                    const limit = new MaxPeriodicLimit({name: 'mailguard', config, db, errors});
+                    await limit.errorIfIsOverLimit({transacting: transaction});
+                    await limit.errorIfWouldGoOverLimit({transacting: transaction});
+                } catch (error) {
+                    should.fail('Should have not errored', error);
+                }
+
+                sinon.assert.calledTwice(config.currentCountQuery);
+                sinon.assert.alwaysCalledWith(config.currentCountQuery, transaction);
             });
         });
     });
