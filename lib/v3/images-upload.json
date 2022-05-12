@@ -1,7 +1,0 @@
-{
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "images.upload.v3",
-  "title": "images.upload",
-  "description": "Schema for images.upload",
-  "$ref": "images.v3#/definitions/image"
-}
