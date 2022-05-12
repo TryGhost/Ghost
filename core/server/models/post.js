@@ -79,7 +79,7 @@ Post = ghostBookshelf.Model.extend({
             type: 'post',
             tiers,
             visibility: visibility,
-            email_recipient_filter: 'none'
+            email_recipient_filter: 'all'
         };
     },
 
@@ -136,14 +136,6 @@ Post = ghostBookshelf.Model.extend({
             }
         });
 
-        // update legacy email_recipient_filter values to proper NQL
-        if (attrs.email_recipient_filter === 'free') {
-            attrs.email_recipient_filter = 'status:free';
-        }
-        if (attrs.email_recipient_filter === 'paid') {
-            attrs.email_recipient_filter = 'status:-free';
-        }
-
         return attrs;
     },
 
@@ -186,14 +178,6 @@ Post = ghostBookshelf.Model.extend({
                 attrs[attrToTransform] = urlUtils[method](attrs[attrToTransform], transformOptions);
             }
         });
-
-        // update legacy email_recipient_filter values to proper NQL
-        if (attrs.email_recipient_filter === 'free') {
-            attrs.email_recipient_filter = 'status:free';
-        }
-        if (attrs.email_recipient_filter === 'paid') {
-            attrs.email_recipient_filter = 'status:-free';
-        }
 
         // transform visibility NQL queries to special-case values where necessary
         // ensures checks against special-case values such as `{{#has visibility="paid"}}` continue working
@@ -675,20 +659,22 @@ Post = ghostBookshelf.Model.extend({
             }
         }
 
-        // newsletter_id is read-only and should only be set using a query param when publishing/scheduling
-        if (options.newsletter_id
+        // newsletter_id is read-only and should only be set using the newsletter param when publishing/scheduling
+        if (options.newsletter
             && !this.get('newsletter_id')
             && this.hasChanged('status')
             && (newStatus === 'published' || newStatus === 'scheduled')) {
-            this.set('newsletter_id', options.newsletter_id);
-        }
+            this.set('newsletter_id', options.newsletter);
 
-        // email_recipient_filter is read-only and should only be set using a query param when publishing/scheduling
-        if (options.email_recipient_filter
-            && (options.email_recipient_filter !== 'none')
-            && this.hasChanged('status')
-            && (newStatus === 'published' || newStatus === 'scheduled')) {
-            this.set('email_recipient_filter', options.email_recipient_filter);
+            // If the `email_segment` isn't passed at the same time, reset it to be 100% sure that they can only be used together
+            this.set('email_recipient_filter', 'all');
+
+            // email_segment is read-only and should only be set using a query param when publishing/scheduling
+            // we can't set it if we don't pass newsletter
+            if (options.email_segment
+                && (options.email_segment !== 'none')) {
+                this.set('email_recipient_filter', options.email_segment);
+            }
         }
 
         // ensure draft posts have the email_recipient_filter reset unless an email has already been sent
@@ -696,7 +682,7 @@ Post = ghostBookshelf.Model.extend({
             ops.push(function ensureSendEmailWhenPublishedIsUnchanged() {
                 return self.related('email').fetch({transacting: options.transacting}).then((email) => {
                     if (!email) {
-                        self.set('email_recipient_filter', 'none');
+                        self.set('email_recipient_filter', 'all');
                         self.set('newsletter_id', null);
                     }
                 });
@@ -1030,7 +1016,7 @@ Post = ghostBookshelf.Model.extend({
             findPage: ['status'],
             findAll: ['columns', 'filter'],
             destroy: ['destroyAll', 'destroyBy'],
-            edit: ['filter', 'email_recipient_filter', 'force_rerender', 'newsletter_id']
+            edit: ['filter', 'email_segment', 'force_rerender', 'newsletter']
         };
 
         // The post model additionally supports having a formats option
