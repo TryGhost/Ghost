@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "tiers.canary",
+  "$id": "tiers",
   "title": "tiers",
   "description": "Base Tier definitions",
   "definitions": {

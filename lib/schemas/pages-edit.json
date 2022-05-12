@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "pages.edit.canary",
+  "$id": "pages.edit",
   "title": "pages.edit",
   "description": "Schema for pages.edit",
   "type": "object",
@@ -12,7 +12,7 @@
       "maxItems": 1,
       "items": {
         "type": "object",
-        "allOf": [{ "$ref": "pages.canary#/definitions/page" }],
+        "allOf": [{ "$ref": "pages#/definitions/page" }],
         "required": ["updated_at"]
       }
     }

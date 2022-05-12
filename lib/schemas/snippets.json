@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "snippets.canary",
+  "$id": "snippets",
   "title": "snippets",
   "description": "Base snippets definitions",
   "definitions": {

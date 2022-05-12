@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "tiers.add.canary",
+  "$id": "tiers.add",
   "title": "tiers.add",
   "description": "Schema for tiers.add",
   "type": "object",
@@ -12,7 +12,7 @@
       "maxItems": 1,
       "items": {
         "type": "object",
-        "allOf": [{ "$ref": "tiers.canary#/definitions/tier" }]
+        "allOf": [{ "$ref": "tiers#/definitions/tier" }]
       }
     }
   },

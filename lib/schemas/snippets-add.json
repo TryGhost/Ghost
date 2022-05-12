@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "snippets.add.canary",
+  "$id": "snippets.add",
   "title": "snippets.add",
   "description": "Schema for snippets.add",
   "type": "object",
@@ -13,7 +13,7 @@
       "additionalProperties": false,
       "items": {
         "type": "object",
-        "allOf": [{ "$ref": "snippets.canary#/definitions/snippet" }],
+        "allOf": [{ "$ref": "snippets#/definitions/snippet" }],
         "required": ["name", "mobiledoc"]
       }
     }

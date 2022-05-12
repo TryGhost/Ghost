@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "products.canary",
+  "$id": "products",
   "title": "products",
   "description": "Base products definitions",
   "definitions": {
@@ -33,13 +33,13 @@
         "stripe_prices": {
           "type": ["array", "null"],
           "items": {
-            "type": "producs.canary#/definitions/stripe_price"
+            "type": "producs#/definitions/stripe_price"
           }
         },
         "benefits": {
           "type": ["array", "null"],
           "items": {
-            "type": "producs.canary#/definitions/product-benefit"
+            "type": "producs#/definitions/product-benefit"
           }
         }
       }

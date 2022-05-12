@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "members.edit.canary",
+  "$id": "members.edit",
   "title": "members.edit",
   "description": "Schema for members.edit",
   "type": "object",
@@ -46,16 +46,16 @@
             "strip": true
           },
           "products": {
-            "$ref": "members.canary#/definitions/member-products"
+            "$ref": "members#/definitions/member-products"
           },
           "tiers": {
-            "$ref": "members.canary#/definitions/member-products"
+            "$ref": "members#/definitions/member-products"
           },
           "newsletters": {
-            "$ref": "members.canary#/definitions/member-newsletters"
+            "$ref": "members#/definitions/member-newsletters"
           },
           "labels": {
-            "$ref": "members.canary#/definitions/member-labels"
+            "$ref": "members#/definitions/member-labels"
           },
           "email_count": {
             "strip": true

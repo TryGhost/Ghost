@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "labels.add.canary",
+  "$id": "labels.add",
   "title": "labels.add",
   "description": "Schema for labels.add",
   "type": "object",
@@ -13,7 +13,7 @@
       "additionalProperties": false,
       "items": {
         "type": "object",
-        "allOf": [{ "$ref": "labels.canary#/definitions/label" }],
+        "allOf": [{ "$ref": "labels#/definitions/label" }],
         "required": ["name"]
       }
     }

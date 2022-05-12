@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "media.canary",
+  "$id": "media",
   "title": "media",
   "description": "Base media definitions",
   "definitions": {

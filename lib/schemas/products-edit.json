@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "products.edit.canary",
+  "$id": "products.edit",
   "title": "products.edit",
   "description": "Schema for products.edit",
   "type": "object",
@@ -11,7 +11,7 @@
       "minItems": 1,
       "maxItems": 1,
       "items": {
-        "type": "products.canary#/definitions/product"
+        "type": "products#/definitions/product"
       }
     }
   },
