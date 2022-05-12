@@ -22,7 +22,7 @@ const settingsCache = require('./shared/settings-cache');
 const urlService = require('./server/services/url');
 const routeSettings = require('./server/services/route-settings');
 
-// Listen to settings.lang.edited, similar to the member service and models/base/listeners
+// Listen to settings.locale.edited, similar to the member service and models/base/listeners
 const events = require('./server/lib/common/events');
 
 const messages = {
@@ -33,9 +33,8 @@ class Bridge {
     init() {
         /**
          * When locale changes, we reload theme translations
-         * @deprecated: the term "lang" was deprecated in favor of "locale" publicly in 4.0
          */
-        events.on('settings.lang.edited', (model) => {
+        events.on('settings.locale.edited', (model) => {
             debug('Active theme init18n');
             this.getActiveTheme().initI18n({locale: model.get('value')});
         });
@@ -54,7 +53,7 @@ class Bridge {
 
     async activateTheme(loadedTheme, checkedTheme) {
         let settings = {
-            locale: settingsCache.get('lang')
+            locale: settingsCache.get('locale')
         };
         // no need to check the score, activation should be used in combination with validate.check
         // Use the two theme objects to set the current active theme

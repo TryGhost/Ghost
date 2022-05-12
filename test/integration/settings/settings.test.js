@@ -20,7 +20,7 @@ describe('Settings', function () {
         'next_update_check',
         'notifications',
         'version_notifications',
-        'session_secret',
+        'admin_session_secret',
         'theme_session_secret',
         'ghost_public_key',
         'ghost_private_key',
