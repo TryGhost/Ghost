@@ -182,10 +182,7 @@
         "email": {
           "strip": true
         },
-        "send_email_when_published": {
-          "strip": true
-        },
-        "email_recipient_filter": {
+        "email_segment": {
           "strip": true
         },
         "frontmatter": {
