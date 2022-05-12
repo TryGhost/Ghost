@@ -98,25 +98,6 @@ class MembersConfigProvider {
         return this.getActiveStripeKeys() !== null;
     }
 
-    getStripePaymentConfig() {
-        if (!this.isStripeConnected()) {
-            return null;
-        }
-
-        const stripeApiKeys = this.getActiveStripeKeys();
-
-        if (!stripeApiKeys) {
-            return null;
-        }
-
-        return {
-            product: {
-                name: this._settingsCache.get('stripe_product_name')
-            },
-            plans: this._settingsCache.get('stripe_plans') || []
-        };
-    }
-
     getAuthSecret() {
         const hexSecret = this._settingsCache.get('members_email_auth_secret');
         if (!hexSecret) {
