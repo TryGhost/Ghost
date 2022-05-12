@@ -66,6 +66,26 @@ describe('Exposes a correct API', function () {
             }
         });
 
+        it('Unknown fields get ignored and trimmed', async function () {
+            const data = {
+                posts: [{
+                    title: 'valid',
+                    author: 'Beccy',
+                    something: 'else'
+                }]
+            };
+
+            try {
+                should.equal(data.posts[0].something, 'else');
+                should.equal(data.posts[0].author, 'Beccy');
+                await apiSchema.validate({data, schema: 'posts-add', definition: 'posts'});
+                should.equal(data.posts[0].something, undefined);
+                should.equal(data.posts[0].author, undefined);
+            } catch (err) {
+                throw new Error('should not throw an error');
+            }
+        });
+
         it('Incorrect use throws an error', async function () {
             const data = {
                 posts: [{
