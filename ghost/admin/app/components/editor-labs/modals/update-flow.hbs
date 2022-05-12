@@ -8,20 +8,18 @@
     {{#let @data.publishOptions.post as |post|}}
         <div class="gh-publish-settings-container gh-update-flow">
             <div class="gh-publish-title">
-                This {{post.displayName}} has been
-                <span class="green">{{post.status}}</span>
+                {{#if (and post.isSent (not post.isPublished))}}
+                    This {{post.displayName}} was
+                    <span class="green">{{post.status}} by email</span>
+                {{else}}
+                    This {{post.displayName}} has been
+                    <span class="green">{{post.status}}</span>
+                {{/if}}
             </div>
 
             <div class="gh-publish-confirmation">
                 <p>
-                    {{#let (moment-site-tz post.publishedAtUTC) as |publishedAt|}}
-                        On
-                            {{moment-format publishedAt "D MMM YYYY"}}
-                            at
-                            {{moment-format publishedAt "HH:mm"}}
-                        your
-                    {{/let}}
-
+                    Your 
                     {{post.displayName}}
 
                     {{if post.isScheduled "will be" "was"}}
@@ -35,14 +33,21 @@
 
                         {{#if post.isScheduled}}
                             {{#let (members-count-fetcher query=(hash filter=post.fullRecipientFilter)) as |countFetcher|}}
-                                <strong>{{gh-pluralize countFetcher.count "member"}}</strong>.
+                                <strong>{{gh-pluralize countFetcher.count "member"}}</strong>
                             {{/let}}
                         {{else}}
-                            <strong>{{pluralize post.email.emailCount "member"}}</strong>.
+                            <strong>{{pluralize post.email.emailCount "member"}}</strong>
                         {{/if}}
                     {{else}}
-                        published.
+                        published on your site
                     {{/if}}
+                    {{#let (moment-site-tz post.publishedAtUTC) as |publishedAt|}}
+                        on
+                            {{moment-format publishedAt "D MMM YYYY"}}
+                            at
+                            {{moment-format publishedAt "HH:mm"}}.
+                    {{/let}}
+
                     {{#if post.isScheduled}}
                         {{#if (and post.isScheduled post.email)}}
                             This post was previously emailed to
@@ -64,6 +69,7 @@
                             <span>Unschedule and revert to draft &rarr;</span>
                         </button>
                     {{else if (not post.emailOnly)}}
+                        <br><br>
                         <button
                             type="button"
                             class="gh-revert-to-draft"
