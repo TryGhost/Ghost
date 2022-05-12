@@ -1,12 +1,19 @@
 const debug = require('@tryghost/debug')('services:webhooks:trigger');
 const logging = require('@tryghost/logging');
-const request = require('@tryghost/request');
-const ghostVersion = require('@tryghost/version');
 
 class WebhookTrigger {
-    constructor({models, payload}){
+    /**
+     *
+     * @param {Object} options
+     * @param {Object} options.models - Ghost models
+     * @param {Function} options.payload - Function to generate payload
+     * @param {Object} [options.request] - HTTP request handling library
+     */
+    constructor({models, payload, request}){
         this.models = models;
         this.payload = payload;
+
+        this.request = request ?? require('@tryghost/request');
     }
 
     getAll(event) {
@@ -72,7 +79,7 @@ class WebhookTrigger {
 
         debug(`${hooks.models.length} webhooks found for ${event}.`);
 
-        hooks.models.forEach(async (webhook) => {
+        for (const webhook of hooks.models) {
             const hookPayload = await this.payload(webhook.get('event'), model);
 
             const reqPayload = JSON.stringify(hookPayload);
@@ -89,10 +96,10 @@ class WebhookTrigger {
 
             logging.info(`Triggering webhook for "${webhook.get('event')}" with url "${url}"`);
 
-            request(url, opts)
+            await this.request(url, opts)
                 .then(response.onSuccess(webhook))
                 .catch(response.onError(webhook));
-        });
+        }
     }
 }
 
