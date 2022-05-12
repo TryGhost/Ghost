@@ -59,7 +59,7 @@ module.exports = {
             });
         }
 
-        if (!type || !['fromAddressUpdate', 'supportAddressUpdate'].includes(type)) {
+        if (!type || !['supportAddressUpdate'].includes(type)) {
             throw new BadRequestError({
                 message: messages.invalidEmailTypeReceived
             });

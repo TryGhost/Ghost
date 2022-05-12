@@ -57,7 +57,7 @@ module.exports = {
                     required: true
                 },
                 action: {
-                    values: ['fromaddressupdate', 'supportaddressupdate']
+                    values: ['supportaddressupdate']
                 }
             }
         },
@@ -68,7 +68,6 @@ module.exports = {
                     const {token, action} = frame.options;
                     const updatedEmailAddress = await membersService.settings.getEmailFromToken({token});
                     const actionToKeyMapping = {
-                        fromAddressUpdate: 'members_from_address',
                         supportAddressUpdate: 'members_support_address'
                     };
                     if (updatedEmailAddress) {
