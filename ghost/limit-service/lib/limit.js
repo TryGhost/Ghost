@@ -98,8 +98,13 @@ class MaxLimit extends Limit {
         return new this.errors.HostLimitError(errorObj);
     }
 
-    async currentCountQuery() {
-        return await this.currentCountQueryFn(this.db);
+    /**
+     * @param {Object} [options]
+     * @param {Object} [options.transacting] Transaction to run the count query on
+     * @returns 
+     */
+    async currentCountQuery(options = {}) {
+        return await this.currentCountQueryFn(options.transacting ?? this.db?.knex);
     }
 
     /**
@@ -108,9 +113,11 @@ class MaxLimit extends Limit {
      * @param {Object} options
      * @param {Number} [options.max] - overrides configured default max value to perform checks against
      * @param {Number} [options.addedCount] - number of items to add to the currentCount during the check
+     * @param {Object} [options.transacting] Transaction to run the count query on
      */
-    async errorIfWouldGoOverLimit({max, addedCount = 1} = {}) {
-        let currentCount = await this.currentCountQuery();
+    async errorIfWouldGoOverLimit(options = {}) {
+        const {max, addedCount = 1} = options;
+        let currentCount = await this.currentCountQuery(options);
 
         if ((currentCount + addedCount) > (max || this.max)) {
             throw this.generateError(currentCount);
@@ -123,11 +130,12 @@ class MaxLimit extends Limit {
      * @param {Object} options
      * @param {Number} [options.max] - overrides configured default max value to perform checks against
      * @param {Number} [options.currentCount] - overrides currentCountQuery to perform checks against
+     * @param {Object} [options.transacting] Transaction to run the count query on
      */
-    async errorIfIsOverLimit({max, currentCount} = {}) {
-        currentCount = currentCount || await this.currentCountQuery();
+    async errorIfIsOverLimit(options = {}) {
+        const currentCount = options.currentCount || await this.currentCountQuery(options);
 
-        if (currentCount > (max || this.max)) {
+        if (currentCount > (options.max || this.max)) {
             throw this.generateError(currentCount);
         }
     }
@@ -202,10 +210,15 @@ class MaxPeriodicLimit extends Limit {
         return new this.errors.HostLimitError(errorObj);
     }
 
-    async currentCountQuery() {
+    /**
+     * @param {Object} [options]
+     * @param {Object} [options.transacting] Transaction to run the count query on
+     * @returns 
+     */
+    async currentCountQuery(options = {}) {
         const lastPeriodStartDate = lastPeriodStart(this.startDate, this.interval);
 
-        return await this.currentCountQueryFn(this.db, lastPeriodStartDate);
+        return await this.currentCountQueryFn(options.transacting ? options.transacting : (this.db ? this.db.knex : undefined), lastPeriodStartDate);
     }
 
     /**
@@ -214,9 +227,11 @@ class MaxPeriodicLimit extends Limit {
      * @param {Object} options
      * @param {Number} [options.max] - overrides configured default maxPeriodic value to perform checks against
      * @param {Number} [options.addedCount] - number of items to add to the currentCount during the check
+     * @param {Object} [options.transacting] Transaction to run the count query on
      */
-    async errorIfWouldGoOverLimit({max, addedCount = 1} = {}) {
-        let currentCount = await this.currentCountQuery();
+    async errorIfWouldGoOverLimit(options = {}) {
+        const {max, addedCount = 1} = options;
+        let currentCount = await this.currentCountQuery(options);
 
         if ((currentCount + addedCount) > (max || this.maxPeriodic)) {
             throw this.generateError(currentCount);
@@ -228,9 +243,11 @@ class MaxPeriodicLimit extends Limit {
      *
      * @param {Object} options
      * @param {Number} [options.max] - overrides configured default maxPeriodic value to perform checks against
+     * @param {Object} [options.transacting] Transaction to run the count query on
      */
-    async errorIfIsOverLimit({max} = {}) {
-        let currentCount = await this.currentCountQuery();
+    async errorIfIsOverLimit(options = {}) {
+        const {max} = options;
+        let currentCount = await this.currentCountQuery(options);
 
         if (currentCount > (max || this.maxPeriodic)) {
             throw this.generateError(currentCount);
