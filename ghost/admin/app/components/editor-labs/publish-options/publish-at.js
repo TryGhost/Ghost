@@ -17,8 +17,15 @@ export default class PublishAtOption extends Component {
     }
 
     @action
-    setTime(time) {
+    setTime(time, event) {
+        const newDate = moment.utc(this.args.publishOptions.scheduledAtUTC);
+
+        // used to reset the time value on blur if it's invalid
+        // TODO: handle this in the picker component instead
+        const oldTime = newDate.tz(this.settings.get('timezone')).format('HH:mm');
+
         if (!time) {
+            event.target.value = oldTime;
             return;
         }
 
@@ -27,12 +34,14 @@ export default class PublishAtOption extends Component {
         }
 
         if (!time.match(/^\d\d:\d\d$/)) {
+            event.target.value = oldTime;
             return;
         }
 
         const [hour, minute] = time.split(':').map(n => parseInt(n, 10));
 
         if (isNaN(hour) || hour < 0 || hour > 23 || isNaN(minute) || minute < 0 || minute > 59) {
+            event.target.value = oldTime;
             return;
         }
 
@@ -42,7 +51,6 @@ export default class PublishAtOption extends Component {
         conversionDate.set({hour, minute});
         const utcDate = moment.utc(conversionDate);
 
-        const newDate = moment.utc(this.args.publishOptions.scheduledAtUTC);
         newDate.set({hour: utcDate.get('hour'), minute: utcDate.get('minute')});
 
         this.args.publishOptions.setScheduledAt(newDate);
