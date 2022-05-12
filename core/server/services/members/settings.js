@@ -69,7 +69,7 @@ function createSettingsInstance(config) {
         getSubject
     });
 
-    const sendEmailAddressUpdateMagicLink = ({email, type = 'fromAddressUpdate'}) => {
+    const sendEmailAddressUpdateMagicLink = ({email, type = 'supportAddressUpdate'}) => {
         const [,toDomain] = email.split('@');
         let fromEmail = `noreply@${toDomain}`;
         if (fromEmail === email) {
@@ -99,9 +99,7 @@ function createSettingsInstance(config) {
 
     const getAdminRedirectLink = ({type}) => {
         const adminUrl = urlUtils.urlFor('admin', true);
-        if (type === 'fromAddressUpdate') {
-            return urlUtils.urlJoin(adminUrl, `#/settings/members-email/?${type}=success`);
-        } else if (type === 'supportAddressUpdate') {
+        if (type === 'supportAddressUpdate') {
             return urlUtils.urlJoin(adminUrl, `#/settings/members/?${type}=success`);
         } else {
             return urlUtils.urlJoin(adminUrl, `#/site/`);
