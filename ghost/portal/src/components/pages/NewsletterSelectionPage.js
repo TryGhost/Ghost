@@ -64,7 +64,7 @@ function NewsletterPrefs({subscribedNewsletters, setSubscribedNewsletters}) {
     });
 }
 
-export default function NewsletterSelectionPage({pageData}) {
+export default function NewsletterSelectionPage({pageData, onBack}) {
     const {brandColor, site, onAction, action} = useContext(AppContext);
     const siteNewsletters = getSiteNewsletters({site});
     const defaultNewsletters = siteNewsletters.filter((d) => {
@@ -122,11 +122,7 @@ export default function NewsletterSelectionPage({pageData}) {
                         <button
                             className='gh-portal-btn gh-portal-btn-link gh-portal-btn-different-plan'
                             onClick = {() => {
-                                if (this.props.onBack) {
-                                    this.props.onBack();
-                                } else {
-                                    this.context.onAction('closePopup');
-                                }
+                                onBack();
                             }}>
                             <span>Choose a different plan</span>
                         </button>

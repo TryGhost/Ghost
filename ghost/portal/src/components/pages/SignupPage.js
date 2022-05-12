@@ -476,9 +476,6 @@ class SignupPage extends React.Component {
             return (
                 <NewsletterSelectionPage
                     pageData={this.state.pageData}
-                    onSubmit={() => {
-                        // Handle submit
-                    }}
                     onBack={() => {
                         this.setState({
                             showNewsletterSelection: false
