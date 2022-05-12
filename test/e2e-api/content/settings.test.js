@@ -1,6 +1,10 @@
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyEtag} = matchers;
 
+const settingsMatcher = {
+    version: matchers.anyString
+};
+
 describe('Settings Content API', function () {
     let agent;
 
@@ -16,6 +20,8 @@ describe('Settings Content API', function () {
             .matchHeaderSnapshot({
                 etag: anyEtag
             })
-            .matchBodySnapshot();
+            .matchBodySnapshot({
+                settings: settingsMatcher
+            });
     });
 });
