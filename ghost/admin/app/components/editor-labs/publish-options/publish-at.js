@@ -1,8 +1,11 @@
 import Component from '@glimmer/component';
 import moment from 'moment';
 import {action} from '@ember/object';
+import {inject as service} from '@ember/service';
 
 export default class PublishAtOption extends Component {
+    @service settings;
+
     @action
     setDate(selectedDate) {
         const newDate = moment(this.args.publishOptions.scheduledAtUTC);
@@ -35,7 +38,7 @@ export default class PublishAtOption extends Component {
 
         // hour/minute will be the site timezone equivalent but we need the hour/minute
         // as it would be in UTC
-        const conversionDate = moment();
+        const conversionDate = moment().tz(this.settings.get('timezone'));
         conversionDate.set({hour, minute});
         const utcDate = moment.utc(conversionDate);
 
