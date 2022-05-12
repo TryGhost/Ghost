@@ -12,17 +12,6 @@ function addRootDiv() {
     document.body.appendChild(elem);
 }
 
-function getSiteUrl() {
-    /**
-     * @type {HTMLElement}
-     */
-    const scriptTag = document.querySelector('script[data-ghost]');
-    if (scriptTag) {
-        return scriptTag.dataset.ghost;
-    }
-    return '';
-}
-
 function getSiteData() {
     /**
      * @type {HTMLElement}
