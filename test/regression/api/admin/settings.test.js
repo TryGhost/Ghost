@@ -285,11 +285,6 @@ const defaultSettingsKeyTypes = [
         group: 'amp'
     },
     {
-        key: 'slack',
-        type: 'string',
-        group: 'slack'
-    },
-    {
         key: 'slack_url',
         type: 'string',
         group: 'slack'
@@ -645,19 +640,13 @@ describe('Settings API (canary)', function () {
             headers['x-cache-invalidate'].should.eql('/*');
             should.exist(putBody);
 
-            putBody.settings.length.should.equal(3);
+            putBody.settings.length.should.equal(2);
 
             putBody.settings[0].key.should.eql('unsplash');
             should.equal(putBody.settings[0].value, true);
 
             putBody.settings[1].key.should.eql('title');
             should.equal(putBody.settings[1].value, 'New Value');
-
-            putBody.settings[2].key.should.eql('slack');
-            should.equal(putBody.settings[2].value, JSON.stringify([{
-                url: 'https://newurl.tld/slack',
-                username: 'New Slack Username'
-            }]));
 
             localUtils.API.checkResponse(putBody, 'settings');
         });
