@@ -191,7 +191,7 @@ class NewslettersService {
 
         const {cleanedAttrs, emailsToVerify} = await this.prepAttrsForEmailVerification(attrs, originalNewsletter);
 
-        if (originalNewsletter.status !== 'active' && cleanedAttrs.status === 'active') {
+        if (originalNewsletter.get('status') !== 'active' && cleanedAttrs.status === 'active') {
             await this.limitService.errorIfWouldGoOverLimit('newsletters', sharedOptions);
         }
 
