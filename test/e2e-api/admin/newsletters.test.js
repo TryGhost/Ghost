@@ -474,6 +474,30 @@ describe('Newsletters API', function () {
                         location: anyLocationFor('newsletters')
                     });
             });
+
+            it('Editing an active newsletter doesn\'t fail', async function () {
+                const allNewsletters = await models.Newsletter.findAll();
+                const newsletterCount = allNewsletters.filter(n => n.get('status') === 'active').length;
+                assert.equal(newsletterCount, 3, 'This test expects to have 3 current active newsletters');
+    
+                const activeNewsletter = allNewsletters.find(n => n.get('status') !== 'active');
+                assert.ok(activeNewsletter, 'This test expects to have an active newsletter in the test fixtures');
+    
+                const id = activeNewsletter.id;
+                await agent.put(`newsletters/${id}`)
+                    .body({
+                        newsletters: [{
+                            name: 'Updated active newsletter name'
+                        }]
+                    })
+                    .expectStatus(200)
+                    .matchBodySnapshot({
+                        newsletters: [newsletterSnapshot]
+                    })
+                    .matchHeaderSnapshot({
+                        etag: anyEtag
+                    });
+            });
     
             it('Editing an archived newsletter doesn\'t fail', async function () {
                 const allNewsletters = await models.Newsletter.findAll();
