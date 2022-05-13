@@ -45,7 +45,7 @@
                                     {{if (eq @recipientType "all") "All"}}
                                 {{/if}}
 
-                                {{countFetcher.count}}
+                                {{format-number countFetcher.count}}
 
                                 {{!-- @recipientType = none/free/paid/all/specific --}}
                                 {{if (not-eq @recipientType "all") @recipientType}}
