@@ -146,6 +146,7 @@ describe('MEGA', function () {
 
             const emailModel = {
                 get: sinon.stub().returns('none'),
+                relations: {},
                 related: sinon.stub().returns({
                     fetch: sinon.stub().returns({
                         id: 'test',

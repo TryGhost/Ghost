@@ -53,8 +53,9 @@ const getReplyToAddress = (fromAddress, replyAddressOption) => {
  * @param {Object} options
  */
 const getEmailData = async (postModel, options) => {
-    let newsletter = await postModel.related('newsletter').fetch();
+    let newsletter = postModel.relations.newsletter ?? await postModel.related('newsletter').fetch();
     if (!newsletter) {
+        // The postModel doesn't have a newsletter in test emails
         newsletter = await models.Newsletter.getDefaultNewsletter();
     }
     const {subject, html, plaintext} = await postEmailSerializer.serialize(postModel, newsletter, options);
@@ -197,9 +198,7 @@ const addEmail = async (postModel, options) => {
     const filterOptions = {...knexOptions, limit: 1};
 
     // TODO: this is a hack for https://github.com/TryGhost/Team/issues/1626
-    delete postModel.relations.newsletter;
-
-    const newsletter = await postModel.related('newsletter').fetch({require: true, ..._.pick(options, ['transacting'])});
+    const newsletter = postModel.relations.newsletter ?? await postModel.related('newsletter').fetch({require: true, ..._.pick(options, ['transacting'])});
 
     if (newsletter.get('status') !== 'active') {
         // A post might have been scheduled to an archived newsletter.
@@ -417,7 +416,7 @@ async function getEmailMemberRows({emailModel, memberSegment, options}) {
     const knexOptions = _.pick(options, ['transacting', 'forUpdate']);
     const filterOptions = Object.assign({}, knexOptions);
 
-    const newsletter = await emailModel.related('newsletter').fetch(Object.assign({}, {require: true}, _.pick(options, ['transacting'])));
+    const newsletter = emailModel.relations.newsletter ?? await emailModel.related('newsletter').fetch(Object.assign({}, {require: true}, _.pick(options, ['transacting'])));
     const recipientFilter = transformEmailRecipientFilter(newsletter, emailModel.get('recipient_filter'), 'recipient_filter');
     filterOptions.filter = recipientFilter;
 
