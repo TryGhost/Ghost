@@ -77,16 +77,11 @@ Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": null,
       "custom_template": null,
-      "excerpt": "Unlike posts, pages in Ghost don't appear in the main feed. They're separate,
-individual pages which only show up when you link to them. Great for content
-which is important, but separate from your usual posts.
+      "excerpt": "Unlike posts, pages in Ghost don't appear in the main feed. They're separate, individual pages which only show up when you link to them. Great for content which is important, but separate from your usual posts.
 
-An about page is a great example of one you might want to set up early on so
-people can find out more about you, and what you do. Why should people subscribe
-to your site and become a member? Details help!
+An about page is a great example of one you might want to set up early on so people can find out more about you, and what you do. Why should people subscribe to your site and become a member? Details help!
 
-> Tip: If you're reading any post or page on your site and you notice something
-y",
+> Tip: If you're reading any post or page on your site and you notice something y",
       "feature_image": null,
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -121,17 +116,14 @@ y",
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": null,
       "custom_template": null,
-      "excerpt": "If you want to set up a contact page for people to be able to reach out to you,
-the simplest way is to set up a simple page like this and list the different
-ways people can reach out to you.
+      "excerpt": "If you want to set up a contact page for people to be able to reach out to you, the simplest way is to set up a simple page like this and list the different ways people can reach out to you.
 
 For example, here's how to reach us!
  * @Ghost [https://twitter.com/ghost] on Twitter
  * @Ghost [https://www.facebook.com/ghost] on Facebook
  * @Ghost [https://instagram.com/ghost] on Instagram
 
-If you prefer to use a contact form, almost all of the great embedded form
-services work great with Ghost and are",
+If you prefer to use a contact form, almost all of the great embedded form services work great with Ghost and are",
       "feature_image": null,
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -166,13 +158,9 @@ services work great with Ghost and are",
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": null,
       "custom_template": null,
-      "excerpt": "Oh hey, you clicked every link of our starter content and even clicked this
-small link in the footer! If you like Ghost and you're enjoying the product so
-far, we'd hugely appreciate your support in any way you care to show it.
+      "excerpt": "Oh hey, you clicked every link of our starter content and even clicked this small link in the footer! If you like Ghost and you're enjoying the product so far, we'd hugely appreciate your support in any way you care to show it.
 
-Ghost is a non-profit organization, and we give away all our intellectual
-property as open source software. If you believe in what we do, there are a
-number of ways you can give us a hand, and we hugely appreciate all of them:
+Ghost is a non-profit organization, and we give away all our intellectual property as open source software. If you believe in what we do, there are a number of ways you can give us a hand, and we hugely appreciate all of them:
 
  * Contribute code via GitHub [https://gith",
       "feature_image": null,
@@ -209,12 +197,9 @@ number of ways you can give us a hand, and we hugely appreciate all of them:
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": null,
       "custom_template": null,
-      "excerpt": "Wondering how Ghost fares when it comes to privacy and GDPR rules? Good news:
-Ghost does not use any tracking cookies of any kind.
+      "excerpt": "Wondering how Ghost fares when it comes to privacy and GDPR rules? Good news: Ghost does not use any tracking cookies of any kind.
 
-You can integrate any products, services, ads or integrations with Ghost
-yourself if you want to, but it's always a good idea to disclose how subscriber
-data will be used by putting together a privacy page.",
+You can integrate any products, services, ads or integrations with Ghost yourself if you want to, but it's always a good idea to disclose how subscriber data will be used by putting together a privacy page.",
       "feature_image": null,
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -284,7 +269,7 @@ exports[`Pages Content API Can request pages 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "9207",
+  "content-length": "9192",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
