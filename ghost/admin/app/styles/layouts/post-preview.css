@@ -175,11 +175,11 @@
 /* Email preview */
 .gh-post-preview-email-container {
     position: relative;
-    height: calc(100vh - 135px);
+    height: calc(100vh - 94px);
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: var(--whitegrey-l1);
+    background: var(--white);
     padding: 30px 30px 40px;
     overflow: auto;
 }
@@ -211,9 +211,13 @@
     width: 100%;
 }
 
+.gh-post-preview-email-test {
+    display: flex;
+    width: 740px;
+}
+
 .gh-post-preview-email-input {
     width: 100%;
-    max-width: 280px;
 }
 
 .gh-post-preview-email-input {
@@ -239,13 +243,10 @@
     justify-content: center;
     flex-wrap: wrap;
     width: 100%;
-    height: 100%;
-    overflow-y: scroll;
-    padding: 3.2rem;
-    overflow-y: scroll;
-    background: var(--whitegrey-l1);
-    border-bottom-left-radius: 3px;
-    border-bottom-right-radius: 3px;
+    height: calc(100vh - 94px);
+    padding: 1rem 3.2rem 3rem;
+    background: var(--white);
+    overflow-y: auto;
 }
 
 .gh-post-preview-social-container:after {
@@ -276,9 +277,9 @@
 .gh-social-og-container {
     width: 476px;
     margin-bottom: 2.4rem;
-    border: 1px solid #e5e5e5;
+    border: 1px solid var(--whitegrey-d1);
     background: #fff;
-    border-radius: 3px;
+    border-radius: var(--border-radius);
 }
 
 @media (min-width: 1120px) {
@@ -440,8 +441,9 @@
 .gh-social-twitter-container {
     width: 591px;
     margin-bottom: 2.4rem;
-    border: 1px solid #ebeef0;
+    border: 1px solid var(--whitegrey-d1);
     background: #fff;
+    border-radius: var(--border-radius);
 }
 
 @media (min-width: 1120px) {
@@ -595,9 +597,10 @@
     width: 100%;
     max-width: 1091px;
     padding: 20px 30px;
-    border: 1px solid var(--whitegrey);
+    border: 1px solid var(--whitegrey-d1);
     font-family: Arial, sans-serif;
     background: #fff;
+    border-radius: var(--border-radius);
 }
 
 .gh-seo-preview-container svg {
