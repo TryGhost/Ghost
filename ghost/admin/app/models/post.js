@@ -160,8 +160,9 @@ export default Model.extend(Comparable, ValidationEngine, {
     hasEmail: computed('email', 'emailOnly', function () {
         return this.email !== null || this.emailOnly;
     }),
-    willEmail: computed('emailRecipientFilter', function () {
-        return this.emailRecipientFilter !== null;
+
+    willEmail: computed('emailRecipientFilter', 'email', function () {
+        return this.emailRecipientFilter !== null && !this.email;
     }),
 
     previewUrl: computed('uuid', 'ghostPaths.url', 'config.blogUrl', function () {
