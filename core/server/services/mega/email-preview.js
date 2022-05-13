@@ -4,16 +4,22 @@ const models = require('../../models');
 class EmailPreview {
     /**
      * @param {Object} post - Post model object instance
-     * @param {String} memberSegment - member segment filter
+     * @param {Object} options
+     * @param {String} options.newsletter - newsletter slug
+     * @param {String} options.memberSegment - member segment filter
      * @returns {Promise<Object>}
      */
-    async generateEmailContent(post, memberSegment) {
-        let newsletter = await post.related('newsletter').fetch();
-        if (!newsletter) {
-            newsletter = await models.Newsletter.getDefaultNewsletter();
+    async generateEmailContent(post, {newsletter, memberSegment} = {}) {
+        let newsletterModel = await post.related('newsletter').fetch();
+        if (!newsletterModel) {
+            if (newsletter) {
+                newsletterModel = await models.Newsletter.findOne({slug: newsletter});
+            } else {
+                newsletterModel = await models.Newsletter.getDefaultNewsletter();
+            }
         }
 
-        let emailContent = await postEmailSerializer.serialize(post, newsletter, {
+        let emailContent = await postEmailSerializer.serialize(post, newsletterModel, {
             isBrowserPreview: true
         });
 
