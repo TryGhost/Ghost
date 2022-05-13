@@ -149,8 +149,8 @@
     flex-direction: column;
     flex-grow: 1;
     align-items: center;
-    background: var(--whitegrey-l1);
-    padding: 30px 30px 45px;
+    background: var(--white);
+    padding: 8vmin 30px 30px;
     height: calc(100vh - 119px);
     border-bottom-left-radius: 5px;
     border-bottom-right-radius: 5px;

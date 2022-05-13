@@ -40,19 +40,19 @@
         <GhLoadingSpinner />
     {{else}}
         {{#if (eq this.tab "browser")}}
-            <Modals::PostPreview::Browser @post={{@data.post}} />
+            <EditorLabs::Modals::Preview::Browser @post={{@data.post}} />
         {{/if}}
 
         {{#if (and (eq this.tab "mobile"))}}
-            <Modals::PostPreview::Mobile @post={{@data.post}} />
+            <EditorLabs::Modals::Preview::Mobile @post={{@data.post}} />
         {{/if}}
 
         {{#if (and (eq this.tab "email") @data.post.isPost)}}
-            <Modals::PostPreview::Email @post={{@data.post}} />
+            <EditorLabs::Modals::Preview::Email @post={{@data.post}} />
         {{/if}}
 
         {{#if (eq this.tab "social")}}
-            <Modals::PostPreview::Social @post={{@data.post}} />
+            <EditorLabs::Modals::Preview::Social @post={{@data.post}} />
         {{/if}}
     {{/if}}
 </div>
