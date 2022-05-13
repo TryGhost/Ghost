@@ -2,7 +2,6 @@ const _ = require('lodash');
 const logging = require('@tryghost/logging');
 const membersService = require('./service');
 const models = require('../../models');
-const offersService = require('../offers/service');
 const urlUtils = require('../../../shared/url-utils');
 const {formattedMemberResponse} = require('./utils');
 
@@ -54,14 +53,6 @@ const getMemberData = async function (req, res) {
         res.writeHead(204);
         res.end();
     }
-};
-
-const getOfferData = async function (req, res) {
-    const offerId = req.params.id;
-    const offer = await offersService.api.getOffer({id: offerId});
-    return res.json({
-        offers: [offer]
-    });
 };
 
 const getMemberNewsletters = async function (req, res) {
@@ -210,7 +201,6 @@ module.exports = {
     getIdentityToken,
     getMemberNewsletters,
     getMemberData,
-    getOfferData,
     updateMemberData,
     updateMemberNewsletters,
     deleteSession
