@@ -65,7 +65,7 @@ module.exports = createTransactionalMigration(
                     continue;
                 }
 
-                const plaintext = htmlToPlaintext(html);
+                const plaintext = htmlToPlaintext.excerpt(html);
 
                 await knex('posts')
                     .transacting(trx)
