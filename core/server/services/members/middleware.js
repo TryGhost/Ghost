@@ -4,9 +4,7 @@ const membersService = require('./service');
 const models = require('../../models');
 const offersService = require('../offers/service');
 const urlUtils = require('../../../shared/url-utils');
-const settingsCache = require('../../../shared/settings-cache');
 const {formattedMemberResponse} = require('./utils');
-const labsService = require('../../../shared/labs');
 
 // @TODO: This piece of middleware actually belongs to the frontend, not to the member app
 // Need to figure a way to separate these things (e.g. frontend actually talks to members API)
