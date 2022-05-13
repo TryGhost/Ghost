@@ -1478,10 +1478,10 @@
   dependencies:
     "@tryghost/errors" "^1.2.1"
 
-"@tryghost/admin-api-schema@3.2.1":
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-3.2.1.tgz#ee2fc119e99211ffcec251bb83af4a33425b19cc"
-  integrity sha512-31bJQkqBuTlWCbis0JwZ/IoCmzSEJd0+hyDoBAqESvJBrtCuOxcfW/subrP/XHg+zXnf6Vz8CQQLJWMY7iPynw==
+"@tryghost/admin-api-schema@3.2.2":
+  version "3.2.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-3.2.2.tgz#298e773def9718145011dc8f8b3deddf14767625"
+  integrity sha512-IutclDY2P3e8ydOaKLR2WAHVRKEwQksyoXbRpsrjw9RMQNKYgyRKvTvKgS1j3tz6lvN9mEwRN+2om+gK8QNfBQ==
   dependencies:
     "@tryghost/errors" "^1.0.0"
     lodash "^4.17.11"
