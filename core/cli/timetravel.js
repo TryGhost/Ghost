@@ -18,6 +18,13 @@ module.exports = class TimeTravel extends Command {
                 .days
         );
 
+        this.info(`Timetravel will use an offset of +${dateOffset} days`);
+        this.warn('This is a destructive command that will modify your database.');
+        if (!this.confirm('Are you sure you want to continue?')) {
+            this.warn('Aborting');
+            process.exit(1);
+        }
+
         // map schema to {table: [dateTimeColumn,...]}
         const dateTimeFields = _.pickBy(
             _.mapValues(schema.tables, (table) => {

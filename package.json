@@ -216,6 +216,7 @@
     "nock": "13.2.4",
     "papaparse": "5.3.2",
     "postcss": "8.4.13",
+    "prompt-sync": "^4.2.0",
     "rewire": "6.0.0",
     "should": "13.2.3",
     "sinon": "14.0.0",
