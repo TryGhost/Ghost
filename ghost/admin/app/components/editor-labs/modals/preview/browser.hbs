@@ -1,23 +1,30 @@
-<div class="gh-post-preview-browser-container">
-    <iframe class="gh-pe-iframe" src={{@post.previewUrl}}></iframe>
-</div>
-<div class="gh-post-preview-browser-footer">
-    <span class="mr3 nowrap fw6 f8 darkgrey">Share preview privately</span>
-    <div class="gh-post-preview-url-container truncate">
-        <span class="db truncate w-90">{{@post.previewUrl}}</span>
+<div class="gh-browserpreview-previewcontainer gh-post-preview-browser">
+    <div class="gh-browserpreview-browser">
+        <div class="tabs">
+            <ul><li></li><li></li><li></li></ul>
+            <div>
+                {{#if (or @icon this.settings.icon)}}
+                    <span class="favicon"><img src={{or @icon this.settings.icon}} alt="icon"></span>
+                {{else}}
+                    <span class="favicon default">{{svg-jar "default-favicon"}}</span>
+                {{/if}}
+                <span class="db truncate w-90">{{@post.previewUrl}}</span>
+                <button type="button" {{on "click" (perform this.copyPreviewUrl)}} class="gh-post-preview-url">
+                    <span class="green-d1">
+                        {{#if this.copyPreviewUrl.isRunning}}
+                            {{svg-jar "check-circle" class="check v-mid mr1 ml2"}} Copied
+                        {{else}}
+                            {{svg-jar "copy" class="w4 ml3 v-mid fill-darkgrey"}}
+                        {{/if}}
+                    </span>
+                </button>
+                <a href={{@post.previewUrl}} target="_blank" rel="noopener noreferrer" class="gh-publish-preview-newtab">
+                    {{svg-jar "external"}}
+                </a>
+            </div>
+        </div>
     </div>
-    <button type="button" {{on "click" (perform this.copyPreviewUrl)}} class="gh-btn gh-btn-green gh-btn-icon gh-post-preview-copy-url-trigger">
-        <span>
-            {{#if this.copyPreviewUrl.isRunning}}
-                Copied!
-            {{else}}
-                copy
-            {{/if}}
-        </span>
-    </button>
-    <div>
-        <a href={{@post.previewUrl}} target="_blank" rel="noopener noreferrer" class="gh-btn gh-btn-editor gh-btn-icon gh-btn-icon-right gh-btn-external">
-            <span>Open in new tab {{svg-jar "external"}}</span>
-        </a>
+    <div class="gh-browserpreview-iframecontainer">
+        <iframe class="gh-pe-iframe" src={{@post.previewUrl}}></iframe>
     </div>
 </div>
