@@ -606,10 +606,6 @@
     line-height: 1.35em;
 }
 
-.gh-publish-setting-trigger:first-letter {
-    text-transform: capitalize;
-}
-
 .gh-publish-setting-trigger .gh-selected-newsletter {
     font-weight: 600;
 }
