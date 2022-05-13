@@ -59,17 +59,6 @@ describe('Settings API', function () {
             });
     });
 
-    it('Can read a setting', async function () {
-        await agent.get('settings/codeinjection_head/')
-            .expectStatus(200)
-            .matchBodySnapshot({
-                settings: [settingsMatcher]
-            })
-            .matchHeaderSnapshot({
-                etag: anyEtag
-            });
-    });
-
     it('Can edit a setting', async function () {
         const settingsToChange = [
             {
