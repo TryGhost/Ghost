@@ -76,11 +76,11 @@
                                 {{#if (feature "multipleNewslettersUI")}}
                                     <div class="gh-newsletter-card-block stats-block {{unless this.displayingDefault "multiple"}}">
                                         <div>
-                                            <h3 class="gh-newsletter-card-name">{{newsletter.count.members}}</h3>
+                                            <h3 class="gh-newsletter-card-name">{{format-number newsletter.count.members}}</h3>
                                             <p class="gh-newsletter-card-description">Subscribers</p>
                                         </div>
                                         <div>
-                                            <h3 class="gh-newsletter-card-name">{{newsletter.count.posts}}</h3>
+                                            <h3 class="gh-newsletter-card-name">{{format-number newsletter.count.posts}}</h3>
                                             <p class="gh-newsletter-card-description">Posts sent</p>
                                         </div>
                                     </div>
