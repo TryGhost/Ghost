@@ -155,16 +155,6 @@ const defaultSettingsKeyTypes = [
         group: 'members'
     },
     {
-        key: 'members_free_price_name',
-        type: 'string',
-        group: 'members'
-    },
-    {
-        key: 'members_free_price_description',
-        type: 'string',
-        group: 'members'
-    },
-    {
         key: 'members_monthly_price_id',
         type: 'string',
         group: 'members'

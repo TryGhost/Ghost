@@ -288,14 +288,6 @@
             "defaultValue": null,
             "type": "string"
         },
-        "members_free_price_name": {
-            "defaultValue": "Free",
-            "type": "string"
-        },
-        "members_free_price_description": {
-            "defaultValue": "Free preview",
-            "type": "string"
-        },
         "members_monthly_price_id": {
             "defaultValue": null,
             "type": "string"
