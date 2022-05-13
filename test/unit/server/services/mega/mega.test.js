@@ -16,6 +16,7 @@ describe('MEGA', function () {
         it('throws when "none" is used as a email_recipient_filter', async function () {
             const postModel = {
                 get: sinon.stub().returns('none'),
+                relations: {},
                 related: sinon.stub().returns({
                     fetch: sinon.stub().returns({
                         get: sinon.stub().returns('active')
@@ -35,6 +36,7 @@ describe('MEGA', function () {
         it('throws when sending to an archived newsletter', async function () {
             const postModel = {
                 get: sinon.stub().returns('all'),
+                relations: {},
                 related: sinon.stub().returns({
                     fetch: sinon.stub().returns({
                         get: sinon.stub().returns('archived')
@@ -59,6 +61,7 @@ describe('MEGA', function () {
 
             const postModel = {
                 get: sinon.stub().returns('status:free'),
+                relations: {},
                 related: sinon.stub().returns({
                     fetch: sinon.stub().returns({
                         get: newsletterGetter

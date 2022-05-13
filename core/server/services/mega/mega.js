@@ -196,6 +196,9 @@ const addEmail = async (postModel, options) => {
     const knexOptions = _.pick(options, ['transacting', 'forUpdate']);
     const filterOptions = {...knexOptions, limit: 1};
 
+    // TODO: this is a hack for https://github.com/TryGhost/Team/issues/1626
+    delete postModel.relations.newsletter;
+
     const newsletter = await postModel.related('newsletter').fetch({require: true, ..._.pick(options, ['transacting'])});
 
     if (newsletter.get('status') !== 'active') {

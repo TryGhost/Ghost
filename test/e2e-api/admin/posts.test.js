@@ -757,6 +757,70 @@ describe('Posts API', function () {
         should(email.get('status')).eql('pending');
     });
 
+    it('Can publish an email_only post with free filter', async function () {
+        const newsletterId = testUtils.DataGenerator.Content.newsletters[1].id;
+
+        const post = {
+            title: 'My post',
+            status: 'draft',
+            feature_image_alt: 'Testing newsletter in posts',
+            feature_image_caption: 'Testing <b>feature image caption</b>',
+            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+            created_at: moment().subtract(2, 'days').toDate(),
+            updated_at: moment().subtract(2, 'days').toDate(),
+            created_by: ObjectId().toHexString(),
+            updated_by: ObjectId().toHexString()
+        };
+
+        const res = await request.post(localUtils.API.getApiQuery('posts'))
+            .set('Origin', config.get('url'))
+            .send({posts: [post]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201);
+
+        const id = res.body.posts[0].id;
+
+        const updatedPost = res.body.posts[0];
+
+        updatedPost.status = 'published';
+        //updatedPost.published_at = moment().add(2, 'days').toDate();
+        updatedPost.email_only = true;
+
+        const publishedRes = await request
+            .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterId + '&email_segment=status%3Afree'))
+            .set('Origin', config.get('url'))
+            .send({posts: [updatedPost]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        const publishedPost = publishedRes.body.posts[0];
+
+        publishedPost.newsletter.id.should.eql(newsletterId);
+        publishedPost.email_segment.should.eql('status:free');
+        publishedPost.status.should.eql('sent');
+        should.not.exist(publishedPost.newsletter_id);
+
+        let model = await models.Post.findOne({
+            id,
+            status: 'all'
+        }, testUtils.context.internal);
+
+        should(model.get('status')).eql('sent');
+        should(model.get('newsletter_id')).eql(newsletterId);
+        should(model.get('email_recipient_filter')).eql('status:free');
+
+        // We should have an email
+        const email = await models.Email.findOne({
+            post_id: id
+        }, testUtils.context.internal);
+
+        should(email.get('newsletter_id')).eql(newsletterId);
+        should(email.get('recipient_filter')).eql('status:free');
+        should(email.get('status')).eql('pending');
+    });
+
     it('Can publish a scheduled post', async function () {
         const newsletterId = testUtils.DataGenerator.Content.newsletters[1].id;
 
