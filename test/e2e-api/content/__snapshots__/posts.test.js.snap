@@ -260,9 +260,9 @@ Object {
       "custom_template": null,
       "email_subject": null,
       "excerpt": " * Lorem
- * Aliquam [http://127.0.0.1:2369/about#nowhere]
- * Tortor [//somewhere.com/link#nowhere]
- * Morbi [http://somewhere.com/link#nowhere]
+ * Aliquam
+ * Tortor
+ * Morbi
  * Praesent
  * Pellentesque
 
@@ -270,7 +270,7 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
 
 1234abcdefghijkl
 
-Definition listConsectetur ad",
+Definition listConsectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim venia",
       "feature_image": null,
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -619,9 +619,11 @@ Definition listConsectetur ad",
       "email_subject": null,
       "excerpt": "For creators and aspiring entrepreneurs looking to generate a sustainable recurring revenue stream from their creative work, Ghost has built-in payments allowing you to create a subscription commerce business.
 
-Connect your Stripe [https://stripe.com] account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
+Connect your Stripe account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
 
-Ghost takes 0% payment fees, so everything you make is yours to ",
+Ghost takes 0% payment fees, so everything you make is yours to keep!
+
+Using subscrip",
       "feature_image": "https://static.ghost.org/v4.0.0/images/organizing-your-content.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -636,15 +638,13 @@ Ghost takes 0% payment fees, so everything you make is yours to ",
       "og_title": null,
       "plaintext": "For creators and aspiring entrepreneurs looking to generate a sustainable recurring revenue stream from their creative work, Ghost has built-in payments allowing you to create a subscription commerce business.
 
-Connect your Stripe [https://stripe.com] account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
+Connect your Stripe account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
 
 Ghost takes 0% payment fees, so everything you make is yours to keep!
 
-Using subscriptions, you can build an independent media business like Stratechery [https://stratechery.com], The Information [https://www.theinformation.com], or The Browser [https://thebrowser.com].
+Using subscriptions, you can build an independent media business like Stratechery, The Information, or The Browser.
 
 The creator economy is just getting started, and Ghost allows you to build something based on technology that you own and control.
-
-https://thebrowser.comThe Browser has over 10,000 paying subscribers
 
 Most successful subscription businesses publish a mix of free and paid posts to attract a new audience, and upsell the most loyal members to a premium offering. You can also mix different access levels within the same post, showing a free preview to logged out members and then, right when you're ready for a cliffhanger, that's a good time to...",
       "primary_author": Object {
@@ -1036,7 +1036,7 @@ exports[`Posts Content API Can filter posts by authors 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "54894",
+  "content-length": "54719",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -1068,9 +1068,9 @@ Object {
       "custom_template": null,
       "email_subject": null,
       "excerpt": " * Lorem
- * Aliquam [http://127.0.0.1:2369/about#nowhere]
- * Tortor [//somewhere.com/link#nowhere]
- * Morbi [http://somewhere.com/link#nowhere]
+ * Aliquam
+ * Tortor
+ * Morbi
  * Praesent
  * Pellentesque
 
@@ -1078,7 +1078,7 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
 
 1234abcdefghijkl
 
-Definition listConsectetur ad",
+Definition listConsectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim venia",
       "feature_image": null,
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -1748,9 +1748,11 @@ Object {
       "email_subject": null,
       "excerpt": "For creators and aspiring entrepreneurs looking to generate a sustainable recurring revenue stream from their creative work, Ghost has built-in payments allowing you to create a subscription commerce business.
 
-Connect your Stripe [https://stripe.com] account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
+Connect your Stripe account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
 
-Ghost takes 0% payment fees, so everything you make is yours to ",
+Ghost takes 0% payment fees, so everything you make is yours to keep!
+
+Using subscrip",
       "feature_image": "https://static.ghost.org/v4.0.0/images/organizing-your-content.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -1765,15 +1767,13 @@ Ghost takes 0% payment fees, so everything you make is yours to ",
       "og_title": null,
       "plaintext": "For creators and aspiring entrepreneurs looking to generate a sustainable recurring revenue stream from their creative work, Ghost has built-in payments allowing you to create a subscription commerce business.
 
-Connect your Stripe [https://stripe.com] account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
+Connect your Stripe account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
 
 Ghost takes 0% payment fees, so everything you make is yours to keep!
 
-Using subscriptions, you can build an independent media business like Stratechery [https://stratechery.com], The Information [https://www.theinformation.com], or The Browser [https://thebrowser.com].
+Using subscriptions, you can build an independent media business like Stratechery, The Information, or The Browser.
 
 The creator economy is just getting started, and Ghost allows you to build something based on technology that you own and control.
-
-https://thebrowser.comThe Browser has over 10,000 paying subscribers
 
 Most successful subscription businesses publish a mix of free and paid posts to attract a new audience, and upsell the most loyal members to a premium offering. You can also mix different access levels within the same post, showing a free preview to logged out members and then, right when you're ready for a cliffhanger, that's a good time to...",
       "primary_author": Object {
@@ -1984,9 +1984,9 @@ Most successful subscription businesses publish a mix of free and paid posts to 
       "custom_template": null,
       "email_subject": null,
       "excerpt": " * Lorem
- * Aliquam [http://127.0.0.1:2369/about#nowhere]
- * Tortor [//somewhere.com/link#nowhere]
- * Morbi [http://somewhere.com/link#nowhere]
+ * Aliquam
+ * Tortor
+ * Morbi
  * Praesent
  * Pellentesque
 
@@ -1994,7 +1994,7 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
 
 1234abcdefghijkl
 
-Definition listConsectetur ad",
+Definition listConsectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim venia",
       "feature_image": null,
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -2281,7 +2281,7 @@ exports[`Posts Content API Can include relations 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "65223",
+  "content-length": "65048",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -2582,9 +2582,11 @@ Object {
       "email_subject": null,
       "excerpt": "For creators and aspiring entrepreneurs looking to generate a sustainable recurring revenue stream from their creative work, Ghost has built-in payments allowing you to create a subscription commerce business.
 
-Connect your Stripe [https://stripe.com] account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
+Connect your Stripe account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
 
-Ghost takes 0% payment fees, so everything you make is yours to ",
+Ghost takes 0% payment fees, so everything you make is yours to keep!
+
+Using subscrip",
       "feature_image": "https://static.ghost.org/v4.0.0/images/organizing-your-content.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -2599,15 +2601,13 @@ Ghost takes 0% payment fees, so everything you make is yours to ",
       "og_title": null,
       "plaintext": "For creators and aspiring entrepreneurs looking to generate a sustainable recurring revenue stream from their creative work, Ghost has built-in payments allowing you to create a subscription commerce business.
 
-Connect your Stripe [https://stripe.com] account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
+Connect your Stripe account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
 
 Ghost takes 0% payment fees, so everything you make is yours to keep!
 
-Using subscriptions, you can build an independent media business like Stratechery [https://stratechery.com], The Information [https://www.theinformation.com], or The Browser [https://thebrowser.com].
+Using subscriptions, you can build an independent media business like Stratechery, The Information, or The Browser.
 
 The creator economy is just getting started, and Ghost allows you to build something based on technology that you own and control.
-
-https://thebrowser.comThe Browser has over 10,000 paying subscribers
 
 Most successful subscription businesses publish a mix of free and paid posts to attract a new audience, and upsell the most loyal members to a premium offering. You can also mix different access levels within the same post, showing a free preview to logged out members and then, right when you're ready for a cliffhanger, that's a good time to...",
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
@@ -2704,9 +2704,9 @@ Most successful subscription businesses publish a mix of free and paid posts to 
       "custom_template": null,
       "email_subject": null,
       "excerpt": " * Lorem
- * Aliquam [http://127.0.0.1:2369/about#nowhere]
- * Tortor [//somewhere.com/link#nowhere]
- * Morbi [http://somewhere.com/link#nowhere]
+ * Aliquam
+ * Tortor
+ * Morbi
  * Praesent
  * Pellentesque
 
@@ -2714,7 +2714,7 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
 
 1234abcdefghijkl
 
-Definition listConsectetur ad",
+Definition listConsectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim venia",
       "feature_image": null,
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -2870,7 +2870,7 @@ exports[`Posts Content API Can request posts 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "46342",
+  "content-length": "46167",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -3055,9 +3055,11 @@ Object {
       "email_subject": null,
       "excerpt": "For creators and aspiring entrepreneurs looking to generate a sustainable recurring revenue stream from their creative work, Ghost has built-in payments allowing you to create a subscription commerce business.
 
-Connect your Stripe [https://stripe.com] account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
+Connect your Stripe account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
 
-Ghost takes 0% payment fees, so everything you make is yours to ",
+Ghost takes 0% payment fees, so everything you make is yours to keep!
+
+Using subscrip",
       "feature_image": "https://static.ghost.org/v4.0.0/images/organizing-your-content.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -3072,15 +3074,13 @@ Ghost takes 0% payment fees, so everything you make is yours to ",
       "og_title": null,
       "plaintext": "For creators and aspiring entrepreneurs looking to generate a sustainable recurring revenue stream from their creative work, Ghost has built-in payments allowing you to create a subscription commerce business.
 
-Connect your Stripe [https://stripe.com] account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
+Connect your Stripe account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
 
 Ghost takes 0% payment fees, so everything you make is yours to keep!
 
-Using subscriptions, you can build an independent media business like Stratechery [https://stratechery.com], The Information [https://www.theinformation.com], or The Browser [https://thebrowser.com].
+Using subscriptions, you can build an independent media business like Stratechery, The Information, or The Browser.
 
 The creator economy is just getting started, and Ghost allows you to build something based on technology that you own and control.
-
-https://thebrowser.comThe Browser has over 10,000 paying subscribers
 
 Most successful subscription businesses publish a mix of free and paid posts to attract a new audience, and upsell the most loyal members to a premium offering. You can also mix different access levels within the same post, showing a free preview to logged out members and then, right when you're ready for a cliffhanger, that's a good time to...",
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
@@ -3177,9 +3177,9 @@ Most successful subscription businesses publish a mix of free and paid posts to 
       "custom_template": null,
       "email_subject": null,
       "excerpt": " * Lorem
- * Aliquam [http://127.0.0.1:2369/about#nowhere]
- * Tortor [//somewhere.com/link#nowhere]
- * Morbi [http://somewhere.com/link#nowhere]
+ * Aliquam
+ * Tortor
+ * Morbi
  * Praesent
  * Pellentesque
 
@@ -3187,7 +3187,7 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
 
 1234abcdefghijkl
 
-Definition listConsectetur ad",
+Definition listConsectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim venia",
       "feature_image": null,
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -3343,7 +3343,7 @@ exports[`Posts Content API Can request posts from different origin 2: [headers] 
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "46342",
+  "content-length": "46167",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",

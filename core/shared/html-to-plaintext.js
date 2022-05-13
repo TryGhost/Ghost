@@ -1,3 +1,13 @@
+const _ = require('lodash');
+
+const mergeSettings = (extraSettings) => {
+    return _.mergeWith({}, baseSettings, extraSettings, function customizer(objValue, srcValue) {
+        if (_.isArray(objValue)) {
+            return objValue.concat(srcValue);
+        }
+    });
+};
+
 const baseSettings = {
     wordwrap: false,
     preserveNewlines: true,
@@ -17,9 +27,6 @@ const baseSettings = {
         {selector: 'h6', options: {uppercase: false}},
         {selector: 'table', options: {uppercaseHeaderCells: false}},
 
-        // equiv hideLinkHrefIfSameAsText: true
-        {selector: 'a', options: {hideLinkHrefIfSameAsText: true}},
-
         // Backwards compatibility with html-to-text 5.1.1
         {selector: 'div', format: 'inline'}
     ]
@@ -35,8 +42,22 @@ const loadConverters = () => {
 
     const {compile} = require('html-to-text');
 
-    excerptConverter = compile(baseSettings);
-    emailConverter = compile(baseSettings);
+    const excerptSettings = mergeSettings({
+        selectors: [
+            {selector: 'a', options: {ignoreHref: true}},
+            {selector: 'figcaption', format: 'skip'}
+        ]
+    });
+
+    const emailSettings = mergeSettings({
+        selectors: [
+            // equiv hideLinkHrefIfSameAsText: true
+            {selector: 'a', options: {hideLinkHrefIfSameAsText: true}}
+        ]
+    });
+
+    excerptConverter = compile(excerptSettings);
+    emailConverter = compile(emailSettings);
 };
 
 module.exports.excerpt = (html) => {
