@@ -885,8 +885,7 @@ const MobileStyles = `
         max-height: 660px;
         margin-bottom: 0;
     }
-
-    .preview .gh-portal-btn-container .gh-portal-signup-message,
+    
     .preview .gh-portal-invite-only-notification + .gh-portal-signup-message {
         margin-bottom: 16px;
     }
