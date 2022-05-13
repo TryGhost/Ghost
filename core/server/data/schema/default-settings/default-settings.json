@@ -256,14 +256,6 @@
             "flags": "PUBLIC,RO",
             "type": "string"
         },
-        "members_free_signup_redirect": {
-            "defaultValue": "/",
-            "type": "string"
-        },
-        "members_paid_signup_redirect": {
-            "defaultValue": "/",
-            "type": "string"
-        },
         "stripe_secret_key": {
             "defaultValue": null,
             "type": "string"

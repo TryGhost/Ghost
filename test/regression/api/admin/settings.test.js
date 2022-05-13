@@ -155,16 +155,6 @@ const defaultSettingsKeyTypes = [
         group: 'members'
     },
     {
-        key: 'members_paid_signup_redirect',
-        type: 'string',
-        group: 'members'
-    },
-    {
-        key: 'members_free_signup_redirect',
-        type: 'string',
-        group: 'members'
-    },
-    {
         key: 'members_free_price_name',
         type: 'string',
         group: 'members'

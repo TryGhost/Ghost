@@ -5,7 +5,7 @@ const db = require('../../../core/server/data/db');
 // Stuff we are testing
 const models = require('../../../core/server/models');
 
-const SETTINGS_LENGTH = 84;
+const SETTINGS_LENGTH = 82;
 
 describe('Settings Model', function () {
     before(models.init);
