@@ -150,17 +150,7 @@ const defaultSettingsKeyTypes = [
         group: 'members'
     },
     {
-        key: 'members_from_address',
-        type: 'string',
-        group: 'members'
-    },
-    {
         key: 'members_support_address',
-        type: 'string',
-        group: 'members'
-    },
-    {
-        key: 'members_reply_address',
         type: 'string',
         group: 'members'
     },

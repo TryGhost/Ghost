@@ -251,22 +251,9 @@
             },
             "type": "string"
         },
-        "members_from_address": {
-            "defaultValue": "noreply",
-            "flags": "RO",
-            "type": "string"
-        },
         "members_support_address": {
             "defaultValue": "noreply",
             "flags": "PUBLIC,RO",
-            "type": "string"
-        },
-        "members_reply_address": {
-            "defaultValue": "newsletter",
-            "validations": {
-                "isEmpty": false,
-                "isIn": [["newsletter", "support"]]
-            },
             "type": "string"
         },
         "members_free_signup_redirect": {
