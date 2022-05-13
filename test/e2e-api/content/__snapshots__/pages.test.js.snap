@@ -122,11 +122,11 @@ An about page is a great example of one you might want to set up early on so peo
 
 For example, here's how to reach us!
 
- * @Ghost [https://twitter.com/ghost] on Twitter
- * @Ghost [https://www.facebook.com/ghost] on Facebook
- * @Ghost [https://instagram.com/ghost] on Instagram
+ * @Ghost on Twitter
+ * @Ghost on Facebook
+ * @Ghost on Instagram
 
-If you prefer to use a contact form, almost all of the great embedded form services work great with Ghost and a",
+If you prefer to use a contact form, almost all of the great embedded form services work great with Ghost and are easy to set up:",
       "feature_image": null,
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -165,7 +165,8 @@ If you prefer to use a contact form, almost all of the great embedded form servi
 
 Ghost is a non-profit organization, and we give away all our intellectual property as open source software. If you believe in what we do, there are a number of ways you can give us a hand, and we hugely appreciate all of them:
 
- * Contribute code via GitHub [https://gith",
+ * Contribute code via GitHub
+ * Contribute",
       "feature_image": null,
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -273,7 +274,7 @@ exports[`Pages Content API Can request pages 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "9196",
+  "content-length": "9124",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
