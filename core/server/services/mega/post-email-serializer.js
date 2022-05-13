@@ -7,7 +7,7 @@ const api = require('../../api').endpoints;
 const apiShared = require('../../api').shared;
 const {URL} = require('url');
 const mobiledocLib = require('../../lib/mobiledoc');
-const htmlToText = require('html-to-text');
+const htmlToPlaintext = require('../../../shared/html-to-plaintext');
 const {isUnsplashImage, isLocalContentImage} = require('@tryghost/kg-default-cards/lib/utils');
 const {textColorForBackgroundColor, darkenToContrastThreshold} = require('@tryghost/color-utils');
 const logging = require('@tryghost/logging');
@@ -46,20 +46,6 @@ const getSite = () => {
     return Object.assign({}, publicSettings, {
         url: urlUtils.urlFor('home', true),
         iconUrl: publicSettings.icon ? urlUtils.urlFor('image', {image: publicSettings.icon}, true) : null
-    });
-};
-
-const htmlToPlaintext = (html) => {
-    // same options as used in Post model for generating plaintext but without `wordwrap: 80`
-    // to avoid replacement strings being split across lines and for mail clients to handle
-    // word wrapping based on user preferences
-    return htmlToText.fromString(html, {
-        wordwrap: false,
-        ignoreImage: true,
-        hideLinkHrefIfSameAsText: true,
-        preserveNewlines: true,
-        returnDomByDefault: true,
-        uppercaseHeadings: false
     });
 };
 

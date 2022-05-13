@@ -2,7 +2,7 @@ module.exports = function htmlToPlaintext(html) {
     const htmlToText = require('html-to-text');
 
     return htmlToText.fromString(html, {
-        wordwrap: 80,
+        wordwrap: false,
         ignoreImage: true,
         hideLinkHrefIfSameAsText: true,
         preserveNewlines: true,
