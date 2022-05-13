@@ -627,7 +627,7 @@ Dashboard v5 Metric */
 .gh-dashboard5-metric-label.is-secondary {
     font-size: 1.3rem;
     font-weight: 500;
-    color: var(--middarkgrey);
+    color: var(--midgrey);
     letter-spacing: 0;
 }
 
@@ -681,6 +681,11 @@ Dashboard v5 Metric */
     text-decoration: none;
 }
 
+.gh-dashboard5-metric-minivalue.na {
+    color: var(--lightgrey);
+    font-weight: 500;
+}
+
 .gh-dashboard5-metric-extra {
     text-transform: none;
     font-weight: 500;
@@ -704,7 +709,7 @@ Dashboard v5 List */
 
 .gh-dashboard5-list-header {
     display: grid;
-    grid-template-columns: 55% 15% 30%;
+    grid-template-columns: 50% 20% 30%;
     padding: 0 0 8px;
     border-bottom: 1px solid var(--whitegrey);
 }
@@ -716,7 +721,7 @@ Dashboard v5 List */
     font-size: 1.1rem;
     font-weight: 500;
     letter-spacing: 0.1px;
-    color: var(--black);
+    color: var(--midgrey);
     padding: 0 20px 8px 0;
     text-transform: uppercase;
     white-space: nowrap;
@@ -732,7 +737,7 @@ Dashboard v5 List */
 .gh-dashboard5-list-item {
     padding: 14px 0;
     display: grid;
-    grid-template-columns: 55% 15% 30%;
+    grid-template-columns: 50% 20% 30%;
     padding: 4px 0;
 }
 
@@ -1030,7 +1035,7 @@ Dashboard v5 Engagement */
 }
 
 .gh-dashboard5-engagement .gh-dashboard5-columns {
-    padding-top: 16px;
+    padding-top: 10px;
 }
 
 .gh-dashboard5-engagement .gh-dashboard5-select {
@@ -1166,13 +1171,13 @@ Dashboard v5 Recents */
     align-items: stretch;
 }
 
-.gh-dashboard5-recents .gh-dashboard5-title {
-    margin-bottom: 24px;
-}
-
 .gh-dashboard5-recents .gh-dashboard5-list-body {
     padding-top: 8px;
     padding-bottom: 8px;
+}
+
+.gh-dashboard5-recents .gh-dashboard5-title {
+    margin-bottom: 24px;
 }
 
 .gh-dashboard5-recents .gh-dashboard5-list-item {
@@ -1220,7 +1225,7 @@ Dashboard v5 Recents */
 }
 
 .gh-dashboard5-recents .gh-dashboard5-list-header {
-    margin-top: 24px;
+    margin-top: 16px;
 }
 
 .gh-dashboard5-recents .gh-dashboard5-list-loading {
@@ -1648,6 +1653,11 @@ Dashboard v5 Resource */
 .gh-dashboard5-resource-bigarticle h3 {
     font-size: 1.8rem;
     font-weight: 700;
+    transition: all 0.25 ease-in-out;
+}
+
+.gh-dashboard5-resource-bigarticle:hover h3 {
+    opacity: 0.8;
 }
 
 .gh-dashboard5-resource-bigarticle p {
@@ -1712,6 +1722,11 @@ Dashboard v5 Resource */
     display: flex;
     width: 100%;
     min-width: 0;
+    transition: all 0.25 ease-in-out;
+}
+
+.gh-dashboard5-resource .gh-dashboard5-list-item:hover .gh-dashboard5-list-link {
+    opacity: 0.8;
 }
 
 .gh-dashboard5-resource .gh-dashboard5-list-link span {

@@ -31,7 +31,7 @@
                             </div>
                             {{#if this.areNewslettersEnabled}}
                                 <div class="gh-dashboard5-list-item-sub">
-                                    <span class="gh-dashboard5-metric-minivalue">
+                                    <span class="gh-dashboard5-metric-minivalue {{unless post.email "na"}}">
                                         {{#if post.email}}
                                             {{format-number post.email.emailCount}}
                                         {{else}}
@@ -45,7 +45,7 @@
                                             <span class="gh-dashboard5-metric-minivalue">{{post.email.openRate}}%</span>
                                             <span class="gh-dashboard5-rate-amount"><span style={{html-safe (concat "width: " post.email.openRate "%;")}}/></span>
                                         {{else}}
-                                            <span class="gh-dashboard5-metric-minivalue">&mdash;</span>
+                                            <span class="gh-dashboard5-metric-minivalue na">&mdash;</span>
                                         {{/if}}
                                     </span>
                                 </div>
