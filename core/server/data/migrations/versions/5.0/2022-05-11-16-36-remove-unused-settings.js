@@ -29,22 +29,21 @@ const settingsToRemove = [
 
 module.exports = createTransactionalMigration(
     async function up(knex) {
-        // eslint-disable-next-line no-restricted-syntax
-        for (const removableSetting of settingsToRemove) {
-            const oldSetting = await knex('settings')
-                .where('key', removableSetting)
-                .select('value')
-                .first();
+        const existingSettings = await knex('settings')
+            .whereIn('key', settingsToRemove)
+            .pluck('key');
 
-            if (!oldSetting) {
-                logging.warn(`Could not find setting ${removableSetting}`);
-                continue;
-            }
-
-            logging.info(`Deleting ${removableSetting}`);
+        const settingsInDatabase = settingsToRemove.filter(s => existingSettings.includes(s));
+        if (settingsInDatabase.length) {
+            logging.info(`Deleting settings: ${settingsInDatabase.join(', ')}`);
             await knex('settings')
-                .where('key', removableSetting)
+                .whereIn('key', settingsInDatabase)
                 .del();
+        }
+
+        const settingsNotInDatabase = settingsToRemove.filter(s => !existingSettings.includes(s));
+        if (settingsNotInDatabase.length) {
+            logging.info(`Unable to delete missing settings: ${settingsNotInDatabase.join(', ')}`);
         }
     },
     async function down() {
