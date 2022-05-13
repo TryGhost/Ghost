@@ -50,7 +50,7 @@ module.exports = createIrreversibleMigration(async (knex) => {
             };
 
             if (html !== post.html || !post.plaintext) {
-                const plaintext = htmlToPlaintext(html);
+                const plaintext = htmlToPlaintext.excerpt(html);
 
                 if (plaintext !== post.plaintext) {
                     updatedAttrs.plaintext = plaintext;

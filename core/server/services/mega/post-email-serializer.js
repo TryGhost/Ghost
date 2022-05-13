@@ -248,7 +248,7 @@ const serialize = async (postModel, newsletter, options = {isBrowserPreview: fal
     `).remove();
     post.html = _cheerio('body').html();
 
-    post.plaintext = htmlToPlaintext(post.html);
+    post.plaintext = htmlToPlaintext.email(post.html);
 
     // Outlook will render feature images at full-size breaking the layout.
     // Content images fix this by rendering max 600px images - do the same for feature image here
@@ -321,7 +321,7 @@ function renderEmailForSegment(email, memberSegment) {
     });
 
     result.html = formatHtmlForEmail($.html());
-    result.plaintext = htmlToPlaintext(result.html);
+    result.plaintext = htmlToPlaintext.email(result.html);
 
     return result;
 }
