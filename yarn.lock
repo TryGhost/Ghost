@@ -2382,7 +2382,14 @@
     "@types/qs" "*"
     "@types/range-parser" "*"
 
-"@types/express@^4.17.13":
+"@types/express-unless@^0.5.3":
+  version "0.5.3"
+  resolved "https://registry.yarnpkg.com/@types/express-unless/-/express-unless-0.5.3.tgz#271f8603617445568ed0d6efe25a7d2f338544c1"
+  integrity sha512-TyPLQaF6w8UlWdv4gj8i46B+INBVzURBNRahCozCSXfsK2VTlL1wNyTlMKw817VHygBtlcl5jfnPadlydr06Yw==
+  dependencies:
+    "@types/express" "*"
+
+"@types/express@*", "@types/express@^4.17.13":
   version "4.17.13"
   resolved "https://registry.yarnpkg.com/@types/express/-/express-4.17.13.tgz#a76e2995728999bab51a33fabce1d705a3709034"
   integrity sha512-6bSZTPaTIACxn48l50SR+axgrqm6qXFIxrdAKaG6PaJk3+zuUr35hBlgT7vOmJcum+OEaIBLtHV/qloEAFITeA==
@@ -2423,7 +2430,7 @@
   dependencies:
     "@types/istanbul-lib-report" "*"
 
-"@types/jsonwebtoken@^8.5.1":
+"@types/jsonwebtoken@^8.5.1", "@types/jsonwebtoken@^8.5.8":
   version "8.5.8"
   resolved "https://registry.yarnpkg.com/@types/jsonwebtoken/-/jsonwebtoken-8.5.8.tgz#01b39711eb844777b7af1d1f2b4cf22fda1c0c44"
   integrity sha512-zm6xBQpFDIDM6o9r6HSgDeIcLy82TKWctCXEPbJJcXb5AKmi5BNNdLXneixK4lplX3PqIVcwLBCGE/kAGnlD4A==
@@ -5238,11 +5245,13 @@ express-hbs@2.4.0:
   optionalDependencies:
     js-beautify "^1.13.11"
 
-express-jwt@7.7.0:
-  version "7.7.0"
-  resolved "https://registry.yarnpkg.com/express-jwt/-/express-jwt-7.7.0.tgz#f4b98e6c4c5bc94a88c7b7db316f3bb6799bbf0b"
-  integrity sha512-4W1N/wD1buyg5F1/IFi4hWMRwerHd1wl17PhfBrNnzMAb1MbAVDJiSoNByVrz2+NGThChIC+vuNaDwVLprkQzQ==
+express-jwt@7.7.1:
+  version "7.7.1"
+  resolved "https://registry.yarnpkg.com/express-jwt/-/express-jwt-7.7.1.tgz#c27b3b96fa3dce575377385d484c17964ac669ce"
+  integrity sha512-3x1Wv5ENeBLcBP5p3t42pFGxKCj8eyAdFiUSrvDExYtsXqYxh75dw5crpyXLXrDTDMPx50Uv9ODMQOl+ced57w==
   dependencies:
+    "@types/express-unless" "^0.5.3"
+    "@types/jsonwebtoken" "^8.5.8"
     express-unless "^1.0.0"
     jsonwebtoken "^8.5.1"
 
