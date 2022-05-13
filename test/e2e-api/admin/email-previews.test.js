@@ -164,6 +164,42 @@ describe('Email Preview API', function () {
             const [preview] = jsonResponse.email_previews;
             preview.html.should.containEql(testUtils.DataGenerator.Content.newsletters[0].name);
         });
+
+        it('uses the newsletter provided through ?newsletter=slug', async function () {
+            const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
+            const selectedNewsletter = testUtils.DataGenerator.Content.newsletters[0];
+
+            selectedNewsletter.id.should.not.eql(defaultNewsletter.id, 'Should use a non-default newsletter for this test');
+
+            const post = testUtils.DataGenerator.forKnex.createPost({
+                id: ObjectId().toHexString(),
+                title: 'Post with email-only card',
+                slug: 'email-only-card',
+                mobiledoc: '{"version":"0.3.1","atoms":[],"cards":[],"markups":[["a",["href","https://ghost.org"]]],"sections":[[1,"p",[[0,[],0,"Testing "],[0,[0],1,"links"],[0,[],0," in email excerpt and apostrophes \'"]]]]}',
+                html: '<p>This is the actual post content...</p>',
+                plaintext: 'This is the actual post content...',
+                status: 'draft',
+                uuid: 'd52c42ae-2755-455c-80ec-70b2ec55c904'
+            });
+
+            await models.Post.add(post, {context: {internal: true}});
+
+            const res = await request
+                .get(localUtils.API.getApiQuery(`email_previews/posts/${post.id}/?newsletter=${selectedNewsletter.slug}`))
+                .set('Origin', config.get('url'))
+                .set('Accept', 'application/json')
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200);
+
+            should.not.exist(res.headers['x-cache-invalidate']);
+            const jsonResponse = res.body;
+            should.exist(jsonResponse);
+            should.exist(jsonResponse.email_previews);
+
+            const [preview] = jsonResponse.email_previews;
+            preview.html.should.containEql(testUtils.DataGenerator.Content.newsletters[0].name);
+        });
     });
 
     describe('As Owner', function () {
