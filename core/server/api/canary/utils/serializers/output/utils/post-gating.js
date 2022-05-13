@@ -15,7 +15,7 @@ const forPost = (attrs, frame) => {
 
         if (paywallIndex !== -1) {
             attrs.html = attrs.html.slice(0, paywallIndex);
-            attrs.plaintext = htmlToPlaintext(attrs.html);
+            attrs.plaintext = htmlToPlaintext.excerpt(attrs.html);
 
             if (!attrs.custom_excerpt && attrs.excerpt) {
                 attrs.excerpt = attrs.plaintext.substring(0, 500);

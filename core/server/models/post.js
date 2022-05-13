@@ -626,7 +626,7 @@ Post = ghostBookshelf.Model.extend({
             if (this.get('html') === null) {
                 plaintext = null;
             } else {
-                plaintext = htmlToPlaintext(this.get('html'));
+                plaintext = htmlToPlaintext.excerpt(this.get('html'));
             }
 
             // CASE: html is e.g. <p></p>
