@@ -140,7 +140,7 @@
     "express-session": "1.17.3",
     "fs-extra": "10.1.0",
     "ghost-storage-base": "1.0.0",
-    "glob": "8.0.2",
+    "glob": "8.0.3",
     "got": "9.6.0",
     "gscan": "4.27.0",
     "html-to-text": "5.1.1",
