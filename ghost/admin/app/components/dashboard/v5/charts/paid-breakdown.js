@@ -243,7 +243,7 @@ export default class PaidBreakdown extends Component {
             },
             layout: {
                 padding: {
-                    top: 0,
+                    top: 4,
                     bottom: 0,
                     left: 0,
                     right: 0
