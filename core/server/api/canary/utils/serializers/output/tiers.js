@@ -87,9 +87,9 @@ function serializeTier(tier, options) {
     }
 
     if (serialized.type === 'paid') {
-        serialized.currency = json.monthlyPrice.currency;
-        serialized.monthly_price = json.monthlyPrice.amount;
-        serialized.yearly_price = json.yearlyPrice.amount;
+        serialized.currency = json.monthlyPrice?.currency;
+        serialized.monthly_price = json.monthlyPrice?.amount;
+        serialized.yearly_price = json.yearlyPrice?.amount;
     }
 
     return serialized;
