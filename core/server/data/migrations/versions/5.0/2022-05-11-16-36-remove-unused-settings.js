@@ -43,7 +43,7 @@ module.exports = createTransactionalMigration(
 
         const settingsNotInDatabase = settingsToRemove.filter(s => !existingSettings.includes(s));
         if (settingsNotInDatabase.length) {
-            logging.info(`Unable to delete missing settings: ${settingsNotInDatabase.join(', ')}`);
+            logging.warn(`Unable to delete missing settings: ${settingsNotInDatabase.join(', ')}`);
         }
     },
     async function down() {
