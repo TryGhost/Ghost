@@ -335,11 +335,6 @@ const defaultSettingsKeyTypes = [
         group: 'editor'
     },
     {
-        key: 'editor_is_launch_complete',
-        type: 'boolean',
-        group: 'editor'
-    },
-    {
         key: 'labs',
         type: 'object',
         group: 'labs'
