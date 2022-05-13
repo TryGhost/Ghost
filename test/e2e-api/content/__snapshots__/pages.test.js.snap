@@ -13,6 +13,7 @@ Object {
       "custom_excerpt": null,
       "custom_template": null,
       "excerpt": "Static page test is what this is for.
+
 Hopefully you don't find it a bore.",
       "feature_image": null,
       "feature_image_alt": null,
@@ -47,7 +48,7 @@ exports[`Pages Content API Can request page 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1076",
+  "content-length": "1078",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -118,12 +119,14 @@ An about page is a great example of one you might want to set up early on so peo
       "custom_template": null,
       "excerpt": "If you want to set up a contact page for people to be able to reach out to you, the simplest way is to set up a simple page like this and list the different ways people can reach out to you.
 
+
 For example, here's how to reach us!
+
  * @Ghost [https://twitter.com/ghost] on Twitter
  * @Ghost [https://www.facebook.com/ghost] on Facebook
  * @Ghost [https://instagram.com/ghost] on Instagram
 
-If you prefer to use a contact form, almost all of the great embedded form services work great with Ghost and are",
+If you prefer to use a contact form, almost all of the great embedded form services work great with Ghost and a",
       "feature_image": null,
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -235,6 +238,7 @@ You can integrate any products, services, ads or integrations with Ghost yoursel
       "custom_excerpt": null,
       "custom_template": null,
       "excerpt": "Static page test is what this is for.
+
 Hopefully you don't find it a bore.",
       "feature_image": null,
       "feature_image_alt": null,
@@ -269,7 +273,7 @@ exports[`Pages Content API Can request pages 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "9192",
+  "content-length": "9196",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
