@@ -123,10 +123,11 @@
     flex-direction: column;
     justify-content: center;
     align-items: flex-start;
-    height: 72px;
+    height: 88px;
     border-bottom: 1px solid var(--whitegrey);
     margin: 0;
     padding: 0 20px;
+    background: var(--whitegrey-l2);
 }
 
 .gh-pe-emailclient-sender p {
