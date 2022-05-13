@@ -88,7 +88,7 @@ export const SignupPageStyles = `
     justify-content: center;
     color: var(--grey4);
     font-size: 1.5rem;
-    margin-top: 8px;
+    margin: 16px 0 0;
 }
 
 .gh-portal-signup-message,
@@ -144,10 +144,6 @@ footer.gh-portal-signin-footer {
 
 .gh-portal-content.signup .gh-portal-section {
     margin-bottom: 0;
-}
-
-.gh-portal-content.signup.noplan {
-    margin-bottom: -8px;
 }
 
 .gh-portal-content.signup.single-field {
