@@ -7432,10 +7432,10 @@ ember-text-measurer@^0.6.0:
     ember-cli-babel "^7.19.0"
     ember-cli-htmlbars "^4.3.1"
 
-ember-tooltips@3.5.1:
-  version "3.5.1"
-  resolved "https://registry.yarnpkg.com/ember-tooltips/-/ember-tooltips-3.5.1.tgz#e7652ca8d677f83e421e9a33d9c7d84af24be8ad"
-  integrity sha512-kwRqm/FKEdO0V2tHMVROIGpTsgEdVcRy0QnzJ7eHBS1LZVL9+OZlxz5HOtSOOa+2bBvG1OyEVEDsLXt+yQmotQ==
+ember-tooltips@3.5.2:
+  version "3.5.2"
+  resolved "https://registry.yarnpkg.com/ember-tooltips/-/ember-tooltips-3.5.2.tgz#4dbc57735ac1ccdd05f36249cafebe7b3d30eb58"
+  integrity sha512-sSU8EJ5xh4bpHB/kFShnUGXYhtFeUPAXlXRpCs/tWn26a+z8zudsAZVtKMiOGlYe5Eeyvoi5ErXraRU32lBoxg==
   dependencies:
     broccoli-file-creator "^2.1.1"
     broccoli-merge-trees "^4.2.0"
