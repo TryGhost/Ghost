@@ -14,11 +14,9 @@ const {getConfig} = require('../../../../../core/server/services/stripe/config')
 function createSettingsMock({setDirect, setConnect}) {
     const getStub = sinon.stub();
 
-    getStub.withArgs('members_from_address').returns('noreply');
     getStub.withArgs('members_signup_access').returns('all');
     getStub.withArgs('stripe_secret_key').returns(setDirect ? 'direct_secret' : null);
     getStub.withArgs('stripe_publishable_key').returns(setDirect ? 'direct_publishable' : null);
-    getStub.withArgs('stripe_product_name').returns('Test');
     getStub.withArgs('stripe_plans').returns([{
         name: 'Monthly',
         currency: 'usd',
