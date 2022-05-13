@@ -97,7 +97,7 @@ export const SignupPageStyles = `
 }
 
 .full-size .gh-portal-signup-message {
-    margin-bottom: 40px;
+    margin: 24px 0 40px;
 }
 
 @media (max-width: 480px) {
