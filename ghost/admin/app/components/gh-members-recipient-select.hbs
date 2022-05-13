@@ -18,7 +18,7 @@
                         Free
                         {{#let (members-count-fetcher query=(hash filter=(concat @newsletter.recipientFilter "+status:free"))) as |countFetcher|}}
                             {{#if (not (is-empty countFetcher.count))}}
-                                <span class="gh-publish-emailcount" data-test-email-count="free-members">({{countFetcher.count}})</span>
+                                <span class="gh-publish-emailcount" data-test-email-count="free-members">({{format-number countFetcher.count}})</span>
                             {{/if}}
                         {{/let}}
                     </p>
@@ -46,7 +46,7 @@
                             Paid
                             {{#let (members-count-fetcher query=(hash filter=(concat @newsletter.recipientFilter "+status:-free"))) as |countFetcher|}}
                                 {{#if (not (is-empty countFetcher.count))}}
-                                    <span class="gh-publish-emailcount" data-test-email-count="paid-members">({{countFetcher.count}})</span>
+                                    <span class="gh-publish-emailcount" data-test-email-count="paid-members">({{format-number countFetcher.count}})</span>
                                 {{/if}}
                             {{/let}}
                         </p>
