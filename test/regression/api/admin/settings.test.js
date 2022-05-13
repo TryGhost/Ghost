@@ -150,37 +150,7 @@ const defaultSettingsKeyTypes = [
         group: 'members'
     },
     {
-        key: 'members_from_address',
-        type: 'string',
-        group: 'members'
-    },
-    {
         key: 'members_support_address',
-        type: 'string',
-        group: 'members'
-    },
-    {
-        key: 'members_reply_address',
-        type: 'string',
-        group: 'members'
-    },
-    {
-        key: 'members_paid_signup_redirect',
-        type: 'string',
-        group: 'members'
-    },
-    {
-        key: 'members_free_signup_redirect',
-        type: 'string',
-        group: 'members'
-    },
-    {
-        key: 'members_free_price_name',
-        type: 'string',
-        group: 'members'
-    },
-    {
-        key: 'members_free_price_description',
         type: 'string',
         group: 'members'
     },
@@ -191,11 +161,6 @@ const defaultSettingsKeyTypes = [
     },
     {
         key: 'members_yearly_price_id',
-        type: 'string',
-        group: 'members'
-    },
-    {
-        key: 'stripe_product_name',
         type: 'string',
         group: 'members'
     },
@@ -350,51 +315,6 @@ const defaultSettingsKeyTypes = [
         group: 'site'
     },
     {
-        key: 'newsletter_show_badge',
-        type: 'boolean',
-        group: 'newsletter'
-    },
-    {
-        key: 'newsletter_header_image',
-        type: 'string',
-        group: 'newsletter'
-    },
-    {
-        key: 'newsletter_show_header_icon',
-        type: 'boolean',
-        group: 'newsletter'
-    },
-    {
-        key: 'newsletter_show_header_title',
-        type: 'boolean',
-        group: 'newsletter'
-    },
-    {
-        key: 'newsletter_title_alignment',
-        type: 'string',
-        group: 'newsletter'
-    },
-    {
-        key: 'newsletter_title_font_category',
-        type: 'string',
-        group: 'newsletter'
-    },
-    {
-        key: 'newsletter_show_feature_image',
-        type: 'boolean',
-        group: 'newsletter'
-    },
-    {
-        key: 'newsletter_body_font_category',
-        type: 'string',
-        group: 'newsletter'
-    },
-    {
-        key: 'newsletter_footer_content',
-        type: 'string',
-        group: 'newsletter'
-    },
-    {
         key: 'oauth_client_id',
         type: 'string',
         group: 'oauth'
@@ -412,11 +332,6 @@ const defaultSettingsKeyTypes = [
     {
         key: 'editor_default_email_recipients_filter',
         type: 'string',
-        group: 'editor'
-    },
-    {
-        key: 'editor_is_launch_complete',
-        type: 'boolean',
         group: 'editor'
     },
     {
