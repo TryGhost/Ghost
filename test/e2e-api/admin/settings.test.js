@@ -2,7 +2,7 @@ const assert = require('assert');
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
 const {stringMatching, anyEtag, anyObjectId, anyISODateTime} = matchers;
 
-const CURRENT_SETTINGS_COUNT = 70;
+const CURRENT_SETTINGS_COUNT = 69;
 
 const settingsMatcher = {
     id: anyObjectId,
@@ -73,13 +73,6 @@ describe('Settings API', function () {
                 key: 'navigation',
                 value: JSON.stringify([{
                     label: 'label1'
-                }])
-            },
-            {
-                key: 'slack',
-                value: JSON.stringify([{
-                    url: 'https://overrides.tld',
-                    username: 'Overrides Username'
                 }])
             },
             {

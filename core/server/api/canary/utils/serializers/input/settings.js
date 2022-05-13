@@ -5,57 +5,8 @@ const settingsCache = require('../../../../../../shared/settings-cache');
 const {WRITABLE_KEYS_ALLOWLIST} = require('../../../../../../shared/labs');
 
 const DEPRECATED_SETTINGS = [
-    'bulk_email_settings',
-    'slack'
+    'slack', 'bulk_email_settings'
 ];
-
-const deprecatedSupportedSettingsOneToManyMap = {
-    slack: [{
-        from: '[0].url',
-        to: {
-            key: 'slack_url',
-            group: 'slack',
-            type: 'string'
-        }
-    }, {
-        from: '[0].username',
-        to: {
-            key: 'slack_username',
-            group: 'slack',
-            type: 'string'
-        }
-    }]
-};
-
-const getMappedDeprecatedSettings = (settings) => {
-    const mappedSettings = [];
-
-    for (const key in deprecatedSupportedSettingsOneToManyMap) {
-        const deprecatedSetting = settings.find(setting => setting.key === key);
-
-        if (deprecatedSetting) {
-            let deprecatedSettingValue;
-
-            try {
-                deprecatedSettingValue = JSON.parse(deprecatedSetting.value);
-            } catch (err) {
-                // ignore the value if it's invalid
-            }
-
-            if (deprecatedSettingValue) {
-                deprecatedSupportedSettingsOneToManyMap[key].forEach(({from, to}) => {
-                    const value = _.get(deprecatedSettingValue, from);
-                    mappedSettings.push({
-                        key: to.key,
-                        value: value
-                    });
-                });
-            }
-        }
-    }
-
-    return mappedSettings;
-};
 
 module.exports = {
     browse(apiConfig, frame) {
@@ -82,16 +33,6 @@ module.exports = {
             const settingFlagsStr = settings[setting.key] ? settings[setting.key].flags : '';
             const settingFlagsArr = settingFlagsStr ? settingFlagsStr.split(',') : [];
             return !settingFlagsArr.includes('RO');
-        });
-
-        const mappedDeprecatedSettings = getMappedDeprecatedSettings(frame.data.settings);
-        mappedDeprecatedSettings.forEach((setting) => {
-            // NOTE: give priority for non-deprecated setting values if they exist
-            const nonDeprecatedExists = frame.data.settings.find(s => s.key === setting.key);
-
-            if (!nonDeprecatedExists) {
-                frame.data.settings.push(setting);
-            }
         });
 
         frame.data.settings.forEach((setting) => {
