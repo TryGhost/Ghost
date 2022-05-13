@@ -9,6 +9,7 @@ import {action} from '@ember/object';
 import {capitalize} from '@ember/string';
 import {inject as service} from '@ember/service';
 import {task, taskGroup, timeout} from 'ember-concurrency';
+import {tracked} from '@glimmer/tracking';
 import {use} from 'ember-could-get-used-to-this';
 
 const SHOW_SAVE_STATUS_DURATION = 3000;
@@ -25,6 +26,8 @@ export default class PublishManagement extends Component {
 
     // ensure we get a new PublishOptions instance when @post is replaced
     @use publishOptions = new PublishOptionsResource(() => [this.args.post]);
+
+    @tracked previewTab = 'browser';
 
     publishFlowModal = null;
     updateFlowModal = null;
@@ -88,9 +91,16 @@ export default class PublishManagement extends Component {
                 post: this.publishOptions.post,
                 hasDirtyAttributes: this.args.hasUnsavedChanges,
                 saveTask: this.saveTask,
-                togglePreviewPublish: this.togglePreviewPublish
+                togglePreviewPublish: this.togglePreviewPublish,
+                currentTab: this.previewTab,
+                changeTab: this.changePreviewTab
             });
         }
+    }
+
+    @action
+    changePreviewTab(tab) {
+        this.previewTab = tab;
     }
 
     @action

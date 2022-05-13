@@ -14,7 +14,7 @@ export default class EditorPostPreviewModal extends Component {
         ignoreBackdropClick: true
     };
 
-    @tracked tab = 'browser';
+    @tracked tab = this.args.data.currentTab || 'browser';
 
     constructor() {
         super(...arguments);
@@ -24,6 +24,7 @@ export default class EditorPostPreviewModal extends Component {
     @action
     changeTab(tab) {
         this.tab = tab;
+        this.args.data.changeTab?.(tab);
     }
 
     @task
