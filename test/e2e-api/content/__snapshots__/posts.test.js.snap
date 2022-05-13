@@ -266,14 +266,11 @@ Object {
  * Praesent
  * Pellentesque
 
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo.
 
+1234abcdefghijkl
 
-Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac
-turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor
-sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies
-mi vitae est. Mauris placerat eleifend leo.
-
-1234abcdefghijklDefinition listConsectetur ad",
+Definition listConsectetur ad",
       "feature_image": null,
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -620,13 +617,9 @@ mi vitae est. Mauris placerat eleifend leo.
       "custom_excerpt": null,
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "For creators and aspiring entrepreneurs looking to generate a sustainable
-recurring revenue stream from their creative work, Ghost has built-in payments
-allowing you to create a subscription commerce business.
+      "excerpt": "For creators and aspiring entrepreneurs looking to generate a sustainable recurring revenue stream from their creative work, Ghost has built-in payments allowing you to create a subscription commerce business.
 
-Connect your Stripe [https://stripe.com] account to Ghost, and you'll be able to
-quickly and easily create monthly and yearly premium plans for members to
-subscribe to, as well as complimentary plans for friends and family.
+Connect your Stripe [https://stripe.com] account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
 
 Ghost takes 0% payment fees, so everything you make is yours to ",
       "feature_image": "https://static.ghost.org/v4.0.0/images/organizing-your-content.png",
@@ -641,29 +634,19 @@ Ghost takes 0% payment fees, so everything you make is yours to ",
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "plaintext": "For creators and aspiring entrepreneurs looking to generate a sustainable
-recurring revenue stream from their creative work, Ghost has built-in payments
-allowing you to create a subscription commerce business.
+      "plaintext": "For creators and aspiring entrepreneurs looking to generate a sustainable recurring revenue stream from their creative work, Ghost has built-in payments allowing you to create a subscription commerce business.
 
-Connect your Stripe [https://stripe.com] account to Ghost, and you'll be able to
-quickly and easily create monthly and yearly premium plans for members to
-subscribe to, as well as complimentary plans for friends and family.
+Connect your Stripe [https://stripe.com] account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
 
 Ghost takes 0% payment fees, so everything you make is yours to keep!
 
-Using subscriptions, you can build an independent media business like 
-Stratechery [https://stratechery.com], The Information
-[https://www.theinformation.com], or The Browser [https://thebrowser.com].
+Using subscriptions, you can build an independent media business like Stratechery [https://stratechery.com], The Information [https://www.theinformation.com], or The Browser [https://thebrowser.com].
 
-The creator economy is just getting started, and Ghost allows you to build
-something based on technology that you own and control.
+The creator economy is just getting started, and Ghost allows you to build something based on technology that you own and control.
 
-[https://thebrowser.com]The Browser has over 10,000 paying subscribersMost
-successful subscription businesses publish a mix of free and paid posts to
-attract a new audience, and upsell the most loyal members to a premium offering.
-You can also mix different access levels within the same post, showing a free
-preview to logged out members and then, right when you're ready for a
-cliffhanger, that's a good time to...",
+https://thebrowser.comThe Browser has over 10,000 paying subscribers
+
+Most successful subscription businesses publish a mix of free and paid posts to attract a new audience, and upsell the most loyal members to a premium offering. You can also mix different access levels within the same post, showing a free preview to logged out members and then, right when you're ready for a cliffhanger, that's a good time to...",
       "primary_author": Object {
         "bio": "You can delete this user to remove all the welcome posts",
         "cover_image": null,
@@ -854,11 +837,15 @@ cliffhanger, that's a good time to...",
       "custom_template": null,
       "email_subject": null,
       "excerpt": "testing
+
+
 mctesters
+
 
  * test
  * line
- * items",
+ * items
+",
       "feature_image": "http://placekitten.com/500/200",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -933,13 +920,8 @@ mctesters
       "custom_template": null,
       "email_subject": null,
       "excerpt": "HTML Ipsum Presents
-Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac
-turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor
-sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies
-mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien
-ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae,
-ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros
-ipsum rutrum or",
+
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum o",
       "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -1054,7 +1036,7 @@ exports[`Posts Content API Can filter posts by authors 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "54909",
+  "content-length": "54894",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -1092,14 +1074,11 @@ Object {
  * Praesent
  * Pellentesque
 
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo.
 
+1234abcdefghijkl
 
-Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac
-turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor
-sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies
-mi vitae est. Mauris placerat eleifend leo.
-
-1234abcdefghijklDefinition listConsectetur ad",
+Definition listConsectetur ad",
       "feature_image": null,
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -1137,11 +1116,15 @@ mi vitae est. Mauris placerat eleifend leo.
       "custom_template": null,
       "email_subject": null,
       "excerpt": "testing
+
+
 mctesters
+
 
  * test
  * line
- * items",
+ * items
+",
       "feature_image": "http://placekitten.com/500/200",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -1228,13 +1211,8 @@ mctesters
       "custom_template": null,
       "email_subject": null,
       "excerpt": "HTML Ipsum Presents
-Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac
-turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor
-sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies
-mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien
-ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae,
-ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros
-ipsum rutrum or",
+
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum o",
       "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -1768,13 +1746,9 @@ Object {
       "custom_excerpt": null,
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "For creators and aspiring entrepreneurs looking to generate a sustainable
-recurring revenue stream from their creative work, Ghost has built-in payments
-allowing you to create a subscription commerce business.
+      "excerpt": "For creators and aspiring entrepreneurs looking to generate a sustainable recurring revenue stream from their creative work, Ghost has built-in payments allowing you to create a subscription commerce business.
 
-Connect your Stripe [https://stripe.com] account to Ghost, and you'll be able to
-quickly and easily create monthly and yearly premium plans for members to
-subscribe to, as well as complimentary plans for friends and family.
+Connect your Stripe [https://stripe.com] account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
 
 Ghost takes 0% payment fees, so everything you make is yours to ",
       "feature_image": "https://static.ghost.org/v4.0.0/images/organizing-your-content.png",
@@ -1789,29 +1763,19 @@ Ghost takes 0% payment fees, so everything you make is yours to ",
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "plaintext": "For creators and aspiring entrepreneurs looking to generate a sustainable
-recurring revenue stream from their creative work, Ghost has built-in payments
-allowing you to create a subscription commerce business.
+      "plaintext": "For creators and aspiring entrepreneurs looking to generate a sustainable recurring revenue stream from their creative work, Ghost has built-in payments allowing you to create a subscription commerce business.
 
-Connect your Stripe [https://stripe.com] account to Ghost, and you'll be able to
-quickly and easily create monthly and yearly premium plans for members to
-subscribe to, as well as complimentary plans for friends and family.
+Connect your Stripe [https://stripe.com] account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
 
 Ghost takes 0% payment fees, so everything you make is yours to keep!
 
-Using subscriptions, you can build an independent media business like 
-Stratechery [https://stratechery.com], The Information
-[https://www.theinformation.com], or The Browser [https://thebrowser.com].
+Using subscriptions, you can build an independent media business like Stratechery [https://stratechery.com], The Information [https://www.theinformation.com], or The Browser [https://thebrowser.com].
 
-The creator economy is just getting started, and Ghost allows you to build
-something based on technology that you own and control.
+The creator economy is just getting started, and Ghost allows you to build something based on technology that you own and control.
 
-[https://thebrowser.com]The Browser has over 10,000 paying subscribersMost
-successful subscription businesses publish a mix of free and paid posts to
-attract a new audience, and upsell the most loyal members to a premium offering.
-You can also mix different access levels within the same post, showing a free
-preview to logged out members and then, right when you're ready for a
-cliffhanger, that's a good time to...",
+https://thebrowser.comThe Browser has over 10,000 paying subscribers
+
+Most successful subscription businesses publish a mix of free and paid posts to attract a new audience, and upsell the most loyal members to a premium offering. You can also mix different access levels within the same post, showing a free preview to logged out members and then, right when you're ready for a cliffhanger, that's a good time to...",
       "primary_author": Object {
         "bio": "You can delete this user to remove all the welcome posts",
         "cover_image": null,
@@ -2026,14 +1990,11 @@ cliffhanger, that's a good time to...",
  * Praesent
  * Pellentesque
 
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo.
 
+1234abcdefghijkl
 
-Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac
-turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor
-sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies
-mi vitae est. Mauris placerat eleifend leo.
-
-1234abcdefghijklDefinition listConsectetur ad",
+Definition listConsectetur ad",
       "feature_image": null,
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -2087,11 +2048,15 @@ mi vitae est. Mauris placerat eleifend leo.
       "custom_template": null,
       "email_subject": null,
       "excerpt": "testing
+
+
 mctesters
+
 
  * test
  * line
- * items",
+ * items
+",
       "feature_image": "http://placekitten.com/500/200",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -2172,13 +2137,8 @@ mctesters
       "custom_template": null,
       "email_subject": null,
       "excerpt": "HTML Ipsum Presents
-Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac
-turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor
-sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies
-mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien
-ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae,
-ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros
-ipsum rutrum or",
+
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum o",
       "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -2321,7 +2281,7 @@ exports[`Posts Content API Can include relations 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "65238",
+  "content-length": "65223",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -2620,13 +2580,9 @@ Object {
       "custom_excerpt": null,
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "For creators and aspiring entrepreneurs looking to generate a sustainable
-recurring revenue stream from their creative work, Ghost has built-in payments
-allowing you to create a subscription commerce business.
+      "excerpt": "For creators and aspiring entrepreneurs looking to generate a sustainable recurring revenue stream from their creative work, Ghost has built-in payments allowing you to create a subscription commerce business.
 
-Connect your Stripe [https://stripe.com] account to Ghost, and you'll be able to
-quickly and easily create monthly and yearly premium plans for members to
-subscribe to, as well as complimentary plans for friends and family.
+Connect your Stripe [https://stripe.com] account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
 
 Ghost takes 0% payment fees, so everything you make is yours to ",
       "feature_image": "https://static.ghost.org/v4.0.0/images/organizing-your-content.png",
@@ -2641,29 +2597,19 @@ Ghost takes 0% payment fees, so everything you make is yours to ",
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "plaintext": "For creators and aspiring entrepreneurs looking to generate a sustainable
-recurring revenue stream from their creative work, Ghost has built-in payments
-allowing you to create a subscription commerce business.
+      "plaintext": "For creators and aspiring entrepreneurs looking to generate a sustainable recurring revenue stream from their creative work, Ghost has built-in payments allowing you to create a subscription commerce business.
 
-Connect your Stripe [https://stripe.com] account to Ghost, and you'll be able to
-quickly and easily create monthly and yearly premium plans for members to
-subscribe to, as well as complimentary plans for friends and family.
+Connect your Stripe [https://stripe.com] account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
 
 Ghost takes 0% payment fees, so everything you make is yours to keep!
 
-Using subscriptions, you can build an independent media business like 
-Stratechery [https://stratechery.com], The Information
-[https://www.theinformation.com], or The Browser [https://thebrowser.com].
+Using subscriptions, you can build an independent media business like Stratechery [https://stratechery.com], The Information [https://www.theinformation.com], or The Browser [https://thebrowser.com].
 
-The creator economy is just getting started, and Ghost allows you to build
-something based on technology that you own and control.
+The creator economy is just getting started, and Ghost allows you to build something based on technology that you own and control.
 
-[https://thebrowser.com]The Browser has over 10,000 paying subscribersMost
-successful subscription businesses publish a mix of free and paid posts to
-attract a new audience, and upsell the most loyal members to a premium offering.
-You can also mix different access levels within the same post, showing a free
-preview to logged out members and then, right when you're ready for a
-cliffhanger, that's a good time to...",
+https://thebrowser.comThe Browser has over 10,000 paying subscribers
+
+Most successful subscription businesses publish a mix of free and paid posts to attract a new audience, and upsell the most loyal members to a premium offering. You can also mix different access levels within the same post, showing a free preview to logged out members and then, right when you're ready for a cliffhanger, that's a good time to...",
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "reading_time": 1,
       "slug": "sell",
@@ -2764,14 +2710,11 @@ cliffhanger, that's a good time to...",
  * Praesent
  * Pellentesque
 
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo.
 
+1234abcdefghijkl
 
-Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac
-turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor
-sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies
-mi vitae est. Mauris placerat eleifend leo.
-
-1234abcdefghijklDefinition listConsectetur ad",
+Definition listConsectetur ad",
       "feature_image": null,
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -2807,11 +2750,15 @@ mi vitae est. Mauris placerat eleifend leo.
       "custom_template": null,
       "email_subject": null,
       "excerpt": "testing
+
+
 mctesters
+
 
  * test
  * line
- * items",
+ * items
+",
       "feature_image": "http://placekitten.com/500/200",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -2854,13 +2801,8 @@ mctesters
       "custom_template": null,
       "email_subject": null,
       "excerpt": "HTML Ipsum Presents
-Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac
-turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor
-sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies
-mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien
-ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae,
-ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros
-ipsum rutrum or",
+
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum o",
       "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -2928,7 +2870,7 @@ exports[`Posts Content API Can request posts 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "46357",
+  "content-length": "46342",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -3111,13 +3053,9 @@ Object {
       "custom_excerpt": null,
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "For creators and aspiring entrepreneurs looking to generate a sustainable
-recurring revenue stream from their creative work, Ghost has built-in payments
-allowing you to create a subscription commerce business.
+      "excerpt": "For creators and aspiring entrepreneurs looking to generate a sustainable recurring revenue stream from their creative work, Ghost has built-in payments allowing you to create a subscription commerce business.
 
-Connect your Stripe [https://stripe.com] account to Ghost, and you'll be able to
-quickly and easily create monthly and yearly premium plans for members to
-subscribe to, as well as complimentary plans for friends and family.
+Connect your Stripe [https://stripe.com] account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
 
 Ghost takes 0% payment fees, so everything you make is yours to ",
       "feature_image": "https://static.ghost.org/v4.0.0/images/organizing-your-content.png",
@@ -3132,29 +3070,19 @@ Ghost takes 0% payment fees, so everything you make is yours to ",
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "plaintext": "For creators and aspiring entrepreneurs looking to generate a sustainable
-recurring revenue stream from their creative work, Ghost has built-in payments
-allowing you to create a subscription commerce business.
+      "plaintext": "For creators and aspiring entrepreneurs looking to generate a sustainable recurring revenue stream from their creative work, Ghost has built-in payments allowing you to create a subscription commerce business.
 
-Connect your Stripe [https://stripe.com] account to Ghost, and you'll be able to
-quickly and easily create monthly and yearly premium plans for members to
-subscribe to, as well as complimentary plans for friends and family.
+Connect your Stripe [https://stripe.com] account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
 
 Ghost takes 0% payment fees, so everything you make is yours to keep!
 
-Using subscriptions, you can build an independent media business like 
-Stratechery [https://stratechery.com], The Information
-[https://www.theinformation.com], or The Browser [https://thebrowser.com].
+Using subscriptions, you can build an independent media business like Stratechery [https://stratechery.com], The Information [https://www.theinformation.com], or The Browser [https://thebrowser.com].
 
-The creator economy is just getting started, and Ghost allows you to build
-something based on technology that you own and control.
+The creator economy is just getting started, and Ghost allows you to build something based on technology that you own and control.
 
-[https://thebrowser.com]The Browser has over 10,000 paying subscribersMost
-successful subscription businesses publish a mix of free and paid posts to
-attract a new audience, and upsell the most loyal members to a premium offering.
-You can also mix different access levels within the same post, showing a free
-preview to logged out members and then, right when you're ready for a
-cliffhanger, that's a good time to...",
+https://thebrowser.comThe Browser has over 10,000 paying subscribers
+
+Most successful subscription businesses publish a mix of free and paid posts to attract a new audience, and upsell the most loyal members to a premium offering. You can also mix different access levels within the same post, showing a free preview to logged out members and then, right when you're ready for a cliffhanger, that's a good time to...",
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "reading_time": 1,
       "slug": "sell",
@@ -3255,14 +3183,11 @@ cliffhanger, that's a good time to...",
  * Praesent
  * Pellentesque
 
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo.
 
+1234abcdefghijkl
 
-Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac
-turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor
-sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies
-mi vitae est. Mauris placerat eleifend leo.
-
-1234abcdefghijklDefinition listConsectetur ad",
+Definition listConsectetur ad",
       "feature_image": null,
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -3298,11 +3223,15 @@ mi vitae est. Mauris placerat eleifend leo.
       "custom_template": null,
       "email_subject": null,
       "excerpt": "testing
+
+
 mctesters
+
 
  * test
  * line
- * items",
+ * items
+",
       "feature_image": "http://placekitten.com/500/200",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -3345,13 +3274,8 @@ mctesters
       "custom_template": null,
       "email_subject": null,
       "excerpt": "HTML Ipsum Presents
-Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac
-turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor
-sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies
-mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien
-ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae,
-ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros
-ipsum rutrum or",
+
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum o",
       "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -3419,7 +3343,7 @@ exports[`Posts Content API Can request posts from different origin 2: [headers] 
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "46357",
+  "content-length": "46342",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
