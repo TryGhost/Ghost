@@ -333,16 +333,9 @@ export default class PaidMix extends Component {
         // tiers all have 0 data
         if (this.areTiersAllZero) {
             totalTiersAmount = 100;
-            if (data.length > 0) {
-                let equalPercentageData = Math.round(100 / data.length);
-                for (let i = 0; i < data.length; i++) {
-                    data[i] = equalPercentageData;
-                }
-            } else {
-                labels[0] = 'Tier 1';
-                labels[1] = 'Tier 2';
-                data[0] = 50;
-                data[1] = 50;
+            let equalPercentageData = Math.round(100 / data.length);
+            for (let i = 0; i < data.length; i++) {
+                data[i] = equalPercentageData;
             }
         // tiers have good data
         } else {
