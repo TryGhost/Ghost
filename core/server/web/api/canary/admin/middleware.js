@@ -36,7 +36,8 @@ const notImplemented = function (req, res, next) {
         schedules: ['PUT'],
         files: ['POST'],
         media: ['POST'],
-        db: ['POST']
+        db: ['POST'],
+        settings: ['GET']
     };
 
     const match = req.url.match(/^\/(\w+)\/?/);
