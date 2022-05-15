@@ -38,20 +38,14 @@ function serializeSettings(models, apiConfig, frame) {
     }
 
     frame.response = {
-        settings: mappers.settings(filteredSettings, frame),
+        settings: mappers.settings(filteredSettings),
         meta: {}
     };
 
-    if (frame.options.type || frame.options.group) {
-        frame.response.meta.filters = {};
-
-        if (frame.options.type) {
-            frame.response.meta.filters.type = frame.options.type;
-        }
-
-        if (frame.options.group) {
-            frame.response.meta.filters.group = frame.options.group;
-        }
+    if (frame.options.group) {
+        frame.response.meta.filters = {
+            group: frame.options.group
+        };
     }
 }
 

@@ -1,6 +1,5 @@
 const _ = require('lodash');
 const url = require('./utils/url');
-const typeGroupMapper = require('../../../../shared/serializers/input/utils/settings-filter-type-group-mapper');
 const settingsCache = require('../../../../../../shared/settings-cache');
 const {WRITABLE_KEYS_ALLOWLIST} = require('../../../../../../shared/labs');
 
@@ -9,18 +8,6 @@ const DEPRECATED_SETTINGS = [
 ];
 
 module.exports = {
-    browse(apiConfig, frame) {
-        if (frame.options.type) {
-            let mappedGroupOptions = typeGroupMapper(frame.options.type);
-
-            if (frame.options.group) {
-                frame.options.group = `${frame.options.group},${mappedGroupOptions}`;
-            } else {
-                frame.options.group = mappedGroupOptions;
-            }
-        }
-    },
-
     edit(apiConfig, frame) {
         // CASE: allow shorthand syntax where a single key and value are passed to edit instead of object and options
         if (_.isString(frame.data)) {

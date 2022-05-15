@@ -58,10 +58,6 @@ const forTag = (id, attrs, options) => {
     return attrs;
 };
 
-const forSettings = (attrs) => {
-    return attrs;
-};
-
 const forImage = (path) => {
     return urlUtils.urlFor('image', {image: path}, true);
 };
@@ -69,5 +65,4 @@ const forImage = (path) => {
 module.exports.forPost = forPost;
 module.exports.forUser = forUser;
 module.exports.forTag = forTag;
-module.exports.forSettings = forSettings;
 module.exports.forImage = forImage;
