@@ -40,23 +40,25 @@ describe('Settings API (canary)', function () {
                 });
         });
 
-        it('Can\'t edit permalinks', function (done) {
+        it('Can\'t edit permalinks', async function () {
             const settingToChange = {
                 settings: [{key: 'permalinks', value: '/:primary_author/:slug/'}]
             };
 
-            request.put(localUtils.API.getApiQuery('settings/'))
+            await request.put(localUtils.API.getApiQuery('settings/'))
                 .set('Origin', config.get('url'))
                 .send(settingToChange)
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(404)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(200)
+                .expect(({body, headers}) => {
+                    // it didn't actually edit anything, but we don't error anymore
+                    body.should.eql({
+                        settings: [],
+                        meta: {}
+                    });
 
-                    done();
+                    should.not.exist(headers['x-cache-invalidate']);
                 });
         });
 
@@ -110,22 +112,15 @@ describe('Settings API (canary)', function () {
                         .send(jsonResponse)
                         .expect('Content-Type', /json/)
                         .expect('Cache-Control', testUtils.cacheRules.private)
-                        .expect(404)
-                        .then(function ({body, headers}) {
-                            jsonResponse = body;
+                        .expect(200)
+                        .expect(({body, headers}) => {
+                            // it didn't actually edit anything, but we don't error anymore
+                            body.should.eql({
+                                settings: [],
+                                meta: {}
+                            });
+
                             should.not.exist(headers['x-cache-invalidate']);
-                            should.exist(jsonResponse.errors);
-                            testUtils.API.checkResponseValue(jsonResponse.errors[0], [
-                                'message',
-                                'context',
-                                'type',
-                                'details',
-                                'property',
-                                'help',
-                                'code',
-                                'id',
-                                'ghostErrorCode'
-                            ]);
                         });
                 });
         });
@@ -313,7 +308,16 @@ describe('Settings API (canary)', function () {
                 .send(settingsToChange)
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(403);
+                .expect(200)
+                .expect(({body, headers}) => {
+                    // it didn't actually edit anything, but we don't error anymore
+                    body.should.eql({
+                        settings: [],
+                        meta: {}
+                    });
+
+                    should.not.exist(headers['x-cache-invalidate']);
+                });
         });
     });
 
@@ -436,6 +440,26 @@ describe('Settings API (canary)', function () {
                             ]);
                         });
                 });
+        });
+    });
+
+    // @TODO swap this internally for using settingsbread and then remove
+    describe('edit via context internal', function () {
+        const api = require('../../../../core/server/api').endpoints;
+
+        before(async function () {
+            await localUtils.startGhost();
+        });
+
+        it('allows editing settings that cannot be edited via HTTP', async function () {
+            let jsonResponse = await api.settings.edit({
+                settings: [{key: 'email_verification_required', value: false}]
+            }, testUtils.context.internal);
+
+            jsonResponse.should.eql({
+                settings: [{key: 'email_verification_required', value: false}],
+                meta: {}
+            });
         });
     });
 });

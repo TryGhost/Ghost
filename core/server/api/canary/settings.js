@@ -15,6 +15,20 @@ const messages = {
 
 };
 
+async function getStripeConnectData(frame) {
+    const stripeConnectIntegrationToken = frame.data.settings.find(setting => setting.key === 'stripe_connect_integration_token');
+
+    if (stripeConnectIntegrationToken && stripeConnectIntegrationToken.value) {
+        const getSessionProp = prop => frame.original.session[prop];
+
+        return await settingsBREADService.getStripeConnectData(
+            stripeConnectIntegrationToken,
+            getSessionProp,
+            membersService.stripeConnect.getStripeConnectTokenData
+        );
+    }
+}
+
 module.exports = {
     docName: 'settings',
 
@@ -171,20 +185,17 @@ module.exports = {
             }
         },
         async query(frame) {
-            let stripeConnectData;
-            const stripeConnectIntegrationToken = frame.data.settings.find(setting => setting.key === 'stripe_connect_integration_token');
+            let stripeConnectData = await getStripeConnectData(frame);
 
-            if (stripeConnectIntegrationToken && stripeConnectIntegrationToken.value) {
-                const getSessionProp = prop => frame.original.session[prop];
+            let result = await settingsBREADService.edit(frame.data.settings, frame.options, stripeConnectData);
 
-                stripeConnectData = await settingsBREADService.getStripeConnectData(
-                    stripeConnectIntegrationToken,
-                    getSessionProp,
-                    membersService.stripeConnect.getStripeConnectTokenData
-                );
+            if (_.isEmpty(result)) {
+                this.headers.cacheInvalidate = false;
+            } else {
+                this.headers.cacheInvalidate = true;
             }
 
-            return await settingsBREADService.edit(frame.data.settings, frame.options, stripeConnectData);
+            return result;
         }
     },
 
