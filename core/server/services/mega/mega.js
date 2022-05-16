@@ -428,7 +428,7 @@ async function getEmailMemberRows({emailModel, memberSegment, options}) {
 
     let newsletter = null;
     if (labsService.isSet('multipleNewsletters')) {
-        newsletter = await emailModel.relations.newsletter ? emailModel.relations.newsletter : (emailModel.related('newsletter').fetch(Object.assign({}, {require: false}, _.pick(options, ['transacting']))));
+        newsletter = emailModel.relations.newsletter ? emailModel.relations.newsletter : (await emailModel.related('newsletter').fetch(Object.assign({}, {require: false}, _.pick(options, ['transacting']))));
     }
     const recipientFilter = transformEmailRecipientFilter(emailModel.get('recipient_filter'), {errorProperty: 'recipient_filter'}, newsletter);
     filterOptions.filter = recipientFilter;
@@ -609,7 +609,8 @@ module.exports = {
     _partitionMembersBySegment: partitionMembersBySegment,
     _getEmailMemberRows: getEmailMemberRows,
     _getFromAddress: getFromAddress,
-    _getReplyToAddress: getReplyToAddress
+    _getReplyToAddress: getReplyToAddress,
+    _sendEmailJob: sendEmailJob
 };
 
 /**
