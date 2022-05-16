@@ -233,7 +233,7 @@ input:focus,
     opacity: 0.2;
 }
 
-.gh-main,
+.gh-main:not(.gh-main-white),
 .gh-nav,
 .gh-unsplash-window {
     background: var(--dark-main-bg-color);
@@ -276,10 +276,6 @@ input:focus,
 
 .gh-btn-group .gh-btn:first-of-type {
     border-right: none !important;
-}
-
-.gh-btn-group .gh-btn-group-selected span {
-    background: var(--lightgrey-l1) !important;
 }
 
 .gh-btn-blue,
@@ -412,6 +408,47 @@ input:focus,
 
 .gh-publishmenu-dropdown {
     background: var(--whitegrey);
+}
+
+.gh-publish-setting {
+    border-bottom: 1px solid var(--lightgrey-l1);
+}
+
+.gh-publish-setting-trigger {
+    color: var(--darkgrey-d2);
+}
+
+.gh-publish-setting-title svg path {
+    stroke: var(--darkgrey-d2);
+}
+
+.gh-publish-newsletter-trigger {
+    background: var(--lightgrey);
+}
+
+.gh-publish-confirmation {
+    color: var(--middarkgrey);
+}
+
+.gh-publish-confirmation strong {
+    color: var(--black)
+}
+
+.gh-btn-pulse {
+    background: var(--green) !important;
+}
+
+.gh-publish-cta-secondary {
+    color: var(--middarkgrey);
+}
+
+.gh-publish-cta-secondary:hover {
+    color: var(--middarkgrey-l2);
+}
+
+.gh-post-bookmark {
+    border: 1px solid rgba(124, 139, 154, 0.25);
+    background: var(--white);
 }
 
 .gh-image-uploader {
@@ -698,12 +735,13 @@ input:focus,
     background: var(--whitegrey-l1);
 }
 
-.gh-browserpreview-browser {
-    background: var(--whitegrey);
+.gh-browserpreview-browser .tabs {
+    background: var(--whitegrey-l2);
 }
 
-.gh-browserpreview-browser .tabs div  {
-    background: var(--lightgrey);
+.gh-browserpreview-browser .tabs div,
+.gh-browserpreview-browser .tabs ul li {
+    background: var(--lightgrey-l2);
 }
 
 .tag-settings .gh-image-uploader {
@@ -794,30 +832,18 @@ input:focus,
 }
 
 /* Editor  */
-@media (max-width: 1024px) {
-    .gh-editor-header {
-        background-color: var(--dark-main-bg-color);
-    }
-}
-
-.gh-editor-back-button {
-    background: var(--dark-main-bg-color);
-}
-
-.gh-editor-post-status {
-    background: var(--dark-main-bg-color);
-}
-
-.gh-editor-preview-trigger {
-    background: var(--dark-main-bg-color) !important;
-}
-
-.gh-editor-preview-trigger:hover {
-    background: var(--whitegrey) !important;
-}
 
 .gh-btn-editor {
-    background: var(--dark-main-bg-color) !important;
+    background: var(--white) !important;
+}
+
+.gh-btn-editor.active, 
+.gh-btn-editor:hover {
+    background: var(--lightgrey) !important;
+}
+    
+.gh-editor-post-status {
+    background: var(--white);
 }
 
 .gh-editor-feature-image-add-button {
@@ -841,7 +867,7 @@ input:focus,
 }
 
 .gh-editor-wordcount-container {
-    background: var(--dark-main-bg-color);
+    background: var(--white);
 }
 
 /* Segment input */
@@ -867,11 +893,6 @@ input:focus,
 }
 
 /* Post preview modal */
-.gh-post-preview-header,
-.gh-post-preview-browser-footer {
-    background: var(--main-color-content-greybg);
-}
-
 .gh-post-preview-browser-footer {
     border-top: 1px solid var(--hairline-color-1);
 }
@@ -924,7 +945,7 @@ input:focus,
 .gh-post-preview-browser-container,
 .gh-post-preview-email-container,
 .gh-post-preview-social-container {
-    background: var(--dark-main-bg-color);
+    background: transparent;
 }
 
 .modal-fullsettings-main {
