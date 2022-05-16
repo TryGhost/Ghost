@@ -23,7 +23,7 @@ const expectedProperties = {
         'feature_image_caption',
         'featured',
         'visibility',
-        'email_recipient_filter',
+        'email_segment',
         'created_at',
         'updated_at',
         'published_at',
