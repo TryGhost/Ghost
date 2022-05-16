@@ -726,6 +726,10 @@ export default class App extends React.Component {
             return {
                 page: 'accountProfile'
             };
+        } else if (path === 'account/newsletters') {
+            return {
+                page: 'accountEmail'
+            };
         }
         return {};
     }

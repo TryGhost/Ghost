@@ -7,14 +7,24 @@ const React = require('react');
 
 export default function AccountEmailPage() {
     const {member, onAction} = useContext(AppContext);
-    const defaultSubscribedNewsletters = [...(member.newsletters || [])];
+    const defaultSubscribedNewsletters = [...(member?.newsletters || [])];
     const [subscribedNewsletters, setSubscribedNewsletters] = useState(defaultSubscribedNewsletters);
+
+    useEffect(() => {
+        if (!member) {
+            onAction('switchPage', {
+                page: 'signin'
+            });
+        }
+    }, [member, onAction]);
+
     useEffect(() => {
         setSubscribedNewsletters(member?.newsletters || []);
-    }, [member.newsletters]);
+    }, [member?.newsletters]);
 
     return (
         <NewsletterManagement
+            notification={null}
             subscribedNewsletters={subscribedNewsletters}
             updateSubscribedNewsletters={(updatedNewsletters) => {
                 setSubscribedNewsletters(updatedNewsletters);
