@@ -1,6 +1,5 @@
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {blur, click, currentURL, fillIn, find, findAll} from '@ember/test-helpers';
-import {enableLabsFlag} from '../../helpers/labs-flag';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -11,9 +10,6 @@ describe('Acceptance: Settings - Membership', function () {
     setupMirage(hooks);
 
     beforeEach(function () {
-        enableLabsFlag(this.server, 'multipleProducts');
-        enableLabsFlag(this.server, 'tierWelcomePages');
-        enableLabsFlag(this.server, 'tierName');
     });
 
     beforeEach(async function () {

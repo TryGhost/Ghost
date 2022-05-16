@@ -47,10 +47,8 @@
                             <h3>{{offer.name}}</h3>
                         </LinkTo>
                         <LinkTo @route="offer" @model={{offer}} class="gh-list-data">
-                            {{#if (feature "multipleProducts")}}
-                                <span>{{offer.tier.name}}</span>
-                                <span class="midgrey">-</span>
-                            {{/if}}
+                            <span>{{offer.tier.name}}</span>
+                            <span class="midgrey">-</span>
                             <span class="midgrey">{{if (eq offer.cadence 'month') 'Monthly' 'Yearly'}} </span>
                         </LinkTo>
                         <LinkTo @route="offer" @model={{offer}} class="gh-list-data">

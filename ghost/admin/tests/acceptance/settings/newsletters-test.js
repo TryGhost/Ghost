@@ -1,12 +1,11 @@
 import {authenticateSession} from 'ember-simple-auth/test-support';
 import {click, currentURL, fillIn, find, findAll} from '@ember/test-helpers';
-import {enableLabsFlag} from '../../helpers/labs-flag';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
 
-describe('Acceptance: Settings - Newsletters (multipleNewslettersUI)', function () {
+describe('Acceptance: Settings - Newsletters', function () {
     const hooks = setupApplicationTest();
     setupMirage(hooks);
 
@@ -15,9 +14,6 @@ describe('Acceptance: Settings - Newsletters (multipleNewslettersUI)', function 
 
         const role = this.server.create('role', {name: 'Owner'});
         this.server.create('user', {roles: [role]});
-
-        enableLabsFlag(this.server, 'multipleNewsletters');
-        enableLabsFlag(this.server, 'multipleNewslettersUI');
 
         return await authenticateSession();
     });

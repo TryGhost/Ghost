@@ -16,7 +16,7 @@ describe('Integration: Component: gh-psm-visibility-input', function () {
         await render(hbs`{{gh-psm-visibility-input post=post}}`);
 
         expect(this.element, 'top-level elements').to.exist;
-        expect(findAll('option'), 'number of options').to.have.length(3);
+        expect(findAll('option'), 'number of options').to.have.length(4);
         expect(find('select').value, 'selected option value').to.equal('members');
     });
 
@@ -31,7 +31,7 @@ describe('Integration: Component: gh-psm-visibility-input', function () {
         await render(hbs`{{gh-psm-visibility-input post=post}}`);
 
         expect(this.element, 'top-level elements').to.exist;
-        expect(findAll('option'), 'number of options').to.have.length(3);
+        expect(findAll('option'), 'number of options').to.have.length(4);
         expect(find('select').value, 'selected option value').to.equal('public');
 
         await fillIn('select', 'paid');

@@ -69,31 +69,29 @@ export default class VisibilitySegmentSelect extends Component {
     *fetchOptionsTask() {
         const options = yield [];
 
-        if (this.feature.get('multipleProducts')) {
-            // fetch all tiers with count
-            // TODO: add `include: 'count.members` to query once API supports
-            const tiers = yield this.store.query('tier', {filter: 'type:paid', limit: 'all', include: 'monthly_price,yearly_price,benefits'});
-            this.tiers = tiers;
+        // fetch all tiers with count
+        // TODO: add `include: 'count.members` to query once API supports
+        const tiers = yield this.store.query('tier', {filter: 'type:paid', limit: 'all', include: 'monthly_price,yearly_price,benefits'});
+        this.tiers = tiers;
 
-            if (tiers.length > 0) {
-                const tiersGroup = {
-                    groupName: 'Tiers',
-                    options: []
-                };
+        if (tiers.length > 0) {
+            const tiersGroup = {
+                groupName: 'Tiers',
+                options: []
+            };
 
-                tiers.forEach((tier) => {
-                    tiersGroup.options.push({
-                        name: tier.name,
-                        id: tier.id,
-                        count: tier.count?.members,
-                        class: 'segment-tier'
-                    });
+            tiers.forEach((tier) => {
+                tiersGroup.options.push({
+                    name: tier.name,
+                    id: tier.id,
+                    count: tier.count?.members,
+                    class: 'segment-tier'
                 });
+            });
 
-                options.push(tiersGroup);
-                if (this.args.selectDefaultTier && !this.args.tiers) {
-                    this.setSegment([tiersGroup.options[0]]);
-                }
+            options.push(tiersGroup);
+            if (this.args.selectDefaultTier && !this.args.tiers) {
+                this.setSegment([tiersGroup.options[0]]);
             }
         }
 

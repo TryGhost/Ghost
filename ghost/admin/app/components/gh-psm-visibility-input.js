@@ -12,8 +12,7 @@ const VISIBILITIES = [
 @classic
 export default class GhPsmVisibilityInput extends Component {
     @service settings;
-    @service feature;
-
+    
     // public attrs
     post = null;
 
@@ -25,11 +24,9 @@ export default class GhPsmVisibilityInput extends Component {
     init() {
         super.init(...arguments);
         this.availableVisibilities = [...VISIBILITIES];
-        if (this.feature.get('multipleProducts')) {
-            this.availableVisibilities.push(
-                {label: 'Specific tier(s)', name: 'tiers'}
-            );
-        }
+        this.availableVisibilities.push(
+            {label: 'Specific tier(s)', name: 'tiers'}
+        );
     }
 
     @action

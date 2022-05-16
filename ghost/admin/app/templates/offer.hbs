@@ -46,11 +46,7 @@
                         </h4>
                         <div class="gh-main-section-content grey">
                             <GhFormGroup @errors={{this.errors}} @property="product-cadence">
-                                {{#if (feature "multipleProducts")}}
                                 <label for="product-cadence" class="fw6">Tier – cadence</label>
-                                {{else}}
-                                <label for="product-cadence" class="fw6">Cadence</label>
-                                {{/if}}
                                 <span class="gh-select">
                                     <OneWaySelect
                                         @value={{this.cadence}}

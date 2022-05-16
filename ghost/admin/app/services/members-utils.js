@@ -121,7 +121,7 @@ export default class MembersUtilsService extends Service {
             settingsParam.append('portalPrices', encodeURIComponent(portalPlans));
         }
 
-        if (portalTiers && this.feature.get('multipleProducts')) {
+        if (portalTiers) {
             settingsParam.append('portalProducts', encodeURIComponent(portalTiers));
         }
 

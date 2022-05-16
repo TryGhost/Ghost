@@ -18,7 +18,7 @@ const FILTER_PROPERTIES = [
     {label: 'Created', name: 'created_at', group: 'Basic', valueType: 'date'},
 
     // Member subscription
-    {label: 'Membership tier', name: 'tier', group: 'Subscription', valueType: 'array', feature: 'multipleProducts'},
+    {label: 'Membership tier', name: 'tier', group: 'Subscription', valueType: 'array'},
     {label: 'Member status', name: 'status', group: 'Subscription'},
     {label: 'Billing period', name: 'subscriptions.plan_interval', group: 'Subscription'},
     {label: 'Stripe subscription status', name: 'subscriptions.status', group: 'Subscription'},
