@@ -1,25 +1,10 @@
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('api:canary:utils:serializers:input:pages');
-const mapNQLKeyValues = require('@tryghost/nql').utils.mapKeyValues;
 const mobiledoc = require('../../../../../lib/mobiledoc');
 const url = require('./utils/url');
 const slugFilterOrder = require('./utils/slug-filter-order');
 const localUtils = require('../../index');
 const postsMetaSchema = require('../../../../../data/schema').tables.posts_meta;
-
-const replacePageWithType = mapNQLKeyValues({
-    key: {
-        from: 'page',
-        to: 'type'
-    },
-    values: [{
-        from: false,
-        to: 'post'
-    }, {
-        from: true,
-        to: 'page'
-    }]
-});
 
 function removeMobiledocFormat(frame) {
     if (frame.options.formats && frame.options.formats.includes('mobiledoc')) {
@@ -119,8 +104,6 @@ module.exports = {
             defaultFormat(frame);
             defaultRelations(frame);
         }
-
-        frame.options.mongoTransformer = replacePageWithType;
     },
 
     read(apiConfig, frame) {

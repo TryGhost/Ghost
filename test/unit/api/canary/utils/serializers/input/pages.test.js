@@ -35,27 +35,13 @@ describe('Unit: canary/utils/serializers/input/pages', function () {
             const frame = {
                 apiType: 'content',
                 options: {
-                    filter: 'page:false+tag:eins',
+                    filter: 'tag:eins',
                     context: {}
                 }
             };
 
             serializers.input.pages.browse(apiConfig, frame);
-            frame.options.filter.should.eql('(page:false+tag:eins)+type:page');
-        });
-
-        it('combine filters', function () {
-            const apiConfig = {};
-            const frame = {
-                apiType: 'content',
-                options: {
-                    filter: 'page:false',
-                    context: {}
-                }
-            };
-
-            serializers.input.pages.browse(apiConfig, frame);
-            frame.options.filter.should.eql('(page:false)+type:page');
+            frame.options.filter.should.eql('(tag:eins)+type:page');
         });
 
         it('remove mobiledoc option from formats', function () {
@@ -128,21 +114,6 @@ describe('Unit: canary/utils/serializers/input/pages', function () {
 
             serializers.input.pages.read(apiConfig, frame);
             frame.options.filter.should.eql('(type:page)+status:[draft,published,scheduled]');
-        });
-
-        it('custom page filter', function () {
-            const apiConfig = {};
-            const frame = {
-                apiType: 'content',
-                options: {
-                    filter: 'page:false',
-                    context: {}
-                },
-                data: {}
-            };
-
-            serializers.input.pages.read(apiConfig, frame);
-            frame.options.filter.should.eql('(page:false)+type:page');
         });
 
         it('custom status filter', function () {

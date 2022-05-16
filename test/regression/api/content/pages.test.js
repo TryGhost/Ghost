@@ -20,23 +20,12 @@ describe('api/canary/content/pages', function () {
         configUtils.restore();
     });
 
-    it('Can browse pages with page:false', function () {
+    it('Returns a validation error when unsupported "page" filter is used', function () {
         return request.get(localUtils.API.getApiQuery(`pages/?key=${key}&filter=page:false`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .then((res) => {
-                res.headers.vary.should.eql('Accept-Encoding');
-                should.exist(res.headers['access-control-allow-origin']);
-                should.not.exist(res.headers['x-cache-invalidate']);
-
-                const jsonResponse = res.body;
-                should.exist(jsonResponse.pages);
-                should.exist(jsonResponse.meta);
-
-                jsonResponse.pages.should.have.length(0);
-            });
+            .expect(400);
     });
 
     it('browse pages with slug filter, should order in slug order', function () {

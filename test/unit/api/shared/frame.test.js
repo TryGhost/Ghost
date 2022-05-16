@@ -21,7 +21,7 @@ describe('Unit: api/shared/frame', function () {
                 context: {user: 'id'},
                 body: {posts: []},
                 params: {id: 'id'},
-                query: {include: 'tags', filter: 'page:false', soup: 'yumyum'}
+                query: {include: 'tags', filter: 'type:post', soup: 'yumyum'}
             };
 
             const frame = new shared.Frame(original);
@@ -42,7 +42,7 @@ describe('Unit: api/shared/frame', function () {
                 context: {user: 'id'},
                 body: {posts: []},
                 params: {id: 'id'},
-                query: {include: 'tags', filter: 'page:false', soup: 'yumyum'}
+                query: {include: 'tags', filter: 'type:post', soup: 'yumyum'}
             };
 
             const frame = new shared.Frame(original);

@@ -133,18 +133,12 @@ describe('Posts API', function () {
         localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
     });
 
-    it('Cannot receive pages', async function () {
-        const res = await request.get(localUtils.API.getApiQuery('posts/?filter=page:true'))
+    it('Returns a validation error when unknown filter key is used', async function () {
+        await request.get(localUtils.API.getApiQuery('posts/?filter=page:true'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
-
-        should.not.exist(res.headers['x-cache-invalidate']);
-        const jsonResponse = res.body;
-        should.exist(jsonResponse.posts);
-        localUtils.API.checkResponse(jsonResponse, 'posts');
-        jsonResponse.posts.should.have.length(0);
+            .expect(400);
     });
 
     it('Can paginate posts', async function () {
