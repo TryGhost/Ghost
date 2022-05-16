@@ -23,7 +23,7 @@
             Scheduled
             {{#if this.isHovered}}
                 to be published
-                {{#if (and @post.emailRecipientFilter (not @post.email))}}
+                {{#if (and @post.newsletter (not @post.email))}}
                     and sent to <GhRecipientFilterCount @filter={{@post.fullRecipientFilter}} @newsletter={{@post.newsletter}} />
                 {{/if}}
                 {{this.scheduledTime}}
