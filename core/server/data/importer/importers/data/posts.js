@@ -37,9 +37,8 @@ class PostsImporter extends BaseImporter {
 
             if (_.has(obj, 'send_email_when_published')) {
                 if (obj.send_email_when_published) {
-                    obj.email_recipient_filter = obj.visibility === 'paid' ? 'paid' : 'all';
-                } else {
-                    obj.email_recipient_filter = 'none';
+                    obj.email_recipient_filter = obj.visibility === 'paid' ? 'status:-free' : 'all';
+                    // @TODO: we need to set the newsletter_id to the default newsletter here to have a proper fallback for older imports
                 }
                 delete obj.send_email_when_published;
             }

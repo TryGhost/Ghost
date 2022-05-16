@@ -372,7 +372,8 @@ DataGenerator.Content = {
             show_header_icon: true,
             show_header_title: true,
             show_badge: true,
-            sort_order: 1
+            sort_order: 1,
+            header_image: '__GHOST_URL__/content/images/2022/05/test.jpg'
         },
         {
             id: ObjectId().toHexString(),
@@ -389,7 +390,8 @@ DataGenerator.Content = {
             show_header_icon: true,
             show_header_title: true,
             show_badge: true,
-            sort_order: 2
+            sort_order: 2,
+            header_image: '__GHOST_URL__/content/images/2022/05/test.jpg'
         },
         {
             id: ObjectId().toHexString(),
@@ -406,7 +408,8 @@ DataGenerator.Content = {
             show_header_icon: true,
             show_header_title: true,
             show_badge: true,
-            sort_order: 2
+            sort_order: 2,
+            header_image: '__GHOST_URL__/content/images/2022/05/test.jpg'
         }
     ],
 

@@ -102,5 +102,23 @@ describe('PostsImporter', function () {
             should.exist(postWithoutNewsletter);
             should.not.exist(postWithoutNewsletter.newsletter_id);
         });
+
+        it('Maps send_email_when_published', function () {
+            const fakePosts = [{
+                slug: 'post-with-newsletter',
+                send_email_when_published: true
+            }];
+
+            const importer = new PostsImporter({posts: fakePosts});
+
+            importer.beforeImport();
+
+            const post = find(importer.dataToImport, {slug: 'post-with-newsletter'});
+            should.exist(post);
+            post.email_recipient_filter.should.eql('all');
+            should.not.exist(post.send_email_when_published);
+            // @TODO: need to check this mapping
+            //post.newsletter_id.should.eql();
+        });
     });
 });

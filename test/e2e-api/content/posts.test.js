@@ -27,8 +27,13 @@ describe('Posts Content API', function () {
 
     before(async function () {
         agent = await agentProvider.getContentAPIAgent();
-        await fixtureManager.init('owner:post', 'users:no-owner', 'user:inactive', 'posts', 'tags:extra', 'api_keys');
+        await fixtureManager.init('owner:post', 'users:no-owner', 'user:inactive', 'posts', 'tags:extra', 'api_keys', 'newsletters', 'members:newsletters');
         agent.authenticate();
+
+        // Assign a newsletter to one of the posts
+        const newsletterId = testUtils.DataGenerator.Content.newsletters[0].id;
+        const postId = testUtils.DataGenerator.Content.posts[0].id;
+        await models.Post.edit({newsletter_id: newsletterId}, {id: postId});
     });
 
     it('Can request posts', async function () {

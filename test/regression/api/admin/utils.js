@@ -37,7 +37,7 @@ const expectedProperties = {
         'featured',
         'status',
         'visibility',
-        'email_recipient_filter',
+        'email_segment',
         'created_at',
         'updated_at',
         'published_at',
