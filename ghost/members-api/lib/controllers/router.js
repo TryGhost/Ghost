@@ -120,16 +120,33 @@ module.exports = class RouterController {
 
     async createCheckoutSession(req, res) {
         let ghostPriceId = req.body.priceId;
+        const tierId = req.body.tierId;
+        const cadence = req.body.cadence;
         const identity = req.body.identity;
         const offerId = req.body.offerId;
         const metadata = req.body.metadata;
 
-        if (!ghostPriceId && !offerId) {
+        if (!ghostPriceId && !offerId && !tierId && !cadence) {
             res.writeHead(400);
             return res.end('Bad Request.');
         }
 
-        if (offerId && ghostPriceId) {
+        if (offerId && (ghostPriceId || (tierId && cadence))) {
+            res.writeHead(400);
+            return res.end('Bad Request.');
+        }
+
+        if (ghostPriceId && tierId && cadence) {
+            res.writeHead(400);
+            return res.end('Bad Request.');
+        }
+
+        if (tierId && !cadence) {
+            res.writeHead(400);
+            return res.end('Bad Request.');
+        }
+
+        if (cadence !== 'month' && cadence !== 'year') {
             res.writeHead(400);
             return res.end('Bad Request.');
         }
@@ -158,6 +175,17 @@ module.exports = class RouterController {
             } catch (err) {
                 res.writeHead(500);
                 return res.end('Could not use Offer.');
+            }
+        }
+
+        if (!ghostPriceId) {
+            const tier = await this._productRepository.get({id: tierId});
+            if (tier) {
+                if (cadence === 'month') {
+                    ghostPriceId = tier.get('monthly_price_id');
+                } else {
+                    ghostPriceId = tier.get('yearly_price_id');
+                }
             }
         }
 

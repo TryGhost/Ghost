@@ -61,8 +61,11 @@ module.exports = class MemberController {
             const cancelAtPeriodEnd = req.body.cancel_at_period_end;
             const smartCancel = req.body.smart_cancel;
             const cancellationReason = req.body.cancellation_reason;
-            const ghostPriceId = req.body.priceId;
-            if (cancelAtPeriodEnd === undefined && ghostPriceId === undefined && smartCancel === undefined) {
+            let ghostPriceId = req.body.priceId;
+            const tierId = req.body.tierId;
+            const cadence = req.body.cadence;
+
+            if (cancelAtPeriodEnd === undefined && ghostPriceId === undefined && smartCancel === undefined && tierId === undefined && cadence === undefined) {
                 throw new errors.BadRequestError({
                     message: 'Updating subscription failed!',
                     help: 'Request should contain "cancel_at_period_end" or "priceId" or "smart_cancel" field.'
@@ -102,6 +105,17 @@ module.exports = class MemberController {
                 throw new errors.BadRequestError({
                     message: 'Invalid token'
                 });
+            }
+
+            if (tierId && cadence) {
+                const tier = await this._productRepository.get({id: tierId});
+                if (tier) {
+                    if (cadence === 'month') {
+                        ghostPriceId = tier.get('monthly_price_id');
+                    } else {
+                        ghostPriceId = tier.get('yearly_price_id');
+                    }
+                }
             }
 
             if (ghostPriceId !== undefined) {
