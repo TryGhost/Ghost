@@ -406,10 +406,6 @@ input:focus,
     color: var(--darkgrey);
 }
 
-.gh-publishmenu-dropdown {
-    background: var(--whitegrey);
-}
-
 .gh-publish-setting {
     border-bottom: 1px solid var(--lightgrey-l1);
 }
@@ -837,7 +833,7 @@ input:focus,
     background: var(--white) !important;
 }
 
-.gh-btn-editor.active, 
+.gh-btn-editor.active,
 .gh-btn-editor:hover {
     background: var(--lightgrey) !important;
 }
