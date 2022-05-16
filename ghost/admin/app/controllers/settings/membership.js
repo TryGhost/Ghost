@@ -339,12 +339,12 @@ export default class MembersAccessController extends Controller {
         if (tier) {
             const monthlyPrice = tier.get('monthlyPrice');
             const yearlyPrice = tier.get('yearlyPrice');
-            if (monthlyPrice && monthlyPrice.amount) {
-                this.stripeMonthlyAmount = (monthlyPrice.amount / 100);
-                this.currency = monthlyPrice.currency;
+            this.currency = tier.get('currency');
+            if (monthlyPrice) {
+                this.stripeMonthlyAmount = (monthlyPrice / 100);
             }
-            if (yearlyPrice && yearlyPrice.amount) {
-                this.stripeYearlyAmount = (yearlyPrice.amount / 100);
+            if (yearlyPrice) {
+                this.stripeYearlyAmount = (yearlyPrice / 100);
             }
             this.updatePortalPreview();
         }
@@ -380,22 +380,8 @@ export default class MembersAccessController extends Controller {
             const monthlyAmount = Math.round(this.stripeMonthlyAmount * 100);
             const yearlyAmount = Math.round(this.stripeYearlyAmount * 100);
 
-            this.tier.set('monthlyPrice', {
-                nickname: 'Monthly',
-                amount: monthlyAmount,
-                active: true,
-                currency: this.currency,
-                interval: 'month',
-                type: 'recurring'
-            });
-            this.tier.set('yearlyPrice', {
-                nickname: 'Yearly',
-                amount: yearlyAmount,
-                active: true,
-                currency: this.currency,
-                interval: 'year',
-                type: 'recurring'
-            });
+            this.tier.set('monthlyPrice', monthlyAmount);
+            this.tier.set('yearlyPrice', yearlyAmount);
 
             const savedTier = await this.tier.save();
             return savedTier;

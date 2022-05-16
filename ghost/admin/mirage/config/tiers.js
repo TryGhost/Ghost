@@ -17,25 +17,11 @@ export default function mockTiers(server) {
         });
     });
 
-    server.put('/tiers/:id/', function ({tiers, tierBenefits}, {params}) {
+    server.put('/tiers/:id/', function ({tiers}, {params}) {
         const attrs = this.normalizedRequestAttrs();
         const tier = tiers.find(params.id);
 
-        const benefitAttrs = attrs.benefits;
-        delete attrs.benefits;
-
         tier.update(attrs);
-
-        benefitAttrs.forEach((benefit) => {
-            if (benefit.id) {
-                const tierBenefit = tierBenefits.find(benefit.id);
-                tierBenefit.tier = tier;
-                tierBenefit.save();
-            } else {
-                tier.createTierBenefit(benefit);
-                tier.save();
-            }
-        });
 
         return tier.save();
     });

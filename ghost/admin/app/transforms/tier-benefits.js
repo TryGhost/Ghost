@@ -9,7 +9,7 @@ export default class TierBenefits extends Transform {
         benefitsArray = serialized || [];
 
         benefitsItems = benefitsArray.map((itemDetails) => {
-            return TierBenefitItem.create(itemDetails);
+            return TierBenefitItem.create({name: itemDetails});
         });
 
         return emberA(benefitsItems);
@@ -21,7 +21,7 @@ export default class TierBenefits extends Transform {
         if (isEmberArray(deserialized)) {
             benefitsArray = deserialized.map((item) => {
                 let name = item.get('name').trim();
-                return {name};
+                return name;
             }).compact();
         } else {
             benefitsArray = [];

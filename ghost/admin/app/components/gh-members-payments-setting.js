@@ -233,47 +233,13 @@ export default Component.extend({
         this.onDisconnected?.();
     }),
 
-    calculateDiscount(monthly, yearly) {
-        if (isNaN(monthly) || isNaN(yearly)) {
-            return 0;
-        }
-
-        return monthly ? 100 - Math.floor((yearly / 12 * 100) / monthly) : 0;
-    },
-
-    getActivePrice(prices, interval, amount, currency) {
-        return prices.find((price) => {
-            return (
-                price.active && price.amount === amount && price.type === 'recurring' &&
-                price.interval === interval && price.currency.toLowerCase() === currency.toLowerCase()
-            );
-        });
-    },
-
     saveTier: task(function* () {
         const tiers = yield this.store.query('tier', {filter: 'type:paid', include: 'monthly_price, yearly_price'});
         this.tier = tiers.firstObject;
         if (this.tier) {
-            const yearlyDiscount = this.calculateDiscount(5, 50);
-            this.tier.set('monthlyPrice', {
-                nickname: 'Monthly',
-                amount: 500,
-                active: true,
-                description: 'Full access',
-                currency: 'usd',
-                interval: 'month',
-                type: 'recurring'
-            });
-            this.tier.set('yearlyPrice', {
-                nickname: 'Yearly',
-                amount: 5000,
-                active: true,
-                currency: 'usd',
-                description: yearlyDiscount > 0 ? `${yearlyDiscount}% discount` : 'Full access',
-                interval: 'year',
-                type: 'recurring'
-            });
-
+            this.tier.set('monthlyPrice', 500);
+            this.tier.set('yearlyPrice', 5000);
+            this.tier.set('currency', 'usd');
             let pollTimeout = 0;
             /** To allow Stripe config to be ready in backend, we poll the save tier request */
             while (pollTimeout < RETRY_PRODUCT_SAVE_MAX_POLL) {

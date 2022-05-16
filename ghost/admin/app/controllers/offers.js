@@ -42,9 +42,9 @@ export default class MembersController extends Controller {
                 return p.id === offer.tier.id;
             });
             const price = offer.cadence === 'month' ? tier.monthlyPrice : tier.yearlyPrice;
-            offer.finalCurrency = offer.currency || price.currency;
-            offer.originalPrice = price.amount;
-            offer.updatedPrice = offer.type === 'fixed' ? (price.amount - offer.amount) : (price.amount - ((price.amount * offer.amount) / 100));
+            offer.finalCurrency = offer.currency || tier.currency;
+            offer.originalPrice = price;
+            offer.updatedPrice = offer.type === 'fixed' ? (price - offer.amount) : (price - ((price * offer.amount) / 100));
             return offer;
         });
     }

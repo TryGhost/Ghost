@@ -7,20 +7,7 @@ export default Factory.extend({
     slug(i) { return `tier-${i}`;},
     type: 'paid',
     visibility: 'none',
-    monthly_price() {
-        return {
-            interval: 'month',
-            nickname: 'Monthly',
-            currency: 'usd',
-            amount: 500
-        };
-    },
-    yearly_price() {
-        return {
-            interval: 'year',
-            nickname: 'Yearly',
-            currency: 'usd',
-            amount: 5000
-        };
-    }
+    currency: 'usd',
+    monthly_price: 500,
+    yearly_price: 5000
 });

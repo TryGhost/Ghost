@@ -165,25 +165,9 @@ export default class GhLaunchWizardConnectStripeComponent extends Component {
             this.tier = tiers.firstObject;
 
             if (this.tier) {
-                const yearlyDiscount = this.calculateDiscount(5, 50);
-                this.tier.set('monthlyPrice', {
-                    nickname: 'Monthly',
-                    amount: 500,
-                    active: true,
-                    description: 'Full access',
-                    currency: 'usd',
-                    interval: 'month',
-                    type: 'recurring'
-                });
-                this.tier.set('yearlyPrice', {
-                    nickname: 'Yearly',
-                    amount: 5000,
-                    active: true,
-                    currency: 'usd',
-                    description: yearlyDiscount > 0 ? `${yearlyDiscount}% discount` : 'Full access',
-                    interval: 'year',
-                    type: 'recurring'
-                });
+                this.tier.set('currency', 'usd');
+                this.tier.set('monthlyPrice', 500);
+                this.tier.set('yearlyPrice', 5000);
                 yield this.saveTier.perform();
                 this.settings.set('portalPlans', ['free', 'monthly', 'yearly']);
                 yield this.settings.save();
