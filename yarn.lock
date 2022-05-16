@@ -1679,10 +1679,10 @@
   dependencies:
     jsonwebtoken "^8.5.1"
 
-"@tryghost/helpers@1.1.67":
-  version "1.1.67"
-  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.67.tgz#cbfcf2d6b2c1d0a64b18d859992c3a98f591a441"
-  integrity sha512-Yyk+6yGwkkce5jB4nSqFhXpx9DSK5XfbnYZ1/vBCaTPjCh/HLne32zmhPNruAL+Vpsd4+h3Xhh9+6e+xlMG4DQ==
+"@tryghost/helpers@1.1.68":
+  version "1.1.68"
+  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.68.tgz#6f70b6c8b631c19b2fa7dcb55485c1f72f5f7e9f"
+  integrity sha512-6XCoJ3ivEyHs0DbEXNN/xyjHb6I6W6jwFvetKBpRcmX3lyAcHcwl0UeGd1vFEdB7zrYp2dB2Pyh2eavmJFbf1A==
   dependencies:
     lodash-es "^4.17.11"
 
@@ -5789,7 +5789,7 @@ glob-parent@^6.0.1:
   dependencies:
     is-glob "^4.0.3"
 
-glob@7.2.0, glob@^7.0.0, glob@^7.1.2, glob@^7.1.3, glob@^7.1.4:
+glob@7.2.0:
   version "7.2.0"
   resolved "https://registry.yarnpkg.com/glob/-/glob-7.2.0.tgz#d15535af7732e02e948f4c41628bd910293f6023"
   integrity sha512-lmLf6gtyrPq8tTjSmrO94wBeQbFR3HbLHbuyD69wuyQkImp2hWqMGB47OX65FBkPffO641IP9jWa1z4ivqG26Q==
@@ -5801,7 +5801,7 @@ glob@7.2.0, glob@^7.0.0, glob@^7.1.2, glob@^7.1.3, glob@^7.1.4:
     once "^1.3.0"
     path-is-absolute "^1.0.0"
 
-glob@7.2.2:
+glob@7.2.2, glob@^7.0.0, glob@^7.1.2, glob@^7.1.3, glob@^7.1.4:
   version "7.2.2"
   resolved "https://registry.yarnpkg.com/glob/-/glob-7.2.2.tgz#29deb38e1ef90f132d5958abe9c3ee8e87f3c318"
   integrity sha512-NzDgHDiJwKYByLrL5lONmQFpK/2G78SMMfo+E9CuGlX4IkvfKDsiQSNPwAYxEy+e6p7ZQ3uslSLlwlJcqezBmQ==
