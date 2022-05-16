@@ -26,9 +26,7 @@ module.exports = {
         return frame.apiType === 'content';
     },
 
-    // @TODO: Remove, not used.
-    isAdminAPIKey: (frame) => {
-        return frame.options.context && Object.keys(frame.options.context).length !== 0 && frame.options.context.api_key &&
-            frame.options.context.api_key.type === 'admin';
+    isInternal: (frame) => {
+        return frame.options.context && frame.options.context.internal;
     }
 };

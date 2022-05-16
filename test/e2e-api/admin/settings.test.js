@@ -163,6 +163,18 @@ describe('Settings API', function () {
                     etag: anyEtag
                 });
         });
+
+        it('cannot edit uneditable settings', async function () {
+            await agent.put('settings/')
+                .body({
+                    settings: [{key: 'email_verification_required', value: false}]
+                })
+                .expectStatus(200)
+                .matchBodySnapshot()
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                });
+        });
     });
 
     describe('stripe connect', function () {
