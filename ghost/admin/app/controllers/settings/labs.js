@@ -10,7 +10,7 @@ import {
     isRequestEntityTooLargeError,
     isUnsupportedMediaTypeError
 } from 'ghost-admin/services/ajax';
-import {action, set} from '@ember/object';
+import {action} from '@ember/object';
 import {isBlank} from '@ember/utils';
 import {isArray as isEmberArray} from '@ember/array';
 import {run} from '@ember/runloop';
@@ -58,7 +58,6 @@ export default class LabsController extends Controller {
     yamlExtension = null;
     yamlMimeType = null;
     yamlAccept = null;
-    isOAuthConfigurationOpen = false;
 
     init() {
         super.init(...arguments);
@@ -144,11 +143,6 @@ export default class LabsController extends Controller {
     }
 
     @action
-    async saveOAuthSettings() {
-        await this.settings.save();
-    }
-
-    @action
     toggleDeleteAllModal() {
         this.toggleProperty('showDeleteAllModal');
     }
@@ -156,18 +150,6 @@ export default class LabsController extends Controller {
     @action
     toggleEarlyAccessModal() {
         this.toggleProperty('showEarlyAccessModal');
-    }
-
-    @action
-    async toggleIsOAuthEnabled() {
-        if (this.isOAuthEnabled) {
-            this.settings.set('oauthClientId', '');
-            this.settings.set('oauthClientSecret', '');
-            set(this, 'isOAuthConfigurationOpen', false);
-            await this.settings.save();
-        } else {
-            set(this, 'isOAuthConfigurationOpen', true);
-        }
     }
 
     /**
