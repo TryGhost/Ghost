@@ -43,12 +43,6 @@ const loadConverters = () => {
     const {compile} = require('html-to-text');
 
     const excerptSettings = mergeSettings({
-        limits: {
-            // Only process the first part of the document
-            maxChildNodes: 15,
-            // don't insert dots at the end
-            ellipsis: ''
-        },
         selectors: [
             {selector: 'a', options: {ignoreHref: true}},
             {selector: 'figcaption', format: 'skip'}
