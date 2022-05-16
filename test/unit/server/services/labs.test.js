@@ -57,6 +57,7 @@ describe('Labs Service', function () {
         // NOTE: this test should be rewritten to test the alpha flag independently of the internal ALPHA_FEATURES list
         //       otherwise we end up in the endless maintenance loop and need to update it every time a feature graduates from alpha
         labs.getAll().should.eql(expectedLabsObject({
+            oauthLogin: true,
             members: true
         }));
 
