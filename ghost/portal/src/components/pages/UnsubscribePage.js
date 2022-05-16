@@ -121,9 +121,9 @@ export default function UnsubscribePage() {
         const unsubscribedNewsletter = siteNewsletters?.find((d) => {
             return d.uuid === pageData.newsletterUuid;
         });
-        const hideClassName = hasInteracted ? 'hide' : '';
+        const hideClassName = hasInteracted ? 'gh-portal-hide' : '';
         return (
-            <p className={`gh-portal-text-center ${hideClassName}`}><strong>{member?.email}</strong> will no longer receive <strong>{unsubscribedNewsletter?.name}</strong> newsletter.</p>
+            <p className={`gh-portal-text-center gh-portal-header-message ${hideClassName}`}><strong>{member?.email}</strong> will no longer receive <strong>{unsubscribedNewsletter?.name}</strong> newsletter.</p>
         );
     };
 

@@ -1120,6 +1120,15 @@ const MultipleProductsGlobalStyles = `
     }
 }
 
+@keyframes fadeOut {
+    0% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
 .gh-portal-newsletter-selection {
     animation: 0.5s ease-in-out fadeIn;
 }
@@ -1132,6 +1141,10 @@ const MultipleProductsGlobalStyles = `
     margin: 0 auto 24px;
     color: var(--grey6);
     font-weight: 400;
+}
+
+.gh-portal-hide {
+    display: none;
 }
 `;
 
