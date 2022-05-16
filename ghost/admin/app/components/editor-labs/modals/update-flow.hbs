@@ -33,7 +33,7 @@
                     {{#if
                         (or post.isSent
                             (and post.isPublished post.email)
-                            (and post.isScheduled post.emailRecipientFilter (not post.email))
+                            post.willEmail
                         )
                     }}
                         {{#if post.emailOnly}}

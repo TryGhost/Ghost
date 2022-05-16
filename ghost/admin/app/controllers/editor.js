@@ -1069,7 +1069,6 @@ export default class EditorController extends Controller {
     async _showScheduledNotification(delayed) {
         let {
             publishedAtUTC,
-            emailRecipientFilter,
             previewUrl,
             emailOnly,
             newsletter
@@ -1079,7 +1078,7 @@ export default class EditorController extends Controller {
         let title = 'Scheduled';
         let description = emailOnly ? ['Will be sent'] : ['Will be published'];
 
-        if (emailRecipientFilter && emailRecipientFilter !== 'none') {
+        if (newsletter) {
             const recipientCount = await this.membersCountCache.countString(this.post.fullRecipientFilter, {newsletter});
             description.push(`${!emailOnly ? 'and delivered ' : ''}to <span><strong>${recipientCount}</strong></span>`);
         }

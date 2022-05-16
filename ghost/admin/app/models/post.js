@@ -104,7 +104,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     updatedBy: attr('number'),
     url: attr('string'),
     uuid: attr('string'),
-    emailRecipientFilter: attr('members-segment-string', {defaultValue: null}),
+    emailSegment: attr('members-segment-string', {defaultValue: null}),
     emailOnly: attr('boolean', {defaultValue: false}),
 
     featureImage: attr('string'),
@@ -160,9 +160,8 @@ export default Model.extend(Comparable, ValidationEngine, {
     hasEmail: computed('email', 'emailOnly', function () {
         return this.email !== null || this.emailOnly;
     }),
-
-    willEmail: computed('emailRecipientFilter', 'email', function () {
-        return this.emailRecipientFilter !== null && !this.email;
+    willEmail: computed('isScheduled', 'newsletter', 'email', function () {
+        return this.isScheduled && !!this.newsletter && !this.email;
     }),
 
     previewUrl: computed('uuid', 'ghostPaths.url', 'config.blogUrl', function () {
@@ -201,12 +200,12 @@ export default Model.extend(Comparable, ValidationEngine, {
         }
     }),
 
-    fullRecipientFilter: computed('newsletter.recipientFilter', 'emailRecipientFilter', function () {
+    fullRecipientFilter: computed('newsletter.recipientFilter', 'emailSegment', function () {
         if (!this.newsletter) {
-            return this.emailRecipientFilter;
+            return this.emailSegment;
         }
 
-        return `${this.newsletter.recipientFilter}+(${this.emailRecipientFilter})`;
+        return `${this.newsletter.recipientFilter}+(${this.emailSegment})`;
     }),
 
     // check every second to see if we're past the scheduled time

@@ -51,13 +51,11 @@
         {{#if (and this.feature.emailAnalytics (eq @post.displayName "post"))}}
             <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-recipients">
                 <div class="flex fw4">
-                    {{#if (or @post.email @post.willEmail)}}
-                        {{#if (eq @post.email.status "submitted")}}
-                            <span class="flex" data-tooltip="{{capitalize @post.email.recipientFilter}} members">
-                                <span class="darkgrey fw5 gh-content-email-stats">{{format-number @post.email.emailCount}}</span>
-                                <span class="midgrey-l2 fw4 gh-content-email-stats-mobile">{{gh-pluralize @post.email.emailCount "send"}}</span>
-                            </span>
-                        {{/if}}
+                    {{#if (eq @post.email.status "submitted")}}
+                        <span class="flex" data-tooltip="{{capitalize @post.email.recipientFilter}} members">
+                            <span class="darkgrey fw5 gh-content-email-stats">{{format-number @post.email.emailCount}}</span>
+                            <span class="midgrey-l2 fw4 gh-content-email-stats-mobile">{{gh-pluralize @post.email.emailCount "send"}}</span>
+                        </span>
                     {{/if}}
                 </div>
             </LinkTo>
@@ -84,9 +82,9 @@
             <a href={{@post.url}} class="permalink gh-list-data gh-post-list-status" target="_blank" rel="noopener noreferrer">
                 <div class="flex items-center">
                     {{#if @post.isScheduled}}
-                    <span class="gh-content-status-scheduled gh-badge nowrap" title="Scheduled" data-tooltip="{{capitalize this.scheduledText}} to {{@post.emailRecipientFilter}} members">
+                    <span class="gh-content-status-scheduled gh-badge nowrap" title="Scheduled" data-tooltip="{{capitalize this.scheduledText}} to {{@post.emailSegment}} members">
                         Scheduled
-                        {{#if @post.emailRecipientFilter}}
+                        {{#if @post.newsletter}}
                         {{svg-jar "email-stroke"}}
                         {{/if}}
                     </span>
@@ -118,9 +116,9 @@
             <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-status">
                 <div class="flex items-center">
                     {{#if @post.isScheduled}}
-                    <span class="gh-content-status-scheduled gh-badge nowrap" title="Scheduled" data-tooltip="{{capitalize this.scheduledText}} to {{@post.emailRecipientFilter}} members">
+                    <span class="gh-content-status-scheduled gh-badge nowrap" title="Scheduled" data-tooltip="{{capitalize this.scheduledText}} to {{@post.emailSegment}} members">
                         Scheduled
-                        {{#if @post.emailRecipientFilter}}
+                        {{#if @post.newsletter}}
                         {{svg-jar "email-stroke"}}
                         {{/if}}
                     </span>

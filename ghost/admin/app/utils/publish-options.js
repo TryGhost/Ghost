@@ -273,8 +273,8 @@ export default class PublishOptions {
         const adapterOptions = {};
 
         if (willEmail) {
-            adapterOptions.newsletter = this.newsletter.id;
-            adapterOptions.emailRecipientFilter = this.recipientFilter;
+            adapterOptions.newsletter = this.newsletter.slug;
+            adapterOptions.emailSegment = this.recipientFilter;
         }
 
         try {

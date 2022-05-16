@@ -335,7 +335,7 @@ export default Component.extend({
             // Set default newsletter recipients
             this.set('sendEmailWhenPublished', this.defaultEmailRecipients);
         } else {
-            this.set('sendEmailWhenPublished', this.post.emailRecipientFilter);
+            this.set('sendEmailWhenPublished', this.post.emailSegment);
         }
     },
 
@@ -476,7 +476,7 @@ export default Component.extend({
 
         try {
             // will show alert for non-date related failed validations
-            post = yield this.saveTask.perform({sendEmailWhenPublished, newsletter: this.selectedNewsletter?.id, emailOnly});
+            post = yield this.saveTask.perform({sendEmailWhenPublished, newsletter: this.selectedNewsletter?.slug, emailOnly});
 
             this._cachePublishedAtBlogTZ();
 
