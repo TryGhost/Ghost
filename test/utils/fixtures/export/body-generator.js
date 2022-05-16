@@ -142,6 +142,7 @@ const exportedBodyLatest = () => {
             },
             data: {
                 custom_theme_settings: [],
+                newsletters: [],
                 posts: [],
                 posts_authors: [],
                 posts_meta: [],

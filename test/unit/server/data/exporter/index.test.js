@@ -39,8 +39,8 @@ describe('Exporter', function () {
 
         it('should try to export all the correct tables (without excluded)', function (done) {
             exporter.doExport().then(function (exportData) {
-                // NOTE: 10 default tables
-                const expectedCallCount = 10;
+                // NOTE: 11 default tables
+                const expectedCallCount = 11;
 
                 should.exist(exportData);
 
@@ -52,16 +52,17 @@ describe('Exporter', function () {
                 knexMock.callCount.should.eql(expectedCallCount);
                 queryMock.select.callCount.should.have.eql(expectedCallCount);
 
-                knexMock.getCall(0).args[0].should.eql('posts');
-                knexMock.getCall(1).args[0].should.eql('posts_meta');
-                knexMock.getCall(2).args[0].should.eql('users');
-                knexMock.getCall(3).args[0].should.eql('posts_authors');
-                knexMock.getCall(4).args[0].should.eql('roles');
-                knexMock.getCall(5).args[0].should.eql('roles_users');
-                knexMock.getCall(6).args[0].should.eql('settings');
-                knexMock.getCall(7).args[0].should.eql('tags');
-                knexMock.getCall(8).args[0].should.eql('posts_tags');
-                knexMock.getCall(9).args[0].should.eql('custom_theme_settings');
+                knexMock.getCall(0).args[0].should.eql('newsletters');
+                knexMock.getCall(1).args[0].should.eql('posts');
+                knexMock.getCall(2).args[0].should.eql('posts_meta');
+                knexMock.getCall(3).args[0].should.eql('users');
+                knexMock.getCall(4).args[0].should.eql('posts_authors');
+                knexMock.getCall(5).args[0].should.eql('roles');
+                knexMock.getCall(6).args[0].should.eql('roles_users');
+                knexMock.getCall(7).args[0].should.eql('settings');
+                knexMock.getCall(8).args[0].should.eql('tags');
+                knexMock.getCall(9).args[0].should.eql('posts_tags');
+                knexMock.getCall(10).args[0].should.eql('custom_theme_settings');
 
                 done();
             }).catch(done);
@@ -71,8 +72,8 @@ describe('Exporter', function () {
             const include = ['mobiledoc_revisions', 'email_recipients'];
 
             exporter.doExport({include}).then(function (exportData) {
-                // NOTE: 10 default tables + 2 includes
-                const expectedCallCount = 12;
+                // NOTE: 11 default tables + 2 includes
+                const expectedCallCount = 13;
 
                 should.exist(exportData);
 
@@ -85,18 +86,19 @@ describe('Exporter', function () {
                 knexMock.callCount.should.eql(expectedCallCount);
                 queryMock.select.callCount.should.have.eql(expectedCallCount);
 
-                knexMock.getCall(0).args[0].should.eql('posts');
-                knexMock.getCall(1).args[0].should.eql('posts_meta');
-                knexMock.getCall(2).args[0].should.eql('users');
-                knexMock.getCall(3).args[0].should.eql('posts_authors');
-                knexMock.getCall(4).args[0].should.eql('roles');
-                knexMock.getCall(5).args[0].should.eql('roles_users');
-                knexMock.getCall(6).args[0].should.eql('settings');
-                knexMock.getCall(7).args[0].should.eql('tags');
-                knexMock.getCall(8).args[0].should.eql('posts_tags');
-                knexMock.getCall(9).args[0].should.eql('mobiledoc_revisions');
-                knexMock.getCall(10).args[0].should.eql('email_recipients');
-                knexMock.getCall(11).args[0].should.eql('custom_theme_settings');
+                knexMock.getCall(0).args[0].should.eql('newsletters');
+                knexMock.getCall(1).args[0].should.eql('posts');
+                knexMock.getCall(2).args[0].should.eql('posts_meta');
+                knexMock.getCall(3).args[0].should.eql('users');
+                knexMock.getCall(4).args[0].should.eql('posts_authors');
+                knexMock.getCall(5).args[0].should.eql('roles');
+                knexMock.getCall(6).args[0].should.eql('roles_users');
+                knexMock.getCall(7).args[0].should.eql('settings');
+                knexMock.getCall(8).args[0].should.eql('tags');
+                knexMock.getCall(9).args[0].should.eql('posts_tags');
+                knexMock.getCall(10).args[0].should.eql('mobiledoc_revisions');
+                knexMock.getCall(11).args[0].should.eql('email_recipients');
+                knexMock.getCall(12).args[0].should.eql('custom_theme_settings');
 
                 done();
             }).catch(done);
