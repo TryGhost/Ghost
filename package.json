@@ -83,7 +83,7 @@
     "@tryghost/kg-mobiledoc-html-renderer": "5.3.5",
     "@tryghost/limit-service": "1.2.0",
     "@tryghost/logging": "2.1.8",
-    "@tryghost/magic-link": "1.0.25",
+    "@tryghost/magic-link": "1.0.26",
     "@tryghost/member-events": "0.4.5",
     "@tryghost/members-api": "8.0.0",
     "@tryghost/members-events-service": "0.4.3",
