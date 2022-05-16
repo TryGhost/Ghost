@@ -10,7 +10,7 @@
                 <button type="button" class="gh-btn {{if (eq this.tab "browser") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changeTab "browser")}}><span>{{svg-jar "desktop"}}</span></button>
                 <button type="button" class="gh-btn {{if (eq this.tab "mobile") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changeTab "mobile")}}><span>{{svg-jar "mobile-phone"}}</span></button>
                 {{#if (and (not-eq this.settings.membersSignupAccess "none") (not-eq this.settings.editorDefaultEmailRecipients "disabled"))}}
-                    {{#if @data.post.isPost}}
+                    {{#if (and @data.publishOptions.post.isPost (not @data.publishOptions.user.isContributor))}}
                         <button type="button" class="gh-btn {{if (eq this.tab "email") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changeTab "email")}}><span>{{svg-jar "email-unread"}}</span></button>
                     {{/if}}
                 {{/if}}
@@ -25,13 +25,24 @@
             >
                 <span>Preview</span>
             </button>
-             <button
-                type="button"
-                class="gh-btn gh-btn-editor darkgrey gh-publish-trigger"
-                {{on "click" @data.togglePreviewPublish}}
-            >
-                <span>Publish</span>
-            </button>
+
+            {{#if @data.publishOptions.user.isContributor}}
+                <GhTaskButton
+                    @buttonText="Save"
+                    @task={{@data.saveTask}}
+                    @runningText="Saving"
+                    @class="gh-btn gh-btn-icon gh-btn-editor contributor-save-button"
+                    data-test-preview-contributor-save />
+            {{else}}
+                <button
+                    type="button"
+                    class="gh-btn gh-btn-editor darkgrey gh-publish-trigger"
+                    {{on "click" @data.togglePreviewPublish}}
+                >
+                    <span>Publish</span>
+                </button>
+            {{/if}}
+
             <div class="settings-menu-toggle-spacer"></div>
         </div>
     </header>
@@ -40,19 +51,21 @@
         <GhLoadingSpinner />
     {{else}}
         {{#if (eq this.tab "browser")}}
-            <EditorLabs::Modals::Preview::Browser @post={{@data.post}} />
+            <EditorLabs::Modals::Preview::Browser @post={{@data.publishOptions.post}} />
         {{/if}}
 
         {{#if (and (eq this.tab "mobile"))}}
-            <EditorLabs::Modals::Preview::Mobile @post={{@data.post}} />
+            <EditorLabs::Modals::Preview::Mobile @post={{@data.publishOptions.post}} />
         {{/if}}
 
-        {{#if (and (eq this.tab "email") @data.post.isPost)}}
-            <EditorLabs::Modals::Preview::Email @post={{@data.post}} @newsletter={{@data.newsletter}} />
-        {{/if}}
+        {{#unless @data.publishOptions.user.isContributor}}
+            {{#if (and (eq this.tab "email") @data.publishOptions.post.isPost)}}
+                <EditorLabs::Modals::Preview::Email @post={{@data.publishOptions.post}} @newsletter={{@data.publishOptions.newsletter}} />
+            {{/if}}
+        {{/unless}}
 
         {{#if (eq this.tab "social")}}
-            <EditorLabs::Modals::Preview::Social @post={{@data.post}} />
+            <EditorLabs::Modals::Preview::Social @post={{@data.publishOptions.post}} />
         {{/if}}
     {{/if}}
 </div>

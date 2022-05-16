@@ -88,8 +88,7 @@ export default class PublishManagement extends Component {
             // without restarting the flow or causing flicker
 
             this.previewModal = this.modals.open(PreviewModal, {
-                newsletter: this.publishOptions.newsletter,
-                post: this.publishOptions.post,
+                publishOptions: this.publishOptions,
                 hasDirtyAttributes: this.args.hasUnsavedChanges,
                 saveTask: this.saveTask,
                 togglePreviewPublish: this.togglePreviewPublish,
