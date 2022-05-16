@@ -69,52 +69,12 @@ describe('Unit: canary/utils/serializers/input/posts', function () {
                             type: 'content'
                         }
                     },
-                    filter: 'page:true+tag:eins'
+                    filter: 'tag:eins'
                 }
             };
 
             serializers.input.posts.browse(apiConfig, frame);
-            frame.options.filter.should.eql('(page:true+tag:eins)+type:post');
-        });
-
-        it('combine filters', function () {
-            const apiConfig = {};
-            const frame = {
-                apiType: 'content',
-                options: {
-                    context: {
-                        user: 0,
-                        api_key: {
-                            id: 1,
-                            type: 'content'
-                        }
-                    },
-                    filter: 'page:true'
-                }
-            };
-
-            serializers.input.posts.browse(apiConfig, frame);
-            frame.options.filter.should.eql('(page:true)+type:post');
-        });
-
-        it('combine filters', function () {
-            const apiConfig = {};
-            const frame = {
-                apiType: 'content',
-                options: {
-                    context: {
-                        user: 0,
-                        api_key: {
-                            id: 1,
-                            type: 'content'
-                        }
-                    },
-                    filter: '(page:true,page:false)'
-                }
-            };
-
-            serializers.input.posts.browse(apiConfig, frame);
-            frame.options.filter.should.eql('((page:true,page:false))+type:post');
+            frame.options.filter.should.eql('(tag:eins)+type:post');
         });
 
         it('remove mobiledoc option from formats', function () {
