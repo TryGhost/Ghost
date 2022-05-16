@@ -1422,12 +1422,13 @@
   dependencies:
     "@tryghost/errors" "^1.2.1"
 
-"@tryghost/admin-api-schema@3.2.1":
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-3.2.1.tgz#ee2fc119e99211ffcec251bb83af4a33425b19cc"
-  integrity sha512-31bJQkqBuTlWCbis0JwZ/IoCmzSEJd0+hyDoBAqESvJBrtCuOxcfW/subrP/XHg+zXnf6Vz8CQQLJWMY7iPynw==
+"@tryghost/admin-api-schema@3.2.3":
+  version "3.2.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-3.2.3.tgz#0feae738e7240e38adeb354cd56d0cce3df2ecaa"
+  integrity sha512-+p4WFSyTiWO2Ift9Cg98Z8xJPd28A1p+ut/FzzvnIIjHhYPZK8KNKOOsIQkb+HU5motjEb0QvVlMZQWMD4Ib7A==
   dependencies:
     "@tryghost/errors" "^1.0.0"
+    ajv "^6.12.6"
     lodash "^4.17.11"
 
 "@tryghost/api-version-compatibility-service@0.4.1":
@@ -2542,7 +2543,7 @@ aggregate-error@^3.0.0:
     clean-stack "^2.0.0"
     indent-string "^4.0.0"
 
-ajv@^6.10.0, ajv@^6.12.3, ajv@^6.12.4:
+ajv@^6.10.0, ajv@^6.12.3, ajv@^6.12.4, ajv@^6.12.6:
   version "6.12.6"
   resolved "https://registry.yarnpkg.com/ajv/-/ajv-6.12.6.tgz#baf5a62e802b07d977034586f8c3baf5adf26df4"
   integrity sha512-j3fVLgvTo527anyYyJOGTYJbG+vnnQYvE0m5mmkc1TK+nxAppkCLMIL0aZ4dblVCNoGShhm+kzE4ZUykBoMg4g==
