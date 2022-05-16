@@ -1666,10 +1666,10 @@
     utils-copy-error "^1.0.1"
     uuid "^8.3.2"
 
-"@tryghost/express-dynamic-redirects@0.2.12":
-  version "0.2.12"
-  resolved "https://registry.yarnpkg.com/@tryghost/express-dynamic-redirects/-/express-dynamic-redirects-0.2.12.tgz#7926f4d735f3844642db1db1847e953acfb4b34b"
-  integrity sha512-zF47gMy9RZrlUgF2d+BqpMY62UF2pjflMi74wOLxG5tXZnvhYQaaQuNC3LbgHe3s7Jljq7LgVclJ3w2K+e+N1w==
+"@tryghost/express-dynamic-redirects@0.2.13":
+  version "0.2.13"
+  resolved "https://registry.yarnpkg.com/@tryghost/express-dynamic-redirects/-/express-dynamic-redirects-0.2.13.tgz#93335d65d11a8b44e859dd57a17cf20e16b555f5"
+  integrity sha512-sr42bZpba3dUoiyauK21gYpFKElscjvp03wJCBs3GcR2LEDy7QRXAOuCMHou+wNRkO3LOw+zVlr/U50p2NqTgg==
 
 "@tryghost/express-test@0.10.0":
   version "0.10.0"
