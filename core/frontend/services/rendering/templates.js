@@ -82,11 +82,11 @@ _private.getEntriesTemplateHierarchy = function getEntriesTemplateHierarchy(rout
  * @param {Object} postObject
  * @returns {String[]}
  */
-_private.getEntryTemplateHierarchy = function getEntryTemplateHierarchy(postObject) {
+_private.getEntryTemplateHierarchy = function getEntryTemplateHierarchy(postObject, context) {
     const templateList = ['post'];
     let slugTemplate = 'post-' + postObject.slug;
 
-    if (postObject.page) {
+    if (context === 'page') {
         templateList.unshift('page');
         slugTemplate = 'page-' + postObject.slug;
     }
@@ -141,8 +141,14 @@ _private.pickTemplate = function pickTemplate(templateList, fallback) {
     return template;
 };
 
-_private.getTemplateForEntry = function getTemplateForEntry(postObject) {
-    const templateList = _private.getEntryTemplateHierarchy(postObject);
+/**
+ *
+ * @param {Object} entry
+ * @param {('post'|'page')} context
+ * @returns
+ */
+_private.getTemplateForEntry = function getTemplateForEntry(entry, context) {
+    const templateList = _private.getEntryTemplateHierarchy(entry, context);
     const fallback = templateList[templateList.length - 1];
     return _private.pickTemplate(templateList, fallback);
 };
@@ -184,7 +190,11 @@ module.exports.setTemplate = function setTemplate(req, res, data) {
     } else if (res.routerOptions.type === 'custom') {
         res._template = _private.pickTemplate(res.routerOptions.templates, res.routerOptions.defaultTemplate);
     } else if (res.routerOptions.type === 'entry') {
-        res._template = _private.getTemplateForEntry(data.post);
+        if (res.routerOptions?.context?.includes('page')) {
+            res._template = _private.getTemplateForEntry(data.page, 'page');
+        } else {
+            res._template = _private.getTemplateForEntry(data.post, 'post');
+        }
     } else {
         res._template = 'index';
     }

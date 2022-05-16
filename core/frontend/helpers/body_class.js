@@ -10,11 +10,11 @@ module.exports = function body_class(options) { // eslint-disable-line camelcase
     const context = options.data.root.context || [];
     const obj = this.post || this.page;
     const tags = obj && obj.tags ? obj.tags : [];
-    const isPage = !!(obj && obj.page);
+    const isPage = !!(this.page);
 
     if (context.includes('home')) {
         classes.push('home-template');
-    } else if (context.includes('post') && obj) {
+    } else if (context.includes('post') && obj && !isPage) {
         classes.push('post-template');
     } else if (context.includes('page') && obj && isPage) {
         classes.push('page-template');
