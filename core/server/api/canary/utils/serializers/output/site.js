@@ -14,7 +14,6 @@ module.exports = {
                 'accent_color',
                 'url',
                 'version',
-                'oauth',
                 'sentry_dsn',
                 'sentry_env'
             ])
