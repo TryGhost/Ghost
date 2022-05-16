@@ -1,12 +1,11 @@
+require('should');
 const {agentProvider, fixtureManager, mockManager} = require('../../../utils/e2e-framework');
-const testUtils = require('../../../utils');
 const moment = require('moment');
 const ObjectId = require('bson-objectid');
 const {_sendEmailJob} = require('../../../../core/server/services/mega/mega');
 const models = require('../../../../core/server/models');
 const sinon = require('sinon');
 const mailgunProvider = require('../../../../core/server/services/bulk-email/mailgun');
-require('should');
 
 let agent;
 
@@ -16,7 +15,6 @@ async function createPublishedPostEmail() {
         status: 'draft',
         feature_image_alt: 'Testing sending',
         feature_image_caption: 'Testing <b>feature image caption</b>',
-        mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
         created_at: moment().subtract(2, 'days').toISOString(),
         updated_at: moment().subtract(2, 'days').toISOString(),
         created_by: ObjectId().toHexString(),
@@ -34,14 +32,14 @@ async function createPublishedPostEmail() {
         updated_at: res.body.posts[0].updated_at
     };
 
-    const newsletterId = testUtils.DataGenerator.Content.newsletters[1].id;
+    const newsletterId = fixtureManager.get('newsletters', 1).id;
     await agent.put(`posts/${id}/?email_recipient_filter=all&newsletter_id=${newsletterId}`)
         .body({posts: [updatedPost]})
         .expectStatus(200);
 
     const emailModel = await models.Email.findOne({
         post_id: id
-    }, testUtils.context.internal);
+    });
     should.exist(emailModel);
 
     return emailModel;
