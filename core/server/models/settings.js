@@ -216,6 +216,11 @@ Settings = ghostBookshelf.Model.extend({
                 return Promise.reject(new errors.ValidationError({message: tpl(messages.valueCannotBeBlank)}));
             }
 
+            // Ensure that object keys are stringified
+            if (_.isObject(item.value)) {
+                item.value = JSON.stringify(item.value);
+            }
+
             item = self.filterData(item);
 
             return Settings.forge({key: item.key}).fetch(options).then(function then(setting) {

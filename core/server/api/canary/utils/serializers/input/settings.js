@@ -1,10 +1,65 @@
 const _ = require('lodash');
 const url = require('./utils/url');
+const localUtils = require('../../index');
 const settingsCache = require('../../../../../../shared/settings-cache');
 const {WRITABLE_KEYS_ALLOWLIST} = require('../../../../../../shared/labs');
 
-const DEPRECATED_SETTINGS = [
-    'slack', 'bulk_email_settings'
+const EDITABLE_SETTINGS = [
+    'title',
+    'description',
+    'logo',
+    'cover_image',
+    'icon',
+    'locale',
+    'timezone',
+    'codeinjection_head',
+    'codeinjection_foot',
+    'facebook',
+    'twitter',
+    'navigation',
+    'secondary_navigation',
+    'meta_title',
+    'meta_description',
+    'og_image',
+    'og_title',
+    'og_description',
+    'twitter_image',
+    'twitter_title',
+    'twitter_description',
+    'is_private',
+    'password',
+    'default_content_visibility',
+    'default_content_visibility_tiers',
+    'members_signup_access',
+    'stripe_secret_key',
+    'stripe_publishable_key',
+    'stripe_connect_secret_key',
+    'stripe_connect_publishable_key',
+    'stripe_connect_account_id',
+    'stripe_connect_display_name',
+    'stripe_connect_livemode',
+    'portal_name',
+    'portal_button',
+    'portal_plans',
+    'portal_button_style',
+    'firstpromoter',
+    'firstpromoter_id',
+    'portal_button_icon',
+    'portal_button_signup_text',
+    'mailgun_api_key',
+    'mailgun_domain',
+    'mailgun_base_url',
+    'email_track_opens',
+    'amp',
+    'amp_gtag_id',
+    'slack_url',
+    'slack_username',
+    'unsplash',
+    'shared_views',
+    'accent_color',
+    'editor_default_email_recipients',
+    'editor_default_email_recipients_filter',
+    'labs'
 ];
 
 module.exports = {
@@ -13,27 +68,18 @@ module.exports = {
         if (_.isString(frame.data)) {
             frame.data = {settings: [{key: frame.data, value: frame.options}]};
         }
+
         const settings = settingsCache.getAll();
 
-        // Ignore and drop all values with Read-only flag
-        frame.data.settings = frame.data.settings.filter((setting) => {
-            const settingFlagsStr = settings[setting.key] ? settings[setting.key].flags : '';
-            const settingFlagsArr = settingFlagsStr ? settingFlagsStr.split(',') : [];
-            return !settingFlagsArr.includes('RO');
-        });
+        if (!localUtils.isInternal(frame)) {
+            // Ignore and drop all values not in the EDITABLE_SETTINGS list unless this is an internal request
+            frame.data.settings = frame.data.settings.filter((setting) => {
+                return EDITABLE_SETTINGS.includes(setting.key);
+            });
+        }
 
         frame.data.settings.forEach((setting) => {
-            // CASE: transform objects/arrays into string (we store stringified objects in the db)
-            // @TODO: This belongs into the model layer. We should stringify before saving and parse when fetching from db.
-            // @TODO: Fix when dropping v0.1
             const settingType = settings[setting.key] ? settings[setting.key].type : '';
-
-            //TODO: Needs to be removed once we get rid of all `object` type settings
-            // NOTE: this transformation is more related to the fact that internal API calls call
-            //       settings API with plain objects instead of stringified ones
-            if (_.isObject(setting.value)) {
-                setting.value = JSON.stringify(setting.value);
-            }
 
             // @TODO: handle these transformations in a centralized API place (these rules should apply for ALL resources)
 
@@ -47,6 +93,7 @@ module.exports = {
                 setting.value = setting.value === 'true';
             }
 
+            // CASE: filter labs to allowlist
             if (setting.key === 'labs') {
                 const inputLabsValue = JSON.parse(setting.value);
                 const filteredLabsValue = {};
@@ -61,16 +108,6 @@ module.exports = {
             }
 
             setting = url.forSetting(setting);
-        });
-
-        // Ignore all deprecated settings
-        frame.data.settings = frame.data.settings.filter((setting) => {
-            // NOTE: ignore old unsplash object notation
-            if (setting.key === 'unsplash' && _.isObject(setting.value)) {
-                return true;
-            }
-
-            return DEPRECATED_SETTINGS.includes(setting.key) === false;
         });
     }
 };
