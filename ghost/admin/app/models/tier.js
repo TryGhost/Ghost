@@ -11,7 +11,8 @@ export default Model.extend(ValidationEngine, {
     welcomePageURL: attr('string'),
     visibility: attr('string', {defaultValue: 'none'}),
     type: attr('string', {defaultValue: 'paid'}),
-    monthlyPrice: attr('stripe-price'),
-    yearlyPrice: attr('stripe-price'),
+    currency: attr('string'),
+    monthlyPrice: attr('number'),
+    yearlyPrice: attr('number'),
     benefits: attr('tier-benefits')
 });
