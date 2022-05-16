@@ -1,8 +1,8 @@
 const assert = require('assert');
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
-const {stringMatching, anyEtag, anyObjectId, anyISODateTime} = matchers;
+const {stringMatching, anyEtag} = matchers;
 
-const CURRENT_SETTINGS_COUNT = 69;
+const CURRENT_SETTINGS_COUNT = 67;
 
 const settingsMatcher = {};
 
