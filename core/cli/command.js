@@ -59,6 +59,7 @@ module.exports = class Command {
     }
 
     static run(command) {
+        // @TODO: make sure we have an instance of `Command`
         return (new command()).handle();
     }
 };
