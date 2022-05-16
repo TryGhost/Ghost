@@ -4,17 +4,10 @@ const {stringMatching, anyEtag, anyObjectId, anyISODateTime} = matchers;
 
 const CURRENT_SETTINGS_COUNT = 69;
 
-const settingsMatcher = {
-    id: anyObjectId,
-    created_at: anyISODateTime,
-    updated_at: anyISODateTime
-};
+const settingsMatcher = {};
 
 const publicHashSettingMatcher = {
-    id: anyObjectId,
-    value: stringMatching(/[a-z0-9]{30}/),
-    created_at: anyISODateTime,
-    updated_at: anyISODateTime
+    value: stringMatching(/[a-z0-9]{30}/)
 };
 
 const matchSettingsArray = (length) => {
