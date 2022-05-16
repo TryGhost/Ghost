@@ -1,5 +1,5 @@
 {{#if @post.isDraft}}
-    <div>
+    <div {{on-key "cmd+p" this.togglePreview}}>
         <button type="button" class="gh-btn gh-editor-preview-trigger" {{on "click" this.openPreview}}>
             <span>Preview</span>
         </button>
