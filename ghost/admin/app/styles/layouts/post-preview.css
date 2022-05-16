@@ -25,6 +25,23 @@
     display: flex;
 }
 
+@media (max-width: 1024px) {
+    .gh-post-preview-header {
+        z-index: 100;
+        height: 64px;
+        margin: 0;
+        padding: 0;
+        padding-left: 15px;
+        background-color: var(--white);
+        border-radius: 0;
+    }
+
+    .gh-post-preview-header .left {
+        position: absolute;
+        left: 15px;
+    }
+}
+
 .gh-post-preview-btn-group .gh-btn-group {
     background: transparent;
 }

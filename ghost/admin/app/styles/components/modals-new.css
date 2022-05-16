@@ -82,7 +82,7 @@
 }
 
 @media (max-width: 900px) {
-    .epm-modal {
+    .epm-modal:not(.fullscreen-modal-total-overlay) {
         padding: 10px;
     }
 }
