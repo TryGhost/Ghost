@@ -9,9 +9,6 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "id": {
-          "strip": true
-        },
         "name": {
           "type": "string",
           "maxLength": 191
@@ -34,15 +31,6 @@
         "visibility": {
           "type": "string",
           "enum": ["public", "none"]
-        },
-        "updated_at": {
-          "strip": true
-        },
-        "type": {
-          "strip": true
-        },
-        "created_at": {
-          "strip": true
         },
         "monthly_price": {
           "$ref": "#/definitions/tier-price"
@@ -96,12 +84,6 @@
         "interval": {
           "type": ["string", "null"],
           "enum": ["year", "month", "week", "day"]
-        },
-        "updated_at": {
-          "strip": true
-        },
-        "created_at": {
-          "strip": true
         }
       }
     },
@@ -120,12 +102,6 @@
         "slug": {
           "type": "string",
           "maxLength": 191
-        },
-        "updated_at": {
-          "strip": true
-        },
-        "created_at": {
-          "strip": true
         }
       },
       "anyOf": [

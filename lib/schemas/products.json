@@ -24,12 +24,6 @@
         "active": {
           "type": "boolean"
         },
-        "updated_at": {
-          "strip": true
-        },
-        "created_at": {
-          "strip": true
-        },
         "stripe_prices": {
           "type": ["array", "null"],
           "items": {
@@ -82,12 +76,6 @@
         "interval": {
           "type": ["string", "null"],
           "enum": ["year", "month", "week", "day"]
-        },
-        "updated_at": {
-          "strip": true
-        },
-        "created_at": {
-          "strip": true
         }
       }
     },
@@ -106,12 +94,6 @@
         "slug": {
           "type": "string",
           "maxLength": 191
-        },
-        "updated_at": {
-          "strip": true
-        },
-        "created_at": {
-          "strip": true
         }
       },
       "anyOf": [

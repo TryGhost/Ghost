@@ -133,63 +133,6 @@
         },
         "tags": {
           "$ref": "#/definitions/post-tags"
-        },
-        "id": {
-          "strip": true
-        },
-        "uuid": {
-          "strip": true
-        },
-        "comment_id": {
-          "strip": true
-        },
-        "author": {
-          "strip": true
-        },
-        "author_id": {
-          "strip": true
-        },
-        "page": {
-          "strip": true
-        },
-        "created_at": {
-          "strip": true
-        },
-        "created_by": {
-          "strip": true
-        },
-        "updated_by": {
-          "strip": true
-        },
-        "published_by": {
-          "strip": true
-        },
-        "url": {
-          "strip": true
-        },
-        "primary_tag": {
-          "strip": true
-        },
-        "primary_author": {
-          "strip": true
-        },
-        "excerpt": {
-          "strip": true
-        },
-        "plaintext": {
-          "strip": true
-        },
-        "email": {
-          "strip": true
-        },
-        "email_segment": {
-          "strip": true
-        },
-        "frontmatter": {
-          "strip": true
-        },
-        "newsletter": {
-          "strip": true
         }
       }
     },
@@ -246,12 +189,6 @@
               "email": {
                 "type": "string",
                 "maxLength": 191
-              },
-              "roles": {
-                "strip": true
-              },
-              "permissions": {
-                "strip": true
               }
             },
             "anyOf": [
@@ -286,15 +223,6 @@
               "slug": {
                 "type": ["string", "null"],
                 "maxLength": 191
-              },
-              "parent": {
-                "strip": true
-              },
-              "parent_id": {
-                "strip": true
-              },
-              "posts": {
-                "strip": true
               }
             },
             "anyOf": [
