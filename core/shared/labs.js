@@ -24,7 +24,6 @@ const GA_FEATURES = [
     'multipleNewsletters',
     'multipleNewslettersUI',
     'membersActivityFeed',
-    'publishingFlow',
     'dashboardV5'
 ];
 
