@@ -32,7 +32,10 @@ export default class ModalPostPreviewEmailComponent extends Component {
     @tracked memberSegment = 'status:free';
     @tracked previewEmailAddress = this.session.user.email;
     @tracked sendPreviewEmailError = '';
-    @tracked newsletter = null;
+
+    get newsletter() {
+        return this.args.post.newsletter || this.args.newsletter;
+    }
 
     get mailgunIsEnabled() {
         return this.config.get('mailgunIsConfigured') ||
@@ -109,17 +112,6 @@ export default class ModalPostPreviewEmailComponent extends Component {
         let {html, subject, memberSegment} = this;
         let {post} = this.args;
 
-        // Fetch newsletter
-        if (!this.newsletter && post.newsletter) {
-            this.newsletter = post.newsletter;   
-        }
-            
-        if (!this.newsletter) {
-            const newsletters = (await this.store.query('newsletter', {filter: 'status:active', limit: 1})).toArray();
-            const defaultNewsletter = newsletters[0];
-            this.newsletter = defaultNewsletter;    
-        }
-
         if (html && subject && memberSegment === this._lastMemberSegment) {
             return {html, subject};
         }
@@ -138,6 +130,7 @@ export default class ModalPostPreviewEmailComponent extends Component {
         } else {
             let url = new URL(this.ghostPaths.url.api('/email_previews/posts', post.id), window.location.href);
             url.searchParams.set('memberSegment', this.memberSegment);
+            url.searchParams.set('newsletter', this.newsletter.slug);
 
             let response = await this.ajax.request(url.href);
             let [emailPreview] = response.email_previews;

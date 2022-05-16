@@ -48,7 +48,7 @@
         {{/if}}
 
         {{#if (and (eq this.tab "email") @data.post.isPost)}}
-            <EditorLabs::Modals::Preview::Email @post={{@data.post}} />
+            <EditorLabs::Modals::Preview::Email @post={{@data.post}} @newsletter={{@data.newsletter}} />
         {{/if}}
 
         {{#if (eq this.tab "social")}}
