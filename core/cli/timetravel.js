@@ -6,7 +6,7 @@ const Command = require('./command');
 
 // we use logins as the basis for our offset
 const datum = {
-    table: 'member_login_events',
+    table: 'members_login_events',
     column: 'created_at'
 };
 
@@ -25,7 +25,9 @@ module.exports = class TimeTravel extends Command {
 
         this.info(`Timetravel will use an offset of +${dateOffset} days`);
         this.warn('This is a destructive command that will modify your database.');
-        if (!this.confirm('Are you sure you want to continue?')) {
+
+        const confirm = await this.confirm('Are you sure you want to continue?');
+        if (!confirm) {
             this.warn('Aborting');
             process.exit(1);
         }

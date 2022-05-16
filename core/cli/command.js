@@ -1,5 +1,5 @@
 const logging = require('@tryghost/logging');
-const prompt = require('prompt-sync')({sigint: true});
+const inquirer = require('inquirer');
 
 module.exports = class Command {
     constructor() {
@@ -32,20 +32,21 @@ module.exports = class Command {
         this.warn(`Command ${this.constructor.name} has not been implemented.`);
     }
 
-    ask(message, value) {
-        return prompt(message, value);
+    async ask(message, opts = {type: 'input'}) {
+        const response = await inquirer.prompt([{
+            message,
+            ...opts,
+            name: 'value'
+        }]);
+        return response.value;
     }
 
-    confirm(message) {
-        const response = this.ask(`${message} (y/N): `, false);
-        if (['y','yes','Y'].includes(response)) {
-            return true;
-        }
-        return false;
+    async confirm(message) {
+        return this.ask(message, {type: 'confirm', default: false});
     }
 
-    secret(message) {
-        return prompt.hide(message);
+    async secret(message) {
+        return this.ask(message, {type: 'password'});
     }
 
     info() {
