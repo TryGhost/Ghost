@@ -47,6 +47,7 @@ export default function UnsubscribePage() {
     const defaultNewsletters = siteNewsletters.filter((d) => {
         return d.subscribe_on_signup;
     });
+    const [hasInteracted, setHasInteracted] = useState(false);
     const [subscribedNewsletters, setSubscribedNewsletters] = useState(defaultNewsletters);
     const [showPrefs, setShowPrefs] = useState(false);
 
@@ -115,14 +116,28 @@ export default function UnsubscribePage() {
             </div>
         );
     }
+
+    const HeaderNotification = () => {
+        const unsubscribedNewsletter = siteNewsletters?.find((d) => {
+            return d.uuid === pageData.newsletterUuid;
+        });
+        const hideClassName = hasInteracted ? 'hide' : '';
+        return (
+            <p className={`gh-portal-text-center ${hideClassName}`}><strong>{member?.email}</strong> will no longer receive <strong>{unsubscribedNewsletter?.name}</strong> newsletter.</p>
+        );
+    };
+
     return (
         <NewsletterManagement
+            notification={HeaderNotification}
             subscribedNewsletters={subscribedNewsletters}
             updateSubscribedNewsletters={async (newsletters) => {
                 setSubscribedNewsletters(newsletters);
+                setHasInteracted(true);
                 await api.member.updateNewsletters({uuid: pageData.uuid, newsletters});
             }}
             unsubscribeAll={async () => {
+                setHasInteracted(true);
                 setSubscribedNewsletters([]);
                 onAction('showPopupNotification', {
                     action: 'updated:success',
