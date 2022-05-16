@@ -18,7 +18,9 @@ const settingsToRemove = [
     'newsletter_title_font_category',
     'newsletter_show_feature_image',
     'newsletter_body_font_category',
-    'newsletter_footer_content'
+    'newsletter_footer_content',
+    'oauth_client_id',
+    'oauth_client_secret'
 ];
 
 // Settings that cannot be removed, but should not be used anymore
