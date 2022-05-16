@@ -17,7 +17,6 @@ const command = require('./core/cli/command');
 // Switch between boot modes
 switch (mode) {
 case 'repl':
-case 'tinker':
     command.run(require('./core/cli/repl'));
     break;
 case 'timetravel':
