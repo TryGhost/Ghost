@@ -34,7 +34,7 @@ describe('Settings API (canary)', function () {
 
                     jsonResponse.settings.length.should.eql(1);
 
-                    testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'group', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
+                    testUtils.API.checkResponseValue(jsonResponse.settings[0], ['key', 'value']);
                     jsonResponse.settings[0].key.should.eql('locale');
                     jsonResponse.settings[0].value.should.eql('ge');
                 });
@@ -84,7 +84,7 @@ describe('Settings API (canary)', function () {
             should.exist(jsonResponse.settings);
 
             jsonResponse.settings.length.should.eql(1);
-            testUtils.API.checkResponseValue(jsonResponse.settings[0], ['id', 'group', 'key', 'value', 'type', 'flags', 'created_at', 'updated_at']);
+            testUtils.API.checkResponseValue(jsonResponse.settings[0], ['key', 'value']);
             jsonResponse.settings[0].key.should.eql('labs');
 
             const responseObj = JSON.parse(jsonResponse.settings[0].value);
