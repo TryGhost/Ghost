@@ -1188,3 +1188,9 @@ remove|ember-template-lint|no-action|207|63|207|63|682c80ff5163c8e4a2bea89f2066d
 remove|ember-template-lint|no-action|216|59|216|59|a80dd18e18dda6fb6f1f97d87bef2b8c2ce3d847|1652054400000|1662422400000|1665014400000|app/templates/settings/membership.hbs
 remove|ember-template-lint|no-passed-in-event-handlers|206|52|206|52|dcb4785647a50814bcfce82f8d68ac8dd8f54ec2|1652054400000|1662422400000|1665014400000|app/templates/settings/membership.hbs
 remove|ember-template-lint|no-passed-in-event-handlers|216|52|216|52|70487c008d7dda453fef82f0140699ee93c0055c|1652054400000|1662422400000|1665014400000|app/templates/settings/membership.hbs
+remove|ember-template-lint|no-action|214|55|214|55|da852fe4064a61e18c07b15cb10e95b8ecc6666f|1652054400000|1662422400000|1665014400000|app/templates/settings/labs.hbs
+remove|ember-template-lint|no-action|215|51|215|51|271aabc30313a0e93dae42dbfc729b7cd0e0ecfd|1652054400000|1662422400000|1665014400000|app/templates/settings/labs.hbs
+remove|ember-template-lint|no-action|225|55|225|55|da852fe4064a61e18c07b15cb10e95b8ecc6666f|1652054400000|1662422400000|1665014400000|app/templates/settings/labs.hbs
+remove|ember-template-lint|no-action|226|51|226|51|4104427b3770f8810844e0c71c7b49f00cd4adc3|1652054400000|1662422400000|1665014400000|app/templates/settings/labs.hbs
+remove|ember-template-lint|no-passed-in-event-handlers|215|44|215|44|5d98389160e93540d9c809151effabc297a8a2a1|1652054400000|1662422400000|1665014400000|app/templates/settings/labs.hbs
+remove|ember-template-lint|no-passed-in-event-handlers|226|44|226|44|57b3bc0ba2625f4feb98ee4fae58805f88c075ca|1652054400000|1662422400000|1665014400000|app/templates/settings/labs.hbs
