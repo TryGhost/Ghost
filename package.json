@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@tryghost/errors": "^1.0.0",
+    "ajv": "^6.12.6",
     "lodash": "^4.17.11"
   }
 }
