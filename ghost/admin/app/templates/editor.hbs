@@ -8,7 +8,7 @@
             <header class="gh-editor-header br2 pe-none">
                 <div class="flex items-center pe-auto h-100">
                     {{#if this.ui.isFullScreen}}
-                        <LinkTo @route={{pluralize this.post.displayName }} class="gh-editor-back-button" data-test-link={{pluralize this.post.displayName}}>
+                        <LinkTo @route={{pluralize this.post.displayName }} class="gh-btn-editor gh-editor-back-button" data-test-link={{pluralize this.post.displayName}}>
                             <span>
                                 {{svg-jar "arrow-left"}}
                                 {{capitalize (pluralize this.post.displayName)}}
@@ -31,7 +31,7 @@
                         {{#if this.session.user.isContributor}}
                             {{#if this.post.isDraft}}
                                 <div {{on-key "cmd+p" this.openPostPreview}}>
-                                    <button type="button" class="gh-btn gh-editor-preview-trigger" {{on "click" this.openPostPreviewModal}}>
+                                    <button type="button" class="gh-btn gh-btn-editor gh-editor-preview-trigger" {{on "click" this.openPostPreviewModal}}>
                                         <span>Preview</span>
                                     </button>
                                 </div>

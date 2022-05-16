@@ -1,6 +1,6 @@
 <div class="flex flex-column h-100 items-center overflow-auto">
     <header class="gh-publish-header" data-test-modal="publish-flow">
-        <button class="gh-publish-back-button" title="Close" type="button" {{on "click" @close}}>
+        <button class="gh-btn-editor gh-publish-back-button" title="Close" type="button" {{on "click" @close}}>
             <span>{{svg-jar "arrow-left"}} Editor</span>
         </button>
 
@@ -9,7 +9,7 @@
                 <div>
                     <button
                         type="button"
-                        class="gh-btn gh-editor-preview-trigger"
+                        class="gh-btn gh-btn-editor gh-editor-preview-trigger"
                         {{on "click" @data.togglePreviewPublish}}
                     >
                         <span>Preview</span>
