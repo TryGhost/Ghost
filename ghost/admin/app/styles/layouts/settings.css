@@ -813,63 +813,6 @@
     height: 6px;
 }
 
-.gh-email-publishmenu-preview .gh-main-section-header.small {
-    padding-top: 4px;
-}
-
-.gh-email-publishmenu-preview .gh-publishmenu-dropdown-container {
-    height: calc(346px * .9);
-}
-
-.gh-email-publishmenu-preview .gh-publishmenu-dropdown {
-    position: relative;
-    top: inherit;
-    right: inherit;
-    margin: 0;
-    box-shadow:
-        0 7px 7px rgba(0, 0, 0, 0.04),
-        0 3px 2.2px -5px rgba(0, 0, 0, 0.011),
-        0 6px 5.3px -5px rgba(0, 0, 0, 0.016),
-        0 10.5px 10px -5px rgba(0, 0, 0, 0.02),
-        0 18px 17.9px -5px rgba(0, 0, 0, 0.024),
-        0 33.8px 33.4px -5px rgba(0, 0, 0, 0.029),
-        0 80px 80px -5px rgba(0, 0, 0, 0.04)
-    ;
-    transform: scale(.9);
-    transform-origin: top left;
-    pointer-events: none;
-}
-
-.gh-publishmenu-heading-dropdown {
-    font-weight: 500;
-    color: var(--black);
-}
-
-.gh-publishmenu-heading-dropdown svg {
-    width: auto;
-    height: 9px;
-    margin-right: 4px;
-}
-
-.gh-publishmenu-heading-dropdown svg path {
-    stroke: var(--black);
-    stroke-width: 2px;
-}
-
-.gh-email-publishmenu-preview .gh-publishmenu-radio .gh-publishmenu-radio-label:after {
-    content: "";
-    display: block;
-    width: 80%;
-    height: 12px;
-    margin-top: 8px;
-    background: var(--whitegrey-d1);
-    border-radius: 6px;
-}
-
-.gh-email-publishmenu-preview .gh-publishmenu-radio.active .gh-publishmenu-radio-label:after {
-    width: 100%;
-}
-
 .member-segments .select-members {
     margin-bottom: .4rem;
 }
@@ -966,9 +909,9 @@ body:not([data-user-is-dragging]) .gh-newsletter-card-draggable:hover .grab-news
     visibility: visible;
     opacity: 1;
 
-    /* 
-        To make sure the grab handler also fades out correctly and only change visibility after the animation, 
-        we need to update the animation curve for visibility to step-start at the start of the animation 
+    /*
+        To make sure the grab handler also fades out correctly and only change visibility after the animation,
+        we need to update the animation curve for visibility to step-start at the start of the animation
     */
     transition: visibility 200ms step-start, opacity 200ms ease-in-out;
 }
@@ -1115,7 +1058,7 @@ body:not([data-user-is-dragging]) .gh-newsletter-card-draggable:hover .grab-news
 .gh-newsletters-labs .gh-members-emailpreview-faux .strong {
     color: var(--darkgrey);
     font-size: 1.4rem;
-    font-weight: 600;   
+    font-weight: 600;
 }
 
 .gh-newsletters-labs .gh-members-emailpreview-faux p {

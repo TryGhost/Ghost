@@ -10,9 +10,7 @@ export default class Post extends ApplicationAdapter {
             const newsletter = snapshot.adapterOptions.newsletter;
             parsedUrl.searchParams.append('newsletter', newsletter);
 
-            // TODO: cleanup sendEmailWhenPublished when removing publishingFlow flag
-            let emailSegment = snapshot?.adapterOptions?.emailSegment
-                || snapshot?.adapterOptions?.sendEmailWhenPublished;
+            let emailSegment = snapshot?.adapterOptions?.emailSegment;
 
             if (emailSegment) {
                 if (emailSegment === 'status:free,status:-free') {

@@ -2,7 +2,6 @@ import ConfirmEditorLeaveModal from '../components/modals/editor/confirm-leave';
 import Controller, {inject as controller} from '@ember/controller';
 import DeletePostModal from '../components/modals/delete-post';
 import PostModel from 'ghost-admin/models/post';
-import PostPreviewModal from '../components/modals/post-preview';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import classic from 'ember-classic-decorator';
 import config from 'ghost-admin/config/environment';
@@ -109,7 +108,6 @@ export default class EditorController extends Controller {
 
     shouldFocusTitle = false;
     showReAuthenticateModal = false;
-    showPostPreviewModal = false;
     showUpgradeModal = false;
     showDeleteSnippetModal = false;
     showSettingsMenu = false;
@@ -258,27 +256,6 @@ export default class EditorController extends Controller {
                 post: this.post
             });
         }
-    }
-
-    @action
-    openPostPreview(keyboardEvent) {
-        keyboardEvent?.preventDefault();
-
-        if (this.post.isDraft) {
-            this.openPostPreviewModal();
-        } else {
-            window.open(this.post.previewUrl, '_blank', 'noopener');
-        }
-    }
-
-    @action
-    openPostPreviewModal() {
-        this.modals.open(PostPreviewModal, {
-            post: this.post,
-            saveTask: this.saveTask,
-            hasDirtyAttributes: this.hasDirtyAttributes,
-            setEditorSaveType: this.setSaveType
-        });
     }
 
     @action
@@ -485,16 +462,6 @@ export default class EditorController extends Controller {
                     status = 'draft';
                 }
             }
-
-            // let the adapter know it should use the `?email_recipient_filter` QP when saving
-            let isPublishing = status === 'published' && !this.post.isPublished;
-            let isScheduling = status === 'scheduled' && !this.post.isScheduled;
-            if (options.sendEmailWhenPublished && (isPublishing || isScheduling)) {
-                options.adapterOptions = Object.assign({}, options.adapterOptions, {
-                    sendEmailWhenPublished: options.sendEmailWhenPublished,
-                    newsletter: options.newsletter
-                });
-            }
         }
 
         // set manually here instead of in beforeSaveTask because the
@@ -509,7 +476,6 @@ export default class EditorController extends Controller {
             post.set('statusScratch', null);
 
             if (!options.silent) {
-                this.set('showPostPreviewModal', false);
                 this._showSaveNotification(prevStatus, post.get('status'), isNew ? true : false);
             }
 
@@ -940,7 +906,6 @@ export default class EditorController extends Controller {
         this.set('post', null);
         this.set('hasDirtyAttributes', false);
         this.set('shouldFocusTitle', false);
-        this.set('showPostPreviewModal', false);
         this.set('showSettingsMenu', false);
         this.set('wordCount', null);
 

@@ -66,7 +66,6 @@ export default class FeatureService extends Service {
     @feature('improvedOnboarding') improvedOnboarding;
     @feature('membersTableStatus') membersTableStatus;
     @feature('selectablePortalLinks') selectablePortalLinks;
-    @feature('publishingFlow') publishingFlow;
 
     _user = null;
 
