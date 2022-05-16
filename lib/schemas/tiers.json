@@ -32,83 +32,22 @@
           "type": "string",
           "enum": ["public", "none"]
         },
+        "currency": {
+          "type": ["string", "null"]
+        },
         "monthly_price": {
-          "$ref": "#/definitions/tier-price"
+          "type": ["number", "null"]
         },
         "yearly_price": {
-          "$ref": "#/definitions/tier-price"
+          "type": ["number", "null"]
         },
         "benefits": {
           "type": ["array", "null"],
           "items": {
-            "$ref": "#/definitions/tier-benefit"
+            "type": "string"
           }
         }
       }
-    },
-    "tier-price": {
-      "description": "A Stripe Price associated with a Tier",
-      "type": ["object", "null"],
-      "properties": {
-        "id": {
-          "type": "string",
-          "maxLength": 24
-        },
-        "stripe_product_id": {
-          "type": ["string", "null"],
-          "maxLength": 255
-        },
-        "stripe_price_id": {
-          "type": "string",
-          "maxLength": 255
-        },
-        "nickname": {
-          "type": "string",
-          "maxLength": 50
-        },
-        "currency": {
-          "type": "string",
-          "maxLength": 3
-        },
-        "amount": {
-          "type": "number"
-        },
-        "active": {
-          "type": "boolean",
-          "default": true
-        },
-        "type": {
-          "type": "string",
-          "enum": ["recurring", "one_time"]
-        },
-        "interval": {
-          "type": ["string", "null"],
-          "enum": ["year", "month", "week", "day"]
-        }
-      }
-    },
-    "tier-benefit": {
-      "description": "A Benefit associated with a Tier",
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "maxLength": 24
-        },
-        "name": {
-          "type": "string",
-          "maxLength": 191
-        },
-        "slug": {
-          "type": "string",
-          "maxLength": 191
-        }
-      },
-      "anyOf": [
-        { "required": ["id"] },
-        { "required": ["name"] },
-        { "required": ["slug"] }
-      ]
     }
   }
 }
