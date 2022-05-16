@@ -54,7 +54,7 @@ const getReplyToAddress = (fromAddress, replyAddressOption) => {
  * @param {ValidAPIVersion} options.apiVersion - api version to be used when serializing email data
  */
 const getEmailData = async (postModel, options) => {
-    let newsletter = await postModel.related('newsletter').fetch();
+    let newsletter = postModel.relations.newsletter ? postModel.relations.newsletter : (await postModel.related('newsletter').fetch());
     if (!newsletter) {
         newsletter = await models.Newsletter.getDefaultNewsletter();
     }
@@ -216,7 +216,7 @@ const addEmail = async (postModel, options) => {
     const knexOptions = _.pick(options, ['transacting', 'forUpdate']);
     const filterOptions = {...knexOptions, limit: 1};
 
-    const newsletter = await postModel.related('newsletter').fetch({require: true, ..._.pick(options, ['transacting'])});
+    const newsletter = postModel.relations.newsletter ? postModel.relations.newsletter : (await postModel.related('newsletter').fetch({require: true, ..._.pick(options, ['transacting'])}));
 
     const emailRecipientFilter = postModel.get('email_recipient_filter');
     filterOptions.filter = transformEmailRecipientFilter(emailRecipientFilter, {errorProperty: 'email_recipient_filter'}, newsletter);
@@ -428,7 +428,7 @@ async function getEmailMemberRows({emailModel, memberSegment, options}) {
 
     let newsletter = null;
     if (labsService.isSet('multipleNewsletters')) {
-        newsletter = await emailModel.related('newsletter').fetch(Object.assign({}, {require: false}, _.pick(options, ['transacting'])));
+        newsletter = await emailModel.relations.newsletter ? emailModel.relations.newsletter : (emailModel.related('newsletter').fetch(Object.assign({}, {require: false}, _.pick(options, ['transacting']))));
     }
     const recipientFilter = transformEmailRecipientFilter(emailModel.get('recipient_filter'), {errorProperty: 'recipient_filter'}, newsletter);
     filterOptions.filter = recipientFilter;
