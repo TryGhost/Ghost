@@ -1862,12 +1862,7 @@
     "@tryghost/tpl" "^0.1.4"
     bson-objectid "^2.0.1"
 
-"@tryghost/member-events@0.4.5":
-  version "0.4.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/member-events/-/member-events-0.4.5.tgz#b6929c2a13bf24be5382015975fc3db7f01eede4"
-  integrity sha512-SOfoHY7ib9jVqtNqXjv6AXHh3hckcce+7RzevXbqD0a4jUyB8Vc9RxJ8vTIJxq5BYxbpecJZulu9rLNuykno2A==
-
-"@tryghost/member-events@^0.4.6":
+"@tryghost/member-events@0.4.6", "@tryghost/member-events@^0.4.6":
   version "0.4.6"
   resolved "https://registry.yarnpkg.com/@tryghost/member-events/-/member-events-0.4.6.tgz#7abe95d38f88c344b2c85249f9b6083c935d6f49"
   integrity sha512-wDg9NGsymYvJDZfbv6xmAV6HA7LMs3P01aYUTXwRIAqzDJfyuXjgwmJr0RRNn0yKJ1B1gDq7lps0+Hb3Oxm4Vw==
