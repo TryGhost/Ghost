@@ -110,18 +110,7 @@ export default ModalComponent.extend({
         return tiers;
     }),
 
-    showPortalTiers: computed('tiers', 'feature.multipleProducts', function () {
-        if (this.feature.get('multipleProducts')) {
-            return true;
-        }
-        return false;
-    }),
-
-    showPortalPrices: computed('tiers', 'feature.multipleProducts', function () {
-        if (!this.feature.get('multipleProducts')) {
-            return true;
-        }
-
+    showPortalPrices: computed('tiers', function () {
         const visibleTiers = this.model.tiers?.filter((tier) => {
             return tier.visibility === 'public' && tier.type === 'paid';
         });

@@ -73,30 +73,28 @@ export default class GhMembersSegmentSelect extends Component {
             });
         }
 
-        if (this.feature.get('multipleProducts')) {
-            // fetch all tiers w̶i̶t̶h̶ c̶o̶u̶n̶t̶s̶
-            // TODO: add `include: 'count.members` to query once API supports
-            const tiers = yield this.store.query('tier', {filter: 'type:paid', limit: 'all', include: 'monthly_price,yearly_price,benefits'});
+        // fetch all tiers w̶i̶t̶h̶ c̶o̶u̶n̶t̶s̶
+        // TODO: add `include: 'count.members` to query once API supports
+        const tiers = yield this.store.query('tier', {filter: 'type:paid', limit: 'all', include: 'monthly_price,yearly_price,benefits'});
 
-            if (tiers.length > 0) {
-                const tiersGroup = {
-                    groupName: 'Tiers',
-                    options: []
-                };
+        if (tiers.length > 0) {
+            const tiersGroup = {
+                groupName: 'Tiers',
+                options: []
+            };
 
-                tiers.forEach((tier) => {
-                    tiersGroup.options.push({
-                        name: tier.name,
-                        segment: `tier:${tier.slug}`,
-                        count: tier.count?.members,
-                        class: 'segment-tier'
-                    });
+            tiers.forEach((tier) => {
+                tiersGroup.options.push({
+                    name: tier.name,
+                    segment: `tier:${tier.slug}`,
+                    count: tier.count?.members,
+                    class: 'segment-tier'
                 });
+            });
 
-                options.push(tiersGroup);
-                if (this.args.selectDefaultTier && !this.args.segment) {
-                    this.args.onChange?.(tiersGroup.options[0].segment);
-                }
+            options.push(tiersGroup);
+            if (this.args.selectDefaultTier && !this.args.segment) {
+                this.args.onChange?.(tiersGroup.options[0].segment);
             }
         }
 

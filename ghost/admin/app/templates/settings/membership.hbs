@@ -48,7 +48,7 @@
                 </div>
             </div>
             <div class="gh-setting-members-portalpreview">
-                <div class="gh-setting-members-portal-mock {{if (feature "multipleProducts") "mock-enabled"}}">
+                <div class="gh-setting-members-portal-mock mock-enabled">
                     {{#if (or (eq this.settings.membersSignupAccess 'none') this.switchFromNoneTask.isRunning)}}
                         <div class="gh-setting-members-portal-disabled" data-test-portal-preview-disabled>
                             <span class="lightgrey">{{svg-jar "portal-logo-stroke"}}</span>
@@ -91,46 +91,24 @@
                     <div class="gh-expandable-content">
                         {{#liquid-if this.freeOpen}}
                         <div class="gh-setting-content-extended" data-test-free-settings-expanded>
-                            {{#if (feature "multipleProducts")}}
-                                <GhTierCard
-                                    @tier={{this.freeTier}}
-                                    @tiers={{this.tiers}}
-                                    @openEditTier={{this.openEditTier}}
+                            <GhTierCard
+                                @tier={{this.freeTier}}
+                                @tiers={{this.tiers}}
+                                @openEditTier={{this.openEditTier}}
+                            />
+                            <GhFormGroup>
+                                <label for="welcomePage" class="fw6">Welcome page</label>
+                                <GhUrlInput
+                                    @id="welcomePage"
+                                    @value={{readonly this.freeTier.welcomePageURL}}
+                                    @baseUrl={{readonly this.siteUrl}}
+                                    @setResult={{this.setWelcomePageURL}}
+                                    @validateUrl={{this.validateWelcomePageURL}}
+                                    @placeholder={{readonly this.siteUrl}}
+                                    data-test-input="free-welcome-page"
                                 />
-                            {{/if}}
-                            {{#if (or (not (feature "tierWelcomePages")) (not (feature "multipleProducts")))}}
-                                <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="free-welcome-page">
-                                    <label for="freeWelcomePage">Welcome page</label>
-                                    <GhUrlInput
-                                        @id="freeWelcomePage"
-                                        @value={{readonly this.settings.membersFreeSignupRedirect}}
-                                        @baseUrl={{readonly this.siteUrl}}
-                                        @setResult={{this.setFreeSignupRedirect}}
-                                        @validateUrl={{this.validateFreeSignupRedirect}}
-                                        @placeholder={{readonly this.siteUrl}}
-                                        data-test-input="old-free-welcome-page"
-                                    />
-                                    <GhErrorMessage
-                                        @errors={{this.settings.errors}}
-                                        @property="membersFreeSignupRedirect"
-                                    />
-                                    <p>Redirect to this URL after signup for a free membership</p>
-                                </GhFormGroup>
-                            {{else}}
-                                <GhFormGroup>
-                                    <label for="welcomePage" class="fw6">Welcome page</label>
-                                    <GhUrlInput
-                                        @id="welcomePage"
-                                        @value={{readonly this.freeTier.welcomePageURL}}
-                                        @baseUrl={{readonly this.siteUrl}}
-                                        @setResult={{this.setWelcomePageURL}}
-                                        @validateUrl={{this.validateWelcomePageURL}}
-                                        @placeholder={{readonly this.siteUrl}}
-                                        data-test-input="free-welcome-page"
-                                    />
-                                    <p>Redirect to this URL after signup for a free membership</p>
-                                </GhFormGroup>
-                            {{/if}}
+                                <p>Redirect to this URL after signup for a free membership</p>
+                            </GhFormGroup>
                         </div>
                         {{/liquid-if}}
                     </div>
@@ -167,82 +145,11 @@
                             {{#if this.fetchDefaultTier.isRunning}}
                                 Loading...
                             {{else}}
-                                {{#if (feature "multipleProducts")}}
-                                    <GhMembershipTiersAlpha
-                                        @updatePortalPreview={{this.updatePortalPreview}}
-                                        @tiers={{this.paidTiers}}
-                                        @confirmTierSave={{this.confirmTierSave}}
-                                    />
-                                {{else}}
-                                    <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="prices">
-                                        <div class="gh-settings-members-pricelabelcont">
-                                            <label for="monthlyPrice">Prices</label>
-                                            <span>–</span>
-                                            <div>
-                                                <span class="gh-setting-members-currency gh-select">
-                                                    <div class="gh-setting-members-currencylabel">
-                                                        <span>{{this.currency}}</span>
-                                                        {{svg-jar "arrow-down-small"}}
-                                                    </div>
-                                                    <OneWaySelect
-                                                        @value={{this.selectedCurrency}}
-                                                        id="currency"
-                                                        name="currency"
-                                                        @options={{readonly this.allCurrencies}}
-                                                        @optionValuePath="value"
-                                                        @optionLabelPath="label"
-                                                        @update={{this.setStripePlansCurrency}}
-                                                    />
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div class="gh-setting-members-prices">
-
-                                            <div class="gh-input-group">
-                                                <GhTextInput
-                                                    @id="monthlyPrice"
-                                                    @value={{readonly this.stripeMonthlyAmount}}
-                                                    @type="number"
-                                                    @input={{action (mut this.stripeMonthlyAmount) value="target.value"}}
-                                                    @focus-out={{action "validateStripePlans"}}
-                                                />
-                                                <span class="gh-input-append"><span class="ttu">{{this.currency}}</span>/month</span>
-                                            </div>
-                                            <div class="gh-input-group">
-                                                <GhTextInput
-                                                    @id="yearlyPrice"
-                                                    @value={{readonly this.stripeYearlyAmount}}
-                                                    @type="number"
-                                                    @input={{action (mut this.stripeYearlyAmount) value="target.value"}}
-                                                    @focus-out={{this.validateStripePlans}}
-                                                    @placeholder=''
-                                                    data-test-title-input={{true}}
-                                                />
-                                                <span class="gh-input-append"><span class="ttu">{{this.currency}}</span>/year</span>
-                                            </div>
-                                        </div>
-                                        {{#if this.stripePlanError}}
-                                            <p class="response w-100"><span class="red">{{this.stripePlanError}}</span></p>
-                                        {{/if}}
-                                    </GhFormGroup>
-                                {{/if}}
-                                {{#if (or (not (feature "tierWelcomePages")) (not (feature "multipleProducts")))}}
-                                    <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="paid-welcome-page">
-                                        <label for="paidWelcomePage">Welcome page</label>
-                                        <GhUrlInput
-                                            @value={{readonly this.settings.membersPaidSignupRedirect}}
-                                            @baseUrl={{readonly this.siteUrl}}
-                                            @setResult={{this.setPaidSignupRedirect}}
-                                            @validateUrl={{this.validatePaidSignupRedirect}}
-                                            @placeholder={{readonly this.siteUrl}}
-                                        />
-                                        <GhErrorMessage
-                                            @errors={{this.settings.errors}}
-                                            @property="membersPaidSignupRedirect"
-                                        />
-                                        <p>Redirect to this URL after signup for premium membership</p>
-                                    </GhFormGroup>
-                                {{/if}}
+                                <GhMembershipTiersAlpha
+                                    @updatePortalPreview={{this.updatePortalPreview}}
+                                    @tiers={{this.paidTiers}}
+                                    @confirmTierSave={{this.confirmTierSave}}
+                                />
                             {{/if}}
                         </div>
                         {{/liquid-if}}

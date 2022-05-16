@@ -111,13 +111,8 @@ export default class OffersController extends Controller {
             let yearlyLabel;
             const tierCurrency = tier.monthlyPrice.currency;
             const tierCurrencySymbol = tierCurrency.toUpperCase();
-            if (this.feature.get('multipleProducts')) {
-                monthlyLabel = `${tier.name} - Monthly (${ghPriceAmount(tier.monthlyPrice.amount)} ${tierCurrencySymbol})`;
-                yearlyLabel = `${tier.name} - Yearly (${ghPriceAmount(tier.yearlyPrice.amount)} ${tierCurrencySymbol})`;
-            } else {
-                monthlyLabel = `Monthly (${ghPriceAmount(tier.monthlyPrice.amount)} ${tierCurrencySymbol})`;
-                yearlyLabel = `Yearly (${ghPriceAmount(tier.yearlyPrice.amount)} ${tierCurrencySymbol})`;
-            }
+            monthlyLabel = `${tier.name} - Monthly (${ghPriceAmount(tier.monthlyPrice.amount)} ${tierCurrencySymbol})`;
+            yearlyLabel = `${tier.name} - Yearly (${ghPriceAmount(tier.yearlyPrice.amount)} ${tierCurrencySymbol})`;
 
             cadences.push({
                 label: monthlyLabel,
