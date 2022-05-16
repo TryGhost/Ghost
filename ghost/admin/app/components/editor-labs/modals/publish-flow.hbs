@@ -5,16 +5,14 @@
         </button>
 
         {{#if (and (not this.emailErrorMessage) (not this.isComplete))}}
-            <div class="flex">
-                <div>
-                    <button
-                        type="button"
-                        class="gh-btn gh-btn-editor gh-editor-preview-trigger"
-                        {{on "click" @data.togglePreviewPublish}}
-                    >
-                        <span>Preview</span>
-                    </button>
-                </div>
+            <div class="flex items-center pe-auto h-100">
+                <button
+                    type="button"
+                    class="gh-btn gh-btn-editor gh-editor-preview-trigger"
+                    {{on "click" @data.togglePreviewPublish}}
+                >
+                    <span>Preview</span>
+                </button>
                 <button class="gh-btn gh-btn-editor darkgrey gh-publish-trigger active" title="Close" type="button" {{on "click" @close}}>
                     <span>Publish</span>
                 </button>
