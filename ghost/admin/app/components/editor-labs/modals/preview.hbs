@@ -1,7 +1,7 @@
 <div class="flex flex-column h-100">
     <header class="modal-header gh-post-preview-header" data-test-modal="preview-email">
         <div class="left">
-            <button class="gh-editor-back-button" title="Close" type="button" {{on "click" @close}}>
+            <button class="gh-btn-editor gh-editor-back-button" title="Close" type="button" {{on "click" @close}}>
                 <span>{{svg-jar "arrow-left"}} Editor</span>
             </button>
         </div>
@@ -20,7 +20,7 @@
         <div class="right">
             <button
                 type="button"
-                class="gh-btn gh-editor-preview-trigger active"
+                class="gh-btn gh-btn-editor gh-editor-preview-trigger active"
                 {{on "click" @close}}
             >
                 <span>Preview</span>
