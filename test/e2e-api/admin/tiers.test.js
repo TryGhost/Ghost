@@ -35,9 +35,8 @@ describe('Tiers API', function () {
     it('Errors when price is non-integer', async function () {
         const tier = {
             name: 'Blah',
-            monthly_price: {
-                amount: 99.99
-            }
+            monthly_price: 99.99,
+            currency: 'usd'
         };
 
         await agent
@@ -54,9 +53,8 @@ describe('Tiers API', function () {
     it('Errors when price is negative', async function () {
         const tier = {
             name: 'Blah',
-            monthly_price: {
-                amount: -100
-            }
+            monthly_price: -100,
+            currency: 'usd'
         };
 
         await agent
@@ -73,9 +71,8 @@ describe('Tiers API', function () {
     it('Errors when price is too large', async function () {
         const tier = {
             name: 'Blah',
-            monthly_price: {
-                amount: Number.MAX_SAFE_INTEGER
-            }
+            monthly_price: Number.MAX_SAFE_INTEGER,
+            currency: 'usd'
         };
 
         await agent
