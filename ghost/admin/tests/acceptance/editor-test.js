@@ -6,7 +6,6 @@ import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-sup
 import {beforeEach, describe, it} from 'mocha';
 import {blur, click, currentRouteName, currentURL, fillIn, find, findAll, triggerEvent} from '@ember/test-helpers';
 import {datepickerSelect} from 'ember-power-datepicker/test-support';
-import {enableLabsFlag} from '../helpers/labs-flag';
 import {enableMailgun} from '../helpers/mailgun';
 import {enableNewsletters} from '../helpers/newsletters';
 import {enableStripe} from '../helpers/stripe';
@@ -845,7 +844,6 @@ describe('Acceptance: Editor', function () {
             const role = this.server.create('role', {name: 'Administrator'});
             user = this.server.create('user', {roles: [role]});
             this.server.loadFixtures('settings');
-            enableLabsFlag(this.server, 'multipleNewsletters');
             return await authenticateSession();
         });
 

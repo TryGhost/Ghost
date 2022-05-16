@@ -9,7 +9,7 @@ export default class SettingsMembersDefaultPostAccess extends Component {
     @tracked showSegmentError;
 
     get options() {
-        const defaultOptions = [{
+        return [{
             name: 'Public',
             description: 'All site visitors to your site, no login required',
             value: 'public',
@@ -27,21 +27,17 @@ export default class SettingsMembersDefaultPostAccess extends Component {
             value: 'paid',
             icon: 'members-paid',
             icon_color: 'pink'
+        }, {
+            name: 'Specific tier(s)',
+            description: 'Members with any of the selected tiers',
+            value: 'tiers',
+            icon: 'members-segment',
+            icon_color: 'yellow'
         }];
-        if (this.feature.get('multipleProducts')) {
-            defaultOptions.push({
-                name: 'Specific tier(s)',
-                description: 'Members with any of the selected tiers',
-                value: 'tiers',
-                icon: 'members-segment',
-                icon_color: 'yellow'
-            });
-        }
-        return defaultOptions;
     }
 
     get hasVisibilityFilter() {
-        return this.feature.get('multipleProducts') && !['public', 'members', 'paid'].includes(this.settings.get('defaultContentVisibility'));
+        return !['public', 'members', 'paid'].includes(this.settings.get('defaultContentVisibility'));
     }
 
     get visibilityTiers() {

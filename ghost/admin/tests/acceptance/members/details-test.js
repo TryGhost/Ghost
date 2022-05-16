@@ -20,7 +20,6 @@ describe('Acceptance: Member details', function () {
         this.server.loadFixtures('settings');
         enableLabsFlag(this.server, 'membersLastSeenFilter');
         enableLabsFlag(this.server, 'membersTimeFilters');
-        enableLabsFlag(this.server, 'multipleProducts');
 
         enableStripe(this.server);
         enableNewsletters(this.server, true);

@@ -44,83 +44,58 @@
                                     </GhFormGroup>
                                     {{#if this.membersUtils.isStripeEnabled}}
                                         <div {{did-insert this.refreshAfterStripeConnected}}>
-                                            {{#if this.showPortalTiers}}
-                                                <div class="mb3 mt5">
-                                                    <h4 class="gh-portal-setting-title">Tiers available at signup</h4>
-                                                </div>
+                                            <div class="mb3 mt5">
+                                                <h4 class="gh-portal-setting-title">Tiers available at signup</h4>
+                                            </div>
+                                            <div class="form-group mb0 for-checkbox">
+                                                <label
+                                                    class="checkbox"
+                                                    for="free-plan"
+                                                >
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={{this.membersUtils.isFreeChecked}}
+                                                        id="free-plan"
+                                                        name="free-plan"
+                                                        disabled={{or
+                                                            (not this.membersUtils.isStripeEnabled)
+                                                            (not-eq this.settings.membersSignupAccess "all")
+                                                        }}
+                                                        class="gh-input post-settings-featured"
+                                                        {{on "click" (action "togglePlan" "free")}}
+                                                    >
+                                                    <span class="input-toggle-component"></span>
+                                                    <p>Free</p>
+                                                </label>
+                                            </div>
+                                            {{#each this.tiers as |tier|}}
                                                 <div class="form-group mb0 for-checkbox">
                                                     <label
                                                         class="checkbox"
-                                                        for="free-plan"
+                                                        for={{tier.id}}
                                                     >
                                                         <input
                                                             type="checkbox"
-                                                            checked={{this.membersUtils.isFreeChecked}}
-                                                            id="free-plan"
-                                                            name="free-plan"
+                                                            id={{tier.id}}
+                                                            name={{tier.id}}
+                                                            checked={{tier.checked}}
                                                             disabled={{or
                                                                 (not this.membersUtils.isStripeEnabled)
                                                                 (not-eq this.settings.membersSignupAccess "all")
                                                             }}
                                                             class="gh-input post-settings-featured"
-                                                            {{on "click" (action "togglePlan" "free")}}
+                                                            {{on "click" (action "toggleTier" tier.id)}}
                                                         >
                                                         <span class="input-toggle-component"></span>
-                                                        <p>Free</p>
+                                                        <p>{{tier.name}}</p>
                                                     </label>
                                                 </div>
-                                                {{#each this.tiers as |tier|}}
-                                                    <div class="form-group mb0 for-checkbox">
-                                                        <label
-                                                            class="checkbox"
-                                                            for={{tier.id}}
-                                                        >
-                                                            <input
-                                                                type="checkbox"
-                                                                id={{tier.id}}
-                                                                name={{tier.id}}
-                                                                checked={{tier.checked}}
-                                                                disabled={{or
-                                                                    (not this.membersUtils.isStripeEnabled)
-                                                                    (not-eq this.settings.membersSignupAccess "all")
-                                                                }}
-                                                                class="gh-input post-settings-featured"
-                                                                {{on "click" (action "toggleTier" tier.id)}}
-                                                            >
-                                                            <span class="input-toggle-component"></span>
-                                                            <p>{{tier.name}}</p>
-                                                        </label>
-                                                    </div>
-                                                {{/each}}
-                                            {{/if}}
+                                            {{/each}}
                                             {{#if this.showPortalPrices}}
-                                                <div class="mb3 {{if (and (feature "multipleProducts") this.showPortalTiers) "mt5" ""}}">
+                                                <div class="mb3 mt5">
                                                     <h4 class="gh-portal-setting-title">Prices available at signup</h4>
                                                 </div>
                                             {{/if}}
-                                            {{#unless this.showPortalTiers}}
-                                                <div class="form-group mb0 for-checkbox">
-                                                    <label
-                                                        class="checkbox"
-                                                        for="free-plan"
-                                                    >
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={{this.membersUtils.isFreeChecked}}
-                                                            id="free-plan"
-                                                            name="free-plan"
-                                                            disabled={{or
-                                                                (not this.membersUtils.isStripeEnabled)
-                                                                (not-eq this.settings.membersSignupAccess "all")
-                                                            }}
-                                                            class="gh-input post-settings-featured"
-                                                            {{on "click" (action "togglePlan" "free")}}
-                                                        >
-                                                        <span class="input-toggle-component"></span>
-                                                        <p>Free</p>
-                                                    </label>
-                                                </div>
-                                            {{/unless}}
                                             {{#if this.showPortalPrices}}
                                                 <div class="form-group mb0 for-checkbox">
                                                     <label
@@ -371,7 +346,7 @@
             <div class="gh-portal-preview-container {{if this.showLinksPage "hide"}}">
                 <div class="gh-portal-site-frame-cover"> </div>
                 <GhSiteIframe
-                    class="gh-portal-siteiframe {{if (feature "multipleProducts") "gh-portal-siteiframe-enabled"}}"
+                    class="gh-portal-siteiframe gh-portal-siteiframe-enabled"
                     @src={{this.portalPreviewUrl}}
                     @guid={{this.portalPreviewGuid}}
                     @invisibleUntilLoaded="portal-ready" />

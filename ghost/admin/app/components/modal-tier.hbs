@@ -104,24 +104,22 @@
                                 <p class="response w-100"><span class="red">{{this.stripePlanError}}</span></p>
                             {{/if}}
                         </GhFormGroup>
-                        {{#if (feature "tierWelcomePages")}}
-                            <GhFormGroup>
-                                <label for="welcomePage" class="fw6">Welcome page</label>
-                                <GhUrlInput
-                                    @id="welcomePage"
-                                    @value={{readonly this.model.tier.welcomePageURL}}
-                                    @baseUrl={{readonly this.siteUrl}}
-                                    @setResult={{this.setWelcomePageURL}}
-                                    @validateUrl={{this.validateWelcomePageURL}}
-                                    @placeholder={{readonly this.siteUrl}}
-                                />
-                                {{#if this.isFreeTier}}
-                                    <p>Redirect to this URL after signup for a free membership</p>
-                                {{else}}
-                                    <p>Redirect to this URL after signup for premium membership</p>
-                                {{/if}}
-                            </GhFormGroup>
-                        {{/if}}
+                        <GhFormGroup>
+                            <label for="welcomePage" class="fw6">Welcome page</label>
+                            <GhUrlInput
+                                @id="welcomePage"
+                                @value={{readonly this.model.tier.welcomePageURL}}
+                                @baseUrl={{readonly this.siteUrl}}
+                                @setResult={{this.setWelcomePageURL}}
+                                @validateUrl={{this.validateWelcomePageURL}}
+                                @placeholder={{readonly this.siteUrl}}
+                            />
+                            {{#if this.isFreeTier}}
+                                <p>Redirect to this URL after signup for a free membership</p>
+                            {{else}}
+                                <p>Redirect to this URL after signup for premium membership</p>
+                            {{/if}}
+                        </GhFormGroup>
                     {{/unless}}
                 </div>
 

@@ -50,7 +50,6 @@ export default class LabsController extends Controller {
     importSuccessful = false;
     showDeleteAllModal = false;
     showEarlyAccessModal = false;
-    showEnableTiersModal = false;
     submitting = false;
     uploadButtonText = 'Import';
     importMimeType = null;
@@ -157,11 +156,6 @@ export default class LabsController extends Controller {
     @action
     toggleEarlyAccessModal() {
         this.toggleProperty('showEarlyAccessModal');
-    }
-
-    @action
-    toggleEnableTiersModal() {
-        this.toggleProperty('showEnableTiersModal');
     }
 
     @action

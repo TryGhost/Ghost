@@ -3,7 +3,6 @@ import sinon from 'sinon';
 import {authenticateSession} from 'ember-simple-auth/test-support';
 import {blur, click, currentURL, fillIn, find, findAll, focus} from '@ember/test-helpers';
 import {datepickerSelect} from 'ember-power-datepicker/test-support';
-import {enableLabsFlag} from '../../helpers/labs-flag';
 import {enableNewsletters} from '../../helpers/newsletters';
 import {enableStripe} from '../../helpers/stripe';
 import {expect} from 'chai';
@@ -21,7 +20,6 @@ describe('Acceptance: Members filtering', function () {
     beforeEach(async function () {
         this.server.loadFixtures('configs');
         this.server.loadFixtures('settings');
-        enableLabsFlag(this.server, 'multipleProducts');
         enableStripe(this.server);
         enableNewsletters(this.server, true);
 

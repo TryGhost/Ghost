@@ -361,36 +361,17 @@ export default class MembersAccessController extends Controller {
 
     @task({drop: true})
     *saveSettingsTask(options) {
-        if (!this.feature.get('multipleProducts')) {
-            yield this.validateStripePlans({updatePortalPreview: false});
-
-            if (this.stripePlanError) {
-                return;
-            }
-
-            if (this.settings.get('errors').length !== 0) {
-                return;
-            }
-
-            yield this.saveTier();
-            const result = yield this.settings.save();
-
-            this.updatePortalPreview(options);
-
-            return result;
-        } else {
-            if (this.settings.get('errors').length !== 0) {
-                return;
-            }
-            // When no filer is selected in `Specific tier(s)` option
-            if (!this.settings.get('defaultContentVisibility')) {
-                return;
-            }
-            const result = yield this.settings.save();
-            yield this.freeTier.save();
-            this.updatePortalPreview(options);
-            return result;
+        if (this.settings.get('errors').length !== 0) {
+            return;
         }
+        // When no filer is selected in `Specific tier(s)` option
+        if (!this.settings.get('defaultContentVisibility')) {
+            return;
+        }
+        const result = yield this.settings.save();
+        yield this.freeTier.save();
+        this.updatePortalPreview(options);
+        return result;
     }
 
     async saveTier() {

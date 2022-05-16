@@ -73,7 +73,11 @@ export default [
     {
         id: 12,
         key: 'labs',
-        value: '{}',
+        value: JSON.stringify({
+            // Keep the GA flags that are not yet cleaned up in frontend code here
+            multipleNewsletters: true,
+            multipleNewslettersUI: true
+        }),
         group: 'labs',
         created_at: '2015-01-12T18:29:01.000Z',
         created_by: 1,
