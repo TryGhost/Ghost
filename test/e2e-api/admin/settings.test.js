@@ -2,7 +2,7 @@ const assert = require('assert');
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
 const {stringMatching, anyEtag, anyObjectId, anyISODateTime} = matchers;
 
-const CURRENT_SETTINGS_COUNT = 87;
+const CURRENT_SETTINGS_COUNT = 70;
 
 const settingsMatcher = {
     id: anyObjectId,
@@ -53,17 +53,6 @@ describe('Settings API', function () {
             .expectStatus(200)
             .matchBodySnapshot({
                 settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
-            })
-            .matchHeaderSnapshot({
-                etag: anyEtag
-            });
-    });
-
-    it('Can read a setting', async function () {
-        await agent.get('settings/codeinjection_head/')
-            .expectStatus(200)
-            .matchBodySnapshot({
-                settings: [settingsMatcher]
             })
             .matchHeaderSnapshot({
                 etag: anyEtag

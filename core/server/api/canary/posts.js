@@ -128,9 +128,8 @@ module.exports = {
             'id',
             'formats',
             'source',
-            'email_recipient_filter',
-            'newsletter_id',
-            'send_email_when_published',
+            'email_segment',
+            'newsletter',
             'force_rerender',
             // NOTE: only for internal context
             'forUpdate',
@@ -146,9 +145,6 @@ module.exports = {
                 },
                 source: {
                     values: ['html']
-                },
-                send_email_when_published: {
-                    values: [true, false]
                 }
             }
         },

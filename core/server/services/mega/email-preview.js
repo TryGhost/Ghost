@@ -10,7 +10,7 @@ class EmailPreview {
      * @returns {Promise<Object>}
      */
     async generateEmailContent(post, {newsletter, memberSegment} = {}) {
-        let newsletterModel = await post.related('newsletter').fetch();
+        let newsletterModel = post.relations.newsletter ?? await post.related('newsletter').fetch();
         if (!newsletterModel) {
             if (newsletter) {
                 newsletterModel = await models.Newsletter.findOne({slug: newsletter});
