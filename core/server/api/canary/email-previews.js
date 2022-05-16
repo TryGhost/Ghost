@@ -15,7 +15,8 @@ module.exports = {
     read: {
         options: [
             'fields',
-            'memberSegment'
+            'memberSegment',
+            'newsletter'
         ],
         validation: {
             options: {
@@ -39,7 +40,10 @@ module.exports = {
                 });
             }
 
-            return emailPreview.generateEmailContent(model, frame.options.memberSegment);
+            return emailPreview.generateEmailContent(model, {
+                newsletter: frame.options.newsletter,
+                memberSegment: frame.options.memberSegment
+            });
         }
     },
     sendTestEmail: {
