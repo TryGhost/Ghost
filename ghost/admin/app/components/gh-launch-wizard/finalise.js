@@ -22,24 +22,9 @@ export default class GhLaunchWizardFinaliseComponent extends Component {
             const monthlyAmount = Math.round(data.monthlyAmount * 100);
             const yearlyAmount = Math.round(data.yearlyAmount * 100);
             const currency = data.currency;
-            const monthlyPrice = {
-                nickname: 'Monthly',
-                amount: monthlyAmount,
-                active: true,
-                currency: currency,
-                interval: 'month',
-                type: 'recurring'
-            };
-            const yearlyPrice = {
-                nickname: 'Yearly',
-                amount: yearlyAmount,
-                active: true,
-                currency: currency,
-                interval: 'year',
-                type: 'recurring'
-            };
-            this.tier.set('monthlyPrice', monthlyPrice);
-            this.tier.set('yearlyPrice', yearlyPrice);
+            this.tier.set('monthlyPrice', monthlyAmount);
+            this.tier.set('yearlyPrice', yearlyAmount);
+            this.tier.set('currency', currency);
             const savedTier = await this.tier.save();
             return savedTier;
         }

@@ -85,10 +85,10 @@ export default class OffersController extends Controller {
     get cadence() {
         if (this.offer.tier && this.offer.cadence) {
             const tier = this.tiers.findBy('id', this.offer.tier.id);
-            return `${this.offer.tier.id}-${this.offer.cadence}-${tier?.monthlyPrice?.currency}`;
+            return `${this.offer.tier.id}-${this.offer.cadence}-${tier?.currency}`;
         } else if (this.defaultProps) {
             const tier = this.tiers.findBy('id', this.defaultProps.tier.id);
-            return `${this.defaultProps.tier.id}-${this.defaultProps.cadence}-${tier?.monthlyPrice?.currency}`;
+            return `${this.defaultProps.tier.id}-${this.defaultProps.cadence}-${tier?.currency}`;
         }
         return '';
     }
@@ -109,10 +109,10 @@ export default class OffersController extends Controller {
         this.tiers.forEach((tier) => {
             let monthlyLabel;
             let yearlyLabel;
-            const tierCurrency = tier.monthlyPrice.currency;
+            const tierCurrency = tier.currency;
             const tierCurrencySymbol = tierCurrency.toUpperCase();
-            monthlyLabel = `${tier.name} - Monthly (${ghPriceAmount(tier.monthlyPrice.amount)} ${tierCurrencySymbol})`;
-            yearlyLabel = `${tier.name} - Yearly (${ghPriceAmount(tier.yearlyPrice.amount)} ${tierCurrencySymbol})`;
+            monthlyLabel = `${tier.name} - Monthly (${ghPriceAmount(tier.monthlyPrice)} ${tierCurrencySymbol})`;
+            yearlyLabel = `${tier.name} - Yearly (${ghPriceAmount(tier.yearlyPrice)} ${tierCurrencySymbol})`;
 
             cadences.push({
                 label: monthlyLabel,
@@ -374,7 +374,7 @@ export default class OffersController extends Controller {
             return '$';
         }
         const tier = this.tiers.findBy('id', tierId);
-        const tierCurrency = tier?.monthlyPrice?.currency || 'usd';
+        const tierCurrency = tier?.currency || 'usd';
         return getSymbol(tierCurrency);
     }
 

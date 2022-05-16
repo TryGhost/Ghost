@@ -1177,6 +1177,11 @@ remove|ember-template-lint|no-action|78|55|78|55|856c8ab1d5835ec424c83eb6b73888b
 remove|ember-template-lint|no-action|82|59|82|59|e8badded2afd5d0c8426b85b6d0e7ac0bef55efb|1652054400000|1662422400000|1665014400000|app/templates/settings/integrations/slack.hbs
 remove|ember-template-lint|no-passed-in-event-handlers|52|48|52|48|a893d9d149388aa9da024f59db6522bb9335bf8a|1652054400000|1662422400000|1665014400000|app/templates/settings/integrations/slack.hbs
 remove|ember-template-lint|no-passed-in-event-handlers|78|48|78|48|1ab458a0888727af2b3a7a661a1e7d5f00ac0ad5|1652054400000|1662422400000|1665014400000|app/templates/settings/integrations/slack.hbs
+remove|ember-template-lint|no-action|206|59|206|59|dcc09bb23a476d5b83b273b693cd8cb2aba68365|1652054400000|1662422400000|1665014400000|app/templates/settings/membership.hbs
+remove|ember-template-lint|no-action|207|63|207|63|682c80ff5163c8e4a2bea89f2066dfd1248b5889|1652054400000|1662422400000|1665014400000|app/templates/settings/membership.hbs
+remove|ember-template-lint|no-action|216|59|216|59|a80dd18e18dda6fb6f1f97d87bef2b8c2ce3d847|1652054400000|1662422400000|1665014400000|app/templates/settings/membership.hbs
+remove|ember-template-lint|no-passed-in-event-handlers|206|52|206|52|dcb4785647a50814bcfce82f8d68ac8dd8f54ec2|1652054400000|1662422400000|1665014400000|app/templates/settings/membership.hbs
+remove|ember-template-lint|no-passed-in-event-handlers|216|52|216|52|70487c008d7dda453fef82f0140699ee93c0055c|1652054400000|1662422400000|1665014400000|app/templates/settings/membership.hbs
 remove|ember-template-lint|no-action|59|49|59|49|caf96338bbfda1006cc9251eacd9d9eee883df44|1652054400000|1662422400000|1665014400000|app/templates/editor.hbs
 remove|ember-template-lint|no-action|60|44|60|44|1731ed4d2ac62556bb83fbc378686e26ca605687|1652054400000|1662422400000|1665014400000|app/templates/editor.hbs
 add|ember-template-lint|table-groups|29|12|29|12|49e0fad85b643b6129963e49b6b5a37ccbd9796c|1652659200000|1663027200000|1668214800000|app/templates/offers.hbs

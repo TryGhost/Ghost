@@ -26,9 +26,9 @@ export default class extends Component {
             const firstPaidTier = this.args.tiers.find((tier) => {
                 return tier.type === 'paid';
             });
-            return firstPaidTier?.monthlyPrice?.currency || 'usd';
+            return firstPaidTier?.currency || 'usd';
         } else {
-            return this.tier?.monthlyPrice?.currency;
+            return this.tier?.currency;
         }
     }
 

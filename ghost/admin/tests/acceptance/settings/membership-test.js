@@ -286,8 +286,7 @@ describe('Acceptance: Settings - Membership', function () {
         const freeTier = this.server.db.tiers.findBy({slug: 'free'});
         expect(freeTier.description).to.equal('Test description');
         expect(freeTier.welcomePageUrl).to.equal('/not%20a%20url');
-        expect(freeTier.tierBenefitIds.length).to.equal(1);
-        const benefits = this.server.db.tierBenefits.find(freeTier.tierBenefitIds);
-        expect(benefits[0].name).to.equal('Second benefit');
+        expect(freeTier.benefits.length).to.equal(1);
+        expect(freeTier.benefits[0]).to.equal('Second benefit');
     });
 });
