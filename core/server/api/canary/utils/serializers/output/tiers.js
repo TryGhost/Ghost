@@ -1,6 +1,5 @@
 //@ts-check
 const debug = require('@tryghost/debug')('api:canary:utils:serializers:output:tiers');
-const _ = require('lodash');
 
 const allowedIncludes = ['monthly_price', 'yearly_price'];
 const utils = require('../../../../shared/utils');
