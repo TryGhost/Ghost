@@ -145,7 +145,11 @@ describe('{{body_class}} helper', function () {
         it('a static page with custom template (is now the same as one without)', function () {
             const rendered = callBodyClassWithContext(
                 ['page'],
-                {relativeUrl: '/about', post: {page: true, slug: 'about'}}
+                {
+                    relativeUrl: '/about',
+                    post: {slug: 'about'},
+                    page: {slug: 'about'}
+                }
             );
 
             rendered.string.should.equal('page-template page-about');

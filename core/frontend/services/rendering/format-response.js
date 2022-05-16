@@ -46,12 +46,18 @@ function formatPageResponse(result) {
  *
  * @return {Object} containing page variables
  */
-function formatResponse(post) {
+function formatResponse(post, context) {
     prepareContextResource(post);
 
-    return {
+    let entry = {
         post: post
     };
+
+    if (context?.includes('page')) {
+        entry.page = post;
+    }
+
+    return entry;
 }
 
 module.exports = {
