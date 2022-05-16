@@ -1612,12 +1612,7 @@
     "@tryghost/root-utils" "^0.3.14"
     debug "^4.3.1"
 
-"@tryghost/domain-events@0.1.13", "@tryghost/domain-events@^0.1.13":
-  version "0.1.13"
-  resolved "https://registry.yarnpkg.com/@tryghost/domain-events/-/domain-events-0.1.13.tgz#a668cf39e808b51d6a5bc4f0f4e9b681047a4c59"
-  integrity sha512-0L1UNk4NROfQTqXnBo/LSU2QIUq1jnwGUBLDhkRYeBZ1qXw6wzdmvTt4mTc8J9E4BzG6rHr0ZSwrshwDpS7tSw==
-
-"@tryghost/domain-events@^0.1.14":
+"@tryghost/domain-events@0.1.14", "@tryghost/domain-events@^0.1.14":
   version "0.1.14"
   resolved "https://registry.yarnpkg.com/@tryghost/domain-events/-/domain-events-0.1.14.tgz#a0206b21981d8e3337dfc0ed56df182d6e7188b3"
   integrity sha512-SoJMvrwBXFDciQwjobpuZae0AQ/pVB+RgSj+QEuKNqg6V6CAhNlLrI1rAhkHtXkuKaLDDzH8tKWQEeeApXdBng==
@@ -1867,7 +1862,7 @@
     "@tryghost/tpl" "^0.1.4"
     bson-objectid "^2.0.1"
 
-"@tryghost/member-events@0.4.5", "@tryghost/member-events@^0.4.5":
+"@tryghost/member-events@0.4.5":
   version "0.4.5"
   resolved "https://registry.yarnpkg.com/@tryghost/member-events/-/member-events-0.4.5.tgz#b6929c2a13bf24be5382015975fc3db7f01eede4"
   integrity sha512-SOfoHY7ib9jVqtNqXjv6AXHh3hckcce+7RzevXbqD0a4jUyB8Vc9RxJ8vTIJxq5BYxbpecJZulu9rLNuykno2A==
@@ -1924,13 +1919,13 @@
     papaparse "^5.3.2"
     pump "^3.0.0"
 
-"@tryghost/members-events-service@0.4.2":
-  version "0.4.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-events-service/-/members-events-service-0.4.2.tgz#434db802e9fc811497b9685198655cd414306a80"
-  integrity sha512-4vwXFcC3GufyEvolkaK89hsQTkIVhcbZxeFTTwntW9vBJN4E8b8Ip3axNY6vzA+BqrPRSAN5cG05fP93cAXOYw==
+"@tryghost/members-events-service@0.4.3":
+  version "0.4.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-events-service/-/members-events-service-0.4.3.tgz#2fa3699ec6728cae77e12d8260648593323e9c09"
+  integrity sha512-aLEnISCo8sl/z+RLxw1jj+KuqI72+ACfkadnRIdHe5Jn6CGbp21L0SdnKU/6NQ7KbuZZfYxYdPnJmHpqm1e4rw==
   dependencies:
-    "@tryghost/domain-events" "^0.1.13"
-    "@tryghost/member-events" "^0.4.5"
+    "@tryghost/domain-events" "^0.1.14"
+    "@tryghost/member-events" "^0.4.6"
     moment-timezone "^0.5.34"
 
 "@tryghost/members-importer@0.5.13":
@@ -1980,21 +1975,7 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.11"
 
-"@tryghost/members-stripe-service@0.10.4":
-  version "0.10.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-stripe-service/-/members-stripe-service-0.10.4.tgz#6b3740a99c2136d58d3c17222474c0326d8055bb"
-  integrity sha512-QFQcvOtLxDmh+XnEpZN226FGQugV99TTUV4LbeRGkcnV+PceZkOuZSbpkYboQzG7PGO2olc5pAQxeJercHrn+A==
-  dependencies:
-    "@tryghost/debug" "^0.1.4"
-    "@tryghost/domain-events" "^0.1.13"
-    "@tryghost/errors" "^1.2.5"
-    "@tryghost/logging" "^2.0.5"
-    "@tryghost/member-events" "^0.4.5"
-    leaky-bucket "^2.2.0"
-    lodash "^4.17.21"
-    stripe "^8.174.0"
-
-"@tryghost/members-stripe-service@^0.10.5":
+"@tryghost/members-stripe-service@0.10.5", "@tryghost/members-stripe-service@^0.10.5":
   version "0.10.5"
   resolved "https://registry.yarnpkg.com/@tryghost/members-stripe-service/-/members-stripe-service-0.10.5.tgz#17adc845a0c279c14fa0a2d6fc920ce8cdda0c6c"
   integrity sha512-MOVquZaZ+WfDVY6DjJUrAyVKQy7cTWXcv8mWMnAcGL+aE526XPX3hrvA8BRilKjwN7hVNI9kBnxoALPsqZHHCw==
@@ -2275,13 +2256,13 @@
     moment-timezone "^0.5.23"
     validator "7.2.0"
 
-"@tryghost/verification-trigger@0.2.4":
-  version "0.2.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/verification-trigger/-/verification-trigger-0.2.4.tgz#c58ca70f9fdee1675add9e05039662c4c5f0824c"
-  integrity sha512-94R0zNDFFz73E25ZpY28Fe8lT7BZ2HZ4uRD+9YHUXdSyV+L2Kf1kCteBELjAc7b8gi74CqScm+/dikDRum2pJA==
+"@tryghost/verification-trigger@0.2.5":
+  version "0.2.5"
+  resolved "https://registry.yarnpkg.com/@tryghost/verification-trigger/-/verification-trigger-0.2.5.tgz#185906ef690ece00264a86ffba2d8809a3e19ad4"
+  integrity sha512-Zt89BuSs54l2epzyrmmE1Ra+NZt/WYMDdTNW0VRhOYBrvDFPPCY0Ks0gVUPSfuHlnSmqBwG+KWVQanwbEi6J9Q==
   dependencies:
-    "@tryghost/domain-events" "^0.1.13"
-    "@tryghost/member-events" "^0.4.5"
+    "@tryghost/domain-events" "^0.1.14"
+    "@tryghost/member-events" "^0.4.6"
 
 "@tryghost/version-notifications-data-service@^0.2.0":
   version "0.2.0"
