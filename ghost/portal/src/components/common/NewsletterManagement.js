@@ -110,6 +110,7 @@ function ShowPaidMemberMessage({site, isPaid}) {
 }
 
 export default function NewsletterManagement({
+    notification,
     subscribedNewsletters,
     updateSubscribedNewsletters,
     unsubscribeAll,
@@ -117,10 +118,15 @@ export default function NewsletterManagement({
 }) {
     const isDisabled = !subscribedNewsletters?.length;
     const {brandColor, site} = useContext(AppContext);
+    const EmptyNotification = () => {
+        return null;
+    };
+    const FinalNotification = notification || EmptyNotification;
     return (
         <div className='gh-portal-content with-footer'>
             <CloseButton />
             <AccountHeader />
+            <FinalNotification />
             <div className='gh-portal-section'>
                 <div className='gh-portal-list'>
                     <NewsletterPrefs
