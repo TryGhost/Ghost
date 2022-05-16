@@ -45,7 +45,10 @@ const loadConverters = () => {
     const excerptSettings = mergeSettings({
         selectors: [
             {selector: 'a', options: {ignoreHref: true}},
-            {selector: 'figcaption', format: 'skip'}
+            {selector: 'figcaption', format: 'skip'},
+            // Strip inline and bottom footnotes
+            {selector: 'a[rel=footnote]', format: 'skip'},
+            {selector: 'div.footnotes', format: 'skip'}
         ]
     });
 

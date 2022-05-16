@@ -47,7 +47,7 @@ function getDescription(data, root, options = {}) {
             description = data.post[`${options.property}_description`]
                 || data.post.custom_excerpt
                 || data.post.meta_description
-                || generateExcerpt(data.post.html || '', {words: 50})
+                || generateExcerpt(data.post.excerpt || '', {words: 50})
                 || settingsCache.get('description')
                 || '';
         } else {
@@ -59,7 +59,7 @@ function getDescription(data, root, options = {}) {
             description = data.post[`${options.property}_description`]
                 || data.post.custom_excerpt
                 || data.post.meta_description
-                || generateExcerpt(data.post.html || '', {words: 50})
+                || generateExcerpt(data.post.excerpt || '', {words: 50})
                 || settingsCache.get('description')
                 || '';
         } else {
@@ -70,7 +70,7 @@ function getDescription(data, root, options = {}) {
             description = data.page[`${options.property}_description`]
                 || data.page.custom_excerpt
                 || data.page.meta_description
-                || generateExcerpt(data.page.html || '', {words: 50})
+                || generateExcerpt(data.page.excerpt || '', {words: 50})
                 || settingsCache.get('description')
                 || '';
         } else {
