@@ -98,6 +98,22 @@ export default class PublishManagement extends Component {
         }
     }
 
+    // triggered by ctrl/cmd+p
+    @action
+    togglePreview(event) {
+        event?.preventDefault();
+
+        if (!this.previewModal || this.previewModal.isClosing) {
+            if (this.publishFlowModal && !this.publishFlowModal.isClosing) {
+                this.togglePreviewPublish();
+            } else {
+                this.openPreview();
+            }
+        } else {
+            this.previewModal.close();
+        }
+    }
+
     @action
     changePreviewTab(tab) {
         this.previewTab = tab;

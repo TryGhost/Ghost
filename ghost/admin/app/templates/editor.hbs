@@ -1,5 +1,5 @@
 {{#if this.post}}
-    <div class="flex flex-row" {{on-key "cmd+p" (action "openPostPreview")}}>
+    <div class="flex flex-row">
         <GhEditor
             @tagName="section"
             @class="gh-editor gh-view relative"
@@ -28,15 +28,15 @@
 
                 <section class="flex" style="pointer-events: auto">
                     {{#unless this.post.isNew}}
-                        {{#if (and this.post.isDraft (not (feature "publishingFlow")))}}
-                            <div>
-                                <button type="button" class="gh-btn gh-editor-preview-trigger" {{on "click" (action "openPostPreviewModal")}}>
-                                    <span>Preview</span>
-                                </button>
-                            </div>
-                        {{/if}}
-
                         {{#if this.session.user.isContributor}}
+                            {{#if this.post.isDraft}}
+                                <div {{on-key "cmd+p" this.openPostPreview}}>
+                                    <button type="button" class="gh-btn gh-editor-preview-trigger" {{on "click" this.openPostPreviewModal}}>
+                                        <span>Preview</span>
+                                    </button>
+                                </div>
+                            {{/if}}
+
                             <GhTaskButton @buttonText="Save"
                                 @task={{this.save}}
                                 @runningText="Saving"
