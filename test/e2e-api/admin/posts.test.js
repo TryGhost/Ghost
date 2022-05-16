@@ -452,7 +452,7 @@ describe('Posts API', function () {
     });
 
     it('Can change the newsletter_id of a post when publishing', async function () {
-        const newsletterId = testUtils.DataGenerator.Content.newsletters[2].id;
+        const newsletterId = testUtils.DataGenerator.Content.newsletters[1].id;
 
         const post = {
             title: 'My newsletter_id post',
@@ -505,7 +505,7 @@ describe('Posts API', function () {
     });
 
     it('Can publish a scheduled post', async function () {
-        const newsletterId = testUtils.DataGenerator.Content.newsletters[2].id;
+        const newsletterId = testUtils.DataGenerator.Content.newsletters[1].id;
 
         const post = {
             title: 'My scheduled post',

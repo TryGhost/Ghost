@@ -183,7 +183,7 @@ exports[`Members API Can add a subscription 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2055",
+  "content-length": "2106",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -261,7 +261,7 @@ exports[`Members API Can add a subscription 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2055",
+  "content-length": "2106",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -291,7 +291,7 @@ Object {
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "description": null,
           "footer_content": null,
-          "header_image": null,
+          "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
           "name": "Weekly newsletter",
           "sender_email": "jamie@example.com",
@@ -329,7 +329,7 @@ exports[`Members API Can add and edit with custom newsletters 2: [headers] 1`] =
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1294",
+  "content-length": "1345",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -360,7 +360,7 @@ Object {
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "description": null,
           "footer_content": null,
-          "header_image": null,
+          "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
           "name": "Daily newsletter",
           "sender_email": "jamie@example.com",
@@ -398,7 +398,7 @@ exports[`Members API Can add and edit with custom newsletters 4: [headers] 1`] =
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1293",
+  "content-length": "1344",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -454,7 +454,7 @@ Object {
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "description": null,
           "footer_content": null,
-          "header_image": null,
+          "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
           "name": "Weekly newsletter",
           "sender_email": "jamie@example.com",
@@ -492,7 +492,7 @@ exports[`Members API Can add and send a signup confirmation email (old) 2: [head
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1789",
+  "content-length": "1840",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": Any<String>,
@@ -559,7 +559,7 @@ Object {
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "description": null,
           "footer_content": null,
-          "header_image": null,
+          "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
           "name": "Daily newsletter",
           "sender_email": "jamie@example.com",
@@ -597,7 +597,7 @@ exports[`Members API Can add and send a signup confirmation email 2: [headers] 1
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1784",
+  "content-length": "1835",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": Any<String>,
@@ -888,7 +888,7 @@ exports[`Members API Can browse 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "13097",
+  "content-length": "13454",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -938,7 +938,7 @@ exports[`Members API Can browse with filter 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1328",
+  "content-length": "1379",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -988,7 +988,7 @@ exports[`Members API Can browse with search 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1328",
+  "content-length": "1379",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -1261,7 +1261,7 @@ exports[`Members API Can destroy 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1759",
+  "content-length": "1810",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -1571,7 +1571,7 @@ exports[`Members API Can filter by paid status 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "9569",
+  "content-length": "9773",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -1684,7 +1684,7 @@ exports[`Members API Can filter on newsletter slug 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "8285",
+  "content-length": "8540",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -1868,7 +1868,7 @@ exports[`Members API Can ignore any unknown includes 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "9569",
+  "content-length": "9773",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -2303,7 +2303,7 @@ exports[`Members API Can read 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1254",
+  "content-length": "1305",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -2345,7 +2345,7 @@ exports[`Members API Can read and include email_recipients 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1276",
+  "content-length": "1327",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -2443,7 +2443,7 @@ Object {
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "description": null,
           "footer_content": null,
-          "header_image": null,
+          "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
           "name": "Weekly newsletter",
           "sender_email": "jamie@example.com",
@@ -2481,7 +2481,7 @@ exports[`Members API Can subscribe by setting (old) subscribed property to true 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1773",
+  "content-length": "1824",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -2564,7 +2564,7 @@ exports[`Members API Can subscribe to a newsletter 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1116",
+  "content-length": "1167",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -2694,7 +2694,7 @@ exports[`Members API Can subscribe to a newsletter 5: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4398",
+  "content-length": "4449",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -2953,7 +2953,7 @@ exports[`Members API Search by case-insensitive email MEMBER2 receives member wi
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1175",
+  "content-length": "1226",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -3003,7 +3003,7 @@ exports[`Members API Search by case-insensitive name egg receives member with na
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1328",
+  "content-length": "1379",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -3081,7 +3081,7 @@ exports[`Members API Search for paid members retrieves member with email paid@te
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2384",
+  "content-length": "2435",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -3122,7 +3122,7 @@ exports[`Members API Subscribes to default newsletters 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1760",
+  "content-length": "1811",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,

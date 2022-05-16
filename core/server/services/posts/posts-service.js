@@ -22,8 +22,8 @@ class PostsService {
 
         // Make sure the newsletter_id is matching an active newsletter
         if (frame.options.newsletter_id) {
-            const newsletter = await this.models.Newsletter.findOne({id: frame.options.newsletter_id, filter: 'status:active'}, {transacting: frame.options.transacting});
-            if (!newsletter) {
+            const newsletter = await this.models.Newsletter.findOne({id: frame.options.newsletter_id}, {transacting: frame.options.transacting});
+            if (!newsletter || newsletter.get('status') !== 'active') {
                 throw new BadRequestError({
                     message: messages.invalidNewsletterId
                 });

@@ -16,6 +16,7 @@ describe('MEGA', function () {
         it('throws when "free" or "paid" strings are used as a email_recipient_filter', async function () {
             const postModel = {
                 get: sinon.stub().returns('free'),
+                relations: {},
                 related: sinon.stub().returns({
                     fetch: sinon.stub().returns(null)
                 })
@@ -34,6 +35,7 @@ describe('MEGA', function () {
         it('throws when "none" is used as a email_recipient_filter', async function () {
             const postModel = {
                 get: sinon.stub().returns('none'),
+                relations: {},
                 related: sinon.stub().returns({
                     fetch: sinon.stub().returns(null)
                 })
@@ -52,6 +54,7 @@ describe('MEGA', function () {
         it('throws when "public" is used as newsletter.visibility', async function () {
             const postModel = {
                 get: sinon.stub().returns('status:free'),
+                relations: {},
                 fetch: sinon.stub().returns(Promise.resolve({
                     get: () => 'public'
                 }))
@@ -128,6 +131,7 @@ describe('MEGA', function () {
         it('addEmail throws when "free" or "paid" strings are used as a recipient_filter', async function () {
             const emailModel = {
                 get: sinon.stub().returns('paid'),
+                relations: {},
                 related: sinon.stub().returns({
                     fetch: sinon.stub().returns({
                         id: 'test'
@@ -147,6 +151,7 @@ describe('MEGA', function () {
         it('addEmail throws when "none" is used as a recipient_filter', async function () {
             const emailModel = {
                 get: sinon.stub().returns('none'),
+                relations: {},
                 related: sinon.stub().returns({
                     fetch: sinon.stub().returns({
                         id: 'test'
