@@ -1,5 +1,4 @@
 const logging = require('@tryghost/logging');
-const inquirer = require('inquirer');
 
 module.exports = class Command {
     constructor() {
@@ -33,6 +32,7 @@ module.exports = class Command {
     }
 
     async ask(message, opts = {type: 'input'}) {
+        const inquirer = require('inquirer');
         const response = await inquirer.prompt([{
             message,
             ...opts,
@@ -47,6 +47,23 @@ module.exports = class Command {
 
     async secret(message) {
         return this.ask(message, {type: 'password'});
+    }
+
+    progressBar(total, opts = {}) {
+        const chalk = require('chalk');
+        const progress = require('cli-progress');
+        const bar = new progress.Bar({
+            format: `|${chalk[opts.color ?? 'cyan']('{bar}')}| {percentage}% | {value}/{total} {status}`,
+            barCompleteChar: '\u2588',
+            barIncompleteChar: '\u2591',
+            hideCursor: true,
+            clearOnComplete: true,
+            stopOnComplete: true,
+            forceRedraw: true,
+            ...opts
+        });
+        bar.start(total, 0, {status: ''});
+        return bar;
     }
 
     info() {

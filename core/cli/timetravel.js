@@ -42,14 +42,20 @@ module.exports = class TimeTravel extends Command {
             fields => fields.length > 0
         );
 
+        const totalFields = _.reduce(dateTimeFields, (result, value) => {
+            return result + value.length;
+        }, 0);
+        const progressBar = this.progressBar(totalFields);
         const db = await knex.transaction();
         for (const table in dateTimeFields) {
             for (const column of dateTimeFields[table]) {
-                this.info(`updating ${table}.${column}`);
+                progressBar.update({status: `Updating ${table}.${column}`});
                 await db(table)
                     .update(column, db.raw(`DATE_ADD(${column}, interval ${dateOffset} day)`));
+                progressBar.increment();
             }
         }
+        this.info(`Updated ${totalFields} fields`);
         await db.commit();
         knex.destroy();
     }
