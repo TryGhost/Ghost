@@ -589,7 +589,8 @@ describe('Posts API', function () {
     });
 
     it('Cannot send to an archived newsletter', async function () {
-        const newsletterId = testUtils.DataGenerator.Content.newsletters[2].id;
+        const newsletterSlug = testUtils.DataGenerator.Content.newsletters[2].slug;
+
         should(testUtils.DataGenerator.Content.newsletters[2].status).eql('archived', 'This test expects an archived newsletter in the test fixtures');
 
         const post = {
@@ -623,7 +624,7 @@ describe('Posts API', function () {
         updatedPost.status = 'published';
 
         await request
-            .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterId))
+            .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterSlug))
             .set('Origin', config.get('url'))
             .send({posts: [updatedPost]})
             .expect('Content-Type', /json/)
@@ -633,6 +634,7 @@ describe('Posts API', function () {
 
     it('Can change the newsletter of a post when publishing', async function () {
         const newsletterId = testUtils.DataGenerator.Content.newsletters[1].id;
+        const newsletterSlug = testUtils.DataGenerator.Content.newsletters[1].slug;
 
         const post = {
             title: 'My newsletter_id post',
@@ -664,7 +666,7 @@ describe('Posts API', function () {
         updatedPost.status = 'published';
 
         const finalPost = await request
-            .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterId))
+            .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterSlug))
             .set('Origin', config.get('url'))
             .send({posts: [updatedPost]})
             .expect('Content-Type', /json/)
@@ -695,6 +697,7 @@ describe('Posts API', function () {
 
     it('Can publish an email_only post', async function () {
         const newsletterId = testUtils.DataGenerator.Content.newsletters[1].id;
+        const newsletterSlug = testUtils.DataGenerator.Content.newsletters[1].slug;
 
         const post = {
             title: 'My post',
@@ -724,7 +727,7 @@ describe('Posts API', function () {
         updatedPost.email_only = true;
 
         const publishedRes = await request
-            .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterId))
+            .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterSlug))
             .set('Origin', config.get('url'))
             .send({posts: [updatedPost]})
             .expect('Content-Type', /json/)
@@ -759,6 +762,7 @@ describe('Posts API', function () {
 
     it('Can publish an email_only post with free filter', async function () {
         const newsletterId = testUtils.DataGenerator.Content.newsletters[1].id;
+        const newsletterSlug = testUtils.DataGenerator.Content.newsletters[1].slug;
 
         const post = {
             title: 'My post',
@@ -788,7 +792,7 @@ describe('Posts API', function () {
         updatedPost.email_only = true;
 
         const publishedRes = await request
-            .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterId + '&email_segment=status%3Afree'))
+            .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterSlug + '&email_segment=status%3Afree'))
             .set('Origin', config.get('url'))
             .send({posts: [updatedPost]})
             .expect('Content-Type', /json/)
@@ -823,6 +827,7 @@ describe('Posts API', function () {
 
     it('Can publish a scheduled post', async function () {
         const newsletterId = testUtils.DataGenerator.Content.newsletters[1].id;
+        const newsletterSlug = testUtils.DataGenerator.Content.newsletters[1].slug;
 
         const post = {
             title: 'My scheduled post',
@@ -851,7 +856,7 @@ describe('Posts API', function () {
         updatedPost.published_at = moment().add(2, 'days').toDate();
 
         const scheduledRes = await request
-            .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterId))
+            .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterSlug))
             .set('Origin', config.get('url'))
             .send({posts: [updatedPost]})
             .expect('Content-Type', /json/)
@@ -915,6 +920,7 @@ describe('Posts API', function () {
 
     it('Can publish a scheduled post with custom email segment', async function () {
         const newsletterId = testUtils.DataGenerator.Content.newsletters[1].id;
+        const newsletterSlug = testUtils.DataGenerator.Content.newsletters[1].slug;
 
         const post = {
             title: 'My scheduled post 2',
@@ -943,7 +949,7 @@ describe('Posts API', function () {
         updatedPost.published_at = moment().add(2, 'days').toDate();
 
         const scheduledRes = await request
-            .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterId + '&email_segment=status:free'))
+            .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterSlug + '&email_segment=status:free'))
             .set('Origin', config.get('url'))
             .send({posts: [updatedPost]})
             .expect('Content-Type', /json/)
@@ -1096,6 +1102,7 @@ describe('Posts API', function () {
 
     it('Can publish a scheduled email only post', async function () {
         const newsletterId = testUtils.DataGenerator.Content.newsletters[1].id;
+        const newsletterSlug = testUtils.DataGenerator.Content.newsletters[1].slug;
 
         const post = {
             title: 'My scheduled email only post',
@@ -1125,7 +1132,7 @@ describe('Posts API', function () {
         updatedPost.published_at = moment().add(2, 'days').toDate();
 
         const scheduledRes = await request
-            .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterId))
+            .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterSlug))
             .set('Origin', config.get('url'))
             .send({posts: [updatedPost]})
             .expect('Content-Type', /json/)
@@ -1217,7 +1224,9 @@ describe('Posts API', function () {
 
         const id = res.body.posts[0].id;
         const newsletterId = testUtils.DataGenerator.Content.newsletters[0].id;
+        const newsletterSlug = testUtils.DataGenerator.Content.newsletters[0].slug;
         const newsletterId2 = testUtils.DataGenerator.Content.newsletters[1].id;
+        const newsletterSlug2 = testUtils.DataGenerator.Content.newsletters[1].slug;
 
         const updatedPost = {
             status: 'published',
@@ -1225,7 +1234,7 @@ describe('Posts API', function () {
         };
 
         const res2 = await request
-            .put(localUtils.API.getApiQuery('posts/' + id + '/?email_segment=status:-free&newsletter=' + newsletterId))
+            .put(localUtils.API.getApiQuery('posts/' + id + '/?email_segment=status:-free&newsletter=' + newsletterSlug))
             .set('Origin', config.get('url'))
             .send({posts: [updatedPost]})
             .expect('Content-Type', /json/)
@@ -1295,7 +1304,7 @@ describe('Posts API', function () {
         };
 
         const res4 = await request
-            .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterId2))
+            .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterSlug2))
             .set('Origin', config.get('url'))
             .send({posts: [republished]})
             .expect('Content-Type', /json/)
@@ -1316,7 +1325,7 @@ describe('Posts API', function () {
 
         // Should not change if status remains published
         const res5 = await request
-            .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterId))
+            .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterSlug))
             .set('Origin', config.get('url'))
             .send({posts: [republished]})
             .expect('Content-Type', /json/)
@@ -1369,7 +1378,9 @@ describe('Posts API', function () {
         should(res.body.posts[0].email_segment).eql('all');
 
         const newsletterId = testUtils.DataGenerator.Content.newsletters[0].id;
+        const newsletterSlug = testUtils.DataGenerator.Content.newsletters[0].slug;
         const newsletterId2 = testUtils.DataGenerator.Content.newsletters[1].id;
+        const newsletterSlug2 = testUtils.DataGenerator.Content.newsletters[1].slug;
 
         const updatedPost = {
             status: 'published',
@@ -1377,7 +1388,7 @@ describe('Posts API', function () {
         };
 
         const res2 = await request
-            .put(localUtils.API.getApiQuery('posts/' + id + '/?email_segment=id:0&newsletter=' + newsletterId))
+            .put(localUtils.API.getApiQuery('posts/' + id + '/?email_segment=id:0&newsletter=' + newsletterSlug))
             .set('Origin', config.get('url'))
             .send({posts: [updatedPost]})
             .expect('Content-Type', /json/)
@@ -1436,7 +1447,7 @@ describe('Posts API', function () {
         };
 
         const res4 = await request
-            .put(localUtils.API.getApiQuery('posts/' + id + '/?email_segment=status:-free&newsletter=' + newsletterId2))
+            .put(localUtils.API.getApiQuery('posts/' + id + '/?email_segment=status:-free&newsletter=' + newsletterSlug2))
             .set('Origin', config.get('url'))
             .send({posts: [republished]})
             .expect('Content-Type', /json/)
@@ -1467,7 +1478,7 @@ describe('Posts API', function () {
 
         // Should not change if status remains published
         const res5 = await request
-            .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterId))
+            .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterSlug))
             .set('Origin', config.get('url'))
             .send({posts: [republished]})
             .expect('Content-Type', /json/)
@@ -1538,6 +1549,7 @@ describe('Posts API', function () {
 
         it('Can publish a post and send as email', async function () {
             const newsletterId = testUtils.DataGenerator.Content.newsletters[1].id;
+            const newsletterSlug = testUtils.DataGenerator.Content.newsletters[1].slug;
 
             const post = {
                 title: 'Author newsletter_id post',
@@ -1570,7 +1582,7 @@ describe('Posts API', function () {
             updatedPost.status = 'published';
 
             const finalPost = await request
-                .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterId))
+                .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterSlug))
                 .set('Origin', config.get('url'))
                 .send({posts: [updatedPost]})
                 .expect('Content-Type', /json/)
@@ -1626,9 +1638,10 @@ describe('Posts API', function () {
             const draftPost = draftPostResponse.body.posts[0];
 
             const newsletterId = testUtils.DataGenerator.Content.newsletters[1].id;
+            const newsletterSlug = testUtils.DataGenerator.Content.newsletters[1].slug;
 
             const response = await request
-                .put(localUtils.API.getApiQuery(`posts/${draftPost.id}/?newsletter=${newsletterId}`))
+                .put(localUtils.API.getApiQuery(`posts/${draftPost.id}/?newsletter=${newsletterSlug}`))
                 .set('Origin', config.get('url'))
                 .send({posts: [{
                     status: 'published',

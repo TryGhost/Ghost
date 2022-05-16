@@ -8,8 +8,8 @@ const config = require('../../../../core/shared/config');
 const models = require('../../../../core/server/models');
 const localUtils = require('./utils');
 
-const default_newsletter_id = testUtils.DataGenerator.Content.newsletters[0].id;
-const second_newsletter_id = testUtils.DataGenerator.Content.newsletters[1].id;
+const defaultNewsletterSlug = testUtils.DataGenerator.Content.newsletters[0].slug;
+const secondNewsletterSlug = testUtils.DataGenerator.Content.newsletters[1].slug;
 
 describe('Posts API (canary)', function () {
     let request;
@@ -596,7 +596,7 @@ describe('Posts API (canary)', function () {
             res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
 
             const publishedRes = await request
-                .put(localUtils.API.getApiQuery(`posts/${res.body.posts[0].id}/?newsletter=${default_newsletter_id}`))
+                .put(localUtils.API.getApiQuery(`posts/${res.body.posts[0].id}/?newsletter=${defaultNewsletterSlug}`))
                 .set('Origin', config.get('url'))
                 .send({
                     posts: [{
@@ -639,7 +639,7 @@ describe('Posts API (canary)', function () {
             res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
 
             const publishedRes = await request
-                .put(localUtils.API.getApiQuery(`posts/${res.body.posts[0].id}/?email_segment=status:-free&newsletter=${default_newsletter_id}`))
+                .put(localUtils.API.getApiQuery(`posts/${res.body.posts[0].id}/?email_segment=status:-free&newsletter=${defaultNewsletterSlug}`))
                 .set('Origin', config.get('url'))
                 .send({
                     posts: [{
@@ -682,7 +682,7 @@ describe('Posts API (canary)', function () {
             res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('posts/')}${res.body.posts[0].id}/`);
 
             const publishedRes = await request
-                .put(localUtils.API.getApiQuery(`posts/${res.body.posts[0].id}/?email_segment=status:-free&newsletter=${second_newsletter_id}`))
+                .put(localUtils.API.getApiQuery(`posts/${res.body.posts[0].id}/?email_segment=status:-free&newsletter=${secondNewsletterSlug}`))
                 .set('Origin', config.get('url'))
                 .send({
                     posts: [{
@@ -1046,7 +1046,7 @@ describe('Posts API (canary)', function () {
                 .expect(201)
                 .then((res) => {
                     return request
-                        .put(`${localUtils.API.getApiQuery(`posts/${res.body.posts[0].id}/`)}?newsletter=${second_newsletter_id}&email_segment=not-a-filter`)
+                        .put(`${localUtils.API.getApiQuery(`posts/${res.body.posts[0].id}/`)}?newsletter=${secondNewsletterSlug}&email_segment=not-a-filter`)
                         .set('Origin', config.get('url'))
                         .send({
                             posts: [{

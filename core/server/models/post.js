@@ -16,13 +16,16 @@ const mobiledocLib = require('../lib/mobiledoc');
 const relations = require('./relations');
 const urlUtils = require('../../shared/url-utils');
 const {Tag} = require('./tag');
+const {Newsletter} = require('./newsletter');
+const {BadRequestError} = require('@tryghost/errors');
 
 const messages = {
     isAlreadyPublished: 'Your post is already published, please reload your page.',
     valueCannotBeBlank: 'Value in {key} cannot be blank.',
     expectedPublishedAtInFuture: 'Date must be at least {cannotScheduleAPostBeforeInMinutes} minutes in the future.',
     untitled: '(Untitled)',
-    notEnoughPermission: 'You do not have permission to perform this action'
+    notEnoughPermission: 'You do not have permission to perform this action',
+    invalidNewsletter: 'The newsletter parameter doesn\'t match any active newsletter.'
 };
 
 const MOBILEDOC_REVISIONS_COUNT = 10;
@@ -664,15 +667,23 @@ Post = ghostBookshelf.Model.extend({
             && !this.get('newsletter_id')
             && this.hasChanged('status')
             && (newStatus === 'published' || newStatus === 'scheduled')) {
-            this.set('newsletter_id', options.newsletter);
+            // Map the passed slug to the id + validate the passed newsletter
+            ops.push(async () => {
+                const newsletter = await Newsletter.findOne({slug: options.newsletter}, {transacting: options.transacting, filter: 'status:active'});
+                if (!newsletter) {
+                    throw new BadRequestError({
+                        message: messages.invalidNewsletter
+                    });
+                }
+                this.set('newsletter_id', newsletter.id);
+            });
 
             // If the `email_segment` isn't passed at the same time, reset it to be 100% sure that they can only be used together
             this.set('email_recipient_filter', 'all');
 
             // email_segment is read-only and should only be set using a query param when publishing/scheduling
             // we can't set it if we don't pass newsletter
-            if (options.email_segment
-                && (options.email_segment !== 'none')) {
+            if (options.email_segment) {
                 this.set('email_recipient_filter', options.email_segment);
             }
         }

@@ -4,7 +4,6 @@ const tpl = require('@tryghost/tpl');
 
 const messages = {
     invalidVisibilityFilter: 'Invalid visibility filter.',
-    invalidNewsletter: 'The newsletter parameter doesn\'t match any active newsletter.',
     invalidEmailSegment: 'The email segment parameter doesn\'t contain a valid filter'
 };
 
@@ -19,25 +18,16 @@ class PostsService {
     async editPost(frame) {
         // Make sure the newsletter is matching an active newsletter
         // Note that this option is simply ignored if the post isn't published or scheduled
-        if (frame.options.newsletter) {
-            const newsletter = await this.models.Newsletter.findOne({id: frame.options.newsletter}, {transacting: frame.options.transacting, filter: 'status:active'});
-            if (!newsletter) {
-                throw new BadRequestError({
-                    message: messages.invalidNewsletter
-                });
-            }
-
-            if (frame.options.email_segment) {
-                if (frame.options.email_segment !== 'all') {
-                    // check filter is valid
-                    try {
-                        await this.models.Member.findPage({filter: frame.options.email_segment, limit: 1});
-                    } catch (err) {
-                        return Promise.reject(new BadRequestError({
-                            message: tpl(messages.invalidEmailSegment),
-                            context: err.message
-                        }));
-                    }
+        if (frame.options.newsletter && frame.options.email_segment) {
+            if (frame.options.email_segment !== 'all') {
+                // check filter is valid
+                try {
+                    await this.models.Member.findPage({filter: frame.options.email_segment, limit: 1});
+                } catch (err) {
+                    return Promise.reject(new BadRequestError({
+                        message: tpl(messages.invalidEmailSegment),
+                        context: err.message
+                    }));
                 }
             }
         }
