@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/members-stripe-service",
-  "version": "0.10.4",
+  "version": "0.10.5",
   "repository": "https://github.com/TryGhost/Members/tree/main/packages/stripe",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -27,10 +27,10 @@
   },
   "dependencies": {
     "@tryghost/debug": "^0.1.4",
-    "@tryghost/domain-events": "^0.1.13",
+    "@tryghost/domain-events": "^0.1.14",
     "@tryghost/errors": "^1.2.5",
     "@tryghost/logging": "^2.0.5",
-    "@tryghost/member-events": "^0.4.5",
+    "@tryghost/member-events": "^0.4.6",
     "leaky-bucket": "^2.2.0",
     "lodash": "^4.17.21",
     "stripe": "^8.174.0"
