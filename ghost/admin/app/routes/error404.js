@@ -12,7 +12,7 @@ export default class Error404Route extends Route {
 
     buildRouteInfoMetadata() {
         return {
-            titleToken: 'Error',
+            titleToken: 'Error'
         };
     }
 }
