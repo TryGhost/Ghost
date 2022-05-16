@@ -1687,10 +1687,10 @@
   dependencies:
     jsonwebtoken "^8.5.1"
 
-"@tryghost/helpers@1.1.68":
-  version "1.1.68"
-  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.68.tgz#6f70b6c8b631c19b2fa7dcb55485c1f72f5f7e9f"
-  integrity sha512-6XCoJ3ivEyHs0DbEXNN/xyjHb6I6W6jwFvetKBpRcmX3lyAcHcwl0UeGd1vFEdB7zrYp2dB2Pyh2eavmJFbf1A==
+"@tryghost/helpers@1.1.69":
+  version "1.1.69"
+  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.69.tgz#8bc2bd39ea9fb6d10fa8df8854e73c0bcd713e17"
+  integrity sha512-IjAJ2/J53bO9aZbrJtKxLeM21/bwBYcjLnA+i5FDOXigLB+DRABsGF//fCjqMqerCUKOPijf69HydqxT7n8Buw==
   dependencies:
     lodash-es "^4.17.11"
 
