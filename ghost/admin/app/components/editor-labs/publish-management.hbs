@@ -1,41 +1,69 @@
-{{#if @post.isDraft}}
-    <div {{on-key "cmd+p" this.togglePreview}}>
-        <button type="button" class="gh-btn gh-btn-editor gh-editor-preview-trigger" {{on "click" this.openPreview}}>
-            <span>Preview</span>
-        </button>
-    </div>
-
-    <button
-        type="button"
-        class="gh-btn gh-btn-editor darkgrey gh-publish-trigger"
-        {{on "click" this.openPublishFlow}}
-        {{on-key "cmd+shift+p"}}
-        disabled={{this.publishOptions.isLoading}}
-        data-test-button="publish-flow"
-    >
-        <span>Publish</span>
-    </button>
-{{else}}
-    {{#if (or @hasUnsavedChanges this.saveButtonTaskGroup.isRunning)}}
-        <GhTaskButton
-            @task={{this.saveTask}}
-            @runningText="Saving..."
-            @class="gh-btn gh-btn-editor gh-publish-trigger"
-            @idleClass="green"
-            @runningClass="midlightgrey"
-            @successClass="midlightgrey"
-            @failureClass="red"
-            @showIcon={{false}}
-            @autoReset={{false}}
-        />
+{{#if this.publishOptions.user.isContributor}}
+    {{#if @post.isDraft}}
+        <div {{on-key "cmd+p" this.togglePreview}}>
+            <button
+                type="button"
+                class="gh-btn gh-btn-editor gh-editor-preview-trigger"
+                {{on "click" this.openPreview}}
+                data-test-button="contributor-preview"
+            >
+                <span>Preview</span>
+            </button>
+        </div>
     {{/if}}
 
-    <button
-        type="button"
-        class="gh-btn gh-btn-editor darkgrey gh-publish-trigger"
-        {{on "click" this.openUpdateFlow}}
-        data-test-button="update-flow"
-    >
-        <span>Update</span>
-    </button>
+    <GhTaskButton
+        @buttonText="Save"
+        @task={{this.saveTask}}
+        @runningText="Saving"
+        @class="gh-btn gh-btn-icon gh-btn-editor contributor-save-button"
+        data-test-button="contributor-save" />
+{{else}}
+    {{#if @post.isDraft}}
+        <div {{on-key "cmd+p" this.togglePreview}}>
+            <button
+                type="button"
+                class="gh-btn gh-editor-preview-trigger"
+                {{on "click" this.openPreview}}
+                data-test-button="publish-preview"
+            >
+                <span>Preview</span>
+            </button>
+        </div>
+
+        <button
+            type="button"
+            class="gh-btn gh-btn-editor darkgrey gh-publish-trigger"
+            {{on "click" this.openPublishFlow}}
+            {{on-key "cmd+shift+p"}}
+            disabled={{this.publishOptions.isLoading}}
+            data-test-button="publish-flow"
+        >
+            <span>Publish</span>
+        </button>
+    {{else}}
+        {{#if (or @hasUnsavedChanges this.saveButtonTaskGroup.isRunning)}}
+            <GhTaskButton
+                @task={{this.saveTask}}
+                @runningText="Saving..."
+                @class="gh-btn gh-btn-editor gh-publish-trigger"
+                @idleClass="green"
+                @runningClass="midlightgrey"
+                @successClass="midlightgrey"
+                @failureClass="red"
+                @showIcon={{false}}
+                @autoReset={{false}}
+                data-test-button="publish-save"
+            />
+        {{/if}}
+
+        <button
+            type="button"
+            class="gh-btn gh-btn-editor darkgrey gh-publish-trigger"
+            {{on "click" this.openUpdateFlow}}
+            data-test-button="update-flow"
+        >
+            <span>Update</span>
+        </button>
+    {{/if}}
 {{/if}}

@@ -1,7 +1,7 @@
 import {Response} from 'miragejs';
 import {authenticateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
-import {click, currentRouteName, fillIn, find, findAll, visit} from '@ember/test-helpers';
+import {blur, click, currentRouteName, fillIn, find, findAll, visit} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -36,8 +36,8 @@ describe('Acceptance: Error Handling', function () {
 
                 await visit('/posts');
                 await click('.posts-list li:nth-of-type(2) a'); // select second post
-                await click('[data-test-publishmenu-trigger]');
-                await click('[data-test-publishmenu-save]');
+                await fillIn('[data-test-editor-title-input]', 'Updated post');
+                await blur('[data-test-editor-title-input]');
 
                 // has the refresh to update alert
                 expect(findAll('.gh-alert').length).to.equal(1);
@@ -97,8 +97,8 @@ describe('Acceptance: Error Handling', function () {
             this.server.create('post');
 
             await visit('/editor/post/1');
-            await click('[data-test-publishmenu-trigger]');
-            await click('[data-test-publishmenu-save]');
+            await fillIn('[data-test-editor-title-input]', 'Updated post');
+            await blur('[data-test-editor-title-input]');
 
             expect(findAll('.gh-alert').length).to.equal(1);
             expect(find('.gh-alert').textContent).to.not.match(/html>/);

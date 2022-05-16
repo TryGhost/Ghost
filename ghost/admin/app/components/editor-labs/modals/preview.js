@@ -29,13 +29,13 @@ export default class EditorPostPreviewModal extends Component {
 
     @task
     *saveFirstTask() {
-        const {saveTask, post, hasDirtyAttributes} = this.args.data;
+        const {saveTask, publishOptions, hasDirtyAttributes} = this.args.data;
 
         if (saveTask.isRunning) {
             return yield saveTask.last;
         }
 
-        if (post.isDraft && hasDirtyAttributes) {
+        if (publishOptions.post.isDraft && hasDirtyAttributes) {
             yield saveTask.perform();
         }
     }
