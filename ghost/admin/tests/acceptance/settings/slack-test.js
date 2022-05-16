@@ -80,10 +80,12 @@ describe('Acceptance: Settings - Integrations - Slack', function () {
 
             let [newRequest] = this.server.pretender.handledRequests.slice(-1);
             let params = JSON.parse(newRequest.requestBody);
-            let [result] = JSON.parse(params.settings.findBy('key', 'slack').value);
 
-            expect(result.url).to.equal('https://hooks.slack.com/services/1275958430');
-            expect(result.username).to.equal('SlackBot');
+            let urlResult = params.settings.findBy('key', 'slack_url').value;
+            let usernameResult = params.settings.findBy('key', 'slack_username').value;
+
+            expect(urlResult).to.equal('https://hooks.slack.com/services/1275958430');
+            expect(usernameResult).to.equal('SlackBot');
             expect(find('[data-test-error="slack-url"]'), 'inline validation response')
                 .to.not.exist;
 

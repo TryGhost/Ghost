@@ -1166,3 +1166,14 @@ add|ember-template-lint|require-input-label|48|12|48|12|16e2b28dce448cbd2dd1cdc1
 remove|ember-template-lint|require-input-label|19|8|19|8|aefef8f18b7648ad42353400a95bf5d4ccc426bc|1652227200000|1662595200000|1667782800000|app/components/editor-labs/modals/preview/email.hbs
 remove|ember-template-lint|no-action|2|48|2|48|74d234e67cc2c695fd41431692bb2974c2feddcf|1652054400000|1662422400000|1665014400000|app/templates/editor.hbs
 remove|ember-template-lint|no-action|35|108|35|108|374dcf5faec6721e81711cb589f7966ab6063a14|1652054400000|1662422400000|1665014400000|app/templates/editor.hbs
+add|ember-template-lint|no-action|52|55|52|55|2c1e9f8787439af0488bbeeed6adc276a525e585|1652659200000|1663027200000|1668211200000|app/templates/settings/integrations/slack.hbs
+add|ember-template-lint|no-action|53|59|53|59|126db4f8e2a36d157b01c874381f548fd8d4a79e|1652659200000|1663027200000|1668211200000|app/templates/settings/integrations/slack.hbs
+add|ember-template-lint|no-action|78|55|78|55|f790efaece9bf04396b25c2fedf4625a426f2467|1652659200000|1663027200000|1668211200000|app/templates/settings/integrations/slack.hbs
+add|ember-template-lint|no-passed-in-event-handlers|52|48|52|48|138f75fcc7408e61c79185c37265529c752af8b3|1652659200000|1663027200000|1668211200000|app/templates/settings/integrations/slack.hbs
+add|ember-template-lint|no-passed-in-event-handlers|78|48|78|48|8fb95409c6333d15490f0777239f6e04641215e6|1652659200000|1663027200000|1668211200000|app/templates/settings/integrations/slack.hbs
+remove|ember-template-lint|no-action|52|55|52|55|6a97879be420bcaec8193dad451443ab160931a2|1652054400000|1662422400000|1665014400000|app/templates/settings/integrations/slack.hbs
+remove|ember-template-lint|no-action|56|59|56|59|e8badded2afd5d0c8426b85b6d0e7ac0bef55efb|1652054400000|1662422400000|1665014400000|app/templates/settings/integrations/slack.hbs
+remove|ember-template-lint|no-action|78|55|78|55|856c8ab1d5835ec424c83eb6b73888b26dccdc51|1652054400000|1662422400000|1665014400000|app/templates/settings/integrations/slack.hbs
+remove|ember-template-lint|no-action|82|59|82|59|e8badded2afd5d0c8426b85b6d0e7ac0bef55efb|1652054400000|1662422400000|1665014400000|app/templates/settings/integrations/slack.hbs
+remove|ember-template-lint|no-passed-in-event-handlers|52|48|52|48|a893d9d149388aa9da024f59db6522bb9335bf8a|1652054400000|1662422400000|1665014400000|app/templates/settings/integrations/slack.hbs
+remove|ember-template-lint|no-passed-in-event-handlers|78|48|78|48|1ab458a0888727af2b3a7a661a1e7d5f00ac0ad5|1652054400000|1662422400000|1665014400000|app/templates/settings/integrations/slack.hbs

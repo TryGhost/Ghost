@@ -117,11 +117,11 @@ export default [
         id: 16,
         created_at: '2016-05-05T15:04:03.115Z',
         created_by: 1,
-        key: 'slack',
+        key: 'slack_username',
         group: 'slack',
-        updated_at: '2016-05-05T18:33:09.168Z',
+        updated_at: '2022-05-05T18:33:09.168Z',
         updated_by: 1,
-        value: '[{"url":"", "username":"Ghost"}]'
+        value: 'Ghost'
     },
     {
         id: 17,
@@ -262,5 +262,15 @@ export default [
         updated_at: '2022-02-21T13:47:00.000Z',
         updated_by: 1,
         value: 'true'
+    },
+    {
+        id: 33,
+        created_at: '2016-05-05T15:04:03.115Z',
+        created_by: 1,
+        key: 'slack_url',
+        group: 'slack',
+        updated_at: '2022-05-05T18:33:09.168Z',
+        updated_by: 1,
+        value: ''
     }
 ];
