@@ -1430,10 +1430,10 @@
   dependencies:
     "@tryghost/errors" "^1.2.1"
 
-"@tryghost/admin-api-schema@3.2.3":
-  version "3.2.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-3.2.3.tgz#0feae738e7240e38adeb354cd56d0cce3df2ecaa"
-  integrity sha512-+p4WFSyTiWO2Ift9Cg98Z8xJPd28A1p+ut/FzzvnIIjHhYPZK8KNKOOsIQkb+HU5motjEb0QvVlMZQWMD4Ib7A==
+"@tryghost/admin-api-schema@4.0.0":
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-4.0.0.tgz#97e528931fab8478d00b6b91e7e3d4a2b4c4c597"
+  integrity sha512-Yo4nV34aZY8M92dVMp+zEI2ZuHyFDcDHHvQ9yY1ZEOKhqkdKw6DxdR2HcAkQi/PSnM99N7CWk5WBKe9Vnm8+jA==
   dependencies:
     "@tryghost/errors" "^1.0.0"
     ajv "^6.12.6"
