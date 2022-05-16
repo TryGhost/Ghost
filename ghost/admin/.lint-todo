@@ -1164,3 +1164,5 @@ remove|ember-template-lint|no-action|96|43|96|43|659c404406f04b8153690817989630a
 remove|ember-template-lint|no-passed-in-event-handlers|95|32|95|32|50acf938ca8cb3c5633b20e7050d7750211b12f4|1652054400000|1662422400000|1665014400000|app/templates/settings/general.hbs
 add|ember-template-lint|require-input-label|48|12|48|12|16e2b28dce448cbd2dd1cdc10211c43a7d0ca021|1652400000000|1662768000000|1667955600000|app/components/editor-labs/modals/preview/email.hbs
 remove|ember-template-lint|require-input-label|19|8|19|8|aefef8f18b7648ad42353400a95bf5d4ccc426bc|1652227200000|1662595200000|1667782800000|app/components/editor-labs/modals/preview/email.hbs
+remove|ember-template-lint|no-action|2|48|2|48|74d234e67cc2c695fd41431692bb2974c2feddcf|1652054400000|1662422400000|1665014400000|app/templates/editor.hbs
+remove|ember-template-lint|no-action|35|108|35|108|374dcf5faec6721e81711cb589f7966ab6063a14|1652054400000|1662422400000|1665014400000|app/templates/editor.hbs
