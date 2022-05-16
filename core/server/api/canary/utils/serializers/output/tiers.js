@@ -1,6 +1,5 @@
 //@ts-check
 const debug = require('@tryghost/debug')('api:canary:utils:serializers:output:tiers');
-const _ = require('lodash');
 
 const allowedIncludes = ['monthly_price', 'yearly_price'];
 const utils = require('../../../../shared/utils');
@@ -60,14 +59,11 @@ function singleTier(model, _apiConfig, frame) {
 /**
  * @param {import('bookshelf').Model} tier
  * @param {object} options
- * @param {'content'|'admin'} apiType
  *
  * @returns {SerializedTier}
  */
-function serializeTier(tier, options, apiType) {
+function serializeTier(tier, options) {
     const json = tier.toJSON(options);
-
-    const hideStripeData = apiType === 'content';
 
     const serialized = {
         id: json.id,
@@ -79,47 +75,23 @@ function serializeTier(tier, options, apiType) {
         welcome_page_url: json.welcome_page_url,
         created_at: json.created_at,
         updated_at: json.updated_at,
-        stripe_prices: json.stripePrices ? json.stripePrices.map(price => serializeStripePrice(price, hideStripeData)) : null,
-        monthly_price: serializeStripePrice(json.monthlyPrice, hideStripeData),
-        yearly_price: serializeStripePrice(json.yearlyPrice, hideStripeData),
-        benefits: json.benefits || null,
-        visibility: json.visibility
+        visibility: json.visibility,
+        benefits: null
     };
+
+    if (Array.isArray(json.benefits)) {
+        serialized.benefits = json.benefits.map(benefit => benefit.name);
+    } else {
+        serialized.benefits = null;
+    }
+
+    if (serialized.type === 'paid') {
+        serialized.currency = json.monthlyPrice?.currency;
+        serialized.monthly_price = json.monthlyPrice?.amount;
+        serialized.yearly_price = json.yearlyPrice?.amount;
+    }
 
     return serialized;
-}
-
-/**
- * @param {object} data
- * @param {boolean} hideStripeData
- *
- * @returns {StripePrice}
- */
-function serializeStripePrice(data, hideStripeData) {
-    if (_.isEmpty(data)) {
-        return null;
-    }
-    const price = {
-        id: data.id,
-        stripe_tier_id: data.stripe_product_id,
-        stripe_price_id: data.stripe_price_id,
-        active: data.active,
-        nickname: data.nickname,
-        description: data.description,
-        currency: data.currency,
-        amount: data.amount,
-        type: data.type,
-        interval: data.interval,
-        created_at: data.created_at,
-        updated_at: data.updated_at
-    };
-
-    if (hideStripeData) {
-        delete price.stripe_price_id;
-        delete price.stripe_tier_id;
-    }
-
-    return price;
 }
 
 /**
@@ -160,7 +132,7 @@ function createSerializer(debugString, serialize) {
 }
 
 /**
- * @typedef {Object} SerializedTier
+ * @typedef {Object} FreeTier
  * @prop {string} id
  * @prop {string} name
  * @prop {string} slug
@@ -170,34 +142,21 @@ function createSerializer(debugString, serialize) {
  * @prop {string} welcome_page_url
  * @prop {Date} created_at
  * @prop {Date} updated_at
- * @prop {StripePrice} [monthly_price]
- * @prop {StripePrice} [yearly_price]
- * @prop {Benefit[]} [benefits]
+ * @prop {string[]} [benefits]
  */
 
 /**
- * @typedef {object} Benefit
- * @prop {string} id
- * @prop {string} name
- * @prop {string} slug
- * @prop {Date} created_at
- * @prop {Date} updated_at
- */
-
-/**
- * @typedef {object} StripePrice
- * @prop {string} id
- * @prop {string|null} stripe_tier_id
- * @prop {string|null} stripe_price_id
- * @prop {boolean} active
- * @prop {string} nickname
- * @prop {string} description
+ * @typedef {FreeTier} PaidTier
  * @prop {string} currency
- * @prop {number} amount
- * @prop {'recurring'|'one-time'} type
- * @prop {'day'|'week'|'month'|'year'} interval
- * @prop {Date} created_at
- * @prop {Date} updated_at
+ * @prop {number} monthly_price
+ * @prop {number} yearly_price
+ */
+
+/**
+ * @typedef {FreeTier | PaidTier} SerializedTier
+ * @prop {string} currency
+ * @prop {number} monthly_price
+ * @prop {number} yearly_price
  */
 
 /**
