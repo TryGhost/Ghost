@@ -190,50 +190,6 @@
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
                         <div>
-                            <h4 class="gh-expandable-title">Google OAuth for staff users</h4>
-                            <p class="gh-expandable-description">
-                                Allow people to sign into Ghost Admin using Google SSO,
-                                <a href="https://ghost.org/docs/tutorials/setting-up-oauth/" target="_blank" rel="noopener noreferrer">docs here</a>
-                            </p>
-                        </div>
-                        <div class="for-switch">
-                            <GhFeatureFlag @flag="oauthLogin" />
-                        </div>
-                    </div>
-                    <div class="gh-expandable-content">
-                        {{#if this.feature.oauthLogin}}
-                            <div class="gh-setting-content-extended gh-labs-sso-settings pt2 pb4">
-                                <a href="https://console.developers.google.com/" target="_blank" rel="noopener noreferrer" class="gh-btn gh-btn-white mb4"><span>{{svg-jar "google-favicon"}}Configure Google OAuth</span></a>
-                                <GhFormGroup @class="no-margin pt2" @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="password">
-                                    <div class="form-group">
-                                        <label for="aouth-client-id">Google OAuth Client ID</label>
-                                        <GhTextInput
-                                            id="oauth-client-id"
-                                            @value={{readonly this.settings.oauthClientId}}
-                                            @name="oauth-client-id"
-                                            @focus-out={{action "saveOAuthSettings"}}
-                                            @input={{action (mut this.settings.oauthClientId) value="target.value"}}
-                                        />
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label for="oauth-client-secret">Google OAuth Client Secret</label>
-                                        <GhTextInput
-                                            id="oauth-client-secret"
-                                            @value={{readonly this.settings.oauthClientSecret}}
-                                            @name="oauth-client-secret"
-                                            @focus-out={{action "saveOAuthSettings"}}
-                                            @input={{action (mut this.settings.oauthClientSecret) value="target.value"}}
-                                        />
-                                    </div>
-                                </GhFormGroup>
-                            </div>
-                        {{/if}}
-                    </div>
-                </div>
-                <div class="gh-expandable-block">
-                    <div class="gh-expandable-header">
-                        <div>
                             <h4 class="gh-expandable-title">Members Activity</h4>
                             <p class="gh-expandable-description">
                                Enable recording of member activity for analytics

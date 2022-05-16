@@ -69,11 +69,7 @@ export default Model.extend(ValidationEngine, {
     stripeConnectLivemode: attr('boolean'),
     stripeConnectDisplayName: attr('string'),
     stripeConnectAccountId: attr('string'),
-    /**
-     * OAuth settings
-     */
-    oauthClientId: attr('string'),
-    oauthClientSecret: attr('string'),
+
     /**
      * Editor settings
      */

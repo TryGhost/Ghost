@@ -57,7 +57,6 @@ export default class FeatureService extends Service {
 
     // labs flags
     @feature('dashboardV5') dashboardV5;
-    @feature('oauthLogin') oauthLogin;
     @feature('membersActivity') membersActivity;
     @feature('urlCache') urlCache;
     @feature('beforeAfterCard') beforeAfterCard;
