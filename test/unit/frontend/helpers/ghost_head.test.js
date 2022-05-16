@@ -196,6 +196,7 @@ describe('{{ghost_head}} helper', function () {
         posts.push(createPost({// Post 4
             title: 'Welcome to Ghost',
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('This is a short post'),
+            excerpt: 'This is a short post',
             authors: [
                 authors[3]
             ],
@@ -266,6 +267,7 @@ describe('{{ghost_head}} helper', function () {
         posts.push(createPost({// Post 9
             title: 'Welcome to Ghost',
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('This is a short post'),
+            excerpt: 'This is a short post',
             tags: [
                 createTag({name: 'tag1'}),
                 createTag({name: 'tag2'}),

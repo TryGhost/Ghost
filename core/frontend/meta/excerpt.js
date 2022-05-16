@@ -10,10 +10,9 @@ function getExcerpt(data) {
     // 1. CASE: custom_excerpt is populated via the UI
     // 2. CASE: no custom_excerpt, but meta_description is poplated via the UI
     // 3. CASE: fall back to automated excerpt of 50 words if neither custom_excerpt nor meta_description is provided
-    // @TODO: https://github.com/TryGhost/Ghost/issues/10062
     const customExcerpt = data.post.excerpt || data.post.custom_excerpt;
     const metaDescription = data.post.meta_description;
-    const fallbackExcerpt = data.post.html ? generateExcerpt(data.post.html, {words: 50}) : '';
+    const fallbackExcerpt = data.post.excerpt ? generateExcerpt(data.post.excerpt, {words: 50}) : '';
 
     return customExcerpt ? customExcerpt : metaDescription ? metaDescription : fallbackExcerpt;
 }
