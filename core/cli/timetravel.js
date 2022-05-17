@@ -1,8 +1,5 @@
-const _ = require('lodash');
-const knex = require('../server/data/db/connection');
-const schema = require('../server/data/schema');
-const {DateTime} = require('luxon');
 const Command = require('./command');
+const chalk = require('chalk');
 
 // we use logins as the basis for our offset
 const datum = {
@@ -10,23 +7,51 @@ const datum = {
     column: 'created_at'
 };
 
-module.exports = class TimeTravel extends Command {
-    async handle() {
-        const datumPoint = await knex(datum.table)
-            .max(datum.column, {as: datum.column})
-            .first();
+const helpText = `Updates the Ghost db and shifts all dates up to present day.
+By default the offset is based on the date of the last member login.\n
+${chalk.red('warning')} This is a destructive operation for testing purposes only. DO NOT run it against a database you care about.`;
 
-        const dateOffset = Math.floor(
-            DateTime.utc()
-                .diff(DateTime.fromJSDate(datumPoint[datum.column]), 'days')
-                .toObject()
-                .days
-        );
+module.exports = class TimeTravel extends Command {
+    setup() {
+        this.help(helpText);
+        this.argument('--offset', {type: 'number', desc: 'Specify a date offset (in days)'});
+        this.argument('--force', {type: 'boolean', desc: 'Continue without confirmation'});
+    }
+
+    async handle(argv = {}) {
+        const _ = require('lodash');
+        // knex has to be loaded _after_ the call to setup()
+        // the db connection requires nconf which passes argv to yargs,
+        // which intercepts --help and stops execution
+        const knex = require('../server/data/db/connection');
+        const schema = require('../server/data/schema');
+        const {DateTime} = require('luxon');
+
+        if (!argv.offset) {
+            const datumPoint = await knex(datum.table)
+                .max(datum.column, {as: datum.column})
+                .first();
+
+            if (!datumPoint[datum.column]) {
+                this.error('No data to use as baseline. Use --offset instead');
+                knex.destroy();
+                return;
+            }
+
+            argv.offset = Math.floor(
+                DateTime.utc()
+                    .diff(DateTime.fromJSDate(datumPoint[datum.column]), 'days')
+                    .toObject()
+                    .days
+            );
+        }
+
+        const dateOffset = argv.offset;
 
         this.info(`Timetravel will use an offset of +${dateOffset} days`);
         this.warn('This is a destructive command that will modify your database.');
 
-        const confirm = await this.confirm('Are you sure you want to continue?');
+        const confirm = argv.force || await this.confirm('Are you sure you want to continue?');
         if (!confirm) {
             this.warn('Aborting');
             process.exit(1);

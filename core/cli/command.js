@@ -1,29 +1,46 @@
-const logging = require('@tryghost/logging');
+const cli = require('@tryghost/pretty-cli');
+const logging = cli.ui.log;
+const chalk = require('chalk');
+
+const errors = {
+    ERR_INVALID_COMMAND: 1,
+    ERR_INVALID_ENV: 2
+};
 
 module.exports = class Command {
     constructor() {
-        // eslint-disable-next-line no-constructor-return
-        return new Proxy(this, {
-            get: (target, prop, receiver) => {
-                if (prop === 'handle') {
-                    this._beforeHandle();
-                    return target[prop];
-                }
-                return Reflect.get(target, prop, receiver);
-            }
-        });
+        this.checkEnv();
+        this.init();
+        this.setup();
+    }
+
+    /**
+     * @private
+     */
+    init() {
+        this.cli = cli;
+        this.cli.strict();
+        // this is always present but not used
+        this.cli.positional('<command>', {hidden: true});
+    }
+
+    setup() {
+        // init cli options
     }
 
     permittedEnvironments() {
         return ['development', 'local'];
     }
 
-    _beforeHandle() {
+    /**
+     * @private
+     */
+    checkEnv() {
         const env = process.env.NODE_ENV ?? 'development';
-        this.warn(`Node environment: ${env}`);
+        this.warn(`Node environment: ${chalk.bold(env)}`);
         if (!this.permittedEnvironments().includes(env)) {
-            this.error(`Command ${this.constructor.name} is not permitted in ${env}`);
-            process.exit(1);
+            this.fatal(`Command ${this.constructor.name} is not permitted in ${env}`);
+            process.exit(errors.ERR_INVALID_ENV);
         }
     }
 
@@ -50,7 +67,6 @@ module.exports = class Command {
     }
 
     progressBar(total, opts = {}) {
-        const chalk = require('chalk');
         const progress = require('cli-progress');
         const bar = new progress.Bar({
             format: `|${chalk[opts.color ?? 'cyan']('{bar}')}| {percentage}% | {value}/{total} {status}`,
@@ -66,18 +82,41 @@ module.exports = class Command {
         return bar;
     }
 
+    argument(key, opts = {}) {
+        this.cli[opts.type ?? 'positional'](key, opts);
+    }
+
+    help(message) {
+        this.cli.preface(`\n${message}`);
+    }
+
+    /* output aliases */
+    ok() {
+        logging.ok(...arguments);
+    }
     info() {
         logging.info(...arguments);
     }
     error() {
         logging.error(...arguments);
     }
+    fatal() {
+        logging.fatal(...arguments);
+    }
     warn() {
         logging.warn(...arguments);
     }
+    debug() {
+        logging.debug(...arguments);
+    }
 
-    static run(command) {
-        // @TODO: make sure we have an instance of `Command`
-        return (new command()).handle();
+    static async run(command) {
+        const cmd = new command();
+        if (cmd instanceof Command !== true) {
+            logging.fatal('Invalid command.');
+            process.exit(errors.ERR_INVALID_COMMAND);
+        }
+        const argv = await cmd.cli.parseAndExit();
+        return await cmd.handle(argv);
     }
 };
