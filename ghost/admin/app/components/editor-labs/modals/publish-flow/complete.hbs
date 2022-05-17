@@ -35,8 +35,22 @@
     </div>
 
     {{#unless post.emailOnly}}
-        <a href={{post.url}} target="_blank" rel="noopener noreferrer">
+        <a href={{post.url}} class="gh-post-bookmark-wrapper" target="_blank" rel="noopener noreferrer">
             <GhPostBookmark @post={{post}} />
         </a>
     {{/unless}}
+
+    {{#if post.isScheduled}}
+        <p class="gh-publish-confirmation">Need to make a change?
+            <button
+            type="button"
+            class="gh-revert-to-draft"
+            {{on "click" (fn @close (hash afterTask="revertToDraftTask"))}}
+        >
+            <span>Unschedule and revert to draft &rarr;</span>
+        </button>
+        </p>
+    {{/if}}    
+
+
 {{/let}}
