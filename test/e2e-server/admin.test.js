@@ -22,7 +22,7 @@ function assertCorrectHeaders(res) {
 
 describe('Admin Routing', function () {
     before(async function () {
-        adminUtils.stubClientFiles();
+        adminUtils.stubAdminFiles();
 
         await testUtils.startGhost();
         request = supertest.agent(config.get('url'));
