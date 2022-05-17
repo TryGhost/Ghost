@@ -238,21 +238,21 @@ module.exports = function (grunt) {
                     npmInstall: true
                 },
                 projects: {
-                    'core/client': 'init'
+                    'core/admin': 'init'
                 }
             },
 
             dev: {
-                'core/client': 'shell:ember:dev'
+                'core/admin': 'shell:ember:dev'
             },
 
             prod: {
-                'core/client': 'shell:ember:prod'
+                'core/admin': 'shell:ember:prod'
             },
 
             watch: {
                 projects: {
-                    'core/client': ['shell:ember:watch', '--live-reload-base-url="' + config.getSubdir() + '/ghost/"']
+                    'core/admin': ['shell:ember:watch', '--live-reload-base-url="' + config.getSubdir() + '/ghost/"']
                 }
             }
         },
