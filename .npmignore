@@ -9,7 +9,7 @@
 .c8rc.json
 jsconfig.json
 changelog.md*
-coverage
+coverage/**
 docs/**
 _site/**
 content/adapters/**
