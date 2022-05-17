@@ -1,4 +1,4 @@
-import {transformApiSiteData} from './helpers';
+import {transformApiSiteData, transformApiTiersData} from './helpers';
 
 function getAnalyticsMetadata() {
     const analyticsTag = document.querySelector('meta[name=ghost-analytics-id]');
@@ -311,7 +311,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
         },
 
-        async checkoutPlan({plan, cancelUrl, successUrl, email: customerEmail, name, offerId, newsletters, metadata = {}} = {}) {
+        async checkoutPlan({plan, tierId, cadence, cancelUrl, successUrl, email: customerEmail, name, offerId, newsletters, metadata = {}} = {}) {
             const siteUrlObj = new URL(siteUrl);
             const identity = await api.member.identity();
             const url = endpointFor({type: 'members', resource: 'create-stripe-checkout-session'});
@@ -328,10 +328,20 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 fp_tid: (window.FPROM || window.$FPROM)?.data?.tid,
                 ...metadata
             };
-            const analyticsData = getAnalyticsMetadata();
-            if (analyticsData) {
-                metadataObj.ghost_analytics_entry_id = analyticsData.entry_id;
-                metadataObj.ghost_analytics_source_url = analyticsData.source_url;
+
+            const body = {
+                priceId: offerId ? null : plan,
+                offerId,
+                identity: identity,
+                metadata: metadataObj,
+                successUrl,
+                cancelUrl,
+                customerEmail: customerEmail
+            };
+            if (tierId && cadence) {
+                delete body.priceId;
+                body.tierId = offerId ? null : tierId;
+                body.cadence = offerId ? null : cadence;
             }
             return makeRequest({
                 url,
@@ -339,15 +349,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    priceId: offerId ? null : plan,
-                    offerId,
-                    identity: identity,
-                    metadata: metadataObj,
-                    successUrl,
-                    cancelUrl,
-                    customerEmail: customerEmail
-                })
+                body: JSON.stringify(body)
             }).then(function (res) {
                 if (!res.ok) {
                     throw new Error('Could not create stripe checkout session');
@@ -413,7 +415,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
         },
 
-        async updateSubscription({subscriptionId, planName, planId, smartCancel, cancelAtPeriodEnd, cancellationReason}) {
+        async updateSubscription({subscriptionId, tierId, cadence, planId, smartCancel, cancelAtPeriodEnd, cancellationReason}) {
             const identity = await api.member.identity();
             const url = endpointFor({type: 'members', resource: 'subscriptions'}) + subscriptionId + '/';
             const body = {
@@ -427,6 +429,13 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             if (body) {
                 body.metadata = analyticsData;
             }
+
+            if (tierId && cadence) {
+                delete body.priceId;
+                body.tierId = tierId;
+                body.cadence = cadence;
+            }
+
             return makeRequest({
                 url,
                 method: 'PUT',
@@ -456,7 +465,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             site = {
                 ...settings,
                 newsletters,
-                tiers
+                tiers: transformApiTiersData({tiers})
             };
         } catch (e) {
             // Ignore
