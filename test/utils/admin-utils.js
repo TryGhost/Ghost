@@ -1,7 +1,7 @@
 const fs = require('fs-extra');
 const path = require('path');
 
-const clientFiles = [
+const adminFiles = [
     'server/web/admin/views/default.html',
     'built/assets/ghost.js',
     'built/assets/ghost.css',
@@ -9,8 +9,8 @@ const clientFiles = [
     'built/assets/vendor.css'
 ];
 
-module.exports.stubClientFiles = () => {
-    clientFiles.forEach((file) => {
+module.exports.stubAdminFiles = () => {
+    adminFiles.forEach((file) => {
         const filePath = path.resolve(__dirname, '../../core/', file);
         fs.ensureFileSync(filePath);
     });

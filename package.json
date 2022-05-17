@@ -46,9 +46,9 @@
     "lint:test": "eslint -c test/.eslintrc.js --ignore-path test/.eslintignore 'test/**/*.js'",
     "lint:code": "yarn lint:server && yarn lint:shared && yarn lint:frontend",
     "lint": "yarn lint:server && yarn lint:shared && yarn lint:frontend && yarn lint:test",
-    "fix:client": "yarn cache clean && cd core/admin && rm -rf node_modules tmp dist && yarn && cd ../../",
+    "fix:admin": "yarn cache clean && cd core/admin && rm -rf node_modules tmp dist && yarn && cd ../../",
     "fix:server": "yarn cache clean && rm -rf node_modules && yarn",
-    "fix": "yarn fix:client && yarn fix:server"
+    "fix": "yarn fix:admin && yarn fix:server"
   },
   "engines": {
     "node": "^14.17.0 || ^16.13.0",

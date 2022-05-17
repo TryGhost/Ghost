@@ -17,7 +17,7 @@ module.exports = function setupAdminApp() {
     // @TODO ensure this gets a local 404 error handler
     const configMaxAge = config.get('caching:admin:maxAge');
     adminApp.use('/assets', serveStatic(
-        config.get('paths').clientAssets,
+        config.get('paths').adminAssets,
         {maxAge: (configMaxAge || configMaxAge === 0) ? configMaxAge : constants.ONE_YEAR_MS, fallthrough: false}
     ));
 
