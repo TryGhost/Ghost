@@ -77,20 +77,6 @@ describe('Unit - apps/amp/lib/router', function () {
                 done();
             });
         });
-
-        it('throws 404 when req.body.post is a page', function (done) {
-            req.body = {
-                post: {
-                    page: true
-                }
-            };
-
-            ampController.renderer(req, res, function (err) {
-                (err instanceof errors.NotFoundError).should.be.true();
-                renderer.renderer.called.should.be.false();
-                done();
-            });
-        });
     });
 
     describe('fn: getPostData', function () {
