@@ -213,6 +213,16 @@ describe('Helpers - ', () => {
 
             expect(supportAddress).toBe('jamie@example.com');
         });
+
+        test('returns expected support address for default noreply value', () => {
+            let site = {
+                members_support_address: 'noreply',
+                url: 'https://www.example.com'
+            };
+            const supportAddress = getSupportAddress({site});
+
+            expect(supportAddress).toBe('noreply@example.com');
+        });
     });
 
     describe('getPriceIdFromPageQuery - ', () => {
