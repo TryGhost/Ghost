@@ -26,8 +26,7 @@ function _renderer(req, res, next) {
     // Format data
     let body = req.body || {};
 
-    // CASE: we only support amp pages for posts that are not static pages
-    if (!body.post || body.post.page) {
+    if (!body.post) {
         return next(new errors.NotFoundError({message: tpl(messages.pageNotFound)}));
     }
 
@@ -70,7 +69,7 @@ function getPostData(req, res, next) {
         }));
     }
 
-    // @NOTE: amp is not supported for static pages
+    // @NOTE: amp is not supported for "page" resource
     // @TODO: https://github.com/TryGhost/Ghost/issues/10548
     dataService.entryLookup(urlWithoutSubdirectoryWithoutAmp, {permalinks, query: {controller: 'postsPublic', resource: 'posts'}}, res.locals)
         .then((result) => {
