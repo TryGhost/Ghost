@@ -101,7 +101,7 @@ describe('Config Loader', function () {
                 'urlCache',
                 'appRoot',
                 'corePath',
-                'clientAssets',
+                'adminAssets',
                 'helperTemplates',
                 'adminViews',
                 'defaultViews',
