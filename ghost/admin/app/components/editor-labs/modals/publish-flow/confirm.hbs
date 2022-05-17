@@ -59,14 +59,36 @@
 {{/if}}
 
 <div class="gh-publish-cta">
-    <GhTaskButton
-        @task={{this.confirmTask}}
-        @buttonText={{this.confirmButtonText}}
-        @runningText={{if @publishOptions.willOnlyEmail "Sending" "Publishing"}}
-        @successText={{if @publishOptions.willOnlyEmail "Sent" "Published"}}
-        @class="gh-btn gh-btn-large"
-        @idleClass="gh-btn-pulse"
-        @showIcon={{false}}
-    />
+    {{#if @publishOptions.willOnlyEmail}}
+        <GhTaskButton
+            @task={{this.confirmTask}}
+            @buttonText={{this.confirmButtonText}}
+            @runningText="Sending"
+            @successText="Sent"
+            @class="gh-btn gh-btn-large"
+            @idleClass="gh-btn-pulse"
+            @showIcon={{false}}
+        />
+    {{else if this.willEmail}}
+        <GhTaskButton
+            @task={{this.confirmTask}}
+            @buttonText={{this.confirmButtonText}}
+            @runningText="Publishing & sending"
+            @successText="Published & sent"
+            @class="gh-btn gh-btn-large"
+            @idleClass="gh-btn-pulse"
+            @showIcon={{false}}
+        />
+    {{else}}
+        <GhTaskButton
+            @task={{this.confirmTask}}
+            @buttonText={{this.confirmButtonText}}
+            @runningText="Publishing"
+            @successText="Published"
+            @class="gh-btn gh-btn-large"
+            @idleClass="gh-btn-pulse"
+            @showIcon={{false}}
+        />
+    {{/if}}
     <button type="button" class="gh-btn gh-btn-link gh-btn-large gh-publish-cta-secondary" {{on "click" @cancel}}>Back to settings</button>
 </div>
