@@ -204,7 +204,7 @@ class UrlGenerator {
      * If the owned resource get's updated, we simply release/free the resource and push it back to the queue.
      * This is the easiest, less error prone implementation.
      *
-     * Imagine you have two collections: `featured:true` and `page:false`.
+     * Imagine you have two collections: `featured:true` and `type:page`.
      * If a published post status get's featured and you have not explicitly defined `featured:false`, we wouldn't
      * be able to figure out if this resource still belongs to me, because the filter still matches.
      */
