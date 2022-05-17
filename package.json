@@ -193,7 +193,7 @@
     "@tryghost/express-test": "0.10.0",
     "c8": "7.11.2",
     "coffeescript": "2.7.0",
-    "cssnano": "5.1.7",
+    "cssnano": "5.1.8",
     "eslint": "8.15.0",
     "eslint-plugin-ghost": "2.14.0",
     "grunt": "1.5.3",
