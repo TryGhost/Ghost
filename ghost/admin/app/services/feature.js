@@ -56,7 +56,6 @@ export default class FeatureService extends Service {
         nightShift;
 
     // labs flags
-    @feature('dashboardV5') dashboardV5;
     @feature('membersActivity') membersActivity;
     @feature('urlCache') urlCache;
     @feature('beforeAfterCard') beforeAfterCard;

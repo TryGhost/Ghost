@@ -1,20 +1,20 @@
-<div class="gh-dashboard5-minichart gh-dashboard5-mrr">
-    <div class="gh-dashboard5-content">
-        <div class="gh-dashboard5-data">
-            <Dashboard::v5::Parts::Metric
+<div class="gh-dashboard-minichart gh-dashboard-mrr">
+    <div class="gh-dashboard-content">
+        <div class="gh-dashboard-data">
+            <Dashboard::Parts::Metric
                 @label={{this.chartTitle}}
                 @value="{{this.currentMRRFormatted}}"
                 @trends={{this.hasTrends}}
                 @percentage={{this.mrrTrend}} /> 
         </div>
-        <div class="gh-dashboard5-chart">
+        <div class="gh-dashboard-chart">
             {{#if this.loading}}
-                <div class="gh-dashboard5-chart-loading">
+                <div class="gh-dashboard-chart-loading">
                     <div class="gh-loading-spinner"></div>
                 </div>
             {{else}}
-                <div class="gh-dashboard5-chart-container">
-                    <div class="gh-dashboard5-chart-box">
+                <div class="gh-dashboard-chart-container">
+                    <div class="gh-dashboard-chart-box">
                         <EmberChart
                             @type={{this.chartType}}
                             @data={{this.chartData}}
@@ -22,11 +22,11 @@
                             @height={{110}} />
                     </div>
     
-                    <div id="gh-dashboard5-mrr-tooltip" class="gh-dashboard5-tooltip">
-                        <div class="gh-dashboard5-tooltip-label">
+                    <div id="gh-dashboard-mrr-tooltip" class="gh-dashboard-tooltip">
+                        <div class="gh-dashboard-tooltip-label">
                             -
                         </div>
-                        <div class="gh-dashboard5-tooltip-value">
+                        <div class="gh-dashboard-tooltip-value">
                             <span class="indicator line"></span>
                             <span class="value">-</span>
                             <span class="metric">MRR</span>

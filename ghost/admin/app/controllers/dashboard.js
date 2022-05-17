@@ -2,64 +2,68 @@ import Controller from '@ember/controller';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
-import {tracked} from '@glimmer/tracking';
+
+// Options 30 and 90 need an extra day to be able to distribute ticks/gridlines evenly
+const DAYS_OPTIONS = [{
+    name: '7 Days',
+    value: 7
+}, {
+    name: '30 Days',
+    value: 30 + 1
+}, {
+    name: '90 Days',
+    value: 90 + 1
+}];
 
 export default class DashboardController extends Controller {
-    @service feature;
-    @service session;
-    @service membersStats;
-    @service store;
-    @service settings;
-    @service whatsNew;
+    @service dashboardStats;
 
-    @tracked whatsNewEntries = null;
-    @tracked whatsNewEntriesLoading = null;
-    @tracked whatsNewEntriesError = null;
-
-    get showMembersData() {
-        return this.settings.get('membersSignupAccess') !== 'none';
-    }
-
-    get showMembersGraphs() {
-        if (!this.feature.improvedOnboarding) {
-            return this.showMembersData;
-        }
-
-        const hasMembers = this.store.peekAll('member').length > 0;
-
-        return this.showMembersData
-            && this.checkMemberCountTask.performCount > 0
-            && hasMembers;
-    }
-
-    initialise() {
-        if (!this.feature.get('dashboardV5')) {
-            this.loadWhatsNew();
-            this.checkMemberCountTask.perform();
-        }
-    }
-
-    loadWhatsNew() {
-        this.whatsNewEntriesLoading = true;
-        this.whatsNew.fetchLatest.perform().then(() => {
-            this.whatsNewEntriesLoading = false;
-            this.whatsNewEntries = this.whatsNew.entries.slice(0, 3);
-        }, (error) => {
-            this.whatsNewEntriesError = error;
-            this.whatsNewEntriesLoading = false;
-        });
-    }
-
-    @action
-    dismissLaunchBanner() {
-        this.settings.set('editorIsLaunchComplete', true);
-        this.settings.save();
-    }
+    daysOptions = DAYS_OPTIONS;
 
     @task
-    *checkMemberCountTask() {
-        if (this.store.peekAll('member').length === 0) {
-            yield this.store.query('member', {limit: 1});
-        }
+    *loadSiteStatusTask() {
+        yield this.dashboardStats.loadSiteStatus();
+        return {};
+    }
+
+    @action 
+    onDaysChange(selected) {
+        this.days = selected.value;
+    }
+
+    get days() {
+        return this.dashboardStats.chartDays;
+    }
+
+    set days(days) {
+        this.dashboardStats.chartDays = days;
+    }
+
+    get selectedDaysOption() {
+        return this.daysOptions.find(d => d.value === this.days);
+    }
+
+    get isLoading() {
+        return this.dashboardStats.siteStatus === null;
+    }
+
+    get totalMembers() {
+        return this.dashboardStats.memberCounts?.total ?? 0;
+    }
+
+    get isTotalMembersZero() {
+        return this.dashboardStats.memberCounts && this.totalMembers === 0;
+    }
+
+    get hasPaidTiers() {
+        return this.dashboardStats.siteStatus?.hasPaidTiers;
+    }
+
+    get areNewslettersEnabled() {
+        return this.dashboardStats.siteStatus?.newslettersEnabled;
+    }
+
+    get areMembersEnabled() {
+        return this.dashboardStats.siteStatus?.membersEnabled;
     }
 }
