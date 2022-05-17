@@ -263,6 +263,16 @@ Dashboard v5 Layout */
     width: 100%;
 }
 
+.gh-dashboard-minicharts .gh-dashboard-mix .gh-dashboard-chart {
+    padding-left: 0;
+}
+
+.gh-dashboard-minicharts .gh-dashboard-mix.is-cadence .gh-dashboard-chart-box {
+    /* remember to match these to the tooltip offsets */
+    width: 69%;
+    margin-left: 30%;
+}
+
 @media screen and (max-width: 1400px) {
     .gh-dashboard-minicharts .gh-dashboard-chart {
         padding-left: 50%;
@@ -292,14 +302,6 @@ Dashboard v5 Layout */
 
 .gh-dashboard-minichart:last-child {
     padding-right: 0;
-}
-
-.gh-dashboard-minichart.is-tiers {
-    flex-direction: column;
-}
-
-.gh-dashboard-minichart.is-tiers .gh-dashboard-chart {
-    padding: 0;
 }
 
 .gh-dashboard-minichart .gh-dashboard-chart-box {
@@ -551,9 +553,9 @@ Dashboard v5 Chart */
     left: 24px;
 }
 
-.gh-dashboard-mix .gh-dashboard-chart.narrow {
-    /* margin-left: -80px; */
-    padding-left: 30%;
+.gh-dashboard-mix .gh-dashboard-chart-box {
+    width: 99%;
+    margin: 0;
 }
 
 
@@ -1974,10 +1976,6 @@ Dashboard v5 Tooltips */
         width: 50%;
         top: 0;
         left: 0;
-    }
-
-    .gh-dashboard-mix .gh-dashboard-chart.narrow {
-        padding: 0;
     }
 
     .gh-dashboard-mix .gh-dashboard-metric {

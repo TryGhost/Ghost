@@ -1,4 +1,4 @@
-<div class="gh-dashboard-minichart gh-dashboard-mix {{if this.isChartTiers 'is-tiers'}}">
+<div class="gh-dashboard-minichart gh-dashboard-mix {{if this.isChartCadence 'is-cadence'}}">
     <div class="gh-dashboard-content">
         <div class="gh-dashboard-data">
             <Dashboard::Parts::Metric
@@ -11,7 +11,7 @@
                 </div>
             {{/if}}
         </div>
-        <div class="gh-dashboard-chart {{if this.isChartCadence "narrow"}}" {{did-insert this.loadCharts}}>
+        <div class="gh-dashboard-chart" {{did-insert this.loadCharts}}>
             {{#if this.loading}}
                 <div class="gh-dashboard-chart-loading">
                     <div class="gh-loading-spinner"></div>
