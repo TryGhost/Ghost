@@ -194,7 +194,7 @@
     "@playwright/test": "1.22.1",
     "@tryghost/express-test": "0.10.0",
     "c8": "7.11.3",
-    "cli-progress": "3.11.0",
+    "cli-progress": "3.11.1",
     "coffeescript": "2.7.0",
     "cssnano": "5.1.8",
     "eslint": "8.15.0",
