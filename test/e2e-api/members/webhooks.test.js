@@ -242,7 +242,7 @@ describe('Members API', function () {
                     // And all the subscriptions are setup correctly
                     const initialMember = await createMemberFromStripe();
                     assert.equal(initialMember.status, 'paid', 'The member initial status should be paid');
-                    assert.equal(initialMember.products.length, 1, 'The member should have one product');
+                    assert.equal(initialMember.tiers.length, 1, 'The member should have one tier');
                     should(initialMember.subscriptions).match([
                         {
                             status: 'active'
@@ -277,7 +277,7 @@ describe('Members API', function () {
                     assert.equal(body2.members.length, 1, 'The member does not exist');
                     const updatedMember = body2.members[0];
                     assert.equal(updatedMember.status, 'paid');
-                    assert.equal(updatedMember.products.length, 1, 'The member should have products');
+                    assert.equal(updatedMember.tiers.length, 1, 'The member should have tiers');
                     should(updatedMember.subscriptions).match([
                         {
                             cancel_at_period_end: true
@@ -365,7 +365,7 @@ describe('Members API', function () {
                     // And all the subscriptions are setup correctly
                     const initialMember = await createMemberFromStripe();
                     assert.equal(initialMember.status, 'paid', 'The member initial status should be paid');
-                    assert.equal(initialMember.products.length, 1, 'The member should have one product');
+                    assert.equal(initialMember.tiers.length, 1, 'The member should have one tier');
                     should(initialMember.subscriptions).match([
                         {
                             status: 'active'
@@ -400,7 +400,7 @@ describe('Members API', function () {
                     assert.equal(body2.members.length, 1, 'The member does not exist');
                     const updatedMember = body2.members[0];
                     assert.equal(updatedMember.status, 'paid');
-                    assert.equal(updatedMember.products.length, 1, 'The member should have products');
+                    assert.equal(updatedMember.tiers.length, 1, 'The member should have products');
                     should(updatedMember.subscriptions).match([
                         {
                             cancel_at_period_end: true
@@ -491,7 +491,7 @@ describe('Members API', function () {
                 // And all the subscriptions are setup correctly
                 const initialMember = await createMemberFromStripe();
                 assert.equal(initialMember.status, 'paid', 'The member initial status should be paid');
-                assert.equal(initialMember.products.length, 1, 'The member should have one product');
+                assert.equal(initialMember.tiers.length, 1, 'The member should have one tier');
                 should(initialMember.subscriptions).match([
                     {
                         status: 'active'
@@ -537,7 +537,7 @@ describe('Members API', function () {
                 assert.equal(body2.members.length, 1, 'The member does not exist');
                 const updatedMember = body2.members[0];
                 assert.equal(updatedMember.status, 'free');
-                assert.equal(updatedMember.products.length, 0, 'The member should have no products');
+                assert.equal(updatedMember.tiers.length, 0, 'The member should have no products');
                 should(updatedMember.subscriptions).match([
                     {
                         status: 'canceled'
@@ -598,7 +598,7 @@ describe('Members API', function () {
 
                 const compedPayload = {
                     id: canceledPaidMember.id,
-                    products: [
+                    tiers: [
                         {
                             id: product.id
                         }
@@ -612,7 +612,7 @@ describe('Members API', function () {
 
                 const updatedMember = body.members[0];
                 assert.equal(updatedMember.status, 'comped', 'A comped member should have the comped status');
-                assert.equal(updatedMember.products.length, 1, 'The member should have one product');
+                assert.equal(updatedMember.tiers.length, 1, 'The member should have one tier');
                 should(updatedMember.subscriptions).match([
                     {
                         status: 'canceled'
@@ -711,7 +711,7 @@ describe('Members API', function () {
                 // And all the subscriptions are setup correctly
                 const initialMember = await createMemberFromStripe();
                 assert.equal(initialMember.status, 'comped', 'The member initial status should be comped');
-                assert.equal(initialMember.products.length, 1, 'The member should have one product');
+                assert.equal(initialMember.tiers.length, 1, 'The member should have one tier');
                 should(initialMember.subscriptions).match([
                     {
                         status: 'active'
@@ -746,7 +746,7 @@ describe('Members API', function () {
                 assert.equal(body2.members.length, 1, 'The member does not exist');
                 const updatedMember = body2.members[0];
                 assert.equal(updatedMember.status, 'free');
-                assert.equal(updatedMember.products.length, 0, 'The member should have no products');
+                assert.equal(updatedMember.tiers.length, 0, 'The member should have no products');
                 should(updatedMember.subscriptions).match([
                     {
                         status: 'canceled'
@@ -1243,7 +1243,7 @@ describe('Members API', function () {
                 assert.equal(body2.members.length, 1, 'The member does not exist');
                 const updatedMember = body2.members[0];
                 assert.equal(updatedMember.status, 'free');
-                assert.equal(updatedMember.products.length, 0, 'The member should have no products');
+                assert.equal(updatedMember.tiers.length, 0, 'The member should have no products');
                 should(updatedMember.subscriptions).match([
                     {
                         status: 'canceled',
