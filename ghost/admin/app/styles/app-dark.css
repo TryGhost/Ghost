@@ -76,21 +76,21 @@
 :root {
     /* Primary colours */
     --black: #fafafb;
-    --white: #111213;
+    --white: #151719;
     --lime: #B5FF18;
 
-    --darkgrey: #e8ebed;
-    --middarkgrey: #aeb5bc;
-    --midgrey: #80868e;
-    --midlightgrey:#60666c;
-    --lightgrey: #2b2d31;
-    --whitegrey: #1c1e21;
+    --darkgrey: #E3E6E8;
+    --middarkgrey: #A9B0B7;
+    --midgrey: #7B8189;
+    --midlightgrey:#5B6167;
+    --lightgrey: #26282B;
+    --whitegrey: #17191C;
     --blue: color-mod(#3eb0ef l(+5%) s(+5%));
 
-    --main-bg-color: #151719;
-    --dark-main-bg-color: #151719;
-    --hairline-color-1: #272a30;
-    --hairline-color-2: #626D79;
+    --main-bg-color: #101114;
+    --dark-main-bg-color: #101114;
+    --hairline-color-1: #22252A;
+    --hairline-color-2: #5E6874;
 
     --main-color-content-greybg: var(--whitegrey);
     --list-color-divider: var(--whitegrey-l1);
@@ -164,6 +164,10 @@ input:focus,
 
 .settings-menu-header {
     background: var(--dark-main-bg-color);
+}
+
+.settings-menu-container {
+    border-color: var(--hairline-color-1);
 }
 
 .settings-menu-container .settings-menu-pane {
@@ -484,13 +488,13 @@ input:focus,
     color: var(--black);
 }
 
-.fullscreen-modal-background {
+.fullscreen-modal-background, .epm-backdrop {
     background: #000;
 }
 
 .epm-modal .modal-content,
 .modal-content {
-    background: var(--whitegrey);
+    background: color-mod(var(--white) l(-1%));
 }
 
 .seo-preview-title {
@@ -662,7 +666,7 @@ input:focus,
 }
 
 .gh-nav-list a {
-    color: color-mod(var(--midgrey));
+    color: color-mod(var(--middarkgrey-d1));
 }
 
 .gh-nav-list a:not(.active):not(.gh-secondary-action):hover,
@@ -743,6 +747,10 @@ input:focus,
     background-color: transparent;
 }
 
+.gh-setting-header {
+    border-color: var(--hairline-color-1);
+}
+
 .gh-settings-main-grid .gh-setting-group span {
     background: color-mod(var(--dark-main-bg-color) l(+2%));
 }
@@ -780,13 +788,13 @@ input:focus,
 .kg-settings-panel {
     background-color: var(--lightgrey-d1);
     box-shadow:
-        0px -1px 10px rgba(0, 0, 0, 0.2),
-        0px 2.8px 2.2px rgba(0, 0, 0, 0.1),
-        0px 6.7px 5.3px rgba(0, 0, 0, 0.1),
-        0px 12.5px 10px rgba(0, 0, 0, 0.12),
-        0px 22.3px 17.9px rgba(0, 0, 0, 0.12),
-        0px 41.8px 33.4px rgba(0, 0, 0, 0.16),
-        0px 100px 80px rgba(0, 0, 0, 0.2)
+        0px -1px 10px rgba(0, 0, 0, 0.1),
+        0px 2.8px 2.2px rgba(0, 0, 0, 0.05),
+        0px 6.7px 5.3px rgba(0, 0, 0, 0.05),
+        0px 12.5px 10px rgba(0, 0, 0, 0.08),
+        0px 22.3px 17.9px rgba(0, 0, 0, 0.08),
+        0px 41.8px 33.4px rgba(0, 0, 0, 0.08),
+        0px 100px 80px rgba(0, 0, 0, 0.1)
     ;
 }
 
@@ -912,6 +920,11 @@ input:focus,
 }
 
 /* Members */
+.gh-members-help-card,
+.gh-offers-help-card {
+    background: var(--dark-main-bg-color);
+}
+
 .gh-members-chart-header {
     background: var(--white);
 }
@@ -987,8 +1000,16 @@ input:focus,
 }
 
 /* Offers */
+.gh-btn-green svg {
+    fill: #fff !important;
+}
+
 .gh-offers-list-cta .discount-bubble {
     color: var(--midgrey-d2);
+}
+
+.gh-offers-help-card .gh-btn {
+    background: var(--whitegrey) !important;
 }
 
 /* Portal */
@@ -1070,11 +1091,11 @@ input:focus,
 }
 
 .gh-list-scrolling thead th:first-child {
-    background: linear-gradient(90deg, rgba(21,23,25,1) 90%, rgba(21,23,25,0) 100%);
+    background: linear-gradient(90deg, rgba(16,17,20,1) 90%, rgba(16,17,20,0) 100%);
 }
 
 .gh-list-scrolling tbody .gh-list-data:first-child {
-    background: linear-gradient(90deg, rgba(21,23,25,1) 90%, rgba(21,23,25,0) 100%);
+    background: linear-gradient(90deg, rgba(16,17,20,1) 90%, rgba(16,17,20,0) 100%);
 }
 
 .gh-filter-builder .gh-filters {
@@ -1122,13 +1143,8 @@ kbd {
     border-color: #394047;
 }
 
-.gh-dashboard .gh-dashboard-box.is-secondary {
-    border: 1px solid #2b2d31;
-}
-
-.gh-dashboard .gh-dashboard-box.is-secondary,
-.gh-dashboard .gh-dashboard-box.is-faded {
-    background: transparent;
+.gh-dashboard .gh-dashboard-box.is-secondary .gh-dashboard-resource-box {
+    background: var(--main-bg-color);
 }
 
 .gh-dashboard .gh-dashboard-column {
@@ -1159,11 +1175,11 @@ kbd {
 }
 
 .gh-dashboard-recents .gh-dashboard-list-item:hover {
-    background: rgba(28, 30, 33, 0.7);
+    background: linear-gradient(90deg, rgba(21,23,25,0) 0%, rgba(21,23,25,1) 100%);
 }
 
 .gh-dashboard-resource .gh-dashboard-list-item:hover {
-    background: rgba(28, 30, 33, 0.3);
+    background: transparent;
 }
 
 .gh-dashboard-community .gh-dashboard-resource-footer {
