@@ -1,0 +1,127 @@
+<section class="gh-dashboard-section gh-dashboard-recents" {{did-insert this.loadPosts}}>
+    <article class="gh-dashboard-box">
+        <div class="gh-dashboard-tabs">
+            <button type="button" class="gh-dashboard-tab {{if this.postsTabSelected 'is-selected'}}" {{on "click" this.changeTabToPosts}}>
+                <Dashboard::Parts::Metric
+                    @label="Recent posts" /> 
+            </button>
+            {{#if this.areMembersEnabled}}
+                <button type="button" class="gh-dashboard-tab {{if this.activityTabSelected 'is-selected'}}" {{on "click" this.changeTabToActivity}}>
+                    <Dashboard::Parts::Metric
+                        @label="Member activity" /> 
+                </button>          
+            {{/if}}
+        </div>
+        {{#if this.postsTabSelected}}
+            <div class="gh-dashboard-recents-posts gh-dashboard-list {{unless this.areNewslettersEnabled 'is-single'}}">
+                <div class="gh-dashboard-list-header">  
+                    <div class="gh-dashboard-list-title">Title</div>
+                    {{#if this.areNewslettersEnabled}}
+                        <div class="gh-dashboard-list-title">Sends</div>
+                        <div class="gh-dashboard-list-title">Open rate</div>
+                    {{else}}
+                        <div class="gh-dashboard-list-title">Published</div>
+                    {{/if}}
+                </div>
+                <div class="gh-dashboard-list-body">
+                    {{#each this.posts as |post|}}
+                        <LinkTo class="gh-dashboard-list-item permalink" @route="editor.edit" @models={{array post.displayName post.id}}>
+                            <div class="gh-dashboard-list-item-sub">
+                                <span class="gh-dashboard-list-text">{{post.title}}</span>
+                            </div>
+                            {{#if this.areNewslettersEnabled}}
+                                <div class="gh-dashboard-list-item-sub">
+                                    <span class="gh-dashboard-metric-minivalue {{unless post.email "na"}}">
+                                        {{#if post.email}}
+                                            {{format-number post.email.emailCount}}
+                                        {{else}}
+                                            &mdash;
+                                        {{/if}}
+                                    </span>
+                                </div>
+                                <div class="gh-dashboard-list-item-sub">
+                                    <span class="gh-dashboard-rate-bar">  
+                                        {{#if post.email}}          
+                                            <span class="gh-dashboard-metric-minivalue">{{post.email.openRate}}%</span>
+                                            <span class="gh-dashboard-rate-amount"><span style={{html-safe (concat "width: " post.email.openRate "%;")}}/></span>
+                                        {{else}}
+                                            <span class="gh-dashboard-metric-minivalue na">&mdash;</span>
+                                        {{/if}}
+                                    </span>
+                                </div>
+                            {{else}}
+                                <div class="gh-dashboard-list-item-sub">
+                                    <span class="gh-dashboard-list-subtext">{{moment-format post.published_at "D MMM YYYY HH:mm"}}</span>
+                                </div>
+                            {{/if}}
+                        </LinkTo>
+                    {{else}}
+                        <div class="gh-dashboard-list-empty">
+                            <p>No published posts yet.</p>
+                        </div>
+                    {{/each}}
+                </div>
+                <div class="gh-dashboard-list-footer">
+                    <LinkTo @route="posts" @query={{reset-query-params "posts"}}>See all posts &rarr;</LinkTo>
+                </div>
+            </div>
+        {{else}}
+            <div class="gh-dashboard-recents-activity gh-dashboard-list" data-test-dashboard-member-activity>
+                <div class="gh-dashboard-list-header">  
+                    <div class="gh-dashboard-list-title">Member</div>
+                    <div class="gh-dashboard-list-title">Event</div>
+                    <div class="gh-dashboard-list-title">Time</div>
+                </div>
+                <div class="gh-dashboard-list-body">
+                    {{#let (members-event-fetcher filter=(members-event-filter excludeEmailEvents=true) pageSize=5) as |eventsFetcher|}}     
+                        {{#if eventsFetcher.isError}}
+                            <div class="gh-dashboard-list-error">
+                                <p>There was an error loading events</p>
+                                {{#if eventsFetcher.errorMessage}}
+                                    <code>{{eventsFetcher.errorMessage}}</code>
+                                {{/if}}
+                            </div>
+                        {{/if}}
+                        
+                        {{#if eventsFetcher.isLoading}}
+                            <div class="gh-dashboard-list-loading">
+                                <div class="gh-loading-spinner"></div>
+                            </div>
+                        {{else}}
+                            {{#if eventsFetcher.data}}
+                                {{#each eventsFetcher.data as |event|}}
+                                    {{#let (parse-member-event event eventsFetcher.hasMultipleNewsletters) as |parsedEvent|}}
+                                        <LinkTo class="gh-dashboard-list-item member-details" @route="member" @model="{{parsedEvent.memberId}}" data-test-dashboard-member-activity-item> 
+                                            <div class="gh-dashboard-list-item-sub">
+                                                <GhMemberAvatar @member={{parsedEvent.member}} @containerClass="w8 h8 mr3 flex-shrink-0" />
+                                                <span class="gh-dashboard-list-text">{{parsedEvent.subject}}</span>
+                                            </div>
+                                            <div class="gh-dashboard-list-item-sub">
+                                                {{svg-jar parsedEvent.icon}}
+                                                <span class="gh-dashboard-list-subtext">
+                                                    {{capitalize-first-letter parsedEvent.action}}
+                                                    {{parsedEvent.object}}
+                                                    {{parsedEvent.info}}
+                                                </span>
+                                            </div>
+                                            <div class="gh-dashboard-list-item-sub">
+                                                <span class="gh-dashboard-list-subtext">{{moment-format event.timestamp "D MMM YYYY HH:mm"}}</span>
+                                            </div>
+                                        </LinkTo>
+                                    {{/let}}
+                                {{/each}}
+                            {{else}}
+                                <div class="gh-dashboard-list-empty" data-test-no-member-activities>
+                                    <p>No activity yet.</p>
+                                </div>
+                            {{/if}}
+                        {{/if}}
+                    {{/let}}
+                </div>
+                <div class="gh-dashboard-list-footer">
+                    <LinkTo @route="members-activity" @query={{reset-query-params "members-activity"}}>See all activity &rarr;</LinkTo>
+                </div>
+            </div>
+        {{/if}}
+    </article>
+</section>

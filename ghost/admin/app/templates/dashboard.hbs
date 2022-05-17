@@ -1,166 +1,68 @@
 <section class="gh-canvas" {{scroll-top}}>
-    {{#if (feature "dashboardV5")}}
-        <div class="gh-dashboard5">
-            <div class="gh-dashboard5-inner">
-                <GhCanvasHeader class="gh-canvas-header">
-                    <h2 class="gh-canvas-title" data-test-screen-title>
-                        Dashboard
-                    </h2>
-                </GhCanvasHeader>
-            </div>
-            <Dashboard::DashboardV5 />
+    <div class="gh-dashboard">
+        <div class="gh-dashboard-inner">
+            <GhCanvasHeader class="gh-canvas-header">
+                <h2 class="gh-canvas-title" data-test-screen-title>
+                    Dashboard
+                </h2>
+            </GhCanvasHeader>
         </div>
-    {{else}}
-        <GhCanvasHeader class="gh-canvas-header">
-            <h2 class="gh-canvas-title" data-test-screen-title>
-                Dashboard
-            </h2>
-        </GhCanvasHeader>
-        <div class="view-container gh-dashboard">
-            {{#if (and this.session.user.isOwnerOnly (not this.settings.editorIsLaunchComplete) (not (feature "improvedOnboarding")))}}
-                <section class="gh-dashboard-area lw-banner">
-                    <div class="gh-lw-banner" style="background-image:url(assets/img/launch-wizard-bg.png);">
-                        <h1>Select your publication style</h1>
-                        <p>Customize your brand and connect to Stripe to get your membership site ready to be shown to the world.</p>
-                        <LinkTo class="gh-btn gh-btn-green" @route="launch"><span>Start setup guide</span></LinkTo>
-                        <div class="gh-dashboard-dismiss">
-                            <GhDropdownButton @dropdownName="launch-wizard-dismiss"
-                                @classNames="gh-btn gh-btn-icon icon-only gh-dashboard-dismissbutton dark">
-                                <span>
-                                    {{svg-jar "dotdotdot"}}
-                                </span>
-                            </GhDropdownButton>
-                            <GhDropdown @name="launch-wizard-dismiss" @classNames="gh-dashboard-dismiss-dropdown dropdown-menu dropdown-triangle-top-right">
-                                <button class="gh-btn" type="button" {{on "click" this.dismissLaunchBanner}}><span>Dismiss</span></button>
-                            </GhDropdown>
-                        </div>
+        <section class="gh-dashboard-layout">
+            {{#if this.isLoading }}
+                <GhLoadingSpinner />
+            {{else}}
+                {{#if this.areMembersEnabled}}
+                    {{#if this.hasPaidTiers}}
+                        <Dashboard::Charts::Overview />
+                    {{/if}}
+
+                    <div class="gh-dashboard-group {{if this.isTotalMembersZero 'is-zero'}}">
+                        <Dashboard::Charts::Anchor />
+
+                        {{#if this.areNewslettersEnabled}}
+                            <Dashboard::Charts::Engagement />
+                        {{/if}}
+
+                        {{#if this.isTotalMembersZero}}
+                            <Dashboard::Parts::Zero />
+                        {{/if}}
                     </div>
-                </section>
-            {{else if this.showMembersGraphs}}
-                <Dashboard::MembersGraphs />
+                {{/if}}
+
+                <Dashboard::Charts::Recents />
+
+                <div class="gh-dashboard-split gh-dashboard-box is-secondary">
+                    <Dashboard::Resources::Resources />
+                    <Dashboard::Resources::Newsletter />
+                </div>
+                <div class="gh-dashboard-split">
+                    <Dashboard::Resources::StaffPicks />
+                    <Dashboard::Resources::WhatsNew />
+                    <Dashboard::Resources::Community />
+                </div>
             {{/if}}
 
-            <section class="gh-dashboard-area mixed">
-                {{#unless this.settings.editorIsLaunchComplete}}
-                <div class="gh-dashboard-container start-contents">
-                    <div class="gh-dashboard-box blogpost">
-                        <h2>Start creating content</h2>
-                        {{#if this.showMembersData}}
-                            <LinkTo @route="members">
-                                <span class="icon">{{svg-jar "members"}}</span>
-                                <div>
-                                    <h4>Create your first member</h4>
-                                    <p>Add yourself or import members from CSV</p>
-                                </div>
-                            </LinkTo>
-                        {{/if}}
-                        <LinkTo @route="editor.new" @model="post">
-                            <span class="icon green">{{svg-jar "posts"}}</span>
-                            <div>
-                                <h4>Publish a post</h4>
-                                <p>Get familiar with the Ghost editor and start creating</p>
-                            </div>
-                        </LinkTo>
-                    </div>
+            {{#unless this.isTotalMembersZero}}
+                <div class="gh-dashboard-select">
+                    <PowerSelect
+                        @selected={{this.selectedDaysOption}}
+                        @options={{this.daysOptions}}
+                        @searchEnabled={{false}}
+                        @onChange={{this.onDaysChange}}
+                        @triggerComponent="gh-power-select/trigger"
+                        @triggerClass="gh-contentfilter-menu-trigger"
+                        @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
+                        @matchTriggerWidth={{false}}
+                        as |option|
+                    >
+                        {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
+                    </PowerSelect>
                 </div>
-                {{/unless}}
+            {{/unless}}
+        </section>
 
-                <div class="gh-dashboard-container col-2">
-                    <div class="gh-dashboard-box">
-                        <div class="content">
-                            <h2>Customize your site</h2>
-                            <p>Stand out from the crowd. Ghost lets you customize everything so you can create a publication that doesn’t just look the same as what everyone else has.</p>
-                        </div>
-                        <div class="footer">
-                            <LinkTo class="gh-btn gh-btn-outline mt2 mr2" @route="settings.design"><span>Design</span></LinkTo>
-                            <LinkTo class="gh-btn gh-btn-outline mt2" @route="settings.newsletters"><span>Email</span></LinkTo>
-                        </div>
-                    </div>
-                    <div class="gh-dashboard-box">
-                        <div class="content">
-                            <h2>Looking for help with Ghost features?</h2>
-                            <p>Our product knowledgebase is packed full of guides, tutorials, answers to frequently asked questions, tips for dealing with common errors, and much more. </p>
-                        </div>
-                        <div class="footer">
-                            <a class="gh-btn gh-btn-outline mt2" href="https://ghost.org/help/" target="_blank" rel="noopener noreferrer"><span>Visit the help center &rarr;</span></a>
-                        </div>
-                    </div>
-                </div>
-
-                <a class="gh-dashboard-container" href="https://ghost.org/blog/types-of-newsletters/?utm_source=dashboard" target="_blank" rel="noopener noreferrer">
-                    <div class="gh-dashboard-box blogpost">
-                        <div class="content">
-                            <h2>6 types of newsletters you can start today</h2>
-                            <p>Choosing one of these newsletter types for your publication will help you create better content at a faster pace with less work.</p>
-                            <p class="green">Get some inspiration &rarr;</p>
-                            <div class="read-time">5 MIN READ</div>
-                        </div>
-                        <div class="thumbnail" style="background-image: url(assets/img/dashboard/bp1.jpg);"></div>
-                    </div>
-                </a>
-
-                <a class="gh-dashboard-container" href="https://careers.ghost.org?utm_source=dashboard" target="_blank" rel="noopener noreferrer">
-                    <div class="gh-dashboard-box grey gh-dashboard-careers">
-                        <div class="summary">
-                            <h2>We're hiring! Join the team that makes Ghost.</h2>
-                            <p>The creator economy is growing faster than ever, and so are we! 📈 Join a team that's determined to make decentralised, open technology the heart and soul of new media 🌺</p>
-                        </div>
-                        <div class="gh-dashboard-careers-cta">
-                            <span class="gh-btn gh-btn-primary"><span>See open roles &rarr;</span></span>
-                        </div>
-                    </div>
-                </a>
-
-                <a class="gh-dashboard-container reverse" href="https://ghost.org/blog/content-strategy-creator-funnel/?utm_source=dashboard" target="_blank" rel="noopener noreferrer">
-                    <div class="gh-dashboard-box blogpost">
-                        <div class="thumbnail" style="background-image: url(assets/img/dashboard/bp2.jpg);"></div>
-                        <div class="content">
-                            <h2>How to grow your audience, starting from 0</h2>
-                            <p>Starting from zero is hard. Thankfully, successful creators have given us clues on how to grow an audience by using something called a content funnel.</p>
-                            <p class="green">Here's how it works &rarr;</p>
-                            <div class="read-time">9 MIN READ</div>
-                        </div>
-                    </div>
-                </a>
-
-                <div class="gh-dashboard-join-community" style="background-image: url(assets/img/dashboard/join-community.jpg)">
-                    <div>
-                        <h2>Join the Ghost creator community.</h2>
-                        <p>Meet other people building both free &amp; paid publications with Ghost. Talk strategy, get advice, or just hang out.</p>
-                        <a class="gh-btn gh-btn-white gh-dashboard-btn" href="https://community.ghost.org" target="_blank" rel="noopener noreferrer"><span>Share the journey</span></a>
-                    </div>
-                    <a class="footer-link" href="https://community.ghost.org" target="_blank" rel="noopener noreferrer">community.ghost.org</a>
-                </div>
-            </section>
-
-            <section class="gh-dashboard-area members-activity">
-                {{#if this.showMembersData}}
-                    <Dashboard::LatestMemberActivity />
-                {{/if}}
-
-                {{#if (not (or this.whatsNewEntriesLoading this.whatsNewEntriesError))}}
-                <div class="gh-dashboard-box whats-new {{if this.whatsNew.hasNew "has-new"}}">
-                    <div class="gh-dashboard-header-container">
-                        <h4 class="gh-dashboard-header">What's new?</h4>
-                        {{svg-jar "gift"}}
-                    </div>
-                    <div class="content">
-                        {{#each this.whatsNewEntries as |entry|}}
-                            <LinkTo @route="whatsnew" @query={{hash entry=entry.slug}}>
-                                <h2>{{entry.title}}</h2>
-                                <span class="wn-date">{{moment-format entry.published_at "D MMM YYYY"}}</span>
-                                {{#if entry.custom_excerpt}}
-                                    <p>{{entry.custom_excerpt}}</p>
-                                {{/if}}
-                            </LinkTo>
-                        {{/each}}
-                    </div>
-                    <div class="footer">
-                        <LinkTo @route="whatsnew" @query={{hash entry=null}} class="green">See more &rarr;</LinkTo>
-                    </div>
-                </div>
-                {{/if}}
-            </section>
-        </div>
-    {{/if}}
+        {{#if (enable-developer-experiments)}}
+            <Dashboard::Prototype::ControlPanel />
+        {{/if}}
+    </div>
 </section>

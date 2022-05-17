@@ -236,7 +236,7 @@ export default class Anchor extends Component {
                 mode: 'index',
                 custom: function (tooltip) {
                     // get tooltip element
-                    const tooltipEl = document.getElementById('gh-dashboard5-anchor-tooltip');
+                    const tooltipEl = document.getElementById('gh-dashboard-anchor-tooltip');
                     const chartContainerEl = tooltipEl.parentElement;
                     const chartWidth = chartContainerEl.offsetWidth;
                     const tooltipWidth = tooltipEl.offsetWidth;
@@ -262,11 +262,11 @@ export default class Anchor extends Component {
                 callbacks: {
                     label: (tooltipItems, data) => {
                         const value = data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-                        document.querySelector('#gh-dashboard5-anchor-tooltip .gh-dashboard5-tooltip-value .value').innerHTML = value;
+                        document.querySelector('#gh-dashboard-anchor-tooltip .gh-dashboard-tooltip-value .value').innerHTML = value;
                     },
                     title: (tooltipItems) => {
                         const value = moment(tooltipItems[0].xLabel).format(DATE_FORMAT);
-                        document.querySelector('#gh-dashboard5-anchor-tooltip .gh-dashboard5-tooltip-label').innerHTML = value;
+                        document.querySelector('#gh-dashboard-anchor-tooltip .gh-dashboard-tooltip-label').innerHTML = value;
                     }
                 }
             },
@@ -305,10 +305,10 @@ export default class Anchor extends Component {
                         autoSkip: false,
                         callback: function (value, index, values) {
                             if (index === 0) {
-                                document.getElementById('gh-dashboard5-anchor-date-start').innerHTML = moment(value).format(DATE_FORMAT);
+                                document.getElementById('gh-dashboard-anchor-date-start').innerHTML = moment(value).format(DATE_FORMAT);
                             }
                             if (index === (values.length - 1)) {
-                                document.getElementById('gh-dashboard5-anchor-date-end').innerHTML = moment(value).format(DATE_FORMAT);
+                                document.getElementById('gh-dashboard-anchor-date-end').innerHTML = moment(value).format(DATE_FORMAT);
                             }
 
                             if (activeDays === (30 + 1)) {

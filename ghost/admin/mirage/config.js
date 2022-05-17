@@ -17,6 +17,7 @@ import mockSettings from './config/settings';
 import mockSite from './config/site';
 import mockSlugs from './config/slugs';
 import mockSnippets from './config/snippets';
+import mockStats from './config/stats';
 import mockTags from './config/tags';
 import mockThemes from './config/themes';
 import mockTiers from './config/tiers';
@@ -81,6 +82,7 @@ export function testConfig() {
     mockOffers(this);
     mockSnippets(this);
     mockNewsletters(this);
+    mockStats(this);
 
     /* Notifications -------------------------------------------------------- */
 

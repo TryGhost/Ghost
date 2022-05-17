@@ -1,25 +1,25 @@
-<section class="gh-dashboard5-section gh-dashboard5-engagement">
-    <article {{did-insert this.loadCharts}} class="gh-dashboard5-box">
-        <Dashboard::v5::Parts::Metric
+<section class="gh-dashboard-section gh-dashboard-engagement">
+    <article {{did-insert this.loadCharts}} class="gh-dashboard-box">
+        <Dashboard::Parts::Metric
             @label="Engagement" /> 
 
-        <div class="gh-dashboard5-columns">
-            <div class="gh-dashboard5-column gh-dashboard5-engagement-30days">
-                <Dashboard::v5::Parts::Metric
+        <div class="gh-dashboard-columns">
+            <div class="gh-dashboard-column gh-dashboard-engagement-30days">
+                <Dashboard::Parts::Metric
                     @label="Engaged in the last 30 days"
                     @value={{this.data30Days}}
                     @secondary={{true}}
                     />
             </div>
-            <div class="gh-dashboard5-column gh-dashboard5-engagement-7days">
-                <Dashboard::v5::Parts::Metric
+            <div class="gh-dashboard-column gh-dashboard-engagement-7days">
+                <Dashboard::Parts::Metric
                     @label="Engaged in the last 7 days"
                     @value={{this.data7Days}}
                     @secondary={{true}}
                     />
             </div>
-            <div class="gh-dashboard5-column gh-dashboard5-engagement-subscribers">
-                <Dashboard::v5::Parts::Metric
+            <div class="gh-dashboard-column gh-dashboard-engagement-subscribers">
+                <Dashboard::Parts::Metric
                     @label="Newsletter subscribers"
                     @value={{this.dataSubscribers}}
                     @secondary={{true}}
@@ -29,7 +29,7 @@
     </article>
 
     {{#if this.hasPaidTiers}}
-        <div class="gh-dashboard5-select">
+        <div class="gh-dashboard-select">
             <PowerSelect
                 @selected={{this.selectedStatusOption}}
                 @options={{this.statusOptions}}

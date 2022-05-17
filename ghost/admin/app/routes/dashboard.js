@@ -1,7 +1,7 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 
 export default class DashboardRoute extends AuthenticatedRoute {
-    beforeModel() {
+    async beforeModel() {
         super.beforeModel(...arguments);
 
         if (this.session.user.isContributor) {
@@ -17,7 +17,12 @@ export default class DashboardRoute extends AuthenticatedRoute {
         };
     }
 
+    // trigger a background load of members plus labels for filter dropdown
     setupController() {
-        this.controller.initialise();
+        super.setupController(...arguments);
+    }
+
+    model() {
+        return this.controllerFor('dashboard').loadSiteStatusTask.perform();
     }
 }
