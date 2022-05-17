@@ -1,4 +1,4 @@
-import {createPopupNotification, getMemberEmail, getMemberName, removePortalLinkFromUrl} from './utils/helpers';
+import {createPopupNotification, getMemberEmail, getMemberName, getProductCadenceFromPrice, removePortalLinkFromUrl} from './utils/helpers';
 
 function switchPage({data, state}) {
     return {
@@ -99,7 +99,8 @@ async function signup({data, state, api}) {
         if (plan.toLowerCase() === 'free') {
             await api.member.sendMagicLink(data);
         } else {
-            await api.member.checkoutPlan({plan, email, name, newsletters, offerId});
+            const {tierId, cadence} = getProductCadenceFromPrice({site: state?.site, priceId: plan});
+            await api.member.checkoutPlan({plan, tierId, cadence, email, name, newsletters, offerId});
         }
         return {
             page: 'magiclink',
@@ -119,8 +120,11 @@ async function signup({data, state, api}) {
 async function checkoutPlan({data, state, api}) {
     try {
         const {plan, offerId} = data;
+        const {tierId, cadence} = getProductCadenceFromPrice({site: state?.site, priceId: plan});
         await api.member.checkoutPlan({
             plan,
+            tierId,
+            cadence,
             offerId,
             metadata: {
                 checkoutType: 'upgrade'
@@ -140,8 +144,15 @@ async function checkoutPlan({data, state, api}) {
 async function updateSubscription({data, state, api}) {
     try {
         const {plan, planId, subscriptionId, cancelAtPeriodEnd} = data;
+        const {tierId, cadence} = getProductCadenceFromPrice({site: state?.site, priceId: planId});
+
         await api.member.updateSubscription({
-            planName: plan, subscriptionId, cancelAtPeriodEnd, planId: planId
+            planName: plan,
+            tierId,
+            cadence,
+            subscriptionId,
+            cancelAtPeriodEnd,
+            planId: planId
         });
         const member = await api.member.sessionData();
         const action = 'updateSubscription:success';

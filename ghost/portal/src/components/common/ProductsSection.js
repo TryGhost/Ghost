@@ -1,7 +1,7 @@
 import React, {useContext, useEffect, useState} from 'react';
 import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
-import {getCurrencySymbol, getPriceString, getStripeAmount, getMemberActivePrice, getProductFromPrice, getFreeTierTitle, getFreeTierDescription, getFreeProduct, getFreeProductBenefits, formatNumber, isCookiesDisabled, hasOnlyFreeProduct} from '../../utils/helpers';
+import {getCurrencySymbol, getPriceString, getStripeAmount, getMemberActivePrice, getProductFromPrice, getFreeTierTitle, getFreeTierDescription, getFreeProduct, getFreeProductBenefits, formatNumber, isCookiesDisabled, hasOnlyFreeProduct, isMemberActivePrice} from '../../utils/helpers';
 import AppContext from '../../AppContext';
 import calculateDiscount from '../../utils/discount';
 
@@ -882,7 +882,7 @@ function ProductDescription({product, selectedPrice, activePrice}) {
 }
 
 function ChangeProductCard({product, onPlanSelect}) {
-    const {member} = useContext(AppContext);
+    const {member, site} = useContext(AppContext);
     const {selectedProduct, setSelectedProduct, selectedInterval} = useContext(ProductsContext);
     const cardClass = selectedProduct === product.id ? 'gh-portal-product-card checked' : 'gh-portal-product-card';
     const monthlyPrice = product.monthlyPrice;
@@ -891,7 +891,7 @@ function ChangeProductCard({product, onPlanSelect}) {
 
     const selectedPrice = selectedInterval === 'month' ? monthlyPrice : yearlyPrice;
 
-    const currentPlan = (selectedPrice.id === memberActivePrice.id);
+    const currentPlan = isMemberActivePrice({member, site, priceId: selectedPrice.id});
 
     return (
         <div className={cardClass + (currentPlan ? ' disabled' : '')} key={product.id} onClick={(e) => {

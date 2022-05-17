@@ -110,6 +110,8 @@ export function getPriceFromSubscription({subscription}) {
             id: subscription.price.price_id,
             price: subscription.price.amount / 100,
             name: subscription.price.nickname,
+            tierId: subscription.tier?.id,
+            cadence: subscription.price?.interval === 'month' ? 'month' : 'year',
             currency: subscription.price.currency.toLowerCase(),
             currency_symbol: getCurrencySymbol(subscription.price.currency)
         };
@@ -120,6 +122,15 @@ export function getPriceFromSubscription({subscription}) {
 export function getMemberActivePrice({member}) {
     const subscription = getMemberSubscription({member});
     return getPriceFromSubscription({subscription});
+}
+
+export function isMemberActivePrice({priceId, site, member}) {
+    const activePrice = getMemberActivePrice({member});
+    const {tierId, cadence} = getProductCadenceFromPrice({site, priceId});
+    if (activePrice?.tierId === tierId && activePrice?.cadence === cadence) {
+        return true;
+    }
+    return false;
 }
 
 export function getSubscriptionFromId({member, subscriptionId}) {
@@ -452,6 +463,24 @@ export function getProductFromPrice({site, priceId}) {
     });
 }
 
+export function getProductCadenceFromPrice({site, priceId}) {
+    if (priceId === 'free') {
+        return getFreeProduct({site});
+    }
+    const products = getAllProductsForSite({site});
+    const tier = products.find((product) => {
+        return (product?.monthlyPrice?.id === priceId) || (product?.yearlyPrice?.id === priceId);
+    });
+    let cadence = 'month';
+    if (tier?.yearlyPrice?.id === priceId) {
+        cadence = 'year';
+    }
+    return {
+        tierId: tier?.id,
+        cadence
+    };
+}
+
 export function getAvailablePrices({site, products = null}) {
     const {
         portal_plans: portalPlans = [],
@@ -658,4 +687,62 @@ export const getUpdatedOfferPrice = ({offer, price, useFormatted = false}) => {
 
 export const isActiveOffer = ({offer}) => {
     return offer?.status === 'active';
+};
+
+function createMonthlyPrice({tier, priceId}) {
+    if (tier?.monthly_price) {
+        return {
+            id: `price-${priceId}`,
+            active: true,
+            type: 'recurring',
+            nickname: 'Monthly',
+            currency: tier.currency,
+            amount: tier.monthly_price,
+            interval: 'month'
+        };
+    }
+    return null;
+}
+
+function createYearlyPrice({tier, priceId}) {
+    if (tier?.yearly_price) {
+        return {
+            id: `price-${priceId}`,
+            active: true,
+            type: 'recurring',
+            nickname: 'Yearly',
+            currency: tier.currency,
+            amount: tier.yearly_price,
+            interval: 'year'
+        };
+    }
+    return null;
+}
+
+function createBenefits({tier}) {
+    tier?.benefits?.map((benefit) => {
+        return {
+            name: benefit
+        };
+    });
+}
+
+export const transformApiTiersData = ({tiers}) => {
+    let priceId = 0;
+
+    return tiers.map((tier) => {
+        let monthlyPrice = createMonthlyPrice({tier, priceId});
+        priceId += 1;
+
+        let yearlyPrice = createYearlyPrice({tier, priceId});
+        priceId += 1;
+
+        let benefits = createBenefits({tier});
+        return {
+            ...tier,
+            benefits: benefits,
+            monthly_price: monthlyPrice,
+            yearly_price: yearlyPrice
+        };
+    });
 };

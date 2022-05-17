@@ -327,7 +327,9 @@ describe('Signup', () => {
                 email: 'jamie@example.com',
                 name: 'Jamie Larsen',
                 offerId: undefined,
-                plan: singleTierProduct.yearlyPrice.id
+                plan: singleTierProduct.yearlyPrice.id,
+                tierId: singleTierProduct.id,
+                cadence: 'year'
             });
         });
 
@@ -367,7 +369,9 @@ describe('Signup', () => {
                 email: 'jamie@example.com',
                 name: 'Jamie Larsen',
                 offerId: undefined,
-                plan: singleTierProduct.yearlyPrice.id
+                plan: singleTierProduct.yearlyPrice.id,
+                tierId: singleTierProduct.id,
+                cadence: 'year'
             });
             const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
             expect(magicLink).toBeInTheDocument();
@@ -408,7 +412,9 @@ describe('Signup', () => {
                 email: 'jamie@example.com',
                 name: '',
                 offerId: undefined,
-                plan: singleTierProduct.monthlyPrice.id
+                plan: singleTierProduct.monthlyPrice.id,
+                tierId: singleTierProduct.id,
+                cadence: 'month'
             });
         });
 
@@ -444,7 +450,9 @@ describe('Signup', () => {
                 email: 'jamie@example.com',
                 name: 'Jamie Larsen',
                 offerId: undefined,
-                plan: singleTierProduct.yearlyPrice.id
+                plan: singleTierProduct.yearlyPrice.id,
+                tierId: singleTierProduct.id,
+                cadence: 'year'
             });
         });
 
@@ -459,6 +467,7 @@ describe('Signup', () => {
                 offer: FixtureOffer
             });
             let planId = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid').monthlyPrice.id;
+            let tier = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
             let offerId = FixtureOffer.id;
             expect(popupFrame).toBeInTheDocument();
             expect(triggerButtonFrame).toBeInTheDocument();
@@ -480,7 +489,9 @@ describe('Signup', () => {
                 email: 'jamie@example.com',
                 name: 'Jamie Larsen',
                 offerId,
-                plan: planId
+                plan: planId,
+                tierId: tier.id,
+                cadence: 'month'
             });
 
             window.location.hash = '';
@@ -501,6 +512,7 @@ describe('Signup', () => {
                 offer: FixtureOffer
             });
             let planId = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid').monthlyPrice.id;
+            let tier = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
             let offerId = FixtureOffer.id;
             expect(popupFrame).toBeInTheDocument();
             expect(triggerButtonFrame).not.toBeInTheDocument();
@@ -516,7 +528,9 @@ describe('Signup', () => {
                 email: undefined,
                 name: undefined,
                 offerId: offerId,
-                plan: planId
+                plan: planId,
+                tierId: tier.id,
+                cadence: 'month'
             });
 
             window.location.hash = '';
@@ -679,6 +693,7 @@ describe('Signup', () => {
                 offer: FixtureOffer
             });
             let planId = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid').monthlyPrice.id;
+            let tier = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
             let offerId = FixtureOffer.id;
             expect(popupFrame).toBeInTheDocument();
             expect(triggerButtonFrame).toBeInTheDocument();
@@ -700,7 +715,9 @@ describe('Signup', () => {
                 email: 'jamie@example.com',
                 name: 'Jamie Larsen',
                 offerId,
-                plan: planId
+                plan: planId,
+                tierId: tier.id,
+                cadence: 'month'
             });
 
             window.location.hash = '';
@@ -720,6 +737,7 @@ describe('Signup', () => {
                 site,
                 offer: FixtureOffer
             });
+            const singleTier = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
             let planId = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid').monthlyPrice.id;
             let offerId = FixtureOffer.id;
             expect(popupFrame).toBeInTheDocument();
@@ -736,7 +754,9 @@ describe('Signup', () => {
                 email: undefined,
                 name: undefined,
                 offerId: offerId,
-                plan: planId
+                plan: planId,
+                tierId: singleTier.id,
+                cadence: 'month'
             });
 
             window.location.hash = '';
