@@ -1,7 +1,7 @@
-<section class="gh-dashboard5-section gh-dashboard5-anchor" {{did-insert this.loadCharts}}>
-    <article class="gh-dashboard5-box">
+<section class="gh-dashboard-section gh-dashboard-anchor" {{did-insert this.loadCharts}}>
+    <article class="gh-dashboard-box">
         {{#if this.hasPaidTiers}}
-            <div class="gh-dashboard5-select-title">
+            <div class="gh-dashboard-select-title">
                 <PowerSelect
                     @selected={{this.selectedDisplayOption}}
                     @options={{this.displayOptions}}
@@ -17,7 +17,7 @@
                 </PowerSelect>
             </div>
         {{else}}
-            <Dashboard::v5::Parts::Metric
+            <Dashboard::Parts::Metric
                 @label="Total members"
                 @value={{format-number this.totalMembers}}
                 @trends={{this.hasTrends}}
@@ -25,12 +25,12 @@
                 @large={{true}} /> 
         {{/if}}
 
-        <div class="gh-dashboard5-hero {{unless this.hasPaidTiers 'is-solo'}}">
-            <div class="gh-dashboard5-chart gh-dashboard5-totals">
-                <div class="gh-dashboard5-chart-container">
-                    <div class="gh-dashboard5-chart-box">
+        <div class="gh-dashboard-hero {{unless this.hasPaidTiers 'is-solo'}}">
+            <div class="gh-dashboard-chart gh-dashboard-totals">
+                <div class="gh-dashboard-chart-container">
+                    <div class="gh-dashboard-chart-box">
                         {{#if this.loading}}
-                            <div class="gh-dashboard5-chart-loading">
+                            <div class="gh-dashboard-chart-loading">
                                 <div class="gh-loading-spinner"></div>
                             </div>      
                         {{else}}
@@ -41,28 +41,28 @@
                                 @height={{200}} />
                         {{/if}}
                     </div>
-                    <div id="gh-dashboard5-anchor-tooltip" class="gh-dashboard5-tooltip">
-                        <div class="gh-dashboard5-tooltip-label">
+                    <div id="gh-dashboard-anchor-tooltip" class="gh-dashboard-tooltip">
+                        <div class="gh-dashboard-tooltip-label">
                             -
                         </div>
-                        <div class="gh-dashboard5-tooltip-value">
+                        <div class="gh-dashboard-tooltip-value">
                             <span class="indicator line"></span>
                             <span class="value">–</span>
                             <span class="metric">{{this.selectedDisplayOption.name}}</span>
                         </div>
                     </div>
                 </div>
-                <div class="gh-dashboard5-chart-ticks">
-                    <span id="gh-dashboard5-anchor-date-start">-</span>
-                    <span id="gh-dashboard5-anchor-date-end">-</span>
+                <div class="gh-dashboard-chart-ticks">
+                    <span id="gh-dashboard-anchor-date-start">-</span>
+                    <span id="gh-dashboard-anchor-date-end">-</span>
                 </div>
             </div>
 
             {{#if this.hasPaidTiers}}
-                <article class="gh-dashboard5-minicharts">
-                    <Dashboard::v5::Charts::PaidMrr />
-                    <Dashboard::v5::Charts::PaidBreakdown />
-                    <Dashboard::v5::Charts::PaidMix />
+                <article class="gh-dashboard-minicharts">
+                    <Dashboard::Charts::PaidMrr />
+                    <Dashboard::Charts::PaidBreakdown />
+                    <Dashboard::Charts::PaidMix />
                 </article>
             {{/if}}
         </div>

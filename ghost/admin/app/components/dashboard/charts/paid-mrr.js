@@ -3,7 +3,7 @@
 import Component from '@glimmer/component';
 import moment from 'moment';
 import {getSymbol} from 'ghost-admin/utils/currency';
-import {ghPriceAmount} from '../../../../helpers/gh-price-amount';
+import {ghPriceAmount} from '../../../helpers/gh-price-amount';
 import {inject as service} from '@ember/service';
 
 const DATE_FORMAT = 'D MMM, YYYY';
@@ -170,7 +170,7 @@ export default class PaidMrr extends Component {
                 mode: 'index',
                 custom: function (tooltip) {
                     // get tooltip element
-                    const tooltipEl = document.getElementById('gh-dashboard5-mrr-tooltip');
+                    const tooltipEl = document.getElementById('gh-dashboard-mrr-tooltip');
                     const chartContainerEl = tooltipEl.parentElement;
                     const chartWidth = chartContainerEl.offsetWidth;
                     const tooltipWidth = tooltipEl.offsetWidth;
@@ -195,11 +195,11 @@ export default class PaidMrr extends Component {
                 callbacks: {
                     label: (tooltipItems, data) => {
                         const value = `${that.mrrCurrencySymbol}${ghPriceAmount(data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index], {cents: false})}`;
-                        document.querySelector('#gh-dashboard5-mrr-tooltip .gh-dashboard5-tooltip-value .value').innerHTML = value;
+                        document.querySelector('#gh-dashboard-mrr-tooltip .gh-dashboard-tooltip-value .value').innerHTML = value;
                     },
                     title: (tooltipItems) => {
                         const value = moment(tooltipItems[0].xLabel).format(DATE_FORMAT);
-                        document.querySelector('#gh-dashboard5-mrr-tooltip .gh-dashboard5-tooltip-label').innerHTML = value;
+                        document.querySelector('#gh-dashboard-mrr-tooltip .gh-dashboard-tooltip-label').innerHTML = value;
                     }
                 }
             },

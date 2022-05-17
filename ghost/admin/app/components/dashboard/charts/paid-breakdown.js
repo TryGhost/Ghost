@@ -262,7 +262,7 @@ export default class PaidBreakdown extends Component {
                 mode: 'index',
                 custom: function (tooltip) {
                     // get tooltip element
-                    const tooltipEl = document.getElementById('gh-dashboard5-breakdown-tooltip');
+                    const tooltipEl = document.getElementById('gh-dashboard-breakdown-tooltip');
                     const chartContainerEl = tooltipEl.parentElement;
                     const chartWidth = chartContainerEl.offsetWidth;
                     const tooltipWidth = tooltipEl.offsetWidth;
@@ -290,15 +290,15 @@ export default class PaidBreakdown extends Component {
                     label: (tooltipItems, data) => {
                         // new data
                         let newValue = parseInt(data.datasets[0].data[tooltipItems.index].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ','));
-                        document.querySelector('#gh-dashboard5-breakdown-tooltip .gh-dashboard5-tooltip-value-1 .value').innerHTML = `${newValue}`;
+                        document.querySelector('#gh-dashboard-breakdown-tooltip .gh-dashboard-tooltip-value-1 .value').innerHTML = `${newValue}`;
 
                         // canceld data
                         let canceledValue = Math.abs(parseInt(data.datasets[1].data[tooltipItems.index].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')));
-                        document.querySelector('#gh-dashboard5-breakdown-tooltip .gh-dashboard5-tooltip-value-2 .value').innerHTML = `${canceledValue}`;
+                        document.querySelector('#gh-dashboard-breakdown-tooltip .gh-dashboard-tooltip-value-2 .value').innerHTML = `${canceledValue}`;
                     },
                     title: (tooltipItems) => {
                         const value = moment(tooltipItems[0].xLabel).format(DATE_FORMAT);
-                        document.querySelector('#gh-dashboard5-breakdown-tooltip .gh-dashboard5-tooltip-label').innerHTML = value;
+                        document.querySelector('#gh-dashboard-breakdown-tooltip .gh-dashboard-tooltip-label').innerHTML = value;
                     }
                 }
             },

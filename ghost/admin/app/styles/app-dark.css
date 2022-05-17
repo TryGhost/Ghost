@@ -69,7 +69,6 @@
 @import "layouts/fullscreen-wizard.css";
 @import "layouts/post-preview.css";
 @import "layouts/dashboard.css";
-@import "layouts/dashboard-v5.css";
 @import "layouts/tiers.css";
 @import "layouts/offers.css";
 
@@ -975,7 +974,6 @@ input:focus,
 
 /* Members activity */
 .gh-members-activity-icon svg path,
-.gh-dashboard-activity-container svg path,
 .gh-member-feed-icon svg path {
     stroke: #fff;
 }
@@ -1049,22 +1047,6 @@ input:focus,
 }
 
 .gh-dashboard-box {
-    border-color: var(--lightgrey);
-}
-
-.gh-dashboard-btn {
-    border: none;
-    background: var(--black) !important;
-    color: #394047 !important;
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.01), 0 1px 2px rgba(0, 0, 0, 0.05);
-    outline: none;
-}
-
-.gh-dashboard-btn:hover {
-    background: var(--white);
-}
-
-.gh-dashboard5-box {
     flex: 1;
     border: 1px solid var(--lightgrey);
 }
@@ -1121,77 +1103,77 @@ kbd {
 
 /* Dashboard v5 */
 
-.gh-dashboard5 .gh-dashboard5-anchor .gh-dashboard5-stats {
+.gh-dashboard .gh-dashboard-anchor .gh-dashboard-stats {
     background: transparent;
     border-top-color: #2b2d31;
 }
 
-.gh-dashboard5 .gh-dashboard5-anchor .gh-dashboard5-stats-button {
+.gh-dashboard .gh-dashboard-anchor .gh-dashboard-stats-button {
     border-color: #202429;
 }
 
-.gh-dashboard5 .gh-dashboard5-anchor .gh-dashboard5-stats-button.is-selected {
+.gh-dashboard .gh-dashboard-anchor .gh-dashboard-stats-button.is-selected {
     border-color: #394047;
 }
 
-.gh-dashboard5 .gh-dashboard5-list-header,
-.gh-dashboard5 .gh-dashboard5-list-item,
-.gh-dashboard5 .gh-dashboard5-list-footer {
+.gh-dashboard .gh-dashboard-list-header,
+.gh-dashboard .gh-dashboard-list-item,
+.gh-dashboard .gh-dashboard-list-footer {
     border-color: #394047;
 }
 
-.gh-dashboard5 .gh-dashboard5-box.is-secondary {
+.gh-dashboard .gh-dashboard-box.is-secondary {
     border: 1px solid #2b2d31;
 }
 
-.gh-dashboard5 .gh-dashboard5-box.is-secondary,
-.gh-dashboard5 .gh-dashboard5-box.is-faded {
+.gh-dashboard .gh-dashboard-box.is-secondary,
+.gh-dashboard .gh-dashboard-box.is-faded {
     background: transparent;
 }
 
-.gh-dashboard5 .gh-dashboard5-column {
+.gh-dashboard .gh-dashboard-column {
     border-color: #2b2d31;
 }
 
-.gh-dashboard5 .gh-dashboard5-breakout {
+.gh-dashboard .gh-dashboard-breakout {
     background: #111213;
 }
 
-.gh-dashboard5-community .gh-dashboard5-list-footer {
+.gh-dashboard-community .gh-dashboard-list-footer {
     border-color: transparent;
 }
 
-.gh-dashboard5-chart-gradient {
+.gh-dashboard-chart-gradient {
     background: rgb(21,23,25);
     background: linear-gradient(270deg, rgba(21,23,25,0) 0%, rgba(21,23,25,1) 100%);
 }
 
-.gh-dashboard5-staff-picks .gh-dashboard5-resource-body,
-.gh-dashboard5-resource-box.is-secondary .gh-dashboard5-resource-footer,
-.gh-dashboard5-whats-new .gh-dashboard5-resource-body {
+.gh-dashboard-staff-picks .gh-dashboard-resource-body,
+.gh-dashboard-resource-box.is-secondary .gh-dashboard-resource-footer,
+.gh-dashboard-whats-new .gh-dashboard-resource-body {
     border-color: #2c2e32;
 }
 
-.gh-dashboard5-list-item:hover {
+.gh-dashboard-list-item:hover {
     background: #1c1e21;
 }
 
-.gh-dashboard5-recents .gh-dashboard5-list-item:hover {
+.gh-dashboard-recents .gh-dashboard-list-item:hover {
     background: rgba(28, 30, 33, 0.7);
 }
 
-.gh-dashboard5-resource .gh-dashboard5-list-item:hover {
+.gh-dashboard-resource .gh-dashboard-list-item:hover {
     background: rgba(28, 30, 33, 0.3);
 }
 
-.gh-dashboard5-community .gh-dashboard5-resource-footer {
+.gh-dashboard-community .gh-dashboard-resource-footer {
     color: #fff;
 }
 
-.gh-dashboard5-zero {
+.gh-dashboard-zero {
     background: rgb(21, 23, 25, 0.8);
 }
 
-.gh-dashboard5-zero-message {
+.gh-dashboard-zero-message {
     background-color: #1c1e21;
 }

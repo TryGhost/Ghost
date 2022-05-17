@@ -5,13 +5,9 @@ import {tracked} from '@glimmer/tracking';
 
 export default class Recents extends Component {
     @service store;
-    @service feature;
-    @service session;
-    @service settings;
     @service dashboardStats;
 
     @tracked selected = 'posts';
-
     @tracked posts = [];
     
     @action 
@@ -35,21 +31,6 @@ export default class Recents extends Component {
 
     get activityTabSelected() {
         return (this.selected === 'activity');
-    }
-
-    get shouldDisplay() {
-        if (this.feature.improvedOnboarding) {
-            return true;
-        }
-
-        const isOwner = this.session.user?.isOwnerOnly;
-        const hasCompletedLaunchWizard = this.settings.get('editorIsLaunchComplete');
-
-        if (isOwner && !hasCompletedLaunchWizard) {
-            return false;
-        }
-
-        return true;
     }
 
     get areMembersEnabled() {

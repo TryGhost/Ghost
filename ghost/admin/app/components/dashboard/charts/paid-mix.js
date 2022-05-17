@@ -436,7 +436,7 @@ export default class PaidMix extends Component {
                 mode: 'single',
                 custom: function (tooltip) {
                     // get tooltip element
-                    const tooltipEl = document.getElementById('gh-dashboard5-mix-tooltip');
+                    const tooltipEl = document.getElementById('gh-dashboard-mix-tooltip');
                     const chartContainerEl = tooltipEl.parentElement;
                     const chartWidth = chartContainerEl.offsetWidth;
                     const tooltipWidth = tooltipEl.offsetWidth;
@@ -460,7 +460,7 @@ export default class PaidMix extends Component {
                 },
                 callbacks: {
                     label: (tooltipItems, data) => {
-                        const tooltipTextEl = document.querySelector('#gh-dashboard5-mix-tooltip .gh-dashboard5-tooltip-value');
+                        const tooltipTextEl = document.querySelector('#gh-dashboard-mix-tooltip .gh-dashboard-tooltip-value');
                         const label = data.datasets[tooltipItems.datasetIndex].label || '';
                         var value = data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index] || 0;
                         if (value < 0) {
