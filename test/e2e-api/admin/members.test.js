@@ -45,6 +45,17 @@ const newsletterSnapshot = {
     updated_at: anyISODateTime
 };
 
+const subscriptionSnapshot = {
+    start_date: anyString,
+    current_period_end: anyString,
+    price: {
+        price_id: anyObjectId,
+        tier: {
+            tier_id: anyObjectId
+        }
+    }
+};
+
 function buildMemberWithoutIncludesSnapshot(options) {
     return {
         id: anyObjectId,
@@ -608,7 +619,6 @@ describe('Members API', function () {
 
         const updatedMember = body2.members[0];
         assert.equal(updatedMember.status, 'comped', 'A comped member should have the comped status');
-        assert.equal(updatedMember.products.length, 1, 'The member should have one product');
         assert.equal(updatedMember.tiers.length, 1, 'The member should have one product');
 
         await assertMemberEvents({
@@ -679,8 +689,7 @@ describe('Members API', function () {
 
         const updatedMember = body2.members[0];
         assert.equal(updatedMember.status, 'free', 'The member should have the free status');
-        assert.equal(updatedMember.products.length, 0, 'The member should have 0 products');
-        assert.equal(updatedMember.tiers.length, 0, 'The member should have 0 products');
+        assert.equal(updatedMember.tiers.length, 0, 'The member should have 0 tiers');
 
         await assertMemberEvents({
             eventType: 'MemberStatusEvent',
@@ -742,13 +751,6 @@ describe('Members API', function () {
                     updated_at: anyISODateTime,
                     labels: anyArray,
                     subscriptions: anyArray,
-                    products: new Array(1).fill({
-                        id: anyObjectId,
-                        monthly_price_id: anyObjectId,
-                        yearly_price_id: anyObjectId,
-                        created_at: anyISODateTime,
-                        updated_at: anyISODateTime
-                    }),
                     tiers: new Array(1).fill({
                         id: anyObjectId,
                         monthly_price_id: anyObjectId,
@@ -870,7 +872,6 @@ describe('Members API', function () {
                     updated_at: anyISODateTime,
                     labels: anyArray,
                     subscriptions: anyArray,
-                    products: anyArray,
                     tiers: anyArray,
                     newsletters: new Array(1).fill(newsletterSnapshot)
                 })
@@ -999,7 +1000,6 @@ describe('Members API', function () {
                     updated_at: anyISODateTime,
                     labels: anyArray,
                     subscriptions: anyArray,
-                    products: anyArray,
                     tiers: anyArray,
                     newsletters: new Array(1).fill(newsletterSnapshot)
                 })
@@ -1073,7 +1073,7 @@ describe('Members API', function () {
         assert.equal(readBody.members.length, 1, 'The member was not found in read');
         const readMember = readBody.members[0];
 
-        // Note that we explicitly need to ask to include products while browsing
+        // Note that we explicitly need to ask to include tiers while browsing
         const {body: browseBody} = await agent.get(`/members/?search=${memberWithPaidSubscription.email}&include=tiers`);
         assert.equal(browseBody.members.length, 1, 'The member was not found in browse');
         const browseMember = browseBody.members[0];
@@ -1167,7 +1167,7 @@ describe('Members API', function () {
         });
     });
 
-    // Internally a different error is thrown for newsletters/products changes
+    // Internally a different error is thrown for newsletters/tiers changes
     it('Cannot edit a non-existing id with newsletters', async function () {
         const memberChanged = {
             name: 'changed',
@@ -1443,16 +1443,7 @@ describe('Members API', function () {
                     created_at: anyISODateTime,
                     updated_at: anyISODateTime,
                     labels: anyArray,
-                    subscriptions: [{
-                        start_date: anyString,
-                        current_period_end: anyString,
-                        price: {
-                            price_id: anyObjectId,
-                            product: {
-                                product_id: anyObjectId
-                            }
-                        }
-                    }],
+                    subscriptions: [subscriptionSnapshot],
                     newsletters: anyArray
                 })
             })
@@ -1471,16 +1462,7 @@ describe('Members API', function () {
                     created_at: anyISODateTime,
                     updated_at: anyISODateTime,
                     labels: anyArray,
-                    subscriptions: [{
-                        start_date: anyString,
-                        current_period_end: anyString,
-                        price: {
-                            price_id: anyObjectId,
-                            product: {
-                                product_id: anyObjectId
-                            }
-                        }
-                    }],
+                    subscriptions: [subscriptionSnapshot],
                     newsletters: anyArray
                 })
             })
