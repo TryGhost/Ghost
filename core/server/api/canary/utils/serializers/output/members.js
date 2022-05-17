@@ -127,8 +127,24 @@ function serializeMember(member, options) {
     };
 
     if (json.products) {
-        serialized.products = json.products;
         serialized.tiers = json.products;
+    }
+
+    // Rename subscriptions.price.product to subscriptions.price.tier
+    for (const subscription of serialized.subscriptions) {
+        if (!subscription.price) {
+            continue;
+        }
+        
+        if (!subscription.price.tier && subscription.price.product) {
+            subscription.price.tier = subscription.price.product;
+            
+            if (!subscription.price.tier.tier_id) {
+                subscription.price.tier.tier_id = subscription.price.tier.product_id;
+            }
+            delete subscription.price.tier.product_id;
+        }
+        delete subscription.price.product;
     }
 
     if (labsService.isSet('multipleNewsletters')) {
