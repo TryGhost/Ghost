@@ -12,6 +12,6 @@ module.exports = {
         frame.response = {
             previews: [data]
         };
-        frame.response.previews[0].page = model.get('type') === 'page';
+        frame.response.previews[0].type = model.get('type');
     }
 };

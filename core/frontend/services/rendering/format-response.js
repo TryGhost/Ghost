@@ -53,7 +53,8 @@ function formatResponse(post, context) {
         post: post
     };
 
-    if (context?.includes('page')) {
+    // NOTE: preview context is a special case where the internal preview api returns the post model's type field
+    if (context?.includes('page') || (context?.includes('preview') && post.type === 'page')) {
         entry.page = post;
     }
 
