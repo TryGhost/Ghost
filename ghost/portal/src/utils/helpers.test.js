@@ -169,6 +169,8 @@ describe('Helpers - ', () => {
             const value = getPriceFromSubscription({subscription});
             expect(value).toStrictEqual({
                 ...subscription.price,
+                tierId: undefined,
+                cadence: 'year',
                 stripe_price_id: subscription.price.id,
                 id: subscription.price.price_id,
                 price: subscription.price.amount / 100,

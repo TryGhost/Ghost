@@ -215,7 +215,9 @@ describe('Logged-in free member', () => {
                     checkoutType: 'upgrade'
                 },
                 offerId: undefined,
-                plan: singleTierProduct.monthlyPrice.id
+                plan: singleTierProduct.monthlyPrice.id,
+                tierId: singleTierProduct.id,
+                cadence: 'month'
             });
         });
 
@@ -250,7 +252,9 @@ describe('Logged-in free member', () => {
                     checkoutType: 'upgrade'
                 },
                 offerId: undefined,
-                plan: singleTierProduct.yearlyPrice.id
+                plan: singleTierProduct.yearlyPrice.id,
+                tierId: singleTierProduct.id,
+                cadence: 'year'
             });
         });
 
@@ -266,6 +270,7 @@ describe('Logged-in free member', () => {
                 offer: FixtureOffer
             });
             let planId = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid').monthlyPrice.id;
+            let singleTierProduct = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
             let offerId = FixtureOffer.id;
             expect(popupFrame).toBeInTheDocument();
             expect(triggerButtonFrame).toBeInTheDocument();
@@ -285,7 +290,9 @@ describe('Logged-in free member', () => {
                 email: 'jimmie@example.com',
                 name: 'Jimmie Larson',
                 offerId,
-                plan: planId
+                plan: planId,
+                tierId: singleTierProduct.id,
+                cadence: 'month'
             });
 
             window.location.hash = '';
@@ -308,6 +315,7 @@ describe('Logged-in free member', () => {
                 offer: FixtureOffer
             });
             let planId = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid').monthlyPrice.id;
+            let singleTierProduct = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
             let offerId = FixtureOffer.id;
             expect(popupFrame).toBeInTheDocument();
             expect(triggerButtonFrame).not.toBeInTheDocument();
@@ -324,7 +332,9 @@ describe('Logged-in free member', () => {
                     checkoutType: 'upgrade'
                 },
                 offerId: offerId,
-                plan: planId
+                plan: planId,
+                tierId: singleTierProduct.id,
+                cadence: 'month'
             });
 
             window.location.hash = '';
@@ -364,7 +374,9 @@ describe('Logged-in free member', () => {
                     checkoutType: 'upgrade'
                 },
                 offerId: undefined,
-                plan: singleTierProduct.yearlyPrice.id
+                plan: singleTierProduct.yearlyPrice.id,
+                tierId: singleTierProduct.id,
+                cadence: 'year'
             });
         });
 
@@ -380,6 +392,7 @@ describe('Logged-in free member', () => {
                 offer: FixtureOffer
             });
             let planId = FixtureSite.multipleTiers.basic.products.find(p => p.type === 'paid').monthlyPrice.id;
+            let singleTierProduct = FixtureSite.multipleTiers.basic.products.find(p => p.type === 'paid');
             let offerId = FixtureOffer.id;
             expect(popupFrame).toBeInTheDocument();
             expect(triggerButtonFrame).toBeInTheDocument();
@@ -399,7 +412,9 @@ describe('Logged-in free member', () => {
                 email: 'jimmie@example.com',
                 name: 'Jimmie Larson',
                 offerId,
-                plan: planId
+                plan: planId,
+                tierId: singleTierProduct.id,
+                cadence: 'month'
             });
 
             window.location.hash = '';
