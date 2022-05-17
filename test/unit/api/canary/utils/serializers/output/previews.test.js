@@ -51,6 +51,6 @@ describe('Unit: canary/utils/serializers/output/previews', function () {
         mappers.posts.callCount.should.equal(1);
         mappers.posts.getCall(0).args.should.eql([ctrlResponse, frame, {tiers: []}]);
 
-        frame.response.previews[0].page.should.equal(true);
+        frame.response.previews[0].type.should.equal('page');
     });
 });
