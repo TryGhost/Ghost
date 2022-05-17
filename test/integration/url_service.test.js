@@ -7,13 +7,6 @@ const configUtils = require('../utils/configUtils');
 const models = require('../../core/server/models');
 const UrlService = require('../../core/server/services/url/UrlService');
 
-/**
- * @NOTE
- *
- * If this test fails for you, you are probably modifying supported theme engines
- * and thus should check if the there is a configuration added for the new API version
- *
- */
 describe('Integration: services/url/UrlService', function () {
     let urlService;
 
@@ -134,7 +127,7 @@ describe('Integration: services/url/UrlService', function () {
             urlService = new UrlService();
 
             urlService.onRouterAddedType('unique-id-1', 'featured:true', 'posts', '/podcast/:slug/');
-            urlService.onRouterAddedType('unique-id-2', 'page:false', 'posts', '/collection/:year/:slug/');
+            urlService.onRouterAddedType('unique-id-2', 'type:post', 'posts', '/collection/:year/:slug/');
             urlService.onRouterAddedType('unique-id-3', null, 'authors', '/persons/:slug/');
             urlService.onRouterAddedType('unique-id-4', null, 'tags', '/category/:slug/');
             urlService.onRouterAddedType('unique-id-5', null, 'pages', '/:slug/');
@@ -160,7 +153,7 @@ describe('Integration: services/url/UrlService', function () {
 
         it('getUrl', function () {
             urlService.urlGenerators.forEach(function (generator) {
-                if (generator.resourceType === 'posts' && generator.filter === 'page:false') {
+                if (generator.resourceType === 'posts' && generator.filter === 'type:post') {
                     generator.getUrls().length.should.eql(2);
                 }
 
