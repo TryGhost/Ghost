@@ -80,7 +80,8 @@ DataGenerator.Content = {
             slug: 'static-page-draft',
             mobiledoc: DataGenerator.markdownToMobiledoc('<h1>Static page test is what this is for.</h1><p>Hopefully you don\'t find it a bore.</p>'),
             type: 'page',
-            status: 'draft'
+            status: 'draft',
+            uuid: 'd52c42ae-2755-455c-80ec-70b2ec55c904'
         },
         {
             id: '618ba1ffbe2896088840a6ed',
