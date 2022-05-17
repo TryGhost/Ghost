@@ -17,10 +17,8 @@ const command = require('./core/cli/command');
 // Switch between boot modes
 switch (mode) {
 case 'repl':
-    command.run(require('./core/cli/repl'));
-    break;
 case 'timetravel':
-    command.run(require('./core/cli/timetravel'));
+    command.run(mode);
     break;
 default:
     // New boot sequence

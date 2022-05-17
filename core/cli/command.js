@@ -111,6 +111,10 @@ module.exports = class Command {
     }
 
     static async run(command) {
+        // attempt to load a cli command by name
+        if (typeof command === 'string') {
+            command = require(`./${command}`);
+        }
         const cmd = new command();
         if (cmd instanceof Command !== true) {
             logging.fatal('Invalid command.');
