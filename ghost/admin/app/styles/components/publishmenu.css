@@ -710,9 +710,16 @@
 
 .gh-post-bookmark-details {
     display: flex;
+    align-items: center;
     color: var(--midgrey);
     font-size: 1.4rem;
     font-weight: 500;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.gh-post-bookmark-author-image {
+    width: 20px;
+    height: 20px;
+    margin-right: 6px;
 }
