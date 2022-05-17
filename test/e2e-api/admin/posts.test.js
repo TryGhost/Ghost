@@ -133,18 +133,12 @@ describe('Posts API', function () {
         localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
     });
 
-    it('Cannot receive pages', async function () {
-        const res = await request.get(localUtils.API.getApiQuery('posts/?filter=page:true'))
+    it('Returns a validation error when unknown filter key is used', async function () {
+        await request.get(localUtils.API.getApiQuery('posts/?filter=page:true'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200);
-
-        should.not.exist(res.headers['x-cache-invalidate']);
-        const jsonResponse = res.body;
-        should.exist(jsonResponse.posts);
-        localUtils.API.checkResponse(jsonResponse, 'posts');
-        jsonResponse.posts.should.have.length(0);
+            .expect(400);
     });
 
     it('Can paginate posts', async function () {
@@ -477,9 +471,9 @@ describe('Posts API', function () {
         res2.body.posts[0].status.should.eql('draft');
     });
 
-    it(`Can't change the newsletter_id of a post from the post body`, async function () {
+    it(`Can't change the newsletter of a post from the post body`, async function () {
         const post = {
-            newsletter_id: testUtils.DataGenerator.Content.newsletters[0].id
+            newsletter: testUtils.DataGenerator.Content.newsletters[0].id
         };
 
         const postId = testUtils.DataGenerator.Content.posts[2].id;
@@ -588,8 +582,53 @@ describe('Posts API', function () {
         should(model.get('newsletter_id')).eql(null);
     });
 
-    it('Can change the newsletter_id of a post when publishing', async function () {
-        const newsletterId = testUtils.DataGenerator.Content.newsletters[2].id;
+    it('Cannot send to an archived newsletter', async function () {
+        const newsletterSlug = testUtils.DataGenerator.Content.newsletters[2].slug;
+
+        should(testUtils.DataGenerator.Content.newsletters[2].status).eql('archived', 'This test expects an archived newsletter in the test fixtures');
+
+        const post = {
+            title: 'My archived newsletter post',
+            status: 'draft',
+            feature_image_alt: 'Testing newsletter',
+            feature_image_caption: 'Testing <b>feature image caption</b>',
+            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+            created_at: moment().subtract(2, 'days').toDate(),
+            updated_at: moment().subtract(2, 'days').toDate(),
+            created_by: ObjectId().toHexString(),
+            updated_by: ObjectId().toHexString()
+        };
+
+        const res = await request.post(localUtils.API.getApiQuery('posts'))
+            .set('Origin', config.get('url'))
+            .send({posts: [post]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201);
+
+        // Check newsletter relation is loaded, but null in response.
+        should(res.body.posts[0].newsletter).eql(null);
+        should(res.body.posts[0].email_segment).eql('all');
+        should.not.exist(res.body.posts[0].newsletter_id);
+
+        const id = res.body.posts[0].id;
+
+        const updatedPost = res.body.posts[0];
+
+        updatedPost.status = 'published';
+
+        await request
+            .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterSlug))
+            .set('Origin', config.get('url'))
+            .send({posts: [updatedPost]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(400);
+    });
+
+    it('Can change the newsletter of a post when publishing', async function () {
+        const newsletterId = testUtils.DataGenerator.Content.newsletters[1].id;
+        const newsletterSlug = testUtils.DataGenerator.Content.newsletters[1].slug;
 
         const post = {
             title: 'My newsletter_id post',
@@ -621,7 +660,7 @@ describe('Posts API', function () {
         updatedPost.status = 'published';
 
         const finalPost = await request
-            .put(localUtils.API.getApiQuery('posts/' + id + '/?email_recipient_filter=all&newsletter_id=' + newsletterId))
+            .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterSlug))
             .set('Origin', config.get('url'))
             .send({posts: [updatedPost]})
             .expect('Content-Type', /json/)
@@ -630,6 +669,7 @@ describe('Posts API', function () {
 
         // Check newsletter relation is loaded in response
         should(finalPost.body.posts[0].newsletter.id).eql(newsletterId);
+        should(finalPost.body.posts[0].email_segment).eql('all');
         should.not.exist(finalPost.body.posts[0].newsletter_id);
 
         const model = await models.Post.findOne({
@@ -649,8 +689,139 @@ describe('Posts API', function () {
         should(email.get('status')).eql('pending');
     });
 
+    it('Can publish an email_only post', async function () {
+        const newsletterId = testUtils.DataGenerator.Content.newsletters[1].id;
+        const newsletterSlug = testUtils.DataGenerator.Content.newsletters[1].slug;
+
+        const post = {
+            title: 'My post',
+            status: 'draft',
+            feature_image_alt: 'Testing newsletter in posts',
+            feature_image_caption: 'Testing <b>feature image caption</b>',
+            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+            created_at: moment().subtract(2, 'days').toDate(),
+            updated_at: moment().subtract(2, 'days').toDate(),
+            created_by: ObjectId().toHexString(),
+            updated_by: ObjectId().toHexString()
+        };
+
+        const res = await request.post(localUtils.API.getApiQuery('posts'))
+            .set('Origin', config.get('url'))
+            .send({posts: [post]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201);
+
+        const id = res.body.posts[0].id;
+
+        const updatedPost = res.body.posts[0];
+
+        updatedPost.status = 'published';
+        //updatedPost.published_at = moment().add(2, 'days').toDate();
+        updatedPost.email_only = true;
+
+        const publishedRes = await request
+            .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterSlug))
+            .set('Origin', config.get('url'))
+            .send({posts: [updatedPost]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        const publishedPost = publishedRes.body.posts[0];
+
+        publishedPost.newsletter.id.should.eql(newsletterId);
+        publishedPost.email_segment.should.eql('all');
+        publishedPost.status.should.eql('sent');
+        should.not.exist(publishedPost.newsletter_id);
+
+        let model = await models.Post.findOne({
+            id,
+            status: 'all'
+        }, testUtils.context.internal);
+
+        should(model.get('status')).eql('sent');
+        should(model.get('newsletter_id')).eql(newsletterId);
+        should(model.get('email_recipient_filter')).eql('all');
+
+        // We should have an email
+        const email = await models.Email.findOne({
+            post_id: id
+        }, testUtils.context.internal);
+
+        should(email.get('newsletter_id')).eql(newsletterId);
+        should(email.get('recipient_filter')).eql('all');
+        should(email.get('status')).eql('pending');
+    });
+
+    it('Can publish an email_only post with free filter', async function () {
+        const newsletterId = testUtils.DataGenerator.Content.newsletters[1].id;
+        const newsletterSlug = testUtils.DataGenerator.Content.newsletters[1].slug;
+
+        const post = {
+            title: 'My post',
+            status: 'draft',
+            feature_image_alt: 'Testing newsletter in posts',
+            feature_image_caption: 'Testing <b>feature image caption</b>',
+            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+            created_at: moment().subtract(2, 'days').toDate(),
+            updated_at: moment().subtract(2, 'days').toDate(),
+            created_by: ObjectId().toHexString(),
+            updated_by: ObjectId().toHexString()
+        };
+
+        const res = await request.post(localUtils.API.getApiQuery('posts'))
+            .set('Origin', config.get('url'))
+            .send({posts: [post]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201);
+
+        const id = res.body.posts[0].id;
+
+        const updatedPost = res.body.posts[0];
+
+        updatedPost.status = 'published';
+        //updatedPost.published_at = moment().add(2, 'days').toDate();
+        updatedPost.email_only = true;
+
+        const publishedRes = await request
+            .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterSlug + '&email_segment=status%3Afree'))
+            .set('Origin', config.get('url'))
+            .send({posts: [updatedPost]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        const publishedPost = publishedRes.body.posts[0];
+
+        publishedPost.newsletter.id.should.eql(newsletterId);
+        publishedPost.email_segment.should.eql('status:free');
+        publishedPost.status.should.eql('sent');
+        should.not.exist(publishedPost.newsletter_id);
+
+        let model = await models.Post.findOne({
+            id,
+            status: 'all'
+        }, testUtils.context.internal);
+
+        should(model.get('status')).eql('sent');
+        should(model.get('newsletter_id')).eql(newsletterId);
+        should(model.get('email_recipient_filter')).eql('status:free');
+
+        // We should have an email
+        const email = await models.Email.findOne({
+            post_id: id
+        }, testUtils.context.internal);
+
+        should(email.get('newsletter_id')).eql(newsletterId);
+        should(email.get('recipient_filter')).eql('status:free');
+        should(email.get('status')).eql('pending');
+    });
+
     it('Can publish a scheduled post', async function () {
-        const newsletterId = testUtils.DataGenerator.Content.newsletters[2].id;
+        const newsletterId = testUtils.DataGenerator.Content.newsletters[1].id;
+        const newsletterSlug = testUtils.DataGenerator.Content.newsletters[1].slug;
 
         const post = {
             title: 'My scheduled post',
@@ -679,7 +850,7 @@ describe('Posts API', function () {
         updatedPost.published_at = moment().add(2, 'days').toDate();
 
         const scheduledRes = await request
-            .put(localUtils.API.getApiQuery('posts/' + id + '/?email_recipient_filter=all&newsletter_id=' + newsletterId))
+            .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterSlug))
             .set('Origin', config.get('url'))
             .send({posts: [updatedPost]})
             .expect('Content-Type', /json/)
@@ -689,6 +860,7 @@ describe('Posts API', function () {
         const scheduledPost = scheduledRes.body.posts[0];
 
         scheduledPost.newsletter.id.should.eql(newsletterId);
+        scheduledPost.email_segment.should.eql('all');
         should.not.exist(scheduledPost.newsletter_id);
 
         let model = await models.Post.findOne({
@@ -697,6 +869,7 @@ describe('Posts API', function () {
         }, testUtils.context.internal);
 
         should(model.get('newsletter_id')).eql(newsletterId);
+        should(model.get('email_recipient_filter')).eql('all');
 
         // We should not have an email
         let email = await models.Email.findOne({
@@ -724,6 +897,7 @@ describe('Posts API', function () {
         }, testUtils.context.internal);
 
         should(model.get('newsletter_id')).eql(newsletterId);
+        should(model.get('email_recipient_filter')).eql('all');
 
         publishedPost.newsletter.id.should.eql(newsletterId);
         should.not.exist(publishedPost.newsletter_id);
@@ -734,16 +908,18 @@ describe('Posts API', function () {
         }, testUtils.context.internal);
 
         should(email.get('newsletter_id')).eql(newsletterId);
+        should(email.get('recipient_filter')).eql('all');
         should(email.get('status')).eql('pending');
     });
 
-    it('Defaults to the default newsletter when publishing without a newsletter_id', async function () {
-        const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
+    it('Can publish a scheduled post with custom email segment', async function () {
+        const newsletterId = testUtils.DataGenerator.Content.newsletters[1].id;
+        const newsletterSlug = testUtils.DataGenerator.Content.newsletters[1].slug;
 
         const post = {
-            title: 'My post without newsletter_id',
+            title: 'My scheduled post 2',
             status: 'draft',
-            feature_image_alt: 'Testing newsletter_id',
+            feature_image_alt: 'Testing newsletter_id in scheduled posts',
             feature_image_caption: 'Testing <b>feature image caption</b>',
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
@@ -761,32 +937,263 @@ describe('Posts API', function () {
 
         const id = res.body.posts[0].id;
 
-        const updatedPost = {
-            status: 'published',
-            updated_at: res.body.posts[0].updated_at
-        };
+        const updatedPost = res.body.posts[0];
 
-        const finalPost = await request
-            .put(localUtils.API.getApiQuery('posts/' + id + '/?email_recipient_filter=all'))
+        updatedPost.status = 'scheduled';
+        updatedPost.published_at = moment().add(2, 'days').toDate();
+
+        const scheduledRes = await request
+            .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterSlug + '&email_segment=status:free'))
             .set('Origin', config.get('url'))
             .send({posts: [updatedPost]})
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        // Check newsletter relation is loaded in response
-        should(finalPost.body.posts[0].newsletter.id).eql(defaultNewsletter.get('id'));
-        should.not.exist(finalPost.body.posts[0].newsletter_id);
+        const scheduledPost = scheduledRes.body.posts[0];
+        
+        scheduledPost.newsletter.id.should.eql(newsletterId);
+        scheduledPost.email_segment.should.eql('status:free');
+        should.not.exist(scheduledPost.newsletter_id);
 
-        const model = await models.Post.findOne({
+        let model = await models.Post.findOne({
+            id,
+            status: 'scheduled'
+        }, testUtils.context.internal);
+
+        should(model.get('newsletter_id')).eql(newsletterId);
+        should(model.get('email_recipient_filter')).eql('status:free');
+
+        // We should not have an email
+        let email = await models.Email.findOne({
+            post_id: id
+        }, testUtils.context.internal);
+
+        should.not.exist(email);
+
+        // Publish now, without passing the newsletter_id or other options again!
+        scheduledPost.status = 'published';
+        scheduledPost.published_at = moment().toDate();
+
+        const publishedRes = await request
+            .put(localUtils.API.getApiQuery('posts/' + id + '/'))
+            .set('Origin', config.get('url'))
+            .send({posts: [scheduledPost]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+        
+        const publishedPost = publishedRes.body.posts[0];
+
+        model = await models.Post.findOne({
             id
         }, testUtils.context.internal);
 
-        should(model.get('newsletter_id')).eql(defaultNewsletter.get('id'));
+        should(model.get('newsletter_id')).eql(newsletterId);
+        should(model.get('email_recipient_filter')).eql('status:free');
+
+        publishedPost.newsletter.id.should.eql(newsletterId);
+        should.not.exist(publishedPost.newsletter_id);
+
+        // Check email is sent to the correct newsletter
+        email = await models.Email.findOne({
+            post_id: id
+        }, testUtils.context.internal);
+
+        should(email.get('newsletter_id')).eql(newsletterId);
+        should(email.get('recipient_filter')).eql('status:free');
+        should(email.get('status')).eql('pending');
     });
 
-    it('Can\'t change the newsletter_id once it has been set', async function () {
-        // Note: this test only works if there are members subscribed to the initial newsletter
+    it('Can publish a scheduled post without newsletter', async function () {
+        const post = {
+            title: 'My scheduled post 3',
+            status: 'draft',
+            feature_image_alt: 'Testing no newsletter in scheduled posts',
+            feature_image_caption: 'Testing <b>feature image caption</b>',
+            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+            created_at: moment().subtract(2, 'days').toDate(),
+            updated_at: moment().subtract(2, 'days').toDate(),
+            created_by: ObjectId().toHexString(),
+            updated_by: ObjectId().toHexString()
+        };
+
+        const res = await request.post(localUtils.API.getApiQuery('posts'))
+            .set('Origin', config.get('url'))
+            .send({posts: [post]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201);
+
+        const id = res.body.posts[0].id;
+
+        const updatedPost = res.body.posts[0];
+
+        updatedPost.status = 'scheduled';
+        updatedPost.published_at = moment().add(2, 'days').toDate();
+
+        const scheduledRes = await request
+            // We also test whether email_segment is ignored if no newsletter is sent
+            .put(localUtils.API.getApiQuery('posts/' + id + '/?email_segment=status:-free'))
+            .set('Origin', config.get('url'))
+            .send({posts: [updatedPost]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        const scheduledPost = scheduledRes.body.posts[0];
+        
+        should(scheduledPost.newsletter).eql(null);
+        scheduledPost.email_segment.should.eql('all'); // should be igored
+        should.not.exist(scheduledPost.newsletter_id);
+
+        let model = await models.Post.findOne({
+            id,
+            status: 'scheduled'
+        }, testUtils.context.internal);
+
+        should(model.get('newsletter_id')).eql(null);
+        should(model.get('email_recipient_filter')).eql('all');
+
+        // We should not have an email
+        let email = await models.Email.findOne({
+            post_id: id
+        }, testUtils.context.internal);
+
+        should.not.exist(email);
+
+        // Publish now, without passing the newsletter_id or other options again!
+        scheduledPost.status = 'published';
+        scheduledPost.published_at = moment().toDate();
+
+        const publishedRes = await request
+            .put(localUtils.API.getApiQuery('posts/' + id + '/'))
+            .set('Origin', config.get('url'))
+            .send({posts: [scheduledPost]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+        
+        const publishedPost = publishedRes.body.posts[0];
+
+        model = await models.Post.findOne({
+            id
+        }, testUtils.context.internal);
+
+        should(model.get('newsletter_id')).eql(null);
+        should(model.get('email_recipient_filter')).eql('all');
+
+        should(publishedPost.newsletter).eql(null);
+        should.not.exist(publishedPost.newsletter_id);
+
+        // Check email is sent to the correct newsletter
+        email = await models.Email.findOne({
+            post_id: id
+        }, testUtils.context.internal);
+
+        should.not.exist(email);
+    });
+
+    it('Can publish a scheduled email only post', async function () {
+        const newsletterId = testUtils.DataGenerator.Content.newsletters[1].id;
+        const newsletterSlug = testUtils.DataGenerator.Content.newsletters[1].slug;
+
+        const post = {
+            title: 'My scheduled email only post',
+            status: 'draft',
+            feature_image_alt: 'Testing newsletter in scheduled posts',
+            feature_image_caption: 'Testing <b>feature image caption</b>',
+            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+            created_at: moment().subtract(2, 'days').toDate(),
+            updated_at: moment().subtract(2, 'days').toDate(),
+            created_by: ObjectId().toHexString(),
+            updated_by: ObjectId().toHexString()
+        };
+
+        const res = await request.post(localUtils.API.getApiQuery('posts'))
+            .set('Origin', config.get('url'))
+            .send({posts: [post]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201);
+
+        const id = res.body.posts[0].id;
+
+        const updatedPost = res.body.posts[0];
+
+        updatedPost.status = 'scheduled';
+        updatedPost.email_only = true;
+        updatedPost.published_at = moment().add(2, 'days').toDate();
+
+        const scheduledRes = await request
+            .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterSlug))
+            .set('Origin', config.get('url'))
+            .send({posts: [updatedPost]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        const scheduledPost = scheduledRes.body.posts[0];
+
+        scheduledPost.newsletter.id.should.eql(newsletterId);
+        scheduledPost.email_segment.should.eql('all');
+        scheduledPost.status.should.eql('scheduled');
+        scheduledPost.email_only.should.eql(true);
+        should.not.exist(scheduledPost.newsletter_id);
+
+        let model = await models.Post.findOne({
+            id,
+            status: 'scheduled'
+        }, testUtils.context.internal);
+
+        should(model.get('newsletter_id')).eql(newsletterId);
+        should(model.get('status')).eql('scheduled');
+        should(model.get('email_recipient_filter')).eql('all');
+
+        // We should not have an email
+        let email = await models.Email.findOne({
+            post_id: id
+        }, testUtils.context.internal);
+
+        should.not.exist(email);
+
+        // Publish now, without passing the newsletter_id or other options again!
+        scheduledPost.status = 'published';
+
+        const publishedRes = await request
+            .put(localUtils.API.getApiQuery('posts/' + id + '/'))
+            .set('Origin', config.get('url'))
+            .send({posts: [scheduledPost]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        const publishedPost = publishedRes.body.posts[0];
+
+        model = await models.Post.findOne({
+            id,
+            status: 'all'
+        }, testUtils.context.internal);
+
+        should(model.get('newsletter_id')).eql(newsletterId);
+        should(model.get('status')).eql('sent');
+        should(model.get('email_recipient_filter')).eql('all');
+
+        publishedPost.newsletter.id.should.eql(newsletterId);
+        should.not.exist(publishedPost.newsletter_id);
+
+        // Check email is sent to the correct newsletter
+        email = await models.Email.findOne({
+            post_id: id
+        }, testUtils.context.internal);
+
+        should(email.get('newsletter_id')).eql(newsletterId);
+        should(email.get('recipient_filter')).eql('all');
+        should(email.get('status')).eql('pending');
+    });
+
+    it('Can\'t change the newsletter once it has been sent', async function () {
+        // Note: this test only works if there are members subscribed to the initial newsletter 
         // (so it won't get reset when changing the post status to draft again)
 
         let model;
@@ -811,7 +1218,9 @@ describe('Posts API', function () {
 
         const id = res.body.posts[0].id;
         const newsletterId = testUtils.DataGenerator.Content.newsletters[0].id;
+        const newsletterSlug = testUtils.DataGenerator.Content.newsletters[0].slug;
         const newsletterId2 = testUtils.DataGenerator.Content.newsletters[1].id;
+        const newsletterSlug2 = testUtils.DataGenerator.Content.newsletters[1].slug;
 
         const updatedPost = {
             status: 'published',
@@ -819,7 +1228,7 @@ describe('Posts API', function () {
         };
 
         const res2 = await request
-            .put(localUtils.API.getApiQuery('posts/' + id + '/?email_recipient_filter=status:-free&send_email_when_published=true&newsletter_id=' + newsletterId))
+            .put(localUtils.API.getApiQuery('posts/' + id + '/?email_segment=status:-free&newsletter=' + newsletterSlug))
             .set('Origin', config.get('url'))
             .send({posts: [updatedPost]})
             .expect('Content-Type', /json/)
@@ -828,6 +1237,8 @@ describe('Posts API', function () {
 
         // Check newsletter relation is loaded in response
         should(res2.body.posts[0].newsletter.id).eql(newsletterId);
+        should(res2.body.posts[0].email_segment).eql('status:-free');
+
         should.not.exist(res2.body.posts[0].newsletter_id);
 
         model = await models.Post.findOne({
@@ -835,6 +1246,7 @@ describe('Posts API', function () {
             status: 'published'
         }, testUtils.context.internal);
         should(model.get('newsletter_id')).eql(newsletterId);
+        should(model.get('email_recipient_filter')).eql('status:-free');
 
         // Check email is sent to the correct newsletter
         let email = await models.Email.findOne({
@@ -842,6 +1254,7 @@ describe('Posts API', function () {
         }, testUtils.context.internal);
 
         should(email.get('newsletter_id')).eql(newsletterId);
+        should(email.get('recipient_filter')).eql('status:-free');
         should(email.get('status')).eql('pending');
 
         const unpublished = {
@@ -858,7 +1271,9 @@ describe('Posts API', function () {
             .expect(200);
 
         // Check newsletter relation is loaded in response
+        // We should keep it, because we already sent an email
         should(res3.body.posts[0].newsletter.id).eql(newsletterId);
+        should(res2.body.posts[0].email_segment).eql('status:-free');
         should.not.exist(res3.body.posts[0].newsletter_id);
 
         model = await models.Post.findOne({
@@ -883,7 +1298,7 @@ describe('Posts API', function () {
         };
 
         const res4 = await request
-            .put(localUtils.API.getApiQuery('posts/' + id + '/?email_recipient_filter=all&newsletter_id=' + newsletterId2))
+            .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterSlug2))
             .set('Origin', config.get('url'))
             .send({posts: [republished]})
             .expect('Content-Type', /json/)
@@ -893,6 +1308,7 @@ describe('Posts API', function () {
         // Check newsletter relation is loaded in response
         // + did update the newsletter id
         should(res4.body.posts[0].newsletter.id).eql(newsletterId);
+        should(res4.body.posts[0].email_segment).eql('status:-free');
         should.not.exist(res4.body.posts[0].newsletter_id);
 
         model = await models.Post.findOne({
@@ -903,7 +1319,7 @@ describe('Posts API', function () {
 
         // Should not change if status remains published
         const res5 = await request
-            .put(localUtils.API.getApiQuery('posts/' + id + '/?email_recipient_filter=all&newsletter_id=' + newsletterId))
+            .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterSlug))
             .set('Origin', config.get('url'))
             .send({posts: [republished]})
             .expect('Content-Type', /json/)
@@ -913,6 +1329,7 @@ describe('Posts API', function () {
         // Check newsletter relation is loaded in response
         // + did not update the newsletter id
         should(res5.body.posts[0].newsletter.id).eql(newsletterId);
+        should(res5.body.posts[0].email_segment).eql('status:-free');
         should.not.exist(res5.body.posts[0].newsletter_id);
 
         model = await models.Post.findOne({
@@ -922,6 +1339,160 @@ describe('Posts API', function () {
 
         // Test if the newsletter_id option was ignored
         should(model.get('newsletter_id')).eql(newsletterId);
+    });
+
+    it('Can change the newsletter if it has not been sent', async function () {
+        // Note: this test only works if there are NO members subscribed to the initial newsletter 
+        // (so it will get reset when changing the post status to draft again)
+
+        let model;
+        const post = {
+            title: 'My post that will get a changed newsletter',
+            status: 'draft',
+            feature_image_alt: 'Testing newsletter',
+            feature_image_caption: 'Testing <b>feature image caption</b>',
+            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+            created_at: moment().subtract(2, 'days').toDate(),
+            updated_at: moment().subtract(2, 'days').toDate(),
+            created_by: ObjectId().toHexString(),
+            updated_by: ObjectId().toHexString()
+        };
+
+        const res = await request.post(localUtils.API.getApiQuery('posts'))
+            .set('Origin', config.get('url'))
+            .send({posts: [post]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201);
+
+        const id = res.body.posts[0].id;
+
+        // Check default values
+        should(res.body.posts[0].newsletter).eql(null);
+        should(res.body.posts[0].email_segment).eql('all');
+
+        const newsletterId = testUtils.DataGenerator.Content.newsletters[0].id;
+        const newsletterSlug = testUtils.DataGenerator.Content.newsletters[0].slug;
+        const newsletterId2 = testUtils.DataGenerator.Content.newsletters[1].id;
+        const newsletterSlug2 = testUtils.DataGenerator.Content.newsletters[1].slug;
+
+        const updatedPost = {
+            status: 'published',
+            updated_at: res.body.posts[0].updated_at
+        };
+
+        const res2 = await request
+            .put(localUtils.API.getApiQuery('posts/' + id + '/?email_segment=id:0&newsletter=' + newsletterSlug))
+            .set('Origin', config.get('url'))
+            .send({posts: [updatedPost]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        // Check newsletter relation is loaded in response
+        should(res2.body.posts[0].newsletter.id).eql(newsletterId);
+        should(res2.body.posts[0].email_segment).eql('id:0');
+
+        should.not.exist(res2.body.posts[0].newsletter_id);
+
+        model = await models.Post.findOne({
+            id: id,
+            status: 'published'
+        }, testUtils.context.internal);
+        should(model.get('newsletter_id')).eql(newsletterId);
+        should(model.get('email_recipient_filter')).eql('id:0');
+
+        // Check email is sent to the correct newsletter
+        let email = await models.Email.findOne({
+            post_id: id
+        }, testUtils.context.internal);
+
+        should(email).eql(null);
+
+        const unpublished = {
+            status: 'draft',
+            updated_at: res2.body.posts[0].updated_at
+        };
+
+        const res3 = await request
+            .put(localUtils.API.getApiQuery('posts/' + id + '/'))
+            .set('Origin', config.get('url'))
+            .send({posts: [unpublished]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        // Check is reset
+        should(res3.body.posts[0].newsletter).eql(null);
+        should.not.exist(res3.body.posts[0].newsletter_id);
+        should(res3.body.posts[0].email_segment).eql('all');
+
+        model = await models.Post.findOne({
+            id: id,
+            status: 'draft'
+        }, testUtils.context.internal);
+
+        should(model.get('newsletter_id')).eql(null);
+        should(model.get('email_recipient_filter')).eql('all');
+
+        const republished = {
+            status: 'published',
+            updated_at: res3.body.posts[0].updated_at
+        };
+
+        const res4 = await request
+            .put(localUtils.API.getApiQuery('posts/' + id + '/?email_segment=status:-free&newsletter=' + newsletterSlug2))
+            .set('Origin', config.get('url'))
+            .send({posts: [republished]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        // Check newsletter relation is loaded in response
+        // + did update the newsletter id
+        should(res4.body.posts[0].newsletter.id).eql(newsletterId2);
+        should(res4.body.posts[0].email_segment).eql('status:-free');
+        should.not.exist(res4.body.posts[0].newsletter_id);
+
+        model = await models.Post.findOne({
+            id: id,
+            status: 'published'
+        }, testUtils.context.internal);
+        should(model.get('newsletter_id')).eql(newsletterId2);
+        should(model.get('email_recipient_filter')).eql('status:-free');
+
+        // Check email is sent to the correct newsletter
+        email = await models.Email.findOne({
+            post_id: id
+        }, testUtils.context.internal);
+
+        should(email.get('newsletter_id')).eql(newsletterId2);
+        should(email.get('recipient_filter')).eql('status:-free');
+        should(email.get('status')).eql('pending');
+
+        // Should not change if status remains published
+        const res5 = await request
+            .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterSlug))
+            .set('Origin', config.get('url'))
+            .send({posts: [republished]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        // Check newsletter relation is loaded in response
+        // + did not update the newsletter id
+        should(res5.body.posts[0].newsletter.id).eql(newsletterId2);
+        should(res5.body.posts[0].email_segment).eql('status:-free');
+        should.not.exist(res5.body.posts[0].newsletter_id);
+
+        model = await models.Post.findOne({
+            id: id,
+            status: 'published'
+        }, testUtils.context.internal);
+
+        // Test if the newsletter_id option was ignored
+        should(model.get('newsletter_id')).eql(newsletterId2);
+        should(model.get('email_recipient_filter')).eql('status:-free');
     });
 
     it('Can destroy a post', async function () {
@@ -971,7 +1542,8 @@ describe('Posts API', function () {
         });
 
         it('Can publish a post and send as email', async function () {
-            const newsletterId = testUtils.DataGenerator.Content.newsletters[2].id;
+            const newsletterId = testUtils.DataGenerator.Content.newsletters[1].id;
+            const newsletterSlug = testUtils.DataGenerator.Content.newsletters[1].slug;
 
             const post = {
                 title: 'Author newsletter_id post',
@@ -1004,7 +1576,7 @@ describe('Posts API', function () {
             updatedPost.status = 'published';
 
             const finalPost = await request
-                .put(localUtils.API.getApiQuery('posts/' + id + '/?email_recipient_filter=all&newsletter_id=' + newsletterId))
+                .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterSlug))
                 .set('Origin', config.get('url'))
                 .send({posts: [updatedPost]})
                 .expect('Content-Type', /json/)
@@ -1013,6 +1585,7 @@ describe('Posts API', function () {
 
             // Check newsletter relation is loaded in response
             should(finalPost.body.posts[0].newsletter.id).eql(newsletterId);
+            should(finalPost.body.posts[0].email_segment).eql('all');
             should.not.exist(finalPost.body.posts[0].newsletter_id);
 
             const model = await models.Post.findOne({
@@ -1049,7 +1622,7 @@ describe('Posts API', function () {
             // NOTE: need to do a full reboot to reinitialize hostSettings
             await localUtils.startGhost();
             request = supertest.agent(config.get('url'));
-            await localUtils.doAuth(request, 'users:extra', 'posts', 'emails');
+            await localUtils.doAuth(request, 'users:extra', 'posts', 'emails', 'newsletters');
 
             const draftPostResponse = await request
                 .get(localUtils.API.getApiQuery(`posts/${testUtils.DataGenerator.Content.posts[3].id}/`))
@@ -1058,8 +1631,11 @@ describe('Posts API', function () {
 
             const draftPost = draftPostResponse.body.posts[0];
 
+            const newsletterId = testUtils.DataGenerator.Content.newsletters[1].id;
+            const newsletterSlug = testUtils.DataGenerator.Content.newsletters[1].slug;
+
             const response = await request
-                .put(localUtils.API.getApiQuery(`posts/${draftPost.id}/?email_recipient_filter=all&send_email_when_published=true`))
+                .put(localUtils.API.getApiQuery(`posts/${draftPost.id}/?newsletter=${newsletterSlug}`))
                 .set('Origin', config.get('url'))
                 .send({posts: [{
                     status: 'published',

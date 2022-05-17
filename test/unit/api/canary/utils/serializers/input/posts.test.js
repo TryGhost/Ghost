@@ -69,52 +69,12 @@ describe('Unit: canary/utils/serializers/input/posts', function () {
                             type: 'content'
                         }
                     },
-                    filter: 'page:true+tag:eins'
+                    filter: 'tag:eins'
                 }
             };
 
             serializers.input.posts.browse(apiConfig, frame);
-            frame.options.filter.should.eql('(page:true+tag:eins)+type:post');
-        });
-
-        it('combine filters', function () {
-            const apiConfig = {};
-            const frame = {
-                apiType: 'content',
-                options: {
-                    context: {
-                        user: 0,
-                        api_key: {
-                            id: 1,
-                            type: 'content'
-                        }
-                    },
-                    filter: 'page:true'
-                }
-            };
-
-            serializers.input.posts.browse(apiConfig, frame);
-            frame.options.filter.should.eql('(page:true)+type:post');
-        });
-
-        it('combine filters', function () {
-            const apiConfig = {};
-            const frame = {
-                apiType: 'content',
-                options: {
-                    context: {
-                        user: 0,
-                        api_key: {
-                            id: 1,
-                            type: 'content'
-                        }
-                    },
-                    filter: '(page:true,page:false)'
-                }
-            };
-
-            serializers.input.posts.browse(apiConfig, frame);
-            frame.options.filter.should.eql('((page:true,page:false))+type:post');
+            frame.options.filter.should.eql('(tag:eins)+type:post');
         });
 
         it('remove mobiledoc option from formats', function () {
@@ -357,72 +317,6 @@ describe('Unit: canary/utils/serializers/input/posts', function () {
 
                 frame.data.posts[0].authors.should.eql([{email: 'email1'}, {email: 'email2'}]);
                 frame.data.posts[0].tags.should.eql([{name: 'name1'}, {name: 'name2'}]);
-            });
-        });
-
-        describe('transforms legacy email recipient filter values', function () {
-            it('free becomes status:free', function () {
-                const frame = {
-                    options: {
-                        email_recipient_filter: 'free'
-                    },
-                    data: {
-                        posts: [{id: '1'}]
-                    }
-                };
-
-                serializers.input.posts.edit({}, frame);
-
-                frame.options.email_recipient_filter.should.eql('status:free');
-            });
-
-            it('paid becomes status:-free', function () {
-                const frame = {
-                    options: {
-                        email_recipient_filter: 'paid'
-                    },
-                    data: {
-                        posts: [{id: '1'}]
-                    }
-                };
-
-                serializers.input.posts.edit({}, frame);
-
-                frame.options.email_recipient_filter.should.eql('status:-free');
-            });
-        });
-    });
-
-    describe('add', function () {
-        describe('transforms legacy email recipient filter values', function () {
-            it('free becomes status:free', function () {
-                const frame = {
-                    options: {
-                        email_recipient_filter: 'free'
-                    },
-                    data: {
-                        posts: [{id: '1'}]
-                    }
-                };
-
-                serializers.input.posts.add({}, frame);
-
-                frame.options.email_recipient_filter.should.eql('status:free');
-            });
-
-            it('paid becomes status:-free', function () {
-                const frame = {
-                    options: {
-                        email_recipient_filter: 'paid'
-                    },
-                    data: {
-                        posts: [{id: '1'}]
-                    }
-                };
-
-                serializers.input.posts.add({}, frame);
-
-                frame.options.email_recipient_filter.should.eql('status:-free');
             });
         });
     });

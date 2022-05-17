@@ -26,6 +26,10 @@ module.exports = async (model, frame, options = {}) => {
 
     const jsonModel = model.toJSON(extendedOptions);
 
+    // Map email_recipient_filter to email_segment
+    jsonModel.email_segment = jsonModel.email_recipient_filter;
+    delete jsonModel.email_recipient_filter;
+
     url.forPost(model.id, jsonModel, frame);
 
     extraAttrs.forPost(frame, model, jsonModel);
@@ -51,14 +55,8 @@ module.exports = async (model, frame, options = {}) => {
     }
 
     if (utils.isContentAPI(frame)) {
-        // Content api v2 still expects page prop
-        if (jsonModel.type === 'page') {
-            jsonModel.page = true;
-        }
         date.forPost(jsonModel);
         gating.forPost(jsonModel, frame);
-
-        delete jsonModel.newsletter_id;
     }
 
     // Transforms post/page metadata to flat structure

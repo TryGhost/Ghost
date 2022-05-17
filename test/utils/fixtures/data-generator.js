@@ -80,7 +80,8 @@ DataGenerator.Content = {
             slug: 'static-page-draft',
             mobiledoc: DataGenerator.markdownToMobiledoc('<h1>Static page test is what this is for.</h1><p>Hopefully you don\'t find it a bore.</p>'),
             type: 'page',
-            status: 'draft'
+            status: 'draft',
+            uuid: 'd52c42ae-2755-455c-80ec-70b2ec55c904'
         },
         {
             id: '618ba1ffbe2896088840a6ed',
@@ -372,7 +373,8 @@ DataGenerator.Content = {
             show_header_icon: true,
             show_header_title: true,
             show_badge: true,
-            sort_order: 1
+            sort_order: 1,
+            header_image: '__GHOST_URL__/content/images/2022/05/test.jpg'
         },
         {
             id: ObjectId().toHexString(),
@@ -389,7 +391,8 @@ DataGenerator.Content = {
             show_header_icon: true,
             show_header_title: true,
             show_badge: true,
-            sort_order: 2
+            sort_order: 2,
+            header_image: '__GHOST_URL__/content/images/2022/05/test.jpg'
         },
         {
             id: ObjectId().toHexString(),
@@ -406,7 +409,8 @@ DataGenerator.Content = {
             show_header_icon: true,
             show_header_title: true,
             show_badge: true,
-            sort_order: 2
+            sort_order: 2,
+            header_image: '__GHOST_URL__/content/images/2022/05/test.jpg'
         }
     ],
 

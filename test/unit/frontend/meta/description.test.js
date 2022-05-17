@@ -208,7 +208,7 @@ describe('getMetaDescription', function () {
 
         it('has correct fallbacks for context: post', function () {
             const post = {
-                html: '<p>Post html</p>',
+                excerpt: 'Post html',
                 custom_excerpt: 'Post custom excerpt',
                 meta_description: 'Post meta description',
                 og_description: 'Post og description'
@@ -232,7 +232,7 @@ describe('getMetaDescription', function () {
             getMetaDescription({post}, {context: 'post'}, options)
                 .should.equal('Post html');
 
-            post.html = '';
+            post.excerpt = '';
 
             getMetaDescription({post}, {context: 'post'}, options)
                 .should.equal('Site description');
@@ -240,7 +240,7 @@ describe('getMetaDescription', function () {
 
         it('has correct fallbacks for context: page', function () {
             const page = {
-                html: '<p>Page html</p>',
+                excerpt: 'Page html',
                 custom_excerpt: 'Page custom excerpt',
                 meta_description: 'Page meta description',
                 og_description: 'Page og description'
@@ -264,7 +264,7 @@ describe('getMetaDescription', function () {
             getMetaDescription({page}, {context: 'page'}, options)
                 .should.equal('Page html');
 
-            page.html = '';
+            page.excerpt = '';
 
             getMetaDescription({page}, {context: 'page'}, options)
                 .should.equal('Site description');
@@ -273,7 +273,7 @@ describe('getMetaDescription', function () {
         // NOTE: this is a legacy format and should be resolved with https://github.com/TryGhost/Ghost/issues/10042
         it('has correct fallbacks for context: page (legacy format)', function () {
             const post = {
-                html: '<p>Page html</p>',
+                excerpt: 'Page html',
                 custom_excerpt: 'Page custom excerpt',
                 meta_description: 'Page meta description',
                 og_description: 'Page og description'
@@ -297,7 +297,7 @@ describe('getMetaDescription', function () {
             getMetaDescription({post}, {context: 'page'}, options)
                 .should.equal('Page html');
 
-            post.html = '';
+            post.excerpt = '';
 
             getMetaDescription({post}, {context: 'page'}, options)
                 .should.equal('Site description');
@@ -438,7 +438,7 @@ describe('getMetaDescription', function () {
 
         it('has correct fallbacks for context: post', function () {
             const post = {
-                html: '<p>Post html</p>',
+                excerpt: 'Post html',
                 custom_excerpt: 'Post custom excerpt',
                 meta_description: 'Post meta description',
                 twitter_description: 'Post twitter description'
@@ -462,7 +462,7 @@ describe('getMetaDescription', function () {
             getMetaDescription({post}, {context: 'post'}, options)
                 .should.equal('Post html');
 
-            post.html = '';
+            post.excerpt = '';
 
             getMetaDescription({post}, {context: 'post'}, options)
                 .should.equal('Site description');
@@ -470,7 +470,7 @@ describe('getMetaDescription', function () {
 
         it('has correct fallbacks for context: page', function () {
             const page = {
-                html: '<p>Page html</p>',
+                excerpt: 'Page html',
                 custom_excerpt: 'Page custom excerpt',
                 meta_description: 'Page meta description',
                 twitter_description: 'Page twitter description'
@@ -494,7 +494,7 @@ describe('getMetaDescription', function () {
             getMetaDescription({page}, {context: 'page'}, options)
                 .should.equal('Page html');
 
-            page.html = '';
+            page.excerpt = '';
 
             getMetaDescription({page}, {context: 'page'}, options)
                 .should.equal('Site description');
@@ -503,7 +503,7 @@ describe('getMetaDescription', function () {
         // NOTE: this is a legacy format and should be resolved with https://github.com/TryGhost/Ghost/issues/10042
         it('has correct fallbacks for context: page (legacy format)', function () {
             const post = {
-                html: '<p>Page html</p>',
+                excerpt: 'Page html',
                 custom_excerpt: 'Page custom excerpt',
                 meta_description: 'Page meta description',
                 twitter_description: 'Page twitter description'
@@ -527,7 +527,7 @@ describe('getMetaDescription', function () {
             getMetaDescription({post}, {context: 'page'}, options)
                 .should.equal('Page html');
 
-            post.html = '';
+            post.excerpt = '';
 
             getMetaDescription({post}, {context: 'page'}, options)
                 .should.equal('Site description');

@@ -9,7 +9,7 @@
 .c8rc.json
 jsconfig.json
 changelog.md*
-coverage
+coverage/**
 docs/**
 _site/**
 content/adapters/**
@@ -41,7 +41,7 @@ core/server/lib/members/static/auth/node_modules/**
 core/built/**/*.map
 core/built/**/test-*
 core/built/**/tests-*
-core/client/**
+core/admin/**
 test/**
 CONTRIBUTING.md
 content/themes/casper/SECURITY.md

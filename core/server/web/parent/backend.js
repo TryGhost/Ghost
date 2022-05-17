@@ -13,7 +13,6 @@ module.exports = () => {
     const backendApp = express('backend');
 
     backendApp.lazyUse(BASE_API_PATH, require('../api'));
-    backendApp.lazyUse('/ghost/oauth', require('../oauth'));
     backendApp.lazyUse('/ghost/.well-known', require('../well-known'));
 
     backendApp.use('/ghost', require('../../services/auth/session').createSessionFromToken, require('../admin')());

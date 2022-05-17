@@ -60,29 +60,6 @@ describe('Post Model', function () {
                     });
             });
 
-            describe('findOne', function () {
-                it('transforms legacy email_recipient_filter values on read', function (done) {
-                    const postId = testUtils.DataGenerator.Content.posts[0].id;
-
-                    db.knex('posts').where({id: postId}).update({
-                        email_recipient_filter: 'paid'
-                    }).then(() => {
-                        return db.knex('posts').where({id: postId});
-                    }).then((knexResult) => {
-                        const [knexPost] = knexResult;
-                        knexPost.email_recipient_filter.should.equal('paid');
-
-                        return models.Post.findOne({id: postId});
-                    }).then((result) => {
-                        should.exist(result);
-                        const post = result.toJSON();
-                        post.email_recipient_filter.should.equal('status:-free');
-
-                        done();
-                    }).catch(done);
-                });
-            });
-
             describe('findPage', function () {
                 describe('with more posts/tags', function () {
                     beforeEach(function () {
@@ -717,62 +694,6 @@ describe('Post Model', function () {
                     done();
                 }).catch(done);
             });
-
-            it('transforms legacy email_recipient_filter values on save', function (done) {
-                const postId = testUtils.DataGenerator.Content.posts[3].id;
-
-                models.Post.findOne({id: postId}).then(() => {
-                    return models.Post.edit({
-                        email_recipient_filter: 'free'
-                    }, _.extend({}, context, {id: postId}));
-                }).then((edited) => {
-                    edited.attributes.email_recipient_filter.should.equal('status:free');
-                    return db.knex('posts').where({id: edited.id});
-                }).then((knexResult) => {
-                    const [knexPost] = knexResult;
-                    knexPost.email_recipient_filter.should.equal('status:free');
-
-                    done();
-                }).catch(done);
-            });
-
-            it('transforms special-case visibility values on save', function (done) {
-                // status:-free === paid
-                // status:-free,status:free (+variations) === members
-
-                const postId = testUtils.DataGenerator.Content.posts[3].id;
-
-                models.Post.findOne({id: postId}).then(() => {
-                    return models.Post.edit({
-                        visibility: 'status:-free'
-                    }, _.extend({}, context, {id: postId}));
-                }).then((edited) => {
-                    edited.attributes.visibility.should.equal('paid');
-                    return db.knex('posts').where({id: edited.id});
-                }).then((knexResult) => {
-                    const [knexPost] = knexResult;
-                    knexPost.visibility.should.equal('paid');
-                }).then(() => {
-                    return models.Post.edit({
-                        visibility: 'status:-free,status:free'
-                    }, _.extend({}, context, {id: postId}));
-                }).then((edited) => {
-                    edited.attributes.visibility.should.equal('members');
-
-                    return models.Post.edit({
-                        visibility: 'status:free,status:-free'
-                    }, _.extend({}, context, {id: postId}));
-                }).then((edited) => {
-                    edited.attributes.visibility.should.equal('members');
-
-                    return models.Post.edit({
-                        visibility: 'status:free,status:-free,label:vip'
-                    }, _.extend({}, context, {id: postId}));
-                }).then((edited) => {
-                    edited.attributes.visibility.should.equal('members');
-                    done();
-                }).catch(done);
-            });
         });
 
         describe('add', function () {
@@ -1225,7 +1146,7 @@ describe('Post Model', function () {
                 models.Post.add(post, context).then((createdPost) => {
                     createdPost.get('mobiledoc').should.equal('{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"http://127.0.0.1:2369/content/images/card.jpg"}]],"markups":[["a",["href","http://127.0.0.1:2369/test"]]],"sections":[[1,"p",[[0,[0],1,"Testing"]]],[10,0]]}');
                     createdPost.get('html').should.equal('<p><a href="http://127.0.0.1:2369/test">Testing</a></p><figure class="kg-card kg-image-card"><img src="http://127.0.0.1:2369/content/images/card.jpg" class="kg-image" alt loading="lazy"></figure>');
-                    createdPost.get('plaintext').should.containEql('Testing [http://127.0.0.1:2369/test]');
+                    createdPost.get('plaintext').should.containEql('Testing');
                     createdPost.get('custom_excerpt').should.equal('Testing <a href="http://127.0.0.1:2369/internal">links</a> in custom excerpts');
                     createdPost.get('codeinjection_head').should.equal('<script src="http://127.0.0.1:2369/assets/head.js"></script>');
                     createdPost.get('codeinjection_foot').should.equal('<script src="http://127.0.0.1:2369/assets/foot.js"></script>');
@@ -1254,7 +1175,7 @@ describe('Post Model', function () {
                     const [knexPost] = knexResult;
                     knexPost.mobiledoc.should.equal('{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"__GHOST_URL__/content/images/card.jpg"}]],"markups":[["a",["href","__GHOST_URL__/test"]]],"sections":[[1,"p",[[0,[0],1,"Testing"]]],[10,0]]}');
                     knexPost.html.should.equal('<p><a href="__GHOST_URL__/test">Testing</a></p><figure class="kg-card kg-image-card"><img src="__GHOST_URL__/content/images/card.jpg" class="kg-image" alt loading="lazy"></figure>');
-                    knexPost.plaintext.should.containEql('Testing [__GHOST_URL__/test]');
+                    knexPost.plaintext.should.containEql('Testing');
                     knexPost.custom_excerpt.should.equal('Testing <a href="__GHOST_URL__/internal">links</a> in custom excerpts');
                     knexPost.codeinjection_head.should.equal('<script src="__GHOST_URL__/assets/head.js"></script>');
                     knexPost.codeinjection_foot.should.equal('<script src="__GHOST_URL__/assets/foot.js"></script>');

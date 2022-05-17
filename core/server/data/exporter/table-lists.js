@@ -15,7 +15,6 @@ const BACKUP_TABLES = [
     'members_stripe_customers_subscriptions',
     'migrations',
     'migrations_lock',
-    'newsletters',
     'permissions',
     'permissions_roles',
     'permissions_users',
@@ -57,7 +56,8 @@ const TABLES_ALLOWLIST = [
     'settings',
     'custom_theme_settings',
     'tags',
-    'users'
+    'users',
+    'newsletters'
 ];
 
 // NOTE: these are settings keys which should never end up in the export file
@@ -69,8 +69,6 @@ const SETTING_KEYS_BLOCKLIST = [
     'stripe_publishable_key',
     'members_stripe_webhook_id',
     'members_stripe_webhook_secret',
-    'oauth_client_id',
-    'oauth_client_secret',
     'email_verification_required'
 ];
 

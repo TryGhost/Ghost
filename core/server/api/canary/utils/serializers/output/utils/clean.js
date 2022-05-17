@@ -73,11 +73,10 @@ const post = (attrs, frame) => {
     const columns = frame && frame.options && frame.options.columns || null;
     const fields = frame && frame.original && frame.original.query && frame.original.query.fields || null;
     if (localUtils.isContentAPI(frame)) {
-        // @TODO: https://github.com/TryGhost/Ghost/issues/10335
-        // delete attrs.page;
         delete attrs.status;
         delete attrs.email_only;
         delete attrs.newsletter;
+        delete attrs.email_segment;
 
         // We are standardising on returning null from the Content API for any empty values
         if (attrs.twitter_title === '') {
@@ -102,16 +101,10 @@ const post = (attrs, frame) => {
         if (columns && columns.includes('visibility') && fields && !fields.includes('visibility')) {
             delete attrs.visibility;
         }
-    } else {
-        delete attrs.page;
     }
 
-    if (columns && columns.includes('email_recipient_filter') && fields && !fields.includes('email_recipient_filter')) {
-        delete attrs.email_recipient_filter;
-    }
-
-    if (fields && !fields.includes('send_email_when_published')) {
-        delete attrs.send_email_when_published;
+    if (columns && columns.includes('email_segment') && fields && !fields.includes('email_segment')) {
+        delete attrs.email_segment;
     }
 
     if (!attrs.tags) {

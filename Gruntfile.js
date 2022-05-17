@@ -3,11 +3,11 @@ const fs = require('fs-extra');
 const path = require('path');
 
 // Utility for outputting messages indicating that the admin is building, as it can take a while.
-let hasBuiltClient = false;
-const logBuildingClient = function (grunt) {
-    if (!hasBuiltClient) {
-        grunt.log.writeln('Building admin client... (can take ~1min)');
-        setTimeout(logBuildingClient, 5000, grunt);
+let hasBuiltAdmin = false;
+const logBuildingAdmin = function (grunt) {
+    if (!hasBuiltAdmin) {
+        grunt.log.writeln('Building admin app... (can take ~1min)');
+        setTimeout(logBuildingAdmin, 5000, grunt);
     }
 };
 
@@ -15,18 +15,18 @@ module.exports = function (grunt) {
     // grunt dev - use yarn dev instead!
     // - Start a server & build assets on the fly whilst developing
     grunt.registerTask('dev', 'Dev Mode; watch files and restart server on changes', function () {
-        if (grunt.option('client')) {
-            grunt.task.run(['clean:built', 'bgShell:client']);
+        if (grunt.option('admin')) {
+            grunt.task.run(['clean:built', 'bgShell:admin']);
         } else if (grunt.option('server')) {
             grunt.task.run(['express:dev', 'watch']);
         } else {
-            grunt.task.run(['clean:built', 'bgShell:client', 'express:dev', 'watch']);
+            grunt.task.run(['clean:built', 'bgShell:admin', 'express:dev', 'watch']);
         }
     });
 
     // grunt build -- use yarn build instead!
-    // - Builds the client without a watch task
-    grunt.registerTask('build', 'Build client app in development mode',
+    // - Builds the admin without a watch task
+    grunt.registerTask('build', 'Build admin app in development mode',
         ['subgrunt:init', 'clean:tmp', 'ember']);
 
     // Helpers for common deprecated tasks
@@ -41,7 +41,7 @@ module.exports = function (grunt) {
     // --- Sub Commands
     // Used to make other commands work
 
-    // Updates submodules, then installs and builds the client for you
+    // Updates submodules, then installs and builds the admin for you
     grunt.registerTask('init', 'Prepare the project for development',
         ['update_submodules:pinned', 'build']);
 
@@ -101,17 +101,17 @@ module.exports = function (grunt) {
         },
 
         // grunt-bg-shell
-        // Tools for building the client
+        // Tools for building the admin
         bgShell: {
-            client: {
+            admin: {
                 cmd: function () {
-                    logBuildingClient(grunt);
+                    logBuildingAdmin(grunt);
                     return 'grunt subgrunt:watch';
                 },
-                bg: grunt.option('client') ? false : true,
+                bg: grunt.option('admin') ? false : true,
                 stdout: function (chunk) {
                     // hide certain output to prevent confusion when running alongside server
-                    const filter = grunt.option('client') ? false : [
+                    const filter = grunt.option('admin') ? false : [
                         /> ghost-admin/,
                         /^Livereload/,
                         /^Serving on/
@@ -124,24 +124,24 @@ module.exports = function (grunt) {
                     }
 
                     if (chunk.indexOf('Slowest Nodes') !== -1) {
-                        hasBuiltClient = true;
+                        hasBuiltAdmin = true;
                     }
                 },
                 stderr: function (chunk) {
-                    const skipFilter = grunt.option('client') ? false : [
+                    const skipFilter = grunt.option('admin') ? false : [
                         /- building/
                     ].some(function (regexp) {
                         return regexp.test(chunk);
                     });
 
-                    const errorFilter = grunt.option('client') ? false : [
+                    const errorFilter = grunt.option('admin') ? false : [
                         /^>>/
                     ].some(function (regexp) {
                         return regexp.test(chunk);
                     });
 
                     if (!skipFilter) {
-                        hasBuiltClient = errorFilter ? hasBuiltClient : true;
+                        hasBuiltAdmin = errorFilter ? hasBuiltAdmin : true;
                         grunt.log.error(chunk);
                     }
                 }
@@ -238,21 +238,21 @@ module.exports = function (grunt) {
                     npmInstall: true
                 },
                 projects: {
-                    'core/client': 'init'
+                    'core/admin': 'init'
                 }
             },
 
             dev: {
-                'core/client': 'shell:ember:dev'
+                'core/admin': 'shell:ember:dev'
             },
 
             prod: {
-                'core/client': 'shell:ember:prod'
+                'core/admin': 'shell:ember:prod'
             },
 
             watch: {
                 projects: {
-                    'core/client': ['shell:ember:watch', '--live-reload-base-url="' + config.getSubdir() + '/ghost/"']
+                    'core/admin': ['shell:ember:watch', '--live-reload-base-url="' + config.getSubdir() + '/ghost/"']
                 }
             }
         },

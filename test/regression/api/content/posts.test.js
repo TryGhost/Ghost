@@ -1,9 +1,6 @@
 const should = require('should');
-const sinon = require('sinon');
-const moment = require('moment');
 const supertest = require('supertest');
 const _ = require('lodash');
-const labs = require('../../../../core/shared/labs');
 const testUtils = require('../../../utils');
 const localUtils = require('./utils');
 const configUtils = require('../../../utils/configUtils');
@@ -114,47 +111,11 @@ describe('api/canary/content/posts', function () {
             });
     });
 
-    it('browse posts with basic page filter should not return pages', function (done) {
-        request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=page:true`))
+    it('browse posts with unsupported "page" filter returns a request validation error', function () {
+        return request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=page:true,featured:true`))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-                const jsonResponse = res.body;
-
-                should.not.exist(res.headers['x-cache-invalidate']);
-                should.exist(jsonResponse.posts);
-                localUtils.API.checkResponse(jsonResponse, 'posts');
-                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
-                jsonResponse.posts.should.have.length(0);
-
-                done();
-            });
-    });
-
-    it('browse posts with basic page filter should not return pages', function (done) {
-        request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=page:true,featured:true`))
-            .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-                const jsonResponse = res.body;
-
-                should.not.exist(res.headers['x-cache-invalidate']);
-                should.exist(jsonResponse.posts);
-                localUtils.API.checkResponse(jsonResponse, 'posts');
-                localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
-                jsonResponse.posts.should.have.length(2);
-                jsonResponse.posts.filter(p => (p.page === true)).should.have.length(0);
-
-                done();
-            });
+            .expect(400);
     });
 
     it('browse posts with published and draft status, should not return drafts', function (done) {
@@ -249,7 +210,7 @@ describe('api/canary/content/posts', function () {
                 localUtils.API.checkResponse(res.body.posts[0], 'post', null, null, ['id', 'title', 'slug', 'excerpt', 'plaintext']);
 
                 // excerpt should transform links to absolute URLs
-                res.body.posts[0].excerpt.should.match(/\* Aliquam \[http:\/\/127.0.0.1:2369\/about#nowhere\]/);
+                res.body.posts[0].excerpt.should.match(/\* Aliquam/);
             });
     });
 

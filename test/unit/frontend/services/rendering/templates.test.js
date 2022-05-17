@@ -130,7 +130,7 @@ describe('templates', function () {
         it('will fall back to post even if no index.hbs', function () {
             hasTemplateStub.returns(false);
 
-            const view = _private.getTemplateForEntry({page: 1});
+            const view = _private.getTemplateForEntry({title: 'hey'}, 'page');
             should.exist(view);
             view.should.eql('post');
         });
@@ -166,18 +166,16 @@ describe('templates', function () {
 
             it('page without custom slug template', function () {
                 const view = _private.getTemplateForEntry({
-                    page: 1,
                     slug: 'contact'
-                });
+                }, 'page');
                 should.exist(view);
                 view.should.eql('page');
             });
 
             it('page with custom slug template', function () {
                 const view = _private.getTemplateForEntry({
-                    page: 1,
                     slug: 'about'
-                });
+                }, 'page');
                 should.exist(view);
                 view.should.eql('page-about');
             });
@@ -219,9 +217,8 @@ describe('templates', function () {
                 hasTemplateStub.withArgs('custom-about').returns(false);
 
                 const view = _private.getTemplateForEntry({
-                    page: 1,
                     custom_template: 'custom-about'
-                });
+                }, 'page');
                 should.exist(view);
                 view.should.eql('page');
             });

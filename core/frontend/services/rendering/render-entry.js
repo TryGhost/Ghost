@@ -13,6 +13,6 @@ module.exports = function renderEntry(req, res) {
     return function renderEntryClosure(entry) {
         // Format data 2 - 1 is in preview/entry
         // Render
-        return renderer(req, res, formatResponse.entry(entry));
+        return renderer(req, res, formatResponse.entry(entry, res.routerOptions?.context));
     };
 };

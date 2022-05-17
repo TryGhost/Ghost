@@ -58,7 +58,6 @@ module.exports = function apiRoutes() {
     );
 
     router.get('/settings', mw.authAdminApi, http(api.settings.browse));
-    router.get('/settings/:key', mw.authAdminApi, http(api.settings.read));
     router.put('/settings', mw.authAdminApi, http(api.settings.edit));
     router.get('/settings/members/email', http(api.settings.validateMembersEmailUpdate));
     router.post('/settings/members/email', mw.authAdminApi, http(api.settings.updateMembersEmail));

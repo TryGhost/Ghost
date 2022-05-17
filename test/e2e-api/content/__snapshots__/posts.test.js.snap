@@ -22,7 +22,6 @@ Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": "We've crammed the most important information to help you get started with Ghost into this one post. It's your cheat-sheet to get started, and your shortcut to advanced features.",
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "We've crammed the most important information to help you get started with Ghost into this one post. It's your cheat-sheet to get started, and your shortcut to advanced features.",
       "feature_image": "https://static.ghost.org/v4.0.0/images/welcome-to-ghost.png",
@@ -57,7 +56,7 @@ exports[`Posts Content API Can filter by published date 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4591",
+  "content-length": "4559",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -87,7 +86,6 @@ Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": "How to tweak a few settings in Ghost to transform your site from a generic template to a custom brand with style and personality.",
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "How to tweak a few settings in Ghost to transform your site from a generic template to a custom brand with style and personality.",
       "feature_image": "https://static.ghost.org/v4.0.0/images/publishing-options.png",
@@ -134,7 +132,7 @@ exports[`Posts Content API Can filter by published date 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "5882",
+  "content-length": "5850",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -164,7 +162,6 @@ Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": "We've crammed the most important information to help you get started with Ghost into this one post. It's your cheat-sheet to get started, and your shortcut to advanced features.",
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "We've crammed the most important information to help you get started with Ghost into this one post. It's your cheat-sheet to get started, and your shortcut to advanced features.",
       "feature_image": "https://static.ghost.org/v4.0.0/images/welcome-to-ghost.png",
@@ -199,7 +196,7 @@ exports[`Posts Content API Can filter by published date 6: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4592",
+  "content-length": "4560",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -261,23 +258,19 @@ Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": null,
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": " * Lorem
- * Aliquam [http://127.0.0.1:2369/about#nowhere]
- * Tortor [//somewhere.com/link#nowhere]
- * Morbi [http://somewhere.com/link#nowhere]
+ * Aliquam
+ * Tortor
+ * Morbi
  * Praesent
  * Pellentesque
 
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo.
 
+1234abcdefghijkl
 
-Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac
-turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor
-sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies
-mi vitae est. Mauris placerat eleifend leo.
-
-1234abcdefghijklDefinition listConsectetur ad",
+Definition listConsectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim venia",
       "feature_image": null,
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -343,7 +336,6 @@ mi vitae est. Mauris placerat eleifend leo.
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": "We've crammed the most important information to help you get started with Ghost into this one post. It's your cheat-sheet to get started, and your shortcut to advanced features.",
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "We've crammed the most important information to help you get started with Ghost into this one post. It's your cheat-sheet to get started, and your shortcut to advanced features.",
       "feature_image": "https://static.ghost.org/v4.0.0/images/welcome-to-ghost.png",
@@ -411,7 +403,6 @@ mi vitae est. Mauris placerat eleifend leo.
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": "How to tweak a few settings in Ghost to transform your site from a generic template to a custom brand with style and personality.",
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "How to tweak a few settings in Ghost to transform your site from a generic template to a custom brand with style and personality.",
       "feature_image": "https://static.ghost.org/v4.0.0/images/publishing-options.png",
@@ -491,7 +482,6 @@ mi vitae est. Mauris placerat eleifend leo.
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": "A full overview of all the features built into the Ghost editor, including powerful workflow automations to speed up your creative process.",
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "A full overview of all the features built into the Ghost editor, including powerful workflow automations to speed up your creative process.",
       "feature_image": "https://static.ghost.org/v4.0.0/images/writing-posts-with-ghost.png",
@@ -559,7 +549,6 @@ mi vitae est. Mauris placerat eleifend leo.
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": "How Ghost allows you to turn anonymous readers into an audience of active subscribers, so you know what's working and what isn't.",
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "How Ghost allows you to turn anonymous readers into an audience of active subscribers, so you know what's working and what isn't.",
       "feature_image": "https://static.ghost.org/v4.0.0/images/creating-a-custom-theme.png",
@@ -627,17 +616,14 @@ mi vitae est. Mauris placerat eleifend leo.
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": null,
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
-      "excerpt": "For creators and aspiring entrepreneurs looking to generate a sustainable
-recurring revenue stream from their creative work, Ghost has built-in payments
-allowing you to create a subscription commerce business.
+      "excerpt": "For creators and aspiring entrepreneurs looking to generate a sustainable recurring revenue stream from their creative work, Ghost has built-in payments allowing you to create a subscription commerce business.
 
-Connect your Stripe [https://stripe.com] account to Ghost, and you'll be able to
-quickly and easily create monthly and yearly premium plans for members to
-subscribe to, as well as complimentary plans for friends and family.
+Connect your Stripe account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
 
-Ghost takes 0% payment fees, so everything you make is yours to ",
+Ghost takes 0% payment fees, so everything you make is yours to keep!
+
+Using subscrip",
       "feature_image": "https://static.ghost.org/v4.0.0/images/organizing-your-content.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -650,29 +636,17 @@ Ghost takes 0% payment fees, so everything you make is yours to ",
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "plaintext": "For creators and aspiring entrepreneurs looking to generate a sustainable
-recurring revenue stream from their creative work, Ghost has built-in payments
-allowing you to create a subscription commerce business.
+      "plaintext": "For creators and aspiring entrepreneurs looking to generate a sustainable recurring revenue stream from their creative work, Ghost has built-in payments allowing you to create a subscription commerce business.
 
-Connect your Stripe [https://stripe.com] account to Ghost, and you'll be able to
-quickly and easily create monthly and yearly premium plans for members to
-subscribe to, as well as complimentary plans for friends and family.
+Connect your Stripe account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
 
 Ghost takes 0% payment fees, so everything you make is yours to keep!
 
-Using subscriptions, you can build an independent media business like 
-Stratechery [https://stratechery.com], The Information
-[https://www.theinformation.com], or The Browser [https://thebrowser.com].
+Using subscriptions, you can build an independent media business like Stratechery, The Information, or The Browser.
 
-The creator economy is just getting started, and Ghost allows you to build
-something based on technology that you own and control.
+The creator economy is just getting started, and Ghost allows you to build something based on technology that you own and control.
 
-[https://thebrowser.com]The Browser has over 10,000 paying subscribersMost
-successful subscription businesses publish a mix of free and paid posts to
-attract a new audience, and upsell the most loyal members to a premium offering.
-You can also mix different access levels within the same post, showing a free
-preview to logged out members and then, right when you're ready for a
-cliffhanger, that's a good time to...",
+Most successful subscription businesses publish a mix of free and paid posts to attract a new audience, and upsell the most loyal members to a premium offering. You can also mix different access levels within the same post, showing a free preview to logged out members and then, right when you're ready for a cliffhanger, that's a good time to...",
       "primary_author": Object {
         "bio": "You can delete this user to remove all the welcome posts",
         "cover_image": null,
@@ -726,7 +700,6 @@ cliffhanger, that's a good time to...",
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": "A guide to collaborating with other staff users to publish, and some resources to help you with the next steps of growing your business",
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "A guide to collaborating with other staff users to publish, and some resources to help you with the next steps of growing your business",
       "feature_image": "https://static.ghost.org/v4.0.0/images/admin-settings.png",
@@ -794,7 +767,6 @@ cliffhanger, that's a good time to...",
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": "Work with all your favorite apps and tools or create your own custom integrations using the Ghost API.",
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "Work with all your favorite apps and tools or create your own custom integrations using the Ghost API.",
       "feature_image": "https://static.ghost.org/v4.0.0/images/app-integrations.png",
@@ -863,14 +835,17 @@ cliffhanger, that's a good time to...",
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": null,
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "testing
+
+
 mctesters
+
 
  * test
  * line
- * items",
+ * items
+",
       "feature_image": "http://placekitten.com/500/200",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -943,16 +918,10 @@ mctesters
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": null,
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "HTML Ipsum Presents
-Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac
-turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor
-sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies
-mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien
-ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae,
-ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros
-ipsum rutrum or",
+
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum o",
       "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -1018,7 +987,6 @@ ipsum rutrum or",
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": "This is my custom excerpt!",
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "This is my custom excerpt!",
       "feature_image": "https://example.com/super_photo.jpg",
@@ -1068,7 +1036,7 @@ exports[`Posts Content API Can filter posts by authors 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "55261",
+  "content-length": "54719",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -1098,23 +1066,19 @@ Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": null,
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": " * Lorem
- * Aliquam [http://127.0.0.1:2369/about#nowhere]
- * Tortor [//somewhere.com/link#nowhere]
- * Morbi [http://somewhere.com/link#nowhere]
+ * Aliquam
+ * Tortor
+ * Morbi
  * Praesent
  * Pellentesque
 
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo.
 
+1234abcdefghijkl
 
-Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac
-turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor
-sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies
-mi vitae est. Mauris placerat eleifend leo.
-
-1234abcdefghijklDefinition listConsectetur ad",
+Definition listConsectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim venia",
       "feature_image": null,
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -1150,14 +1114,17 @@ mi vitae est. Mauris placerat eleifend leo.
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": null,
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "testing
+
+
 mctesters
+
 
  * test
  * line
- * items",
+ * items
+",
       "feature_image": "http://placekitten.com/500/200",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -1242,16 +1209,10 @@ mctesters
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": null,
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "HTML Ipsum Presents
-Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac
-turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor
-sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies
-mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien
-ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae,
-ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros
-ipsum rutrum or",
+
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum o",
       "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -1350,7 +1311,6 @@ ipsum rutrum or",
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": "This is my custom excerpt!",
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "This is my custom excerpt!",
       "feature_image": "https://example.com/super_photo.jpg",
@@ -1450,7 +1410,7 @@ exports[`Posts Content API Can filter posts by tag 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "14037",
+  "content-length": "13909",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -1481,7 +1441,6 @@ Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": "We've crammed the most important information to help you get started with Ghost into this one post. It's your cheat-sheet to get started, and your shortcut to advanced features.",
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "We've crammed the most important information to help you get started with Ghost into this one post. It's your cheat-sheet to get started, and your shortcut to advanced features.",
       "feature_image": "https://static.ghost.org/v4.0.0/images/welcome-to-ghost.png",
@@ -1555,7 +1514,6 @@ Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": "How to tweak a few settings in Ghost to transform your site from a generic template to a custom brand with style and personality.",
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "How to tweak a few settings in Ghost to transform your site from a generic template to a custom brand with style and personality.",
       "feature_image": "https://static.ghost.org/v4.0.0/images/publishing-options.png",
@@ -1641,7 +1599,6 @@ Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": "A full overview of all the features built into the Ghost editor, including powerful workflow automations to speed up your creative process.",
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "A full overview of all the features built into the Ghost editor, including powerful workflow automations to speed up your creative process.",
       "feature_image": "https://static.ghost.org/v4.0.0/images/writing-posts-with-ghost.png",
@@ -1715,7 +1672,6 @@ Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": "How Ghost allows you to turn anonymous readers into an audience of active subscribers, so you know what's working and what isn't.",
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "How Ghost allows you to turn anonymous readers into an audience of active subscribers, so you know what's working and what isn't.",
       "feature_image": "https://static.ghost.org/v4.0.0/images/creating-a-custom-theme.png",
@@ -1789,17 +1745,14 @@ Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": null,
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
-      "excerpt": "For creators and aspiring entrepreneurs looking to generate a sustainable
-recurring revenue stream from their creative work, Ghost has built-in payments
-allowing you to create a subscription commerce business.
+      "excerpt": "For creators and aspiring entrepreneurs looking to generate a sustainable recurring revenue stream from their creative work, Ghost has built-in payments allowing you to create a subscription commerce business.
 
-Connect your Stripe [https://stripe.com] account to Ghost, and you'll be able to
-quickly and easily create monthly and yearly premium plans for members to
-subscribe to, as well as complimentary plans for friends and family.
+Connect your Stripe account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
 
-Ghost takes 0% payment fees, so everything you make is yours to ",
+Ghost takes 0% payment fees, so everything you make is yours to keep!
+
+Using subscrip",
       "feature_image": "https://static.ghost.org/v4.0.0/images/organizing-your-content.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -1812,29 +1765,17 @@ Ghost takes 0% payment fees, so everything you make is yours to ",
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "plaintext": "For creators and aspiring entrepreneurs looking to generate a sustainable
-recurring revenue stream from their creative work, Ghost has built-in payments
-allowing you to create a subscription commerce business.
+      "plaintext": "For creators and aspiring entrepreneurs looking to generate a sustainable recurring revenue stream from their creative work, Ghost has built-in payments allowing you to create a subscription commerce business.
 
-Connect your Stripe [https://stripe.com] account to Ghost, and you'll be able to
-quickly and easily create monthly and yearly premium plans for members to
-subscribe to, as well as complimentary plans for friends and family.
+Connect your Stripe account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
 
 Ghost takes 0% payment fees, so everything you make is yours to keep!
 
-Using subscriptions, you can build an independent media business like 
-Stratechery [https://stratechery.com], The Information
-[https://www.theinformation.com], or The Browser [https://thebrowser.com].
+Using subscriptions, you can build an independent media business like Stratechery, The Information, or The Browser.
 
-The creator economy is just getting started, and Ghost allows you to build
-something based on technology that you own and control.
+The creator economy is just getting started, and Ghost allows you to build something based on technology that you own and control.
 
-[https://thebrowser.com]The Browser has over 10,000 paying subscribersMost
-successful subscription businesses publish a mix of free and paid posts to
-attract a new audience, and upsell the most loyal members to a premium offering.
-You can also mix different access levels within the same post, showing a free
-preview to logged out members and then, right when you're ready for a
-cliffhanger, that's a good time to...",
+Most successful subscription businesses publish a mix of free and paid posts to attract a new audience, and upsell the most loyal members to a premium offering. You can also mix different access levels within the same post, showing a free preview to logged out members and then, right when you're ready for a cliffhanger, that's a good time to...",
       "primary_author": Object {
         "bio": "You can delete this user to remove all the welcome posts",
         "cover_image": null,
@@ -1894,7 +1835,6 @@ cliffhanger, that's a good time to...",
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": "A guide to collaborating with other staff users to publish, and some resources to help you with the next steps of growing your business",
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "A guide to collaborating with other staff users to publish, and some resources to help you with the next steps of growing your business",
       "feature_image": "https://static.ghost.org/v4.0.0/images/admin-settings.png",
@@ -1968,7 +1908,6 @@ cliffhanger, that's a good time to...",
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": "Work with all your favorite apps and tools or create your own custom integrations using the Ghost API.",
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "Work with all your favorite apps and tools or create your own custom integrations using the Ghost API.",
       "feature_image": "https://static.ghost.org/v4.0.0/images/app-integrations.png",
@@ -2043,23 +1982,19 @@ cliffhanger, that's a good time to...",
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": null,
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": " * Lorem
- * Aliquam [http://127.0.0.1:2369/about#nowhere]
- * Tortor [//somewhere.com/link#nowhere]
- * Morbi [http://somewhere.com/link#nowhere]
+ * Aliquam
+ * Tortor
+ * Morbi
  * Praesent
  * Pellentesque
 
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo.
 
+1234abcdefghijkl
 
-Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac
-turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor
-sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies
-mi vitae est. Mauris placerat eleifend leo.
-
-1234abcdefghijklDefinition listConsectetur ad",
+Definition listConsectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim venia",
       "feature_image": null,
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -2111,14 +2046,17 @@ mi vitae est. Mauris placerat eleifend leo.
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": null,
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "testing
+
+
 mctesters
+
 
  * test
  * line
- * items",
+ * items
+",
       "feature_image": "http://placekitten.com/500/200",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -2197,16 +2135,10 @@ mctesters
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": null,
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "HTML Ipsum Presents
-Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac
-turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor
-sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies
-mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien
-ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae,
-ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros
-ipsum rutrum or",
+
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum o",
       "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -2278,7 +2210,6 @@ ipsum rutrum or",
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": "This is my custom excerpt!",
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "This is my custom excerpt!",
       "feature_image": "https://example.com/super_photo.jpg",
@@ -2350,7 +2281,7 @@ exports[`Posts Content API Can include relations 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "65590",
+  "content-length": "65048",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -2370,7 +2301,6 @@ Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": "This is my custom excerpt!",
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "This is my custom excerpt!",
       "feature_image": "https://example.com/super_photo.jpg",
@@ -2405,7 +2335,7 @@ exports[`Posts Content API Can request a single post 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2377",
+  "content-length": "2345",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -2497,7 +2427,6 @@ Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": "We've crammed the most important information to help you get started with Ghost into this one post. It's your cheat-sheet to get started, and your shortcut to advanced features.",
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "We've crammed the most important information to help you get started with Ghost into this one post. It's your cheat-sheet to get started, and your shortcut to advanced features.",
       "feature_image": "https://static.ghost.org/v4.0.0/images/welcome-to-ghost.png",
@@ -2533,7 +2462,6 @@ Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": "How to tweak a few settings in Ghost to transform your site from a generic template to a custom brand with style and personality.",
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "How to tweak a few settings in Ghost to transform your site from a generic template to a custom brand with style and personality.",
       "feature_image": "https://static.ghost.org/v4.0.0/images/publishing-options.png",
@@ -2581,7 +2509,6 @@ Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": "A full overview of all the features built into the Ghost editor, including powerful workflow automations to speed up your creative process.",
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "A full overview of all the features built into the Ghost editor, including powerful workflow automations to speed up your creative process.",
       "feature_image": "https://static.ghost.org/v4.0.0/images/writing-posts-with-ghost.png",
@@ -2617,7 +2544,6 @@ Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": "How Ghost allows you to turn anonymous readers into an audience of active subscribers, so you know what's working and what isn't.",
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "How Ghost allows you to turn anonymous readers into an audience of active subscribers, so you know what's working and what isn't.",
       "feature_image": "https://static.ghost.org/v4.0.0/images/creating-a-custom-theme.png",
@@ -2653,17 +2579,14 @@ Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": null,
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
-      "excerpt": "For creators and aspiring entrepreneurs looking to generate a sustainable
-recurring revenue stream from their creative work, Ghost has built-in payments
-allowing you to create a subscription commerce business.
+      "excerpt": "For creators and aspiring entrepreneurs looking to generate a sustainable recurring revenue stream from their creative work, Ghost has built-in payments allowing you to create a subscription commerce business.
 
-Connect your Stripe [https://stripe.com] account to Ghost, and you'll be able to
-quickly and easily create monthly and yearly premium plans for members to
-subscribe to, as well as complimentary plans for friends and family.
+Connect your Stripe account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
 
-Ghost takes 0% payment fees, so everything you make is yours to ",
+Ghost takes 0% payment fees, so everything you make is yours to keep!
+
+Using subscrip",
       "feature_image": "https://static.ghost.org/v4.0.0/images/organizing-your-content.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -2676,29 +2599,17 @@ Ghost takes 0% payment fees, so everything you make is yours to ",
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "plaintext": "For creators and aspiring entrepreneurs looking to generate a sustainable
-recurring revenue stream from their creative work, Ghost has built-in payments
-allowing you to create a subscription commerce business.
+      "plaintext": "For creators and aspiring entrepreneurs looking to generate a sustainable recurring revenue stream from their creative work, Ghost has built-in payments allowing you to create a subscription commerce business.
 
-Connect your Stripe [https://stripe.com] account to Ghost, and you'll be able to
-quickly and easily create monthly and yearly premium plans for members to
-subscribe to, as well as complimentary plans for friends and family.
+Connect your Stripe account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
 
 Ghost takes 0% payment fees, so everything you make is yours to keep!
 
-Using subscriptions, you can build an independent media business like 
-Stratechery [https://stratechery.com], The Information
-[https://www.theinformation.com], or The Browser [https://thebrowser.com].
+Using subscriptions, you can build an independent media business like Stratechery, The Information, or The Browser.
 
-The creator economy is just getting started, and Ghost allows you to build
-something based on technology that you own and control.
+The creator economy is just getting started, and Ghost allows you to build something based on technology that you own and control.
 
-[https://thebrowser.com]The Browser has over 10,000 paying subscribersMost
-successful subscription businesses publish a mix of free and paid posts to
-attract a new audience, and upsell the most loyal members to a premium offering.
-You can also mix different access levels within the same post, showing a free
-preview to logged out members and then, right when you're ready for a
-cliffhanger, that's a good time to...",
+Most successful subscription businesses publish a mix of free and paid posts to attract a new audience, and upsell the most loyal members to a premium offering. You can also mix different access levels within the same post, showing a free preview to logged out members and then, right when you're ready for a cliffhanger, that's a good time to...",
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "reading_time": 1,
       "slug": "sell",
@@ -2720,7 +2631,6 @@ cliffhanger, that's a good time to...",
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": "A guide to collaborating with other staff users to publish, and some resources to help you with the next steps of growing your business",
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "A guide to collaborating with other staff users to publish, and some resources to help you with the next steps of growing your business",
       "feature_image": "https://static.ghost.org/v4.0.0/images/admin-settings.png",
@@ -2756,7 +2666,6 @@ cliffhanger, that's a good time to...",
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": "Work with all your favorite apps and tools or create your own custom integrations using the Ghost API.",
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "Work with all your favorite apps and tools or create your own custom integrations using the Ghost API.",
       "feature_image": "https://static.ghost.org/v4.0.0/images/app-integrations.png",
@@ -2793,23 +2702,19 @@ cliffhanger, that's a good time to...",
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": null,
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": " * Lorem
- * Aliquam [http://127.0.0.1:2369/about#nowhere]
- * Tortor [//somewhere.com/link#nowhere]
- * Morbi [http://somewhere.com/link#nowhere]
+ * Aliquam
+ * Tortor
+ * Morbi
  * Praesent
  * Pellentesque
 
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo.
 
+1234abcdefghijkl
 
-Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac
-turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor
-sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies
-mi vitae est. Mauris placerat eleifend leo.
-
-1234abcdefghijklDefinition listConsectetur ad",
+Definition listConsectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim venia",
       "feature_image": null,
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -2843,14 +2748,17 @@ mi vitae est. Mauris placerat eleifend leo.
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": null,
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "testing
+
+
 mctesters
+
 
  * test
  * line
- * items",
+ * items
+",
       "feature_image": "http://placekitten.com/500/200",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -2891,16 +2799,10 @@ mctesters
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": null,
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "HTML Ipsum Presents
-Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac
-turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor
-sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies
-mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien
-ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae,
-ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros
-ipsum rutrum or",
+
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum o",
       "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -2934,7 +2836,6 @@ ipsum rutrum or",
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": "This is my custom excerpt!",
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "This is my custom excerpt!",
       "feature_image": "https://example.com/super_photo.jpg",
@@ -2969,7 +2870,7 @@ exports[`Posts Content API Can request posts 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "46709",
+  "content-length": "46167",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -2999,7 +2900,6 @@ Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": "We've crammed the most important information to help you get started with Ghost into this one post. It's your cheat-sheet to get started, and your shortcut to advanced features.",
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "We've crammed the most important information to help you get started with Ghost into this one post. It's your cheat-sheet to get started, and your shortcut to advanced features.",
       "feature_image": "https://static.ghost.org/v4.0.0/images/welcome-to-ghost.png",
@@ -3035,7 +2935,6 @@ Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": "How to tweak a few settings in Ghost to transform your site from a generic template to a custom brand with style and personality.",
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "How to tweak a few settings in Ghost to transform your site from a generic template to a custom brand with style and personality.",
       "feature_image": "https://static.ghost.org/v4.0.0/images/publishing-options.png",
@@ -3083,7 +2982,6 @@ Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": "A full overview of all the features built into the Ghost editor, including powerful workflow automations to speed up your creative process.",
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "A full overview of all the features built into the Ghost editor, including powerful workflow automations to speed up your creative process.",
       "feature_image": "https://static.ghost.org/v4.0.0/images/writing-posts-with-ghost.png",
@@ -3119,7 +3017,6 @@ Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": "How Ghost allows you to turn anonymous readers into an audience of active subscribers, so you know what's working and what isn't.",
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "How Ghost allows you to turn anonymous readers into an audience of active subscribers, so you know what's working and what isn't.",
       "feature_image": "https://static.ghost.org/v4.0.0/images/creating-a-custom-theme.png",
@@ -3155,17 +3052,14 @@ Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": null,
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
-      "excerpt": "For creators and aspiring entrepreneurs looking to generate a sustainable
-recurring revenue stream from their creative work, Ghost has built-in payments
-allowing you to create a subscription commerce business.
+      "excerpt": "For creators and aspiring entrepreneurs looking to generate a sustainable recurring revenue stream from their creative work, Ghost has built-in payments allowing you to create a subscription commerce business.
 
-Connect your Stripe [https://stripe.com] account to Ghost, and you'll be able to
-quickly and easily create monthly and yearly premium plans for members to
-subscribe to, as well as complimentary plans for friends and family.
+Connect your Stripe account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
 
-Ghost takes 0% payment fees, so everything you make is yours to ",
+Ghost takes 0% payment fees, so everything you make is yours to keep!
+
+Using subscrip",
       "feature_image": "https://static.ghost.org/v4.0.0/images/organizing-your-content.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -3178,29 +3072,17 @@ Ghost takes 0% payment fees, so everything you make is yours to ",
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "plaintext": "For creators and aspiring entrepreneurs looking to generate a sustainable
-recurring revenue stream from their creative work, Ghost has built-in payments
-allowing you to create a subscription commerce business.
+      "plaintext": "For creators and aspiring entrepreneurs looking to generate a sustainable recurring revenue stream from their creative work, Ghost has built-in payments allowing you to create a subscription commerce business.
 
-Connect your Stripe [https://stripe.com] account to Ghost, and you'll be able to
-quickly and easily create monthly and yearly premium plans for members to
-subscribe to, as well as complimentary plans for friends and family.
+Connect your Stripe account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
 
 Ghost takes 0% payment fees, so everything you make is yours to keep!
 
-Using subscriptions, you can build an independent media business like 
-Stratechery [https://stratechery.com], The Information
-[https://www.theinformation.com], or The Browser [https://thebrowser.com].
+Using subscriptions, you can build an independent media business like Stratechery, The Information, or The Browser.
 
-The creator economy is just getting started, and Ghost allows you to build
-something based on technology that you own and control.
+The creator economy is just getting started, and Ghost allows you to build something based on technology that you own and control.
 
-[https://thebrowser.com]The Browser has over 10,000 paying subscribersMost
-successful subscription businesses publish a mix of free and paid posts to
-attract a new audience, and upsell the most loyal members to a premium offering.
-You can also mix different access levels within the same post, showing a free
-preview to logged out members and then, right when you're ready for a
-cliffhanger, that's a good time to...",
+Most successful subscription businesses publish a mix of free and paid posts to attract a new audience, and upsell the most loyal members to a premium offering. You can also mix different access levels within the same post, showing a free preview to logged out members and then, right when you're ready for a cliffhanger, that's a good time to...",
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "reading_time": 1,
       "slug": "sell",
@@ -3222,7 +3104,6 @@ cliffhanger, that's a good time to...",
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": "A guide to collaborating with other staff users to publish, and some resources to help you with the next steps of growing your business",
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "A guide to collaborating with other staff users to publish, and some resources to help you with the next steps of growing your business",
       "feature_image": "https://static.ghost.org/v4.0.0/images/admin-settings.png",
@@ -3258,7 +3139,6 @@ cliffhanger, that's a good time to...",
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": "Work with all your favorite apps and tools or create your own custom integrations using the Ghost API.",
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "Work with all your favorite apps and tools or create your own custom integrations using the Ghost API.",
       "feature_image": "https://static.ghost.org/v4.0.0/images/app-integrations.png",
@@ -3295,23 +3175,19 @@ cliffhanger, that's a good time to...",
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": null,
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": " * Lorem
- * Aliquam [http://127.0.0.1:2369/about#nowhere]
- * Tortor [//somewhere.com/link#nowhere]
- * Morbi [http://somewhere.com/link#nowhere]
+ * Aliquam
+ * Tortor
+ * Morbi
  * Praesent
  * Pellentesque
 
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo.
 
+1234abcdefghijkl
 
-Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac
-turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor
-sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies
-mi vitae est. Mauris placerat eleifend leo.
-
-1234abcdefghijklDefinition listConsectetur ad",
+Definition listConsectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim venia",
       "feature_image": null,
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -3345,14 +3221,17 @@ mi vitae est. Mauris placerat eleifend leo.
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": null,
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "testing
+
+
 mctesters
+
 
  * test
  * line
- * items",
+ * items
+",
       "feature_image": "http://placekitten.com/500/200",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -3393,16 +3272,10 @@ mctesters
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": null,
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "HTML Ipsum Presents
-Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac
-turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor
-sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies
-mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien
-ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae,
-ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros
-ipsum rutrum or",
+
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum o",
       "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -3436,7 +3309,6 @@ ipsum rutrum or",
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "custom_excerpt": "This is my custom excerpt!",
       "custom_template": null,
-      "email_recipient_filter": "none",
       "email_subject": null,
       "excerpt": "This is my custom excerpt!",
       "feature_image": "https://example.com/super_photo.jpg",
@@ -3471,7 +3343,7 @@ exports[`Posts Content API Can request posts from different origin 2: [headers] 
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "46709",
+  "content-length": "46167",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",

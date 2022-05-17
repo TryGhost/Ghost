@@ -1,5 +1,6 @@
 const {notifications} = require('../../services/notifications');
-const api = require('./index');
+const settingsService = require('../../services/settings/settings-service');
+const settingsBREADService = settingsService.getSettingsBREADServiceInstance();
 const internalContext = {context: {internal: true}};
 
 module.exports = {
@@ -25,19 +26,17 @@ module.exports = {
             }
         },
         permissions: true,
-        query(frame) {
+        async query(frame) {
             const {allNotifications, notificationsToAdd} = notifications.add({
                 notifications: frame.data.notifications
             });
 
             if (notificationsToAdd.length){
-                return api.settings.edit({
-                    settings: [{
-                        key: 'notifications',
-                        // @NOTE: We always need to store all notifications!
-                        value: allNotifications.concat(notificationsToAdd)
-                    }]
-                }, internalContext).then(() => {
+                return await settingsBREADService.edit([{
+                    key: 'notifications',
+                    // @NOTE: We always need to store all notifications!
+                    value: allNotifications.concat(notificationsToAdd)
+                }], internalContext).then(() => {
                     return notificationsToAdd;
                 });
             }
@@ -63,12 +62,10 @@ module.exports = {
                 }
             });
 
-            return api.settings.edit({
-                settings: [{
-                    key: 'notifications',
-                    value: allNotifications
-                }]
-            }, internalContext).return();
+            await settingsBREADService.edit([{
+                key: 'notifications',
+                value: allNotifications
+            }], internalContext);
         }
     },
 
@@ -82,15 +79,13 @@ module.exports = {
         permissions: {
             method: 'destroy'
         },
-        query() {
+        async query() {
             const allNotifications = notifications.destroyAll();
 
-            return api.settings.edit({
-                settings: [{
-                    key: 'notifications',
-                    value: allNotifications
-                }]
-            }, internalContext).return();
+            await settingsBREADService.edit([{
+                key: 'notifications',
+                value: allNotifications
+            }], internalContext);
         }
     }
 };

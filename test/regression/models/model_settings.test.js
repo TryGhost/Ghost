@@ -5,6 +5,8 @@ const db = require('../../../core/server/data/db');
 // Stuff we are testing
 const models = require('../../../core/server/models');
 
+const SETTINGS_LENGTH = 77;
+
 describe('Settings Model', function () {
     before(models.init);
     afterEach(testUtils.teardownDb);
@@ -17,7 +19,7 @@ describe('Settings Model', function () {
             await models.Settings.populateDefaults();
 
             const settingsPopulated = await models.Settings.findAll();
-            settingsPopulated.length.should.equal(96);
+            settingsPopulated.length.should.equal(SETTINGS_LENGTH);
         });
 
         it('doesn\'t overwrite any existing settings', async function () {
@@ -42,7 +44,7 @@ describe('Settings Model', function () {
             await models.Settings.populateDefaults();
 
             const settingsPopulated = await models.Settings.findAll();
-            settingsPopulated.length.should.equal(96);
+            settingsPopulated.length.should.equal(SETTINGS_LENGTH);
 
             const titleSetting = settingsPopulated.models.find(s => s.get('key') === 'title');
             titleSetting.get('value').should.equal('Testing Defaults');

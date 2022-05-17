@@ -24,7 +24,6 @@ const GA_FEATURES = [
     'multipleNewsletters',
     'multipleNewslettersUI',
     'membersActivityFeed',
-    'publishingFlow',
     'dashboardV5'
 ];
 
@@ -35,7 +34,6 @@ const BETA_FEATURES = [
 ];
 
 const ALPHA_FEATURES = [
-    'oauthLogin',
     'urlCache',
     'beforeAfterCard',
     'tweetGridCard'

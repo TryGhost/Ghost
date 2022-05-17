@@ -1,25 +1,10 @@
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('api:canary:utils:serializers:input:posts');
-const mapNQLKeyValues = require('@tryghost/nql').utils.mapKeyValues;
 const url = require('./utils/url');
 const slugFilterOrder = require('./utils/slug-filter-order');
 const localUtils = require('../../index');
 const mobiledoc = require('../../../../../lib/mobiledoc');
 const postsMetaSchema = require('../../../../../data/schema').tables.posts_meta;
-
-const replacePageWithType = mapNQLKeyValues({
-    key: {
-        from: 'page',
-        to: 'type'
-    },
-    values: [{
-        from: false,
-        to: 'post'
-    }, {
-        from: true,
-        to: 'page'
-    }]
-});
 
 function removeMobiledocFormat(frame) {
     if (frame.options.formats && frame.options.formats.includes('mobiledoc')) {
@@ -102,15 +87,6 @@ const forceStatusFilter = (frame) => {
     }
 };
 
-const transformLegacyEmailRecipientFilters = (frame) => {
-    if (frame.options.email_recipient_filter === 'free') {
-        frame.options.email_recipient_filter = 'status:free';
-    }
-    if (frame.options.email_recipient_filter === 'paid') {
-        frame.options.email_recipient_filter = 'status:-free';
-    }
-};
-
 module.exports = {
     browse(apiConfig, frame) {
         debug('browse');
@@ -136,8 +112,6 @@ module.exports = {
             defaultFormat(frame);
             defaultRelations(frame);
         }
-
-        frame.options.mongoTransformer = replacePageWithType;
     },
 
     read(apiConfig, frame) {
@@ -205,7 +179,6 @@ module.exports = {
             });
         }
 
-        transformLegacyEmailRecipientFilters(frame);
         handlePostsMeta(frame);
         defaultFormat(frame);
         defaultRelations(frame);

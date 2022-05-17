@@ -17,7 +17,6 @@ const models = require('../../models');
 const postEmailSerializer = require('./post-email-serializer');
 const labs = require('../../../shared/labs');
 const {getSegmentsFromHtml} = require('./segment-parser');
-const labsService = require('../../../shared/labs');
 
 // Used to listen to email.added and email.edited model events originally, I think to offload this - ideally would just use jobs now if possible
 const events = require('../../lib/common/events');
@@ -28,6 +27,7 @@ const messages = {
     noneFilterError: 'Cannot send email to "none" {property}',
     emailSendingDisabled: `Email sending is temporarily disabled because your account is currently in review. You should have an email about this from us already, but you can also reach us any time at support@ghost.org`,
     sendEmailRequestFailed: 'The email service was unable to send an email batch.',
+    archivedNewsletterError: 'Cannot send email to archived newsletters',
     newsletterVisibilityError: 'Unexpected visibility value "{value}". Use one of the valid: "members", "paid".'
 };
 
@@ -53,8 +53,9 @@ const getReplyToAddress = (fromAddress, replyAddressOption) => {
  * @param {Object} options
  */
 const getEmailData = async (postModel, options) => {
-    let newsletter = await postModel.related('newsletter').fetch();
+    let newsletter = postModel.relations.newsletter ?? await postModel.related('newsletter').fetch();
     if (!newsletter) {
+        // The postModel doesn't have a newsletter in test emails
         newsletter = await models.Newsletter.getDefaultNewsletter();
     }
     const {subject, html, plaintext} = await postEmailSerializer.serialize(postModel, newsletter, options);
@@ -132,28 +133,14 @@ const sendTestEmail = async (postModel, toEmails, memberSegment) => {
  *
  * Accepts a filter string, errors on unexpected legacy filter syntax and enforces subscribed:true
  *
+ * @param {Object} newsletter
  * @param {string} emailRecipientFilter NQL filter for members
- * @param {object} options
+ * @param {string} errorProperty
  */
-const transformEmailRecipientFilter = (emailRecipientFilter, {errorProperty = 'email_recipient_filter'} = {}, newsletter = null) => {
-    let filter = [];
-
-    if (!newsletter) {
-        filter.push(`subscribed:true`);
-    } else {
-        filter.push(`newsletters.id:${newsletter.id}`);
-    }
+const transformEmailRecipientFilter = (newsletter, emailRecipientFilter, errorProperty) => {
+    const filter = [`newsletters.id:${newsletter.id}`];
 
     switch (emailRecipientFilter) {
-    // `paid` and `free` were swapped out for NQL filters in 4.5.0, we shouldn't see them here now
-    case 'paid':
-    case 'free':
-        throw new errors.InternalServerError({
-            message: tpl(messages.unexpectedFilterError, {
-                property: errorProperty,
-                value: emailRecipientFilter
-            })
-        });
     case 'all':
         break;
     case 'none':
@@ -167,22 +154,20 @@ const transformEmailRecipientFilter = (emailRecipientFilter, {errorProperty = 'e
         break;
     }
 
-    if (newsletter) {
-        const visibility = newsletter.get('visibility');
-        switch (visibility) {
-        case 'members':
-            // No need to add a member status filter as the email is available to all members
-            break;
-        case 'paid':
-            filter.push(`status:-free`);
-            break;
-        default:
-            throw new errors.InternalServerError({
-                message: tpl(messages.newsletterVisibilityError, {
-                    value: visibility
-                })
-            });
-        }
+    const visibility = newsletter.get('visibility');
+    switch (visibility) {
+    case 'members':
+        // No need to add a member status filter as the email is available to all members
+        break;
+    case 'paid':
+        filter.push(`status:-free`);
+        break;
+    default:
+        throw new errors.InternalServerError({
+            message: tpl(messages.newsletterVisibilityError, {
+                value: visibility
+            })
+        });
     }
 
     return filter.join('+');
@@ -196,7 +181,6 @@ const transformEmailRecipientFilter = (emailRecipientFilter, {errorProperty = 'e
  *
  * @param {object} postModel Post Model Object
  * @param {object} options
- * @param {string} options.newsletter_id - the newsletter_id to send the email to
  */
 
 const addEmail = async (postModel, options) => {
@@ -213,10 +197,19 @@ const addEmail = async (postModel, options) => {
     const knexOptions = _.pick(options, ['transacting', 'forUpdate']);
     const filterOptions = {...knexOptions, limit: 1};
 
-    const newsletter = await postModel.related('newsletter').fetch({require: true, ..._.pick(options, ['transacting'])});
+    // TODO: this is a hack for https://github.com/TryGhost/Team/issues/1626
+    const newsletter = postModel.relations.newsletter ?? await postModel.related('newsletter').fetch({require: true, ..._.pick(options, ['transacting'])});
+
+    if (newsletter.get('status') !== 'active') {
+        // A post might have been scheduled to an archived newsletter.
+        // Don't send it (people can't unsubscribe any longer).
+        throw new errors.EmailError({
+            message: tpl(messages.archivedNewsletterError)
+        });
+    }
 
     const emailRecipientFilter = postModel.get('email_recipient_filter');
-    filterOptions.filter = transformEmailRecipientFilter(emailRecipientFilter, {errorProperty: 'email_recipient_filter'}, newsletter);
+    filterOptions.filter = transformEmailRecipientFilter(newsletter, emailRecipientFilter, 'email_segment');
 
     const startRetrieve = Date.now();
     debug('addEmail: retrieving members count');
@@ -423,11 +416,8 @@ async function getEmailMemberRows({emailModel, memberSegment, options}) {
     const knexOptions = _.pick(options, ['transacting', 'forUpdate']);
     const filterOptions = Object.assign({}, knexOptions);
 
-    let newsletter = null;
-    if (labsService.isSet('multipleNewsletters')) {
-        newsletter = await emailModel.related('newsletter').fetch(Object.assign({}, {require: false}, _.pick(options, ['transacting'])));
-    }
-    const recipientFilter = transformEmailRecipientFilter(emailModel.get('recipient_filter'), {errorProperty: 'recipient_filter'}, newsletter);
+    const newsletter = emailModel.relations.newsletter ?? await emailModel.related('newsletter').fetch(Object.assign({}, {require: true}, _.pick(options, ['transacting'])));
+    const recipientFilter = transformEmailRecipientFilter(newsletter, emailModel.get('recipient_filter'), 'recipient_filter');
     filterOptions.filter = recipientFilter;
 
     if (memberSegment) {
