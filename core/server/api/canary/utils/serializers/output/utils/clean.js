@@ -73,8 +73,6 @@ const post = (attrs, frame) => {
     const columns = frame && frame.options && frame.options.columns || null;
     const fields = frame && frame.original && frame.original.query && frame.original.query.fields || null;
     if (localUtils.isContentAPI(frame)) {
-        // @TODO: https://github.com/TryGhost/Ghost/issues/10335
-        // delete attrs.page;
         delete attrs.status;
         delete attrs.email_only;
         delete attrs.newsletter;
@@ -103,8 +101,6 @@ const post = (attrs, frame) => {
         if (columns && columns.includes('visibility') && fields && !fields.includes('visibility')) {
             delete attrs.visibility;
         }
-    } else {
-        delete attrs.page;
     }
 
     if (columns && columns.includes('email_segment') && fields && !fields.includes('email_segment')) {
