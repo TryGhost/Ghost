@@ -30,6 +30,13 @@ describe('Frontend Routing', function () {
         };
     }
 
+    function assertCorrectFrontendHeaders(res) {
+        should.not.exist(res.headers['x-cache-invalidate']);
+        should.not.exist(res.headers['X-CSRF-Token']);
+        should.not.exist(res.headers['set-cookie']);
+        should.exist(res.headers.date);
+    }
+
     function addPosts(done) {
         testUtils.clearData().then(function () {
             return testUtils.initData();
@@ -160,28 +167,32 @@ describe('Frontend Routing', function () {
                     await request.get('/static-page-test/edit')
                         .expect('Location', '/static-page-test/edit/')
                         .expect('Cache-Control', testUtils.cacheRules.year)
-                        .expect(301);
+                        .expect(301)
+                        .expect(assertCorrectFrontendHeaders);
                 });
 
                 it('should redirect to editor for post resource', async function () {
                     await request.get('//welcome/edit/')
                         .expect('Location', /ghost\/#\/editor\/post\/\w+/)
                         .expect('Cache-Control', testUtils.cacheRules.public)
-                        .expect(302);
+                        .expect(302)
+                        .expect(assertCorrectFrontendHeaders);
                 });
 
                 it('should redirect to editor for page resource', async function () {
                     await request.get('/static-page-test/edit/')
                         .expect('Location', /ghost\/#\/editor\/page\/\w+/)
                         .expect('Cache-Control', testUtils.cacheRules.public)
-                        .expect(302);
+                        .expect(302)
+                        .expect(assertCorrectFrontendHeaders);
                 });
 
                 it('should 404 for non-edit parameter', async function () {
                     await request.get('/static-page-test/notedit/')
                         .expect('Cache-Control', testUtils.cacheRules.private)
                         .expect(404)
-                        .expect(/Page not found/);
+                        .expect(/Page not found/)
+                        .expect(assertCorrectFrontendHeaders);
                 });
             });
 
