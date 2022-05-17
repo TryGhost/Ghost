@@ -254,40 +254,59 @@ Dashboard v5 Layout */
     min-height: 88px;
 }
 
-.gh-dashboard-minicharts .gh-dashboard-chart {
+.gh-dashboard-minichart .gh-dashboard-chart {
     flex: auto;
-    padding: 0;
     height: 88px;
-    padding: 0;
-    padding-left: 45%;
     width: 100%;
+    padding: 0;
+    margin: 0;
 }
 
-.gh-dashboard-minicharts .gh-dashboard-mix .gh-dashboard-chart {
-    padding-left: 0;
+.gh-dashboard-minichart .gh-dashboard-chart-box {
+    width: 54%;
+    margin-left: 45%;
 }
 
-.gh-dashboard-minicharts .gh-dashboard-mix.is-cadence .gh-dashboard-chart-box {
+.gh-dashboard-minichart.gh-dashboard-mix .gh-dashboard-chart-box {
+    width: 99%;
+    margin-left: 0;
+}
+
+.gh-dashboard-minichart.gh-dashboard-mix.is-cadence .gh-dashboard-chart-box {
     /* remember to match these to the tooltip offsets */
     width: 69%;
     margin-left: 30%;
 }
 
 @media screen and (max-width: 1400px) {
-    .gh-dashboard-minicharts .gh-dashboard-chart {
-        padding-left: 50%;
+    .gh-dashboard-minichart .gh-dashboard-chart-box {
+        width: 49%;
+        margin-left: 50%;
+    }
+    
+    .gh-dashboard-minichart.gh-dashboard-mix.is-cadence .gh-dashboard-chart-box {
+        width: 64%;
+        margin-left: 35%;
     }
 }
 
 @media screen and (max-width: 1320px) {
-    .gh-dashboard-minicharts .gh-dashboard-chart {
-        padding-left: 60%;
+    .gh-dashboard-minichart .gh-dashboard-chart-box {
+        width: 39%;
+        margin-left: 60%;
+    }
+
+    .gh-dashboard-minichart.gh-dashboard-mix.is-cadence .gh-dashboard-chart-box {
+        width: 54%;
+        margin-left: 45%;
     }
 }
 
 @media screen and (max-width: 1120px) {
-    .gh-dashboard-minicharts .gh-dashboard-chart {
-        padding-left: 0%;
+    .gh-dashboard-minichart .gh-dashboard-chart-box,
+    .gh-dashboard-minichart.gh-dashboard-mix.is-cadence .gh-dashboard-chart-box {
+        width: 99%;
+        margin-left: 0%;
     }
 }
 
