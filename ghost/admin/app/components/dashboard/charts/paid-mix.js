@@ -448,8 +448,17 @@ export default class PaidMix extends Component {
                     }
 
                     let offsetX = 0;
-                    if (tooltip.x > chartWidth - tooltipWidth) {
-                        offsetX = tooltipWidth - 10;
+
+                    if (that.mode === 'cadence') {
+                        // these adjustments should match the special width and margin values in css
+                        if (tooltip.x > (chartWidth * 0.69) - tooltipWidth) {
+                            offsetX = tooltipWidth - 10;
+                        }
+                        offsetX -= (chartWidth * 0.30);
+                    } else {
+                        if (tooltip.x > chartWidth - tooltipWidth) {
+                            offsetX = tooltipWidth - 10;
+                        } 
                     }
 
                     // update tooltip styles
