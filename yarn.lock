@@ -2167,17 +2167,10 @@
   dependencies:
     moment "^2.29.3"
 
-"@tryghost/string@0.1.26":
+"@tryghost/string@0.1.26", "@tryghost/string@^0.1.17", "@tryghost/string@^0.1.20":
   version "0.1.26"
   resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.26.tgz#f9f1ce40070234a2f0b452d282405be09e78f91b"
   integrity sha512-NZQ6EdSm373Q9JJwev552vjloqmV/G4vNe8GAlyJ1w+PCOniMZbmPWiadjsaD9lt6/lwzy4JlwTAp/v4hPRCpg==
-  dependencies:
-    unidecode "^0.1.8"
-
-"@tryghost/string@^0.1.17", "@tryghost/string@^0.1.20":
-  version "0.1.25"
-  resolved "https://registry.yarnpkg.com/@tryghost/string/-/string-0.1.25.tgz#59fd8dffeb98da532309cb94c99c2ad5f42df4b5"
-  integrity sha512-9Y4T4GjLF2kwtOHKt9nANI7N0jGblgLK4GIFk/HB3immFFq2CJgD24+pli6P7Xw750hfgV2z72T9Vh7qgoU3fw==
   dependencies:
     unidecode "^0.1.8"
 
@@ -3569,10 +3562,10 @@ cli-cursor@^3.1.0:
   dependencies:
     restore-cursor "^3.1.0"
 
-cli-progress@3.11.0:
-  version "3.11.0"
-  resolved "https://registry.yarnpkg.com/cli-progress/-/cli-progress-3.11.0.tgz#03651defd06182a5396ddc2a41da17c2f257ecdf"
-  integrity sha512-ug+V4/Qy3+0jX9XkWPV/AwHD98RxKXqDpL37vJBOxQhD90qQ3rDqDKoFpef9se91iTUuOXKlyg2HUyHBo5lHsQ==
+cli-progress@3.11.1:
+  version "3.11.1"
+  resolved "https://registry.yarnpkg.com/cli-progress/-/cli-progress-3.11.1.tgz#02afb11be9a123f2a302931beb087eafe3a0d971"
+  integrity sha512-TTMA2LHrYaZeNMcgZGO10oYqj9hvd03pltNtVbu4ddeyDTHlYV7gWxsFiuvaQlgwMBFCv1TukcjiODWFlb16tQ==
   dependencies:
     string-width "^4.2.3"
 
