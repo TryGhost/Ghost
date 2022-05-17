@@ -2,7 +2,7 @@
 
 ![](https://github.com/TryGhost/Admin/workflows/Test%20Suite/badge.svg?branch=main)
 
-This is the home of Ember.js based admin client that ships with [Ghost](https://github.com/tryghost/ghost).
+This is the home of Ember.js based admin app that ships with [Ghost](https://github.com/tryghost/ghost).
 
 **Do you want to set up a Ghost blog?** Check the [getting started guide](https://ghost.org/docs/introduction/)
 
@@ -10,7 +10,7 @@ This is the home of Ember.js based admin client that ships with [Ghost](https://
 
 ## Have a bug or issue?
 
-Bugs and issues (even if they only affect the admin client) should be opened on the core [Ghost](https://github.com/tryghost/ghost/issues) repository.
+Bugs and issues (even if they only affect the admin app) should be opened on the core [Ghost](https://github.com/tryghost/ghost/issues) repository.
 
 # Copyright & License
 

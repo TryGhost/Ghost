@@ -64,7 +64,7 @@ module.exports = function (grunt) {
         }
     });
 
-    grunt.registerTask('init', 'Install the client dependencies',
+    grunt.registerTask('init', 'Install the admin dependencies',
         ['shell:npm-install']
     );
 };
