@@ -91,6 +91,9 @@ module.exports = class Command {
     }
 
     /* output aliases */
+    log() {
+        logging(...arguments);
+    }
     ok() {
         logging.ok(...arguments);
     }
