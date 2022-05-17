@@ -1962,10 +1962,10 @@
     "@tryghost/domain-events" "^0.1.14"
     "@tryghost/members-offers" "^0.11.6"
 
-"@tryghost/members-ssr@1.0.27":
-  version "1.0.27"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-1.0.27.tgz#3a73530807d42796b24377e67dae29d5e195963b"
-  integrity sha512-LSQkGqfn+DGjGT5rbkcn36V+E0yO3K1A/nNHyiZfts4JBhiVUTgWOCdEI0Dd9u4WRfMz948sQR3o5Qvcrcm9hg==
+"@tryghost/members-ssr@1.0.28":
+  version "1.0.28"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-ssr/-/members-ssr-1.0.28.tgz#a5db80f7a9ce4518fd3d87830ceb2bd2e11ccc97"
+  integrity sha512-kZlBB34M9W4nRAdjxcTe6tZQ6YOp8LLhv9X8Mf7yX3He9Td+FAlEBlsWkn/YkRUP3jylBWRRn1S525WHOY/25g==
   dependencies:
     "@tryghost/debug" "^0.1.2"
     "@tryghost/errors" "^1.1.0"
