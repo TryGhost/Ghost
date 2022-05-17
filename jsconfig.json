@@ -8,6 +8,6 @@
   },
   "exclude": [
     "core/built",
-    "core/client"
+    "core/admin"
   ]
 }
