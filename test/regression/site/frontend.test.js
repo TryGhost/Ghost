@@ -156,28 +156,32 @@ describe('Frontend Routing', function () {
             });
 
             describe('edit', function () {
-                it('should redirect without slash', function (done) {
-                    request.get('/static-page-test/edit')
+                it('should redirect without slash', async function () {
+                    await request.get('/static-page-test/edit')
                         .expect('Location', '/static-page-test/edit/')
                         .expect('Cache-Control', testUtils.cacheRules.year)
-                        .expect(301)
-                        .end(doEnd(done));
+                        .expect(301);
                 });
 
-                it('should redirect to editor', function (done) {
-                    request.get('/static-page-test/edit/')
-                        .expect('Location', /ghost\/#\/editor\/\w+/)
+                it('should redirect to editor for post resource', async function () {
+                    await request.get('//welcome/edit/')
+                        .expect('Location', /ghost\/#\/editor\/post\/\w+/)
                         .expect('Cache-Control', testUtils.cacheRules.public)
-                        .expect(302)
-                        .end(doEnd(done));
+                        .expect(302);
                 });
 
-                it('should 404 for non-edit parameter', function (done) {
-                    request.get('/static-page-test/notedit/')
+                it('should redirect to editor for page resource', async function () {
+                    await request.get('/static-page-test/edit/')
+                        .expect('Location', /ghost\/#\/editor\/page\/\w+/)
+                        .expect('Cache-Control', testUtils.cacheRules.public)
+                        .expect(302);
+                });
+
+                it('should 404 for non-edit parameter', async function () {
+                    await request.get('/static-page-test/notedit/')
                         .expect('Cache-Control', testUtils.cacheRules.private)
                         .expect(404)
-                        .expect(/Page not found/)
-                        .end(doEnd(done));
+                        .expect(/Page not found/);
                 });
             });
 
