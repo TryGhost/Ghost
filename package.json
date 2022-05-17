@@ -153,7 +153,7 @@
     "juice": "8.0.0",
     "keypair": "1.0.4",
     "knex": "2.0.0",
-    "knex-migrator": "4.2.9",
+    "knex-migrator": "4.2.10",
     "lodash": "4.17.21",
     "luxon": "2.4.0",
     "mailgun-js": "0.22.0",
