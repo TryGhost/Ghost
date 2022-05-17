@@ -1193,3 +1193,7 @@ kbd {
 .gh-dashboard-zero-message {
     background-color: #1c1e21;
 }
+
+.gh-dashboard-tooltip {
+    background: var(--whitegrey);
+}
