@@ -170,7 +170,7 @@ export default class Anchor extends Component {
         const ctxFill = canvasFill.getContext('2d');
         const gradientFill = ctxFill.createLinearGradient(0, 0, 1000, 0);
         gradientFill.addColorStop(0, 'rgba(250, 45, 142, 0.2');   
-        gradientFill.addColorStop(1, 'rgba(143, 66, 255, 0.02');
+        gradientFill.addColorStop(1, 'rgba(143, 66, 255, 0.1');
         
         return {
             labels: labels,
