@@ -11,6 +11,7 @@
                     @triggerClass="gh-contentfilter-menu-trigger"
                     @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
                     @matchTriggerWidth={{false}}
+                    @horizontalPosition="left"
                     as |option|
                 >
                     {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
