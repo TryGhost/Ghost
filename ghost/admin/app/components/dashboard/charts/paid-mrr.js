@@ -118,7 +118,7 @@ export default class PaidMrr extends Component {
             labels: labels,
             datasets: [{
                 data: data,
-                tension: 0,
+                tension: 1,
                 cubicInterpolationMode: 'monotone',
                 fill: false,
                 fillColor: gradient,

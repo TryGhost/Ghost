@@ -176,7 +176,7 @@ export default class Anchor extends Component {
             labels: labels,
             datasets: [{
                 data: data,
-                tension: 0,
+                tension: 1,
                 cubicInterpolationMode: 'monotone',
                 fill: true,
                 fillColor: gradientFill,
