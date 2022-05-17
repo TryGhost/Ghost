@@ -588,6 +588,11 @@ export const getMemberName = ({member}) => {
 
 export const getSupportAddress = ({site}) => {
     const {members_support_address: supportAddress} = site || {};
+    if (supportAddress?.split('@')?.length > 1) {
+        const [recipient, domain] = supportAddress?.split('@');
+        const updatedDomain = domain?.replace(/^(www)\.(?=[^/]*\..{2,5})/, '') || '';
+        return `${recipient}@${updatedDomain}`;
+    }
     return supportAddress || '';
 };
 

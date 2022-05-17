@@ -1,4 +1,4 @@
-import {getCurrencySymbol, getFreeProduct, getMemberName, getMemberSubscription, getPriceFromSubscription, getPriceIdFromPageQuery, hasMultipleProducts, isActiveOffer, isInviteOnlySite, isPaidMember, isSameCurrency} from './helpers';
+import {getCurrencySymbol, getFreeProduct, getMemberName, getMemberSubscription, getPriceFromSubscription, getPriceIdFromPageQuery, getSupportAddress, hasMultipleProducts, isActiveOffer, isInviteOnlySite, isPaidMember, isSameCurrency} from './helpers';
 import * as Fixtures from './fixtures-generator';
 import {site as FixturesSite, member as FixtureMember, offer as FixtureOffer} from '../utils/test-fixtures';
 import {isComplimentaryMember} from '../utils/helpers';
@@ -183,6 +183,35 @@ describe('Helpers - ', () => {
         test('returns null for invalid subscription', () => {
             const value = getPriceFromSubscription({subscription: {}});
             expect(value).toBe(null);
+        });
+    });
+
+    describe('getSupportAddress -', () => {
+        test('returns expected support address for non sub domain', () => {
+            let site = {
+                members_support_address: 'jamie@example.com'
+            };
+            const supportAddress = getSupportAddress({site});
+
+            expect(supportAddress).toBe('jamie@example.com');
+        });
+
+        test('returns expected support address for non www sub domain', () => {
+            let site = {
+                members_support_address: 'jamie@blog.example.com'
+            };
+            const supportAddress = getSupportAddress({site});
+
+            expect(supportAddress).toBe('jamie@blog.example.com');
+        });
+
+        test('returns expected support address for www domain', () => {
+            let site = {
+                members_support_address: 'jamie@www.example.com'
+            };
+            const supportAddress = getSupportAddress({site});
+
+            expect(supportAddress).toBe('jamie@example.com');
         });
     });
 
