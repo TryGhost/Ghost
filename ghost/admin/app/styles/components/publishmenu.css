@@ -652,6 +652,10 @@
     font-weight: 500;
 }
 
+.gh-post-bookmark-wrapper {
+    margin-bottom: 24px;
+}
+
 .gh-post-bookmark {
     display: flex;
     align-items: center;
