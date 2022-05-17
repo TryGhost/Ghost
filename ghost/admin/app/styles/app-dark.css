@@ -494,7 +494,7 @@ input:focus,
 
 .epm-modal .modal-content,
 .modal-content {
-    background: color-mod(var(--white) l(-1%));
+    background: color-mod(var(--white) l(+2%));
 }
 
 .seo-preview-title {
