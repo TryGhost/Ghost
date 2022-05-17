@@ -60,6 +60,24 @@ describe('Frontend Routing: Preview Routes', function () {
             });
     });
 
+    it('should redirect draft posts accessed via uuid and edit to admin post edit screen', async function () {
+        await request.get('/p/d52c42ae-2755-455c-80ec-70b2ec55c903/edit/')
+            .expect('Content-Type', /text\/plain/)
+            .expect(302)
+            .expect('Location', /ghost\/#\/editor\/post\/\w+/)
+            .expect('Cache-Control', testUtils.cacheRules.public)
+            .expect(assertCorrectFrontendHeaders);
+    });
+
+    it('should redirect draft page accessed via uuid and edit to admin page edit screen', async function () {
+        await request.get('/p/d52c42ae-2755-455c-80ec-70b2ec55c904/edit/')
+            .expect('Content-Type', /text\/plain/)
+            .expect(302)
+            .expect('Location', /ghost\/#\/editor\/page\/\w+/)
+            .expect('Cache-Control', testUtils.cacheRules.public)
+            .expect(assertCorrectFrontendHeaders);
+    });
+
     it('should redirect published posts to their live url', async function () {
         await request.get('/p/2ac6b4f6-e1f3-406c-9247-c94a0496d39d/')
             .expect(301)
