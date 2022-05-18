@@ -67,8 +67,7 @@
             @successText="Scheduled"
             @class="gh-btn gh-btn-large"
             @idleClass="gh-btn-pulse"
-            @runningClass="gh-btn-green"
-            @showIcon={{false}}
+            @runningClass="gh-btn-green gh-btn-icon"
         />
     {{else if @publishOptions.willOnlyEmail}}
         <GhTaskButton
@@ -78,8 +77,7 @@
             @successText="Sent"
             @class="gh-btn gh-btn-large"
             @idleClass="gh-btn-pulse"
-            @runningClass="gh-btn-green"
-            @showIcon={{false}}
+            @runningClass="gh-btn-green gh-btn-icon"
         />
     {{else if this.willEmail}}
         <GhTaskButton
@@ -89,8 +87,7 @@
             @successText="Published & sent"
             @class="gh-btn gh-btn-large"
             @idleClass="gh-btn-pulse"
-            @runningClass="gh-btn-green"
-            @showIcon={{false}}
+            @runningClass="gh-btn-green gh-btn-icon"
         />
     {{else}}
         <GhTaskButton
@@ -100,8 +97,7 @@
             @successText="Published"
             @class="gh-btn gh-btn-large"
             @idleClass="gh-btn-pulse"
-            @runningClass="gh-btn-green"
-            @showIcon={{false}}
+            @runningClass="gh-btn-green gh-btn-icon"
         />
     {{/if}}
     <button type="button" class="gh-btn gh-btn-link gh-btn-large gh-publish-cta-secondary" {{on "click" @cancel}}>Back to settings</button>
