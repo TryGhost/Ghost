@@ -73,18 +73,16 @@
                                         </p>
                                     </LinkTo>
                                 {{/if}}
-                                {{#if (feature "multipleNewslettersUI")}}
-                                    <div class="gh-newsletter-card-block stats-block {{unless this.displayingDefault "multiple"}}">
-                                        <div>
-                                            <h3 class="gh-newsletter-card-name">{{format-number newsletter.count.members}}</h3>
-                                            <p class="gh-newsletter-card-description">Subscribers</p>
-                                        </div>
-                                        <div>
-                                            <h3 class="gh-newsletter-card-name">{{format-number newsletter.count.posts}}</h3>
-                                            <p class="gh-newsletter-card-description">Posts sent</p>
-                                        </div>
+                                <div class="gh-newsletter-card-block stats-block {{unless this.displayingDefault "multiple"}}">
+                                    <div>
+                                        <h3 class="gh-newsletter-card-name">{{format-number newsletter.count.members}}</h3>
+                                        <p class="gh-newsletter-card-description">Subscribers</p>
                                     </div>
-                                {{/if}}
+                                    <div>
+                                        <h3 class="gh-newsletter-card-name">{{format-number newsletter.count.posts}}</h3>
+                                        <p class="gh-newsletter-card-description">Posts sent</p>
+                                    </div>
+                                </div>
                                 <div class="gh-newsletter-card-block cta-block">
                                     {{#if this.displayingDefault}}
                                         <LinkTo @route="settings.newsletters.edit-newsletter" @model={{newsletter.id}} class="gh-btn gh-btn-green" data-test-button="customize-newsletter"><span>Customize &rarr;</span></LinkTo>
@@ -129,7 +127,5 @@
             {{/if}}
         </div>
     </section>
-    {{#if (feature "multipleNewslettersUI")}}
-        <LinkTo @route="settings.newsletters.new-newsletter" class="gh-add-newsletter" data-test-button="add-newsletter">{{svg-jar "add-stroke"}}Add newsletter</LinkTo>
-    {{/if}}
+    <LinkTo @route="settings.newsletters.new-newsletter" class="gh-add-newsletter" data-test-button="add-newsletter">{{svg-jar "add-stroke"}}Add newsletter</LinkTo>
 </div>
