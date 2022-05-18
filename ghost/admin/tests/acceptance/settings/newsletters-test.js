@@ -80,6 +80,21 @@ describe('Acceptance: Settings - Newsletters', function () {
         expect(find(`[data-test-modal="${name}-newsletter"]`), 'Newsletter modal should disappear after saving').to.not.exist;
     }
 
+    async function checkCancel(options) {
+        const name = options.edit ? 'edit' : 'create';
+
+        // Create the newsletter
+        await click('[data-test-button="cancel-newsletter"]');
+
+        if (options.shouldConfirm) {
+            expect(find('[data-test-modal="unsaved-settings"]'), 'Confirm unsaved settings modal should be visible').to.exist;
+            await click('[data-test-leave-button]');
+        }
+
+        // Check if modal closes on save
+        expect(find(`[data-test-modal="${name}-newsletter"]`), 'Newsletter modal should disappear after canceling').to.not.exist;
+    }
+
     async function openTab(name, optional = true) {
         const generalToggleSelector = '[data-test-nav-toggle="' + name + '"]';
         const generalToggle = find(generalToggleSelector);
@@ -249,6 +264,115 @@ describe('Acceptance: Settings - Newsletters', function () {
         await checkSave({
             edit: true,
             verifyEmail: /previous email address \(test@example\.com\)/
+        });
+    });
+
+    it('does not ask to confirm saved changes', async function () {
+        await visit('/settings/newsletters');
+
+        // When we only have a single newsletter, the customize button is shown instead of the menu button
+        await click('[data-test-button="customize-newsletter"]');
+
+        // Check if modal opens
+        expect(find('[data-test-modal="edit-newsletter"]'), 'Edit newsletter modal').to.exist;
+
+        // Make no changes
+
+        // Everything should be valid
+        await checkCancel({
+            edit: true,
+            shouldConfirm: false
+        });
+    });
+
+    it('asks to confirm unsaved changes', async function () {
+        async function doCheck(tabName, field) {
+            await visit('/settings/newsletters');
+
+            // When we only have a single newsletter, the customize button is shown instead of the menu button
+            await click('[data-test-button="customize-newsletter"]');
+
+            // Check if modal opens
+            expect(find('[data-test-modal="edit-newsletter"]'), 'Edit newsletter modal').to.exist;
+
+            // Make a change
+            await openTab(tabName, false);
+            if (field.input) {
+                await fillIn(field.input, field.value ?? 'my changed value');
+            } else if (field.toggle) {
+                await click(field.toggle);
+            } else if (field.dropdown) {
+                // Open dropdown
+                await click(`${field.dropdown} .ember-basic-dropdown-trigger`);
+
+                // Click first not-selected option
+                await click(`${field.dropdown} li.ember-power-select-option[aria-current="false"]`);
+            }
+
+            // Everything should be valid
+            await checkCancel({
+                edit: true,
+                shouldConfirm: true
+            });
+        }
+
+        // General name
+        await doCheck('general.name', {
+            input: '#newsletter-title'
+        });
+
+        await doCheck('general.name', {
+            input: '#newsletter-description'
+        });
+
+        // General email
+        await doCheck('general.email', {
+            input: '#newsletter-sender-name'
+        });
+
+        await doCheck('general.email', {
+            input: '#newsletter-sender-email'
+        });
+
+        await doCheck('general.email', {
+            input: '#newsletter-reply-to',
+            value: 'support'
+        });
+
+        // Member settings
+        await doCheck.call(this, 'general.member', {
+            toggle: '[data-test-toggle="subscribeOnSignup"]'
+        });
+
+        // Design header
+        await doCheck.call(this, 'design.header', {
+            toggle: '[data-test-toggle="showHeaderTitle"]'
+        });
+
+        await doCheck.call(this, 'design.header', {
+            toggle: '[data-test-toggle="showHeaderName"]'
+        });
+
+        // Design body
+        await doCheck.call(this, 'design.body', {
+            dropdown: '[data-test-input="titleFontCategory"]'
+        });
+
+        await doCheck.call(this, 'design.body', {
+            toggle: '#newsletter-title-alignment button:not(.gh-btn-group-selected)'
+        });
+
+        await doCheck.call(this, 'design.body', {
+            dropdown: '[data-test-input="bodyFontCategory"]'
+        });
+
+        await doCheck.call(this, 'design.body', {
+            toggle: '#show-feature-image'
+        });
+
+        // Design footer
+        await doCheck('design.footer', {
+            input: '[contenteditable="true"]'
         });
     });
 });
