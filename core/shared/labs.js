@@ -22,7 +22,6 @@ const GA_FEATURES = [
     'membersTableStatus',
     'multipleNewsletters',
     'multipleNewslettersUI',
-    'membersActivityFeed',
     'dashboardV5'
 ];
 
