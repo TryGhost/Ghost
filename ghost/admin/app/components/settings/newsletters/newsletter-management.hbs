@@ -53,7 +53,7 @@
                             @isSortable={{true}}
                         >
                             {{svg-jar "grab" class="grab-newsletter"}}
-                            <div class="gh-main-content-card gh-newsletter-card">
+                            <div class="gh-main-content-card gh-newsletter-card" data-test-newsletter="{{newsletter.slug}}">
                                 {{#if this.displayingDefault}}
                                     <div class="gh-newsletter-card-block title-block">
                                         <h3 class="gh-newsletter-card-name">

@@ -4,7 +4,7 @@
     <div class="modal-fullsettings-section-labs">
 
         {{#let (eq @openSection "design-header") as |isOpen|}}
-            <button class="modal-fullsettings-tab {{if isOpen "active"}}" type="button" {{on "click" (fn @toggleSection "design-header")}} data-test-nav-toggle="general">
+            <button class="modal-fullsettings-tab {{if isOpen "active"}}" type="button" {{on "click" (fn @toggleSection "design-header")}} data-test-nav-toggle="design.header">
                 {{svg-jar "email-header"}} Header
                 <span class="gh-nav-button-expand">{{svg-jar (if isOpen "arrow-up-stroke" "arrow-down-stroke")}}</span>
             </button>
@@ -112,7 +112,7 @@
         {{/let}}
 
         {{#let (eq @openSection "design-body") as |isOpen|}}
-            <button class="modal-fullsettings-tab {{if isOpen "active"}}" type="button" {{on "click" (fn @toggleSection "design-body")}} data-test-nav-toggle="general">
+            <button class="modal-fullsettings-tab {{if isOpen "active"}}" type="button" {{on "click" (fn @toggleSection "design-body")}} data-test-nav-toggle="design.body">
                 {{svg-jar "email-body"}} Body
                 <span class="gh-nav-button-expand">{{svg-jar (if isOpen "arrow-up-stroke" "arrow-down-stroke")}}</span>
             </button>
@@ -166,7 +166,7 @@
         {{/let}}
 
         {{#let (eq @openSection "design-footer") as |isOpen|}}
-            <button class="modal-fullsettings-tab {{if isOpen "active"}}" type="button" {{on "click" (fn @toggleSection "design-footer")}} data-test-nav-toggle="general">
+            <button class="modal-fullsettings-tab {{if isOpen "active"}}" type="button" {{on "click" (fn @toggleSection "design-footer")}} data-test-nav-toggle="design.footer">
                 {{svg-jar "email-footer"}} Footer
                 <span class="gh-nav-button-expand">{{svg-jar (if isOpen "arrow-up-stroke" "arrow-down-stroke")}}</span>
             </button>
