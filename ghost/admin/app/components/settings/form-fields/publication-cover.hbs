@@ -33,11 +33,9 @@
                     <button id="publication-cover" type="button" class="gh-btn gh-btn-white" {{on "click" uploader.triggerFileDialog}} data-test-image-upload-btn="coverImage">
                         <span>Upload cover</span>
                     </button>
-                    {{#if (feature "improvedOnboarding")}}
-                        <button type="button" class="gh-btn gh-btn-white w10" {{on "click" this.toggleUnsplashSelector}} aria-label="Select photo from Unsplash">
-                            <span>{{svg-jar "unsplash" class="nudge-right--2 nudge-bottom--2"}}</span>
-                        </button>
-                    {{/if}}
+                    <button type="button" class="gh-btn gh-btn-white w10" {{on "click" this.toggleUnsplashSelector}} aria-label="Select photo from Unsplash">
+                        <span>{{svg-jar "unsplash" class="nudge-right--2 nudge-bottom--2"}}</span>
+                    </button>
                 </div>
             {{/if}}
             <div class="dn">
