@@ -146,7 +146,7 @@ module.exports = class RouterController {
             return res.end('Bad Request.');
         }
 
-        if (cadence !== 'month' && cadence !== 'year') {
+        if (cadence && cadence !== 'month' && cadence !== 'year') {
             res.writeHead(400);
             return res.end('Bad Request.');
         }
