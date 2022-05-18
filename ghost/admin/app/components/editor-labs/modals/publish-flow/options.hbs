@@ -48,12 +48,14 @@
                                 {{format-number countFetcher.count}}
 
                                 {{!-- @recipientType = none/free/paid/all/specific --}}
-                                {{if (not-eq @recipientType "all") @recipientType}}
+                                {{#let (if (not-eq @recipientType "all") @recipientType) as |recipientType|}}
+                                    {{if (is-empty countFetcher.count) (capitalize recipientType) recipientType}}
+                                {{/let}}
 
                                 {{#if @publishOptions.onlyDefaultNewsletter}}
-                                    {{gh-pluralize countFetcher.count "subscriber" without-count=true}}
+                                    {{gh-pluralize countFetcher.count (if (is-empty countFetcher.count) "Subscriber" "subscriber") without-count=true}}
                                 {{else}}
-                                    {{gh-pluralize countFetcher.count "subscriber" without-count=true}}
+                                    {{gh-pluralize countFetcher.count (if (is-empty countFetcher.count) "Subscriber" "subscriber") without-count=true}}
                                     of <span class="gh-selected-newsletter">{{@publishOptions.newsletter.name}}</span>
                                 {{/if}}
                             {{/let}}
