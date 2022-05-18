@@ -6,7 +6,7 @@
         @renderInPlace={{false}}
         @dropdownClass="gh-publish-newsletter-dropdown"
     />
-    
+
     {{#if (gt @publishOptions.newsletters.length 1)}}
         <div class="mt4">
             <label class="gh-main-section-header small bn">Newsletter</label>
@@ -19,7 +19,11 @@
                 @dropdownClass="gh-publish-newsletter-dropdown"
                 as |newsletter|
             >
-                <span>{{newsletter.name}}</span><span class="gh-newsletter-count">{{format-number newsletter.count.members}}</span>
+                <span>{{newsletter.name}}</span>
+                {{!-- TODO: remove conditional when author/editor can fetch member counts --}}
+                {{#if @publishOptions.user.isAdmin}}
+                    <span class="gh-newsletter-count">{{format-number newsletter.count.members}}</span>
+                {{/if}}
             </PowerSelect>
         </div>
     {{/if}}
