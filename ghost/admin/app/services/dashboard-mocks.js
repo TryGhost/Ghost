@@ -291,10 +291,12 @@ export default class DashboardMocksService extends Service {
                 negativeDelta: data.paidCanceled
             };
         });
+
+        const lastStat = stats[stats.length - 1];
         const currentCounts = {
-            total: (stats[stats.length - 1]?.paid ?? 0) + (stats[stats.length - 1]?.free ?? 0) + (stats[stats.length - 1]?.comped ?? 0),
-            paid: stats[stats.length - 1]?.paid ?? 0,
-            free: (stats[stats.length - 1]?.free ?? 0) + (stats[stats.length - 1]?.comped ?? 0)
+            total: lastStat.paid + lastStat.free + lastStat.comped,
+            paid: lastStat.paid,
+            free: lastStat.free + lastStat.comped
         };
 
         const cadenceRate = Math.random();
