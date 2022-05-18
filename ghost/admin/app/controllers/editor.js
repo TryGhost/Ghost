@@ -971,8 +971,8 @@ export default class EditorController extends Controller {
         }
 
         // titleScratch isn't an attr so needs a manual dirty check
-        if (this.titleScratch !== this.title) {
-            this._leaveModalReason = {reason: 'title is different', context: {current: this.title, scratch: this.titleScratch}};
+        if (post.titleScratch !== post.title) {
+            this._leaveModalReason = {reason: 'title is different', context: {current: post.title, scratch: post.titleScratch}};
             return true;
         }
 
