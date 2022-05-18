@@ -39,7 +39,7 @@ export default class MembersCountCacheService extends Service {
             const allNewsletters = await this.store.query('newsletter', {status: 'active', limit: 'all'});
             this.hasMultipleNewsletters = allNewsletters.length > 1;
         }
-        
+
         const user = this.session.user;
 
         const nounSingular = newsletter && this.hasMultipleNewsletters ? 'subscriber' : 'member';
@@ -59,10 +59,10 @@ export default class MembersCountCacheService extends Service {
                 return 'all free ' + nounPlural + suffix;
             }
             if (isPaid) {
-                return 'all paid members' + nounPlural + suffix;
+                return 'all paid ' + nounPlural + suffix;
             }
             if (isAll) {
-                return 'all members' + nounPlural + suffix;
+                return 'all ' + nounPlural + suffix;
             }
 
             return 'a custom members segment';
