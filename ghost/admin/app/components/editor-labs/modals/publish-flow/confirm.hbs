@@ -59,7 +59,17 @@
 {{/if}}
 
 <div class="gh-publish-cta">
-    {{#if @publishOptions.willOnlyEmail}}
+    {{#if @publishOptions.isScheduled}}
+        <GhTaskButton
+            @task={{this.confirmTask}}
+            @buttonText={{this.confirmButtonText}}
+            @runningText="Scheduling"
+            @successText="Scheduled"
+            @class="gh-btn gh-btn-large"
+            @idleClass="gh-btn-pulse"
+            @showIcon={{false}}
+        />
+    {{else if @publishOptions.willOnlyEmail}}
         <GhTaskButton
             @task={{this.confirmTask}}
             @buttonText={{this.confirmButtonText}}
