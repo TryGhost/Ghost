@@ -366,6 +366,7 @@ export default class DashboardStatsService extends Service {
             const _tier = this.paidTiers.find(x => x.id === tier);
             paidMembersByTier.push({
                 tier: {
+                    id: _tier.id,
                     name: _tier.name
                 },
                 members: result.meta.totals.reduce((sum, total) => {
@@ -375,6 +376,19 @@ export default class DashboardStatsService extends Service {
                     return sum + total.count;
                 }, 0)
             });
+        }
+
+        // Add all missing tiers without members
+        for (const tier of this.paidTiers) {
+            if (!paidMembersByTier.find(t => t.tier.id === tier.id)) {
+                paidMembersByTier.push({
+                    tier: {
+                        id: tier.id,
+                        name: tier.name
+                    },
+                    members: 0
+                });
+            }
         }
 
         function mergeDates(list, entry) {
