@@ -591,12 +591,6 @@
 	animation: pulse-green 2s infinite;
 }
 
-.gh-publish-cta .gh-btn-green,
-.gh-publish-cta .gh-btn-green:hover,
-.gh-publish-cta .gh-btn-green:active {
-    background: linear-gradient(90deg,#4dd831,#1DC32E) !important;
-}
-
 @keyframes pulse-green {
 	0% {
 		transform: scale(0.98);
@@ -612,6 +606,16 @@
 		transform: scale(0.98);
 		box-shadow: 0 0 0 0 rgba(48, 207, 67, 0);
 	}
+}
+
+.gh-publish-cta .gh-btn-green,
+.gh-publish-cta .gh-btn-green:hover,
+.gh-publish-cta .gh-btn-green:active {
+    background: linear-gradient(90deg,#4dd831,#1DC32E) !important;
+}
+
+.gh-publish-cta .gh-btn-green + .gh-publish-cta-secondary {
+    display: none;
 }
 
 .gh-publish-cta-secondary {
