@@ -53,6 +53,13 @@ export default class PublishManagement extends Component {
                 saveTask: this.publishTask,
                 togglePreviewPublish: this.togglePreviewPublish
             });
+
+            const result = await this.publishFlowModal;
+
+            if (result?.afterTask && this[result?.afterTask]) {
+                await timeout(160); // wait for modal animation to finish
+                this[result.afterTask].perform();
+            }
         }
     }
 
