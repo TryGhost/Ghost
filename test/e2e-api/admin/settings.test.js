@@ -1,6 +1,6 @@
 const assert = require('assert');
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
-const {stringMatching, anyEtag} = matchers;
+const {stringMatching, anyEtag, anyUuid} = matchers;
 
 const CURRENT_SETTINGS_COUNT = 67;
 
@@ -205,6 +205,37 @@ describe('Settings API', function () {
                             assert.equal(setting.value, null);
                         }
                     });
+                });
+        });
+
+        it('Can attempt to connect to stripe', async function () {
+            const settingsToChange = [
+                {
+                    key: 'stripe_connect_integration_token',
+                    value: JSON.stringify({
+                        s: 'session_state',
+                        p: 'public_key',
+                        a: 'secret_key',
+                        l: true,
+                        n: 'Display Name',
+                        i: 'account_id'
+
+                    })
+                }
+            ];
+
+            await agent.put('settings/')
+                .body({
+                    settings: settingsToChange
+                })
+                .expectStatus(400)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyUuid
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    etag: anyEtag
                 });
         });
     });
