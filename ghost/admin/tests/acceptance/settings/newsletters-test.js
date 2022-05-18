@@ -10,7 +10,7 @@ describe('Acceptance: Settings - Newsletters', function () {
     setupMirage(hooks);
 
     beforeEach(async function () {
-        this.server.loadFixtures('configs');
+        this.server.loadFixtures('configs', 'newsletters');
 
         const role = this.server.create('role', {name: 'Owner'});
         this.server.create('user', {roles: [role]});
@@ -37,12 +37,20 @@ describe('Acceptance: Settings - Newsletters', function () {
         expect(this.server.db.settings.findBy({key: 'email_track_opens'}).value).to.equal(false);
     });
 
-    async function checkValidationError(regexp) {
+    async function checkValidationError(errors) {
         // Create the newsletter
         await click('[data-test-button="save-newsletter"]');
 
-        expect(findAll('.error > .response').length, 'error message is displayed').to.equal(1);
-        expect(find('.error > .response').textContent).to.match(regexp);
+        // @todo: at the moment, the tabs don't open on error automatically
+        // we need to remove these lines when this is fixed
+        // and replace it with something like ± checkTabOpen('genexral')
+        // await openTab('general.name');
+
+        for (const selector of Object.keys(errors)) {
+            expect(findAll(selector).length, 'field ' + selector + ' is not visible').to.equal(1);
+            expect(findAll(selector + ' + .response').length, 'error message is displayed').to.equal(1);
+            expect(find(selector + ' + .response').textContent).to.match(errors[selector]);
+        }
 
         // Check button is in error state
         expect(find('[data-test-button="save-newsletter"] > [data-test-task-button-state="failure"]')).to.exist;
@@ -57,8 +65,14 @@ describe('Acceptance: Settings - Newsletters', function () {
         // No errors
         expect(findAll('.error > .response').length, 'error message is displayed').to.equal(0);
 
-        if (options.shouldVerifyEmail) {
+        if (options.verifyEmail) {
             expect(find('[data-test-modal="confirm-newsletter-email"]'), 'Confirm email modal').to.exist;
+
+            // Check message
+            if (typeof verifyEmail !== 'boolean') {
+                const t = find('[data-test-modal="confirm-newsletter-email"] p').textContent.trim().replace(/\s+/g, ' ');
+                expect(t).to.match(options.verifyEmail, t);
+            }
             await click('[data-test-button="confirm-newsletter-email"]');
         }
 
@@ -66,7 +80,44 @@ describe('Acceptance: Settings - Newsletters', function () {
         expect(find(`[data-test-modal="${name}-newsletter"]`), 'Newsletter modal should disappear after saving').to.not.exist;
     }
 
+    async function openTab(name, optional = true) {
+        const generalToggleSelector = '[data-test-nav-toggle="' + name + '"]';
+        const generalToggle = find(generalToggleSelector);
+        const doesExist = !!generalToggle;
+
+        if (!doesExist && !optional) {
+            throw new Error('Expected tab ' + name + ' to exist');
+        }
+
+        if (doesExist && !generalToggle.classList.contains('active')) {
+            await click(generalToggleSelector);
+
+            if (!generalToggle.classList.contains('active')) {
+                throw new Error('Could not open ' + name + ' tab');
+            }
+        }
+    }
+
+    async function closeTab(name, optional = true) {
+        const generalToggleSelector = '[data-test-nav-toggle="' + name + '"]';
+        const generalToggle = find(generalToggleSelector);
+        const doesExist = !!generalToggle;
+
+        if (!doesExist && !optional) {
+            throw new Error('Expected tab ' + name + ' to exist');
+        }
+
+        if (doesExist && generalToggle.classList.contains('active')) {
+            await click(generalToggleSelector);
+
+            if (generalToggle.classList.contains('active')) {
+                throw new Error('Could not close ' + name + ' tab');
+            }
+        }
+    }
+
     async function fillName(name) {
+        await openTab('general.name');
         await fillIn('input#newsletter-title', name);
     }
 
@@ -94,7 +145,7 @@ describe('Acceptance: Settings - Newsletters', function () {
         expect(find('[data-test-modal="create-newsletter"]'), 'Create newsletter modal').to.exist;
 
         // Invalid name error when you try to save
-        await checkValidationError(/Please enter a name./);
+        await checkValidationError({'input#newsletter-title': /Please enter a name./});
 
         // Fill in the newsletter name
         await fillName('My new newsletter');
@@ -103,34 +154,101 @@ describe('Acceptance: Settings - Newsletters', function () {
         await checkSave({});
     });
 
-    /*it('validates edit fields before saving', async function () {
+    it('can edit via menu if multiple newsletters', async function () {
+        // Create an extra newsletter
+        this.server.create('newsletter', {status: 'active', name: 'test newsletter', slug: 'test-newsletter'});
         await visit('/settings/newsletters');
 
-        // This one is only needed because we already created a second newsletter in previous test
         await click('[data-test-newsletter-menu-trigger]');
         await click('[data-test-button="customize-newsletter"]');
 
         // Check if modal opens
         expect(find('[data-test-modal="edit-newsletter"]'), 'Edit newsletter modal').to.exist;
+    });
+
+    it('validates edit fields before saving', async function () {
+        await visit('/settings/newsletters');
+
+        // When we only have a single newsletter, the customize button is shown instead of the menu button
+        await click('[data-test-button="customize-newsletter"]');
+
+        // Check if modal opens
+        expect(find('[data-test-modal="edit-newsletter"]'), 'Edit newsletter modal').to.exist;
+
+        // Clear newsletter name
+        await fillName('');
 
         // Invalid name error when you try to save
-        await checkValidationError(/Please enter a name./);
+        await checkValidationError({'input#newsletter-title': /Please enter a name./});
 
         // Fill in the newsletter name
         await fillName('My new newsletter');
 
         // Enter an invalid email
+        await openTab('general.email');
         await fillIn('input#newsletter-sender-email', 'invalid-email');
 
         // Check if it complains about the invalid email
-        await checkValidationError(/Invalid email./);
+        await checkValidationError({
+            'input#newsletter-sender-email': /Invalid email./
+        });
 
         await fillIn('input#newsletter-sender-email', 'valid-email@email.com');
 
         // Everything should be valid
         await checkSave({
             edit: true,
-            shouldVerifyEmail: true
+            verifyEmail: /default email address \(noreply/
         });
-    });*/
+    });
+
+    it('can open / close all tabs', async function () {
+        await visit('/settings/newsletters');
+
+        // When we only have a single newsletter, the customize button is shown instead of the menu button
+        await click('[data-test-button="customize-newsletter"]');
+
+        // Check if modal opens
+        expect(find('[data-test-modal="edit-newsletter"]'), 'Edit newsletter modal').to.exist;
+
+        await openTab('general.name', false);
+        await closeTab('general.name', false);
+
+        await openTab('general.email', false);
+        await closeTab('general.email', false);
+
+        await openTab('general.member', false);
+        await closeTab('general.member', false);
+
+        await openTab('design.header', false);
+        await closeTab('design.header', false);
+
+        await openTab('design.body', false);
+        await closeTab('design.body', false);
+
+        await openTab('design.footer', false);
+        await closeTab('design.footer', false);
+    });
+
+    it('shows current sender email in verify modal', async function () {
+        this.server.create('newsletter', {status: 'active', name: 'test newsletter', slug: 'test-newsletter', senderEmail: 'test@example.com'});
+
+        await visit('/settings/newsletters');
+
+        // Edit the last newsletter
+        await click('[data-test-newsletter="test-newsletter"] [data-test-newsletter-menu-trigger]');
+        await click('[data-test-button="customize-newsletter"]');
+
+        // Check if modal opens
+        expect(find('[data-test-modal="edit-newsletter"]'), 'Edit newsletter modal').to.exist;
+
+        await openTab('general.email');
+        await fillIn('input#newsletter-sender-email', 'valid-email@email.com');
+
+        // Everything should be valid
+        await checkSave({
+            edit: true,
+            verifyEmail: /previous email address \(test@example\.com\)/
+        });
+    });
 });

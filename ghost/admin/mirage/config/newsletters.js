@@ -42,7 +42,8 @@ export default function mockNewsletters(server) {
 
         // sender email can't be changed without verification
         if (newSenderEmail && newSenderEmail !== previousSenderEmail) {
-            attrs.senderEmail = previousSenderEmail;
+            // It doesn't correctly return to the previous email if previousSenderEmail is undefined
+            attrs.senderEmail = previousSenderEmail === undefined ? null : previousSenderEmail;
         }
 
         newsletter.update(attrs);
