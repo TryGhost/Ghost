@@ -5,6 +5,7 @@ import CloseButton from '../common/CloseButton';
 import InputForm from '../common/InputForm';
 import {getCurrencySymbol, getProductFromId, hasMultipleProductsFeature, isSameCurrency, formatNumber, hasMultipleNewsletters} from '../../utils/helpers';
 import {ValidateInputForm} from '../../utils/form';
+import NewsletterSelectionPage from './NewsletterSelectionPage';
 const React = require('react');
 
 export const OfferPageStyles = ({site}) => {
@@ -132,7 +133,8 @@ export default class OfferPage extends React.Component {
         this.state = {
             name: context?.member?.name || '',
             email: context?.member?.email || '',
-            plan: 'free'
+            plan: 'free',
+            showNewsletterSelection: false
         };
     }
 
@@ -213,10 +215,10 @@ export default class OfferPage extends React.Component {
                     offerId: offer?.id
                 };
                 if (hasMultipleNewsletters({site})) {
-                    onAction('switchPage', {
-                        page: 'signupNewsletter',
-                        lastPage: 'signup',
-                        pageData: signupData
+                    this.setState({
+                        showNewsletterSelection: true,
+                        pageData: signupData,
+                        errors: {}
                     });
                 } else {
                     onAction('signup', signupData);
@@ -265,6 +267,19 @@ export default class OfferPage extends React.Component {
 
     renderForm() {
         const fields = this.getInputFields({state: this.state});
+
+        if (this.state.showNewsletterSelection) {
+            return (
+                <NewsletterSelectionPage
+                    pageData={this.state.pageData}
+                    onBack={() => {
+                        this.setState({
+                            showNewsletterSelection: false
+                        });
+                    }}
+                />
+            );
+        }
 
         return (
             <section>
@@ -443,6 +458,44 @@ export default class OfferPage extends React.Component {
         );
     }
 
+    renderProductCard({product, offer, currencyClass, updatedPrice, price, benefits}) {
+        if (this.state.showNewsletterSelection) {
+            return null;
+        }
+        return (
+            <>
+                <div className='gh-portal-product-card top'>
+                    <div className='gh-portal-product-card-header'>
+                        <h4 className="gh-portal-product-name">{product.name} - {(offer.cadence === 'month' ? 'Monthly' : 'Yearly')}</h4>
+                        <div className="gh-portal-offer-oldprice">{getCurrencySymbol(price.currency)} {formatNumber(price.amount / 100)}</div>
+                        <div className="gh-portal-product-card-pricecontainer">
+                            <div className="gh-portal-product-price">
+                                <span className={'currency-sign ' + currencyClass}>{getCurrencySymbol(price.currency)}</span>
+                                <span className="amount">{formatNumber(this.renderRoundedPrice(updatedPrice))}</span>
+                            </div>
+                        </div>
+                        {this.renderOfferMessage({offer, product})}
+                    </div>
+                </div>
+
+                <div>
+                    <div className='gh-portal-product-card bottom'>
+                        <div className='gh-portal-product-card-detaildata'>
+                            {(product.description ? <div className="gh-portal-product-description">{product.description}</div> : '')}
+                            {(benefits.length ? this.renderBenefits({product}) : '')}
+                        </div>
+                    </div>
+
+                    <div className='gh-portal-btn-container sticky m32'>
+                        {this.renderSubmitButton()}
+                    </div>
+
+                    {this.renderLoginMessage()}
+                </div>
+            </>
+        );
+    }
+
     render() {
         const {pageData: offer, site} = this.context;
         if (!offer) {
@@ -470,35 +523,7 @@ export default class OfferPage extends React.Component {
                     </div>
 
                     {this.renderForm()}
-
-                    <div className='gh-portal-product-card top'>
-                        <div className='gh-portal-product-card-header'>
-                            <h4 className="gh-portal-product-name">{product.name} - {(offer.cadence === 'month' ? 'Monthly' : 'Yearly')}</h4>
-                            <div className="gh-portal-offer-oldprice">{getCurrencySymbol(price.currency)} {formatNumber(price.amount / 100)}</div>
-                            <div className="gh-portal-product-card-pricecontainer">
-                                <div className="gh-portal-product-price">
-                                    <span className={'currency-sign ' + currencyClass}>{getCurrencySymbol(price.currency)}</span>
-                                    <span className="amount">{formatNumber(this.renderRoundedPrice(updatedPrice))}</span>
-                                </div>
-                            </div>
-                            {this.renderOfferMessage({offer, product})}
-                        </div>
-                    </div>
-
-                    <div>
-                        <div className='gh-portal-product-card bottom'>
-                            <div className='gh-portal-product-card-detaildata'>
-                                {(product.description ? <div className="gh-portal-product-description">{product.description}</div> : '')}
-                                {(benefits.length ? this.renderBenefits({product}) : '')}
-                            </div>
-                        </div>
-
-                        <div className='gh-portal-btn-container sticky m32'>
-                            {this.renderSubmitButton()}
-                        </div>
-
-                        {this.renderLoginMessage()}
-                    </div>
+                    {this.renderProductCard({product, offer, currencyClass, updatedPrice, price, benefits})}
                 </div>
             </>
         );
