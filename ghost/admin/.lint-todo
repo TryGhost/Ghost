@@ -1199,3 +1199,15 @@ remove|ember-template-lint|no-action|225|55|225|55|da852fe4064a61e18c07b15cb10e9
 remove|ember-template-lint|no-action|226|51|226|51|4104427b3770f8810844e0c71c7b49f00cd4adc3|1652054400000|1662422400000|1665014400000|app/templates/settings/labs.hbs
 remove|ember-template-lint|no-passed-in-event-handlers|215|44|215|44|5d98389160e93540d9c809151effabc297a8a2a1|1652054400000|1662422400000|1665014400000|app/templates/settings/labs.hbs
 remove|ember-template-lint|no-passed-in-event-handlers|226|44|226|44|57b3bc0ba2625f4feb98ee4fae58805f88c075ca|1652054400000|1662422400000|1665014400000|app/templates/settings/labs.hbs
+remove|ember-template-lint|no-action|79|31|79|31|86a3921e2b84ed283377ac91f4891d9eba1fb13f|1652054400000|1662422400000|1665014400000|app/templates/editor.hbs
+remove|ember-template-lint|no-action|80|29|80|29|35b2a87756532d8d9d0a75e635f8e9916f28c2d1|1652054400000|1662422400000|1665014400000|app/templates/editor.hbs
+remove|ember-template-lint|no-action|83|30|83|30|f5b0f5df69a96175b8bc116e49fcc9c217114316|1652054400000|1662422400000|1665014400000|app/templates/editor.hbs
+remove|ember-template-lint|no-action|87|33|87|33|e5572ceb3ad01be53caa7e8d9b9636f55e4c44ce|1652054400000|1662422400000|1665014400000|app/templates/editor.hbs
+remove|ember-template-lint|no-action|88|35|88|35|8a96bcfc084625064f71504695fc8f0cb83c2917|1652054400000|1662422400000|1665014400000|app/templates/editor.hbs
+remove|ember-template-lint|no-action|96|33|96|33|fc6c30bc7d7bcc1386888e211991d34342117690|1652054400000|1662422400000|1665014400000|app/templates/editor.hbs
+remove|ember-template-lint|no-action|97|36|97|36|ad6cff383fbf03cdc7a63b365a733e5195e769b1|1652054400000|1662422400000|1665014400000|app/templates/editor.hbs
+remove|ember-template-lint|no-action|98|40|98|40|a0975049344eb27591aa168151c4c66510cbff29|1652054400000|1662422400000|1665014400000|app/templates/editor.hbs
+remove|ember-template-lint|no-action|99|35|99|35|57e3f9297a6011b2c94f1f62126229a1752c4c2b|1652054400000|1662422400000|1665014400000|app/templates/editor.hbs
+remove|ember-template-lint|no-action|118|28|118|28|0eba6cead2056aa8d89e186bd0318f0bc350b6e7|1652054400000|1662422400000|1665014400000|app/templates/editor.hbs
+remove|ember-template-lint|no-action|135|19|135|19|2e591e0b5aa8f903afda1d0f2ffd2183812e6c2f|1652054400000|1662422400000|1665014400000|app/templates/editor.hbs
+remove|ember-template-lint|no-action|146|19|146|19|c90e6d7f98e739c3a6472176ceeecc896913f2f6|1652054400000|1662422400000|1665014400000|app/templates/editor.hbs
