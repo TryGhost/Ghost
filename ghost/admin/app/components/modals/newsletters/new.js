@@ -6,6 +6,7 @@ import {tracked} from '@glimmer/tracking';
 
 export default class NewNewsletterModal extends Component {
     @service modals;
+    @service store;
 
     @tracked optInExisting = this.args.data.newsletter.isNew;
 
@@ -44,9 +45,11 @@ export default class NewNewsletterModal extends Component {
             yield newsletter.validate({});
 
             const result = yield newsletter.save({
-                adapterOptions: {optInExisting: this.optInExisting, include: 'count.members,count.posts'}
+                adapterOptions: {optInExisting: this.optInExisting}
             });
 
+            // Re-fetch newsletter data to refresh counts
+            yield this.store.query('newsletter', {include: 'count.members,count.posts', limit: 'all'});
             this.args.data.afterSave?.(result);
 
             return result;
