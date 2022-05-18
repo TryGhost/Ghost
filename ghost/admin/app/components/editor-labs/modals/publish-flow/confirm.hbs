@@ -67,6 +67,7 @@
             @successText="Scheduled"
             @class="gh-btn gh-btn-large"
             @idleClass="gh-btn-pulse"
+            @runningClass="gh-btn-green"
             @showIcon={{false}}
         />
     {{else if @publishOptions.willOnlyEmail}}
@@ -77,6 +78,7 @@
             @successText="Sent"
             @class="gh-btn gh-btn-large"
             @idleClass="gh-btn-pulse"
+            @runningClass="gh-btn-green"
             @showIcon={{false}}
         />
     {{else if this.willEmail}}
@@ -87,6 +89,7 @@
             @successText="Published & sent"
             @class="gh-btn gh-btn-large"
             @idleClass="gh-btn-pulse"
+            @runningClass="gh-btn-green"
             @showIcon={{false}}
         />
     {{else}}
@@ -97,6 +100,7 @@
             @successText="Published"
             @class="gh-btn gh-btn-large"
             @idleClass="gh-btn-pulse"
+            @runningClass="gh-btn-green"
             @showIcon={{false}}
         />
     {{/if}}
