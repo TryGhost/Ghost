@@ -50,14 +50,14 @@
                                 {{!-- @recipientType = none/free/paid/all/specific --}}
                                 {{#let (if (not-eq @recipientType "all") @recipientType) as |recipientType|}}
                                     {{if (is-empty countFetcher.count) (capitalize recipientType) recipientType}}
-                                {{/let}}
 
-                                {{#if @publishOptions.onlyDefaultNewsletter}}
-                                    {{gh-pluralize countFetcher.count (if (is-empty countFetcher.count) "Subscriber" "subscriber") without-count=true}}
-                                {{else}}
-                                    {{gh-pluralize countFetcher.count (if (is-empty countFetcher.count) "Subscriber" "subscriber") without-count=true}}
-                                    of <span class="gh-selected-newsletter">{{@publishOptions.newsletter.name}}</span>
-                                {{/if}}
+                                    {{#if @publishOptions.onlyDefaultNewsletter}}
+                                        {{gh-pluralize countFetcher.count (if (and (is-empty countFetcher.count) (not recipientType)) "Subscriber" "subscriber") without-count=true}}
+                                    {{else}}
+                                        {{gh-pluralize countFetcher.count (if (and (is-empty countFetcher.count) (not recipientType)) "Subscriber" "subscriber") without-count=true}}
+                                        of <span class="gh-selected-newsletter">{{@publishOptions.newsletter.name}}</span>
+                                    {{/if}}
+                                {{/let}}
                             {{/let}}
                         {{else}}
                             Not sent as newsletter
