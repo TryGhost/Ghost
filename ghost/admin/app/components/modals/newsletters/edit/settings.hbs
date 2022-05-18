@@ -3,7 +3,7 @@
         <h4 class="modal-fullsettings-section-title">General settings</h4>
 
         {{#let (eq @openSection "name") as |isOpen|}}
-            <button class="modal-fullsettings-tab {{if isOpen "active"}}" type="button" {{on "click" (fn @toggleSection "name")}} data-test-nav-toggle="general">
+            <button class="modal-fullsettings-tab {{if isOpen "active"}}" type="button" {{on "click" (fn @toggleSection "name")}} data-test-nav-toggle="general.name">
                 {{svg-jar "email-name"}} Name and description
                 <span class="gh-nav-button-expand">{{svg-jar (if isOpen "arrow-up-stroke" "arrow-down-stroke")}}</span>
             </button>
@@ -38,7 +38,7 @@
         {{/let}}
 
         {{#let (eq @openSection "email") as |isOpen|}}
-            <button class="modal-fullsettings-tab {{if isOpen "active"}}" type="button" {{on "click" (fn @toggleSection "email")}} data-test-nav-toggle="general">
+            <button class="modal-fullsettings-tab {{if isOpen "active"}}" type="button" {{on "click" (fn @toggleSection "email")}} data-test-nav-toggle="general.email">
                 {{svg-jar "email-at"}} Email addresses
                 <span class="gh-nav-button-expand">{{svg-jar (if isOpen "arrow-up-stroke" "arrow-down-stroke")}}</span>
             </button>
@@ -93,7 +93,7 @@
         {{/let}}
 
         {{#let (eq @openSection "members") as |isOpen|}}
-            <button class="modal-fullsettings-tab {{if isOpen "active"}}" type="button" {{on "click" (fn @toggleSection "members")}} data-test-nav-toggle="general">
+            <button class="modal-fullsettings-tab {{if isOpen "active"}}" type="button" {{on "click" (fn @toggleSection "members")}} data-test-nav-toggle="general.member">
                 {{svg-jar "email-member"}} Member settings
                 <span class="gh-nav-button-expand">{{svg-jar (if isOpen "arrow-up-stroke" "arrow-down-stroke")}}</span>
             </button>
