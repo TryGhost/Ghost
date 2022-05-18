@@ -62,7 +62,6 @@ export default class FeatureService extends Service {
     @feature('multipleNewsletters') multipleNewsletters;
     @feature('multipleNewslettersUI') multipleNewslettersUI;
     @feature('tweetGridCard') tweetGridCard;
-    @feature('improvedOnboarding') improvedOnboarding;
     @feature('membersTableStatus') membersTableStatus;
     @feature('selectablePortalLinks') selectablePortalLinks;
 

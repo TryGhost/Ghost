@@ -4,15 +4,16 @@ import {inject as service} from '@ember/service';
 export default class HomeRoute extends Route {
     @service feature;
     @service modals;
+    @service router;
 
     beforeModel(transition) {
         super.beforeModel(...arguments);
 
-        if (this.feature.improvedOnboarding && transition.to?.queryParams?.firstStart === 'true') {
-            return this.transitionTo('setup.done');
+        if (transition.to?.queryParams?.firstStart === 'true') {
+            return this.router.transitionTo('setup.done');
         }
 
-        this.transitionTo('dashboard');
+        this.router.transitionTo('dashboard');
     }
 
     resetController(controller) {
