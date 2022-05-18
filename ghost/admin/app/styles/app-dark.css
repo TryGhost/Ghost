@@ -1122,7 +1122,7 @@ kbd {
 }
 
 
-/* Dashboard v5 */
+/* Dashboard */
 
 .gh-dashboard .gh-dashboard-anchor .gh-dashboard-stats {
     background: transparent;
@@ -1139,7 +1139,8 @@ kbd {
 
 .gh-dashboard .gh-dashboard-list-header,
 .gh-dashboard .gh-dashboard-list-item,
-.gh-dashboard .gh-dashboard-list-footer {
+.gh-dashboard .gh-dashboard-list-footer,
+.gh-dashboard .gh-dashboard-resource-title.has-border {
     border-color: #394047;
 }
 
@@ -1147,6 +1148,7 @@ kbd {
     background: var(--main-bg-color);
 }
 
+.gh-dashboard .gh-dashboard-minichart,
 .gh-dashboard .gh-dashboard-column {
     border-color: #2b2d31;
 }
@@ -1164,10 +1166,10 @@ kbd {
     background: linear-gradient(270deg, rgba(21,23,25,0) 0%, rgba(21,23,25,1) 100%);
 }
 
-.gh-dashboard-staff-picks .gh-dashboard-resource-body,
 .gh-dashboard-resource-box.is-secondary .gh-dashboard-resource-footer,
-.gh-dashboard-whats-new .gh-dashboard-resource-body {
-    border-color: #2c2e32;
+.gh-dashboard-staff-picks .gh-dashboard-resource-box,
+.gh-dashboard-whats-new .gh-dashboard-resource-box {
+    border-color: #26282b;
 }
 
 .gh-dashboard-list-item:hover {
