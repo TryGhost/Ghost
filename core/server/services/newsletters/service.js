@@ -161,14 +161,14 @@ class NewslettersService {
             // subscribe members that have an existing subscription to an active newsletter
             const memberIds = await this.MemberModel.fetchAllSubscribed(_.pick(options, 'transacting'));
 
-            newsletter.meta = newsletter.meta || {};
-            newsletter.meta.opted_in_member_count = memberIds.length;
-
             if (memberIds.length) {
                 debug(`Found ${memberIds.length} members to subscribe`);
 
                 await newsletter.subscribeMembersById(memberIds, options);
+                newsletter = await this.NewsletterModel.findOne({id: newsletter.id}, {...options, require: true});
             }
+            newsletter.meta = newsletter.meta || {};
+            newsletter.meta.opted_in_member_count = memberIds.length;
         }
 
         // send any verification emails and respond with the appropriate meta added
@@ -196,7 +196,7 @@ class NewslettersService {
         }
 
         let updatedNewsletter;
-        
+
         try {
             updatedNewsletter = await this.NewsletterModel.edit(cleanedAttrs, options);
         } catch (error) {
@@ -212,7 +212,7 @@ class NewslettersService {
 
         // Load relations correctly in the response
         updatedNewsletter = await this.NewsletterModel.findOne({id: updatedNewsletter.id}, {...options, require: true});
-        
+
         await this.respondWithEmailVerification(updatedNewsletter, emailsToVerify);
         return updatedNewsletter;
     }
