@@ -104,6 +104,22 @@ describe('Front-end members behaviour', function () {
                 .expect(400);
         });
 
+        it('should not throw 400 for using offer id on members create checkout session endpoint', async function () {
+            await request.post('/members/api/create-stripe-checkout-session')
+                .send({
+                    offerId: '62826b1b6dccb3e3e997ebd4',
+                    identity: null,
+                    metadata: {
+                        name: 'Jamie Larsen'
+                    },
+                    cancelUrl: 'https://example.com/blog/?stripe=cancel',
+                    customerEmail: 'jamie@example.com',
+                    tierId: null,
+                    cadence: null
+                })
+                .expect(500);
+        });
+
         it('should error for invalid data on members create update session endpoint', async function () {
             await request.post('/members/api/create-stripe-update-session')
                 .expect(400);
