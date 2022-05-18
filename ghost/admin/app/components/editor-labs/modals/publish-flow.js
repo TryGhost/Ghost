@@ -73,10 +73,11 @@ export default class PublishModalComponent extends Component {
 
         // no count is shown for pages, scheduled posts, or email-only posts
         if (publishOptions.post.isPage || publishOptions.isScheduled || !publishOptions.willPublish) {
+            this.postCount = null;
             return;
         }
 
-        const result = yield this.store.query('post', {status: 'published', limit: 1});
+        const result = yield this.store.query('post', {filter: 'status:published', limit: 1});
         let count = result.meta.pagination.total;
 
         count += 1; // account for the new post
