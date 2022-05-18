@@ -20,7 +20,6 @@ const GA_FEATURES = [
     'tierName',
     'selectablePortalLinks',
     'membersTableStatus',
-    'improvedOnboarding',
     'multipleNewsletters',
     'multipleNewslettersUI',
     'membersActivityFeed',
