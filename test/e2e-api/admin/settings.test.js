@@ -238,7 +238,6 @@ describe('Settings API', function () {
                     etag: anyEtag
                 });
         });
-
     });
 
     // @TODO Fixing https://github.com/TryGhost/Team/issues/584 should result in thes tests changing
