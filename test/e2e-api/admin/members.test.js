@@ -1632,6 +1632,18 @@ describe('Members API', function () {
             });
     });
 
+    it('Can filter on tier slug', async function () {
+        const res = await agent
+            .get('/members/?include=tiers&filter=tier:default-product')
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: new Array(7).fill(memberMatcherShallowIncludesWithTiers)
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
+
     // Edit a member
     it('Can add and edit with custom newsletters', async function () {
         // Add custom newsletter list to new member

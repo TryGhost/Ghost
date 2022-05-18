@@ -30,6 +30,12 @@ const Member = ghostBookshelf.Model.extend({
             key: 'products',
             replacement: 'products.slug'
         }, {
+            key: 'tier',
+            replacement: 'products.slug'
+        }, {
+            key: 'tiers',
+            replacement: 'products.slug'
+        }, {
             key: 'newsletters',
             replacement: 'newsletters.slug'
         }];
