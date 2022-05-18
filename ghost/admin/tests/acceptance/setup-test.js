@@ -2,7 +2,6 @@ import {Response} from 'miragejs';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
 import {click, currentURL, fillIn, find, findAll} from '@ember/test-helpers';
-import {enableLabsFlag} from '../helpers/labs-flag';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -11,10 +10,6 @@ import {visit} from '../helpers/visit';
 describe('Acceptance: Setup', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
-
-    beforeEach(function () {
-        enableLabsFlag(this.server, 'improvedOnboarding');
-    });
 
     it('redirects if already authenticated', async function () {
         let role = this.server.create('role', {name: 'Author'});

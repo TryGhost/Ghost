@@ -14,7 +14,6 @@ describe('Acceptance: Dashboard', function () {
         this.server.loadFixtures('configs');
         this.server.loadFixtures('settings');
         enableLabsFlag(this.server, 'membersActivity');
-        enableLabsFlag(this.server, 'improvedOnboarding');
 
         let role = this.server.create('role', {name: 'Administrator'});
         this.server.create('user', {roles: [role]});

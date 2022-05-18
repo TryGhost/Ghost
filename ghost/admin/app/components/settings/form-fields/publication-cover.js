@@ -31,9 +31,7 @@ export default class PublicationCoverFormField extends Component {
 
     @action
     toggleUnsplashSelector() {
-        if (this.feature.improvedOnboarding) {
-            this.showUnsplashSelector = !this.showUnsplashSelector;
-        }
+        this.showUnsplashSelector = !this.showUnsplashSelector;
     }
 
     @action
