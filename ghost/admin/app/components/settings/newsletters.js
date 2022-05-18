@@ -85,6 +85,11 @@ export default class Newsletters extends Component {
         }
 
         this.recipientsSelectValue = this._getDerivedRecipientsSelectValue();
+
+        // Force a save when the toggle is changed
+        // this is required
+        // eslint-disable-next-line no-console
+        this.settings.save().catch(console.error);
     }
 
     @action
