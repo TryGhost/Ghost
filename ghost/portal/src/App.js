@@ -10,7 +10,7 @@ import {getActivePage, isAccountPage, isOfferPage} from './pages';
 import ActionHandler from './actions';
 import './App.css';
 import NotificationParser from './utils/notifications';
-import {createPopupNotification, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isComplimentaryMember, isInviteOnlySite, isPaidMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
+import {createPopupNotification, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isComplimentaryMember, isInviteOnlySite, isPaidMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
 
 const {handleDataAttributes} = require('./data-attributes');
 const React = require('react');
@@ -619,9 +619,11 @@ export default class App extends React.Component {
                             page: 'loading'
                         });
                         if (member) {
-                            this.dispatchAction('checkoutPlan', {plan: price.id, offerId});
+                            const {tierId, cadence} = getProductCadenceFromPrice({site, priceId: price.id});
+                            this.dispatchAction('checkoutPlan', {plan: price.id, offerId, tierId, cadence});
                         } else {
-                            this.dispatchAction('signup', {plan: price.id, offerId});
+                            const {tierId, cadence} = getProductCadenceFromPrice({site, priceId: price.id});
+                            this.dispatchAction('signup', {plan: price.id, offerId, tierId, cadence});
                         }
                     } else {
                         this.dispatchAction('openPopup', {
@@ -659,7 +661,8 @@ export default class App extends React.Component {
                     page: 'loading'
                 });
             }
-            this.dispatchAction('signup', {plan});
+            const {tierId, cadence} = getProductCadenceFromPrice({site, priceId: plan});
+            this.dispatchAction('signup', {plan, tierId, cadence});
         }
     }
 
