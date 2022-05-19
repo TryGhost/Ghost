@@ -94,6 +94,16 @@
                     <span>Unschedule and revert to draft &rarr;</span>
                 </button>
             </p>
+        {{else}}
+            <p class="gh-publish-confirmation">
+                <button
+                    type="button"
+                    class="gh-back-to-editor"
+                    {{on "click" @close}}
+                >
+                    <span>Back to editor</span>
+                </button>
+            </p>
         {{/if}}
     {{/if}}
 
