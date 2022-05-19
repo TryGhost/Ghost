@@ -1,5 +1,5 @@
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyErrorId, anyObjectId, anyISODate, stringMatching} = matchers;
+const {anyEtag, anyErrorId, anyObjectId, anyISODate, stringMatching, anyContentLength} = matchers;
 
 const webhookMatcher = {
     id: anyObjectId,
@@ -35,7 +35,8 @@ describe('Webhooks API', function () {
             .expectStatus(201)
             .matchHeaderSnapshot({
                 // Note: No location header as there is no read method for webhooks
-                etag: anyEtag
+                etag: anyEtag,
+                'content-length': anyContentLength
 
             })
             .matchBodySnapshot({
@@ -93,7 +94,8 @@ describe('Webhooks API', function () {
             })
             .expectStatus(200)
             .matchHeaderSnapshot({
-                etag: anyEtag
+                etag: anyEtag,
+                'content-length': anyContentLength
             })
             .matchBodySnapshot({
                 webhooks: [webhookMatcher]
