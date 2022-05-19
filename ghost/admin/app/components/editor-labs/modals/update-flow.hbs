@@ -12,7 +12,7 @@
     </header>
 
     {{#let @data.publishOptions.post as |post|}}
-        <div class="gh-publish-settings-container gh-update-flow">
+        <div class="gh-publish-settings-container gh-update-flow fade-in">
             <div class="gh-publish-title">
                 {{#if (and post.isSent (not post.isPublished))}}
                     This {{post.displayName}} was

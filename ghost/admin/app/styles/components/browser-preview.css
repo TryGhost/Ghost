@@ -12,6 +12,12 @@
         0 41.8px 33.4px rgba(0, 0, 0, 0.05),
         0 100px 80px rgba(0, 0, 0, 0.07);
     ;
+    opacity: 1;
+}
+
+.gh-browserpreview-previewcontainer.fade-in {
+    transform-origin: center;
+    animation: fade-in-pulse .35s forwards cubic-bezier(.8,.02,.45,.91);
 }
 
 .gh-browserpreview-iframecontainer {
