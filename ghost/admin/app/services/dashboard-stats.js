@@ -145,6 +145,10 @@ export default class DashboardStatsService extends Service {
 
     paidTiers = null;
 
+    get activePaidTiers() {
+        return this.paidTiers ? this.paidTiers.filter(tier => tier.active) : null;
+    }
+
     /**
      * @type {?MemberCounts}
      */
@@ -296,11 +300,11 @@ export default class DashboardStatsService extends Service {
             yield this.loadPaidTiers();
         }
 
-        const hasPaidTiers = this.membersUtils.isStripeEnabled && this.paidTiers && this.paidTiers.length > 0;
+        const hasPaidTiers = this.membersUtils.isStripeEnabled && this.activePaidTiers && this.activePaidTiers.length > 0;
 
         this.siteStatus = {
             hasPaidTiers,
-            hasMultipleTiers: hasPaidTiers && this.paidTiers.length > 1,
+            hasMultipleTiers: hasPaidTiers && this.activePaidTiers.length > 1,
             newslettersEnabled: this.settings.get('editorDefaultEmailRecipients') !== 'disabled',
             membersEnabled: this.membersUtils.isMembersEnabled
         };
@@ -364,6 +368,10 @@ export default class DashboardStatsService extends Service {
 
         for (const tier of result.meta.tiers) {
             const _tier = this.paidTiers.find(x => x.id === tier);
+
+            if (!_tier) {
+                continue;
+            }
             paidMembersByTier.push({
                 tier: {
                     id: _tier.id,
@@ -379,7 +387,7 @@ export default class DashboardStatsService extends Service {
         }
 
         // Add all missing tiers without members
-        for (const tier of this.paidTiers) {
+        for (const tier of this.activePaidTiers) {
             if (!paidMembersByTier.find(t => t.tier.id === tier.id)) {
                 paidMembersByTier.push({
                     tier: {
@@ -564,7 +572,7 @@ export default class DashboardStatsService extends Service {
     @task
     *_loadPaidTiers() {
         const data = yield this.store.query('tier', {
-            filter: 'type:paid+active:true',
+            filter: 'type:paid',
             limit: 'all'
         });
         this.paidTiers = data.toArray();
