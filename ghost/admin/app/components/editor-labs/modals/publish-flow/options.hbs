@@ -41,23 +41,22 @@
                     <div class="gh-publish-setting-trigger">
                         {{#if @publishOptions.recipientFilter}}
                             {{#let (members-count-fetcher query=(hash filter=@publishOptions.fullRecipientFilter)) as |countFetcher|}}
-                                {{#if (gt countFetcher.count 1)}}
+                                {{#if (or (gt countFetcher.count 1) (is-empty countFetcher.count))}}
                                     {{if (eq @recipientType "all") "All"}}
                                 {{/if}}
 
                                 {{format-number countFetcher.count}}
 
-                                {{!-- @recipientType = none/free/paid/all/specific --}}
-                                {{#let (if (not-eq @recipientType "all") @recipientType) as |recipientType|}}
-                                    {{if (is-empty countFetcher.count) (capitalize recipientType) recipientType}}
+                                {{!-- @recipientType = all/free/paid/all/specific --}}
+                                {{#if (not-eq @recipientType "all")}}
+                                    {{if (is-empty countFetcher.count) (capitalize @recipientType) @recipientType}}
+                                {{/if}}
 
-                                    {{#if @publishOptions.onlyDefaultNewsletter}}
-                                        {{gh-pluralize countFetcher.count (if (and (is-empty countFetcher.count) (not recipientType)) "Subscriber" "subscriber") without-count=true}}
-                                    {{else}}
-                                        {{gh-pluralize countFetcher.count (if (and (is-empty countFetcher.count) (not recipientType)) "Subscriber" "subscriber") without-count=true}}
-                                        of <span class="gh-selected-newsletter">{{@publishOptions.newsletter.name}}</span>
-                                    {{/if}}
-                                {{/let}}
+                                {{gh-pluralize countFetcher.count "subscriber" without-count=true}}
+
+                                {{#unless @publishOptions.onlyDefaultNewsletter}}
+                                    of <span class="gh-selected-newsletter">{{@publishOptions.newsletter.name}}</span>
+                                {{/unless}}
                             {{/let}}
                         {{else}}
                             Not sent as newsletter
@@ -99,7 +98,7 @@
                     Already sent to
                     {{@publishOptions.post.email.emailCount}}
                     {{if (not-eq @recipientType "all") @recipientType}} {{!-- free/paid/specific --}}
-                    {{gh-pluralize @publishOptions.post.email.emailCount (if @publishOptions.onlyDefaultNewsletter "member" "subscriber") without-count=true}}
+                    {{gh-pluralize @publishOptions.post.email.emailCount "subscriber" without-count=true}}
                     {{#unless @publishOptions.onlyDefaultNewsletter}}
                         of {{@publishOptions.post.newsletter.name}}
                     {{/unless}}
