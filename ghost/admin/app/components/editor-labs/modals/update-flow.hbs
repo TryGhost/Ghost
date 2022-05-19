@@ -44,18 +44,12 @@
 
                         {{#if post.isScheduled}}
                             {{#let (members-count-fetcher query=(hash filter=post.fullRecipientFilter)) as |countFetcher|}}
-                                {{#if this.showNewsletterName}}
-                                    <strong>{{gh-pluralize countFetcher.count "subscriber"}}</strong> of <strong>{{post.newsletter.name}}</strong>
-                                {{else}}
-                                    <strong>{{gh-pluralize countFetcher.count "subscribers"}}</strong>
-                                {{/if}}
+                                <strong>{{gh-pluralize countFetcher.count "subscriber"}}</strong>
+                                {{#if this.showNewsletterName}}of <strong>{{post.newsletter.name}}</strong>{{/if}}
                             {{/let}}
                         {{else}}
-                            {{#if this.showNewsletterName}}
-                                <strong>{{gh-pluralize post.email.emailCount "subscriber"}}</strong> of <strong>{{post.newsletter.name}}</strong>
-                            {{else}}
-                                <strong>{{gh-pluralize post.email.emailCount "subscribers"}}</strong>
-                            {{/if}}
+                            <strong>{{gh-pluralize post.email.emailCount "subscriber"}}</strong>
+                            {{#if this.showNewsletterName}}of <strong>{{post.newsletter.name}}</strong>{{/if}}
                         {{/if}}
                     {{else}}
                         published on your site
@@ -72,13 +66,14 @@
                         {{#if (and post.isScheduled post.email)}}
                             This post was previously emailed to
 
+                            <strong>{{pluralize post.email.emailCount "subscriber"}}</strong>
+
                             {{#if this.showNewsletterName}}
-                                <strong>{{pluralize post.email.emailCount "subscriber"}}</strong> of <strong>{{post.newsletter.name}}</strong> on
-                            {{else}}
-                                <strong>{{pluralize post.email.emailCount "member"}}</strong> on
+                                of <strong>{{post.newsletter.name}}</strong>
                             {{/if}}
 
                             {{#let (moment-site-tz post.email.createdAtUTC) as |sentAt|}}
+                                on
                                 {{moment-format sentAt "D MMM YYYY"}}
                                 at
                                 {{moment-format sentAt "HH:mm"}}.
