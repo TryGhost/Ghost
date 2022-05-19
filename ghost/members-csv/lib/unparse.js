@@ -35,11 +35,11 @@ const unparse = (members, columns = DEFAULT_COLUMNS.slice()) => {
             }).join(',');
         }
 
-        let products = '';
+        let tiers = '';
 
-        if (Array.isArray(member.products)) {
-            products = member.products.map((product) => {
-                return product.name;
+        if (Array.isArray(member.tiers)) {
+            tiers = member.tiers.map((tier) => {
+                return tier.name;
             }).join(',');
         }
 
@@ -54,7 +54,7 @@ const unparse = (members, columns = DEFAULT_COLUMNS.slice()) => {
             created_at: member.created_at,
             deleted_at: member.deleted_at,
             labels: labels,
-            products: products,
+            products: tiers,
             error: member.error || null
         };
     });
