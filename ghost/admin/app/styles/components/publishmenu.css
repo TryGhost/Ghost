@@ -670,6 +670,20 @@
     display: none;
 }
 
+.gh-publish-cta .gh-btn-green {
+    animation: pulse-click 1s;
+}
+
+@keyframes pulse-click {
+	0% {
+		box-shadow: 0 0 0 0 rgba(48, 207, 67, 0.7);
+	}
+
+	100% {
+		box-shadow: 0 0 0 16px rgba(48, 207, 67, 0);
+	}
+}
+
 .gh-publish-cta-secondary {
     display: block;
     overflow: hidden;

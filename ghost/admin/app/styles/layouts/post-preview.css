@@ -80,33 +80,48 @@
     stroke: var(--darkgrey);
 }
 
+/* Preview animation */
+
+.gh-post-preview-container {
+    opacity: 1;
+}
+
+.gh-post-preview-container.fade-in {
+    transform-origin: center;
+    animation: fade-in-pulse .35s forwards cubic-bezier(.8,.02,.45,.91);
+}
+.epm-out .gh-post-preview-container.fade-in {
+    transform-origin: center;
+    animation: fade-out-pulse .35s forwards cubic-bezier(.8,.02,.45,.91);
+}
+
+
 /* Browser preview */
+
 .gh-post-preview-browser-container {
-    position: relative;
     display: flex;
-    flex-grow: 1;
-    overflow: auto;
-    margin: 0;
-    background: var(--whitegrey-l1);
-}
-
-.gh-post-preview-browser-container iframe {
-    width: 100%;
-    /* height: 100%; */
-    border: none;
-}
-
-.gh-post-preview-browser {
+    flex-direction: column;
+    height: 100%;
     margin: 0 40px 40px;
+    border-radius: 3px !important;
+    box-shadow:
+        0 0 0 1px rgba(0,0,0,0.02),
+        0 2.8px 2.2px rgba(0, 0, 0, 0.02),
+        0 6.7px 5.3px rgba(0, 0, 0, 0.028),
+        0 12.5px 10px rgba(0, 0, 0, 0.035),
+        0 22.3px 17.9px rgba(0, 0, 0, 0.042),
+        0 41.8px 33.4px rgba(0, 0, 0, 0.05),
+        0 100px 80px rgba(0, 0, 0, 0.07);
+    ;
 }
 
-.gh-post-preview-browser .gh-pe-iframe {
+.gh-post-preview-browser-container .gh-pe-iframe {
     width: 100%;
     height: 100%;
     border: none;
 }
 
-.gh-post-preview-browser .tabs div {
+.gh-post-preview-browser-container .tabs div {
     width: 360px;
     color: var(--middarkgrey);
     font-weight: 400;
