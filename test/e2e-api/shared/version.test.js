@@ -1,5 +1,5 @@
 const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
-const {anyErrorId, stringMatching, anyObjectId, anyLocationFor, anyISODateTime, anyEtag, anyString} = matchers;
+const {anyErrorId, stringMatching, anyObjectId, anyLocationFor, anyISODateTime, anyEtag, anyString, anyContentLength, anyContentVersion} = matchers;
 
 const settingsMatcher = {
     settings: {
@@ -35,6 +35,7 @@ describe('API Versioning', function () {
                     }
                 })
                 .matchHeaderSnapshot({
+                    'content-length': anyContentLength,
                     etag: anyEtag
                 });
         });
@@ -51,7 +52,8 @@ describe('API Versioning', function () {
                 })
                 .matchHeaderSnapshot({
                     etag: anyEtag,
-                    'content-version': stringMatching(/v\d+\.\d+/)
+                    'content-version': anyContentVersion,
+                    'content-length': anyContentLength
                 });
         });
 
@@ -67,7 +69,8 @@ describe('API Versioning', function () {
                 })
                 .matchHeaderSnapshot({
                     etag: anyEtag,
-                    'content-version': stringMatching(/v\d+\.\d+/)
+                    'content-version': anyContentVersion,
+                    'content-length': anyContentLength
                 });
         });
 
@@ -83,7 +86,8 @@ describe('API Versioning', function () {
                 })
                 .matchHeaderSnapshot({
                     etag: anyEtag,
-                    'content-version': stringMatching(/v\d+\.\d+/)
+                    'content-version': anyContentVersion,
+                    'content-length': anyContentLength
                 });
         });
 
@@ -95,7 +99,8 @@ describe('API Versioning', function () {
                 .expectStatus(406)
                 .matchHeaderSnapshot({
                     etag: anyEtag,
-                    'content-version': stringMatching(/v\d+\.\d+/)
+                    'content-version': anyContentVersion,
+                    'content-length': anyContentLength
                 })
                 .matchBodySnapshot({
                     errors: [{
@@ -114,7 +119,8 @@ describe('API Versioning', function () {
                 .expectStatus(406)
                 .matchHeaderSnapshot({
                     etag: anyEtag,
-                    'content-version': stringMatching(/v\d+\.\d+/)
+                    'content-version': anyContentVersion,
+                    'content-length': anyContentLength
                 })
                 .matchBodySnapshot({
                     errors: [{
@@ -138,7 +144,8 @@ describe('API Versioning', function () {
                 .expectStatus(406)
                 .matchHeaderSnapshot({
                     etag: anyEtag,
-                    'content-version': stringMatching(/v\d+\.\d+/)
+                    'content-version': anyContentVersion,
+                    'content-length': anyContentLength
                 })
                 .matchBodySnapshot({
                     errors: [{
@@ -160,7 +167,8 @@ describe('API Versioning', function () {
                 .expectStatus(406)
                 .matchHeaderSnapshot({
                     etag: anyEtag,
-                    'content-version': stringMatching(/v\d+\.\d+/)
+                    'content-version': anyContentVersion,
+                    'content-length': anyContentLength
                 })
                 .matchBodySnapshot({
                     errors: [{
@@ -179,7 +187,8 @@ describe('API Versioning', function () {
                 .expectStatus(404)
                 .matchHeaderSnapshot({
                     etag: anyEtag,
-                    'content-version': stringMatching(/v\d+\.\d+/)
+                    'content-version': anyContentVersion,
+                    'content-length': anyContentLength
                 })
                 .matchBodySnapshot({
                     errors: [{
@@ -194,7 +203,8 @@ describe('API Versioning', function () {
                 .expectStatus(200)
                 .matchHeaderSnapshot({
                     etag: anyEtag,
-                    'content-version': stringMatching(/v\d+\.\d+/)
+                    'content-version': anyContentVersion,
+                    'content-length': anyContentLength
                 })
                 .matchBodySnapshot({site: {
                     version: stringMatching(/\d+\.\d+/)
@@ -211,7 +221,8 @@ describe('API Versioning', function () {
                 .matchHeaderSnapshot({
                     etag: anyEtag,
                     location: anyLocationFor('tags'),
-                    'content-version': stringMatching(/v\d+\.\d+/)
+                    'content-version': anyContentVersion,
+                    'content-length': anyContentLength
                 })
                 .matchBodySnapshot({
                     tags: [{
@@ -229,7 +240,8 @@ describe('API Versioning', function () {
                 .expectStatus(406)
                 .matchHeaderSnapshot({
                     etag: anyEtag,
-                    'content-version': stringMatching(/v\d+\.\d+/)
+                    'content-version': anyContentVersion,
+                    'content-length': anyContentLength
                 })
                 .matchBodySnapshot({errors: [{
                     context: stringMatching(/Provided client accept-version v99\.0 is ahead of current Ghost version v\d+\.\d+/),
@@ -244,7 +256,8 @@ describe('API Versioning', function () {
                 .expectStatus(406)
                 .matchHeaderSnapshot({
                     etag: anyEtag,
-                    'content-version': stringMatching(/v\d+\.\d+/)
+                    'content-version': anyContentVersion,
+                    'content-length': anyContentLength
                 })
                 .matchBodySnapshot({errors: [{
                     context: stringMatching(/Provided client accept-version v1\.0 is behind current Ghost version v\d+\.\d+/),
@@ -265,7 +278,10 @@ describe('API Versioning', function () {
         it('responds with no content version header when accept version header is NOT PRESENT', async function () {
             await agentContentAPI.get('settings/')
                 .expectStatus(200)
-                .matchHeaderSnapshot()
+                .matchHeaderSnapshot({
+                    etag: anyEtag,
+                    'content-length': anyContentLength
+                })
                 .matchBodySnapshot(settingsMatcher);
         });
 
@@ -274,7 +290,9 @@ describe('API Versioning', function () {
                 .header('Accept-Version', 'v3.0')
                 .expectStatus(200)
                 .matchHeaderSnapshot({
-                    'content-version': stringMatching(/v\d+\.\d+/)
+                    etag: anyEtag,
+                    'content-version': anyContentVersion,
+                    'content-length': anyContentLength
                 })
                 .matchBodySnapshot(settingsMatcher);
         });
@@ -285,7 +303,8 @@ describe('API Versioning', function () {
                 .expectStatus(200)
                 .matchHeaderSnapshot({
                     etag: anyEtag,
-                    'content-version': stringMatching(/v\d+\.\d+/)
+                    'content-version': anyContentVersion,
+                    'content-length': anyContentLength
                 })
                 .matchBodySnapshot({
                     tags: [{

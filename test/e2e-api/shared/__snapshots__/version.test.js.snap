@@ -18,7 +18,7 @@ exports[`API Versioning Admin API Does an internal rewrite for canary URLs with 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "167",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "deprecation": "version=\\"v4\\"",
@@ -63,7 +63,7 @@ exports[`API Versioning Admin API Does an internal rewrite for v3 URL + POST wit
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "521",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "deprecation": "version=\\"v3\\"",
@@ -94,7 +94,7 @@ exports[`API Versioning Admin API allows invalid accept-version header 2: [heade
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "167",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -152,7 +152,7 @@ exports[`API Versioning Admin API responds with 404 error when the resource cann
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "246",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -182,7 +182,7 @@ Object {
 exports[`API Versioning Admin API responds with 406 for an unknown version with accept-version set ahead 2: [headers] 1`] = `
 Object {
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "370",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -212,7 +212,7 @@ Object {
 exports[`API Versioning Admin API responds with 406 for an unknown version with accept-version set behind 2: [headers] 1`] = `
 Object {
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "371",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -239,7 +239,7 @@ exports[`API Versioning Admin API responds with current content version header w
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "167",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -266,7 +266,7 @@ exports[`API Versioning Admin API responds with current content version header w
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "167",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -297,7 +297,7 @@ exports[`API Versioning Admin API responds with error and sends email ONCE when 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "371",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -328,7 +328,7 @@ exports[`API Versioning Admin API responds with error and sends email ONCE when 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "371",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -359,7 +359,7 @@ exports[`API Versioning Admin API responds with error requested version is AHEAD
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "371",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -390,7 +390,7 @@ exports[`API Versioning Admin API responds with error when requested version is 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "371",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -417,7 +417,7 @@ exports[`API Versioning Admin API responds with no content version header when a
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "167",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -467,7 +467,7 @@ exports[`API Versioning Content API Does an internal rewrite with accept version
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "552",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "deprecation": "version=\\"v4\\"",
@@ -562,10 +562,10 @@ exports[`API Versioning Content API responds with current content version header
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1235",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": "W/\\"4d3-mq2QrkgGnMZ8/BMmziwONEMrvLM\\"",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
   "x-powered-by": "Express",
 }
@@ -655,9 +655,9 @@ exports[`API Versioning Content API responds with no content version header when
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1235",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
-  "etag": "W/\\"4d3-mq2QrkgGnMZ8/BMmziwONEMrvLM\\"",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
   "x-powered-by": "Express",
 }
