@@ -51,7 +51,7 @@ export default class PublishFlowOptions extends Component {
         try {
             yield this.args.saveTask.perform();
         } catch (e) {
-            if (e === undefined && this.publishOptions.post.errors.length !== 0) {
+            if (e === undefined && this.args.publishOptions.post.errors.length !== 0) {
                 // validation error
                 const validationError = this.args.publishOptions.post.errors.messages[0];
                 this.errorMessage = `Validation failed: ${validationError}`;

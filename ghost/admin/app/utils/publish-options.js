@@ -41,7 +41,7 @@ export default class PublishOptions {
     @tracked scheduledAtUTC = this.minScheduledAt;
 
     get minScheduledAt() {
-        return moment.utc().add(5, 'minutes');
+        return moment.utc().add(5, 'minutes').milliseconds(0);
     }
 
     @action
@@ -59,11 +59,15 @@ export default class PublishOptions {
 
     @action
     setScheduledAt(date) {
-        if (moment.utc(date).isBefore(this.minScheduledAt)) {
+        // API only stores seconds so providing non-zero milliseconds can
+        // trigger unexpected validation when updating scheduled posts
+        date = moment.utc(date).milliseconds(0);
+
+        if (date.isBefore(this.minScheduledAt)) {
             return;
         }
 
-        this.scheduledAtUTC = moment.utc(date);
+        this.scheduledAtUTC = date;
     }
 
     @action
