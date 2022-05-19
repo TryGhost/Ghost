@@ -38,7 +38,7 @@ export default class PublishManagement extends Component {
     }
 
     @action
-    async openPublishFlow(event) {
+    async openPublishFlow(event, {skipAnimation} = {}) {
         event?.preventDefault();
 
         this.updateFlowModal?.close();
@@ -51,7 +51,8 @@ export default class PublishManagement extends Component {
             this.publishFlowModal = this.modals.open(PublishFlowModal, {
                 publishOptions: this.publishOptions,
                 saveTask: this.publishTask,
-                togglePreviewPublish: this.togglePreviewPublish
+                togglePreviewPublish: this.togglePreviewPublish,
+                skipAnimation
             });
 
             const result = await this.publishFlowModal;
@@ -87,7 +88,7 @@ export default class PublishManagement extends Component {
     }
 
     @action
-    openPreview(event) {
+    openPreview(event, {skipAnimation} = {}) {
         event?.preventDefault();
 
         if (!this.previewModal || this.previewModal.isClosing) {
@@ -100,7 +101,8 @@ export default class PublishManagement extends Component {
                 saveTask: this.saveTask,
                 togglePreviewPublish: this.togglePreviewPublish,
                 currentTab: this.previewTab,
-                changeTab: this.changePreviewTab
+                changeTab: this.changePreviewTab,
+                skipAnimation
             });
         }
     }
@@ -131,11 +133,11 @@ export default class PublishManagement extends Component {
         event?.preventDefault();
 
         if (this.previewModal && !this.previewModal.isClosing) {
-            this.openPublishFlow();
+            this.openPublishFlow(event, {skipAnimation: true});
             await timeout(160);
             this.previewModal.close();
         } else if (this.publishFlowModal && !this.publishFlowModal.isClosing) {
-            this.openPreview();
+            this.openPreview(event, {skipAnimation: true});
             await timeout(160);
             this.publishFlowModal.close();
         }
