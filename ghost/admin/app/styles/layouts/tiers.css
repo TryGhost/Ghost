@@ -18,7 +18,7 @@
 
 .gh-contentfilter-menu-trigger-tiers .ember-power-select-selected-item {
     font-weight: 400 !important;
-    color: #394047 !important;
+    color: var(--darkgrey) !important;
 }
 
 .gh-tier-cards {
@@ -55,8 +55,8 @@
 }
 
 .gh-tier-card-edit-button svg {
-    fill: #15171a;
-    color: transparent;
+    /*fill: #15171a;
+    color: transparent;*/
 }
 
 .gh-tier-actions-menu {
