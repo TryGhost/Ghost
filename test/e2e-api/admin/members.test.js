@@ -1562,13 +1562,15 @@ describe('Members API', function () {
                 'content-disposition': anyString
             });
 
-        res.text.should.match(/id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at/);
+        res.text.should.match(/id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,products/);
 
         const csv = Papa.parse(res.text, {header: true});
         should.exist(csv.data.find(row => row.name === 'Mr Egg'));
         should.exist(csv.data.find(row => row.name === 'Winston Zeddemore'));
         should.exist(csv.data.find(row => row.name === 'Ray Stantz'));
         should.exist(csv.data.find(row => row.email === 'member2@test.com'));
+        should.exist(csv.data.find(row => row.products.length > 0));
+        should.exist(csv.data.find(row => row.labels.length > 0));
     });
 
     it('Can export a filtered CSV', async function () {
@@ -1581,13 +1583,15 @@ describe('Members API', function () {
                 'content-disposition': anyString
             });
 
-        res.text.should.match(/id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at/);
+        res.text.should.match(/id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,products/);
 
         const csv = Papa.parse(res.text, {header: true});
         should.exist(csv.data.find(row => row.name === 'Mr Egg'));
         should.not.exist(csv.data.find(row => row.name === 'Egon Spengler'));
         should.not.exist(csv.data.find(row => row.name === 'Ray Stantz'));
         should.not.exist(csv.data.find(row => row.email === 'member2@test.com'));
+        // note that this member doesn't have products
+        should.exist(csv.data.find(row => row.labels.length > 0));
     });
 
     // Get stats
