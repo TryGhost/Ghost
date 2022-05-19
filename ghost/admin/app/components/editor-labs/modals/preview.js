@@ -15,15 +15,21 @@ export default class EditorPostPreviewModal extends Component {
     };
 
     @tracked tab = this.args.data.currentTab || 'browser';
+    @tracked isChangingTab = false;
 
     constructor() {
         super(...arguments);
         this.saveFirstTask.perform();
     }
 
+    get skipAnimation() {
+        return this.args.data.skipAnimation || this.isChangingTab;
+    }
+
     @action
     changeTab(tab) {
         this.tab = tab;
+        this.isChangingTab = true;
         this.args.data.changeTab?.(tab);
     }
 
