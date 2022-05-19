@@ -285,6 +285,8 @@ module.exports = {
         anyISODate: stringMatching(/\d{4}-\d{2}-\d{2}/),
         anyISODateTimeWithTZ: stringMatching(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000\+\d{2}:\d{2}/),
         anyEtag: stringMatching(/(?:W\/)?"(?:[ !#-\x7E\x80-\xFF]*|\r\n[\t ]|\\.)*"/),
+        anyContentLength: stringMatching(/\d+/),
+        anyContentVersion: stringMatching(/v\d+\.\d+/),
         anyObjectId: stringMatching(/[a-f0-9]{24}/),
         anyErrorId: stringMatching(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/),
         anyUuid: stringMatching(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/),
