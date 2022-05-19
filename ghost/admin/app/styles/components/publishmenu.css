@@ -485,6 +485,17 @@
     display: none;
 }
 
+.gh-publish-newsletter-dropdown .gh-newsletter-count {
+    padding: 2px 7px;
+    background: var(--whitegrey-l1);
+    color: var(--middarkgrey);
+    border-radius: 999px;
+    font-weight: 500;
+    font-size: 1.25rem;
+    min-width: 23px;
+    text-align: center;
+}
+
 .gh-publish-newsletter-dropdown {
     z-index: 99999;
     padding: 4px 0;
