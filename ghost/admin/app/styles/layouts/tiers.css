@@ -54,11 +54,6 @@
     height: 24px;
 }
 
-.gh-tier-card-edit-button svg {
-    /*fill: #15171a;
-    color: transparent;*/
-}
-
 .gh-tier-actions-menu {
     top: calc(100% + 6px);
     left: auto;
