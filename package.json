@@ -136,7 +136,7 @@
     "express": "4.18.1",
     "express-brute": "1.0.1",
     "express-hbs": "2.4.0",
-    "express-jwt": "7.7.1",
+    "express-jwt": "7.7.2",
     "express-lazy-router": "1.0.4",
     "express-query-boolean": "2.0.0",
     "express-session": "1.17.3",
