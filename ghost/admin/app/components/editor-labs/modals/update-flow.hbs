@@ -47,14 +47,14 @@
                                 {{#if this.showNewsletterName}}
                                     <strong>{{gh-pluralize countFetcher.count "subscriber"}}</strong> of <strong>{{post.newsletter.name}}</strong>
                                 {{else}}
-                                    <strong>{{gh-pluralize countFetcher.count "member"}}</strong>
+                                    <strong>{{gh-pluralize countFetcher.count "subscribers"}}</strong>
                                 {{/if}}
                             {{/let}}
                         {{else}}
                             {{#if this.showNewsletterName}}
                                 <strong>{{gh-pluralize post.email.emailCount "subscriber"}}</strong> of <strong>{{post.newsletter.name}}</strong>
                             {{else}}
-                                <strong>{{gh-pluralize post.email.emailCount "member"}}</strong>
+                                <strong>{{gh-pluralize post.email.emailCount "subscribers"}}</strong>
                             {{/if}}
                         {{/if}}
                     {{else}}
