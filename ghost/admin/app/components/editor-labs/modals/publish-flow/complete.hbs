@@ -40,21 +40,25 @@
                 Your post
                 {{if post.isScheduled "will be" "was"}}
                 sent to
-                {{#if post.isScheduled}}
-                    {{#let (members-count-fetcher query=(hash filter=post.fullRecipientFilter)) as |countFetcher|}}
-                        {{#if @publishOptions.onlyDefaultNewsletter}}
-                            <strong>{{gh-pluralize post.email.emailCount "subscribers"}}</strong>
-                        {{else}}
-                            <strong>{{gh-pluralize post.email.emailCount "subscriber"}}</strong> of <strong>{{@publishOptions.post.newsletter.name}}</strong>
-                        {{/if}}
-                    {{/let}}
-                {{else}}
+                
+                {{#let (members-count-fetcher query=(hash filter=post.fullRecipientFilter)) as |countFetcher|}}
+
+                    <strong>
+                        {{if (eq @recipientType "all") "all"}}
+
+                        {{countFetcher.count}}
+
+                        {{!-- @recipientType = none/free/paid/all/specific --}}
+                        {{if (not-eq @recipientType "all") @recipientType}}
+                    </strong>
+
                     {{#if @publishOptions.onlyDefaultNewsletter}}
-                        <strong>{{gh-pluralize post.email.emailCount "subscribers"}}</strong>
+                        <strong>{{gh-pluralize countFetcher.count "subscriber" without-count=true}}</strong>
                     {{else}}
-                        <strong>{{gh-pluralize post.email.emailCount "subscriber"}}</strong> of <strong>{{@publishOptions.post.newsletter.name}}</strong>
+                        <strong>{{gh-pluralize countFetcher.count "subscriber" without-count=true}}</strong>
+                        of <strong>{{@publishOptions.newsletter.name}}</strong>,
                     {{/if}}
-                {{/if}}
+                {{/let}}
 
                 {{#let (moment-site-tz post.publishedAtUTC) as |publishedAt|}}
                     on
