@@ -53,14 +53,14 @@
         {{#if (eq this.tab "browser")}}
             <EditorLabs::Modals::Preview::Browser
                 @post={{@data.publishOptions.post}}
-                @skipAnimation={{@data.skipAnimation}}
+                @skipAnimation={{this.skipAnimation}}
             />
         {{/if}}
 
         {{#if (and (eq this.tab "mobile"))}}
             <EditorLabs::Modals::Preview::Mobile
                 @post={{@data.publishOptions.post}}
-                @skipAnimation={{@data.skipAnimation}}
+                @skipAnimation={{this.skipAnimation}}
             />
         {{/if}}
 
@@ -69,7 +69,7 @@
                 <EditorLabs::Modals::Preview::Email
                     @post={{@data.publishOptions.post}}
                     @newsletter={{@data.publishOptions.newsletter}}
-                    @skipAnimation={{@data.skipAnimation}}
+                    @skipAnimation={{this.skipAnimation}}
                 />
             {{/if}}
         {{/unless}}
@@ -77,7 +77,7 @@
         {{#if (eq this.tab "social")}}
             <EditorLabs::Modals::Preview::Social
                 @post={{@data.publishOptions.post}}
-                @skipAnimation={{@data.skipAnimation}}
+                @skipAnimation={{this.skipAnimation}}
             />
         {{/if}}
     {{/if}}
