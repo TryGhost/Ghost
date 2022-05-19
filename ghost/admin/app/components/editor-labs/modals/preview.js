@@ -9,7 +9,7 @@ export default class EditorPostPreviewModal extends Component {
     @service session;
 
     static modalOptions = {
-        className: 'fullscreen-modal-total-overlay',
+        className: 'fullscreen-modal-total-overlay publish-modal',
         omitBackdrop: true,
         ignoreBackdropClick: true
     };
