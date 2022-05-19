@@ -985,6 +985,7 @@ body:not([data-user-is-dragging]) .gh-newsletter-card-draggable:hover .grab-news
 
 .gh-newsletter-actions-menu {
     margin-top: 4px;
+    background: none;
 }
 
 .gh-add-newsletter {
