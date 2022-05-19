@@ -346,6 +346,12 @@ export default class PaidMix extends Component {
         }
 
         for (let i = 0; i < data.length; i++) {
+            if (!this.areTiersAllZero && data[i] === 0) {
+                // If not all tiers are zero, hide tiers with 0 members, because
+                // they are not visible in the graph and can break rounded corners
+                continue;
+            }
+
             let tierPercentage = Math.round(data[i] / totalTiersAmount * 100);
 
             // The first value has to be negative to make rounded corners work
