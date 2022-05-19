@@ -3,7 +3,7 @@ import {task} from 'ember-concurrency';
 
 export default class UpdateFlowModalComponent extends Component {
     static modalOptions = {
-        className: 'fullscreen-modal-total-overlay',
+        className: 'fullscreen-modal-total-overlay publish-modal',
         omitBackdrop: true,
         ignoreBackdropClick: true
     };

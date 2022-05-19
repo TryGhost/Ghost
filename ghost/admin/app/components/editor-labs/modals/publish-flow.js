@@ -6,7 +6,7 @@ import {tracked} from '@glimmer/tracking';
 
 export default class PublishModalComponent extends Component {
     static modalOptions = {
-        className: 'fullscreen-modal-total-overlay',
+        className: 'fullscreen-modal-total-overlay publish-modal',
         omitBackdrop: true,
         ignoreBackdropClick: true
     };
