@@ -694,7 +694,7 @@
 }
 
 .gh-publish-confirmation {
-    margin-bottom: 7rem;
+    margin-bottom: 5rem;
     color: var(--black);
     font-size: 1.8rem;
     font-weight: 400;
@@ -712,6 +712,13 @@
 .gh-revert-to-draft {
     color: var(--green-d1);
     font-weight: 500;
+}
+
+.gh-back-to-editor {
+    color: var(--midgrey);
+    font-size: 1.6rem;
+    font-weight: 400;
+    letter-spacing: .4px;
 }
 
 .gh-post-bookmark-wrapper {
