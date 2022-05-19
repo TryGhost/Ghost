@@ -283,6 +283,30 @@
     margin: 0 auto 8rem;
     margin-bottom: 11vw;
     padding: 11vw 24px 0;
+    opacity: 1;
+}
+
+.gh-publish-settings-container.fade-in {
+    transform-origin: center;
+    animation: fade-in-pulse .25s forwards cubic-bezier(.8,.02,.45,.91);
+}
+
+@keyframes fade-in-pulse {
+    0% {
+        opacity:0;
+        -webkit-transform:scale(.85);
+        transform:scale(.85)
+    }
+
+    50% {
+        opacity:1
+    }
+
+    100%,
+    70% {
+        -webkit-transform:scale(1);
+        transform:scale(1)
+    }
 }
 
 @media (max-width: 1024px) {
