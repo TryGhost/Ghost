@@ -95,12 +95,16 @@ async function signin({data, api, state}) {
 
 async function signup({data, state, api}) {
     try {
-        const {plan, email, name, newsletters, offerId} = data;
+        let {plan, tierId, cadence, email, name, newsletters, offerId} = data;
         if (plan.toLowerCase() === 'free') {
             await api.member.sendMagicLink(data);
         } else {
-            const {tierId, cadence} = getProductCadenceFromPrice({site: state?.site, priceId: plan});
-            await api.member.checkoutPlan({plan, tierId, cadence, email, name, newsletters, offerId});
+            if (tierId && cadence) {
+                await api.member.checkoutPlan({plan, tierId, cadence, email, name, newsletters, offerId});
+            } else {
+                ({tierId, cadence} = getProductCadenceFromPrice({site: state?.site, priceId: plan}));
+                await api.member.checkoutPlan({plan, tierId, cadence, email, name, newsletters, offerId});
+            }
         }
         return {
             page: 'magiclink',
@@ -119,8 +123,10 @@ async function signup({data, state, api}) {
 
 async function checkoutPlan({data, state, api}) {
     try {
-        const {plan, offerId} = data;
-        const {tierId, cadence} = getProductCadenceFromPrice({site: state?.site, priceId: plan});
+        let {plan, offerId, tierId, cadence} = data;
+        if (!tierId || !cadence) {
+            ({tierId, cadence} = getProductCadenceFromPrice({site: state?.site, priceId: plan}));
+        }
         await api.member.checkoutPlan({
             plan,
             tierId,
