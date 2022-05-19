@@ -2160,10 +2160,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.32.tgz#c8a8a80d758bedff5c594667543fd658ed139301"
   integrity sha512-TU/nbqKRVxRJyVBpha5u9pw9oJTlCJhIislE0kS6IfGfjO6EDGa20gfXHV8AGeTuB1pNpiBUKcpX+IsHjjCM/w==
 
-"@tryghost/stats-service@0.2.1":
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/stats-service/-/stats-service-0.2.1.tgz#d9b0488d705b9a697dc9ebff9ec8e64b33902649"
-  integrity sha512-2w2C8f9BR7QjcyvgPLQmzNW+cDHT6eceCMa8Ihp3PoQtcikE8TKAOx1cwlEDxs+0Blf5BQ8HILA2bJYsfsylAg==
+"@tryghost/stats-service@0.2.2":
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/stats-service/-/stats-service-0.2.2.tgz#79995fb5b4770284f6312537275965afa5aeb804"
+  integrity sha512-HCq6bPVdhU1AROON/+jGuniM3PrX+bv6d5zfa8fVPo423IMhYfYNzD7GzYCpW9sJBwklrl3XO+x7nQMXaTQtTg==
   dependencies:
     moment "^2.29.3"
 
