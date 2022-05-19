@@ -291,6 +291,16 @@
     animation: fade-in-pulse .25s forwards cubic-bezier(.8,.02,.45,.91);
 }
 
+.epm-out .gh-publish-settings-container.fade-in {
+    transform-origin: center;
+    animation: fade-out-pulse .25s forwards cubic-bezier(.8,.02,.45,.91);
+}
+
+/* wait for fade-out-pulse to finish before fading out modal */
+/* .publish-modal.epm-out {
+    animation-delay: .25s;
+} */
+
 @keyframes fade-in-pulse {
     0% {
         opacity:0;
@@ -306,6 +316,24 @@
     70% {
         -webkit-transform:scale(1);
         transform:scale(1)
+    }
+}
+
+@keyframes fade-out-pulse {
+    0% {
+        -webkit-transform:scale(1);
+        transform:scale(1)
+    }
+
+    50% {
+        opacity:1
+    }
+
+    100%,
+    70% {
+        opacity:0;
+        -webkit-transform:scale(.85);
+        transform:scale(.85)
     }
 }
 
@@ -741,7 +769,7 @@
     font-weight: 600;
     line-height: 1.4em;line-clamp: 2;
     -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;  
+    -webkit-box-orient: vertical;
     overflow: hidden;
 }
 
