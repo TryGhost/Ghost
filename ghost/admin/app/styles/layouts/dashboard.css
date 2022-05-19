@@ -700,6 +700,7 @@ Dashboard v5 Metric */
     font-weight: 700;
     color: var(--darkgrey);
     text-decoration: none;
+    min-width: 54px;
 }
 
 .gh-dashboard-metric-minivalue.na {
@@ -1537,13 +1538,8 @@ Dashboard v5 Misc */
     position: relative;
     display: block;
     flex-grow: 1;
-    margin-left: 20px;
+    margin-left: 10px;
     margin-right: 8px;
-}
-
-.gh-dashboard-rate-amount + span {
-    flex-shrink: 0;
-    padding-left: 15px;
 }
 
 .gh-dashboard-rate-amount > span {
