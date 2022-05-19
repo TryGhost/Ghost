@@ -77,7 +77,7 @@ function bulkAction(bulkActionResult, _apiConfig, frame) {
 /**
  * @template PageMeta
  *
- * @param {{data: import('bookshelf').Model[], meta: PageMeta}} page
+ * @param {{data: any[], meta: PageMeta}} page
  * @param {APIConfig} _apiConfig
  * @param {Frame} frame
  *
@@ -86,9 +86,14 @@ function bulkAction(bulkActionResult, _apiConfig, frame) {
 function exportCSV(page, _apiConfig, frame) {
     debug('exportCSV');
 
-    const members = page.data.map(model => serializeMember(model, frame.options));
+    for (const member of page.data) {
+        // Note: we don't modify the array or change/duplicate objects
+        // to increase performance
+        member.subscribed = !!member.subscribed;
+        member.comped = member.status === 'comped';
+    }
 
-    return unparse(members);
+    return unparse(page.data);
 }
 
 /**
