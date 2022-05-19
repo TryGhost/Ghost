@@ -15,15 +15,6 @@
     opacity: 1;
 }
 
-.gh-browserpreview-previewcontainer.fade-in {
-    transform-origin: center;
-    animation: fade-in-pulse .35s forwards cubic-bezier(.8,.02,.45,.91);
-}
-.epm-out .gh-browserpreview-previewcontainer.fade-in {
-    transform-origin: center;
-    animation: fade-out-pulse .35s forwards cubic-bezier(.8,.02,.45,.91);
-}
-
 .gh-browserpreview-iframecontainer {
     flex-grow: 1;
     position: relative;
