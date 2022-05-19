@@ -21,7 +21,7 @@
         {{/if}}
     </header>
 
-    <div class="gh-publish-settings-container fade-in">
+    <div class="gh-publish-settings-container {{unless @data.skipAnimation "fade-in"}}">
         {{#if this.emailErrorMessage}}
             <EditorLabs::Modals::PublishFlow::CompleteWithEmailError
                 @emailErrorMessage={{this.emailErrorMessage}}
