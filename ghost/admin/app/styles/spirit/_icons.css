@@ -85,17 +85,23 @@
 .fill-black-90 g { fill: var(--black-90); }
 
 .fill-darkgrey path,
-.fill-darkgrey g { fill: var(--darkgrey); }
+.fill-darkgrey g, 
+.fill-darkgrey circle { fill: var(--darkgrey); }
 .fill-middarkgrey path,
-.fill-middarkgrey g { fill: var(--middarkgrey); }
+.fill-middarkgrey g,
+.fill-middarkgrey circle { fill: var(--middarkgrey); }
 .fill-midgrey path,
-.fill-midgrey g { fill: var(--midgrey); }
+.fill-midgrey g,
+.fill-midgrey circle { fill: var(--midgrey); }
 .fill-midlightgrey path,
-.fill-midlightgrey g { fill: var(--midlightgrey); }
+.fill-midlightgrey g,
+.fill-midlightgrey circle { fill: var(--midlightgrey); }
 .fill-lightgrey path,
-.fill-lightgrey g { fill: var(--lightgrey); }
+.fill-lightgrey g,
+.fill-lightgrey circle  { fill: var(--lightgrey); }
 .fill-whitegrey path,
-.fill-whitegrey g { fill: var(--whitegrey); }
+.fill-whitegrey g,
+.fill-whitegrey circle { fill: var(--whitegrey); }
 
 /* Shades */
 .fill-blue-l3 path,

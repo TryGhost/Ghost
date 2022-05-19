@@ -46,7 +46,7 @@
     margin: 0;
     padding: 0;
     font-size: 1.4rem;
-    color: #40474f;
+    color: var(--darkgrey-l1);
 }
 
 .gh-member-details-activity-link {
@@ -196,7 +196,7 @@
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    color: #394047;
+    color: var(--darkgrey);
     font-weight: 500;
     font-size: 1.4rem;
     padding: 0.125rem 6rem 0 0.25rem;
