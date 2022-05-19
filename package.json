@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "4.46.0",
+  "version": "5.0.0",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -32,7 +32,7 @@
     "test:unit": "c8 yarn test:unit:base",
     "test:unit:base": "mocha --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js './test/unit' --timeout=2000",
     "test:integration": "mocha --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js  './test/integration' --timeout=5000",
-    "test:e2e": "mocha --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js './test/e2e-api' './test/e2e-frontend' './test/e2e-server' --timeout=10000",
+    "test:e2e": "mocha --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js './test/e2e-api' './test/e2e-frontend' './test/e2e-server' --timeout=15000",
     "test:regression": "mocha --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js  './test/regression' --timeout=60000",
     "test:browser": "playwright test --browser=all test/e2e-browser",
     "test:ci": "yarn test:e2e -b && yarn test:integration -b && yarn test:regression -b",
