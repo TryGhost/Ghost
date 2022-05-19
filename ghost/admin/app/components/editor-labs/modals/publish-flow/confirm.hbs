@@ -39,7 +39,7 @@
             </strong>
 
             {{#if @publishOptions.onlyDefaultNewsletter}}
-                <strong>{{gh-pluralize countFetcher.count "member" without-count=true}}</strong>{{#if this.willPublish}}.{{else}},{{/if}}
+                <strong>{{gh-pluralize countFetcher.count "subscriber" without-count=true}}</strong>{{#if this.willPublish}}.{{else}},{{/if}}
             {{else}}
                 <strong>{{gh-pluralize countFetcher.count "subscriber" without-count=true}}</strong>
                 of <strong>{{@publishOptions.newsletter.name}}</strong>{{#if this.willPublish}}.{{else}},{{/if}}
