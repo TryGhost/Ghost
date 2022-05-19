@@ -424,7 +424,7 @@ export default class DashboardStatsService extends Service {
                 });
             }
 
-            return [entry].concat(mergeDates(rest));
+            return [entry].concat(mergeDates(list));
         }
 
         const subscriptionCountStats = mergeDates(result.stats);
