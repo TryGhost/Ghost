@@ -22,7 +22,7 @@ module.exports = async function (options) {
             // Include mongoTransformer to apply subscribed:{true|false} => newsletter relation mapping
             Object.assign(filterOptions, _.pick(options, ['filter', 'search', 'mongoTransformer']));
         }
-        
+
         const memberRows = await models.Member.getFilteredCollectionQuery(filterOptions)
             .select('members.id')
             .distinct();
@@ -42,7 +42,7 @@ module.exports = async function (options) {
             END) as subscribed
         `))
         .select(knex.raw(`
-            (SELECT GROUP_CONCAT(product_id) FROM members_products f WHERE f.member_id = members.id) as products
+            (SELECT GROUP_CONCAT(product_id) FROM members_products f WHERE f.member_id = members.id) as tiers
         `))
         .select(knex.raw(`
             (SELECT GROUP_CONCAT(label_id) FROM members_labels f WHERE f.member_id = members.id) as labels
@@ -57,14 +57,14 @@ module.exports = async function (options) {
 
     const rows = await query;
     for (const row of rows) {
-        const productIds = row.products ? row.products.split(',') : [];
-        const products = productIds.map((id) => {
-            const product = allProducts.find(p => p.id === id);
+        const tierIds = row.tiers ? row.tiers.split(',') : [];
+        const tiers = tierIds.map((id) => {
+            const tier = allProducts.find(p => p.id === id);
             return {
-                name: product.get('name')
+                name: tier.get('name')
             };
         });
-        row.products = products;
+        row.tiers = tiers;
 
         const labelIds = row.labels ? row.labels.split(',') : [];
         const labels = labelIds.map((id) => {
