@@ -304,6 +304,19 @@ class Base {
         });
     }
 
+    /**
+     * @returns {Object}
+     */
+    mapImportedData(originalObject, importedObject) {
+        return {
+            id: importedObject.id,
+            originalId: this.originalIdMap[importedObject.id],
+            slug: importedObject.get('slug'),
+            originalSlug: originalObject.slug,
+            email: importedObject.get('email')
+        };
+    }
+
     doImport(options, importOptions) {
         debug('doImport', this.modelName, this.dataToImport.length);
 
@@ -322,13 +335,9 @@ class Base {
                         }
 
                         // for identifier lookup
-                        this.importedData.push({
-                            id: importedModel.id,
-                            originalId: this.originalIdMap[importedModel.id],
-                            slug: importedModel.get('slug'),
-                            originalSlug: obj.slug,
-                            email: importedModel.get('email')
-                        });
+                        this.importedData.push(
+                            this.mapImportedData(obj, importedModel)
+                        );
 
                         importedModel = null;
                         this.dataToImport.splice(index, 1);
