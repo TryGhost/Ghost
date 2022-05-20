@@ -52,8 +52,8 @@ describe('DB API (canary)', function () {
                 should.exist(jsonResponse.db);
                 jsonResponse.db.should.have.length(1);
 
-                // NOTE: 10 default tables + 1 from include parameters
-                Object.keys(jsonResponse.db[0].data).length.should.eql(11);
+                // NOTE: 15 default tables + 1 from include parameters
+                Object.keys(jsonResponse.db[0].data).length.should.eql(16);
             });
     });
 
