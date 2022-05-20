@@ -146,10 +146,14 @@ const exportedBodyLatest = () => {
                 posts: [],
                 posts_authors: [],
                 posts_meta: [],
+                posts_products: [],
                 posts_tags: [],
+                products: [],
                 roles: [],
                 roles_users: [],
                 settings: [],
+                stripe_prices: [],
+                stripe_products: [],
                 tags: [],
                 users: []
             }
