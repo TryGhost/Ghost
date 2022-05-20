@@ -1,7 +1,6 @@
 const models = require('../../../models');
 const {knex} = require('../../../data/db');
 const moment = require('moment');
-const _ = require('lodash');
 
 module.exports = async function (options) {
     const hasFilter = options.limit !== 'all' || options.filter || options.search;
@@ -10,12 +9,26 @@ module.exports = async function (options) {
     if (hasFilter) {
         // do a very minimal query, only to fetch the ids of the filtered values
         // should be quite fast
+        options.withRelated = [];
+        options.columns = ['id'];
+
+        const page = await models.Member.findPage(options);
+        ids = page.data.map(d => d.id);
+
+        /*
         const filterOptions = _.pick(options, ['transacting', 'context']);
+
+        if (all !== true) {
+            // Include mongoTransformer to apply subscribed:{true|false} => newsletter relation mapping
+            Object.assign(filterOptions, _.pick(options, ['filter', 'search', 'mongoTransformer']));
+        }
+        
         const memberRows = await models.Member.getFilteredCollectionQuery(filterOptions)
             .select('members.id')
             .distinct();
 
         ids = memberRows.map(row => row.id);
+        */
     }
 
     const allProducts = await models.Product.fetchAll();
