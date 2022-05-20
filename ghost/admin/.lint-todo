@@ -1211,3 +1211,4 @@ remove|ember-template-lint|no-action|99|35|99|35|57e3f9297a6011b2c94f1f62126229a
 remove|ember-template-lint|no-action|118|28|118|28|0eba6cead2056aa8d89e186bd0318f0bc350b6e7|1652054400000|1662422400000|1665014400000|app/templates/editor.hbs
 remove|ember-template-lint|no-action|135|19|135|19|2e591e0b5aa8f903afda1d0f2ffd2183812e6c2f|1652054400000|1662422400000|1665014400000|app/templates/editor.hbs
 remove|ember-template-lint|no-action|146|19|146|19|c90e6d7f98e739c3a6472176ceeecc896913f2f6|1652054400000|1662422400000|1665014400000|app/templates/editor.hbs
+remove|ember-template-lint|no-unused-block-params|1|0|1|0|df27de023763e49bb0cde497e82991bbfc16b1b1|1652054400000|1662422400000|1665014400000|lib/koenig-editor/addon/components/koenig-card-audio.hbs
