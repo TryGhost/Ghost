@@ -30,6 +30,249 @@ Object {
 }
 `;
 
+exports[`Members API Bulk operations Can bulk delete a label from members 1: [body] 1`] = `
+Object {
+  "bulk": Object {
+    "meta": Object {
+      "errors": Array [],
+      "stats": Object {
+        "successful": 2,
+        "unsuccessful": 0,
+      },
+      "unsuccessfulData": Array [],
+    },
+  },
+}
+`;
+
+exports[`Members API Bulk operations Can bulk delete a label from members 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "95",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API Bulk operations Can bulk delete a label from members 3: [body] 1`] = `
+Object {
+  "bulk": Object {
+    "meta": Object {
+      "errors": Array [],
+      "stats": Object {
+        "successful": 1,
+        "unsuccessful": 0,
+      },
+      "unsuccessfulData": Array [],
+    },
+  },
+}
+`;
+
+exports[`Members API Bulk operations Can bulk delete a label from members 4: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "95",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API Bulk operations Can bulk delete a label from members with filters 1: [body] 1`] = `
+Object {
+  "bulk": Object {
+    "meta": Object {
+      "errors": Array [],
+      "stats": Object {
+        "successful": 1,
+        "unsuccessful": 0,
+      },
+      "unsuccessfulData": Array [],
+    },
+  },
+}
+`;
+
+exports[`Members API Bulk operations Can bulk delete a label from members with filters 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "95",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API Bulk operations Can bulk unsubscribe members with deprecated subscribed filter (actual) 1: [body] 1`] = `
+Object {
+  "bulk": Object {
+    "meta": Object {
+      "errors": Array [],
+      "stats": Object {
+        "successful": 6,
+        "unsuccessful": 0,
+      },
+      "unsuccessfulData": Array [],
+    },
+  },
+}
+`;
+
+exports[`Members API Bulk operations Can bulk unsubscribe members with deprecated subscribed filter (actual) 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "95",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API Bulk operations Can bulk unsubscribe members with deprecated subscribed filter 1: [body] 1`] = `
+Object {
+  "bulk": Object {
+    "meta": Object {
+      "errors": Array [],
+      "stats": Object {
+        "successful": 2,
+        "unsuccessful": 0,
+      },
+      "unsuccessfulData": Array [],
+    },
+  },
+}
+`;
+
+exports[`Members API Bulk operations Can bulk unsubscribe members with deprecated subscribed filter 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "95",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API Bulk operations Can bulk unsubscribe members with filter 1: [body] 1`] = `
+Object {
+  "bulk": Object {
+    "meta": Object {
+      "errors": Array [],
+      "stats": Object {
+        "successful": 1,
+        "unsuccessful": 0,
+      },
+      "unsuccessfulData": Array [],
+    },
+  },
+}
+`;
+
+exports[`Members API Bulk operations Can bulk unsubscribe members with filter 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "95",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API Bulk operations Can bulk unsubscribe members with filter 3: [body] 1`] = `
+Object {
+  "bulk": Object {
+    "meta": Object {
+      "errors": Array [],
+      "stats": Object {
+        "successful": 1,
+        "unsuccessful": 0,
+      },
+      "unsuccessfulData": Array [],
+    },
+  },
+}
+`;
+
+exports[`Members API Bulk operations Can bulk unsubscribe members with filter 4: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "95",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API Bulk operations Doesn't delete labels apart from the passed label id 1: [body] 1`] = `
+Object {
+  "bulk": Object {
+    "meta": Object {
+      "errors": Array [],
+      "stats": Object {
+        "successful": 1,
+        "unsuccessful": 0,
+      },
+      "unsuccessfulData": Array [],
+    },
+  },
+}
+`;
+
+exports[`Members API Bulk operations Doesn't delete labels apart from the passed label id 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "95",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API Bulk operations doesn't delete labels apart from the passed label id 1: [body] 1`] = `
+Object {
+  "bulk": Object {
+    "meta": Object {
+      "errors": Array [],
+      "stats": Object {
+        "successful": 1,
+        "unsuccessful": 0,
+      },
+      "unsuccessfulData": Array [],
+    },
+  },
+}
+`;
+
+exports[`Members API Bulk operations doesn't delete labels apart from the passed label id 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "95",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
 exports[`Members API Can add 1: [body] 1`] = `
 Object {
   "members": Array [
