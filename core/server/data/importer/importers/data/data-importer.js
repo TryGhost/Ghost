@@ -120,6 +120,31 @@ DataImporter = {
                 });
             });
 
+            /**
+             * @TODO: figure out how to fix this properly
+             * fixup the circular reference from
+             * stripe_prices -> stripe_products -> products -> stripe_prices
+             */
+            ops.push(() => {
+                const importedStripePrices = importers.stripe_prices.importedData;
+                const importedProducts = importers.products.importedData;
+                return sequence(_.flatten(_.map(importedProducts, (importedProduct) => {
+                    return _.map(['monthly_price_id', 'yearly_price_id'], (field) => {
+                        const mappedPrice = _.find(importedStripePrices, {originalId: importedProduct[field]});
+                        if (mappedPrice) {
+                            return models.Product.edit({id: importedProduct.id, [field]: mappedPrice.id}, {transacting})
+                                .then(() => {
+                                    // make sure we're returning the correct data
+                                    if (importers.products.importedDataToReturn) {
+                                        //
+                                    }
+                                    debug('updated');
+                                });
+                        }
+                    });
+                })));
+            });
+
             return sequence(ops)
                 .then(function () {
                     results.forEach(function (promise) {
