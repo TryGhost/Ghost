@@ -128,21 +128,28 @@ DataImporter = {
             ops.push(() => {
                 const importedStripePrices = importers.stripe_prices.importedData;
                 const importedProducts = importers.products.importedData;
-                return sequence(_.flatten(_.map(importedProducts, (importedProduct) => {
-                    return _.map(['monthly_price_id', 'yearly_price_id'], (field) => {
+                const productOps = [];
+
+                _.forEach(importedProducts, (importedProduct) => {
+                    return _.forEach(['monthly_price_id', 'yearly_price_id'], (field) => {
                         const mappedPrice = _.find(importedStripePrices, {originalId: importedProduct[field]});
                         if (mappedPrice) {
-                            return models.Product.edit({[field]: mappedPrice.id}, {id: importedProduct.id, transacting})
-                                .then(() => {
-                                    // make sure we're returning the correct data
-                                    if (importers.products.importedDataToReturn) {
-                                        //
-                                    }
-                                    debug('updated');
-                                });
+                            productOps.push(() => {
+                                return models.Product
+                                    .edit({[field]: mappedPrice.id}, {id: importedProduct.id, transacting})
+                                    .then(() => {
+                                        // make sure we're returning the correct data
+                                        if (importers.products.importedDataToReturn) {
+                                            //
+                                        }
+                                        debug('updated');
+                                    });
+                            });
                         }
                     });
-                })));
+                });
+
+                return sequence(productOps);
             });
 
             return sequence(ops)
