@@ -132,7 +132,7 @@ DataImporter = {
                     return _.map(['monthly_price_id', 'yearly_price_id'], (field) => {
                         const mappedPrice = _.find(importedStripePrices, {originalId: importedProduct[field]});
                         if (mappedPrice) {
-                            return models.Product.edit({id: importedProduct.id, [field]: mappedPrice.id}, {transacting})
+                            return models.Product.edit({[field]: mappedPrice.id}, {id: importedProduct.id, transacting})
                                 .then(() => {
                                     // make sure we're returning the correct data
                                     if (importers.products.importedDataToReturn) {
