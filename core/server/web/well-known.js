@@ -21,10 +21,13 @@ module.exports = function setupWellKnownApp() {
         // based on this setting all of the keys to have
         // "use": "sig" property
         const keys = jwks.keys
-            .map((key) => {
-                key.use = 'sig';
-                return key;
-            });
+            .map(key => ({
+                e: key.e,
+                kid: key.kid,
+                kty: key.kty,
+                n: key.n,
+                use: 'sig'
+            }));
 
         res.json({keys});
     });
