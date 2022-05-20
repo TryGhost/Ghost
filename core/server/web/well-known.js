@@ -16,7 +16,17 @@ module.exports = function setupWellKnownApp() {
 
     wellKnownApp.get('/jwks.json', async (req, res) => {
         const jwks = await getSafePublicJWKS();
-        res.json(jwks);
+
+        // there's only one key in the store atm
+        // based on this setting all of the keys to have
+        // "use": "sig" property
+        const keys = jwks.keys
+            .map((key) => {
+                key.use = 'sig';
+                return key;
+            });
+
+        res.json({keys});
     });
 
     return wellKnownApp;
