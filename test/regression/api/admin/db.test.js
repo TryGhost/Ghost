@@ -14,6 +14,8 @@ const localUtils = require('./utils');
 let request;
 let eventsTriggered;
 
+const TABLE_ALLOWLIST_LENGTH = 20;
+
 describe('DB API (canary)', function () {
     let backupKey;
     let schedulerKey;
@@ -53,7 +55,7 @@ describe('DB API (canary)', function () {
                 jsonResponse.db.should.have.length(1);
 
                 // NOTE: 15 default tables + 1 from include parameters
-                Object.keys(jsonResponse.db[0].data).length.should.eql(16);
+                Object.keys(jsonResponse.db[0].data).length.should.eql(TABLE_ALLOWLIST_LENGTH + 1);
             });
     });
 
