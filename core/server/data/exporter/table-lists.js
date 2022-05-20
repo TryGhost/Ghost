@@ -18,10 +18,7 @@ const BACKUP_TABLES = [
     'permissions',
     'permissions_roles',
     'permissions_users',
-    'benefits',
-    'products_benefits',
     'webhooks',
-    'snippets',
     'tokens',
     'sessions',
     'mobiledoc_revisions',
@@ -35,9 +32,8 @@ const BACKUP_TABLES = [
     'members_paid_subscription_events',
     'members_subscribe_events',
     'members_product_events',
-    'members_newsletters',
-    'offers',
-    'offer_redemptions'
+    'members_newsletters'
+
 ];
 
 // NOTE: exposing only tables which are going to be included in a "default" export file
@@ -58,7 +54,12 @@ const TABLES_ALLOWLIST = [
     'stripe_products',
     'stripe_prices',
     'posts_products',
-    'newsletters'
+    'newsletters',
+    'benefits',
+    'products_benefits',
+    'offers',
+    'offer_redemptions',
+    'snippets'
 ];
 
 // NOTE: these are settings keys which should never end up in the export file

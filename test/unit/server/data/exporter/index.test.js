@@ -40,7 +40,7 @@ describe('Exporter', function () {
         it('should try to export all the correct tables (without excluded)', function (done) {
             exporter.doExport().then(function (exportData) {
                 // NOTE: 15 default tables
-                const expectedCallCount = 15;
+                const expectedCallCount = exporter.TABLES_ALLOWLIST.length;
 
                 should.exist(exportData);
 
@@ -67,7 +67,12 @@ describe('Exporter', function () {
                     'stripe_products',
                     'stripe_prices',
                     'posts_products',
-                    'newsletters'
+                    'newsletters',
+                    'benefits',
+                    'products_benefits',
+                    'offers',
+                    'offer_redemptions',
+                    'snippets'
                 ];
 
                 for (let call = 0; call < expectedCallCount; call++) {
@@ -86,7 +91,7 @@ describe('Exporter', function () {
 
             exporter.doExport({include}).then(function (exportData) {
                 // NOTE: 15 default tables + 2 includes
-                const expectedCallCount = 17;
+                const expectedCallCount = exporter.TABLES_ALLOWLIST.length + 2;
 
                 should.exist(exportData);
 
@@ -114,7 +119,12 @@ describe('Exporter', function () {
                     'stripe_products',
                     'stripe_prices',
                     'posts_products',
-                    'newsletters'
+                    'newsletters',
+                    'benefits',
+                    'products_benefits',
+                    'offers',
+                    'offer_redemptions',
+                    'snippets'
                 ].concat(include);
 
                 for (let call = 0; call < expectedCallCount; call++) {
