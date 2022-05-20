@@ -332,7 +332,7 @@ describe('DB API (canary)', function () {
         // Check settings
         const portalProducts = await models.Settings.findOne({key: 'portal_products'});
         should.exist(portalProducts);
-        JSON.parse(portalProducts.get('value')).should.equal([product.id]);
+        JSON.parse(portalProducts.get('value')).should.equal([]);
 
         // Check stripe products
         const stripeProduct = await models.StripeProduct.findOne({product_id: product.id});
