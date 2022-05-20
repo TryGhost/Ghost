@@ -190,6 +190,9 @@ class PostsImporter extends BaseImporter {
 
         // map newsletter_id -> newsletters.id
         _.each(this.dataToImport, (objectInFile) => {
+            if (!objectInFile.newsletter_id) {
+                return;
+            }
             const importedObject = _.find(this.requiredImportedData.newsletters, {originalId: objectInFile.newsletter_id});
             // CASE: we've imported the newsletter
             if (importedObject) {
@@ -203,6 +206,7 @@ class PostsImporter extends BaseImporter {
                 return;
             }
             // CASE: newsletter doesn't exist; ignore it
+            debug(`newsletter ${objectInFile.newsletter_id} not found; ignoring`);
             delete objectInFile.newsletter_id;
         });
 

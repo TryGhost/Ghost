@@ -1,6 +1,7 @@
 const debug = require('@tryghost/debug')('importer:newsletters');
 const _ = require('lodash');
 const BaseImporter = require('./base');
+const models = require('../../../../models');
 
 const ignoredColumns = ['sender_email'];
 
@@ -21,6 +22,13 @@ class NewslettersImporter extends BaseImporter {
                 delete obj[column];
             });
         });
+    }
+
+    fetchExisting(modelOptions) {
+        return models.Newsletter.findAll(_.merge({columns: ['id']}, modelOptions))
+            .then((existingData) => {
+                this.existingData = existingData.toJSON();
+            });
     }
 
     beforeImport() {

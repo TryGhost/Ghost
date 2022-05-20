@@ -30,11 +30,11 @@ DataImporter = {
         importers.roles = new RolesImporter(importData.data);
         importers.tags = new TagsImporter(importData.data);
         importers.newsletters = new NewslettersImporter(importData.data);
-        importers.posts = new PostsImporter(importData.data);
         importers.settings = new SettingsImporter(importData.data);
         importers.products = new ProductsImporter(importData.data);
         importers.stripe_products = new StripeProductsImporter(importData.data);
         importers.stripe_prices = new StripePricesImporter(importData.data);
+        importers.posts = new PostsImporter(importData.data);
 
         return importData;
     },

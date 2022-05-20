@@ -41,10 +41,10 @@ class StripePricesImporter extends BaseImporter {
         this.dataToImport = this.dataToImport.filter(item => !invalidPrices.includes(item.id));
     }
 
-    beforeImport() {
-        debug('beforeImport');
+    replaceIdentifiers() {
+        // this has to be in replaceIdentifiers because it's after required* fields are set
         this.validateStripeProduct();
-        return super.beforeImport();
+        return super.replaceIdentifiers();
     }
 }
 

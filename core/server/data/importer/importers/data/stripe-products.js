@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('importer:stripeproducts');
 const BaseImporter = require('./base');
+const models = require('../../../../models');
 
 class StripeProductsImporter extends BaseImporter {
     constructor(allDataFromFile) {
@@ -10,6 +11,21 @@ class StripeProductsImporter extends BaseImporter {
             requiredImportedData: ['products'],
             requiredExistingData: ['products']
         });
+    }
+
+    fetchExisting(modelOptions) {
+        return models.StripeProduct.findAll(_.merge({columns: ['id', 'stripe_product_id']}, modelOptions))
+            .then((existingData) => {
+                this.existingData = existingData.toJSON();
+            });
+    }
+
+    mapImportedData(originalObject, importedObject) {
+        return {
+            id: importedObject.id,
+            originalId: this.originalIdMap[importedObject.id],
+            stripe_product_id: originalObject.stripe_product_id
+        };
     }
 
     replaceIdentifiers() {
