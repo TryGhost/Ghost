@@ -10,7 +10,7 @@ const keyTypeMapper = require('../../../../api/shared/serializers/input/utils/se
 const {WRITABLE_KEYS_ALLOWLIST} = require('../../../../../shared/labs');
 
 const labsDefaults = JSON.parse(defaultSettings.labs.labs.defaultValue);
-const ignoredSettings = ['slack_url', 'members_from_address', 'members_support_address'];
+const ignoredSettings = ['slack_url', 'members_from_address', 'members_support_address', 'portal_products'];
 
 // Importer maintains as much backwards compatibility as possible
 const renamedSettingsMap = {

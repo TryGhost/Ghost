@@ -88,7 +88,7 @@ describe('PostsImporter', function () {
             pageTrueTypePost.type.should.equal('post', 'pageTrueTypePost.type');
         });
 
-        it('Removes the newsletter_id column', function () {
+        it('Does not remove the newsletter_id column', function () {
             const fakePosts = [{
                 slug: 'post-with-newsletter',
                 newsletter_id: 'bananas'
@@ -100,7 +100,7 @@ describe('PostsImporter', function () {
 
             const postWithoutNewsletter = find(importer.dataToImport, {slug: 'post-with-newsletter'});
             should.exist(postWithoutNewsletter);
-            should.not.exist(postWithoutNewsletter.newsletter_id);
+            should.exist(postWithoutNewsletter.newsletter_id);
         });
 
         it('Maps send_email_when_published', function () {
