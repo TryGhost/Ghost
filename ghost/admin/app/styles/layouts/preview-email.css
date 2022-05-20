@@ -182,6 +182,7 @@
     border-radius: 28px;
     flex-grow: 1;
     overflow: hidden;
+    -webkit-mask-image: -webkit-radial-gradient(white, black);
 }
 
 .gh-pe-mobile-container .gh-pe-iframe {
