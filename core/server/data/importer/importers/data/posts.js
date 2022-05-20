@@ -6,7 +6,6 @@ const mobiledocLib = require('../../../../lib/mobiledoc');
 const validator = require('@tryghost/validator');
 const postsMetaSchema = require('../../../schema').tables.posts_meta;
 const metaAttrs = _.keys(_.omit(postsMetaSchema, ['id']));
-const ignoredColumns = ['newsletter_id'];
 
 class PostsImporter extends BaseImporter {
     constructor(allDataFromFile) {
@@ -22,8 +21,8 @@ class PostsImporter extends BaseImporter {
                 'products',
                 'posts_products'
             ],
-            requiredImportedData: ['tags', 'products'],
-            requiredExistingData: ['tags', 'products']
+            requiredImportedData: ['tags', 'products', 'newsletters'],
+            requiredExistingData: ['tags', 'products', 'newsletters']
         });
     }
 
@@ -50,10 +49,6 @@ class PostsImporter extends BaseImporter {
                 }
                 delete obj.send_email_when_published;
             }
-
-            ignoredColumns.forEach((column) => {
-                delete obj[column];
-            });
         });
     }
 
@@ -191,6 +186,24 @@ class PostsImporter extends BaseImporter {
             run(postToImport, postIndex, 'tags', 'tags');
             run(postToImport, postIndex, 'authors', 'users');
             run(postToImport, postIndex, 'products', 'products');
+        });
+
+        // map newsletter_id -> newsletters.id
+        _.each(this.dataToImport, (objectInFile) => {
+            const importedObject = _.find(this.requiredImportedData.newsletters, {originalId: objectInFile.newsletter_id});
+            // CASE: we've imported the newsletter
+            if (importedObject) {
+                debug(`replaced newsletter_id ${objectInFile.newsletter_id} with ${importedObject.id}`);
+                objectInFile.newsletter_id = importedObject.id;
+                return;
+            }
+            const existingObject = _.find(this.requiredExistingData.newsletters, {id: objectInFile.newsletter_id});
+            // CASE: newsletter already exists in the db
+            if (existingObject) {
+                return;
+            }
+            // CASE: newsletter doesn't exist; ignore it
+            delete objectInFile.newsletter_id;
         });
 
         return super.replaceIdentifiers();
