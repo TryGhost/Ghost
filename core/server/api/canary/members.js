@@ -5,7 +5,6 @@ const moment = require('moment-timezone');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
 const membersService = require('../../services/members');
-const labsService = require('../../../shared/labs');
 
 const settingsCache = require('../../../shared/settings-cache');
 const tpl = require('@tryghost/tpl');
@@ -362,13 +361,7 @@ module.exports = {
         },
         validation: {},
         async query(frame) {
-            frame.options.withRelated = ['labels', 'stripeSubscriptions', 'stripeSubscriptions.customer'];
-            if (labsService.isSet('multipleProducts')) {
-                frame.options.withRelated.push('products');
-            }
-            if (labsService.isSet('multipleNewsletters')) {
-                frame.options.withRelated.push('newsletters');
-            }
+            frame.options.withRelated = ['labels', 'stripeSubscriptions', 'stripeSubscriptions.customer', 'products', 'newsletters'];
             const page = await membersService.api.members.list(frame.options);
 
             return page;
