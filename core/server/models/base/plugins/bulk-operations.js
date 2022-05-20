@@ -52,9 +52,9 @@ async function editMultiple(knex, table, chunk, options) {
     await knex(table).whereIn('id', chunk).update(options.data);
 }
 
-async function delSingle(knex, table, id) {
+async function delSingle(knex, table, id, options) {
     try {
-        await knex(table).where('id', id).del();
+        await knex(table).where(options.column ?? 'id', id).del();
     } catch (err) {
         const importError = new errors.DataImportError({
             message: `Failed to remove entry from ${table}`,
@@ -66,8 +66,8 @@ async function delSingle(knex, table, id) {
     }
 }
 
-async function delMultiple(knex, table, chunk) {
-    await knex(table).whereIn('id', chunk).del();
+async function delMultiple(knex, table, chunk, options) {
+    await knex(table).whereIn(options.column ?? 'id', chunk).del();
 }
 
 const insert = createBulkOperation(insertSingle, insertMultiple);
@@ -91,10 +91,18 @@ module.exports = function (Bookshelf) {
             return edit(Bookshelf.knex, tableName, data, options);
         },
 
-        bulkDestroy: function bulkDestroy(data, tableName) {
+        /**
+         * 
+         * @param {string[]} data List of ids to delete
+         * @param {*} tableName 
+         * @param {Object} [options] 
+         * @param {string} [options.column] Delete the rows where this column equals the ids in `data` (defaults to 'id')
+         * @returns 
+         */
+        bulkDestroy: function bulkDestroy(data, tableName, options = {}) {
             tableName = tableName || this.prototype.tableName;
 
-            return del(Bookshelf.knex, tableName, data);
+            return del(Bookshelf.knex, tableName, data, options);
         }
     });
 };
