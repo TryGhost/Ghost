@@ -39,8 +39,8 @@ describe('Exporter', function () {
 
         it('should try to export all the correct tables (without excluded)', function (done) {
             exporter.doExport().then(function (exportData) {
-                // NOTE: 11 default tables
-                const expectedCallCount = 11;
+                // NOTE: 15 default tables
+                const expectedCallCount = 15;
 
                 should.exist(exportData);
 
@@ -52,17 +52,30 @@ describe('Exporter', function () {
                 knexMock.callCount.should.eql(expectedCallCount);
                 queryMock.select.callCount.should.have.eql(expectedCallCount);
 
-                knexMock.getCall(0).args[0].should.eql('newsletters');
-                knexMock.getCall(1).args[0].should.eql('posts');
-                knexMock.getCall(2).args[0].should.eql('posts_meta');
-                knexMock.getCall(3).args[0].should.eql('users');
-                knexMock.getCall(4).args[0].should.eql('posts_authors');
-                knexMock.getCall(5).args[0].should.eql('roles');
-                knexMock.getCall(6).args[0].should.eql('roles_users');
-                knexMock.getCall(7).args[0].should.eql('settings');
-                knexMock.getCall(8).args[0].should.eql('tags');
-                knexMock.getCall(9).args[0].should.eql('posts_tags');
-                knexMock.getCall(10).args[0].should.eql('custom_theme_settings');
+                let expectedTables = [
+                    'posts',
+                    'posts_authors',
+                    'posts_meta',
+                    'posts_tags',
+                    'roles',
+                    'roles_users',
+                    'settings',
+                    'custom_theme_settings',
+                    'tags',
+                    'users',
+                    'products',
+                    'stripe_products',
+                    'stripe_prices',
+                    'posts_products',
+                    'newsletters'
+                ];
+
+                for (let call = 0; call < expectedCallCount; call++) {
+                    const arg = knexMock.getCall(call).args[0];
+                    arg.should.be.equalOneOf(expectedTables);
+                    expectedTables = expectedTables.filter(item => item !== arg);
+                }
+                expectedTables.should.be.empty();
 
                 done();
             }).catch(done);
@@ -72,8 +85,8 @@ describe('Exporter', function () {
             const include = ['mobiledoc_revisions', 'email_recipients'];
 
             exporter.doExport({include}).then(function (exportData) {
-                // NOTE: 11 default tables + 2 includes
-                const expectedCallCount = 13;
+                // NOTE: 15 default tables + 2 includes
+                const expectedCallCount = 17;
 
                 should.exist(exportData);
 
@@ -86,19 +99,30 @@ describe('Exporter', function () {
                 knexMock.callCount.should.eql(expectedCallCount);
                 queryMock.select.callCount.should.have.eql(expectedCallCount);
 
-                knexMock.getCall(0).args[0].should.eql('newsletters');
-                knexMock.getCall(1).args[0].should.eql('posts');
-                knexMock.getCall(2).args[0].should.eql('posts_meta');
-                knexMock.getCall(3).args[0].should.eql('users');
-                knexMock.getCall(4).args[0].should.eql('posts_authors');
-                knexMock.getCall(5).args[0].should.eql('roles');
-                knexMock.getCall(6).args[0].should.eql('roles_users');
-                knexMock.getCall(7).args[0].should.eql('settings');
-                knexMock.getCall(8).args[0].should.eql('tags');
-                knexMock.getCall(9).args[0].should.eql('posts_tags');
-                knexMock.getCall(10).args[0].should.eql('mobiledoc_revisions');
-                knexMock.getCall(11).args[0].should.eql('email_recipients');
-                knexMock.getCall(12).args[0].should.eql('custom_theme_settings');
+                let expectedTables = [
+                    'posts',
+                    'posts_authors',
+                    'posts_meta',
+                    'posts_tags',
+                    'roles',
+                    'roles_users',
+                    'settings',
+                    'custom_theme_settings',
+                    'tags',
+                    'users',
+                    'products',
+                    'stripe_products',
+                    'stripe_prices',
+                    'posts_products',
+                    'newsletters'
+                ].concat(include);
+
+                for (let call = 0; call < expectedCallCount; call++) {
+                    const arg = knexMock.getCall(call).args[0];
+                    arg.should.be.equalOneOf(expectedTables);
+                    expectedTables = expectedTables.filter(item => item !== arg);
+                }
+                expectedTables.should.be.empty();
 
                 done();
             }).catch(done);
