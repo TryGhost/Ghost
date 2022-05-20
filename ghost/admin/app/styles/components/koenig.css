@@ -2538,8 +2538,13 @@ button.emoji-picker__category-button.active {
 
 .kg-upload-title,
 .kg-upload-caption {
-    width: 100%;
     margin: 4px 4px 0;
+}
+
+.kg-upload-title,
+.kg-upload-caption,
+.kg-audio-title {
+    width: 100%;
     padding: 4px 12px;
     border: none;
     font-size: 1.8rem;
@@ -2547,12 +2552,18 @@ button.emoji-picker__category-button.active {
     background: transparent;
 }
 
+.kg-audio-title {
+    margin: 4px 0 0;
+}
+
 .kg-upload-title:focus,
-.kg-upload-caption:focus {
+.kg-upload-caption:focus,
+.kg-audio-title:focus {
     box-shadow: none;
 }
 
-.kg-upload-title::placeholder {
+.kg-upload-title::placeholder,
+.kg-audio-title::placeholder {
     font-weight: 700;
 }
 
