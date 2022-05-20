@@ -109,13 +109,13 @@ describe('Members API — exportCSV', function () {
             products: tiers
         });
 
-        const tiersList = tiers.map(tier => tier.get('name')).join(',');
+        const tiersList = tiers.map(tier => tier.get('name')).sort().join(',');
 
         await testOutput(member, (row) => {
             basicAsserts(member, row);
             should(row.subscribed_to_emails).eql('false');
             should(row.complimentary_plan).eql('');
-            should(row.products).eql(tiersList);
+            should(row.products.split(',').sort().join(',')).eql(tiersList);
         }, [`filter=products:${tiers[0].get('slug')}`, 'filter=subscribed:false']);
     });
 

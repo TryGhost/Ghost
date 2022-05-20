@@ -1,6 +1,7 @@
 const models = require('../../../models');
 const {knex} = require('../../../data/db');
 const moment = require('moment');
+const _ = require('lodash');
 
 module.exports = async function (options) {
     const hasFilter = options.limit !== 'all' || options.filter || options.search;
@@ -9,11 +10,12 @@ module.exports = async function (options) {
     if (hasFilter) {
         // do a very minimal query, only to fetch the ids of the filtered values
         // should be quite fast
-        options.withRelated = [];
-        options.columns = ['id'];
+        const filterOptions = _.pick(options, ['transacting', 'context']);
+        const memberRows = await models.Member.getFilteredCollectionQuery(filterOptions)
+            .select('members.id')
+            .distinct();
 
-        const page = await models.Member.findPage(options);
-        ids = page.data.map(d => d.id);
+        ids = memberRows.map(row => row.id);
     }
 
     const allProducts = await models.Product.fetchAll();
