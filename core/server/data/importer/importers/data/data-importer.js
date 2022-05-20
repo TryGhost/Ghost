@@ -10,6 +10,9 @@ const TagsImporter = require('./tags');
 const SettingsImporter = require('./settings');
 const UsersImporter = require('./users');
 const NewslettersImporter = require('./newsletters');
+const ProductsImporter = require('./products');
+const StripeProductsImporter = require('./stripe-products');
+const StripePricesImporter = require('./stripe-prices');
 const RolesImporter = require('./roles');
 let importers = {};
 let DataImporter;
@@ -26,9 +29,12 @@ DataImporter = {
         importers.users = new UsersImporter(importData.data);
         importers.roles = new RolesImporter(importData.data);
         importers.tags = new TagsImporter(importData.data);
-        importers.posts = new PostsImporter(importData.data);
         importers.newsletters = new NewslettersImporter(importData.data);
+        importers.posts = new PostsImporter(importData.data);
         importers.settings = new SettingsImporter(importData.data);
+        importers.products = new ProductsImporter(importData.data);
+        importers.stripe_products = new StripeProductsImporter(importData.data);
+        importers.stripe_prices = new StripePricesImporter(importData.data);
 
         return importData;
     },

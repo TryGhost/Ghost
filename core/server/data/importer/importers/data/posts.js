@@ -13,9 +13,17 @@ class PostsImporter extends BaseImporter {
         super(allDataFromFile, {
             modelName: 'Post',
             dataKeyToImport: 'posts',
-            requiredFromFile: ['posts', 'tags', 'posts_tags', 'posts_authors', 'posts_meta'],
-            requiredImportedData: ['tags'],
-            requiredExistingData: ['tags']
+            requiredFromFile: [
+                'posts',
+                'tags',
+                'posts_tags',
+                'posts_authors',
+                'posts_meta',
+                'products',
+                'posts_products'
+            ],
+            requiredImportedData: ['tags', 'products'],
+            requiredExistingData: ['tags', 'products']
         });
     }
 
@@ -64,15 +72,17 @@ class PostsImporter extends BaseImporter {
     }
 
     /**
-     * Naive function to attach related tags and authors.
+     * Naive function to attach related tags, authors, and products.
      */
     addNestedRelations() {
         this.requiredFromFile.posts_tags = _.orderBy(this.requiredFromFile.posts_tags, ['post_id', 'sort_order'], ['asc', 'asc']);
         this.requiredFromFile.posts_authors = _.orderBy(this.requiredFromFile.posts_authors, ['post_id', 'sort_order'], ['asc', 'asc']);
+        this.requiredFromFile.posts_products = _.orderBy(this.requiredFromFile.posts_products, ['post_id', 'sort_order'], ['asc', 'asc']);
 
         /**
          * from {post_id: 1, tag_id: 2} to post.tags=[{id:id}]
          * from {post_id: 1, author_id: 2} post.authors=[{id:id}]
+         * from {post_id: 1, product_id: 2} post.products=[{id:id}]
          */
         const run = (relations, target, fk) => {
             _.each(relations, (relation) => {
@@ -102,6 +112,7 @@ class PostsImporter extends BaseImporter {
 
         run(this.requiredFromFile.posts_tags, 'tags', 'tag_id');
         run(this.requiredFromFile.posts_authors, 'authors', 'author_id');
+        run(this.requiredFromFile.posts_products, 'products', 'product_id');
     }
 
     /**
@@ -179,6 +190,7 @@ class PostsImporter extends BaseImporter {
         _.each(this.dataToImport, (postToImport, postIndex) => {
             run(postToImport, postIndex, 'tags', 'tags');
             run(postToImport, postIndex, 'authors', 'users');
+            run(postToImport, postIndex, 'products', 'products');
         });
 
         return super.replaceIdentifiers();
