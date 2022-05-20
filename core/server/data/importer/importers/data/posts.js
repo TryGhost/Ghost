@@ -107,7 +107,7 @@ class PostsImporter extends BaseImporter {
 
         run(this.requiredFromFile.posts_tags, 'tags', 'tag_id');
         run(this.requiredFromFile.posts_authors, 'authors', 'author_id');
-        run(this.requiredFromFile.posts_products, 'products', 'product_id');
+        run(this.requiredFromFile.posts_products, 'tiers', 'product_id');
     }
 
     /**
@@ -185,7 +185,7 @@ class PostsImporter extends BaseImporter {
         _.each(this.dataToImport, (postToImport, postIndex) => {
             run(postToImport, postIndex, 'tags', 'tags');
             run(postToImport, postIndex, 'authors', 'users');
-            run(postToImport, postIndex, 'products', 'products');
+            run(postToImport, postIndex, 'tiers', 'products');
         });
 
         // map newsletter_id -> newsletters.id
