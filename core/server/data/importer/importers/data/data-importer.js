@@ -124,6 +124,11 @@ DataImporter = {
              * @TODO: figure out how to fix this properly
              * fixup the circular reference from
              * stripe_prices -> stripe_products -> products -> stripe_prices
+             *
+             * Note: the product importer validates that all values are either
+             *   - being imported, or
+             *   - already exist in the db
+             * so we only need to map imported products
              */
             ops.push(() => {
                 const importedStripePrices = importers.stripe_prices.importedData;
@@ -135,15 +140,7 @@ DataImporter = {
                         const mappedPrice = _.find(importedStripePrices, {originalId: importedProduct[field]});
                         if (mappedPrice) {
                             productOps.push(() => {
-                                return models.Product
-                                    .edit({[field]: mappedPrice.id}, {id: importedProduct.id, transacting})
-                                    .then(() => {
-                                        // make sure we're returning the correct data
-                                        if (importers.products.importedDataToReturn) {
-                                            //
-                                        }
-                                        debug('updated');
-                                    });
+                                return models.Product.edit({[field]: mappedPrice.id}, {id: importedProduct.id, transacting});
                             });
                         }
                     });
