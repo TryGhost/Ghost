@@ -329,6 +329,11 @@ describe('DB API (canary)', function () {
         product.get('description').should.equal('Our daily newsletter');
         product.get('welcome_page_url').should.equal('/welcome');
 
+        // Check settings
+        const portalProducts = await models.Settings.findOne({key: 'portal_products'});
+        should.exist(portalProducts);
+        JSON.parse(portalProducts.get('value')).should.equal([product.id]);
+
         // Check stripe products
         const stripeProduct = await models.StripeProduct.findOne({product_id: product.id});
         should.exist(stripeProduct);
@@ -339,12 +344,16 @@ describe('DB API (canary)', function () {
         const newsletter = await models.Newsletter.findOne({slug: 'test'});
         should.exist(newsletter);
         newsletter.get('name').should.equal('Ghost Inc.');
+        // Make sure sender_email is not set
+        should(newsletter.get('sender_email')).equal(null);
 
         // Check posts
         const post = await models.Post.findOne({slug: 'test-newsletter'}, {withRelated: ['tiers']});
         should.exist(post);
 
         post.get('newsletter_id').should.equal(newsletter.id);
+        post.get('visibility').should.equal('public');
+        post.get('email_recipient_filter').should.equal('status:-free');
 
         // Check this post is connected to the imported product
         post.relations.tiers.models.map(m => m.id).should.match([product.id]);

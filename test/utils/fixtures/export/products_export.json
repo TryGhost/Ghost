@@ -60,6 +60,18 @@
             "updated_at": "2021-09-15T13:31:53.000Z"
         }
       ],
+      "settings": [
+        {
+          "id": "614a8ae163d21912331172c6",
+          "group": "portal",
+          "key": "portal_products",
+          "value": "[\"60be1fb9bd3af33564cf87b2\"]",
+          "type": "array",
+          "flags": null,
+          "created_at": "2021-12-31T01:46:09.000Z",
+          "updated_at": "2022-01-14T15:53:50.000Z"
+        }
+      ],
       "posts": [
         {
           "id": "626104751a34a28c24d4ed78",
@@ -84,7 +96,7 @@
           "codeinjection_foot": null,
           "custom_template": null,
           "canonical_url": null,
-          "email_recipient_filter": "all",
+          "email_recipient_filter": "status:-free",
           "newsletter_id": "626022161e917a710c687f9e"
         }
       ],
