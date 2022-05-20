@@ -617,13 +617,7 @@ module.exports = class MemberRepository {
         const memberIds = memberRows.map(row => row.id);
 
         if (data.action === 'unsubscribe') {
-            const memberNewsletterRows = await this._Member.getNewsletterRelations({
-                memberIds
-            });
-
-            const membersNewsletterIds = memberNewsletterRows.map(row => row.id);
-
-            return await this._Member.bulkDestroy(membersNewsletterIds, 'members_newsletters');
+            return await this._Member.bulkDestroy(memberIds, 'members_newsletters', {column: 'member_id'});
         }
 
         if (data.action === 'removeLabel') {
