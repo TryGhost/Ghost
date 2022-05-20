@@ -175,7 +175,7 @@ module.exports = {
 
     processImport: processImport,
 
-    stats: membersStats
-
+    stats: membersStats,
+    export: require('./exporter/query')
 };
 module.exports.middleware = require('./middleware');
