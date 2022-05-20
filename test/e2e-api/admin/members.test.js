@@ -1991,3 +1991,289 @@ describe('Members API', function () {
         });
     });
 });
+
+describe('Members API Bulk operations', function () {
+    beforeEach(async function () {
+        agent = await agentProvider.getAdminAPIAgent();
+        await fixtureManager.init('newsletters', 'members:newsletters');
+        await agent.loginAsOwner();
+
+        mockManager.mockStripe();
+        mockManager.mockMail();
+    });
+
+    afterEach(function () {
+        mockManager.restore();
+    });
+
+    it('Can bulk unsubscribe members with filter', async function () {
+        // This member has 2 subscriptions
+        const member = fixtureManager.get('members', 4);
+        const newsletterCount = 2;
+
+        const model = await models.Member.findOne({id: member.id}, {withRelated: 'newsletters'});
+        should(model.relations.newsletters.models.length).equal(newsletterCount, 'This test requires a member with 2 or more newsletters');
+
+        await agent
+            .put(`/members/bulk/?filter=id:${member.id}`)
+            .body({bulk: {
+                action: 'unsubscribe'
+            }})
+            .expectStatus(200)
+            .matchBodySnapshot({
+                bulk: {
+                    meta: {
+                        stats: {
+                            // Should contain the count of members, not the newsletter count!
+                            successful: 1,
+                            unsuccessful: 0
+                        },
+                        unsuccessfulData: [],
+                        errors: []
+                    }
+                }
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+        
+        const updatedModel = await models.Member.findOne({id: member.id}, {withRelated: 'newsletters'});
+        should(updatedModel.relations.newsletters.models.length).equal(0, 'This member should be unsubscribed from all newsletters');
+
+        // When we do it again, we should still receive a count of 1, because we unsubcribed one member (who happens to be already unsubscribed)
+        await agent
+            .put(`/members/bulk/?filter=id:${member.id}`)
+            .body({bulk: {
+                action: 'unsubscribe'
+            }})
+            .expectStatus(200)
+            .matchBodySnapshot({
+                bulk: {
+                    meta: {
+                        stats: {
+                            // Should contain the count of members, not the newsletter count!
+                            successful: 1,
+                            unsuccessful: 0
+                        },
+                        unsuccessfulData: [],
+                        errors: []
+                    }
+                }
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
+
+    it('Can bulk unsubscribe members with deprecated subscribed filter', async function () {
+        await agent
+            .put(`/members/bulk/?filter=subscribed:false`)
+            .body({bulk: {
+                action: 'unsubscribe'
+            }})
+            .expectStatus(200)
+            .matchBodySnapshot({
+                bulk: {
+                    meta: {
+                        stats: {
+                            successful: 2, // We have two members who are subscribed to an inactive newsletter
+                            unsuccessful: 0
+                        },
+                        unsuccessfulData: [],
+                        errors: []
+                    }
+                }
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
+
+    it('Can bulk unsubscribe members with deprecated subscribed filter (actual)', async function () {
+        // This member is subscribed to an inactive newsletter
+        const ignoredMember = fixtureManager.get('members', 6);
+
+        await agent
+            .put(`/members/bulk/?filter=subscribed:true`)
+            .body({bulk: {
+                action: 'unsubscribe'
+            }})
+            .expectStatus(200)
+            .matchBodySnapshot({
+                bulk: {
+                    meta: {
+                        stats: {
+                            successful: 6, // not 7 because members subscribed to an inactive newsletter aren't subscribed (newsletter fixture[2])
+                            unsuccessful: 0
+                        },
+                        unsuccessfulData: [],
+                        errors: []
+                    }
+                }
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+
+        const allMembers = await models.Member.findAll({withRelated: 'newsletters'});
+        for (const model of allMembers) {
+            if (model.id === ignoredMember.id) {
+                continue;
+            }
+            should(model.relations.newsletters.models.length).equal(0, 'This member should be unsubscribed from all newsletters');
+        }
+    });
+
+    it('Can bulk delete a label from members', async function () {
+        await agent
+            .put(`/members/bulk/?all=true`)
+            .body({bulk: {
+                action: 'removeLabel',
+                meta: {
+                    label: {
+                        // Note! this equals DataGenerator.Content.labels[2]
+                        // the index is different in the fixtureManager
+                        id: fixtureManager.get('labels', 1).id
+                    }
+                }
+            }})
+            .expectStatus(200)
+            .matchBodySnapshot({
+                bulk: {
+                    meta: {
+                        stats: {
+                            successful: 2,
+                            unsuccessful: 0
+                        },
+                        unsuccessfulData: [],
+                        errors: []
+                    }
+                }
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+
+        await agent
+            .put(`/members/bulk/?all=true`)
+            .body({bulk: {
+                action: 'removeLabel',
+                meta: {
+                    label: {
+                        id: fixtureManager.get('labels', 0).id
+                    }
+                }
+            }})
+            .expectStatus(200)
+            .matchBodySnapshot({
+                bulk: {
+                    meta: {
+                        stats: {
+                            successful: 1,
+                            unsuccessful: 0
+                        },
+                        unsuccessfulData: [],
+                        errors: []
+                    }
+                }
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
+
+    it(`Doesn't delete labels apart from the passed label id`, async function () {
+        const member = fixtureManager.get('members', 1);
+
+        // Manually add 2 labels to a member
+        await models.Member.edit({labels: [{name: 'first-tag'}, {name: 'second-tag'}]}, {id: member.id});
+        const model = await models.Member.findOne({id: member.id}, {withRelated: 'labels'});
+        should(model.relations.labels.models.map(m => m.get('name'))).match(['first-tag', 'second-tag']);
+
+        const firstId = model.relations.labels.models[0].id;
+        const secondId = model.relations.labels.models[1].id;
+
+        // Delete first label only
+        await agent
+            .put(`/members/bulk/?all=true`)
+            .body({bulk: {
+                action: 'removeLabel',
+                meta: {
+                    label: {
+                        id: secondId
+                    }
+                }
+            }})
+            .expectStatus(200)
+            .matchBodySnapshot({
+                bulk: {
+                    meta: {
+                        stats: {
+                            successful: 1,
+                            unsuccessful: 0
+                        },
+                        unsuccessfulData: [],
+                        errors: []
+                    }
+                }
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+
+        const updatedModel = await models.Member.findOne({id: member.id}, {withRelated: 'labels'});
+        should(updatedModel.relations.labels.models.map(m => m.id)).match([firstId]);
+    });
+
+    it('Can bulk delete a label from members with filters', async function () {
+        const member1 = fixtureManager.get('members', 0);
+        const member2 = fixtureManager.get('members', 1);
+
+        // Manually add 2 labels to a member
+        await models.Member.edit({labels: [{name: 'first-tag'}, {name: 'second-tag'}]}, {id: member1.id});
+        const model1 = await models.Member.findOne({id: member1.id}, {withRelated: 'labels'});
+        should(model1.relations.labels.models.map(m => m.get('name'))).match(['first-tag', 'second-tag']);
+
+        const firstId = model1.relations.labels.models[0].id;
+        const secondId = model1.relations.labels.models[1].id;
+
+        await models.Member.edit({labels: [{name: 'first-tag'}, {name: 'second-tag'}]}, {id: member2.id});
+        const model2 = await models.Member.findOne({id: member2.id}, {withRelated: 'labels'});
+        should(model2.relations.labels.models.map(m => m.id)).match([firstId, secondId]);
+
+        await agent
+            .put(`/members/bulk/?filter=id:${member1.id}`)
+            .body({bulk: {
+                action: 'removeLabel',
+                meta: {
+                    label: {
+                        // Note! this equals DataGenerator.Content.labels[2]
+                        // the index is different in the fixtureManager
+                        id: firstId
+                    }
+                }
+            }})
+            .expectStatus(200)
+            .matchBodySnapshot({
+                bulk: {
+                    meta: {
+                        stats: {
+                            successful: 1,
+                            unsuccessful: 0
+                        },
+                        unsuccessfulData: [],
+                        errors: []
+                    }
+                }
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+
+        const updatedModel1 = await models.Member.findOne({id: member1.id}, {withRelated: 'labels'});
+        should(updatedModel1.relations.labels.models.map(m => m.id)).match([secondId]);
+
+        const updatedModel2 = await models.Member.findOne({id: member2.id}, {withRelated: 'labels'});
+        should(updatedModel2.relations.labels.models.map(m => m.id)).match([firstId, secondId]);
+    });
+});

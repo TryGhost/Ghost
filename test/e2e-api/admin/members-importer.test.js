@@ -214,7 +214,7 @@ describe('Members Importer API', function () {
         should.exist(bulkUnsubscribeResponse.body.bulk.meta);
         should.exist(bulkUnsubscribeResponse.body.bulk.meta.stats);
         should.exist(bulkUnsubscribeResponse.body.bulk.meta.stats.successful);
-        should.equal(bulkUnsubscribeResponse.body.bulk.meta.stats.successful, 8 * filteredNewsletters.length);
+        should.equal(bulkUnsubscribeResponse.body.bulk.meta.stats.successful, 8);
 
         const postUnsubscribeBrowseResponse = await request
             .get(localUtils.API.getApiQuery('members/?filter=label:bulk-unsubscribe-test'))
