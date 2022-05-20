@@ -10,6 +10,9 @@ const TagsImporter = require('./tags');
 const SettingsImporter = require('./settings');
 const UsersImporter = require('./users');
 const NewslettersImporter = require('./newsletters');
+const ProductsImporter = require('./products');
+const StripeProductsImporter = require('./stripe-products');
+const StripePricesImporter = require('./stripe-prices');
 const RolesImporter = require('./roles');
 let importers = {};
 let DataImporter;
@@ -26,9 +29,12 @@ DataImporter = {
         importers.users = new UsersImporter(importData.data);
         importers.roles = new RolesImporter(importData.data);
         importers.tags = new TagsImporter(importData.data);
-        importers.posts = new PostsImporter(importData.data);
         importers.newsletters = new NewslettersImporter(importData.data);
         importers.settings = new SettingsImporter(importData.data);
+        importers.products = new ProductsImporter(importData.data);
+        importers.stripe_products = new StripeProductsImporter(importData.data);
+        importers.stripe_prices = new StripePricesImporter(importData.data);
+        importers.posts = new PostsImporter(importData.data);
 
         return importData;
     },
@@ -112,6 +118,35 @@ DataImporter = {
                                 });
                         });
                 });
+            });
+
+            /**
+             * @TODO: figure out how to fix this properly
+             * fixup the circular reference from
+             * stripe_prices -> stripe_products -> products -> stripe_prices
+             *
+             * Note: the product importer validates that all values are either
+             *   - being imported, or
+             *   - already exist in the db
+             * so we only need to map imported products
+             */
+            ops.push(() => {
+                const importedStripePrices = importers.stripe_prices.importedData;
+                const importedProducts = importers.products.importedData;
+                const productOps = [];
+
+                _.forEach(importedProducts, (importedProduct) => {
+                    return _.forEach(['monthly_price_id', 'yearly_price_id'], (field) => {
+                        const mappedPrice = _.find(importedStripePrices, {originalId: importedProduct[field]});
+                        if (mappedPrice) {
+                            productOps.push(() => {
+                                return models.Product.edit({[field]: mappedPrice.id}, {id: importedProduct.id, transacting});
+                            });
+                        }
+                    });
+                });
+
+                return sequence(productOps);
             });
 
             return sequence(ops)

@@ -391,7 +391,6 @@ describe('Importer', function () {
                 })
                 .catch(function (response) {
                     response.length.should.equal(6);
-
                     // NOTE: a duplicated tag.slug is a warning
                     response[0].errorType.should.equal('ValidationError');
                     response[0].message.should.eql('Value in [users.bio] exceeds maximum length of 200 characters.');
@@ -402,14 +401,14 @@ describe('Importer', function () {
                     response[2].errorType.should.equal('ValidationError');
                     response[2].message.should.eql('Value in [tags.meta_title] exceeds maximum length of 300 characters.');
 
-                    response[3].message.should.eql('Value in [posts.title] cannot be blank.');
-                    response[3].errorType.should.eql('ValidationError');
+                    response[3].errorType.should.equal('ValidationError');
+                    response[3].message.should.eql('Value in [settings.key] cannot be blank.');
 
-                    response[4].errorType.should.equal('ValidationError');
-                    response[4].message.should.eql('Value in [posts.title] exceeds maximum length of 255 characters.');
+                    response[4].message.should.eql('Value in [posts.title] cannot be blank.');
+                    response[4].errorType.should.eql('ValidationError');
 
                     response[5].errorType.should.equal('ValidationError');
-                    response[5].message.should.eql('Value in [settings.key] cannot be blank.');
+                    response[5].message.should.eql('Value in [posts.title] exceeds maximum length of 255 characters.');
                 });
         });
 
