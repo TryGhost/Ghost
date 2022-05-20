@@ -12,7 +12,7 @@ export default class Recents extends Component {
     
     @action 
     async loadPosts() {
-        this.posts = await this.store.query('post', {limit: 5, filter: 'status:published', order: 'published_at desc'});
+        this.posts = await this.store.query('post', {limit: 5, filter: 'status:[published,sent]', order: 'published_at desc'});
     }
 
     @action
