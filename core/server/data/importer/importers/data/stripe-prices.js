@@ -1,15 +1,51 @@
+const _ = require('lodash');
+const debug = require('@tryghost/debug')('importer:stripeprices');
 const BaseImporter = require('./base');
 
 class StripePricesImporter extends BaseImporter {
     constructor(allDataFromFile) {
         super(allDataFromFile, {
             modelName: 'StripePrice',
-            dataKeyToImport: 'stripe_prices'
+            dataKeyToImport: 'stripe_prices',
+            requiredImportedData: ['stripe_products'],
+            requiredExistingData: ['stripe_products']
         });
     }
 
-    //@TODO: ensure stripe_product_id exists in either the import or the db
-    // stripe_prices.stripe_product_id -> stripe_products.stripe_product_id
+    validateStripeProduct() {
+        // ensure we have a valid stripe_product_id in the stripe_products table
+        let invalidPrices = [];
+        _.each(this.dataToImport, (objectInFile) => {
+            const importedObject = _.find(
+                this.requiredImportedData.stripe_products,
+                {stripe_product_id: objectInFile.stripe_product_id}
+            );
+            // CASE: we've imported the stripe_product
+            if (importedObject) {
+                return;
+            }
+            const existingObject = _.find(
+                this.requiredExistingData.stripe_products,
+                {stripe_product_id: objectInFile.stripe_product_id}
+            );
+            // CASE: stripe product already exists in the DB
+            if (existingObject) {
+                return;
+            }
+            // CASE: we don't know what stripe product this is for
+            debug(`ignoring invalid product ${objectInFile.stripe_product_id}`);
+            invalidPrices.push(objectInFile.id);
+        });
+        // ignore prices with invalid products
+        debug(`ignoring ${invalidPrices.length} products`);
+        this.dataToImport = this.dataToImport.filter(item => !invalidPrices.includes(item.id));
+    }
+
+    beforeImport() {
+        debug('beforeImport');
+        this.validateStripeProduct();
+        return super.beforeImport();
+    }
 }
 
 module.exports = StripePricesImporter;
