@@ -30,6 +30,7 @@ const boot = require('../../core/boot');
 const AdminAPITestAgent = require('./admin-api-test-agent');
 const MembersAPITestAgent = require('./members-api-test-agent');
 const ContentAPITestAgent = require('./content-api-test-agent');
+const GhostAPITestAgent = require('./ghost-api-test-agent');
 const db = require('./db-utils');
 
 // Services that need resetting
@@ -220,6 +221,32 @@ const getMembersAPIAgent = async () => {
 };
 
 /**
+ * Creates a GhostAPITestAgent, which is a drop-in substitution for supertest
+ * It is automatically hooked up to the Ghost API so you can make requests to e.g.
+ * agent.get('/well-known/jwks.json') without having to worry about URL paths
+ *
+ * @returns {Promise<GhostAPITestAgent>} agent
+ */
+const getGhostAPIAgent = async () => {
+    const bootOptions = {
+        frontend: false
+    };
+
+    try {
+        const app = await startGhost(bootOptions);
+        const originURL = configUtils.config.get('url');
+
+        return new GhostAPITestAgent(app, {
+            apiURL: '/ghost/',
+            originURL
+        });
+    } catch (error) {
+        error.message = `Unable to create test agent. ${error.message}`;
+        throw error;
+    }
+};
+
+/**
  *
  * @returns {Promise<{adminAgent: AdminAPITestAgent, membersAgent: MembersAPITestAgent}>} agents
  */
@@ -260,7 +287,8 @@ module.exports = {
         getAdminAPIAgent,
         getMembersAPIAgent,
         getContentAPIAgent,
-        getAgentsForMembers
+        getAgentsForMembers,
+        getGhostAPIAgent
     },
 
     // Mocks and Stubs
