@@ -58,6 +58,10 @@ async function testOutput(member, asserts, filters = []) {
         should.exist(row);
 
         asserts(row);
+
+        if (filter === 'filter=id:${member.id}') {
+            csv.data.length.should.eql(1);
+        }
     }
 }
 
