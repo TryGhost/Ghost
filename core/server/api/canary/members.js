@@ -361,10 +361,9 @@ module.exports = {
         },
         validation: {},
         async query(frame) {
-            frame.options.withRelated = ['labels', 'stripeSubscriptions', 'stripeSubscriptions.customer', 'products', 'newsletters'];
-            const page = await membersService.api.members.list(frame.options);
-
-            return page;
+            return {
+                data: await membersService.export(frame.options)
+            };
         }
     },
 

@@ -79,18 +79,13 @@ function bulkAction(bulkActionResult, _apiConfig, frame) {
 /**
  * @template PageMeta
  *
- * @param {{data: import('bookshelf').Model[], meta: PageMeta}} page
- * @param {APIConfig} _apiConfig
- * @param {Frame} frame
+ * @param {{data: any[]}} data
  *
  * @returns {string} - A CSV string
  */
-function exportCSV(page, _apiConfig, frame) {
+function exportCSV(data) {
     debug('exportCSV');
-
-    const members = page.data.map(model => serializeMember(model, frame.options));
-
-    return unparse(members);
+    return unparse(data.data);
 }
 
 /**
