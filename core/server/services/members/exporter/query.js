@@ -42,18 +42,18 @@ module.exports = async function (options) {
 
     const rows = await query;
     for (const row of rows) {
-        const productIds = row.products?.split(',') ?? [];
+        const productIds = row.products ? row.products.split(',') : [];
         const products = productIds.map((id) => {
-            const product = allProducts.find((p) => p.id === id);
+            const product = allProducts.find(p => p.id === id);
             return {
                 name: product.get('name')
             };
         });
         row.products = products;
 
-        const labelIds = row.labels?.split(',') ?? [];
+        const labelIds = row.labels ? row.labels.split(',') : [];
         const labels = labelIds.map((id) => {
-            const label = allLabels.find((l) => l.id === id);
+            const label = allLabels.find(l => l.id === id);
             return {
                 name: label.get('name')
             };
