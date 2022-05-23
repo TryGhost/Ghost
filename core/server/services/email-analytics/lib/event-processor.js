@@ -136,10 +136,13 @@ class GhostEventProcessor extends EventProcessor {
             return false;
         }
 
+        await this.db.knex('members_newsletters')
+            .where('member_id', '=', memberId)
+            .del();
+
         const updateResult = await this.db.knex('members')
             .where('id', '=', memberId)
             .update({
-                subscribed: false,
                 updated_at: moment.utc().toDate()
             });
 
@@ -153,10 +156,13 @@ class GhostEventProcessor extends EventProcessor {
             return false;
         }
 
+        await this.db.knex('members_newsletters')
+            .where('member_id', '=', memberId)
+            .del();
+
         const updateResult = await this.db.knex('members')
             .where('id', '=', memberId)
             .update({
-                subscribed: false,
                 updated_at: moment.utc().toDate()
             });
 
