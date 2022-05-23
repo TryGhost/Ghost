@@ -732,7 +732,7 @@ function createYearlyPrice({tier, priceId}) {
 }
 
 function createBenefits({tier}) {
-    tier?.benefits?.map((benefit) => {
+    return tier?.benefits?.map((benefit) => {
         return {
             name: benefit
         };
