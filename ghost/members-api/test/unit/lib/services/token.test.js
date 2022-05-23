@@ -1,4 +1,6 @@
 const assert = require('assert');
+const jwt = require('jsonwebtoken');
+const jwkToPem = require('jwk-to-pem');
 const TokenService = require('../../../../lib/services/token');
 
 describe('TokenService', function () {
@@ -20,6 +22,24 @@ describe('TokenService', function () {
         it('can encode a token and decode it afterwards', async function () {
             const token = await tokenService.encodeIdentityToken({sub: 'member@example.com'});
             const decodedToken = await tokenService.decodeToken(token);
+
+            assert.deepEqual(Object.keys(decodedToken), ['sub', 'kid', 'iat', 'exp', 'aud', 'iss']);
+            assert.equal(decodedToken.aud, 'http://127.0.0.1:2369/members/api');
+            assert.equal(decodedToken.iss, 'http://127.0.0.1:2369/members/api');
+            assert.equal(decodedToken.sub, 'member@example.com');
+        });
+    });
+
+    describe('getPublicKeys', function () {
+        it('can verify the token using public keys', async function () {
+            const token = await tokenService.encodeIdentityToken({sub: 'member@example.com'});
+            const jwks = await tokenService.getPublicKeys();
+            const publicKey = jwkToPem(jwks.keys[0]);
+
+            const decodedToken = jwt.verify(token, publicKey, {
+                algorithms: ['RS512'],
+                issuer: this._issuer
+            });
 
             assert.deepEqual(Object.keys(decodedToken), ['sub', 'kid', 'iat', 'exp', 'aud', 'iss']);
             assert.equal(decodedToken.aud, 'http://127.0.0.1:2369/members/api');
