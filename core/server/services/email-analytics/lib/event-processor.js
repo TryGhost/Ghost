@@ -1,4 +1,5 @@
 const {EventProcessor} = require('@tryghost/email-analytics-service');
+const {default: ObjectID} = require('bson-objectid');
 const moment = require('moment-timezone');
 
 class GhostEventProcessor extends EventProcessor {
@@ -136,9 +137,24 @@ class GhostEventProcessor extends EventProcessor {
             return false;
         }
 
+        const subscribedNewsletterIds = this.db.knex('members_newsletters')
+            .where('member_id', '=', memberId)
+            .select('id');
+
         await this.db.knex('members_newsletters')
             .where('member_id', '=', memberId)
             .del();
+
+        for (const newsletterId of subscribedNewsletterIds) {
+            await this.db.knex('members_subscribe_events').insert({
+                id: ObjectID().toHexString(),
+                member_id: memberId,
+                newsletter_id: newsletterId,
+                subscribed: false,
+                created_at: moment.utc().toDate(),
+                source: 'system'
+            });
+        }
 
         const updateResult = await this.db.knex('members')
             .where('id', '=', memberId)
@@ -156,6 +172,10 @@ class GhostEventProcessor extends EventProcessor {
             return false;
         }
 
+        const subscribedNewsletterIds = this.db.knex('members_newsletters')
+            .where('member_id', '=', memberId)
+            .select('id');
+
         await this.db.knex('members_newsletters')
             .where('member_id', '=', memberId)
             .del();
@@ -165,6 +185,17 @@ class GhostEventProcessor extends EventProcessor {
             .update({
                 updated_at: moment.utc().toDate()
             });
+
+        for (const newsletterId of subscribedNewsletterIds) {
+            await this.db.knex('members_subscribe_events').insert({
+                id: ObjectID().toHexString(),
+                member_id: memberId,
+                newsletter_id: newsletterId,
+                subscribed: false,
+                created_at: moment.utc().toDate(),
+                source: 'system'
+            });
+        }
 
         return updateResult > 0;
     }
