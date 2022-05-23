@@ -1,7 +1,30 @@
 /* eslint-disable no-unused-vars*/
 import {getFreeProduct, getMemberData, getOfferData, getPriceData, getProductData, getSiteData, getSubscriptionData, getTestSite} from './fixtures-generator';
 
-const singleSiteTier = [
+export const transformTierFixture = [
+    getFreeProduct({
+        name: 'Free',
+        description: 'Free tier description',
+        numOfBenefits: 2
+    })
+    ,
+    getProductData({
+        name: 'Bronze',
+        // description: 'Access to all members articles',
+        description: '',
+        monthlyPrice: getPriceData({
+            interval: 'month',
+            amount: 700
+        }),
+        yearlyPrice: getPriceData({
+            interval: 'year',
+            amount: 7000
+        }),
+        numOfBenefits: 3
+    })
+];
+
+export const singleSiteTier = [
     getFreeProduct({
         name: 'Free',
         description: 'Free tier description',

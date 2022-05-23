@@ -1,6 +1,6 @@
-import {getCurrencySymbol, getFreeProduct, getMemberName, getMemberSubscription, getPriceFromSubscription, getPriceIdFromPageQuery, getSupportAddress, hasMultipleProducts, isActiveOffer, isInviteOnlySite, isPaidMember, isSameCurrency} from './helpers';
+import {getCurrencySymbol, getFreeProduct, getMemberName, getMemberSubscription, getPriceFromSubscription, getPriceIdFromPageQuery, getSupportAddress, hasMultipleProducts, isActiveOffer, isInviteOnlySite, isPaidMember, isSameCurrency, transformApiTiersData} from './helpers';
 import * as Fixtures from './fixtures-generator';
-import {site as FixturesSite, member as FixtureMember, offer as FixtureOffer} from '../utils/test-fixtures';
+import {site as FixturesSite, member as FixtureMember, offer as FixtureOffer, transformTierFixture as TransformFixtureTiers} from '../utils/test-fixtures';
 import {isComplimentaryMember} from '../utils/helpers';
 
 describe('Helpers - ', () => {
@@ -234,6 +234,15 @@ describe('Helpers - ', () => {
             const expectedPriceId = testProduct.yearlyPrice.id;
             const value = mockPriceIdFn({site: siteData, pageQuery});
             expect(value).toBe(expectedPriceId);
+        });
+    });
+
+    describe('transformApiTiersData - ', () => {
+        test('can correctly transform tiers data ', () => {
+            const transformedTiers = transformApiTiersData({tiers: TransformFixtureTiers});
+
+            expect(transformedTiers[0].benefits).toHaveLength(2);
+            expect(transformedTiers[1].benefits).toHaveLength(3);
         });
     });
 });
