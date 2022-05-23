@@ -48,7 +48,11 @@ const loadConverters = () => {
             {selector: 'figcaption', format: 'skip'},
             // Strip inline and bottom footnotes
             {selector: 'a[rel=footnote]', format: 'skip'},
-            {selector: 'div.footnotes', format: 'skip'}
+            {selector: 'div.footnotes', format: 'skip'},
+            // Don't output hrs
+            {selector: 'hr', format: 'skip'},
+            // Don't output > in blockquotes
+            {selector: 'blockquote', format: 'block'}
         ]
     });
 
