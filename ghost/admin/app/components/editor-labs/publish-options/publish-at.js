@@ -18,11 +18,10 @@ export default class PublishAtOption extends Component {
 
     @action
     setTime(time, event) {
-        const newDate = moment.utc(this.args.publishOptions.scheduledAtUTC);
+        const newDate = moment.tz(this.args.publishOptions.scheduledAtUTC, this.settings.get('timezone'));
 
         // used to reset the time value on blur if it's invalid
-        // TODO: handle this in the picker component instead
-        const oldTime = newDate.tz(this.settings.get('timezone')).format('HH:mm');
+        const oldTime = newDate.format('HH:mm');
 
         if (!time) {
             event.target.value = oldTime;
@@ -45,14 +44,7 @@ export default class PublishAtOption extends Component {
             return;
         }
 
-        // hour/minute will be the site timezone equivalent but we need the hour/minute
-        // as it would be in UTC
-        const conversionDate = moment().tz(this.settings.get('timezone'));
-        conversionDate.set({hour, minute});
-        const utcDate = moment.utc(conversionDate);
-
-        newDate.set({hour: utcDate.get('hour'), minute: utcDate.get('minute')});
-
+        newDate.set({hour, minute});
         this.args.publishOptions.setScheduledAt(newDate);
     }
 }

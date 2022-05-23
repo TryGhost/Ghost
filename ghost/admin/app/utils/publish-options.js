@@ -64,6 +64,7 @@ export default class PublishOptions {
         date = moment.utc(date).milliseconds(0);
 
         if (date.isBefore(this.minScheduledAt)) {
+            this.scheduledAtUTC = this.minScheduledAt;
             return;
         }
 
