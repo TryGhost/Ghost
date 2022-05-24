@@ -24,7 +24,7 @@ module.exports = {
 function paginatedTiers(page, _apiConfig, frame) {
     return {
         tiers: page.data.map((model) => {
-            return serializeTier(model, frame.options, frame)
+            return serializeTier(model, frame.options, frame);
         }),
         meta: page.meta
     };
