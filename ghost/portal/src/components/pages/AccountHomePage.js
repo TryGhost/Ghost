@@ -346,27 +346,20 @@ const AccountActions = () => {
 
 function EmailNewsletterAction() {
     const {member, site, onAction} = useContext(AppContext);
-    let {subscribed} = member;
+    let {newsletters} = member;
 
     if (hasMultipleNewsletters({site})) {
         return null;
     }
-
+    const subscribed = !!newsletters?.length;
     let label = subscribed ? 'Subscribed' : 'Unsubscribed';
     const onToggleSubscription = (e, sub) => {
         e.preventDefault();
-        const newsletters = getSiteNewsletters({site});
-        if (newsletters?.length === 1) {
-            const subscribedNewsletters = !member?.newsletters?.length ? newsletters : [];
-            onAction('updateNewsletterPreference', {newsletters: subscribedNewsletters});
-        } else {
-            onAction('updateNewsletter', {subscribed: !sub});
-        }
+        const siteNewsletters = getSiteNewsletters({site});
+        const subscribedNewsletters = !member?.newsletters?.length ? siteNewsletters : [];
+        onAction('updateNewsletterPreference', {newsletters: subscribedNewsletters});
     };
-    const newsletters = getSiteNewsletters({site});
-    if (newsletters?.length > 0) {
-        subscribed = !!member?.newsletters?.length;
-    }
+
     return (
         <section>
             <div className='gh-portal-list-detail'>
