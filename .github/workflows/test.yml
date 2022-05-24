@@ -250,7 +250,7 @@ jobs:
           node-version: '14.17.0'
           cache: yarn
       - run: npm install -g ghost-cli@latest
-      - run: npm --no-git-tag-version version major # We need to artificially bump the major version to get migrations to run
+      - run: npm --no-git-tag-version version minor # We need to artificially bump the minor version to get migrations to run
 
       - run: zip -r ghost.zip .
 
