@@ -154,7 +154,7 @@ class GhostEventProcessor extends EventProcessor {
                 newsletter_id: newsletterId,
                 subscribed: false,
                 created_at: moment.utc().toDate(),
-                source: 'system'
+                source: 'member'
             });
         }
 
@@ -197,7 +197,7 @@ class GhostEventProcessor extends EventProcessor {
                 newsletter_id: newsletterId,
                 subscribed: false,
                 created_at: moment.utc().toDate(),
-                source: 'system'
+                source: 'member'
             });
         }
 
