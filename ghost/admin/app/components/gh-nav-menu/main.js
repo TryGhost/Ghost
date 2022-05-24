@@ -54,9 +54,6 @@ export default class Main extends Component.extend(ShortcutsMixin) {
     @reads('config.hostSettings.billing.enabled')
         showBilling;
 
-    @reads('settings.stripeConnectAccountId')
-        isStripeConnected;
-
     init() {
         super.init(...arguments);
 

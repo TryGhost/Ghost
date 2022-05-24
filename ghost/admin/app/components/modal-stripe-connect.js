@@ -7,6 +7,7 @@ import {inject as service} from '@ember/service';
 @classic
 export default class ModalStripeConnect extends ModalBase {
     @service settings;
+    @service membersUtils;
 
     @action
     setStripeConnectIntegrationTokenSetting(stripeConnectIntegrationToken) {
@@ -34,7 +35,8 @@ export default class ModalStripeConnect extends ModalBase {
 
     @action
     updateSuccessModifier() {
-        if (this.settings.get('stripeConnectAccountId')) {
+        // Note, we should also check isStripeEnabled because stripeDirect option might be enabled
+        if (this.membersUtils.get('isStripeEnabled') && this.settings.get('stripeConnectAccountId')) {
             if (this.modifier?.indexOf('stripe-connected') === -1) {
                 this.updateModifier(`${this.modifier} stripe-connected`);
             }

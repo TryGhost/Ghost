@@ -13,6 +13,7 @@ export default Component.extend({
     ghostPaths: service(),
     ajax: service(),
     settings: service(),
+    membersUtils: service(),
     store: service(),
 
     topCurrencies: null,
@@ -22,10 +23,10 @@ export default Component.extend({
     _scratchStripeYearlyAmount: null,
     _scratchStripeMonthlyAmount: null,
 
+    stripeDirect: false,
+
     // passed in actions
     setStripeConnectIntegrationTokenSetting() {},
-
-    stripeDirect: reads('config.stripeDirect'),
 
     /** OLD **/
     stripeDirectPublicKey: reads('settings.stripePublishableKey'),
@@ -59,6 +60,9 @@ export default Component.extend({
     init() {
         this._super(...arguments);
 
+        // Allow disabling stripe direct keys if stripe is still enabled, while the config is disabled
+        this.updateStripeDirect();
+
         const noOfTopCurrencies = 5;
         this.set('topCurrencies', currencies.slice(0, noOfTopCurrencies).map((currency) => {
             return {
@@ -86,12 +90,6 @@ export default Component.extend({
                 options: this.currencies
             }
         ]);
-
-        if (this.stripeConnectAccountId) {
-            this.set('membersStripeOpen', false);
-        } else {
-            this.set('membersStripeOpen', true);
-        }
     },
 
     actions: {
@@ -154,11 +152,12 @@ export default Component.extend({
 
         disconnectStripeConnectIntegration() {
             this.disconnectStripeConnectIntegration.perform();
-        },
-
-        openStripeSettings() {
-            this.set('membersStripeOpen', true);
         }
+    },
+
+    updateStripeDirect() {
+        // Allow disabling stripe direct keys if stripe is still enabled, while the config is disabled
+        this.set('stripeDirect', this.get('config.stripeDirect') || (this.get('membersUtils.isStripeEnabled') && !this.get('settings.stripeConnectAccountId')));
     },
 
     validateStripePlans() {
@@ -274,7 +273,6 @@ export default Component.extend({
 
                 response = yield this.settings.save();
 
-                this.set('membersStripeOpen', false);
                 this.set('stripeConnectSuccess', true);
                 this.onConnected?.();
 
@@ -292,7 +290,9 @@ export default Component.extend({
     }).drop(),
 
     saveSettings: task(function* () {
-        return yield this.settings.save();
+        const s = yield this.settings.save();
+        this.updateStripeDirect();
+        return s;
     }).drop(),
 
     get liveStripeConnectAuthUrl() {
