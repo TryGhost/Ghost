@@ -154,7 +154,11 @@ export default class KoenigCardMarkdown extends Component {
     }
 
     _applyToolbarStyles() {
-        let toolbar = this.element.querySelector('.editor-toolbar');
+        if (this.isDestroyed || this.isDestroying) {
+            return;
+        }
+
+        let toolbar = this.element?.querySelector('.editor-toolbar');
 
         if (!toolbar) {
             return;
