@@ -390,7 +390,7 @@ export default ModalComponent.extend({
                 }
             });
             // this.toggleProperty('showSupportAddressConfirmation');
-            return response;
+            return true;
         } catch (e) {
             // Failed to send email, retry
             return false;
