@@ -45,10 +45,26 @@ function convertTierInput(input) {
 
 module.exports = {
     all(_apiConfig, frame) {
+        if (localUtils.isContentAPI(frame)) {
+            // CASE: content api can only have active tiers
+            forceActiveFilter(frame);
+
+            // CASE: content api includes these by default
+            const defaultRelations = ['monthly_price', 'yearly_price', 'benefits'];
+            if (!frame.options.withRelated) {
+                frame.options.withRelated = defaultRelations;
+            } else {
+                for (const relation of defaultRelations) {
+                    if (!frame.options.withRelated.includes(relation)) {
+                        frame.options.withRelated.push(relation);
+                    }
+                }
+            }
+        }
+
         if (!frame.options.withRelated) {
             return;
         }
-
         frame.options.withRelated = frame.options.withRelated.map((relation) => {
             if (relation === 'stripe_prices') {
                 return 'stripePrices';
@@ -61,13 +77,6 @@ module.exports = {
             }
             return relation;
         });
-    },
-
-    browse(_apiConfig, frame) {
-        if (localUtils.isContentAPI(frame)) {
-            // CASE: content api can only has active tiers
-            forceActiveFilter(frame);
-        }
     },
 
     add(_apiConfig, frame) {

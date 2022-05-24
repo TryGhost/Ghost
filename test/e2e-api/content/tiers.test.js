@@ -10,7 +10,7 @@ describe('Tiers Content API', function () {
     });
 
     it('Can request only active tiers', async function () {
-        await agent.get('/tiers/?include=monthly_price,yearly_price,benefits')
+        await agent.get('/tiers/?include=monthly_price')
             .expectStatus(200)
             .matchHeaderSnapshot({
                 etag: matchers.anyEtag
