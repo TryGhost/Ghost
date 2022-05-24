@@ -72,7 +72,9 @@ export default class GhSimplemde extends TextArea {
     }
 
     willDestroyElement() {
-        this._editor.toTextArea();
+        if (this._editor?.codemirror) {
+            this._editor.toTextArea();
+        }
         delete this._editor;
         super.willDestroyElement(...arguments);
     }
