@@ -2141,10 +2141,10 @@
     "@tryghost/debug" "^0.1.10"
     "@tryghost/logging" "^2.0.1"
 
-"@tryghost/session-service@0.1.42":
-  version "0.1.42"
-  resolved "https://registry.yarnpkg.com/@tryghost/session-service/-/session-service-0.1.42.tgz#9cc171abd8d20463883b0e8157734beee8ed12ce"
-  integrity sha512-dSCZRJoNv8c+cgDGJXK4JzVwgHbt59N5vT4AV2c5BQdx6ZAx05kyZk8/+CiZgr4myt+Y3hb9h5NxjaSakCU/Yw==
+"@tryghost/session-service@0.1.43":
+  version "0.1.43"
+  resolved "https://registry.yarnpkg.com/@tryghost/session-service/-/session-service-0.1.43.tgz#f175e358987daacaab073431500f97e25dc607ec"
+  integrity sha512-pq1PvfbKQ1An+2jbIfMcUAiaOPVKmNN71gjpfI2lfog588ERb74WgVUa2RwDPCGbS5A0E8bvdncDRcStr1th8w==
   dependencies:
     "@tryghost/errors" "^1.2.1"
 
