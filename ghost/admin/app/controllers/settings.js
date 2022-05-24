@@ -12,11 +12,6 @@ export default class SettingsController extends Controller {
     showLeaveSettingsModal = false;
 
     @action
-    openStripeSettings() {
-        this.set('membersStripeOpen', true);
-    }
-
-    @action
     closeLeaveSettingsModal() {
         this.set('showLeaveSettingsModal', false);
     }

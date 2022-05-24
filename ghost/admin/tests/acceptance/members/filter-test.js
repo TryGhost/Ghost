@@ -1281,7 +1281,7 @@ describe('Acceptance: Members filtering', function () {
 
         it('hides paid filters when stripe isn\'t connected', async function () {
             // disconnect stripe
-            this.server.db.settings.update({key: 'stripe_connect_account_id'}, {value: null});
+            this.server.db.settings.update({key: 'paid_members_enabled'}, {value: false});
             this.server.createList('member', 10);
 
             await visit('/members');

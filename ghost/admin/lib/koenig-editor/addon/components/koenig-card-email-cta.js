@@ -83,7 +83,7 @@ export default class KoenigCardEmailCtaComponent extends Component {
             url: this.config.getSiteUrl('/#/portal/signup/free')
         }]);
 
-        if (this.membersUtils.isStripeEnabled) {
+        if (this.membersUtils.paidMembersEnabled) {
             urls.push(...[{
                 name: 'Paid signup',
                 url: this.config.getSiteUrl('/#/portal/signup')

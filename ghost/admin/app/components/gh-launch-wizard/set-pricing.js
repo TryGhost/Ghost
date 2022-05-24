@@ -46,10 +46,6 @@ export default class GhLaunchWizardSetPricingComponent extends Component {
         return envConfig.environment !== 'development' && !/^https:/.test(siteUrl);
     }
 
-    get isPaidPriceDisabled() {
-        return !this.membersUtils.isStripeEnabled;
-    }
-
     get isFreeDisabled() {
         return this.settings.get('membersSignupAccess') !== 'all';
     }

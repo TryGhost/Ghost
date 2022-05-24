@@ -375,8 +375,8 @@ export default class MembersAccessController extends Controller {
     }
 
     async saveTier() {
-        const isStripeConnected = this.settings.get('stripeConnectAccountId');
-        if (this.tier && isStripeConnected) {
+        const paidMembersEnabled = this.settings.get('paidMembersEnabled');
+        if (this.tier && paidMembersEnabled) {
             const monthlyAmount = Math.round(this.stripeMonthlyAmount * 100);
             const yearlyAmount = Math.round(this.stripeYearlyAmount * 100);
 

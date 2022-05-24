@@ -167,7 +167,7 @@ export default class MembersFilter extends Component {
             });
 
         // exclude subscription filters if Stripe isn't connected
-        if (!this.settings.get('stripeConnectAccountId')) {
+        if (!this.settings.get('paidMembersEnabled')) {
             availableFilters = availableFilters.reject(prop => prop.group === 'Subscription');
         }
 

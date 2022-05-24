@@ -17,7 +17,7 @@
                             {{#liquid-if isOpen}}
                                 <div class="modal-fullsettings-tab-expanded {{if (not-eq this.settings.membersSignupAccess "all") "disabled-overlay"}}" onclick={{action "switchPreviewPage" "signup"}}>
                                     {{#unless this.membersUtils.isStripeEnabled}}
-                                        <button class="gh-btn gh-btn-link {{unless this.session.user.isAdmin "disabled"}}" type="button" {{on "click" (action "openStripeSettings")}}>Connect to Stripe</button>
+                                        <button class="gh-btn gh-btn-link {{unless this.session.user.isAdmin "disabled"}}" type="button" {{on "click" (action "openStripeConnect")}}>Connect to Stripe</button>
                                     {{/unless}}
                                     <GhFormGroup @classNames="gh-members-subscribed-checkbox gh-portal-setting-first mb0">
                                         <div class="flex justify-between items-center">

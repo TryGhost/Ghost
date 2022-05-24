@@ -24,12 +24,8 @@ export default class extends Component {
     @tracked tiersList;
     @tracked newslettersList;
 
-    get canShowStripeInfo() {
-        return !this.member.get('isNew') && this.membersUtils.isStripeEnabled;
-    }
-
     get isAddComplimentaryAllowed() {
-        if (!this.membersUtils.isStripeEnabled) {
+        if (!this.membersUtils.paidMembersEnabled) {
             return false;
         }
 
@@ -113,10 +109,6 @@ export default class extends Component {
             };
         }
         return null;
-    }
-
-    get isStripeConnected() {
-        return this.settings.get('stripeConnectAccountId');
     }
 
     @action
