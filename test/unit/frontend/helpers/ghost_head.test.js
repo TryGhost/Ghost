@@ -1678,7 +1678,7 @@ describe('{{ghost_head}} helper', function () {
 
         it('includes stripe when connected', function (done) {
             settingsCache.get.withArgs('members_enabled').returns(true);
-            settingsCache.get.withArgs('stripe_connected').returns(true);
+            settingsCache.get.withArgs('paid_members_enabled').returns(true);
 
             ghost_head(testUtils.createHbsResponse({
                 locals: {
@@ -1698,7 +1698,7 @@ describe('{{ghost_head}} helper', function () {
 
         it('skips portal and stripe when members are disabled', function (done) {
             settingsCache.get.withArgs('members_enabled').returns(false);
-            settingsCache.get.withArgs('stripe_connected').returns(true);
+            settingsCache.get.withArgs('paid_members_enabled').returns(true);
 
             ghost_head(testUtils.createHbsResponse({
                 locals: {
@@ -1718,7 +1718,7 @@ describe('{{ghost_head}} helper', function () {
 
         it('skips stripe if not set up', function (done) {
             settingsCache.get.withArgs('members_enabled').returns(true);
-            settingsCache.get.withArgs('stripe_connected').returns(false);
+            settingsCache.get.withArgs('paid_members_enabled').returns(false);
 
             ghost_head(testUtils.createHbsResponse({
                 locals: {
