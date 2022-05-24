@@ -2,6 +2,7 @@
 const debug = require('@tryghost/debug')('api:canary:utils:serializers:output:tiers');
 
 const allowedIncludes = ['monthly_price', 'yearly_price'];
+const localUtils = require('../../index');
 const utils = require('../../../../shared/utils');
 
 module.exports = {
@@ -21,15 +22,9 @@ module.exports = {
  * @returns {{tiers: SerializedTier[], meta: PageMeta}}
  */
 function paginatedTiers(page, _apiConfig, frame) {
-    const requestedQueryIncludes = frame.original && frame.original.query && frame.original.query.include && frame.original.query.include.split(',') || [];
-    const requestedOptionsIncludes = utils.options.trimAndLowerCase(frame.original && frame.original.options && frame.original.options.include || []);
     return {
         tiers: page.data.map((model) => {
-            return cleanIncludes(
-                allowedIncludes,
-                requestedQueryIncludes.concat(requestedOptionsIncludes),
-                serializeTier(model, frame.options, frame.apiType)
-            );
+            return serializeTier(model, frame.options, frame)
         }),
         meta: page.meta
     };
@@ -43,15 +38,9 @@ function paginatedTiers(page, _apiConfig, frame) {
  * @returns {{tiers: SerializedTier[]}}
  */
 function singleTier(model, _apiConfig, frame) {
-    const requestedQueryIncludes = frame.original && frame.original.query && frame.original.query.include && frame.original.query.include.split(',') || [];
-    const requestedOptionsIncludes = frame.original && frame.original.options && frame.original.options.include || [];
     return {
         tiers: [
-            cleanIncludes(
-                allowedIncludes,
-                requestedQueryIncludes.concat(requestedOptionsIncludes),
-                serializeTier(model, frame.options, frame.apiType)
-            )
+            serializeTier(model, frame.options, frame)
         ]
     };
 }
@@ -59,10 +48,11 @@ function singleTier(model, _apiConfig, frame) {
 /**
  * @param {import('bookshelf').Model} tier
  * @param {object} options
+ * @param {object} frame
  *
  * @returns {SerializedTier}
  */
-function serializeTier(tier, options) {
+function serializeTier(tier, options, frame) {
     const json = tier.toJSON(options);
 
     const serialized = {
@@ -89,6 +79,17 @@ function serializeTier(tier, options) {
         serialized.currency = json.monthlyPrice?.currency;
         serialized.monthly_price = json.monthlyPrice?.amount;
         serialized.yearly_price = json.yearlyPrice?.amount;
+    }
+
+    if (!localUtils.isContentAPI(frame)) {
+        const requestedQueryIncludes = frame.original && frame.original.query && frame.original.query.include && frame.original.query.include.split(',') || [];
+        const requestedOptionsIncludes = utils.options.trimAndLowerCase(frame.original && frame.original.options && frame.original.options.include || []);
+
+        return cleanIncludes(
+            allowedIncludes,
+            requestedQueryIncludes.concat(requestedOptionsIncludes),
+            serialized
+        );
     }
 
     return serialized;
