@@ -51,7 +51,7 @@ function getMembersHelper(data, frontendKey) {
     const colorString = _.has(data, 'site._preview') && data.site.accent_color ? ` data-accent-color="${data.site.accent_color}"` : '';
     let membersHelper = `<script defer src="${config.get('portal:url')}" data-ghost="${urlUtils.getSiteUrl()}"${colorString} data-key="${frontendKey}" data-api="${urlUtils.urlFor('api', {type: 'content'}, true)}" crossorigin="anonymous"></script>`;
     membersHelper += (`<style id="gh-members-styles">${templateStyles}</style>`);
-    if (settingsCache.get('stripe_connected')) {
+    if (settingsCache.get('paid_members_enabled')) {
         membersHelper += '<script async src="https://js.stripe.com/v3/"></script>';
     }
     return membersHelper;

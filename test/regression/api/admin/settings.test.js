@@ -9,6 +9,39 @@ const db = require('../../../../core/server/data/db');
 describe('Settings API (canary)', function () {
     let request;
 
+    async function checkCantEdit(key, value) {
+        // Get current value
+        const {body} = await request.get(localUtils.API.getApiQuery('settings/'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        const currentValue = body.settings.find(s => s.key === key);
+
+        if (!currentValue || currentValue.value === value) {
+            throw new Error('Invalid key or unchanged value');
+        }
+
+        const settingToChange = {
+            settings: [{key, value}]
+        };
+
+        await request.put(localUtils.API.getApiQuery('settings/'))
+            .set('Origin', config.get('url'))
+            .send(settingToChange)
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .expect(({body, headers}) => {
+                // it didn't actually edit anything, but we don't error anymore
+                const newValue = body.settings.find(setting => setting.key === key);
+                should.strictEqual(newValue.value, currentValue.value);
+
+                should.not.exist(headers['x-cache-invalidate']);
+            });
+    }
+
     describe('As Owner', function () {
         before(async function () {
             await localUtils.startGhost();
@@ -41,7 +74,7 @@ describe('Settings API (canary)', function () {
         });
 
         it('Can\'t edit permalinks', async function () {
-            const settingToChange = {
+            /*const settingToChange = {
                 settings: [{key: 'permalinks', value: '/:primary_author/:slug/'}]
             };
 
@@ -59,7 +92,8 @@ describe('Settings API (canary)', function () {
                     });
 
                     should.not.exist(headers['x-cache-invalidate']);
-                });
+                });*/
+            await checkCantEdit('permalinks', '/:primary_author/:slug/');
         });
 
         it('Can edit only allowed labs keys', async function () {
@@ -86,6 +120,7 @@ describe('Settings API (canary)', function () {
             should.exist(jsonResponse.settings);
 
             jsonResponse.settings.length.should.eql(1);
+            
             testUtils.API.checkResponseValue(jsonResponse.settings[0], ['key', 'value']);
             jsonResponse.settings[0].key.should.eql('labs');
 
