@@ -335,9 +335,13 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 identity: identity,
                 metadata: metadataObj,
                 successUrl,
-                cancelUrl,
-                customerEmail: customerEmail
+                cancelUrl
             };
+
+            if (customerEmail) {
+                body.customerEmail = customerEmail;
+            }
+
             if (tierId && cadence) {
                 delete body.priceId;
                 body.tierId = offerId ? null : tierId;
