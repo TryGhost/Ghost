@@ -131,42 +131,14 @@ class GhostEventProcessor extends EventProcessor {
     }
 
     async handleUnsubscribed(event) {
-        const memberId = await this.getMemberId(event);
-
-        if (!memberId) {
-            return false;
-        }
-
-        const subscribedNewsletterIds = await this.db.knex('members_newsletters')
-            .where('member_id', '=', memberId)
-            .pluck('newsletter_id');
-
-        await this.db.knex('members_newsletters')
-            .where('member_id', '=', memberId)
-            .del();
-
-        const nowUTC = moment.utc().toDate();
-        for (const newsletterId of subscribedNewsletterIds) {
-            await this.db.knex('members_subscribe_events').insert({
-                id: ObjectID().toHexString(),
-                member_id: memberId,
-                newsletter_id: newsletterId,
-                subscribed: false,
-                created_at: nowUTC,
-                source: 'member'
-            });
-        }
-
-        const updateResult = await this.db.knex('members')
-            .where('id', '=', memberId)
-            .update({
-                updated_at: moment.utc().toDate()
-            });
-
-        return updateResult > 0;
+        return this._unsubscribeFromNewsletters(event);
     }
 
     async handleComplained(event) {
+        return this._unsubscribeFromNewsletters(event);
+    }
+
+    async _unsubscribeFromNewsletters(event) {
         const memberId = await this.getMemberId(event);
 
         if (!memberId) {
@@ -181,12 +153,6 @@ class GhostEventProcessor extends EventProcessor {
             .where('member_id', '=', memberId)
             .del();
 
-        const updateResult = await this.db.knex('members')
-            .where('id', '=', memberId)
-            .update({
-                updated_at: moment.utc().toDate()
-            });
-
         const nowUTC = moment.utc().toDate();
         for (const newsletterId of subscribedNewsletterIds) {
             await this.db.knex('members_subscribe_events').insert({
@@ -198,6 +164,12 @@ class GhostEventProcessor extends EventProcessor {
                 source: 'member'
             });
         }
+
+        const updateResult = await this.db.knex('members')
+            .where('id', '=', memberId)
+            .update({
+                updated_at: moment.utc().toDate()
+            });
 
         return updateResult > 0;
     }
