@@ -137,9 +137,11 @@ class GhostEventProcessor extends EventProcessor {
             return false;
         }
 
-        const subscribedNewsletterIds = this.db.knex('members_newsletters')
-            .where('member_id', '=', memberId)
-            .select('id');
+        const subscribedNewsletterIds = (
+            await this.db.knex('members_newsletters')
+                .where('member_id', '=', memberId)
+                .select('newsletter_id')
+        ).map(mn => mn.newsletter_id);
 
         await this.db.knex('members_newsletters')
             .where('member_id', '=', memberId)
@@ -172,9 +174,11 @@ class GhostEventProcessor extends EventProcessor {
             return false;
         }
 
-        const subscribedNewsletterIds = this.db.knex('members_newsletters')
-            .where('member_id', '=', memberId)
-            .select('id');
+        const subscribedNewsletterIds = (
+            await this.db.knex('members_newsletters')
+                .where('member_id', '=', memberId)
+                .select('newsletter_id')
+        ).map(mn => mn.newsletter_id);
 
         await this.db.knex('members_newsletters')
             .where('member_id', '=', memberId)
