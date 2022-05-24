@@ -690,6 +690,7 @@ label[for="member-description"] + p {
 .gh-member-details a,
 .gh-member-details a:hover {
     color: var(--darkgrey-l1);
+    word-break: break-all;
 }
 
 .gh-member-details-identity {
