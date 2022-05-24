@@ -383,13 +383,13 @@ export default ModalComponent.extend({
     updateSupportAddress: task(function* () {
         let url = this.get('ghostPaths.url').api('/settings/members/email');
         try {
-            const response = yield this.ajax.post(url, {
+            yield this.ajax.post(url, {
                 data: {
                     email: this.supportAddress,
                     type: 'supportAddressUpdate'
                 }
             });
-            // this.toggleProperty('showSupportAddressConfirmation');
+
             return true;
         } catch (e) {
             // Failed to send email, retry
