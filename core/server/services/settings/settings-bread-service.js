@@ -155,7 +155,9 @@ class SettingsBREADService {
         await this.SettingsModel.edit(filteredSettings, options);
 
         // Return all settings, because some calculated settings could have changed too
-        return await this.browse(options.context);
+        return this.SettingsModel.edit(filteredSettings, options).then((result) => {
+            return this._formatBrowse(_.keyBy(_.invokeMap(result, 'toJSON'), 'key'), options.context);
+        });
     }
 
     /**
