@@ -51,14 +51,14 @@
         <GhLoadingSpinner />
     {{else}}
         {{#if (eq this.tab "browser")}}
-            <EditorLabs::Modals::Preview::Browser
+            <Editor::Modals::Preview::Browser
                 @post={{@data.publishOptions.post}}
                 @skipAnimation={{this.skipAnimation}}
             />
         {{/if}}
 
         {{#if (and (eq this.tab "mobile"))}}
-            <EditorLabs::Modals::Preview::Mobile
+            <Editor::Modals::Preview::Mobile
                 @post={{@data.publishOptions.post}}
                 @skipAnimation={{this.skipAnimation}}
             />
@@ -66,7 +66,7 @@
 
         {{#unless @data.publishOptions.user.isContributor}}
             {{#if (and (eq this.tab "email") @data.publishOptions.post.isPost)}}
-                <EditorLabs::Modals::Preview::Email
+                <Editor::Modals::Preview::Email
                     @post={{@data.publishOptions.post}}
                     @newsletter={{@data.publishOptions.newsletter}}
                     @skipAnimation={{this.skipAnimation}}
@@ -75,7 +75,7 @@
         {{/unless}}
 
         {{#if (eq this.tab "social")}}
-            <EditorLabs::Modals::Preview::Social
+            <Editor::Modals::Preview::Social
                 @post={{@data.publishOptions.post}}
                 @skipAnimation={{this.skipAnimation}}
             />
