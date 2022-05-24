@@ -106,7 +106,7 @@
                             {{/if}}
                         </li>
 
-                        {{#if (and this.settings.paidMembersEnabled)}}
+                        {{#if this.settings.paidMembersEnabled}}
                             <li>
                                 <LinkTo @route="offers" @alt="Offers">{{svg-jar "percentage"}}Offers</LinkTo>
                             </li>
