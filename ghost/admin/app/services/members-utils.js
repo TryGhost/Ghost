@@ -7,9 +7,16 @@ export default class MembersUtilsService extends Service {
     @service store;
 
     get isMembersEnabled() {
-        return this.settings.get('membersSignupAccess') !== 'none';
+        return this.settings.get('membersEnabled');
     }
 
+    get paidMembersEnabled() {
+        return this.settings.get('paidMembersEnabled');
+    }
+
+    /**
+     * Note: always use paidMembersEnabled! Only use this getter for the Stripe Connection UI.
+     */
     get isStripeEnabled() {
         const stripeDirect = this.config.get('stripeDirect');
 

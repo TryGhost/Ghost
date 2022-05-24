@@ -296,11 +296,11 @@ export default class DashboardStatsService extends Service {
             return;
         }
 
-        if (this.membersUtils.isStripeEnabled) {
+        if (this.membersUtils.paidMembersEnabled) {
             yield this.loadPaidTiers();
         }
 
-        const hasPaidTiers = this.membersUtils.isStripeEnabled && this.activePaidTiers && this.activePaidTiers.length > 0;
+        const hasPaidTiers = this.membersUtils.paidMembersEnabled && this.activePaidTiers && this.activePaidTiers.length > 0;
 
         this.siteStatus = {
             hasPaidTiers,

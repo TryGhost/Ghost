@@ -70,6 +70,9 @@ export default Model.extend(ValidationEngine, {
     stripeConnectDisplayName: attr('string'),
     stripeConnectAccountId: attr('string'),
 
+    membersEnabled: attr('boolean'),
+    paidMembersEnabled: attr('boolean'),
+
     /**
      * Editor settings
      */

@@ -100,7 +100,7 @@
                 />
             {{/if}}
 
-            {{#if this.isStripeConnected}}
+            {{#if this.membersUtils.paidMembersEnabled}}
                 <h4 class="gh-main-section-header small bn">Subscriptions</h4>
 
                 {{#unless this.tiers}}

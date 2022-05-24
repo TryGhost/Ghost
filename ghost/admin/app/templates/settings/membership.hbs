@@ -72,9 +72,9 @@
             <div class="gh-settings-members-tiersheader">
                 <h4 class="gh-main-section-header small bn">Membership tiers</h4>
                 {{#if this.session.user.isAdmin}}
-                <button type="button" class="gh-btn gh-btn-outline gh-btn-stripe-status {{if this.isConnectDisallowed "disabled"}} {{if this.settings.stripeConnectAccountId "connected" ""}}" {{on "click" this.openStripeConnect}}>
+                <button type="button" class="gh-btn gh-btn-outline gh-btn-stripe-status {{if this.isConnectDisallowed "disabled"}} {{if this.membersUtils.isStripeEnabled "connected" ""}}" {{on "click" this.openStripeConnect}}>
                     <span>
-                        {{if this.settings.stripeConnectAccountId "Connected to Stripe" "Stripe not connected"}}
+                        {{if this.membersUtils.isStripeEnabled "Connected to Stripe" "Stripe not connected"}}
                     </span>
                 </button>
                 {{/if}}
@@ -122,7 +122,7 @@
                             <p class="gh-expandable-description">Set prices and paid member sign up settings</p>
                         </div>
 
-                        {{#if this.settings.stripeConnectAccountId}}
+                        {{#if this.membersUtils.isStripeEnabled}}
                             <button type="button" class="gh-btn" {{on "click" (toggle "paidOpen" this)}} data-test-toggle-pub-info><span>{{if this.paidOpen "Close" "Expand"}}</span></button>
                         {{else}}
                             <button type="button" class="stripe-connect {{if (or (not this.session.user.isAdmin) this.isConnectDisallowed) "disabled"}}" {{on "click" this.openStripeConnect}}>
@@ -172,7 +172,7 @@
         <GhFullscreenModal @modal="portal-settings"
             @model={{hash
                 preloadTask=this.saveSettingsTask
-                openStripeSettings=this.openStripeConnect
+                openStripeConnect=this.openStripeConnect
                 tiers=this.tiers
             }}
             @close={{this.closePortalSettings}}

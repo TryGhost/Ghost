@@ -121,7 +121,7 @@
                             id="monthly-plan"
                             name="monthly-plan"
                             checked={{this.isMonthlyChecked}}
-                            disabled={{this.isPaidPriceDisabled}}
+                            disabled={{not this.membersUtils.isStripeEnabled}}
                             class="gh-input post-settings-featured"
                             {{on "click" this.toggleMonthlyPlan}}
                             data-test-checkbox="featured"
@@ -140,7 +140,7 @@
                             id="yearly-plan"
                             name="yearly-plan"
                             checked={{this.isYearlyChecked}}
-                            disabled={{this.isPaidPriceDisabled}}
+                            disabled={{not this.membersUtils.isStripeEnabled}}
                             class="gh-input post-settings-featured"
                             {{on "click" this.toggleYearlyPlan}}
                             data-test-checkbox="featured"

@@ -86,13 +86,13 @@ export default ModalComponent.extend({
         const allowedPlans = this.settings.get('portalPlans') || [];
         return (this.settings.get('membersSignupAccess') === 'all' && allowedPlans.includes('free'));
     }),
-    isMonthlyChecked: computed('settings.portalPlans.[]', 'isStripeConfigured', function () {
+    isMonthlyChecked: computed('settings.portalPlans.[]', 'membersUtils.paidMembersEnabled', function () {
         const allowedPlans = this.settings.get('portalPlans') || [];
-        return (this.membersUtils.isStripeEnabled && allowedPlans.includes('monthly'));
+        return (this.membersUtils.paidMembersEnabled && allowedPlans.includes('monthly'));
     }),
-    isYearlyChecked: computed('settings.portalPlans.[]', 'isStripeConfigured', function () {
+    isYearlyChecked: computed('settings.portalPlans.[]', 'membersUtils.paidMembersEnabled', function () {
         const allowedPlans = this.settings.get('portalPlans') || [];
-        return (this.membersUtils.isStripeEnabled && allowedPlans.includes('yearly'));
+        return (this.membersUtils.paidMembersEnabled && allowedPlans.includes('yearly'));
     }),
     tiers: computed('model.tiers.[]', 'changedTiers.[]', 'isPreloading', function () {
         const paidTiers = this.model.tiers?.filter(tier => tier.type === 'paid' && tier.active === true);
@@ -243,9 +243,9 @@ export default ModalComponent.extend({
             this.set('showLeaveSettingsModal', false);
         },
 
-        openStripeSettings() {
+        openStripeConnect() {
             this.isWaitingForStripeConnection = true;
-            this.model.openStripeSettings();
+            this.model.openStripeConnect();
         },
 
         leaveSettings() {
