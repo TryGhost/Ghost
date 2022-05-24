@@ -28,7 +28,7 @@
 
                 <section class="flex items-center pe-auto h-100">
                     {{#unless this.post.isNew}}
-                        <EditorLabs::PublishManagement
+                        <Editor::PublishManagement
                             @post={{this.post}}
                             @hasUnsavedChanges={{this.hasDirtyAttributes}}
                             @beforePublish={{perform this.beforeSaveTask}}
