@@ -22,7 +22,7 @@
         {{/if}}
         {{#liquid-if (eq this.openSection "publishType")}}
             <div class="gh-publish-setting-form">
-                <EditorLabs::PublishOptions::PublishType
+                <Editor::PublishOptions::PublishType
                     @publishOptions={{@publishOptions}}
                 />
             </div>
@@ -82,7 +82,7 @@
             {{/if}}
             {{#liquid-if (eq this.openSection "emailRecipients")}}
                 <div class="gh-publish-setting-form">
-                    <EditorLabs::PublishOptions::EmailRecipients
+                    <Editor::PublishOptions::EmailRecipients
                         @publishOptions={{@publishOptions}}
                     />
                 </div>
@@ -125,7 +125,7 @@
         </button>
         {{#liquid-if (eq this.openSection "publishAt")}}
             <div class="gh-publish-setting-form last">
-                <EditorLabs::PublishOptions::PublishAt
+                <Editor::PublishOptions::PublishAt
                     @publishOptions={{@publishOptions}}
                 />
             </div>
