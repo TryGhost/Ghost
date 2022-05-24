@@ -1577,6 +1577,8 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('attaches style tag to existing script/style tag', function (done) {
+            settingsCache.get.withArgs('members_enabled').returns(true);
+            
             const renderObject = {
                 post: posts[1]
             };
@@ -1656,8 +1658,8 @@ describe('{{ghost_head}} helper', function () {
     });
 
     describe('members scripts', function () {
-        it('includes portal when signup is "all"', function (done) {
-            settingsCache.get.withArgs('members_signup_access').returns('all');
+        it('includes portal when members enabled', function (done) {
+            settingsCache.get.withArgs('members_enabled').returns(true);
 
             ghost_head(testUtils.createHbsResponse({
                 locals: {
@@ -1674,29 +1676,9 @@ describe('{{ghost_head}} helper', function () {
             }).catch(done);
         });
 
-        it('includes portal when signup is "invite"', function (done) {
-            settingsCache.get.withArgs('members_signup_access').returns('invite');
-
-            ghost_head(testUtils.createHbsResponse({
-                locals: {
-                    relativeUrl: '/',
-                    context: ['home', 'index'],
-                    safeVersion: '4.3'
-                }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.containEql('<script defer src="https://unpkg.com/@tryghost/portal');
-                rendered.string.should.containEql('data-ghost="http://127.0.0.1:2369/" data-key="xyz" data-api="http://127.0.0.1:2369/ghost/api/content/"');
-                rendered.string.should.containEql('<style id="gh-members-styles">');
-                done();
-            }).catch(done);
-        });
-
-        it('includes stripe when set up as direct', function (done) {
-            settingsCache.get.withArgs('members_signup_access').returns('all');
-            settingsCache.get.withArgs('stripe_secret_key').returns('secret');
-            settingsCache.get.withArgs('stripe_publishable_key').returns('publishable');
-            settingsCache.get.withArgs('stripe_connect_account_id').returns(null);
+        it('includes stripe when connected', function (done) {
+            settingsCache.get.withArgs('members_enabled').returns(true);
+            settingsCache.get.withArgs('stripe_connected').returns(true);
 
             ghost_head(testUtils.createHbsResponse({
                 locals: {
@@ -1714,31 +1696,9 @@ describe('{{ghost_head}} helper', function () {
             }).catch(done);
         });
 
-        it('includes stripe when set up as connect', function (done) {
-            settingsCache.get.withArgs('members_signup_access').returns('all');
-            settingsCache.get.withArgs('stripe_secret_key').returns(null);
-            settingsCache.get.withArgs('stripe_publishable_key').returns(null);
-            settingsCache.get.withArgs('stripe_connect_account_id').returns('connect_account');
-
-            ghost_head(testUtils.createHbsResponse({
-                locals: {
-                    relativeUrl: '/',
-                    context: ['home', 'index'],
-                    safeVersion: '4.3'
-                }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.containEql('<script defer src="https://unpkg.com/@tryghost/portal');
-                rendered.string.should.containEql('data-ghost="http://127.0.0.1:2369/" data-key="xyz" data-api="http://127.0.0.1:2369/ghost/api/content/"');
-                rendered.string.should.containEql('<style id="gh-members-styles">');
-                rendered.string.should.containEql('<script async src="https://js.stripe.com');
-                done();
-            }).catch(done);
-        });
-
-        it('skips portal and stripe when signup is "none"', function (done) {
-            settingsCache.get.withArgs('members_signup_access').returns('none');
-            settingsCache.get.withArgs('stripe_connect_account_id').returns('connect_account');
+        it('skips portal and stripe when members are disabled', function (done) {
+            settingsCache.get.withArgs('members_enabled').returns(false);
+            settingsCache.get.withArgs('stripe_connected').returns(true);
 
             ghost_head(testUtils.createHbsResponse({
                 locals: {
@@ -1757,10 +1717,8 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('skips stripe if not set up', function (done) {
-            settingsCache.get.withArgs('members_signup_access').returns('all');
-            settingsCache.get.withArgs('stripe_secret_key', null);
-            settingsCache.get.withArgs('stripe_publishable_key', null);
-            settingsCache.get.withArgs('stripe_connect_account_id', null);
+            settingsCache.get.withArgs('members_enabled').returns(true);
+            settingsCache.get.withArgs('stripe_connected').returns(false);
 
             ghost_head(testUtils.createHbsResponse({
                 locals: {
