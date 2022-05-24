@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/release-utils",
-  "version": "0.7.15",
+  "version": "0.8.0",
   "repository": "https://github.com/TryGhost/Utils/tree/main/packages/release-utils",
   "author": "Ghost Foundation",
   "license": "MIT",

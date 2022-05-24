@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/database-info",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "repository": "https://github.com/TryGhost/Utils/tree/main/packages/database-info",
   "author": "Ghost Foundation",
   "license": "MIT",
