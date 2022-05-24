@@ -137,23 +137,22 @@ class GhostEventProcessor extends EventProcessor {
             return false;
         }
 
-        const subscribedNewsletterIds = (
-            await this.db.knex('members_newsletters')
-                .where('member_id', '=', memberId)
-                .select('newsletter_id')
-        ).map(mn => mn.newsletter_id);
+        const subscribedNewsletterIds = await this.db.knex('members_newsletters')
+            .where('member_id', '=', memberId)
+            .pluck('newsletter_id');
 
         await this.db.knex('members_newsletters')
             .where('member_id', '=', memberId)
             .del();
 
+        const nowUTC = moment.utc().toDate();
         for (const newsletterId of subscribedNewsletterIds) {
             await this.db.knex('members_subscribe_events').insert({
                 id: ObjectID().toHexString(),
                 member_id: memberId,
                 newsletter_id: newsletterId,
                 subscribed: false,
-                created_at: moment.utc().toDate(),
+                created_at: nowUTC,
                 source: 'member'
             });
         }
@@ -174,11 +173,9 @@ class GhostEventProcessor extends EventProcessor {
             return false;
         }
 
-        const subscribedNewsletterIds = (
-            await this.db.knex('members_newsletters')
-                .where('member_id', '=', memberId)
-                .select('newsletter_id')
-        ).map(mn => mn.newsletter_id);
+        const subscribedNewsletterIds = await this.db.knex('members_newsletters')
+            .where('member_id', '=', memberId)
+            .pluck('newsletter_id');
 
         await this.db.knex('members_newsletters')
             .where('member_id', '=', memberId)
@@ -190,13 +187,14 @@ class GhostEventProcessor extends EventProcessor {
                 updated_at: moment.utc().toDate()
             });
 
+        const nowUTC = moment.utc().toDate();
         for (const newsletterId of subscribedNewsletterIds) {
             await this.db.knex('members_subscribe_events').insert({
                 id: ObjectID().toHexString(),
                 member_id: memberId,
                 newsletter_id: newsletterId,
                 subscribed: false,
-                created_at: moment.utc().toDate(),
+                created_at: nowUTC,
                 source: 'member'
             });
         }
