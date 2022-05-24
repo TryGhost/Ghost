@@ -44,17 +44,14 @@ function finaliseStructuredData(meta) {
 }
 
 function getMembersHelper(data, frontendKey) {
-    if (settingsCache.get('members_signup_access') === 'none') {
+    if (!settingsCache.get('members_enabled')) {
         return '';
     }
 
-    const stripeDirectSecretKey = settingsCache.get('stripe_secret_key');
-    const stripeDirectPublishableKey = settingsCache.get('stripe_publishable_key');
-    const stripeConnectAccountId = settingsCache.get('stripe_connect_account_id');
     const colorString = _.has(data, 'site._preview') && data.site.accent_color ? ` data-accent-color="${data.site.accent_color}"` : '';
     let membersHelper = `<script defer src="${config.get('portal:url')}" data-ghost="${urlUtils.getSiteUrl()}"${colorString} data-key="${frontendKey}" data-api="${urlUtils.urlFor('api', {type: 'content'}, true)}" crossorigin="anonymous"></script>`;
     membersHelper += (`<style id="gh-members-styles">${templateStyles}</style>`);
-    if ((!!stripeDirectSecretKey && !!stripeDirectPublishableKey) || !!stripeConnectAccountId) {
+    if (settingsCache.get('paid_members_enabled')) {
         membersHelper += '<script async src="https://js.stripe.com/v3/"></script>';
     }
     return membersHelper;

@@ -5,9 +5,62 @@ const config = require('../../../../core/shared/config');
 const testUtils = require('../../../utils');
 const localUtils = require('./utils');
 const db = require('../../../../core/server/data/db');
+const settingsCache = require('../../../../core/shared/settings-cache');
 
 describe('Settings API (canary)', function () {
     let request;
+
+    async function checkCanEdit(key, value, expectedValue) {
+        if (!expectedValue) {
+            expectedValue = value;
+        }
+
+        const settingToChange = {
+            settings: [{key, value}]
+        };
+
+        await request.put(localUtils.API.getApiQuery('settings/'))
+            .set('Origin', config.get('url'))
+            .send(settingToChange)
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .expect((response) => {
+                should.exist(response.headers['x-cache-invalidate']);
+                response.headers['x-cache-invalidate'].should.eql('/*');
+            });
+
+        // Check if not changed (also check internal ones)
+        const afterValue = settingsCache.get(key);
+        should.deepEqual(afterValue, expectedValue);
+    }
+
+    async function checkCantEdit(key, value) {
+        // Get current value (internal)
+        const currentValue = settingsCache.get(key);
+
+        const settingToChange = {
+            settings: [{key, value}]
+        };
+
+        if (currentValue === value) {
+            throw new Error('This test requires a different value than the current one');
+        }
+
+        await request.put(localUtils.API.getApiQuery('settings/'))
+            .set('Origin', config.get('url'))
+            .send(settingToChange)
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200)
+            .expect((response) => {
+                should.not.exist(response.headers['x-cache-invalidate']);
+            });
+
+        // Check if not changed (also check internal ones)
+        const afterValue = settingsCache.get(key);
+        should.deepEqual(afterValue, currentValue);
+    }
 
     describe('As Owner', function () {
         before(async function () {
@@ -16,152 +69,32 @@ describe('Settings API (canary)', function () {
             await localUtils.doAuth(request);
         });
 
-        it('Can edit newly introduced locale setting', function () {
-            return request.put(localUtils.API.getApiQuery('settings/'))
-                .set('Origin', config.get('url'))
-                .send({
-                    settings: [{key: 'locale', value: 'ge'}]
-                })
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200)
-                .then(function (res) {
-                    should.exist(res.headers['x-cache-invalidate']);
-                    const jsonResponse = res.body;
-
-                    should.exist(jsonResponse);
-                    should.exist(jsonResponse.settings);
-
-                    jsonResponse.settings.length.should.eql(1);
-
-                    testUtils.API.checkResponseValue(jsonResponse.settings[0], ['key', 'value']);
-                    jsonResponse.settings[0].key.should.eql('locale');
-                    jsonResponse.settings[0].value.should.eql('ge');
-                });
+        it('Can edit newly introduced locale setting', async function () {
+            await checkCanEdit('locale', 'ge');
         });
 
         it('Can\'t edit permalinks', async function () {
-            const settingToChange = {
-                settings: [{key: 'permalinks', value: '/:primary_author/:slug/'}]
-            };
-
-            await request.put(localUtils.API.getApiQuery('settings/'))
-                .set('Origin', config.get('url'))
-                .send(settingToChange)
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200)
-                .expect(({body, headers}) => {
-                    // it didn't actually edit anything, but we don't error anymore
-                    body.should.eql({
-                        settings: [],
-                        meta: {}
-                    });
-
-                    should.not.exist(headers['x-cache-invalidate']);
-                });
+            await checkCantEdit('permalinks', '/:primary_author/:slug/');
         });
 
         it('Can edit only allowed labs keys', async function () {
-            const settingToChange = {
-                settings: [{
-                    key: 'labs',
-                    value: JSON.stringify({
-                        activitypub: true,
-                        gibberish: true
-                    })
-                }]
-            };
-
-            const res = await request.put(localUtils.API.getApiQuery('settings/'))
-                .set('Origin', config.get('url'))
-                .send(settingToChange)
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200);
-
-            const jsonResponse = res.body;
-
-            should.exist(jsonResponse);
-            should.exist(jsonResponse.settings);
-
-            jsonResponse.settings.length.should.eql(1);
-            testUtils.API.checkResponseValue(jsonResponse.settings[0], ['key', 'value']);
-            jsonResponse.settings[0].key.should.eql('labs');
-
-            const responseObj = JSON.parse(jsonResponse.settings[0].value);
-
-            should.not.exist(responseObj.gibberish);
+            await checkCanEdit('labs', 
+                JSON.stringify({
+                    activitypub: true,
+                    gibberish: true
+                }),
+                {
+                    activitypub: true
+                }
+            );
         });
 
-        it('Can\'t edit non existent setting', function () {
-            return request.get(localUtils.API.getApiQuery('settings/'))
-                .set('Origin', config.get('url'))
-                .set('Accept', 'application/json')
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .then(function (res) {
-                    let jsonResponse = res.body;
-                    const newValue = 'new value';
-                    should.exist(jsonResponse);
-                    should.exist(jsonResponse.settings);
-                    jsonResponse.settings = [{key: 'testvalue', value: newValue}];
-
-                    return request.put(localUtils.API.getApiQuery('settings/'))
-                        .set('Origin', config.get('url'))
-                        .send(jsonResponse)
-                        .expect('Content-Type', /json/)
-                        .expect('Cache-Control', testUtils.cacheRules.private)
-                        .expect(200)
-                        .expect(({body, headers}) => {
-                            // it didn't actually edit anything, but we don't error anymore
-                            body.should.eql({
-                                settings: [],
-                                meta: {}
-                            });
-
-                            should.not.exist(headers['x-cache-invalidate']);
-                        });
-                });
+        it('Can\'t edit non existent setting', async function () {
+            await checkCantEdit('non-existent-setting', 'value');
         });
 
         it('Will transform "1"', function () {
-            return request.get(localUtils.API.getApiQuery('settings/'))
-                .set('Origin', config.get('url'))
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .then(function (res) {
-                    const jsonResponse = res.body;
-
-                    const settingToChange = {
-                        settings: [
-                            {
-                                key: 'is_private',
-                                value: '1'
-                            }
-                        ]
-                    };
-
-                    should.exist(jsonResponse);
-                    should.exist(jsonResponse.settings);
-
-                    return request.put(localUtils.API.getApiQuery('settings/'))
-                        .set('Origin', config.get('url'))
-                        .send(settingToChange)
-                        .expect('Content-Type', /json/)
-                        .expect('Cache-Control', testUtils.cacheRules.private)
-                        .expect(200)
-                        .then(function ({body, headers}) {
-                            const putBody = body;
-                            headers['x-cache-invalidate'].should.eql('/*');
-                            should.exist(putBody);
-
-                            putBody.settings[0].key.should.eql('is_private');
-                            putBody.settings[0].value.should.eql(true);
-
-                            localUtils.API.checkResponse(putBody, 'settings');
-                        });
-                });
+            return checkCanEdit('is_private', '1', true);
         });
 
         it('Can edit multiple setting along with a deprecated one from v4', async function () {
@@ -194,13 +127,11 @@ describe('Settings API (canary)', function () {
             headers['x-cache-invalidate'].should.eql('/*');
             should.exist(putBody);
 
-            putBody.settings.length.should.equal(2);
+            let setting = putBody.settings.find(s => s.key === 'unsplash');
+            should.equal(setting.value, true);
 
-            putBody.settings[0].key.should.eql('unsplash');
-            should.equal(putBody.settings[0].value, true);
-
-            putBody.settings[1].key.should.eql('title');
-            should.equal(putBody.settings[1].value, 'New Value');
+            setting = putBody.settings.find(s => s.key === 'title');
+            should.equal(setting.value, 'New Value');
 
             localUtils.API.checkResponse(putBody, 'settings');
         });
@@ -226,11 +157,9 @@ describe('Settings API (canary)', function () {
             headers['x-cache-invalidate'].should.eql('/*');
             should.exist(putBody);
 
-            putBody.settings.length.should.equal(1);
-
             localUtils.API.checkResponse(putBody, 'settings');
-            putBody.settings[0].key.should.eql('slack_username');
-            putBody.settings[0].value.should.eql('can edit me');
+            const setting = putBody.settings.find(s => s.key === 'slack_username');
+            setting.value.should.eql('can edit me');
         });
 
         it('Can edit URLs without internal storage format leaking', async function () {
@@ -297,27 +226,7 @@ describe('Settings API (canary)', function () {
         });
 
         it('Cannot edit notifications key through API', async function () {
-            const settingsToChange = {
-                settings: [
-                    {key: 'notifications', value: JSON.stringify(['do not touch me'])}
-                ]
-            };
-
-            await request.put(localUtils.API.getApiQuery('settings/'))
-                .set('Origin', config.get('url'))
-                .send(settingsToChange)
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(200)
-                .expect(({body, headers}) => {
-                    // it didn't actually edit anything, but we don't error anymore
-                    body.should.eql({
-                        settings: [],
-                        meta: {}
-                    });
-
-                    should.not.exist(headers['x-cache-invalidate']);
-                });
+            await checkCantEdit('notifications', JSON.stringify(['do not touch me']));
         });
     });
 
@@ -452,14 +361,22 @@ describe('Settings API (canary)', function () {
         });
 
         it('allows editing settings that cannot be edited via HTTP', async function () {
+            // Get current value
+            const {settings} = await api.settings.browse({}, testUtils.context.internal);
+
+            const currentValue = settings.find(s => s.key === 'email_verification_required');
+
+            if (!currentValue || currentValue.value === true) {
+                throw new Error('Invalid key or unchanged value');
+            }
+        
             let jsonResponse = await api.settings.edit({
-                settings: [{key: 'email_verification_required', value: false}]
+                settings: [{key: 'email_verification_required', value: true}]
             }, testUtils.context.internal);
 
-            jsonResponse.should.eql({
-                settings: [{key: 'email_verification_required', value: false}],
-                meta: {}
-            });
+            const setting = jsonResponse.settings.find(s => s.key === 'email_verification_required');
+            should.exist(setting);
+            setting.value.should.eql(true);
         });
     });
 });

@@ -157,7 +157,7 @@ describe('Settings API', function () {
                 })
                 .expectStatus(200)
                 .matchBodySnapshot({
-                    settings: matchSettingsArray(settingsToChange.length)
+                    settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
                 })
                 .matchHeaderSnapshot({
                     etag: anyEtag
@@ -167,12 +167,18 @@ describe('Settings API', function () {
         it('cannot edit uneditable settings', async function () {
             await agent.put('settings/')
                 .body({
-                    settings: [{key: 'email_verification_required', value: false}]
+                    settings: [{key: 'email_verification_required', value: true}]
                 })
                 .expectStatus(200)
-                .matchBodySnapshot()
+                .matchBodySnapshot({
+                    settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
+                })
                 .matchHeaderSnapshot({
                     etag: anyEtag
+                })
+                .expect(({body}) => {
+                    const emailVerificationRequired = body.settings.find(setting => setting.key === 'email_verification_required');
+                    assert.strictEqual(emailVerificationRequired.value, false);
                 });
         });
     });

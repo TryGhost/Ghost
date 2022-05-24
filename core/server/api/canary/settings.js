@@ -195,7 +195,9 @@ module.exports = {
                 this.headers.cacheInvalidate = true;
             }
 
-            return result;
+            // We need to return all settings here, because we have calculated settings that might change
+            const browse = await settingsBREADService.browse(frame.options.context);
+            return browse;
         }
     },
 
