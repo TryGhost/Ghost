@@ -119,7 +119,11 @@ module.exports = {
     },
 
     isStripeConnected() {
-        return this.isMembersEnabled() && this.getActiveStripeKeys() !== null;
+        return this.getActiveStripeKeys() !== null;
+    },
+
+    arePaidMembersEnabled() {
+        return this.isMembersEnabled() && this.isStripeConnected();
     },
 
     getFirstpromoterId() {
@@ -137,7 +141,8 @@ module.exports = {
 
         fields.push(new CalculatedField({key: 'members_enabled', type: 'boolean', group: 'members', fn: this.isMembersEnabled.bind(this), dependents: ['members_signup_access']}));
         fields.push(new CalculatedField({key: 'members_invite_only', type: 'boolean', group: 'members', fn: this.isMembersInviteOnly.bind(this), dependents: ['members_signup_access']}));
-        fields.push(new CalculatedField({key: 'paid_members_enabled', type: 'boolean', group: 'members', fn: this.isStripeConnected.bind(this), dependents: ['members_signup_access', 'stripe_secret_key', 'stripe_publishable_key', 'stripe_connect_secret_key', 'stripe_connect_publishable_key']}));
+        fields.push(new CalculatedField({key: 'paid_members_enabled', type: 'boolean', group: 'members', fn: this.arePaidMembersEnabled.bind(this), dependents: ['members_signup_access', 'stripe_secret_key', 'stripe_publishable_key', 'stripe_connect_secret_key', 'stripe_connect_publishable_key']}));
+        fields.push(new CalculatedField({key: 'stripe_connected', type: 'boolean', group: 'members', fn: this.isStripeConnected.bind(this), dependents: ['stripe_secret_key', 'stripe_publishable_key', 'stripe_connect_secret_key', 'stripe_connect_publishable_key']}));
         fields.push(new CalculatedField({key: 'firstpromoter_account', type: 'string', group: 'firstpromoter', fn: this.getFirstpromoterId.bind(this), dependents: ['firstpromoter', 'firstpromoter_id']}));
 
         return fields;
