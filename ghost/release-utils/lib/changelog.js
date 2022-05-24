@@ -27,7 +27,7 @@ class Changelog {
         }
 
         const commands = [
-            `git log --no-merges --pretty=tformat:'%at * [%h](${options.githubRepoPath}/commit/%h) %s - %an' ${options.lastVersion}.. ${sign} ${this.changelogPath}`
+            `git log --no-merges --pretty=tformat:'%at * [%h](${options.githubRepoPath}/commit/%h) %s - %an' ${options.lastVersion}.. | sed 's/(#[0-9]{1,})//g' ${sign} ${this.changelogPath}`
         ];
 
         _.each(commands, (command) => {
