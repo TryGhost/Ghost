@@ -190,7 +190,7 @@ module.exports.setTemplate = function setTemplate(req, res, data) {
     } else if (res.routerOptions.type === 'custom') {
         res._template = _private.pickTemplate(res.routerOptions.templates, res.routerOptions.defaultTemplate);
     } else if (res.routerOptions.type === 'entry') {
-        if (res.routerOptions?.context?.includes('page')) {
+        if (res.routerOptions?.context?.includes('page') || (res.routerOptions?.context?.includes('preview') && data.page)) {
             res._template = _private.getTemplateForEntry(data.page, 'page');
         } else {
             res._template = _private.getTemplateForEntry(data.post, 'post');
