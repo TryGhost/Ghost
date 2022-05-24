@@ -8,6 +8,7 @@ Object {
       "kid": Any<String>,
       "kty": "RSA",
       "n": Any<String>,
+      "use": "sig",
     },
   ],
 }
@@ -15,7 +16,7 @@ Object {
 
 exports[`.well-known GET /jwks.json should return a JWKS 2: [headers] 1`] = `
 Object {
-  "content-length": "265",
+  "content-length": "277",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
