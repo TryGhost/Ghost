@@ -9,9 +9,9 @@ export default class PublishAtOption extends Component {
     @action
     setDate(selectedDate) {
         const newDate = moment(this.args.publishOptions.scheduledAtUTC);
-        const {year, month, date} = moment(selectedDate).toObject();
+        const {years, months, date} = moment(selectedDate).toObject();
 
-        newDate.set({year, month, date});
+        newDate.set({years, months, date});
 
         this.args.publishOptions.setScheduledAt(newDate);
     }
