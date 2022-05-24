@@ -1287,20 +1287,56 @@ Object {
       "value": "[]",
     },
     Object {
+      "key": "description",
+      "value": "Thoughts, stories and ideas",
+    },
+    Object {
+      "key": "logo",
+      "value": "",
+    },
+    Object {
+      "key": "cover_image",
+      "value": "https://static.ghost.org/v4.0.0/images/publication-cover.jpg",
+    },
+    Object {
+      "key": "icon",
+      "value": "",
+    },
+    Object {
+      "key": "accent_color",
+      "value": "#FF1A75",
+    },
+    Object {
+      "key": "locale",
+      "value": "ua",
+    },
+    Object {
+      "key": "timezone",
+      "value": "Pacific/Auckland",
+    },
+    Object {
       "key": "codeinjection_head",
       "value": null,
+    },
+    Object {
+      "key": "codeinjection_foot",
+      "value": "",
+    },
+    Object {
+      "key": "facebook",
+      "value": "ghost",
+    },
+    Object {
+      "key": "twitter",
+      "value": "@ghost",
     },
     Object {
       "key": "navigation",
       "value": "[{\\"label\\":\\"label1\\"}]",
     },
     Object {
-      "key": "slack_username",
-      "value": "New Slack Username",
-    },
-    Object {
-      "key": "is_private",
-      "value": false,
+      "key": "secondary_navigation",
+      "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
     },
     Object {
       "key": "meta_title",
@@ -1335,20 +1371,184 @@ Object {
       "value": "twitter description",
     },
     Object {
-      "key": "locale",
-      "value": "ua",
+      "key": "active_theme",
+      "value": "casper",
+    },
+    Object {
+      "key": "is_private",
+      "value": false,
+    },
+    Object {
+      "key": "password",
+      "value": "",
+    },
+    Object {
+      "key": "public_hash",
+      "value": StringMatching /\\[a-z0-9\\]\\{30\\}/,
+    },
+    Object {
+      "key": "default_content_visibility",
+      "value": "public",
+    },
+    Object {
+      "key": "default_content_visibility_tiers",
+      "value": "[]",
+    },
+    Object {
+      "key": "members_signup_access",
+      "value": "all",
+    },
+    Object {
+      "key": "members_support_address",
+      "value": "noreply",
+    },
+    Object {
+      "key": "stripe_secret_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_publishable_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_plans",
+      "value": "[]",
+    },
+    Object {
+      "key": "stripe_connect_publishable_key",
+      "value": "pk_test_for_stripe",
+    },
+    Object {
+      "key": "stripe_connect_secret_key",
+      "value": "••••••••",
+    },
+    Object {
+      "key": "stripe_connect_livemode",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_display_name",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_account_id",
+      "value": null,
+    },
+    Object {
+      "key": "members_monthly_price_id",
+      "value": null,
+    },
+    Object {
+      "key": "members_yearly_price_id",
+      "value": null,
+    },
+    Object {
+      "key": "portal_name",
+      "value": true,
+    },
+    Object {
+      "key": "portal_button",
+      "value": true,
+    },
+    Object {
+      "key": "portal_plans",
+      "value": "[\\"free\\"]",
+    },
+    Object {
+      "key": "portal_products",
+      "value": "[]",
+    },
+    Object {
+      "key": "portal_button_style",
+      "value": "icon-and-text",
+    },
+    Object {
+      "key": "portal_button_icon",
+      "value": null,
+    },
+    Object {
+      "key": "portal_button_signup_text",
+      "value": "Subscribe",
+    },
+    Object {
+      "key": "mailgun_domain",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_api_key",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_base_url",
+      "value": null,
+    },
+    Object {
+      "key": "email_track_opens",
+      "value": true,
+    },
+    Object {
+      "key": "email_verification_required",
+      "value": false,
+    },
+    Object {
+      "key": "amp",
+      "value": false,
+    },
+    Object {
+      "key": "amp_gtag_id",
+      "value": null,
+    },
+    Object {
+      "key": "firstpromoter",
+      "value": false,
+    },
+    Object {
+      "key": "firstpromoter_id",
+      "value": null,
     },
     Object {
       "key": "labs",
       "value": "{\\"multipleProducts\\":true,\\"tierWelcomePages\\":true,\\"tierName\\":true,\\"selectablePortalLinks\\":true,\\"membersTableStatus\\":true,\\"multipleNewsletters\\":true,\\"multipleNewslettersUI\\":true,\\"membersActivityFeed\\":true,\\"dashboardV5\\":true,\\"members\\":true}",
     },
     Object {
-      "key": "timezone",
-      "value": "Pacific/Auckland",
+      "key": "slack_url",
+      "value": "",
+    },
+    Object {
+      "key": "slack_username",
+      "value": "New Slack Username",
     },
     Object {
       "key": "unsplash",
       "value": false,
+    },
+    Object {
+      "key": "shared_views",
+      "value": "[]",
+    },
+    Object {
+      "key": "editor_default_email_recipients",
+      "value": "visibility",
+    },
+    Object {
+      "key": "editor_default_email_recipients_filter",
+      "value": "all",
+    },
+    Object {
+      "key": "members_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "members_invite_only",
+      "value": false,
+    },
+    Object {
+      "key": "paid_members_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "firstpromoter_account",
+      "value": null,
     },
   ],
 }
@@ -1358,7 +1558,7 @@ exports[`Settings API Edit Can edit a setting 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1112",
+  "content-length": "3536",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -1370,7 +1570,276 @@ Object {
 exports[`Settings API Edit cannot edit uneditable settings 1: [body] 1`] = `
 Object {
   "meta": Object {},
-  "settings": Array [],
+  "settings": Array [
+    Object {
+      "key": "title",
+      "value": "[]",
+    },
+    Object {
+      "key": "description",
+      "value": "Thoughts, stories and ideas",
+    },
+    Object {
+      "key": "logo",
+      "value": "",
+    },
+    Object {
+      "key": "cover_image",
+      "value": "https://static.ghost.org/v4.0.0/images/publication-cover.jpg",
+    },
+    Object {
+      "key": "icon",
+      "value": "",
+    },
+    Object {
+      "key": "accent_color",
+      "value": "#FF1A75",
+    },
+    Object {
+      "key": "locale",
+      "value": "ua",
+    },
+    Object {
+      "key": "timezone",
+      "value": "Pacific/Auckland",
+    },
+    Object {
+      "key": "codeinjection_head",
+      "value": null,
+    },
+    Object {
+      "key": "codeinjection_foot",
+      "value": "",
+    },
+    Object {
+      "key": "facebook",
+      "value": "ghost",
+    },
+    Object {
+      "key": "twitter",
+      "value": "@ghost",
+    },
+    Object {
+      "key": "navigation",
+      "value": "[{\\"label\\":\\"label1\\"}]",
+    },
+    Object {
+      "key": "secondary_navigation",
+      "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "meta_title",
+      "value": "SEO title",
+    },
+    Object {
+      "key": "meta_description",
+      "value": "SEO description",
+    },
+    Object {
+      "key": "og_image",
+      "value": "http://127.0.0.1:2369/content/images/2019/07/facebook.png",
+    },
+    Object {
+      "key": "og_title",
+      "value": "facebook title",
+    },
+    Object {
+      "key": "og_description",
+      "value": "facebook description",
+    },
+    Object {
+      "key": "twitter_image",
+      "value": "http://127.0.0.1:2369/content/images/2019/07/twitter.png",
+    },
+    Object {
+      "key": "twitter_title",
+      "value": "twitter title",
+    },
+    Object {
+      "key": "twitter_description",
+      "value": "twitter description",
+    },
+    Object {
+      "key": "active_theme",
+      "value": "casper",
+    },
+    Object {
+      "key": "is_private",
+      "value": false,
+    },
+    Object {
+      "key": "password",
+      "value": "",
+    },
+    Object {
+      "key": "public_hash",
+      "value": StringMatching /\\[a-z0-9\\]\\{30\\}/,
+    },
+    Object {
+      "key": "default_content_visibility",
+      "value": "public",
+    },
+    Object {
+      "key": "default_content_visibility_tiers",
+      "value": "[]",
+    },
+    Object {
+      "key": "members_signup_access",
+      "value": "all",
+    },
+    Object {
+      "key": "members_support_address",
+      "value": "noreply",
+    },
+    Object {
+      "key": "stripe_secret_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_publishable_key",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_plans",
+      "value": "[]",
+    },
+    Object {
+      "key": "stripe_connect_publishable_key",
+      "value": "pk_test_for_stripe",
+    },
+    Object {
+      "key": "stripe_connect_secret_key",
+      "value": "••••••••",
+    },
+    Object {
+      "key": "stripe_connect_livemode",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_display_name",
+      "value": null,
+    },
+    Object {
+      "key": "stripe_connect_account_id",
+      "value": null,
+    },
+    Object {
+      "key": "members_monthly_price_id",
+      "value": null,
+    },
+    Object {
+      "key": "members_yearly_price_id",
+      "value": null,
+    },
+    Object {
+      "key": "portal_name",
+      "value": true,
+    },
+    Object {
+      "key": "portal_button",
+      "value": true,
+    },
+    Object {
+      "key": "portal_plans",
+      "value": "[\\"free\\"]",
+    },
+    Object {
+      "key": "portal_products",
+      "value": "[]",
+    },
+    Object {
+      "key": "portal_button_style",
+      "value": "icon-and-text",
+    },
+    Object {
+      "key": "portal_button_icon",
+      "value": null,
+    },
+    Object {
+      "key": "portal_button_signup_text",
+      "value": "Subscribe",
+    },
+    Object {
+      "key": "mailgun_domain",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_api_key",
+      "value": null,
+    },
+    Object {
+      "key": "mailgun_base_url",
+      "value": null,
+    },
+    Object {
+      "key": "email_track_opens",
+      "value": true,
+    },
+    Object {
+      "key": "email_verification_required",
+      "value": false,
+    },
+    Object {
+      "key": "amp",
+      "value": false,
+    },
+    Object {
+      "key": "amp_gtag_id",
+      "value": null,
+    },
+    Object {
+      "key": "firstpromoter",
+      "value": false,
+    },
+    Object {
+      "key": "firstpromoter_id",
+      "value": null,
+    },
+    Object {
+      "key": "labs",
+      "value": "{\\"multipleProducts\\":true,\\"tierWelcomePages\\":true,\\"tierName\\":true,\\"selectablePortalLinks\\":true,\\"membersTableStatus\\":true,\\"multipleNewsletters\\":true,\\"multipleNewslettersUI\\":true,\\"membersActivityFeed\\":true,\\"dashboardV5\\":true,\\"members\\":true}",
+    },
+    Object {
+      "key": "slack_url",
+      "value": "",
+    },
+    Object {
+      "key": "slack_username",
+      "value": "New Slack Username",
+    },
+    Object {
+      "key": "unsplash",
+      "value": false,
+    },
+    Object {
+      "key": "shared_views",
+      "value": "[]",
+    },
+    Object {
+      "key": "editor_default_email_recipients",
+      "value": "visibility",
+    },
+    Object {
+      "key": "editor_default_email_recipients_filter",
+      "value": "all",
+    },
+    Object {
+      "key": "members_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "members_invite_only",
+      "value": false,
+    },
+    Object {
+      "key": "paid_members_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "firstpromoter_account",
+      "value": null,
+    },
+  ],
 }
 `;
 
@@ -1390,7 +1859,7 @@ exports[`Settings API Edit cannot edit uneditable settings 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "25",
+  "content-length": "3536",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
