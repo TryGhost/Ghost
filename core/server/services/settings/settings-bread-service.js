@@ -152,7 +152,6 @@ class SettingsBREADService {
             });
         }
 
-        await this.SettingsModel.edit(filteredSettings, options);
 
         return this.SettingsModel.edit(filteredSettings, options).then((result) => {
             return this._formatBrowse(_.keyBy(_.invokeMap(result, 'toJSON'), 'key'), options.context);
