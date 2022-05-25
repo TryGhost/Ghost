@@ -7,7 +7,6 @@ export default class MemberSerializer extends ApplicationSerializer.extend(Embed
         createdAtUTC: {key: 'created_at'},
         lastSeenAtUTC: {key: 'last_seen_at'},
         labels: {embedded: 'always'},
-        emailRecipients: {embedded: 'always'},
         newsletters: {embedded: 'always'}
     };
 
@@ -17,7 +16,6 @@ export default class MemberSerializer extends ApplicationSerializer.extend(Embed
         // Properties that exist on the model but we don't want sent in the payload
         delete json.stripe;
         delete json.geolocation;
-        delete json.email_recipients;
         delete json.status;
         delete json.last_seen_at;
 
