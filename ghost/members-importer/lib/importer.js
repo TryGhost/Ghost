@@ -169,9 +169,7 @@ module.exports = class MembersCSVImporter {
                         member_id: member.id
                     }, options);
                 } else if (row.complimentary_plan) {
-                    if (!this._isSet('multipleProducts')) {
-                        await membersApi.members.setComplimentarySubscription(member, options);
-                    } else if (!row.products) {
+                    if (!row.products) {
                         await membersApi.members.update({
                             products: [{id: defaultProduct.id}]
                         }, {
@@ -181,15 +179,13 @@ module.exports = class MembersCSVImporter {
                     }
                 }
 
-                if (this._isSet('multipleProducts')) {
-                    if (row.products) {
-                        await membersApi.members.update({
-                            products: row.products
-                        }, {
-                            ...options,
-                            id: member.id
-                        });
-                    }
+                if (row.products) {
+                    await membersApi.members.update({
+                        products: row.products
+                    }, {
+                        ...options,
+                        id: member.id
+                    });
                 }
 
                 await trx.commit();

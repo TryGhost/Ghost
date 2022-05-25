@@ -205,14 +205,6 @@ module.exports = class MemberBREADService {
     }
 
     async add(data, options) {
-        if (!this.labsService.isSet('multipleProducts')) {
-            delete data.products;
-        }
-
-        if (!this.labsService.isSet('multipleNewsletters')) {
-            delete data.newsletters;
-        }
-
         if (!this.stripeService.configured && (data.comped || data.stripe_customer_id)) {
             const property = data.comped ? 'comped' : 'stripe_customer_id';
             throw new errors.ValidationError({
@@ -264,12 +256,6 @@ module.exports = class MemberBREADService {
             throw error;
         }
 
-        if (!this.labsService.isSet('multipleProducts')) {
-            if (data.comped) {
-                await this.memberRepository.setComplimentarySubscription(model, sharedOptions);
-            }
-        }
-
         if (options.send_email) {
             await this.emailService.sendEmailWithMagicLink({
                 email: model.get('email'), requestedType: options.email_type
@@ -280,14 +266,6 @@ module.exports = class MemberBREADService {
     }
 
     async edit(data, options) {
-        if (!this.labsService.isSet('multipleProducts')) {
-            delete data.products;
-        }
-
-        if (!this.labsService.isSet('multipleNewsletters')) {
-            delete data.newsletters;
-        }
-
         delete data.last_seen_at;
 
         let model;
@@ -303,20 +281,6 @@ module.exports = class MemberBREADService {
             }
 
             throw error;
-        }
-
-        const hasCompedSubscription = !!model.related('stripeSubscriptions').find((sub) => {
-            return sub.get('plan_nickname') === 'Complimentary' && sub.get('status') === 'active';
-        });
-
-        if (!this.labsService.isSet('multipleProducts')) {
-            if (typeof data.comped === 'boolean') {
-                if (data.comped && !hasCompedSubscription) {
-                    await this.memberRepository.setComplimentarySubscription(model);
-                } else if (!data.comped && hasCompedSubscription) {
-                    await this.memberRepository.cancelComplimentarySubscription(model);
-                }
-            }
         }
 
         return this.read({id: model.id}, options);
