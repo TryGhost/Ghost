@@ -37,7 +37,7 @@
     "@html-next/vertical-collection": "2.1.0",
     "@joeattardi/emoji-button": "4.6.4",
     "@sentry/ember": "6.16.1",
-    "@tryghost/color-utils": "0.1.16",
+    "@tryghost/color-utils": "0.1.17",
     "@tryghost/ember-promise-modals": "2.0.1",
     "@tryghost/helpers": "1.1.69",
     "@tryghost/kg-clean-basic-html": "2.2.10",
