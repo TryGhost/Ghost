@@ -1151,6 +1151,8 @@ describe('Members API', function () {
             }
 
             it('Correctly includes monthly forever percentage discounts in MRR', async function () {
+                // Do you get a offer_id is null failed test here 
+                // -> check if members-api and members-offers package versions are in sync in yarn.lock or if both are linked in dev
                 const discount = {
                     id: 'di_1Knkn7HUEDadPGIBPOQgmzIX',
                     object: 'discount',

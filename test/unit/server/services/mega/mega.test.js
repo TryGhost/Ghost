@@ -129,7 +129,6 @@ describe('MEGA', function () {
             };
             await handleUnsubscribeRequest(req);
             updateStub.calledWith({
-                subscribed: false,
                 newsletters: []
             }, {
                 id: 'id-1'
