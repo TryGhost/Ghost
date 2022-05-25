@@ -161,10 +161,7 @@ export default class MembersController extends Controller {
     }
 
     get filterColumns() {
-        const defaultColumns = ['name', 'email', 'email_open_rate', 'created_at'];
-        if (this.feature.get('membersTableStatus')) {
-            defaultColumns.push('status', 'tier');
-        }
+        const defaultColumns = ['name', 'email', 'email_open_rate', 'created_at', 'status', 'tier'];
         const availableFilters = this.filters.length ? this.filters : this.softFilters;
         return availableFilters.map((filter) => {
             return filter.type;

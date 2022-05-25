@@ -46,14 +46,11 @@ export default class extends Component {
     }
 
     get hasSingleNewsletter() {
-        if (!this.feature.get('multipleNewsletters')) {
-            return true;
-        }
         return this.newslettersList?.length === 1;
     }
 
     get hasMultipleNewsletters() {
-        return !!(this.feature.get('multipleNewsletters') && this.newslettersList?.length > 1);
+        return !!(this.newslettersList?.length > 1);
     }
 
     get isCreatingComplimentary() {
@@ -124,9 +121,7 @@ export default class extends Component {
     @action
     setup() {
         this.fetchTiers.perform();
-        if (this.feature.get('multipleNewsletters')) {
-            this.fetchNewsletters.perform();
-        }
+        this.fetchNewsletters.perform();
     }
 
     @action
