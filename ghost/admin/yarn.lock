@@ -2030,10 +2030,10 @@
     utils-copy-error "^1.0.1"
     uuid "^8.3.2"
 
-"@tryghost/helpers@1.1.67":
-  version "1.1.67"
-  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.67.tgz#cbfcf2d6b2c1d0a64b18d859992c3a98f591a441"
-  integrity sha512-Yyk+6yGwkkce5jB4nSqFhXpx9DSK5XfbnYZ1/vBCaTPjCh/HLne32zmhPNruAL+Vpsd4+h3Xhh9+6e+xlMG4DQ==
+"@tryghost/helpers@1.1.69":
+  version "1.1.69"
+  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.69.tgz#8bc2bd39ea9fb6d10fa8df8854e73c0bcd713e17"
+  integrity sha512-IjAJ2/J53bO9aZbrJtKxLeM21/bwBYcjLnA+i5FDOXigLB+DRABsGF//fCjqMqerCUKOPijf69HydqxT7n8Buw==
   dependencies:
     lodash-es "^4.17.11"
 
