@@ -824,6 +824,7 @@
 
 .gh-post-bookmark-site-title {
     flex-shrink: 0;
+    max-width: 362px;
     overflow: hidden;
     color: var(--darkgrey);
     font-weight: 500;
