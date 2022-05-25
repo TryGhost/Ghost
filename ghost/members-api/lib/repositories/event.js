@@ -360,7 +360,7 @@ module.exports = class EventRepository {
             {type: 'payment_event', action: 'getPaymentEvents'},
             {type: 'signup_event', action: 'getSignupEvents'}
         ];
-        if (this._labsService.isSet('membersActivityFeed') && this._EmailRecipient) {
+        if (this._EmailRecipient) {
             pageActions.push({type: 'email_delivered_event', action: 'getEmailDeliveredEvents'});
             pageActions.push({type: 'email_opened_event', action: 'getEmailOpenedEvents'});
             pageActions.push({type: 'email_failed_event', action: 'getEmailFailedEvents'});
@@ -380,32 +380,8 @@ module.exports = class EventRepository {
 
         return allEvents.sort((a, b) => {
             return new Date(b.data.created_at) - new Date(a.data.created_at);
-        }).reduce((memo, event, i) => {
-            if (this._labsService.isSet('membersActivityFeed')) {
-                //disable the event filtering
-                return memo.concat(event);
-            }
-            if (event.type === 'newsletter_event' && event.data.subscribed) {
-                const previousEvent = allEvents[i - 1];
-                const nextEvent = allEvents[i + 1];
-                const currentMember = event.data.member_id;
-
-                if (previousEvent && previousEvent.type === 'signup_event') {
-                    const previousMember = previousEvent.data.member_id;
-
-                    if (currentMember === previousMember) {
-                        return memo;
-                    }
-                }
-
-                if (nextEvent && nextEvent.type === 'signup_event') {
-                    const nextMember = nextEvent.data.member_id;
-
-                    if (currentMember === nextMember) {
-                        return memo;
-                    }
-                }
-            }
+        }).reduce((memo, event) => {
+            //disable the event filtering
             return memo.concat(event);
         }, []).slice(0, options.limit);
     }
