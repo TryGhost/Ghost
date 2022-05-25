@@ -1216,3 +1216,5 @@ add|ember-template-lint|no-action|20|150|20|150|d6149e8bd18677704c261b7d3e9afeaf
 remove|ember-template-lint|no-action|20|150|20|150|d07a2c2968b7c337172eb3d189fcd004f05034d7|1652054400000|1662422400000|1665014400000|app/components/modal-portal-settings.hbs
 remove|ember-template-lint|no-action|2|17|2|17|c31e149422ee6e80dcaf0561a993a93ecd166c90|1652054400000|1662422400000|1665014400000|app/components/gh-canvas-header.hbs
 remove|ember-template-lint|no-action|3|19|3|19|80972d8846ff5e8dd8ef7cc359093dfd822a3dd3|1652054400000|1662422400000|1665014400000|app/components/gh-canvas-header.hbs
+remove|ember-template-lint|no-action|4|83|4|83|671e1cde0a4afb412c681bb728239241c2cc822f|1652054400000|1662422400000|1665014400000|app/components/gh-alert.hbs
+remove|ember-template-lint|no-action|27|90|27|90|671e1cde0a4afb412c681bb728239241c2cc822f|1652054400000|1662422400000|1665014400000|app/components/gh-notification.hbs

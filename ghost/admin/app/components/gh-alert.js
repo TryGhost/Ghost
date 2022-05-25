@@ -1,19 +1,12 @@
-import Component from '@ember/component';
-import classic from 'ember-classic-decorator';
-import {action, computed} from '@ember/object';
-import {classNameBindings, classNames, tagName} from '@ember-decorators/component';
+import Component from '@glimmer/component';
+import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
-@classic
-@classNameBindings('typeClass')
-@classNames('gh-alert')
-@tagName('article')
 export default class GhAlert extends Component {
     @service notifications;
 
-    @computed('message.type')
     get typeClass() {
-        let type = this.get('message.type');
+        let type = this.args.message.type;
         let classes = '';
         let typeMapping;
 

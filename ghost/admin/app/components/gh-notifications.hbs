@@ -1,3 +1,5 @@
-{{#each this.messages as |message|}}
-    <GhNotification @message={{message}} />
-{{/each}}
+<aside class="gh-notifications" ...attributes>
+    {{#each this.notifications.notifications as |message|}}
+        <GhNotification @message={{message}} />
+    {{/each}}
+</aside>
