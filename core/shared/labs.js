@@ -18,8 +18,7 @@ const GA_FEATURES = [
     'selectablePortalLinks',
     'membersTableStatus',
     'multipleNewsletters',
-    'multipleNewslettersUI',
-    'membersActivityFeed'
+    'multipleNewslettersUI'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
