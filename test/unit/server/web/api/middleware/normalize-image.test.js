@@ -69,7 +69,7 @@ describe('normalize', function () {
         });
     });
 
-    ['.gif', '.svg', '.svgz'].forEach(function (extension) {
+    ['.svg', '.svgz'].forEach(function (extension) {
         it(`should skip resizing when file extension is ${extension}`, function (done) {
             req.file.ext = extension;
             normalize(req, res, function () {
