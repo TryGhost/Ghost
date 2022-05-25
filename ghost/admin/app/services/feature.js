@@ -59,7 +59,6 @@ export default class FeatureService extends Service {
     @feature('urlCache') urlCache;
     @feature('beforeAfterCard') beforeAfterCard;
     @feature('tweetGridCard') tweetGridCard;
-    @feature('selectablePortalLinks') selectablePortalLinks;
 
     _user = null;
 
