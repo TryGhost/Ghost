@@ -17,8 +17,8 @@
                 </div>
                 <div
                     class="gh-social-og-preview"
-                    {{on "mouseenter" (action (mut this.facebookHovered) true)}}
-                    {{on "mouseleave" (action (mut this.facebookHovered) false)}}
+                    {{on "mouseenter" (fn (mut this.facebookHovered) true)}}
+                    {{on "mouseleave" (fn (mut this.facebookHovered) false)}}
                 >
                     {{#if (and this.facebookHovered (not this.facebookImage))}}
                         {{!-- only shown on hover when there's no image or fallback --}}
@@ -68,6 +68,7 @@
                             </div>
                             {{#if this.editingFacebookTitle}}
                                 <input
+                                    aria-label="Facebook title"
                                     type="text"
                                     class="gh-input"
                                     placeholder={{this.facebookTitle}}
@@ -80,12 +81,13 @@
                                     data-prevent-escape-close-modal="true"
                                 />
                             {{else}}
-                                <div class="gh-social-og-preview-title editable pointer" {{on "click" this.editFacebookTitle}}>
+                                <div class="gh-social-og-preview-title editable pointer" role="button" aria-label="Edit Facebook title" {{on "click" this.editFacebookTitle}}>
                                     {{truncate this.facebookTitle}}
                                 </div>
                             {{/if}}
                             {{#if this.editingFacebookDescription}}
                                 <textarea
+                                    aria-label="Facebook description"
                                     class="gh-input"
                                     maxlength="500"
                                     placeholder={{truncate this.facebookDescription 160}}
@@ -96,7 +98,7 @@
                                     data-prevent-escape-close-modal="true"
                                 >{{@post.ogDescription}}</textarea>
                             {{else}}
-                                <div class="gh-social-og-preview-desc editable pointer" {{on "click" this.editFacebookDescription}}>
+                                <div class="gh-social-og-preview-desc editable pointer" role="button" aria-label="Edit Facebook description" {{on "click" this.editFacebookDescription}}>
                                     {{truncate this.facebookDescription}}
                                 </div>
                             {{/if}}
@@ -121,8 +123,8 @@
                             <span class="gh-social-og-desc w-60" />
                         </div>
                         <div class="gh-social-twitter-post-preview"
-                            {{on "mouseenter" (action (mut this.twitterHovered) true)}}
-                            {{on "mouseleave" (action (mut this.twitterHovered) false)}}
+                            {{on "mouseenter" (fn (mut this.twitterHovered) true)}}
+                            {{on "mouseleave" (fn (mut this.twitterHovered) false)}}
                         >
                             {{#if (and this.twitterHovered (not this.twitterImage))}}
                                 {{!-- only shown on hover when there's no image or fallback --}}
@@ -167,6 +169,7 @@
                             <div class="gh-social-twitter-preview-content">
                                 {{#if this.editingTwitterTitle}}
                                     <input
+                                        aria-label="Twitter title"
                                         type="text"
                                         class="gh-input"
                                         placeholder={{this.twitterTitle}}
@@ -179,10 +182,11 @@
                                         data-prevent-escape-close-modal="true"
                                     />
                                 {{else}}
-                                    <div class="gh-social-twitter-preview-title editable pointer" {{on "click" this.editTwitterTitle}}>{{this.twitterTitle}}</div>
+                                    <div class="gh-social-twitter-preview-title editable pointer" role="button" aria-label="Edit Twitter title" {{on "click" this.editTwitterTitle}}>{{this.twitterTitle}}</div>
                                 {{/if}}
                                 {{#if this.editingTwitterDescription}}
                                     <textarea
+                                        aria-label="Twitter description"
                                         class="gh-input"
                                         maxlength="500"
                                         placeholder={{truncate this.twitterDescription 160}}
@@ -193,7 +197,7 @@
                                         data-prevent-escape-close-modal="true"
                                     >{{@post.twitterDescription}}</textarea>
                                 {{else}}
-                                    <div class="gh-social-twitter-preview-desc editable pointer" {{on "click" this.editTwitterDescription}}>{{truncate this.twitterDescription}}</div>
+                                    <div class="gh-social-twitter-preview-desc editable pointer" role="button" aria-label="Edit Twitter description" {{on "click" this.editTwitterDescription}}>{{truncate this.twitterDescription}}</div>
                                 {{/if}}
                                 <div class="gh-social-twitter-preview-meta">
                                     {{svg-jar "twitter-link"}}
@@ -219,6 +223,7 @@
                 <div class="gh-seo-preview-link">{{this.serpURL}}</div>
                 {{#if this.editingMetaTitle}}
                     <input
+                        aria-label="Meta title"
                         type="text"
                         class="gh-input"
                         placeholder={{this.serpTitle}}
@@ -231,12 +236,13 @@
                         data-prevent-escape-close-modal="true"
                     >
                 {{else}}
-                    <div class="gh-seo-preview-title editable pointer" {{on "click" this.editMetaTitle}}>
+                    <div class="gh-seo-preview-title editable pointer" role="button" aria-label="Edit meta title" {{on "click" this.editMetaTitle}}>
                         {{this.serpTitle}}
                     </div>
                 {{/if}}
                 {{#if this.editingMetaDescription}}
                     <textarea
+                        aria-label="Meta description"
                         class="gh-input"
                         placeholder={{this.serpDescription}}
                         maxlength="500"
@@ -247,7 +253,7 @@
                         data-prevent-escape-close-modal="true"
                     >{{@post.metaDescription}}</textarea>
                 {{else}}
-                    <div class="gh-seo-preview-desc editable pointer" {{on "click" this.editMetaDescription}}>
+                    <div class="gh-seo-preview-desc editable pointer" role="button" aria-label="Edit meta description" {{on "click" this.editMetaDescription}}>
                         {{moment-format (now) "DD MMM YYYY"}} — {{truncate this.serpDescription 149}}
                     </div>
                 {{/if}}
