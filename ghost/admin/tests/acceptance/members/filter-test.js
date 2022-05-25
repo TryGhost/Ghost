@@ -58,7 +58,7 @@ describe('Acceptance: Members filtering', function () {
         expect(find('[data-test-button="members-filter-actions"] span'), 'filter button').to.not.have.class('gh-btn-label-green');
 
         // standard columns are shown
-        expect(findAll('[data-test-table="members"] [data-test-table-column]').length).to.equal(3);
+        expect(findAll('[data-test-table="members"] [data-test-table-column]').length).to.equal(4);
     });
 
     describe('filtering', function () {
@@ -112,15 +112,15 @@ describe('Acceptance: Members filtering', function () {
         });
 
         it('can filter by tier', async function () {
-            // add some labels to test the selection dropdown
+            // add multiple tiers to activate tiers filtering
             const newsletter = this.server.create('newsletter', {status: 'active'});
             this.server.createList('tier', 4);
 
-            // add a labelled member so we can test the filter includes correctly
+            // add some members with tiers
             const tier = this.server.create('tier');
             this.server.createList('member', 3, {tiers: [tier], newsletters: [newsletter]});
 
-            // add some non-labelled members so we can see the filter excludes correctly
+            // add some free members so we can see the filter excludes correctly
             this.server.createList('member', 4, {newsletters: [newsletter]});
 
             await visit('/members');
@@ -149,9 +149,9 @@ describe('Acceptance: Members filtering', function () {
             expect(findAll('[data-test-list="members-list-item"]').length, `# of filtered member rows - ${tier.name}`)
                 .to.equal(3);
             // table shows labels column+data
-            expect(find('[data-test-table-column="tier"]')).to.exist;
-            expect(findAll('[data-test-table-data="tier"]').length).to.equal(3);
-            expect(find('[data-test-table-data="tier"]')).to.contain.text(tier.name);
+            expect(find('[data-test-table-column="status"]')).to.exist;
+            expect(findAll('[data-test-table-data="status"]').length).to.equal(3);
+            expect(find('[data-test-table-data="status"]')).to.contain.text(tier.name);
 
             // can delete filter
             await click('[data-test-delete-members-filter="0"]');

@@ -22,25 +22,23 @@
                 </div>
             </div>
         </LinkTo>
-        {{#if (feature "membersTableStatus")}}
-            {{#if this.hasMultipleTiers}}
-                <LinkTo @route="member" @model={{@member}} class="gh-list-data">
-                    {{#if (not (is-empty @member.status))}}
-                        <span>{{capitalize @member.status}}</span>
-                    {{else}}
-                        <span class="midlightgrey">-</span>
-                    {{/if}}
-                    <div class="midgrey">{{this.tiers}}</div>
-                </LinkTo>
-            {{else}}
-                <LinkTo @route="member" @model={{@member}} class="gh-list-data" data-test-table-data="status">
-                    {{#if (not (is-empty @member.status))}}
-                        <span>{{capitalize @member.status}}</span>
-                    {{else}}
-                        <span class="midlightgrey">-</span>
-                    {{/if}}
-                </LinkTo>
-            {{/if}}
+        {{#if this.hasMultipleTiers}}
+            <LinkTo @route="member" @model={{@member}} class="gh-list-data" data-test-table-data="status">
+                {{#if (not (is-empty @member.status))}}
+                    <span>{{capitalize @member.status}}</span>
+                {{else}}
+                    <span class="midlightgrey">-</span>
+                {{/if}}
+                <div class="midgrey">{{this.tiers}}</div>
+            </LinkTo>
+        {{else}}
+            <LinkTo @route="member" @model={{@member}} class="gh-list-data" data-test-table-data="status">
+                {{#if (not (is-empty @member.status))}}
+                    <span>{{capitalize @member.status}}</span>
+                {{else}}
+                    <span class="midlightgrey">-</span>
+                {{/if}}
+            </LinkTo>
         {{/if}}
         {{#if @newsletterEnabled}}
             {{#if (feature "emailAnalytics")}}
