@@ -48,7 +48,7 @@
     "@tryghost/nql": "0.9.2",
     "@tryghost/nql-lang": "0.3.2",
     "@tryghost/string": "0.1.26",
-    "@tryghost/timezone-data": "0.2.63",
+    "@tryghost/timezone-data": "0.2.68",
     "autoprefixer": "9.8.6",
     "blueimp-md5": "2.19.0",
     "broccoli-asset-rev": "3.0.0",
