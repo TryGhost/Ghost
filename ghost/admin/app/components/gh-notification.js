@@ -5,8 +5,6 @@ import {inject as service} from '@ember/service';
 export default class GhNotification extends Component {
     @service notifications;
 
-    message = null;
-
     get typeClass() {
         const typeMapping = {
             error: 'red',

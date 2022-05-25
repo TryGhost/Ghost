@@ -6,17 +6,16 @@ export default class GhAlert extends Component {
     @service notifications;
 
     get typeClass() {
-        let type = this.args.message.type;
-        let classes = '';
-        let typeMapping;
-
-        typeMapping = {
+        const typeMapping = {
             success: 'green',
             error: 'red',
             warn: 'blue',
             info: 'blue'
         };
 
+        const type = this.args.message.type;
+
+        let classes = '';
         if (typeMapping[type] !== undefined) {
             classes += `gh-alert-${typeMapping[type]}`;
         }
@@ -26,6 +25,6 @@ export default class GhAlert extends Component {
 
     @action
     closeNotification() {
-        this.notifications.closeNotification(this.message);
+        this.notifications.closeNotification(this.args.message);
     }
 }
