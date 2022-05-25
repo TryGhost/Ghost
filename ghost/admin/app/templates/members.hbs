@@ -112,9 +112,7 @@
                         <thead>
                             <tr>
                                 <th>{{this.listHeader}}</th>
-                                {{#if (feature "membersTableStatus")}}
-                                    <th data-test-table-column="status">Status</th>
-                                {{/if}}
+                                <th data-test-table-column="status">Status</th>
                                 {{#if (not-eq this.settings.editorDefaultEmailRecipients "disabled")}}
                                     <th data-test-table-column="email_open_rate">Open rate</th>
                                 {{/if}}

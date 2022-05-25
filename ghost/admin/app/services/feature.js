@@ -56,13 +56,9 @@ export default class FeatureService extends Service {
         nightShift;
 
     // labs flags
-    @feature('membersActivity') membersActivity;
     @feature('urlCache') urlCache;
     @feature('beforeAfterCard') beforeAfterCard;
-    @feature('multipleNewsletters') multipleNewsletters;
-    @feature('multipleNewslettersUI') multipleNewslettersUI;
     @feature('tweetGridCard') tweetGridCard;
-    @feature('membersTableStatus') membersTableStatus;
     @feature('selectablePortalLinks') selectablePortalLinks;
 
     _user = null;

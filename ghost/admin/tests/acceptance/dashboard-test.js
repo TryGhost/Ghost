@@ -1,7 +1,6 @@
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {currentURL, visit} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
-import {enableLabsFlag} from '../helpers/labs-flag';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -13,7 +12,6 @@ describe('Acceptance: Dashboard', function () {
     beforeEach(async function () {
         this.server.loadFixtures('configs');
         this.server.loadFixtures('settings');
-        enableLabsFlag(this.server, 'membersActivity');
 
         let role = this.server.create('role', {name: 'Administrator'});
         this.server.create('user', {roles: [role]});
