@@ -41,4 +41,4 @@ module.exports = function tiers(options = {}) {
     }
 
     return new SafeString(output);
-}
+};

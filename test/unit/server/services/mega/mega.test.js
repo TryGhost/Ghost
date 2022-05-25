@@ -124,7 +124,6 @@ describe('MEGA', function () {
         });
 
         it('unsubscribes from all newsletters', async function () {
-            sinon.stub(labs, 'isSet').withArgs('multipleNewsletters').returns(true);
             const req = {
                 url: 'https://example.com?uuid=abc'
             };
