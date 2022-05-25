@@ -1,17 +1,28 @@
 import hbs from 'htmlbars-inline-precompile';
 import sinon from 'sinon';
-import {click, find, render} from '@ember/test-helpers';
+import {click, find, render, settled} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupRenderingTest} from 'ember-mocha';
+import {tracked} from '@glimmer/tracking';
+
+class Message {
+    @tracked message;
+    @tracked type;
+
+    constructor({message, type}) {
+        this.message = message;
+        this.type = type;
+    }
+}
 
 describe('Integration: Component: gh-notification', function () {
     setupRenderingTest();
 
     it('renders', async function () {
-        this.set('message', {message: 'Test message', type: 'success'});
+        this.set('message', new Message({message: 'Test message', type: 'success'}));
 
-        await render(hbs`{{gh-notification message=message}}`);
+        await render(hbs`<GhNotification @message={{this.message}} />`);
 
         expect(find('article.gh-notification')).to.exist;
 
@@ -21,28 +32,30 @@ describe('Integration: Component: gh-notification', function () {
     });
 
     it('maps message types to CSS classes', async function () {
-        this.set('message', {message: 'Test message', type: 'success'});
+        this.set('message', new Message({message: 'Test message', type: 'success'}));
 
-        await render(hbs`{{gh-notification message=message}}`);
+        await render(hbs`<GhNotification @message={{this.message}} />`);
         let notification = find('.gh-notification');
 
-        this.set('message.type', 'error');
+        this.message.type = 'error';
+        await settled();
         expect(notification, 'success class is red')
             .to.have.class('gh-notification-red');
 
-        this.set('message.type', 'warn');
+        this.message.type = 'warn';
+        await settled();
         expect(notification, 'success class is yellow')
             .to.have.class('gh-notification-yellow');
     });
 
     it('closes notification through notifications service', async function () {
-        let message = {message: 'Test close', type: 'success'};
+        let message = new Message({message: 'Test close', type: 'success'});
         this.set('message', message);
 
         let notifications = this.owner.lookup('service:notifications');
         notifications.closeNotification = sinon.stub();
 
-        await render(hbs`{{gh-notification message=message}}`);
+        await render(hbs`<GhNotification @message={{this.message}} />`);
         expect(find('.gh-notification')).to.exist;
 
         await click('[data-test-button="close-notification"]');
