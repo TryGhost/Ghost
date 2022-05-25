@@ -1,6 +1,5 @@
 <div
-    {{did-insert (action "initScrollWatch")}}
-    {{will-destroy (action "clearScrollWatch")}}
+    {{on-scroll this.onScroll scrollContainer=".gh-main"}}
     ...attributes
 >
     <header class="gh-canvas-header-content">
