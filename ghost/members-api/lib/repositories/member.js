@@ -112,15 +112,13 @@ module.exports = class MemberRepository {
             return 0;
         }
 
-        const matchStripeBehaviour = this._labsService.isSet('dashboardV5');
-
-        if (matchStripeBehaviour && canceled) {
+        if (canceled) {
             return 0;
         }
 
         let amountWithDiscount = amount;
 
-        if (matchStripeBehaviour && discount && discount.end === null && discount.coupon && discount.coupon.duration === 'forever') {
+        if (discount && discount.end === null && discount.coupon && discount.coupon.duration === 'forever') {
             // Discounts should only get applied when they are 'forever' discounts / they don't have an end date
             if (discount.coupon.amount_off !== null) {
                 amountWithDiscount = Math.max(0, amountWithDiscount - discount.coupon.amount_off);
