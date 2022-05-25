@@ -9238,10 +9238,10 @@ grunt-shell@4.0.0:
     npm-run-path "^2.0.0"
     strip-ansi "^6.0.1"
 
-grunt@1.5.2:
-  version "1.5.2"
-  resolved "https://registry.yarnpkg.com/grunt/-/grunt-1.5.2.tgz#46b014e28d17c85baac19d5e891bb3f04923c098"
-  integrity sha512-XCtfaIu72OyDqK24MjWiGC9SwlkuhkS1mrULr1xzuJ2XqAFhP3ZAchZGHJeSCY6mkaOXU4F7SbmmCF7xIVoC9w==
+grunt@1.5.3:
+  version "1.5.3"
+  resolved "https://registry.yarnpkg.com/grunt/-/grunt-1.5.3.tgz#3214101d11257b7e83cf2b38ea173b824deab76a"
+  integrity sha512-mKwmo4X2d8/4c/BmcOETHek675uOqw0RuA/zy12jaspWqvTp4+ZeQF1W+OTpcbncnaBsfbQJ6l0l4j+Sn/GmaQ==
   dependencies:
     dateformat "~3.0.3"
     eventemitter2 "~0.4.13"
