@@ -21,7 +21,7 @@
     {{#if @post.isDraft}}
         <button
             type="button"
-            class="gh-btn gh-editor-preview-trigger"
+            class="gh-btn gh-btn-editor gh-editor-preview-trigger"
             {{on "click" this.openPreview}}
             {{on-key "cmd+p" this.togglePreview}}
             data-test-button="publish-preview"
