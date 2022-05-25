@@ -15,15 +15,11 @@ const messages = {
 
 // flags in this list always return `true`, allows quick global enable prior to full flag removal
 const GA_FEATURES = [
-    'multipleProducts',
-    'tierWelcomePages',
-    'tierName',
     'selectablePortalLinks',
     'membersTableStatus',
     'multipleNewsletters',
     'multipleNewslettersUI',
-    'membersActivityFeed',
-    'dashboardV5'
+    'membersActivityFeed'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
