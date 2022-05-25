@@ -24,8 +24,7 @@ const BETA_FEATURES = [
 
 const ALPHA_FEATURES = [
     'urlCache',
-    'beforeAfterCard',
-    'tweetGridCard'
+    'beforeAfterCard'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
