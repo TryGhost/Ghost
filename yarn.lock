@@ -1910,10 +1910,10 @@
     "@tryghost/member-events" "^0.4.6"
     moment-timezone "^0.5.34"
 
-"@tryghost/members-importer@0.5.15":
-  version "0.5.15"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-importer/-/members-importer-0.5.15.tgz#a28d4c14d0f43608b9363892faf442b4afb49e5f"
-  integrity sha512-rHig0CUBRAtInn/iXHaiR4QTGvnOMvRh6UmZ9oGn4oxUMuYo8wRhA1xyKOhgxOx/rFFIT2i27d21/m0QzXX1zQ==
+"@tryghost/members-importer@0.5.16":
+  version "0.5.16"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-importer/-/members-importer-0.5.16.tgz#d39f25d88515c9c386b3b9c574034b533aa21d96"
+  integrity sha512-1D+9s9lWg72gc40p4IrxxcNpWjU5dClqnv9P7CJwKk5WUJV28WlyBwZuuqn0r0S+igjVyX3eKLKkp8W1tinulw==
   dependencies:
     "@tryghost/errors" "^1.0.0"
     "@tryghost/members-csv" "^1.2.16"
