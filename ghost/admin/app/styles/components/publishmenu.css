@@ -823,8 +823,18 @@
 }
 
 .gh-post-bookmark-site-title {
+    flex-shrink: 0;
+    overflow: hidden;
     color: var(--darkgrey);
     font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.gh-post-bookmark-authors {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .gh-post-bookmark-authors:before {
@@ -833,8 +843,8 @@
     color: var(--darkgrey);
 }
 
-.gh-post-bookmark-site-icon,
-.gh-post-bookmark-author-image {
+.gh-post-bookmark-site-icon {
+    flex-shrink: 0;
     width: 20px;
     height: 20px;
     margin-right: 6px;
