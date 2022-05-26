@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 const labs = require('../../../../../core/shared/labs');
 
-const {addEmail, _partitionMembersBySegment, _getEmailMemberRows, _transformEmailRecipientFilter, handleUnsubscribeRequest, _getFromAddress, _getReplyToAddress} = require('../../../../../core/server/services/mega/mega');
+const {addEmail, _partitionMembersBySegment, _getEmailMemberRows, _transformEmailRecipientFilter, _getFromAddress, _getReplyToAddress} = require('../../../../../core/server/services/mega/mega');
 const membersService = require('../../../../../core/server/services/members');
 
 describe('MEGA', function () {
@@ -97,44 +97,6 @@ describe('MEGA', function () {
 
             const transformedFilter = _transformEmailRecipientFilter({id: 'test', get: newsletterGetter}, 'status:free,status:-free', 'field');
             transformedFilter.should.equal('newsletters.id:test+(status:free,status:-free)+status:-free');
-        });
-    });
-
-    describe('handleUnsubscribeRequest', function () {
-        const updateStub = sinon.stub();
-        beforeEach(function () {
-            updateStub.returns({
-                toJSON: () => {
-                    return {};
-                }
-            });
-            sinon.stub(membersService, 'api').get(() => {
-                return {
-                    members: {
-                        get: () => {
-                            return {
-                                id: 'id-1',
-                                name: 'Jamie'
-                            };
-                        },
-                        update: updateStub
-                    }
-                };
-            });
-        });
-
-        it('unsubscribes from all newsletters', async function () {
-            sinon.stub(labs, 'isSet').withArgs('multipleNewsletters').returns(true);
-            const req = {
-                url: 'https://example.com?uuid=abc'
-            };
-            await handleUnsubscribeRequest(req);
-            updateStub.calledWith({
-                subscribed: false,
-                newsletters: []
-            }, {
-                id: 'id-1'
-            }).should.be.true();
         });
     });
 

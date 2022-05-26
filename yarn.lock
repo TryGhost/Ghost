@@ -1862,10 +1862,10 @@
     "@tryghost/domain-events" "^0.1.14"
     "@tryghost/member-events" "^0.4.6"
 
-"@tryghost/members-api@8.1.1":
-  version "8.1.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-8.1.1.tgz#9078ea61717a0c4dab1cff1ef0a0ae505389731c"
-  integrity sha512-gnNmK9Bw8xpdWm/KsXmYKXdE6h52pzI+QOYMTrCHvKkdOk643OBYwkDmssXfSZAxO31offkE0j/q3xTIstlTUw==
+"@tryghost/members-api@8.1.2":
+  version "8.1.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-8.1.2.tgz#dd4191ad7cbf0e6687c69153b06b8b5f9ef4709e"
+  integrity sha512-cD1NrGgPJQfaZBkW0GfTJRq5pcOABu13Tf/BFa4koFi03JUbK3QM92mZPmboks2cpDzkku6EzwFS4D7nbgcS5Q==
   dependencies:
     "@nexes/nql" "^0.6.0"
     "@tryghost/debug" "^0.1.2"
@@ -1910,10 +1910,10 @@
     "@tryghost/member-events" "^0.4.6"
     moment-timezone "^0.5.34"
 
-"@tryghost/members-importer@0.5.15":
-  version "0.5.15"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-importer/-/members-importer-0.5.15.tgz#a28d4c14d0f43608b9363892faf442b4afb49e5f"
-  integrity sha512-rHig0CUBRAtInn/iXHaiR4QTGvnOMvRh6UmZ9oGn4oxUMuYo8wRhA1xyKOhgxOx/rFFIT2i27d21/m0QzXX1zQ==
+"@tryghost/members-importer@0.5.16":
+  version "0.5.16"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-importer/-/members-importer-0.5.16.tgz#d39f25d88515c9c386b3b9c574034b533aa21d96"
+  integrity sha512-1D+9s9lWg72gc40p4IrxxcNpWjU5dClqnv9P7CJwKk5WUJV28WlyBwZuuqn0r0S+igjVyX3eKLKkp8W1tinulw==
   dependencies:
     "@tryghost/errors" "^1.0.0"
     "@tryghost/members-csv" "^1.2.16"

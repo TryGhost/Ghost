@@ -1,7 +1,6 @@
 //@ts-check
 const debug = require('@tryghost/debug')('api:canary:utils:serializers:output:members');
 const {unparse} = require('@tryghost/members-csv');
-const labsService = require('../../../../../../shared/labs');
 
 module.exports = {
     browse: createSerializer('browse', paginatedMembers),
@@ -142,19 +141,17 @@ function serializeMember(member, options) {
         delete subscription.price.product;
     }
 
-    if (labsService.isSet('multipleNewsletters')) {
-        if (json.newsletters) {
-            serialized.newsletters = json.newsletters
-                .filter(newsletter => newsletter.status === 'active')
-                .sort((a, b) => {
-                    return a.sort_order - b.sort_order;
-                });
-        }
-        // override the `subscribed` param to mean "subscribed to any active newsletter"
-        serialized.subscribed = false;
-        if (Array.isArray(serialized.newsletters) && serialized.newsletters.length > 0) {
-            serialized.subscribed = true;
-        }
+    if (json.newsletters) {
+        serialized.newsletters = json.newsletters
+            .filter(newsletter => newsletter.status === 'active')
+            .sort((a, b) => {
+                return a.sort_order - b.sort_order;
+            });
+    }
+    // override the `subscribed` param to mean "subscribed to any active newsletter"
+    serialized.subscribed = false;
+    if (Array.isArray(serialized.newsletters) && serialized.newsletters.length > 0) {
+        serialized.subscribed = true;
     }
 
     return serialized;

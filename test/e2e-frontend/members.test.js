@@ -192,10 +192,6 @@ describe('Front-end members behaviour', function () {
     });
 
     describe('Unsubscribe', function () {
-        beforeEach(function () {
-            mockManager.mockLabsEnabled('multipleNewslettersUI');
-        });
-
         afterEach(function () {
             mockManager.restore();
         });

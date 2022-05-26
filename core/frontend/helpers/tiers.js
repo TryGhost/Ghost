@@ -3,12 +3,11 @@
 //
 // Returns a string of the tiers with access to the post.
 // By default, tiers are separated by commas.
-const {labs} = require('../services/proxy');
 const {SafeString, escapeExpression} = require('../services/handlebars');
 
 const isString = require('lodash/isString');
 
-function tiers(options = {}) {
+module.exports = function tiers(options = {}) {
     options = options || {};
     options.hash = options.hash || {};
 
@@ -42,18 +41,4 @@ function tiers(options = {}) {
     }
 
     return new SafeString(output);
-}
-
-module.exports = function productsLabsWrapper() {
-    let self = this;
-    let args = arguments;
-
-    return labs.enabledHelper({
-        flagKey: 'multipleProducts',
-        flagName: 'Tiers',
-        helperName: 'tiers',
-        helpUrl: 'https://ghost.org/docs/themes/'
-    }, () => {
-        return tiers.apply(self, args);
-    });
 };
