@@ -17,10 +17,6 @@ const messages = {
  * We fetch the `authors` relations when you either request `withRelated=['authors']` or `withRelated=['author`].
  * The old `author` relation was removed, but we still have to support this case.
  *
- * # CASE 2:
- * If you request `include=author`, we have to fill this object with `post.authors[0]`.
- * Otherwise we can't return `post.author = User`.
- *
  * ---
  *
  * It's impossible to implement a default `withRelated` feature nicely at the moment, because we can't hook into bookshelf
@@ -133,27 +129,12 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
         },
 
         serialize: function serialize(options) {
-            const authors = this.related('authors');
             let attrs = proto.serialize.call(this, options);
 
             // CASE: e.g. you stub model response in the test
             // CASE: you delete a model without fetching before
             if (!this._originalOptions) {
                 this._originalOptions = {};
-            }
-
-            /**
-             * CASE: `author` was requested, `posts.authors` must exist
-             * @deprecated: single authors was superceded by multiple authors in Ghost 1.22.0
-             */
-            if (this._originalOptions.withRelated && this._originalOptions.withRelated && this._originalOptions.withRelated.indexOf('author') !== -1) {
-                if (!authors.models.length) {
-                    throw new errors.ValidationError({
-                        message: 'The target post has no primary author.'
-                    });
-                }
-
-                attrs.author = attrs.authors[0];
             }
 
             // CASE: `posts.authors` was not requested, but fetched in specific cases (see top)
