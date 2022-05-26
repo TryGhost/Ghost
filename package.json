@@ -102,7 +102,7 @@
     "@tryghost/pretty-cli": "1.2.27",
     "@tryghost/promise": "0.1.18",
     "@tryghost/request": "0.1.26",
-    "@tryghost/root-utils": "0.3.14",
+    "@tryghost/root-utils": "0.3.15",
     "@tryghost/security": "0.3.1",
     "@tryghost/session-service": "0.1.42",
     "@tryghost/settings-path-manager": "0.1.7",
