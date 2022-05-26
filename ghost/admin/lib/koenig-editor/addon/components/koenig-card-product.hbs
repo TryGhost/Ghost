@@ -21,7 +21,6 @@
     {{on "dragleave" this.dragLeave}}
     {{on "drop" this.drop}}
     {{did-insert this.registerElement}}
-    as |card|
 >
     {{#if @isEditing}}
         <div class="kg-product-card">
@@ -29,14 +28,14 @@
                 @files={{this.files}}
                 @accept={{this.imageMimeTypes}}
                 @extensions={{this.imageExtensions}}
-                @onStart={{action "setPreviewSrc"}}
-                @onComplete={{action "updateSrc"}}
-                @onFailed={{action "resetSrcs"}}
+                @onStart={{this.setPreviewSrc}}
+                @onComplete={{this.updateSrc}}
+                @onFailed={{this.resetSrcs}}
                 as |uploader|
             >
-                <div class="relative kg-product-card-image-container hide-child{{unless (or this.previewSrc @payload.productImageSrc) " bg-whitegrey-l2"}}">
+                <div class="relative kg-product-card-image-container hide-child{{if (not (or this.previewSrc @payload.productImageSrc)) " bg-whitegrey-l2"}}">
                     {{#if (or this.previewSrc @payload.productImageSrc)}}
-                        <img src={{or this.previewSrc @payload.productImageSrc}} class="{{kg-style this.kgImgStyle sidebar=this.ui.hasSideNav}} kg-product-card-image">
+                        <img src={{or this.previewSrc @payload.productImageSrc}} class="{{kg-style this.kgImgStyle sidebar=this.ui.hasSideNav}} kg-product-card-image" alt="" role="presentation">
                         {{#unless this.koenigDragDropHandler.isDragging}}
                             <div class="bg-image-overlay-top child pe-none {{this.image.overlayClasses}}">
                                 <div class="flex flex-row-reverse">
@@ -92,24 +91,24 @@
                         @class="w-100 fw4 bn bg-transparent kg-product-card-title"
                         @name="title"
                         @defaultTag="h4"
-                        @onChange={{action "setProductTitle"}}
-                        @didCreateEditor={{action "registerTitleEditor"}}
+                        @onChange={{this.setProductTitle}}
+                        @didCreateEditor={{this.registerTitleEditor}}
                     />
                     {{#if @payload.productRatingEnabled}}
                     <div class="kg-product-card-rating-edit icons" style="line-height: auto;">
-                        <button class="{{if (gte @payload.productStarRating 1) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="1" onclick={{action "changeStars"}} onmouseover={{this.hoverStarOn}} onmouseout={{this.hoverStarOff}} type="button">
+                        <button class="{{if (gte @payload.productStarRating 1) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="1" {{on "click" this.changeStars}} {{on "mouseover" this.hoverStarOn}} {{on "mouseout" this.hoverStarOff}} type="button">
                             <span>{{svg-jar "koenig/kg-star"}}</span>
                         </button>
-                        <button class="{{if (gte @payload.productStarRating 2) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="2" onclick={{action "changeStars"}} onmouseover={{this.hoverStarOn}} onmouseout={{this.hoverStarOff}} type="button">
+                        <button class="{{if (gte @payload.productStarRating 2) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="2" {{on "click" this.changeStars}} {{on "mouseover" this.hoverStarOn}} {{on "mouseout" this.hoverStarOff}} type="button">
                             <span>{{svg-jar "koenig/kg-star"}}</span>
                         </button>
-                        <button class="{{if (gte @payload.productStarRating 3) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="3" onclick={{action "changeStars"}} onmouseover={{this.hoverStarOn}} onmouseout={{this.hoverStarOff}} type="button">
+                        <button class="{{if (gte @payload.productStarRating 3) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="3" {{on "click" this.changeStars}} {{on "mouseover" this.hoverStarOn}} {{on "mouseout" this.hoverStarOff}} type="button">
                             <span>{{svg-jar "koenig/kg-star"}}</span>
                         </button>
-                        <button class="{{if (gte @payload.productStarRating 4) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="4" onclick={{action "changeStars"}} onmouseover={{this.hoverStarOn}} onmouseout={{this.hoverStarOff}} type="button">
+                        <button class="{{if (gte @payload.productStarRating 4) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="4" {{on "click" this.changeStars}} {{on "mouseover" this.hoverStarOn}} {{on "mouseout" this.hoverStarOff}} type="button">
                             <span>{{svg-jar "koenig/kg-star"}}</span>
                         </button>
-                        <button class="{{if (gte @payload.productStarRating 5) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="5" onclick={{action "changeStars"}} onmouseover={{this.hoverStarOn}} onmouseout={{this.hoverStarOff}} type="button">
+                        <button class="{{if (gte @payload.productStarRating 5) "kg-product-card-rating-active"}} kg-product-card-rating-star" value="5" {{on "click" this.changeStars}} {{on "mouseover" this.hoverStarOn}} {{on "mouseout" this.hoverStarOff}} type="button">
                             <span>{{svg-jar "koenig/kg-star"}}</span>
                         </button>
                     </div>
@@ -120,8 +119,8 @@
                     @placeholder="Description"
                     @class="w-100 fw4 bg-transparent kg-product-card-description"
                     @name="description"
-                    @onChange={{action "setProductDescription"}}
-                    @didCreateEditor={{action "registerEditor"}}
+                    @onChange={{this.setProductDescription}}
+                    @didCreateEditor={{this.registerEditor}}
                 />
                 {{#if @payload.productButtonEnabled}}
                     <a href="javascript:void(0)" class="gh-btn gh-btn-accent kg-product-card-button" disabled={{not @payload.productButton}}>
@@ -204,10 +203,11 @@
 
     {{else}}
 
+        {{!-- template-lint-disable no-triple-curlies --}}
         <div class="kg-product-card">
             {{#if @payload.productImageSrc}}
                 <div class="kg-product-card-image-container">
-                    <img src={{@payload.productImageSrc}} class="kg-product-card-image" />
+                    <img src={{@payload.productImageSrc}} class="kg-product-card-image" alt="" role="presentation" />
                 </div>
             {{/if}}
                 <div class="kg-product-card-header">
