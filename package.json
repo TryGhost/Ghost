@@ -109,7 +109,7 @@
     "@tryghost/social-urls": "0.1.32",
     "@tryghost/stats-service": "0.2.2",
     "@tryghost/string": "0.1.26",
-    "@tryghost/tpl": "0.1.16",
+    "@tryghost/tpl": "0.1.17",
     "@tryghost/update-check-service": "0.3.4",
     "@tryghost/url-utils": "4.0.1",
     "@tryghost/validator": "0.1.24",
