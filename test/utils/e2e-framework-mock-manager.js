@@ -5,6 +5,7 @@ const nock = require('nock');
 
 // Helper services
 const configUtils = require('./configUtils');
+const WebhookMockReceiver = require('./webhook-mock-receiver');
 
 let mocks = {};
 let emailCount = 0;
@@ -46,6 +47,12 @@ const mockMail = (response = 'Mail is disabled') => {
         .resolves(response);
 
     return mocks.mail;
+};
+
+const mockWebhookRequests = () => {
+    mocks.webhookMockReceiver = new WebhookMockReceiver();
+
+    return mocks.webhookMockReceiver;
 };
 
 const sentEmailCount = (count) => {
@@ -139,6 +146,10 @@ const restore = () => {
     emailCount = 0;
     nock.cleanAll();
     nock.enableNetConnect();
+
+    if (mocks.webhookMockReceiver) {
+        mocks.webhookMockReceiver.reset();
+    }
 };
 
 module.exports = {
@@ -148,6 +159,7 @@ module.exports = {
     mockStripe,
     mockLabsEnabled,
     mockLabsDisabled,
+    mockWebhookRequests,
     restore,
     assert: {
         sentEmailCount,
