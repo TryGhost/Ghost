@@ -1600,12 +1600,12 @@
     "@tryghost/root-utils" "^0.3.9"
     debug "^4.3.1"
 
-"@tryghost/debug@0.1.16", "@tryghost/debug@^0.1.10", "@tryghost/debug@^0.1.13", "@tryghost/debug@^0.1.16", "@tryghost/debug@^0.1.2", "@tryghost/debug@^0.1.4", "@tryghost/debug@^0.1.5", "@tryghost/debug@^0.1.8", "@tryghost/debug@^0.1.9":
-  version "0.1.16"
-  resolved "https://registry.yarnpkg.com/@tryghost/debug/-/debug-0.1.16.tgz#a66211c01cb1d5866fcd7b8fa37b420bd9b4ea5b"
-  integrity sha512-kPUXRJ8FTEcJyLkYAnPnEbURk9nD9MNVhaDvNpGH6Zga2gVpWr07LkoU+kSJhhw1ZnPF4Sr3egFezR62jhi7Hg==
+"@tryghost/debug@0.1.17", "@tryghost/debug@^0.1.10", "@tryghost/debug@^0.1.13", "@tryghost/debug@^0.1.16", "@tryghost/debug@^0.1.2", "@tryghost/debug@^0.1.4", "@tryghost/debug@^0.1.5", "@tryghost/debug@^0.1.8", "@tryghost/debug@^0.1.9":
+  version "0.1.17"
+  resolved "https://registry.yarnpkg.com/@tryghost/debug/-/debug-0.1.17.tgz#2655fa1c71b2608e71de7f166f5f7b1a1c086915"
+  integrity sha512-Sz7O4+uCV2CLDb4daEP8/lLkSf0ttTGMpF3RzhwyQKXNCIeutAeaW8nqhr+BIq1e3LeMV/sVRzh4LeyKKDEkrw==
   dependencies:
-    "@tryghost/root-utils" "^0.3.14"
+    "@tryghost/root-utils" "^0.3.15"
     debug "^4.3.1"
 
 "@tryghost/domain-events@0.1.14", "@tryghost/domain-events@^0.1.14":
@@ -2115,7 +2115,7 @@
     got "9.6.0"
     lodash "^4.17.21"
 
-"@tryghost/root-utils@0.3.14", "@tryghost/root-utils@^0.3.14", "@tryghost/root-utils@^0.3.8", "@tryghost/root-utils@^0.3.9":
+"@tryghost/root-utils@0.3.14":
   version "0.3.14"
   resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.3.14.tgz#ade604a1d2de7948b0841ec1eee7fe0a68d045b3"
   integrity sha512-APWd8XVy1XpGbeb/yL7V/OTBAQ9qWyla1QQVHVOmZv9x+IH0PEYMcf0xZBivyZmCrQokbc+NMVYcra/7M9OjSg==
@@ -2127,6 +2127,14 @@
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.1.0.tgz#7578cb5e57953316fef58edd43a152a86b719a8f"
   integrity sha512-zy3PSviwytjvjdMso86RYZLE2I4e2yL/s83fIEf/g17C8V8hsCcgE83cFOpCw3ISWDFX3Qi0IX9kI3or2pfGLg==
+  dependencies:
+    caller "^1.0.1"
+    find-root "^1.1.0"
+
+"@tryghost/root-utils@^0.3.14", "@tryghost/root-utils@^0.3.15", "@tryghost/root-utils@^0.3.8", "@tryghost/root-utils@^0.3.9":
+  version "0.3.15"
+  resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.3.15.tgz#0b7fd9e02360b81cf46d07b1b87d1e94e9bf6585"
+  integrity sha512-HgSdyvg1CVXZBIdrJh5RMp14VQhJWFBozs1SCjomWew400ERDsUIHamwlzKxqfGZgc1P4Sp1jinkOb+dVanruw==
   dependencies:
     caller "^1.0.1"
     find-root "^1.1.0"
