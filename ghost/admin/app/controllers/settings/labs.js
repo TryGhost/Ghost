@@ -1,7 +1,6 @@
 import classic from 'ember-classic-decorator';
 import {inject as service} from '@ember/service';
 /* eslint-disable ghost/ember/alias-model-in-controller */
-import $ from 'jquery';
 import Controller from '@ember/controller';
 import RSVP from 'rsvp';
 import config from 'ghost-admin/config/environment';
@@ -161,11 +160,7 @@ export default class LabsController extends Controller {
     @action
     triggerFileDialog(event) {
         // simulate click to open file dialog
-        // using jQuery because IE11 doesn't support MouseEvent
-        $(event.target)
-            .closest('.gh-setting-action')
-            .find('input[type="file"]')
-            .click();
+        event?.target.closest('.gh-setting-action')?.find('input[type="file"]')?.click();
     }
 
     // TODO: convert to ember-concurrency task

@@ -1,4 +1,3 @@
-import $ from 'jquery';
 import Component from '@ember/component';
 import EmberObject, {action, computed, set} from '@ember/object';
 import classic from 'ember-classic-decorator';
@@ -68,7 +67,7 @@ export default class KoenigCardGallery extends Component {
                 title: 'Add images',
                 icon: 'koenig/kg-add',
                 iconClass: 'fill-white',
-                action: run.bind(this, this._triggerFileDialog)
+                action: this.triggerFileDialog
             }]
         };
     }
@@ -184,7 +183,12 @@ export default class KoenigCardGallery extends Component {
 
     @action
     triggerFileDialog(event) {
-        this._triggerFileDialog(event);
+        const target = event?.target || this.element;
+
+        const cardElem = target.closest('.__mobiledoc-card');
+        const fileInput = cardElem?.querySelector('input[type="file"]');
+
+        fileInput?.click();
     }
 
     @action
@@ -338,17 +342,6 @@ export default class KoenigCardGallery extends Component {
         save(payload, false);
 
         this._registerOrRefreshDragDropHandler();
-    }
-
-    _triggerFileDialog(event) {
-        let target = event && event.target || this.element;
-
-        // simulate click to open file dialog
-        // using jQuery because IE11 doesn't support MouseEvent
-        $(target)
-            .closest('.__mobiledoc-card')
-            .find('input[type="file"]')
-            .click();
     }
 
     // - rename container so that it's more explicit when we have an initial file

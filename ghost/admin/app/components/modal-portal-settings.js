@@ -1,4 +1,3 @@
-import $ from 'jquery';
 import ModalComponent from 'ghost-admin/components/modal-base';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import {action, computed} from '@ember/object';
@@ -222,12 +221,7 @@ export default ModalComponent.extend({
          * @param  {MouseEvent} event - MouseEvent fired by the button click
          */
         triggerFileDialog(event) {
-            // simulate click to open file dialog
-            // using jQuery because IE11 doesn't support MouseEvent
-            $(event.target)
-                .closest('.gh-setting-action')
-                .find('input[type="file"]')
-                .click();
+            event?.target.closest('.gh-setting-action')?.find('input[type="file"]')?.click();
         },
 
         deleteCustomIcon() {

@@ -1,4 +1,3 @@
-import $ from 'jquery';
 import Browser from 'mobiledoc-kit/utils/browser';
 import Component from '@glimmer/component';
 import {
@@ -276,18 +275,12 @@ export default class KoenigCardProductComponent extends Component {
      */
     @action
     triggerFileDialog(event) {
-        this._triggerFileDialog(event);
-    }
+        const target = event?.target || this.element;
 
-    _triggerFileDialog(event) {
-        let target = event && event.target || this.element;
+        const cardElem = target.closest('.__mobiledoc-card');
+        const fileInput = cardElem?.querySelector('input[type="file"]');
 
-        // simulate click to open file dialog
-        // using jQuery because IE11 doesn't support MouseEvent
-        $(target)
-            .closest('.__mobiledoc-card')
-            .find('input[type="file"]')
-            .click();
+        fileInput?.click();
     }
 
     @action

@@ -123,9 +123,7 @@ export default class KoenigCardFileComponent extends Component {
         const cardElem = target.closest('.__mobiledoc-card');
         const fileInput = cardElem?.querySelector('input[type="file"]');
 
-        if (fileInput) {
-            fileInput.click();
-        }
+        fileInput?.click();
     }
 
     @action

@@ -1,4 +1,3 @@
-import $ from 'jquery';
 import Component from '@ember/component';
 import classic from 'ember-classic-decorator';
 import {
@@ -137,7 +136,7 @@ export default class KoenigCardImage extends Component {
                 title: 'Replace image',
                 icon: 'koenig/kg-replace',
                 iconClass: 'fill-white',
-                action: run.bind(this, this._triggerFileDialog)
+                action: this.triggerFileDialog
             }];
         }
 
@@ -219,7 +218,12 @@ export default class KoenigCardImage extends Component {
      */
     @action
     triggerFileDialog(event) {
-        this._triggerFileDialog(event);
+        const target = event?.target || this.element;
+
+        const cardElem = target.closest('.__mobiledoc-card');
+        const fileInput = cardElem?.querySelector('input[type="file"]');
+
+        fileInput?.click();
     }
 
     @action
@@ -375,17 +379,6 @@ export default class KoenigCardImage extends Component {
 
         // update the mobiledoc and stay in edit mode
         save(payload, false);
-    }
-
-    _triggerFileDialog(event) {
-        let target = event && event.target || this.element;
-
-        // simulate click to open file dialog
-        // using jQuery because IE11 doesn't support MouseEvent
-        $(target)
-            .closest('.__mobiledoc-card')
-            .find('input[type="file"]')
-            .click();
     }
 
     _editLink(event) {
