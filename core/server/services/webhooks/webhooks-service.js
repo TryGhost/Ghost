@@ -50,7 +50,7 @@ class WebhooksService {
 }
 
 /**
- * @returns {WebhooksService} instance of the PostsService
+ * @returns {WebhooksService} instance of the WebhooksService
  */
 const getWebhooksServiceInstance = ({WebhookModel}) => {
     return new WebhooksService({WebhookModel});
