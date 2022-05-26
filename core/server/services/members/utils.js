@@ -1,5 +1,3 @@
-const labsService = require('../../../shared/labs');
-
 function formatNewsletterResponse(newsletters) {
     return newsletters.map(({id, name, description, sort_order: sortOrder}) => {
         return {id, name, description, sort_order: sortOrder};
@@ -20,7 +18,7 @@ module.exports.formattedMemberResponse = function formattedMemberResponse(member
         subscriptions: member.subscriptions || [],
         paid: member.status !== 'free'
     };
-    if (member.newsletters && labsService.isSet('multipleNewsletters')) {
+    if (member.newsletters) {
         data.newsletters = formatNewsletterResponse(member.newsletters);
     }
     return data;

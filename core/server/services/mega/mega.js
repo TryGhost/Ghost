@@ -2,7 +2,6 @@ const _ = require('lodash');
 const Promise = require('bluebird');
 const debug = require('@tryghost/debug')('mega');
 const tpl = require('@tryghost/tpl');
-const url = require('url');
 const moment = require('moment');
 const ObjectID = require('bson-objectid');
 const errors = require('@tryghost/errors');
@@ -15,7 +14,6 @@ const jobsService = require('../jobs');
 const db = require('../../data/db');
 const models = require('../../models');
 const postEmailSerializer = require('./post-email-serializer');
-const labs = require('../../../shared/labs');
 const {getSegmentsFromHtml} = require('./segment-parser');
 
 // Used to listen to email.added and email.edited model events originally, I think to offload this - ideally would just use jobs now if possible
@@ -266,58 +264,6 @@ const retryFailedEmail = async (emailModel) => {
         id: emailModel.get('id')
     });
 };
-
-/**
- * handleUnsubscribeRequest
- *
- * Takes a request/response pair and reads the `unsubscribe` query parameter,
- * using the content to update the members service to set the `subscribed` flag
- * to false on the member
- *
- * If any operation fails, or the request is invalid the function will error - so using
- * as middleware should consider wrapping with `try/catch`
- *
- * @param {Request} req
- * @returns {Promise<void>}
- */
-async function handleUnsubscribeRequest(req) {
-    if (!req.url) {
-        throw new errors.BadRequestError({
-            message: 'Email address not found.'
-        });
-    }
-
-    const {query} = url.parse(req.url, true);
-    if (!query || !query.uuid) {
-        throw new errors.BadRequestError({
-            message: (query.preview ? 'Unsubscribe preview' : 'Email address not found.')
-        });
-    }
-
-    const member = await membersService.api.members.get({
-        uuid: query.uuid
-    });
-
-    if (!member) {
-        throw new errors.BadRequestError({
-            message: 'Email address not found.'
-        });
-    }
-
-    try {
-        let memberData = {subscribed: false};
-        if (labs.isSet('multipleNewsletters')) {
-            memberData.newsletters = [];
-        }
-        const memberModel = await membersService.api.members.update(memberData, {id: member.id});
-        return memberModel.toJSON();
-    } catch (err) {
-        throw new errors.InternalServerError({
-            err,
-            message: 'Failed to unsubscribe this email address'
-        });
-    }
-}
 
 async function pendingEmailHandler(emailModel, options) {
     // CASE: do not send email if we import a database
@@ -590,7 +536,6 @@ module.exports = {
     addEmail,
     retryFailedEmail,
     sendTestEmail,
-    handleUnsubscribeRequest,
     // NOTE: below are only exposed for testing purposes
     _transformEmailRecipientFilter: transformEmailRecipientFilter,
     _partitionMembersBySegment: partitionMembersBySegment,
