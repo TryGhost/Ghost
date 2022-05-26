@@ -13,7 +13,6 @@ const url = require('../utils/url');
 const utils = require('../../../index');
 
 const postsMetaSchema = require('../../../../../../data/schema').tables.posts_meta;
-const labsService = require('../../../../../../../shared/labs');
 
 const getPostServiceInstance = require('../../../../../../services/posts/posts-service');
 const postsService = getPostServiceInstance();
@@ -35,9 +34,7 @@ module.exports = async (model, frame, options = {}) => {
     extraAttrs.forPost(frame, model, jsonModel);
 
     // Attach tiers to custom nql visibility filter
-    if (labsService.isSet('multipleProducts')
-        && jsonModel.visibility
-    ) {
+    if (jsonModel.visibility) {
         if (['members', 'public'].includes(jsonModel.visibility) && jsonModel.tiers) {
             jsonModel.tiers = tiersData || [];
         }
