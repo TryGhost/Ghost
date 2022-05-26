@@ -138,7 +138,7 @@ describe('Webhooks API (canary)', function () {
                     .send({
                         webhooks: [{
                             name: 'Edit Test',
-                            event: 'subscriber.added',
+                            event: 'member.added',
                             target_url: 'https://example.com/new-subscriber'
                         }]
                     })
