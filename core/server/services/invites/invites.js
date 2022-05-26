@@ -52,6 +52,7 @@ class Invites {
                     mail: [{
                         message: {
                             to: invite.get('email'),
+                            replyTo: emailData.invitedByEmail,
                             subject: tpl(messages.invitedByName, {
                                 invitedByName: emailData.invitedByName,
                                 blogName: emailData.blogName
