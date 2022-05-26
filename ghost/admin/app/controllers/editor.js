@@ -468,7 +468,7 @@ export default class EditorController extends Controller {
         // new publishing flow sets the post status manually on publish
         this.set('post.status', status);
 
-        yield this.beforeSaveTask.perform();
+        yield this.beforeSaveTask.perform(options);
 
         try {
             let post = yield this._savePostTask.perform(options);
