@@ -15,7 +15,7 @@
         @buttonText="Save"
         @task={{this.saveTask}}
         @runningText="Saving"
-        @class="gh-btn gh-btn-icon gh-btn-editor contributor-save-button"
+        @class="gh-btn gh-btn-icon gh-btn-editor gh-editor-save-trigger contributor-save-button"
         data-test-button="contributor-save" />
 {{else}}
     {{#if @post.isDraft}}
@@ -44,7 +44,7 @@
             <GhTaskButton
                 @task={{this.saveTask}}
                 @runningText="Saving..."
-                @class="gh-btn gh-btn-editor gh-publish-trigger"
+                @class="gh-btn gh-btn-editor gh-editor-save-trigger gh-publish-trigger"
                 @idleClass="green"
                 @runningClass="midlightgrey"
                 @successClass="midlightgrey"

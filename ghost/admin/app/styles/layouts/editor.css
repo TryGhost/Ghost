@@ -625,6 +625,10 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     border-radius: 3px;
 }
 
+.gh-editor-save-trigger {
+    margin-right: 8px;
+}
+
 .gh-editor-preview-trigger {
     background: var(--white);
     font-size: 1.35rem;

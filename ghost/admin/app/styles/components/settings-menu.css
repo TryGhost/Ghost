@@ -6,7 +6,7 @@
 
 .settings-menu-toggle {
     position: absolute;
-    top: 31px;
+    top: 30px;
     right: 24px;
     z-index: 9999;
     margin-right: 0 !important;
@@ -34,7 +34,7 @@
 }
 
 .settings-menu-toggle-spacer {
-    width: 40px;
+    width: 46px;
 }
 
 @media (max-width: 1024px) {
