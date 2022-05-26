@@ -178,9 +178,6 @@ add|ember-template-lint|no-passed-in-event-handlers|441|40|441|40|055c4b70aa8dab
 add|ember-template-lint|simple-unless|64|30|64|30|ca177565b6e1c5a6175982047708732f5dde7e59|1652054400000|1662422400000|1665014400000|app/components/gh-post-settings-menu.hbs
 add|ember-template-lint|simple-unless|195|62|195|62|5d9203e10703908836b537481cf012f167ded239|1652054400000|1662422400000|1665014400000|app/components/gh-post-settings-menu.hbs
 add|ember-template-lint|no-action|12|16|12|16|40e7337ccf8501ef3b2fea94812d4de8435286da|1652054400000|1662422400000|1665014400000|app/components/gh-products-price-billingperiod.hbs
-add|ember-template-lint|no-action|14|45|14|45|818de8cb87f2b92338a54aa71f8b0fc95404b264|1652054400000|1662422400000|1665014400000|app/components/gh-profile-image.hbs
-add|ember-template-lint|no-action|23|16|23|16|01077e862788636fab21f0dbe27fe73a7c227e9b|1652054400000|1662422400000|1665014400000|app/components/gh-profile-image.hbs
-add|ember-template-lint|require-valid-alt-text|11|8|11|8|473922dad04893d18a81bd598d91e64e5e034544|1652054400000|1662422400000|1665014400000|app/components/gh-profile-image.hbs
 add|ember-template-lint|no-action|4|14|4|14|c8f6146f9286ec1b289e28983ab446386f390f01|1652054400000|1662422400000|1665014400000|app/components/gh-psm-authors-input.hbs
 add|ember-template-lint|no-action|5|14|5|14|a90edd9a99596008f60bfcdbc6befe7fe8d26321|1652054400000|1662422400000|1665014400000|app/components/gh-psm-tags-input.hbs
 add|ember-template-lint|no-action|6|14|6|14|3924d7cfb394cbcfd6b1bf9cf13a5040ac8f94b5|1652054400000|1662422400000|1665014400000|app/components/gh-psm-tags-input.hbs
