@@ -2,7 +2,6 @@ import classic from 'ember-classic-decorator';
 import {action, computed} from '@ember/object';
 import {inject as service} from '@ember/service';
 /* eslint-disable ghost/ember/alias-model-in-controller */
-import $ from 'jquery';
 import Controller from '@ember/controller';
 import generatePassword from 'ghost-admin/utils/password-generator';
 import validator from 'validator';
@@ -67,12 +66,7 @@ export default class GeneralController extends Controller {
      */
     @action
     triggerFileDialog(event) {
-        // simulate click to open file dialog
-        // using jQuery because IE11 doesn't support MouseEvent
-        $(event.target)
-            .closest('.gh-setting-action')
-            .find('input[type="file"]')
-            .click();
+        event?.target.closest('.gh-setting-action')?.find('input[type="file"]')?.click();
     }
 
     /**

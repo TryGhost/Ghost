@@ -1,4 +1,3 @@
-import $ from 'jquery';
 import Component from '@glimmer/component';
 import {
     IMAGE_EXTENSIONS,
@@ -80,17 +79,6 @@ export default class KoenigCardBeforeAfterComponent extends Component {
         if (!args.payload.caption) {
             args.payload.caption = null;
         }
-    }
-
-    _triggerFileDialog(event) {
-        let target = event && event.target || this.element;
-
-        // simulate click to open file dialog
-        // using jQuery because IE11 doesn't support MouseEvent
-        $(target)
-            .closest('.__mobiledoc-card')
-            .find('input[type="file"]')
-            .trigger('click');
     }
 
     setupListeners() {
@@ -187,6 +175,15 @@ export default class KoenigCardBeforeAfterComponent extends Component {
     selectAfterImage() {
         this.selectingFile = 'after';
         this._triggerFileDialog();
+    }
+
+    _triggerFileDialog(event) {
+        const target = event?.target || this.element;
+
+        const cardElem = target.closest('.__mobiledoc-card');
+        const fileInput = cardElem?.querySelector('input[type="file"]');
+
+        fileInput?.click();
     }
 
     @action
