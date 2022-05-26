@@ -114,7 +114,7 @@
     "@tryghost/url-utils": "4.0.1",
     "@tryghost/validator": "0.1.24",
     "@tryghost/verification-trigger": "0.2.5",
-    "@tryghost/version": "0.1.14",
+    "@tryghost/version": "0.1.15",
     "@tryghost/vhost-middleware": "1.0.25",
     "@tryghost/zip": "1.1.25",
     "amperize": "0.6.1",
