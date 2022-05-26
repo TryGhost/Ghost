@@ -49,7 +49,7 @@ Object {
     Object {
       "api_version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
-      "event": "subscriber.added",
+      "event": "member.added",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "integration_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "last_triggered_at": null,
@@ -57,7 +57,7 @@ Object {
       "last_triggered_status": null,
       "name": "Edit Test",
       "secret": "thisissecret",
-      "target_url": "https://example.com/new-subscriber",
+      "target_url": "https://example.com/new-member",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
     },
   ],

@@ -630,12 +630,12 @@ DataGenerator.Content = {
     webhooks: [
         {
             id: ObjectId().toHexString(),
-            event: 'subscriber.added',
+            event: 'member.added',
             target_url: 'https://example.com/webhooks/subscriber-added'
         },
         {
             id: ObjectId().toHexString(),
-            event: 'subscriber.removed',
+            event: 'member.removed',
             target_url: 'https://example.com/webhooks/subscriber-removed'
         }
     ],

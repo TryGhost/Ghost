@@ -87,8 +87,8 @@ describe('Webhooks API', function () {
             .body({
                 webhooks: [{
                     name: 'Edit Test',
-                    event: 'subscriber.added',
-                    target_url: 'https://example.com/new-subscriber',
+                    event: 'member.added',
+                    target_url: 'https://example.com/new-member',
                     integration_id: 'ignore_me'
                 }]
             })
