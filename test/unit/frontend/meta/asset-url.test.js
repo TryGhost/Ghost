@@ -52,7 +52,13 @@ describe('getAssetUrl', function () {
         it('should correct favicon path for custom png', function () {
             sinon.stub(settingsCache, 'get').withArgs('icon').returns('/content/images/2017/04/my-icon.png');
             const testUrl = getAssetUrl('favicon.ico');
-            testUrl.should.equal('/favicon.png');
+            testUrl.should.equal('/content/images/size/w256h256/2017/04/my-icon.png');
+        });
+
+        it('should correct favicon path for custom svg', function () {
+            sinon.stub(settingsCache, 'get').withArgs('icon').returns('/content/images/2017/04/my-icon.svg');
+            const testUrl = getAssetUrl('favicon.ico');
+            testUrl.should.equal('/content/images/size/w256h256/format/png/2017/04/my-icon.svg');
         });
     });
 

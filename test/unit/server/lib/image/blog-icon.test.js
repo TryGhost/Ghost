@@ -16,7 +16,7 @@ describe('lib/image: blog icon', function () {
                     }
                 }
             }});
-            blogIcon.getIconUrl().should.deepEqual([{relativeUrl: '/favicon.ico'}, undefined]);
+            blogIcon.getIconUrl().should.deepEqual([{relativeUrl: '/content/images/2017/04/my-icon.ico'}, undefined]);
         });
 
         it('custom uploaded png blog icon', function () {
@@ -29,7 +29,7 @@ describe('lib/image: blog icon', function () {
                     }
                 }
             }});
-            blogIcon.getIconUrl().should.deepEqual([{relativeUrl: '/favicon.png'}, undefined]);
+            blogIcon.getIconUrl().should.deepEqual([{relativeUrl: '/content/images/size/w256h256/2017/04/my-icon.png'}, undefined]);
         });
 
         it('default ico blog icon', function () {
@@ -52,7 +52,7 @@ describe('lib/image: blog icon', function () {
                         }
                     }
                 }});
-                blogIcon.getIconUrl(true).should.deepEqual([{relativeUrl: '/favicon.ico'}, true]);
+                blogIcon.getIconUrl(true).should.deepEqual([{relativeUrl: '/content/images/2017/04/my-icon.ico'}, true]);
             });
 
             it('custom uploaded png blog icon', function () {
@@ -65,7 +65,7 @@ describe('lib/image: blog icon', function () {
                         }
                     }
                 }});
-                blogIcon.getIconUrl(true).should.deepEqual([{relativeUrl: '/favicon.png'}, true]);
+                blogIcon.getIconUrl(true).should.deepEqual([{relativeUrl: '/content/images/size/w256h256/2017/04/my-icon.png'}, true]);
             });
 
             it('default ico blog icon', function () {
@@ -124,40 +124,6 @@ describe('lib/image: blog icon', function () {
                 get: () => {}
             }});
             blogIcon.getIconPath().should.eql(path.join(root, 'favicon.ico'));
-        });
-    });
-
-    describe('isIcoImageType', function () {
-        it('returns true, if icon is .ico filetype', function () {
-            const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {}, settingsCache: {}});
-            blogIcon.isIcoImageType('icon.ico').should.be.true();
-        });
-
-        it('returns false, if icon is not .ico filetype', function () {
-            const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {}, settingsCache: {}});
-            blogIcon.isIcoImageType('icon.png').should.be.false();
-        });
-
-        it('returns true, if icon is .ico filetype when using settingsCache', function () {
-            const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {}, settingsCache: {
-                get: (key) => {
-                    if (key === 'icon') {
-                        return 'icon.ico';
-                    }
-                }
-            }});
-            blogIcon.isIcoImageType().should.be.true();
-        });
-
-        it('returns false, if icon is not .ico filetype when using settingsCache', function () {
-            const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {}, settingsCache: {
-                get: (key) => {
-                    if (key === 'icon') {
-                        return 'icon.png';
-                    }
-                }
-            }});
-            blogIcon.isIcoImageType().should.be.false();
         });
     });
 

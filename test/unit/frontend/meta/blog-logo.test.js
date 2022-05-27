@@ -35,6 +35,6 @@ describe('getBlogLogo', function () {
 
         blogLogo = getBlogLogo();
         should.exist(blogLogo);
-        blogLogo.should.have.property('url', 'http://127.0.0.1:2369/favicon.png');
+        blogLogo.should.have.property('url', 'http://127.0.0.1:2369/content/images/size/w256h256/favicon.png');
     });
 });
