@@ -576,7 +576,7 @@ export const getMemberEmail = ({member}) => {
 };
 
 export const getFirstpromoterId = ({site}) => {
-    return (site && site.firstpromoter_id);
+    return (site && site.firstpromoter_account);
 };
 
 export const getMemberName = ({member}) => {
