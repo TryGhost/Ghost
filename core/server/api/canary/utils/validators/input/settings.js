@@ -45,6 +45,12 @@ module.exports = {
             }
         });
 
+        // Prevent setting icon to the resized one when sending all settings received from browse again in the edit endpoint
+        const icon = frame.data.settings.find(setting => setting.key === 'icon');
+        if (icon && icon.value) {
+            icon.value = icon.value.replace(/\/content\/images\/size\/([^/]+)\//, '/content/images/');
+        }
+
         if (errors.length) {
             return Promise.reject(errors[0]);
         }
