@@ -1,15 +1,22 @@
-import {inject as service} from '@ember/service';
-// TODO: remove usage of Ember Data's private `Errors` class when refactoring validations
-// eslint-disable-next-line
-import DS from 'ember-data';
 import EmberObject from '@ember/object';
-import RSVP from 'rsvp';
 import UnauthenticatedRoute from 'ghost-admin/routes/unauthenticated';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import classic from 'ember-classic-decorator';
+import {inject as service} from '@ember/service';
+import {tracked} from '@glimmer/tracking';
 
-const {Promise} = RSVP;
-const {Errors} = DS;
+// EmberObject is still needed here for ValidationEngine
+@classic
+class SignupDetails extends EmberObject.extend(ValidationEngine) {
+    @tracked name = '';
+    @tracked email = '';
+    @tracked password = '';
+
+    token = '';
+    blogTitle = ''; // used for password validation
+
+    validationType = 'signup';
+}
 
 export default class SignupRoute extends UnauthenticatedRoute {
     @service ghostPaths;
@@ -27,11 +34,6 @@ export default class SignupRoute extends UnauthenticatedRoute {
     }
 
     model(params) {
-        @classic
-        class SignupDetails extends EmberObject.extend(ValidationEngine) {
-            validationType = 'signup';
-        }
-
         let signupDetails = SignupDetails.create();
         let re = /^(?:[A-Za-z0-9_-]{4})*(?:[A-Za-z0-9_-]{2}|[A-Za-z0-9_-]{3})?$/;
         let email,
@@ -50,11 +52,10 @@ export default class SignupRoute extends UnauthenticatedRoute {
             // leave e-mail blank even though we get it from the token because
             // we need the user to type it in for Chrome to remember the
             // email/password combo properly
-            signupDetails.set('email', '');
-            signupDetails.set('token', params.token);
-            signupDetails.set('errors', Errors.create());
+            signupDetails.email = '';
+            signupDetails.token = params.token;
 
-            let authUrl = this.get('ghostPaths.url').api('authentication', 'invitation');
+            let authUrl = this.ghostPaths.url.api('authentication', 'invitation');
 
             return this.ajax.request(authUrl, {
                 dataType: 'json',
@@ -69,7 +70,7 @@ export default class SignupRoute extends UnauthenticatedRoute {
                 }
 
                 // set blogTitle, so password validation has access to it
-                signupDetails.set('blogTitle', this.get('config.blogTitle'));
+                signupDetails.blogTitle = this.config.get('blogTitle');
 
                 resolve(signupDetails);
             }).catch(() => {
@@ -82,6 +83,9 @@ export default class SignupRoute extends UnauthenticatedRoute {
         super.deactivate(...arguments);
 
         // clear the properties that hold the sensitive data from the controller
-        this.controllerFor('signup').get('signupDetails').setProperties({email: '', password: '', token: ''});
+        const signupDetails = this.controllerFor('signup').signupDetails;
+        signupDetails.email = '';
+        signupDetails.password = '';
+        signupDetails.token = '';
     }
 }
