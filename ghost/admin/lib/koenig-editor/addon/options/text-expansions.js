@@ -491,7 +491,7 @@ export function registerBasicInputTextExpansions(mobiledocEditor) {
 }
 
 // TODO: reduce duplication
-export function registerBasicTextareaTextExpansions(mobiledocEditor, koenig) {
+export function registerBasicTextareaTextExpansions(mobiledocEditor) {
     // unregister mobiledoc-kit's block-level text handlers
     mobiledocEditor.unregisterTextInputHandler('heading');
 
