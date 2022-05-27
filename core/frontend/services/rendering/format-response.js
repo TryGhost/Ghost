@@ -6,7 +6,7 @@ const {prepareContextResource} = require('../proxy');
  *
  * @return {Object} containing page variables
  */
-function formatPageResponse(result) {
+function formatPageResponse(result, pageAsPost = false) {
     const response = {};
 
     if (result.posts) {
@@ -31,6 +31,10 @@ function formatPageResponse(result) {
             response[name] = data[0];
         }
     });
+
+    if (pageAsPost && response.page) {
+        response.post = response.page;
+    }
 
     return response;
 }
