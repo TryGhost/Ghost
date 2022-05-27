@@ -53,6 +53,8 @@ export default Controller.extend({
             } catch (error) {
                 notifications.showAPIError(error, {key: 'signup.complete'});
             }
+
+            return true;
         } catch (error) {
             // ValidationEngine throws undefined
             if (!error) {
@@ -68,6 +70,8 @@ export default Controller.extend({
             } else {
                 notifications.showAPIError(error, {key: 'signup.complete'});
             }
+
+            return false;
         }
     }).drop(),
 
