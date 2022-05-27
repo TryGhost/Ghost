@@ -188,7 +188,7 @@ describe('Settings API (canary)', function () {
 
             responseSettings.should.have.property('cover_image', `${config.get('url')}/content/images/cover_image.png`);
             responseSettings.should.have.property('logo', `${config.get('url')}/content/images/logo.png`);
-            responseSettings.should.have.property('icon', `${config.get('url')}/content/images/icon.png`);
+            responseSettings.should.have.property('icon', `${config.get('url')}/content/images/size/w256h256/icon.png`);
             responseSettings.should.have.property('portal_button_icon', `${config.get('url')}/content/images/portal_button_icon.png`);
             responseSettings.should.have.property('og_image', `${config.get('url')}/content/images/og_image.png`);
             responseSettings.should.have.property('twitter_image', `${config.get('url')}/content/images/twitter_image.png`);

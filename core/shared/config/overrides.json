@@ -49,8 +49,8 @@
             "contentTypes": ["image/jpeg", "image/png", "image/gif", "image/svg+xml", "image/x-icon", "image/vnd.microsoft.icon", "image/webp"]
         },
         "icons": {
-            "extensions": [".png", ".ico"],
-            "contentTypes": ["image/png", "image/x-icon", "image/vnd.microsoft.icon"]
+            "extensions": [".jpg", ".jpeg", ".gif", ".png", ".svg", ".svgz", ".ico", ".webp"],
+            "contentTypes": ["image/jpeg", "image/png", "image/gif", "image/svg+xml", "image/x-icon", "image/vnd.microsoft.icon", "image/webp"]
         },
         "db": {
             "extensions": [".json", ".zip"],
@@ -84,6 +84,9 @@
             "w1000": {"width": 1000},
             "w1600": {"width": 1600},
             "w2400": {"width": 2400}
+        },
+        "internalImageSizes": {
+            "icon": {"width": 256, "height": 256}
         }
     }
 }

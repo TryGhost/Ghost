@@ -40,19 +40,29 @@ describe('{{asset}} helper', function () {
         });
 
         it('handles custom favicon correctly', function () {
-            localSettingsCache.icon = '/content/images/favicon.png';
-
             // with png
+            localSettingsCache.icon = '/content/images/favicon.png';
             rendered = asset('favicon.png');
             should.exist(rendered);
-            String(rendered).should.equal('/favicon.png');
-
-            localSettingsCache.icon = '/content/images/favicon.ico';
+            String(rendered).should.equal('/content/images/size/w256h256/favicon.png');
 
             // with ico
+            localSettingsCache.icon = '/content/images/favicon.ico';
             rendered = asset('favicon.ico');
             should.exist(rendered);
-            String(rendered).should.equal('/favicon.ico');
+            String(rendered).should.equal('/content/images/favicon.ico');
+
+            // with webp
+            localSettingsCache.icon = '/content/images/favicon.webp';
+            rendered = asset('favicon.png');
+            should.exist(rendered);
+            String(rendered).should.equal('/content/images/size/w256h256/format/png/favicon.webp');
+
+            // with svg
+            localSettingsCache.icon = '/content/images/favicon.svg';
+            rendered = asset('favicon.png');
+            should.exist(rendered);
+            String(rendered).should.equal('/content/images/size/w256h256/format/png/favicon.svg');
         });
 
         it('handles public assets correctly', function () {

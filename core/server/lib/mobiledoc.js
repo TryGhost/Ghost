@@ -38,7 +38,7 @@ module.exports = {
 
                     // NOTE: the "saveRaw" check is smelly
                     return imageTransform.canTransformFiles()
-                        && imageTransform.canTransformFileExtension(ext)
+                        && imageTransform.shouldResizeFileExtension(ext)
                         && typeof storage.getStorage('images').saveRaw === 'function';
                 }
             });

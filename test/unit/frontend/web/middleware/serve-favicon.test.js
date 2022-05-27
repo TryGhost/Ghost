@@ -51,66 +51,6 @@ describe('Serve Favicon', function () {
         });
 
         describe('serves', function () {
-            it('custom uploaded favicon.png', function (done) {
-                const middleware = serveFavicon();
-                req.path = '/favicon.png';
-
-                storage.getStorage().storagePath = path.join(__dirname, '../../../../utils/fixtures/images/');
-                localSettingsCache.icon = 'favicon.png';
-
-                res = {
-                    writeHead: function (statusCode) {
-                        statusCode.should.eql(200);
-                    },
-                    end: function (body) {
-                        body.length.should.eql(6792);
-                        done();
-                    }
-                };
-
-                middleware(req, res, next);
-            });
-
-            it('custom uploaded favicon.ico', function (done) {
-                const middleware = serveFavicon();
-                req.path = '/favicon.ico';
-
-                storage.getStorage().storagePath = path.join(__dirname, '../../../../utils/fixtures/images/');
-                localSettingsCache.icon = 'favicon.ico';
-
-                res = {
-                    writeHead: function (statusCode) {
-                        statusCode.should.eql(200);
-                    },
-                    end: function (body) {
-                        body.length.should.eql(15406);
-                        done();
-                    }
-                };
-
-                middleware(req, res, next);
-            });
-
-            it('custom uploaded myicon.ico', function (done) {
-                const middleware = serveFavicon();
-                req.path = '/favicon.ico';
-
-                storage.getStorage().storagePath = path.join(__dirname, '../../../../utils/fixtures/images/');
-                localSettingsCache.icon = 'myicon.ico';
-
-                res = {
-                    writeHead: function (statusCode) {
-                        statusCode.should.eql(200);
-                    },
-                    end: function (body) {
-                        body.length.should.eql(15086);
-                        done();
-                    }
-                };
-
-                middleware(req, res, next);
-            });
-
             it('default favicon.ico', function (done) {
                 const middleware = serveFavicon();
                 req.path = '/favicon.ico';
@@ -131,16 +71,17 @@ describe('Serve Favicon', function () {
         });
 
         describe('redirects', function () {
-            it('to custom favicon.ico when favicon.png is requested', function (done) {
+            it('custom uploaded favicon.png', function (done) {
                 const middleware = serveFavicon();
                 req.path = '/favicon.png';
 
-                configUtils.set('paths:contentPath', path.join(__dirname, '../../../../test/utils/fixtures/'));
-                localSettingsCache.icon = 'favicon.ico';
+                storage.getStorage().storagePath = path.join(__dirname, '../../../../utils/fixtures/images/');
+                localSettingsCache.icon = '/content/images/favicon.png';
 
                 res = {
-                    redirect: function (statusCode) {
+                    redirect: function (statusCode, p) {
                         statusCode.should.eql(302);
+                        p.should.eql('/content/images/size/w256h256/favicon.png');
                         done();
                     }
                 };
@@ -148,16 +89,35 @@ describe('Serve Favicon', function () {
                 middleware(req, res, next);
             });
 
-            it('to custom favicon.png when favicon.ico is requested', function (done) {
+            it('custom uploaded favicon.webp', function (done) {
+                const middleware = serveFavicon();
+                req.path = '/favicon.png';
+
+                storage.getStorage().storagePath = path.join(__dirname, '../../../../utils/fixtures/images/');
+                localSettingsCache.icon = '/content/images/favicon.webp';
+
+                res = {
+                    redirect: function (statusCode, p) {
+                        statusCode.should.eql(302);
+                        p.should.eql('/content/images/size/w256h256/format/png/favicon.webp');
+                        done();
+                    }
+                };
+
+                middleware(req, res, next);
+            });
+
+            it('custom uploaded favicon.ico', function (done) {
                 const middleware = serveFavicon();
                 req.path = '/favicon.ico';
 
-                configUtils.set('paths:contentPath', path.join(__dirname, '../../../../test/utils/fixtures/'));
-                localSettingsCache.icon = 'favicon.png';
+                storage.getStorage().storagePath = path.join(__dirname, '../../../../utils/fixtures/images/');
+                localSettingsCache.icon = '/content/images/favicon.ico';
 
                 res = {
-                    redirect: function (statusCode) {
+                    redirect: function (statusCode, p) {
                         statusCode.should.eql(302);
+                        p.should.eql('/content/images/favicon.ico');
                         done();
                     }
                 };
@@ -170,11 +130,12 @@ describe('Serve Favicon', function () {
                 req.path = '/favicon.png';
 
                 configUtils.set('paths:publicFilePath', path.join(__dirname, '../../../../test/utils/fixtures/'));
-                localSettingsCache.icon = '';
+                localSettingsCache.icon = null;
 
                 res = {
-                    redirect: function (statusCode) {
+                    redirect: function (statusCode, p) {
                         statusCode.should.eql(302);
+                        p.should.eql('/favicon.ico');
                         done();
                     }
                 };

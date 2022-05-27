@@ -1304,7 +1304,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             })).then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.match(/<link rel="icon" href="\/site\/favicon.png" type="image\/png" \/>/);
+                rendered.string.should.match(/<link rel="icon" href="\/site\/content\/images\/size\/w256h256\/favicon.png" type="image\/png" \/>/);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/site\/" \/>/);
                 rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/site\/rss\/" \/>/);
@@ -1333,7 +1333,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             })).then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.match(/<link rel="icon" href="\/site\/favicon.png" type="image\/png" \/>/);
+                rendered.string.should.match(/<link rel="icon" href="\/site\/content\/images\/size\/w256h256\/favicon.png" type="image\/png" \/>/);
                 rendered.string.should.match(/<meta name="referrer" content="origin" \/>/);
                 rendered.string.should.not.match(/<meta name="description" /);
 
@@ -1368,7 +1368,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             })).then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.match(/<link rel="icon" href="\/favicon.png" type="image\/png" \/>/);
+                rendered.string.should.match(/<link rel="icon" href="\/content\/images\/size\/w256h256\/favicon.png" type="image\/png" \/>/);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/post\/" \/>/);
                 rendered.string.should.match(/<link rel="amphtml" href="http:\/\/localhost:65530\/post\/amp\/" \/>/);
                 rendered.string.should.match(/<meta name="description" content="site description" \/>/);
@@ -1401,7 +1401,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             })).then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.match(/<link rel="icon" href="\/favicon.png" type="image\/png" \/>/);
+                rendered.string.should.match(/<link rel="icon" href="\/content\/images\/size\/w256h256\/favicon.png" type="image\/png" \/>/);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/" \/>/);
                 rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/rss\/" \/>/);
@@ -1487,7 +1487,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             })).then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.match(/<link rel="icon" href="\/favicon.png" type="image\/png" \/>/);
+                rendered.string.should.match(/<link rel="icon" href="\/content\/images\/size\/w256h256\/favicon.png" type="image\/png" \/>/);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/" \/>/);
                 rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/rss\/" \/>/);

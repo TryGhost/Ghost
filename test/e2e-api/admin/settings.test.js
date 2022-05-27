@@ -1,4 +1,5 @@
 const assert = require('assert');
+const settingsCache = require('../../../core/shared/settings-cache');
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
 const {stringMatching, anyEtag, anyUuid} = matchers;
 
@@ -162,6 +163,36 @@ describe('Settings API', function () {
                 .matchHeaderSnapshot({
                     etag: anyEtag
                 });
+        });
+
+        it('removes image size prefixes when setting the icon', async function () {
+            const settingsToChange = [
+                {
+                    key: 'icon',
+                    value: '/content/images/size/w256h256/2019/07/icon.png'
+                }
+            ];
+
+            const {body} = await agent.put('settings/')
+                .body({
+                    settings: settingsToChange
+                })
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
+                })
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                });
+            
+            // Check returned WITH prefix
+            const val = body.settings.find(setting => setting.key === 'icon');
+            assert.ok(val);
+            assert.equal(val.value, 'http://127.0.0.1:2369/content/images/size/w256h256/2019/07/icon.png');
+
+            // Check if not changed (also check internal ones)
+            const afterValue = settingsCache.get('icon');
+            assert.equal(afterValue, 'http://127.0.0.1:2369/content/images/2019/07/icon.png');
         });
 
         it('cannot edit uneditable settings', async function () {

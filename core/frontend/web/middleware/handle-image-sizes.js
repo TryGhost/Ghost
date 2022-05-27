@@ -7,6 +7,8 @@ const activeTheme = require('../../services/theme-engine/active');
 const config = require('../../../shared/config');
 
 const SIZE_PATH_REGEX = /^\/size\/([^/]+)\//;
+const FORMAT_PATH_REGEX = /^\/format\/([^./]+)\//;
+
 const TRAILING_SLASH_REGEX = /\/+$/;
 
 module.exports = function (req, res, next) {
@@ -18,9 +20,29 @@ module.exports = function (req, res, next) {
         return next();
     }
 
-    const [sizeImageDir, requestedDimension] = req.url.match(SIZE_PATH_REGEX);
+    const requestedDimension = req.url.match(SIZE_PATH_REGEX)[1];
+    
+    // Note that we don't use sizeImageDir because we need to keep the trailing slash
+    let imagePath = req.url.replace(`/size/${requestedDimension}`, '');
+
+    // Check if we want to format the image
+    let format = null;
+    const matchedFormat = imagePath.match(FORMAT_PATH_REGEX);
+    if (matchedFormat) {
+        format = matchedFormat[1];
+
+        // Note that we don't use matchedFormat[0] because we need to keep the trailing slash
+        imagePath = imagePath.replace(`/format/${format}`, '');
+    }
+
     const redirectToOriginal = () => {
-        const url = req.originalUrl.replace(`/size/${requestedDimension}`, '');
+        // We need to keep the first slash here
+        let url = req.originalUrl
+            .replace(`/size/${requestedDimension}`, '');
+        
+        if (format) {
+            url = url.replace(`/format/${format}`, '');
+        }
         return res.redirect(url);
     };
 
@@ -31,14 +53,10 @@ module.exports = function (req, res, next) {
         return next();
     }
 
-    // CASE: image transform is not capable of transforming file (e.g. .gif)
-    if (!imageTransform.canTransformFileExtension(requestUrlFileExtension)) {
-        return redirectToOriginal();
-    }
-
     const contentImageSizes = config.get('imageOptimization:contentImageSizes');
+    const internalImageSizes = config.get('imageOptimization:internalImageSizes');
     const themeImageSizes = activeTheme.get().config('image_sizes');
-    const imageSizes = _.merge({}, themeImageSizes, contentImageSizes);
+    const imageSizes = _.merge({}, themeImageSizes, internalImageSizes, contentImageSizes);
 
     // CASE: no image_sizes config (NOTE - unlikely to be reachable now we have content sizes)
     if (!imageSizes) {
@@ -63,6 +81,25 @@ module.exports = function (req, res, next) {
         return redirectToOriginal();
     }
 
+    // CASE: image transform is not capable of transforming some files (e.g. .ico)
+    if (!imageTransform.canTransformFileExtension(requestUrlFileExtension)) {
+        return redirectToOriginal();
+    }
+
+    if (format) {        
+        // CASE: When formatting, we need to check if the imageTransform package supports this specific format
+        if (!imageTransform.canTransformToFormat(format)) {
+            // transform not supported
+            return redirectToOriginal();
+        }
+    }
+
+    // CASE: when transforming is supported, we need to check if it is desired 
+    // (e.g. it is not desired to resize SVGs when not formatting them to a different type)
+    if (!format && !imageTransform.shouldResizeFileExtension(requestUrlFileExtension)) {
+        return redirectToOriginal();
+    }
+
     const storageInstance = storage.getStorage('images');
     // CASE: unsupported storage adapter
     if (typeof storageInstance.saveRaw !== 'function') {
@@ -79,7 +116,6 @@ module.exports = function (req, res, next) {
             return redirectToOriginal();
         }
 
-        const imagePath = path.relative(sizeImageDir, req.url);
         const {dir, name, ext} = path.parse(imagePath);
         const [imageNameMatched, imageName, imageNumber] = name.match(/^(.+?)(-\d+)?$/) || [null];
 
@@ -104,12 +140,16 @@ module.exports = function (req, res, next) {
                 if (originalImageBuffer.length <= 0) {
                     throw new NoContentError();
                 }
-                return imageTransform.resizeFromBuffer(originalImageBuffer, imageDimensionConfig);
+                return imageTransform.resizeFromBuffer(originalImageBuffer, {withoutEnlargement: requestUrlFileExtension !== '.svg', ...imageDimensionConfig, format});
             })
             .then((resizedImageBuffer) => {
                 return storageInstance.saveRaw(resizedImageBuffer, req.url);
             });
     }).then(() => {
+        if (format) {
+            // File extension won't match the new format, so we need to update the Content-Type header manually here
+            res.type(format);
+        }
         next();
     }).catch(function (err) {
         if (err.code === 'SHARP_INSTALLATION' || err.code === 'IMAGE_PROCESSING' || err.errorType === 'NoContentError') {
