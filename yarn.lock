@@ -1653,7 +1653,7 @@
   dependencies:
     html-to-text "^5.1.1"
 
-"@tryghost/errors@1.2.12", "@tryghost/errors@^1.0.0", "@tryghost/errors@^1.1.0", "@tryghost/errors@^1.1.1", "@tryghost/errors@^1.2.1", "@tryghost/errors@^1.2.12", "@tryghost/errors@^1.2.3", "@tryghost/errors@^1.2.5":
+"@tryghost/errors@1.2.12":
   version "1.2.12"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.12.tgz#906f2cf603dd90f6e386f4a95b963d613e4279e6"
   integrity sha512-VRRsat58v+bNX/fsjDXc7EVcyoZnOdGmAqNe6mCxmPVLWO55qEic0M+AJFnBh1TOCCkx+kRvH46+C0JOomfKAw==
@@ -1662,7 +1662,7 @@
     utils-copy-error "^1.0.1"
     uuid "^8.3.2"
 
-"@tryghost/errors@1.2.13":
+"@tryghost/errors@1.2.13", "@tryghost/errors@^1.0.0", "@tryghost/errors@^1.1.0", "@tryghost/errors@^1.1.1", "@tryghost/errors@^1.2.1", "@tryghost/errors@^1.2.12", "@tryghost/errors@^1.2.3", "@tryghost/errors@^1.2.5":
   version "1.2.13"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.13.tgz#09a680f81e5b14a008427d772689683d1280e221"
   integrity sha512-uZmPndO4UriA+n1qw+X6V25SG1X3WLNy1sgHflDlMAYiKtwDlKl6N5128BXoydLrATLAqb+to+G3QorM4+4nKw==
@@ -2212,10 +2212,10 @@
     lodash "^4.17.21"
     moment "^2.24.0"
 
-"@tryghost/url-utils@4.0.1":
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-4.0.1.tgz#e983b610904bafa59ca5857afdffa6ffd029e54f"
-  integrity sha512-2UVuU8aaKM2b2oVQejLR/OaEFs2+r7NDhaGTUrI/LtvWZ8ySDvWyaqZZkoE1NI31HOvYeZ1f9rTpnxzuTLyEFg==
+"@tryghost/url-utils@4.0.2":
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-4.0.2.tgz#8e9acfaa5b2a3240b864592187272b7726c44c96"
+  integrity sha512-2Xy4KALp+HeD1ju5AzrKUBntOqr5KMltlMXL0DP4Y/IC29eW2da36Ao59oe3E15VTji1j2E/A019ry6mSz4dJQ==
   dependencies:
     cheerio "^0.22.0"
     moment "^2.27.0"
