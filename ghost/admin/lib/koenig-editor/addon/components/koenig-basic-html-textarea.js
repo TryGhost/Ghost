@@ -351,6 +351,7 @@ export default class KoenigBasicHtmlTextarea extends Component {
             // post.toRange() can fail if a list item was just removed
             // TODO: mobiledoc-kit bug?
         }
+
         markers.forEach((marker) => {
             let {markups} = marker;
             if (markups.length > 1 && marker.hasMarkup('code')) {
@@ -362,6 +363,11 @@ export default class KoenigBasicHtmlTextarea extends Component {
 
         // remove any non-markerable/non-list sections
         post.sections.forEach((section) => {
+            // headings are not supported so convert them to paragraphs
+            if (section.isMarkerable) {
+                section.tagName = 'p';
+            }
+
             if (!section.isMarkerable && !section.isListSection) {
                 let reposition = section === editor.activeSection;
                 postEditor.removeSection(section);
