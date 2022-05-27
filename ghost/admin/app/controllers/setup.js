@@ -59,12 +59,11 @@ export default class SetupController extends Controller.extend(ValidationEngine)
         this.session.skipAuthSuccessHandler = true;
 
         try {
-            let authResult = yield this.session
-                .authenticate(authStrategy, ...authentication);
+            yield this.session.authenticate(authStrategy, ...authentication);
 
             this.errors.remove('session');
 
-            return authResult;
+            return true;
         } catch (error) {
             if (error && error.payload && error.payload.errors) {
                 if (isVersionMismatchError(error)) {
@@ -80,6 +79,8 @@ export default class SetupController extends Controller.extend(ValidationEngine)
                 // Connection errors don't return proper status message, only req.body
                 this.notifications.showAlert('There was a problem on the server.', {type: 'error', key: 'session.authenticate.failed'});
             }
+
+            return false;
         }
     })
         authenticate;
