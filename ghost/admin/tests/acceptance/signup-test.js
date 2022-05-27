@@ -1,5 +1,5 @@
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
-import {blur, click, currentRouteName, fillIn, find} from '@ember/test-helpers';
+import {blur, click, currentRouteName, fillIn, find, focus} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
@@ -44,6 +44,7 @@ describe('Acceptance: Signup', function () {
         expect(currentRouteName()).to.equal('signup');
 
         // focus out in Name field triggers inline error
+        await focus('[data-test-input="name"]');
         await blur('[data-test-input="name"]');
 
         expect(
