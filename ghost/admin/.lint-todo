@@ -1233,3 +1233,13 @@ remove|ember-template-lint|no-unused-block-params|1|0|1|0|80177996433f1baa0760ba
 remove|ember-template-lint|require-valid-alt-text|39|24|39|24|5c972340e69c179be52c12fcf81ed23f169a6f50|1652054400000|1662422400000|1665014400000|lib/koenig-editor/addon/components/koenig-card-product.hbs
 remove|ember-template-lint|require-valid-alt-text|210|20|210|20|00f4e6cd2b8af768b1053aa70e3eaafe975fb917|1652054400000|1662422400000|1665014400000|lib/koenig-editor/addon/components/koenig-card-product.hbs
 remove|ember-template-lint|simple-unless|37|88|37|88|ca177565b6e1c5a6175982047708732f5dde7e59|1652054400000|1662422400000|1665014400000|lib/koenig-editor/addon/components/koenig-card-product.hbs
+remove|ember-template-lint|no-action|10|95|10|95|14fa00292afa5a097a84059fec973b062946d320|1652054400000|1662422400000|1665014400000|app/templates/signup.hbs
+remove|ember-template-lint|no-action|23|35|23|35|3f59ec0af9406fede916165af7aa76681fe8c507|1652054400000|1662422400000|1665014400000|app/templates/signup.hbs
+remove|ember-template-lint|no-action|24|39|24|39|01a0e69389c37262a25dcdc7375cfaf00b46eb85|1652054400000|1662422400000|1665014400000|app/templates/signup.hbs
+remove|ember-template-lint|no-action|43|35|43|35|a448b467a8383450e765a522aedf938a3b183ed7|1652054400000|1662422400000|1665014400000|app/templates/signup.hbs
+remove|ember-template-lint|no-action|44|39|44|39|16ea7718f3380824c5f9ef2cd0099834429dcae5|1652054400000|1662422400000|1665014400000|app/templates/signup.hbs
+remove|ember-template-lint|no-action|63|35|63|35|f6cd465ad1e6da1ae11e2e1d2bf0304b6892dacd|1652054400000|1662422400000|1665014400000|app/templates/signup.hbs
+remove|ember-template-lint|no-action|64|39|64|39|ba128af5dc9e5cd8c8bc648b08aaaab5dcd80832|1652054400000|1662422400000|1665014400000|app/templates/signup.hbs
+remove|ember-template-lint|no-passed-in-event-handlers|23|28|23|28|8783ae3cd90695c7887bd2e591215c27c071c564|1652054400000|1662422400000|1665014400000|app/templates/signup.hbs
+remove|ember-template-lint|no-passed-in-event-handlers|43|28|43|28|2a0c55d8aff6a65585f9451556a1d3f6e581a234|1652054400000|1662422400000|1665014400000|app/templates/signup.hbs
+remove|ember-template-lint|no-passed-in-event-handlers|63|28|63|28|46235ba79ee3e75e5527f44ce60a8e731c97311e|1652054400000|1662422400000|1665014400000|app/templates/signup.hbs

@@ -1,41 +1,54 @@
 import Controller from '@ember/controller';
-import {alias} from '@ember/object/computed';
+import {action} from '@ember/object';
 import {isArray as isEmberArray} from '@ember/array';
-import {
-    isVersionMismatchError
-} from 'ghost-admin/services/ajax';
+import {isVersionMismatchError} from 'ghost-admin/services/ajax';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
+import {tracked} from '@glimmer/tracking';
 
-export default Controller.extend({
-    ajax: service(),
-    config: service(),
-    ghostPaths: service(),
-    notifications: service(),
-    session: service(),
-    settings: service(),
+export default class SignupController extends Controller {
+    @service ajax;
+    @service config;
+    @service ghostPaths;
+    @service notifications;
+    @service session;
+    @service settings;
 
-    flowErrors: '',
+    @tracked flowErrors = '';
 
-    signupDetails: alias('model'),
+    get signupDetails() {
+        return this.model;
+    }
 
-    actions: {
-        validate(property) {
-            return this.signupDetails.validate({property});
-        },
+    @action
+    validate(property) {
+        return this.signupDetails.validate({property});
+    }
 
-        submit(event) {
-            event.preventDefault();
-            this.signup.perform();
-        }
-    },
+    @action
+    setSignupProperty(property, event) {
+        const value = event.target.value;
+        this.signupDetails[property] = value;
+    }
 
-    signup: task(function* () {
-        let setupProperties = ['name', 'email', 'password', 'token'];
-        let notifications = this.notifications;
+    @action
+    trimSignupProperty(property, event) {
+        const value = event.target.value.trim();
+        this.signupDetails[property] = value;
+    }
 
-        this.set('flowErrors', '');
-        this.get('signupDetails.hasValidated').addObjects(setupProperties);
+    @action
+    submit(event) {
+        event.preventDefault();
+        this.signupTask.perform();
+    }
+
+    @task({drop: true})
+    *signupTask() {
+        const setupProperties = ['name', 'email', 'password', 'token'];
+
+        this.flowErrors = '';
+        this.signupDetails.hasValidated.addObjects(setupProperties);
 
         try {
             yield this.signupDetails.validate();
@@ -44,52 +57,51 @@ export default Controller.extend({
             try {
                 yield this._authenticateWithPassword();
             } catch (error) {
-                notifications.showAPIError(error, {key: 'signup.complete'});
+                this.notifications.showAPIError(error, {key: 'signup.complete'});
             }
 
             return true;
         } catch (error) {
             // ValidationEngine throws undefined
             if (!error) {
-                this.set('flowErrors', 'Please fill out the form to complete your signup');
+                this.flowErrors = 'Please fill out the form to complete your signup';
                 return false;
             }
 
-            if (error && error.payload && error.payload.errors && isEmberArray(error.payload.errors)) {
+            if (isEmberArray(error?.payload?.errors)) {
                 if (isVersionMismatchError(error)) {
-                    notifications.showAPIError(error);
+                    this.notifications.showAPIError(error);
                 }
-                this.set('flowErrors', error.payload.errors[0].message);
+                this.flowErrors = error.payload.errors[0].message;
             } else {
-                notifications.showAPIError(error, {key: 'signup.complete'});
+                this.notifications.showAPIError(error, {key: 'signup.complete'});
             }
 
             return false;
         }
-    }).drop(),
+    }
 
     _completeInvitation() {
-        let authUrl = this.get('ghostPaths.url').api('authentication', 'invitation');
-        let signupDetails = this.signupDetails;
+        const authUrl = this.ghostPaths.url.api('authentication', 'invitation');
+        const signupDetails = this.signupDetails;
 
         return this.ajax.post(authUrl, {
             dataType: 'json',
             data: {
                 invitation: [{
-                    name: signupDetails.get('name'),
-                    email: signupDetails.get('email'),
-                    password: signupDetails.get('password'),
-                    token: signupDetails.get('token')
+                    name: signupDetails.name,
+                    email: signupDetails.email,
+                    password: signupDetails.password,
+                    token: signupDetails.token
                 }]
             }
         });
-    },
+    }
 
     _authenticateWithPassword() {
-        let email = this.get('signupDetails.email');
-        let password = this.get('signupDetails.password');
+        const {email, password} = this.signupDetails;
 
         return this.session
             .authenticate('authenticator:cookie', email, password);
     }
-});
+}
