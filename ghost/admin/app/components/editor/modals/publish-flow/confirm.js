@@ -21,17 +21,48 @@ export default class PublishFlowOptions extends Component {
     willEmail = this.args.publishOptions.willEmail;
     willPublish = this.args.publishOptions.willPublish;
 
-    get confirmButtonText() {
-        const publishOptions = this.args.publishOptions;
+    buttonTextMap = {
+        'publish+send': {
+            idle: 'Publish & Send',
+            running: 'Publishing & sending',
+            success: 'Published & sent'
+        },
+        send: {
+            idle: 'Send email',
+            running: 'Sending',
+            success: 'Sent'
+        },
+        publish: {
+            idle: 'Publish',
+            running: 'Publishing',
+            success: 'Published'
+        },
+        schedule: {
+            // idle: '', - uses underlying publish type text
+            running: 'Scheduling',
+            success: 'Scheduled'
+        }
+    };
 
+    get publishType() {
+        const {publishOptions} = this.args;
+
+        if (this.willPublish && this.willEmail) {
+            return 'publish+send';
+        } else if (publishOptions.willOnlyEmail) {
+            return 'send';
+        } else {
+            return 'publish';
+        }
+    }
+
+    get confirmButtonText() {
         let buttonText = '';
 
-        if (publishOptions.willPublish && publishOptions.willEmail) {
-            buttonText = 'Publish & send';
-        } else if (publishOptions.willOnlyEmail) {
-            buttonText = 'Send email';
-        } else {
-            buttonText = `Publish ${this.args.publishOptions.post.displayName}`;
+        buttonText = this.buttonTextMap[this.publishType].idle;
+
+        if (this.publishType === 'publish') {
+            buttonText += ` ${this.args.publishOptions.post.displayName}`;
         }
 
         if (this.args.publishOptions.isScheduled) {
@@ -42,6 +73,16 @@ export default class PublishFlowOptions extends Component {
         }
 
         return buttonText;
+    }
+
+    get confirmRunningText() {
+        const publishType = this.args.publishOptions.isScheduled ? 'schedule' : this.publishType;
+        return this.buttonTextMap[publishType].running;
+    }
+
+    get confirmSuccessText() {
+        const publishType = this.args.publishOptions.isScheduled ? 'schedule' : this.publishType;
+        return this.buttonTextMap[publishType].success;
     }
 
     @task({drop: true})

@@ -59,46 +59,14 @@
 {{/if}}
 
 <div class="gh-publish-cta">
-    {{#if @publishOptions.isScheduled}}
-        <GhTaskButton
-            @task={{this.confirmTask}}
-            @buttonText={{this.confirmButtonText}}
-            @runningText="Scheduling"
-            @successText="Scheduled"
-            @class="gh-btn gh-btn-large"
-            @idleClass="gh-btn-pulse"
-            @runningClass="gh-btn-green gh-btn-icon"
-        />
-    {{else if @publishOptions.willOnlyEmail}}
-        <GhTaskButton
-            @task={{this.confirmTask}}
-            @buttonText={{this.confirmButtonText}}
-            @runningText="Sending"
-            @successText="Sent"
-            @class="gh-btn gh-btn-large"
-            @idleClass="gh-btn-pulse"
-            @runningClass="gh-btn-green gh-btn-icon"
-        />
-    {{else if this.willEmail}}
-        <GhTaskButton
-            @task={{this.confirmTask}}
-            @buttonText={{this.confirmButtonText}}
-            @runningText="Publishing & sending"
-            @successText="Published & sent"
-            @class="gh-btn gh-btn-large"
-            @idleClass="gh-btn-pulse"
-            @runningClass="gh-btn-green gh-btn-icon"
-        />
-    {{else}}
-        <GhTaskButton
-            @task={{this.confirmTask}}
-            @buttonText={{this.confirmButtonText}}
-            @runningText="Publishing"
-            @successText="Published"
-            @class="gh-btn gh-btn-large"
-            @idleClass="gh-btn-pulse"
-            @runningClass="gh-btn-green gh-btn-icon"
-        />
-    {{/if}}
+    <GhTaskButton
+        @task={{this.confirmTask}}
+        @buttonText={{this.confirmButtonText}}
+        @runningText={{this.confirmRunningText}}
+        @successText={{this.confirmSuccessText}}
+        @class="gh-btn gh-btn-large"
+        @idleClass="gh-btn-pulse"
+        @runningClass="gh-btn-green gh-btn-icon"
+    />
     <button type="button" class="gh-btn gh-btn-link gh-btn-large gh-publish-cta-secondary" {{on "click" @cancel}}>Back to settings</button>
 </div>
