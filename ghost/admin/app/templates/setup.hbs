@@ -11,7 +11,6 @@
                 <label for="blog-title">Site title</label>
                 <span class="gh-input-icon gh-icon-content">
                     <GhTrimFocusInput
-                        @tabindex="1"
                         @type="text"
                         @id="blog-title"
                         @name="blog-title"
@@ -29,7 +28,6 @@
                 <label for="name">Full name</label>
                 <span class="gh-input-icon gh-icon-user">
                     <GhTextInput
-                        @tabindex="2"
                         @id="name"
                         @name="name"
                         @placeholder="Jamie Larson"
@@ -47,7 +45,6 @@
                 <label for="email">Email address</label>
                 <span class="gh-input-icon gh-icon-mail">
                     <GhTextInput
-                        @tabindex="3"
                         @type="email"
                         @id="email"
                         @name="email"
@@ -66,7 +63,6 @@
                 <label for="password">Password</label>
                 <span class="gh-input-icon gh-icon-lock">
                     <GhTextInput
-                        @tabindex="4"
                         @type="password"
                         @id="password"
                         @name="password"
@@ -81,7 +77,14 @@
                 <GhErrorMessage @errors={{this.errors}} @property="password" />
             </GhFormGroup>
 
-            <GhTaskButton @task={{this.setupTask}} @type="submit" @tabindex="5" @data-test-button="setup" @class="gh-btn gh-btn-black gh-btn-signup gh-btn-block gh-btn-icon" as |task|>
+            <GhTaskButton
+                @task={{this.setupTask}}
+                @showSuccess={{false}}
+                type="submit"
+                class="gh-btn gh-btn-black gh-btn-signup gh-btn-block gh-btn-icon"
+                data-test-button="setup"
+                as |task|
+            >
                 {{#if task.isRunning}}
                     <span>{{svg-jar "spinner" class="gh-icon-spinner gh-btn-icon-no-margin"}}</span>
                 {{else}}

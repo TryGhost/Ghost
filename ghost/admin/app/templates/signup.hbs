@@ -12,7 +12,6 @@
                     <label for="name">Full name</label>
                     <span class="gh-input-icon gh-icon-user">
                         <GhTrimFocusInput
-                            @tabindex="1"
                             @type="text"
                             @id="display-name"
                             @name="display-name"
@@ -32,7 +31,6 @@
                     <label for="email">Email address</label>
                     <span class="gh-input-icon gh-icon-mail">
                         <GhTextInput
-                            @tabindex="2"
                             @type="text"
                             @id="username"
                             @name="username"
@@ -52,7 +50,6 @@
                     <label for="password">Password</label>
                     <span class="gh-input-icon gh-icon-lock">
                         <GhTextInput
-                            @tabindex="3"
                             @type="password"
                             @id="password"
                             @name="password"
@@ -68,8 +65,18 @@
                     <GhErrorMessage @errors={{this.signupDetails.errors}} @property="password" />
                 </GhFormGroup>
 
-                <GhTaskButton @buttonText="Create Account &rarr;" @type="submit" @form="signup" @defaultClick={{true}} @runningText="Creating"
-                    @task={{this.signup}} @data-test-button="signup" @class="gh-btn gh-btn-signup gh-btn-block gh-btn-icon" @tabindex="3" style={{accent-color-background}} />
+                <GhTaskButton
+                    @buttonText="Create Account &rarr;"
+                    @runningText="Creating"
+                    @task={{this.signup}}
+                    @defaultClick={{true}}
+                    @showSuccess={{false}}
+                    type="submit"
+                    form="signup"
+                    class="gh-btn gh-btn-signup gh-btn-block gh-btn-icon"
+                    style={{accent-color-background}}
+                    data-test-button="signup"
+                />
             </form>
             {{#if this.flowErrors}}
                 <p class="main-error">{{this.flowErrors}}&nbsp;</p>
