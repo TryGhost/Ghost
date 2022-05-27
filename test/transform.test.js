@@ -23,27 +23,54 @@ describe('Transform', function () {
     });
 
     describe('canTransformFileExtension', function () {
-        it('returns false for ".gif"', function () {
+        it('returns true for ".gif"', function () {
             should.equal(
                 transform.canTransformFileExtension('.gif'),
-                false
+                true
             );
         });
-        it('returns false for ".svg"', function () {
+        it('returns true for ".svg"', function () {
             should.equal(
                 transform.canTransformFileExtension('.svg'),
-                false
+                true
             );
         });
-        it('returns false for ".svgz"', function () {
+        it('returns true for ".svgz"', function () {
             should.equal(
                 transform.canTransformFileExtension('.svgz'),
-                false
+                true
             );
         });
         it('returns false for ".ico"', function () {
             should.equal(
                 transform.canTransformFileExtension('.ico'),
+                false
+            );
+        });
+    });
+
+    describe('shouldResizeFileExtension', function () {
+        it('returns true for ".gif"', function () {
+            should.equal(
+                transform.shouldResizeFileExtension('.gif'),
+                true
+            );
+        });
+        it('returns false for ".svg"', function () {
+            should.equal(
+                transform.shouldResizeFileExtension('.svg'),
+                false
+            );
+        });
+        it('returns false for ".svgz"', function () {
+            should.equal(
+                transform.shouldResizeFileExtension('.svgz'),
+                false
+            );
+        });
+        it('returns false for ".ico"', function () {
+            should.equal(
+                transform.shouldResizeFileExtension('.ico'),
                 false
             );
         });
