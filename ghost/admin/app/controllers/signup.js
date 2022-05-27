@@ -1,6 +1,5 @@
 import Controller from '@ember/controller';
 import {alias} from '@ember/object/computed';
-import {get} from '@ember/object';
 import {isArray as isEmberArray} from '@ember/array';
 import {
     isVersionMismatchError
@@ -17,17 +16,12 @@ export default Controller.extend({
     settings: service(),
 
     flowErrors: '',
-    profileImage: null,
 
     signupDetails: alias('model'),
 
     actions: {
         validate(property) {
             return this.signupDetails.validate({property});
-        },
-
-        setImage(image) {
-            this.set('profileImage', image);
         },
 
         submit(event) {
@@ -49,7 +43,6 @@ export default Controller.extend({
 
             try {
                 yield this._authenticateWithPassword();
-                yield this._sendImage.perform();
             } catch (error) {
                 notifications.showAPIError(error, {key: 'signup.complete'});
             }
@@ -98,31 +91,5 @@ export default Controller.extend({
 
         return this.session
             .authenticate('authenticator:cookie', email, password);
-    },
-
-    _sendImage: task(function* () {
-        let formData = new FormData();
-        let imageFile = this.profileImage;
-        let uploadUrl = this.get('ghostPaths.url').api('images', 'upload');
-
-        if (imageFile) {
-            formData.append('file', imageFile, imageFile.name);
-            formData.append('purpose', 'profile_image');
-
-            let user = this.session.user;
-            let response = yield this.ajax.post(uploadUrl, {
-                data: formData,
-                processData: false,
-                contentType: false,
-                dataType: 'text'
-            });
-
-            let [image] = get(JSON.parse(response), 'images');
-            let imageUrl = image.url;
-
-            user.set('profileImage', imageUrl);
-
-            return yield user.save();
-        }
-    })
+    }
 });
