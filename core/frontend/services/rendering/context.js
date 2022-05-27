@@ -57,9 +57,6 @@ function setResponseContext(req, res, data) {
         }
     }
 
-    // @TODO: remove first if condition when only page key is returned
-    //        ref.: https://github.com/TryGhost/Ghost/issues/10042
-    // The first if is now used by the preview route
     if (data && data.page) {
         if (!res.locals.context.includes('page')) {
             res.locals.context.push('page');
