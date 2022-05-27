@@ -145,7 +145,7 @@ export default class SetupController extends Controller.extend(ValidationEngine)
         }
     }
 
-    async _afterAuthentication(result) {
+    async _afterAuthentication() {
         await this.session.handleAuthentication();
 
         return this.router.transitionTo('setup.done');
