@@ -1592,6 +1592,11 @@
   resolved "https://registry.yarnpkg.com/@tryghost/database-info/-/database-info-0.3.5.tgz#81b77dc976142a8bbbec81f58d56e89c05a1ecdc"
   integrity sha512-pRWpmQmdg/KOQdkEHDpOAwYvNNc4nrhQ5X8HEVmvqC5ALEKMS6ghKavQGXSnCfUn6Bu8+GXEZ789mE7YOk32jQ==
 
+"@tryghost/database-info@0.3.7":
+  version "0.3.7"
+  resolved "https://registry.yarnpkg.com/@tryghost/database-info/-/database-info-0.3.7.tgz#370c4d43bdd349fb423ebd95c56ffda0dbc8da70"
+  integrity sha512-+kTVHmLkeBzvS3HJ4a+T8ejhgAN60JIs6cHg++QWyoiaPRKBDKf7gO0VsTI/A8erlhygURThtTZ/K7ffY10Oyw==
+
 "@tryghost/debug@0.1.11":
   version "0.1.11"
   resolved "https://registry.yarnpkg.com/@tryghost/debug/-/debug-0.1.11.tgz#cc21e55ac610190426c366a7c69067c5d53117ad"
@@ -1653,7 +1658,7 @@
   dependencies:
     html-to-text "^5.1.1"
 
-"@tryghost/errors@1.2.12", "@tryghost/errors@^1.0.0", "@tryghost/errors@^1.1.0", "@tryghost/errors@^1.1.1", "@tryghost/errors@^1.2.1", "@tryghost/errors@^1.2.12", "@tryghost/errors@^1.2.3", "@tryghost/errors@^1.2.5":
+"@tryghost/errors@1.2.12":
   version "1.2.12"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.12.tgz#906f2cf603dd90f6e386f4a95b963d613e4279e6"
   integrity sha512-VRRsat58v+bNX/fsjDXc7EVcyoZnOdGmAqNe6mCxmPVLWO55qEic0M+AJFnBh1TOCCkx+kRvH46+C0JOomfKAw==
@@ -1662,7 +1667,7 @@
     utils-copy-error "^1.0.1"
     uuid "^8.3.2"
 
-"@tryghost/errors@1.2.13":
+"@tryghost/errors@1.2.13", "@tryghost/errors@^1.0.0", "@tryghost/errors@^1.1.0", "@tryghost/errors@^1.1.1", "@tryghost/errors@^1.2.1", "@tryghost/errors@^1.2.12", "@tryghost/errors@^1.2.3", "@tryghost/errors@^1.2.5":
   version "1.2.13"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.13.tgz#09a680f81e5b14a008427d772689683d1280e221"
   integrity sha512-uZmPndO4UriA+n1qw+X6V25SG1X3WLNy1sgHflDlMAYiKtwDlKl6N5128BXoydLrATLAqb+to+G3QorM4+4nKw==
