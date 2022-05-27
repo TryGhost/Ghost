@@ -14,11 +14,11 @@ import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
 export const IMAGE_MIME_TYPES = 'image/gif,image/jpg,image/jpeg,image/png,image/svg+xml,image/webp';
-export const IMAGE_EXTENSIONS = ['gif', 'jpg', 'jpeg', 'png', 'svg', 'webp'];
+export const IMAGE_EXTENSIONS = ['gif', 'jpg', 'jpeg', 'png', 'svg', 'svgz', 'webp'];
 export const IMAGE_PARAMS = {purpose: 'image'};
 
-export const ICON_EXTENSIONS = ['ico', 'png'];
-export const ICON_MIME_TYPES = 'image/png,image/x-icon';
+export const ICON_EXTENSIONS = ['gif', 'ico', 'jpg', 'jpeg', 'png', 'svg', 'svgz', 'webp'];
+export const ICON_MIME_TYPES = 'image/x-icon,image/vnd.microsoft.icon,image/gif,image/jpg,image/jpeg,image/png,image/svg+xml,image/webp';
 export const ICON_PARAMS = {purpose: 'icon'};
 
 export default Component.extend({

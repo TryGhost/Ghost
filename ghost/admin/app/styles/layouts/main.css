@@ -174,7 +174,7 @@
     width: 32px;
     height: 32px;
     background-color: transparent;
-    background-size: 32px;
+    background-size: cover;
     border-radius: 6px;
 }
 
