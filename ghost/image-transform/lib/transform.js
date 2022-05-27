@@ -17,13 +17,38 @@ const canTransformFiles = () => {
 
 /**
  * Check if this tool can handle a particular extension
- * NOTE: .gif optimization is currently not supported by sharp but will be soon
- *       as there has been support added in underlying libvips library https://github.com/lovell/sharp/issues/1372
- *       As for .svg files, sharp only supports conversion to png, and this does not
- *       play well with animated svg files
  * @param {String} ext the extension to check, including the leading dot
  */
-const canTransformFileExtension = ext => !['.gif', '.svg', '.svgz', '.ico'].includes(ext);
+const canTransformFileExtension = ext => !['.ico'].includes(ext);
+
+/**
+ * Check if this tool can handle a particular extension, only to resize (= not convert format)
+ * - In this case we don't want to resize SVG's (doesn't save file size)
+ * - We don't want to resize GIF's (because we would lose the animation)
+ * So this is a 'should' instead of a 'could'. Because Sharp can handle them, but animations are lost.
+ * This is 'resize' instead of 'transform', because for the transform we might want to convert a SVG to a PNG, which is perfectly possible.
+ * @param {String} ext the extension to check, including the leading dot
+ */
+const shouldResizeFileExtension = ext => !['.ico', '.svg', '.svgz'].includes(ext);
+
+/**
+ * Can we output animation (prevents outputting animated JPGs that are just all the pages listed under each other)
+ * @param {keyof import('sharp').FormatEnum} format the extension to check, EXCLUDING the leading dot
+ */
+const doesFormatSupportAnimation = format => ['webp', 'gif'].includes(format);
+
+/**
+ * Check if this tool can convert to a particular format (used in the format option of ResizeFromBuffer)
+ * @param {String} format the format to check, EXCLUDING the leading dot
+ * @returns {ext is keyof import('sharp').FormatEnum}
+ */
+const canTransformToFormat = format => [
+    'gif',
+    'jpeg',
+    'jpg',
+    'png',
+    'webp'
+].includes(format);
 
 /**
   * @NOTE: Sharp cannot operate on the same image path, that's why we have to use in & out paths.
@@ -50,33 +75,49 @@ const unsafeResizeFromPath = (options = {}) => {
  * Resize an image
  *
  * @param {Buffer} originalBuffer image to resize
- * @param {{width, height}} options
- * @returns {Buffer} the resizedBuffer
+ * @param {{width?: number, height?: number, format?: keyof import('sharp').FormatEnum, animated?: boolean, withoutEnlargement?: boolean}} [options] 
+ *  options.animated defaults to true for file formats where animation is supported (will always maintain animation if possible)
+ * @returns {Promise<Buffer>} the resizedBuffer
  */
-const unsafeResizeFromBuffer = (originalBuffer, {width, height} = {}) => {
+const unsafeResizeFromBuffer = async (originalBuffer, options = {}) => {
     const sharp = require('sharp');
 
     // Disable the internal libvips cache - https://sharp.pixelplumbing.com/api-utility#cache
     sharp.cache(false);
 
-    return sharp(originalBuffer)
-        .resize(width, height, {
+    // It is safe to set animated to true for all formats, because if the input image doesn't contain animation
+    // nothing will change.
+    let animated = options.animated ?? true;
+    
+    if (options.format) {
+        // Only set animated to true if the output format supports animation
+        // Else we end up with multiple images stacked on top of each other (from the source image)
+        animated = doesFormatSupportAnimation(options.format);
+    }
+
+    let s = sharp(originalBuffer, {animated})
+        .resize(options.width, options.height, {
             // CASE: dont make the image bigger than it was
-            withoutEnlargement: true
+            withoutEnlargement: options.withoutEnlargement ?? true
         })
         // CASE: Automatically remove metadata and rotate based on the orientation.
-        .rotate()
-        .toBuffer()
-        .then((resizedBuffer) => {
-            return resizedBuffer.length < originalBuffer.length ? resizedBuffer : originalBuffer;
-        });
+        .rotate();
+
+    if (options.format) {
+        s = s.toFormat(options.format);
+    }
+    
+    const resizedBuffer = await s.toBuffer();
+    return options.format || resizedBuffer.length < originalBuffer.length ? resizedBuffer : originalBuffer;
 };
 
 /**
  * Internal utility to wrap all transform functions in error handling
  * Allows us to keep Sharp as an optional dependency
  *
- * @param {Function} fn
+ * @param {T} fn
+ * @return {T}
+ * @template {Function} T
  */
 const makeSafe = fn => (...args) => {
     try {
@@ -104,6 +145,8 @@ const generateOriginalImageName = (originalPath) => {
 
 module.exports.canTransformFiles = canTransformFiles;
 module.exports.canTransformFileExtension = canTransformFileExtension;
+module.exports.shouldResizeFileExtension = shouldResizeFileExtension;
+module.exports.canTransformToFormat = canTransformToFormat;
 module.exports.generateOriginalImageName = generateOriginalImageName;
 module.exports.resizeFromPath = makeSafe(unsafeResizeFromPath);
 module.exports.resizeFromBuffer = makeSafe(unsafeResizeFromBuffer);
