@@ -8,6 +8,8 @@ import {expect} from 'chai';
 import {run} from '@ember/runloop';
 import {setupTest} from 'ember-mocha';
 
+import {GENERIC_ERROR_MESSAGE} from 'ghost-admin/services/notifications';
+
 // notifications service determines if a notification is a model instance by
 // checking `notification.constructor.modelName === 'notification'`
 const NotificationStub = EmberObject.extend();
@@ -56,6 +58,23 @@ describe('Unit: Service: notifications', function () {
 
         expect(notifications.content)
             .to.deep.include({message: 'Test', status: 'notification'});
+    });
+
+    it('#handleNotification shows generic error message when a word matches built-in error type', function () {
+        let notifications = this.owner.lookup('service:notifications');
+
+        notifications.handleNotification({message: 'TypeError test'});
+        expect(notifications.content[0].message).to.equal(GENERIC_ERROR_MESSAGE);
+
+        notifications.clearAll();
+        expect(notifications.content.length).to.equal(0);
+
+        notifications.handleNotification({message: 'TypeError: Testing'});
+        expect(notifications.content[0].message).to.equal(GENERIC_ERROR_MESSAGE);
+
+        notifications.clearAll();
+        notifications.handleNotification({message: 'Unknown error - TypeError, cannot save invite.'});
+        expect(notifications.content[0].message).to.equal(GENERIC_ERROR_MESSAGE);
     });
 
     it('#showAlert adds POJO alerts', function () {
@@ -253,6 +272,15 @@ describe('Unit: Service: notifications', function () {
         expect(alert.status).to.equal('alert');
         expect(alert.type).to.equal('error');
         expect(alert.key).to.equal('api-error');
+    });
+
+    it('#showAPIError shows generic error for built-in error types', function () {
+        let notifications = this.owner.lookup('service:notifications');
+        const error = new TypeError('Testing');
+
+        notifications.showAPIError(error);
+
+        expect(notifications.alerts[0].message).to.equal(GENERIC_ERROR_MESSAGE);
     });
 
     it('#displayDelayed moves delayed notifications into content', function () {

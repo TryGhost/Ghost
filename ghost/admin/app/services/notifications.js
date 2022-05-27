@@ -20,6 +20,23 @@ import {tracked} from '@glimmer/tracking';
 // to avoid stacking of multiple error messages whilst leaving enough
 // specificity to re-use keys for i18n lookups
 
+// Rather than showing raw JS error messages to users we want to show a generic one.
+// This list is used to check obj.name in `showApiError(obj)` as the first line
+// of defence, then at the lowest `handleNotification(msg)` level we check the
+// first word of the message text as a fallback in case we get JS error messages
+// from the API. If there's a match we show the generic message.
+const GENERIC_ERROR_NAMES = [
+    'AggregateError',
+    'EvalError',
+    'RangeError',
+    'ReferenceError',
+    'SyntaxError',
+    'TypeError',
+    'URIError'
+];
+
+export const GENERIC_ERROR_MESSAGE = 'An unexpected error occurred, please try again.';
+
 export default class NotificationsService extends Service {
     @service config;
     @service upgradeStatus;
@@ -35,7 +52,17 @@ export default class NotificationsService extends Service {
         return this.content.filter(n => n.status === 'notification');
     }
 
-    handleNotification(message, delayed) {
+    handleNotification(message, delayed = false) {
+        const wordRegex = /[a-z]+/igm;
+        const wordMatches = (message.message.string || message.message).matchAll(wordRegex);
+
+        for (const wordMatch of wordMatches) {
+            if (GENERIC_ERROR_NAMES.includes(wordMatch[0])) {
+                message.message = GENERIC_ERROR_MESSAGE;
+                break;
+            }
+        }
+
         // If this is an alert message from the server, treat it as html safe
         if (message.constructor.modelName === 'notification' && message.status === 'alert') {
             message.message = htmlSafe(message.message);
@@ -124,7 +151,7 @@ export default class NotificationsService extends Service {
         }
 
         // loop over ember-ajax errors object
-        if (resp && resp.payload && isArray(resp.payload.errors)) {
+        if (isArray(resp?.payload?.errors)) {
             return resp.payload.errors.forEach((error) => {
                 this._showAPIError(error, options);
             });
@@ -147,7 +174,9 @@ export default class NotificationsService extends Service {
 
         let msg = options.defaultErrorText || 'There was a problem on the server, please try again.';
 
-        if (resp instanceof String) {
+        if (resp?.name && GENERIC_ERROR_NAMES.includes(resp.name)) {
+            msg = GENERIC_ERROR_MESSAGE;
+        } else if (resp instanceof String) {
             msg = resp;
         } else if (!isBlank(resp?.detail)) {
             msg = resp.detail;
