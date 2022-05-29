@@ -160,7 +160,7 @@ export default class LabsController extends Controller {
     @action
     triggerFileDialog(event) {
         // simulate click to open file dialog
-        event?.target.closest('.gh-setting-action')?.find('input[type="file"]')?.click();
+        event?.target.closest('.gh-setting-action')?.querySelector('input[type="file"]')?.click();
     }
 
     // TODO: convert to ember-concurrency task

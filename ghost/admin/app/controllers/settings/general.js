@@ -66,7 +66,7 @@ export default class GeneralController extends Controller {
      */
     @action
     triggerFileDialog(event) {
-        event?.target.closest('.gh-setting-action')?.find('input[type="file"]')?.click();
+        event?.target.closest('.gh-setting-action')?.querySelector('input[type="file"]')?.click();
     }
 
     /**
