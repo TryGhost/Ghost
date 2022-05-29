@@ -221,7 +221,7 @@ export default ModalComponent.extend({
          * @param  {MouseEvent} event - MouseEvent fired by the button click
          */
         triggerFileDialog(event) {
-            event?.target.closest('.gh-setting-action')?.find('input[type="file"]')?.click();
+            event?.target.closest('.gh-setting-action')?.querySelector('input[type="file"]')?.click();
         },
 
         deleteCustomIcon() {
