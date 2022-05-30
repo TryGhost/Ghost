@@ -15,7 +15,7 @@ describe('Offers Content API', function () {
     before(async function () {
         agent = await agentProvider.getContentAPIAgent();
         await fixtureManager.init('api_keys', 'members');
-        agent.authenticate();
+        await agent.authenticate();
     });
 
     it('Can read offer details from id', async function () {

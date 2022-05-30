@@ -13,7 +13,7 @@ describe('Newsletters Content API', function () {
     before(async function () {
         agent = await agentProvider.getContentAPIAgent();
         await fixtureManager.init('api_keys', 'newsletters');
-        agent.authenticate();
+        await agent.authenticate();
     });
 
     it('Can request only active newsletters', async function () {

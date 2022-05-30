@@ -11,7 +11,7 @@ describe('Settings Content API', function () {
     before(async function () {
         agent = await agentProvider.getContentAPIAgent();
         await fixtureManager.init('api_keys');
-        agent.authenticate();
+        await agent.authenticate();
     });
 
     it('Can request settings', async function () {

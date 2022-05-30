@@ -28,7 +28,7 @@ describe('Posts Content API', function () {
     before(async function () {
         agent = await agentProvider.getContentAPIAgent();
         await fixtureManager.init('owner:post', 'users:no-owner', 'user:inactive', 'posts', 'tags:extra', 'api_keys', 'newsletters', 'members:newsletters');
-        agent.authenticate();
+        await agent.authenticate();
 
         // Assign a newsletter to one of the posts
         const newsletterId = testUtils.DataGenerator.Content.newsletters[0].id;
