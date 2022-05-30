@@ -541,7 +541,8 @@ module.exports = {
     _partitionMembersBySegment: partitionMembersBySegment,
     _getEmailMemberRows: getEmailMemberRows,
     _getFromAddress: getFromAddress,
-    _getReplyToAddress: getReplyToAddress
+    _getReplyToAddress: getReplyToAddress,
+    _sendEmailJob: sendEmailJob
 };
 
 /**
