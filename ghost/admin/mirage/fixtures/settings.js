@@ -1,278 +1,117 @@
 /* eslint-disable camelcase */
+import moment from 'moment';
+
+let id = 0;
+
+function setting(group, key, value) {
+    id = id + 1;
+
+    return {
+        id,
+        group,
+        key,
+        value,
+        updated_at: moment.utc().format(),
+        updated_by: 1,
+        created_at: moment.utc().format(),
+        created_by: 1
+    };
+}
+
+// These settings represent a default new site setup
+// Real default settings can be found in https://github.com/TryGhost/Ghost/blob/main/core/server/data/schema/default-settings/default-settings.json
 export default [
-    {
-        id: 1,
-        created_at: '2015-09-11T09:44:30.805Z',
-        created_by: 1,
-        key: 'title',
-        group: 'site',
-        updated_at: '2015-10-04T16:26:05.195Z',
-        updated_by: 1,
-        value: 'Test Blog'
-    },
-    {
-        id: 2,
-        created_at: '2015-09-11T09:44:30.806Z',
-        created_by: 1,
-        key: 'description',
-        group: 'site',
-        updated_at: '2015-10-04T16:26:05.198Z',
-        updated_by: 1,
-        value: 'Thoughts, stories and ideas.'
-    },
-    {
-        id: 3,
-        key: 'logo',
-        value: '/content/images/2013/Nov/logo.png',
-        group: 'site',
-        created_at: '2013-11-25T14:48:11.000Z',
-        created_by: 1,
-        updated_at: '2015-10-27T17:39:58.273Z',
-        updated_by: 1
-    },
-    {
-        id: 4,
-        key: 'cover_image',
-        value: '/content/images/2014/Feb/cover.jpg',
-        group: 'site',
-        created_at: '2013-11-25T14:48:11.000Z',
-        created_by: 1,
-        updated_at: '2015-10-27T17:39:58.276Z',
-        updated_by: 1
-    },
-    {
-        id: 5,
-        key: 'locale',
-        value: 'en',
-        group: 'site',
-        created_at: '2013-11-25T14:48:11.000Z',
-        created_by: 1,
-        updated_at: '2015-10-27T17:39:58.278Z',
-        updated_by: 1
-    },
-    {
-        id: 10,
-        created_at: '2015-09-11T09:44:30.809Z',
-        created_by: 1,
-        key: 'codeinjection_head',
-        group: 'site',
-        updated_at: '2015-09-23T13:32:49.858Z',
-        updated_by: 1,
-        value: ''
-    },
-    {
-        id: 11,
-        created_at: '2015-09-11T09:44:30.809Z',
-        created_by: 1,
-        key: 'codeinjection_foot',
-        group: 'site',
-        updated_at: '2015-09-23T13:32:49.858Z',
-        updated_by: 1,
-        value: ''
-    },
-    {
-        id: 12,
-        key: 'labs',
-        value: JSON.stringify({
-            // Keep the GA flags that are not yet cleaned up in frontend code here
-        }),
-        group: 'labs',
-        created_at: '2015-01-12T18:29:01.000Z',
-        created_by: 1,
-        updated_at: '2015-10-27T17:39:58.288Z',
-        updated_by: 1
-    },
-    {
-        id: 13,
-        created_at: '2015-09-11T09:44:30.810Z',
-        created_by: 1,
-        key: 'navigation',
-        group: 'site',
-        updated_at: '2015-09-23T13:32:49.868Z',
-        updated_by: 1,
-        value: JSON.stringify([
-            {label: 'Home', url: '/'},
-            {label: 'About', url: '/about'}
-        ])
-    },
-    {
-        id: 14,
-        created_at: '2015-09-11T09:44:30.810Z',
-        created_by: 1,
-        key: 'is_private',
-        group: 'private',
-        updated_at: '2015-09-23T13:32:49.868Z',
-        updated_by: 1,
-        value: false
-    },
-    {
-        id: 15,
-        created_at: '2015-09-11T09:44:30.810Z',
-        created_by: 1,
-        key: 'password',
-        group: 'private',
-        updated_at: '2015-09-23T13:32:49.868Z',
-        updated_by: 1,
-        value: ''
-    },
-    {
-        id: 16,
-        created_at: '2016-05-05T15:04:03.115Z',
-        created_by: 1,
-        key: 'slack_username',
-        group: 'slack',
-        updated_at: '2022-05-05T18:33:09.168Z',
-        updated_by: 1,
-        value: 'Ghost'
-    },
-    {
-        id: 17,
-        created_at: '2016-05-05T15:40:12.133Z',
-        created_by: 1,
-        key: 'facebook',
-        group: 'site',
-        updated_at: '2016-05-08T15:20:25.953Z',
-        updated_by: 1,
-        value: 'test'
-    },
-    {
-        id: 18,
-        created_at: '2016-05-05T15:40:12.134Z',
-        created_by: 1,
-        key: 'twitter',
-        group: 'site',
-        updated_at: '2016-05-08T15:20:25.954Z',
-        updated_by: 1,
-        value: '@test'
-    },
-    {
-        id: 19,
-        created_at: '2015-09-11T09:44:30.810Z',
-        created_by: 1,
-        key: 'timezone',
-        group: 'site',
-        updated_at: '2015-09-23T13:32:49.868Z',
-        updated_by: 1,
-        value: 'Etc/UTC'
-    },
-    {
-        id: 21,
-        created_at: '2017-01-09T08:40:59.000Z',
-        created_by: 1,
-        key: 'amp',
-        group: 'amp',
-        updated_at: '2017-01-09T08:49:42.991Z',
-        updated_by: 1,
-        value: 'true'
-    },
-    {
-        id: 22,
-        key: 'icon',
-        value: '/content/images/2014/Feb/favicon.ico',
-        group: 'site',
-        created_at: '2013-11-25T14:48:11.000Z',
-        created_by: 1,
-        updated_at: '2015-10-27T17:39:58.276Z',
-        updated_by: 1
-    },
-    {
-        id: 23,
-        group: 'members',
-        key: 'members_subscription_settings',
-        value: '{"allowSelfSignup":true,"fromAddress":"noreply","paymentProcessors":[{"adapter":"stripe","config":{"secret_token":"","public_token":"","tier":{"name":"Ghost Subscription"},"plans":[{"name":"Monthly","currency":"usd","interval":"month","amount":""},{"name":"Yearly","currency":"usd","interval":"year","amount":""}]}}]}',
-        created_at: '2019-10-09T09:49:00.000Z',
-        created_by: 1,
-        updated_at: '2019-10-09T09:49:00.000Z',
-        updated_by: 1
-    },
-    {
-        id: 24,
-        group: 'email',
-        key: 'bulk_email_settings',
-        value: '{"provider":"mailgun","apiKey":"","domain":"","baseUrl":""}',
-        created_at: '2019-10-09T09:49:00.000Z',
-        created_by: 1,
-        updated_at: '2019-10-09T09:49:00.000Z',
-        updated_by: 1
-    },
-    {
-        id: 25,
-        key: 'secondary_navigation',
-        group: 'site',
-        created_at: '2019-11-20T09:44:30.810Z',
-        created_by: 1,
-        updated_at: '2019-11-20T13:32:49.868Z',
-        updated_by: 1,
-        value: JSON.stringify([])
-    },
-    {
-        id: 26,
-        created_at: '2020-01-09T08:40:59.000Z',
-        created_by: 1,
-        key: 'unsplash',
-        group: 'unsplash',
-        updated_at: '2020-01-09T08:49:42.991Z',
-        updated_by: 1,
-        value: 'true'
-    },
-    {
-        id: 27,
-        created_at: '2021-11-01T15:44:43.494Z',
-        created_by: 1,
-        key: 'active_theme',
-        group: 'theme',
-        updated_at: '2021-11-01T15:44:43.494Z',
-        updated_by: 1,
-        value: 'casper'
-    },
-    {
-        id: 28,
-        created_at: '2022-02-16T09:38:00.000Z',
-        created_by: 1,
-        key: 'members_signup_access',
-        group: 'members',
-        updated_at: '2022-02-16T09:38:00.000Z',
-        updated_by: 1,
-        value: 'all'
-    },
-    {
-        id: 29,
-        created_at: '2022-02-16T09:38:00.000Z',
-        created_by: 1,
-        key: 'default_content_visibility',
-        group: 'members',
-        updated_at: '2022-02-16T09:38:00.000Z',
-        updated_by: 1,
-        value: 'public'
-    },
-    {
-        id: 30,
-        created_at: '2022-02-16T09:38:00.000Z',
-        created_by: 1,
-        key: 'default_content_visibility_tiers',
-        group: 'members',
-        updated_at: '2022-02-16T09:38:00.000Z',
-        updated_by: 1,
-        value: '[]'
-    },
-    {
-        id: 31,
-        created_at: '2022-02-21T13:47:00.000Z',
-        created_by: 1,
-        key: 'email_track_opens',
-        group: 'email',
-        updated_at: '2022-02-21T13:47:00.000Z',
-        updated_by: 1,
-        value: 'true'
-    },
-    {
-        id: 33,
-        created_at: '2016-05-05T15:04:03.115Z',
-        created_by: 1,
-        key: 'slack_url',
-        group: 'slack',
-        updated_at: '2022-05-05T18:33:09.168Z',
-        updated_by: 1,
-        value: ''
-    }
+    // SITE
+    setting('site', 'title', 'Test Blog'),
+    setting('site', 'description', 'Thoughts, stories and ideas'),
+    setting('site', 'logo', '/content/images/2013/Nov/logo.png'),
+    setting('site', 'cover_image', '/content/images/2014/Feb/cover.jpg'),
+    setting('site', 'icon', '/content/images/2014/Feb/favicon.ico'),
+    setting('site', 'accent_color', '#ff1a75'),
+    setting('site', 'locale', 'en'),
+    setting('site', 'timezone', 'Etc/UTC'),
+    setting('site', 'codeinjection_head', null),
+    setting('site', 'codeinjection_foot', null),
+    setting('site', 'facebook', 'test'),
+    setting('site', 'twitter', '@test'),
+    setting('site', 'navigation', JSON.stringify([
+        {label: 'Home', url: '/'},
+        {label: 'About', url: '/about'}
+    ])),
+    setting('site', 'secondary_navigation', JSON.stringify([])),
+    setting('site', 'meta_title', null),
+    setting('site', 'meta_description', null),
+    setting('site', 'og_image', null),
+    setting('site', 'og_title', null),
+    setting('site', 'og_description', null),
+    setting('site', 'twitter_image', null),
+    setting('site', 'twitter_title', null),
+    setting('site', 'twitter_description', null),
+
+    // THEME
+    setting('theme', 'active_theme', 'Casper'),
+
+    // PRIVATE
+    setting('private', 'is_private', 'false'),
+    setting('private', 'password', ''),
+    setting('private', 'public_hash', ''),
+
+    // MEMBERS
+    setting('members', 'default_content_visibility', 'public'),
+    setting('members', 'default_content_visibility_tiers', JSON.stringify([])),
+    setting('members', 'members_signup_access', 'all'),
+    setting('members', 'members_support_address', 'noreply'),
+    setting('members', 'stripe_secret_key', null),
+    setting('members', 'stripe_publishable_key', null),
+    setting('members', 'stripe_plans', JSON.stringify([])),
+    setting('members', 'stripe_connect_publishable_key', 'pk_test_for_stripe'),
+    setting('members', 'stripe_connect_secret_key', 'sk_test_for_stripe'),
+    setting('members', 'stripe_connect_livemode', null),
+    setting('members', 'stripe_connect_display_name', null),
+    setting('members', 'stripe_connect_account_id', null),
+    setting('members', 'members_monthly_price_id', null),
+    setting('members', 'members_yearly_price_id', null),
+
+    // PORTAL
+    setting('portal', 'portal_name', 'true'),
+    setting('portal', 'portal_button', 'true'),
+    setting('portal', 'portal_plans', JSON.stringify(['free'])),
+    setting('portal', 'portal_products', JSON.stringify([])),
+    setting('portal', 'portal_button_style', 'icon-and-text'),
+    setting('portal', 'portal_button_icon', null),
+    setting('portal', 'portal_button_signup_text', 'Subscribe'),
+
+    // EMAIL
+    setting('email', 'mailgun_domain', null),
+    setting('email', 'mailgun_api_key', null),
+    setting('email', 'mailgun_base_url', null),
+    setting('email', 'email_track_opens', 'true'),
+    setting('email', 'email_verification_required', 'false'),
+
+    // AMP
+    setting('amp', 'amp', 'false'),
+    setting('amp', 'amp_gtag_id', null),
+
+    // FIRSTPROMOTER
+    setting('firstpromoter', 'firstpromoter', 'false'),
+    setting('firstpromoter', 'firstpromoter_id', null),
+
+    // LABS
+    setting('labs', 'labs', JSON.stringify({
+        // Keep the GA flags that are not yet cleaned up in frontend code here
+    })),
+
+    // SLACK
+    setting('slack', 'slack_url', ''),
+    setting('slack', 'slack_username', 'Ghost'),
+
+    // UNSPLASH
+    setting('unsplash', 'unsplash', 'true'),
+
+    // VIEWS
+    setting('views', 'shared_views', JSON.stringify([])),
+
+    // EDITOR
+    setting('editor', 'editor_default_email_recipients', 'visibility'),
+    setting('editor', 'editor_default_email_recipients_filter', 'all')
 ];

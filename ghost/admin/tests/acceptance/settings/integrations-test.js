@@ -92,13 +92,15 @@ describe('Acceptance: Settings - Integrations - Custom', function () {
 
     describe('navigation', function () {
         beforeEach(async function () {
+            this.server.loadFixtures('settings');
+
             let role = this.server.create('role', {name: 'Administrator'});
             this.server.create('user', {roles: [role]});
 
             return await authenticateSession();
         });
 
-        it('renders correctly', async function () {
+        it('renders defaults correctly', async function () {
             await visit('/settings/integrations');
 
             // slack is not configured in the fixtures
@@ -107,7 +109,18 @@ describe('Acceptance: Settings - Integrations - Custom', function () {
                 'slack app status'
             ).to.equal('Configure');
 
-            // amp is enabled in the fixtures
+            // amp is disabled in the fixtures
+            expect(
+                find('[data-test-app="amp"] [data-test-app-status]').textContent.trim(),
+                'amp app status'
+            ).to.equal('Configure');
+        });
+
+        it('renders AMP active state', async function () {
+            this.server.db.settings.update({key: 'amp', value: true});
+            await visit('/settings/integrations');
+
+            // amp switches to active when enabled
             expect(
                 find('[data-test-app="amp"] [data-test-app-status]').textContent.trim(),
                 'amp app status'
