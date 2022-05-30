@@ -1,5 +1,5 @@
 {{#let @publishOptions.post as |post|}}
-    <div class="gh-publish-title">
+    <div class="gh-publish-title" data-test-publish-flow="complete" data-test-complete-title>
         {{#if post.isScheduled}}
             <span class="green">All set!</span>
 
@@ -27,7 +27,7 @@
             {{#if post.emailOnly}}
                 Your email has been sent.
             {{else if (and post.isPost @postCount)}}
-                That’s {{@postCount}} posts published, keep going!
+                That’s {{gh-pluralize @postCount "post"}} published, keep going!
             {{else}}
                 Your {{post.displayName}} has been published.
             {{/if}}
@@ -35,7 +35,7 @@
     </div>
 
     {{#if post.emailOnly}}
-        <div class="gh-publish-confirmation">
+        <div class="gh-publish-confirmation" data-test-complete->
             <p>
                 Your post
                 {{if post.isScheduled "will be" "was"}}
@@ -79,7 +79,7 @@
             {{/if}}
         </div>
     {{else}}
-        <a href={{post.url}} class="gh-post-bookmark-wrapper" target="_blank" rel="noopener noreferrer">
+        <a href={{post.url}} class="gh-post-bookmark-wrapper" target="_blank" rel="noopener noreferrer" data-test-complete-bookmark>
             <GhPostBookmark @post={{post}} />
         </a>
 
@@ -90,6 +90,7 @@
                     type="button"
                     class="gh-revert-to-draft"
                     {{on "click" (fn @close (hash afterTask="revertToDraftTask"))}}
+                    data-test-button="revert-to-draft"
                 >
                     <span>Unschedule and revert to draft &rarr;</span>
                 </button>
@@ -100,6 +101,7 @@
                     type="button"
                     class="gh-back-to-editor"
                     {{on "click" @close}}
+                    data-test-button="back-to-editor"
                 >
                     <span>Back to editor</span>
                 </button>
