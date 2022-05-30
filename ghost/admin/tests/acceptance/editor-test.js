@@ -6,9 +6,6 @@ import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-sup
 import {beforeEach, describe, it} from 'mocha';
 import {blur, click, currentRouteName, currentURL, fillIn, find, findAll, triggerEvent} from '@ember/test-helpers';
 import {datepickerSelect} from 'ember-power-datepicker/test-support';
-import {enableMailgun} from '../helpers/mailgun';
-import {enableNewsletters} from '../helpers/newsletters';
-import {enableStripe} from '../helpers/stripe';
 import {expect} from 'chai';
 import {selectChoose} from 'ember-power-select/test-support';
 import {setupApplicationTest} from 'ember-mocha';
@@ -120,319 +117,101 @@ describe('Acceptance: Editor', function () {
             return await authenticateSession();
         });
 
-        it.skip('renders the editor correctly, PSM Publish Date and Save Button', async function () {
-            let [post1] = this.server.createList('post', 2, {authors: [author]});
-            let futureTime = moment().tz('Etc/UTC').add(10, 'minutes');
-
-            // post id 1 is a draft, checking for draft behaviour now
-            await visit('/editor/post/1');
-
-            expect(currentURL(), 'currentURL')
-                .to.equal('/editor/post/1');
-
-            // open post settings menu
-            await click('[data-test-psm-trigger]');
-
-            // should error, if the publish time is in the wrong format
-            await fillIn('[data-test-date-time-picker-time-input]', 'foo');
-            await blur('[data-test-date-time-picker-time-input]');
-
-            expect(find('[data-test-date-time-picker-error]').textContent.trim(), 'inline error response for invalid time')
-                .to.equal('Must be in format: "15:00"');
-
-            // should error, if the publish time is in the future
-            // NOTE: date must be selected first, changing the time first will save
-            // with the new time
-            await fillIn('[data-test-date-time-picker-datepicker] input', moment.tz('Etc/UTC').add(1, 'day').format('YYYY-MM-DD'));
-            await blur('[data-test-date-time-picker-datepicker] input');
-            await fillIn('[data-test-date-time-picker-time-input]', futureTime.format('HH:mm'));
-            await blur('[data-test-date-time-picker-time-input]');
-
-            expect(find('[data-test-date-time-picker-error]').textContent.trim(), 'inline error response for future time')
-                .to.equal('Must be in the past');
-
-            // closing the PSM will reset the invalid date/time
-            await click('[data-test-psm-trigger]');
-            await click('[data-test-psm-trigger]');
-
-            expect(
-                find('[data-test-date-time-picker-error]'),
-                'date picker error after closing PSM'
-            ).to.not.exist;
-
-            expect(
-                find('[data-test-date-time-picker-date-input]').value,
-                'PSM date value after closing with invalid date'
-            ).to.equal(moment(post1.publishedAt).tz('Etc/UTC').format('YYYY-MM-DD'));
-
-            expect(
-                find('[data-test-date-time-picker-time-input]').value,
-                'PSM time value after closing with invalid date'
-            ).to.equal(moment(post1.publishedAt).tz('Etc/UTC').format('HH:mm'));
-
-            // saves the post with the new date
-            let validTime = moment('2017-04-09 12:00').tz('Etc/UTC');
-            await fillIn('[data-test-date-time-picker-time-input]', validTime.format('HH:mm'));
-            await blur('[data-test-date-time-picker-time-input]');
-            await datepickerSelect('[data-test-date-time-picker-datepicker]', validTime.toDate());
-
-            // hide psm
-            await click('[data-test-psm-trigger]');
-
-            // checking the flow of the saving button for a draft
-            expect(
-                find('[data-test-publishmenu-trigger]').textContent.trim(),
-                'draft publish button text'
-            ).to.equal('Publish');
-
-            expect(
-                find('[data-test-editor-post-status]').textContent.trim(),
-                'draft status text'
-            ).to.match(/Draft\s+- Saved/);
-
-            // click on publish now
-            await click('[data-test-publishmenu-trigger]');
-
-            expect(
-                find('[data-test-publishmenu-draft]'),
-                'draft publish menu is shown'
-            ).to.exist;
-
-            await click('[data-test-publishmenu-scheduled-option]');
-
-            expect(
-                find('[data-test-publishmenu-save]').textContent.trim(),
-                'draft post schedule button text'
-            ).to.equal('Schedule');
-
-            await click('[data-test-publishmenu-published-option]');
-
-            expect(
-                find('[data-test-publishmenu-save]').textContent.trim(),
-                'draft post publish button text'
-            ).to.equal('Publish');
-
-            // Publish the post and re-open publish menu
-            await click('[data-test-publishmenu-save]');
-
-            expect(
-                find('[data-test-publishmenu-save]').textContent.trim(),
-                'publish menu save button updated after draft is published'
-            ).to.equal('Update');
-
-            expect(
-                find('[data-test-publishmenu-published]'),
-                'publish menu is shown after draft published'
-            ).to.exist;
-
-            expect(
-                find('[data-test-editor-post-status]').textContent.trim(),
-                'post status updated after draft published'
-            ).to.equal('Published');
-
-            await click('[data-test-publishmenu-cancel]');
-            await click('[data-test-publishmenu-trigger]');
-            await click('[data-test-publishmenu-unpublished-option]');
-
-            expect(
-                find('[data-test-publishmenu-save]').textContent.trim(),
-                'published post unpublish button text'
-            ).to.equal('Unpublish');
-
-            // post id 2 is a published post, checking for published post behaviour now
-            await visit('/editor/post/2');
-            expect(currentURL(), 'currentURL').to.equal('/editor/post/2');
-
-            await click('[data-test-psm-trigger]');
-            expect(find('[data-test-date-time-picker-date-input]').value).to.equal('2015-12-19');
-            expect(find('[data-test-date-time-picker-time-input]').value).to.equal('16:25');
-
-            // saves the post with a new date
-            await datepickerSelect('[data-test-date-time-picker-datepicker]', moment('2016-05-10 10:00').toDate());
-            await fillIn('[data-test-date-time-picker-time-input]', '10:00');
-            await blur('[data-test-date-time-picker-time-input]');
-
-            await click('[data-test-psm-trigger]');
-
-            // saving
-            await click('[data-test-publishmenu-trigger]');
-
-            expect(
-                find('[data-test-publishmenu-save]').textContent.trim(),
-                'published button text'
-            ).to.equal('Update');
-
-            await click('[data-test-publishmenu-save]');
-
-            expect(
-                find('[data-test-publishmenu-save]').textContent.trim(),
-                'publish menu save button updated after published post is updated'
-            ).to.equal('Update');
-
-            // go to settings to change the timezone
-            await visit('/settings/general');
-            await click('[data-test-toggle-timezone]');
-
-            expect(currentURL(), 'currentURL for settings')
-                .to.equal('/settings/general');
-            expect(find('#timezone option:checked').textContent.trim(), 'default timezone')
-                .to.equal('(GMT) UTC');
-
-            // select a new timezone
-            find('#timezone option[value="Pacific/Kwajalein"]').selected = true;
-
-            await triggerEvent('#timezone', 'change');
-            // save the settings
-            await click('[data-test-button="save"]');
-
-            expect(find('#timezone option:checked').textContent.trim(), 'new timezone after saving')
-                .to.equal('(GMT +12:00) International Date Line West');
-
-            // and now go back to the editor
-            await visit('/editor/post/2');
-
-            expect(currentURL(), 'currentURL in editor')
-                .to.equal('/editor/post/2');
-
-            await click('[data-test-psm-trigger]');
-            expect(
-                find('[data-test-date-time-picker-date-input]').value,
-                'date after timezone change'
-            ).to.equal('2016-05-10');
-
-            expect(
-                find('[data-test-date-time-picker-time-input]').value,
-                'time after timezone change'
-            ).to.equal('22:00');
-
-            // unpublish
-            await click('[data-test-publishmenu-trigger]');
-            await click('[data-test-publishmenu-unpublished-option]');
-
-            expect(
-                find('[data-test-publishmenu-save]').textContent.trim(),
-                'published post unpublish button text'
-            ).to.equal('Unpublish');
-
-            await click('[data-test-publishmenu-save]');
-
-            expect(
-                find('[data-test-publishmenu-save]').textContent.trim(),
-                'publish menu save button updated after published post is unpublished'
-            ).to.equal('Publish');
-
-            expect(
-                find('[data-test-publishmenu-draft]'),
-                'draft menu is shown after unpublished'
-            ).to.exist;
-
-            expect(
-                find('[data-test-editor-post-status]').textContent.trim(),
-                'post status updated after unpublished'
-            ).to.match(/Draft\s+- Saved/);
-
-            // schedule post
-            await click('[data-test-publishmenu-cancel]');
-            await click('[data-test-publishmenu-trigger]');
-            await click('[data-test-publishmenu-scheduled-option]');
-
-            expect(
-                find('[data-test-publishmenu-save]').textContent.trim(),
-                'draft post, schedule button text'
-            ).to.equal('Schedule');
-
-            // get time in current timezone and select the current date
-            // will result in the default +5mins schedule time
-            let newFutureTime = moment.tz('Pacific/Kwajalein');
-            await datepickerSelect('[data-test-publishmenu-draft] [data-test-date-time-picker-datepicker]', new Date(newFutureTime.format().replace(/\+.*$/, '')));
-            await click('[data-test-publishmenu-save]');
-
-            expect(
-                find('[data-test-publishmenu-save]').textContent.trim(),
-                'publish menu save button updated after draft is scheduled'
-            ).to.equal('Reschedule');
-
-            await click('[data-test-publishmenu-cancel]');
-
-            expect(
-                find('[data-test-publishmenu-scheduled]'),
-                'publish menu is not shown after closed'
-            ).to.not.exist;
-
-            // expect countdown to show warning that post is scheduled to be published
-            await triggerEvent('[data-test-editor-post-status]', 'mouseover');
-            expect(find('[data-test-schedule-countdown]').textContent.trim(), 'notification countdown')
-                .to.match(/to be published\s+in (4|5) minutes/);
-
-            expect(
-                find('[data-test-publishmenu-trigger]').textContent.trim(),
-                'scheduled publish button text'
-            ).to.equal('Scheduled');
-
-            expect(
-                find('[data-test-editor-post-status]').textContent.trim(),
-                'scheduled post status'
-            ).to.match(/to be published\s+in (4|5) minutes/);
-
-            // Re-schedule
-            await click('[data-test-publishmenu-trigger]');
-            await click('[data-test-publishmenu-scheduled-option]');
-            expect(
-                find('[data-test-publishmenu-save]').textContent.trim(),
-                'scheduled post button reschedule text'
-            ).to.equal('Reschedule');
-
-            await click('[data-test-publishmenu-save]');
-
-            expect(
-                find('[data-test-publishmenu-save]').textContent.trim(),
-                'publish menu save button text for a rescheduled post'
-            ).to.equal('Reschedule');
-
-            await click('[data-test-publishmenu-cancel]');
-
-            expect(
-                find('[data-test-publishmenu-scheduled]'),
-                'publish menu is not shown after closed'
-            ).to.not.exist;
-
-            expect(
-                find('[data-test-editor-post-status]').textContent.trim(),
-                'scheduled status text'
-            ).to.match(/to be published\s+in (4|5) minutes/);
-
-            // unschedule
-            await click('[data-test-publishmenu-trigger]');
-            await click('[data-test-publishmenu-draft-option]');
-
-            expect(
-                find('[data-test-publishmenu-save]').textContent.trim(),
-                'publish menu save button updated after scheduled post is unscheduled'
-            ).to.equal('Unschedule');
-
-            await click('[data-test-publishmenu-save]');
-
-            expect(
-                find('[data-test-publishmenu-save]').textContent.trim(),
-                'publish menu save button updated after scheduled post is unscheduled'
-            ).to.equal('Publish');
-
-            await click('[data-test-publishmenu-cancel]');
-
-            expect(
-                find('[data-test-publishmenu-trigger]').textContent.trim(),
-                'publish button text after unschedule'
-            ).to.equal('Publish');
-
-            expect(
-                find('[data-test-editor-post-status]').textContent.trim(),
-                'status text after unschedule'
-            ).to.match(/Draft\s+- Saved/);
-
-            expect(
-                find('[data-test-schedule-countdown]'),
-                'scheduled countdown after unschedule'
-            ).to.not.exist;
+        describe('post settings menu', function () {
+            it('can set publish date', async function () {
+                let [post1] = this.server.createList('post', 2, {authors: [author]});
+                let futureTime = moment().tz('Etc/UTC').add(10, 'minutes');
+
+                // sanity check
+                expect(
+                    moment(post1.publishedAt).tz('Etc/UTC').format('YYYY-MM-DD HH:mm:ss'),
+                    'initial publishedAt sanity check')
+                    .to.equal('2015-12-19 16:25:07');
+
+                // post id 1 is a draft, checking for draft behaviour now
+                await visit('/editor/post/1');
+
+                // open post settings menu
+                await click('[data-test-psm-trigger]');
+
+                // should error, if the publish time is in the wrong format
+                await fillIn('[data-test-date-time-picker-time-input]', 'foo');
+                await blur('[data-test-date-time-picker-time-input]');
+
+                expect(find('[data-test-date-time-picker-error]').textContent.trim(), 'inline error response for invalid time')
+                    .to.equal('Must be in format: "15:00"');
+
+                // should error, if the publish time is in the future
+                // NOTE: date must be selected first, changing the time first will save
+                // with the new time
+                await fillIn('[data-test-date-time-picker-datepicker] input', moment.tz('Etc/UTC').add(1, 'day').format('YYYY-MM-DD'));
+                await blur('[data-test-date-time-picker-datepicker] input');
+                await fillIn('[data-test-date-time-picker-time-input]', futureTime.format('HH:mm'));
+                await blur('[data-test-date-time-picker-time-input]');
+
+                expect(find('[data-test-date-time-picker-error]').textContent.trim(), 'inline error response for future time')
+                    .to.equal('Must be in the past');
+
+                // closing the PSM will reset the invalid date/time
+                await click('[data-test-psm-trigger]');
+                await click('[data-test-psm-trigger]');
+
+                expect(
+                    find('[data-test-date-time-picker-error]'),
+                    'date picker error after closing PSM'
+                ).to.not.exist;
+
+                expect(
+                    find('[data-test-date-time-picker-date-input]').value,
+                    'PSM date value after closing with invalid date'
+                ).to.equal(moment(post1.publishedAt).tz('Etc/UTC').format('YYYY-MM-DD'));
+
+                expect(
+                    find('[data-test-date-time-picker-time-input]').value,
+                    'PSM time value after closing with invalid date'
+                ).to.equal(moment(post1.publishedAt).tz('Etc/UTC').format('HH:mm'));
+
+                // saves the post with the new date
+                let validTime = moment('2017-04-09 12:00');
+                await fillIn('[data-test-date-time-picker-time-input]', validTime.format('HH:mm'));
+                await blur('[data-test-date-time-picker-time-input]');
+                await datepickerSelect('[data-test-date-time-picker-datepicker]', validTime.toDate());
+
+                expect(moment(post1.publishedAt).tz('Etc/UTC').format('YYYY-MM-DD HH:mm:ss')).to.equal('2017-04-09 12:00:00');
+
+                // go to settings to change the timezone
+                await visit('/settings/general');
+                await click('[data-test-toggle-timezone]');
+
+                expect(currentURL(), 'currentURL for settings')
+                    .to.equal('/settings/general');
+                expect(find('#timezone option:checked').textContent.trim(), 'default timezone')
+                    .to.equal('(GMT) UTC');
+
+                // select a new timezone
+                find('#timezone option[value="Pacific/Kwajalein"]').selected = true;
+
+                await triggerEvent('#timezone', 'change');
+                // save the settings
+                await click('[data-test-button="save"]');
+
+                expect(find('#timezone option:checked').textContent.trim(), 'new timezone after saving')
+                    .to.equal('(GMT +12:00) International Date Line West');
+
+                // and now go back to the editor
+                await visit('/editor/post/1');
+
+                await click('[data-test-psm-trigger]');
+                expect(
+                    find('[data-test-date-time-picker-date-input]').value,
+                    'date after timezone change'
+                ).to.equal('2017-04-10');
+
+                expect(
+                    find('[data-test-date-time-picker-time-input]').value,
+                    'time after timezone change'
+                ).to.equal('00:00');
+            });
         });
 
         it.skip('handles validation errors when scheduling', async function () {
@@ -834,78 +613,6 @@ describe('Acceptance: Editor', function () {
             let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
             let body = JSON.parse(lastRequest.requestBody);
             expect(body.posts[0].title).to.equal('CMD-S Test');
-        });
-    });
-
-    describe('regressions', function () {
-        let user;
-
-        beforeEach(async function () {
-            const role = this.server.create('role', {name: 'Administrator'});
-            user = this.server.create('user', {roles: [role]});
-            this.server.loadFixtures('settings');
-            return await authenticateSession();
-        });
-
-        // BUG: opening the publish menu and selecting a scheduled time then
-        // closing prevents scheduling with a "Must be in the past" error
-        // when re-opening the menu
-        // https://github.com/TryGhost/Team/issues/1399
-        it.skip('can close publish menu after selecting schedule then re-open, schedule, and publish without error', async function () {
-            const post = this.server.create('post', {status: 'draft', authors: [user]});
-
-            await visit(`/editor/post/${post.id}`);
-            await click('[data-test-publishmenu-trigger]');
-            await click('[data-test-publishmenu-scheduled-option]');
-            await click('[data-test-publishmenu-cancel]');
-            await click('[data-test-publishmenu-trigger]');
-            await click('[data-test-publishmenu-scheduled-option]');
-            await click('[data-test-publishmenu-save]');
-
-            expect(post.attrs.status).to.equal('scheduled');
-        });
-
-        // BUG: re-scheduling a send-only post unexpectedly switched to publish+send
-        // https://github.com/TryGhost/Ghost/issues/14354
-        it.skip('can re-schedule an email-only post', async function () {
-            // Enable newsletters (extra confirmation step)
-            enableMailgun(this.server);
-            enableNewsletters(this.server, true);
-
-            // Enable stripe to also show paid members breakdown
-            enableStripe(this.server);
-
-            const newsletter = this.server.create('newsletter', {status: 'active', name: 'test newsletter', slug: 'test-newsletter'});
-            this.server.createList('member', 4, {status: 'free', newsletters: [newsletter]});
-            this.server.createList('member', 2, {status: 'paid', newsletters: [newsletter]});
-
-            const post = this.server.create('post', {status: 'draft', authors: [user]});
-
-            const scheduledTime = moment().add(2, 'hours');
-
-            await visit(`/editor/post/${post.id}`);
-            await click('[data-test-publishmenu-trigger]');
-            await selectChoose('[data-test-distribution-action-select]', 'send');
-            await click('[data-test-publishmenu-scheduled-option]');
-            await datepickerSelect('[data-test-publishmenu-draft] [data-test-date-time-picker-datepicker]', new Date(scheduledTime.format().replace(/\+.*$/, '')));
-
-            // Expect 4 free and 2 paid recipients here
-            expect(find('[data-test-email-count="free-members"]')).to.contain.text('4');
-            expect(find('[data-test-email-count="paid-members"]')).to.contain.text('2');
-
-            await click('[data-test-publishmenu-save]');
-            await click('[data-test-button="confirm-schedule"]');
-
-            expect(post.attrs.emailOnly).to.be.true;
-
-            await click('[data-test-publishmenu-trigger]');
-
-            expect(find('[data-test-publishmenu-header]')).to.contain.text('Will be sent');
-
-            await datepickerSelect('[data-test-publishmenu-scheduled] [data-test-date-time-picker-datepicker]', new Date(scheduledTime.add(1, 'day').format().replace(/\+.*$/, '')));
-            await click('[data-test-publishmenu-save]');
-
-            expect(post.attrs.emailOnly).to.be.true;
         });
     });
 });

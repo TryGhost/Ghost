@@ -1,8 +1,8 @@
-<div class="gh-publish-title">
+<div class="gh-publish-title" data-test-publish-flow="confirm">
     <div class="green">Ready, set, publish.</div>
     <div>Share it with the world.</div>
 </div>
-<p class="gh-publish-confirmation">
+<p class="gh-publish-confirmation" data-test-text="confirm-details">
     {{#if @publishOptions.isScheduled}}
         {{#let (moment-site-tz @publishOptions.scheduledAtUTC) as |scheduledAt|}}
             On
@@ -53,7 +53,7 @@
 </p>
 
 {{#if this.errorMessage}}
-    <p class="error gh-box gh-box-error mt3 mb3">
+    <p class="error gh-box gh-box-error mt3 mb3" data-test-confirm-error>
         {{this.errorMessage}}
     </p>
 {{/if}}
@@ -67,6 +67,7 @@
         @class="gh-btn gh-btn-large"
         @idleClass="gh-btn-pulse"
         @runningClass="gh-btn-green gh-btn-icon"
+        data-test-button="confirm-publish"
     />
-    <button type="button" class="gh-btn gh-btn-link gh-btn-large gh-publish-cta-secondary" {{on "click" @cancel}}>Back to settings</button>
+    <button type="button" class="gh-btn gh-btn-link gh-btn-large gh-publish-cta-secondary" {{on "click" @cancel}} data-test-button="back-to-options">Back to settings</button>
 </div>
