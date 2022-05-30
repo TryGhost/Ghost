@@ -7728,10 +7728,10 @@ kind-of@^6.0.0, kind-of@^6.0.2:
   resolved "https://registry.yarnpkg.com/kind-of/-/kind-of-6.0.3.tgz#07c05034a6c349fa06e24fa35aa76db4580ce4dd"
   integrity sha512-dcS1ul+9tmeD95T+x28/ehLgd9mENa3LsvDTtzm3vyBEO7RPptvAD+t44WVXaUjTBRcrpFeFlC8WCruUR456hw==
 
-knex-migrator@4.2.10:
-  version "4.2.10"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-4.2.10.tgz#549b01be2deff4702904a5d0acfced89eed13868"
-  integrity sha512-cE1VBdm55XZ1HUyVy8EWFHITDbBGcRGrBFPnIMDrsYlF/rNzOoHslaOV+Nx+CQFD3hNAc6Ywh2qALNhykk8bcQ==
+knex-migrator@4.2.11:
+  version "4.2.11"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-4.2.11.tgz#8e80098039f92210840f9932a024b13db7322bbb"
+  integrity sha512-eQDFuiF645g3qL9UyA2kl8V4oOJfn0Kn6o7vNXj/YA/3Z64BHBzw1syparYKzNhxkb+Cl/VepOXt+1wtaQSv+A==
   dependencies:
     "@tryghost/database-info" "0.3.5"
     "@tryghost/logging" "2.1.8"
@@ -7740,7 +7740,7 @@ knex-migrator@4.2.10:
     compare-ver "2.0.2"
     debug "4.3.4"
     ghost-ignition "4.6.3"
-    knex "2.0.0"
+    knex "2.1.0"
     lodash "4.17.21"
     moment "2.24.0"
     mysql2 "2.3.3"
@@ -7748,26 +7748,6 @@ knex-migrator@4.2.10:
     resolve "1.22.0"
   optionalDependencies:
     sqlite3 "5.0.8"
-
-knex@2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/knex/-/knex-2.0.0.tgz#84296ced7ef27e0f3b954302ac7d9da67c28b5d3"
-  integrity sha512-LchC8/GLfreMz8d4kCwh/ymXttsoJG8zO1O0AJBjnxdyr2oT/k2ik77hP1PpZkZH9mDQrq6WsQcIu18Pnqppzg==
-  dependencies:
-    colorette "2.0.16"
-    commander "^9.1.0"
-    debug "4.3.4"
-    escalade "^3.1.1"
-    esm "^3.2.25"
-    get-package-type "^0.1.0"
-    getopts "2.3.0"
-    interpret "^2.2.0"
-    lodash "^4.17.21"
-    pg-connection-string "2.5.0"
-    rechoir "^0.8.0"
-    resolve-from "^5.0.0"
-    tarn "^3.0.2"
-    tildify "2.0.0"
 
 knex@2.1.0:
   version "2.1.0"
