@@ -15,7 +15,7 @@ module.exports = function setupApiApp() {
     // API middleware
 
     // @NOTE: req.body is undefined if we don't use this parser, this can trouble if components rely on req.body being present
-    apiApp.use(bodyParser.json({limit: '1mb'}));
+    apiApp.use(bodyParser.json({limit: '50mb'}));
 
     // Query parsing
     apiApp.use(boolParser());
