@@ -1,4 +1,30 @@
-const {agentProvider, mockManager, fixtureManager} = require('../utils/e2e-framework');
+const {agentProvider, mockManager, fixtureManager, matchers} = require('../utils/e2e-framework');
+const {anyObjectId, anyISODateTime, anyUuid} = matchers;
+
+const tierSnapshot = {
+    id: anyObjectId,
+    created_at: anyISODateTime,
+    updated_at: anyISODateTime
+};
+
+const buildPostSnapshotWithTiers = ({tiersCount}) => {
+    return {
+        id: anyObjectId,
+        uuid: anyUuid,
+        comment_id: anyObjectId,
+        published_at: anyISODateTime,
+        created_at: anyISODateTime,
+        updated_at: anyISODateTime,
+        tiers: new Array(tiersCount).fill(tierSnapshot)
+    };
+};
+
+const buildPreviousPostSnapshotWithTiers = ({tiersCount}) => {
+    return {
+        updated_at: anyISODateTime,
+        tiers: new Array(tiersCount).fill(tierSnapshot)
+    };
+};
 
 describe('post.* events', function () {
     let adminAPIAgent;
@@ -19,10 +45,11 @@ describe('post.* events', function () {
     });
 
     it('post.published even is triggered', async function () {
-        await webhookMockReceiver.mock('post.published');
+        const webhookURL = 'https://test-webhook-receiver.com/post-published/';
+        await webhookMockReceiver.mock(webhookURL);
         await fixtureManager.insertWebhook({
             event: 'post.published',
-            url: 'https://test-webhook-receiver.com/webhook'
+            url: webhookURL
         });
 
         const res = await adminAPIAgent
@@ -47,6 +74,13 @@ describe('post.* events', function () {
             .expectStatus(200);
 
         await webhookMockReceiver
-            .matchBodySnapshot();
+            // TODO: implement header matching feature next!
+            // .matchHeaderSnapshot();
+            .matchBodySnapshot({
+                post: {
+                    current: buildPostSnapshotWithTiers({tiersCount: 2}),
+                    previous: buildPreviousPostSnapshotWithTiers({tiersCount: 2})
+                }
+            });
     });
 });
