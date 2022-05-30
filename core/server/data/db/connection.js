@@ -1,4 +1,8 @@
+const _ = require('lodash');
 const knex = require('knex');
+const os = require('os');
+
+const logging = require('@tryghost/logging');
 const config = require('../../../shared/config');
 let knexInstance;
 
@@ -30,6 +34,15 @@ function configure(dbConfig) {
         // Force bthreads to use child_process backend until a worker_thread-compatible version of sqlite3 is published
         // https://github.com/mapbox/node-sqlite3/issues/1386
         process.env.BTHREADS_BACKEND = 'child_process';
+
+        // In the default SQLite test config we set the path to /tmp/ghost-test.db,
+        // but this won't work on Windows, so we need to replace the /tmp bit with
+        // the Windows temp folder
+        const filename = dbConfig.connection.filename;
+        if (process.platform === 'win32' && _.isString(filename) && filename.match(/^\/tmp/)) {
+            dbConfig.connection.filename = filename.replace(/^\/tmp/, os.tmpdir());
+            logging.info(`Ghost DB path: ${dbConfig.connection.filename}`);
+        }
     }
 
     if (client === 'mysql2') {
