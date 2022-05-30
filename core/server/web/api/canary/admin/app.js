@@ -16,8 +16,8 @@ module.exports = function setupApiApp() {
     // API middleware
 
     // Body parsing
-    apiApp.use(bodyParser.json({limit: '1mb'}));
-    apiApp.use(bodyParser.urlencoded({extended: true, limit: '1mb'}));
+    apiApp.use(bodyParser.json({limit: '50mb'}));
+    apiApp.use(bodyParser.urlencoded({extended: true, limit: '50mb'}));
 
     // Query parsing
     apiApp.use(boolParser());

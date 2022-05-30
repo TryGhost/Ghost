@@ -36,12 +36,12 @@ module.exports = function setupMembersApp() {
 
     // Manage newsletter subscription via unsubscribe link
     membersApp.get('/api/member/newsletters', middleware.getMemberNewsletters);
-    membersApp.put('/api/member/newsletters', bodyParser.json({limit: '1mb'}), middleware.updateMemberNewsletters);
+    membersApp.put('/api/member/newsletters', bodyParser.json({limit: '50mb'}), middleware.updateMemberNewsletters);
 
     // Get and update member data
     membersApp.get('/api/member', middleware.getMemberData);
-    membersApp.put('/api/member', bodyParser.json({limit: '1mb'}), middleware.updateMemberData);
-    membersApp.post('/api/member/email', bodyParser.json({limit: '1mb'}), (req, res) => membersService.api.middleware.updateEmailAddress(req, res));
+    membersApp.put('/api/member', bodyParser.json({limit: '50mb'}), middleware.updateMemberData);
+    membersApp.post('/api/member/email', bodyParser.json({limit: '50mb'}), (req, res) => membersService.api.middleware.updateEmailAddress(req, res));
 
     // Manage session
     membersApp.get('/api/session', middleware.getIdentityToken);
