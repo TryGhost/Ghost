@@ -1,16 +1,16 @@
-<div class="gh-publish-title">
+<div class="gh-publish-title" data-test-publish-flow="options">
     <div class="green">Ready, set, publish.</div>
     <div>Share it with the world.</div>
 </div>
 <div class="gh-publish-settings">
-    <div class="gh-publish-setting">
+    <div class="gh-publish-setting" data-test-setting="publish-type">
         {{#if @publishOptions.emailUnavailable}}
-            <div class="gh-publish-setting-title">
+            <div class="gh-publish-setting-title" data-test-setting-title>
                 {{svg-jar "send-email"}}
                 <div class="gh-publish-setting-trigger">Publish on site</div>
             </div>
         {{else}}
-            <button type="button" class="gh-publish-setting-title" {{on "click" (fn this.toggleSection "publishType")}}>
+            <button type="button" class="gh-publish-setting-title" {{on "click" (fn this.toggleSection "publishType")}} data-test-setting-title>
                 {{svg-jar "send-email"}}
                 <div class="gh-publish-setting-trigger">
                     <span>{{@publishOptions.selectedPublishTypeOption.display}}</span>
@@ -30,12 +30,13 @@
     </div>
 
     {{#unless @publishOptions.emailUnavailable}}
-        <div class="gh-publish-setting">
+        <div class="gh-publish-setting" data-test-setting="email-recipients">
             {{#if (not-eq @publishOptions.publishType "publish")}}
                 <button
                     type="button"
                     class="gh-publish-setting-title"
                     {{on "click" (fn this.toggleSection "emailRecipients")}}
+                    data-test-setting-title
                 >
                     {{svg-jar "member"}}
                     <div class="gh-publish-setting-trigger">
@@ -70,6 +71,7 @@
                 <button
                     type="button"
                     class="gh-publish-setting-title disabled"
+                    data-test-setting-title
                 >
                     {{svg-jar "member"}}
                     <div class="gh-publish-setting-trigger">
@@ -91,8 +93,8 @@
     {{/unless}}
 
     {{#if (and @publishOptions.post.email (not @publishOptions.emailDisabledInSettings))}}
-        <div class="gh-publish-setting">
-            <div class="gh-publish-setting-title disabled">
+        <div class="gh-publish-setting" data-test-setting="email-recipients">
+            <div class="gh-publish-setting-title disabled" data-test-setting-title>
                 {{svg-jar "member"}}
                 <div class="gh-publish-setting-trigger">
                     Already sent to
@@ -107,8 +109,8 @@
         </div>
     {{/if}}
 
-    <div class="gh-publish-setting last">
-        <button type="button" class="gh-publish-setting-title" {{on "click" (fn this.toggleSection "publishAt")}}>
+    <div class="gh-publish-setting last" data-test-setting="publish-time">
+        <button type="button" class="gh-publish-setting-title" {{on "click" (fn this.toggleSection "publishAt")}} data-test-setting-title>
             {{svg-jar "clock"}}
             <div class="gh-publish-setting-trigger">
                 <span>
@@ -135,5 +137,7 @@
 </div>
 
 <div class="gh-publish-cta">
-    <button type="button" class="gh-btn gh-btn-black gh-btn-large" {{on "click" @confirm}}><span>Continue, final review &rarr;</span></button>
+    <button type="button" class="gh-btn gh-btn-black gh-btn-large" {{on "click" @confirm}} data-test-button="continue">
+        <span>Continue, final review &rarr;</span>
+    </button>
 </div>

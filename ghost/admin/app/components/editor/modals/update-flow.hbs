@@ -1,5 +1,5 @@
-<div class="flex flex-column h-100 items-center overflow-auto">
-    <header class="gh-publish-header" data-test-modal="update-flow">
+<div class="flex flex-column h-100 items-center overflow-auto" data-test-modal="update-flow">
+    <header class="gh-publish-header">
         <button class="gh-btn-editor gh-publish-back-button" title="Close" type="button" {{on "click" @close}}>
             <span>{{svg-jar "arrow-left"}} Editor</span>
         </button>
@@ -13,7 +13,7 @@
 
     {{#let @data.publishOptions.post as |post|}}
         <div class="gh-publish-settings-container gh-update-flow fade-in">
-            <div class="gh-publish-title">
+            <div class="gh-publish-title" data-test-update-flow-title>
                 {{#if (and post.isSent (not post.isPublished))}}
                     This {{post.displayName}} was
                     <span class="green">{{post.status}} by email</span>
@@ -23,7 +23,7 @@
                 {{/if}}
             </div>
 
-            <div class="gh-publish-confirmation">
+            <div class="gh-publish-confirmation" data-test-update-flow-confirmation>
                 <p>
                     Your
                     {{post.displayName}}
@@ -86,6 +86,7 @@
                             type="button"
                             class="gh-revert-to-draft"
                             {{on "click" (fn @close (hash afterTask="revertToDraftTask"))}}
+                            data-test-button="revert-to-draft"
                         >
                             <span>Unschedule and revert to draft &rarr;</span>
                         </button>
@@ -95,6 +96,7 @@
                             type="button"
                             class="gh-revert-to-draft"
                             {{on "click" (fn @close (hash afterTask="revertToDraftTask"))}}
+                            data-test-button="revert-to-draft"
                         >
                             <span>Unpublish and revert to private draft &rarr;</span>
                         </button>
