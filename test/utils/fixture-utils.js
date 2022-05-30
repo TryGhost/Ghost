@@ -436,6 +436,16 @@ const fixtures = {
         });
     },
 
+    insertWebhook: function (attributes) {
+        const webhook = DataGenerator.forKnex.createWebhook(
+            Object.assign(attributes, {
+                integration_id: DataGenerator.forKnex.integrations[0].id
+            })
+        );
+
+        return models.Webhook.add(webhook, context.internal);
+    },
+
     insertWebhooks: function insertWebhooks() {
         return Promise.map(DataGenerator.forKnex.webhooks, function (webhook) {
             return models.Webhook.add(webhook, context.internal);
