@@ -5239,10 +5239,10 @@ express-hbs@2.4.0:
   optionalDependencies:
     js-beautify "^1.13.11"
 
-express-jwt@7.7.2:
-  version "7.7.2"
-  resolved "https://registry.yarnpkg.com/express-jwt/-/express-jwt-7.7.2.tgz#5f4bc1ec9c4d23dd77ba30974adeb463288f3ab6"
-  integrity sha512-NTNciChI54hnfzOh0XNjfsF6zY4W6t1BE4MfrylYrdlzTipMFzCmUaI4ebUac7e4ZBpai5CwrID661o+TwYsRQ==
+express-jwt@7.7.3:
+  version "7.7.3"
+  resolved "https://registry.yarnpkg.com/express-jwt/-/express-jwt-7.7.3.tgz#eb466e6e4943862df99207772d61a507a5bb7836"
+  integrity sha512-20J4jgcRK0JrUo81NHeOQnekDYWEuksNYxDSAmxNqX0XUGi2dubw3a6Y84+X4ReVWDbVpwH8qRRBDmHbXxW7Gw==
   dependencies:
     "@types/express-unless" "^0.5.3"
     "@types/jsonwebtoken" "^8.5.8"
