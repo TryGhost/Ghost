@@ -193,7 +193,7 @@
     "@lodder/grunt-postcss": "3.1.1",
     "@playwright/test": "1.22.2",
     "@tryghost/express-test": "0.11.1",
-    "@tryghost/webhook-mock-receiver": "0.1.0",
+    "@tryghost/webhook-mock-receiver": "0.1.1",
     "c8": "7.11.3",
     "cli-progress": "3.11.1",
     "coffeescript": "2.7.0",
