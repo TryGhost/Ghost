@@ -5,6 +5,7 @@ import {disableMailgun, enableMailgun} from '../../helpers/mailgun';
 import {disableMembers, enableMembers} from '../../helpers/members';
 import {disableNewsletters, enableNewsletters} from '../../helpers/newsletters';
 import {expect} from 'chai';
+import {selectChoose} from 'ember-power-select/test-support/helpers';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
@@ -167,6 +168,39 @@ describe('Acceptance: Publish flow', function () {
         it('can publish');
         it('can schedule publish');
 
+        it('respects default recipient settings - usually nobody', async function () {
+            // switch to "usually nobody" setting
+            // - doing it this way so we're not testing potentially stale mocked setting keys/values
+            await visit('/settings/newsletters');
+            await click('[data-test-toggle-membersemail]');
+            await selectChoose('[data-test-select="default-recipients"]', 'Usually nobody');
+            await click('[data-test-button="save-members-settings"]');
+
+            const post = this.server.create('post', {status: 'draft'});
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+
+            expect(
+                find('[data-test-setting="publish-type"] [data-test-setting-title]'), 'publish type title'
+            ).to.have.trimmed.text('Publish');
+
+            expect(
+                find('[data-test-setting="email-recipients"] [data-test-setting-title]'), 'publish type title'
+            ).to.have.trimmed.text('Not sent as newsletter');
+
+            await click('[data-test-setting="publish-type"] [data-test-setting-title]');
+
+            // email-related options are enabled
+            expect(find('[data-test-publish-type="publish+send"]')).to.not.have.attribute('disabled');
+            expect(find('[data-test-publish-type="send"]')).to.not.have.attribute('disabled');
+
+            await click('[data-test-publish-type="publish+send"]');
+
+            expect(
+                find('[data-test-setting="email-recipients"] [data-test-setting-title]'), 'publish type title'
+            ).to.have.trimmed.rendered.text('1 subscriber');
+        });
+
         it('handles Mailgun not being set up', async function () {
             disableMailgun(this.server);
 
@@ -191,6 +225,7 @@ describe('Acceptance: Publish flow', function () {
 
         it('handles no members present', async function () {
             this.server.db.members.remove();
+            this.server.db.newsletters.update({memberIds: []});
 
             const post = this.server.create('post', {status: 'draft'});
             await visit(`/editor/post/${post.id}`);
