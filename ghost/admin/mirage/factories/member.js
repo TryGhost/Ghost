@@ -10,7 +10,6 @@ export default Factory.extend({
     name() { return `${faker.name.firstName()} ${faker.name.lastName()}`; },
     email: faker.internet.email,
     status: 'free',
-    subscribed: true,
     createdAt() { return moment(randomDate()).format('YYYY-MM-DD HH:mm:ss'); },
 
     free: trait({
@@ -23,5 +22,12 @@ export default Factory.extend({
 
     comped: trait({
         status: 'comped'
-    })
+    }),
+
+    afterCreate(member, server) {
+        const newslettersToSignup = server.schema.newsletters.where({subscribeOnSignup: true});
+
+        member.newsletters = newslettersToSignup;
+        member.save();
+    }
 });

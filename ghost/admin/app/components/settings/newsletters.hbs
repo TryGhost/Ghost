@@ -59,7 +59,7 @@
                                 </div>
                             </div>
                         {{else}}
-                            <div class="gh-setting-richdd-container gh-setting-rich-dropdown form-group">
+                            <div class="gh-setting-richdd-container gh-setting-rich-dropdown form-group" data-test-select="default-recipients">
                                 <Settings::MembersEmail::DefaultRecipientsSelect
                                     @recipients={{this.recipientsSelectValue}}
                                     @segment={{this.settings.editorDefaultEmailRecipientsFilter}}
