@@ -281,6 +281,13 @@ const getAgentsForMembers = async () => {
     };
 };
 
+const insertWebhook = ({event, url}) => {
+    return fixtureUtils.fixtures.insertWebhook({
+        event: event,
+        target_url: url
+    });
+};
+
 module.exports = {
     // request agent
     agentProvider: {
@@ -297,6 +304,7 @@ module.exports = {
     // DB State Manipulation
     fixtureManager: {
         get: getFixture,
+        insertWebhook: insertWebhook,
         getCurrentOwnerUser: fixtureUtils.getCurrentOwnerUser,
         init: initFixtures,
         restore: resetData,
