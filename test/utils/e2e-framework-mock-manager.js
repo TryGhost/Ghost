@@ -5,7 +5,8 @@ const nock = require('nock');
 
 // Helper services
 const configUtils = require('./configUtils');
-const WebhookMockReceiver = require('./webhook-mock-receiver');
+const WebhookMockReceiver = require('@tryghost/webhook-mock-receiver');
+const {snapshotManager} = require('@tryghost/express-test').snapshot;
 
 let mocks = {};
 let emailCount = 0;
@@ -50,7 +51,7 @@ const mockMail = (response = 'Mail is disabled') => {
 };
 
 const mockWebhookRequests = () => {
-    mocks.webhookMockReceiver = new WebhookMockReceiver();
+    mocks.webhookMockReceiver = new WebhookMockReceiver({snapshotManager});
 
     return mocks.webhookMockReceiver;
 };

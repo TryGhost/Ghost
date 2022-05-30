@@ -2256,6 +2256,11 @@
   resolved "https://registry.yarnpkg.com/@tryghost/vhost-middleware/-/vhost-middleware-1.0.26.tgz#8e5fc668f47d3960af6295bf4275a37e7c4fc4e1"
   integrity sha512-7IYYeRLIzWS/Wl3PLSVDTpk08AB9SZbulh67buXdzjWXZCkFtWPPMB4BS3fCUuJCFDOfz6f92rfMkMu7Xji/TA==
 
+"@tryghost/webhook-mock-receiver@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/webhook-mock-receiver/-/webhook-mock-receiver-0.1.0.tgz#273375a1265eb9d17f9e1e1cb99be36621304dbd"
+  integrity sha512-zhU7wjZ5x1hiqa5wCevW7IyWKPUWMGE73SCIGNxT7+ww9teWjxeWbDeA233qG86SBZR/11QJSNG7RX/I7lYF7Q==
+
 "@tryghost/zip@1.1.26":
   version "1.1.26"
   resolved "https://registry.yarnpkg.com/@tryghost/zip/-/zip-1.1.26.tgz#5e6bafd8157d89ce63d034da477fd4c0511f28c7"
