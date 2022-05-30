@@ -82,7 +82,7 @@ describe('Acceptance: Settings - Code-Injection', function () {
             let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
             let params = JSON.parse(lastRequest.requestBody);
 
-            expect(params.settings.findBy('key', 'codeinjection_head').value).to.equal('');
+            expect(params.settings.findBy('key', 'codeinjection_head').value).to.equal(null);
             expect(find('[data-test-save-button]').textContent.trim(), 'save button text').to.equal('Save');
 
             // CMD-S shortcut works
@@ -96,7 +96,7 @@ describe('Acceptance: Settings - Code-Injection', function () {
             let [newRequest] = this.server.pretender.handledRequests.slice(-1);
             params = JSON.parse(newRequest.requestBody);
 
-            expect(params.settings.findBy('key', 'codeinjection_head').value).to.equal('');
+            expect(params.settings.findBy('key', 'codeinjection_head').value).to.equal(null);
             expect(find('[data-test-save-button]').textContent.trim(), 'save button text').to.equal('Save');
         });
     });
