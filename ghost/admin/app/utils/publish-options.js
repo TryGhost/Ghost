@@ -162,13 +162,16 @@ export default class PublishOptions {
     }
 
     get defaultRecipientFilter() {
-        const defaultEmailRecipients = this.settings.get('editorDefaultEmailRecipients');
+        const recipients = this.settings.get('editorDefaultEmailRecipients');
+        const filter = this.settings.get('editorDefaultEmailRecipientsFilter');
 
-        if (defaultEmailRecipients === 'disabled') {
+        const usuallyNobody = recipients === 'filter' && filter === null;
+
+        if (recipients === 'disabled') {
             return null;
         }
 
-        if (defaultEmailRecipients === 'visibility') {
+        if (recipients === 'visibility' || usuallyNobody) {
             if (this.post.visibility === 'public') {
                 return 'status:free,status:-free';
             }
@@ -188,7 +191,7 @@ export default class PublishOptions {
             return this.post.visibility;
         }
 
-        return this.settings.get('editorDefaultEmailRecipientsFilter');
+        return filter;
     }
 
     get fullRecipientFilter() {
@@ -238,6 +241,16 @@ export default class PublishOptions {
         this.newsletter = this.defaultNewsletter;
 
         if (this.emailUnavailable || this.emailDisabled) {
+            this.publishType = 'publish';
+        }
+
+        // When default recipients is set to "Usually nobody":
+        // Set publish type to "Publish" but keep email recipients matching post visibility
+        // to avoid multiple clicks to turn on emailing
+        if (
+            this.settings.get('editorDefaultEmailRecipients') === 'filter' &&
+            this.settings.get('editorDefaultEmailRecipientsFilter') === null
+        ) {
             this.publishType = 'publish';
         }
     }
