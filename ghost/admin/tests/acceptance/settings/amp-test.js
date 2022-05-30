@@ -66,19 +66,19 @@ describe('Acceptance: Settings - Integrations - AMP', function () {
             // has correct url
             expect(currentURL(), 'currentURL').to.equal('/settings/integrations/amp');
 
-            // AMP is enabled by default
-            expect(find('[data-test-amp-checkbox]').checked, 'AMP checkbox').to.be.true;
+            // AMP is disabled by default
+            expect(find('[data-test-amp-checkbox]').checked, 'AMP checkbox').to.be.false;
 
             await click('[data-test-amp-checkbox]');
 
-            expect(find('[data-test-amp-checkbox]').checked, 'AMP checkbox').to.be.false;
+            expect(find('[data-test-amp-checkbox]').checked, 'AMP checkbox').to.be.true;
 
             await click('[data-test-save-button]');
 
             let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
             let params = JSON.parse(lastRequest.requestBody);
 
-            expect(params.settings.findBy('key', 'amp').value).to.equal(false);
+            expect(params.settings.findBy('key', 'amp').value).to.equal(true);
 
             // CMD-S shortcut works
             await click('[data-test-amp-checkbox]');
@@ -93,8 +93,8 @@ describe('Acceptance: Settings - Integrations - AMP', function () {
             let [newRequest] = this.server.pretender.handledRequests.slice(-1);
             params = JSON.parse(newRequest.requestBody);
 
-            expect(find('[data-test-amp-checkbox]').checked, 'AMP checkbox').to.be.true;
-            expect(params.settings.findBy('key', 'amp').value).to.equal(true);
+            expect(find('[data-test-amp-checkbox]').checked, 'AMP checkbox').to.be.false;
+            expect(params.settings.findBy('key', 'amp').value).to.equal(false);
         });
 
         it('warns when leaving without saving', async function () {
@@ -103,12 +103,12 @@ describe('Acceptance: Settings - Integrations - AMP', function () {
             // has correct url
             expect(currentURL(), 'currentURL').to.equal('/settings/integrations/amp');
 
-            // AMP is enabled by default
-            expect(find('[data-test-amp-checkbox]').checked, 'AMP checkbox default').to.be.true;
+            // AMP is disabled by default
+            expect(find('[data-test-amp-checkbox]').checked, 'AMP checkbox default').to.be.false;
 
             await click('[data-test-amp-checkbox]');
 
-            expect(find('[data-test-amp-checkbox]').checked, 'AMP checkbox after click').to.be.false;
+            expect(find('[data-test-amp-checkbox]').checked, 'AMP checkbox after click').to.be.true;
 
             await visit('/settings/staff');
 
@@ -124,7 +124,7 @@ describe('Acceptance: Settings - Integrations - AMP', function () {
             expect(currentURL(), 'currentURL after return').to.equal('/settings/integrations/amp');
 
             // settings were not saved
-            expect(find('[data-test-amp-checkbox]').checked, 'AMP checkbox').to.be.true;
+            expect(find('[data-test-amp-checkbox]').checked, 'AMP checkbox').to.be.false;
         });
     });
 });
