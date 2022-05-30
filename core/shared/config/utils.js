@@ -1,6 +1,5 @@
 const path = require('path');
 const fs = require('fs-extra');
-const os = require('os');
 const _ = require('lodash');
 
 /**
@@ -73,14 +72,6 @@ const sanitizeDatabaseProperties = function sanitizeDatabaseProperties(nconf) {
 
     if (nconf.get('database:client') === 'sqlite3') {
         makePathsAbsolute(nconf, nconf.get('database:connection'), 'database:connection');
-
-        // In the default SQLite test config we set the path to /tmp/ghost-test.db,
-        // but this won't work on Windows, so we need to replace the /tmp bit with
-        // the Windows temp folder
-        const filename = nconf.get('database:connection:filename');
-        if (_.isString(filename) && filename.match(/^\/tmp/)) {
-            nconf.set('database:connection:filename', filename.replace(/^\/tmp/, os.tmpdir()));
-        }
     }
 };
 
