@@ -256,6 +256,11 @@
 .gh-post-preview-email-input {
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
+    border-right-width: 0;
+}
+
+.gh-post-preview-email-input:focus {
+    border-right-width: 1px;
 }
 
 .gh-post-preview-email-trigger,
