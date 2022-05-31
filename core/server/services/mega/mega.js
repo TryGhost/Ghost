@@ -495,13 +495,15 @@ async function createEmailBatches({emailModel, memberRows, memberSegment, option
             });
         });
 
-        const insertQuery = db.knex('email_recipients').insert(recipientData);
+        for (let data of _.chunk(recipientData,499)) {
 
-        if (knexOptions.transacting) {
-            insertQuery.transacting(knexOptions.transacting);
+            const insertQuery = db.knex('email_recipients').insert(data);
+            if (knexOptions.transacting) {
+                insertQuery.transacting(knexOptions.transacting);
+            }
+            await insertQuery;
+
         }
-
-        await insertQuery;
 
         return batchModel.id;
     };
