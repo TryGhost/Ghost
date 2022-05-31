@@ -23,7 +23,7 @@ export default class PublishFlowOptions extends Component {
 
     buttonTextMap = {
         'publish+send': {
-            idle: 'Publish & Send',
+            idle: 'Publish & send',
             running: 'Publishing & sending',
             success: 'Published & sent'
         },

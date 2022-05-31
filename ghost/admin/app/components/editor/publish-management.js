@@ -45,7 +45,7 @@ export default class PublishManagement extends Component {
 
         const isValid = await this._validatePost();
 
-        if (isValid && !this.publishFlowModal || this.publishFlowModal.isClosing) {
+        if (isValid && !this.publishFlowModal || this.publishFlowModal?.isClosing) {
             this.publishOptions.resetPastScheduledAt();
 
             this.publishFlowModal = this.modals.open(PublishFlowModal, {

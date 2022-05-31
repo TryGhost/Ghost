@@ -2,11 +2,11 @@
 <fieldset>
     <div class="gh-publish-schedule">
         <div class="gh-radio {{unless @publishOptions.isScheduled "active"}}" {{on "click" (fn @publishOptions.toggleScheduled false)}}>
-            <div class="gh-radio-button" data-test-publishmenu-published-option></div>
+            <div class="gh-radio-button" data-test-radio="publish-now"></div>
             <label>Set it live now</label>
         </div>
         <div class="gh-radio {{if @publishOptions.isScheduled "active"}}" {{on "click" (fn @publishOptions.toggleScheduled true)}}>
-            <div class="gh-radio-button" data-test-publishmenu-scheduled-option></div>
+            <div class="gh-radio-button" data-test-radio="schedule"></div>
             <label>Schedule for later</label>
         </div>
     </div>
