@@ -17,10 +17,8 @@ describe('MEGA', function () {
             const postModel = {
                 get: sinon.stub().returns('none'),
                 relations: {},
-                related: sinon.stub().returns({
-                    fetch: sinon.stub().returns({
-                        get: sinon.stub().returns('active')
-                    })
+                getLazyRelation: sinon.stub().returns({
+                    get: sinon.stub().returns('active')
                 })
             };
 
@@ -37,10 +35,8 @@ describe('MEGA', function () {
             const postModel = {
                 get: sinon.stub().returns('all'),
                 relations: {},
-                related: sinon.stub().returns({
-                    fetch: sinon.stub().returns({
-                        get: sinon.stub().returns('archived')
-                    })
+                getLazyRelation: sinon.stub().returns({
+                    get: sinon.stub().returns('archived')
                 })
             };
 
@@ -62,10 +58,8 @@ describe('MEGA', function () {
             const postModel = {
                 get: sinon.stub().returns('status:free'),
                 relations: {},
-                related: sinon.stub().returns({
-                    fetch: sinon.stub().returns({
-                        get: newsletterGetter
-                    })
+                getLazyRelation: sinon.stub().returns({
+                    get: newsletterGetter
                 })
             };
             sinon.stub(labs, 'isSet').returns(true);
@@ -109,11 +103,9 @@ describe('MEGA', function () {
             const emailModel = {
                 get: sinon.stub().returns('none'),
                 relations: {},
-                related: sinon.stub().returns({
-                    fetch: sinon.stub().returns({
-                        id: 'test',
-                        newsletterGetter
-                    })
+                getLazyRelation: sinon.stub().returns({
+                    id: 'test',
+                    newsletterGetter
                 })
             };
 

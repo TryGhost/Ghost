@@ -61,6 +61,8 @@ ghostBookshelf.plugin(require('./plugins/data-manipulation'));
 
 ghostBookshelf.plugin(require('./plugins/overrides'));
 
+ghostBookshelf.plugin(require('./plugins/relations'));
+
 // Manages nested updates (relationships)
 ghostBookshelf.plugin('bookshelf-relations', {
     allowedOptions: ['context', 'importing', 'migrating'],

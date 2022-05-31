@@ -691,7 +691,7 @@ Post = ghostBookshelf.Model.extend({
         // ensure draft posts have the email_recipient_filter reset unless an email has already been sent
         if (newStatus === 'draft' && this.hasChanged('status')) {
             ops.push(function ensureSendEmailWhenPublishedIsUnchanged() {
-                return self.related('email').fetch({transacting: options.transacting}).then((email) => {
+                return self.getLazyRelation('email', {transacting: options.transacting}).then((email) => {
                     if (!email) {
                         self.set('email_recipient_filter', 'all');
                         self.set('newsletter_id', null);
