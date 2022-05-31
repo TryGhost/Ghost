@@ -71,7 +71,7 @@ export default function mockPosts(server) {
         });
     });
 
-    server.put('/posts/:id/', function ({newsletters, posts, users, tags}, {params}) {
+    server.put('/posts/:id/', function ({newsletters, posts, users, tags}, {params, queryParams}) {
         const attrs = this.normalizedRequestAttrs();
         const post = posts.find(params.id);
 
@@ -80,8 +80,8 @@ export default function mockPosts(server) {
 
         attrs.updatedAt = moment.utc().toDate();
 
-        if (params.newsletter_id) {
-            const newsletter = newsletters.find(params.newsletter_id);
+        if (queryParams.newsletter) {
+            const newsletter = newsletters.findBy({slug: queryParams.newsletter});
             post.newsletter = newsletter;
             post.save();
         }
