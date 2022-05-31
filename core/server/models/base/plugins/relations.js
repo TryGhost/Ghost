@@ -16,6 +16,10 @@ module.exports = function (Bookshelf) {
                 // Relation was already loaded
                 return this.relations[name];
             }
+
+            if (!this[name]) {
+                return undefined;
+            }
             // Not yet loaded, or force refresh
             // Note that we don't use .refresh on the relation on options.forceRefresh
             // Because the relation can also be a collection, which doesn't have a refresh method
