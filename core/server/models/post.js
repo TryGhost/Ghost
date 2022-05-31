@@ -645,12 +645,12 @@ Post = ghostBookshelf.Model.extend({
 
         // ### Business logic for published_at and published_by
         // If the current status is 'published' and published_at is not set, set it to now
-        if (newStatus === 'published' && !publishedAt) {
+        if ((newStatus === 'published' || newStatus === 'sent') && !publishedAt) {
             this.set('published_at', new Date());
         }
 
         // If the current status is 'published' and the status has just changed ensure published_by is set correctly
-        if (newStatus === 'published' && this.hasChanged('status')) {
+        if ((newStatus === 'published' || newStatus === 'sent') && this.hasChanged('status')) {
             // unless published_by is set and we're importing, set published_by to contextUser
             if (!(this.get('published_by') && options.importing)) {
                 this.set('published_by', String(this.contextUser(options)));
@@ -666,7 +666,7 @@ Post = ghostBookshelf.Model.extend({
         if (options.newsletter
             && !this.get('newsletter_id')
             && this.hasChanged('status')
-            && (newStatus === 'published' || newStatus === 'scheduled')) {
+            && (newStatus === 'published' || newStatus === 'scheduled' || newStatus === 'sent')) {
             // Map the passed slug to the id + validate the passed newsletter
             ops.push(async () => {
                 const newsletter = await Newsletter.findOne({slug: options.newsletter}, {transacting: options.transacting, filter: 'status:active'});
@@ -705,6 +705,9 @@ Post = ghostBookshelf.Model.extend({
         const hasEmailOnlyFlag = _.get(attrs, 'posts_meta.email_only') || model.related('posts_meta').get('email_only');
         if (hasEmailOnlyFlag && (newStatus === 'published') && this.hasChanged('status')) {
             this.set('status', 'sent');
+        } else if (!hasEmailOnlyFlag && (newStatus === 'sent') && this.hasChanged('status')) {
+            // Prevent setting status to 'sent' for non email only posts
+            this.set('status', 'published');
         }
 
         // If a title is set, not the same as the old title, a draft post, and has never been published
