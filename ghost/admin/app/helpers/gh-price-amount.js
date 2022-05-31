@@ -7,7 +7,7 @@ export function ghPriceAmount(amount, {cents = true} = {}) {
         if (price % 1 === 0) {
             return formatNumber(price);
         } else {
-            return formatNumber(Math.round(price * 100) / 100);
+            return formatNumber(Math.round(price * 100) / 100, {minimumFractionDigits: 2});
         }
     }
     return 0;
