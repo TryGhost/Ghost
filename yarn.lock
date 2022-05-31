@@ -5239,14 +5239,14 @@ express-hbs@2.4.0:
   optionalDependencies:
     js-beautify "^1.13.11"
 
-express-jwt@7.7.3:
-  version "7.7.3"
-  resolved "https://registry.yarnpkg.com/express-jwt/-/express-jwt-7.7.3.tgz#eb466e6e4943862df99207772d61a507a5bb7836"
-  integrity sha512-20J4jgcRK0JrUo81NHeOQnekDYWEuksNYxDSAmxNqX0XUGi2dubw3a6Y84+X4ReVWDbVpwH8qRRBDmHbXxW7Gw==
+express-jwt@7.7.5:
+  version "7.7.5"
+  resolved "https://registry.yarnpkg.com/express-jwt/-/express-jwt-7.7.5.tgz#5b46e056be33abdfbcbcb3d8ddc79639e6994508"
+  integrity sha512-2CMse20Ex2vbqvsuGAcai7TgQuvmFa1n39PwKLaEszTGhuRzckBERII4PwdZIibtwfYUGSNVQzPpf+QcGo2yHw==
   dependencies:
     "@types/express-unless" "^0.5.3"
     "@types/jsonwebtoken" "^8.5.8"
-    express-unless "^1.0.0"
+    express-unless "^2.0.2"
     jsonwebtoken "^8.5.1"
 
 express-lazy-router@1.0.4:
@@ -5273,10 +5273,10 @@ express-session@1.17.3:
     safe-buffer "5.2.1"
     uid-safe "~2.1.5"
 
-express-unless@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/express-unless/-/express-unless-1.0.0.tgz#ecd1c354c5ccf7709a8a17ece617934e037cccd8"
-  integrity sha512-zXSSClWBPfcSYjg0hcQNompkFN/MxQQ53eyrzm9BYgik2ut2I7PxAf2foVqBRMYCwWaZx/aWodi+uk76npdSAw==
+express-unless@^2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/express-unless/-/express-unless-2.0.2.tgz#54709f5732e05e9e04fc13e4be709211cbab48ac"
+  integrity sha512-x3aTYZLO9q5ZUe+X/AdrExWb1PxXkbLLbkZZAZmqumqrfhrjiJUcyDn4rq2h6lK3QOPmZqdys2Y5TnIPxsr71g==
 
 express@4.18.1, express@^4.16.4, express@^4.17.2:
   version "4.18.1"
