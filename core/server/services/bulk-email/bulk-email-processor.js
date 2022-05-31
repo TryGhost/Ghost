@@ -168,7 +168,7 @@ module.exports = {
 
         try {
             // Load newsletter data on email
-            await emailBatchModel.relations.email.related('newsletter').fetch(Object.assign({}, {require: false}, knexOptions));
+            await emailBatchModel.relations.email.getLazyRelation('newsletter', {require: false, ...knexOptions});
 
             // send the email
             const sendResponse = await this.send(emailBatchModel.relations.email.toJSON(), recipientRows, memberSegment);
