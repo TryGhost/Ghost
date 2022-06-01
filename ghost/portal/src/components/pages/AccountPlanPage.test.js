@@ -46,23 +46,25 @@ const customSetup = (overrides) => {
 
 describe('Account Plan Page', () => {
     test('renders', () => {
-        const {monthlyCheckboxEl, yearlyCheckboxEl, chooseBtns} = setup();
-
+        const {monthlyCheckboxEl, yearlyCheckboxEl, queryAllByRole} = setup();
+        const continueBtn = queryAllByRole('button', {name: 'Continue'});
         expect(monthlyCheckboxEl).toBeInTheDocument();
         expect(yearlyCheckboxEl).toBeInTheDocument();
-        expect(chooseBtns).toHaveLength(1);
+        expect(continueBtn).toHaveLength(1);
     });
 
     test('can choose plan and continue', async () => {
         const siteData = getSiteData({
             products: getProductsData({numOfProducts: 1})
         });
-        const {mockOnActionFn, monthlyCheckboxEl, yearlyCheckboxEl, chooseBtns} = setup({site: siteData});
+        const {mockOnActionFn, monthlyCheckboxEl, yearlyCheckboxEl, queryAllByRole} = setup({site: siteData});
+        const continueBtn = queryAllByRole('button', {name: 'Continue'});
+
         fireEvent.click(monthlyCheckboxEl);
         expect(monthlyCheckboxEl.className).toEqual('gh-portal-btn active');
         fireEvent.click(yearlyCheckboxEl);
         expect(yearlyCheckboxEl.className).toEqual('gh-portal-btn active');
-        fireEvent.click(chooseBtns[0]);
+        fireEvent.click(continueBtn[0]);
         expect(mockOnActionFn).toHaveBeenCalledWith('checkoutPlan', {plan: siteData.products[0].yearlyPrice.id});
     });
 
