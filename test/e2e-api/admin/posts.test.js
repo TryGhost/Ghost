@@ -626,7 +626,133 @@ describe('Posts API', function () {
             .expect(400);
     });
 
-    it('Can change the newsletter of a post when publishing', async function () {
+    it('Can publish a post without email', async function () {
+        const post = {
+            title: 'My publish only post',
+            status: 'draft',
+            feature_image_alt: 'Testing posts',
+            feature_image_caption: 'Testing <b>feature image caption</b>',
+            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+            created_at: moment().subtract(2, 'days').toDate(),
+            updated_at: moment().subtract(2, 'days').toDate(),
+            created_by: ObjectId().toHexString(),
+            updated_by: ObjectId().toHexString()
+        };
+
+        const res = await request.post(localUtils.API.getApiQuery('posts'))
+            .set('Origin', config.get('url'))
+            .send({posts: [post]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201);
+
+        // Check newsletter relation is loaded, but null in response.
+        should(res.body.posts[0].newsletter).eql(null);
+        should.not.exist(res.body.posts[0].newsletter_id);
+
+        const id = res.body.posts[0].id;
+
+        const updatedPost = res.body.posts[0];
+
+        updatedPost.status = 'published';
+
+        const finalPost = await request
+            .put(localUtils.API.getApiQuery('posts/' + id + '/'))
+            .set('Origin', config.get('url'))
+            .send({posts: [updatedPost]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        // Check newsletter relation is loaded in response
+        should(finalPost.body.posts[0].newsletter).eql(null);
+        should(finalPost.body.posts[0].email_segment).eql('all');
+        should.not.exist(finalPost.body.posts[0].newsletter_id);
+
+        const model = await models.Post.findOne({
+            id
+        }, testUtils.context.internal);
+
+        should(model.get('newsletter_id')).eql(null);
+
+        // Check email
+        // Note: we only create an email if we have members susbcribed to the newsletter
+        const email = await models.Email.findOne({
+            post_id: id
+        }, testUtils.context.internal);
+
+        should.not.exist(email);
+    });
+
+    it('Interprets sent status as published for not email only posts', async function () {
+        const post = {
+            title: 'My publish only post',
+            status: 'draft',
+            feature_image_alt: 'Testing posts',
+            feature_image_caption: 'Testing <b>feature image caption</b>',
+            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+            created_at: moment().subtract(2, 'days').toDate(),
+            updated_at: moment().subtract(2, 'days').toDate(),
+            created_by: ObjectId().toHexString(),
+            updated_by: ObjectId().toHexString()
+        };
+
+        const res = await request.post(localUtils.API.getApiQuery('posts'))
+            .set('Origin', config.get('url'))
+            .send({posts: [post]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201);
+
+        // Check newsletter relation is loaded, but null in response.
+        should(res.body.posts[0].newsletter).eql(null);
+        should.not.exist(res.body.posts[0].newsletter_id);
+
+        const id = res.body.posts[0].id;
+
+        const updatedPost = res.body.posts[0];
+
+        updatedPost.status = 'sent';
+
+        const initialModel = await models.Post.findOne({
+            id,
+            status: 'all'
+        }, testUtils.context.internal);
+        should.not.exist(initialModel.get('published_by'));
+
+        const finalPost = await request
+            .put(localUtils.API.getApiQuery('posts/' + id + '/'))
+            .set('Origin', config.get('url'))
+            .send({posts: [updatedPost]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        // Check newsletter relation is loaded in response
+        should(finalPost.body.posts[0].newsletter).eql(null);
+        should(finalPost.body.posts[0].email_segment).eql('all');
+        should.not.exist(finalPost.body.posts[0].newsletter_id);
+        
+        // Check status is set to published
+        finalPost.body.posts[0].status.should.eql('published');
+
+        const model = await models.Post.findOne({
+            id
+        }, testUtils.context.internal);
+
+        should(model.get('newsletter_id')).eql(null);
+        should.exist(model.get('published_by'));
+
+        // Check email
+        // Note: we only create an email if we have members susbcribed to the newsletter
+        const email = await models.Email.findOne({
+            post_id: id
+        }, testUtils.context.internal);
+
+        should.not.exist(email);
+    });
+
+    it('Can publish a post and send as email', async function () {
         const newsletterId = testUtils.DataGenerator.Content.newsletters[1].id;
         const newsletterSlug = testUtils.DataGenerator.Content.newsletters[1].slug;
 
@@ -659,6 +785,12 @@ describe('Posts API', function () {
 
         updatedPost.status = 'published';
 
+        const initialModel = await models.Post.findOne({
+            id,
+            status: 'all'
+        }, testUtils.context.internal);
+        should.not.exist(initialModel.get('published_by'));
+
         const finalPost = await request
             .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterSlug))
             .set('Origin', config.get('url'))
@@ -677,6 +809,7 @@ describe('Posts API', function () {
         }, testUtils.context.internal);
 
         should(model.get('newsletter_id')).eql(newsletterId);
+        should.exist(model.get('published_by'));
 
         // Check email
         // Note: we only create an email if we have members susbcribed to the newsletter
@@ -689,7 +822,80 @@ describe('Posts API', function () {
         should(email.get('status')).eql('pending');
     });
 
-    it('Can publish an email_only post', async function () {
+    it('Interprets sent as published for a post with email', async function () {
+        const newsletterId = testUtils.DataGenerator.Content.newsletters[1].id;
+        const newsletterSlug = testUtils.DataGenerator.Content.newsletters[1].slug;
+
+        const post = {
+            title: 'My newsletter_id post',
+            status: 'draft',
+            feature_image_alt: 'Testing newsletter_id',
+            feature_image_caption: 'Testing <b>feature image caption</b>',
+            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+            created_at: moment().subtract(2, 'days').toDate(),
+            updated_at: moment().subtract(2, 'days').toDate(),
+            created_by: ObjectId().toHexString(),
+            updated_by: ObjectId().toHexString()
+        };
+
+        const res = await request.post(localUtils.API.getApiQuery('posts'))
+            .set('Origin', config.get('url'))
+            .send({posts: [post]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201);
+
+        // Check newsletter relation is loaded, but null in response.
+        should(res.body.posts[0].newsletter).eql(null);
+        should.not.exist(res.body.posts[0].newsletter_id);
+
+        const id = res.body.posts[0].id;
+
+        const updatedPost = res.body.posts[0];
+
+        updatedPost.status = 'sent';
+
+        const initialModel = await models.Post.findOne({
+            id,
+            status: 'all'
+        }, testUtils.context.internal);
+        should.not.exist(initialModel.get('published_by'));
+
+        const finalPost = await request
+            .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterSlug))
+            .set('Origin', config.get('url'))
+            .send({posts: [updatedPost]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        // Check newsletter relation is loaded in response
+        should(finalPost.body.posts[0].newsletter.id).eql(newsletterId);
+        should(finalPost.body.posts[0].email_segment).eql('all');
+        should.not.exist(finalPost.body.posts[0].newsletter_id);
+
+        // Check status
+        should(finalPost.body.posts[0].status).eql('published');
+
+        const model = await models.Post.findOne({
+            id
+        }, testUtils.context.internal);
+
+        should(model.get('newsletter_id')).eql(newsletterId);
+        should.exist(model.get('published_by'));
+
+        // Check email
+        // Note: we only create an email if we have members susbcribed to the newsletter
+        const email = await models.Email.findOne({
+            post_id: id
+        }, testUtils.context.internal);
+
+        should.exist(email);
+        should(email.get('newsletter_id')).eql(newsletterId);
+        should(email.get('status')).eql('pending');
+    });
+
+    it('Can publish an email_only post by setting status to published', async function () {
         const newsletterId = testUtils.DataGenerator.Content.newsletters[1].id;
         const newsletterSlug = testUtils.DataGenerator.Content.newsletters[1].slug;
 
@@ -720,6 +926,12 @@ describe('Posts API', function () {
         //updatedPost.published_at = moment().add(2, 'days').toDate();
         updatedPost.email_only = true;
 
+        const initialModel = await models.Post.findOne({
+            id,
+            status: 'all'
+        }, testUtils.context.internal);
+        should.not.exist(initialModel.get('published_by'));
+
         const publishedRes = await request
             .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterSlug))
             .set('Origin', config.get('url'))
@@ -743,6 +955,7 @@ describe('Posts API', function () {
         should(model.get('status')).eql('sent');
         should(model.get('newsletter_id')).eql(newsletterId);
         should(model.get('email_recipient_filter')).eql('all');
+        should.exist(model.get('published_by'));
 
         // We should have an email
         const email = await models.Email.findOne({
@@ -782,8 +995,13 @@ describe('Posts API', function () {
         const updatedPost = res.body.posts[0];
 
         updatedPost.status = 'published';
-        //updatedPost.published_at = moment().add(2, 'days').toDate();
         updatedPost.email_only = true;
+
+        const initialModel = await models.Post.findOne({
+            id,
+            status: 'all'
+        }, testUtils.context.internal);
+        should.not.exist(initialModel.get('published_by'));
 
         const publishedRes = await request
             .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterSlug + '&email_segment=status%3Afree'))
@@ -808,6 +1026,78 @@ describe('Posts API', function () {
         should(model.get('status')).eql('sent');
         should(model.get('newsletter_id')).eql(newsletterId);
         should(model.get('email_recipient_filter')).eql('status:free');
+        should.exist(model.get('published_by'));
+
+        // We should have an email
+        const email = await models.Email.findOne({
+            post_id: id
+        }, testUtils.context.internal);
+
+        should(email.get('newsletter_id')).eql(newsletterId);
+        should(email.get('recipient_filter')).eql('status:free');
+        should(email.get('status')).eql('pending');
+    });
+
+    it('Can publish an email_only post by setting the status to sent', async function () {
+        const newsletterId = testUtils.DataGenerator.Content.newsletters[1].id;
+        const newsletterSlug = testUtils.DataGenerator.Content.newsletters[1].slug;
+
+        const post = {
+            title: 'My post',
+            status: 'draft',
+            feature_image_alt: 'Testing newsletter in posts',
+            feature_image_caption: 'Testing <b>feature image caption</b>',
+            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+            created_at: moment().subtract(2, 'days').toDate(),
+            updated_at: moment().subtract(2, 'days').toDate(),
+            created_by: ObjectId().toHexString(),
+            updated_by: ObjectId().toHexString()
+        };
+
+        const res = await request.post(localUtils.API.getApiQuery('posts'))
+            .set('Origin', config.get('url'))
+            .send({posts: [post]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201);
+
+        const id = res.body.posts[0].id;
+
+        const updatedPost = res.body.posts[0];
+
+        updatedPost.status = 'sent';
+        updatedPost.email_only = true;
+
+        const initialModel = await models.Post.findOne({
+            id,
+            status: 'all'
+        }, testUtils.context.internal);
+        should.not.exist(initialModel.get('published_by'));
+
+        const publishedRes = await request
+            .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterSlug + '&email_segment=status%3Afree'))
+            .set('Origin', config.get('url'))
+            .send({posts: [updatedPost]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        const publishedPost = publishedRes.body.posts[0];
+
+        publishedPost.newsletter.id.should.eql(newsletterId);
+        publishedPost.email_segment.should.eql('status:free');
+        publishedPost.status.should.eql('sent');
+        should.not.exist(publishedPost.newsletter_id);
+
+        let model = await models.Post.findOne({
+            id,
+            status: 'all'
+        }, testUtils.context.internal);
+        
+        should(model.get('status')).eql('sent');
+        should(model.get('newsletter_id')).eql(newsletterId);
+        should(model.get('email_recipient_filter')).eql('status:free');
+        should.exist(model.get('published_by'));
 
         // We should have an email
         const email = await models.Email.findOne({
@@ -870,6 +1160,7 @@ describe('Posts API', function () {
 
         should(model.get('newsletter_id')).eql(newsletterId);
         should(model.get('email_recipient_filter')).eql('all');
+        should.not.exist(model.get('published_by'));
 
         // We should not have an email
         let email = await models.Email.findOne({
@@ -898,6 +1189,7 @@ describe('Posts API', function () {
 
         should(model.get('newsletter_id')).eql(newsletterId);
         should(model.get('email_recipient_filter')).eql('all');
+        should.exist(model.get('published_by'));
 
         publishedPost.newsletter.id.should.eql(newsletterId);
         should.not.exist(publishedPost.newsletter_id);
@@ -1602,6 +1894,72 @@ describe('Posts API', function () {
 
             should.exist(email);
             should(email.get('newsletter_id')).eql(newsletterId);
+            should(email.get('status')).eql('pending');
+        });
+
+        it('Can publish an email_only post', async function () {
+            const newsletterId = testUtils.DataGenerator.Content.newsletters[1].id;
+            const newsletterSlug = testUtils.DataGenerator.Content.newsletters[1].slug;
+    
+            const post = {
+                title: 'My post',
+                status: 'draft',
+                authors: [{id: request.user.id}],
+                feature_image_alt: 'Testing newsletter in posts',
+                feature_image_caption: 'Testing <b>feature image caption</b>',
+                mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+                created_at: moment().subtract(2, 'days').toDate(),
+                updated_at: moment().subtract(2, 'days').toDate(),
+                created_by: ObjectId().toHexString(),
+                updated_by: ObjectId().toHexString()
+            };
+    
+            const res = await request.post(localUtils.API.getApiQuery('posts'))
+                .set('Origin', config.get('url'))
+                .send({posts: [post]})
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(201);
+    
+            const id = res.body.posts[0].id;
+    
+            const updatedPost = res.body.posts[0];
+    
+            updatedPost.status = 'published';
+            //updatedPost.published_at = moment().add(2, 'days').toDate();
+            updatedPost.email_only = true;
+    
+            const publishedRes = await request
+                .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterSlug))
+                .set('Origin', config.get('url'))
+                .send({posts: [updatedPost]})
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200);
+    
+            const publishedPost = publishedRes.body.posts[0];
+    
+            publishedPost.newsletter.id.should.eql(newsletterId);
+            publishedPost.email_segment.should.eql('all');
+            publishedPost.status.should.eql('sent');
+            should.not.exist(publishedPost.newsletter_id);
+    
+            let model = await models.Post.findOne({
+                id,
+                status: 'all'
+            }, testUtils.context.internal);
+    
+            should(model.get('status')).eql('sent');
+            should(model.get('newsletter_id')).eql(newsletterId);
+            should(model.get('email_recipient_filter')).eql('all');
+    
+            // We should have an email
+            const email = await models.Email.findOne({
+                post_id: id
+            }, testUtils.context.internal);
+    
+            should(email.get('newsletter_id')).eql(newsletterId);
+            should(email.get('recipient_filter')).eql('all');
             should(email.get('status')).eql('pending');
         });
     });
