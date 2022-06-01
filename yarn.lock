@@ -1662,10 +1662,19 @@
     utils-copy-error "^1.0.1"
     uuid "^8.3.2"
 
-"@tryghost/errors@1.2.13", "@tryghost/errors@^1.0.0", "@tryghost/errors@^1.1.0", "@tryghost/errors@^1.1.1", "@tryghost/errors@^1.2.1", "@tryghost/errors@^1.2.12", "@tryghost/errors@^1.2.3", "@tryghost/errors@^1.2.5":
+"@tryghost/errors@1.2.13":
   version "1.2.13"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.13.tgz#09a680f81e5b14a008427d772689683d1280e221"
   integrity sha512-uZmPndO4UriA+n1qw+X6V25SG1X3WLNy1sgHflDlMAYiKtwDlKl6N5128BXoydLrATLAqb+to+G3QorM4+4nKw==
+  dependencies:
+    lodash "^4.17.21"
+    utils-copy-error "^1.0.1"
+    uuid "^8.3.2"
+
+"@tryghost/errors@^1.0.0", "@tryghost/errors@^1.1.0", "@tryghost/errors@^1.1.1", "@tryghost/errors@^1.2.1", "@tryghost/errors@^1.2.12", "@tryghost/errors@^1.2.14", "@tryghost/errors@^1.2.3", "@tryghost/errors@^1.2.5":
+  version "1.2.14"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.14.tgz#af5e0ea1450b6fac7bde94585177943f85f0e41f"
+  integrity sha512-ycXhblMBlbwXo+PfmVJZtT26/B1wu6Ae/8SBjXlzHAp6qlkho/Z5hZPKMRo0frfBt6CDGyX/abKTeVQzSkTPYA==
   dependencies:
     lodash "^4.17.21"
     utils-copy-error "^1.0.1"
@@ -2042,13 +2051,13 @@
   resolved "https://registry.yarnpkg.com/@tryghost/mw-session-from-token/-/mw-session-from-token-0.1.32.tgz#e3d0f8045f074d2a49643e5d9d9d82b94225490c"
   integrity sha512-TuDs+e6NNEo0804cTe5ZbSecEdhD/rxFeif5PGpjN4grDO3O/sv3uSJvInjlhVjZJY6vcSWYqKZkIuWQHBsVFw==
 
-"@tryghost/nodemailer@0.3.22":
-  version "0.3.22"
-  resolved "https://registry.yarnpkg.com/@tryghost/nodemailer/-/nodemailer-0.3.22.tgz#c80151c70358a42cee1038746e5e2a1975811b95"
-  integrity sha512-nrBCfl0cQFCtLXVOpunb1Hfd+nv6nWCVy/SuFQGNzljKHHlkTJ1oL7ltCGsMxqsUGbZ1Ksyer4Il07syDAzDcw==
+"@tryghost/nodemailer@0.3.24":
+  version "0.3.24"
+  resolved "https://registry.yarnpkg.com/@tryghost/nodemailer/-/nodemailer-0.3.24.tgz#b9cd59fadf20b327002a88ac4b2f5597a507e576"
+  integrity sha512-PR8Z1YbUU2h5EH82AJCP8qQ1Ra5/7Y9Z0YdMYfx0mLOYON4REI2pHnN5awc0lF3TnwgBv8SGMAUuV0XZX4YOsg==
   dependencies:
     "@aws-sdk/client-ses" "^3.31.0"
-    "@tryghost/errors" "^1.2.12"
+    "@tryghost/errors" "^1.2.14"
     nodemailer "^6.6.3"
     nodemailer-direct-transport "^3.3.2"
     nodemailer-stub-transport "^1.1.0"
