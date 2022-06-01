@@ -625,6 +625,21 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     border-radius: 3px;
 }
 
+.gh-editor-post-status-btn {
+    position: relative;
+}
+
+.gh-editor-post-status-btn::after {
+    position: absolute;
+    content: "";
+    display: block;
+    bottom: 6px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--lightgrey);
+}
+
 .gh-editor-save-trigger {
     margin-right: 8px;
 }
