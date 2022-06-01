@@ -29,17 +29,17 @@ describe('Create Stripe Checkout Session', function () {
         const paidTier = tiers.find(tier => tier.type === 'paid');
 
         await membersAgent.post('/api/create-stripe-checkout-session/')
-              .body({
-                  customerEmail: 'paid@test.com',
-                  tierId: paidTier.id,
-                  cadence: 'month'
-              })
-              .expectStatus(403)
-              .matchBodySnapshot({
-                  errors: [{
-                      id: matchers.anyUuid,
-                      code: 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION'
-                  }]
-              });
+            .body({
+                customerEmail: 'paid@test.com',
+                tierId: paidTier.id,
+                cadence: 'month'
+            })
+            .expectStatus(403)
+            .matchBodySnapshot({
+                errors: [{
+                    id: matchers.anyUuid,
+                    code: 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION'
+                }]
+            });
     });
 });
