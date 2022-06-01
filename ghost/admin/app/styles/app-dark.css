@@ -1207,3 +1207,7 @@ kbd {
 .gh-dashboard-tooltip {
     background: var(--whitegrey);
 }
+
+.gh-editor-post-status-btn::after {
+    background: var(--hairline-color-2);
+}
