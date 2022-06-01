@@ -246,30 +246,38 @@ module.exports = function MembersAPI({
         return getMemberIdentityData(email);
     }
 
+    const forwardError = fn => async (req, res, next) => {
+        try {
+            await fn(req, res, next);
+        } catch (err) {
+            next(err);
+        }
+    };
+
     const middleware = {
         sendMagicLink: Router().use(
             body.json(),
-            (req, res) => routerController.sendMagicLink(req, res)
+            forwardError((req, res) => routerController.sendMagicLink(req, res))
         ),
         createCheckoutSession: Router().use(
             body.json(),
-            (req, res) => routerController.createCheckoutSession(req, res)
+            forwardError((req, res) => routerController.createCheckoutSession(req, res))
         ),
         createCheckoutSetupSession: Router().use(
             body.json(),
-            (req, res) => routerController.createCheckoutSetupSession(req, res)
+            forwardError((req, res) => routerController.createCheckoutSetupSession(req, res))
         ),
         createEvents: Router().use(
             body.json(),
-            (req, res) => MembersAnalyticsIngress.createEvents(req, res)
+            forwardError((req, res) => MembersAnalyticsIngress.createEvents(req, res))
         ),
         updateEmailAddress: Router().use(
             body.json(),
-            (req, res) => memberController.updateEmailAddress(req, res)
+            forwardError((req, res) => memberController.updateEmailAddress(req, res))
         ),
         updateSubscription: Router({mergeParams: true}).use(
             body.json(),
-            (req, res) => memberController.updateSubscription(req, res)
+            forwardError((req, res) => memberController.updateSubscription(req, res))
         ),
         wellKnown: Router()
             .get('/jwks.json',
