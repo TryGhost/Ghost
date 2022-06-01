@@ -752,7 +752,7 @@
 
 .gh-post-bookmark {
     display: grid;
-    grid-template-columns: auto auto;
+    grid-template-columns: 1fr minmax(0, 2fr);
     width: 100%;
     max-width: 640px;
     margin-top: 1.6rem;
@@ -780,7 +780,6 @@
 
 .gh-post-bookmark-image img {
     width: 100%;
-    max-width: 222px;
     height: 100%;
     max-height: 152px;
     object-fit: cover;
@@ -793,6 +792,10 @@
     justify-content: space-between;
     padding: 2rem;
     overflow: hidden;
+}
+
+.gh-post-bookmark-content.no-image {
+    grid-column: span 2;
 }
 
 .gh-post-bookmark-title {
