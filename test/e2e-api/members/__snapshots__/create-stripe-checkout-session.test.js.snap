@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Create Stripe Checkout Session Will not set a cookie if the token is invalid 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": "CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION",
+      "context": null,
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "A subscription exists for this Member.",
+      "property": null,
+      "type": "NoPermissionError",
+    },
+  ],
+}
+`;
