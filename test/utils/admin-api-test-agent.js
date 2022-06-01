@@ -20,26 +20,25 @@ class AdminAPITestAgent extends TestAgent {
     }
 
     async loginAs(email, password) {
-        await this.post('/session/')
+        const res = await this.post('/session/')
             .body({
                 grant_type: 'password',
                 username: email,
                 password: password
-            })
-            .then(function then(res) {
-                if (res.statusCode === 302) {
-                    // This can happen if you already have an instance running e.g. if you've been using Ghost CLI recently
-                    throw new errors.IncorrectUsageError({
-                        message: 'Ghost is redirecting, do you have an instance already running on port 2369?'
-                    });
-                } else if (res.statusCode !== 200 && res.statusCode !== 201) {
-                    throw new errors.IncorrectUsageError({
-                        message: res.body.errors[0].message
-                    });
-                }
-
-                return res.headers['set-cookie'];
             });
+
+        if (res.statusCode === 302) {
+            // This can happen if you already have an instance running e.g. if you've been using Ghost CLI recently
+            throw new errors.IncorrectUsageError({
+                message: 'Ghost is redirecting, do you have an instance already running on port 2369?'
+            });
+        } else if (res.statusCode !== 200 && res.statusCode !== 201) {
+            throw new errors.IncorrectUsageError({
+                message: res.body.errors[0].message
+            });
+        }
+
+        return res.headers['set-cookie'];
     }
 
     async loginAsOwner() {
