@@ -126,7 +126,7 @@
     "brute-knex": "4.0.1",
     "bson-objectid": "2.0.3",
     "bthreads": "0.5.1",
-    "chalk": "4.1.2",
+    "chalk": "5.0.1",
     "cheerio": "0.22.0",
     "compression": "1.7.4",
     "connect-slashes": "1.4.0",
