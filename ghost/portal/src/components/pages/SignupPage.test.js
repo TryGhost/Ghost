@@ -29,11 +29,12 @@ const setup = (overrides) => {
 
 describe('SignupPage', () => {
     test('renders', () => {
-        const {nameInput, emailInput, chooseButton, signinButton} = setup();
+        const {nameInput, emailInput, queryAllByRole, signinButton} = setup();
+        const chooseButton = queryAllByRole('button', {name: 'Continue'});
 
         expect(nameInput).toBeInTheDocument();
         expect(emailInput).toBeInTheDocument();
-        expect(chooseButton).toHaveLength(2);
+        expect(chooseButton).toHaveLength(1);
         expect(signinButton).toBeInTheDocument();
     });
 
