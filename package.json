@@ -59,7 +59,7 @@
     "@tryghost/adapter-manager": "0.2.31",
     "@tryghost/admin-api-schema": "4.0.0",
     "@tryghost/api-version-compatibility-service": "0.4.3",
-    "@tryghost/bookshelf-plugins": "0.4.1",
+    "@tryghost/bookshelf-plugins": "0.4.3",
     "@tryghost/bootstrap-socket": "0.2.20",
     "@tryghost/color-utils": "0.1.17",
     "@tryghost/config-url-helpers": "1.0.0",
