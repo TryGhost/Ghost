@@ -82,7 +82,7 @@
     "@tryghost/kg-markdown-html-renderer": "5.1.5",
     "@tryghost/kg-mobiledoc-html-renderer": "5.3.5",
     "@tryghost/limit-service": "1.2.0",
-    "@tryghost/logging": "2.1.8",
+    "@tryghost/logging": "2.2.3",
     "@tryghost/magic-link": "1.0.26",
     "@tryghost/member-events": "0.4.6",
     "@tryghost/members-api": "8.1.2",
@@ -225,7 +225,7 @@
     "tmp": "0.2.1"
   },
   "resolutions": {
-    "@tryghost/logging": "2.1.8",
+    "@tryghost/logging": "2.2.3",
     "moment": "2.24.0",
     "moment-timezone": "0.5.23"
   }
