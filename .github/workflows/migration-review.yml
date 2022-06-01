@@ -8,6 +8,7 @@ on:
 jobs:
   createComment:
     runs-on: ubuntu-latest
+    if: github.repository_owner == 'TryGhost'
     name: Create checklist comment
     steps:
       - uses: peter-evans/create-or-update-comment@26f07868647c398ca3d2042238c8aa620ca5d311
