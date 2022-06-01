@@ -23,7 +23,7 @@ describe('Create Stripe Checkout Session', function () {
         mockManager.restore();
     });
 
-    it('Will not set a cookie if the token is invalid', async function () {
+    it('Does not allow to create a checkout session if the custoemrEmail is associated with a paid member', async function () {
         const {body: {tiers}} = await adminAgent.get('/tiers/?include=monthly_price&yearly_price');
 
         const paidTier = tiers.find(tier => tier.type === 'paid');
