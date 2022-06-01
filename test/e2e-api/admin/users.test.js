@@ -185,8 +185,8 @@ describe('User API', function () {
         }
     });
 
-    it('Can edit user with empty roles data', async function () {
-        await request.put(localUtils.API.getApiQuery('users/me'))
+    it('Can edit user with empty roles data and does not change the role', async function () {
+        const res = await request.put(localUtils.API.getApiQuery('users/me?include=roles'))
             .set('Origin', config.get('url'))
             .send({
                 users: [{
@@ -194,6 +194,51 @@ describe('User API', function () {
                 }]
             })
             .expect(200);
+
+        const jsonResponse = res.body;
+        should.exist(jsonResponse.users);
+        jsonResponse.users.should.have.length(1);
+
+        should.exist(jsonResponse.users[0].roles);
+        jsonResponse.users[0].roles.should.have.length(1);
+        jsonResponse.users[0].roles[0].name.should.equal('Owner');
+    });
+
+    it('Cannot edit user with invalid roles data', async function () {
+        const userId = testUtils.getExistingData().users[1].id;
+        const res = await request.put(localUtils.API.getApiQuery(`users/${userId}?include=roles`))
+            .set('Origin', config.get('url'))
+            .send({
+                users: [{
+                    roles: ['Invalid Role Name']
+                }]
+            })
+            .expect(422);
+
+        const jsonResponse = res.body;
+        should.exist(jsonResponse.errors);
+        jsonResponse.errors.should.have.length(1);
+        jsonResponse.errors[0].message.should.match(/cannot edit user/);
+    });
+
+    it('Can edit user roles by name', async function () {
+        const userId = testUtils.getExistingData().users[1].id;
+        const res = await request.put(localUtils.API.getApiQuery(`users/${userId}?include=roles`))
+            .set('Origin', config.get('url'))
+            .send({
+                users: [{
+                    roles: ['Administrator']
+                }]
+            })
+            .expect(200);
+
+        const jsonResponse = res.body;
+        should.exist(jsonResponse.users);
+        jsonResponse.users.should.have.length(1);
+
+        should.exist(jsonResponse.users[0].roles);
+        jsonResponse.users[0].roles.should.have.length(1);
+        jsonResponse.users[0].roles[0].name.should.equal('Administrator');
     });
 
     it('Can destroy an active user and transfer posts to the owner', async function () {
