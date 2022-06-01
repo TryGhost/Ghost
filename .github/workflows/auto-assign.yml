@@ -5,6 +5,7 @@ on:
 jobs:
   automate:
     runs-on: ubuntu-18.04
+    if: github.repository_owner == 'TryGhost'
     env:
       FORCE_COLOR: 1
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
