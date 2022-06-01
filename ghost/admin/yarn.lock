@@ -2235,10 +2235,10 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/timezone-data@0.2.68":
-  version "0.2.68"
-  resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.2.68.tgz#ab9f3673f3b6bb386599f8431d93438873e8550e"
-  integrity sha512-M4PNL4P+KKoCizgI6adkm+rdLjsilmQSOzTp0rhKiMmAGAylft+NaQOrHNEy2cyKgNwhwl5lycOVcbCB3ayKug==
+"@tryghost/timezone-data@0.2.70":
+  version "0.2.70"
+  resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.2.70.tgz#071882ee5d16fbae4c7353ea85801f436da98fcc"
+  integrity sha512-klbOFzE2o/2mHTKPeVsy4X89vi6nnM0sjzJdlZcVzc3r5a1yiw/8bUvQS/SfuW4ySQ6BRxfmEy/em38ao7T7pA==
 
 "@types/acorn@^4.0.3":
   version "4.0.6"
