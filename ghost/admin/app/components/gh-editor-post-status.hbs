@@ -1,8 +1,10 @@
-<div role="tooltip" {{on "mouseover" this.onMouseover}} {{on "mouseleave" this.onMouseleave}} data-test-editor-post-status ...attributes>
+{{!-- template-lint-disable no-invalid-interactive --}}
+<div {{on "mouseover" this.onMouseover}} {{on "mouseleave" this.onMouseleave}} data-test-editor-post-status ...attributes>
     {{#if (and this.isSaving @post.isDraft)}}
         Saving...
     {{else if @post.isSent}}
-        Sent to {{gh-pluralize @post.email.emailCount "member"}}
+        <button type="button" {{on "click" @openUpdateFlow}} class="gh-editor-post-status-btn">Sent</button>
+        to {{gh-pluralize @post.email.emailCount "member"}}
     {{else if (and @post.emailOnly @post.isScheduled)}}
         Scheduled
         {{#if this.isHovered}}

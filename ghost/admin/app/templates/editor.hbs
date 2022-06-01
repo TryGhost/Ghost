@@ -6,41 +6,45 @@
             as |editor|
         >
             <header class="gh-editor-header br2 pe-none">
-                <div class="flex items-center pe-auto h-100">
-                    {{#if this.ui.isFullScreen}}
-                        <LinkTo @route={{pluralize this.post.displayName }} class="gh-btn-editor gh-editor-back-button" data-test-link={{pluralize this.post.displayName}}>
+                <Editor::PublishManagement
+                    @post={{this.post}}
+                    @hasUnsavedChanges={{this.hasDirtyAttributes}}
+                    @beforePublish={{perform this.beforeSaveTask}}
+                    @afterPublish={{this.afterSave}}
+                    @saveTask={{this.saveTask}}
+                    as |publishManagement|
+                >
+                    <div class="flex items-center pe-auto h-100">
+                        {{#if this.ui.isFullScreen}}
+                            <LinkTo @route={{pluralize this.post.displayName }} class="gh-btn-editor gh-editor-back-button" data-test-link={{pluralize this.post.displayName}}>
+                                <span>
+                                    {{svg-jar "arrow-left"}}
+                                    {{capitalize (pluralize this.post.displayName)}}
+                                </span>
+                            </LinkTo>
+                        {{/if}}
+                        <div class="gh-editor-post-status">
                             <span>
-                                {{svg-jar "arrow-left"}}
-                                {{capitalize (pluralize this.post.displayName)}}
+                                <GhEditorPostStatus
+                                    @post={{this.post}}
+                                    @hasDirtyAttributes={{this.hasDirtyAttributes}}
+                                    @isSaving={{or this.autosaveTask.isRunning this.saveTasks.isRunning}}
+                                    @openUpdateFlow={{publishManagement.openUpdateFlow}}
+                                />
                             </span>
-                        </LinkTo>
-                    {{/if}}
-                    <div class="gh-editor-post-status">
-                        <span>
-                            <GhEditorPostStatus
-                                @post={{this.post}}
-                                @hasDirtyAttributes={{this.hasDirtyAttributes}}
-                                @isSaving={{or this.autosaveTask.isRunning this.saveTasks.isRunning}}
-                            />
-                        </span>
+                        </div>
                     </div>
-                </div>
 
-                <section class="flex items-center pe-auto h-100">
-                    {{#unless this.post.isNew}}
-                        <Editor::PublishManagement
-                            @post={{this.post}}
-                            @hasUnsavedChanges={{this.hasDirtyAttributes}}
-                            @beforePublish={{perform this.beforeSaveTask}}
-                            @afterPublish={{this.afterSave}}
-                            @saveTask={{this.saveTask}}
-                        />
+                    <section class="flex items-center pe-auto h-100">
+                        {{#unless this.post.isNew}}
+                            <Editor::PublishButtons @publishManagement={{publishManagement}} />
 
-                        {{#unless this.showSettingsMenu}}
-                            <div class="settings-menu-toggle-spacer"></div>
+                            {{#unless this.showSettingsMenu}}
+                                <div class="settings-menu-toggle-spacer"></div>
+                            {{/unless}}
                         {{/unless}}
-                    {{/unless}}
-                </section>
+                    </section>
+                </Editor::PublishManagement>
             </header>
 
             {{!--
