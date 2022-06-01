@@ -354,9 +354,11 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(body)
-            }).then(function (res) {
+            }).then(async function (res) {
                 if (!res.ok) {
-                    throw new Error('Could not create stripe checkout session');
+                    const errData = await res.json();
+                    const errMssg = errData?.errors?.[0]?.message || 'Failed to signup, please try again.';
+                    throw new Error(errMssg);
                 }
                 return res.json();
             }).then(function (result) {
@@ -402,7 +404,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 })
             }).then(function (res) {
                 if (!res.ok) {
-                    throw new Error('Could not create stripe checkout session');
+                    throw new Error('Unable to create stripe checkout session');
                 }
                 return res.json();
             }).then(function (result) {

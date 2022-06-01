@@ -624,7 +624,9 @@ function ProductCard({product, products, selectedInterval, handleChooseSignup}) 
     const {action} = useContext(AppContext);
 
     const cardClass = selectedProduct === product.id ? 'gh-portal-product-card checked' : 'gh-portal-product-card';
-    const noOfProducts = products.length;
+    const noOfProducts = products?.filter((d) => {
+        return d.type === 'paid';
+    })?.length;
 
     let disabled = (['signup:running', 'checkoutPlan:running'].includes(action)) ? true : false;
 
