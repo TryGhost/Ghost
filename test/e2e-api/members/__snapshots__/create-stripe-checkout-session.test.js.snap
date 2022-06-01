@@ -1,0 +1,48 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Create Stripe Checkout Session Does allow to create a checkout session if the customerEmail is not associated with a paid member 1: [body] 1`] = `
+Object {
+  "publicKey": "pk_test_for_stripe",
+  "sessionId": "cs_123",
+}
+`;
+
+exports[`Create Stripe Checkout Session Does allow to create a checkout session if the customerEmail is not associated with a paid member 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-type": "application/json",
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Create Stripe Checkout Session Does not allow to create a checkout session if the customerEmail is associated with a paid member 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": "CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION",
+      "context": null,
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "A subscription exists for this Member.",
+      "property": null,
+      "type": "NoPermissionError",
+    },
+  ],
+}
+`;
+
+exports[`Create Stripe Checkout Session Does not allow to create a checkout session if the customerEmail is associated with a paid member 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "268",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
