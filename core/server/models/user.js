@@ -13,11 +13,17 @@ const validatePassword = require('../lib/validate-password');
 const permissions = require('../services/permissions');
 const urlUtils = require('../../shared/url-utils');
 const activeStates = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4'];
+const ASSIGNABLE_ROLES = ['Administrator', 'Editor', 'Author', 'Contributor'];
 
 const messages = {
     valueCannotBeBlank: 'Value in [{tableName}.{columnKey}] cannot be blank.',
     onlyOneRolePerUserSupported: 'Only one role per user is supported at the moment.',
     methodDoesNotSupportOwnerRole: 'This method does not support assigning the owner role',
+    invalidRoleValue: {
+        message: 'Role should be an existing role id or a role name',
+        context: 'Invalid role assigned to the user',
+        help: 'Change the provided role to a role id or use a role name.'
+    },
     userNotFound: 'User not found',
     ownerNotFound: 'Owner not found',
     notEnoughPermission: 'You do not have permission to perform this action',
@@ -507,7 +513,7 @@ User = ghostBookshelf.Model.extend({
         }
 
         ops.push(function update() {
-            return ghostBookshelf.Model.edit.call(self, data, options).then((user) => {
+            return ghostBookshelf.Model.edit.call(self, data, options).then(async (user) => {
                 let roleId;
 
                 if (!data.roles || !data.roles.length) {
@@ -521,7 +527,29 @@ User = ghostBookshelf.Model.extend({
                     if (roles.models[0].id === roleId) {
                         return;
                     }
-                    return ghostBookshelf.model('Role').findOne({id: roleId});
+
+                    if (ASSIGNABLE_ROLES.includes(roleId)) {
+                        // return if the role is already assigned
+                        if (roles.models[0].get('name') === roleId) {
+                            return;
+                        }
+
+                        return ghostBookshelf.model('Role').findOne({
+                            name: roleId
+                        });
+                    } else if (ObjectId.isValid(roleId)){
+                        return ghostBookshelf.model('Role').findOne({
+                            id: roleId
+                        });
+                    } else {
+                        return Promise.reject(
+                            new errors.ValidationError({
+                                message: tpl(messages.invalidRoleValue.message),
+                                context: tpl(messages.invalidRoleValue.context),
+                                help: tpl(messages.invalidRoleValue.help)
+                            })
+                        );
+                    }
                 }).then((roleToAssign) => {
                     if (roleToAssign && roleToAssign.get('name') === 'Owner') {
                         return Promise.reject(
@@ -531,7 +559,7 @@ User = ghostBookshelf.Model.extend({
                         );
                     } else {
                         // assign all other roles
-                        return user.roles().updatePivot({role_id: roleId});
+                        return user.roles().updatePivot({role_id: roleToAssign.id});
                     }
                 }).then(() => {
                     options.status = 'all';
