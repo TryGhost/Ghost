@@ -9,5 +9,6 @@ on:
 jobs:
   action:
     runs-on: ubuntu-latest
+    if: github.repository_owner == 'TryGhost'
     steps:
       - uses: tryghost/label-actions@main

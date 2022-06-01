@@ -4,6 +4,7 @@ on:
     - cron: '0 15 * * *'
 jobs:
   stale:
+    if: github.repository_owner == 'TryGhost'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/stale@v5
