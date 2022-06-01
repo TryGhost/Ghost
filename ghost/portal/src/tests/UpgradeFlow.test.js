@@ -207,7 +207,7 @@ describe('Logged-in free member', () => {
             // added fake timeout for react state delay in setting plan
             await new Promise(r => setTimeout(r, 10));
 
-            const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Choose'});
+            const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
 
             fireEvent.click(submitButton);
             expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
@@ -244,7 +244,7 @@ describe('Logged-in free member', () => {
             // added fake timeout for react state delay in setting plan
             await new Promise(r => setTimeout(r, 10));
 
-            const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Choose'});
+            const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
 
             fireEvent.click(submitButton);
             expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
