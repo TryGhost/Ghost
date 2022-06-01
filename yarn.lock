@@ -1692,10 +1692,10 @@
   dependencies:
     jsonwebtoken "^8.5.1"
 
-"@tryghost/helpers@1.1.70":
-  version "1.1.70"
-  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.70.tgz#25c79e3da3720289df06612c391d73e7bb1f04c9"
-  integrity sha512-/R1DLsUhprQjB1YHtufxk447QauWWgudNt3gnVPsEP4I6yB2ACK2uqrigOlWRzo3R8/BytpwmAV4N4vhTOia+Q==
+"@tryghost/helpers@1.1.71":
+  version "1.1.71"
+  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.71.tgz#0b957ebda1be81cb5f290a2222a855248cc4fde7"
+  integrity sha512-BTaf3DHabg9JNpZNHRH1wxh8vfUIRNs4LWGrXm2l6DfktKPSmOBNxLazuSTrccDzv+7ixwmo2iAyvIlB4+TfKA==
   dependencies:
     lodash-es "^4.17.11"
 
