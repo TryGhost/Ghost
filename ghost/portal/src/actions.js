@@ -111,11 +111,12 @@ async function signup({data, state, api}) {
             lastPage: 'signup'
         };
     } catch (e) {
+        const message = e?.message || 'Failed to sign up, please try again';
         return {
             action: 'signup:failed',
             popupNotification: createPopupNotification({
                 type: 'signup:failed', autoHide: false, closeable: true, state, status: 'error',
-                message: 'Failed to sign up, please try again'
+                message
             })
         };
     }
