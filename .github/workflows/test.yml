@@ -50,11 +50,6 @@ jobs:
             DB_CLIENT: mysql
     env:
       database__client: ${{ matrix.env.DB_CLIENT }}
-      database__connection__filename: /dev/shm/ghost-test.db
-      database__connection__host: 127.0.0.1
-      database__connection__user: root
-      database__connection__password: root
-      database__connection__database: ghost_testing
     name: Migrations (${{ matrix.env.DB }})
     steps:
       - uses: actions/checkout@v2
@@ -86,6 +81,18 @@ jobs:
           mysql version: '8.0'
           mysql database: 'ghost_testing'
           mysql root password: 'root'
+
+      - name: Set env vars (SQLite)
+        if: contains(matrix.env.DB, 'sqlite')
+        run: echo "database__connection__filename=/dev/shm/ghost-test.db" >> $GITHUB_ENV
+
+      - name: Set env vars (MySQL)
+        if: contains(matrix.env.DB, 'mysql')
+        run: |
+          echo "database__connection__host=127.0.0.1" >> $GITHUB_ENV
+          echo "database__connection__user=root" >> $GITHUB_ENV
+          echo "database__connection__password=root" >> $GITHUB_ENV
+          echo "database__connection__database=ghost_testing" >> $GITHUB_ENV
 
       - run: yarn
       - run: |
@@ -148,7 +155,6 @@ jobs:
     env:
       DB: ${{ matrix.env.DB }}
       NODE_ENV: ${{ matrix.env.NODE_ENV }}
-      database__connection__password: root
     name: Database Tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
       - uses: actions/checkout@v2
@@ -182,10 +188,16 @@ jobs:
 
       - run: date +%s > ${{ runner.temp }}/startTime # Get start time for test suite
 
+      - name: Set env vars (SQLite)
+        if: contains(matrix.env.DB, 'sqlite')
+        run: echo "database__connection__filename=/dev/shm/ghost-test.db" >> $GITHUB_ENV
+
+      - name: Set env vars (MySQL)
+        if: contains(matrix.env.DB, 'mysql')
+        run: echo "database__connection__password=root" >> $GITHUB_ENV
+
       - name: Run tests
         run: yarn test:ci
-        env:
-          database__connection__filename: /dev/shm/ghost-test.db
 
       # Get runtime in seconds for test suite
       - run: |
