@@ -557,7 +557,7 @@ User = ghostBookshelf.Model.extend({
                                 message: tpl(messages.methodDoesNotSupportOwnerRole)
                             })
                         );
-                    } else {
+                    } else if (roleToAssign) {
                         // assign all other roles
                         return user.roles().updatePivot({role_id: roleToAssign.id});
                     }
