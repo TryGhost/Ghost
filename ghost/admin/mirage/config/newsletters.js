@@ -1,4 +1,6 @@
 import {camelize} from '@ember/string';
+import {dasherize} from '@ember/string';
+import {isBlank} from '@ember/utils';
 import {paginatedResponse} from '../utils';
 
 export default function mockNewsletters(server) {
@@ -11,6 +13,10 @@ export default function mockNewsletters(server) {
         // sender email can't be set without verification
         const senderEmail = attrs.senderEmail;
         attrs.senderEmail = null;
+
+        if (isBlank(attrs.slug) && !isBlank(attrs.name)) {
+            attrs.slug = dasherize(attrs.name);
+        }
 
         const newsletter = newsletters.create(attrs);
 
