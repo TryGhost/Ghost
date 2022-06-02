@@ -16,8 +16,8 @@ module.exports = {
         permissions: true,
         async query(frame) {
             const offers = await offersService.api.listOffers(frame.options);
-            frame.response = {
-                offers
+            return {
+                data: offers
             };
         }
     },
@@ -32,9 +32,8 @@ module.exports = {
                     message: tpl(messages.offerNotFound)
                 });
             }
-
-            frame.response = {
-                offers: [offer]
+            return {
+                data: [offer]
             };
         }
     },
@@ -57,8 +56,8 @@ module.exports = {
                 });
             }
 
-            frame.response = {
-                offers: [offer]
+            return {
+                data: [offer]
             };
         }
     },
@@ -70,8 +69,8 @@ module.exports = {
         },
         async query(frame) {
             const offer = await offersService.api.createOffer(frame.data.offers[0]);
-            frame.response = {
-                offers: [offer]
+            return {
+                data: [offer]
             };
         }
     }
