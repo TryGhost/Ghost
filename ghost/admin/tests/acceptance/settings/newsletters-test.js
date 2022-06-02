@@ -139,6 +139,7 @@ describe('Acceptance: Settings - Newsletters', function () {
     describe('Creating newsletters', function () {
         it('can create new newsletter', async function () {
             await visit('/settings/newsletters');
+            expect(findAll('[data-test-newsletter]').length, 'Total newsletters shown').to.equal(1);
             await click('[data-test-button="add-newsletter"]');
 
             // Check if modal opens
@@ -151,10 +152,14 @@ describe('Acceptance: Settings - Newsletters', function () {
             await fillIn('textarea#newsletter-description', 'My newsletter description');
 
             await checkSave({});
+
+            expect(findAll('[data-test-newsletter]').length, 'Total newsletters shown').to.equal(2);
         });
 
         it('validates create newsletter before saving', async function () {
             await visit('/settings/newsletters');
+            expect(findAll('[data-test-newsletter]').length, 'Total newsletters shown').to.equal(1);
+
             await click('[data-test-button="add-newsletter"]');
 
             // Check if modal opens
@@ -168,6 +173,8 @@ describe('Acceptance: Settings - Newsletters', function () {
 
             // Everything should be valid
             await checkSave({});
+
+            expect(findAll('[data-test-newsletter]').length, 'Total newsletters shown').to.equal(2);
         });
 
         it('checks limits when creating a newsletter', async function () {
