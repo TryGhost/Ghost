@@ -5,6 +5,105 @@ import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
 
+async function checkValidationError(errors) {
+    // Create the newsletter
+    await click('[data-test-button="save-newsletter"]');
+
+    // @todo: at the moment, the tabs don't open on error automatically
+    // we need to remove these lines when this is fixed
+    // and replace it with something like ± checkTabOpen('genexral')
+    // await openTab('general.name');
+
+    for (const selector of Object.keys(errors)) {
+        expect(findAll(selector).length, 'field ' + selector + ' is not visible').to.equal(1);
+        expect(findAll(selector + ' + .response').length, 'error message is displayed').to.equal(1);
+        expect(find(selector + ' + .response').textContent).to.match(errors[selector]);
+    }
+
+    // Check button is in error state
+    expect(find('[data-test-button="save-newsletter"] > [data-test-task-button-state="failure"]')).to.exist;
+}
+
+async function checkSave(options) {
+    const name = options.edit ? 'edit' : 'create';
+
+    // Create the newsletter
+    await click('[data-test-button="save-newsletter"]');
+
+    // No errors
+    expect(findAll('.error > .response').length, 'error message is displayed').to.equal(0);
+
+    if (options.verifyEmail) {
+        expect(find('[data-test-modal="confirm-newsletter-email"]'), 'Confirm email modal').to.exist;
+
+        // Check message
+        if (typeof verifyEmail !== 'boolean') {
+            const t = find('[data-test-modal="confirm-newsletter-email"] p').textContent.trim().replace(/\s+/g, ' ');
+            expect(t).to.match(options.verifyEmail, t);
+        }
+        await click('[data-test-button="confirm-newsletter-email"]');
+    }
+
+    // Check if modal closes on save
+    expect(find(`[data-test-modal="${name}-newsletter"]`), 'Newsletter modal should disappear after saving').to.not.exist;
+}
+
+async function checkCancel(options) {
+    const name = options.edit ? 'edit' : 'create';
+
+    // Create the newsletter
+    await click('[data-test-button="cancel-newsletter"]');
+
+    if (options.shouldConfirm) {
+        expect(find('[data-test-modal="unsaved-settings"]'), 'Confirm unsaved settings modal should be visible').to.exist;
+        await click('[data-test-leave-button]');
+    }
+
+    // Check if modal closes on save
+    expect(find(`[data-test-modal="${name}-newsletter"]`), 'Newsletter modal should disappear after canceling').to.not.exist;
+}
+
+async function openTab(name, optional = true) {
+    const generalToggleSelector = '[data-test-nav-toggle="' + name + '"]';
+    const generalToggle = find(generalToggleSelector);
+    const doesExist = !!generalToggle;
+
+    if (!doesExist && !optional) {
+        throw new Error('Expected tab ' + name + ' to exist');
+    }
+
+    if (doesExist && !generalToggle.classList.contains('active')) {
+        await click(generalToggleSelector);
+
+        if (!generalToggle.classList.contains('active')) {
+            throw new Error('Could not open ' + name + ' tab');
+        }
+    }
+}
+
+async function closeTab(name, optional = true) {
+    const generalToggleSelector = '[data-test-nav-toggle="' + name + '"]';
+    const generalToggle = find(generalToggleSelector);
+    const doesExist = !!generalToggle;
+
+    if (!doesExist && !optional) {
+        throw new Error('Expected tab ' + name + ' to exist');
+    }
+
+    if (doesExist && generalToggle.classList.contains('active')) {
+        await click(generalToggleSelector);
+
+        if (generalToggle.classList.contains('active')) {
+            throw new Error('Could not close ' + name + ' tab');
+        }
+    }
+}
+
+async function fillName(name) {
+    await openTab('general.name');
+    await fillIn('input#newsletter-title', name);
+}
+
 describe('Acceptance: Settings - Newsletters', function () {
     const hooks = setupApplicationTest();
     setupMirage(hooks);
@@ -36,105 +135,6 @@ describe('Acceptance: Settings - Newsletters', function () {
 
         expect(this.server.db.settings.findBy({key: 'email_track_opens'}).value).to.equal(false);
     });
-
-    async function checkValidationError(errors) {
-        // Create the newsletter
-        await click('[data-test-button="save-newsletter"]');
-
-        // @todo: at the moment, the tabs don't open on error automatically
-        // we need to remove these lines when this is fixed
-        // and replace it with something like ± checkTabOpen('genexral')
-        // await openTab('general.name');
-
-        for (const selector of Object.keys(errors)) {
-            expect(findAll(selector).length, 'field ' + selector + ' is not visible').to.equal(1);
-            expect(findAll(selector + ' + .response').length, 'error message is displayed').to.equal(1);
-            expect(find(selector + ' + .response').textContent).to.match(errors[selector]);
-        }
-
-        // Check button is in error state
-        expect(find('[data-test-button="save-newsletter"] > [data-test-task-button-state="failure"]')).to.exist;
-    }
-
-    async function checkSave(options) {
-        const name = options.edit ? 'edit' : 'create';
-
-        // Create the newsletter
-        await click('[data-test-button="save-newsletter"]');
-
-        // No errors
-        expect(findAll('.error > .response').length, 'error message is displayed').to.equal(0);
-
-        if (options.verifyEmail) {
-            expect(find('[data-test-modal="confirm-newsletter-email"]'), 'Confirm email modal').to.exist;
-
-            // Check message
-            if (typeof verifyEmail !== 'boolean') {
-                const t = find('[data-test-modal="confirm-newsletter-email"] p').textContent.trim().replace(/\s+/g, ' ');
-                expect(t).to.match(options.verifyEmail, t);
-            }
-            await click('[data-test-button="confirm-newsletter-email"]');
-        }
-
-        // Check if modal closes on save
-        expect(find(`[data-test-modal="${name}-newsletter"]`), 'Newsletter modal should disappear after saving').to.not.exist;
-    }
-
-    async function checkCancel(options) {
-        const name = options.edit ? 'edit' : 'create';
-
-        // Create the newsletter
-        await click('[data-test-button="cancel-newsletter"]');
-
-        if (options.shouldConfirm) {
-            expect(find('[data-test-modal="unsaved-settings"]'), 'Confirm unsaved settings modal should be visible').to.exist;
-            await click('[data-test-leave-button]');
-        }
-
-        // Check if modal closes on save
-        expect(find(`[data-test-modal="${name}-newsletter"]`), 'Newsletter modal should disappear after canceling').to.not.exist;
-    }
-
-    async function openTab(name, optional = true) {
-        const generalToggleSelector = '[data-test-nav-toggle="' + name + '"]';
-        const generalToggle = find(generalToggleSelector);
-        const doesExist = !!generalToggle;
-
-        if (!doesExist && !optional) {
-            throw new Error('Expected tab ' + name + ' to exist');
-        }
-
-        if (doesExist && !generalToggle.classList.contains('active')) {
-            await click(generalToggleSelector);
-
-            if (!generalToggle.classList.contains('active')) {
-                throw new Error('Could not open ' + name + ' tab');
-            }
-        }
-    }
-
-    async function closeTab(name, optional = true) {
-        const generalToggleSelector = '[data-test-nav-toggle="' + name + '"]';
-        const generalToggle = find(generalToggleSelector);
-        const doesExist = !!generalToggle;
-
-        if (!doesExist && !optional) {
-            throw new Error('Expected tab ' + name + ' to exist');
-        }
-
-        if (doesExist && generalToggle.classList.contains('active')) {
-            await click(generalToggleSelector);
-
-            if (generalToggle.classList.contains('active')) {
-                throw new Error('Could not close ' + name + ' tab');
-            }
-        }
-    }
-
-    async function fillName(name) {
-        await openTab('general.name');
-        await fillIn('input#newsletter-title', name);
-    }
 
     describe('Creating newsletters', function () {
         it('can create new newsletter', async function () {
@@ -168,6 +168,34 @@ describe('Acceptance: Settings - Newsletters', function () {
 
             // Everything should be valid
             await checkSave({});
+        });
+
+        it('checks limits when creating a newsletter', async function () {
+            const config = this.server.db.configs.find(1);
+            config.hostSettings = {
+                limits: {
+                    newsletters: {
+                        max: 1,
+                        error: 'Your plan supports up to {{max}} newsletters. Please upgrade to add more.'
+                    }
+                }
+            };
+            this.server.db.configs.update(1, config);
+
+            await visit('/settings/newsletters');
+            await click('[data-test-button="add-newsletter"]');
+
+            // Check if modal doesn't open
+            expect(find('[data-test-modal="create-newsletter"]'), 'Create newsletter modal').not.to.exist;
+
+            // Check limits modal is shown
+            expect(find('[data-test-modal="limits/multiple-newsletters"]'), 'Limits modal').to.exist;
+
+            // Check can close modal
+            await click('[data-test-button="cancel-upgrade"]');
+
+            // Check modal is closed
+            expect(find('[data-test-modal="limits/multiple-newsletters"]'), 'Limits modal').not.to.exist;
         });
     });
 
@@ -492,6 +520,52 @@ describe('Acceptance: Settings - Newsletters', function () {
 
             // Check total newsletters shown
             expect(findAll('[data-test-newsletter]').length, 'Total newsletters shown').to.equal(3);
+        });
+
+        it('checks limits when reactivating a newsletter', async function () {
+            const config = this.server.db.configs.find(1);
+            config.hostSettings = {
+                limits: {
+                    newsletters: {
+                        max: 1,
+                        error: 'Your plan supports up to {{max}} newsletters. Please upgrade to add more.'
+                    }
+                }
+            };
+            this.server.db.configs.update(1, config);
+
+            // Create an archived newsletter, beacuse the toggle is invisible otherwise
+            this.server.create('newsletter', {status: 'archived', name: 'test newsletter 2', slug: 'test-newsletter2'});
+            await visit('/settings/newsletters');
+
+            // Check total newsletters shown
+            expect(findAll('[data-test-newsletter]').length, 'Total newsletters shown').to.equal(1);
+
+            // Go to archived newsletters
+            await click('[data-test-dropdown="newsletter-status-filter"] .ember-power-select-trigger');
+            await click('.ember-power-select-option[aria-selected="false"]');
+
+            // Check title okay
+            expect(find('.gh-newsletters .gh-expandable-title').textContent.trim(), 'Title').to.equal('Archived newsletters');
+
+            // Check total newsletters shown
+            expect(findAll('[data-test-newsletter]').length, 'Total archived newsletters shown').to.equal(1);
+
+            // Reactivate the newsletter
+            await click('[data-test-newsletter-menu-trigger]');
+            await click('[data-test-button="reactivate-newsletter"]');
+
+            // Check if confimation modal doesn't open
+            expect(find('[data-test-modal="confirm-newsletter-reactivate"]'), 'Reactivate newsletter modal').not.to.exist;
+
+            // Check limits modal is shown
+            expect(find('[data-test-modal="limits/multiple-newsletters"]'), 'Limits modal').to.exist;
+
+            // Check can close modal
+            await click('[data-test-button="cancel-upgrade"]');
+
+            // Check modal is closed
+            expect(find('[data-test-modal="limits/multiple-newsletters"]'), 'Limits modal').not.to.exist;
         });
     });
 });
