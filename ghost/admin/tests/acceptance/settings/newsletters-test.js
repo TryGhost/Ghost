@@ -153,7 +153,7 @@ describe('Acceptance: Settings - Newsletters', function () {
 
             await checkSave({});
 
-            expect(findAll('[data-test-newsletter]').length, 'Total newsletters shown').to.equal(2);
+            expect(findAll('[data-test-newsletter]').length, 'Total newsletters shown afterwards').to.equal(2);
         });
 
         it('validates create newsletter before saving', async function () {
@@ -174,7 +174,7 @@ describe('Acceptance: Settings - Newsletters', function () {
             // Everything should be valid
             await checkSave({});
 
-            expect(findAll('[data-test-newsletter]').length, 'Total newsletters shown').to.equal(2);
+            expect(findAll('[data-test-newsletter]').length, 'Total newsletters shown afterwards').to.equal(2);
         });
 
         it('checks limits when creating a newsletter', async function () {
