@@ -18,6 +18,7 @@
             type="button"
             class="gh-btn"
             {{on "click" (fn @close false)}}
+            data-test-button="cancel-newsletter-archive"
         >
             <span>Cancel</span>
         </button>
@@ -29,6 +30,7 @@
             @task={{@data.archiveNewsletterTask}}
             @taskArgs={{@data.newsletter}}
             @class="gh-btn gh-btn-black gh-btn-icon"
+            data-test-button="confirm-newsletter-archive"
         />
     </div>
 </div>
