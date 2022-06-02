@@ -19,7 +19,7 @@ _Note the `TZ=UTC` environment variable which is currently required to get tests
 
 If you are serving the admin app (e.g., when running `yarn serve`, or when running `yarn dev` in the main Ghost project),  you can also run the tests in your browser by going to http://localhost:4200/tests. 
 
-This has the additional benefit that you can use `await this.pauseTest()` in your tests to temporarily pause tests. This allows you to inspect the DOM in your browser to debug tests. You can resume tests by running `resumeTest()` in your browser console.
+This has the additional benefit that you can use `await this.pauseTest()` in your tests to temporarily pause tests (best to also add `this.timeout(0);` to avoid timeouts). This allows you to inspect the DOM in your browser to debug tests. You can resume tests by running `resumeTest()` in your browser console.
 
 [More information](https://guides.emberjs.com/v3.28.0/testing/testing-application/#toc_debugging-your-tests)
 
