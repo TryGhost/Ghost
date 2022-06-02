@@ -3,7 +3,7 @@
         <h4 class="gh-main-section-header small bn">Newsletters</h4>
         {{#if this.archivedNewsletters}}
             <div>
-                <div>
+                <div data-test-dropdown="newsletter-status-filter">
                     <PowerSelect
                         @selected={{this.statusFilter}}
                         @options={{this.statusFilters}}
@@ -97,14 +97,14 @@
                                                     </li>
                                                     {{#if (eq newsletter.status "active")}}
                                                         <li>
-                                                            <button class="mr2" type="button" {{on "click" (fn this.archiveNewsletter newsletter)}}>
+                                                            <button class="mr2" type="button" {{on "click" (fn this.archiveNewsletter newsletter)}} data-test-button="archive-newsletter">
                                                                 <span>Archive</span>
                                                             </button>
                                                         </li>
                                                     {{/if}}
                                                     {{#if (eq newsletter.status "archived")}}
                                                         <li>
-                                                            <button class="mr2" type="button" {{on "click" (fn this.unarchiveNewsletter newsletter)}}>
+                                                            <button class="mr2" type="button" {{on "click" (fn this.unarchiveNewsletter newsletter)}} data-test-button="reactivate-newsletter">
                                                                 <span>Reactivate</span>
                                                             </button>
                                                         </li>
