@@ -38,6 +38,7 @@ Session.vim
 
 # compiled output
 /dist
+/dist-test
 /tmp
 
 # dependencies
