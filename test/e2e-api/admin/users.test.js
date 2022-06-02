@@ -185,6 +185,40 @@ describe('User API', function () {
         }
     });
 
+    it('can edit a user fetched from the API', async function () {
+        const userToEditId = testUtils.getExistingData().users[1].id;
+        const res = await request
+            .get(localUtils.API.getApiQuery(`users/${userToEditId}/?include=roles`))
+            .set('Origin', config.get('url'))
+            .expect(200);
+
+        const jsonResponse = res.body;
+        jsonResponse.users[0].name.should.equal('Ghost');
+
+        should.exist(jsonResponse.users[0].roles);
+        jsonResponse.users[0].roles.should.have.length(1);
+        jsonResponse.users[0].roles[0].name.should.equal('Contributor');
+
+        jsonResponse.users[0].name = 'Changed Name';
+
+        const editResponse = await request
+            .put(localUtils.API.getApiQuery(`users/${userToEditId}/?include=roles`))
+            .set('Origin', config.get('url'))
+            .send({
+                users: jsonResponse.users
+            })
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        const editJSONResponse = editResponse.body;
+        editJSONResponse.users[0].name.should.equal('Changed Name');
+
+        should.exist(editJSONResponse.users[0].roles);
+        editJSONResponse.users[0].roles.should.have.length(1);
+        editJSONResponse.users[0].roles[0].name.should.equal('Contributor');
+    });
+
     it('Can edit user with empty roles data and does not change the role', async function () {
         const res = await request.put(localUtils.API.getApiQuery('users/me?include=roles'))
             .set('Origin', config.get('url'))
