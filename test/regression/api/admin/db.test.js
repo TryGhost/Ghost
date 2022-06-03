@@ -379,20 +379,9 @@ describe('DB API (canary)', function () {
     });
 
     it('Can import a JSON database with products for an existing product', async function () {
-        await request.delete(localUtils.API.getApiQuery('db/'))
-            .set('Origin', config.get('url'))
-            .set('Accept', 'application/json')
-            .expect(204);
-
-        // Create a product with existing slug
-        const existingProduct = await models.Product.forge({
-            slug: 'ghost-inc',
-            name: 'Ghost Inc.',
-            description: 'Our daily newsletter',
-            type: 'paid',
-            active: 1,
-            visibility: 'public'
-        }).save();
+        const existingProduct = await models.Product.findOne({slug: 'ghost-inc'});
+        should.exist(existingProduct);
+        existingProduct.get('name').should.equal('Ghost Inc.');
 
         const res = await request.post(localUtils.API.getApiQuery('db/'))
             .set('Origin', config.get('url'))
@@ -409,7 +398,7 @@ describe('DB API (canary)', function () {
         const product = await models.Product.findOne({slug: 'ghost-inc'});
         should.exist(product);
         product.id.should.equal(existingProduct.id);
-        product.slug.should.equal('ghost-inc');
+        product.get('slug').should.equal('ghost-inc');
 
         product.get('name').should.equal('Ghost Inc.');
         product.get('description').should.equal('Our daily newsletter');
