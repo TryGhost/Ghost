@@ -377,4 +377,90 @@ describe('DB API (canary)', function () {
         yearlyPrice.get('stripe_price_id').should.equal('price_d04baebb73');
         yearlyPrice.get('stripe_product_id').should.equal('prod_d2c1708c21');
     });
+
+    it('Can import a JSON database with products for an existing product', async function () {
+        await request.delete(localUtils.API.getApiQuery('db/'))
+            .set('Origin', config.get('url'))
+            .set('Accept', 'application/json')
+            .expect(204);
+
+        // Create a product with existing slug
+        const existingProduct = await models.Product.forge({
+            slug: 'ghost-inc',
+            name: 'Ghost Inc.',
+            description: 'Our daily newsletter',
+            type: 'paid',
+            active: 1,
+            visibility: 'public'
+        }).save();
+
+        const res = await request.post(localUtils.API.getApiQuery('db/'))
+            .set('Origin', config.get('url'))
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .attach('importfile', path.join(__dirname, '/../../../utils/fixtures/export/products_export.json'))
+            .expect(200);
+
+        // Check if we ignored the import of the product
+        const productDuplicate = await models.Product.findOne({slug: 'ghost-inc-2'});
+        should.not.exist(productDuplicate);
+
+        // Check if we have a product
+        const product = await models.Product.findOne({slug: 'ghost-inc'});
+        should.exist(product);
+        product.id.should.equal(existingProduct.id);
+        product.slug.should.equal('ghost-inc');
+
+        product.get('name').should.equal('Ghost Inc.');
+        product.get('description').should.equal('Our daily newsletter');
+        product.get('welcome_page_url').should.equal('/welcome');
+
+        // Check settings
+        const portalProducts = await models.Settings.findOne({key: 'portal_products'});
+        should.exist(portalProducts);
+        JSON.parse(portalProducts.get('value')).should.deepEqual([]);
+
+        // Check stripe products
+        const stripeProduct = await models.StripeProduct.findOne({product_id: product.id});
+        should.exist(stripeProduct);
+        stripeProduct.get('stripe_product_id').should.equal('prod_d2c1708c21');
+        stripeProduct.id.should.not.equal('60be1fc9bd3af33564cfb337');
+
+        // Check newsletters
+        const newsletter = await models.Newsletter.findOne({slug: 'test'});
+        should.exist(newsletter);
+        newsletter.get('name').should.equal('Ghost Inc.');
+        // Make sure sender_email is not set
+        should(newsletter.get('sender_email')).equal(null);
+
+        // Check posts
+        const post = await models.Post.findOne({slug: 'test-newsletter'}, {withRelated: ['tiers']});
+        should.exist(post);
+
+        post.get('newsletter_id').should.equal(newsletter.id);
+        post.get('visibility').should.equal('public');
+        post.get('email_recipient_filter').should.equal('status:-free');
+
+        // Check this post is connected to the imported product
+        post.relations.tiers.models.map(m => m.id).should.match([product.id]);
+
+        // Check stripe prices
+        const monthlyPrice = await models.StripePrice.findOne({id: product.get('monthly_price_id')});
+        should.exist(monthlyPrice);
+
+        const yearlyPrice = await models.StripePrice.findOne({id: product.get('yearly_price_id')});
+        should.exist(yearlyPrice);
+
+        monthlyPrice.get('amount').should.equal(500);
+        monthlyPrice.get('currency').should.equal('usd');
+        monthlyPrice.get('interval').should.equal('month');
+        monthlyPrice.get('stripe_price_id').should.equal('price_a425520db0');
+        monthlyPrice.get('stripe_product_id').should.equal('prod_d2c1708c21');
+
+        yearlyPrice.get('amount').should.equal(4800);
+        yearlyPrice.get('currency').should.equal('usd');
+        yearlyPrice.get('interval').should.equal('year');
+        yearlyPrice.get('stripe_price_id').should.equal('price_d04baebb73');
+        yearlyPrice.get('stripe_product_id').should.equal('prod_d2c1708c21');
+    });
 });
