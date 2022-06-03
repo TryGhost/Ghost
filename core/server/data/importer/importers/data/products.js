@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const BaseImporter = require('./base');
 const models = require('../../../../models');
+const debug = require('@tryghost/debug')('importer:products');
 
 class ProductsImporter extends BaseImporter {
     constructor(allDataFromFile) {
@@ -8,12 +9,12 @@ class ProductsImporter extends BaseImporter {
             modelName: 'Product',
             dataKeyToImport: 'products',
             requiredFromFile: ['stripe_prices'],
-            requiredExistingData: ['stripe_prices']
+            requiredExistingData: ['stripe_prices', 'products']
         });
     }
 
     fetchExisting(modelOptions) {
-        return models.Product.findAll(_.merge({columns: ['products.id as id']}, modelOptions))
+        return models.Product.findAll(_.merge({columns: ['products.id as id', 'name', 'slug']}, modelOptions))
             .then((existingData) => {
                 this.existingData = existingData.toJSON();
             });
@@ -58,8 +59,34 @@ class ProductsImporter extends BaseImporter {
         this.dataToImport = this.dataToImport.filter(item => !invalidProducts.includes(item.id));
     }
 
+    preventDuplicates() {
+        debug('preventDuplicates');
+        let duplicateProducts = [];
+        _.each(this.dataToImport, (objectInFile) => {
+            const existingObject = _.find(
+                this.requiredExistingData.products,
+                {name: objectInFile.name, slug: objectInFile.slug}
+            );
+            // CASE: tier already exists
+            if (existingObject) {
+                debug(`skipping existing product ${objectInFile.name}`);
+                this.problems.push({
+                    message: 'Entry was not imported and ignored. Detected duplicated entry.',
+                    help: this.modelName,
+                    context: JSON.stringify({
+                        product: objectInFile
+                    })
+                });
+                duplicateProducts.push(objectInFile.id);
+            }
+        });
+        // ignore products that already exist
+        this.dataToImport = this.dataToImport.filter(item => !duplicateProducts.includes(item.id));
+    }
+
     replaceIdentifiers() {
         // this has to be in replaceIdentifiers because it's after required* fields are set
+        this.preventDuplicates();
         this.validateStripePrice();
         return super.replaceIdentifiers();
     }
