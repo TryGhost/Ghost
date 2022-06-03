@@ -8,6 +8,7 @@ class StripeProductsImporter extends BaseImporter {
         super(allDataFromFile, {
             modelName: 'StripeProduct',
             dataKeyToImport: 'stripe_products',
+            requiredFromFile: ['products'],
             requiredImportedData: ['products'],
             requiredExistingData: ['products']
         });
@@ -41,11 +42,32 @@ class StripeProductsImporter extends BaseImporter {
                 objectInFile.product_id = importedObject.id;
                 return;
             }
-            const existingObject = _.find(this.requiredExistingData.products, {id: objectInFile.product_id});
+
+            const existingObjectById = _.find(this.requiredExistingData.products, {id: objectInFile.product_id});
             // CASE: the product exists in the db already
-            if (existingObject) {
+            if (existingObjectById) {
                 return;
             }
+
+            // CASE: we skipped product import because a product with the same name and slug exists in the DB
+            debug('lookup product by name and slug');
+            const productFromFile = _.find(
+                this.requiredFromFile.products,
+                {id: objectInFile.product_id}
+            );
+            if (productFromFile) {
+                // look for the existing product with the same name and slug
+                const existingObjectByNameAndSlug = _.find(
+                    this.requiredExistingData.products,
+                    {name: productFromFile.name, slug: productFromFile.slug}
+                );
+                if (existingObjectByNameAndSlug) {
+                    debug(`resolved ${objectInFile.product_id} to ${existingObjectByNameAndSlug.name}`);
+                    objectInFile.product_id = existingObjectByNameAndSlug.id;
+                    return;
+                }
+            }
+
             // CASE: we don't know what product this is for
             debug(`ignoring stripe product ${objectInFile.stripe_product_id}`);
             invalidProducts.push(objectInFile.id);
