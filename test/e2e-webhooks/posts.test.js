@@ -7,12 +7,12 @@ const tierSnapshot = {
     updated_at: anyISODateTime
 };
 
-const buildPostSnapshotWithTiers = ({tiersCount}) => {
+const buildPostSnapshotWithTiers = ({published, tiersCount}) => {
     return {
         id: anyObjectId,
         uuid: anyUuid,
         comment_id: anyObjectId,
-        published_at: anyISODateTime,
+        published_at: published ? anyISODateTime : null,
         created_at: anyISODateTime,
         updated_at: anyISODateTime,
         // @TODO: hack here! it's due to https://github.com/TryGhost/Toolbox/issues/341
@@ -81,8 +81,42 @@ describe('post.* events', function () {
             // .matchHeaderSnapshot();
             .matchBodySnapshot({
                 post: {
-                    current: buildPostSnapshotWithTiers({tiersCount: 2}),
+                    current: buildPostSnapshotWithTiers({
+                        published: true,
+                        tiersCount: 2
+                    }),
                     previous: buildPreviousPostSnapshotWithTiers({tiersCount: 2})
+                }
+            });
+    });
+
+    it('post.added even is triggered', async function () {
+        const webhookURL = 'https://test-webhook-receiver.com/post-added/';
+        await webhookMockReceiver.mock(webhookURL);
+        await fixtureManager.insertWebhook({
+            event: 'post.added',
+            url: webhookURL
+        });
+
+        await adminAPIAgent
+            .post('posts/')
+            .body({
+                posts: [{
+                    title: 'testing post.added webhook',
+                    status: 'draft'
+                }]
+            })
+            .expectStatus(201);
+
+        await webhookMockReceiver
+            // TODO: implement header matching feature next!
+            // .matchHeaderSnapshot();
+            .matchBodySnapshot({
+                post: {
+                    current: buildPostSnapshotWithTiers({
+                        published: false,
+                        tiersCount: 2
+                    })
                 }
             });
     });
