@@ -7,6 +7,12 @@ const tierSnapshot = {
     updated_at: anyISODateTime
 };
 
+const authorSnapshot = {
+    last_seen: anyISODateTime,
+    created_at: anyISODateTime,
+    updated_at: anyISODateTime
+};
+
 const buildPostSnapshotWithTiers = ({published, tiersCount}) => {
     return {
         id: anyObjectId,
@@ -18,7 +24,9 @@ const buildPostSnapshotWithTiers = ({published, tiersCount}) => {
         // @TODO: hack here! it's due to https://github.com/TryGhost/Toolbox/issues/341
         //        this matcher should be removed once the issue is solved
         url: stringMatching(/http:\/\/127.0.0.1:2369\/\w+\//),
-        tiers: new Array(tiersCount).fill(tierSnapshot)
+        tiers: new Array(tiersCount).fill(tierSnapshot),
+        primary_author: authorSnapshot,
+        authors: new Array(1).fill(authorSnapshot)
     };
 };
 
