@@ -377,11 +377,36 @@ describe('DB API (canary)', function () {
         yearlyPrice.get('stripe_price_id').should.equal('price_d04baebb73');
         yearlyPrice.get('stripe_product_id').should.equal('prod_d2c1708c21');
     });
+});
+
+// The following tests will create a new clean database for every test
+describe('DB API (cleaned)', function () {
+    let backupKey;
+    let schedulerKey;
+
+    beforeEach(async function () {
+        await testUtils.stopGhost();
+        await localUtils.startGhost();
+        request = supertest.agent(config.get('url'));
+        await localUtils.doAuth(request);
+        backupKey = _.find(testUtils.getExistingData().apiKeys, {integration: {slug: 'ghost-backup'}});
+        schedulerKey = _.find(testUtils.getExistingData().apiKeys, {integration: {slug: 'ghost-scheduler'}});
+    });
+
+    afterEach(function () {
+        sinon.restore();
+    });
 
     it('Can import a JSON database with products for an existing product', async function () {
-        const existingProduct = await models.Product.findOne({slug: 'ghost-inc'});
-        should.exist(existingProduct);
-        existingProduct.get('name').should.equal('Ghost Inc.');
+        // Create a product with existing slug
+        const existingProduct = await models.Product.forge({
+            slug: 'ghost-inc',
+            name: 'Ghost Inc.',
+            description: 'Our daily newsletter',
+            type: 'paid',
+            active: 1,
+            visibility: 'public'
+        }).save();
 
         const res = await request.post(localUtils.API.getApiQuery('db/'))
             .set('Origin', config.get('url'))
@@ -399,10 +424,8 @@ describe('DB API (canary)', function () {
         should.exist(product);
         product.id.should.equal(existingProduct.id);
         product.get('slug').should.equal('ghost-inc');
-
         product.get('name').should.equal('Ghost Inc.');
         product.get('description').should.equal('Our daily newsletter');
-        product.get('welcome_page_url').should.equal('/welcome');
 
         // Check settings
         const portalProducts = await models.Settings.findOne({key: 'portal_products'});
@@ -434,10 +457,10 @@ describe('DB API (canary)', function () {
         post.relations.tiers.models.map(m => m.id).should.match([product.id]);
 
         // Check stripe prices
-        const monthlyPrice = await models.StripePrice.findOne({id: product.get('monthly_price_id')});
+        const monthlyPrice = await models.StripePrice.findOne({stripe_price_id: 'price_a425520db0'});
         should.exist(monthlyPrice);
 
-        const yearlyPrice = await models.StripePrice.findOne({id: product.get('yearly_price_id')});
+        const yearlyPrice = await models.StripePrice.findOne({stripe_price_id: 'price_d04baebb73'});
         should.exist(yearlyPrice);
 
         monthlyPrice.get('amount').should.equal(500);
