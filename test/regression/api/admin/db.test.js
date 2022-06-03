@@ -98,7 +98,7 @@ describe('DB API (canary)', function () {
                     .expect(200);
             })
             .then((res) => {
-                res.body.problems.length.should.eql(4);
+                res.body.problems.length.should.eql(6);
                 fs.removeSync(exportFolder);
             });
     });
