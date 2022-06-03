@@ -41,15 +41,26 @@ module.exports = function imgUrl(requestedImageUrl, options) {
 
     // CASE: if you pass an external image, there is nothing we want to do to it!
     const isInternalImage = detectInternalImage(requestedImageUrl);
+    const sizeOptions = getImageSizeOptions(options);
+
     if (!isInternalImage) {
+        // Detect Unsplash width and format
+        const isUnsplashImage = /images\.unsplash\.com/.test(requestedImageUrl);
+        if (isUnsplashImage) {
+            try {
+                return getUnsplashImage(requestedImageUrl, sizeOptions);
+            } catch (e) {
+                // ignore errors and just return the original URL
+            }
+        }
+        
         return requestedImageUrl;
     }
 
-    const {requestedSize, imageSizes} = getImageSizeOptions(options);
     const absoluteUrlRequested = getAbsoluteOption(options);
 
     function applyImageSizes(image) {
-        return getImageWithSize(image, requestedSize, imageSizes);
+        return getImageWithSize(image, sizeOptions);
     }
 
     function getImageUrl(image) {
@@ -79,10 +90,12 @@ function getAbsoluteOption(options) {
 function getImageSizeOptions(options) {
     const requestedSize = options && options.hash && options.hash.size;
     const imageSizes = options && options.data && options.data.config && options.data.config.image_sizes;
+    const requestedFormat = options && options.hash && options.hash.format;
 
     return {
         requestedSize,
-        imageSizes
+        imageSizes,
+        requestedFormat
     };
 }
 
@@ -99,12 +112,52 @@ function detectInternalImage(requestedImageUrl) {
     return isAbsoluteInternalImage || isRelativeInternalImage;
 }
 
-function getImageWithSize(imagePath, requestedSize, imageSizes) {
+function getUnsplashImage(imagePath, sizeOptions) {
+    const parsedUrl = new URL(imagePath);
+    const {requestedSize, imageSizes, requestedFormat} = sizeOptions;
+
+    if (requestedFormat) {
+        parsedUrl.searchParams.set('fm', requestedFormat);
+    }
+
+    if (!imageSizes || !imageSizes[requestedSize]) {
+        return parsedUrl.toString();
+    }
+
+    const {width, height} = imageSizes[requestedSize];
+
+    if (!width && !height) {
+        return parsedUrl.toString();
+    }
+
+    parsedUrl.searchParams.delete('w');
+    parsedUrl.searchParams.delete('h');
+
+    if (width) {
+        parsedUrl.searchParams.set('w', width);
+    }
+    if (height) {
+        parsedUrl.searchParams.set('h', height);
+    }
+    return parsedUrl.toString();
+}
+
+/**
+ * 
+ * @param {string} imagePath 
+ * @param {Object} sizeOptions 
+ * @param {string} sizeOptions.requestedSize
+ * @param {Object[]} sizeOptions.imageSizes
+ * @param {string} [sizeOptions.requestedFormat]
+ * @returns 
+ */
+function getImageWithSize(imagePath, sizeOptions) {
     const hasLeadingSlash = imagePath[0] === '/';
 
     if (hasLeadingSlash) {
-        return '/' + getImageWithSize(imagePath.slice(1), requestedSize, imageSizes);
+        return '/' + getImageWithSize(imagePath.slice(1), sizeOptions);
     }
+    const {requestedSize, imageSizes, requestedFormat} = sizeOptions;
 
     if (!requestedSize) {
         return imagePath;
@@ -123,8 +176,9 @@ function getImageWithSize(imagePath, requestedSize, imageSizes) {
     const [imgBlogUrl, imageName] = imagePath.split(STATIC_IMAGE_URL_PREFIX);
 
     const sizeDirectoryName = prefixIfPresent('w', width) + prefixIfPresent('h', height);
+    const formatPrefix = requestedFormat ? `/format/${requestedFormat}` : '';
 
-    return [imgBlogUrl, STATIC_IMAGE_URL_PREFIX, `/size/${sizeDirectoryName}`, imageName].join('');
+    return [imgBlogUrl, STATIC_IMAGE_URL_PREFIX, `/size/${sizeDirectoryName}`, formatPrefix, imageName].join('');
 }
 
 function prefixIfPresent(prefix, string) {
