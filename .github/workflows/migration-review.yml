@@ -5,8 +5,14 @@ on:
     paths:
       - 'core/server/data/schema/**'
       - 'core/server/data/migrations/versions/**'
+permissions:
+  contents: read
+
 jobs:
   createComment:
+    permissions:
+      issues: write  # for peter-evans/create-or-update-comment to create or update comment
+      pull-requests: write  # for peter-evans/create-or-update-comment to create or update comment
     runs-on: ubuntu-latest
     if: github.repository_owner == 'TryGhost'
     name: Create checklist comment

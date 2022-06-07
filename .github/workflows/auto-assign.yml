@@ -2,6 +2,9 @@ name: Auto Assign
 on:
   pull_request:
     types: [opened, reopened]
+permissions:
+  contents: read
+
 jobs:
   automate:
     runs-on: ubuntu-18.04

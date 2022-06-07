@@ -2,6 +2,11 @@ name: Canary Build
 on: workflow_dispatch
 env:
   FORCE_COLOR: 1
+permissions:
+  contents: read
+
 jobs:
   canary:
+    permissions:
+      contents: none
     uses: tryghost/actions/.github/workflows/canary.yml@main
