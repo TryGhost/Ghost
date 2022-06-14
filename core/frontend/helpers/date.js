@@ -45,7 +45,9 @@ module.exports = function (...attrs) {
     // i18n: Making dates, including month names, translatable to any language.
     // Documentation: http://momentjs.com/docs/#/i18n/
     // Locales: https://github.com/moment/moment/tree/develop/locale
-    dateMoment.locale(locale);
+    if (locale && locale.match('^[^/\\\\]*$') !== null) {
+        dateMoment.locale(locale);
+    }
 
     if (timeago) {
         date = dateMoment.tz(timezone).from(timeNow);
