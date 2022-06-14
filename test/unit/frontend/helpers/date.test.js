@@ -1,3 +1,4 @@
+const assert = require('assert');
 const sinon = require('sinon');
 const should = require('should');
 
@@ -7,6 +8,23 @@ const date = require('../../../../core/frontend/helpers/date');
 const moment = require('moment-timezone');
 
 describe('{{date}} helper', function () {
+    afterEach(function () {
+        sinon.restore();
+    });
+    it('does not call moment locale method with a path', function () {
+        const localeStub = sinon.stub(moment.prototype, 'locale');
+        date.call('1970-01-01', {
+            hash: {},
+            data: {
+                site: {
+                    locale: '../../../content/files/1970/01/hax.js',
+                    timezone: 'Europe/Dublin'
+                }
+            }
+        });
+        assert(localeStub.notCalled, 'locale should not have been called with a path');
+    });
+
     it('creates properly formatted date strings', function () {
         const testDates = [
             '2013-12-31T11:28:58.593+02:00',
