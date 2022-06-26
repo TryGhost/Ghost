@@ -111,6 +111,7 @@ function send(message, recipientData, replacements) {
             });
         });
     } catch (error) {
+        // REF: possible mailgun errors https://documentation.mailgun.com/en/latest/api-intro.html#errors
         return Promise.reject({error, messageData});
     }
 }

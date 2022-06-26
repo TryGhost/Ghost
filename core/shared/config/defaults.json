@@ -143,5 +143,8 @@
     },
     "gravatar": {
         "url": "https://www.gravatar.com/avatar/{hash}?s={size}&r={rating}&d={_default}"
+    },
+    "bulkEmail": {
+        "module": "./mailgun"
     }
 }

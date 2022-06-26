@@ -1,11 +1,12 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
+const config = require('../../../shared/config');
 const moment = require('moment-timezone');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const models = require('../../models');
-const mailgunProvider = require('./mailgun');
+const bulkEmailProvider = require(config.get('bulkEmail:module'));
 const sentry = require('../../../shared/sentry');
 const debug = require('@tryghost/debug')('mega');
 const postEmailSerializer = require('../mega/post-email-serializer');
@@ -14,12 +15,12 @@ const messages = {
     error: 'The email service was unable to send an email batch.'
 };
 
-const BATCH_SIZE = mailgunProvider.BATCH_SIZE;
+const BATCH_SIZE = bulkEmailProvider.BATCH_SIZE;
 
 /**
  * An object representing batch request result
- * @typedef { Object } BatchResultBase
- * @property { string } data - data that is returned from Mailgun or one which Mailgun was called with
+ * @typedef { Class } BatchResultBase
+ * @property { string } data - data that is returned from bulk email provider
  */
 class BatchResultBase {
     constructor(id) {
@@ -208,8 +209,8 @@ module.exports = {
      * @returns {Object} - {providerId: 'xxx'}
      */
     send(emailData, recipients, memberSegment) {
-        const mailgunInstance = mailgunProvider.getInstance();
-        if (!mailgunInstance) {
+        const bulkEmailInstance = bulkEmailProvider.getInstance();
+        if (!bulkEmailInstance) {
             return;
         }
 
@@ -241,11 +242,10 @@ module.exports = {
 
         emailData = postEmailSerializer.renderEmailForSegment(emailData, memberSegment);
 
-        return mailgunProvider.send(emailData, recipientData, replacements).then((response) => {
+        return bulkEmailProvider.send(emailData, recipientData, replacements).then((response) => {
             debug(`sent message (${Date.now() - startTime}ms)`);
             return response;
         }).catch((error) => {
-            // REF: possible mailgun errors https://documentation.mailgun.com/en/latest/api-intro.html#errors
             let ghostError = new errors.EmailError({
                 err: error,
                 context: tpl(messages.error),
