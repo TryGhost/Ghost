@@ -195,7 +195,7 @@
     "@tryghost/express-test": "0.11.1",
     "@tryghost/webhook-mock-receiver": "0.1.1",
     "c8": "7.11.3",
-    "cli-progress": "3.11.1",
+    "cli-progress": "3.11.2",
     "coffeescript": "2.7.0",
     "cssnano": "5.1.10",
     "eslint": "8.18.0",
