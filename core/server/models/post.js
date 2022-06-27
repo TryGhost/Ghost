@@ -667,6 +667,12 @@ Post = ghostBookshelf.Model.extend({
             && !this.get('newsletter_id')
             && this.hasChanged('status')
             && (newStatus === 'published' || newStatus === 'scheduled' || newStatus === 'sent')) {
+            // Don't let non-Editor, non-Admins send emails
+            const canEmail = _.some(this.contextUser(options).roles, ({name}) => name === 'Editor' || name === 'Administrator');
+            if (!canEmail) {
+              throw 'You can\'t do that!!';
+            }
+
             // Map the passed slug to the id + validate the passed newsletter
             ops.push(async () => {
                 const newsletter = await Newsletter.findOne({slug: options.newsletter}, {transacting: options.transacting, filter: 'status:active'});
