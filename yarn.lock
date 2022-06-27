@@ -3492,10 +3492,10 @@ cheerio@0.22.0, cheerio@^0.22.0:
     lodash.reject "^4.4.0"
     lodash.some "^4.4.0"
 
-cheerio@^1.0.0-rc.3, cheerio@~1.0.0-rc.11:
-  version "1.0.0-rc.11"
-  resolved "https://registry.yarnpkg.com/cheerio/-/cheerio-1.0.0-rc.11.tgz#1be84be1a126958366bcc57a11648cd9b30a60c2"
-  integrity sha512-bQwNaDIBKID5ts/DsdhxrjqFXYfLw4ste+wMKqWA8DyKcS4qwsPP4Bk8ZNaTJjvpiX/qW3BT4sU7d6Bh5i+dag==
+cheerio@^1.0.0-rc.3, cheerio@~1.0.0-rc.12:
+  version "1.0.0-rc.12"
+  resolved "https://registry.yarnpkg.com/cheerio/-/cheerio-1.0.0-rc.12.tgz#788bf7466506b1c6bf5fae51d24a2c4d62e47683"
+  integrity sha512-VqR8m68vM46BNnuZ5NtnGBKIE/DfN0cRIzg9n40EIq9NOv90ayxLBXA8fXC5gquFRGJSTRqBq25Jt2ECLR431Q==
   dependencies:
     cheerio-select "^2.1.0"
     dom-serializer "^2.0.0"
@@ -3504,7 +3504,6 @@ cheerio@^1.0.0-rc.3, cheerio@~1.0.0-rc.11:
     htmlparser2 "^8.0.1"
     parse5 "^7.0.0"
     parse5-htmlparser2-tree-adapter "^7.0.0"
-    tslib "^2.4.0"
 
 chokidar@3.5.3:
   version "3.5.3"
@@ -8442,13 +8441,13 @@ metascraper-url@5.29.11:
   dependencies:
     "@metascraper/helpers" "^5.29.11"
 
-metascraper@5.29.11:
-  version "5.29.11"
-  resolved "https://registry.yarnpkg.com/metascraper/-/metascraper-5.29.11.tgz#9719bb94e74527eb19902823277806d9be9212c0"
-  integrity sha512-IJ0rSAQ9ruwNWLTmiVsnY7KjjRrimNx9XXW1eSe03CRw0tIOuRHDf8IxK60PpAfW2Aonp1XoHYvmtzgn3XpZgw==
+metascraper@5.29.12:
+  version "5.29.12"
+  resolved "https://registry.yarnpkg.com/metascraper/-/metascraper-5.29.12.tgz#501ba9a7bd3a50e0376af5887cc46a2461bf3f47"
+  integrity sha512-zbgDC3UyRf+AESJzQrefPvZbmcm4Z03RqlNggpHsR01+DopPUXRhqXjEztjsqdx4y/ITO7Qh4RZ7Um6cYyaZ3Q==
   dependencies:
     "@metascraper/helpers" "^5.29.11"
-    cheerio "~1.0.0-rc.11"
+    cheerio "~1.0.0-rc.12"
     lodash "~4.17.21"
     whoops "~4.1.1"
 
