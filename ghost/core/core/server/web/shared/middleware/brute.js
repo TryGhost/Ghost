@@ -103,6 +103,8 @@ module.exports = {
             ignoreIP: false,
             key(_req, _res, _next) {
                 if (_req.body.email) {
+                    // Change the email to lower case to prevent multi accounts creations
+                    req.body.email = req.body.email.toLowerCase();
                     return _next(`${_req.body.email}login`);
                 }
 
