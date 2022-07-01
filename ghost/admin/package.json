@@ -152,7 +152,7 @@
     "react-dom": "^18.2.0",
     "reframe.js": "3.0.3",
     "simplemde": "https://github.com/kevinansfield/simplemde-markdown-editor.git#ghost",
-    "testem": "3.7.0",
+    "testem": "3.8.0",
     "top-gh-contribs": "2.0.4",
     "tracked-built-ins": "2.0.1",
     "validator": "7.2.0",
