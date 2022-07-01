@@ -8,11 +8,19 @@ export default class PublishAtOption extends Component {
 
     @action
     setDate(selectedDate) {
-        const newDate = moment(this.args.publishOptions.scheduledAtUTC);
-        const {years, months, date} = moment(selectedDate).toObject();
+        const selectedMoment = moment(selectedDate);
+        const {years, months, date} = selectedMoment.toObject();
 
+        // Create a new moment from existing scheduledAtUTC _in site timezone_.
+        // This ensures we're setting the date correctly because we don't need
+        // to account for the converted UTC date being yesterday/tomorrow.
+        const newDate = moment.tz(
+            this.args.publishOptions.scheduledAtUTC,
+            this.settings.get('timezone')
+        );
         newDate.set({years, months, date});
 
+        // converts back to UTC
         this.args.publishOptions.setScheduledAt(newDate);
     }
 
