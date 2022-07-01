@@ -17,7 +17,7 @@
             @time={{moment-format (moment-site-tz @publishOptions.scheduledAtUTC) "HH:mm"}}
             @setDate={{this.setDate}}
             @setTime={{this.setTime}}
-            @minDate={{@publishOptions.minScheduledAt}}
+            @minDate={{moment-site-tz @publishOptions.minScheduledAt}}
             @isActive={{@publishOptions.isScheduled}}
             @renderInPlace={{false}}
         />
