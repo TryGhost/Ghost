@@ -14,7 +14,7 @@ const urlService = require('../../../../core/server/services/url');
 
 const ghost_head = require('../../../../core/frontend/helpers/ghost_head');
 const proxy = require('../../../../core/frontend/services/proxy');
-const {settingsCache} = proxy;
+const {settingsCache, labs} = proxy;
 
 describe('{{ghost_head}} helper', function () {
     let posts = [];
@@ -1578,7 +1578,7 @@ describe('{{ghost_head}} helper', function () {
 
         it('attaches style tag to existing script/style tag', function (done) {
             settingsCache.get.withArgs('members_enabled').returns(true);
-            
+
             const renderObject = {
                 post: posts[1]
             };
@@ -1732,6 +1732,26 @@ describe('{{ghost_head}} helper', function () {
                 rendered.string.should.containEql('data-ghost="http://127.0.0.1:2369/" data-key="xyz" data-api="http://127.0.0.1:2369/ghost/api/content/"');
                 rendered.string.should.containEql('<style id="gh-members-styles">');
                 rendered.string.should.not.containEql('<script async src="https://js.stripe.com');
+                done();
+            }).catch(done);
+        });
+    });
+
+    describe('search scripts', function () {
+        it('includes search when labs flag enabled', function (done) {
+            labsStub = sinon.stub(labs, 'isSet').returns(true);
+
+            ghost_head(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            })).then(function (rendered) {
+                should.exist(rendered);
+                rendered.string.should.containEql('<script defer src="https://unpkg.com/@tryghost/sodo-search');
+                rendered.string.should.containEql('data-ghost="http://127.0.0.1:2369/" data-key="xyz" data-api="http://127.0.0.1:2369/ghost/api/content/"');
+
                 done();
             }).catch(done);
         });

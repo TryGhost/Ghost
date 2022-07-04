@@ -57,6 +57,16 @@ function getMembersHelper(data, frontendKey) {
     return membersHelper;
 }
 
+function getSearchHelper(frontendKey) {
+    if (!labs.isSet('sodoSearch')) {
+        return '';
+    }
+
+    let helper = `<script defer src="${config.get('sodoSearch:url')}" data-ghost="${urlUtils.getSiteUrl()}" data-key="${frontendKey}" data-api="${urlUtils.urlFor('api', {type: 'content'}, true)}" crossorigin="anonymous"></script>`;
+
+    return helper;
+}
+
 /**
  * **NOTE**
  * Express adds `_locals`, see https://github.com/expressjs/express/blob/4.15.4/lib/response.js#L962.
@@ -193,6 +203,7 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
         // no code injection for amp context!!!
         if (!_.includes(context, 'amp')) {
             head.push(getMembersHelper(options.data, frontendKey));
+            head.push(getSearchHelper(frontendKey));
 
             // @TODO do this in a more "frameworky" way
             if (cardAssetService.hasFile('js')) {
