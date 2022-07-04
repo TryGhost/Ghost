@@ -22,7 +22,7 @@
     "build:combined": "node ./scripts/build-combined.js",
     "build:bundle": "webpack --config webpack.config.js",
     "test:ui": "react-scripts test",
-    "test": "yarn test --watchAll=false --coverage",
+    "test": "yarn test:ui --watchAll=false --coverage",
     "eject": "react-scripts eject",
     "lint": "eslint src --ext .js --cache",
     "preship": "yarn lint",
