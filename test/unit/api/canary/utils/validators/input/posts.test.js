@@ -3,10 +3,10 @@ const _ = require('lodash');
 const should = require('should');
 const sinon = require('sinon');
 const Promise = require('bluebird');
-const validators = require('../../../../../../../core/server/api/canary/utils/validators');
+const validators = require('../../../../../../../core/server/api/endpoints/utils/validators');
 const models = require('../../../../../../../core/server/models');
 
-describe('Unit: canary/utils/validators/input/posts', function () {
+describe('Unit: endpoints/utils/validators/input/posts', function () {
     before(function () {
         models.init();
     });

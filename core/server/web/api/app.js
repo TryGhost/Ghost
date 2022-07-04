@@ -16,8 +16,8 @@ module.exports = function setupApiApp() {
     apiApp.use(APIVersionCompatibilityService.versionRewrites);
     apiApp.use(APIVersionCompatibilityService.contentVersion);
 
-    apiApp.lazyUse('/content/', require('./canary/content/app'));
-    apiApp.lazyUse('/admin/', require('./canary/admin/app'));
+    apiApp.lazyUse('/content/', require('./endpoints/content/app'));
+    apiApp.lazyUse('/admin/', require('./endpoints/admin/app'));
 
     // Error handling for requests to non-existent API versions
     apiApp.use(errorHandler.resourceNotFound);

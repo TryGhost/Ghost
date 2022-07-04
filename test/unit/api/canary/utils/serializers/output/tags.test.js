@@ -1,10 +1,10 @@
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../../../utils');
-const mappers = require('../../../../../../../core/server/api/canary/utils/serializers/output/mappers');
-const serializers = require('../../../../../../../core/server/api/canary/utils/serializers');
+const mappers = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/mappers');
+const serializers = require('../../../../../../../core/server/api/endpoints/utils/serializers');
 
-describe('Unit: canary/utils/serializers/output/tags', function () {
+describe('Unit: endpoints/utils/serializers/output/tags', function () {
     let tagModel;
 
     beforeEach(function () {

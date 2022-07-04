@@ -11,7 +11,7 @@ const localUtils = require('./utils');
 const defaultNewsletterSlug = testUtils.DataGenerator.Content.newsletters[0].slug;
 const secondNewsletterSlug = testUtils.DataGenerator.Content.newsletters[1].slug;
 
-describe('Posts API (canary)', function () {
+describe('Posts API', function () {
     let request;
 
     before(async function () {

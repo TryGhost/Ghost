@@ -26,7 +26,7 @@
     "!core/server/web/parent/middleware/**",
     "core/server/web/shared/**",
     "!core/server/web/shared/middleware/**",
-    "core/server/api/canary/**",
-    "!core/server/api/canary/utils"
+    "core/server/api/endpoints/**",
+    "!core/server/api/endpoints/utils"
   ]
 }

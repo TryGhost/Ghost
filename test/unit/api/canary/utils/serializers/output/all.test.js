@@ -1,7 +1,7 @@
 const should = require('should');
-const serializers = require('../../../../../../../core/server/api/canary/utils/serializers');
+const serializers = require('../../../../../../../core/server/api/endpoints/utils/serializers');
 
-describe('Unit: canary/utils/serializers/output/all', function () {
+describe('Unit: endpoints/utils/serializers/output/all', function () {
     describe('after', function () {
         it('x_by', function () {
             const apiConfig = {};

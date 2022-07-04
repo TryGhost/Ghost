@@ -4,7 +4,7 @@ const testUtils = require('../../../utils');
 const config = require('../../../../core/shared/config');
 const localUtils = require('./utils');
 
-describe('Webhooks API (canary)', function () {
+describe('Webhooks API', function () {
     let request;
     const API_VERSION = 'canary';
 

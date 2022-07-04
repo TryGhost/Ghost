@@ -1,8 +1,8 @@
 const should = require('should');
 const sinon = require('sinon');
-const utils = require('../../../../../core/server/api/canary/utils');
+const utils = require('../../../../../core/server/api/endpoints/utils');
 
-describe('Unit: canary/utils/index', function () {
+describe('Unit: endpoints/utils/index', function () {
     afterEach(function () {
         sinon.restore();
     });

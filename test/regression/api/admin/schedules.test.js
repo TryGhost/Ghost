@@ -10,7 +10,7 @@ const config = require('../../../../core/shared/config');
 const testUtils = require('../../../utils');
 const localUtils = require('./utils');
 
-describe('Canary Schedules API', function () {
+describe('Schedules API', function () {
     const resources = [];
     let request;
 
