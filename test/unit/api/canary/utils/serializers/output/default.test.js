@@ -1,9 +1,9 @@
 const should = require('should');
 const sinon = require('sinon');
-const serializers = require('../../../../../../../core/server/api/canary/utils/serializers');
-const mappers = require('../../../../../../../core/server/api/canary/utils/serializers/output/mappers');
+const serializers = require('../../../../../../../core/server/api/endpoints/utils/serializers');
+const mappers = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/mappers');
 
-describe('Unit: canary/utils/serializers/output/default', function () {
+describe('Unit: endpoints/utils/serializers/output/default', function () {
     let toJSONStub;
     beforeEach(function () {
         toJSONStub = sinon.stub().callsFake(function () {

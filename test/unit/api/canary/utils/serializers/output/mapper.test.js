@@ -1,11 +1,11 @@
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../../../utils');
-const dateUtil = require('../../../../../../../core/server/api/canary/utils/serializers/output/utils/date');
-const urlUtil = require('../../../../../../../core/server/api/canary/utils/serializers/output/utils/url');
-const cleanUtil = require('../../../../../../../core/server/api/canary/utils/serializers/output/utils/clean');
-const extraAttrsUtils = require('../../../../../../../core/server/api/canary/utils/serializers/output/utils/extra-attrs');
-const mappers = require('../../../../../../../core/server/api/canary/utils/serializers/output/mappers');
+const dateUtil = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/date');
+const urlUtil = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/url');
+const cleanUtil = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/clean');
+const extraAttrsUtils = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/extra-attrs');
+const mappers = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/mappers');
 
 describe('Unit: utils/serializers/output/mappers', function () {
     afterEach(function () {

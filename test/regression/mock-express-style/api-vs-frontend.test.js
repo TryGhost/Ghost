@@ -34,7 +34,7 @@ describe('Frontend behaviour tests', function () {
 
         beforeEach(function () {
             sinon.stub(themeEngine.getActive(), 'config').withArgs('posts_per_page').returns(2);
-            const postsAPI = require('../../../core/server/api/canary/posts-public');
+            const postsAPI = require('../../../core/server/api/endpoints/posts-public');
             postSpy = sinon.spy(postsAPI.browse, 'query');
         });
 

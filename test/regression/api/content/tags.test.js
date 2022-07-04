@@ -8,7 +8,7 @@ const config = require('../../../../core/shared/config');
 
 let request;
 
-describe('api/canary/content/tags', function () {
+describe('api/endpoints/content/tags', function () {
     const validKey = localUtils.getValidKey();
 
     before(async function () {

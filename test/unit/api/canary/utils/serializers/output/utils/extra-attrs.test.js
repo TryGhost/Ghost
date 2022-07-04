@@ -1,8 +1,8 @@
 const should = require('should');
 const sinon = require('sinon');
-const extraAttrsUtil = require('../../../../../../../../core/server/api/canary/utils/serializers/output/utils/extra-attrs');
+const extraAttrsUtil = require('../../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/extra-attrs');
 
-describe('Unit: canary/utils/serializers/output/utils/extra-attrs', function () {
+describe('Unit: endpoints/utils/serializers/output/utils/extra-attrs', function () {
     const frame = {
         options: {}
     };

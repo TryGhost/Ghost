@@ -7,7 +7,7 @@ const localUtils = require('./utils');
 const db = require('../../../../core/server/data/db');
 const settingsCache = require('../../../../core/shared/settings-cache');
 
-describe('Settings API (canary)', function () {
+describe('Settings API', function () {
     let request;
 
     async function checkCanEdit(key, value, expectedValue) {
