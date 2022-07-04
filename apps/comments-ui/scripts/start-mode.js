@@ -13,7 +13,7 @@ let stdOutChunks = [];
 let stdErrChunks = [];
 let startYarnOutput = false;
 
-const {v, verbose, port = 5368} = minimist(process.argv.slice(2));
+const {v, verbose, port = 5369} = minimist(process.argv.slice(2));
 const showVerbose = !!(v || verbose);
 
 function clearConsole({withHistory = true} = {}) {
