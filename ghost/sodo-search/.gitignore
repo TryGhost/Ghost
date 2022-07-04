@@ -68,4 +68,17 @@ typings/
 # OSX
 .DS_Store
 
-# Sodo Search Custom
+# Comments Ui Custom
+# dotenv environment variables file
+.env.*
+
+# Membersjs build folders
+umd/
+build/
+
+# Allow .env file
+!.env
+## We use .env file to define NODE_PATH as recommended test-utils setup pattern to avoid relative imports.
+# Refs: https://testing-library.com/docs/react-testing-library/setup#jest-and-create-react-app
+# CRA also suggests `.env` files should be checked into source control
+# Ref: https://create-react-app.dev/docs/adding-custom-environment-variables/#adding-development-environment-variables-in-env
