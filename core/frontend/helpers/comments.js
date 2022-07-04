@@ -11,7 +11,7 @@ async function comments() {
     const frontendKey = await getFrontendKey();
 
     const data = {
-        ghost: urlUtils.getSiteUrl(),
+        'ghost-comments': urlUtils.getSiteUrl(),
         api: urlUtils.urlFor('api', {type: 'content'}, true),
         key: frontendKey,
         'comment-id': commentId
