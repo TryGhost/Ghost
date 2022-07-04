@@ -2,11 +2,11 @@ import React from 'react';
 import './App.css';
 
 function App() {
-  return (
-    <div className="App">
+    return (
+        <div className="App">
         Sodo Search
-    </div>
-  );
+        </div>
+    );
 }
 
 export default App;
