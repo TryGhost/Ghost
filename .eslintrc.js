@@ -20,7 +20,7 @@ module.exports = {
     },
     overrides: [
         {
-            files: 'core/server/api/canary/*',
+            files: 'core/server/api/endpoints/*',
             rules: {
                 'ghost/ghost-custom/max-api-complexity': 'error'
             }
