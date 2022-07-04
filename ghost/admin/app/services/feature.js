@@ -59,6 +59,7 @@ export default class FeatureService extends Service {
     @feature('urlCache') urlCache;
     @feature('beforeAfterCard') beforeAfterCard;
     @feature('sodoSearch') sodoSearch;
+    @feature('comments') comments;
 
     _user = null;
 
