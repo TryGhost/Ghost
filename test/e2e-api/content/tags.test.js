@@ -124,4 +124,45 @@ describe('Tags Content API', function () {
         assert(getTag('bacon').url.endsWith('/tag/bacon/'));
         assert(getTag('chorizo').url.endsWith('/tag/chorizo/'));
     });
+
+    it('Can use multiple fields and have valid url fields', async function () {
+        const res = await request.get(localUtils.API.getApiQuery(`tags/?key=${validKey}&fields=url`))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        const jsonResponse = res.body;
+
+        assert(jsonResponse.tags);
+        console.log(jsonResponse.tags);
+
+        const getTag = name => jsonResponse.tags.find(tag => tag.name === name);
+
+        assert(getTag('Getting Started').url.endsWith('/tag/getting-started/'));
+        assert(getTag('kitchen sink').url.endsWith('/tag/kitchen-sink/'));
+        assert(getTag('bacon').url.endsWith('/tag/bacon/'));
+        assert(getTag('chorizo').url.endsWith('/tag/chorizo/'));
+    });
+
+    it('Can use multiple fields and have valid url fields', async function () {
+        const res = await request.get(localUtils.API.getApiQuery(`tags/?key=${validKey}&fields=name`))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        const jsonResponse = res.body;
+
+        assert(jsonResponse.tags);
+
+        console.log(jsonResponse.tags);
+
+        const getTag = name => jsonResponse.tags.find(tag => tag.name === name);
+
+        assert(getTag('Getting Started').url.endsWith('/tag/getting-started/'));
+        assert(getTag('kitchen sink').url.endsWith('/tag/kitchen-sink/'));
+        assert(getTag('bacon').url.endsWith('/tag/bacon/'));
+        assert(getTag('chorizo').url.endsWith('/tag/chorizo/'));
+    });
 });

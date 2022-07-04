@@ -95,6 +95,8 @@ module.exports = function (Bookshelf) {
                 options.columns = _.union(options.columns, this.prototype.defaultColumnsToFetch());
             }
 
+            console.log('columns', options.columns);
+
             if (options.order) {
                 const {order, orderRaw, eagerLoad} = itemCollection.parseOrderOption(options.order, options.withRelated);
                 options.orderRaw = orderRaw;
