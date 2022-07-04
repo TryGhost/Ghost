@@ -131,6 +131,9 @@
         "url": "https://unpkg.com/@tryghost/portal@~2.2.0/umd/portal.min.js",
         "version": "2.2"
     },
+    "sodoSearch": {
+        "url": "https://unpkg.com/@tryghost/sodo-search@~0.1.0/umd/sodo-search.min.js"
+    },
     "tenor": {
         "publicReadOnlyApiKey": null,
         "contentFilter": "off"
