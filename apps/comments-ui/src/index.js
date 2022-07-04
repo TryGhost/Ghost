@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-
+import App from './App';
 const ROOT_DIV_ID = 'ghost-comments-root';
 
 function addRootDiv() {
@@ -27,7 +27,8 @@ function getSiteData() {
         const siteUrl = scriptTag.dataset.ghost;
         const apiKey = scriptTag.dataset.key;
         const apiUrl = scriptTag.dataset.api;
-        return {siteUrl, apiKey, apiUrl};
+        const sentryDsn = scriptTag.dataset.sentryDsn;
+        return {siteUrl, apiKey, apiUrl, sentryDsn};
     }
     return {};
 }
@@ -47,13 +48,12 @@ function setup({siteUrl}) {
 
 function init() {
     // const customSiteUrl = getSiteUrl();
-    const {siteUrl: customSiteUrl} = getSiteData();
+    const {siteUrl: customSiteUrl, sentryDsn} = getSiteData();
     const siteUrl = customSiteUrl || window.location.origin;
     setup({siteUrl});
     ReactDOM.render(
         <React.StrictMode>
-            Hello World
-            {/* <App siteUrl={siteUrl} customSiteUrl={customSiteUrl} apiKey={apiKey} apiUrl={apiUrl} /> */}
+            {<App siteUrl={siteUrl} customSiteUrl={customSiteUrl} sentryDsn={sentryDsn}/>}
         </React.StrictMode>,
         document.getElementById(ROOT_DIV_ID)
     );

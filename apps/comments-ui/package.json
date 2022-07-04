@@ -5,6 +5,7 @@
   "repository": "git@github.com:TryGhost/comments-ui.git",
   "author": "Ghost Foundation",
   "dependencies": {
+    "@sentry/react": "^7.5.0",
     "@testing-library/jest-dom": "5.16.2",
     "@testing-library/react": "12.1.2",
     "@testing-library/user-event": "14.0.0",
