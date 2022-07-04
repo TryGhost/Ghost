@@ -222,7 +222,7 @@
     "rewire": "6.0.0",
     "should": "13.2.3",
     "sinon": "14.0.0",
-    "supertest": "6.2.3",
+    "supertest": "6.2.4",
     "tmp": "0.2.1"
   },
   "resolutions": {
