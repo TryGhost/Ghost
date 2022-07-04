@@ -33,7 +33,7 @@
     "@ember/optional-features": "2.0.0",
     "@ember/render-modifiers": "2.0.4",
     "@ember/test-helpers": "2.8.1",
-    "@embroider/macros": "1.7.1",
+    "@embroider/macros": "1.8.3",
     "@glimmer/component": "1.1.2",
     "@html-next/vertical-collection": "2.1.0",
     "@joeattardi/emoji-button": "4.6.4",
