@@ -589,7 +589,7 @@ export const getMemberName = ({member}) => {
 export const getSupportAddress = ({site}) => {
     const {members_support_address: supportAddress} = site || {};
 
-    if (supportAddress.indexOf('@') < 0) {
+    if (supportAddress?.indexOf('@') < 0) {
         const siteDomain = getSiteDomain({site});
         const updatedDomain = siteDomain?.replace(/^(www)\.(?=[^/]*\..{2,5})/, '') || '';
         return `${supportAddress}@${updatedDomain}`;
