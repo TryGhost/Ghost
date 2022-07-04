@@ -16,7 +16,7 @@ let spinner;
 let stdOutChunks = [];
 let stdErrChunks = [];
 
-const {v, verbose, port = 5369, basic, b} = minimist(process.argv.slice(2));
+const {v, verbose, port = 5370, basic, b} = minimist(process.argv.slice(2));
 const showVerbose = !!(v || verbose);
 const showBasic = !!(b || basic);
 
