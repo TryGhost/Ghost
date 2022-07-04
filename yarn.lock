@@ -8518,7 +8518,7 @@ mime@1.6.0:
   resolved "https://registry.yarnpkg.com/mime/-/mime-1.6.0.tgz#32cd9e5c64553bd58d19a568af452acff04981b1"
   integrity sha512-x0Vn8spI+wuJ1O6S7gnbaQg8Pxh4NNHb7KSINmEWKiPE4RKOplvijn+NkmYmmRgP68mc70j2EbeTFRsrswaQeg==
 
-mime@^2.4.6, mime@^2.5.0:
+mime@2.6.0, mime@^2.4.6:
   version "2.6.0"
   resolved "https://registry.yarnpkg.com/mime/-/mime-2.6.0.tgz#a2a682a95cd4d0cb1d6257e28f83da7e35800367"
   integrity sha512-USPkMeET31rOMiarsBNIHZKLGgvKc/LrjofAnBlOttf5ajRvqiRA8QsenbcooctK6d6Ts6aqZXBA+XbkKthiQg==
@@ -11359,10 +11359,10 @@ stylehacks@^5.1.0:
     browserslist "^4.16.6"
     postcss-selector-parser "^6.0.4"
 
-superagent@^7.1.3:
-  version "7.1.3"
-  resolved "https://registry.yarnpkg.com/superagent/-/superagent-7.1.3.tgz#783ff8330e7c2dad6ad8f0095edc772999273b6b"
-  integrity sha512-WA6et4nAvgBCS73lJvv1D0ssI5uk5Gh+TGN/kNe+B608EtcVs/yzfl+OLXTzDs7tOBDIpvgh/WUs1K2OK1zTeQ==
+superagent@^8.0.0:
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/superagent/-/superagent-8.0.0.tgz#2ea4587df4b81ef023ec01ebc6e1bcb9e2344cb6"
+  integrity sha512-iudipXEel+SzlP9y29UBWGDjB+Zzag+eeA1iLosaR2YHBRr1Q1kC29iBrF2zIVD9fqVbpZnXkN/VJmwFMVyNWg==
   dependencies:
     component-emitter "^1.3.0"
     cookiejar "^2.1.3"
@@ -11371,18 +11371,18 @@ superagent@^7.1.3:
     form-data "^4.0.0"
     formidable "^2.0.1"
     methods "^1.1.2"
-    mime "^2.5.0"
+    mime "2.6.0"
     qs "^6.10.3"
     readable-stream "^3.6.0"
     semver "^7.3.7"
 
-supertest@6.2.3:
-  version "6.2.3"
-  resolved "https://registry.yarnpkg.com/supertest/-/supertest-6.2.3.tgz#291b220126e5faa654d12abe1ada3658757c8c67"
-  integrity sha512-3GSdMYTMItzsSYjnIcljxMVZKPW1J9kYHZY+7yLfD0wpPwww97GeImZC1oOk0S5+wYl2niJwuFusBJqwLqYM3g==
+supertest@6.2.4:
+  version "6.2.4"
+  resolved "https://registry.yarnpkg.com/supertest/-/supertest-6.2.4.tgz#3dcebe42f7fd6f28dd7ac74c6cba881f7101b2f0"
+  integrity sha512-M8xVnCNv+q2T2WXVzxDECvL2695Uv2uUj2O0utxsld/HRyJvOU8W9f1gvsYxSNU4wmIe0/L/ItnpU4iKq0emDA==
   dependencies:
     methods "^1.1.2"
-    superagent "^7.1.3"
+    superagent "^8.0.0"
 
 supports-color@8.1.1, supports-color@^8.0.0:
   version "8.1.1"
