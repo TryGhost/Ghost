@@ -58,6 +58,7 @@ export default class FeatureService extends Service {
     // labs flags
     @feature('urlCache') urlCache;
     @feature('beforeAfterCard') beforeAfterCard;
+    @feature('sodoSearch') sodoSearch;
 
     _user = null;
 
