@@ -2,9 +2,9 @@ const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../../../utils');
 const labs = require('../../../../../../../core/shared/labs');
-const memberSerializer = require('../../../../../../../core/server/api/canary/utils/serializers/output/members');
+const memberSerializer = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/members');
 
-describe('Unit: canary/utils/serializers/output/members', function () {
+describe('Unit: endpoints/utils/serializers/output/members', function () {
     let memberModel;
     let labsStub;
     beforeEach(function () {

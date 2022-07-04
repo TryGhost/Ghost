@@ -1,3 +1,3 @@
-module.exports.endpoints = require('./canary');
+module.exports.endpoints = require('./endpoints');
 
 module.exports.shared = require('./shared');

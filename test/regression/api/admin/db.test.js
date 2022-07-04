@@ -17,7 +17,7 @@ let eventsTriggered;
 
 const TABLE_ALLOWLIST_LENGTH = 20;
 
-describe('DB API (canary)', function () {
+describe('DB API', function () {
     let backupKey;
     let schedulerKey;
 
