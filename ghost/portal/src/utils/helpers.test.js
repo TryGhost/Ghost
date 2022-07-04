@@ -223,6 +223,16 @@ describe('Helpers - ', () => {
 
             expect(supportAddress).toBe('noreply@example.com');
         });
+
+        test('returns empty string for missing support address', () => {
+            let site = {
+                members_support_address: null,
+                url: 'https://www.example.com'
+            };
+            const supportAddress = getSupportAddress({site});
+
+            expect(supportAddress).toBe('');
+        });
     });
 
     describe('getPriceIdFromPageQuery - ', () => {
