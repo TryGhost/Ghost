@@ -35,7 +35,7 @@ const author = (attrs, frame) => {
         // @NOTE: used for night shift
         delete attrs.accessibility;
 
-        // Extra properties removed from canary
+        // Extra properties removed from current API
         delete attrs.tour;
 
         // We are standardising on returning null from the Content API for any empty values

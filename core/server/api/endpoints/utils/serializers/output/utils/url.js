@@ -14,7 +14,7 @@ const forPost = (id, attrs, frame) => {
      *
      * Imagine the site won't be part of core and core does not serve urls anymore.
      * Core needs to offer a preview API, which returns draft posts.
-     * That means the url is no longer /p/:uuid, it's e.g. GET /api/canary/content/preview/:uuid/.
+     * That means the url is no longer /p/:uuid, it's e.g. GET /api/content/preview/:uuid/.
      * /p/ is a concept of the site, not of core.
      *
      * The site is not aware of existing drafts. It won't be able to get the uuid.

@@ -58,14 +58,14 @@ const expectedProperties = {
             'last_seen',
             'status'
         )
-        // canary API doesn't return unused fields
+        // API doesn't return unused fields
         .without('accessibility', 'locale', 'tour', 'visibility')
     ,
     tag: _(schema.tags)
         .keys()
-        // canary Tag API doesn't return parent_id or parent
+        // Tag API doesn't return parent_id or parent
         .without('parent_id', 'parent')
-        // canary Tag API doesn't return date fields
+        // Tag API doesn't return date fields
         .without('created_at', 'updated_at')
 };
 
