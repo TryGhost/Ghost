@@ -1,7 +1,7 @@
 const should = require('should');
-const serializers = require('../../../../../../../core/server/api/canary/utils/serializers');
+const serializers = require('../../../../../../../core/server/api/endpoints/utils/serializers');
 
-describe('Unit: canary/utils/serializers/input/members', function () {
+describe('Unit: endpoints/utils/serializers/input/members', function () {
     describe('all', function () {
         it('converts tiers include', function () {
             const apiConfig = {};
