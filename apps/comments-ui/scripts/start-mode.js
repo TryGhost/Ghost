@@ -28,7 +28,7 @@ function clearConsole({withHistory = true} = {}) {
 
 function printConfigInstruction() {
     const data = {
-        portal: {
+        comments: {
             url: `http://localhost:${port}/comments`
         }
     };
