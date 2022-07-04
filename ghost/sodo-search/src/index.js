@@ -15,9 +15,9 @@ function getSiteData() {
     /**
      * @type {HTMLElement}
      */
-    const scriptTag = document.querySelector('script[data-ghost-search]');
+    const scriptTag = document.querySelector('script[data-sodo-search]');
     if (scriptTag) {
-        const siteUrl = scriptTag.dataset.ghostSearch;
+        const siteUrl = scriptTag.dataset.sodoSearch;
         const apiKey = scriptTag.dataset.key;
         const apiUrl = scriptTag.dataset.api;
         return {siteUrl, apiKey, apiUrl};
