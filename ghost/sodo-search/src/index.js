@@ -25,21 +25,11 @@ function getSiteData() {
     return {};
 }
 
-function handleTokenUrl() {
-    const url = new URL(window.location.href);
-    if (url.searchParams.get('token')) {
-        url.searchParams.delete('token');
-        window.history.replaceState({}, document.title, url.href);
-    }
-}
-
 function setup({siteUrl}) {
     addRootDiv();
-    handleTokenUrl();
 }
 
 function init() {
-    // const customSiteUrl = getSiteUrl();
     const {siteUrl: customSiteUrl} = getSiteData();
     const siteUrl = customSiteUrl || window.location.origin;
     setup({siteUrl});
