@@ -47,7 +47,7 @@ function printConfigInstruction() {
 
 function printInstructions() {
     log();
-    log(chalk.yellowBright.underline(`Add portal to your local Ghost config`));
+    log(chalk.yellowBright.underline(`Add comments to your local Ghost config`));
     printConfigInstruction();
     log(chalk.cyanBright('='.repeat(50)));
     log();
@@ -141,7 +141,7 @@ function startDevServer() {
     });
 
     server.listen(port, () => {
-        log(chalk.whiteBright(`Portal dev server is running on http://localhost:${port}`));
+        log(chalk.whiteBright(`Comments dev server is running on http://localhost:${port}`));
         printInstructions();
         doYarnStart();
     });
