@@ -29,7 +29,7 @@ function clearConsole({withHistory = true} = {}) {
 function printConfigInstruction() {
     const data = {
         portal: {
-            url: `http://localhost:${port}/portal`
+            url: `http://localhost:${port}/comments`
         }
     };
     const stringifedData = JSON.stringify(data, null, 2);
@@ -123,7 +123,7 @@ function startDevServer() {
     const server = http.createServer((request, response) => {
         return handler(request, response, {
             rewrites: [
-                {source: '/portal', destination: 'scripts/load-portal.js'}
+                {source: '/comments', destination: 'scripts/load-portal.js'}
             ],
             headers: [
                 {

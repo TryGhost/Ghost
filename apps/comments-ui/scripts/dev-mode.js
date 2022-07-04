@@ -91,7 +91,7 @@ function printBuildComplete(code) {
 function printConfigInstruction() {
     const data = {
         portal: {
-            url: `http://localhost:${port}/portal`
+            url: `http://localhost:${port}/comments`
         }
     };
     const stringifedData = JSON.stringify(data, null, 2);
@@ -191,8 +191,8 @@ function startDevServer() {
     const server = http.createServer((request, response) => {
         return handler(request, response, {
             rewrites: [
-                {source: '/portal', destination: 'umd/portal.min.js'},
-                {source: '/portal.min.js.map', destination: 'umd/portal.min.js.map'}
+                {source: '/comments', destination: 'umd/comments.min.js'},
+                {source: '/comments-ui.min.js.map', destination: 'umd/comments.min.js.map'}
             ],
             headers: [
                 {
