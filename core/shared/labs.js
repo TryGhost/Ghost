@@ -25,7 +25,8 @@ const BETA_FEATURES = [
 const ALPHA_FEATURES = [
     'urlCache',
     'beforeAfterCard',
-    'sodoSearch'
+    'sodoSearch',
+    'comments'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
