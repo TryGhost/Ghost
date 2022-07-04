@@ -1739,7 +1739,7 @@ describe('{{ghost_head}} helper', function () {
 
     describe('search scripts', function () {
         it('includes search when labs flag enabled', function (done) {
-            labsStub = sinon.stub(labs, 'isSet').returns(true);
+            sinon.stub(labs, 'isSet').returns(true);
 
             ghost_head(testUtils.createHbsResponse({
                 locals: {
@@ -1750,7 +1750,7 @@ describe('{{ghost_head}} helper', function () {
             })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.containEql('<script defer src="https://unpkg.com/@tryghost/sodo-search');
-                rendered.string.should.containEql('data-ghost="http://127.0.0.1:2369/" data-key="xyz" data-api="http://127.0.0.1:2369/ghost/api/content/"');
+                rendered.string.should.containEql('data-sodo-search="http://127.0.0.1:2369/" data-key="xyz" data-api="http://127.0.0.1:2369/ghost/api/content/"');
 
                 done();
             }).catch(done);
