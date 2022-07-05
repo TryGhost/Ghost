@@ -14,6 +14,7 @@ async function comments() {
     const data = {
         'ghost-comments': urlUtils.getSiteUrl(),
         api: urlUtils.urlFor('api', {type: 'content'}, true),
+        admin: urlUtils.urlFor('admin', true),
         key: frontendKey,
         'post-id': this.id,
         'sentry-dsn': '' /* todo: insert sentry dsn key here */
