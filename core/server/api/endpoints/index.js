@@ -219,5 +219,13 @@ module.exports = {
 
     get offersPublic() {
         return shared.pipeline(require('./offers-public'), localUtils, 'content');
+    },
+
+    /**
+     * Comment API
+     */
+
+    get commentsComments() {
+        return shared.pipeline(require('./comments-comments'), localUtils, 'comments');
     }
 };
