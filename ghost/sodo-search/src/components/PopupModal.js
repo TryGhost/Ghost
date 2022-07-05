@@ -114,7 +114,7 @@ function TagResults({tags}) {
     });
     return (
         <div className='border-t border-gray-200 py-4 px-7'>
-            <h1 className='uppercase text-xs text-neutral-400 font-semibold mb-2'>Tags</h1>
+            <h1 className='uppercase text-xs text-neutral-400 font-semibold mb-2 tracking-wide'>Tags</h1>
             {TagItems}
         </div>
     );
@@ -144,7 +144,7 @@ function PostResults({posts}) {
     });
     return (
         <div className='border-t border-neutral-200 py-4 px-7'>
-            <h1 className='uppercase text-xs text-neutral-400 font-semibold mb-2'>Posts</h1>
+            <h1 className='uppercase text-xs text-neutral-400 font-semibold mb-2 tracking-wide'>Posts</h1>
             {PostItems}
         </div>
     );
@@ -183,7 +183,7 @@ function AuthorResults({authors}) {
     });
     return (
         <div className='border-t border-neutral-200 py-4 px-7'>
-            <h1 className='uppercase text-xs text-neutral-400 font-semibold mb-2'>Authors</h1>
+            <h1 className='uppercase text-xs text-neutral-400 font-semibold mb-2 tracking-wide'>Authors</h1>
             {AuthorItems}
         </div>
     );
