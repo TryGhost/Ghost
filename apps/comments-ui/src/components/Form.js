@@ -63,7 +63,7 @@ class Form extends React.Component {
     render() {
         return (
             <form onSubmit={this.submitForm} className="comment-form">         
-                <div className="flex bg-neutral-50 p-3 space-x-3 rounded-md">
+                <div className="flex bg-neutral-50 p-3 space-x-3 rounded-md dark:bg-transparent">
                     <figure>
                         {this.context.member ?
                             <img className="w-8 h-8 rounded-full" src={this.context.member.avatar_image} alt="Avatar"/> :
@@ -71,8 +71,8 @@ class Form extends React.Component {
                         }
                     </figure>
                     <div className="w-full">
-                        <textarea className="w-full resize-none rounded-md border h-24 p-3 font-sans mb-1" value={this.state.message} onChange={this.handleChange} placeholder="Join the conversation" />
-                        <button type="submit" className="w-full rounded-md border p-3 font-sans text-sm text-center bg-black text-white">Add your comment</button>
+                        <textarea className="w-full resize-none rounded-md border h-24 p-3 font-sans mb-1 dark:bg-[rgba(255,255,255,0.08)] dark:border-none" value={this.state.message} onChange={this.handleChange} placeholder="Join the conversation" />
+                        <button type="submit" className="w-full rounded-md border p-3 font-sans text-sm text-center bg-black font-bold text-white dark:bg-[rgba(255,255,255,0.8)] dark:text-neutral-800">Add your comment</button>
                     </div>
                 </div>
             </form>
