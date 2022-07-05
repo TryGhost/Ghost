@@ -73,7 +73,6 @@ class Form extends React.Component {
                             Add a bio
                         </span>
                     </div>
-                   
                 </div>
 
                 <textarea className="w-full rounded-md border p-2" value={this.state.message} onChange={this.handleChange} placeholder="What are your thoughts?" />

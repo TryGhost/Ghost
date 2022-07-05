@@ -167,7 +167,8 @@ export default class App extends React.Component {
 
         const iFrameStyles = {
             border: 'none',
-            width: '100%'
+            width: '100%',
+            height: '420px'
         };
 
         return (
