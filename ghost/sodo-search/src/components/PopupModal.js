@@ -138,15 +138,25 @@ function SearchBox() {
                 className='grow text-[1.65rem] focus-visible:outline-none placeholder:text-gray-300'
                 placeholder='Search posts, tags, authors..'
             />
-            <ClearIcon
-                className='ml-3 fill-neutral-400 cursor-pointer' alt='Clear'
-                onClick={() => {
-                    dispatch('update', {
-                        searchValue: ''
-                    });
-                }}
-            />
+            <ClearButton />
         </div>
+    );
+}
+
+function ClearButton() {
+    const {searchValue = '', dispatch} = useContext(AppContext);
+    if (!searchValue) {
+        return null;
+    }
+    return (
+        <ClearIcon
+            className='ml-3 fill-neutral-400 cursor-pointer' alt='Clear'
+            onClick={() => {
+                dispatch('update', {
+                    searchValue: ''
+                });
+            }}
+        />
     );
 }
 
