@@ -14,7 +14,11 @@ export default class SearchIndex {
 
     #updateIndex(data) {
         data.posts.forEach((post) => {
-            this.index.addDoc(post);
+            this.index.addDoc({
+                id: post.id,
+                title: post.title,
+                excerpt: post.excerpt
+            });
         });
 
         this.storage.setItem('ease_search_index', JSON.stringify(this.index));
@@ -32,18 +36,15 @@ export default class SearchIndex {
         this.storage.removeItem('ease_index');
         this.storage.removeItem('ease_last');
 
-        if (
-            !indexDump
-        ) {
+        if (!indexDump) {
             return fetch(url)
                 .then(response => response.json())
                 .then((data) => {
                     if (data.posts.length > 0) {
-                        this.index = elasticlunr(function () {
-                            this.addField('title');
-                            this.addField('plaintext');
-                            this.setRef('id');
-                        });
+                        this.index = elasticlunr();
+                        this.index.addField('title');
+                        this.index.addField('excerpt');
+                        this.index.setRef('id');
 
                         this.#updateIndex(data);
                     }
@@ -63,6 +64,9 @@ export default class SearchIndex {
     }
 
     search(value) {
-        return this.index.search(value, {expand: true});
+        const searchResults = this.index.search(value, {expand: true});
+        return searchResults.map((doc) => {
+            return this.index.documentStore.docs[doc.ref];
+        });
     }
 }
