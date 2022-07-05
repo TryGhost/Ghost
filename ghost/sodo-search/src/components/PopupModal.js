@@ -289,8 +289,7 @@ function SearchResultBox() {
     /* eslint-disable no-console */
     if (indexComplete && searchValue) {
         searchResults = searchIndex.search(searchValue);
-        console.log(searchResults);
-        filteredPosts = searchResults?.map((d) => {
+        filteredPosts = searchResults?.posts?.map((d) => {
             return {
                 id: d?.id,
                 excerpt: d?.excerpt,
