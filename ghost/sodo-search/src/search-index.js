@@ -1,57 +1,68 @@
 import elasticlunr from 'elasticlunr';
 
-let index;
+export default class SearchIndex {
+    constructor({apiUrl, apiKey, storage = localStorage}) {
+        this.apiUrl = apiUrl;
+        this.apiKey = apiKey;
+        this.storage = storage;
 
-export const init = async function ({apiUrl, apiKey}) {
-    // remove default stop words to search of *any* word
-    elasticlunr.clearStopWords();
+        this.index = null;
 
-    const url = `${apiUrl}/posts/?key=${apiKey}&limit=all&fields=id,title,excerpt,url,updated_at,visibility&order=updated_at%20desc&formats=plaintext`;
+        this.init = this.init.bind(this);
+        this.search = this.search.bind(this);
+    }
 
-    const indexDump = JSON.parse(localStorage.getItem('ease_search_index'));
-
-    localStorage.removeItem('ease_index');
-    localStorage.removeItem('ease_last');
-
-    function update(data) {
-        data.posts.forEach(function (post) {
-            index.addDoc(post);
+    #updateIndex(data) {
+        data.posts.forEach((post) => {
+            this.index.addDoc(post);
         });
 
-        localStorage.setItem('ease_search_index', JSON.stringify(index));
-        localStorage.setItem('ease_search_last', data.posts[0].updated_at);
+        this.storage.setItem('ease_search_index', JSON.stringify(this.index));
+        this.storage.setItem('ease_search_last', data.posts[0].updated_at);
     }
 
-    if (
-        !indexDump
-    ) {
-        return fetch(url)
-            .then(response => response.json())
-            .then((data) => {
-                if (data.posts.length > 0) {
-                    index = elasticlunr(function () {
-                        this.addField('title');
-                        this.addField('plaintext');
-                        this.setRef('id');
-                    });
+    async init() {
+        // remove default stop words to search of *any* word
+        elasticlunr.clearStopWords();
 
-                    update(data);
-                }
-            });
-    } else {
-        index = elasticlunr.Index.load(indexDump);
+        const url = `${this.apiUrl}/posts/?key=${this.apiKey}&limit=all&fields=id,title,excerpt,url,updated_at,visibility&order=updated_at%20desc&formats=plaintext`;
 
-        return fetch(`${url}&filter=updated_at:>'${localStorage.getItem('ease_search_last').replace(/\..*/, '').replace(/T/, ' ')}'`
-        )
-            .then(response => response.json())
-            .then((data) => {
-                if (data.posts.length > 0) {
-                    update(data);
-                }
-            });
+        const indexDump = JSON.parse(this.storage.getItem('ease_search_index'));
+
+        this.storage.removeItem('ease_index');
+        this.storage.removeItem('ease_last');
+
+        if (
+            !indexDump
+        ) {
+            return fetch(url)
+                .then(response => response.json())
+                .then((data) => {
+                    if (data.posts.length > 0) {
+                        this.index = elasticlunr(function () {
+                            this.addField('title');
+                            this.addField('plaintext');
+                            this.setRef('id');
+                        });
+
+                        this.#updateIndex(data);
+                    }
+                });
+        } else {
+            this.index = elasticlunr.Index.load(indexDump);
+
+            return fetch(`${url}&filter=updated_at:>'${this.storage.getItem('ease_search_last').replace(/\..*/, '').replace(/T/, ' ')}'`
+            )
+                .then(response => response.json())
+                .then((data) => {
+                    if (data.posts.length > 0) {
+                        this.#updateIndex(data);
+                    }
+                });
+        }
     }
-};
 
-export const search = function (value) {
-    return index.search(value, {expand: true});
-};
+    search(value) {
+        return this.index.search(value, {expand: true});
+    }
+}
