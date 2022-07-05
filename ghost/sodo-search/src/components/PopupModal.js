@@ -160,14 +160,7 @@ function TagListItem({title}) {
 }
 
 function TagResults({tags}) {
-    const {searchValue = ''} = useContext(AppContext);
-    const filteredTags = tags.filter((d) => {
-        return d.title?.toLowerCase().includes(searchValue?.toLowerCase());
-    });
-    if (!filteredTags?.length) {
-        return null;
-    }
-    const TagItems = filteredTags.map((d) => {
+    const TagItems = tags.map((d) => {
         return (
             <TagListItem
                 key={d.title}
@@ -193,19 +186,11 @@ function PostListItem({title, excerpt}) {
 }
 
 function PostResults({posts}) {
-    const {searchValue = ''} = useContext(AppContext);
     if (!posts?.length) {
         return null;
     }
-    const filteredPosts = posts.filter((d) => {
-        return d.title?.toLowerCase().includes(searchValue.toLowerCase()) || d.excerpt?.toLowerCase().includes(searchValue?.toLowerCase());
-    });
 
-    if (!filteredPosts?.length) {
-        return null;
-    }
-
-    const PostItems = filteredPosts.map((d) => {
+    const PostItems = posts.map((d) => {
         return (
             <PostListItem
                 key={d.title}
@@ -244,15 +229,11 @@ function AuthorAvatar({name, avatar}) {
 }
 
 function AuthorResults({authors}) {
-    const {searchValue = ''} = useContext(AppContext);
-    const filteredAuthors = authors.filter((d) => {
-        return d.name?.toLowerCase().includes(searchValue?.toLowerCase());
-    });
-    if (!filteredAuthors?.length) {
+    if (!authors?.length) {
         return null;
     }
 
-    const AuthorItems = filteredAuthors.map((d) => {
+    const AuthorItems = authors.map((d) => {
         return (
             <AuthorListItem
                 key={d.name}
@@ -271,10 +252,24 @@ function AuthorResults({authors}) {
 }
 
 function SearchResultBox() {
-    const hasResults = postsData?.length || authorsData?.length || tagsData?.length;
+    const {searchValue = ''} = useContext(AppContext);
+    const filteredTags = tagsData.filter((d) => {
+        return d.title?.toLowerCase().includes(searchValue?.toLowerCase());
+    });
+
+    const filteredPosts = postsData.filter((d) => {
+        return d.title?.toLowerCase().includes(searchValue.toLowerCase()) || d.excerpt?.toLowerCase().includes(searchValue?.toLowerCase());
+    });
+
+    const filteredAuthors = authorsData.filter((d) => {
+        return d.name?.toLowerCase().includes(searchValue?.toLowerCase());
+    });
+
+    const hasResults = filteredPosts?.length || filteredAuthors?.length || filteredTags?.length;
+
     if (hasResults) {
         return (
-            <Results posts={postsData} authors={authorsData} tags={tagsData} />
+            <Results posts={filteredPosts} authors={filteredAuthors} tags={filteredTags} />
         );
     }
 
