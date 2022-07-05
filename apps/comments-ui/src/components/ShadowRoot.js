@@ -10,7 +10,7 @@ const ShadowRoot = ({
     );
 
     return (
-        <root.div {...props} title='ghost-comments-iframe' mode={'closed'}>
+        <root.div {...props} title='ghost-comments-shadowroot' mode={'closed'}>
             {head}
             {children}
         </root.div>
