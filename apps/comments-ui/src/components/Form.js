@@ -38,12 +38,44 @@ class Form extends React.Component {
         this.setState({message: event.target.value});
     }
 
+    getInitials() {
+        if (!this.context.member) {
+            return '';
+        }
+        const parts = this.context.member.name.split(' ');
+
+        if (parts.length === 0) {
+            return '';
+        }
+
+        if (parts.length === 1) {
+            return parts[0].substring(0, 1);
+        }
+
+        return parts[0].substring(0, 1) + parts[parts.length - 1].substring(0, 1);
+    }
+
     render() {
         return (
             <form onSubmit={this.submitForm} className="comment-form">
-                <figure className="avatar">
-                    <span />
-                </figure>
+                <div style={{display: 'flex', flexDirection: 'row'}}>
+                    <figure style={{position: 'relative', marginRight: '15px'}}>
+                        <div style={{backgroundColor: 'black', width: '60px', height: '60px', borderRadius: '30px', color: 'white', textAlign: 'center', fontSize: '20px', fontWeight: 'bold', lineHeight: '60px'}}>
+                            { this.getInitials() }
+                        </div>
+                        { this.context.member ? <img src={this.context.member.avatar_image} width="60" height="60" style={{position: 'absolute', left: '0', top: '0'}} alt="Avatar"/> : '' }
+                    </figure>
+                    <div>
+                        <div style={{fontWeight: 'bold'}}>
+                            {this.context.member ? this.context.member.name : ''}
+                        </div>
+                        <span>
+                            Add a bio
+                        </span>
+                    </div>
+                   
+                </div>
+
                 <textarea className="w-full rounded-md border p-2" value={this.state.message} onChange={this.handleChange} placeholder="What are your thoughts?" />
                 <button type="submit" className="bg-black p-2 text-white rounded w-full mt-2">Comment</button>
             </form>
