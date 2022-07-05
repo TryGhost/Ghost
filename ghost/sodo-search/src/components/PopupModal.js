@@ -88,17 +88,17 @@ function SearchBox() {
     return (
         <div className='flex items-center py-6 px-7'>
             <SearchIcon className='mr-3' alt='Search' />
-            <input className='grow text-[1.65rem] focus-visible:outline-none' placeholder='Search posts, tags, authors..' />
-            <ClearIcon className='ml-3 fill-gray-400' alt='Clear' />
+            <input className='grow text-[1.65rem] focus-visible:outline-none placeholder:text-gray-300' placeholder='Search posts, tags, authors..' />
+            <ClearIcon className='ml-3 fill-neutral-400' alt='Clear' />
         </div>
     );
 }
 
 function PostListItem({title, excerpt}) {
     return (
-        <div className="py-2 -mx-7 px-7 hover:bg-gray-100 cursor-pointer">
-            <h2 className="text-[1.65rem] font-medium leading-tight text-gray-900">{title}</h2>
-            <p className="text-gray-400 leading-normal text-sm mt-0 mb-0 truncate">{excerpt}</p>
+        <div className="py-2 -mx-7 px-7 hover:bg-neutral-100 cursor-pointer">
+            <h2 className="text-[1.65rem] font-medium leading-tight text-neutral-900">{title}</h2>
+            <p className="text-neutral-400 leading-normal text-sm mt-0 mb-0 truncate">{excerpt}</p>
         </div>
     );
 }
@@ -117,8 +117,8 @@ function PostResults({posts}) {
         );
     });
     return (
-        <div className="border-t border-gray-200 py-6 px-7">
-            <h1 className="uppercase text-xs text-gray-400 font-semibold mb-2">Posts</h1>
+        <div className="border-t border-neutral-200 py-6 px-7">
+            <h1 className="uppercase text-xs text-neutral-400 font-semibold mb-2">Posts</h1>
             {PostItems}
         </div>
     );
@@ -126,9 +126,9 @@ function PostResults({posts}) {
 
 function AuthorListItem({name}) {
     return (
-        <div className="py-2 -mx-7 px-7 hover:bg-gray-100 cursor-pointer">
+        <div className="py-2 -mx-7 px-7 hover:bg-neutral-100 cursor-pointer">
             <div className="rounded-full bg-slate-600"></div>
-            <h2 className="text-[1.65rem] font-medium leading-tight text-gray-900">{name}</h2>
+            <h2 className="text-[1.65rem] font-medium leading-tight text-neutral-900">{name}</h2>
         </div>
     );
 }
@@ -143,8 +143,8 @@ function AuthorResults({authors}) {
         );
     });
     return (
-        <div className="border-t border-gray-200 py-6 px-7">
-            <h1 className="uppercase text-xs text-gray-400 font-semibold mb-2">Authors</h1>
+        <div className="border-t border-neutral-200 py-6 px-7">
+            <h1 className="uppercase text-xs text-neutral-400 font-semibold mb-2">Authors</h1>
             {AuthorItems}
         </div>
     );
