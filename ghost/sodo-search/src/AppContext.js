@@ -9,9 +9,7 @@ const AppContext = React.createContext({
     lastPage: '',
     page: '',
     pageData: {},
-    dispatch: (action, data) => {
-        return {action, data};
-    }
+    dispatch: (_action, _data) => {}
 });
 
 export default AppContext;

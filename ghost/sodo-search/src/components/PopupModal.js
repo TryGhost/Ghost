@@ -6,6 +6,44 @@ import {useContext} from 'react';
 
 const React = require('react');
 
+const tags = [
+    {
+        title: 'Nomad life'
+    },
+    {
+        title: 'Technology'
+    }
+];
+
+const posts = [
+    {
+        title: 'How to ergonomically optimize your workspace',
+        excerpt: 'Organically grow the holistic world view of disruptive innovation via workplace diversity and empowerment.'
+    },
+    {
+        title: 'The economical advantage of design',
+        excerpt: 'New data show the end of pandemic relief coincided with a 49 percent increase in the number of families struggling to survive.'
+    },
+    {
+        title: 'When tech brands get illustration right',
+        excerpt: 'Leverage agile frameworks to provide a robust synopsis for high level overviews.'
+    }
+];
+
+const authors = [
+    {
+        name: 'Norman Foster'
+    },
+    {
+        name: 'John O\'Nolan',
+        avatar: 'https://pbs.twimg.com/profile_images/1064595509472456704/XyL-qE64_400x400.jpg'
+
+    },
+    {
+        name: 'Ann Jensen'
+    }
+];
+
 const StylesWrapper = () => {
     return {
         modalContainer: {
@@ -85,10 +123,20 @@ class PopupContent extends React.Component {
 }
 
 function SearchBox() {
+    const {searchValue, dispatch} = useContext(AppContext);
     return (
         <div className='flex items-center py-6 px-7'>
             <SearchIcon className='mr-3' alt='Search' />
-            <input className='grow text-[1.65rem] focus-visible:outline-none placeholder:text-gray-300' placeholder='Search posts, tags, authors..' />
+            <input
+                value={searchValue || ''}
+                onChange={(e) => {
+                    dispatch('update', {
+                        searchValue: e.target.value
+                    });
+                }}
+                className='grow text-[1.65rem] focus-visible:outline-none placeholder:text-gray-300'
+                placeholder='Search posts, tags, authors..'
+            />
             <ClearIcon className='ml-3 fill-neutral-400' alt='Clear' />
         </div>
     );
@@ -104,7 +152,12 @@ function TagListItem({title}) {
 }
 
 function TagResults({tags}) {
-    const TagItems = tags.map((d) => {
+    const {searchValue = ''} = useContext(AppContext);
+    const filteredTags = tags.filter((d) => {
+        return d.title?.toLowerCase().includes(searchValue?.toLowerCase());
+    });
+
+    const TagItems = filteredTags.map((d) => {
         return (
             <TagListItem
                 key={d.title}
@@ -130,10 +183,14 @@ function PostListItem({title, excerpt}) {
 }
 
 function PostResults({posts}) {
+    const {searchValue = ''} = useContext(AppContext);
     if (!posts?.length) {
         return null;
     }
-    const PostItems = posts.map((d) => {
+    const filteredPosts = posts.filter((d) => {
+        return d.title?.toLowerCase().includes(searchValue.toLowerCase()) || d.excerpt?.toLowerCase().includes(searchValue?.toLowerCase());
+    });
+    const PostItems = filteredPosts.map((d) => {
         return (
             <PostListItem
                 key={d.title}
@@ -172,7 +229,12 @@ function AuthorAvatar({name, avatar}) {
 }
 
 function AuthorResults({authors}) {
-    const AuthorItems = authors.map((d) => {
+    const {searchValue = ''} = useContext(AppContext);
+    const filteredAuthors = authors.filter((d) => {
+        return d.name?.toLowerCase().includes(searchValue?.toLowerCase());
+    });
+
+    const AuthorItems = filteredAuthors.map((d) => {
         return (
             <AuthorListItem
                 key={d.name}
@@ -181,6 +243,7 @@ function AuthorResults({authors}) {
             />
         );
     });
+
     return (
         <div className='border-t border-neutral-200 py-4 px-7'>
             <h1 className='uppercase text-xs text-neutral-400 font-semibold mb-2 tracking-wide'>Authors</h1>
@@ -190,44 +253,6 @@ function AuthorResults({authors}) {
 }
 
 function SearchResultBox() {
-    const tags = [
-        {
-            title: 'Nomad life'
-        },
-        {
-            title: 'Technology'
-        }
-    ];
-
-    const posts = [
-        {
-            title: 'How to ergonomically optimize your workspace',
-            excerpt: 'Organically grow the holistic world view of disruptive innovation via workplace diversity and empowerment.'
-        },
-        {
-            title: 'The economical advantage of design',
-            excerpt: 'New data show the end of pandemic relief coincided with a 49 percent increase in the number of families struggling to survive.'
-        },
-        {
-            title: 'When tech brands get illustration right',
-            excerpt: 'Leverage agile frameworks to provide a robust synopsis for high level overviews.'
-        }
-    ];
-
-    const authors = [
-        {
-            name: 'Norman Foster'
-        },
-        {
-            name: 'John O\'Nolan',
-            avatar: 'https://pbs.twimg.com/profile_images/1064595509472456704/XyL-qE64_400x400.jpg'
-
-        },
-        {
-            name: 'Ann Jensen'
-        }
-    ];
-
     const hasResults = posts?.length || authors?.length || tags?.length;
     if (hasResults) {
         return (
@@ -261,10 +286,13 @@ function NoResultsBox() {
 function Search() {
     const {searchIndex, indexComplete} = useContext(AppContext);
     /* eslint-disable no-console */
-    console.log(searchIndex);
     if (indexComplete) {
         const searchValue = searchIndex.search('T');
         console.log(searchValue);
+        const test = searchValue.map((d) => {
+            return d.doc;
+        });
+        console.log(test);
     }
 
     return (
