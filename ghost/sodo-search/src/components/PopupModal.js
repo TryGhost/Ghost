@@ -104,6 +104,9 @@ function PostListItem({title, excerpt}) {
 }
 
 function PostResults({posts}) {
+    if (!posts?.length) {
+        return null;
+    }
     const PostItems = posts.map((d) => {
         return (
             <PostListItem
@@ -117,6 +120,32 @@ function PostResults({posts}) {
         <div className="border-t border-gray-200 py-6 px-7">
             <h1 className="uppercase text-xs text-gray-400 font-semibold mb-2">Posts</h1>
             {PostItems}
+        </div>
+    );
+}
+
+function AuthorListItem({name}) {
+    return (
+        <div className="py-2 -mx-7 px-7 hover:bg-gray-100 cursor-pointer">
+            <div className="rounded-full bg-slate-600"></div>
+            <h2 className="text-[1.65rem] font-medium leading-tight text-gray-900">{name}</h2>
+        </div>
+    );
+}
+
+function AuthorResults({authors}) {
+    const AuthorItems = authors.map((d) => {
+        return (
+            <AuthorListItem
+                key={d.name}
+                name={d.name}
+            />
+        );
+    });
+    return (
+        <div className="border-t border-gray-200 py-6 px-7">
+            <h1 className="uppercase text-xs text-gray-400 font-semibold mb-2">Authors</h1>
+            {AuthorItems}
         </div>
     );
 }
@@ -137,12 +166,37 @@ function SearchResultBox() {
         }
     ];
 
-    if (posts?.length) {
+    const authors = [
+        {
+            name: 'Peter Johnson'
+        },
+        {
+            name: 'Robert Smith'
+        },
+        {
+            name: 'David Jensen'
+        }
+    ];
+
+    const hasResults = posts?.length || authors?.length;
+    if (hasResults) {
         return (
-            <PostResults posts={posts} />
+            <Results posts={posts} authors={authors} />
         );
     }
-    return <NoResultsBox />;
+
+    return (
+        <NoResultsBox />
+    );
+}
+
+function Results({posts, authors}) {
+    return (
+        <div>
+            <AuthorResults authors={authors} />
+            <PostResults posts={posts} />
+        </div>
+    );
 }
 
 function NoResultsBox() {
