@@ -9,6 +9,7 @@ describe('Permissions', function () {
                 external: false,
                 user: null,
                 api_key: null,
+                member: null,
                 public: true,
                 integration: null
             });
@@ -17,6 +18,7 @@ describe('Permissions', function () {
                 external: false,
                 user: null,
                 api_key: null,
+                member: null,
                 public: true,
                 integration: null
             });
@@ -28,6 +30,7 @@ describe('Permissions', function () {
                 external: false,
                 user: null,
                 api_key: null,
+                member: null,
                 public: true,
                 integration: null
             });
@@ -36,6 +39,7 @@ describe('Permissions', function () {
                 external: false,
                 user: null,
                 api_key: null,
+                member: null,
                 public: true,
                 integration: null
             });
@@ -47,6 +51,7 @@ describe('Permissions', function () {
                 external: false,
                 user: 1,
                 api_key: null,
+                member: null,
                 public: false,
                 integration: null
             });
@@ -64,6 +69,7 @@ describe('Permissions', function () {
                     id: 1,
                     type: 'content'
                 },
+                member: null,
                 public: true,
                 integration: {id: 2}
             });
@@ -81,6 +87,7 @@ describe('Permissions', function () {
                     id: 1,
                     type: 'admin'
                 },
+                member: null,
                 public: false,
                 integration: {id: 3}
             });
@@ -92,6 +99,7 @@ describe('Permissions', function () {
                 external: false,
                 user: null,
                 api_key: null,
+                member: null,
                 public: false,
                 integration: null
             });
@@ -101,6 +109,7 @@ describe('Permissions', function () {
                 external: false,
                 user: null,
                 api_key: null,
+                member: null,
                 public: false,
                 integration: null
             });
@@ -112,6 +121,7 @@ describe('Permissions', function () {
                 external: true,
                 user: null,
                 api_key: null,
+                member: null,
                 public: false,
                 integration: null
             });
@@ -121,6 +131,7 @@ describe('Permissions', function () {
                 external: true,
                 user: null,
                 api_key: null,
+                member: null,
                 public: false,
                 integration: null
             });
