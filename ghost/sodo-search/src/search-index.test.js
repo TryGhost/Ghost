@@ -40,10 +40,10 @@ describe('search index', function () {
         await searchIndex.init({apiUrl, apiKey});
 
         let searchResults = searchIndex.search('Barcelona');
-        expect(searchResults.length).toEqual(1);
-        expect(searchResults[0].title).toEqual('Awesome Barcelona Life');
+        expect(searchResults.posts.length).toEqual(1);
+        expect(searchResults.posts[0].title).toEqual('Awesome Barcelona Life');
 
         searchResults = searchIndex.search('Nothing like this');
-        expect(searchResults.length).toEqual(0);
+        expect(searchResults.posts.length).toEqual(0);
     });
 });
