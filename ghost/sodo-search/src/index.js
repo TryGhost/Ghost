@@ -30,12 +30,12 @@ function setup({siteUrl}) {
 }
 
 function init() {
-    const {siteUrl: customSiteUrl} = getSiteData();
+    const {siteUrl: customSiteUrl, apiKey, apiUrl} = getSiteData();
     const siteUrl = customSiteUrl || window.location.origin;
     setup({siteUrl});
     ReactDOM.render(
         <React.StrictMode>
-            <App />
+            <App apiKey={apiKey} apiUrl={apiUrl} />
         </React.StrictMode>,
         document.getElementById(ROOT_DIV_ID)
     );

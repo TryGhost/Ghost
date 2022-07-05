@@ -2,6 +2,7 @@ import Frame from './Frame';
 import AppContext from '../AppContext';
 import {ReactComponent as SearchIcon} from '../icons/search.svg';
 import {ReactComponent as ClearIcon} from '../icons/delete.svg';
+import {useContext} from 'react';
 
 const React = require('react');
 
@@ -84,6 +85,19 @@ class PopupContent extends React.Component {
 }
 
 function Search() {
+    const {searchIndex, indexComplete} = useContext(AppContext);
+    let pageClass = 'search';
+    /* eslint-disable no-console */
+    console.log(searchIndex);
+    if (indexComplete) {
+        const searchValue = searchIndex.search('dada');
+        console.log(searchValue);
+    }
+
+    let className = 'gh-portal-popup-container';
+
+    const containerClassName = `${className} ${pageClass}`;
+
     return (
         <> 
             <div className='bg-[rgba(0,0,0,0.2)] h-screen w-screen pt-20'>
