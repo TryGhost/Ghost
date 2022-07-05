@@ -14,7 +14,7 @@ const CustomIFrame = ({
     );
 
     return (
-        <iframe {...props} ref={setContentRef} title='iframeyall'>
+        <iframe {...props} ref={setContentRef} title='ghost-comments-iframe'>
             {headNode && createPortal(head, headNode)}
             {mountNode && createPortal(children, mountNode)}
         </iframe>
