@@ -92,7 +92,7 @@ module.exports = {
         frame.options.context = permissions.parseContext(frame.options.context);
 
         // CASE: Content API access
-        if (frame.options.context.public) {
+        if (frame.options.context.public && frame.apiType !== 'comments') {
             debug('check content permissions');
 
             // @TODO: Remove when we drop v0.1
