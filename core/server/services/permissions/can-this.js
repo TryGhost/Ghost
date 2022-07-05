@@ -27,7 +27,8 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (objTypes, actType, c
         permission: models.Permission,
         setting: models.Settings,
         invite: models.Invite,
-        integration: models.Integration
+        integration: models.Integration,
+        comment: models.Comment
     };
 
     // Iterate through the object types, i.e. ['post', 'tag', 'user']
@@ -57,10 +58,12 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (objTypes, actType, c
             return permissionLoad.then(function (loadedPermissions) {
                 // Iterate through the user permissions looking for an affirmation
                 const userPermissions = loadedPermissions.user ? loadedPermissions.user.permissions : null;
-
                 const apiKeyPermissions = loadedPermissions.apiKey ? loadedPermissions.apiKey.permissions : null;
+                const memberPermissions = loadedPermissions.member ? loadedPermissions.member.permissions : null;
+
                 let hasUserPermission;
                 let hasApiKeyPermission;
+                let hasMemberPermission = false;
 
                 const checkPermission = function (perm) {
                     let permObjId;
@@ -91,6 +94,10 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (objTypes, actType, c
                     hasUserPermission = _.some(userPermissions, checkPermission);
                 }
 
+                if (loadedPermissions.member) {
+                    hasMemberPermission = _.some(memberPermissions, checkPermission);
+                }
+
                 // Check api key permissions if they were passed
                 hasApiKeyPermission = true;
                 if (!_.isNull(apiKeyPermissions)) {
@@ -102,7 +109,7 @@ CanThisResult.prototype.buildObjectTypeHandlers = function (objTypes, actType, c
                 // Offer a chance for the TargetModel to override the results
                 if (TargetModel && _.isFunction(TargetModel.permissible)) {
                     return TargetModel.permissible(
-                        modelId, actType, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission
+                        modelId, actType, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission, hasMemberPermission
                     );
                 }
 
@@ -122,6 +129,7 @@ CanThisResult.prototype.beginCheck = function (context) {
     const self = this;
     let userPermissionLoad;
     let apiKeyPermissionLoad;
+    let memberPermissionLoad;
     let permissionsLoad;
 
     // Get context.user, context.api_key and context.app
@@ -147,11 +155,16 @@ CanThisResult.prototype.beginCheck = function (context) {
         apiKeyPermissionLoad = Promise.resolve(null);
     }
 
+    if (context.member) {
+        memberPermissionLoad = providers.member(context.member.id);
+    }
+
     // Wait for both user and app permissions to load
-    permissionsLoad = Promise.all([userPermissionLoad, apiKeyPermissionLoad]).then(function (result) {
+    permissionsLoad = Promise.all([userPermissionLoad, apiKeyPermissionLoad, memberPermissionLoad]).then(function (result) {
         return {
             user: result[0],
-            apiKey: result[1]
+            apiKey: result[1],
+            member: result[2]
         };
     });
 
