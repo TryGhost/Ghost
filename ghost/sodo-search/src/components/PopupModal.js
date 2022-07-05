@@ -76,24 +76,28 @@ class PopupContent extends React.Component {
     }
 
     render() {
-        const pageStyle = {};
-        let popupWidthStyle = '';
-
-        let pageClass = 'search';
-
-        let className = 'gh-portal-popup-container';
-
-        const containerClassName = `${className} ${popupWidthStyle} ${pageClass}`;
         return (
-            <>
-                <div className={'gh-portal-popup-wrapper ' + pageClass} onClick={e => this.handlePopupClose(e)}>
-                    <div className={containerClassName} style={pageStyle} ref={node => (this.node = node)} tabIndex={-1}>
-                        Something something
-                    </div>
-                </div>
-            </>
+            <Search />
         );
     }
+}
+
+function Search() {
+    let pageClass = 'search';
+
+    let className = 'gh-portal-popup-container';
+
+    const containerClassName = `${className} ${pageClass}`;
+
+    return (
+        <>
+            <div className={'gh-portal-popup-wrapper'}>
+                <div className={containerClassName} style={{}}>
+                    Search posts, tags, and authors
+                </div>
+            </div>
+        </>
+    );
 }
 
 export default class PopupModal extends React.Component {
