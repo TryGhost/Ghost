@@ -12,6 +12,8 @@ const shared = require('../shared');
 const labs = require('../../../shared/labs');
 const errorHandler = require('@tryghost/mw-error-handler');
 
+const commentRouter = require('../comments');
+
 module.exports = function setupMembersApp() {
     debug('Members App setup start');
     const membersApp = express('members');
@@ -53,6 +55,9 @@ module.exports = function setupMembersApp() {
     membersApp.post('/api/create-stripe-update-session', (req, res, next) => membersService.api.middleware.createCheckoutSetupSession(req, res, next));
     membersApp.put('/api/subscriptions/:id', (req, res, next) => membersService.api.middleware.updateSubscription(req, res, next));
     membersApp.post('/api/events', labs.enabledMiddleware('membersActivity'), middleware.loadMemberSession, (req, res, next) => membersService.api.middleware.createEvents(req, res, next));
+
+    // Comments
+    membersApp.use('/api/comments', commentRouter());
 
     // API error handling
     membersApp.use('/api', errorHandler.resourceNotFound);
