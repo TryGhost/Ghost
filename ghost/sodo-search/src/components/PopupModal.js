@@ -160,6 +160,10 @@ function TagListItem({title}) {
 }
 
 function TagResults({tags}) {
+    if (!tags?.length) {
+        return null;
+    }
+
     const TagItems = tags.map((d) => {
         return (
             <TagListItem
@@ -253,6 +257,7 @@ function AuthorResults({authors}) {
 
 function SearchResultBox() {
     const {searchValue = ''} = useContext(AppContext);
+
     const filteredTags = tagsData.filter((d) => {
         return d.title?.toLowerCase().includes(searchValue?.toLowerCase());
     });
