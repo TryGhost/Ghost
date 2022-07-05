@@ -39,8 +39,10 @@ describe('search index', function () {
 
         await searchIndex.init({apiUrl, apiKey});
 
-        const searchResults = searchIndex.search('Barcelona');
-
+        let searchResults = searchIndex.search('Barcelona');
         expect(searchResults.length).toEqual(1);
+
+        searchResults = searchIndex.search('Nothing like this');
+        expect(searchResults.length).toEqual(0);
     });
 });
