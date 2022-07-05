@@ -290,14 +290,14 @@ function SearchResultBox() {
     if (indexComplete && searchValue) {
         searchResults = searchIndex.search(searchValue);
         console.log(searchResults);
-        filteredPosts = searchResults.map((d) => {
+        filteredPosts = searchResults?.map((d) => {
             return {
                 id: d?.id,
                 excerpt: d?.excerpt,
                 title: d?.title,
                 slug: d?.slug
             };
-        });
+        }) || [];
         console.log(filteredPosts);
     }
 
