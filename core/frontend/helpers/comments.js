@@ -2,6 +2,7 @@ const {SafeString} = require('../services/handlebars');
 const {config, urlUtils, getFrontendKey, labs} = require('../services/proxy');
 
 async function comments() {
+    // todo: For now check on the comment id to exclude normal pages (we probably have a better way to do this)
     const commentId = this.comment_id;
 
     if (!commentId) {
@@ -14,7 +15,7 @@ async function comments() {
         'ghost-comments': urlUtils.getSiteUrl(),
         api: urlUtils.urlFor('api', {type: 'content'}, true),
         key: frontendKey,
-        'comment-id': commentId,
+        'post-id': this.id,
         'sentry-dsn': '' /* todo: insert sentry dsn key here */
     };
 
