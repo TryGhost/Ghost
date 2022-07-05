@@ -39,7 +39,7 @@ class Form extends React.Component {
     }
 
     getInitials() {
-        if (!this.context.member) {
+        if (!this.context.member || !this.context.member.name) {
             return '';
         }
         const parts = this.context.member.name.split(' ');
