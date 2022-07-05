@@ -9,6 +9,7 @@ const log = console.log;
 /* eslint-enable no-console */
 
 let yarnStartProcess;
+let tailwindServerProcess;
 let stdOutChunks = [];
 let stdErrChunks = [];
 let startYarnOutput = false;
@@ -55,6 +56,7 @@ function printInstructions() {
 
 function onProcessClose(code) {
     yarnStartProcess = null;
+    tailwindServerProcess = null;
     stdErrChunks = [];
     stdOutChunks = [];
     log(chalk.redBright.bold.underline(`Please restart the script...\n`));
@@ -93,6 +95,33 @@ function doYarnStart() {
             printYarnProcessOutput(data);
         });
         yarnStartProcess.stderr.on('data', (data) => {
+            log(Buffer.from(data).toString());
+            stdErrChunks.push(data);
+        });
+    }
+}
+
+function doTailwindServerStart() {
+    if (tailwindServerProcess) {
+        return;
+    }
+    const options = getBuildOptions();
+    tailwindServerProcess = spawn('yarn tailwind', options);
+
+    ['SIGINT', 'SIGTERM'].forEach(function (sig) {
+        tailwindServerProcess.on(sig, function () {
+            tailwindServerProcess && tailwindServerProcess.exit();
+        });
+    });
+
+    tailwindServerProcess.on('close', onProcessClose);
+
+    if (!showVerbose) {
+        tailwindServerProcess.stdout.on('data', (data) => {
+            stdOutChunks.push(data);
+            printYarnProcessOutput(data);
+        });
+        tailwindServerProcess.stderr.on('data', (data) => {
             log(Buffer.from(data).toString());
             stdErrChunks.push(data);
         });
@@ -144,6 +173,7 @@ function startDevServer() {
         log(chalk.whiteBright(`Comments dev server is running on http://localhost:${port}`));
         printInstructions();
         doYarnStart();
+        doTailwindServerStart();
     });
 }
 

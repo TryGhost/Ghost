@@ -31,7 +31,8 @@
     "ship": "STATUS=$(git status --porcelain); echo $STATUS; if [ -z \"$STATUS\" ]; then yarn publish && git push ${GHOST_UPSTREAM:-upstream} main --follow-tags; fi",
     "posttest": "yarn lint",
     "analyze": "source-map-explorer 'umd/*.js'",
-    "prepublishOnly": "yarn build"
+    "prepublishOnly": "yarn build",
+    "tailwind": "npx tailwindcss -i ./src/index.css -o ./public/main.css --watch"
   },
   "eslintConfig": {
     "extends": [
