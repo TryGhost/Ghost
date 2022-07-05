@@ -86,7 +86,8 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                         bio: 'CEO',
                         name: 'Terry Korsgaard'
                     },
-                    html: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis erat vitae diam gravida accumsan vitae quis nisl. Donec luctus laoreet mauris, nec posuere turpis accumsan in. Proin sagittis magna quis vulputate tempus.'
+                    html: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis erat vitae diam gravida accumsan vitae quis nisl. Donec luctus laoreet mauris, nec posuere turpis accumsan in. Proin sagittis magna quis vulputate tempus.',
+                    created_at: '2022-07-05T13:33:00.284Z'
                 };
             });
 

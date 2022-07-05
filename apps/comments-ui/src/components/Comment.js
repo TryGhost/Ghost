@@ -1,4 +1,5 @@
 import Avatar from './Avatar';
+import {formatRelativeTime} from '../utils/helpers';
 
 function Comment(props) {
     const comment = props.comment;
@@ -13,7 +14,7 @@ function Comment(props) {
                     <h4 className="text-lg font-sans font-semibold mb-1">{comment.member.name}</h4>
                     {/* <h6 className="text-sm text-neutral-400 font-sans">{comment.member.bio}</h6> */}
                     <div className="text-sm text-neutral-400 font-sans font-normal">
-                        2 minutes ago
+                        {formatRelativeTime(comment.created_at)}
                     </div>
                 </div>
                 <div className="mb-4 font-sans leading-normal">
