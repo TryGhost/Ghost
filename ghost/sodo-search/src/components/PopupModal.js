@@ -192,38 +192,39 @@ function AuthorResults({authors}) {
 function SearchResultBox() {
     const tags = [
         {
-            title: 'Lifestyle'
+            title: 'Nomad life'
         },
         {
-            title: 'Business'
+            title: 'Technology'
         }
     ];
 
     const posts = [
         {
-            title: 'The DNC’s Disastrous Post-Roe Message',
-            excerpt: 'Democrats’ first stab at warning voters about the GOP threat with harpoons and guns and knives and rifles'
+            title: 'How to ergonomically optimize your workspace',
+            excerpt: 'Organically grow the holistic world view of disruptive innovation via workplace diversity and empowerment.'
         },
         {
-            title: 'Roberts Started A Revolution, Dems Enabled It',
+            title: 'The economical advantage of design',
             excerpt: 'New data show the end of pandemic relief coincided with a 49 percent increase in the number of families struggling to survive.'
         },
         {
-            title: 'Ending Pandemic Aid Created A Disaster',
-            excerpt: 'On this week’s Lever Time: David goes deep into SCOTUS, including exposing the dark money network that has been bankrolling conservative judicial nominees.'
+            title: 'When tech brands get illustration right',
+            excerpt: 'Leverage agile frameworks to provide a robust synopsis for high level overviews.'
         }
     ];
 
     const authors = [
         {
-            name: 'Peter Johnson',
-            avatar: 'https://cdn.hackaday.io/images/resize/600x600/5814431501695533979.jpeg'
+            name: 'Norman Foster'
         },
         {
-            name: 'Robert Smith'
+            name: 'John O\'Nolan',
+            avatar: 'https://pbs.twimg.com/profile_images/1064595509472456704/XyL-qE64_400x400.jpg'
+
         },
         {
-            name: 'David Jensen'
+            name: 'Ann Jensen'
         }
     ];
 
