@@ -218,7 +218,7 @@ function Search() {
 
     return (
         <>
-            <div className='bg-[rgba(0,0,0,0.2)] h-screen w-screen pt-20'>
+            <div className='bg-[rgba(0,0,0,0.2)] h-screen w-screen pt-20 antialiased'>
                 <div className='bg-white max-w-lg rounded-lg shadow-xl m-auto'>
                     <SearchBox />
                     <SearchResultBox />
