@@ -25,6 +25,7 @@ describe('Exporter', function () {
                 'actions',
                 'api_keys',
                 'brute',
+                'comments',
                 'custom_theme_settings',
                 'email_batches',
                 'email_recipients',
