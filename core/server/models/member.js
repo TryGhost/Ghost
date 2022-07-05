@@ -12,7 +12,8 @@ const Member = ghostBookshelf.Model.extend({
             status: 'free',
             uuid: uuid.v4(),
             email_count: 0,
-            email_opened_count: 0
+            email_opened_count: 0,
+            enable_comment_notifications: true
         };
     },
 
