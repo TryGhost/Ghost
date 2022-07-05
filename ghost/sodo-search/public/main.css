@@ -566,20 +566,20 @@ video {
 }
 
 .-mx-7 {
-  margin-left: -1.75rem;
-  margin-right: -1.75rem;
+  margin-left: -2.8rem;
+  margin-right: -2.8rem;
 }
 
 .mr-3 {
-  margin-right: 0.75rem;
+  margin-right: 1.2rem;
 }
 
 .ml-3 {
-  margin-left: 0.75rem;
+  margin-left: 1.2rem;
 }
 
 .mb-2 {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.8rem;
 }
 
 .mt-0 {
@@ -607,7 +607,7 @@ video {
 }
 
 .max-w-lg {
-  max-width: 32rem;
+  max-width: 51.2rem;
 }
 
 .grow {
@@ -629,7 +629,7 @@ video {
 }
 
 .rounded-lg {
-  border-radius: 0.5rem;
+  border-radius: 0.8rem;
 }
 
 .border-t {
@@ -655,22 +655,22 @@ video {
 }
 
 .py-6 {
-  padding-top: 1.5rem;
-  padding-bottom: 1.5rem;
+  padding-top: 2.4rem;
+  padding-bottom: 2.4rem;
 }
 
 .px-7 {
-  padding-left: 1.75rem;
-  padding-right: 1.75rem;
+  padding-left: 2.8rem;
+  padding-right: 2.8rem;
 }
 
 .py-2 {
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
+  padding-top: 0.8rem;
+  padding-bottom: 0.8rem;
 }
 
 .pt-20 {
-  padding-top: 5rem;
+  padding-top: 8rem;
 }
 
 .text-\[1\.65rem\] {
@@ -678,13 +678,11 @@ video {
 }
 
 .text-xs {
-  font-size: 0.75rem;
-  line-height: 1rem;
+  font-size: 1.2rem;
 }
 
 .text-sm {
-  font-size: 0.875rem;
-  line-height: 1.25rem;
+  font-size: 1.4rem;
 }
 
 .font-semibold {

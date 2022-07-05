@@ -84,22 +84,76 @@ class PopupContent extends React.Component {
     }
 }
 
+function PostListItem({title, excerpt}) {
+    return (
+        <div className="py-2 -mx-7 px-7 hover:bg-gray-100 cursor-pointer">
+            <h2 className="text-[1.65rem] font-medium leading-tight text-gray-900">{title}</h2>
+            <p className="text-gray-400 leading-normal text-sm mt-0 mb-0 truncate">{excerpt}</p>
+        </div>
+    );
+}
+
+function PostResults({posts}) {
+    const PostItems = posts.map((d) => {
+        return (
+            <PostListItem
+                key={d.title}
+                title={d.title}
+                excerpt={d.excerpt}
+            />
+        );
+    });
+    return (
+        <div className="border-t border-gray-200 py-6 px-7">
+            <h1 className="uppercase text-xs text-gray-400 font-semibold mb-2">Posts</h1>
+            {PostItems}
+        </div>
+    );
+}
+
+function SearchResultBox() {
+    const posts = [
+        {
+            title: 'The DNC’s Disastrous Post-Roe Message',
+            excerpt: 'Democrats’ first stab at warning voters about the GOP threat with harpoons and guns and knives and rifles'
+        },
+        {
+            title: 'Roberts Started A Revolution, Dems Enabled It',
+            excerpt: 'New data show the end of pandemic relief coincided with a 49 percent increase in the number of families struggling to survive.'
+        },
+        {
+            title: 'Ending Pandemic Aid Created A Disaster',
+            excerpt: 'On this week’s Lever Time: David goes deep into SCOTUS, including exposing the dark money network that has been bankrolling conservative judicial nominees.'
+        }
+    ];
+
+    if (posts?.length) {
+        return (
+            <PostResults posts={posts} />
+        );
+    }
+    return <NoResultsBox />;
+}
+
+function NoResultsBox() {
+    return (
+        <div>
+            No results
+        </div>
+    );
+}
+
 function Search() {
     const {searchIndex, indexComplete} = useContext(AppContext);
-    let pageClass = 'search';
     /* eslint-disable no-console */
     console.log(searchIndex);
     if (indexComplete) {
-        const searchValue = searchIndex.search('dada');
+        const searchValue = searchIndex.search('T');
         console.log(searchValue);
     }
 
-    let className = 'gh-portal-popup-container';
-
-    const containerClassName = `${className} ${pageClass}`;
-
     return (
-        <> 
+        <>
             <div className='bg-[rgba(0,0,0,0.2)] h-screen w-screen pt-20'>
                 <div className='bg-white max-w-lg rounded-lg shadow-xl m-auto'>
                     <div className='flex items-center py-6 px-7'>
@@ -107,21 +161,8 @@ function Search() {
                         <input className='grow text-[1.65rem] focus-visible:outline-none' placeholder='Search posts, tags, authors..' />
                         <ClearIcon className='ml-3 fill-gray-400' alt='Clear' />
                     </div>
-                    <div className="border-t border-gray-200 py-6 px-7">
-                        <h1 className="uppercase text-xs text-gray-400 font-semibold mb-2">Posts</h1>
-                        <div className="py-2 -mx-7 px-7 hover:bg-gray-100 cursor-pointer">
-                            <h2 className="text-[1.65rem] font-medium leading-tight text-gray-900">The DNC’s Disastrous Post-Roe Message</h2>
-                            <p className="text-gray-400 leading-normal text-sm mt-0 mb-0 truncate">Democrats’ first stab at warning voters about the GOP threat with harpoons and guns and knives and rifles</p>
-                        </div>
-                        <div className="py-2 -mx-7 px-7 hover:bg-gray-100 cursor-pointer">
-                            <h2 className="text-[1.65rem] font-medium leading-tight text-gray-900">Roberts Started A Revolution, Dems Enabled It</h2>
-                            <p className="text-gray-400 leading-normal text-sm mt-0 mb-0 truncate">New data show the end of pandemic relief coincided with a 49 percent increase in the number of families struggling to survive.</p>
-                        </div>
-                        <div className="py-2 -mx-7 px-7 hover:bg-gray-100 cursor-pointer">
-                            <h2 className="text-[1.65rem] font-medium leading-tight text-gray-900">Ending Pandemic Aid Created A Disaster</h2>
-                            <p className="text-gray-400 leading-normal text-sm mt-0 mb-0 truncate">On this week’s Lever Time: David goes deep into SCOTUS, including exposing the dark money network that has been bankrolling conservative judicial nominees.</p>
-                        </div>
-                    </div>
+
+                    <SearchResultBox />
                 </div>
             </div>
         </>
