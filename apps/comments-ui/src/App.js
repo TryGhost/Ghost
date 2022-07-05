@@ -1,5 +1,5 @@
-import './App.css';
 import Form from './components/Form';
+import CustomIFrame from './components/CustomIFrame';
 import * as Sentry from '@sentry/react';
 import React from 'react';
 import ActionHandler from './actions';
@@ -86,7 +86,9 @@ export default class App extends React.Component {
         return (
             <SentryErrorBoundary dsn={this.props.sentryDsn}>
                 <AppContext.Provider value={this.getContextFromState()}>
-                    <Form />
+                    <CustomIFrame>
+                        <Form />
+                    </CustomIFrame>
                 </AppContext.Provider>
             </SentryErrorBoundary>
         );

@@ -5,4 +5,4 @@ function loadScript(src) {
     document.head.appendChild(script);
 }
 
-loadScript('http://localhost:3000/static/js/bundle.js');
+loadScript('http://localhost:4000/static/js/bundle.js');
