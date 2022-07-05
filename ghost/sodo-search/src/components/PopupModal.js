@@ -97,7 +97,7 @@ function Search() {
                 <div className={containerClassName} style={{}}>
                     <div>
                         <SearchIcon alt='Search' />
-                        Search posts, tags, and authors
+                        <input placeholder='Search posts, tags, and authors' />
                         <ClearIcon alt='Clear' />
                     </div>
                 </div>
