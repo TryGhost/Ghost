@@ -132,8 +132,10 @@ export default class PopupModal extends React.Component {
                 --brandcolor: ${this.context.brandColor || ''}
             }
         ` + FrameStyle;
+
         return (
             <>
+                <link rel="stylesheet" href="http://localhost:3000/main.css" />
                 <style dangerouslySetInnerHTML={{__html: styles}} />
                 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
             </>

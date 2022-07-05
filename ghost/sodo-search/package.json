@@ -17,7 +17,9 @@
     "start": "BROWSER=none react-scripts start",
     "start:combined": "BROWSER=none node ./scripts/start-combined.js",
     "start:dev": "node ./scripts/start-mode.js",
-    "dev": "node ./scripts/dev-mode.js",
+    "dev": "node ./scripts/start-mode.js",
+    "tailwind": "npx tailwindcss -i ./src/index.css -o ./public/main.css --watch",
+    "old:dev": "node ./scripts/dev-mode.js",
     "build": "npm run build:combined",
     "build:original": "react-scripts build",
     "build:combined": "node ./scripts/build-combined.js",
@@ -55,6 +57,7 @@
     ]
   },
   "devDependencies": {
+    "autoprefixer": "^10.4.7",
     "chalk": "4.1.2",
     "chokidar": "3.5.2",
     "copy-webpack-plugin": "6.4.1",
@@ -62,9 +65,11 @@
     "minimist": "1.2.5",
     "nock": "13.2.8",
     "ora": "5.4.1",
+    "postcss": "^8.4.14",
     "rewire": "6.0.0",
     "serve-handler": "6.1.3",
     "source-map-explorer": "2.5.2",
+    "tailwindcss": "^3.1.4",
     "webpack-cli": "3.3.12"
   },
   "resolutions": {

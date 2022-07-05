@@ -2,6 +2,17 @@ const rewire = require('rewire');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const defaults = rewire('react-scripts/scripts/build.js');
 let config = defaults.__get__('config');
+const fs = require('fs');
+/* eslint-disable no-console */
+const log = console.log;
+/* eslint-enable no-console */
+
+fs.copyFile('./public/main.css', './umd/main.css', (err) => {
+    if (err) {
+        throw err;
+    }
+    log('Copied main.css');
+});
 
 config.optimization.splitChunks = {
     cacheGroups: {
