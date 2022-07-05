@@ -6,7 +6,7 @@ export default class SearchIndex {
         this.apiKey = apiKey;
         this.storage = storage;
 
-        this.index = null;
+        this.postsIndex = null;
 
         this.init = this.init.bind(this);
         this.search = this.search.bind(this);
@@ -14,7 +14,7 @@ export default class SearchIndex {
 
     #updateIndex(data) {
         data.posts.forEach((post) => {
-            this.index.addDoc({
+            this.postsIndex.addDoc({
                 id: post.id,
                 title: post.title,
                 excerpt: post.excerpt,
@@ -22,7 +22,7 @@ export default class SearchIndex {
             });
         });
 
-        this.storage.setItem('ease_search_index', JSON.stringify(this.index));
+        this.storage.setItem('ease_search_index', JSON.stringify(this.postsIndex));
         this.storage.setItem('ease_search_last', data.posts[0].updated_at);
     }
 
@@ -42,16 +42,16 @@ export default class SearchIndex {
                 .then(response => response.json())
                 .then((data) => {
                     if (data.posts.length > 0) {
-                        this.index = elasticlunr();
-                        this.index.addField('title');
-                        this.index.addField('excerpt');
-                        this.index.setRef('id');
+                        this.postsIndex = elasticlunr();
+                        this.postsIndex.addField('title');
+                        this.postsIndex.addField('excerpt');
+                        this.postsIndex.setRef('id');
 
                         this.#updateIndex(data);
                     }
                 });
         } else {
-            this.index = elasticlunr.Index.load(indexDump);
+            this.postsIndex = elasticlunr.Index.load(indexDump);
 
             return fetch(`${url}&filter=updated_at:>'${this.storage.getItem('ease_search_last').replace(/\..*/, '').replace(/T/, ' ')}'`
             )
@@ -65,9 +65,11 @@ export default class SearchIndex {
     }
 
     search(value) {
-        const searchResults = this.index.search(value, {expand: true});
-        return searchResults.map((doc) => {
-            return this.index.documentStore.docs[doc.ref];
-        });
+        const posts = this.postsIndex.search(value, {expand: true});
+        return {
+            posts: posts.map((doc) => {
+                return this.postsIndex.documentStore.docs[doc.ref];
+            })
+        };
     }
 }
