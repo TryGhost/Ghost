@@ -1,6 +1,5 @@
 import Frame from './Frame';
 import AppContext from '../AppContext';
-import {getFrameStyles} from './Frame.styles';
 import {ReactComponent as SearchIcon} from '../icons/search.svg';
 import {ReactComponent as ClearIcon} from '../icons/delete.svg';
 
@@ -85,21 +84,13 @@ class PopupContent extends React.Component {
 }
 
 function Search() {
-    let pageClass = 'search';
-
-    let className = 'gh-portal-popup-container';
-
-    const containerClassName = `${className} ${pageClass}`;
-
     return (
         <>
-            <div className={'gh-portal-popup-wrapper'}>
-                <div className={containerClassName} style={{}}>
-                    <div>
-                        <SearchIcon alt='Search' />
-                        <input placeholder='Search posts, tags, and authors' />
-                        <ClearIcon alt='Clear' />
-                    </div>
+            <div className='bg-[rgba(0,0,0,0.2)] h-screen w-screen pt-8'>
+                <div className='bg-white max-w-lg rounded-lg shadow-lg p-4 m-auto'>
+                    <SearchIcon alt='Search' />
+                    <input placeholder='Search posts, tags, and authors' />
+                    <ClearIcon alt='Clear' />
                 </div>
             </div>
         </>
@@ -128,12 +119,11 @@ export default class PopupModal extends React.Component {
     }
 
     renderFrameStyles() {
-        const FrameStyle = getFrameStyles({});
         const styles = `
             :root {
                 --brandcolor: ${this.context.brandColor || ''}
             }
-        ` + FrameStyle;
+        `;
 
         return (
             <>
@@ -151,12 +141,10 @@ export default class PopupModal extends React.Component {
             ...Styles.frame.common
         };
 
-        let className = 'gh-portal-popup-background';
-
         return (
             <div style={Styles.modalContainer} className='gh-root-frame'>
                 <Frame style={frameStyle} title="portal-popup" head={this.renderFrameStyles()}>
-                    <div className={className} onClick = {e => this.handlePopupClose(e)}></div>
+                    <div onClick = {e => this.handlePopupClose(e)}></div>
                     <PopupContent />
                 </Frame>
             </div>
