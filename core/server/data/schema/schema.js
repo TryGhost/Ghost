@@ -148,6 +148,7 @@ module.exports = {
         meta_description: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 500}}},
         tour: {type: 'text', maxlength: 65535, nullable: true},
         last_seen: {type: 'dateTime', nullable: true},
+        comment_notifications: {type: 'boolean', nullable: false, defaultTo: true},
         created_at: {type: 'dateTime', nullable: false},
         created_by: {type: 'string', maxlength: 24, nullable: false},
         updated_at: {type: 'dateTime', nullable: true},

@@ -61,7 +61,8 @@ User = ghostBookshelf.Model.extend({
         return {
             password: security.identifier.uid(50),
             visibility: 'public',
-            status: 'active'
+            status: 'active',
+            comment_notifications: true
         };
     },
 
