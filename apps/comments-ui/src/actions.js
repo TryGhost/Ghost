@@ -22,7 +22,7 @@ async function addComment({state, api, data: comment}) {
     };
     
     return {
-        comments: [...state.comments, commentStructured]
+        comments: [commentStructured, ...state.comments]
         // todo: fix pagination now?
     };
 }

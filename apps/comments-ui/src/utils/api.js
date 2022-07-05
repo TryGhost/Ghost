@@ -90,7 +90,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 credentials: 'same-origin'
             }).then(function (res) {
                 if (res.ok) {
-                    return res.json()
+                    return res.json();
                 } else {
                     throw new Error('Failed to fetch comments');
                 }
