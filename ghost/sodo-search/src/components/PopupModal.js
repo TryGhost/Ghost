@@ -2,6 +2,7 @@ import Frame from './Frame';
 import AppContext from '../AppContext';
 import {getFrameStyles} from './Frame.styles';
 import {ReactComponent as SearchIcon} from '../icons/search.svg';
+import {ReactComponent as ClearIcon} from '../icons/delete.svg';
 
 const React = require('react');
 
@@ -97,6 +98,7 @@ function Search() {
                     <div>
                         <SearchIcon alt='Search' />
                         Search posts, tags, and authors
+                        <ClearIcon alt='Clear' />
                     </div>
                 </div>
             </div>
