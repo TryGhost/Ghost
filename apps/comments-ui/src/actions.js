@@ -3,7 +3,7 @@ function loadMoreComments({state, api}) {
     if (state.pagination && state.pagination.page) {
         page = state.pagination.page + 1;
     }
-    const data = api.comments.browse({page});
+    const data = api.comments.browse({page, postId: state.postId});
     
     return {
         comments: [...data.comments, ...state.comments],
@@ -11,8 +11,18 @@ function loadMoreComments({state, api}) {
     };
 }
 
+function addComment({state, api, data: comment}) {
+    const data = api.comments.add({comment});
+    
+    return {
+        comments: [...data.comments, ...state.comments]
+        // todo: fix pagination now?
+    };
+}
+
 const Actions = {
     // Put your actions here
+    addComment,
     loadMoreComments
 };
 

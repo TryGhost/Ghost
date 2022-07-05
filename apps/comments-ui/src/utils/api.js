@@ -2,14 +2,10 @@ import {transformApiSiteData} from './helpers';
 
 function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
     const apiPath = 'members/api';
-    const commentsApiPath = 'comments/api';
 
     function endpointFor({type, resource, params = ''}) {
         if (type === 'members') {
-            return `${siteUrl.replace(/\/$/, '')}/${apiPath}/${resource}/`;
-        }
-        if (type === 'comments') {
-            return `${siteUrl.replace(/\/$/, '')}/${commentsApiPath}/${resource}/${params}`;
+            return `${siteUrl.replace(/\/$/, '')}/${apiPath}/${resource}/${params}`;
         }
     }
 
@@ -80,7 +76,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
     };
 
     api.comments = {
-        browse({page}) {
+        browse({page, postId}) {
             const limit = 5;
             const comments = (new Array(limit)).fill().map(() => {
                 return {
@@ -108,8 +104,13 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                     }
                 }
             };
-            /*
-            const url = endpointFor({type: 'comments', resource: 'comment', params: '?limit=15&page='+page});
+
+            // !! This commented code is working, don't delete it ;)
+            // This fetches the comments from the real API.
+
+            /*const filter = encodeURIComponent('post_id:' + postId);
+
+            const url = endpointFor({type: 'members', resource: 'comments', params: `?limit=15&include=member&filter=${filter}&page=${page}`});
             return makeRequest({
                 url,
                 method: 'GET',
@@ -124,6 +125,26 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                     throw new Error('Failed to fetch comments');
                 }
             });*/
+        },
+        add({comment}) {
+            const body = {
+                comments: [comment]
+            };
+            const url = endpointFor({type: 'members', resource: 'comments'});
+            return makeRequest({
+                url,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            }).then(function (res) {
+                if (res.ok) {
+                    return 'Success';
+                } else {
+                    throw new Error('Failed to add comment');
+                }
+            });
         }
     };
 

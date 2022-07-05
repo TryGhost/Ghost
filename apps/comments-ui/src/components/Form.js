@@ -25,6 +25,11 @@ class Form extends React.Component {
 
         try {
             // Todo: send comment to server
+            await this.context.onAction('addComment', {
+                post_id: this.context.postId,
+                status: 'published',
+                html: message
+            });
 
             // Clear message on success
             this.setState({message: ''});

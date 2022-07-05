@@ -36,7 +36,7 @@ export default class App extends React.Component {
             pagination: null,
             popupNotification: null,
             customSiteUrl: props.customSiteUrl,
-            postCommentId: props.postCommentId
+            postId: props.postId
         };
     }
 
@@ -126,7 +126,7 @@ export default class App extends React.Component {
 
     /** Fetch first few comments  */
     async fetchComments() {
-        const data = this.GhostApi.comments.browse({page: 1});
+        const data = await this.GhostApi.comments.browse({page: 1, postId: this.state.postId});
 
         return {
             comments: data.comments,
@@ -162,7 +162,7 @@ export default class App extends React.Component {
 
     /**Get final App level context from App state*/
     getContextFromState() {
-        const {action, popupNotification, customSiteUrl, member, comments, pagination} = this.state;
+        const {action, popupNotification, customSiteUrl, member, comments, pagination, postId} = this.state;
         return {
             action,
             popupNotification,
@@ -170,6 +170,7 @@ export default class App extends React.Component {
             member,
             comments,
             pagination,
+            postId,
             onAction: (_action, data) => this.dispatchAction(_action, data)
         };
     }
