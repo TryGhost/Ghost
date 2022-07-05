@@ -31,13 +31,13 @@ const Comment = ghostBookshelf.Model.extend({
 
         model.emitChange('added', options);
     }
-});
-
-const Comments = ghostBookshelf.Collection.extend({
-    model: Comment
+}, {
+    async permissible(model, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission, hasMemberPermission) {
+        console.log('checking permissions', hasMemberPermission);
+        return true;
+    }
 });
 
 module.exports = {
-    Comment: ghostBookshelf.model('Comment', Comment),
-    Comments: ghostBookshelf.collection('Comments', Comments)
+    Comment: ghostBookshelf.model('Comment', Comment)
 };
