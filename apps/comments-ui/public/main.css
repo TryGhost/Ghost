@@ -561,7 +561,7 @@ video {
 }
 
 .mt-2 {
-  margin-top: 0.5rem;
+  margin-top: 0.8rem;
 }
 
 .w-full {
@@ -586,7 +586,19 @@ video {
 }
 
 .p-2 {
-  padding: 0.5rem;
+  padding: 0.8rem;
+}
+
+.text-xl {
+  font-size: 2rem;
+}
+
+.text-lg {
+  font-size: 1.8rem;
+}
+
+.text-md {
+  font-size: 1.5rem;
 }
 
 .text-white {
@@ -597,4 +609,12 @@ video {
 .filter {
   -webkit-filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
           filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
+}
+
+html {
+  font-size: 62.5%;
+}
+
+body {
+  font-size: 1.5rem;
 }

@@ -76,7 +76,7 @@ class Form extends React.Component {
                 </div>
 
                 <textarea className="w-full rounded-md border p-2" value={this.state.message} onChange={this.handleChange} placeholder="What are your thoughts?" />
-                <button type="submit" className="bg-black p-2 text-white rounded w-full mt-2">Comment</button>
+                <button type="submit" className="bg-black p-2 text-white rounded w-full mt-2 text-md">Comment</button>
             </form>
         );
     }
