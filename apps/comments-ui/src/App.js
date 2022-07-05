@@ -14,8 +14,12 @@ function AuthFrame({adminUrl, onLoad}) {
         onLoad();
     }, []);
 
+    const iframeStyle = {
+        display: 'none'
+    };
+
     return (
-        <iframe data-frame="admin-auth" src={adminUrl + 'auth-frame'}></iframe>
+        <iframe data-frame="admin-auth" src={adminUrl + 'auth-frame'} style={iframeStyle}></iframe>
     );
 }
 
