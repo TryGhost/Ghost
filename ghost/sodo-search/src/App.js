@@ -1,11 +1,17 @@
 import React from 'react';
 import './App.css';
+import AppContext from './AppContext';
+import PopupModal from './components/PopupModal';
 
 function App() {
     return (
-        <div className="App">
-        Sodo Search
-        </div>
+        <AppContext.Provider value={{
+            page: 'search',
+            showPopup: true,
+            onAction: () => {}
+        }}>
+            <PopupModal />
+        </AppContext.Provider>
     );
 }
 
