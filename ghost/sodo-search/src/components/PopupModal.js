@@ -86,11 +86,13 @@ class PopupContent extends React.Component {
 function Search() {
     return (
         <>
-            <div className='bg-[rgba(0,0,0,0.2)] h-screen w-screen pt-8'>
-                <div className='bg-white max-w-lg rounded-lg shadow-lg p-4 m-auto'>
-                    <SearchIcon alt='Search' />
-                    <input placeholder='Search posts, tags, and authors' />
-                    <ClearIcon alt='Clear' />
+            <div className='bg-[rgba(0,0,0,0.2)] h-screen w-screen pt-20'>
+                <div className='bg-white max-w-lg rounded-lg shadow-xl py-6 px-7 m-auto'>
+                    <div className='flex items-center'>
+                        <SearchIcon className='mr-3' alt='Search' />
+                        <input className='grow text-[1.65rem] focus-visible:outline-none' placeholder='Search posts, tags, authors..' />
+                        <ClearIcon className='ml-3 fill-gray-400' alt='Clear' />
+                    </div>
                 </div>
             </div>
         </>
