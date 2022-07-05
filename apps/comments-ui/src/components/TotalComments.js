@@ -10,7 +10,7 @@ class TotalComments extends React.Component {
         }
 
         return (
-            <section className="font-sans text-base text-neutral-400 mb-px">
+            <section className="font-sans text-base text-neutral-400 mb-px dark:text-white">
                 <p>{this.context.pagination.total} {this.context.pagination.total === 1 ? 'comment' : 'comments'}</p>
             </section>
         );
