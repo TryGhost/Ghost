@@ -84,6 +84,16 @@ class PopupContent extends React.Component {
     }
 }
 
+function SearchBox() {
+    return (
+        <div className='flex items-center py-6 px-7'>
+            <SearchIcon className='mr-3' alt='Search' />
+            <input className='grow text-[1.65rem] focus-visible:outline-none' placeholder='Search posts, tags, authors..' />
+            <ClearIcon className='ml-3 fill-gray-400' alt='Clear' />
+        </div>
+    );
+}
+
 function PostListItem({title, excerpt}) {
     return (
         <div className="py-2 -mx-7 px-7 hover:bg-gray-100 cursor-pointer">
@@ -156,12 +166,7 @@ function Search() {
         <>
             <div className='bg-[rgba(0,0,0,0.2)] h-screen w-screen pt-20'>
                 <div className='bg-white max-w-lg rounded-lg shadow-xl m-auto'>
-                    <div className='flex items-center py-6 px-7'>
-                        <SearchIcon className='mr-3' alt='Search' />
-                        <input className='grow text-[1.65rem] focus-visible:outline-none' placeholder='Search posts, tags, authors..' />
-                        <ClearIcon className='ml-3 fill-gray-400' alt='Clear' />
-                    </div>
-
+                    <SearchBox />
                     <SearchResultBox />
                 </div>
             </div>
