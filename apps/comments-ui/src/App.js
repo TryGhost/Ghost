@@ -32,6 +32,7 @@ export default class App extends React.Component {
             action: 'init:running',
             initStatus: 'running',
             member: null,
+            comments: null,
             popupNotification: null,
             customSiteUrl: props.customSiteUrl
         };

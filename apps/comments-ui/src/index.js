@@ -28,7 +28,7 @@ function getSiteData() {
      */
     const scriptTag = document.querySelector('script[data-ghost-comments]');
     if (scriptTag) {
-        const siteUrl = scriptTag.dataset.ghost;
+        const siteUrl = scriptTag.dataset.ghostComments;
         const apiKey = scriptTag.dataset.key;
         const apiUrl = scriptTag.dataset.api;
         const sentryDsn = scriptTag.dataset.sentryDsn;
