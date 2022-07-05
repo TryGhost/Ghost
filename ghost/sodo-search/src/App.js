@@ -18,8 +18,11 @@ export default class App extends React.Component {
         };
     }
 
-    componentDidMount() {
-        this.state.searchIndex.init();
+    async componentDidMount() {
+        await this.state.searchIndex.init();
+        this.setState({
+            indexComplete: true
+        });
     }
 
     render() {
@@ -27,6 +30,8 @@ export default class App extends React.Component {
             <AppContext.Provider value={{
                 page: 'search',
                 showPopup: true,
+                searchIndex: this.state.searchIndex,
+                indexComplete: true,
                 onAction: () => {}
             }}>
                 <PopupModal />
