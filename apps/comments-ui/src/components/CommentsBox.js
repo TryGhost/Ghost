@@ -2,7 +2,7 @@ import React from 'react';
 import AppContext from '../AppContext';
 import NotSignedInBox from './NotSignedInBox';
 import Form from './Form';
-import TotalComments from './TotalComments';
+// import TotalComments from './TotalComments';
 import Comment from './Comment';
 import Pagination from './Pagination';
 
@@ -15,7 +15,7 @@ class CommentsBox extends React.Component {
     }
 
     luminance(r, g, b) {
-        var a = [r, g, b].map(function(v) {
+        var a = [r, g, b].map(function (v) {
             v /= 255;
             return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
         });
@@ -48,7 +48,7 @@ class CommentsBox extends React.Component {
 
         return (
             <section className={containerClass}>
-                {/* <div className="flex justify-between items-end mb-6">
+                {/* <div className="flex justify-between items-end mb-10">
                     <h1 className="text-2xl font-sans font-bold tracking-tight dark:text-neutral-300">Members discussion</h1>
                     <TotalComments />
                 </div> */}
