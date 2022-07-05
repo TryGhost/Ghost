@@ -125,7 +125,7 @@ class PopupContent extends React.Component {
 function SearchBox() {
     const {searchValue, dispatch} = useContext(AppContext);
     return (
-        <div className='flex items-center py-6 px-7'>
+        <div className='flex items-center py-5 px-7'>
             <SearchIcon className='mr-3 text-neutral-900' alt='Search' />
             <input
                 autoFocus
@@ -183,8 +183,8 @@ function TagResults({tags}) {
         );
     });
     return (
-        <div className='border-t border-gray-200 py-4 px-7'>
-            <h1 className='uppercase text-xs text-neutral-400 font-semibold mb-2 tracking-wide'>Tags</h1>
+        <div className='border-t border-gray-200 py-3 px-7'>
+            <h1 className='uppercase text-xs text-neutral-400 font-semibold mb-1 tracking-wide'>Tags</h1>
             {TagItems}
         </div>
     );
@@ -214,8 +214,8 @@ function PostResults({posts}) {
         );
     });
     return (
-        <div className='border-t border-neutral-200 py-4 px-7'>
-            <h1 className='uppercase text-xs text-neutral-400 font-semibold mb-2 tracking-wide'>Posts</h1>
+        <div className='border-t border-neutral-200 py-3 px-7'>
+            <h1 className='uppercase text-xs text-neutral-400 font-semibold mb-1 tracking-wide'>Posts</h1>
             {PostItems}
         </div>
     );
@@ -258,8 +258,8 @@ function AuthorResults({authors}) {
     });
 
     return (
-        <div className='border-t border-neutral-200 py-4 px-7'>
-            <h1 className='uppercase text-xs text-neutral-400 font-semibold mb-2 tracking-wide'>Authors</h1>
+        <div className='border-t border-neutral-200 py-3 px-7'>
+            <h1 className='uppercase text-xs text-neutral-400 font-semibold mb-1 tracking-wide'>Authors</h1>
             {AuthorItems}
         </div>
     );
