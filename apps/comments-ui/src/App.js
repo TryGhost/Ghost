@@ -7,6 +7,28 @@ import AppContext from './AppContext';
 import {hasMode} from './utils/check-mode';
 import setupGhostApi from './utils/api';
 import CommentsBox from './components/CommentsBox';
+import {useEffect} from 'react';
+
+function AuthFrame({adminUrl, onLoad}) {
+    useEffect(function () {
+        onLoad();
+    }, []);
+
+    return (
+        <iframe data-frame="admin-auth" src={adminUrl + 'auth-frame'}></iframe>
+    );
+}
+
+function CommentsBoxContainer({done}) {
+    if (!done) {
+        return null;
+    }
+    return (
+        <ShadowRoot>
+            <CommentsBox />
+        </ShadowRoot>
+    );
+}
 
 function SentryErrorBoundary({dsn, children}) {
     if (dsn) {
@@ -40,20 +62,21 @@ export default class App extends React.Component {
         };
     }
 
-    componentDidMount() {
-        this.initSetup();
-    }
-
     /** Initialize comments setup on load, fetch data and setup state*/
     async initSetup() {
         try {
             // Fetch data from API, links, preview, dev sources
             const {site, member} = await this.fetchApiData();
             const {comments, pagination} = await this.fetchComments();
-
+            this.adminApi = this.setupAdminAPI();
+            const admin = await this.adminApi.getUser();
+            /* eslint-disable no-console */
+            console.log(admin);
+            /* eslint-enable no-console */
             const state = {
                 site,
                 member,
+                admin,
                 action: 'init:success',
                 initStatus: 'success',
                 comments,
@@ -134,6 +157,69 @@ export default class App extends React.Component {
         };
     }
 
+    setupAdminAPI() {
+        const frame = document.querySelector('iframe[data-frame="admin-auth"]');
+        let uid = 1;
+        let handlers = {};
+        window.addEventListener('message', function (event) {
+            if (event.origin !== '*') {
+                // return;
+            }
+            let data = null;
+            try {
+                data = JSON.parse(event.data);
+            } catch (err) {
+                /* eslint-disable no-console */
+                console.error('Error parsing event data', err);
+                /* eslint-enable no-console */
+                return;
+            }
+
+            const handler = handlers[data.uid];
+
+            if (!handler) {
+                return;
+            }
+
+            delete handlers[data.uid];
+
+            handler(data.error, data.result);
+        });
+
+        function callApi(action, args) {
+            return new Promise((resolve, reject) => {
+                function handler(error, result) {
+                    if (error) {
+                        return reject(error);
+                    }
+                    return resolve(result);
+                }
+                uid += 1;
+                handlers[uid] = handler;
+                frame.contentWindow.postMessage(JSON.stringify({
+                    uid,
+                    action,
+                    ...args
+                }), '*');
+            });
+        }
+
+        const api = {
+            async getUser() {
+                const result = await callApi('getUser');
+                return result.users[0];
+            },
+            hideComment(id) {
+                return callApi('hideComment', {id});
+            },
+            showComment(id) {
+                return callApi('showComment', {id});
+            }
+        };
+
+        return api;
+    }
+
     /** Setup Sentry */
     setupSentry({site}) {
         if (hasMode(['test'])) {
@@ -181,16 +267,13 @@ export default class App extends React.Component {
     }
 
     render() {
-        if (this.state.initStatus !== 'success') {
-            return null;
-        }
+        const done = this.state.initStatus === 'success';
 
         return (
             <SentryErrorBoundary dsn={this.props.sentryDsn}>
                 <AppContext.Provider value={this.getContextFromState()}>
-                    <ShadowRoot>
-                        <CommentsBox />
-                    </ShadowRoot>
+                    <CommentsBoxContainer done={done}/>
+                    <AuthFrame adminUrl={this.props.adminUrl} onLoad={this.initSetup.bind(this)}/>
                 </AppContext.Provider>
             </SentryErrorBoundary>
         );
