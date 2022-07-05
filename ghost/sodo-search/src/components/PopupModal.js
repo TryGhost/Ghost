@@ -266,19 +266,33 @@ function AuthorResults({authors}) {
 }
 
 function SearchResultBox() {
-    const {searchValue = ''} = useContext(AppContext);
-
-    const filteredTags = tagsData.filter((d) => {
+    const {searchValue = '', searchIndex, indexComplete} = useContext(AppContext);
+    let searchResults = null;
+    let filteredTags = tagsData.filter((d) => {
         return d.title?.toLowerCase().includes(searchValue?.toLowerCase());
     });
 
-    const filteredPosts = postsData.filter((d) => {
+    let filteredPosts = postsData.filter((d) => {
         return d.title?.toLowerCase().includes(searchValue.toLowerCase()) || d.excerpt?.toLowerCase().includes(searchValue?.toLowerCase());
     });
 
-    const filteredAuthors = authorsData.filter((d) => {
+    let filteredAuthors = authorsData.filter((d) => {
         return d.name?.toLowerCase().includes(searchValue?.toLowerCase());
     });
+
+    /* eslint-disable no-console */
+    if (indexComplete && searchValue) {
+        searchResults = searchIndex.search(searchValue);
+        console.log(searchResults);
+        filteredPosts = searchResults.map((d) => {
+            return {
+                id: d?.id,
+                excerpt: d?.excerpt,
+                title: d?.title
+            };
+        });
+        console.log(filteredPosts);
+    }
 
     const hasResults = filteredPosts?.length || filteredAuthors?.length || filteredTags?.length;
 
@@ -316,17 +330,6 @@ function NoResultsBox() {
 }
 
 function Search() {
-    const {searchIndex, indexComplete} = useContext(AppContext);
-    /* eslint-disable no-console */
-    if (indexComplete) {
-        const searchValue = searchIndex.search('T');
-        console.log(searchValue);
-        const test = searchValue.map((d) => {
-            return d.doc;
-        });
-        console.log(test);
-    }
-
     return (
         <>
             <div className='bg-[rgba(0,0,0,0.2)] h-screen w-screen pt-20 antialiased'>
