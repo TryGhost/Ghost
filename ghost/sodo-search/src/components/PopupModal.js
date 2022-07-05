@@ -126,7 +126,7 @@ function SearchBox() {
     const {searchValue, dispatch} = useContext(AppContext);
     return (
         <div className='flex items-center py-6 px-7'>
-            <SearchIcon className='mr-3' alt='Search' />
+            <SearchIcon className='mr-3 text-neutral-900' alt='Search' />
             <input
                 autoFocus
                 value={searchValue || ''}
@@ -332,7 +332,7 @@ function NoResultsBox() {
 function Search() {
     return (
         <>
-            <div className='bg-[rgba(0,0,0,0.2)] h-screen w-screen pt-20 antialiased'>
+            <div className='bg-[rgba(0,0,0,0.2)] h-screen w-screen pt-20 antialiased z-50 relative'>
                 <div className='bg-white max-w-lg rounded-lg shadow-xl m-auto'>
                     <SearchBox />
                     <SearchResultBox />
@@ -391,6 +391,7 @@ export default class PopupModal extends React.Component {
                 <Frame style={frameStyle} title='portal-popup' head={this.renderFrameStyles()}>
                     <div onClick = {e => this.handlePopupClose(e)}></div>
                     <PopupContent />
+                    <div className='absolute top-0 bottom-0 left-0 right-0 block backdrop-blur-[2px] z-0 bg-gradient-to-br from-[rgba(0,0,0,0.2)] to-[rgba(0,0,0,0.1)]'></div>
                 </Frame>
             </div>
         );
