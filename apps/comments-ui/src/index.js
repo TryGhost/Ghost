@@ -7,14 +7,20 @@ const ROOT_DIV_ID = 'ghost-comments-root';
 function addRootDiv() {
     const scriptTag = document.querySelector('script[data-ghost-comments]');
 
-    // We need to inject the comment box at the same place as the script tag
-    if (scriptTag) {
+    if (process.env.NODE_ENV === 'development') {
         const elem = document.createElement('div');
         elem.id = ROOT_DIV_ID;
-        scriptTag.parentElement.insertBefore(elem, scriptTag);
+        document.body.appendChild(elem);
     } else {
-        // eslint-disable-next-line no-console
-        console.warn('Comment box location was not found: could not load comments box.');
+        // We need to inject the comment box at the same place as the script tag
+        if (scriptTag) {
+            const elem = document.createElement('div');
+            elem.id = ROOT_DIV_ID;
+            scriptTag.parentElement.insertBefore(elem, scriptTag);
+        } else {
+            // eslint-disable-next-line no-console
+            console.warn('Comment box location was not found: could not load comments box.');
+        }
     }
 }
 

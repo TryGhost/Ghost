@@ -589,6 +589,14 @@ video {
   padding: 0.8rem;
 }
 
+.p-\[calc\(21px\+10\%\)\] {
+  padding: calc(21px + 10%);
+}
+
+.p-4 {
+  padding: 1.6rem;
+}
+
 .text-xl {
   font-size: 2rem;
 }
