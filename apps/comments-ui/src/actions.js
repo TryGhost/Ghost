@@ -5,8 +5,9 @@ async function loadMoreComments({state, api}) {
     }
     const data = await api.comments.browse({page, postId: state.postId});
     
+    // Note: we store the comments from new to old, and show them in reverse order
     return {
-        comments: [...data.comments, ...state.comments],
+        comments: [...state.comments, ...data.comments],
         pagination: data.meta.pagination
     };
 }

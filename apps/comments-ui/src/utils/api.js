@@ -78,8 +78,9 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
     api.comments = {
         browse({page, postId}) {
             const filter = encodeURIComponent('post_id:' + postId);
+            const order = encodeURIComponent('created_at DESC');
 
-            const url = endpointFor({type: 'members', resource: 'comments', params: `?limit=15&include=member&filter=${filter}&page=${page}`});
+            const url = endpointFor({type: 'members', resource: 'comments', params: `?limit=5&include=member&order=${order}&filter=${filter}&page=${page}`});
             return makeRequest({
                 url,
                 method: 'GET',
@@ -89,7 +90,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 credentials: 'same-origin'
             }).then(function (res) {
                 if (res.ok) {
-                    return res.json();
+                    return res.json()
                 } else {
                     throw new Error('Failed to fetch comments');
                 }

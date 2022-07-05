@@ -41,7 +41,7 @@ class CommentsBox extends React.Component {
     }
 
     render() {
-        const comments = !this.context.comments ? 'Loading...' : this.context.comments.map(comment => <Comment comment={comment} key={comment.id} />);
+        const comments = !this.context.comments ? 'Loading...' : this.context.comments.slice().reverse().map(comment => <Comment comment={comment} key={comment.id} />);
 
         const containerClass = this.darkMode() ? 'dark' : '';
 
