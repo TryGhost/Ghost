@@ -17,7 +17,8 @@ export default class SearchIndex {
             this.index.addDoc({
                 id: post.id,
                 title: post.title,
-                excerpt: post.excerpt
+                excerpt: post.excerpt,
+                slug: post.slug
             });
         });
 
@@ -29,7 +30,7 @@ export default class SearchIndex {
         // remove default stop words to search of *any* word
         elasticlunr.clearStopWords();
 
-        const url = `${this.apiUrl}/posts/?key=${this.apiKey}&limit=all&fields=id,title,excerpt,url,updated_at,visibility&order=updated_at%20desc&formats=plaintext`;
+        const url = `${this.apiUrl}/posts/?key=${this.apiKey}&limit=all&fields=id,slug,title,excerpt,url,updated_at,visibility&order=updated_at%20desc&formats=plaintext`;
 
         const indexDump = JSON.parse(this.storage.getItem('ease_search_index'));
 

@@ -35,7 +35,7 @@ function init() {
     setup({siteUrl});
     ReactDOM.render(
         <React.StrictMode>
-            <App apiKey={apiKey} apiUrl={apiUrl} />
+            <App siteUrl={siteUrl} apiKey={apiKey} apiUrl={apiUrl} />
         </React.StrictMode>,
         document.getElementById(ROOT_DIV_ID)
     );
