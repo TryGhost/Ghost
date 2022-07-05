@@ -32,8 +32,8 @@ describe('search index', function () {
             .reply(200, {
                 posts: [{
                     id: 'sounique',
-                    title: 'Amazing Barcelona Life',
-                    plaintext: 'We are sitting by the pool and smashing out search features'
+                    title: 'Awesome Barcelona Life',
+                    excerpt: 'We are sitting by the pool and smashing out search features'
                 }]
             });
 
@@ -41,6 +41,7 @@ describe('search index', function () {
 
         let searchResults = searchIndex.search('Barcelona');
         expect(searchResults.length).toEqual(1);
+        expect(searchResults[0].title).toEqual('Awesome Barcelona Life');
 
         searchResults = searchIndex.search('Nothing like this');
         expect(searchResults.length).toEqual(0);
