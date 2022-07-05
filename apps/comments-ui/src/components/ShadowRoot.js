@@ -1,7 +1,7 @@
 import React from 'react';
 import root from 'react-shadow';
 
-const CustomIFrame = ({
+const ShadowRoot = ({
     children,
     ...props
 }) => {
@@ -17,4 +17,4 @@ const CustomIFrame = ({
     );
 };
 
-export default CustomIFrame;
+export default ShadowRoot;

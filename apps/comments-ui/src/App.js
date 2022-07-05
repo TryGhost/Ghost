@@ -1,4 +1,4 @@
-import CustomIFrame from './components/CustomIFrame';
+import ShadowRoot from './components/ShadowRoot';
 import * as Sentry from '@sentry/react';
 import React from 'react';
 import ActionHandler from './actions';
@@ -168,9 +168,9 @@ export default class App extends React.Component {
         return (
             <SentryErrorBoundary dsn={this.props.sentryDsn}>
                 <AppContext.Provider value={this.getContextFromState()}>
-                    <CustomIFrame>
+                    <ShadowRoot>
                         <CommentsBox />
-                    </CustomIFrame>
+                    </ShadowRoot>
                 </AppContext.Provider>
             </SentryErrorBoundary>
         );
