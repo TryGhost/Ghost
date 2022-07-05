@@ -31,8 +31,9 @@ class CommentsBox extends React.Component {
     }
 
     darkMode() {
-        const bodyColor = getComputedStyle(document.querySelector('body')).getPropertyValue('color');
-        const colorsOnly = bodyColor.substring(bodyColor.indexOf('(') + 1, bodyColor.lastIndexOf(')')).split(/,\s*/);
+        const containerColor = getComputedStyle(document.querySelector('#ghost-comments-root').parentNode).getPropertyValue('color');
+
+        const colorsOnly = containerColor.substring(containerColor.indexOf('(') + 1, containerColor.lastIndexOf(')')).split(/,\s*/);
         const red = colorsOnly[0];
         const green = colorsOnly[1];
         const blue = colorsOnly[2];
