@@ -4,6 +4,8 @@ import {formatRelativeTime} from '../utils/helpers';
 function Comment(props) {
     const comment = props.comment;
 
+    const html = {__html: comment.html};
+
     return (
         <div className="flex mb-4">
             <div className="mr-4">
@@ -18,7 +20,7 @@ function Comment(props) {
                     </div>
                 </div>
                 <div className="mb-4 font-sans leading-normal dark:text-neutral-300">
-                    <p>{comment.html}</p>
+                    <p dangerouslySetInnerHTML={html} className="whitespace-pre-wrap"></p>
                 </div>
             </div>
         </div>

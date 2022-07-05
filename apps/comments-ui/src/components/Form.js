@@ -14,6 +14,13 @@ class Form extends React.Component {
         this.handleChange = this.handleChange.bind(this);
     }
 
+    getHTML() {
+        const text = this.state.message;
+
+        // Convert newlines to <br> for now (until we add a real editor)
+        return text.replace('\n', '<br>');
+    }
+
     async submitForm(event) {
         event.preventDefault();
         const message = this.state.message;
@@ -28,7 +35,7 @@ class Form extends React.Component {
             await this.context.onAction('addComment', {
                 post_id: this.context.postId,
                 status: 'published',
-                html: message
+                html: this.getHTML()
             });
 
             // Clear message on success
