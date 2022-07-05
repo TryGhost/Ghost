@@ -1,6 +1,6 @@
 function Avatar() {
     return (
-        <div class="avatar">
+        <div className="avatar">
             <p>JW</p>
         </div>
     );

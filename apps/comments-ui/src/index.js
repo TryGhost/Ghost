@@ -32,7 +32,8 @@ function getSiteData() {
         const apiKey = scriptTag.dataset.key;
         const apiUrl = scriptTag.dataset.api;
         const sentryDsn = scriptTag.dataset.sentryDsn;
-        return {siteUrl, apiKey, apiUrl, sentryDsn};
+        const postCommentId = scriptTag.dataset.commentId;
+        return {siteUrl, apiKey, apiUrl, sentryDsn, postCommentId};
     }
     return {};
 }
@@ -52,12 +53,12 @@ function setup({siteUrl}) {
 
 function init() {
     // const customSiteUrl = getSiteUrl();
-    const {siteUrl: customSiteUrl, sentryDsn} = getSiteData();
+    const {siteUrl: customSiteUrl, sentryDsn, postCommentId} = getSiteData();
     const siteUrl = customSiteUrl || window.location.origin;
     setup({siteUrl});
     ReactDOM.render(
         <React.StrictMode>
-            {<App siteUrl={siteUrl} customSiteUrl={customSiteUrl} sentryDsn={sentryDsn}/>}
+            {<App siteUrl={siteUrl} customSiteUrl={customSiteUrl} sentryDsn={sentryDsn} postCommentId={postCommentId} />}
         </React.StrictMode>,
         document.getElementById(ROOT_DIV_ID)
     );

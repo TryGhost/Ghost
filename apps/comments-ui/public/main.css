@@ -609,11 +609,11 @@ video {
 }
 
 .rounded-md {
-  border-radius: 0.6rem;
+  border-radius: 0.375rem;
 }
 
 .rounded {
-  border-radius: 0.4rem;
+  border-radius: 0.25rem;
 }
 
 .border {
@@ -700,4 +700,5 @@ body {
   /* Reset all CSS properties */
   all: initial;
 }
+
 

@@ -1,8 +1,5 @@
 import React from 'react';
 import AppContext from '../AppContext';
-import TotalComments from './TotalComments';
-import Comment from './Comment';
-import Pagination from './Pagination';
 
 class Form extends React.Component {
     static contextType = AppContext;
@@ -61,15 +58,7 @@ class Form extends React.Component {
     render() {
         return (
             <form onSubmit={this.submitForm} className="comment-form">
-                <div className="flex justify-between items-center mb-3">
-                    <h1 className="text-2xl font-sans font-medium">Members discussion</h1>
-                    <TotalComments />
-                </div>
-                <Pagination />
-                <div>
-                    <Comment />
-                    <Comment />
-                </div>
+                
                 <div>
                     <div>
                         <figure>

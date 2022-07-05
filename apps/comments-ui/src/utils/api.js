@@ -2,10 +2,14 @@ import {transformApiSiteData} from './helpers';
 
 function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
     const apiPath = 'members/api';
+    const commentsApiPath = 'comments/api';
 
-    function endpointFor({type, resource}) {
+    function endpointFor({type, resource, params = ''}) {
         if (type === 'members') {
             return `${siteUrl.replace(/\/$/, '')}/${apiPath}/${resource}/`;
+        }
+        if (type === 'comments') {
+            return `${siteUrl.replace(/\/$/, '')}/${commentsApiPath}/${resource}/${params}`;
         }
     }
 
@@ -73,6 +77,54 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
         }
       
+    };
+
+    api.comments = {
+        browse({page}) {
+            const limit = 15;
+            const comments = (new Array(limit)).fill().map(() => {
+                return {
+                    id: 'comment-' + Math.random() * 10000 + Date.now(),
+                    member: {
+                        avatar: '',
+                        bio: 'CEO',
+                        name: 'Just a name'
+                    },
+                    html: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis erat vitae diam gravida accumsan vitae quis nisl. Donec luctus laoreet mauris, nec posuere turpis accumsan in. Proin sagittis magna quis vulputate tempus. Duis sagittis purus mattis enim condimentum, quis tempus est tristique.'
+                };
+            });
+
+            // Temporary placeholder until we have a proper API
+            return {
+                comments,
+                meta: {
+                    pagination: {
+                        page: page,
+                        limit,
+                        pages: 3,
+                        total: 15 * 3,
+                        next: null,
+                        prev: null
+                    }
+                }
+            };
+            /*
+            const url = endpointFor({type: 'comments', resource: 'comment', params: '?limit=15&page='+page});
+            return makeRequest({
+                url,
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin'
+            }).then(function (res) {
+                if (res.ok) {
+                    return res.json();
+                } else {
+                    throw new Error('Failed to fetch comments');
+                }
+            });*/
+        }
     };
 
     api.init = async () => {

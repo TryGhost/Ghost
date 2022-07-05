@@ -33,8 +33,10 @@ export default class App extends React.Component {
             initStatus: 'running',
             member: null,
             comments: null,
+            pagination: null,
             popupNotification: null,
-            customSiteUrl: props.customSiteUrl
+            customSiteUrl: props.customSiteUrl,
+            postCommentId: props.postCommentId
         };
     }
 
@@ -47,11 +49,15 @@ export default class App extends React.Component {
         try {
             // Fetch data from API, links, preview, dev sources
             const {site, member} = await this.fetchApiData();
+            const {comments, pagination} = await this.fetchComments();
+
             const state = {
                 site,
                 member,
                 action: 'init:success',
-                initStatus: 'success'
+                initStatus: 'success',
+                comments,
+                pagination
             };
 
             this.setState(state);
@@ -118,6 +124,16 @@ export default class App extends React.Component {
         }
     }
 
+    /** Fetch first few comments  */
+    async fetchComments() {
+        const data = this.GhostApi.comments.browse({page: 1});
+
+        return {
+            comments: data.comments,
+            pagination: data.meta.pagination
+        };
+    }
+
     /** Setup Sentry */
     setupSentry({site}) {
         if (hasMode(['test'])) {
@@ -146,12 +162,14 @@ export default class App extends React.Component {
 
     /**Get final App level context from App state*/
     getContextFromState() {
-        const {action, popupNotification, customSiteUrl, member} = this.state;
+        const {action, popupNotification, customSiteUrl, member, comments, pagination} = this.state;
         return {
             action,
             popupNotification,
             customSiteUrl,
             member,
+            comments,
+            pagination,
             onAction: (_action, data) => this.dispatchAction(_action, data)
         };
     }
