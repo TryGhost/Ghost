@@ -1,9 +1,10 @@
-import {render, screen} from '@testing-library/react';
+import {render} from '@testing-library/react';
 import App from './App';
 import React from 'react';
 
 test('renders Sodo Search app component', () => {
     render(<App />);
-    const linkElement = screen.getByText(/Sodo Search/i);
-    expect(linkElement).toBeInTheDocument();
+    // const containerElement = screen.getElementsByClassName('gh-portal-popup-container');
+    const containerElement = document.querySelector('.gh-root-frame');
+    expect(containerElement).toBeInTheDocument();
 });

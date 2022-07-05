@@ -154,7 +154,7 @@ export default class PopupModal extends React.Component {
         let className = 'gh-portal-popup-background';
 
         return (
-            <div style={Styles.modalContainer}>
+            <div style={Styles.modalContainer} className='gh-root-frame'>
                 <Frame style={frameStyle} title="portal-popup" head={this.renderFrameStyles()}>
                     <div className={className} onClick = {e => this.handlePopupClose(e)}></div>
                     <PopupContent />
@@ -164,10 +164,6 @@ export default class PopupModal extends React.Component {
     }
 
     render() {
-        const {showPopup} = this.context;
-        if (showPopup) {
-            return this.renderFrameContainer();
-        }
-        return null;
+        return this.renderFrameContainer();
     }
 }
