@@ -564,8 +564,56 @@ video {
   margin-top: 0.8rem;
 }
 
+.mb-4 {
+  margin-bottom: 1.6rem;
+}
+
+.mb-3 {
+  margin-bottom: 1.2rem;
+}
+
+.mb-8 {
+  margin-bottom: 3.2rem;
+}
+
+.mr-4 {
+  margin-right: 1.6rem;
+}
+
+.mr-2 {
+  margin-right: 0.8rem;
+}
+
+.mb-1 {
+  margin-bottom: 0.4rem;
+}
+
+.flex {
+  display: flex;
+}
+
 .w-full {
   width: 100%;
+}
+
+.resize-none {
+  resize: none;
+}
+
+.items-end {
+  align-items: flex-end;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.items-stretch {
+  align-items: stretch;
+}
+
+.justify-between {
+  justify-content: space-between;
 }
 
 .rounded-md {
@@ -585,17 +633,97 @@ video {
   background-color: rgb(0 0 0 / var(--tw-bg-opacity));
 }
 
+.p-8 {
+  padding: 3.2rem;
+}
+
 .p-2 {
   padding: 0.8rem;
+}
+
+.p-4 {
+  padding: 1.6rem;
+}
+
+.p-3 {
+  padding: 1.2rem;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.font-sans {
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
 .text-md {
   font-size: 1.5rem;
 }
 
+.text-xl {
+  font-size: 2rem;
+}
+
+.text-2xl {
+  font-size: 2.4rem;
+}
+
+.text-sm {
+  font-size: 1.4rem;
+}
+
+.text-lg {
+  font-size: 1.8rem;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+.font-medium {
+  font-weight: 500;
+}
+
+.font-normal {
+  font-weight: 400;
+}
+
+.leading-5 {
+  line-height: 1.25rem;
+}
+
+.leading-normal {
+  line-height: 1.5;
+}
+
+.leading-snug {
+  line-height: 1.375;
+}
+
 .text-white {
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity));
+}
+
+.text-slate-400 {
+  --tw-text-opacity: 1;
+  color: rgb(148 163 184 / var(--tw-text-opacity));
+}
+
+.text-slate-600 {
+  --tw-text-opacity: 1;
+  color: rgb(71 85 105 / var(--tw-text-opacity));
+}
+
+.text-gray-200 {
+  --tw-text-opacity: 1;
+  color: rgb(229 231 235 / var(--tw-text-opacity));
+}
+
+.text-gray-400 {
+  --tw-text-opacity: 1;
+  color: rgb(156 163 175 / var(--tw-text-opacity));
 }
 
 .filter {
