@@ -19,7 +19,7 @@ class CommentsBox extends React.Component {
 
         return (
             <section>
-                <div className="flex justify-between items-center mb-6">
+                <div className="flex justify-between items-end mb-6">
                     <h1 className="text-2xl font-sans font-bold">Members discussion</h1>
                     <TotalComments />
                 </div>

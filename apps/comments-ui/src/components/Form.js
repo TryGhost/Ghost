@@ -58,20 +58,17 @@ class Form extends React.Component {
     render() {
         return (
             <form onSubmit={this.submitForm} className="comment-form">         
-                <div>
-                    <div>
-                        <figure>
-                            {this.context.member ?
-                                <img className="w-10 h-10 rounded-full" src={this.context.member.avatar_image} alt="Avatar"/> :
-                                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-black">{ this.getInitials() }</div>
-                            }
-                        </figure>
-                        <div>
-                            <h4 className="text-lg font-sans font-semibold mb-1">{this.context.member ? this.context.member.name : ''}</h4>
-                        </div>
+                <div className="flex bg-neutral-50 p-3 space-x-3 rounded-md">
+                    <figure>
+                        {this.context.member ?
+                            <img className="w-8 h-8 rounded-full" src={this.context.member.avatar_image} alt="Avatar"/> :
+                            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-black">{ this.getInitials() }</div>
+                        }
+                    </figure>
+                    <div className="w-full">
+                        <textarea className="w-full resize-none rounded-md border h-24 p-3 font-sans mb-1" value={this.state.message} onChange={this.handleChange} placeholder="Join the conversation" />
+                        <button type="submit" className="w-full rounded-md border p-3 font-sans text-sm text-center bg-black text-white">Add your comment</button>
                     </div>
-                    <textarea className="w-full resize-none rounded-md border h-24 p-2 font-sans" value={this.state.message} onChange={this.handleChange} placeholder="What are your thoughts?" />
-                    <button type="submit" className="bg-black p-2 text-white rounded w-full mt-2 text-md font-sans">Comment</button>
                 </div>
             </form>
         );

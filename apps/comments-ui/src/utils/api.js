@@ -88,7 +88,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                     member: {
                         avatar: '',
                         bio: 'CEO',
-                        name: 'Just a name'
+                        name: 'Terry Korsgaard'
                     },
                     html: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis erat vitae diam gravida accumsan vitae quis nisl. Donec luctus laoreet mauris, nec posuere turpis accumsan in. Proin sagittis magna quis vulputate tempus. Duis sagittis purus mattis enim condimentum, quis tempus est tristique.'
                 };
