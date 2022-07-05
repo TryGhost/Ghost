@@ -6,7 +6,7 @@ import {useContext} from 'react';
 
 const React = require('react');
 
-const tags = [
+const tagsData = [
     {
         title: 'Nomad life'
     },
@@ -15,7 +15,7 @@ const tags = [
     }
 ];
 
-const posts = [
+const postsData = [
     {
         title: 'How to ergonomically optimize your workspace',
         excerpt: 'Organically grow the holistic world view of disruptive innovation via workplace diversity and empowerment.'
@@ -30,7 +30,7 @@ const posts = [
     }
 ];
 
-const authors = [
+const authorsData = [
     {
         name: 'Norman Foster'
     },
@@ -128,6 +128,7 @@ function SearchBox() {
         <div className='flex items-center py-6 px-7'>
             <SearchIcon className='mr-3' alt='Search' />
             <input
+                autoFocus
                 value={searchValue || ''}
                 onChange={(e) => {
                     dispatch('update', {
@@ -137,7 +138,14 @@ function SearchBox() {
                 className='grow text-[1.65rem] focus-visible:outline-none placeholder:text-gray-300'
                 placeholder='Search posts, tags, authors..'
             />
-            <ClearIcon className='ml-3 fill-neutral-400' alt='Clear' />
+            <ClearIcon
+                className='ml-3 fill-neutral-400 cursor-pointer' alt='Clear'
+                onClick={() => {
+                    dispatch('update', {
+                        searchValue: ''
+                    });
+                }}
+            />
         </div>
     );
 }
@@ -156,7 +164,9 @@ function TagResults({tags}) {
     const filteredTags = tags.filter((d) => {
         return d.title?.toLowerCase().includes(searchValue?.toLowerCase());
     });
-
+    if (!filteredTags?.length) {
+        return null;
+    }
     const TagItems = filteredTags.map((d) => {
         return (
             <TagListItem
@@ -190,6 +200,11 @@ function PostResults({posts}) {
     const filteredPosts = posts.filter((d) => {
         return d.title?.toLowerCase().includes(searchValue.toLowerCase()) || d.excerpt?.toLowerCase().includes(searchValue?.toLowerCase());
     });
+
+    if (!filteredPosts?.length) {
+        return null;
+    }
+
     const PostItems = filteredPosts.map((d) => {
         return (
             <PostListItem
@@ -233,6 +248,9 @@ function AuthorResults({authors}) {
     const filteredAuthors = authors.filter((d) => {
         return d.name?.toLowerCase().includes(searchValue?.toLowerCase());
     });
+    if (!filteredAuthors?.length) {
+        return null;
+    }
 
     const AuthorItems = filteredAuthors.map((d) => {
         return (
@@ -253,10 +271,10 @@ function AuthorResults({authors}) {
 }
 
 function SearchResultBox() {
-    const hasResults = posts?.length || authors?.length || tags?.length;
+    const hasResults = postsData?.length || authorsData?.length || tagsData?.length;
     if (hasResults) {
         return (
-            <Results posts={posts} authors={authors} tags={tags} />
+            <Results posts={postsData} authors={authorsData} tags={tagsData} />
         );
     }
 
@@ -266,6 +284,10 @@ function SearchResultBox() {
 }
 
 function Results({posts, authors, tags}) {
+    const {searchValue} = useContext(AppContext);
+    if (!searchValue) {
+        return null;
+    }
     return (
         <div>
             <AuthorResults authors={authors} />
