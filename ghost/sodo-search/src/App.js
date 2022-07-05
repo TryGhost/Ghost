@@ -2,23 +2,24 @@ import React from 'react';
 import './App.css';
 import AppContext from './AppContext';
 import PopupModal from './components/PopupModal';
-import {init as initSearchIndex} from './search-index.js';
+import SearchIndex from './search-index.js';
 
 export default class App extends React.Component {
     constructor(props) {
         super(props);
 
-        this.state = {
+        const searchIndex = new SearchIndex({
             apiUrl: props.apiUrl,
             apiKey: props.apiKey
+        });
+
+        this.state = {
+            searchIndex
         };
     }
 
     componentDidMount() {
-        initSearchIndex({
-            apiUrl: this.state.apiUrl,
-            apiKey: this.state.apiKey
-        });
+        this.state.searchIndex.init();
     }
 
     render() {
