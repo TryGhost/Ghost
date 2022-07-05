@@ -94,9 +94,35 @@ function SearchBox() {
     );
 }
 
+function TagListItem({title}) {
+    return (
+        <div className="flex items-center py-3 -mx-7 px-7 hover:bg-gray-100 cursor-pointer">
+            <p className='mr-2 text-sm font-bold text-neutral-400'>#</p>
+            <h2 className="text-[1.65rem] font-medium leading-tight text-neutral-900">{title}</h2>
+        </div>
+    );
+}
+
+function TagResults({tags}) {
+    const TagItems = tags.map((d) => {
+        return (
+            <TagListItem
+                key={d.title}
+                title={d.title}
+            />
+        );
+    });
+    return (
+        <div className="border-t border-gray-200 py-6 px-7">
+            <h1 className="uppercase text-xs text-neutral-400 font-semibold mb-2">Tags</h1>
+            {TagItems}
+        </div>
+    );
+}
+
 function PostListItem({title, excerpt}) {
     return (
-        <div className="py-2 -mx-7 px-7 hover:bg-neutral-100 cursor-pointer">
+        <div className="py-3 -mx-7 px-7 hover:bg-neutral-100 cursor-pointer">
             <h2 className="text-[1.65rem] font-medium leading-tight text-neutral-900">{title}</h2>
             <p className="text-neutral-400 leading-normal text-sm mt-0 mb-0 truncate">{excerpt}</p>
         </div>
@@ -151,6 +177,15 @@ function AuthorResults({authors}) {
 }
 
 function SearchResultBox() {
+    const tags = [
+        {
+            title: 'Lifestyle'
+        },
+        {
+            title: 'Business'
+        }
+    ];
+
     const posts = [
         {
             title: 'The DNC’s Disastrous Post-Roe Message',
@@ -178,10 +213,10 @@ function SearchResultBox() {
         }
     ];
 
-    const hasResults = posts?.length || authors?.length;
+    const hasResults = posts?.length || authors?.length || tags?.length;
     if (hasResults) {
         return (
-            <Results posts={posts} authors={authors} />
+            <Results posts={posts} authors={authors} tags={tags} />
         );
     }
 
@@ -190,10 +225,11 @@ function SearchResultBox() {
     );
 }
 
-function Results({posts, authors}) {
+function Results({posts, authors, tags}) {
     return (
         <div>
             <AuthorResults authors={authors} />
+            <TagResults tags={tags} />
             <PostResults posts={posts} />
         </div>
     );
