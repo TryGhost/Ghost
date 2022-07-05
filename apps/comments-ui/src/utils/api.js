@@ -75,9 +75,14 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
       
     };
 
+    // To fix pagination when we create new comments (or people post comments after you loaded the page, we need to only load comments creatd AFTER the page load)
+    let firstCommentsLoadedAt = null;
+
     api.comments = {
         browse({page, postId}) {
-            const filter = encodeURIComponent('post_id:' + postId);
+            firstCommentsLoadedAt = firstCommentsLoadedAt ?? new Date().toISOString();
+
+            const filter = encodeURIComponent(`post_id:${postId}+created_at:<=${firstCommentsLoadedAt}`);
             const order = encodeURIComponent('created_at DESC');
 
             const url = endpointFor({type: 'members', resource: 'comments', params: `?limit=5&include=member&order=${order}&filter=${filter}&page=${page}`});
