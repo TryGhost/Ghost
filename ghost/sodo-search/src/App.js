@@ -31,8 +31,17 @@ export default class App extends React.Component {
                 page: 'search',
                 showPopup: true,
                 searchIndex: this.state.searchIndex,
-                indexComplete: true,
-                onAction: () => {}
+                indexComplete: this.state.indexComplete,
+                searchValue: this.state.searchValue,
+                onAction: () => {},
+                dispatch: (action, data) => {
+                    if (action === 'update') {
+                        this.setState({
+                            ...this.state,
+                            ...data
+                        });
+                    }
+                }
             }}>
                 <PopupModal />
             </AppContext.Provider>
