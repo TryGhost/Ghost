@@ -48,12 +48,12 @@ class CommentsBox extends React.Component {
 
         return (
             <section className={containerClass}>
-                {/* <div className="flex justify-between items-end mb-10">
+                {/* <div className="flex justify-between items-end mb-6">
                     <h1 className="text-2xl font-sans font-bold tracking-tight dark:text-neutral-300">Members discussion</h1>
                     <TotalComments />
                 </div> */}
                 <Pagination />
-                <div>
+                <div className="mt-6">
                     {comments}
                 </div>
                 <div>
