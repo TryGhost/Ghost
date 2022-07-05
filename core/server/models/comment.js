@@ -5,7 +5,8 @@ const tpl = require('@tryghost/tpl');
 
 const messages = {
     commentNotFound: 'Comment could not be found',
-    notYourComment: 'You may only edit your own comments'
+    notYourCommentToEdit: 'You may only edit your own comments',
+    notYourCommentToDestroy: 'You may only delete your own comments'
 };
 
 const Comment = ghostBookshelf.Model.extend({
@@ -40,6 +41,23 @@ const Comment = ghostBookshelf.Model.extend({
         model.emitChange('added', options);
     }
 }, {
+    destroy: function destroy(unfilteredOptions) {
+        let options = this.filterOptions(unfilteredOptions, 'destroy', {extraAllowedProperties: ['id']});
+
+        const softDelete = () => {
+            return ghostBookshelf.Model.edit.call(this, {status: 'deleted'}, options);
+        };
+
+        if (!options.transacting) {
+            return ghostBookshelf.transaction((transacting) => {
+                options.transacting = transacting;
+                return softDelete();
+            });
+        }
+
+        return softDelete();
+    },
+
     async permissible(commentModelOrId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission, hasMemberPermission) {
         const self = this;
 
@@ -64,9 +82,15 @@ const Comment = ghostBookshelf.Model.extend({
             });
         }
 
-        if ((action === 'edit' || action === 'destroy') && commentModelOrId.get('member_id') !== context.member.id) {
+        if (action === 'edit' && commentModelOrId.get('member_id') !== context.member.id) {
             return Promise.reject(new errors.NoPermissionError({
-                message: tpl(messages.notYourComment)
+                message: tpl(messages.notYourCommentToEdit)
+            }));
+        }
+
+        if (action === 'destroy' && commentModelOrId.get('member_id') !== context.member.id) {
+            return Promise.reject(new errors.NoPermissionError({
+                message: tpl(messages.notYourCommentToDestroy)
             }));
         }
 
