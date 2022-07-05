@@ -1,6 +1,7 @@
 import Frame from './Frame';
 import AppContext from '../AppContext';
 import {getFrameStyles} from './Frame.styles';
+import {ReactComponent as SearchIcon} from '../icons/search.svg';
 
 const React = require('react');
 
@@ -93,7 +94,10 @@ function Search() {
         <>
             <div className={'gh-portal-popup-wrapper'}>
                 <div className={containerClassName} style={{}}>
-                    Search posts, tags, and authors
+                    <div>
+                        <SearchIcon alt='Search' />
+                        Search posts, tags, and authors
+                    </div>
                 </div>
             </div>
         </>
