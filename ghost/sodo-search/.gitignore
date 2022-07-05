@@ -82,3 +82,5 @@ build/
 # Refs: https://testing-library.com/docs/react-testing-library/setup#jest-and-create-react-app
 # CRA also suggests `.env` files should be checked into source control
 # Ref: https://create-react-app.dev/docs/adding-custom-environment-variables/#adding-development-environment-variables-in-env
+
+public/main.css
