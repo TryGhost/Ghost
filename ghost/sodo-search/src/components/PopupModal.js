@@ -190,9 +190,14 @@ function TagResults({tags}) {
     );
 }
 
-function PostListItem({title, excerpt}) {
+function PostListItem({title, excerpt, slug}) {
+    const {siteUrl} = useContext(AppContext);
     return (
-        <div className='py-3 -mx-7 px-7 hover:bg-neutral-100 cursor-pointer'>
+        <div className='py-3 -mx-7 px-7 hover:bg-neutral-100 cursor-pointer' onClick={() => {
+            if (slug) {
+                window.location.href = `${siteUrl}${slug}`;
+            }
+        }}>
             <h2 className='text-[1.65rem] font-medium leading-tight text-neutral-900'>{title}</h2>
             <p className='text-neutral-400 leading-normal text-sm mt-0 mb-0 truncate'>{excerpt}</p>
         </div>
@@ -210,6 +215,7 @@ function PostResults({posts}) {
                 key={d.title}
                 title={d.title}
                 excerpt={d.excerpt}
+                slug={d.slug}
             />
         );
     });
@@ -288,7 +294,8 @@ function SearchResultBox() {
             return {
                 id: d?.id,
                 excerpt: d?.excerpt,
-                title: d?.title
+                title: d?.title,
+                slug: d?.slug
             };
         });
         console.log(filteredPosts);

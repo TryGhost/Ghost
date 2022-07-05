@@ -30,6 +30,7 @@ export default class App extends React.Component {
             <AppContext.Provider value={{
                 page: 'search',
                 showPopup: true,
+                siteUrl: this.props.siteUrl,
                 searchIndex: this.state.searchIndex,
                 indexComplete: this.state.indexComplete,
                 searchValue: this.state.searchValue,
