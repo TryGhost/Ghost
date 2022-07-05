@@ -277,8 +277,8 @@ function Results({posts, authors, tags}) {
 
 function NoResultsBox() {
     return (
-        <div>
-            No results
+        <div className='py-4 px-7 border-t border-neutral-200'>
+            <p className='text-[1.65rem] text-neutral-400 leading-normal'>No matches found...</p>
         </div>
     );
 }
