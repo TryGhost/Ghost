@@ -27,6 +27,7 @@ describe('Exporter', function () {
                 'brute',
                 'comments',
                 'comment_likes',
+                'comment_reports',
                 'custom_theme_settings',
                 'email_batches',
                 'email_recipients',
