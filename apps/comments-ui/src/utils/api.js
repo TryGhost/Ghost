@@ -77,39 +77,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
 
     api.comments = {
         browse({page, postId}) {
-            const limit = 5;
-            const comments = (new Array(limit)).fill().map(() => {
-                return {
-                    id: 'comment-' + Math.random() * 10000 + Date.now(),
-                    member: {
-                        avatar: '',
-                        bio: 'CEO',
-                        name: 'Terry Korsgaard'
-                    },
-                    html: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut mollis erat vitae diam gravida accumsan vitae quis nisl. Donec luctus laoreet mauris, nec posuere turpis accumsan in. Proin sagittis magna quis vulputate tempus.',
-                    created_at: '2022-07-05T13:33:00.284Z'
-                };
-            });
-
-            // Temporary placeholder until we have a proper API
-            return {
-                comments,
-                meta: {
-                    pagination: {
-                        page: page,
-                        limit,
-                        pages: 3,
-                        total: 15 * 3,
-                        next: null,
-                        prev: null
-                    }
-                }
-            };
-
-            // !! This commented code is working, don't delete it ;)
-            // This fetches the comments from the real API.
-
-            /*const filter = encodeURIComponent('post_id:' + postId);
+            const filter = encodeURIComponent('post_id:' + postId);
 
             const url = endpointFor({type: 'members', resource: 'comments', params: `?limit=15&include=member&filter=${filter}&page=${page}`});
             return makeRequest({
@@ -125,7 +93,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 } else {
                     throw new Error('Failed to fetch comments');
                 }
-            });*/
+            });
         },
         add({comment}) {
             const body = {

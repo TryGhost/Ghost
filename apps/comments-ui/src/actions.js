@@ -1,9 +1,9 @@
-function loadMoreComments({state, api}) {
+async function loadMoreComments({state, api}) {
     let page = 1;
     if (state.pagination && state.pagination.page) {
         page = state.pagination.page + 1;
     }
-    const data = api.comments.browse({page, postId: state.postId});
+    const data = await api.comments.browse({page, postId: state.postId});
     
     return {
         comments: [...data.comments, ...state.comments],
@@ -11,11 +11,17 @@ function loadMoreComments({state, api}) {
     };
 }
 
-function addComment({state, api, data: comment}) {
-    const data = api.comments.add({comment});
+async function addComment({state, api, data: comment}) {
+    await api.comments.add({comment});
+
+    const commentStructured = {
+        ...comment,
+        member: state.member,
+        created_at: new Date().toISOString()
+    };
     
     return {
-        comments: [...data.comments, ...state.comments]
+        comments: [...state.comments, commentStructured]
         // todo: fix pagination now?
     };
 }
