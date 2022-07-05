@@ -58,15 +58,15 @@ class Form extends React.Component {
     render() {
         return (
             <form onSubmit={this.submitForm} className="comment-form">
-                <div style={{display: 'flex', flexDirection: 'row'}}>
-                    <figure style={{position: 'relative', marginRight: '15px'}}>
-                        <div style={{backgroundColor: 'black', width: '60px', height: '60px', borderRadius: '30px', color: 'white', textAlign: 'center', fontSize: '20px', fontWeight: 'bold', lineHeight: '60px'}}>
+                <div>
+                    <figure>
+                        <div>
                             { this.getInitials() }
                         </div>
-                        { this.context.member ? <img src={this.context.member.avatar_image} width="60" height="60" style={{position: 'absolute', left: '0', top: '0'}} alt="Avatar"/> : '' }
+                        { this.context.member ? <img src={this.context.member.avatar_image} width="60" height="60" alt="Avatar"/> : '' }
                     </figure>
                     <div>
-                        <div style={{fontWeight: 'bold'}}>
+                        <div>
                             {this.context.member ? this.context.member.name : ''}
                         </div>
                         <span>
