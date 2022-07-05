@@ -565,6 +565,18 @@ video {
   margin: auto;
 }
 
+.mr-3 {
+  margin-right: 1.2rem;
+}
+
+.ml-3 {
+  margin-left: 1.2rem;
+}
+
+.flex {
+  display: flex;
+}
+
 .hidden {
   display: none;
 }
@@ -581,6 +593,14 @@ video {
   max-width: 51.2rem;
 }
 
+.grow {
+  flex-grow: 1;
+}
+
+.items-center {
+  align-items: center;
+}
+
 .rounded-lg {
   border-radius: 0.8rem;
 }
@@ -594,12 +614,70 @@ video {
   background-color: rgb(255 255 255 / var(--tw-bg-opacity));
 }
 
+.fill-gray-50 {
+  fill: #f9fafb;
+}
+
+.fill-gray-500 {
+  fill: #6b7280;
+}
+
+.fill-gray-300 {
+  fill: #d1d5db;
+}
+
+.fill-gray-400 {
+  fill: #9ca3af;
+}
+
 .p-4 {
   padding: 1.6rem;
 }
 
+.p-6 {
+  padding: 2.4rem;
+}
+
+.py-6 {
+  padding-top: 2.4rem;
+  padding-bottom: 2.4rem;
+}
+
+.px-7 {
+  padding-left: 2.8rem;
+  padding-right: 2.8rem;
+}
+
 .pt-8 {
   padding-top: 3.2rem;
+}
+
+.pt-12 {
+  padding-top: 4.8rem;
+}
+
+.pt-20 {
+  padding-top: 8rem;
+}
+
+.text-md {
+  font-size: 1.5rem;
+}
+
+.text-lg {
+  font-size: 1.8rem;
+}
+
+.text-\[1\.6rem\] {
+  font-size: 1.6rem;
+}
+
+.text-\[1\.65rem\] {
+  font-size: 1.65rem;
+}
+
+.text-\[1\.7rem\] {
+  font-size: 1.7rem;
 }
 
 .shadow-lg {
@@ -608,8 +686,20 @@ video {
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 
+.shadow-xl {
+  --tw-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --tw-shadow-colored: 0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+
 .outline {
   outline-style: solid;
+}
+
+.blur-sm {
+  --tw-blur: blur(4px);
+  -webkit-filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
+          filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
 }
 
 .filter {
@@ -625,4 +715,17 @@ html {
 
 body {
   font-size: 1.5rem;
+}
+
+.focus\:border-none:focus {
+  border-style: none;
+}
+
+.focus-visible\:border-none:focus-visible {
+  border-style: none;
+}
+
+.focus-visible\:outline-none:focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
 }
