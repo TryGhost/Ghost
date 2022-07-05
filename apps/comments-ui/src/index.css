@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+:host {
+    /* Reset all CSS properties */
+    all: initial !important;
+}
+
 html {
     font-size: 62.5%;
 }
@@ -9,8 +14,3 @@ html {
 body {
     font-size: 1.5rem;
 }
-:host {
-    /* Reset all CSS properties */
-    all: initial;
-}
-
