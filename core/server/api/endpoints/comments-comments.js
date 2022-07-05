@@ -2,11 +2,13 @@ const Promise = require('bluebird');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
+const {identity} = require('lodash');
 const ALLOWED_INCLUDES = ['post', 'member'];
 const UNSAFE_ATTRS = ['status'];
 
 const messages = {
-    commentNotFound: 'Comment could not be found'
+    commentNotFound: 'Comment could not be found',
+    memberNotFound: 'Unable to find member'
 };
 
 module.exports = {
@@ -103,9 +105,6 @@ module.exports = {
                 include: ALLOWED_INCLUDES
             },
             data: {
-                member_id: {
-                    required: true
-                },
                 post_id: {
                     required: true
                 }
@@ -115,7 +114,17 @@ module.exports = {
             unsafeAttrs: UNSAFE_ATTRS
         },
         query(frame) {
-            return models.Comment.add(frame.data.comments[0], frame.options);
+            // TODO: move to comment service
+            const data = frame.data.comments[0];
+
+            if (frame.options?.context?.member?.id) {
+                data.member_id = frame.options.context.member.id;
+                return models.Comment.add(data, frame.options);
+            } else {
+                return Promise.reject(new errors.NotFoundError({
+                    message: tpl(messages.memberNotFound)
+                }));
+            }
         }
     },
 
