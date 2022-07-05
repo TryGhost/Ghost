@@ -9,3 +9,8 @@ html {
 body {
     font-size: 1.5rem;
 }
+:host {
+    /* Reset all CSS properties */
+    all: initial;
+}
+

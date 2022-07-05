@@ -165,16 +165,10 @@ export default class App extends React.Component {
             return null;
         }
 
-        const iFrameStyles = {
-            border: 'none',
-            width: '100%',
-            height: '420px'
-        };
-
         return (
             <SentryErrorBoundary dsn={this.props.sentryDsn}>
                 <AppContext.Provider value={this.getContextFromState()}>
-                    <CustomIFrame style={iFrameStyles}>
+                    <CustomIFrame>
                         <CommentsBox />
                     </CustomIFrame>
                 </AppContext.Provider>
