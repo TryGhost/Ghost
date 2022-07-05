@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-    <defs>
-        <style>.a{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px!important;}
-        </style>
-    </defs>
-    <title>check-circle-1</title>
-    <path class="a" d="M6,13.223,8.45,16.7a1.049,1.049,0,0,0,1.707.051L18,6.828"/>
-    <circle class="a" cx="12" cy="11.999" r="11.25"/>
-</svg>
