@@ -81,7 +81,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
 
     api.comments = {
         browse({page}) {
-            const limit = 15;
+            const limit = 5;
             const comments = (new Array(limit)).fill().map(() => {
                 return {
                     id: 'comment-' + Math.random() * 10000 + Date.now(),

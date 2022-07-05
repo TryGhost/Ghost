@@ -29,9 +29,9 @@ class Pagination extends React.Component {
         }
 
         return (
-            <div className="w-full rounded-md border p-3 mb-3 font-sans text-sm text-center" onClick={this.loadMore}>
+            <button className="w-full rounded-md border p-3 mb-3 font-sans text-sm text-center" onClick={this.loadMore}>
                 Show {left} more comments
-            </div>
+            </button>
         );
     }
 }
