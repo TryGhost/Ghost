@@ -21,6 +21,10 @@ module.exports = function setupAdminApp() {
         {maxAge: (configMaxAge || configMaxAge === 0) ? configMaxAge : constants.ONE_YEAR_MS, fallthrough: false}
     ));
 
+    adminApp.use('/auth-frame', serveStatic(
+        config.get('paths').adminAuthAssets
+    ));
+
     // Ember CLI's live-reload script
     if (config.get('env') === 'development') {
         adminApp.get('/ember-cli-live-reload.js', function emberLiveReload(req, res) {
