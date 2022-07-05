@@ -14,7 +14,8 @@ async function comments() {
         'ghost-comments': urlUtils.getSiteUrl(),
         api: urlUtils.urlFor('api', {type: 'content'}, true),
         key: frontendKey,
-        'comment-id': commentId
+        'comment-id': commentId,
+        'sentry-dsn': '' /* todo: insert sentry dsn key here */
     };
 
     let dataAttributes = '';
