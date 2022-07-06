@@ -32,7 +32,7 @@ class Comment extends React.Component {
             <div className="flex mb-4">
                 <div>
                     <div className="flex mb-2 space-x-4 justify-start items-center">
-                        <Avatar />
+                        <Avatar comment={comment} />
                         <div>
                             <h4 className="text-lg font-sans font-bold mb-1 tracking-tight dark:text-neutral-300">{comment.member.name}</h4>
                             <h6 className="text-xs text-neutral-400 font-sans">{formatRelativeTime(comment.created_at)}</h6>
@@ -41,8 +41,10 @@ class Comment extends React.Component {
                     <div className="ml-14 mb-4 font-sans leading-normal dark:text-neutral-300">
                         <p dangerouslySetInnerHTML={html} className="whitespace-pre-wrap"></p>
                     </div>
-                    <button onClick={this.toggleContextMenu}><MoreIcon className='gh-comments-icon gh-comments-icon-more' /></button>
-                    {this.state.isContextMenuOpen ? <CommentContextMenu comment={comment} /> : null}
+                    <div className="ml-14">
+                        <button onClick={this.toggleContextMenu}><MoreIcon className='gh-comments-icon gh-comments-icon-more' /></button>
+                        {this.state.isContextMenuOpen ? <CommentContextMenu comment={comment} /> : null}
+                    </div>
                 </div>
             </div>
         );
