@@ -131,9 +131,9 @@ function SearchBox() {
         };
     }, [dispatch]);
 
-    let className = 'z-10 relative flex items-center py-5 px-7 mt-10 md:mt-0 bg-white rounded-t-lg shadow';
+    let className = 'z-10 relative flex items-center py-5 px-4 md:px-7 mt-10 md:mt-0 bg-white rounded-t-lg shadow';
     if (!searchValue) {
-        className = 'z-10 relative flex items-center py-5 px-7 mt-10 md:mt-0 bg-white rounded-lg';
+        className = 'z-10 relative flex items-center py-5 px-4 md:px-7 mt-10 md:mt-0 bg-white rounded-lg';
     }
 
     return (
@@ -261,7 +261,7 @@ function AuthorListItem({author}) {
     const {name, profile_image: profileImage, url} = author;
     return (
         <div
-            className='py-[1rem] -mx-7 px-7 hover:bg-neutral-100 cursor-pointer flex items-center'
+            className='py-[1rem] -mx-4 md:-mx-7 px-4 md:px-7 hover:bg-neutral-100 cursor-pointer flex items-center'
             onClick={() => {
                 if (url) {
                     window.location.href = url;
@@ -381,7 +381,7 @@ function Search() {
                     }
                 }}
             >
-                <div className='bg-white w-full max-w-[95vw] max-w-lg rounded-lg shadow-xl m-auto relative animate-popup'>
+                <div className='bg-white w-full max-w-[95vw] md:max-w-lg rounded-lg shadow-xl m-auto relative animate-popup'>
                     <SearchBox />
                     <SearchResultBox />
                 </div>
