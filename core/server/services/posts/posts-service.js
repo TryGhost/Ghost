@@ -77,6 +77,20 @@ class PostsService {
     }
 
     /**
+     * Returns the most recently `published_at` post that was published or sent
+     * via email
+     */
+    async getMostRecentlyPublishedPost() {
+        const recentlyPublishedPost = await this.models.Post.findPage({
+            status: ['published', 'sent'],
+            order: 'published_at DESC',
+            limit: 1
+        });
+
+        return recentlyPublishedPost?.data[0];
+    }
+
+    /**
      * Calculates if the email should be tried to be sent out
      * @private
      * @param {String} currentStatus current status from the post model
