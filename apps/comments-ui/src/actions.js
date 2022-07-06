@@ -13,12 +13,13 @@ async function loadMoreComments({state, api}) {
 }
 
 async function addComment({state, api, data: comment}) {
-    await api.comments.add({comment});
+    const data = await api.comments.add({comment});
+    comment = data.comments[0];
 
     const commentStructured = {
         ...comment,
-        member: state.member,
-        created_at: new Date().toISOString()
+        // Temporary workaround for missing member relation (bug in API)
+        member: state.member
     };
     
     return {

@@ -115,7 +115,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 body: JSON.stringify(body)
             }).then(function (res) {
                 if (res.ok) {
-                    return 'Success';
+                    return res.json();
                 } else {
                     throw new Error('Failed to add comment');
                 }
