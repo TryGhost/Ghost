@@ -52,6 +52,3 @@ describe('Unit: canary/utils/serializers/output/utils/extra-attrs', function () 
         });
     });
 });
-
-
-
