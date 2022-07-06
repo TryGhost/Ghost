@@ -127,8 +127,13 @@ class PopupContent extends React.Component {
 
 function SearchBox() {
     const {searchValue, dispatch} = useContext(AppContext);
+    let className = 'z-10 relative flex items-center py-5 px-7 mt-10 md:mt-0 bg-white rounded-t-lg shadow';
+    if (!searchValue) {
+        className = 'z-10 relative flex items-center py-5 px-7 mt-10 md:mt-0 bg-white rounded-lg';
+    } 
+
     return (
-        <div className='flex items-center py-5 px-7 mt-0'>
+        <div className={className}>
             <SearchIcon className='mr-3 text-neutral-900' alt='Search' />
             <input
                 value={searchValue || ''}
@@ -329,7 +334,7 @@ function Results({posts, authors, tags}) {
         return null;
     }
     return (
-        <div className='overflow-y-auto max-h-[70vh]'>
+        <div className='overflow-y-auto max-h-[70vh] -mt-[1px]'>
             <AuthorResults authors={authors} />
             <TagResults tags={tags} />
             <PostResults posts={posts} />
