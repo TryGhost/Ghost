@@ -28,6 +28,8 @@ module.exports = function apiRoutes() {
     router.put('/posts/:id', mw.authAdminApi, http(api.posts.edit));
     router.del('/posts/:id', mw.authAdminApi, http(api.posts.destroy));
 
+    router.put('/comments/:id', mw.authAdminApi, http(api.comments.edit));
+
     // ## Pages
     router.get('/pages', mw.authAdminApi, http(api.pages.browse));
     router.post('/pages', mw.authAdminApi, http(api.pages.add));

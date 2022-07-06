@@ -70,6 +70,10 @@ const Comment = ghostBookshelf.Model.extend({
     async permissible(commentModelOrId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission, hasMemberPermission) {
         const self = this;
 
+        if (hasUserPermission) {
+            return true;
+        }
+
         if (_.isString(commentModelOrId)) {
             // Grab the original args without the first one
             const origArgs = _.toArray(arguments).slice(1);
