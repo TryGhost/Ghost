@@ -35,6 +35,7 @@ export default BaseModel.extend(ValidationEngine, {
     facebook: attr('facebook-url-user'),
     twitter: attr('twitter-url-user'),
     tour: attr('json-string'),
+    commentNotifications: attr(),
 
     ghostPaths: service(),
     ajax: service(),
