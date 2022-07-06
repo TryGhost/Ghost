@@ -8,6 +8,7 @@ class CommentsServiceWrapper {
         const {GhostMailer} = require('../mail');
         const mailer = new GhostMailer();
         const settingsCache = require('../../../shared/settings-cache');
+        const urlService = require('../url');
         const urlUtils = require('../../../shared/url-utils');
 
         this.api = new CommentsService({
@@ -16,6 +17,7 @@ class CommentsServiceWrapper {
             models,
             mailer,
             settingsCache,
+            urlService,
             urlUtils
         });
     }
