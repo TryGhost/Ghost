@@ -1,9 +1,11 @@
 const {promises: fs} = require('fs');
 const path = require('path');
+const {ghostMailer} = require('../newsletters');
 
 class CommentsService {
-    constructor({config, models, mailer, settingsCache, urlUtils}) {
+    constructor({config, logging, models, mailer, settingsCache, urlUtils}) {
         this.config = config;
+        this.logging = logging;
         this.models = models;
         this.mailer = mailer;
         this.settingsCache = settingsCache;
@@ -38,15 +40,28 @@ class CommentsService {
         return this.supportAddress || this.membersAddress;
     }
 
+    async sendMail(message) {
+        if (process.env.NODE_ENV !== 'production') {
+            this.logging.warn(message.text);
+        }
+
+        let msg = Object.assign({
+            from: this.notificationFromAddress,
+            forceTextContent: true
+        }, message);
+
+        return ghostMailer.send(msg);
+    }
+
     async sendNewCommentNotifications(comment) {
-        this.notifyPostAuthor(comment);
+        this.notifyPostAuthors(comment);
 
         if (comment.get('parent_id')) {
             this.notifyParentCommentAuthor(comment);
         }
     }
 
-    async notifyPostAuthor(comment) {
+    async notifyPostAuthors(comment) {
         const post = await this.models.Post.findOne({id: comment.get('post_id')}, {withRelated: ['authors']});
 
         for (const author of post.related('authors')) {
@@ -54,7 +69,6 @@ class CommentsService {
                 continue;
             }
 
-            const from = this.notificationFromAddress;
             const to = author.get('email');
             const subject = 'You have a new comment on one of your posts';
 
@@ -63,16 +77,16 @@ class CommentsService {
                 siteUrl: this.urlUtils.getSiteUrl(),
                 siteDomain: this.siteDomain,
                 accentColor: this.settingsCache.get('accent_color'),
-                fromEmail: from
+                fromEmail: this.notificationFromAddress
             };
 
-            const html = await this.renderEmailTemplate('new-comment', templateData);
+            const {html, text} = await this.renderEmailTemplate('new-comment', templateData);
 
-            this.mailer.send({
-                from,
+            this.sendMail({
                 to,
                 subject,
                 html,
+                text,
                 forceTextContent: true
             });
         }
@@ -86,11 +100,15 @@ class CommentsService {
         }
     }
 
-    async renderEmailTemplate(name, data) {
-        const templateSource = await fs.readFile(path.join(__dirname, './emails/', `${name}.hbs`), 'utf8');
-        const template = this.Handlebars.compile(Buffer.from(templateSource).toString());
+    async renderEmailTemplate(templateName, data) {
+        const htmlTemplateSource = await fs.readFile(path.join(__dirname, './emails/', `${templateName}.hbs`), 'utf8');
+        const htmlTemplate = this.Handlebars.compile(Buffer.from(htmlTemplateSource).toString());
+        const textTemplate = require(`./emails/${templateName}.txt.js`);
 
-        return template(data);
+        const html = htmlTemplate(data);
+        const text = textTemplate(data);
+
+        return {html, text};
     }
 }
 
