@@ -43,7 +43,7 @@ export default class App extends React.Component {
 
     handleSearchUrl() {
         const [path] = window.location.hash.substr(1).split('?');
-        if (path === '/sodo-search') {
+        if (path === '/search' || path === '/search/') {
             this.setState({
                 showPopup: true
             });
