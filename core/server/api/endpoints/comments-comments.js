@@ -2,7 +2,7 @@ const Promise = require('bluebird');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
-const ALLOWED_INCLUDES = ['post', 'member', 'likes'];
+const ALLOWED_INCLUDES = ['post', 'member', 'likes', 'replies'];
 const UNSAFE_ATTRS = ['status'];
 
 const messages = {
@@ -171,7 +171,7 @@ module.exports = {
                 };
 
                 const existing = await models.CommentLike.findOne(data, frame.options);
-                
+
                 if (existing) {
                     throw new errors.BadRequestError({
                         message: tpl(messages.alreadyLiked)
