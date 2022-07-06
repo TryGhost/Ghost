@@ -12,12 +12,12 @@ class AuthorContextMenu extends React.Component {
     }
 
     deleteComment(event) {
-        // todo
+        this.context.onAction('deleteComment', this.props.comment);
     }
 
     render() {
         return (
-            <div class="flex flex-col">
+            <div className="flex flex-col">
                 <button className="w-full mb-3 text-left">
                     Edit
                 </button>

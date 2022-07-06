@@ -43,10 +43,32 @@ async function hideComment({state, adminApi, data: comment}) {
     };
 }
 
+async function deleteComment({state, api, data: comment}) {
+    await api.comments.edit({
+        comment: {
+            id: comment.id,
+            status: 'deleted'
+        }
+    });
+
+    return {
+        comments: state.comments.map((c) => {
+            if (c.id === comment.id) {
+                return {
+                    ...c,
+                    status: 'deleted'
+                };
+            }
+            return c;
+        })
+    };
+}
+
 const Actions = {
     // Put your actions here
     addComment,
     hideComment,
+    deleteComment,
     loadMoreComments
 };
 

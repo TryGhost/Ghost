@@ -120,6 +120,26 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                     throw new Error('Failed to add comment');
                 }
             });
+        },
+        edit({comment}) {
+            const body = {
+                comments: [comment]
+            };
+            const url = endpointFor({type: 'members', resource: `comments/${comment.id}`});
+            return makeRequest({
+                url,
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            }).then(function (res) {
+                if (res.ok) {
+                    return res.json();
+                } else {
+                    throw new Error('Failed to edit comment');
+                }
+            });
         }
     };
 

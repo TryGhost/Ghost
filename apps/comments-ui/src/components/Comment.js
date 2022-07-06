@@ -28,6 +28,10 @@ class Comment extends React.Component {
         const comment = this.props.comment;
         const html = {__html: comment.html};
 
+        if (comment.status !== 'published') {
+            html.__html = '<i>This comment has been removed</i>';
+        }
+
         return (
             <div className="flex mb-8">
                 <div>
