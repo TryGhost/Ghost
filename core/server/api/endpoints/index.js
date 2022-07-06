@@ -181,6 +181,10 @@ module.exports = {
         return shared.pipeline(require('./newsletters'), localUtils);
     },
 
+    get comments() {
+        return shared.pipeline(require('./comments'), localUtils);
+    },
+
     /**
      * Content API Controllers
      *
