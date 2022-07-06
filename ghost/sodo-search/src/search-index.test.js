@@ -14,21 +14,15 @@ describe('search index', function () {
         const scope = nock('http://localhost/ghost/api/content')
             .get('/posts/?key=secret_key&limit=all&fields=id,slug,title,excerpt,url,updated_at,visibility&order=updated_at%20desc&formats=plaintext')
             .reply(200, {
-                posts: [{}]
+                posts: []
             })
             .get('/authors/?key=secret_key&limit=all&fields=id,slug,name,url,profile_image')
             .reply(200, {
-                authors: [{
-                    id: 'different_uniq',
-                    name: 'Barcelona Author'
-                }]
+                authors: []
             })
             .get('/tags/?key=secret_key&&limit=all&fields=id,slug,name,url')
             .reply(200, {
-                tags: [{
-                    id: 'uniq_tag',
-                    name: 'Barcelona Tag'
-                }]
+                tags: []
             });
 
         await searchIndex.init({apiUrl, apiKey});
