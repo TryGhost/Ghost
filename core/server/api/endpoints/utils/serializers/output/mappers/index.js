@@ -1,6 +1,7 @@
 module.exports = {
     actions: require('./actions'),
     authors: require('./authors'),
+    comments: require('./comments'),
     emails: require('./emails'),
     images: require('./images'),
     integrations: require('./integrations'),
