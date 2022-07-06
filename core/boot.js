@@ -271,6 +271,7 @@ async function initServices({config}) {
     const limits = require('./server/services/limits');
     const apiVersionCompatibility = require('./server/services/api-version-compatibility');
     const scheduling = require('./server/adapters/scheduling');
+    const comments = require('./server/services/comments');
 
     const urlUtils = require('./shared/url-utils');
 
@@ -293,7 +294,8 @@ async function initServices({config}) {
         apiVersionCompatibility.init(),
         scheduling.init({
             apiUrl: urlUtils.urlFor('api', {type: 'admin'}, true)
-        })
+        }),
+        comments.init()
     ]);
     debug('End: Services');
 
