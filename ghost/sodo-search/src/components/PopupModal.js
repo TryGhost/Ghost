@@ -350,7 +350,7 @@ function Results({posts, authors, tags}) {
         return null;
     }
     return (
-        <div className='overflow-y-auto max-h-[70vh] -mt-[1px]'>
+        <div className='overflow-y-auto max-h-[calc(100vh-212px)] sm:max-h-[70vh] -mt-[1px]'>
             <AuthorResults authors={authors} />
             <TagResults tags={tags} />
             <PostResults posts={posts} />
