@@ -4,8 +4,8 @@ import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import isNumber from 'ghost-admin/utils/isNumber';
 import validator from 'validator';
 import windowProxy from 'ghost-admin/utils/window-proxy';
+import {action, computed} from '@ember/object';
 import {alias, and, not, or, readOnly} from '@ember/object/computed';
-import {computed} from '@ember/object';
 import {isArray as isEmberArray} from '@ember/array';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
@@ -380,6 +380,10 @@ export default Controller.extend({
             });
         }
     },
+
+    toggleCommentNotifications: action(function (event) {
+        this.user.commentNotifications = event.target.checked;
+    }),
 
     _exportDb(filename) {
         this.utils.downloadFile(`${this.ghostPaths.url.api('db')}?filename=${filename}`);
