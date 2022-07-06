@@ -1,6 +1,8 @@
 import Frame from './Frame';
 import AppContext from '../AppContext';
 import {ReactComponent as SearchIcon} from '../icons/search.svg';
+import {ReactComponent as ClearIcon} from '../icons/delete.svg';
+import {ReactComponent as CloseIcon} from '../icons/close.svg';
 import {useContext} from 'react';
 
 const React = require('react');
@@ -124,7 +126,7 @@ class PopupContent extends React.Component {
 function SearchBox() {
     const {searchValue, dispatch} = useContext(AppContext);
     return (
-        <div className='flex items-center py-5 px-7'>
+        <div className='flex items-center py-6 px-7 mt-10 md:mt-0'>
             <SearchIcon className='mr-3 text-neutral-900' alt='Search' />
             <input
                 autoFocus
@@ -340,7 +342,8 @@ function Search() {
     return (
         <>
             <div className='bg-[rgba(0,0,0,0.2)] h-screen w-screen pt-20 antialiased z-50 relative'>
-                <div className='bg-white max-w-lg rounded-lg shadow-xl m-auto'>
+                <div className='bg-white max-w-lg rounded-t-2xl md:rounded-lg shadow-xl m-auto absolute top-20 bottom-0 left-0 right-0 md:relative'>
+                    <CloseIcon className='ml-3 text-neutral-300 cursor-pointer w-5 h-5 absolute right-6 top-6 md:hidden' alt='Close' />
                     <SearchBox />
                     <SearchResultBox />
                 </div>
