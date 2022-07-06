@@ -25,11 +25,10 @@ class Comment extends React.Component {
 
     render() {
         const comment = this.props.comment;
-
         const html = {__html: comment.html};
 
         return (
-            <div className="flex mb-4">
+            <div className="flex mb-6">
                 <div>
                     <div className="flex mb-2 space-x-4 justify-start items-center">
                         <Avatar comment={comment} />
@@ -38,11 +37,11 @@ class Comment extends React.Component {
                             <h6 className="text-xs text-neutral-400 font-sans">{formatRelativeTime(comment.created_at)}</h6>
                         </div>
                     </div>
-                    <div className="ml-14 mb-4 font-sans leading-normal dark:text-neutral-300">
+                    <div className="ml-14 mb-2 font-sans leading-normal dark:text-neutral-300">
                         <p dangerouslySetInnerHTML={html} className="whitespace-pre-wrap"></p>
                     </div>
                     <div className="ml-14">
-                        <button onClick={this.toggleContextMenu}><MoreIcon className='gh-comments-icon gh-comments-icon-more' /></button>
+                        <button onClick={this.toggleContextMenu}><MoreIcon className='gh-comments-icon gh-comments-icon-more -m-[3px]' /></button>
                         {this.state.isContextMenuOpen ? <CommentContextMenu comment={comment} /> : null}
                     </div>
                 </div>
