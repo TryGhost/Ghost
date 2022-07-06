@@ -269,7 +269,7 @@ function AuthorAvatar({name, avatar}) {
         );
     }
     return (
-        <div className='rounded-full bg-neutral-200 w-6 h-6 mr-2 flex items-center justify-center'><span className="text-neutral-500">{Character}</span></div> 
+        <div className='rounded-full bg-neutral-200 w-6 h-6 mr-2 flex items-center justify-center font-bold'><span className="text-neutral-400">{Character}</span></div> 
     );
 }
 
