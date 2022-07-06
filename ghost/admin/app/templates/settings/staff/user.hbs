@@ -297,6 +297,31 @@
                             </p>
                         </GhFormGroup>
 
+                        {{#if (feature 'comments')}}
+                        <h4 class="user-settings-heading">Email notifications</h4>
+                        <GhFormGroup @errors={{this.user.errors}} @hasValidated={{this.user.hasValidated}} @property="email">
+                            <div class="user-setting-toggle">
+                                <div>
+                                    <label for="user-email">Comments</label>
+                                    <p>Send notifications on members commenting on your posts</p>
+                                </div>
+                                <div class="for-switch">
+                                    <label class="switch" for={{notifications.comment}}>
+                                        <Input
+                                            {{!-- @checked={{newsletter.subscribed}} --}}
+                                            @type="checkbox"
+                                            id={{notifications.comment}}
+                                            name="comment-emails"
+                                            data-test-checkbox="member-subscribed"
+                                            {{!-- {{on "click" (fn this.updateNewsletterPreference newsletter)}} --}}
+                                        />
+                                        <span class="input-toggle-component"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </GhFormGroup>
+                        {{/if}}
+
                     </fieldset>
                 </div>
 
