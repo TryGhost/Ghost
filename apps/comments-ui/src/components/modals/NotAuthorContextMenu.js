@@ -1,32 +1,29 @@
 import React from 'react';
 import AppContext from '../../AppContext';
 
-class AuthorContextMenu extends React.Component {
+class NotAuthorContextMenu extends React.Component {
     static contextType = AppContext;
 
     constructor(props) {
         super(props);
         this.state = {};
 
-        this.deleteComment = this.deleteComment.bind(this);
+        this.reportComment = this.reportComment.bind(this);
     }
 
-    deleteComment(event) {
+    reportComment(event) {
         // todo
     }
 
     render() {
         return (
             <div className='bg-white absolute'>
-                <button>
-                    Edit
-                </button>
-                <button onClick={this.deleteComment}>
-                    Delete
+                <button onClick={this.reportComment}>
+                    Report comment
                 </button>
             </div>
         );
     }
 }
   
-export default AuthorContextMenu;
+export default NotAuthorContextMenu;

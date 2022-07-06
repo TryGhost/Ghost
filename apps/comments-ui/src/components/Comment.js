@@ -2,8 +2,8 @@ import {formatRelativeTime} from '../utils/helpers';
 import {ReactComponent as MoreIcon} from '../images/icons/more.svg';
 import React from 'react';
 import AppContext from '../AppContext';
-import AuthorContextMenu from './modals/AuthorContextMenu';
 import {getInitials} from '../utils/helpers';
+import CommentContextMenu from './modals/CommentContextMenu';
 
 class Comment extends React.Component {
     static contextType = AppContext;
@@ -52,7 +52,7 @@ class Comment extends React.Component {
                         <p dangerouslySetInnerHTML={html} className="whitespace-pre-wrap"></p>
                     </div>
                     <button onClick={this.toggleContextMenu}><MoreIcon className='gh-comments-icon gh-comments-icon-more' /></button>
-                    {this.state.isContextMenuOpen ? <AuthorContextMenu /> : null}
+                    {this.state.isContextMenuOpen ? <CommentContextMenu comment={comment} /> : null}
                 </div>
             </div>
         );

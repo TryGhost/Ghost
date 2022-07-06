@@ -1,7 +1,7 @@
 import React from 'react';
 import AppContext from '../../AppContext';
 
-class AuthorContextMenu extends React.Component {
+class AdminContextMenu extends React.Component {
     static contextType = AppContext;
 
     constructor(props) {
@@ -18,15 +18,12 @@ class AuthorContextMenu extends React.Component {
     render() {
         return (
             <div className='bg-white absolute'>
-                <button>
-                    Edit
-                </button>
                 <button onClick={this.deleteComment}>
-                    Delete
+                    Hide comment
                 </button>
             </div>
         );
     }
 }
   
-export default AuthorContextMenu;
+export default AdminContextMenu;
