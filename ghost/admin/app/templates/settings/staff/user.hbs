@@ -292,7 +292,7 @@
                             />
                             <GhErrorMessage @errors={{this.user.errors}} @property="bio" data-test-error="user-bio" />
                             <p>
-                                Recommended: <strong>200</strong> characters. 
+                                Recommended: <strong>200</strong> characters.
                                 You've used {{gh-count-down-characters this.user.bio 200}}
                             </p>
                         </GhFormGroup>
@@ -306,15 +306,15 @@
                                     <p>Send notifications on members commenting on your posts</p>
                                 </div>
                                 <div class="for-switch">
-                                    <label class="switch" for={{notifications.comment}}>
-                                        <Input
-                                            {{!-- @checked={{newsletter.subscribed}} --}}
-                                            @type="checkbox"
-                                            id={{notifications.comment}}
-                                            name="comment-emails"
-                                            data-test-checkbox="member-subscribed"
-                                            {{!-- {{on "click" (fn this.updateNewsletterPreference newsletter)}} --}}
-                                        />
+                                    <label class="switch" for="comment-notifications">
+                                        <input
+                                            id="comment-notifications"
+                                            type="checkbox"
+                                            checked={{this.user.commentNotifications}}
+                                            class="gh-input"
+                                            {{on "change" this.toggleCommentNotifications}}
+                                            data-test-checkbox="comment-notifications"
+                                        >
                                         <span class="input-toggle-component"></span>
                                     </label>
                                 </div>
