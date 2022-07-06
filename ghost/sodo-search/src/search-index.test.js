@@ -22,6 +22,13 @@ describe('search index', function () {
                     id: 'different_uniq',
                     name: 'Barcelona Author'
                 }]
+            })
+            .get('/tags/?key=secret_key&&limit=all&fields=id,slug,name,url')
+            .reply(200, {
+                tags: [{
+                    id: 'uniq_tag',
+                    name: 'Barcelona Tag'
+                }]
             });
 
         await searchIndex.init({apiUrl, apiKey});
@@ -51,6 +58,15 @@ describe('search index', function () {
                     name: 'Barcelona Author',
                     profile_image: 'https://url_to_avatar/barcelona.png'
                 }]
+            })
+            .get('/tags/?key=secret_key&&limit=all&fields=id,slug,name,url')
+            .reply(200, {
+                tags: [{
+                    id: 'uniq_tag',
+                    slug: 'barcelona-tag',
+                    name: 'Barcelona Tag',
+                    url: 'http://localhost/ghost/tags/barcelona-tag'
+                }]
             });
 
         await searchIndex.init({apiUrl, apiKey});
@@ -58,9 +74,16 @@ describe('search index', function () {
         let searchResults = searchIndex.search('Barcelona');
         expect(searchResults.posts.length).toEqual(1);
         expect(searchResults.posts[0].title).toEqual('Awesome Barcelona Life');
+
+        expect(searchResults.authors.length).toEqual(1);
         expect(searchResults.authors[0].name).toEqual('Barcelona Author');
+
+        expect(searchResults.tags.length).toEqual(1);
+        expect(searchResults.tags[0].name).toEqual('Barcelona Tag');
 
         searchResults = searchIndex.search('Nothing like this');
         expect(searchResults.posts.length).toEqual(0);
+        expect(searchResults.authors.length).toEqual(0);
+        expect(searchResults.tags.length).toEqual(0);
     });
 });

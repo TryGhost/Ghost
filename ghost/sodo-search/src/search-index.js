@@ -36,12 +36,22 @@ export default class SearchIndex {
         });
     }
 
+    #updateTagsIndex(data) {
+        data.tags.forEach((tag) => {
+            this.tagsIndex.addDoc({
+                id: tag.id,
+                name: tag.name
+            });
+        });
+    }
+
     async init() {
         // remove default stop words to search of *any* word
         elasticlunr.clearStopWords();
 
         const postsAPIUrl = `${this.apiUrl}/posts/?key=${this.apiKey}&limit=all&fields=id,slug,title,excerpt,url,updated_at,visibility&order=updated_at%20desc&formats=plaintext`;
         const authorsAPIUrl = `${this.apiUrl}/authors/?key=${this.apiKey}&limit=all&fields=id,slug,name,profile_image`;
+        const tagsAPIUrl = `${this.apiUrl}/tags/?key=${this.apiKey}&limit=all&fields=id,slug,name,url`;
 
         const indexDump = JSON.parse(this.storage.getItem('ease_search_index'));
 
@@ -71,6 +81,17 @@ export default class SearchIndex {
 
                 this.#updateAuthorsIndex(authors);
             }
+
+            const tagsResponse = await fetch(tagsAPIUrl);
+            const tags = await tagsResponse.json();
+
+            if (tags.tags.length > 0) {
+                this.tagsIndex = elasticlunr();
+                this.tagsIndex.addField('name');
+                this.tagsIndex.setRef('id');
+
+                this.#updateTagsIndex(tags);
+            }
         } else {
             this.postsIndex = elasticlunr.Index.load(indexDump);
 
@@ -88,6 +109,7 @@ export default class SearchIndex {
     search(value) {
         const posts = this.postsIndex.search(value, {expand: true});
         const authors = this.authorsIndex.search(value, {expand: true});
+        const tags = this.tagsIndex.search(value, {expand: true});
 
         return {
             posts: posts.map((doc) => {
@@ -95,6 +117,9 @@ export default class SearchIndex {
             }),
             authors: authors.map((doc) => {
                 return this.authorsIndex.documentStore.docs[doc.ref];
+            }),
+            tags: tags.map((doc) => {
+                return this.tagsIndex.documentStore.docs[doc.ref];
             })
         };
     }
