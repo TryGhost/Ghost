@@ -3,7 +3,7 @@ import React from 'react';
 import AppContext from '../AppContext';
 import Avatar from './Avatar';
 import Like from './Like';
-// import Reply from './Reply';
+import Reply from './Reply';
 import More from './More';
 import EditForm from './EditForm';
 import Replies from './Replies';
@@ -44,6 +44,7 @@ class Comment extends React.Component {
 
     render() {
         const comment = this.props.comment;
+        const hasReplies = comment.replies && comment.replies.length > 0;
         const html = {__html: comment.html};
 
         if (comment.status !== 'published') {
@@ -56,7 +57,7 @@ class Comment extends React.Component {
             );
         } else {
             return (
-                <div className="flex flex-col   ">
+                <div className={`flex flex-col ${!hasReplies ? 'mb-10' : ''}`}>
                     <div>
                         <div className="flex mb-2 space-x-4 justify-start items-center">
                             <Avatar comment={comment} />
@@ -68,17 +69,17 @@ class Comment extends React.Component {
                         <div className="ml-14 mb-2.5 pr-4 font-sans leading-normal dark:text-neutral-300">
                             <p dangerouslySetInnerHTML={html} className="whitespace-pre-wrap"></p>
                         </div>
-
-                        <div className="ml-14 flex gap-5">
+                        <div className="ml-14 flex gap-4">
                             <Like comment={comment} />
-                        
-                            {/* <Reply comment={comment} /> */}
+                            <Reply comment={comment} />
                             <More comment={comment} show={this.hasMoreContextMenu} toggleEdit={this.toggleEditMode} />
                         </div>
-                    </div>
-                    <div className="ml-14 mt-8">
-                        {comment.replies && comment.replies.length > 0 && <Replies replies={comment.replies} />}
-                    </div>
+                    </div>    
+                    {hasReplies && 
+                        <div className="ml-14 mt-10">
+                            <Replies replies={comment.replies} />
+                        </div>
+                    }
                 </div>
             );
         }

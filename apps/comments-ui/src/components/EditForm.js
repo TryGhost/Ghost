@@ -50,8 +50,8 @@ class EditForm extends React.Component {
                         <div className="relative w-full">
                             <textarea className="w-full resize-none rounded-md border h-32 p-3 font-sans mb-1 leading-normal focus:outline-0 dark:bg-[rgba(255,255,255,0.08)] dark:border-none dark:text-neutral-300" value={this.state.message} onChange={this.handleChange} autofocus="true" />
                             <div className="flex flex-start">
-                                <button type="submit" className="rounded-md border p-2 font-sans text-sm text-center bg-black font-semibold text-white dark:bg-[rgba(255,255,255,0.8)] dark:text-neutral-800">Edit comment</button>
-                                <button className="font-sans text-sm font-medium ml-2.5 text-neutral-500" onClick={this.props.toggle}>Cancel</button>
+                                <button type="submit" className="rounded border py-1 px-4 font-sans text-sm text-center bg-black font-semibold text-white dark:bg-[rgba(255,255,255,0.8)] dark:text-neutral-800">Edit comment</button>
+                                <button className="font-sans text-sm font-medium ml-2.5 text-neutral-500 dark:text-neutral-400" onClick={this.props.toggle}>Cancel</button>
                             </div>
                         </div>
                     </div>
