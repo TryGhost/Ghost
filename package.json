@@ -55,7 +55,7 @@
     "cli": "^1.17.0"
   },
   "dependencies": {
-    "@sentry/node": "6.19.7",
+    "@sentry/node": "7.5.1",
     "@tryghost/adapter-manager": "0.2.32",
     "@tryghost/admin-api-schema": "4.0.0",
     "@tryghost/api-version-compatibility-service": "0.4.3",
