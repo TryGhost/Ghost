@@ -29,7 +29,7 @@ class Pagination extends React.Component {
         }
 
         return (
-            <button className="w-full rounded-md border p-3 font-sans text-sm text-center dark:border-neutral-500 dark:text-white" onClick={this.loadMore}>
+            <button className="w-full rounded-md border p-3 mb-6 font-sans text-sm text-center dark:border-neutral-500 dark:text-white" onClick={this.loadMore}>
                 Show {left} previous comments
             </button>
         );

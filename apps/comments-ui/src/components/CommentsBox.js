@@ -1,7 +1,7 @@
 import React from 'react';
 import AppContext from '../AppContext';
 import NotSignedInBox from './NotSignedInBox';
-import Form from './Form';
+import AddForm from './AddForm';
 import Comment from './Comment';
 import Pagination from './Pagination';
 
@@ -48,11 +48,11 @@ class CommentsBox extends React.Component {
         return (
             <section className={containerClass}>
                 <Pagination />
-                <div className="mt-6">
+                <div className={!this.context.pagination ? 'mt-4' : ''}>
                     {comments}
                 </div>
                 <div>
-                    { this.context.member ? <Form /> : <NotSignedInBox /> }
+                    { this.context.member ? <AddForm /> : <NotSignedInBox /> }
                 </div>
             </section>
         );
