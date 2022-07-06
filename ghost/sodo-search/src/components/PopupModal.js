@@ -2,7 +2,7 @@ import Frame from './Frame';
 import AppContext from '../AppContext';
 import {ReactComponent as SearchIcon} from '../icons/search.svg';
 import {ReactComponent as CloseIcon} from '../icons/close.svg';
-import {useContext, useEffect, useRef} from 'react';
+import {useContext, useEffect, useMemo, useRef, useState} from 'react';
 import {getBundledCssLink} from '../utils/helpers';
 
 const React = require('react');
@@ -147,6 +147,11 @@ function SearchBox() {
                         searchValue: e.target.value
                     });
                 }}
+                onKeyDown={(e) => {
+                    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                        e.preventDefault();
+                    }
+                }}
                 className='grow -my-5 py-5 -ml-3 pl-3 text-[1.65rem] focus-visible:outline-none placeholder:text-gray-400'
                 placeholder='Search posts, tags, authors..'
             />
@@ -175,15 +180,22 @@ function ClearButton() {
     );
 }
 
-function TagListItem({tag}) {
-    const {name, url} = tag;
+function TagListItem({tag, selectedResult, setSelectedResult}) {
+    const {name, url, id} = tag;
+    let className = 'flex items-center py-3 -mx-4 sm:-mx-7 px-4 sm:px-7 cursor-pointer';
+    if (id === selectedResult) {
+        className += ' bg-neutral-100';
+    }
     return (
         <div
-            className='flex items-center py-3 -mx-4 sm:-mx-7 px-4 sm:px-7 hover:bg-gray-100 cursor-pointer'
+            className={className}
             onClick={() => {
                 if (url) {
                     window.location.href = url;
                 }
+            }}
+            onMouseEnter={() => {
+                setSelectedResult(id);
             }}
         >
             <p className='mr-2 text-sm font-bold text-neutral-400'>#</p>
@@ -192,7 +204,7 @@ function TagListItem({tag}) {
     );
 }
 
-function TagResults({tags}) {
+function TagResults({tags, selectedResult, setSelectedResult}) {
     if (!tags?.length) {
         return null;
     }
@@ -202,6 +214,7 @@ function TagResults({tags}) {
             <TagListItem
                 key={d.name}
                 tag={d}
+                {...{selectedResult, setSelectedResult}}
             />
         );
     });
@@ -213,29 +226,42 @@ function TagResults({tags}) {
     );
 }
 
-function PostListItem({post}) {
-    const {title, excerpt, url} = post;
+function PostListItem({post, selectedResult, setSelectedResult}) {
+    const {title, excerpt, url, id} = post;
+    let className = 'py-3 -mx-4 sm:-mx-7 px-4 sm:px-7 cursor-pointer';
+    if (id === selectedResult) {
+        className += ' bg-neutral-100';
+    }
     return (
-        <div className='py-3 -mx-4 sm:-mx-7 px-4 sm:px-7 hover:bg-neutral-100 cursor-pointer' onClick={() => {
-            if (url) {
-                window.location.href = url;
-            }
-        }}>
+        <div
+            className={className}
+            onClick={() => {
+                if (url) {
+                    window.location.href = url;
+                }
+            }}
+            onMouseEnter={() => {
+                setSelectedResult(id);
+            }}
+        >
             <h2 className='text-[1.65rem] font-medium leading-tight text-neutral-900'>{title}</h2>
             <p className='text-neutral-400 leading-normal text-sm mt-0 mb-0 truncate'>{excerpt}</p>
         </div>
     );
 }
 
-function ShowMoreButtom() {
+function ShowMoreButton() {
     return (
-        <button className='w-full my-3 p-[1rem] border border-neutral-200 hover:border-neutral-300 text-neutral-800 hover:text-black font-semibold rounded transition duration-150 ease hover:ease'>
+        <button
+            className='w-full my-3 p-[1rem] border border-neutral-200 hover:border-neutral-300 text-neutral-800 hover:text-black font-semibold rounded transition duration-150 ease hover:ease'
+
+        >
             Show more results
         </button>
     );
 }
 
-function PostResults({posts}) {
+function PostResults({posts, selectedResult, setSelectedResult}) {
     if (!posts?.length) {
         return null;
     }
@@ -245,6 +271,7 @@ function PostResults({posts}) {
             <PostListItem
                 key={d.title}
                 post={d}
+                {...{selectedResult, setSelectedResult}}
             />
         );
     });
@@ -252,20 +279,27 @@ function PostResults({posts}) {
         <div className='border-t border-neutral-200 py-3 px-4 sm:px-7'>
             <h1 className='uppercase text-xs text-neutral-400 font-semibold mb-1 tracking-wide'>Posts</h1>
             {PostItems}
-            <ShowMoreButtom />
+            <ShowMoreButton />
         </div>
     );
 }
 
-function AuthorListItem({author}) {
-    const {name, profile_image: profileImage, url} = author;
+function AuthorListItem({author, selectedResult, setSelectedResult}) {
+    const {name, profile_image: profileImage, url, id} = author;
+    let className = 'py-[1rem] -mx-4 sm:-mx-7 px-4 sm:px-7 cursor-pointer flex items-center';
+    if (id === selectedResult) {
+        className += ' bg-neutral-100';
+    }
     return (
         <div
-            className='py-[1rem] -mx-4 sm:-mx-7 px-4 sm:px-7 hover:bg-neutral-100 cursor-pointer flex items-center'
+            className={className}
             onClick={() => {
                 if (url) {
                     window.location.href = url;
                 }
+            }}
+            onMouseEnter={() => {
+                setSelectedResult(id);
             }}
         >
             <AuthorAvatar name={name} avatar={profileImage} />
@@ -287,7 +321,7 @@ function AuthorAvatar({name, avatar}) {
     );
 }
 
-function AuthorResults({authors}) {
+function AuthorResults({authors, selectedResult, setSelectedResult}) {
     if (!authors?.length) {
         return null;
     }
@@ -297,6 +331,7 @@ function AuthorResults({authors}) {
             <AuthorListItem
                 key={d.name}
                 author={d}
+                {...{selectedResult, setSelectedResult}}
             />
         );
     });
@@ -346,14 +381,73 @@ function SearchResultBox() {
 
 function Results({posts, authors, tags}) {
     const {searchValue} = useContext(AppContext);
+
+    const allResults = useMemo(() => {
+        return [
+            ...authors,
+            ...tags,
+            ...posts
+        ];
+    }, [authors, tags, posts]);
+
+    const defaultId = allResults?.[0]?.id || null;
+    const [selectedResult, setSelectedResult] = useState(defaultId);
+    const containerRef = useRef(null);
+
+    useEffect(() => {
+        setSelectedResult(allResults?.[0]?.id || null);
+    }, [allResults]);
+
+    useEffect(() => {
+        let keyUphandler = (event) => {
+            const selectedResultIdx = allResults.findIndex((d) => {
+                return d.id === selectedResult;
+            });
+            let nextResult = allResults[selectedResultIdx + 1];
+            let prevResult = allResults[selectedResultIdx - 1];
+            if (event.key === 'ArrowUp' && prevResult) {
+                setSelectedResult(prevResult?.id);
+            } else if (event.key === 'ArrowDown' && nextResult) {
+                setSelectedResult(nextResult?.id);
+            }
+
+            if (event.key === 'Enter') {
+                const selectedResultData = allResults.find((d) => {
+                    return d.id === selectedResult;
+                });
+                window.location.href = selectedResultData?.url;
+            }
+        };
+
+        const containeRefNode = containerRef?.current;
+        containeRefNode?.ownerDocument.removeEventListener('keyup', keyUphandler);
+        containeRefNode?.ownerDocument.addEventListener('keyup', keyUphandler);
+
+        return () => {
+            containeRefNode?.ownerDocument?.removeEventListener('keyup', keyUphandler);
+        };
+    }, [allResults, selectedResult]);
+
     if (!searchValue) {
         return null;
     }
     return (
-        <div className='overflow-y-auto max-h-[calc(100vh-212px)] sm:max-h-[70vh] -mt-[1px]'>
-            <AuthorResults authors={authors} />
-            <TagResults tags={tags} />
-            <PostResults posts={posts} />
+        <div className='overflow-y-auto max-h-[calc(100vh-212px)] sm:max-h-[70vh] -mt-[1px]' ref={containerRef}>
+            <AuthorResults
+                authors={authors}
+                selectedResult={selectedResult}
+                setSelectedResult={setSelectedResult}
+            />
+            <TagResults
+                tags={tags}
+                selectedResult={selectedResult}
+                setSelectedResult={setSelectedResult}
+            />
+            <PostResults
+                posts={posts}
+                selectedResult={selectedResult}
+                setSelectedResult={setSelectedResult}
+            />
         </div>
     );
 }
