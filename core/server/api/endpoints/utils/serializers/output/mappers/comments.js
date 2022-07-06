@@ -16,7 +16,7 @@ const memberFields = [
     'avatar_image'
 ];
 
-module.exports = (model, frame) => {
+const commentMapper = (model, frame) => {
     const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
 
     const response = _.pick(jsonModel, commentFields);
@@ -33,6 +33,11 @@ module.exports = (model, frame) => {
         response.likes_count = 0;
     }
 
+    if (jsonModel.replies) {
+        response.replies = jsonModel.replies.map(reply => commentMapper(reply, frame));
+    }
+
+    // todo
     response.liked = false;
     if (jsonModel.likes && frame.original.context.member && frame.original.context.member.id) {
         const id = frame.original.context.member.id;
@@ -41,3 +46,5 @@ module.exports = (model, frame) => {
 
     return response;
 };
+
+module.exports = commentMapper;

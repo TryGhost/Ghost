@@ -35,6 +35,10 @@ const Comment = ghostBookshelf.Model.extend({
         return this.hasMany('CommentLike', 'comment_id');
     },
 
+    replies() {
+        return this.hasMany('Comment', 'parent_id');
+    },
+
     emitChange: function emitChange(event, options) {
         const eventToTrigger = 'comment' + '.' + event;
         ghostBookshelf.Model.prototype.emitChange.bind(this)(this, eventToTrigger, options);
@@ -124,7 +128,7 @@ const Comment = ghostBookshelf.Model.extend({
     defaultRelations: function defaultRelations(methodName, options) {
         // @todo: the default relations are not working for 'add' when we add it below
         if (['findAll', 'findPage', 'edit', 'findOne'].indexOf(methodName) !== -1) {
-            options.withRelated = _.union(['member', 'likes'], options.withRelated || []);
+            options.withRelated = _.union(['member', 'likes', 'replies', 'replies.member', 'replies.likes'], options.withRelated || []);
         }
 
         return options;
