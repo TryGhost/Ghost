@@ -1,10 +1,10 @@
 import {formatRelativeTime} from '../utils/helpers';
-import {ReactComponent as LikeIcon} from '../images/icons/like.svg';
-import {ReactComponent as MoreIcon} from '../images/icons/more.svg';
 import React from 'react';
 import AppContext from '../AppContext';
-import CommentContextMenu from './modals/CommentContextMenu';
 import Avatar from './Avatar';
+import CommentContextMenu from './modals/CommentContextMenu';
+import {ReactComponent as LikeIcon} from '../images/icons/like.svg';
+import {ReactComponent as MoreIcon} from '../images/icons/more.svg';
 
 class Comment extends React.Component {
     static contextType = AppContext;
