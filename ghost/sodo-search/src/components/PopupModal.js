@@ -222,6 +222,14 @@ function PostListItem({post}) {
     );
 }
 
+function ShowMoreButtom() {
+    return (
+        <button className='w-full my-3 p-[1rem] border border-neutral-200 hover:border-neutral-300 text-neutral-800 hover:text-black font-semibold rounded transition duration-150 ease hover:ease'>
+            Show more results
+        </button>
+    );
+}
+
 function PostResults({posts}) {
     if (!posts?.length) {
         return null;
@@ -239,6 +247,7 @@ function PostResults({posts}) {
         <div className='border-t border-neutral-200 py-3 px-7'>
             <h1 className='uppercase text-xs text-neutral-400 font-semibold mb-1 tracking-wide'>Posts</h1>
             {PostItems}
+            <ShowMoreButtom />
         </div>
     );
 }
@@ -247,7 +256,7 @@ function AuthorListItem({author}) {
     const {name, profile_image: profileImage, url} = author;
     return (
         <div
-            className='py-3 -mx-7 px-7 hover:bg-neutral-100 cursor-pointer flex items-center'
+            className='py-[1rem] -mx-7 px-7 hover:bg-neutral-100 cursor-pointer flex items-center'
             onClick={() => {
                 if (url) {
                     window.location.href = url;
@@ -265,11 +274,11 @@ function AuthorAvatar({name, avatar}) {
     const Character = name.charAt(0);
     if (Avatar) {
         return (
-            <img className='rounded-full bg-neutral-300 w-6 h-6 mr-2 object-cover' src={avatar} alt={name}/>
+            <img className='rounded-full bg-neutral-300 w-7 h-7 mr-2 object-cover' src={avatar} alt={name}/>
         );
     }
     return (
-        <div className='rounded-full bg-neutral-200 w-6 h-6 mr-2 flex items-center justify-center font-bold'><span className="text-neutral-400">{Character}</span></div> 
+        <div className='rounded-full bg-neutral-200 w-7 h-7 mr-2 flex items-center justify-center font-bold'><span className="text-neutral-400">{Character}</span></div> 
     );
 }
 
