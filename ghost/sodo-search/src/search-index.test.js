@@ -2,30 +2,26 @@ import SearchIndex from './search-index';
 import nock from 'nock';
 
 describe('search index', function () {
-    afterEach(function () {
-        localStorage.clear();
-    });
-
     test('initializes search index', async () => {
-        const apiUrl = 'http://localhost/ghost/api/content';
-        const apiKey = 'secret_key';
-        const searchIndex = new SearchIndex({apiUrl, apiKey, storage: localStorage});
+        const siteURL = 'http://localhost';
+        const apiKey = '69010382388f9de5869ad6e558';
+        const searchIndex = new SearchIndex({siteURL, apiKey, storage: localStorage});
 
         const scope = nock('http://localhost/ghost/api/content')
-            .get('/posts/?key=secret_key&limit=all&fields=id,slug,title,excerpt,url,updated_at,visibility&order=updated_at%20desc&formats=plaintext')
+            .get('/posts/?key=69010382388f9de5869ad6e558&limit=all&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC&formats=plaintext')
             .reply(200, {
                 posts: []
             })
-            .get('/authors/?key=secret_key&limit=all&fields=id,slug,name,url,profile_image')
+            .get('/authors/?key=69010382388f9de5869ad6e558&limit=all&fields=id,slug,name,url,profile_image')
             .reply(200, {
                 authors: []
             })
-            .get('/tags/?key=secret_key&&limit=all&fields=id,slug,name,url')
+            .get('/tags/?key=69010382388f9de5869ad6e558&&limit=all&fields=id,slug,name,url')
             .reply(200, {
                 tags: []
             });
 
-        await searchIndex.init({apiUrl, apiKey});
+        await searchIndex.init({siteURL, apiKey});
 
         expect(scope.isDone()).toBeTruthy();
 
@@ -37,12 +33,12 @@ describe('search index', function () {
     });
 
     test('allows to search for indexed posts and authors', async () => {
-        const apiUrl = 'http://localhost/ghost/api/content';
-        const apiKey = 'secret_key';
-        const searchIndex = new SearchIndex({apiUrl, apiKey, storage: localStorage});
+        const siteURL = 'http://localhost';
+        const apiKey = '69010382388f9de5869ad6e558';
+        const searchIndex = new SearchIndex({siteURL, apiKey, storage: localStorage});
 
         nock('http://localhost/ghost/api/content')
-            .get('/posts/?key=secret_key&limit=all&fields=id,slug,title,excerpt,url,updated_at,visibility&order=updated_at%20desc&formats=plaintext')
+            .get('/posts/?key=69010382388f9de5869ad6e558&limit=all&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC&formats=plaintext')
             .reply(200, {
                 posts: [{
                     id: 'sounique',
@@ -51,7 +47,7 @@ describe('search index', function () {
                     url: 'http://localhost/ghost/awesome-barcelona-life/'
                 }]
             })
-            .get('/authors/?key=secret_key&limit=all&fields=id,slug,name,url,profile_image')
+            .get('/authors/?key=69010382388f9de5869ad6e558&limit=all&fields=id,slug,name,url,profile_image')
             .reply(200, {
                 authors: [{
                     id: 'different_uniq',
@@ -67,7 +63,7 @@ describe('search index', function () {
                     url: 'http://localhost/ghost/authors/bob/'
                 }]
             })
-            .get('/tags/?key=secret_key&&limit=all&fields=id,slug,name,url')
+            .get('/tags/?key=69010382388f9de5869ad6e558&&limit=all&fields=id,slug,name,url')
             .reply(200, {
                 tags: [{
                     id: 'uniq_tag',
@@ -77,7 +73,7 @@ describe('search index', function () {
                 }]
             });
 
-        await searchIndex.init({apiUrl, apiKey});
+        await searchIndex.init({siteURL, apiKey});
 
         let searchResults = searchIndex.search('Barcelona');
         expect(searchResults.posts.length).toEqual(1);

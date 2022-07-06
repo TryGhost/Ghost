@@ -19,9 +19,8 @@ function getSiteData() {
     if (scriptTag) {
         const siteUrl = scriptTag.dataset.sodoSearch;
         const apiKey = scriptTag.dataset.key;
-        const apiUrl = scriptTag.dataset.api;
         const appVersion = scriptTag.dataset.version;
-        return {siteUrl, apiKey, apiUrl, appVersion};
+        return {siteUrl, apiKey, appVersion};
     }
     return {};
 }

@@ -9,7 +9,7 @@ export default class App extends React.Component {
         super(props);
 
         const searchIndex = new SearchIndex({
-            apiUrl: props.apiUrl,
+            siteURL: props.siteURL,
             apiKey: props.apiKey
         });
 
