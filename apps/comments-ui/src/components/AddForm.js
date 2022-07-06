@@ -131,10 +131,6 @@ class AddForm extends React.Component {
                 <div className="w-full">
                     <div className="flex mb-2 space-x-4 justify-start items-center">
                         <Avatar />
-                        <div>
-                            <h4 className="text-lg font-sans font-bold mb-1 tracking-tight dark:text-neutral-300">{this.context.member.name}</h4>
-                            <h6 className="text-xs text-neutral-400 font-sans">&nbsp;</h6>
-                        </div>
                     </div>
                     <div className="-mt-[51px] ml-14 pr-3 font-sans leading-normal dark:text-neutral-300">
                         <div className="relative w-full">

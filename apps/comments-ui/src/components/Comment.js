@@ -74,7 +74,6 @@ class Comment extends React.Component {
 
                             {comment.replies && comment.replies.length > 0 && <Replies replies={comment.replies} />}
                             {/* <Reply comment={comment} /> */}
-
                             <More comment={comment} show={this.hasMoreContextMenu} toggleEdit={this.toggleEditMode} />
                         </div>
                     </div>

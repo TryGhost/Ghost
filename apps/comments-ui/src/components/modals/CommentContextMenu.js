@@ -30,7 +30,7 @@ class CommentContextMenu extends React.Component {
         const comment = this.props.comment;
 
         return (
-            <div className="bg-white absolute font-sans rounded py-3 px-4 drop-shadow-xl text-sm whitespace-nowrap">
+            <div className="bg-white absolute font-sans rounded py-3 px-4 drop-shadow-xl text-sm whitespace-nowrap z-10">
                 {this.isAuthor && comment.status === 'published' ? <AuthorContextMenu comment={comment} close={this.close} toggleEdit={this.props.toggleEdit} /> : (this.isAdmin ? <AdminContextMenu comment={comment} close={this.close}/> : <NotAuthorContextMenu comment={comment} close={this.close}/>)}
             </div>
         );

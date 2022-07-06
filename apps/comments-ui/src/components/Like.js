@@ -14,8 +14,8 @@ function Like(props) {
     };
 
     return (
-        <button className="flex font-sans text-[14px] items-center" onClick={toggleLike}>
-            <LikeIcon className={`gh-comments-icon gh-comments-icon-like mr-1 ${props.comment.liked ? 'fill-black' : ''}`} />
+        <button className="flex font-sans text-[14px] items-center dark:text-white" onClick={toggleLike}>
+            <LikeIcon className={`gh-comments-icon gh-comments-icon-like mr-1 dark:stroke-white ${props.comment.liked ? 'fill-black' : ''}`} />
             {props.comment.likes_count}
         </button>
     );

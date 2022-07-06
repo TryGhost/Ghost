@@ -27,7 +27,7 @@ class More extends React.Component {
 
         return (
             <div className="relative">
-                {show ? <button onClick={this.toggleContextMenu}><MoreIcon className='gh-comments-icon gh-comments-icon-more -m-[3px]' /></button> : null}
+                {show ? <button onClick={this.toggleContextMenu}><MoreIcon className='gh-comments-icon gh-comments-icon-more -m-[3px] dark:fill-white' /></button> : null}
                 {this.state.isContextMenuOpen ? <CommentContextMenu comment={comment} close={this.toggleContextMenu} toggleEdit={this.props.toggleEdit} /> : null}
             </div>
         );
