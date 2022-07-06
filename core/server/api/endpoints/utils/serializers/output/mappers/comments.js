@@ -10,6 +10,7 @@ const commentFields = [
 
 const memberFields = [
     'id',
+    'uuid',
     'name',
     'bio',
     'avatar_image'

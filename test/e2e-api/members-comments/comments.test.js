@@ -13,7 +13,8 @@ const commentMatcherWithMember = {
     id: anyObjectId,
     created_at: anyISODateTime,
     member: {
-        id: anyObjectId
+        id: anyObjectId,
+        uuid: anyUuid
     },
     likes_count: anyNumber,
     liked: anyBoolean
