@@ -25,7 +25,7 @@ class Comment extends React.Component {
 
     getInitials() {
         const comment = this.props.comment;
-        return this.getInitials(comment.member.name);
+        return getInitials(comment.member.name);
     }
 
     render() {
@@ -39,7 +39,7 @@ class Comment extends React.Component {
                     <div className="flex mb-2 space-x-4 justify-start items-center">
                         <figure className="relative w-10 h-10">
                             <div className="flex justify-center items-center w-10 h-10 rounded-full bg-black">
-                                <p className="text-white font-sans font-semibold">{ getInitials() }</p>
+                                <p className="text-white font-sans font-semibold">{ this.getInitials() }</p>
                             </div>
                             <img className="absolute top-0 left-0 w-10 h-10 rounded-full" src={comment.member.avatar_image} alt="Avatar"/>
                         </figure>

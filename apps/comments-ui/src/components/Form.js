@@ -1,5 +1,6 @@
 import React from 'react';
 import AppContext from '../AppContext';
+import {getInitials} from '../utils/helpers';
 
 class Form extends React.Component {
     static contextType = AppContext;
@@ -54,17 +55,7 @@ class Form extends React.Component {
         if (!this.context.member || !this.context.member.name) {
             return '';
         }
-        const parts = this.context.member.name.split(' ');
-
-        if (parts.length === 0) {
-            return '';
-        }
-
-        if (parts.length === 1) {
-            return parts[0].substring(0, 1);
-        }
-
-        return parts[0].substring(0, 1) + parts[parts.length - 1].substring(0, 1);
+        return getInitials(this.context.member.name);
     }
 
     render() {
