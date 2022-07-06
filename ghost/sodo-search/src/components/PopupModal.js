@@ -342,7 +342,7 @@ function Search() {
     return (
         <>
             <div
-                className='bg-[rgba(0,0,0,0.2)] h-screen w-screen pt-20 antialiased z-50 relative'
+                className='bg-[rgba(0,0,0,0.2)] h-screen w-screen pt-20 antialiased z-50 relative ghost-display'
                 onClick={(e) => {
                     e.preventDefault();
                     if (e.target === e.currentTarget) {
