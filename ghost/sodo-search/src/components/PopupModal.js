@@ -134,7 +134,7 @@ function SearchBox() {
                         searchValue: e.target.value
                     });
                 }}
-                className='grow text-[1.65rem] focus-visible:outline-none placeholder:text-gray-300'
+                className='grow text-[1.65rem] focus-visible:outline-none placeholder:text-gray-400'
                 placeholder='Search posts, tags, authors..'
             />
             <ClearButton />
