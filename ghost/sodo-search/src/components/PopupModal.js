@@ -197,7 +197,7 @@ function TagListItem({tag}) {
     const {name, url} = tag;
     return (
         <div
-            className='flex items-center py-3 -mx-7 px-7 hover:bg-gray-100 cursor-pointer'
+            className='flex items-center py-3 -mx-4 md:-mx-7 px-4 md:px-7 hover:bg-gray-100 cursor-pointer'
             onClick={() => {
                 if (url) {
                     window.location.href = url;
@@ -224,7 +224,7 @@ function TagResults({tags}) {
         );
     });
     return (
-        <div className='border-t border-gray-200 py-3 px-7'>
+        <div className='border-t border-gray-200 py-3 px-4 md:px-7'>
             <h1 className='uppercase text-xs text-neutral-400 font-semibold mb-1 tracking-wide'>Tags</h1>
             {TagItems}
         </div>
@@ -234,7 +234,7 @@ function TagResults({tags}) {
 function PostListItem({post}) {
     const {title, excerpt, url} = post;
     return (
-        <div className='py-3 -mx-7 px-7 hover:bg-neutral-100 cursor-pointer' onClick={() => {
+        <div className='py-3 -mx-4 md:-mx-7 px-4 md:px-7 hover:bg-neutral-100 cursor-pointer' onClick={() => {
             if (url) {
                 window.location.href = url;
             }
@@ -267,7 +267,7 @@ function PostResults({posts}) {
         );
     });
     return (
-        <div className='border-t border-neutral-200 py-3 px-7'>
+        <div className='border-t border-neutral-200 py-3 px-4 md:px-7'>
             <h1 className='uppercase text-xs text-neutral-400 font-semibold mb-1 tracking-wide'>Posts</h1>
             {PostItems}
             <ShowMoreButtom />
@@ -320,7 +320,7 @@ function AuthorResults({authors}) {
     });
 
     return (
-        <div className='border-t border-neutral-200 py-3 px-7'>
+        <div className='border-t border-neutral-200 py-3 px-4 md:px-7'>
             <h1 className='uppercase text-xs text-neutral-400 font-semibold mb-1 tracking-wide'>Authors</h1>
             {AuthorItems}
         </div>
@@ -399,7 +399,7 @@ function Search() {
                     }
                 }}
             >
-                <div className='bg-white max-w-lg rounded-t-2xl md:rounded-lg shadow-2xl drop-shadow-md m-auto absolute md:relative top-20 md:top-0 bottom-0 left-0 right-0 animate-popup'>
+                <div className='bg-white w-full max-w-[95vw] max-w-lg rounded-lg shadow-xl m-auto relative animate-popup'>
                     <SearchBox />
                     <SearchResultBox />
                 </div>
