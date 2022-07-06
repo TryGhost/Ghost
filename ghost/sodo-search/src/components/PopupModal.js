@@ -1,7 +1,6 @@
 import Frame from './Frame';
 import AppContext from '../AppContext';
 import {ReactComponent as SearchIcon} from '../icons/search.svg';
-import {ReactComponent as ClearIcon} from '../icons/delete.svg';
 import {useContext} from 'react';
 
 const React = require('react');
@@ -149,14 +148,16 @@ function ClearButton() {
         return null;
     }
     return (
-        <ClearIcon
-            className='ml-3 fill-neutral-400 cursor-pointer' alt='Clear'
+        <button
+            className='ml-3 text-sm text-neutral-500 underline' alt='Clear'
             onClick={() => {
                 dispatch('update', {
                     searchValue: ''
                 });
             }}
-        />
+        >
+            Clear
+        </button>
     );
 }
 
