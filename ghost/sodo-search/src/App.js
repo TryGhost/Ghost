@@ -63,10 +63,12 @@ export default class App extends React.Component {
 
     addKeyboardShortcuts() {
         this.handleKeyDown = (e) => {
-            if (e.keyCode === 75 && e.metaKey) {
+            if (e.key === 'k' && e.metaKey) {
                 this.setState({
                     showPopup: true
                 });
+                e.preventDefault();
+                e.stopPropagation();
                 return false;
             }
         };
