@@ -50,7 +50,7 @@ export default class SearchIndex {
         elasticlunr.clearStopWords();
 
         const postsAPIUrl = `${this.apiUrl}/posts/?key=${this.apiKey}&limit=all&fields=id,slug,title,excerpt,url,updated_at,visibility&order=updated_at%20desc&formats=plaintext`;
-        const authorsAPIUrl = `${this.apiUrl}/authors/?key=${this.apiKey}&limit=all&fields=id,slug,name,profile_image`;
+        const authorsAPIUrl = `${this.apiUrl}/authors/?key=${this.apiKey}&limit=all&fields=id,slug,name,url,profile_image`;
         const tagsAPIUrl = `${this.apiUrl}/tags/?key=${this.apiKey}&limit=all&fields=id,slug,name,url`;
 
         const indexDump = JSON.parse(this.storage.getItem('ease_search_index'));
@@ -65,6 +65,7 @@ export default class SearchIndex {
             if (posts.posts.length > 0) {
                 this.postsIndex = elasticlunr();
                 this.postsIndex.addField('title');
+                this.postsIndex.addField('url');
                 this.postsIndex.addField('excerpt');
                 this.postsIndex.setRef('id');
 
@@ -77,6 +78,7 @@ export default class SearchIndex {
             if (authors.authors.length > 0) {
                 this.authorsIndex = elasticlunr();
                 this.authorsIndex.addField('name');
+                this.authorsIndex.addField('url');
                 this.authorsIndex.setRef('id');
 
                 this.#updateAuthorsIndex(authors);
@@ -88,6 +90,7 @@ export default class SearchIndex {
             if (tags.tags.length > 0) {
                 this.tagsIndex = elasticlunr();
                 this.tagsIndex.addField('name');
+                this.tagsIndex.addField('url');
                 this.tagsIndex.setRef('id');
 
                 this.#updateTagsIndex(tags);
@@ -107,9 +110,25 @@ export default class SearchIndex {
     }
 
     search(value) {
-        const posts = this.postsIndex.search(value, {expand: true});
-        const authors = this.authorsIndex.search(value, {expand: true});
-        const tags = this.tagsIndex.search(value, {expand: true});
+        const posts = this.postsIndex.search(value, {
+            fields: {
+                title: {boost: 1},
+                excerpt: {boost: 1}
+            },
+            expand: true
+        });
+        const authors = this.authorsIndex.search(value, {
+            fields: {
+                name: {boost: 1}
+            },
+            expand: true
+        });
+        const tags = this.tagsIndex.search(value, {
+            fields: {
+                name: {boost: 1}
+            },
+            expand: true
+        });
 
         return {
             posts: posts.map((doc) => {

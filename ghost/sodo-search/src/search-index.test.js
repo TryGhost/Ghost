@@ -16,7 +16,7 @@ describe('search index', function () {
             .reply(200, {
                 posts: [{}]
             })
-            .get('/authors/?key=secret_key&limit=all&fields=id,slug,name,profile_image')
+            .get('/authors/?key=secret_key&limit=all&fields=id,slug,name,url,profile_image')
             .reply(200, {
                 authors: [{
                     id: 'different_uniq',
@@ -50,12 +50,17 @@ describe('search index', function () {
                     excerpt: 'We are sitting by the pool and smashing out search features'
                 }]
             })
-            .get('/authors/?key=secret_key&limit=all&fields=id,slug,name,profile_image')
+            .get('/authors/?key=secret_key&limit=all&fields=id,slug,name,url,profile_image')
             .reply(200, {
                 authors: [{
                     id: 'different_uniq',
                     slug: 'barcelona-author',
                     name: 'Barcelona Author',
+                    profile_image: 'https://url_to_avatar/barcelona.png'
+                }, {
+                    id: 'different_uniq_2',
+                    slug: 'bob',
+                    name: 'Bob',
                     profile_image: 'https://url_to_avatar/barcelona.png'
                 }]
             })
