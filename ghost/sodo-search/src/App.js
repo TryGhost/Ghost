@@ -15,15 +15,40 @@ export default class App extends React.Component {
 
         this.state = {
             searchIndex,
-            showPopup: true
+            showPopup: false
         };
     }
 
     async componentDidMount() {
+        this.initSetup();
         await this.state.searchIndex.init();
         this.setState({
             indexComplete: true
         });
+    }
+
+    componentWillUnmount() {
+        /**Clear timeouts and event listeners on unmount */
+        window.removeEventListener('hashchange', this.hashHandler, false);
+    }
+
+    initSetup() {
+        // Listen to preview mode changes
+        this.handleSearchUrl();
+        this.hashHandler = () => {
+            this.handleSearchUrl();
+        };
+        window.addEventListener('hashchange', this.hashHandler, false);
+    }
+
+    handleSearchUrl() {
+        const [path] = window.location.hash.substr(1).split('?');
+        if (path === '/sodo-search') {
+            this.setState({
+                showPopup: true
+            });
+            window.history.replaceState('', document.title, window.location.pathname);
+        }
     }
 
     render() {
