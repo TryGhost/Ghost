@@ -2,9 +2,9 @@ import {formatRelativeTime} from '../utils/helpers';
 import React from 'react';
 import AppContext from '../AppContext';
 import Avatar from './Avatar';
-import CommentContextMenu from './modals/CommentContextMenu';
-import {ReactComponent as LikeIcon} from '../images/icons/like.svg';
-import {ReactComponent as MoreIcon} from '../images/icons/more.svg';
+import Like from './Like';
+import Reply from './Reply';
+import More from './More';
 
 class Comment extends React.Component {
     static contextType = AppContext;
@@ -54,11 +54,9 @@ class Comment extends React.Component {
                         <p dangerouslySetInnerHTML={html} className="whitespace-pre-wrap"></p>
                     </div>
                     <div className="ml-14 flex">
-                        <button className="flex font-sans mr-5"><LikeIcon className='gh-comments-icon gh-comments-icon-like mr-1' />3</button>
-                        <div className="relative">
-                            {this.hasMoreContextMenu ? <button onClick={this.toggleContextMenu}><MoreIcon className='gh-comments-icon gh-comments-icon-more -m-[3px]' /></button> : null}
-                            {this.state.isContextMenuOpen ? <CommentContextMenu comment={comment} close={this.toggleContextMenu} /> : null}
-                        </div>
+                        <Like comment={comment} />
+                        <Reply comment={comment} />
+                        <More comment={comment} show={this.hasMoreContextMenu} />
                     </div>
                 </div>
             </div>

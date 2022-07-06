@@ -23,14 +23,15 @@ class More extends React.Component {
 
     render() {
         const comment = this.props.comment;
+        const show = this.props.show;
 
         return (
             <div className="relative">
-                <button onClick={this.toggleContextMenu}><MoreIcon className='gh-comments-icon gh-comments-icon-more -m-[3px]' /></button>
-                {this.state.isContextMenuOpen ? <CommentContextMenu comment={comment} /> : null}
+                {show ? <button onClick={this.toggleContextMenu}><MoreIcon className='gh-comments-icon gh-comments-icon-more -m-[3px]' /></button> : null}
+                {this.state.isContextMenuOpen ? <CommentContextMenu comment={comment} close={this.toggleContextMenu} /> : null}
             </div>
         );
     }
 }
-  
+
 export default More;
