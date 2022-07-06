@@ -20,11 +20,14 @@
 
     <section class="view-container settings-debug">
 
-        <div class="gh-main-layout content-preview">
+        <div class="gh-main-layout gh-setting-membership content-preview">
             <div class="gh-setting-members-basicsform">
                 <p class="intro">Fund your work with subscription revenue. Connect your Stripe account and offer premium content to your audience. Our creators are already making over $12 million per year, while <strong>Ghost takes 0% payment fees</strong>.</p>
-                <hr>
-                <div>
+                
+                {{#unless (feature 'comments')}}
+                    <hr>
+                {{/unless}}
+                <div class="flex flex-column justify-between mt3">
                     <section class="gh-expandable gh-setting-members-portalcta">
                         <div class="gh-expandable-block">
                             <div class="gh-expandable-header">
@@ -44,6 +47,9 @@
                     <div class="gh-setting-rich-dropdown">
                         <Settings::MembersSubscriptionAccess @onChange={{this.membersSubscriptionAccessChanged}} />
                         <Settings::MembersDefaultPostAccess />
+                        {{#if (feature 'comments')}}
+                            <Settings::MembersCommentAccess />
+                        {{/if}}
                     </div>
                 </div>
             </div>
