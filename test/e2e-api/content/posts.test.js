@@ -309,4 +309,18 @@ describe('Posts Content API', function () {
 
         tiersPostData.tiers.length.should.eql(1);
     });
+
+    it('Can use post excerpt as field', async function () {
+        await agent
+            .get(`posts/?fields=excerpt`)
+            .expectStatus(200)
+            .matchBodySnapshot();
+    });
+
+    it('Can use post plaintext as field', async function () {
+        await agent
+            .get(`posts/?fields=plaintext`)
+            .expectStatus(200)
+            .matchBodySnapshot();
+    });
 });

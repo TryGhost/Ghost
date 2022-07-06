@@ -7,6 +7,16 @@ const messages = {
     couldNotUnderstandRequest: 'Could not understand request.'
 };
 
+// If user requested an excerpt we need to ensure plaintext and custom_excerpt is also included so we can include it when we query the database.
+const requiredForExcerpt = (requestedColumns) => {
+    if (requestedColumns){
+        if (requestedColumns.includes('excerpt') && !requestedColumns.includes('plaintext') && !requestedColumns.includes('plaintext') || !requestedColumns) {
+            requestedColumns.push('plaintext');
+            requestedColumns.push('custom_excerpt');
+        }
+    }
+};
+
 /**
  * @param {Bookshelf} Bookshelf
  */
@@ -72,6 +82,8 @@ module.exports = function (Bookshelf) {
             const options = this.filterOptions(unfilteredOptions, 'findPage');
             const itemCollection = this.getFilteredCollection(options);
             const requestedColumns = options.columns;
+            // make sure we include plaintext and custom_excerpt if excerpt is requested
+            requiredForExcerpt(requestedColumns);
 
             // Set this to true or pass ?debug=true as an API option to get output
             itemCollection.debug = unfilteredOptions.debug && process.env.NODE_ENV !== 'production';
@@ -126,6 +138,9 @@ module.exports = function (Bookshelf) {
             const options = this.filterOptions(unfilteredOptions, 'findOne');
             data = this.filterData(data);
             const model = this.forge(data);
+            const requestedColumns = options.columns;
+            // make sure we include plaintext and custom_excerpt if excerpt is requested
+            requiredForExcerpt(requestedColumns);
 
             // @NOTE: The API layer decides if this option is allowed
             if (options.filter) {
