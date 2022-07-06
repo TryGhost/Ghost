@@ -1,5 +1,5 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyObjectId, anyLocationFor, anyISODateTime, anyUuid} = matchers;
+const {anyEtag, anyObjectId, anyLocationFor, anyISODateTime, anyUuid, anyNumber, anyBoolean} = matchers;
 
 let membersAgent, membersService, postId, commentId;
 
@@ -13,7 +13,9 @@ const commentMatcherWithMember = {
     created_at: anyISODateTime,
     member: {
         id: anyObjectId
-    }
+    },
+    likes_count: anyNumber,
+    liked: anyBoolean
 };
 
 describe('Comments API', function () {
@@ -58,8 +60,8 @@ describe('Comments API', function () {
         });
 
         it('Can browse all comments of a post', async function () {
-            await membersAgent
-                .get(`/api/comments/?filter=post_id:${postId}&include=member`)
+            const {body} = await membersAgent
+                .get(`/api/comments/?filter=post_id:${postId}`)
                 .expectStatus(200)
                 .matchHeaderSnapshot({
                     etag: anyEtag
