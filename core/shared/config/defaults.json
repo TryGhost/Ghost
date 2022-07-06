@@ -132,7 +132,8 @@
         "version": "2.2"
     },
     "sodoSearch": {
-        "url": "https://unpkg.com/@tryghost/sodo-search@~0.1.0/umd/sodo-search.min.js"
+        "url": "https://unpkg.com/@tryghost/sodo-search@~0.1.0/umd/sodo-search.min.js",
+        "version": "0.1.0"
     },
     "tenor": {
         "publicReadOnlyApiKey": null,
