@@ -54,9 +54,5 @@
         "fixtures": "test/utils/fixtures/fixtures",
         "defaultSettings": "test/utils/fixtures/default-settings.json",
         "urlCache": "test/utils/fixtures/urls"
-    },
-    "sodoSearch": {
-        "url": "https://unpkg.com/@tryghost/sodo-search@~0.1.0/umd/sodo-search.min.js",
-        "version": "0.1.0"
     }
 }
