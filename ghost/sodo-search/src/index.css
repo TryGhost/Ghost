@@ -10,3 +10,7 @@ html {
 body {
     font-size: 1.5rem;
 }
+
+.ghost-display {
+    display: block !important;
+}

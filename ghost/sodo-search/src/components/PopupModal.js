@@ -112,7 +112,9 @@ class PopupContent extends React.Component {
     handlePopupClose(e) {
         e.preventDefault();
         if (e.target === e.currentTarget) {
-            this.context.onAction('closePopup');
+            this.context.dispatch('update', {
+                showPopup: false
+            });
         }
     }
 
@@ -129,7 +131,6 @@ function SearchBox() {
         <div className='flex items-center py-5 px-7 mt-10 md:mt-0'>
             <SearchIcon className='mr-3 text-neutral-900' alt='Search' />
             <input
-                autoFocus
                 value={searchValue || ''}
                 onChange={(e) => {
                     dispatch('update', {
@@ -337,9 +338,20 @@ function NoResultsBox() {
 }
 
 function Search() {
+    const {dispatch} = useContext(AppContext);
     return (
         <>
-            <div className='bg-[rgba(0,0,0,0.2)] h-screen w-screen pt-20 antialiased z-50 relative'>
+            <div
+                className='bg-[rgba(0,0,0,0.2)] h-screen w-screen pt-20 antialiased z-50 relative'
+                onClick={(e) => {
+                    e.preventDefault();
+                    if (e.target === e.currentTarget) {
+                        dispatch('update', {
+                            showPopup: false
+                        });
+                    }
+                }}
+            >
                 <div className='bg-white max-w-lg rounded-t-2xl md:rounded-lg shadow-xl m-auto absolute md:relative top-20 md:top-0 bottom-0 left-0 right-0'>
                     <CloseIcon className='ml-3 text-neutral-300 cursor-pointer w-5 h-5  right-6 top-6 md:hidden' alt='Close' />
                     <SearchBox />
@@ -367,7 +379,9 @@ export default class PopupModal extends React.Component {
     handlePopupClose(e) {
         e.preventDefault();
         if (e.target === e.currentTarget) {
-            // this.context.onAction('closePopup');
+            this.context.dispatch('update', {
+                showPopup: false
+            });
         }
     }
 
@@ -375,6 +389,10 @@ export default class PopupModal extends React.Component {
         const styles = `
             :root {
                 --brandcolor: ${this.context.brandColor || ''}
+            }
+
+            .ghost-display {
+                display: none;
             }
         `;
 
@@ -398,15 +416,20 @@ export default class PopupModal extends React.Component {
         return (
             <div style={Styles.modalContainer} className='gh-root-frame'>
                 <Frame style={frameStyle} title='portal-popup' head={this.renderFrameStyles()}>
-                    <div onClick = {e => this.handlePopupClose(e)}></div>
+                    <div
+                        onClick = {e => this.handlePopupClose(e)}
+                        className='absolute top-0 bottom-0 left-0 right-0 block backdrop-blur-[2px] z-0 bg-gradient-to-br from-[rgba(0,0,0,0.2)] to-[rgba(0,0,0,0.1)]' />
                     <PopupContent />
-                    <div className='absolute top-0 bottom-0 left-0 right-0 block backdrop-blur-[2px] z-0 bg-gradient-to-br from-[rgba(0,0,0,0.2)] to-[rgba(0,0,0,0.1)]'></div>
                 </Frame>
             </div>
         );
     }
 
     render() {
-        return this.renderFrameContainer();
+        const {showPopup} = this.context;
+        if (showPopup) {
+            return this.renderFrameContainer();
+        }
+        return null;
     }
 }
