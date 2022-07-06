@@ -1,10 +1,9 @@
 import elasticlunr from 'elasticlunr';
 
 export default class SearchIndex {
-    constructor({apiUrl, apiKey, storage = localStorage}) {
+    constructor({apiUrl, apiKey}) {
         this.apiUrl = apiUrl;
         this.apiKey = apiKey;
-        this.storage = storage;
 
         this.postsIndex = null;
         this.authorsIndex = null;
@@ -22,9 +21,6 @@ export default class SearchIndex {
                 slug: post.slug
             });
         });
-
-        this.storage.setItem('ease_search_index', JSON.stringify(this.postsIndex));
-        this.storage.setItem('ease_search_last', data.posts[0].updated_at);
     }
 
     #updateAuthorsIndex(data) {
@@ -53,59 +49,41 @@ export default class SearchIndex {
         const authorsAPIUrl = `${this.apiUrl}/authors/?key=${this.apiKey}&limit=all&fields=id,slug,name,url,profile_image`;
         const tagsAPIUrl = `${this.apiUrl}/tags/?key=${this.apiKey}&limit=all&fields=id,slug,name,url`;
 
-        const indexDump = JSON.parse(this.storage.getItem('ease_search_index'));
+        const postsResponse = await fetch(postsAPIUrl);
+        const posts = await postsResponse.json();
 
-        this.storage.removeItem('ease_index');
-        this.storage.removeItem('ease_last');
+        this.postsIndex = elasticlunr();
+        this.postsIndex.addField('title');
+        this.postsIndex.addField('url');
+        this.postsIndex.addField('excerpt');
+        this.postsIndex.setRef('id');
 
-        if (!indexDump) {
-            const postsResponse = await fetch(postsAPIUrl);
-            const posts = await postsResponse.json();
+        if (posts.posts.length > 0) {
+            this.#updatePostIndex(posts);
+        }
 
-            this.postsIndex = elasticlunr();
-            this.postsIndex.addField('title');
-            this.postsIndex.addField('url');
-            this.postsIndex.addField('excerpt');
-            this.postsIndex.setRef('id');
+        const authorsResponse = await fetch(authorsAPIUrl);
+        const authors = await authorsResponse.json();
 
-            if (posts.posts.length > 0) {
-                this.#updatePostIndex(posts);
-            }
+        this.authorsIndex = elasticlunr();
+        this.authorsIndex.addField('name');
+        this.authorsIndex.addField('url');
+        this.authorsIndex.setRef('id');
 
-            const authorsResponse = await fetch(authorsAPIUrl);
-            const authors = await authorsResponse.json();
+        if (authors.authors.length > 0) {
+            this.#updateAuthorsIndex(authors);
+        }
 
-            this.authorsIndex = elasticlunr();
-            this.authorsIndex.addField('name');
-            this.authorsIndex.addField('url');
-            this.authorsIndex.setRef('id');
+        const tagsResponse = await fetch(tagsAPIUrl);
+        const tags = await tagsResponse.json();
 
-            if (authors.authors.length > 0) {
-                this.#updateAuthorsIndex(authors);
-            }
+        this.tagsIndex = elasticlunr();
+        this.tagsIndex.addField('name');
+        this.tagsIndex.addField('url');
+        this.tagsIndex.setRef('id');
 
-            const tagsResponse = await fetch(tagsAPIUrl);
-            const tags = await tagsResponse.json();
-
-            this.tagsIndex = elasticlunr();
-            this.tagsIndex.addField('name');
-            this.tagsIndex.addField('url');
-            this.tagsIndex.setRef('id');
-
-            if (tags.tags.length > 0) {
-                this.#updateTagsIndex(tags);
-            }
-        } else {
-            this.postsIndex = elasticlunr.Index.load(indexDump);
-
-            return fetch(`${postsAPIUrl}&filter=updated_at:>'${this.storage.getItem('ease_search_last').replace(/\..*/, '').replace(/T/, ' ')}'`
-            )
-                .then(response => response.json())
-                .then((data) => {
-                    if (data.posts.length > 0) {
-                        this.#updatePostIndex(data);
-                    }
-                });
+        if (tags.tags.length > 0) {
+            this.#updateTagsIndex(tags);
         }
     }
 
