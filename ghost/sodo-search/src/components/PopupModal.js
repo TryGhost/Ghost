@@ -321,7 +321,7 @@ function Results({posts, authors, tags}) {
         return null;
     }
     return (
-        <div className='overflow-scroll max-h-[70vh]'>
+        <div className='overflow-y-auto max-h-[70vh]'>
             <AuthorResults authors={authors} />
             <TagResults tags={tags} />
             <PostResults posts={posts} />
