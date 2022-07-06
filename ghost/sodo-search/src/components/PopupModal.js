@@ -2,7 +2,7 @@ import Frame from './Frame';
 import AppContext from '../AppContext';
 import {ReactComponent as SearchIcon} from '../icons/search.svg';
 import {ReactComponent as CloseIcon} from '../icons/close.svg';
-import {useContext} from 'react';
+import {useContext, useEffect, useRef} from 'react';
 import {getBundledCssLink} from '../utils/helpers';
 
 const React = require('react');
@@ -127,15 +127,23 @@ class PopupContent extends React.Component {
 
 function SearchBox() {
     const {searchValue, dispatch} = useContext(AppContext);
+    const inputRef = useRef(null);
+    useEffect(() => {
+        setTimeout(() => {
+            inputRef?.current?.focus();
+        }, 150);
+    }, []);
+
     let className = 'z-10 relative flex items-center py-5 px-7 mt-10 md:mt-0 bg-white rounded-t-lg shadow';
     if (!searchValue) {
         className = 'z-10 relative flex items-center py-5 px-7 mt-10 md:mt-0 bg-white rounded-lg';
-    } 
+    }
 
     return (
         <div className={className}>
             <SearchIcon className='mr-3 text-neutral-900' alt='Search' />
             <input
+                ref={inputRef}
                 value={searchValue || ''}
                 onChange={(e) => {
                     dispatch('update', {
@@ -278,7 +286,7 @@ function AuthorAvatar({name, avatar}) {
         );
     }
     return (
-        <div className='rounded-full bg-neutral-200 w-7 h-7 mr-2 flex items-center justify-center font-bold'><span className="text-neutral-400">{Character}</span></div> 
+        <div className='rounded-full bg-neutral-200 w-7 h-7 mr-2 flex items-center justify-center font-bold'><span className="text-neutral-400">{Character}</span></div>
     );
 }
 
