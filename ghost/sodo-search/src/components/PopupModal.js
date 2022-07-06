@@ -128,7 +128,7 @@ class PopupContent extends React.Component {
 function SearchBox() {
     const {searchValue, dispatch} = useContext(AppContext);
     return (
-        <div className='flex items-center py-5 px-7 mt-10 md:mt-0'>
+        <div className='flex items-center py-5 px-7 mt-0'>
             <SearchIcon className='mr-3 text-neutral-900' alt='Search' />
             <input
                 value={searchValue || ''}
@@ -141,6 +141,7 @@ function SearchBox() {
                 placeholder='Search posts, tags, authors..'
             />
             <ClearButton />
+            <CloseIcon className='ml-4 text-neutral-300 cursor-pointer w-5 h-5 md:hidden' alt='Close' />
         </div>
     );
 }
@@ -342,7 +343,7 @@ function Search() {
     return (
         <>
             <div
-                className='bg-[rgba(0,0,0,0.2)] h-screen w-screen pt-20 antialiased z-50 relative ghost-display'
+                className='h-screen w-screen pt-20 antialiased z-50 relative ghost-display'
                 onClick={(e) => {
                     e.preventDefault();
                     if (e.target === e.currentTarget) {
@@ -352,8 +353,7 @@ function Search() {
                     }
                 }}
             >
-                <div className='bg-white max-w-lg rounded-t-2xl md:rounded-lg shadow-xl m-auto absolute md:relative top-20 md:top-0 bottom-0 left-0 right-0'>
-                    <CloseIcon className='ml-3 text-neutral-300 cursor-pointer w-5 h-5  right-6 top-6 md:hidden' alt='Close' />
+                <div className='bg-white max-w-lg rounded-t-2xl md:rounded-lg shadow-xl m-auto absolute md:relative top-20 md:top-0 bottom-0 left-0 right-0 animate-popup'>
                     <SearchBox />
                     <SearchResultBox />
                 </div>
@@ -418,7 +418,7 @@ export default class PopupModal extends React.Component {
                 <Frame style={frameStyle} title='portal-popup' head={this.renderFrameStyles()}>
                     <div
                         onClick = {e => this.handlePopupClose(e)}
-                        className='absolute top-0 bottom-0 left-0 right-0 block backdrop-blur-[2px] z-0 bg-gradient-to-br from-[rgba(0,0,0,0.2)] to-[rgba(0,0,0,0.1)]' />
+                        className='absolute top-0 bottom-0 left-0 right-0 block backdrop-blur-[2px] animate-fadein z-0 bg-gradient-to-br from-[rgba(0,0,0,0.2)] to-[rgba(0,0,0,0.1)]' />
                     <PopupContent />
                 </Frame>
             </div>
