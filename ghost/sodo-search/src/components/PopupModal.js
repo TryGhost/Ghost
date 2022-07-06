@@ -376,7 +376,7 @@ function Search() {
                     }
                 }}
             >
-                <div className='bg-white max-w-lg rounded-t-2xl md:rounded-lg shadow-xl m-auto absolute md:relative top-20 md:top-0 bottom-0 left-0 right-0 animate-popup'>
+                <div className='bg-white max-w-lg rounded-t-2xl md:rounded-lg shadow-2xl drop-shadow-md m-auto absolute md:relative top-20 md:top-0 bottom-0 left-0 right-0 animate-popup'>
                     <SearchBox />
                     <SearchResultBox />
                 </div>
