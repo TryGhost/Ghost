@@ -6,6 +6,7 @@ import Like from './Like';
 // import Reply from './Reply';
 import More from './More';
 import EditForm from './EditForm';
+import Replies from './Replies';
 
 class Comment extends React.Component {
     static contextType = AppContext;
@@ -67,9 +68,13 @@ class Comment extends React.Component {
                         <div className="ml-14 mb-2.5 pr-4 font-sans leading-normal dark:text-neutral-300">
                             <p dangerouslySetInnerHTML={html} className="whitespace-pre-wrap"></p>
                         </div>
+
                         <div className="ml-14 flex gap-5">
                             <Like comment={comment} />
+
+                            {comment.replies && comment.replies.length > 0 && <Replies replies={comment.replies} />}
                             {/* <Reply comment={comment} /> */}
+
                             <More comment={comment} show={this.hasMoreContextMenu} toggleEdit={this.toggleEditMode} />
                         </div>
                     </div>
@@ -78,5 +83,5 @@ class Comment extends React.Component {
         }
     }
 }
-  
+
 export default Comment;
