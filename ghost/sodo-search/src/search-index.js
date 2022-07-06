@@ -62,37 +62,37 @@ export default class SearchIndex {
             const postsResponse = await fetch(postsAPIUrl);
             const posts = await postsResponse.json();
 
-            if (posts.posts.length > 0) {
-                this.postsIndex = elasticlunr();
-                this.postsIndex.addField('title');
-                this.postsIndex.addField('url');
-                this.postsIndex.addField('excerpt');
-                this.postsIndex.setRef('id');
+            this.postsIndex = elasticlunr();
+            this.postsIndex.addField('title');
+            this.postsIndex.addField('url');
+            this.postsIndex.addField('excerpt');
+            this.postsIndex.setRef('id');
 
+            if (posts.posts.length > 0) {
                 this.#updatePostIndex(posts);
             }
 
             const authorsResponse = await fetch(authorsAPIUrl);
             const authors = await authorsResponse.json();
 
-            if (authors.authors.length > 0) {
-                this.authorsIndex = elasticlunr();
-                this.authorsIndex.addField('name');
-                this.authorsIndex.addField('url');
-                this.authorsIndex.setRef('id');
+            this.authorsIndex = elasticlunr();
+            this.authorsIndex.addField('name');
+            this.authorsIndex.addField('url');
+            this.authorsIndex.setRef('id');
 
+            if (authors.authors.length > 0) {
                 this.#updateAuthorsIndex(authors);
             }
 
             const tagsResponse = await fetch(tagsAPIUrl);
             const tags = await tagsResponse.json();
 
-            if (tags.tags.length > 0) {
-                this.tagsIndex = elasticlunr();
-                this.tagsIndex.addField('name');
-                this.tagsIndex.addField('url');
-                this.tagsIndex.setRef('id');
+            this.tagsIndex = elasticlunr();
+            this.tagsIndex.addField('name');
+            this.tagsIndex.addField('url');
+            this.tagsIndex.setRef('id');
 
+            if (tags.tags.length > 0) {
                 this.#updateTagsIndex(tags);
             }
         } else {

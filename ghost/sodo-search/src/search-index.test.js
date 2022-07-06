@@ -28,6 +28,12 @@ describe('search index', function () {
         await searchIndex.init({apiUrl, apiKey});
 
         expect(scope.isDone()).toBeTruthy();
+
+        const searchResults = searchIndex.search('find nothing');
+
+        expect(searchResults.posts.length).toEqual(0);
+        expect(searchResults.authors.length).toEqual(0);
+        expect(searchResults.tags.length).toEqual(0);
     });
 
     test('allows to search for indexed posts and authors', async () => {
