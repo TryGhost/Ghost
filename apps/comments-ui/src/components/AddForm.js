@@ -68,11 +68,14 @@ class AddForm extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            message: ''
+            message: '',
+            focused: false
         };
 
         this.submitForm = this.submitForm.bind(this);
         this.handleChange = this.handleChange.bind(this);
+        this.handleBlur = this.handleBlur.bind(this);
+        this.handleFocus = this.handleFocus.bind(this);
     }
 
     getHTML() {
@@ -87,7 +90,7 @@ class AddForm extends React.Component {
         const message = this.state.message;
 
         if (message.length === 0) {
-            alert('Please enter a message');
+            // alert('Please enter a message'); TODO: Check, but don't think we really need this
             return;
         }
 
@@ -100,7 +103,10 @@ class AddForm extends React.Component {
             });
 
             // Clear message on success
-            this.setState({message: ''});
+            this.setState({
+                message: '',
+                focused: false
+            });
         } catch (e) {
             // eslint-disable-next-line no-console
             console.error(e);
@@ -109,6 +115,14 @@ class AddForm extends React.Component {
 
     handleChange(event) {
         this.setState({message: event.target.value});
+    }
+
+    handleBlur(event) {
+        // this.setState({focused: false});
+    }
+
+    handleFocus(event) {
+        this.setState({focused: true});
     }
 
     render() {
@@ -122,10 +136,11 @@ class AddForm extends React.Component {
                             <h6 className="text-xs text-neutral-400 font-sans">&nbsp;</h6>
                         </div>
                     </div>
-                    <div className="-mt-12 ml-14 pr-3 font-sans leading-normal dark:text-neutral-300">
+                    <div className="-mt-[51px] ml-14 pr-3 font-sans leading-normal dark:text-neutral-300">
                         <div className="relative w-full">
-                            <textarea className="w-full resize-none rounded-md border h-36 p-3 font-sans mb-1 leading-normal focus:outline-0 dark:bg-[rgba(255,255,255,0.08)] dark:border-none dark:text-neutral-300" value={this.state.message} onChange={this.handleChange} autofocus="true" />
-                            <button type="submit" className="rounded-md border p-3 py-3 font-sans text-sm text-center bg-black font-semibold text-white dark:bg-[rgba(255,255,255,0.8)] dark:text-neutral-800">Add your comment</button>
+                            <textarea className={`transition-[height] ${this.state.focused ? 'cursor-text h-40 duration-0' : 'cursor-pointer duration-150 hover:border-slate-300'} w-full resize-none rounded-md border border-slate-200 h-12 p-3 font-sans mb-1 leading-normal focus:outline-0 dark:bg-[rgba(255,255,255,0.08)] dark:border-none dark:text-neutral-300`} value={this.state.message} onChange={this.handleChange} onFocus={this.handleFocus} onBlur={this.handleBlur} placeholder={this.state.focused ? '' : 'Add to the discussion'} />
+                            <button className={`transition-[opacity] ${this.state.focused ? 'opacity-100 duration-0' : 'opacity-0 duration-150'}  rounded-md border p-3 py-3 font-sans text-sm text-center bg-black font-semibold text-white dark:bg-[rgba(255,255,255,0.8)] dark:text-neutral-800`} type="submit">Add your comment</button>
+                            <button className={`transition-[opacity] ${this.state.focused ? 'opacity-0 duration-0' : 'opacity-100 duration-100'} absolute top-[5px] right-[5px] rounded-md border p-2 font-sans text-sm text-center bg-black font-semibold text-white pointer-events-none dark:bg-[rgba(255,255,255,0.8)] dark:text-neutral-800`} disabled="true">Comment</button>
                         </div>
                     </div>
                 </div>
