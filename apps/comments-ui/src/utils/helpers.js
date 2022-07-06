@@ -87,3 +87,20 @@ export function formatRelativeTime(dateString) {
     }
     return `${Math.floor(diff)} weeks ago`;
 }
+
+export function getInitials(name) {
+    if (!name) {
+        return '';
+    }
+    const parts = name.split(' ');
+
+    if (parts.length === 0) {
+        return '';
+    }
+
+    if (parts.length === 1) {
+        return parts[0].substring(0, 1);
+    }
+
+    return parts[0].substring(0, 1) + parts[parts.length - 1].substring(0, 1);
+}
