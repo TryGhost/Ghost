@@ -49,7 +49,7 @@ class Comment extends React.Component {
                         <button className="flex font-sans mr-5"><LikeIcon className='gh-comments-icon gh-comments-icon-like mr-1' />3</button>
                         <div className="relative">
                             <button onClick={this.toggleContextMenu}><MoreIcon className='gh-comments-icon gh-comments-icon-more -m-[3px]' /></button>
-                            {this.state.isContextMenuOpen ? <CommentContextMenu comment={comment} /> : null}
+                            {this.state.isContextMenuOpen ? <CommentContextMenu comment={comment} close={this.toggleContextMenu} /> : null}
                         </div>
                     </div>
                 </div>

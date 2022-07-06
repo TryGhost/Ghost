@@ -10,6 +10,8 @@ class CommentContextMenu extends React.Component {
     constructor(props) {
         super(props);
         this.state = {};
+
+        this.close = this.close.bind(this);
     }
 
     get isAuthor() {
@@ -20,12 +22,16 @@ class CommentContextMenu extends React.Component {
         return !!this.context.admin;
     }
 
+    close() {
+        this.props.close();
+    }
+
     render() {
         const comment = this.props.comment;
 
         return (
             <div className="bg-white absolute font-sans rounded py-3 px-4 drop-shadow-xl text-sm whitespace-nowrap">
-                {this.isAuthor ? <AuthorContextMenu comment={comment}/> : (this.isAdmin ? <AdminContextMenu comment={comment}/> : <NotAuthorContextMenu comment={comment}/>)}
+                {this.isAuthor ? <AuthorContextMenu comment={comment} close={this.close}/> : (this.isAdmin ? <AdminContextMenu comment={comment} close={this.close}/> : <NotAuthorContextMenu comment={comment} close={this.close}/>)}
             </div>
         );
     }

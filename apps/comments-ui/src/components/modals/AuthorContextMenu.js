@@ -13,6 +13,11 @@ class AuthorContextMenu extends React.Component {
 
     deleteComment(event) {
         this.context.onAction('deleteComment', this.props.comment);
+        this.close();
+    }
+
+    close() {
+        this.props.close();
     }
 
     render() {
