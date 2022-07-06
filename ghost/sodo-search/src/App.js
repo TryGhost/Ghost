@@ -27,6 +27,14 @@ export default class App extends React.Component {
         });
     }
 
+    componentDidUpdate(_prevProps, _prevState) {
+        if (this.state.showPopup !== _prevState?.showPopup && !this.state.showPopup) {
+            this.setState({
+                searchValue: ''
+            });
+        }
+    }
+
     componentWillUnmount() {
         /**Clear timeouts and event listeners on unmount */
         window.removeEventListener('hashchange', this.hashHandler, false);
