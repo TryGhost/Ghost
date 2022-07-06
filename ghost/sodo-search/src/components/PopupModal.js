@@ -182,8 +182,8 @@ function TagResults({tags}) {
     const TagItems = tags.map((d) => {
         return (
             <TagListItem
-                key={d.title}
-                title={d.title}
+                key={d.name}
+                title={d.name}
             />
         );
     });
@@ -293,14 +293,9 @@ function SearchResultBox() {
 
     if (indexComplete && searchValue) {
         searchResults = searchIndex.search(searchValue);
-        filteredPosts = searchResults?.posts?.map((d) => {
-            return {
-                id: d?.id,
-                excerpt: d?.excerpt,
-                title: d?.title,
-                slug: d?.slug
-            };
-        }) || [];
+        filteredPosts = searchResults?.posts || [];
+        filteredAuthors = searchResults?.authors || [];
+        filteredTags = searchResults?.tags || [];
     }
 
     const hasResults = filteredPosts?.length || filteredAuthors?.length || filteredTags?.length;
