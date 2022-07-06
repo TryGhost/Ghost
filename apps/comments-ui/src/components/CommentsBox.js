@@ -1,7 +1,7 @@
 import React from 'react';
 import AppContext from '../AppContext';
 import NotSignedInBox from './NotSignedInBox';
-import Form from './Form';
+import AddForm from './AddForm';
 import Comment from './Comment';
 import Pagination from './Pagination';
 
@@ -52,7 +52,7 @@ class CommentsBox extends React.Component {
                     {comments}
                 </div>
                 <div>
-                    { this.context.member ? <Form /> : <NotSignedInBox /> }
+                    { this.context.member ? <AddForm /> : <NotSignedInBox /> }
                 </div>
             </section>
         );
