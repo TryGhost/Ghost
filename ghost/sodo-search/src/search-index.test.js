@@ -47,7 +47,8 @@ describe('search index', function () {
                 posts: [{
                     id: 'sounique',
                     title: 'Awesome Barcelona Life',
-                    excerpt: 'We are sitting by the pool and smashing out search features'
+                    excerpt: 'We are sitting by the pool and smashing out search features',
+                    url: 'http://localhost/ghost/awesome-barcelona-life/'
                 }]
             })
             .get('/authors/?key=secret_key&limit=all&fields=id,slug,name,url,profile_image')
@@ -56,12 +57,14 @@ describe('search index', function () {
                     id: 'different_uniq',
                     slug: 'barcelona-author',
                     name: 'Barcelona Author',
-                    profile_image: 'https://url_to_avatar/barcelona.png'
+                    profile_image: 'https://url_to_avatar/barcelona.png',
+                    url: 'http://localhost/ghost/authors/barcelona-author/'
                 }, {
                     id: 'different_uniq_2',
                     slug: 'bob',
                     name: 'Bob',
-                    profile_image: 'https://url_to_avatar/barcelona.png'
+                    profile_image: 'https://url_to_avatar/barcelona.png',
+                    url: 'http://localhost/ghost/authors/bob/'
                 }]
             })
             .get('/tags/?key=secret_key&&limit=all&fields=id,slug,name,url')
@@ -70,7 +73,7 @@ describe('search index', function () {
                     id: 'uniq_tag',
                     slug: 'barcelona-tag',
                     name: 'Barcelona Tag',
-                    url: 'http://localhost/ghost/tags/barcelona-tag'
+                    url: 'http://localhost/ghost/tags/barcelona-tag/'
                 }]
             });
 
@@ -79,12 +82,15 @@ describe('search index', function () {
         let searchResults = searchIndex.search('Barcelona');
         expect(searchResults.posts.length).toEqual(1);
         expect(searchResults.posts[0].title).toEqual('Awesome Barcelona Life');
+        expect(searchResults.posts[0].url).toEqual('http://localhost/ghost/awesome-barcelona-life/');
 
         expect(searchResults.authors.length).toEqual(1);
         expect(searchResults.authors[0].name).toEqual('Barcelona Author');
+        expect(searchResults.authors[0].url).toEqual('http://localhost/ghost/authors/barcelona-author/');
 
         expect(searchResults.tags.length).toEqual(1);
         expect(searchResults.tags[0].name).toEqual('Barcelona Tag');
+        expect(searchResults.tags[0].url).toEqual('http://localhost/ghost/tags/barcelona-tag/');
 
         searchResults = searchIndex.search('Nothing like this');
         expect(searchResults.posts.length).toEqual(0);
