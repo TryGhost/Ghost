@@ -161,3 +161,28 @@
         box-shadow: none !important;
     }
 }
+
+/* Notifications */
+.user-settings-heading {
+    border-top: 1px solid var(--lightgrey);
+    padding-top: 4vw;
+    margin-top: 4vw;
+    font-size: 1.55rem;
+    font-weight: 700;
+    line-height: 1.3em;
+}
+
+.user-setting-toggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+}
+
+.user-setting-toggle label {
+    margin-bottom: 0;
+}
+
+.user-setting-toggle p {
+    margin-top: 0;
+}
