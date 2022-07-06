@@ -340,8 +340,8 @@ function Search() {
     return (
         <>
             <div className='bg-[rgba(0,0,0,0.2)] h-screen w-screen pt-20 antialiased z-50 relative'>
-                <div className='bg-white max-w-lg rounded-t-2xl md:rounded-lg shadow-xl m-auto absolute top-20 bottom-0 left-0 right-0 md:relative'>
-                    <CloseIcon className='ml-3 text-neutral-300 cursor-pointer w-5 h-5 absolute right-6 top-6 md:hidden' alt='Close' />
+                <div className='bg-white max-w-lg rounded-t-2xl md:rounded-lg shadow-xl m-auto absolute md:relative top-20 md:top-0 bottom-0 left-0 right-0'>
+                    <CloseIcon className='ml-3 text-neutral-300 cursor-pointer w-5 h-5  right-6 top-6 md:hidden' alt='Close' />
                     <SearchBox />
                     <SearchResultBox />
                 </div>
