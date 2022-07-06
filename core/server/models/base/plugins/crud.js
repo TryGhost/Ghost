@@ -82,7 +82,6 @@ module.exports = function (Bookshelf) {
             const options = this.filterOptions(unfilteredOptions, 'findPage');
             const itemCollection = this.getFilteredCollection(options);
             const requestedColumns = options.columns;
-            requiredForExcerpt(requestedColumns);
 
             // Set this to true or pass ?debug=true as an API option to get output
             itemCollection.debug = unfilteredOptions.debug && process.env.NODE_ENV !== 'production';
@@ -137,10 +136,6 @@ module.exports = function (Bookshelf) {
             const options = this.filterOptions(unfilteredOptions, 'findOne');
             data = this.filterData(data);
             const model = this.forge(data);
-
-            const requestedColumns = options.columns;
-            // make sure we include plaintext and custom_excerpt if excerpt is requested
-            requiredForExcerpt(requestedColumns);
 
             // @NOTE: The API layer decides if this option is allowed
             if (options.filter) {
