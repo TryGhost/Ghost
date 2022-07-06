@@ -7,16 +7,6 @@ const messages = {
     couldNotUnderstandRequest: 'Could not understand request.'
 };
 
-// If user requested an excerpt we need to ensure plaintext and custom_excerpt is also included so we can include it when we query the database.
-const requiredForExcerpt = (requestedColumns) => {
-    if (requestedColumns){
-        if (requestedColumns.includes('excerpt') && !requestedColumns.includes('plaintext') && !requestedColumns.includes('plaintext') || !requestedColumns) {
-            requestedColumns.push('plaintext');
-            requestedColumns.push('custom_excerpt');
-        }
-    }
-};
-
 /**
  * @param {Bookshelf} Bookshelf
  */
