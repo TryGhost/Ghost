@@ -450,5 +450,19 @@
             "defaultValue": "all",
             "type": "string"
         }
+    },
+    "comments": {
+        "comments_enabled": {
+            "type": "string",
+            "defaultValue": "off",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [[
+                    "off",
+                    "all",
+                    "paid"
+                ]]
+            }
+        }
     }
 }
