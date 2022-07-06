@@ -31,6 +31,10 @@ const Comment = ghostBookshelf.Model.extend({
         return this.belongsTo('Comment', 'parent_id');
     },
 
+    likes() {
+        return this.hasMany('CommentLike', 'comment_id');
+    },
+
     emitChange: function emitChange(event, options) {
         const eventToTrigger = 'comment' + '.' + event;
         ghostBookshelf.Model.prototype.emitChange.bind(this)(this, eventToTrigger, options);
@@ -100,6 +104,21 @@ const Comment = ghostBookshelf.Model.extend({
         }
 
         return hasMemberPermission;
+    },
+
+    /**
+     * We have to ensure consistency. If you listen on model events (e.g. `member.added`), you can expect that you always
+     * receive all fields including relations. Otherwise you can't rely on a consistent flow. And we want to avoid
+     * that event listeners have to re-fetch a resource. This function is used in the context of inserting
+     * and updating resources. We won't return the relations by default for now.
+     */
+    defaultRelations: function defaultRelations(methodName, options) {
+        // @todo: the default relations are not working for 'add' when we add it below
+        if (['findAll', 'findPage', 'edit'].indexOf(methodName) !== -1) {
+            options.withRelated = _.union(['member', 'likes'], options.withRelated || []);
+        }
+
+        return options;
     }
 });
 
