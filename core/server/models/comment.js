@@ -114,7 +114,7 @@ const Comment = ghostBookshelf.Model.extend({
      */
     defaultRelations: function defaultRelations(methodName, options) {
         // @todo: the default relations are not working for 'add' when we add it below
-        if (['findAll', 'findPage', 'edit'].indexOf(methodName) !== -1) {
+        if (['findAll', 'findPage', 'edit', 'findOne'].indexOf(methodName) !== -1) {
             options.withRelated = _.union(['member', 'likes'], options.withRelated || []);
         }
 

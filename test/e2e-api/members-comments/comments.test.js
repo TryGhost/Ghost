@@ -1,5 +1,6 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyEtag, anyObjectId, anyLocationFor, anyISODateTime, anyUuid, anyNumber, anyBoolean} = matchers;
+require('should');
 
 let membersAgent, membersService, postId, commentId;
 
@@ -72,6 +73,20 @@ describe('Comments API', function () {
         });
 
         it('Can like a comment', async function () {
+            // Check not liked
+            await membersAgent
+                .get(`/api/comments/${commentId}/`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    comments: new Array(1).fill(commentMatcherWithMember)
+                })
+                .expect(({body}) => {
+                    body.comments[0].liked.should.eql(false);
+                });
+
             // Create a temporary comment
             await membersAgent
                 .post(`/api/comments/${commentId}/like/`)
@@ -80,6 +95,20 @@ describe('Comments API', function () {
                     etag: anyEtag
                 })
                 .expectEmptyBody();
+
+            // Check liked
+            await membersAgent
+                .get(`/api/comments/${commentId}/`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    comments: new Array(1).fill(commentMatcherWithMember)
+                })
+                .expect(({body}) => {
+                    body.comments[0].liked.should.eql(true);
+                });
         });
 
         it('Cannot like a comment multiple times', async function () {
@@ -99,13 +128,27 @@ describe('Comments API', function () {
 
         it('Can remove a like', async function () {
             // Create a temporary comment
-            const {body} = await membersAgent
+            await membersAgent
                 .delete(`/api/comments/${commentId}/like/`)
                 .expectStatus(204)
                 .matchHeaderSnapshot({
                     etag: anyEtag
                 })
                 .expectEmptyBody();
+
+            // Check liked
+            await membersAgent
+                .get(`/api/comments/${commentId}/`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    comments: new Array(1).fill(commentMatcherWithMember)
+                })
+                .expect(({body}) => {
+                    body.comments[0].liked.should.eql(false);
+                });
         });
     });
 });
