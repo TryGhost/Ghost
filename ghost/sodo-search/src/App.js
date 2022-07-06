@@ -45,10 +45,28 @@ export default class App extends React.Component {
         // Listen to preview mode changes
         this.handleSearchUrl();
         this.addKeyboardShortcuts();
+        this.setupCustomTriggerButton();
         this.hashHandler = () => {
             this.handleSearchUrl();
         };
         window.addEventListener('hashchange', this.hashHandler, false);
+    }
+
+    /** Setup custom trigger buttons handling on page */
+    setupCustomTriggerButton() {
+        // Handler for custom buttons
+        this.clickHandler = (event) => {
+            event.preventDefault();
+            this.setState({
+                showPopup: true
+            });
+        };
+        const customTriggerSelector = '[data-ghost-search]';
+        this.customTriggerButtons = document.querySelectorAll(customTriggerSelector) || [];
+        this.customTriggerButtons.forEach((customTriggerButton) => {
+            customTriggerButton.removeEventListener('click', this.clickHandler);
+            customTriggerButton.addEventListener('click', this.clickHandler);
+        });
     }
 
     handleSearchUrl() {
