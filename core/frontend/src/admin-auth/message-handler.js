@@ -34,7 +34,10 @@ window.addEventListener('message', async function (event) {
             const res = await fetch('https://admin.egg/blog/ghost/api/canary/admin/comments/' + data.id + '/', {
                 method: 'PUT',
                 body: JSON.stringify({
-                    status: 'hidden'
+                    comments: [{
+                        id: data.id,
+                        status: 'hidden'
+                    }]
                 }),
                 headers: {
                     'Content-Type': 'application/json'
@@ -52,7 +55,10 @@ window.addEventListener('message', async function (event) {
             const res = await fetch('https://admin.egg/blog/ghost/api/canary/admin/comments/' + data.id + '/', {
                 method: 'PUT',
                 body: JSON.stringify({
-                    status: 'published'
+                    comments: [{
+                        id: data.id,
+                        status: 'published'
+                    }]
                 }),
                 headers: {
                     'Content-Type': 'application/json'
