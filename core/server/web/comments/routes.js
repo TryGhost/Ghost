@@ -19,5 +19,8 @@ module.exports = function apiRoutes() {
     router.put('/:id', http(api.commentsComments.edit));
     router.delete('/:id', http(api.commentsComments.destroy));
 
+    router.post('/:id/like', http(api.commentsComments.like));
+    router.delete('/:id/like', http(api.commentsComments.unlike));
+
     return router;
 };

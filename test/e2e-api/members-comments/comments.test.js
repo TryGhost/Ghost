@@ -1,7 +1,7 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyEtag, anyObjectId, anyLocationFor, anyISODateTime, anyUuid} = matchers;
 
-let membersAgent, membersService, postId;
+let membersAgent, membersService, postId, commentId;
 
 describe('Comments API', function () {
     before(async function () {
@@ -47,6 +47,8 @@ describe('Comments API', function () {
                         updated_at: anyISODateTime
                     }]
                 });
+            // Save for other tests
+            commentId = body.comments[0].id;
         });
 
         it('Can browse all comments of a post', async function () {
@@ -71,6 +73,43 @@ describe('Comments API', function () {
                         updated_at: anyISODateTime
                     }]
                 });
+        });
+
+        it('Can like a comment', async function () {
+            // Create a temporary comment
+            await membersAgent
+                .post(`/api/comments/${commentId}/like/`)
+                .expectStatus(204)
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .expectEmptyBody();
+        });
+
+        it('Cannot like a comment multiple times', async function () {
+            // Create a temporary comment
+            await membersAgent
+                .post(`/api/comments/${commentId}/like/`)
+                .expectStatus(400)
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyUuid
+                    }]
+                });
+        });
+
+        it('Can remove a like', async function () {
+            // Create a temporary comment
+            const {body} = await membersAgent
+                .delete(`/api/comments/${commentId}/like/`)
+                .expectStatus(204)
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .expectEmptyBody();
         });
     });
 });
