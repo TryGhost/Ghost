@@ -2,6 +2,7 @@ const ghostBookshelf = require('./base');
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
+const commentsService = require('../services/comments');
 
 const messages = {
     commentNotFound: 'Comment could not be found',
@@ -37,6 +38,10 @@ const Comment = ghostBookshelf.Model.extend({
 
     onCreated: function onCreated(model, options) {
         ghostBookshelf.Model.prototype.onCreated.apply(this, arguments);
+
+        if (!options.context.internal) {
+            commentsService.api.sendNewCommentNotifications(model);
+        }
 
         model.emitChange('added', options);
     }
