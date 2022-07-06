@@ -59,6 +59,40 @@ async function showComment({state, adminApi, data: comment}) {
     };
 }
 
+async function likeComment({state, api, data: comment}) {
+    await api.comments.like({comment});
+
+    return {
+        comments: state.comments.map((c) => {
+            if (c.id === comment.id) {
+                return {
+                    ...c,
+                    liked: true,
+                    likes_count: c.likes_count + 1
+                };
+            }
+            return c;
+        })
+    };
+}
+
+async function unlikeComment({state, api, data: comment}) {
+    await api.comments.unlike({comment});
+
+    return {
+        comments: state.comments.map((c) => {
+            if (c.id === comment.id) {
+                return {
+                    ...c,
+                    liked: false,
+                    likes_count: c.likes_count - 1
+                };
+            }
+            return c;
+        })
+    };
+}
+
 async function deleteComment({state, api, data: comment}) {
     await api.comments.edit({
         comment: {
@@ -86,6 +120,8 @@ const Actions = {
     hideComment,
     deleteComment,
     showComment,
+    likeComment,
+    unlikeComment,
     loadMoreComments
 };
 

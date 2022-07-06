@@ -1,30 +1,24 @@
-import React from 'react';
-import AppContext from '../AppContext';
+import {useContext} from 'react';
 import {ReactComponent as LikeIcon} from '../images/icons/like.svg';
+import AppContext from '../AppContext';
 
-class Like extends React.Component {
-    static contextType = AppContext;
+function Like(props) {
+    const {onAction} = useContext(AppContext);
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            liked: false
-        };
+    const toggleLike = () => {
+        if (!props.comment.liked) {
+            onAction('likeComment', props.comment);
+        } else {
+            onAction('unlikeComment', props.comment);
+        }
+    };
 
-        this.toggleLike = this.toggleLike.bind(this);
-    }
-
-    toggleLike() {
-        this.setState(state => ({
-            liked: !state.liked
-        }));
-    }
-
-    render() {
-        return (
-            <button className="flex font-sans text-[14px] items-center" onClick={this.toggleLike}><LikeIcon className={`gh-comments-icon gh-comments-icon-like mr-1 ${this.state.liked ? 'fill-black' : ''}`} />3</button>
-        );
-    }
+    return (
+        <button className="flex font-sans text-[14px] items-center" onClick={toggleLike}>
+            <LikeIcon className={`gh-comments-icon gh-comments-icon-like mr-1 ${props.comment.liked ? 'fill-black' : ''}`} />
+            {props.comment.likes_count}
+        </button>
+    );
 }
 
 export default Like;

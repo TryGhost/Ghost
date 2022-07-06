@@ -140,6 +140,46 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                     throw new Error('Failed to edit comment');
                 }
             });
+        },
+        like({comment}) {
+            const body = {
+                comments: [comment]
+            };
+            const url = endpointFor({type: 'members', resource: `comments/${comment.id}/like`});
+            return makeRequest({
+                url,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            }).then(function (res) {
+                if (res.ok) {
+                    return 'Success';
+                } else {
+                    throw new Error('Failed to like comment');
+                }
+            });
+        },
+        unlike({comment}) {
+            const body = {
+                comments: [comment]
+            };
+            const url = endpointFor({type: 'members', resource: `comments/${comment.id}/like`});
+            return makeRequest({
+                url,
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            }).then(function (res) {
+                if (res.ok) {
+                    return 'Success';
+                } else {
+                    throw new Error('Failed to unlike comment');
+                }
+            });
         }
     };
 
