@@ -1,9 +1,13 @@
 import elasticlunr from 'elasticlunr';
+import GhostContentAPI from '@tryghost/content-api';
 
 export default class SearchIndex {
-    constructor({apiUrl, apiKey}) {
-        this.apiUrl = apiUrl;
-        this.apiKey = apiKey;
+    constructor({siteURL, apiKey}) {
+        this.api = new GhostContentAPI({
+            url: siteURL,
+            key: apiKey,
+            version: 'v5.0'
+        });
 
         this.postsIndex = null;
         this.authorsIndex = null;
@@ -12,8 +16,8 @@ export default class SearchIndex {
         this.search = this.search.bind(this);
     }
 
-    #updatePostIndex(data) {
-        data.posts.forEach((post) => {
+    #updatePostIndex(posts) {
+        posts.forEach((post) => {
             this.postsIndex.addDoc({
                 id: post.id,
                 title: post.title,
@@ -24,8 +28,8 @@ export default class SearchIndex {
         });
     }
 
-    #updateAuthorsIndex(data) {
-        data.authors.forEach((author) => {
+    #updateAuthorsIndex(authors) {
+        authors.forEach((author) => {
             this.authorsIndex.addDoc({
                 id: author.id,
                 name: author.name,
@@ -35,8 +39,8 @@ export default class SearchIndex {
         });
     }
 
-    #updateTagsIndex(data) {
-        data.tags.forEach((tag) => {
+    #updateTagsIndex(tags) {
+        tags.forEach((tag) => {
             this.tagsIndex.addDoc({
                 id: tag.id,
                 name: tag.name,
@@ -49,12 +53,12 @@ export default class SearchIndex {
         // remove default stop words to search of *any* word
         elasticlunr.clearStopWords();
 
-        const postsAPIUrl = `${this.apiUrl}/posts/?key=${this.apiKey}&limit=all&fields=id,slug,title,excerpt,url,updated_at,visibility&order=updated_at%20desc&formats=plaintext`;
-        const authorsAPIUrl = `${this.apiUrl}/authors/?key=${this.apiKey}&limit=all&fields=id,slug,name,url,profile_image`;
-        const tagsAPIUrl = `${this.apiUrl}/tags/?key=${this.apiKey}&limit=all&fields=id,slug,name,url`;
-
-        const postsResponse = await fetch(postsAPIUrl);
-        const posts = await postsResponse.json();
+        let posts = await this.api.posts.browse({
+            limit: 'all',
+            fields: 'id,slug,title,excerpt,url,updated_at,visibility',
+            order: 'updated_at DESC',
+            formats: 'plaintext'
+        });
 
         this.postsIndex = elasticlunr();
         this.postsIndex.addField('title');
@@ -62,12 +66,17 @@ export default class SearchIndex {
         this.postsIndex.addField('excerpt');
         this.postsIndex.setRef('id');
 
-        if (posts.posts.length > 0) {
+        if (posts || posts.length > 0) {
+            if (!posts.length) {
+                posts = [posts];
+            }
             this.#updatePostIndex(posts);
         }
 
-        const authorsResponse = await fetch(authorsAPIUrl);
-        const authors = await authorsResponse.json();
+        let authors = await this.api.authors.browse({
+            limit: 'all',
+            fields: 'id,slug,name,url,profile_image'
+        });
 
         this.authorsIndex = elasticlunr();
         this.authorsIndex.addField('name');
@@ -75,19 +84,28 @@ export default class SearchIndex {
         this.authorsIndex.addField('profile_image');
         this.authorsIndex.setRef('id');
 
-        if (authors.authors.length > 0) {
+        if (authors || authors.length > 0) {
+            if (!authors.length) {
+                authors = [authors];
+            }
+
             this.#updateAuthorsIndex(authors);
         }
 
-        const tagsResponse = await fetch(tagsAPIUrl);
-        const tags = await tagsResponse.json();
-
+        let tags = await this.api.tags.browse({
+            limit: 'all',
+            fields: 'id,slug,name,url'
+        });
         this.tagsIndex = elasticlunr();
         this.tagsIndex.addField('name');
         this.tagsIndex.addField('url');
         this.tagsIndex.setRef('id');
 
-        if (tags.tags.length > 0) {
+        if (tags || tags.length > 0) {
+            if (!tags.length) {
+                tags = [tags];
+            }
+
             this.#updateTagsIndex(tags);
         }
     }
