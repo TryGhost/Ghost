@@ -32,8 +32,11 @@ module.exports = (model, frame) => {
         response.likes_count = 0;
     }
 
-    // todo
     response.liked = false;
+    if (jsonModel.likes && frame.original.context.member && frame.original.context.member.id) {
+        const id = frame.original.context.member.id;
+        response.liked = !!jsonModel.likes.find(l => l.member_id === id);
+    }
 
     return response;
 };
