@@ -62,7 +62,7 @@ import Avatar from './Avatar';
 //     );
 // };
 
-class AddForm extends React.Component {
+class Form extends React.Component {
     static contextType = AppContext;
 
     constructor(props) {
@@ -133,5 +133,5 @@ class AddForm extends React.Component {
         );
     }
 }
-
-export default AddForm;
+  
+export default Form;
