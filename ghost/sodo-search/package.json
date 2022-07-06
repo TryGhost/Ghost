@@ -31,7 +31,7 @@
     "start:combined": "BROWSER=none node ./scripts/start-combined.js",
     "start:dev": "node ./scripts/start-mode.js",
     "dev": "node ./scripts/start-mode.js",
-    "tailwind": "npx tailwindcss -i ./src/index.css -o ./public/main.css --watch",
+    "tailwind": "npx tailwindcss -i ./src/index.css -o ./public/main.css --watch --minify",
     "old:dev": "node ./scripts/dev-mode.js",
     "build": "npm run build:combined",
     "build:original": "react-scripts build",
