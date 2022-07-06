@@ -24,7 +24,7 @@ class CommentContextMenu extends React.Component {
         const comment = this.props.comment;
 
         return (
-            <div>
+            <div className="bg-white absolute font-sans rounded py-3 px-4 drop-shadow-xl text-sm">
                 {this.isAuthor ? <AuthorContextMenu comment={comment}/> : (this.isAdmin ? <AdminContextMenu comment={comment}/> : <NotAuthorContextMenu comment={comment}/>)}
             </div>
         );

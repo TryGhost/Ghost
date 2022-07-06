@@ -17,11 +17,9 @@ class AdminContextMenu extends React.Component {
 
     render() {
         return (
-            <div className='bg-white absolute'>
-                <button onClick={this.deleteComment}>
-                    Hide comment
-                </button>
-            </div>
+            <button onClick={this.deleteComment}>
+                Hide comment
+            </button>
         );
     }
 }

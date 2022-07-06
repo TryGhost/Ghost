@@ -17,14 +17,14 @@ class AuthorContextMenu extends React.Component {
 
     render() {
         return (
-            <div className='bg-white absolute'>
-                <button>
+            <>
+                <button className="w-full mb-3 text-left">
                     Edit
                 </button>
-                <button onClick={this.deleteComment}>
+                <button className="w-full text-left" onClick={this.deleteComment}>
                     Delete
                 </button>
-            </div>
+            </>
         );
     }
 }

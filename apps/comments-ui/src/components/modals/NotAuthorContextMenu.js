@@ -17,11 +17,9 @@ class NotAuthorContextMenu extends React.Component {
 
     render() {
         return (
-            <div className='bg-white absolute'>
-                <button onClick={this.reportComment}>
-                    Report comment
-                </button>
-            </div>
+            <button onClick={this.reportComment}>
+                Report comment
+            </button>
         );
     }
 }
