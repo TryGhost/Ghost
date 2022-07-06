@@ -2,13 +2,14 @@ const Promise = require('bluebird');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
-const {identity} = require('lodash');
 const ALLOWED_INCLUDES = ['post', 'member'];
 const UNSAFE_ATTRS = ['status'];
 
 const messages = {
     commentNotFound: 'Comment could not be found',
-    memberNotFound: 'Unable to find member'
+    memberNotFound: 'Unable to find member',
+    likeNotFound: 'Unable to find like',
+    alreadyLiked: 'This comment was liked already'
 };
 
 module.exports = {
@@ -150,6 +151,71 @@ module.exports = {
                         message: tpl(messages.commentNotFound)
                     }));
                 });
+        }
+    },
+
+    like: {
+        statusCode: 204,
+        options: [
+            'id'
+        ],
+        validation: {
+        },
+        permissions: true,
+        async query(frame) {
+            // TODO: move to likes service
+            if (frame.options?.context?.member?.id) {
+                const data = {
+                    member_id: frame.options.context.member.id,
+                    comment_id: frame.options.id
+                };
+
+                const existing = await models.CommentLike.findOne(data, frame.options);
+                
+                if (existing) {
+                    throw new errors.BadRequestError({
+                        message: tpl(messages.alreadyLiked)
+                    });
+                }
+
+                return await models.CommentLike.add(data, frame.options);
+            } else {
+                throw new errors.NotFoundError({
+                    message: tpl(messages.memberNotFound)
+                });
+            }
+        }
+    },
+
+    unlike: {
+        statusCode: 204,
+        options: [
+            'id'
+        ],
+        validation: {},
+        permissions: true,
+        query(frame) {
+            frame.options.require = true;
+
+            // TODO: move to likes service
+            if (frame.options?.context?.member?.id) {
+                return models.CommentLike.destroy({
+                    ...frame.options,
+                    destroyBy: {
+                        member_id: frame.options.context.member.id,
+                        comment_id: frame.options.id
+                    }
+                }).then(() => null)
+                    .catch(models.CommentLike.NotFoundError, () => {
+                        return Promise.reject(new errors.NotFoundError({
+                            message: tpl(messages.likeNotFound)
+                        }));
+                    });
+            } else {
+                return Promise.reject(new errors.NotFoundError({
+                    message: tpl(messages.memberNotFound)
+                }));
+            }
         }
     }
 };
