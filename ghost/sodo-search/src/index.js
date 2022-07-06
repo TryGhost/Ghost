@@ -20,7 +20,8 @@ function getSiteData() {
         const siteUrl = scriptTag.dataset.sodoSearch;
         const apiKey = scriptTag.dataset.key;
         const apiUrl = scriptTag.dataset.api;
-        return {siteUrl, apiKey, apiUrl};
+        const appVersion = scriptTag.dataset.version;
+        return {siteUrl, apiKey, apiUrl, appVersion};
     }
     return {};
 }
@@ -30,12 +31,15 @@ function setup({siteUrl}) {
 }
 
 function init() {
-    const {siteUrl: customSiteUrl, apiKey, apiUrl} = getSiteData();
+    const {siteUrl: customSiteUrl, apiKey, apiUrl, appVersion} = getSiteData();
     const siteUrl = customSiteUrl || window.location.origin;
     setup({siteUrl});
     ReactDOM.render(
         <React.StrictMode>
-            <App siteUrl={siteUrl} apiKey={apiKey} apiUrl={apiUrl} />
+            <App
+                siteUrl={siteUrl} apiKey={apiKey} apiUrl={apiUrl}
+                appVersion={appVersion}
+            />
         </React.StrictMode>,
         document.getElementById(ROOT_DIV_ID)
     );
