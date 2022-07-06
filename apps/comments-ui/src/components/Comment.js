@@ -3,7 +3,7 @@ import React from 'react';
 import AppContext from '../AppContext';
 import Avatar from './Avatar';
 import Like from './Like';
-import Reply from './Reply';
+// import Reply from './Reply';
 import More from './More';
 import EditForm from './EditForm';
 
@@ -69,7 +69,7 @@ class Comment extends React.Component {
                         </div>
                         <div className="ml-14 flex gap-5">
                             <Like comment={comment} />
-                            <Reply comment={comment} />
+                            {/* <Reply comment={comment} /> */}
                             <More comment={comment} show={this.hasMoreContextMenu} toggleEdit={this.toggleEditMode} />
                         </div>
                     </div>
