@@ -29,7 +29,8 @@ export default class SearchIndex {
             this.authorsIndex.addDoc({
                 id: author.id,
                 name: author.name,
-                url: author.url
+                url: author.url,
+                profile_image: author.profile_image
             });
         });
     }
@@ -71,6 +72,7 @@ export default class SearchIndex {
         this.authorsIndex = elasticlunr();
         this.authorsIndex.addField('name');
         this.authorsIndex.addField('url');
+        this.authorsIndex.addField('profile_image');
         this.authorsIndex.setRef('id');
 
         if (authors.authors.length > 0) {

@@ -87,6 +87,7 @@ describe('search index', function () {
         expect(searchResults.authors.length).toEqual(1);
         expect(searchResults.authors[0].name).toEqual('Barcelona Author');
         expect(searchResults.authors[0].url).toEqual('http://localhost/ghost/authors/barcelona-author/');
+        expect(searchResults.authors[0].profile_image).toEqual('https://url_to_avatar/barcelona.png');
 
         expect(searchResults.tags.length).toEqual(1);
         expect(searchResults.tags[0].name).toEqual('Barcelona Tag');
