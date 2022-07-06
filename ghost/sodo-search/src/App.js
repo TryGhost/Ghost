@@ -30,11 +30,13 @@ export default class App extends React.Component {
     componentWillUnmount() {
         /**Clear timeouts and event listeners on unmount */
         window.removeEventListener('hashchange', this.hashHandler, false);
+        window.removeEventListener('keydown', this.handleKeyDown, false);
     }
 
     initSetup() {
         // Listen to preview mode changes
         this.handleSearchUrl();
+        this.addKeyboardShortcuts();
         this.hashHandler = () => {
             this.handleSearchUrl();
         };
@@ -49,6 +51,17 @@ export default class App extends React.Component {
             });
             window.history.replaceState('', document.title, window.location.pathname);
         }
+    }
+
+    addKeyboardShortcuts() {
+        this.handleKeyDown = (e) => {
+            if (e.keyCode === 75 && e.metaKey) {
+                this.setState({
+                    showPopup: true
+                });
+            }
+        };
+        document.addEventListener('keydown', this.handleKeyDown);
     }
 
     render() {
