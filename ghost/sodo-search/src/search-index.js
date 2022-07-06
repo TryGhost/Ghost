@@ -18,7 +18,8 @@ export default class SearchIndex {
                 id: post.id,
                 title: post.title,
                 excerpt: post.excerpt,
-                slug: post.slug
+                slug: post.slug,
+                url: post.url
             });
         });
     }
@@ -27,7 +28,8 @@ export default class SearchIndex {
         data.authors.forEach((author) => {
             this.authorsIndex.addDoc({
                 id: author.id,
-                name: author.name
+                name: author.name,
+                url: author.url
             });
         });
     }
@@ -36,7 +38,8 @@ export default class SearchIndex {
         data.tags.forEach((tag) => {
             this.tagsIndex.addDoc({
                 id: tag.id,
-                name: tag.name
+                name: tag.name,
+                url: tag.url
             });
         });
     }
