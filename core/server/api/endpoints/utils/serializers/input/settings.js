@@ -55,7 +55,8 @@ const EDITABLE_SETTINGS = [
     'accent_color',
     'editor_default_email_recipients',
     'editor_default_email_recipients_filter',
-    'labs'
+    'labs',
+    'comments_enabled'
 ];
 
 module.exports = {
