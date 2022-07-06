@@ -5,6 +5,7 @@ import Avatar from './Avatar';
 import Like from './Like';
 import Reply from './Reply';
 import More from './More';
+import EditForm from './EditForm';
 
 class Comment extends React.Component {
     static contextType = AppContext;
@@ -12,15 +13,23 @@ class Comment extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            isContextMenuOpen: false
+            isContextMenuOpen: false,
+            isInEditMode: false
         };
 
         this.toggleContextMenu = this.toggleContextMenu.bind(this);
+        this.toggleEditMode = this.toggleEditMode.bind(this);
     }
 
     toggleContextMenu() {
         this.setState(state => ({
             isContextMenuOpen: !state.isContextMenuOpen
+        }));
+    }
+
+    toggleEditMode() {
+        this.setState(state => ({
+            isInEditMode: !state.isInEditMode
         }));
     }
 
@@ -40,27 +49,33 @@ class Comment extends React.Component {
             html.__html = '<i>This comment has been removed.</i>';
         }
 
-        return (
-            <div className="flex mb-8">
-                <div>
-                    <div className="flex mb-2 space-x-4 justify-start items-center">
-                        <Avatar comment={comment} />
-                        <div>
-                            <h4 className="text-lg font-sans font-bold mb-1 tracking-tight dark:text-neutral-300">{comment.member.name}</h4>
-                            <h6 className="text-xs text-neutral-400 font-sans">{formatRelativeTime(comment.created_at)}</h6>
+        if (this.state.isInEditMode) {
+            return (
+                <EditForm value={html} comment={comment} toggle={this.toggleEditMode} />
+            );
+        } else {
+            return (
+                <div className="flex mb-8">
+                    <div>
+                        <div className="flex mb-2 space-x-4 justify-start items-center">
+                            <Avatar comment={comment} />
+                            <div>
+                                <h4 className="text-lg font-sans font-bold mb-1 tracking-tight dark:text-neutral-300">{comment.member.name}</h4>
+                                <h6 className="text-xs text-neutral-400 font-sans">{formatRelativeTime(comment.created_at)}</h6>
+                            </div>
+                        </div>
+                        <div className="ml-14 mb-2.5 pr-4 font-sans leading-normal dark:text-neutral-300">
+                            <p dangerouslySetInnerHTML={html} className="whitespace-pre-wrap"></p>
+                        </div>
+                        <div className="ml-14 flex gap-5">
+                            <Like comment={comment} />
+                            <Reply comment={comment} />
+                            <More comment={comment} show={this.hasMoreContextMenu} toggleEdit={this.toggleEditMode} />
                         </div>
                     </div>
-                    <div className="ml-14 mb-2.5 pr-4 font-sans leading-normal dark:text-neutral-300">
-                        <p dangerouslySetInnerHTML={html} className="whitespace-pre-wrap"></p>
-                    </div>
-                    <div className="ml-14 flex gap-5">
-                        <Like comment={comment} />
-                        <Reply comment={comment} />
-                        <More comment={comment} show={this.hasMoreContextMenu} />
-                    </div>
                 </div>
-            </div>
-        );
+            );
+        }
     }
 }
   

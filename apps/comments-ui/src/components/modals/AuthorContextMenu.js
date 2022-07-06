@@ -23,10 +23,10 @@ class AuthorContextMenu extends React.Component {
     render() {
         return (
             <div className="flex flex-col">
-                <button className="w-full mb-3 text-left">
+                <button className="w-full mb-3 text-left text-[14px]" onClick={this.props.toggleEdit}>
                     Edit
                 </button>
-                <button className="w-full text-left" onClick={this.deleteComment}>
+                <button className="w-full text-left text-[14px]" onClick={this.deleteComment}>
                     Delete
                 </button>
             </div>

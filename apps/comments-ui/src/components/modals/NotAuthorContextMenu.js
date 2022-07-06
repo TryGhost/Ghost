@@ -22,7 +22,7 @@ class NotAuthorContextMenu extends React.Component {
 
     render() {
         return (
-            <button onClick={this.reportComment}>
+            <button className="text-[14px]" onClick={this.reportComment}>
                 Report comment
             </button>
         );

@@ -35,11 +35,11 @@ class AdminContextMenu extends React.Component {
             <div className="flex flex-col">
                 {
                     this.isHidden ? 
-                        <button onClick={this.showComment}>
+                        <button className="text-[14px]" onClick={this.showComment}>
                             Show comment
                         </button> 
                         : 
-                        <button onClick={this.hideComment}>
+                        <button className="text-[14px]" onClick={this.hideComment}>
                             Hide comment
                         </button>
                 }
