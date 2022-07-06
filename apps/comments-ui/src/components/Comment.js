@@ -29,7 +29,7 @@ class Comment extends React.Component {
      * (to hide the 'more' icon if we don't have any actions)
      */
     get hasMoreContextMenu() {
-        return !!this.context.member || !!this.context.admin;
+        return (!!this.context.member && this.props.comment.status === 'published') || !!this.context.admin;
     }
 
     render() {
@@ -37,7 +37,7 @@ class Comment extends React.Component {
         const html = {__html: comment.html};
 
         if (comment.status !== 'published') {
-            html.__html = '<i>This comment has been removed</i>';
+            html.__html = '<i>This comment has been removed.</i>';
         }
 
         return (

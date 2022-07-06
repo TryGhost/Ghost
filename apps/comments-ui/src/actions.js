@@ -43,6 +43,22 @@ async function hideComment({state, adminApi, data: comment}) {
     };
 }
 
+async function showComment({state, adminApi, data: comment}) {
+    await adminApi.showComment(comment.id);
+
+    return {
+        comments: state.comments.map((c) => {
+            if (c.id === comment.id) {
+                return {
+                    ...c,
+                    status: 'published'
+                };
+            }
+            return c;
+        })
+    };
+}
+
 async function deleteComment({state, api, data: comment}) {
     await api.comments.edit({
         comment: {
@@ -69,6 +85,7 @@ const Actions = {
     addComment,
     hideComment,
     deleteComment,
+    showComment,
     loadMoreComments
 };
 

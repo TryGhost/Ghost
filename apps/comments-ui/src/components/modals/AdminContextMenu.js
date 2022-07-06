@@ -9,11 +9,21 @@ class AdminContextMenu extends React.Component {
         this.state = {};
 
         this.hideComment = this.hideComment.bind(this);
+        this.showComment = this.showComment.bind(this);
     }
 
     hideComment(event) {
         this.context.onAction('hideComment', this.props.comment);
         this.close();
+    }
+
+    showComment(event) {
+        this.context.onAction('showComment', this.props.comment);
+        this.close();
+    }
+
+    get isHidden() {
+        return this.props.comment.status !== 'published';
     }
 
     close() {
@@ -22,9 +32,18 @@ class AdminContextMenu extends React.Component {
 
     render() {
         return (
-            <button onClick={this.hideComment}>
-                Hide comment
-            </button>
+            <div className="flex flex-col">
+                {
+                    this.isHidden ? 
+                        <button onClick={this.showComment}>
+                            Show comment
+                        </button> 
+                        : 
+                        <button onClick={this.hideComment}>
+                            Hide comment
+                        </button>
+                }
+            </div>
         );
     }
 }
