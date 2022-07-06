@@ -23,7 +23,11 @@ Object {
       "custom_excerpt": "We've crammed the most important information to help you get started with Ghost into this one post. It's your cheat-sheet to get started, and your shortcut to advanced features.",
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "We've crammed the most important information to help you get started with Ghost into this one post. It's your cheat-sheet to get started, and your shortcut to advanced features.",
+      "excerpt": "Hey there, welcome to your new home on the web!
+
+Unlike social networks, this one is all yours. Publish your work on a custom domain, invite your audience to subscribe, send them new content by email newsletter, and offer premium subscriptions to generate sustainable recurring revenue to fund your work.
+
+Ghost is an independent, open source app, which means you can customize absolutely everything. Inside the admin area, you'll find straightforward controls for changing themes, colors, navigation",
       "feature_image": "https://static.ghost.org/v4.0.0/images/welcome-to-ghost.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -56,7 +60,7 @@ exports[`Posts Content API Can filter by published date 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4559",
+  "content-length": "4886",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -87,7 +91,9 @@ Object {
       "custom_excerpt": "How to tweak a few settings in Ghost to transform your site from a generic template to a custom brand with style and personality.",
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "How to tweak a few settings in Ghost to transform your site from a generic template to a custom brand with style and personality.",
+      "excerpt": "As discussed in the introduction post, one of the best things about Ghost is just how much you can customize to turn your site into something unique. Everything about your layout and design can be changed, so you're not stuck with yet another clone of a social network profile.
+
+How far you want to go with customization is completely up to you, there's no right or wrong approach! The majority of people use one of Ghost's built-in themes to get started, and then progress to something more bespoke ",
       "feature_image": "https://static.ghost.org/v4.0.0/images/publishing-options.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -132,7 +138,7 @@ exports[`Posts Content API Can filter by published date 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "5850",
+  "content-length": "6223",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -163,7 +169,11 @@ Object {
       "custom_excerpt": "We've crammed the most important information to help you get started with Ghost into this one post. It's your cheat-sheet to get started, and your shortcut to advanced features.",
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "We've crammed the most important information to help you get started with Ghost into this one post. It's your cheat-sheet to get started, and your shortcut to advanced features.",
+      "excerpt": "Hey there, welcome to your new home on the web!
+
+Unlike social networks, this one is all yours. Publish your work on a custom domain, invite your audience to subscribe, send them new content by email newsletter, and offer premium subscriptions to generate sustainable recurring revenue to fund your work.
+
+Ghost is an independent, open source app, which means you can customize absolutely everything. Inside the admin area, you'll find straightforward controls for changing themes, colors, navigation",
       "feature_image": "https://static.ghost.org/v4.0.0/images/welcome-to-ghost.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -196,7 +206,7 @@ exports[`Posts Content API Can filter by published date 6: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4560",
+  "content-length": "4887",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -337,7 +347,11 @@ Definition listConsectetur adipisicing elit, sed do eiusmod tempor incididunt ut
       "custom_excerpt": "We've crammed the most important information to help you get started with Ghost into this one post. It's your cheat-sheet to get started, and your shortcut to advanced features.",
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "We've crammed the most important information to help you get started with Ghost into this one post. It's your cheat-sheet to get started, and your shortcut to advanced features.",
+      "excerpt": "Hey there, welcome to your new home on the web!
+
+Unlike social networks, this one is all yours. Publish your work on a custom domain, invite your audience to subscribe, send them new content by email newsletter, and offer premium subscriptions to generate sustainable recurring revenue to fund your work.
+
+Ghost is an independent, open source app, which means you can customize absolutely everything. Inside the admin area, you'll find straightforward controls for changing themes, colors, navigation",
       "feature_image": "https://static.ghost.org/v4.0.0/images/welcome-to-ghost.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -404,7 +418,9 @@ Definition listConsectetur adipisicing elit, sed do eiusmod tempor incididunt ut
       "custom_excerpt": "How to tweak a few settings in Ghost to transform your site from a generic template to a custom brand with style and personality.",
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "How to tweak a few settings in Ghost to transform your site from a generic template to a custom brand with style and personality.",
+      "excerpt": "As discussed in the introduction post, one of the best things about Ghost is just how much you can customize to turn your site into something unique. Everything about your layout and design can be changed, so you're not stuck with yet another clone of a social network profile.
+
+How far you want to go with customization is completely up to you, there's no right or wrong approach! The majority of people use one of Ghost's built-in themes to get started, and then progress to something more bespoke ",
       "feature_image": "https://static.ghost.org/v4.0.0/images/publishing-options.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -483,7 +499,9 @@ Definition listConsectetur adipisicing elit, sed do eiusmod tempor incididunt ut
       "custom_excerpt": "A full overview of all the features built into the Ghost editor, including powerful workflow automations to speed up your creative process.",
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "A full overview of all the features built into the Ghost editor, including powerful workflow automations to speed up your creative process.",
+      "excerpt": "Ghost comes with a best-in-class editor which does its very best to get out of the way, and let you focus on your content. Don't let its minimal looks fool you, though, beneath the surface lies a powerful editing toolset designed to accommodate the extensive needs of modern creators.
+
+For many, the base canvas of the Ghost editor will feel familiar. You can start writing as you would expect, highlight content to access the toolbar you would expect, and generally use all of the keyboard shortcuts",
       "feature_image": "https://static.ghost.org/v4.0.0/images/writing-posts-with-ghost.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -550,7 +568,9 @@ Definition listConsectetur adipisicing elit, sed do eiusmod tempor incididunt ut
       "custom_excerpt": "How Ghost allows you to turn anonymous readers into an audience of active subscribers, so you know what's working and what isn't.",
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "How Ghost allows you to turn anonymous readers into an audience of active subscribers, so you know what's working and what isn't.",
+      "excerpt": "What sets Ghost apart from other products is that you can publish content and grow your audience using the same platform. Rather than just endlessly posting and hoping someone is listening, you can track real signups against your work and have them subscribe to be notified of future posts. The feature that makes all this possible is called Portal.
+
+Portal is an embedded interface for your audience to sign up to your site. It works on every Ghost site, with every theme, and for any type of publis",
       "feature_image": "https://static.ghost.org/v4.0.0/images/creating-a-custom-theme.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -701,7 +721,13 @@ Most successful subscription businesses publish a mix of free and paid posts to 
       "custom_excerpt": "A guide to collaborating with other staff users to publish, and some resources to help you with the next steps of growing your business",
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "A guide to collaborating with other staff users to publish, and some resources to help you with the next steps of growing your business",
+      "excerpt": "As you grow, you'll probably want to start inviting team members and collaborators to your site. Ghost has a number of different user roles for your team:
+
+Contributors
+This is the base user level in Ghost. Contributors can create and edit their own draft posts, but they are unable to edit drafts of others or publish posts. Contributors are untrusted users with the most basic access to your publication.
+
+Authors
+Authors are the 2nd user level in Ghost. Authors can write, edit and publish their o",
       "feature_image": "https://static.ghost.org/v4.0.0/images/admin-settings.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -768,7 +794,11 @@ Most successful subscription businesses publish a mix of free and paid posts to 
       "custom_excerpt": "Work with all your favorite apps and tools or create your own custom integrations using the Ghost API.",
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "Work with all your favorite apps and tools or create your own custom integrations using the Ghost API.",
+      "excerpt": "It's possible to extend your Ghost site and connect it with hundreds of the most popular apps and tools using integrations.
+
+Whether you need to automatically publish new posts on social media, connect your favorite analytics tool, sync your community or embed forms into your content — our integrations library has got it all covered with hundreds of integration tutorials.
+
+Many integrations are as simple as inserting an embed by pasting a link, or copying a snippet of code directly from an app a",
       "feature_image": "https://static.ghost.org/v4.0.0/images/app-integrations.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -988,7 +1018,9 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
       "custom_excerpt": "This is my custom excerpt!",
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "This is my custom excerpt!",
+      "excerpt": "HTML Ipsum Presents
+
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum o",
       "feature_image": "https://example.com/super_photo.jpg",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -1036,7 +1068,7 @@ exports[`Posts Content API Can filter posts by authors 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "54719",
+  "content-length": "57406",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -1312,7 +1344,9 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
       "custom_excerpt": "This is my custom excerpt!",
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "This is my custom excerpt!",
+      "excerpt": "HTML Ipsum Presents
+
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum o",
       "feature_image": "https://example.com/super_photo.jpg",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -1410,7 +1444,7 @@ exports[`Posts Content API Can filter posts by tag 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "13909",
+  "content-length": "14385",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -1442,7 +1476,11 @@ Object {
       "custom_excerpt": "We've crammed the most important information to help you get started with Ghost into this one post. It's your cheat-sheet to get started, and your shortcut to advanced features.",
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "We've crammed the most important information to help you get started with Ghost into this one post. It's your cheat-sheet to get started, and your shortcut to advanced features.",
+      "excerpt": "Hey there, welcome to your new home on the web!
+
+Unlike social networks, this one is all yours. Publish your work on a custom domain, invite your audience to subscribe, send them new content by email newsletter, and offer premium subscriptions to generate sustainable recurring revenue to fund your work.
+
+Ghost is an independent, open source app, which means you can customize absolutely everything. Inside the admin area, you'll find straightforward controls for changing themes, colors, navigation",
       "feature_image": "https://static.ghost.org/v4.0.0/images/welcome-to-ghost.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -1515,7 +1553,9 @@ Object {
       "custom_excerpt": "How to tweak a few settings in Ghost to transform your site from a generic template to a custom brand with style and personality.",
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "How to tweak a few settings in Ghost to transform your site from a generic template to a custom brand with style and personality.",
+      "excerpt": "As discussed in the introduction post, one of the best things about Ghost is just how much you can customize to turn your site into something unique. Everything about your layout and design can be changed, so you're not stuck with yet another clone of a social network profile.
+
+How far you want to go with customization is completely up to you, there's no right or wrong approach! The majority of people use one of Ghost's built-in themes to get started, and then progress to something more bespoke ",
       "feature_image": "https://static.ghost.org/v4.0.0/images/publishing-options.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -1600,7 +1640,9 @@ Object {
       "custom_excerpt": "A full overview of all the features built into the Ghost editor, including powerful workflow automations to speed up your creative process.",
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "A full overview of all the features built into the Ghost editor, including powerful workflow automations to speed up your creative process.",
+      "excerpt": "Ghost comes with a best-in-class editor which does its very best to get out of the way, and let you focus on your content. Don't let its minimal looks fool you, though, beneath the surface lies a powerful editing toolset designed to accommodate the extensive needs of modern creators.
+
+For many, the base canvas of the Ghost editor will feel familiar. You can start writing as you would expect, highlight content to access the toolbar you would expect, and generally use all of the keyboard shortcuts",
       "feature_image": "https://static.ghost.org/v4.0.0/images/writing-posts-with-ghost.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -1673,7 +1715,9 @@ Object {
       "custom_excerpt": "How Ghost allows you to turn anonymous readers into an audience of active subscribers, so you know what's working and what isn't.",
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "How Ghost allows you to turn anonymous readers into an audience of active subscribers, so you know what's working and what isn't.",
+      "excerpt": "What sets Ghost apart from other products is that you can publish content and grow your audience using the same platform. Rather than just endlessly posting and hoping someone is listening, you can track real signups against your work and have them subscribe to be notified of future posts. The feature that makes all this possible is called Portal.
+
+Portal is an embedded interface for your audience to sign up to your site. It works on every Ghost site, with every theme, and for any type of publis",
       "feature_image": "https://static.ghost.org/v4.0.0/images/creating-a-custom-theme.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -1836,7 +1880,13 @@ Most successful subscription businesses publish a mix of free and paid posts to 
       "custom_excerpt": "A guide to collaborating with other staff users to publish, and some resources to help you with the next steps of growing your business",
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "A guide to collaborating with other staff users to publish, and some resources to help you with the next steps of growing your business",
+      "excerpt": "As you grow, you'll probably want to start inviting team members and collaborators to your site. Ghost has a number of different user roles for your team:
+
+Contributors
+This is the base user level in Ghost. Contributors can create and edit their own draft posts, but they are unable to edit drafts of others or publish posts. Contributors are untrusted users with the most basic access to your publication.
+
+Authors
+Authors are the 2nd user level in Ghost. Authors can write, edit and publish their o",
       "feature_image": "https://static.ghost.org/v4.0.0/images/admin-settings.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -1909,7 +1959,11 @@ Most successful subscription businesses publish a mix of free and paid posts to 
       "custom_excerpt": "Work with all your favorite apps and tools or create your own custom integrations using the Ghost API.",
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "Work with all your favorite apps and tools or create your own custom integrations using the Ghost API.",
+      "excerpt": "It's possible to extend your Ghost site and connect it with hundreds of the most popular apps and tools using integrations.
+
+Whether you need to automatically publish new posts on social media, connect your favorite analytics tool, sync your community or embed forms into your content — our integrations library has got it all covered with hundreds of integration tutorials.
+
+Many integrations are as simple as inserting an embed by pasting a link, or copying a snippet of code directly from an app a",
       "feature_image": "https://static.ghost.org/v4.0.0/images/app-integrations.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -2211,7 +2265,9 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
       "custom_excerpt": "This is my custom excerpt!",
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "This is my custom excerpt!",
+      "excerpt": "HTML Ipsum Presents
+
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum o",
       "feature_image": "https://example.com/super_photo.jpg",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -2281,7 +2337,7 @@ exports[`Posts Content API Can include relations 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "65048",
+  "content-length": "67735",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -2302,7 +2358,9 @@ Object {
       "custom_excerpt": "This is my custom excerpt!",
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "This is my custom excerpt!",
+      "excerpt": "HTML Ipsum Presents
+
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum o",
       "feature_image": "https://example.com/super_photo.jpg",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -2335,7 +2393,7 @@ exports[`Posts Content API Can request a single post 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2345",
+  "content-length": "2821",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -2428,7 +2486,11 @@ Object {
       "custom_excerpt": "We've crammed the most important information to help you get started with Ghost into this one post. It's your cheat-sheet to get started, and your shortcut to advanced features.",
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "We've crammed the most important information to help you get started with Ghost into this one post. It's your cheat-sheet to get started, and your shortcut to advanced features.",
+      "excerpt": "Hey there, welcome to your new home on the web!
+
+Unlike social networks, this one is all yours. Publish your work on a custom domain, invite your audience to subscribe, send them new content by email newsletter, and offer premium subscriptions to generate sustainable recurring revenue to fund your work.
+
+Ghost is an independent, open source app, which means you can customize absolutely everything. Inside the admin area, you'll find straightforward controls for changing themes, colors, navigation",
       "feature_image": "https://static.ghost.org/v4.0.0/images/welcome-to-ghost.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -2463,7 +2525,9 @@ Object {
       "custom_excerpt": "How to tweak a few settings in Ghost to transform your site from a generic template to a custom brand with style and personality.",
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "How to tweak a few settings in Ghost to transform your site from a generic template to a custom brand with style and personality.",
+      "excerpt": "As discussed in the introduction post, one of the best things about Ghost is just how much you can customize to turn your site into something unique. Everything about your layout and design can be changed, so you're not stuck with yet another clone of a social network profile.
+
+How far you want to go with customization is completely up to you, there's no right or wrong approach! The majority of people use one of Ghost's built-in themes to get started, and then progress to something more bespoke ",
       "feature_image": "https://static.ghost.org/v4.0.0/images/publishing-options.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -2510,7 +2574,9 @@ Object {
       "custom_excerpt": "A full overview of all the features built into the Ghost editor, including powerful workflow automations to speed up your creative process.",
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "A full overview of all the features built into the Ghost editor, including powerful workflow automations to speed up your creative process.",
+      "excerpt": "Ghost comes with a best-in-class editor which does its very best to get out of the way, and let you focus on your content. Don't let its minimal looks fool you, though, beneath the surface lies a powerful editing toolset designed to accommodate the extensive needs of modern creators.
+
+For many, the base canvas of the Ghost editor will feel familiar. You can start writing as you would expect, highlight content to access the toolbar you would expect, and generally use all of the keyboard shortcuts",
       "feature_image": "https://static.ghost.org/v4.0.0/images/writing-posts-with-ghost.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -2545,7 +2611,9 @@ Object {
       "custom_excerpt": "How Ghost allows you to turn anonymous readers into an audience of active subscribers, so you know what's working and what isn't.",
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "How Ghost allows you to turn anonymous readers into an audience of active subscribers, so you know what's working and what isn't.",
+      "excerpt": "What sets Ghost apart from other products is that you can publish content and grow your audience using the same platform. Rather than just endlessly posting and hoping someone is listening, you can track real signups against your work and have them subscribe to be notified of future posts. The feature that makes all this possible is called Portal.
+
+Portal is an embedded interface for your audience to sign up to your site. It works on every Ghost site, with every theme, and for any type of publis",
       "feature_image": "https://static.ghost.org/v4.0.0/images/creating-a-custom-theme.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -2632,7 +2700,13 @@ Most successful subscription businesses publish a mix of free and paid posts to 
       "custom_excerpt": "A guide to collaborating with other staff users to publish, and some resources to help you with the next steps of growing your business",
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "A guide to collaborating with other staff users to publish, and some resources to help you with the next steps of growing your business",
+      "excerpt": "As you grow, you'll probably want to start inviting team members and collaborators to your site. Ghost has a number of different user roles for your team:
+
+Contributors
+This is the base user level in Ghost. Contributors can create and edit their own draft posts, but they are unable to edit drafts of others or publish posts. Contributors are untrusted users with the most basic access to your publication.
+
+Authors
+Authors are the 2nd user level in Ghost. Authors can write, edit and publish their o",
       "feature_image": "https://static.ghost.org/v4.0.0/images/admin-settings.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -2667,7 +2741,11 @@ Most successful subscription businesses publish a mix of free and paid posts to 
       "custom_excerpt": "Work with all your favorite apps and tools or create your own custom integrations using the Ghost API.",
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "Work with all your favorite apps and tools or create your own custom integrations using the Ghost API.",
+      "excerpt": "It's possible to extend your Ghost site and connect it with hundreds of the most popular apps and tools using integrations.
+
+Whether you need to automatically publish new posts on social media, connect your favorite analytics tool, sync your community or embed forms into your content — our integrations library has got it all covered with hundreds of integration tutorials.
+
+Many integrations are as simple as inserting an embed by pasting a link, or copying a snippet of code directly from an app a",
       "feature_image": "https://static.ghost.org/v4.0.0/images/app-integrations.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -2837,7 +2915,9 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
       "custom_excerpt": "This is my custom excerpt!",
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "This is my custom excerpt!",
+      "excerpt": "HTML Ipsum Presents
+
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum o",
       "feature_image": "https://example.com/super_photo.jpg",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -2870,7 +2950,7 @@ exports[`Posts Content API Can request posts 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "46167",
+  "content-length": "48854",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -2901,7 +2981,11 @@ Object {
       "custom_excerpt": "We've crammed the most important information to help you get started with Ghost into this one post. It's your cheat-sheet to get started, and your shortcut to advanced features.",
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "We've crammed the most important information to help you get started with Ghost into this one post. It's your cheat-sheet to get started, and your shortcut to advanced features.",
+      "excerpt": "Hey there, welcome to your new home on the web!
+
+Unlike social networks, this one is all yours. Publish your work on a custom domain, invite your audience to subscribe, send them new content by email newsletter, and offer premium subscriptions to generate sustainable recurring revenue to fund your work.
+
+Ghost is an independent, open source app, which means you can customize absolutely everything. Inside the admin area, you'll find straightforward controls for changing themes, colors, navigation",
       "feature_image": "https://static.ghost.org/v4.0.0/images/welcome-to-ghost.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -2936,7 +3020,9 @@ Object {
       "custom_excerpt": "How to tweak a few settings in Ghost to transform your site from a generic template to a custom brand with style and personality.",
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "How to tweak a few settings in Ghost to transform your site from a generic template to a custom brand with style and personality.",
+      "excerpt": "As discussed in the introduction post, one of the best things about Ghost is just how much you can customize to turn your site into something unique. Everything about your layout and design can be changed, so you're not stuck with yet another clone of a social network profile.
+
+How far you want to go with customization is completely up to you, there's no right or wrong approach! The majority of people use one of Ghost's built-in themes to get started, and then progress to something more bespoke ",
       "feature_image": "https://static.ghost.org/v4.0.0/images/publishing-options.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -2983,7 +3069,9 @@ Object {
       "custom_excerpt": "A full overview of all the features built into the Ghost editor, including powerful workflow automations to speed up your creative process.",
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "A full overview of all the features built into the Ghost editor, including powerful workflow automations to speed up your creative process.",
+      "excerpt": "Ghost comes with a best-in-class editor which does its very best to get out of the way, and let you focus on your content. Don't let its minimal looks fool you, though, beneath the surface lies a powerful editing toolset designed to accommodate the extensive needs of modern creators.
+
+For many, the base canvas of the Ghost editor will feel familiar. You can start writing as you would expect, highlight content to access the toolbar you would expect, and generally use all of the keyboard shortcuts",
       "feature_image": "https://static.ghost.org/v4.0.0/images/writing-posts-with-ghost.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -3018,7 +3106,9 @@ Object {
       "custom_excerpt": "How Ghost allows you to turn anonymous readers into an audience of active subscribers, so you know what's working and what isn't.",
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "How Ghost allows you to turn anonymous readers into an audience of active subscribers, so you know what's working and what isn't.",
+      "excerpt": "What sets Ghost apart from other products is that you can publish content and grow your audience using the same platform. Rather than just endlessly posting and hoping someone is listening, you can track real signups against your work and have them subscribe to be notified of future posts. The feature that makes all this possible is called Portal.
+
+Portal is an embedded interface for your audience to sign up to your site. It works on every Ghost site, with every theme, and for any type of publis",
       "feature_image": "https://static.ghost.org/v4.0.0/images/creating-a-custom-theme.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -3105,7 +3195,13 @@ Most successful subscription businesses publish a mix of free and paid posts to 
       "custom_excerpt": "A guide to collaborating with other staff users to publish, and some resources to help you with the next steps of growing your business",
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "A guide to collaborating with other staff users to publish, and some resources to help you with the next steps of growing your business",
+      "excerpt": "As you grow, you'll probably want to start inviting team members and collaborators to your site. Ghost has a number of different user roles for your team:
+
+Contributors
+This is the base user level in Ghost. Contributors can create and edit their own draft posts, but they are unable to edit drafts of others or publish posts. Contributors are untrusted users with the most basic access to your publication.
+
+Authors
+Authors are the 2nd user level in Ghost. Authors can write, edit and publish their o",
       "feature_image": "https://static.ghost.org/v4.0.0/images/admin-settings.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -3140,7 +3236,11 @@ Most successful subscription businesses publish a mix of free and paid posts to 
       "custom_excerpt": "Work with all your favorite apps and tools or create your own custom integrations using the Ghost API.",
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "Work with all your favorite apps and tools or create your own custom integrations using the Ghost API.",
+      "excerpt": "It's possible to extend your Ghost site and connect it with hundreds of the most popular apps and tools using integrations.
+
+Whether you need to automatically publish new posts on social media, connect your favorite analytics tool, sync your community or embed forms into your content — our integrations library has got it all covered with hundreds of integration tutorials.
+
+Many integrations are as simple as inserting an embed by pasting a link, or copying a snippet of code directly from an app a",
       "feature_image": "https://static.ghost.org/v4.0.0/images/app-integrations.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -3310,7 +3410,9 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
       "custom_excerpt": "This is my custom excerpt!",
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "This is my custom excerpt!",
+      "excerpt": "HTML Ipsum Presents
+
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum o",
       "feature_image": "https://example.com/super_photo.jpg",
       "feature_image_alt": null,
       "feature_image_caption": null,
@@ -3343,10 +3445,50 @@ exports[`Posts Content API Can request posts from different origin 2: [headers] 
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "46167",
+  "content-length": "48854",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
   "x-powered-by": "Express",
+}
+`;
+
+exports[`Posts Content API Can use post excerpt as field 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "pagination": Object {
+      "limit": 1,
+      "next": 2,
+      "page": 1,
+      "pages": 15,
+      "prev": null,
+      "total": 15,
+    },
+  },
+  "posts": Array [
+    Object {
+      "excerpt": "",
+    },
+  ],
+}
+`;
+
+exports[`Posts Content API Can use post plaintext as field 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "pagination": Object {
+      "limit": 1,
+      "next": 2,
+      "page": 1,
+      "pages": 15,
+      "prev": null,
+      "total": 15,
+    },
+  },
+  "posts": Array [
+    Object {
+      "plaintext": "",
+    },
+  ],
 }
 `;
