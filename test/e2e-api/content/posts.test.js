@@ -312,14 +312,14 @@ describe('Posts Content API', function () {
 
     it('Can use post excerpt as field', async function () {
         await agent
-            .get(`posts/?fields=excerpt&limit=1`)
+            .get(`posts/?fields=excerpt`)
             .expectStatus(200)
             .matchBodySnapshot();
     });
 
     it('Can use post plaintext as field', async function () {
         await agent
-            .get(`posts/?fields=plaintext&limit=1`)
+            .get(`posts/?fields=plaintext`)
             .expectStatus(200)
             .matchBodySnapshot();
     });
