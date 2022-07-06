@@ -320,7 +320,7 @@ function Results({posts, authors, tags}) {
         return null;
     }
     return (
-        <div>
+        <div className='overflow-scroll max-h-[70vh]'>
             <AuthorResults authors={authors} />
             <TagResults tags={tags} />
             <PostResults posts={posts} />
