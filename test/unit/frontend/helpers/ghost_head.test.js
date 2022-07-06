@@ -1750,7 +1750,7 @@ describe('{{ghost_head}} helper', function () {
             })).then(function (rendered) {
                 should.exist(rendered);
                 rendered.string.should.containEql('<script defer src="https://unpkg.com/@tryghost/sodo-search');
-                rendered.string.should.containEql('data-sodo-search="http://127.0.0.1:2369/" data-key="xyz" data-api="http://127.0.0.1:2369/ghost/api/content/"');
+                rendered.string.should.containEql('data-sodo-search="http://127.0.0.1:2369/" data-version="0.1.0" data-key="xyz" data-api="http://127.0.0.1:2369/ghost/api/content/"');
 
                 done();
             }).catch(done);
