@@ -3,6 +3,7 @@ import AppContext from '../AppContext';
 import {ReactComponent as SearchIcon} from '../icons/search.svg';
 import {ReactComponent as CloseIcon} from '../icons/close.svg';
 import {useContext} from 'react';
+import {getBundledCssLink} from '../utils/helpers';
 
 const React = require('react');
 
@@ -288,7 +289,6 @@ function SearchResultBox() {
         return d.name?.toLowerCase().includes(searchValue?.toLowerCase());
     });
 
-    /* eslint-disable no-console */
     if (indexComplete && searchValue) {
         searchResults = searchIndex.search(searchValue);
         filteredPosts = searchResults?.posts?.map((d) => {
@@ -299,7 +299,6 @@ function SearchResultBox() {
                 slug: d?.slug
             };
         }) || [];
-        console.log(filteredPosts);
     }
 
     const hasResults = filteredPosts?.length || filteredAuthors?.length || filteredTags?.length;
@@ -379,9 +378,10 @@ export default class PopupModal extends React.Component {
             }
         `;
 
+        const cssLink = getBundledCssLink({appVersion: this.context.appVersion});
         return (
             <>
-                <link rel='stylesheet' href='http://localhost:3000/main.css' />
+                <link rel='stylesheet' href={cssLink} />
                 <style dangerouslySetInnerHTML={{__html: styles}} />
                 <meta name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1' />
             </>
