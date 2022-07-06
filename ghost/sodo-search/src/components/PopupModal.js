@@ -187,7 +187,7 @@ function TagListItem({tag}) {
             }}
         >
             <p className='mr-2 text-sm font-bold text-neutral-400'>#</p>
-            <h2 className='text-[1.65rem] font-medium leading-tight text-neutral-900'>{name}</h2>
+            <h2 className='text-[1.65rem] font-medium leading-tight text-neutral-900 truncate'>{name}</h2>
         </div>
     );
 }
@@ -269,7 +269,7 @@ function AuthorListItem({author}) {
             }}
         >
             <AuthorAvatar name={name} avatar={profileImage} />
-            <h2 className='text-[1.65rem] font-medium leading-tight text-neutral-900'>{name}</h2>
+            <h2 className='text-[1.65rem] font-medium leading-tight text-neutral-900 truncate'>{name}</h2>
         </div>
     );
 }
