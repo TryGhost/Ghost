@@ -1,0 +1,208 @@
+<section class="gh-canvas circle-bg" {{did-insert this.setup}}>
+    <GhCanvasHeader class="gh-canvas-header gh-setting-members-header">
+        <h2 class="gh-canvas-title" data-test-screen-title>
+            <LinkTo @route="settings">Settings</LinkTo>
+            <span>{{svg-jar "arrow-right"}}</span>
+            Membership
+        </h2>
+        <section class="view-actions">
+            <GhTaskButton
+                @buttonText="Save"
+                @task={{this.saveSettingsTask}}
+                @successText="Saved"
+                @runningText="Saving"
+                @class="gh-btn gh-btn-primary gh-btn-icon"
+                {{on-key "cmd+s"}}
+                data-test-button="save-settings"
+            />
+        </section>
+    </GhCanvasHeader>
+
+    <section class="view-container settings-debug">
+
+        <div class="gh-main-layout content-preview">
+            <div class="gh-setting-members-basicsform">
+                <p class="intro">Fund your work with subscription revenue. Connect your Stripe account and offer premium content to your audience. Our creators are already making over $12 million per year, while <strong>Ghost takes 0% payment fees</strong>.</p>
+                <hr>
+                <div>
+                    <section class="gh-expandable gh-setting-members-portalcta">
+                        <div class="gh-expandable-block">
+                            <div class="gh-expandable-header">
+                                <div>
+                                    <h4 class="gh-expandable-title">Portal Settings</h4>
+                                    <p class="gh-expandable-description">
+                                        Customize members modal signup flow
+                                    </p>
+                                </div>
+                                <button type="button" class="gh-btn gh-btn-green" disabled={{eq this.settings.membersSignupAccess "none"}} {{on "click" this.openPortalSettings}} data-test-toggle="portal-settings">
+                                    <span>Customize Portal &rarr;</span>
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <div class="gh-setting-rich-dropdown">
+                        <Settings::MembersSubscriptionAccess @onChange={{this.membersSubscriptionAccessChanged}} />
+                        <Settings::MembersDefaultPostAccess />
+                    </div>
+                </div>
+            </div>
+            <div class="gh-setting-members-portalpreview">
+                <div class="gh-setting-members-portal-mock mock-enabled">
+                    {{#if (or (eq this.settings.membersSignupAccess 'none') this.switchFromNoneTask.isRunning)}}
+                        <div class="gh-setting-members-portal-disabled" data-test-portal-preview-disabled>
+                            <span class="lightgrey">{{svg-jar "portal-logo-stroke"}}</span>
+                            <h4>Portal disabled</h4>
+                            <p>Change your Subscription Access setting to re-enable Portal</p>
+                        </div>
+                    {{else}}
+                        <GhSiteIframe
+                            scrolling="no"
+                            @src={{this.portalPreviewUrl}}
+                            @invisibleUntilLoaded="portal-ready"
+                            @onInserted={{this.portalPreviewInserted}}
+                            @onDestroyed={{this.portalPreviewDestroyed}}
+                            data-test-iframe="portal-preview"/>
+                    {{/if}}
+                </div>
+            </div>
+        </div>
+
+        <div class="gh-setting-members-tierscontainer">
+            <div class="gh-settings-members-tiersheader">
+                <h4 class="gh-main-section-header small bn">Membership tiers</h4>
+                {{#if this.session.user.isAdmin}}
+                <button type="button" class="gh-btn gh-btn-outline gh-btn-stripe-status {{if this.isConnectDisallowed "disabled"}} {{if this.membersUtils.isStripeEnabled "connected" ""}}" {{on "click" this.openStripeConnect}}>
+                    <span>
+                        {{if this.membersUtils.isStripeEnabled "Connected to Stripe" "Stripe not connected"}}
+                    </span>
+                </button>
+                {{/if}}
+            </div>
+            <section class="gh-expandable">
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Free</h4>
+                            <p class="gh-expandable-description">Free member sign up settings</p>
+                        </div>
+                        <button type="button" class="gh-btn" {{on "click" (toggle "freeOpen" this)}} data-test-button="toggle-free-settings"><span>{{if this.freeOpen "Close" "Expand"}}</span></button>
+                    </div>
+                    <div class="gh-expandable-content">
+                        {{#liquid-if this.freeOpen}}
+                        <div class="gh-setting-content-extended" data-test-free-settings-expanded>
+                            <GhTierCard
+                                @tier={{this.freeTier}}
+                                @tiers={{this.tiers}}
+                                @openEditTier={{this.openEditTier}}
+                            />
+                            <GhFormGroup>
+                                <label for="welcomePage" class="fw6">Welcome page</label>
+                                <GhUrlInput
+                                    @id="welcomePage"
+                                    @value={{readonly this.freeTier.welcomePageURL}}
+                                    @baseUrl={{readonly this.siteUrl}}
+                                    @setResult={{this.setWelcomePageURL}}
+                                    @validateUrl={{this.validateWelcomePageURL}}
+                                    @placeholder={{readonly this.siteUrl}}
+                                    data-test-input="free-welcome-page"
+                                />
+                                <p>Redirect to this URL after signup for a free membership</p>
+                            </GhFormGroup>
+                        </div>
+                        {{/liquid-if}}
+                    </div>
+                </div>
+            </section>
+            <section class="gh-expandable">
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Premium</h4>
+                            <p class="gh-expandable-description">Set prices and paid member sign up settings</p>
+                        </div>
+
+                        {{#if this.membersUtils.isStripeEnabled}}
+                            <button type="button" class="gh-btn" {{on "click" (toggle "paidOpen" this)}} data-test-toggle-pub-info><span>{{if this.paidOpen "Close" "Expand"}}</span></button>
+                        {{else}}
+                            <button type="button" class="stripe-connect {{if (or (not this.session.user.isAdmin) this.isConnectDisallowed) "disabled"}}" {{on "click" this.openStripeConnect}}>
+                                <span>Connect with Stripe</span>
+                            </button>
+                        {{/if}}
+                    </div>
+                    {{#if this.isConnectDisallowed}}
+                    <div class="gh-setting-nossl">
+                        <div class="gh-setting-nossl-container">
+                            <span class="red">{{svg-jar "shield-lock"}}</span>
+                            <h4>Your site is not secured</h4>
+                            <p>Paid memberships through Ghost can only be run on sites secured by SSL (HTTPS vs. HTTP). More information on adding a free SSL Certificate to your Ghost site can be <a href="https://ghost.org/integrations/lets-encrypt/" target="_blank" rel="noopener noreferrer">found here</a>.</p>
+                        </div>
+                    </div>
+                    {{/if}}
+                    <div class="gh-expandable-content">
+                        {{#liquid-if this.paidOpen}}
+                        <div class="gh-setting-content-extended">
+                            {{#if this.fetchDefaultTier.isRunning}}
+                                Loading...
+                            {{else}}
+                                <GhMembershipTiersAlpha
+                                    @updatePortalPreview={{this.updatePortalPreview}}
+                                    @tiers={{this.paidTiers}}
+                                    @confirmTierSave={{this.confirmTierSave}}
+                                />
+                            {{/if}}
+                        </div>
+                        {{/liquid-if}}
+                    </div>
+                </div>
+            </section>
+        </div>
+    </section>
+
+    {{#if this.showLeaveRouteModal}}
+        <GhFullscreenModal
+            @modal="leave-settings"
+            @confirm={{this.confirmLeave}}
+            @close={{this.cancelLeave}}
+            @modifier="action wide"
+        />
+    {{/if}}
+
+    {{#if this.showPortalSettings}}
+        <GhFullscreenModal @modal="portal-settings"
+            @model={{hash
+                preloadTask=this.saveSettingsTask
+                openStripeConnect=this.openStripeConnect
+                tiers=this.tiers
+            }}
+            @close={{this.closePortalSettings}}
+            @modifier="full-overlay portal-settings" />
+    {{/if}}
+
+    {{#if this.showLeavePortalModal}}
+        <GhFullscreenModal
+            @modal="leave-settings"
+            @confirm={{this.confirmClosePortalSettings}}
+            @close={{this.cancelClosePortalSettings}}
+            @modifier="action wide"
+        />
+    {{/if}}
+
+    {{#if this.showStripeConnect}}
+        <GhFullscreenModal
+            @modal="stripe-connect"
+            @close={{this.closeStripeConnect}}
+            @modifier="action wide stripe-connect" />
+    {{/if}}
+    {{#if this.showTierModal}}
+        <GhFullscreenModal
+            @modal="tier"
+            @model={{hash
+                tier=this.tierModel
+                tiers=this.tiers
+            }}
+            @confirm={{this.confirmTierSave}}
+            @close={{this.closeTierModal}}
+            @modifier="edit-tier action wide" />
+    {{/if}}
+</section>

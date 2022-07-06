@@ -1,0 +1,297 @@
+.gh-members-activity.gh-canvas {
+    padding-left: 48px;
+    padding-right: 48px;
+    margin: 0;
+    width: 100%;
+    max-width: 100%;
+}
+
+.gh-members-activity .gh-list,
+.gh-members-activity .gh-canvas-header-content,
+.gh-members-activity .gh-member-details-activity {
+    max-width: calc(1320px - 48px - 48px);
+    margin: 0 auto;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.gh-members-activity .gh-list-scrolling {
+    height: calc(100vh - 96px);
+}
+
+.gh-members-activity-single .gh-list-scrolling {
+    height: calc(100vh - 96px - 116px);
+}
+
+.gh-member-details-activity .gh-main-section-block {
+    padding: 16px 0 20px;
+}
+
+.gh-member-details-activity .gh-main-section-content {
+    margin: 0 -4px;
+}
+
+.gh-member-details-activity h3 {
+    margin: 0 0 2px;
+    padding: 0;
+    font-size: 1.6rem;
+    font-weight: 600;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.gh-member-details-activity p {
+    margin: 0;
+    padding: 0;
+    font-size: 1.4rem;
+    color: var(--darkgrey-l1);
+}
+
+.gh-member-details-activity-link {
+    margin: 1px 0 0;
+    padding: 0;
+    font-size: 1.4rem;
+    font-weight: 400;
+    color: #2bba3c;
+    display: flex;
+    align-items: center;
+    transition: color 125ms linear;
+}
+
+.gh-member-details-activity-link:hover {
+    color: var(--green-d2);
+}
+
+.gh-member-details-activity-link svg {
+    width: 1.6rem;
+    height: 1.6rem;
+    margin-right: 0.6rem;
+    color: #2bba3c;
+}
+
+.gh-member-details-activity-link:hover svg {
+    color: var(--green-d2);
+}
+
+.gh-member-details-activity-email {
+    margin: 0;
+    padding: 0;
+    font-size: 1.4rem;
+    color: var(--midgrey);
+}
+
+.gh-members-activity .gh-list-scrolling thead th:last-child {
+    width: 18%;
+}
+
+.gh-members-activity .gh-list-scrolling tbody .gh-list-data:last-child {
+    white-space: nowrap;
+}
+
+.gh-members-activity:not(.gh-members-activity-single) .gh-list-data {
+    padding-top: 12px;
+    padding-bottom: 12px;
+}
+
+.gh-members-activity .gh-list h3 {
+    margin-bottom: 4px;
+}
+
+.gh-list-data-event {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.gh-members-activity-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 1.25rem 0;
+}
+
+.gh-members-activity-detail {
+    display: flex;
+    flex-direction: column;
+}
+
+.gh-members-activity-description {
+    display: inline-block;
+    color: var(--middarkgrey);
+    font-weight: 500;
+}
+
+.gh-members-activity-icon {
+    width: 24px;
+    height: 24px;
+    margin: 0 0.75rem 0 0;
+}
+
+.gh-members-activity-single .gh-members-activity-icon {
+    margin-bottom: 0;
+}
+
+.gh-members-activity-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.gh-members-activity-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--black);
+}
+
+.gh-members-activity-event {
+    display: inline-block;
+    color: var(--middarkgrey);
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.gh-members-activity-event > a {
+    font-weight: 500;
+    color: var(--black);
+}
+
+.gh-member-activity-actions-menu {
+    top: auto;
+    left: auto;
+    padding: 2rem;
+    margin-top: 8px;
+}
+
+.gh-member-activity-actions-menu h3 {
+    margin-bottom: 0.75rem;
+}
+
+.gh-member-activity-actions-menu {
+    cursor: default;
+}
+
+.gh-member-activity-actions-menu .ember-power-select-option {
+    padding: 4px 0;
+}
+
+.gh-member-activity-actions-menu .ember-power-select-option:first-child {
+    padding-top: 0;
+}
+
+.gh-member-activity-actions-menu .ember-power-select-option:last-child {
+    padding-bottom: 0;
+}
+
+.gh-member-activity-actions-menu .ember-power-select-option label {
+    padding: 0.25rem 2rem 0.25rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    color: var(--midlightgrey);
+    cursor: pointer;
+}
+
+.gh-member-activity-actions-menu .ember-power-select-option label p {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    color: var(--darkgrey);
+    font-weight: 500;
+    font-size: 1.4rem;
+    padding: 0.125rem 6rem 0 0.25rem;
+    margin: 0;
+}
+
+.gh-member-activity-actions-menu .ember-power-select-option input {
+    visibility: hidden;
+    width: 0;
+}
+
+.gh-member-activity-actions-menu.dropdown-menu .gh-member-activity-actions-icon {
+    margin-right: 1.25rem;
+    height: 20px;
+    width: 20px;
+    line-height: 1em;
+    fill: none;
+}
+
+.gh-member-activity-actions-menu.dropdown-menu .ember-power-select-option.selected .gh-member-activity-actions-icon path {
+    stroke: var(--middarkgrey);
+}
+
+.gh-member-activity-actions-menu .ember-power-select-option.selected label {
+    font-weight: 500;
+    color: var(--darkgrey);
+}
+
+.gh-member-activity-actions-menu.dropdown-menu .gh-member-activity-actions-tick {
+    color: var(--green);
+    margin-right: -8px;
+    height: 16px;
+    width: 16px;
+}
+
+.gh-member-filter-search-trigger {
+    width: 240px;
+}
+
+.gh-member-filter-search-dropdown li {
+    height: 7rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding-left: 17px;
+    border-bottom: 1px solid var(--whitegrey);
+}
+
+.gh-member-filter-search-dropdown li:last-child {
+    border-bottom: none;
+}
+
+.gh-member-filter-search-dropdown li strong {
+    color: var(--black);
+    display: inline-block;
+    margin: 0 0 0.25rem;
+    font-weight: 600;
+}
+
+.gh-member-filter-search-dropdown li span {
+    font-weight: 400;
+    color: var(--middarkgrey);
+}
+
+@media (max-width: 800px) {
+    .gh-members-activity.gh-canvas {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .gh-members-activity .gh-canvas-header-content,
+    .gh-members-activity .gh-member-details-activity {
+        max-width: calc(100% - 4vw - 4vw);
+    }
+
+    .gh-members-activity-single .gh-list-scrolling {
+        height: calc(100vh - 96px - 116px -64px);
+    }
+
+    .gh-members-activity .gh-list-scrolling {
+        margin-left: 4vw;
+        margin-right: 0;
+        padding-left: 0;
+        padding-right: 4vw;
+    }
+}
+
+@media (max-width: 1450px) {
+    .gh-members-activity .gh-canvas-header.break.tablet .gh-canvas-header-content {
+        height: 95px;
+        border-bottom: 0;
+        align-items: center;
+    }
+    .gh-members-activity .gh-canvas-header.break.tablet .gh-canvas-title {
+        margin-top: -3px;
+    }
+}

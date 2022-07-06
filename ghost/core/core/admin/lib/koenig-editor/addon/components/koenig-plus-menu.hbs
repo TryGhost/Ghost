@@ -1,0 +1,18 @@
+{{#if this.showButton}}
+    <button aria-label="Add a card" class="koenig-plus-menu-button flex justify-center items-center relative w9 h9 ba b--midlightgrey-l2 bg-white br-100 anim-normal" onclick={{action "openMenu"}} type="button">{{svg-jar "plus" class="w4 h4 stroke-middarkgrey i-strokew--2"}}</button>
+{{/if}}
+
+{{#if this.showMenu}}
+    {{!-- TODO: restructure HTML and update kg-style helper to avoid negative margins on divider/title elements --}}
+    <div class="{{kg-style "cardmenu"}} pa0" role="menu">
+        {{!-- <div class="koenig-cardmenu-search">
+            {{svg-jar "koenig/search"}}
+            <input type="text" placeholder="Search for a card..." class="gh-input koenig-cardmenu-search-input">
+        </div> --}}
+        <KoenigMenuContent
+            @itemSections={{this.itemSections}}
+            @itemClicked={{action "itemClicked"}}
+            @postType={{@postType}}
+        />
+    </div>
+{{/if}}

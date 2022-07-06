@@ -1,0 +1,70 @@
+<div class="gh-post-preview-container gh-post-preview-email-container {{unless @skipAnimation "fade-in"}}">
+    <div class="gh-post-preview-email-mockup">
+        <div class="gh-pe-emailclient-sender">
+            <p>
+                <span class="strong">{{or this.newsletter.senderName this.settings.title}}</span> &lt;{{full-email-address (or this.newsletter.senderEmail "noreply")}}&gt;
+            </p>
+            <p><span class="dark">To:</span> Jamie Larson &lt;jamie@example.com&gt;</p>
+        </div>
+        <iframe class="gh-pe-iframe" {{did-insert this.renderEmailPreview}} title="Email preview" sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe>
+    </div>
+    {{!-- <div class="flex">
+        <div class="gh-btn-group mr3">
+            <button type="button" class="gh-btn {{if (eq this.memberSegment "status:free") "gh-btn-group-selected"}}" {{on "click" (fn this.changeMemberSegment "status:free")}}><span>Free member</span></button>
+            <button type="button" class="gh-btn {{if (eq this.memberSegment "status:-free") "gh-btn-group-selected"}}" {{on "click" (fn this.changeMemberSegment "status:-free")}}><span>Paid member</span></button>
+        </div>
+
+        <div class="gh-post-preview-email-input {{if this.sendPreviewEmailError "error"}}">
+            <Input
+                @value={{this.previewEmailAddress}}
+                class="gh-input gh-post-preview-email-input"
+                placeholder="you@yoursite.com"
+                aria-invalid={{if this.sendPreviewEmailError "true"}}
+                aria-describedby={{if this.sendPreviewEmailError "sendError"}}
+                {{on-key "Enter" (perform this.sendPreviewEmailTask)}}
+            />
+            {{#if this.sendPreviewEmailError}}
+                <div class="error fixed nowrap f8 lh-heading"><span class="response" id="sendError">{{this.sendPreviewEmailError}}</span></div>
+            {{/if}}
+        </div>
+
+        <GhTaskButton
+            @task={{this.sendPreviewEmailTask}}
+            @buttonText="Send test email"
+            @successText="Sent"
+            @runningText="Sending..."
+            @class="gh-btn gh-btn-green gh-btn-icon gh-post-preview-email-trigger"
+        />
+    </div> --}}
+</div>
+<div class="gh-post-preview-email-footer">
+    <div class="gh-post-preview-email-test">
+        <div class="gh-btn-group mr3">
+            <button type="button" class="gh-btn {{if (eq this.memberSegment "status:free") "gh-btn-group-selected"}}" {{on "click" (fn this.changeMemberSegment "status:free")}}><span>Free member</span></button>
+            <button type="button" class="gh-btn {{if (eq this.memberSegment "status:-free") "gh-btn-group-selected"}}" {{on "click" (fn this.changeMemberSegment "status:-free")}}><span>Paid member</span></button>
+        </div>
+
+        <div class="gh-post-preview-email-input {{if this.sendPreviewEmailError "error"}}">
+            <Input
+                @value={{this.previewEmailAddress}}
+                class="gh-input gh-post-preview-email-input"
+                placeholder="you@yoursite.com"
+                aria-label="Email address to receive preview"
+                aria-invalid={{if this.sendPreviewEmailError "true"}}
+                aria-describedby={{if this.sendPreviewEmailError "sendError"}}
+                {{on-key "Enter" (perform this.sendPreviewEmailTask)}}
+            />
+            {{#if this.sendPreviewEmailError}}
+                <div class="error fixed nowrap f8 lh-heading"><span class="response" id="sendError">{{this.sendPreviewEmailError}}</span></div>
+            {{/if}}
+        </div>
+
+        <GhTaskButton
+            @task={{this.sendPreviewEmailTask}}
+            @buttonText="Send test email"
+            @successText="Sent"
+            @runningText="Sending..."
+            @class="gh-btn gh-btn-icon gh-post-preview-email-trigger"
+        />
+    </div>
+</div>

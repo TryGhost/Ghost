@@ -1,0 +1,74 @@
+<div class="kg-media-selector-browser"
+    {{did-insert this.didInsertContainer}}
+    {{on-key "Escape" @close}}
+    {{scroll-into-view offset=20}}
+>
+    {{!-- static header --}}
+    <header class="kg-media-selector-heading">
+        <span class="gh-input-icon">
+            {{svg-jar "search"}}
+            <input
+                class="gh-input kg-media-selector-searchbox"
+                name="searchKeyword"
+                placeholder="Search Tenor for GIFs"
+                autocorrect="off"
+                autocomplete="hidden"
+                value={{readonly this.tenor.searchTerm}}
+                {{on "input" this.search}}
+                {{on "focus" this.clearHighlight}}
+                {{autofocus}}
+            />
+        </span>
+    </header>
+
+    {{!-- content container --}}
+    <div class="kg-media-selector-content">
+        {{!-- scrollable image container --}}
+        <div class="kg-media-selector-mediagrid">
+            {{#if this.tenor.gifs}}
+                <section class="gh-unsplash-grid">
+                    {{#each this.tenor.columns as |gifs|}}
+                        <div class="gh-unsplash-grid-column">
+                            {{#each gifs as |gif|}}
+                                <KoenigCardImage::SelectorTenor::Gif
+                                    @gif={{gif}}
+                                    @select={{fn this.select gif}}
+                                    @isHighlighted={{eq gif this.highlightedGif}}
+                                    {{scroll-into-view (eq gif this.highlightedGif) offset=20 useViewport=false}}
+                                    data-tenor-index={{gif.index}} />
+                            {{/each}}
+                        </div>
+                    {{/each}}
+                </section>
+            {{else if (and this.tenor.searchTerm (not this.tenor.error this.tenor.isLoading))}}
+                <section class="gh-unsplash-error h-100 flex items-center justify-center pb30">
+                    <div>
+                        <img class="gh-unsplash-error-404" src="assets/img/unsplash-404.png" alt="No photos found" />
+                        <h4>No gifs found for '{{this.tenor.searchTerm}}'</h4>
+                    </div>
+                </section>
+            {{/if}}
+
+            {{#if this.tenor.error}}
+                <section class="gh-unsplash-error h-100 flex items-center justify-center pb30">
+                    <div>
+                        <img class="gh-unsplash-error-404" src="assets/img/unsplash-404.png" alt="Network error" />
+                        <h4>{{this.tenor.error}} (<a href="#" {{on "click" this.tenor.retry}}>retry</a>)</h4>
+                    </div>
+                </section>
+            {{/if}}
+
+            {{#if this.tenor.isLoading}}
+                <div class="gh-unsplash-loading h-100 flex items-center justify-center pb30">
+                    <div class="gh-loading-spinner"></div>
+                </div>
+            {{/if}}
+
+            {{#unless this.tenor.isLoading}}
+                <GhScrollTrigger
+                    @enter={{this.tenor.loadNextPage}}
+                    @triggerOffset={{1000}} />
+            {{/unless}}
+        </div>
+    </div>
+</div>

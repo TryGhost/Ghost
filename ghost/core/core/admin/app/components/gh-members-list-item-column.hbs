@@ -1,0 +1,94 @@
+{{#if (eq @filterColumn 'label')}}
+    <LinkTo @route="member" @model={{@member}} class="gh-list-data wrap middarkgrey f8" data-test-table-data={{@filterColumn}}>
+        <span class="gh-members-list-labels">{{this.labels}}</span>
+    </LinkTo>
+
+{{else if (eq @filterColumn 'tier')}}
+    <LinkTo @route="member" @model={{@member}} class="gh-list-data wrap middarkgrey f8" data-test-table-data={{@filterColumn}}>
+        <span class="gh-members-list-labels">{{this.tiers}}</span>
+    </LinkTo>
+
+{{else if (eq @filterColumn 'status')}}
+    <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8" data-test-table-data={{@filterColumn}}>
+        {{#if (not (is-empty @member.status))}}
+            <span>{{capitalize @member.status}}</span>
+        {{else}}
+            <span class="midlightgrey">-</span>
+        {{/if}}
+    </LinkTo>
+
+{{else if (eq @filterColumn 'last_seen_at')}}
+    <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8" data-test-table-data={{@filterColumn}}>
+        {{#if (not (is-empty @member.lastSeenAtUTC))}}
+            {{moment-format (moment-site-tz @member.lastSeenAtUTC) "D MMM YYYY"}}
+            <div class="midlightgrey gh-members-list-subscribed-moment">{{moment-from-now @member.lastSeenAtUTC}}</div>
+        {{else}}
+            <span class="midlightgrey">-</span>
+        {{/if}}
+    </LinkTo>
+
+{{else if (eq @filterColumn 'email_count')}}
+    <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8" data-test-table-data={{@filterColumn}}>
+        {{#if (not (is-empty @member.emailCount))}}
+            <span>{{@member.emailCount}}</span>
+        {{else}}
+            <span class="midlightgrey">-</span>
+        {{/if}}
+    </LinkTo>
+
+{{else if (eq @filterColumn 'email_opened_count')}}
+    <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8" data-test-table-data={{@filterColumn}}>
+        {{#if (not (is-empty @member.emailOpenedCount))}}
+            <span>{{@member.emailOpenedCount}}</span>
+        {{else}}
+            <span class="midlightgrey">-</span>
+        {{/if}}
+    </LinkTo>
+
+{{else if (eq @filterColumn 'subscribed')}}
+    <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8" data-test-table-data={{@filterColumn}}>
+        {{#if (not (is-empty @member.subscribed))}}
+            <span>{{if @member.subscribed "Yes" "No"}}</span>
+        {{else}}
+            <span class="midlightgrey">-</span>
+        {{/if}}
+    </LinkTo>
+
+{{else if (eq @filterColumn 'subscriptions.status')}}
+    <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8" data-test-table-data={{@filterColumn}}>
+        {{#if (not (is-empty this.mostRecentSubscription.status))}}
+            <span>{{capitalize this.mostRecentSubscription.status}}</span>
+        {{else}}
+            <span class="midlightgrey">-</span>
+        {{/if}}
+    </LinkTo>
+
+{{else if (eq @filterColumn 'subscriptions.plan_interval')}}
+    <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8" data-test-table-data={{@filterColumn}}>
+        {{#if (not (is-empty this.mostRecentSubscription.price.interval))}}
+            <span>{{capitalize this.mostRecentSubscription.price.interval}}</span>
+        {{else}}
+            <span class="midlightgrey">-</span>
+        {{/if}}
+    </LinkTo>
+
+{{else if (eq @filterColumn 'subscriptions.start_date')}}
+    <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8" data-test-table-data={{@filterColumn}}>
+        {{#if (not (is-empty this.mostRecentSubscription.start_date))}}
+            {{moment-format (moment-site-tz this.mostRecentSubscription.start_date) "D MMM YYYY"}}
+            <div class="midlightgrey gh-members-list-subscribed-moment">{{moment-from-now this.mostRecentSubscription.start_date}}</div>
+        {{else}}
+            <span class="midlightgrey">-</span>
+        {{/if}}
+    </LinkTo>
+
+{{else if (eq @filterColumn 'subscriptions.current_period_end')}}
+    <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8" data-test-table-data={{@filterColumn}}>
+        {{#if (not (is-empty this.mostRecentSubscription.current_period_end))}}
+            {{moment-format (moment-site-tz this.mostRecentSubscription.current_period_end) "D MMM YYYY"}}
+            <div class="midlightgrey gh-members-list-subscribed-moment">{{moment-from-now this.mostRecentSubscription.current_period_end}}</div>
+        {{else}}
+            <span class="midlightgrey">-</span>
+        {{/if}}
+    </LinkTo>
+{{/if}}

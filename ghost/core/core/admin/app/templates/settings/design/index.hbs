@@ -1,0 +1,41 @@
+<section class="gh-canvas gh-design" {{on-key "cmd+s" this.saveFromKeyboard}}>
+    <GhCanvasHeader class="gh-canvas-header">
+        <h2 class="gh-canvas-title">Site design</h2>
+        <section class="view-actions">
+            <div class="gh-select gh-preview-page-selector">
+                <OneWaySelect
+                    @value={{this.themeManagement.previewType}}
+                    @options={{this.themeManagement.availablePreviewTypes}}
+                    @optionValuePath="name"
+                    @optionLabelPath="label"
+                    @optionTargetPath="name"
+                    @update={{this.themeManagement.setPreviewType}}
+                />
+                {{svg-jar "arrow-down-small"}}
+            </div>
+
+            <div class="gh-contentfilter gh-btn-group">
+                <button type="button" class="gh-btn gh-design-preview-mode {{if this.isDesktopPreview "gh-btn-group-selected"}}" {{on "click" (fn this.setPreviewSize "desktop")}} data-test-button="desktop-preview"><span>{{svg-jar "desktop"}}</span></button>
+                <button type="button" class="gh-btn gh-design-preview-mode {{if this.isMobilePreview "gh-btn-group-selected"}}" {{on "click" (fn this.setPreviewSize "mobile")}} data-test-button="mobile-preview"><span>{{svg-jar "mobile-phone"}}</span></button>
+            </div>
+
+            <GhTaskButton
+                @buttonText="Save"
+                @task={{this.saveTask}}
+                @successText="Saved"
+                @runningText="Saving"
+                @class="gh-btn gh-btn-primary gh-btn-icon"
+                data-test-button="save-settings"
+            />
+        </section>
+    </GhCanvasHeader>
+
+    <div class="view-container">
+        <GhBrowserPreview @isMobilePreview={{this.isMobilePreview}}>
+            <GhHtmlIframe
+                class={{if this.isMobilePreview "gh-post-preview-iframe" "site-frame"}}
+                @html={{this.themeManagement.previewHtml}}
+                @pageId={{this.themeManagement.previewType}} />
+        </GhBrowserPreview>
+    </div>
+</section>

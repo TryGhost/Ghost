@@ -1,0 +1,104 @@
+<KoenigCard
+    @env={{@env}}
+    @class={{concat (kg-style "container-card") " kg-button-card mih10 miw-100 relative"}}
+    @headerOffset={{@headerOffset}}
+    @toolbar={{this.toolbar}}
+    @payload={{@payload}}
+    @isSelected={{@isSelected}}
+    @isEditing={{@isEditing}}
+    @selectCard={{@selectCard}}
+    @deselectCard={{@deselectCard}}
+    @editCard={{@editCard}}
+    @hasEditMode={{true}}
+    @saveCard={{@saveCard}}
+    @saveAsSnippet={{@saveAsSnippet}}
+    @onLeaveEdit={{this.leaveEditMode}}
+    @addParagraphAfterCard={{@addParagraphAfterCard}}
+    @moveCursorToPrevSection={{@moveCursorToPrevSection}}
+    @moveCursorToNextSection={{@moveCursorToNextSection}}
+    @editor={{@editor}}
+    {{did-insert this.registerElement}}
+    as |card|
+>
+    {{#if @isEditing}}
+
+        {{!-- edit mode view --}}
+
+        <div class="{{if (eq @payload.alignment "center") "tc"}}">
+
+            <button type="button" class="gh-btn gh-btn-accent" disabled={{not @payload.buttonText}}>
+                {{#if @payload.buttonText}}
+                    <span>{{@payload.buttonText}}</span>
+                {{else}}
+                    <span>Add button text</span>
+                {{/if}}
+            </button>
+
+        </div>
+
+        <KoenigSettingsPanel>
+            <div class="kg-settings-panel-control kg-settings-panel-control-horizontal">
+                <div class="kg-settings-panel-control-label">Content alignment</div>
+                <div class="kg-settings-panel-control-input">
+                    <div class="gh-btn-group icons">
+                        <button type="button" title="Left-align content" class="gh-btn gh-btn-icon {{if (eq @payload.alignment "left") "gh-btn-group-selected"}}" {{on "click" (fn this.setAlignment "left")}}><span>{{svg-jar "align-left"}}</span></button>
+                        <button type="button" title="Center-align content" class="gh-btn gh-btn-icon {{if (eq @payload.alignment "center") "gh-btn-group-selected"}}" {{on "click" (fn this.setAlignment "center")}}><span>{{svg-jar "align-center"}}</span></button>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="kg-settings-panel-divider">
+
+            <div class="kg-settings-panel-control">
+                <label class="kg-settings-panel-control-label" for="button-text-input">Button text</label>
+                <div class="kg-settings-panel-control-input">
+                    <input
+                        type="text"
+                        class="gh-input"
+                        id="button-text-input"
+                        name="button-text"
+                        value={{@payload.buttonText}}
+                        placeholder="Add button text"
+                        {{on "input" this.setButtonText}}
+                        {{on-key "Enter" (fn this.focusElement "#button-url-input")}}
+                    >
+                </div>
+            </div>
+
+            <div class="kg-settings-panel-control">
+                <label class="kg-settings-panel-control-label" for="button-url-input">Button URL</label>
+                <div class="kg-settings-panel-control-input">
+                    <GhInputWithSelect
+                        @value={{@payload.buttonUrl}}
+                        @options={{this.suggestedUrls}}
+                        @valueField="url"
+                        @searchField="url"
+                        @placeholder="https://yoursite.com/#/portal/signup/"
+                        @searchMessage={{null}}
+                        @onInput={{this.setButtonUrl}}
+                        @openOnFocus={{true}}
+                        @closeWhenEmpty={{true}}
+                        @triggerClass="email-cta-button-url-input"
+                        @triggerId="button-url-input"
+                        @renderInPlace={{false}} {{!-- avoid dropdown inheriting editor styles --}}
+                        as |suggestion|
+                    >
+                        <span class="kg-settings-link-title" title="{{suggestion.name}}">{{suggestion.name}}</span>
+                        <span class="kg-settings-link-url" title="{{suggestion.url}}">{{suggestion.url}}</span>
+                    </GhInputWithSelect>
+                </div>
+            </div>
+        </KoenigSettingsPanel>
+
+    {{else}}
+
+        {{!-- rendered (non-edit) mode view --}}
+
+        <div class="{{if (eq @payload.alignment "center") "tc"}}">
+            <div class="dib" data-tooltip={{or @payload.buttonUrl "Double click to add button URL"}}>
+                <a class="gh-btn gh-btn-accent {{if this.isIncomplete "o-50"}}" href="javascript:void(0)"><span>{{or @payload.buttonText "Add button text"}}</span></a>
+            </div>
+        </div>
+
+    {{/if}}
+</KoenigCard>

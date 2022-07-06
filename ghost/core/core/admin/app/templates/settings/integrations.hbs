@@ -1,0 +1,249 @@
+<section class="gh-canvas">
+    <GhCanvasHeader class="gh-canvas-header">
+        <h2 class="gh-canvas-title" data-test-screen-title>
+            <LinkTo @route="settings">Settings</LinkTo>
+            <span>{{svg-jar "arrow-right"}}</span>
+            Integrations
+        </h2>
+    </GhCanvasHeader>
+
+    <div class="gh-main-section" {{scroll-top}}>
+        <div class="integrations-directory">
+            <a class="id-item" href="https://ghost.org/integrations/disqus/" target="_blank" rel="noopener noreferrer">
+                <div class="id-item-logo id-disqus">
+                    <img class="w-100 h-100" style="object-fit:contain;" src="assets/img/disqus.svg" alt="Disqus Icon" />
+                </div>
+                <div class="f8 mt1">Disqus</div>
+            </a>
+            <a class="id-item" href="https://ghost.org/integrations/google/" target="_blank" rel="noopener noreferrer">
+                <div class="id-item-logo id-analytics">
+                    <img class="w-100 h-100" style="object-fit:contain;padding:1px 0;" src="assets/img/google-analytics.png" alt="Google Analytics Icon" />
+                </div>
+                <div class="f8 mt1">Analytics</div>
+            </a>
+            <a class="id-item" href="https://ghost.org/integrations/ulysses/" target="_blank" rel="noopener noreferrer">
+                <div class="id-item-logo id-ulysses">
+                    <img class="w-100 h-100" style="object-fit:contain;" src="assets/img/ulysses.png" alt="Ulysses Icon" />
+                </div>
+                <div class="f8 mt1">Ulysses</div>
+            </a>
+            <a class="id-item" href="https://ghost.org/integrations/typeform/" target="_blank" rel="noopener noreferrer">
+                <div class="id-item-logo id-typeform">
+                    <img class="w-100 h-100" style="object-fit:contain;" src="assets/img/typeform.svg" alt="Typeform Icon" />
+                </div>
+                <div class="f8 mt1">Typeform</div>
+            </a>
+            <a class="id-item" href="https://ghost.org/integrations/buffer/" target="_blank" rel="noopener noreferrer">
+                <div class="id-item-logo id-buffer">
+                    <img class="w-100 h-100" style="object-fit:contain;padding:1px 0;" src="assets/img/buffer.png" alt="Buffer Icon" />
+                </div>
+                <div class="f8 mt1">Buffer</div>
+            </a>
+            <a class="id-item" href="https://ghost.org/integrations/plausible/" target="_blank" rel="noopener noreferrer">
+                <div class="id-item-logo id-plausible">
+                    <img class="w-100 h-100" style="object-fit:contain;padding:1px 0;" src="assets/img/plausible.png" alt="Plausible Icon" />
+                </div>
+                <div class="f8 mt1">Plausible</div>
+            </a>
+            <a class="id-item" href="https://ghost.org/integrations/github/" target="_blank" rel="noopener noreferrer">
+                <div class="id-item-logo id-github">
+                    <img class="w-100 h-100" style="object-fit:contain;" src="assets/img/github.svg" alt="GitHub Icon" />
+                </div>
+                <div class="f8 mt1">GitHub</div>
+            </a>
+            <a class="id-item" href="https://ghost.org/integrations/" target="_blank" rel="noopener noreferrer">
+                <div class="id-item-logo id-more">
+                    {{!-- <img class="w-100 h-100" style="object-fit:contain;padding:0 8px;" src="assets/img/more.png" alt="Three dots" /> --}}
+                    {{svg-jar "circle-ellipsis" class="w5"}}
+                </div>
+                <div class="f8 mt1">More</div>
+            </a>
+        </div>
+    </div>
+
+    <section class="gh-main-section">
+        <h4 class="gh-main-section-header small">Built-in integrations</h4>
+        <div class="apps-grid">
+            {{#unless this.zapierDisabled}}
+            <div class="apps-grid-cell" data-test-app="zapier">
+                <LinkTo @route="settings.integrations.zapier" data-test-link="zapier">
+                <article class="apps-card-app">
+                    <div class="apps-card-left">
+                        <figure class="apps-card-app-icon" style="background-image:url(assets/img/zapier.svg);background-size:36px;"></figure>
+                        <div class="apps-card-meta">
+                            <h3 class="apps-card-app-title">Zapier</h3>
+                            <p class="apps-card-app-desc">Automation for your favorite apps</p>
+                        </div>
+                    </div>
+                    <div class="gh-card-right">
+                        <div class="apps-configured">
+                            <span data-test-app-status>Configure</span>
+                            {{svg-jar "arrow-right"}}
+                        </div>
+                    </div>
+                </article>
+                </LinkTo>
+            </div>
+            {{/unless}}
+
+            <div class="apps-grid-cell" data-test-app="slack">
+                <LinkTo @route="settings.integrations.slack" data-test-link="slack">
+                <article class="apps-card-app">
+                    <div class="apps-card-left">
+                        <figure class="apps-card-app-icon" style="background-image:url(assets/img/slackicon.png); background-size: 36px;"></figure>
+                        <div class="apps-card-meta">
+                            <h3 class="apps-card-app-title">Slack</h3>
+                            <p class="apps-card-app-desc">A messaging app for teams</p>
+                        </div>
+                    </div>
+                    <div class="gh-card-right">
+                        <div class="apps-configured">
+                            {{#if this.settings.slack.isActive}}
+                                <span class="gh-badge" data-test-app-status>Active</span>
+                            {{else}}
+                                <span data-test-app-status>Configure</span>
+                            {{/if}}
+                            {{svg-jar "arrow-right"}}
+                        </div>
+                    </div>
+                </article>
+                </LinkTo>
+            </div>
+
+            <div class="apps-grid-cell" data-test-app="amp">
+                <LinkTo @route="settings.integrations.amp" data-test-link="amp">
+                <article class="apps-card-app">
+                    <div class="apps-card-left">
+                        <figure class="apps-card-app-icon" style="background-image:url(assets/img/amp.svg); background-size: 36px;"></figure>
+                        <div class="apps-card-meta">
+                            <h3 class="apps-card-app-title">AMP</h3>
+                            <p class="apps-card-app-desc">Google Accelerated Mobile Pages</p>
+                        </div>
+                    </div>
+                    <div class="gh-card-right">
+                        <div class="apps-configured">
+                            {{#if this.settings.amp}}
+                                <span class="gh-badge" data-test-app-status>Active</span>
+                            {{else}}
+                                <span data-test-app-status>Configure</span>
+                            {{/if}}
+                            {{svg-jar "arrow-right"}}
+                        </div>
+                    </div>
+                </article>
+                </LinkTo>
+            </div>
+
+            <div class="apps-grid-cell" data-test-app="unsplash">
+                <LinkTo @route="settings.integrations.unsplash" data-test-link="unsplash">
+                <article class="apps-card-app">
+                    <div class="apps-card-left">
+                        <figure class="apps-card-app-icon id-unsplash" style="background-image:url(assets/icons/unsplash.svg); background-size:30px;"></figure>
+                        <div class="apps-card-meta">
+                            <h3 class="apps-card-app-title">Unsplash</h3>
+                            <p class="apps-card-app-desc">Beautiful, free photos</p>
+                        </div>
+                    </div>
+                    <div class="gh-card-right">
+                        <div class="apps-configured">
+                            {{#if this.settings.unsplash}}
+                                <span class="gh-badge" data-test-app-status>Active</span>
+                            {{else}}
+                                <span data-test-app-status>Configure</span>
+                            {{/if}}
+                            {{svg-jar "arrow-right"}}
+                        </div>
+                    </div>
+                </article>
+                </LinkTo>
+            </div>
+            <div class="apps-grid-cell" data-test-app="firstpromoter">
+                <LinkTo @route="settings.integrations.firstpromoter" data-test-link="firstpromoter">
+                <article class="apps-card-app">
+                    <div class="apps-card-left">
+                        <figure class="apps-card-app-icon id-unsplash" style="background-image:url(assets/icons/firstpromoter.png); background-size:30px;"></figure>
+                        <div class="apps-card-meta">
+                            <h3 class="apps-card-app-title">FirstPromoter</h3>
+                            <p class="apps-card-app-desc">Launch your member referral program</p>
+                        </div>
+                    </div>
+                    <div class="gh-card-right">
+                        <div class="apps-configured">
+                            {{#if this.settings.firstpromoter}}
+                                <span class="gh-badge" data-test-app-status>Active</span>
+                            {{else}}
+                                <span data-test-app-status>Configure</span>
+                            {{/if}}
+                            {{svg-jar "arrow-right"}}
+                        </div>
+                    </div>
+                </article>
+                </LinkTo>
+            </div>
+
+        </div>
+    </section>
+
+    <section class="gh-main-section">
+        <h4 class="gh-main-section-header small">Custom integrations</h4>
+        <div class="apps-grid">
+            {{#each this.integrations as |integration|}}
+                <div class="apps-grid-cell" data-test-custom-integration>
+                    <LinkTo @route="settings.integration" @model={{integration}} data-test-integration={{integration.id}}>
+                        <article class="apps-card-app">
+                            <div class="apps-card-left">
+                                <figure class="apps-card-app-icon flex items-center" style={{integration-icon-style integration}}>
+                                    {{#unless integration.iconImage}}
+                                        {{svg-jar "integration" class="nudge-left--6 w9 stroke-darkgrey"}}
+                                    {{/unless}}
+                                </figure>
+                                <div class="apps-card-meta">
+                                    <h3 class="apps-card-app-title" data-test-text="name">
+                                        {{integration.name}}
+                                    </h3>
+                                    <p class="apps-card-app-desc" data-test-text="description">
+                                        {{integration.description}}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="gh-card-right">
+                                <div class="apps-configured">
+                                    <span>Configure</span>
+                                    {{svg-jar "arrow-right"}}
+                                </div>
+                            </div>
+                        </article>
+                    </LinkTo>
+                </div>
+            {{else}}
+                <div class="flex flex-column justify-center items-center mih30 miw-100 bb b--whitegrey" data-test-blank="custom-integrations">
+                    {{#if this.fetchIntegrations.isRunning}}
+                        <div class="gh-loading-spinner"></div>
+                    {{else}}
+                        <div class="flex flex-column items-center pa5 pt15 pb15">
+                            <p class="ma0 pa0 tc midgrey lh-title mt2 mb4">
+                                Create your own custom Ghost integrations with dedicated API keys & webhooks
+                            </p>
+                            <LinkTo @route="settings.integrations.new" class="gh-btn gh-btn-green gh-btn-icon" data-test-button="new-integration">
+                                <span>{{svg-jar "add" class="w3 h3"}} Add custom integration</span>
+                            </LinkTo>
+                        </div>
+                    {{/if}}
+                </div>
+            {{/each}}
+        </div>
+
+        {{#if this.integrations}}
+        {{!-- <div class="apps-grid-cell new-integration-cell"> --}}
+        <div class="mt5">
+            <LinkTo @route="settings.integrations.new" class="gh-btn gh-btn-green gh-btn-icon" data-test-button="new-integration">
+                <span>{{svg-jar "add" class="w3 h3"}} Add custom integration</span>
+            </LinkTo>
+        </div>
+        {{!-- </div> --}}
+        {{/if}}
+    </section>
+
+</section>
+
+{{outlet}}

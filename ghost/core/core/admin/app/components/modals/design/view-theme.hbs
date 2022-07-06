@@ -1,0 +1,24 @@
+<section class="gh-canvas gh-theme-preview flex flex-column h-100">
+    <GhCanvasHeader class="gh-canvas-header">
+        <h2 class="gh-canvas-title" data-test-screen-title>
+            <LinkTo @route="settings.design.change-theme" data-test-link="back">Themes</LinkTo>
+            <span>{{svg-jar "arrow-right"}}</span>
+            {{@data.theme.name}}
+        </h2>
+
+        <section class="view-actions">
+            <div class="gh-contentfilter gh-btn-group">
+                <button type="button" class="gh-btn gh-design-preview-mode {{if this.isDesktopPreview "gh-btn-group-selected"}}" {{on "click" (fn this.setPreviewSize "desktop")}}><span>{{svg-jar "desktop"}}</span></button>
+                <button type="button" class="gh-btn gh-design-preview-mode {{if this.isMobilePreview "gh-btn-group-selected"}}" {{on "click" (fn this.setPreviewSize "mobile")}}><span>{{svg-jar "mobile-phone"}}</span></button>
+            </div>
+
+            <button type="button" class="gh-btn gh-btn-primary" {{on "click" this.installTheme}} data-test-button="install-theme"><span>Use {{@data.theme.name}}</span></button>
+        </section>
+    </GhCanvasHeader>
+
+    <section class="view-container">
+        <GhBrowserPreview @isMobilePreview={{this.isMobilePreview}}>
+            <iframe class={{if this.isMobilePreview "gh-post-preview-iframe" "site-frame"}} src={{@data.theme.previewUrl}} title="{{@data.theme.name}} theme preview" />
+        </GhBrowserPreview>
+    </section>
+</section>

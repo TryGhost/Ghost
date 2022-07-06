@@ -1,0 +1,293 @@
+:root {
+    /* The named -duration and -delay variables will be lowered to near zero when using the setupPromiseModals test helper  */
+    --epm-animation-backdrop-in-duration: 0.15s;
+    --epm-animation-backdrop-out-duration: 0.15s;
+    --epm-animation-modal-in-duration: 0.15s;
+    --epm-animation-modal-out-duration: 0.15s;
+    --epm-animation-backdrop-in-delay: 0s;
+    --epm-animation-backdrop-out-delay: 0s;
+    --epm-animation-modal-in-delay: 0s;
+    --epm-animation-modal-out-delay: 0s;
+    --epm-animation-backdrop-in: var(--epm-animation-backdrop-in-duration) ease
+        var(--epm-animation-backdrop-in-delay) forwards epm-backdrop-in;
+    --epm-animation-backdrop-out: var(--epm-animation-backdrop-out-duration)
+        ease var(--epm-animation-backdrop-out-delay) forwards epm-backdrop-out;
+    --epm-animation-modal-in: var(--epm-animation-modal-in-duration) ease-out
+        var(--epm-animation-modal-in-delay) forwards epm-modal-in;
+    --epm-animation-modal-out: var(--epm-animation-modal-out-duration) ease-out
+        var(--epm-animation-modal-out-delay) forwards epm-modal-out;
+    --epm-backdrop-opacity: 0.6;
+    --epm-backdrop-background: #15171A;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --epm-animation-backdrop-in-duration: 0s;
+        --epm-animation-backdrop-out-duration: 0s;
+        --epm-animation-modal-in-duration: 0s;
+        --epm-animation-modal-out-duration: 0s;
+        --epm-animation-backdrop-in-delay: 0s;
+        --epm-animation-backdrop-out-delay: 0s;
+        --epm-animation-modal-in-delay: 0s;
+        --epm-animation-modal-out-delay: 0s;
+    }
+}
+
+.epm-scrolling-disabled {
+    overflow: hidden;
+}
+
+.epm-backdrop,
+.epm-modal-container {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+.epm-backdrop {
+    background-color: var(--epm-backdrop-background);
+    opacity: var(--epm-backdrop-opacity);
+    animation: var(--epm-animation-backdrop-in);
+    animation-delay: var(--epm-animation-backdrop-in-delay);
+    animation-duration: var(--epm-animation-backdrop-in-duration);
+    z-index: 10000;
+}
+
+.epm-modal-container {
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    overflow: auto;
+    align-items: unset;
+}
+
+.epm-animating .epm-modal-container {
+    overflow: unset;
+}
+
+.epm-modal {
+    opacity: 0;
+    animation: var(--epm-animation-modal-in);
+    animation-delay: var(--epm-animation-modal-in-delay);
+    animation-duration: var(--epm-animation-modal-in-duration);
+    -webkit-overflow-scrolling: touch; /* momentum-based scrolling for Safari on iOS */
+    pointer-events: none;
+    transform: none;
+}
+
+.epm-modal * {
+    pointer-events: auto;
+}
+
+@media (max-width: 900px) {
+    .epm-modal:not(.fullscreen-modal-total-overlay) {
+        padding: 10px;
+    }
+}
+
+
+.epm-backdrop.epm-out {
+    opacity: 1;
+    animation: var(--epm-animation-backdrop-out);
+    animation-delay: var(--epm-animation-backdrop-out-delay);
+    animation-duration: var(--epm-animation-backdrop-out-duration);
+    pointer-events: none;
+}
+
+.epm-modal.epm-out {
+    opacity: 1;
+    animation: var(--epm-animation-modal-out);
+    animation-delay: var(--epm-animation-modal-out-delay);
+    animation-duration: var(--epm-animation-modal-out-duration);
+    pointer-events: none;
+    transform: none;
+}
+
+@keyframes epm-backdrop-in {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: var(--epm-backdrop-opacity);
+    }
+}
+
+@keyframes epm-backdrop-out {
+    0% {
+        opacity: var(--epm-backdrop-opacity);
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes epm-modal-in {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes epm-modal-out {
+    0% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+
+/* The modal
+/* ---------------------------------------------------------- */
+
+/* TODO: remove .epm-modal once original modals.css is removed */
+.epm-modal .fullscreen-modal {
+    margin: 30px auto;
+}
+
+/* Modal content
+/* ---------------------------------------------------------- */
+
+/* TODO: remove .epm-modal once original modals.css is removed */
+.epm-modal .modal-content {
+    position: relative;
+    padding: 32px;
+    background-color: #fff;
+    background-clip: padding-box;
+    border-radius: 3px;
+    box-shadow:
+        0 2.8px 2.2px rgba(0, 0, 0, 0.02),
+        0 6.7px 5.3px rgba(0, 0, 0, 0.028),
+        0 12.5px 10px rgba(0, 0, 0, 0.035),
+        0 22.3px 17.9px rgba(0, 0, 0, 0.042),
+        0 41.8px 33.4px rgba(0, 0, 0, 0.05),
+        0 100px 80px rgba(0, 0, 0, 0.07)
+    ;
+}
+
+.modal-content * {
+    user-select: text;
+}
+
+.modal-content .close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 9999;
+    margin: 0;
+    padding: 0;
+    width: 16px;
+    height: 16px;
+    border: none;
+}
+
+.modal-content .close svg {
+    fill: #808284;
+    width: 16px;
+    height: 16px;
+}
+
+.modal-content .close svg:hover {
+    fill: var(--darkgrey);
+}
+
+.modal-header {
+    position: relative;
+    margin-bottom: 22px;
+}
+
+.modal-header h1 {
+    display: inline-block;
+    margin: -5px 25px 0 0;
+    font-size: 2.2rem;
+    line-height: 1.15em;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+}
+
+.modal-header.icon-center {
+    padding-top: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    min-height: 124px;
+}
+
+.modal-header.icon-center svg {
+    width: 66px;
+    height: 66px;
+}
+
+.modal-header.icon-center h1 {
+    margin: 20px 0 8px;
+    padding: 0;
+}
+
+.modal-header.icon-center .gh-loading-content {
+    position: relative;
+    padding: 8px 0;
+    height: 62px;
+}
+
+.modal-body {
+    position: relative;
+}
+
+.modal-body p {
+    font-size: 1.4rem;
+    line-height: 1.5em;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.modal-footer-spread {
+    justify-content: space-between;
+}
+
+.modal-footer .gh-btn {
+    min-width: 100px;
+    text-align: center;
+}
+
+.modal-footer .gh-btn:not(:first-child) {
+    margin-left: 12px;
+}
+
+.modal-footer-hint {
+    font-size: 1.3rem;
+    color: var(--midgrey-d2);
+}
+
+.modal-body .gh-image-uploader {
+    margin: 0;
+    background: var(--whitegrey-l2);
+}
+
+/* Modifiers
+/* ---------------------------------------------------------- */
+
+/* TODO: remove .epm-modal once original modals.css is removed */
+.epm-modal .fullscreen-modal-wide {
+    width: 100%;
+    max-width: 550px;
+}
+
+.epm-modal .fullscreen-modal-action {
+    margin: 6vw 0;
+}
+
+@media (max-height: 960px) {
+    .epm-modal .fullscreen-modal-action {
+        margin: 40px auto;
+    }
+}

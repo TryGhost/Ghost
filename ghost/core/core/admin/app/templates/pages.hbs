@@ -1,0 +1,69 @@
+<section class="gh-canvas">
+    <GhCanvasHeader class="gh-canvas-header break tablet post-header">
+        <GhCustomViewTitle @title="Pages" @query={{reset-query-params "posts"}} />
+
+        <section class="view-actions">
+            <GhContentfilter
+                @currentUser={{this.session.user}}
+                @selectedType={{this.selectedType}}
+                @availableTypes={{this.availableTypes}}
+                @onTypeChange={{action "changeType"}}
+                @selectedVisibility={{this.selectedVisibility}}
+                @availableVisibilities={{this.availableVisibilities}}
+                @onVisibilityChange={{action "changeVisibility"}}
+                @selectedAuthor={{this.selectedAuthor}}
+                @availableAuthors={{this.availableAuthors}}
+                @onAuthorChange={{action "changeAuthor"}}
+                @selectedTag={{this.selectedTag}}
+                @availableTags={{this.availableTags}}
+                @onTagChange={{action "changeTag"}}
+                @selectedOrder={{this.selectedOrder}}
+                @availableOrders={{this.availableOrders}}
+                @onOrderChange={{action "changeOrder"}}
+            />
+
+            <LinkTo @route="editor.new" @model="page" class="gh-btn gh-btn-primary view-actions-top-row" data-test-new-page-button={{true}}><span>New page</span></LinkTo>
+        </section>
+    </GhCanvasHeader>
+
+    <section class="view-container content-list">
+        <ol class="gh-list {{unless this.postsInfinityModel "no-posts"}}">
+            {{#if this.postsInfinityModel}}
+                <li class="gh-list-row header">
+                    <div class="gh-list-header gh-posts-title-header">Title</div>
+                    <div class="gh-list-header gh-posts-status-header">Status</div>
+                </li>
+            {{/if}}
+
+            {{#each this.postsInfinityModel as |page|}}
+                <GhPostsListItem
+                    @post={{page}}
+                    data-test-page-id={{page.id}} />
+            {{else}}
+                <li class="no-posts-box">
+                    <div class="no-posts">
+                        {{#if this.showingAll}}
+                            {{svg-jar "pages-placeholder" class="gh-pages-placeholder"}}
+                            <h4>Tell the world about yourself.</h4>
+                            <LinkTo @route="editor.new" @model="page" class="gh-btn gh-btn-green">
+                                <span>Create a new page</span>
+                            </LinkTo>
+                        {{else}}
+                            <h4>No pages match the current filter</h4>
+                            <LinkTo @route="pages" @query={{hash type=null author=null tag=null}} class="gh-btn">
+                                <span>Show all pages</span>
+                            </LinkTo>
+                        {{/if}}
+                    </div>
+                </li>
+            {{/each}}
+        </ol>
+
+        <GhInfinityLoader
+            @infinityModel={{this.postsInfinityModel}}
+            @scrollable=".gh-main"
+            @triggerOffset={{1000}} />
+    </section>
+
+    {{outlet}}
+</section>

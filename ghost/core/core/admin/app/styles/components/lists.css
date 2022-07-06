@@ -1,0 +1,421 @@
+/* Plain text lists */
+ul.nostyle {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+ul.nostyle li {
+    margin: 0;
+    padding: 0;
+}
+
+/* Tabular data lists */
+.gh-list {
+    display: table;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: var(--white);
+    width: 100%;
+    border-bottom: var(--main-color-area-divider) 1px solid;
+}
+
+.gh-list.tabbed {
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+}
+
+.gh-list-row {
+    display: table-row;
+}
+
+.gh-list-row:not(.header):first-of-type {
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+.gh-list-row:last-of-type {
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.gh-list-cell {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.gh-list-header {
+    display: table-cell;
+    vertical-align: middle;
+    border-bottom: var(--main-color-area-divider) 1px solid;
+    font-size: 1.1rem;
+    font-weight: 500;
+    letter-spacing: 0.1px;
+    color: var(--black);
+    padding: 10px 20px;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.gh-list-row.header.empty .gh-list-header {
+    padding: 0;
+}
+
+.gh-list:not(.tabbed) .gh-list-header:first-child {
+    border-top-left-radius: 5px;
+    padding-left: 0;
+}
+
+.gh-list:not(.tabbed) .gh-list-header:last-child {
+    border-top-right-radius: 5px;
+    padding-right: 16px;
+}
+
+.gh-list-data {
+    display: table-cell;
+    vertical-align: middle;
+    padding: 16px 20px;
+    border-top: var(--whitegrey) 1px solid;
+    transition: none !important;
+    font-size: 1.3rem;
+}
+
+.gh-list.small .gh-list-data {
+    padding: 8px 20px;
+}
+
+.gh-list-row:nth-of-type(2) .gh-list-data {
+    border-top: none;
+}
+
+.gh-list-row .gh-list-data:first-child {
+    padding-left: 0;
+}
+
+.gh-list-data.show-on-hover > *,
+.gh-list-cell.show-on-hover > * {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.gh-list-row:hover .gh-list-data.show-on-hover > *,
+.gh-list-row:hover .gh-list-cell.show-on-hover > * {
+    opacity: 1;
+}
+
+.gh-list-row:not(.loading):hover .gh-list-data:first-of-type {
+    background: linear-gradient(315deg, var(--whitegrey-l2) 60%, var(--white) 100%);
+}
+
+.gh-list-row:not(.loading):hover .gh-list-data:not(:first-of-type) {
+    background: var(--whitegrey-l2);
+}
+
+.gh-list-data.align-right,
+.gh-list-cell.align-right {
+    text-align: right;
+}
+
+.gh-list-cellwidth-max {
+    width: 100%;
+}
+
+.gh-list-cellwidth-min {
+    max-width: 8px;
+}
+
+.gh-list-cellwidth-2-3 {
+    width: 67%;
+}
+
+.gh-list-cellwidth-1-2 {
+    width: 50%;
+}
+
+.gh-list-cellwidth-1-3 {
+    width: 33%;
+}
+
+.gh-list-cellwidth-10 { width: 10%; }
+.gh-list-cellwidth-20 { width: 20%; }
+.gh-list-cellwidth-30 { width: 30%; }
+.gh-list-cellwidth-40 { width: 40%; }
+.gh-list-cellwidth-50 { width: 50%; }
+.gh-list-cellwidth-60 { width: 60%; }
+.gh-list-cellwidth-70 { width: 70%; }
+.gh-list-cellwidth-80 { width: 80%; }
+.gh-list-cellwidth-90 { width: 90%; }
+.gh-list-cellwidth-100 { width: 100%; }
+
+.gh-list-cellwidth-chevron {
+    width: 32px;
+}
+
+/* Typography
+/* --------------------------------------------------- */
+.gh-list h3 {
+    margin: 0 0 3px 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.gh-list a:not(.gh-btn) {
+    color: var(--black);
+}
+
+
+/* Helpers for smaller sizes
+/* --------------------------------------------------- */
+
+@media (max-width: 1000px) {
+    .gh-list {
+        border-bottom: none;
+    }
+
+    .gh-list-header {
+        display: none;
+    }
+
+    /* Generic helper class to hide cell */
+    .gh-list-hidecell-m {
+        display: none;
+    }
+}
+
+@media (max-width: 800px) {
+    .gh-list-hidecell-s {
+        display: none;
+    }
+
+    /* Hidden elements are usually controls for the row which should
+       be shown always on mobile sizes */
+    .gh-list-cell.show-on-hover > *,
+    .gh-list-data.show-on-hover > * {
+        opacity: 1;
+    }
+
+    .gh-list-cell.force-hide-s > *,
+    .gh-list-data.force-hide-s > * {
+        opacity: 0;
+    }
+}
+
+
+/* Flex lists - header and responsive sizes must be custom
+/* -------------------------------------------------- */
+.gh-flex-list-row {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    margin: 0;
+    padding: 0;
+    border-top: var(--whitegrey) 1px solid;
+}
+
+.gh-flex-list-row:first-of-type {
+    border-top: none;
+}
+
+.gh-flex-list-row:not(.header):not(.loading):hover {
+    background: var(--whitegrey-l2);
+}
+
+.gh-flex-list-row:first-of-type {
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+.gh-flex-list-row:last-of-type {
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.gh-flex-list-data {
+    display: flex;
+    align-items: center;
+    padding: 16px 20px;
+    transition: none !important;
+}
+
+.gh-flex-list-auto {
+    flex: 1 1 auto;
+}
+
+.gh-flex-list-grow {
+    flex-grow: 1;
+}
+
+.gh-flex-list-shrink {
+    flex-grow: 1;
+}
+
+.gh-list-chevron a {
+    display: flex;
+    align-items: center;
+    line-height: 1;
+}
+
+
+/* Fake loading list
+/* -------------------------------------------------- */
+
+@keyframes placeHolderShimmer {
+    0%{
+        background-position: -800px 0
+    }
+    100%{
+        background-position: 800px 0
+    }
+}
+
+@keyframes fadeLoadingList {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.gh-list.loading {
+    opacity: 0;
+    animation: fadeLoadingList 0.3s ease 0.75s 1 forwards;
+}
+
+.gh-list-loadingcell div {
+    animation-duration: 1.5s;
+    animation-fill-mode: forwards;
+    animation-iteration-count: infinite;
+    animation-name: placeHolderShimmer;
+    animation-timing-function: linear;
+    background: var(--lightgrey);
+    background: linear-gradient(to right, var(--lightgrey) 8%, color-mod(var(--lightgrey) l(+2%)) 18%, var(--lightgrey) 33%);
+    background-size: 800px 104px;
+    position: relative;
+    max-width: 440px;
+    height: 13px;
+}
+
+.gh-list-loadingcell:hover {
+    background: none;
+}
+
+.gh-list-loadingcell .gh-list-loading-title {
+    max-width: 440px;
+    height: 13px;
+}
+
+.gh-list-loadingcell .gh-list-loading-detail {
+    max-width: 320px;
+    height: 9px;
+    margin-top: 8px;
+}
+
+/* Horizontally scrolling list */
+.gh-list-scrolling {
+    position: relative;
+    overflow: auto;
+    max-width: calc(100% + 96px);
+    height: calc(100vh - 129px);
+    margin: 0 -48px -81px;
+    padding: 0 48px;
+}
+
+.gh-list-scrolling table {
+    position: relative;
+    border-collapse: inherit;
+    margin: 0;
+    border-bottom: none;
+}
+
+.gh-list-scrolling thead tr {
+    position: sticky;
+    background: var(--main-bg-color);
+    z-index: 2;
+    top: 0;
+}
+
+.gh-list-scrolling thead th {
+    vertical-align: middle;
+    font-size: 1.1rem;
+    font-weight: 500;
+    letter-spacing: 0.1px;
+    color: var(--black);
+    border-bottom: var(--whitegrey) 1px solid;
+    padding: 10px 20px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    background: var(--main-bg-color);
+}
+
+.gh-list-scrolling thead th:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 3;
+    border-bottom: none;
+    padding: 0 60px 0 0;
+    background: linear-gradient(90deg, rgba(255,255,255,1) 90%, rgba(255,255,255,0) 100%);
+}
+
+.gh-list-scrolling thead th:first-child::after {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 40px;
+    height: 100%;
+    background: green;
+}
+
+.gh-list-scrolling tbody .gh-list-data:first-child {
+    position: sticky;
+    left: 0;
+    border-bottom: none;
+    background: var(--main-bg-color);
+    background: linear-gradient(90deg, rgba(255,255,255,1) 90%, rgba(255,255,255,0) 100%);
+    padding: 0 60px 0 0;
+}
+
+.gh-list-scrolling thead th:first-child::before,
+.gh-list-scrolling tbody .gh-list-data:first-child::before {
+    position: absolute;
+    content: "";
+    bottom: 0;
+    right: 0;
+    left: 0;
+    height: 1px;
+    background: var(--whitegrey);
+}
+
+.gh-list-scrolling td:not(.wrap),
+.gh-list-scrolling th:not(.wrap),
+.gh-list-scrolling a:not(.wrap) {
+    white-space: nowrap;
+}
+
+.gh-list-scrolling tbody th{
+    position: sticky;
+    left: 0;
+}
+
+.gh-list-scrolling tbody .gh-list-data {
+    border-top: none;
+    border-bottom: var(--whitegrey) 1px solid;
+}
+
+@media (max-width: 800px) {
+    .gh-list-scrolling {
+        max-width: calc(100% + 8vw);
+        height: calc(100vh - 193px);
+        margin-left: 0;
+        margin-right: -4vw;
+        padding-left: 0;
+        padding-right: 4vw;
+    }
+}
+
+@media (min-width: 1450px) {
+    .gh-list-scrolling {
+        height: calc(100vh - 96px);
+    }
+}

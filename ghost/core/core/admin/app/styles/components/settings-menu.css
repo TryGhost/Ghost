@@ -1,0 +1,437 @@
+/* Settings Menu
+/* ---------------------------------------------------------- */
+
+/* Toggle button
+/* ---------------------------------------------------------- */
+
+.settings-menu-toggle {
+    position: absolute;
+    top: 30px;
+    right: 24px;
+    z-index: 9999;
+    margin-right: 0 !important;
+}
+
+.settings-menu-toggle svg {
+    fill: none !important;
+}
+
+.settings-menu-toggle .settings-menu-open svg path {
+    stroke: var(--black);
+}
+
+@media (min-width: 500px) and (max-width: 1024px) {
+    .settings-menu-toggle {
+        top: 16px;
+    }
+}
+
+@media (max-width: 500px) {
+    .settings-menu-toggle {
+        top: 15px;
+        right: 20px;
+    }
+}
+
+.settings-menu-toggle-spacer {
+    width: 46px;
+}
+
+@media (max-width: 1024px) {
+    .settings-menu-toggle-spacer {
+        width: 68px;
+    }
+}
+
+
+/* Container
+/* ---------------------------------------------------------- */
+
+.settings-menu-container {
+    z-index: 999;
+    height: 100vh;
+    min-width: 380px;
+    overflow-x: visible;
+    overflow-y: auto;
+    border-left: 1px solid var(--whitegrey-d1);
+}
+
+.settings-menu-container-wide {
+    width: 501px;
+    min-width: 501px;
+}
+
+@media (max-width: 1024px) {
+    .settings-menu-container {
+        position: absolute;
+        right: 0;
+        box-shadow:
+        -4.5px 0 3.6px rgba(0, 0, 0, 0.007),
+        -12.5px 0 10px rgba(0, 0, 0, 0.008),
+        -30.1px 0 24.1px rgba(0, 0, 0, 0.01),
+        -100px 0 80px rgba(0, 0, 0, 0.02)
+    ;
+    }
+}
+
+@media (max-width: 800px) {
+    .settings-menu-container {
+        padding-bottom: 64px;
+    }
+}
+
+.settings-menu-container .settings-menu-pane {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-width: 380px;
+    overflow: auto;
+    background-color: var(--white);
+    opacity: 1;
+}
+
+.settings-menu-container-wide .settings-menu-pane {
+    width: 500px;
+    min-width: 500px;
+}
+
+.settings-menu-container .settings-menu-pane-main {
+    position: relative;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    height: 100vh;
+}
+
+/* Header
+/* ---------------------------------------------------------- */
+
+.settings-menu-header {
+    position: fixed;
+    display: flex;
+    width: 100%;
+    max-width: 364px;
+    padding: 36px 24px 24px;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1;
+    background: var(--white);
+}
+
+@media (min-width: 500px) and (max-width: 1024px) {
+    .settings-menu-header {
+        padding-top: 17px;
+    }
+}
+
+@media (max-width: 500px) {
+    .settings-menu-header {
+        padding-top: 19px;
+    }
+}
+
+.settings-menu-header h4 {
+    margin: 0;
+    font-size: 1.75rem;
+    line-height: 1.375;
+    font-weight: 600;
+}
+
+.settings-menu-header .close {
+    margin-right: -15px;
+    padding: 10px 15px;
+    font-size: 12px;
+    line-height: 12px;
+}
+
+.settings-menu-header .close svg {
+    width: 12px;
+    height: 12px;
+    fill: var(--darkgrey);
+}
+
+.settings-menu-header.subview {
+    z-index: 2;
+    width: 100%;
+    max-width: 484px;
+}
+
+.settings-menu-header.subview h4 {
+    width: 100%;
+    text-align: left;
+}
+
+.settings-menu-header.subview .back {
+    margin-left: -15px;
+    padding: 2px 15px 0;
+    line-height: 14px;
+}
+
+.settings-menu-header.subview .back svg {
+    width: 12px;
+    height: 12px;
+}
+
+.settings-menu-header.subview .back svg path {
+    fill: var(--darkgrey);
+}
+
+/* Content
+/* ---------------------------------------------------------- */
+
+.settings-menu-container:not(.ember-power-select-multiple-trigger):not(.tag-settings) input:not([disabled]),
+.settings-menu-container:not(.tag-settings) .gh-input:not([disabled]),
+.settings-menu-pane .gh-date-time-picker-date,
+.settings-menu-pane .gh-date-time-picker-time {
+    background: var(--white);
+    border: var(--input-border);
+}
+
+.settings-menu-container .ember-power-select-multiple-trigger input,
+.settings-menu-pane .gh-date-time-picker-date input,
+.settings-menu-pane .gh-date-time-picker-time input {
+    border: none !important;
+}
+
+.settings-menu-content {
+    padding: 92px 24px 33px;
+}
+
+@media (max-width: 1024px) {
+    .settings-menu-content {
+        padding-top: 72px;
+    }
+}
+
+.settings-menu-content label code {
+    font-weight: normal;
+    border: 1px solid var(--lightgrey);
+}
+
+.settings-menu-content .gh-image-uploader {
+    margin: 0 0 1.6rem 0;
+    background: color-mod(var(--whitegrey-l1) l(+2%));
+}
+
+.settings-menu-content .gh-image-uploader .description {
+    font-size: 1.4rem;
+}
+
+.settings-menu-content .gh-image-uploader form {
+    padding: 35px 45px;
+}
+
+.settings-menu-content .gh-image-uploader.-with-image {
+    width: auto;
+    min-height: 50px;
+    max-height: 250px;
+    margin-top: 0;
+}
+
+.settings-menu-content .gh-radio {
+    margin: 20px 0;
+}
+
+.settings-menu-content .no-selection {
+    margin-top: -16px;
+}
+
+.settings-menu-content .gh-radio-desc {
+    margin: 8px 0 0 -32px;
+}
+
+.settings-menu-content .select-members {
+    margin-bottom: .4rem;
+}
+
+.settings-menu-content .segment-totals {
+    line-height: 1.65;
+}
+
+.settings-menu-content textarea {
+    height: 108px;
+}
+
+.settings-menu-content textarea.gh-input {
+    font-size: 1.5rem;
+    line-height: 1.4em;
+}
+
+.settings-menu-content .gh-cm-editor-textarea {
+    min-height: 170px;
+}
+
+.settings-menu-content .nav-list {
+    margin-top: 3rem;
+}
+
+.settings-menu-content .word-count {
+    font-weight: bold;
+}
+
+.ghost-url-preview {
+    width: 98%;
+    /* Preview never wider than input */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.settings-menu-delete-button {
+    background: transparent;
+    box-shadow: none;
+    color: var(--red);
+    border: none;
+}
+
+.settings-menu-delete-button:hover {
+    box-shadow: none;
+    background: none;
+}
+
+.settings-menu-delete-button span {
+    font-size: inherit;
+    padding: 6px 0;
+}
+
+.settings-menu-delete-button svg {
+    margin-bottom: 1px;
+}
+
+.settings-menu-delete-button svg path {
+    stroke: var(--red);
+    fill: var(--red);
+    stroke-width: 1px;
+}
+
+.settings-menu-delete-button:hover,
+.settings-menu-delete-button:hover svg path {
+    stroke: color-mod(var(--red) lightness(-10%));
+    fill: color-mod(var(--red) lightness(-10%));
+    color: color-mod(var(--red) lightness(-10%));
+}
+
+.post-setting-custom-excerpt {
+    font-size: 1.5rem;
+    line-height: 1.35em;
+}
+
+.settings-menu-content .gh-seo-preview-title {
+    white-space: inherit;
+}
+
+.settings-menu-content .CodeMirror {
+    height: 170px;
+    min-height: 170px;
+    padding: 0;
+    background: var(--white);
+    color: var(--darkgrey);
+    border: 1px solid var(--lightgrey);
+    border-radius: 4px;
+}
+
+.settings-menu-content .CodeMirror-cursor {
+    border: 1px solid var(--midgrey);
+}
+
+.settings-menu-content .CodeMirror-gutters {
+    background-color: var(--whitegrey-l2);
+    border-right: 1px solid var(--lightgrey);
+}
+
+.settings-menu-content .CodeMirror:hover {
+    cursor: text;
+}
+
+.settings-menu-content .CodeMirror-scroll {
+    min-height: 170px;
+}
+
+.settings-menu-content .for-radio .input-toggle-component,
+.settings-menu-content .for-checkbox .input-toggle-component {
+    background: #fff;
+}
+
+/* .settings-menu-pane .ember-power-select-multiple-trigger {
+    border: var(--input-border);
+    background: var(--input-bg-color);
+}
+
+.settings-menu-pane .ember-power-select-trigger[aria-expanded=true] {
+    border-color: transparent;
+    background: color-mod(var(--input-bg-color) l(-3%));
+} */
+
+.settings-menu-pane .ember-power-select-dropdown {
+    border: none;
+    border-top: none;
+    margin: 0 1px;
+    width: calc(100% - 2px);
+    box-shadow: 0 0 0 1px rgba(99,114,130,0.16), 0 8px 16px rgba(27,39,51,0.08);
+}
+
+.settings-menu-pane .gh-date-time-picker-date,
+.settings-menu-pane .gh-date-time-picker-time {
+    margin: 0;
+}
+
+.settings-menu-pane .gh-date-time-picker-date {
+    margin-right: 4px;
+}
+
+.settings-menu-pane .gh-date-time-picker-time {
+    margin-left: 4px;
+}
+
+
+/* Background
+/* ---------------------------------------------------------- */
+@keyframes coverFadeIn {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.mobile-menu-expanded .content-cover {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 900;
+    opacity: 0;
+    transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
+    background: rgba(0,0,0,0.02);
+    /* Not off the screen, to give a parallax effect */
+    animation: coverFadeIn 0.3s ease 0.1s 1 forwards;
+}
+
+.mobile-menu-expanded .content-cover {
+    transform: translate3d(205px, 0px, 0px);
+}
+
+
+/* Badges
+/* ---------------------------------------------------------- */
+.gh-setting-title .gh-badge {
+    font-size: 13px;
+}
+
+/* Email
+/* ---------------------------------------------------------- */
+.settings-menu-email-button span {
+    padding: 4px 0;
+    line-height: 1em;
+    height: unset;
+    margin-bottom: 4px;
+}
+
+.settings-menu-email .disabled button,
+.settings-menu-email .disabled input {
+    opacity: 0.5;
+}

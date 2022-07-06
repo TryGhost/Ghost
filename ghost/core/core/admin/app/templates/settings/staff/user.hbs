@@ -1,0 +1,414 @@
+<section class="gh-canvas">
+    <GhCanvasHeader class="gh-canvas-header">
+        {{!-- Remove breadcrumbs for Authors and Contributors --}}
+        {{#if this.currentUser.isAuthorOrContributor}}
+            <h2 class="gh-canvas-title" data-test-screen-title>Your profile</h2>
+        {{else}}
+            <h2 class="gh-canvas-title" data-test-screen-title>
+                <LinkTo @route="settings">Settings</LinkTo>
+                <span>{{svg-jar "arrow-right"}}</span>
+                <LinkTo @route="settings.staff" data-test-staff-link={{true}}>Staff</LinkTo>
+                <span>{{svg-jar "arrow-right"}}</span>
+                {{this.user.name}}
+
+                {{#if this.user.isSuspended}}
+                    <span class="gh-badge suspended" data-test-suspended-badge>Suspended</span>
+                {{/if}}
+            </h2>
+        {{/if}}
+
+        {{#if this.showLeaveSettingsModal}}
+            <GhFullscreenModal @modal="leave-settings"
+                @confirm={{action "leaveSettings"}}
+                @close={{action "toggleLeaveSettingsModal"}}
+                @modifier="action wide" />
+        {{/if}}
+
+        <section class="view-actions">
+            {{#if this.userActionsAreVisible}}
+                <span class="dropdown">
+                    <GhDropdownButton @dropdownName="user-actions-menu" @classNames="gh-btn gh-btn-white gh-btn-icon icon-only user-actions-cog" @title="User Actions" data-test-user-actions={{true}}>
+                        <span>
+                            {{svg-jar "settings"}}
+                            <span class="hidden">User Settings</span>
+                        </span>
+                    </GhDropdownButton>
+                    <GhDropdown @name="user-actions-menu" @tagName="ul" @classNames="user-actions-menu dropdown-menu dropdown-align-right">
+                        {{#if this.canMakeOwner}}
+                            <li>
+                                <button type="button" {{action "toggleTransferOwnerModal"}}>
+                                    Make owner
+                                </button>
+                                {{#if this.showTransferOwnerModal}}
+                                    <GhFullscreenModal @modal="transfer-owner"
+                                        @confirm={{action "transferOwnership"}}
+                                        @close={{action "toggleTransferOwnerModal"}}
+                                        @modifier="action wide" />
+                                {{/if}}
+                            </li>
+                        {{/if}}
+                        {{#if this.deleteUserActionIsVisible}}
+                            <li>
+                                <button class="delete" data-test-delete-button type="button" {{action "toggleDeleteUserModal"}}>
+                                    Delete user
+                                </button>
+                            </li>
+                            {{#if this.user.isActive}}
+                                <li>
+                                    <button class="suspend" data-test-suspend-button type="button" {{action "toggleSuspendUserModal"}}>
+                                        Suspend user
+                                    </button>
+                                </li>
+                            {{/if}}
+                            {{#if this.user.isSuspended}}
+                                <li>
+                                    <button class="unsuspend" data-test-unsuspend-button type="button" {{action "toggleUnsuspendUserModal"}}>
+                                        Un-suspend user
+                                    </button>
+                                </li>
+                            {{/if}}
+                        {{/if}}
+                    </GhDropdown>
+                </span>
+            {{/if}}
+
+            <GhTaskButton @class="gh-btn gh-btn-primary gh-btn-icon" @task={{this.save}} data-test-save-button={{true}} />
+
+            {{#if this.showDeleteUserModal}}
+                <GhFullscreenModal @modal="delete-user"
+                    @model={{this.user}}
+                    @confirm={{action (perform this.deleteUser)}}
+                    @close={{action "toggleDeleteUserModal"}}
+                    @modifier="action wide" />
+            {{/if}}
+
+            {{#if this.showSuspendUserModal}}
+                <GhFullscreenModal @modal="suspend-user"
+                    @model={{this.user}}
+                    @confirm={{action "suspendUser"}}
+                    @close={{action "toggleSuspendUserModal"}}
+                    @modifier="action wide" />
+            {{/if}}
+
+            {{#if this.showUnsuspendUserModal}}
+                {{#if this.limitErrorMessage}}
+                    <GhFullscreenModal @modal="upgrade-unsuspend-user-host-limit"
+                        @model={{hash
+                            message=this.limitErrorMessage
+                        }}
+                        @close={{action "toggleUnsuspendUserModal"}}
+                        @modifier="action wide" />
+                {{else}}
+                    <GhFullscreenModal @modal="unsuspend-user"
+                        @model={{this.user}}
+                        @confirm={{action "unsuspendUser"}}
+                        @close={{action "toggleUnsuspendUserModal"}}
+                        @modifier="action wide" />
+                {{/if}}
+            {{/if}}
+        </section>
+    </GhCanvasHeader>
+
+    {{#if this.user.isLocked}}
+        <p class="gh-box gh-box-alert">{{svg-jar "info"}}This user account is locked. To sign in, ask this user to perform a password reset on their account.</p>
+    {{/if}}
+
+    {{!-- <div class="bg-"> --}}
+    <section>
+        <div class="gm-main view-container settings-user">
+            <form class="user-profile" novalidate="novalidate" autocomplete="off" {{action (perform this.save) on="submit"}}>
+
+                <figure class="user-cover" style={{background-image-style this.user.coverImageUrl}}>
+                    <button type="button" class="gh-btn gh-btn-default user-cover-edit" {{action "toggleUploadCoverModal"}}><span>Change cover</span></button>
+                    {{#if this.showUploadCoverModal}}
+                        <GhFullscreenModal @modal="upload-image"
+                            @model={{hash model=this.user imageProperty="coverImage"}}
+                            @close={{action "toggleUploadCoverModal"}}
+                            @modifier="action wide" />
+                    {{/if}}
+                </figure>
+
+                <figure class="user-image bg-whitegrey">
+                    <div id="user-image" class="img" style={{background-image-style this.user.profileImageUrl}}><span class="hidden">{{this.user.name}}"s picture</span></div>
+                    <button type="button" {{action "toggleUploadImageModal"}} class="edit-user-image">Edit picture</button>
+                    {{#if this.showUploadImageModal}}
+                        <GhFullscreenModal @modal="upload-image"
+                            @model={{hash model=this.user imageProperty="profileImage" paramsHash=(hash purpose="profile_image")}}
+                            @close={{action "toggleUploadImageModal"}}
+                            @modifier="action wide" />
+                    {{/if}}
+                </figure>
+
+                <div class="pa5">
+                    <fieldset class="user-details-bottom">
+
+                        <GhFormGroup @errors={{this.user.errors}} @hasValidated={{this.user.hasValidated}} @property="name" @class="first-form-group">
+                            <label for="user-name">Full name</label>
+                            <GhTextInput
+                                @id="user-name"
+                                @class="user-name"
+                                @autocorrect="off"
+                                @value={{readonly this.user.name}}
+                                @input={{action (mut this.user.name) value="target.value"}}
+                                @focus-out={{action "validate" "name" target=this.user}}
+                                data-test-name-input={{true}}
+                            />
+                            {{#if this.user.errors.name}}
+                                <GhErrorMessage @errors={{this.user.errors}} @property="name" data-test-error="user-name" />
+                            {{else}}
+                                <p>Use your real name so people can recognize you</p>
+                            {{/if}}
+                        </GhFormGroup>
+
+                        <GhFormGroup @errors={{this.user.errors}} @hasValidated={{this.user.hasValidated}} @property="slug">
+                            <label for="user-slug">Slug</label>
+                            <GhTextInput
+                                @class="user-name"
+                                @id="user-slug"
+                                @name="user"
+                                @selectOnClick="true"
+                                @autocorrect="off"
+                                @value={{readonly this.slugValue}}
+                                @input={{action (mut this.slugValue) value="target.value"}}
+                                @focus-out={{action (perform this.updateSlug this.slugValue)}}
+                                data-test-slug-input={{true}}
+                            />
+                            <p><GhBlogUrl />/author/{{this.slugValue}}</p>
+                            <GhErrorMessage @errors={{this.user.errors}} @property="slug" data-test-error="user-slug" />
+                        </GhFormGroup>
+
+                        <GhFormGroup @errors={{this.user.errors}} @hasValidated={{this.user.hasValidated}} @property="email">
+                            <label for="user-email">Email</label>
+                            {{!-- Administrators only see text of Owner's email address but not input --}}
+                            {{#if this.canChangeEmail}}
+                                <GhTextInput
+                                    @type="email"
+                                    @id="user-email"
+                                    @name="email"
+                                    @placeholder="jamie@example.com"
+                                    @autocapitalize="off"
+                                    @autocorrect="off"
+                                    @autocomplete="off"
+                                    @value={{readonly this.user.email}}
+                                    @input={{action (mut this.user.email) value="target.value"}}
+                                    @focus-out={{action "validate" "email" target=this.user}}
+                                    data-test-email-input={{true}}
+                                />
+                                <GhErrorMessage @errors={{this.user.errors}} @property="email" data-test-error="user-email" />
+                            {{else}}
+                                <span>{{this.user.email}}</span>
+                            {{/if}}
+                            <p>Used for notifications</p>
+                        </GhFormGroup>
+
+                        {{#if this.rolesDropdownIsVisible}}
+                            <div class="form-group">
+                                <label for="user-role">Role</label>
+                                <div class="gh-input pointer" {{on "click" (action "toggleRoleSelectionModal")}}>{{this.user.role.name}}{{svg-jar "arrow-down-small"}}</div>
+                                <p>What permissions should this user have?</p>
+                            </div>
+
+                            {{#if this.showRoleSelectionModal}}
+                                <GhFullscreenModal
+                                    @modal="select-user-role"
+                                    @model={{readonly this.user.role}}
+                                    @confirm={{action "changeRole"}}
+                                    @close={{action "toggleRoleSelectionModal"}}
+                                    @modifier="change-role"
+                                />
+                            {{/if}}
+                        {{/if}}
+
+                        <GhFormGroup @errors={{this.user.errors}} @hasValidated={{this.user.hasValidated}} @property="location">
+                            <label for="user-location">Location</label>
+                            <GhTextInput
+                                @id="user-location"
+                                @value={{readonly this.user.location}}
+                                @input={{action (mut this.user.location) value="target.value"}}
+                                @focus-out={{action "validate" "location" target=this.user}}
+                                data-test-location-input={{true}} />
+                            <GhErrorMessage @errors={{this.user.errors}} @property="location" data-test-error="user-location" />
+                            <p>Where in the world do you live?</p>
+                        </GhFormGroup>
+
+                        <GhFormGroup @errors={{this.user.errors}} @hasValidated={{this.user.hasValidated}} @property="website">
+                            <label for="user-website">Website</label>
+                            <GhTextInput
+                                @type="url"
+                                @id="user-website"
+                                @autocapitalize="off"
+                                @autocorrect="off"
+                                @autocomplete="off"
+                                @value={{readonly this.user.website}}
+                                @input={{action (mut this.user.website) value="target.value"}}
+                                @focus-out={{action "validate" "website" target=this.user}}
+                                data-test-website-input={{true}} />
+                            <GhErrorMessage @errors={{this.user.errors}} @property="website" data-test-error="user-website" />
+                            <p>Have a website or blog other than this one? Link it!</p>
+                        </GhFormGroup>
+
+                        <GhFormGroup @errors={{this.user.errors}} @hasValidated={{this.user.hasValidated}} @property="facebook">
+                            <label for="user-facebook">Facebook profile</label>
+                            <GhTextInput
+                                @type="url"
+                                @placeholder="https://www.facebook.com/username"
+                                @autocorrect="off"
+                                @id="user-facebook"
+                                @name="user[facebook]"
+                                @value={{readonly this.user.facebook}}
+                                @input={{action (mut this._scratchFacebook) value="target.value"}}
+                                @focus-out={{action "validateFacebookUrl"}}
+                                data-test-facebook-input={{true}}
+                            />
+                            <GhErrorMessage @errors={{this.user.errors}} @property="facebook" data-test-error="user-facebook" />
+                            <p>URL of your personal Facebook Profile</p>
+                        </GhFormGroup>
+
+                        <GhFormGroup @errors={{this.user.errors}} @hasValidated={{this.user.hasValidated}} @property="twitter">
+                            <label for="user-twitter">Twitter profile</label>
+                            <GhTextInput
+                                @type="url"
+                                @placeholder="https://twitter.com/username"
+                                @autocorrect="off"
+                                @id="user-twitter"
+                                @name="user[twitter]"
+                                @value={{readonly this.user.twitter}}
+                                @input={{action (mut this._scratchTwitter) value="target.value"}}
+                                @focus-out={{action "validateTwitterUrl"}}
+                                data-test-twitter-input={{true}}
+                            />
+                            <GhErrorMessage @errors={{this.user.errors}} @property="twitter" data-test-error="user-twitter" />
+                            <p>URL of your personal Twitter profile</p>
+                        </GhFormGroup>
+
+                        <GhFormGroup @errors={{this.user.errors}} @hasValidated={{this.user.hasValidated}} @property="bio" @class="bio-container">
+                            <label for="user-bio">Bio</label>
+                            <GhTextarea
+                                @id="user-bio"
+                                @value={{readonly this.user.bio}}
+                                @input={{action (mut this.user.bio) value="target.value"}}
+                                @focus-out={{action "validate" "bio" target=this.user}}
+                                data-test-bio-input={{true}}
+                            />
+                            <GhErrorMessage @errors={{this.user.errors}} @property="bio" data-test-error="user-bio" />
+                            <p>
+                                Recommended: <strong>200</strong> characters. 
+                                You've used {{gh-count-down-characters this.user.bio 200}}
+                            </p>
+                        </GhFormGroup>
+
+                    </fieldset>
+                </div>
+
+            </form> {{! user details form }}
+
+            {{!-- If an administrator is viewing Owner's profile then hide inputs for change password --}}
+            {{#if this.canChangePassword}}
+                <form id="password-reset" class="user-profile" novalidate="novalidate" autocomplete="off" {{action (perform this.user.saveNewPassword) on="submit"}}>
+                    <div class="pa5">
+                        <fieldset class="user-details-form">
+                            {{#if this.isOwnProfile}}
+                                <GhFormGroup @errors={{this.user.errors}} @hasValidated={{this.user.hasValidated}} @property="password">
+                                    <label for="user-password-old">Old password</label>
+                                    <GhTextInput
+                                        @type="password"
+                                        @id="user-password-old"
+                                        @autocomplete="current-password"
+                                        @value={{readonly this.user.password}}
+                                        @input={{action "updatePassword" value="target.value"}}
+                                        @keyEvents={{hash
+                                            Enter=(action (perform this.user.saveNewPassword))
+                                        }}
+                                        data-test-old-pass-input={{true}}
+                                    />
+                                    <GhErrorMessage @errors={{this.user.errors}} @property="password" data-test-error="user-old-pass" />
+                                </GhFormGroup>
+                            {{/if}}
+
+                            <GhFormGroup @errors={{this.user.errors}} @hasValidated={{this.user.hasValidated}} @property="newPassword">
+                                <label for="user-password-new">New password</label>
+                                <GhTextInput
+                                    @value={{readonly this.user.newPassword}}
+                                    @type="password"
+                                    @autocomplete="new-password"
+                                    @id="user-password-new"
+                                    @input={{action "updateNewPassword" value="target.value"}}
+                                    @keyEvents={{hash
+                                        Enter=(action (perform this.user.saveNewPassword))
+                                    }}
+                                    data-test-new-pass-input={{true}}
+                                />
+                                <GhErrorMessage @errors={{this.user.errors}} @property="newPassword" data-test-error="user-new-pass" />
+                            </GhFormGroup>
+
+                            <GhFormGroup @errors={{this.user.errors}} @hasValidated={{this.user.hasValidated}} @property="ne2Password">
+                                <label for="user-new-password-verification">Verify password</label>
+                                <GhTextInput
+                                    @value={{readonly this.user.ne2Password}}
+                                    @type="password"
+                                    @id="user-new-password-verification"
+                                    @input={{action "updateNe2Password" value="target.value"}}
+                                    @keyEvents={{hash
+                                        Enter=(action (perform this.user.saveNewPassword))
+                                    }}
+                                    data-test-ne2-pass-input={{true}}
+                                />
+                                <GhErrorMessage @errors={{this.user.errors}} @property="ne2Password" data-test-error="user-ne2-pass" />
+                            </GhFormGroup>
+
+                            <div class="form-group">
+                                <GhTaskButton @buttonText="Change Password" @idleClass="gh-btn-red" @class="gh-btn gh-btn-icon button-change-password" @task={{this.user.saveNewPassword}} data-test-save-pw-button="true" />
+                            </div>
+                        </fieldset>
+                    </div>
+                </form> {{! change password form }}
+            {{/if}}
+
+            {{#if this.isOwnProfile}}
+                <form class="user-profile">
+                    <div class="pa5">
+                        <fieldset class="user-details-form">
+                            <GhFormGroup>
+                                <label for="personal-token">Staff access token</label>
+                                <div class="relative flex items-center {{unless this.copyContentKey.isRunning "hide-child-instant"}}">
+                                    <GhTextInput
+                                            @id="personal-token"
+                                            @value={{readonly this.personalToken}}
+                                            @readonly
+                                            @type="text"
+                                            onclick="this.select()"
+                                        />
+                                    <div class="app-api-personal-token-buttons child">
+                                        <button type="button" {{action "confirmRegenerateTokenModal"}} class="app-button-regenerate" data-tooltip="Regenerate">
+                                            {{svg-jar "reload" class="w4 h4 stroke-midgrey"}}
+                                        </button>
+                                        <button type="button" {{action (perform this.copyContentKey)}} class="app-button-copy">
+                                            {{#if this.copyContentKey.isRunning}}
+                                            {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
+                                            {{else}}
+                                            Copy
+                                            {{/if}}
+                                        </button>
+                                    </div>
+                                </div>
+                                <p>
+                                    Give apps personal access without sharing your email/password.
+                                </p>
+                                {{#if this.personalTokenRegenerated}}
+                                    <p class="green">Staff access token was successfully regenerated </p>
+                                {{/if}}
+                                {{#if this.showRegenerateTokenModal}}
+                                    <GhFullscreenModal @modal="regenerate-token"
+                                        @confirm={{action "regenerateToken"}}
+                                        @close={{action "cancelRegenerateTokenModal"}}
+                                        @modifier="action wide" />
+                                {{/if}}
+
+                            </GhFormGroup>
+                        </fieldset>
+                    </div>
+                </form>
+            {{/if}}
+        </div>
+    </section>
+</section>

@@ -1,0 +1,159 @@
+/* Image Uploader
+/* ---------------------------------------------------------- */
+
+.gh-image-uploader {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    min-height: 130px;
+    overflow: hidden;
+    margin: 1.6em 0;
+    color: var(--middarkgrey);
+    text-align: center;
+    border-radius: 3px;
+}
+
+.gh-image-uploader.-drag-over {
+    border: 2px solid var(--green);
+}
+
+.gh-image-uploader.-with-image {
+    background: transparent !important;
+    border: none !important;
+}
+
+.gh-image-uploader img {
+    display: block;
+    min-width: 200px;
+    max-width: 100%;
+    margin: 0 auto;
+    line-height: 0;
+}
+
+.image-delete {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 300;
+    display: block;
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    color: #fff;
+    font-size: 13px;
+    line-height: 10px;
+    text-decoration: none;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: var(--border-radius);
+    box-shadow: rgba(255, 255, 255, 0.2) 0 0 0 1px;
+}
+
+.image-delete svg {
+    width: 13px;
+    height: 13px;
+    margin: 0 !important;
+    fill: #fff;
+}
+
+.image-delete:hover {
+    color: #fff;
+    cursor: pointer;
+    background: var(--red);
+}
+
+.gh-image-uploader .upload-form {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+}
+
+.gh-image-uploader .x-file-input {
+    flex-grow: 1;
+    display: flex;
+    width: 100%;
+}
+
+.gh-image-uploader .x-file-input label {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    outline: none;
+}
+
+.gh-image-uploader .description {
+    width: 100%;
+    font-size: 1.6rem;
+    text-align: center;
+}
+
+.gh-image-uploader .failed {
+    margin: 1em 2em;
+    font-size: 16px;
+    color: color-mod(var(--midgrey));
+}
+
+/* TODO: remove the gh-image-uploader classes once it's using gh-progrss-bar */
+.gh-image-uploader .progress-container,
+.gh-progress-container {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+}
+
+.gh-image-uploader .progress,
+.gh-progress-container-progress {
+    width: 60%;
+    overflow: hidden;
+    margin: 0 auto;
+    background: linear-gradient(to bottom, #f5f5f5, #f9f9f9);
+    border-radius: 12px;
+}
+
+.gh-image-uploader .bar,
+.gh-progress-bar {
+    height: 8px;
+    background: var(--green);
+}
+
+.gh-image-uploader .bar.fail,
+.gh-progress-bar.-error {
+    width: 100% !important;
+    background: var(--red);
+}
+
+/* Try Again button */
+.gh-image-uploader .gh-btn-green:last-child {
+    margin-top: 1em;
+    margin-bottom: 3em;
+}
+
+
+/* Unsplash Button
+/* ---------------------------------------------------------- */
+
+.gh-image-uploader-unsplash {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 36px;
+    height: 36px;
+    padding: 10px;
+    opacity: 0.33;
+    transition: opacity 0.3s ease;
+}
+
+.gh-image-uploader-unsplash:hover {
+    cursor: pointer;
+    opacity: 1.0;
+    transition: opacity 0.3s ease;
+}
+
+.gh-image-uploader-unsplash svg {
+    width: 14px;
+}

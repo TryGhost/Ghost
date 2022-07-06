@@ -1,0 +1,590 @@
+/* Apps
+/* ---------------------------------------------------------- */
+
+.apps-filter {
+    border-radius: 5px;
+}
+@media (max-width: 1460px) {
+    .apps-filter {
+        max-width: 700px;
+    }
+}
+
+/* Main Layout
+/* ---------------------------------------------------------- */
+
+.integrations-directory {
+    display: grid;
+    justify-content: space-between;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+    grid-gap: 25px;
+    background: var(--whitegrey-l1);
+    padding: 24px;
+    border-radius: 3px;
+}
+
+.id-item {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100px;
+    padding: 10px;
+    text-align: center;
+    text-decoration: none;
+    color: var(--darkgrey);
+    border-radius: 5px;
+    box-shadow: 0 3px 6px -2px rgba(0,0,0,.1);
+    background: var(--white);
+    transition: all .5s ease;
+}
+
+.id-item:hover {
+    transform: translateY(-2.5%);
+    box-shadow: 0 0 1px rgba(0,0,0,.02), 0 8px 26px -4px rgba(0,0,0,.08);
+    transition: all .3s ease;
+}
+
+.id-item-logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 38px;
+    width: 38px;
+    margin-top: 4px;
+}
+
+.id-more svg circle {
+    stroke: var(--midlightgrey);
+}
+
+@media (max-width: 1320px) {
+    .integrations-directory {
+        grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+    }
+    .id-item:nth-child(7) {
+        display: none;
+    }
+}
+@media (max-width: 1160px) {
+    .integrations-directory {
+        grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+    }
+    .id-item:nth-child(6) {
+        display: none;
+    }
+}
+@media (max-width: 1020px) {
+    .integrations-directory {
+        grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    }
+    .id-item:nth-child(5) {
+        display: none;
+    }
+}
+@media (max-width: 900px) {
+    .integrations-directory {
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+    }
+    .id-item:nth-child(5),
+    .id-item:nth-child(6),
+    .id-item:nth-child(7) {
+        display: flex;
+    }
+}
+
+@media (max-width: 500px) {
+    .integrations-directory {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+    .id-item:nth-child(6),
+    .id-item:nth-child(7) {
+        display: none;
+    }
+}
+
+/* Built-in integrations */
+.apps-first-header,
+.apps-first-header .apps-grid-title {
+    margin-top: 0px;
+}
+
+.apps-grid {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: flex-start;
+}
+
+.apps-grid-note {
+    display: block;
+    margin-top: 5px;
+    color: var(--midgrey);
+    font-size: 1.2rem;
+    font-style: italic;
+}
+
+/* Apps Card
+/* ---------------------------------------------------------- */
+
+.apps-grid-cell {
+    flex: 1 1 100%;
+    background: var(--white);
+    margin: 0;
+}
+
+.apps-grid-cell {
+    transition: background 0.3s ease;
+}
+
+.apps-grid-cell:hover {
+    background: var(--whitegrey-l2);
+    transition: none;
+}
+
+.apps-card-app {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    overflow: hidden;
+    padding: 16px 4px;
+    height: 65px;
+    border-bottom: var(--whitegrey) 1px solid;
+    transition: background 0.3s ease;
+}
+
+.new-integration-cell .apps-card-app {
+    padding: 10px 16px;
+    height: auto;
+}
+
+@media (max-width: 500px) {
+    .apps-card-app {
+        min-height: 75px;
+        height: auto;
+    }
+
+    .new-integration-cell .apps-card-app {
+        min-height: auto;
+        height: auto;
+    }
+}
+
+.apps-grid-cell:first-of-type .apps-card-app {
+    border-top: none;
+}
+
+.apps-card-left {
+    display: flex;
+    align-items: center;
+}
+
+@media (max-width: 500px) {
+    .apps-card-left {
+        flex-basis: 70%;
+    }
+}
+
+.apps-card-right {
+    display: flex;
+    align-items: center;
+}
+
+.apps-card-right svg {
+    margin-left: 15px;
+    height: 14px;
+}
+
+.apps-card-right svg path {
+    fill: var(--midgrey);
+}
+
+.apps-configured {
+    display: flex;
+    align-items: center;
+    color: var(--midgrey);
+    font-weight: 300;
+}
+
+.apps-configured svg {
+    margin-left: 15px;
+    height: 14px;
+}
+
+.apps-configured svg path {
+    fill: var(--midgrey);
+}
+
+.apps-configured a {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+.apps-configured-action {
+    margin-left: 15px;
+    text-transform: uppercase;
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+.apps-card-app-icon {
+    flex: 0 0 47px;
+    margin: 0 12px 0 0;
+    width: 47px;
+    height: 47px;
+    background-position: center center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    border-radius: 15%;
+    mix-blend-mode: multiply;
+}
+
+.apps-card-meta {
+    display: flex;
+    flex-direction: column;
+    padding-right: 40px;
+}
+@media (max-width: 500px) {
+    .apps-card-meta {
+        flex-basis: 70%;
+        padding-right: 10px;
+    }
+}
+
+.apps-card-app-title {
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 1.5rem;
+    line-height: 1.3em;
+    font-weight: 600;
+}
+@media (max-width: 500px) {
+    .apps-card-app-title {
+        white-space: normal;
+        font-size: 1.5rem;
+    }
+}
+
+
+/* Apps Card Meta
+/* ---------------------------------------------------------- */
+
+.apps-card-app-desc {
+    display: -webkit-box;
+    overflow: hidden;
+    margin: 4px 0 0;
+    padding: 0;
+    max-height: 4.2rem;
+    color: var(--midgrey);
+    text-overflow: ellipsis;
+    font-size: 1.3rem;
+    line-height: 1.3em;
+    font-weight: 400;
+
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+@media (min-width: 600px) and (max-width: 1460px) {
+    .apps-card-app-desc {
+        padding-right: 24px;
+    }
+}
+
+
+/* Apps Card Footer
+/* ---------------------------------------------------------- */
+
+.apps-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+    width: 100%;
+}
+
+/* Details
+/* ---------------------------------------------------------- */
+
+.app-grid {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    align-content: flex-start;
+    margin-top: 24px;
+}
+
+.app-icon {
+    position: relative;
+    flex: 1 0 56px;
+    width: 56px;
+    min-width: 56px;
+    height: 56px;
+    background-position: center center;
+    background-size: cover;
+    border-radius: 10%;
+    margin-right: 32px;
+}
+
+.app-icon img {
+    display: block;
+}
+
+.app-cell h3 {
+    margin: 4px 0 0;
+    color: var(--black);
+    font-size: 2.1rem;
+    font-weight: 600;
+}
+
+.app-cell p {
+    margin: 0;
+    margin-bottom: 5px;
+    color: var(--midgrey);
+    font-size: 1.4rem;
+    line-height: 1.4em;
+}
+
+.app-subtitle {
+    max-width: 550px;
+    color: var(--midgrey);
+    font-size: 1.6rem;
+}
+.app-config-form .gh-btn-grey {
+    margin-top: 1.6em;
+    background-color: #e8e8e8;
+    box-shadow: none;
+    font-size: 1.1rem;
+}
+
+.app-config-form > .gh-btn-grey:hover,
+.app-config-form > .gh-btn-grey:focus {
+    border-color: rgb(223, 225, 227);
+}
+
+.app-api-buttons {
+    display: flex;
+    align-items: center;
+    position: absolute;
+    top: -3px;
+    right: -3px;
+}
+
+.app-api-personal-token-buttons {
+    display: flex;
+    align-items: center;
+    position: absolute;
+    right: 5px;
+}
+
+.app-button-regenerate {
+    height: 26px;
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--lightgrey);
+    border-radius: 3px;
+    padding: 5px 8px;
+    margin-right: 8px;
+    background: var(--white);
+}
+
+.app-button-copy {
+    height: 26px;
+    display: flex;
+    align-items: center;
+    background: var(--black);
+    font-size: 1.2rem;
+    padding: 4px 12px;
+    color: var(--white);
+    font-weight: 500;
+    border-radius: 3px;
+}
+
+/* Zapier templates */
+/* ---------------------------------------------------------- */
+.gh-zapier-data-container {
+    margin: 1.6em 0;
+}
+
+.gh-zapier-data-container .gh-zapier-data {
+    display: flex;
+    align-items: center;
+}
+
+@media (max-width: 500px) {
+    .gh-zapier-data-container .gh-zapier-data {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+.gh-zapier-data .data-label {
+    width: 128px;
+    height: 36px;
+    padding: 8px 8px 8px 0;
+    color: var(--midgrey);
+    font-size: 1.4rem;
+    line-height: 1.45;
+    font-weight: 400;
+    white-space: nowrap;
+}
+
+.gh-zapier-data .data {
+    width: 100%;
+    height: 36px;
+    padding: 8px;
+    color: var(--darkgrey);
+    font-size: 1.4rem;
+    line-height: 1.45;
+    font-weight: 500;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.gh-zapier-data .data.highlight-hover:hover {
+    background: var(--whitegrey-l1);
+}
+
+@media (max-width: 500px) {
+    .gh-zapier-data .data {
+        padding: 4px 0;
+    }
+
+    .gh-zapier-data .data.highlight-hover:hover {
+        background: transparent;
+    }
+}
+
+.gh-zapier-data .admin-key,
+.gh-zapier-data .api-url {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    word-wrap: break-word;
+    word-break: break-word;
+}
+
+.gh-settings-zapier-templates .apps-grid-cell:hover {
+    background: var(--white);
+}
+
+.zapier-template-link:hover {
+    border-color: #f04600;
+}
+
+.zapier-template-link span {
+    transition: all 0.2s ease;
+    transition-property: color;
+}
+
+.zapier-template-link:hover span {
+    color: #f04600;
+}
+
+.gh-settings-zapier-templates .apps-card-app-title {
+    margin-left: 8px;
+    white-space: unset;
+}
+
+.gh-settings-zapier-templates .apps-card-app {
+    height: 68px;
+}
+
+.gh-settings-zapier-templates .gh-card-right {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.zapier-footer,
+.zapier-footer a {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    color: var(--midgrey);
+    font-size: 1.3rem;
+}
+
+.zapier-footer figure {
+    margin: 0 0 2px;
+    width: 47px;
+    height: 47px;
+    background-position: 50%;
+    background-size: cover;
+    background-repeat: no-repeat;
+    border-radius: 15%;
+}
+
+/* Custom Integrations
+/* ---------------------------------------------------------- */
+.new-webhook-cell td {
+    padding: 0;
+}
+
+.new-webhook-cell:hover {
+    background: var(--whitegrey-l2);
+}
+
+.app-custom-icon-container {
+    margin-right: 32px;
+}
+
+.app-custom-icon {
+    display: flex;
+    position: relative;
+    align-items: center;
+    height: 117px;
+    width: 117px;
+    margin: 0;
+    border-radius: 3px;
+    border: 1px solid var(--whitegrey-d1);
+    background: var(--white);
+    padding: 24px;
+}
+
+.app-custom-icon-uploadlabel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    color: var(--white);
+    border-radius: 3px;
+    text-align: center;
+    background-color: var(--black);
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.app-custom-api-table {
+    margin-bottom: 0;
+}
+
+.app-custom-api-table .data-label {
+    width: 160px;
+}
+
+.app-custom-api-table .data.highlight-hover:hover {
+    background: var(--white) !important;
+}
+
+.apps-card-app-orb {
+    width: 32px;
+    height: 32px;
+}
+
+.apps-card-app-orb.rot-1 {
+    transform: rotate(90deg);
+}
+
+.apps-card-app-orb.rot-2 {
+    transform: rotate(180deg);
+}
+
+.apps-card-app-orb.rot-3 {
+    transform: rotate(270deg);
+}

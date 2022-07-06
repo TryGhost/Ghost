@@ -1,0 +1,1213 @@
+/* Spirit - Ghost's CSS framework
+/* ---------------------------------------------------------- */
+/*
+    includes normalize v7 so must come first to avoid clobbering
+    our old non-Spirit classes
+*/
+@import "spirit/spirit-dark.css";
+
+/* Patterns
+/* ---------------------------------------------------------- */
+@import "patterns/global.css";
+@import "patterns/icons.css";
+@import "patterns/forms.css";
+@import "patterns/buttons.css";
+@import "patterns/labels.css";
+@import "patterns/tables.css";
+@import "patterns/navlist.css";
+@import "patterns/boxes.css";
+
+/* Components
+/* ---------------------------------------------------------- */
+@import "components/loading-indicator.css";
+@import "components/modals.css";
+@import "components/modals-new.css";
+@import "components/notifications.css";
+@import "components/uploader.css";
+@import "components/splitbuttons.css";
+@import "components/dropdowns.css";
+@import "components/pagination.css";
+@import "components/badges.css";
+@import "components/settings-menu.css";
+@import "components/power-select.css";
+@import "components/power-calendar.css";
+@import "components/koenig.css";
+@import "components/koenig-dark.css";
+@import "components/publishmenu.css";
+@import "components/popovers.css";
+@import "components/unsplash.css";
+@import "components/codemirror.css";
+@import "components/lists.css";
+@import "components/tabs.css";
+@import "components/browser-preview.css";
+@import "components/stacks.css";
+@import "components/browser-preview.css";
+@import "components/filter-builder.css";
+
+
+/* Layouts
+/* ---------------------------------------------------------- */
+@import "layouts/main.css";
+@import "layouts/flow.css";
+@import "layouts/auth.css";
+@import "layouts/content.css";
+@import "layouts/editor.css";
+@import "layouts/settings.css";
+@import "layouts/users.css";
+@import "layouts/user.css";
+@import "layouts/whatsnew.css";
+@import "layouts/tags.css";
+@import "layouts/members.css";
+@import "layouts/member-activity.css";
+@import "layouts/error.css";
+@import "layouts/apps.css";
+@import "layouts/packages.css";
+@import "layouts/labs.css";
+@import "layouts/preview-email.css";
+@import "layouts/portal-settings.css";
+@import "layouts/billing.css";
+@import "layouts/fullscreen-wizard.css";
+@import "layouts/post-preview.css";
+@import "layouts/dashboard.css";
+@import "layouts/tiers.css";
+@import "layouts/offers.css";
+
+
+:root {
+    /* Primary colours */
+    --black: #fafafb;
+    --white: #101114;
+    --lime: #B5FF18;
+
+    --darkgrey: #E3E6E8;
+    --middarkgrey: #A9B0B7;
+    --midgrey: #7B8189;
+    --midlightgrey:#5B6167;
+    --lightgrey: #26282B;
+    --whitegrey: #17191C;
+    --blue: color-mod(#3eb0ef l(+5%) s(+5%));
+
+    --main-bg-color: #101114;
+    --dark-main-bg-color: #101114;
+    --hairline-color-1: #22252A;
+    --hairline-color-2: #5E6874;
+
+    --main-color-content-greybg: var(--whitegrey);
+    --list-color-divider: var(--whitegrey-l1);
+}
+
+body {
+    color: var(--darkgrey);
+}
+
+pre {
+    border: color-mod(var(--lightgrey) l(+5%));
+    background: var(--lightgrey);
+}
+
+hr {
+    border-color: color-mod(var(--lightgrey) l(+5%));
+}
+
+input,
+.gh-input,
+.gh-select,
+.for-switch .input-toggle-component,
+.gh-select select,
+.settings-menu-container:not(.ember-power-select-multiple-trigger):not(.tag-settings) input:not([disabled]),
+.settings-menu-container:not(.tag-settings) .gh-input:not([disabled]),
+.settings-menu-pane .gh-date-time-picker-date,
+.settings-menu-pane .gh-date-time-picker-time {
+    color: var(--darkgrey);
+    border-color: color-mod(var(--lightgrey));
+    background: color-mod(var(--lightgrey));
+}
+
+input:focus,
+.gh-input:focus,
+.gh-select:focus,
+.gh-select select:focus {
+    border-color: color-mod(var(--lightgrey) l(+10%));
+}
+
+.for-checkbox label:hover input:not(:checked) + .input-toggle-component,
+.for-radio label:hover input:not(:checked) + .input-toggle-component {
+    /* light=>dark theme => lightgrey=>middarkgrey */
+    border-color: color-mod(var(--lightgrey) l(+10%));
+}
+
+.for-checkbox input:checked + .input-toggle-component {
+    border-color: var(--green);
+    background: var(--green);
+}
+
+.gh-input-append {
+    border-color: color-mod(var(--lightgrey));
+}
+
+.gh-input-group .gh-input:focus + .gh-input-append {
+    border-color: color-mod(var(--lightgrey) l(+10%));
+}
+
+.gh-input-append,
+.gh-input-append:before {
+    background: color-mod(var(--lightgrey));
+}
+
+.gh-input-icon.gh-icon-link svg path {
+    stroke: var(--darkgrey);
+}
+
+.gh-main-white {
+    background: var(--white);
+}
+
+.settings-menu-header {
+    background: var(--dark-main-bg-color);
+}
+
+.settings-menu-container {
+    border-color: var(--hairline-color-1);
+}
+
+.settings-menu-container .settings-menu-pane {
+    background: var(--dark-main-bg-color);
+}
+
+@media (max-width: 800px) {
+    .gh-mobile-nav-bar {
+        background: #191b1f;
+    }
+
+    .gh-mobile-nav-bar a.active {
+        background: #111213;
+        color: #fff;
+    }
+}
+
+.gh-nav-search .ember-power-select-trigger {
+    border-color: color-mod(var(--lightgrey));
+    background: color-mod(var(--lightgrey));
+}
+
+.ember-power-select-multiple-trigger {
+    border-color: color-mod(var(--lightgrey));
+    background: color-mod(var(--lightgrey));
+}
+
+.ember-power-select-dropdown {
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+.ember-power-select-dropdown,
+.ember-power-select-options:not([role="group"]),
+.ember-power-select-dropdown.ember-basic-dropdown-content--in-place {
+    border-color: color-mod(var(--lightgrey));
+    background: var(--whitegrey-l1);
+}
+
+.ember-power-select-option[aria-current="true"] {
+    background: var(--whitegrey-d1);
+}
+
+.ember-basic-dropdown--opened > .ember-power-select-trigger,
+.ember-power-select-trigger[aria-expanded="true"],
+.ember-power-select-search input {
+    border-color: color-mod(var(--lightgrey));
+}
+
+.ember-power-calendar-weekdays,
+.ember-power-calendar-day--selected,
+.ember-power-calendar-day--selected:not([disabled]):hover {
+    color: var(--darkgrey);
+}
+
+.ember-power-calendar-day--today,
+.ember-power-calendar-day:not([disabled]):hover {
+    background-color: color-mod(var(--lightgrey) l(-5%));
+}
+
+.ember-power-calendar-day--selected,
+.ember-power-calendar-day--selected:not([disabled]):hover {
+    background: color-mod(var(--blue) l(-10%));
+}
+
+.ember-power-calendar-day--interactive[disabled] {
+    opacity: 0.2;
+}
+
+.gh-main:not(.gh-main-white),
+.gh-nav,
+.gh-unsplash-window {
+    background: var(--dark-main-bg-color);
+}
+
+.gh-image-uploader-unsplash {
+    filter: invert(100%);
+}
+
+/* Buttons
+/* ---------------------------------------------------------------------- */
+.gh-btn {
+    color: var(--black);
+    text-shadow: none;
+}
+
+.gh-btn-primary,
+.gh-btn-black {
+    color: var(--white);
+}
+
+.gh-btn-black:not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):hover,
+.gh-btn-primary:not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):hover {
+    background: var(--black) !important;
+}
+
+.gh-btn:not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-primary):not(.gh-btn-black):not(.gh-btn-text):not(.gh-btn-accent):not(.gh-btn-link):not(.gh-editor-preview-trigger) {
+    background: var(--lightgrey);
+    color: var(--black);
+}
+
+.gh-btn:not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-primary):not(.gh-btn-black):not(.gh-btn-text):not(.gh-btn-accent):not(.gh-btn-link):not(.gh-editor-preview-trigger):hover {
+    background: var(--lightgrey-d1);
+    color: var(--black);
+}
+
+.gh-btn-group {
+    background: var(--whitegrey-l2);
+}
+
+.gh-btn-group .gh-btn:first-of-type {
+    border-right: none !important;
+}
+
+.gh-btn-blue,
+.gh-btn-green,
+.gh-btn-red {
+    color: #fff;
+}
+
+.gh-btn-blue:hover,
+.gh-btn-green:hover,
+.gh-btn-red:hover {
+    color: white;
+}
+
+.gh-btn-white {
+    background: var(--transparent);
+}
+
+.gh-btn-outline:hover {
+    border-color: var(--lightgrey-l2);
+}
+
+.gh-btn-link {
+    border: none !important;
+}
+
+.gh-image-uploader .gh-btn {
+    background: var(--whitegrey) !important;
+}
+
+/* ---------------------------------------------------------------------- */
+
+.gh-expandable-header .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-text):not(.gh-btn-link),
+.gh-expandable-content .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-text):not(.gh-btn-link),
+.gh-main-section-content.grey .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-text):not(.gh-btn-link) {
+    background: var(--lightgrey);
+}
+
+.gh-expandable-header .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-text):not(.gh-btn-link):hover,
+.gh-expandable-content .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-text):not(.gh-btn-link):hover,
+.gh-main-section-content.grey .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-text):not(.gh-btn-link):hover {
+    background: var(--lightgrey-l1);
+}
+
+.gh-main-section-header {
+    border-bottom: 1px solid var(--hairline-color-1);
+}
+
+.gh-main-section.no-heading,
+.gh-main-section.bt {
+    border-top: 1px solid var(--hairline-color-1);
+}
+
+.gh-btn-tabs .gh-btn {
+    background: transparent !important;
+}
+
+.settings-menu-delete-button {
+    color: var(--red);
+    border: none !important;
+    border-color: transparent;
+    background: var(--dark-main-bg-color) !important;
+}
+
+.gh-publish-trigger {
+    color: var(--blue);
+    border: none !important;
+}
+
+.gh-publish-trigger svg path {
+    stroke-width: 2px;
+}
+
+.dropdown-menu li > a,
+.dropdown-menu li > button {
+    color: color-mod(var(--lightgrey) lightness(+20%));
+}
+
+.dropdown-menu li > a:hover, .dropdown-menu li > a:focus,
+.dropdown-menu li > button:hover, .dropdown-menu li > button:focus {
+    color: var(--lightgrey);
+    background: var(--whitegrey-d1);
+}
+
+.gh-cardmenu {
+    background: var(--lightgrey);
+}
+
+.editor-toolbar a.active, .editor-toolbar a:hover {
+    background-color: rgba(0,0,0,0.3);
+}
+
+.email-cta-toolbar,
+.email-cta-toolbar .borders,
+.email-cta-toolbar .email-cta-align {
+    border-color: var(--lightgrey);
+}
+
+.email-cta-toolbar .gh-btn {
+    background: var(--dark-main-bg-color) !important;
+}
+
+.gh-badge-black,
+.gh-badge.owner {
+    color: var(--lightgrey);
+}
+
+.nav-list {
+    border-color: var(--lightgrey);
+    background: var(--lightgrey);
+}
+
+.nav-list-item:hover {
+    background: var(--lightgrey-l1);
+}
+
+.gh-select select {
+    color: var(--darkgrey);
+    background: var(--lightgrey);
+}
+
+.gh-date-time-picker-date,
+.gh-date-time-picker-time {
+    background: var(--lightgrey);
+}
+
+.gh-date-time-picker input {
+    color: var(--darkgrey);
+}
+
+.gh-publish-setting {
+    border-bottom: 1px solid var(--lightgrey-l1);
+}
+
+.gh-publish-setting-trigger {
+    color: var(--darkgrey-d2);
+}
+
+.gh-publish-setting-title svg path {
+    stroke: var(--darkgrey-d2);
+}
+
+.gh-publish-newsletter-trigger {
+    background: var(--lightgrey);
+}
+
+.gh-publish-confirmation {
+    color: var(--middarkgrey);
+}
+
+.gh-publish-confirmation strong {
+    color: var(--black)
+}
+
+.gh-btn-pulse {
+    background: var(--green) !important;
+}
+
+.gh-publish-cta-secondary {
+    color: var(--middarkgrey);
+}
+
+.gh-publish-cta-secondary:hover {
+    color: var(--middarkgrey-l2);
+}
+
+.gh-post-bookmark {
+    border: 1px solid rgba(124, 139, 154, 0.25);
+    background: var(--white);
+}
+
+.gh-back-to-editor {
+    color: var(--middarkgrey);
+}
+
+.gh-back-to-editor:hover {
+    color: var(--middarkgrey-l2);
+}
+
+.gh-image-uploader {
+    background: var(--lightgrey);
+}
+
+.gh-image-uploader .description {
+    color: var(--midgrey);
+}
+
+.gh-main > section.gh-editor-fullscreen {
+    background: color-mod(#191b1f l(+2%));
+}
+
+.dropdown-menu {
+    background: var(--whitegrey-l1);
+}
+
+.dropdown-menu li > a, .dropdown-menu li > button {
+    color: var(--darkgrey);
+}
+
+.dropdown-menu li > a:hover, .dropdown-menu li > a:focus,
+.dropdown-menu li > button:hover, .dropdown-menu li > button:focus {
+    color: #fff;
+}
+
+.dropdown-menu .divider {
+    opacity: 0.1;
+}
+
+.ember-power-select-group .ember-power-select-option .highlight {
+    background: rgba(0,0,0,0.5);
+}
+
+.ember-power-select-multiple-option {
+    background: var(--white);
+    color: var(--black);
+}
+
+.fullscreen-modal-background, .epm-backdrop {
+    background: #000;
+}
+
+.epm-modal .modal-content,
+.modal-content {
+    background: color-mod(var(--white) l(+2%));
+}
+
+.seo-preview-title {
+    color: color-mod(#1e0fbe l(+25%));
+}
+
+.seo-preview-description {
+    color: var(--midgrey);
+}
+
+.gh-markdown-editor .CodeMirror-cursor {
+    border-color: #fff;
+}
+
+.koenig-card-html--editor .CodeMirror-cursor {
+    border-color: #fff;
+}
+
+.gh-about-logo svg,
+.apps-card-app-orb,
+.gh-nav-logo-default,
+.gh-unsplash-logo {
+    filter: invert(100%) brightness(150%);
+}
+
+.gh-canvas-background {
+    background: #191b1f;
+}
+
+.gh-canvas-title span path {
+    fill: var(--darkgrey);
+}
+
+.gh-canvas-header {
+    background: var(--dark-main-bg-color);
+}
+
+.gh-loading-spinner {
+    border-color: rgba(255,255,255,0.1);
+}
+
+.gh-loading-spinner:before {
+    background: #fff;
+}
+
+.user-cover-edit {
+    color: #fff;
+}
+
+.gh-unsplash-search:focus {
+    background-color: color-mod(var(--lightgrey));
+}
+
+.gh-unsplash-zoom {
+    background: rgba(0,0,0,0.8);
+}
+
+.gh-contributors a:before {
+    color: var(--lightgrey);
+}
+
+.settings-menu-content .for-radio .input-toggle-component,
+.settings-menu-content .for-checkbox .input-toggle-component {
+    background: var(--lightgrey);
+}
+
+.mobile-menu-expanded .content-cover {
+    background: transparent;
+}
+
+.gh-box {
+    background: var(--lightgrey);
+    color: var(--darkgrey);
+}
+
+.apps-grid,
+.apps-grid-cell {
+    background: var(--dark-main-bg-color);
+}
+
+.td-item-overlay:hover,
+.td-item-overlay:focus {
+    background-color: var(--black-90);
+}
+
+.td-item-empty {
+    background: var(--whitegrey-l1);
+}
+
+.gh-themes-container {
+    background: var(--whitegrey-l2);
+}
+
+.gh-themes-container .apps-grid {
+    background: none;
+}
+
+.gh-theme-directory-footer {
+    color: var(--darkgrey);
+    background-color: var(--whitegrey);
+}
+
+.settings-code-editor .CodeMirror-gutters,
+.settings-code code,
+.form-group code {
+    background-color: var(--whitegrey);
+    border-right: 1px solid var(--hairline-color-1);
+}
+
+.gh-main-section-description code {
+    background-color: var(--whitegrey);
+    border: 1px solid var(--lightgrey);
+}
+
+.for-switch input:checked+.input-toggle-component {
+    background: var(--green);
+}
+
+.settings-code-editor .CodeMirror {
+    color: var(--black);
+}
+
+.settings-code-editor .CodeMirror-cursor {
+    border-color: var(--midgrey);
+}
+
+.gh-branding-settings-right {
+    background: var(--dark-main-bg-color);
+}
+
+.gh-branding-settings-header {
+    border-bottom: 1px solid var(--hairline-color-1);
+}
+
+.gh-branding-settings-options {
+    border-right: 1px solid var(--hairline-color-1);
+}
+
+.gh-branding-image-container.transparent-bg {
+    background-image: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Ctitle%3ERectangle%3C/title%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cpath fill='%23303e46' d='M0 0h24v24H0z'/%3E%3Cpath fill='%233e515b' d='M0 0h12v12H0zM12 12h12v12H12z'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+.id-item {
+    background: var(--dark-main-bg-color);
+}
+
+.CodeMirror .cm-spell-error:not(.cm-url):not(.cm-comment):not(.cm-tag):not(.cm-word) {
+    background: rgba(255, 0, 0, .30);
+}
+
+.CodeMirror .CodeMirror-code .cm-string {
+    color: color-mod(#183691 l(+25%));
+}
+
+.id-github img,
+.id-typeform img,
+.id-buffer img,
+.id-unsplash,
+.id-more img {
+    filter: invert(100%);
+}
+
+.dark-no-shadow {
+    box-shadow: none;
+}
+
+.gh-nav {
+    border-color: var(--hairline-color-1);
+}
+
+.gh-nav-list a {
+    color: color-mod(var(--middarkgrey-d1));
+}
+
+.gh-nav-list a:not(.active):not(.gh-secondary-action):hover,
+.gh-nav-list .gh-secondary-action:hover span,
+.gh-nav-bottom .ember-basic-dropdown-trigger:hover,
+.gh-nav-btn-search:hover,
+.gh-nav-list button.main-menu-item:hover,
+.gh-nav-bottom .ember-basic-dropdown-trigger:hover,
+.gh-nav-bottom-tabicon:hover,
+.gh-nav-bottom-tabicon.active,
+.gh-nav-list .gh-secondary-action:not(.icon-only):hover span {
+    background: var(--whitegrey);
+}
+
+.gh-nav-list a:not(.active):not(.gh-secondary-action):hover {
+    background: var(--whitegrey);
+}
+
+.gh-nav-btn-search:hover {
+    background: var(--lightgrey);
+}
+
+.apps-grid-cell:hover {
+    background: var(--whitegrey);
+}
+
+.apps-card-app {
+    border-bottom: var(--hairline-color-1) 1px solid;
+}
+
+.apps-card-app-icon {
+    mix-blend-mode: normal;
+}
+
+.apps-card-app-icon.id-typeform {
+    filter: invert(100%);
+}
+
+.gh-nav,
+.gh-contentfilter-menu-trigger,
+.gh-contentfilter-menu-trigger--active,
+.gh-contentfilter-menu-trigger:focus,
+.tags-container,
+.content-list ol,
+.gh-settings-main-grid {
+    background: var(--dark-main-bg-color);
+}
+
+.gh-posts-list-item:hover,
+.ember-power-select-group .ember-power-select-option[aria-current=true],
+.settings-tag .tag-edit-button.active,
+.gh-portal-site-frame-cover {
+    background: var(--whitegrey);
+}
+
+.gh-list-row:not(.loading):hover .gh-list-data:first-of-type {
+    background: linear-gradient(315deg, var(--whitegrey) 60%, var(--white) 100%);
+}
+
+.gh-list-row:not(.loading):hover .gh-list-data:not(:first-of-type) {
+    background: var(--whitegrey);
+}
+
+.gh-content-status-published {
+    background: var(--whitegrey-l1);
+}
+
+.gh-browserpreview-browser .tabs {
+    background: var(--whitegrey-l2);
+}
+
+.gh-browserpreview-browser .tabs div,
+.gh-browserpreview-browser .tabs ul li {
+    background: var(--lightgrey-l2);
+}
+
+.tag-settings .gh-image-uploader {
+    background-color: transparent;
+}
+
+.gh-setting-header {
+    border-color: var(--hairline-color-1);
+}
+
+.gh-settings-main-grid .gh-setting-group span {
+    background: color-mod(var(--dark-main-bg-color) l(+2%));
+}
+
+.nightshift-toggle {
+    background: var(--lightgrey);
+}
+
+.nightshift-toggle .thumb {
+    background: var(--black);
+}
+
+.nightshift-toggle .moon svg {
+    color: var(--black);
+}
+
+.gh-nav-list .gh-nav-nightshift span svg path {
+    fill: color-mod(var(--midgrey) l(-5%));
+}
+
+.gh-tag-setting-codeinjection .CodeMirror {
+    background: var(--dark-main-bg-color);
+}
+
+.gh-tag-setting-codeinjection .CodeMirror-gutters {
+    background-color: var(--whitegrey);
+    border-right: 1px solid var(--lightgrey);
+}
+
+/* Koenig styles */
+.kg-link-input {
+    border-color: var(--green) !important;
+}
+
+.kg-settings-panel {
+    background-color: var(--lightgrey-d1);
+    box-shadow:
+        0px -1px 10px rgba(0, 0, 0, 0.1),
+        0px 2.8px 2.2px rgba(0, 0, 0, 0.05),
+        0px 6.7px 5.3px rgba(0, 0, 0, 0.05),
+        0px 12.5px 10px rgba(0, 0, 0, 0.08),
+        0px 22.3px 17.9px rgba(0, 0, 0, 0.08),
+        0px 41.8px 33.4px rgba(0, 0, 0, 0.08),
+        0px 100px 80px rgba(0, 0, 0, 0.1)
+    ;
+}
+
+.kg-settings-panel .for-switch .input-toggle-component {
+    background: var(--lightgrey-l2);
+}
+
+.kg-settings-panel .gh-btn-group {
+    background: var(--lightgrey);
+}
+
+.kg-settings-panel .gh-btn-group .gh-btn-group-selected span {
+    background: var(--lightgrey-l2) !important;
+}
+
+.kg-settings-panel .kg-upload-thumbnail-xl:hover {
+    background: var(--lightgrey) !important;
+}
+
+.emoji-picker__emoji:hover {
+    background: var(--lightgrey) !important;
+}
+
+.kg-upload-title {
+    background: transparent;
+}
+
+.kg-upload-button .kg-audio-icon {
+    fill: var(--black);
+}
+
+.kg-video-thumbnail-xl-container {
+    background-image: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Ctitle%3ERectangle%3C/title%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cpath fill='%23303e46' d='M0 0h24v24H0z'/%3E%3Cpath fill='%233e515b' d='M0 0h12v12H0zM12 12h12v12H12z'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+.image-overlay button {
+    background: var(--whitegrey);
+}
+
+/* Editor  */
+
+.gh-btn-editor {
+    background: var(--white) !important;
+}
+
+.gh-btn-editor.active,
+.gh-btn-editor:hover {
+    background: var(--lightgrey) !important;
+}
+    
+.gh-editor-post-status {
+    background: var(--white);
+}
+
+.gh-editor-feature-image-add-button {
+    color: var(--midgrey);
+}
+
+.gh-editor-feature-image-add-button:hover {
+    color: var(--darkgrey);
+}
+
+.gh-editor-feature-image-add-button:hover svg path {
+    stroke: var(--darkgrey);
+}
+
+.gh-editor-feature-image-unsplash svg {
+    fill: var(--midgrey);
+}
+
+.gh-editor-feature-image-unsplash svg:hover {
+    fill: var(--darkgrey);
+}
+
+.gh-editor-wordcount-container {
+    background: var(--white);
+}
+
+/* Segment input */
+
+.token-segment-status-free {
+    border: 1px solid var(--green-d1);
+    background: var(--green-d1);
+}
+
+.token-segment-status-paid {
+    border: 1px solid var(--pink-d1);
+    background: var(--pink-d1);
+}
+
+.token-segment-tier {
+    background: var(--darkgrey);
+    color: var(--white);
+}
+
+.token-segment-tier svg path {
+    stroke: var(--lightgrey);
+    fill: var(--lightgrey);
+}
+
+/* Post preview modal */
+.gh-post-preview-browser-footer {
+    border-top: 1px solid var(--hairline-color-1);
+}
+
+/* Dark style Lists */
+.gh-list {
+    background: var(--dark-main-bg-color) !important;
+}
+
+.gh-list-header,
+.gh-list-row:not(.header):hover .gh-list-cell,
+.gh-list-row:not(.header):hover .gh-list-data {
+    background: var(--dark-main-bg-color);
+}
+
+.gh-list-header {
+    border-bottom: 1px solid var(--hairline-color-1);
+}
+
+.gh-list-data {
+    border-top: 1px solid var(--hairline-color-1);
+}
+
+/* Members */
+.gh-members-help-card,
+.gh-offers-help-card {
+    background: var(--dark-main-bg-color);
+}
+
+.gh-members-chart-header {
+    background: var(--white);
+}
+.gh-members-chart-header .gh-contentfilter-type .gh-contentfilter-menu-trigger {
+    box-shadow: 0 0 0 1px color-mod(var(--darkgrey) l(-27%) blackness(+15%) alpha(50%));
+}
+
+.gh-members-import-table::before {
+    background: #191b1f;
+}
+
+.gh-members-import-table::after {
+    background: #191b1f;
+}
+.gh-import-member-select,
+.gh-import-member-select select {
+    background: none !important;
+}
+
+.modal-fullsettings-preview-container,
+.fullscreen-modal-email-preview .gh-pe-mobile-container,
+.fullscreen-modal-email-preview .gh-pe-desktop-container{
+    background: var(--dark-main-bg-color);
+}
+
+.gh-post-preview-browser-container,
+.gh-post-preview-email-container,
+.gh-post-preview-social-container {
+    background: transparent;
+}
+
+.modal-fullsettings-main {
+    border-left: 1px solid var(--hairline-color-1);
+}
+
+.gh-pe-mobile-bezel {
+    background: var(--lightgrey-l2);
+}
+
+.gh-members-emailsettings-footer-input {
+    background: color-mod(var(--lightgrey));
+}
+
+.gh-email-design-typography .gh-radio-content {
+    border: 1px solid var(--hairline-color-1);
+}
+
+.gh-members-connect-testmodelabel {
+    background: #983705;
+    color: #f8e5b9;
+}
+
+.members-list .gh-list-header {
+    background: var(--dark-main-bg-color);
+}
+
+.gh-members-empty .gh-members-placeholder {
+    fill: var(--midgrey-d2);
+}
+
+/* Members activity */
+.gh-members-activity-icon svg path,
+.gh-member-feed-icon svg path {
+    stroke: #fff;
+}
+
+.gh-member-settings .gh-member-feed {
+    background: transparent;
+}
+
+.gh-member-feed-row {
+    border-bottom: 1px solid var(--lightgrey-l1);
+}
+
+/* Offers */
+.gh-btn-green svg {
+    fill: #fff !important;
+}
+
+.gh-offers-list-cta .discount-bubble {
+    color: var(--midgrey-d2);
+}
+
+.gh-offers-help-card .gh-btn {
+    background: var(--whitegrey) !important;
+}
+
+/* Portal */
+.gh-portal-settings-maintabs {
+    border: 1px solid color-mod(var(--darkgrey) l(-27%) blackness(+15%));
+}
+
+.gh-portal-page-url-container {
+    color: var(--darkgrey);
+    border-color: color-mod(var(--lightgrey));
+    background: color-mod(var(--lightgrey));
+}
+
+.gh-portal-settings-maintabs li:not(:last-of-type) {
+    border-right: 1px solid color-mod(var(--darkgrey) l(-27%) blackness(+15%));
+}
+
+.gh-portal-settings-main {
+    border-left: 1px solid var(--hairline-color-1);
+}
+
+.gh-portal-setting-sectionheading {
+    border-bottom: 1px solid var(--hairline-color-1);
+}
+
+.gh-portal-links-container {
+    background: var(--main-color-content-greybg)
+}
+
+/* Launch-site wizard */
+.fullscreen-wizard-container {
+    background: var(--dark-main-bg-color);
+}
+
+.gh-launch-wizard-content {
+    background: var(--dark-main-bg-color);
+    border-top: 1px solid var(--hairline-color-1);
+}
+
+.gh-launch-wizard-btn {
+    color: var(--black);
+    background: var(--green-d1);
+}
+
+.gh-launch-wizard-btn:hover {
+    color: #fff;
+    background: var(--green) !important;
+}
+
+.gh-launch-wizard-btn svg {
+    fill: var(--black);
+}
+
+.gh-lw-banner {
+    border: 1px solid color-mod(var(--green) a(60%));
+}
+
+.gh-dashboard-box {
+    flex: 1;
+    border: 1px solid var(--lightgrey);
+}
+
+.gh-notification {
+    background: var(--lightgrey);
+}
+
+/* Opacity needed to display correctly in Safari */
+::selection {
+    background: rgb(55, 59, 67, 0.99);
+}
+
+.user-image {
+    border-color: var(--dark-main-bg-color);
+}
+
+.gh-whats-new-badge-account {
+    top: 0;
+    right: -2px;
+}
+
+.gh-list-scrolling thead th:first-child {
+    background: linear-gradient(90deg, rgba(16,17,20,1) 90%, rgba(16,17,20,0) 100%);
+}
+
+.gh-list-scrolling tbody .gh-list-data:first-child {
+    background: linear-gradient(90deg, rgba(16,17,20,1) 90%, rgba(16,17,20,0) 100%);
+}
+
+.gh-filter-builder .gh-filters {
+    background: var(--whitegrey);
+}
+
+.kg-settings-headerstyle-btn-group .gh-btn {
+    border-color: var(--midlightgrey);
+}
+
+.kg-header-card.kg-style-dark {
+    background: #08090C;
+}
+
+kbd {
+    color: #394047;
+}
+
+
+/* Finishing touches */
+/* ---------------------------------------------------- */
+.gh-done {
+    background: #15171A;
+}
+
+
+/* Dashboard */
+
+.gh-dashboard .gh-dashboard-anchor .gh-dashboard-stats {
+    background: transparent;
+    border-top-color: #2b2d31;
+}
+
+.gh-dashboard .gh-dashboard-anchor .gh-dashboard-stats-button {
+    border-color: #202429;
+}
+
+.gh-dashboard .gh-dashboard-anchor .gh-dashboard-stats-button.is-selected {
+    border-color: #394047;
+}
+
+.gh-dashboard .gh-dashboard-list-header,
+.gh-dashboard .gh-dashboard-list-item,
+.gh-dashboard .gh-dashboard-list-footer,
+.gh-dashboard .gh-dashboard-resource-title.has-border {
+    border-color: #394047;
+}
+
+.gh-dashboard .gh-dashboard-box.is-secondary .gh-dashboard-resource-box {
+    background: var(--main-bg-color);
+}
+
+.gh-dashboard .gh-dashboard-minichart,
+.gh-dashboard .gh-dashboard-column {
+    border-color: #2b2d31;
+}
+
+.gh-dashboard .gh-dashboard-breakout {
+    background: #111213;
+}
+
+.gh-dashboard-community .gh-dashboard-list-footer {
+    border-color: transparent;
+}
+
+.gh-dashboard-chart-gradient {
+    background: rgb(21,23,25);
+    background: linear-gradient(270deg, rgba(21,23,25,0) 0%, rgba(21,23,25,1) 100%);
+}
+
+.gh-dashboard-resource-box.is-secondary .gh-dashboard-resource-footer,
+.gh-dashboard-staff-picks .gh-dashboard-resource-box,
+.gh-dashboard-whats-new .gh-dashboard-resource-box {
+    border-color: #26282b;
+}
+
+.gh-dashboard-list-item:hover {
+    background: #1c1e21;
+}
+
+.gh-dashboard-recents .gh-dashboard-list-item:hover {
+    background: linear-gradient(90deg, rgba(21,23,25,0) 0%, rgba(21,23,25,1) 100%);
+}
+
+.gh-dashboard-resource .gh-dashboard-list-item:hover {
+    background: transparent;
+}
+
+.gh-dashboard-community .gh-dashboard-resource-footer {
+    color: #fff;
+}
+
+.gh-dashboard-zero {
+    background: rgb(21, 23, 25, 0.8);
+}
+
+.gh-dashboard-zero-message {
+    background-color: #1c1e21;
+}
+
+.gh-dashboard-tooltip {
+    background: var(--whitegrey);
+}
+
+.gh-editor-post-status-btn::after {
+    background: var(--hairline-color-2);
+}

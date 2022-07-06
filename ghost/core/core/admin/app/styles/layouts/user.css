@@ -1,0 +1,163 @@
+/* User profile /ghost/settings/users/<user>/
+/* ---------------------------------------------------------- */
+
+
+/* User actions menu
+/* ---------------------------------------------------------- */
+
+.user-actions-cog {
+    margin-right: 10px;
+    color: var(--darkgrey);
+}
+
+.user-actions-cog svg {
+    height: 16px;
+    width: 16px;
+    margin-right: 0;
+}
+
+.user-actions-cog svg path {
+    stroke: var(--darkgrey);
+}
+
+.user-actions-menu {
+    top: calc(100% + 6px);
+    right: 10px;
+    left: auto;
+}
+
+.user-actions-menu.fade-out {
+    animation-duration: 0.01s;
+    pointer-events: none;
+}
+
+
+/* Layout
+/* ---------------------------------------------------------- */
+
+.settings-user {
+    padding: 0 0 3vw;
+}
+
+.user-cover {
+    display: block;
+    overflow: hidden;
+    margin: 0;
+    width: 100%;
+    height: 300px;
+    margin-bottom: 30px;
+    background: #fafafa no-repeat center center;
+    background-size: cover;
+}
+
+.user-cover-edit {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 2;
+    min-height: 37px;
+    height: 37px;
+    border-width: 0;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: var(--border-radius);
+    color: rgba(255, 255, 255, 0.8);
+    text-shadow: none;
+    transition: color 0.3s ease, background 0.3s ease;
+}
+
+.user-cover-edit:hover {
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+}
+
+.user-details-bottom,
+.user-details-form {
+    max-width: 540px;
+    margin: 2vw auto 0;
+}
+
+.user-details-form {
+    border-top: 1px solid var(--lightgrey);
+    padding-top: 4vw;
+    margin-bottom: -2vw;
+}
+
+
+/* Edit user
+/* ---------------------------------------------------------- */
+
+.user-profile {
+    position: relative;
+    z-index: 1;
+}
+
+@media (max-width: 550px) {
+    .user-profile fieldset {
+        padding: 0 15px;
+    }
+}
+
+.user-profile textarea {
+    min-width: 100%;
+}
+
+
+/* Profile picture
+/* ---------------------------------------------------------- */
+
+.user-image {
+    position: absolute;
+    top: 236px;
+    left: 0;
+    right: 0;
+    z-index: 2;
+    margin: 0 auto;
+    padding: 0;
+    width: 120px;
+    height: 120px;
+    border-radius: 9999px;
+    border: 4px solid var(--white);
+    text-align: center;
+}
+
+.user-image .img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background-position: center center;
+    background-size: cover;
+    border-radius: 9999px;
+}
+
+.user-image:hover .edit-user-image {
+    opacity: 1;
+}
+
+.edit-user-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 9999px;
+    color: #fff;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-size: 12px;
+    line-height: 100px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* User roles modal
+/* ---------------------------------------------------------- */
+
+@media (max-height: 740px) {
+    .fullscreen-modal-change-role {
+        overflow-y: auto;
+    }
+    .fullscreen-modal-change-role .modal-content {
+        box-shadow: none !important;
+    }
+}

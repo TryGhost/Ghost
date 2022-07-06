@@ -1,0 +1,321 @@
+/* Notifications
+/* ---------------------------------------------------------- */
+
+/* Base notification style */
+.gh-notifications {
+    position: absolute;
+    bottom: 30px;
+    left: 30px;
+    z-index: 7000;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Base notification style */
+.gh-notification {
+    position: relative;
+    display: flex;
+    margin-top: 8px;
+    padding: 4px 8px;
+    width: 286px;
+    background: var(--black);
+    border-radius: 6px;
+    box-shadow:
+        0 1.1px 2.3px rgba(0, 0, 0, 0.028),
+        0 3.8px 7.8px rgba(0, 0, 0, 0.042),
+        0 17px 35px -7px rgba(0, 0, 0, 0.11)
+    ;
+    color: #fff;
+    font-size: 1.3rem;
+    line-height: 1.25em;
+    opacity: 1.0;
+    min-height: 44px;
+}
+
+.gh-notification-icon {
+    margin: 10px 0 0 6px;
+}
+
+.gh-notification-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+.gh-notification-icon svg path {
+    stroke-width: 1.5px;
+    stroke: #fff;
+}
+
+.gh-notification-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 9px 15px 10px 10px;
+    border-radius: 3px;
+    max-width: 215px;
+}
+
+.gh-notification-content p span {
+    white-space: nowrap;
+}
+
+.gh-notification-title {
+    display: block;
+    margin-top: 1px;
+    font-weight: 600;
+    font-size: 1.4rem;
+}
+
+.gh-notification p {
+    margin: 6px 0 0;
+    padding: 0;
+    line-height: 1.35em;
+}
+
+.gh-notification a {
+    color: #fff;
+    text-decoration: underline;
+    font-weight: 400;
+}
+
+.gh-notification em {
+    font-weight: bold;
+    font-style: normal;
+}
+
+.gh-notification-actions {
+    margin-top: 6px;
+    margin-bottom: 2px;
+    display: flex;
+}
+
+.gh-notification-actions a {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.gh-notification-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 8px;
+    background: none;
+    border-radius: 999px;
+    line-height: 0;
+    width: 24px;
+    height: 24px;
+}
+
+.gh-notification-close svg {
+    height: 8px;
+    width: 8px;
+    stroke: #fff;
+}
+
+.gh-notification-close svg path {
+    stroke-width: 2px;
+}
+
+.gh-notification-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.gh-notification-passive {
+    animation: notification-fade-in-spring, fade-out;
+    animation-delay: 0s, 5s;
+    animation-duration: 0.8s, 0.35s;
+    animation-iteration-count: 1;
+    animation-timing-function: cubic-bezier(0.445, 0.050, 0.550, 0.950);
+}
+
+.gh-notification-passive:hover {
+    animation: notification-fade-in-spring;
+}
+
+@keyframes notification-fade-in-spring {
+    0.00% {
+        opacity: 0;
+        transform: translateX(-232.05px);
+    }
+    26.52% {
+        opacity: 0.5;
+        transform: translateX(5.90px);
+    }
+    63.26% {
+        transform: translateX(-1.77px);
+        opacity: 1;
+    }
+    100.00% {
+        transform: translateX(0px);
+    }
+}
+
+/* Red notification
+/* ---------------------------------------------------------- */
+.gh-notification-red {
+    background: var(--red);
+}
+
+/* Green notification
+/* ---------------------------------------------------------- */
+
+.gh-notification-green {
+    background: var(--green);
+}
+
+/* Schedule notification top
+/* ---------------------------------------------------------- */
+
+.gh-notification-schedule {
+    display: inline-block;
+    margin: 0;
+    padding: 7px 10px;
+    width: auto;
+    border: var(--lightgrey) 1px solid;
+    border-radius: 2px;
+    box-shadow: none;
+    vertical-align: middle;
+    line-height: 1.3em;
+}
+
+.gh-notification-schedule:hover {
+    cursor: default;
+}
+
+/* Alerts
+/* ---------------------------------------------------------- */
+
+/* Alert wrapper, top of screen */
+.gh-alerts {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Base alert style */
+.gh-alert {
+    z-index: 9999;
+    flex-grow: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 15px;
+    border-bottom: #dfe1e3 1px solid;
+    background-color: white;
+}
+
+.gh-alert-content {
+    font-size: 1.4rem;
+    line-height: 1.3em;
+    font-weight: 400;
+    user-select: text;
+}
+
+.gh-alert a {
+    text-decoration: underline;
+    font-weight: 400;
+    user-select: text;
+}
+
+.gh-alert-close {
+    flex-shrink: 0;
+    margin-left: 20px;
+    padding: 4px;
+    font-size: 10px;
+    line-height: 10px;
+}
+
+.gh-alert-close svg {
+    height: 12px;
+    width: 12px;
+}
+
+
+/* Blue alert
+/* ---------------------------------------------------------- */
+
+.gh-alert-blue {
+    border-bottom: color-mod(var(--blue) lightness(-10%)) 1px solid;
+    background: var(--blue);
+    color: #fff;
+}
+.gh-alert-blue a {
+    color: #fff;
+}
+.gh-alert-blue svg {
+    fill: #fff;
+}
+.gh-alert-blue .gh-alert-close svg:hover {
+    fill: #fff;
+}
+
+/* Red alert
+/* ---------------------------------------------------------- */
+
+.gh-alert-red {
+    border-bottom: color-mod(var(--red) lightness(-10%)) 1px solid;
+    background: var(--red);
+    color: #fff;
+}
+.gh-alert-red a {
+    color: #fff;
+}
+.gh-alert-red svg {
+    fill: #fff;
+}
+.gh-alert-red .gh-alert-close:hover {
+    color: #fff;
+}
+.gh-alert-red .gh-alert-close svg:hover {
+    fill: #fff;
+}
+
+/* Green alert
+/* ---------------------------------------------------------- */
+
+.gh-alert-green {
+    border-bottom: color-mod(var(--green) lightness(-7%)) 1px solid;
+    background: var(--green);
+    color: #fff;
+}
+.gh-alert-green a {
+    color: #fff;
+}
+.gh-alert-green svg {
+    fill: #fff;
+}
+.gh-alert-green .gh-alert-close:hover {
+    color: #fff;
+}
+.gh-alert-green .gh-alert-close svg:hover {
+    fill: #fff;
+}
+
+/* Black alert
+/* ---------------------------------------------------------- */
+
+.gh-alert-black {
+    border-bottom: color-mod(var(--darkgrey) lightness(-10%)) 1px solid;
+    background: var(--darkgrey);
+    color: #fff;
+}
+.gh-alert-black a {
+    color: #fff;
+}
+.gh-alert-black svg {
+    fill: #fff;
+}
+.gh-alert-black .gh-alert-close:hover {
+    color: #fff;
+}
+.gh-alert-black .gh-alert-close svg:hover {
+    fill: #fff;
+}
+
+/* Yellow alert
+/* ---------------------------------------------------------- */
+
+.gh-alert-yellow {
+    border-bottom: #e9ebb6 1px solid;
+    background: #fdffb6;
+}

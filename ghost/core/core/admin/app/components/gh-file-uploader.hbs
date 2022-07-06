@@ -1,0 +1,20 @@
+{{#if this.file}}
+    {{!-- Upload in progress! --}}
+    {{#if this.failureMessage}}
+        <div class="failed">{{this.failureMessage}}</div>
+    {{/if}}
+    <div class="progress-container">
+        <div class="progress">
+            <div class="bar {{if this.failureMessage "fail"}}" style={{this.progressStyle}}></div>
+        </div>
+    </div>
+    {{#if this.failureMessage}}
+        <button class="gh-btn gh-btn-green" data-test-upload-try-again-button type="button" {{action "reset"}}><span>Try Again</span></button>
+    {{/if}}
+{{else}}
+    <div class="upload-form">
+        <GhFileInput @multiple={{false}} @alt={{this.labelText}} @action={{action "fileSelected"}} @accept={{this.accept}}>
+            <div class="description">{{this.labelText}}</div>
+        </GhFileInput>
+    </div>
+{{/if}}

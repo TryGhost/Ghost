@@ -1,0 +1,72 @@
+<section class="gh-dashboard-section gh-dashboard-anchor" {{did-insert this.loadCharts}}>
+    <article class="gh-dashboard-box">
+        {{#if this.hasPaidTiers}}
+            <div class="gh-dashboard-select-title">
+                <PowerSelect
+                    @selected={{this.selectedDisplayOption}}
+                    @options={{this.displayOptions}}
+                    @searchEnabled={{false}}
+                    @onChange={{this.onDisplayChange}}
+                    @triggerComponent="gh-power-select/trigger"
+                    @triggerClass="gh-contentfilter-menu-trigger"
+                    @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
+                    @matchTriggerWidth={{false}}
+                    @horizontalPosition="left"
+                    as |option|
+                >
+                    {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
+                </PowerSelect>
+            </div>
+        {{else}}
+            <Dashboard::Parts::Metric
+                @label="Total members"
+                @value={{format-number this.totalMembers}}
+                @trends={{this.hasTrends}}
+                @percentage={{this.totalMembersTrend}}
+                @large={{true}} /> 
+        {{/if}}
+
+        <div class="gh-dashboard-hero {{unless this.hasPaidTiers 'is-solo'}}">
+            <div class="gh-dashboard-chart gh-dashboard-totals">
+                <div class="gh-dashboard-chart-container">
+                    <div class="gh-dashboard-chart-box">
+                        {{#if this.loading}}
+                            <div class="gh-dashboard-chart-loading">
+                                <div class="gh-loading-spinner"></div>
+                            </div>      
+                        {{else}}
+                            <EmberChart
+                                @type={{this.chartType}}
+                                @data={{this.chartData}}
+                                @options={{this.chartOptions}}
+                                @height={{200}} />
+                        {{/if}}
+                    </div>
+                    <div id="gh-dashboard-anchor-tooltip" class="gh-dashboard-tooltip">
+                        <div class="gh-dashboard-tooltip-label">
+                            -
+                        </div>
+                        <div class="gh-dashboard-tooltip-value">
+                            <span class="indicator line"></span>
+                            <span class="value">–</span>
+                            <span class="metric">{{this.selectedDisplayOption.name}}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="gh-dashboard-chart-ticks">
+                    <span id="gh-dashboard-anchor-date-start">-</span>
+                    <span id="gh-dashboard-anchor-date-end">-</span>
+                </div>
+            </div>
+
+            {{#if this.hasPaidTiers}}
+                <article class="gh-dashboard-minicharts">
+                    <Dashboard::Charts::PaidMrr />
+                    <Dashboard::Charts::PaidBreakdown />
+                    <Dashboard::Charts::PaidMix />
+                </article>
+            {{/if}}
+        </div>
+
+    </article>
+</section>

@@ -1,0 +1,32 @@
+<div class="modal-body">
+    {{#if this.url}}
+        <div class="gh-image-uploader -with-image">
+            <div><img src={{this.url}}></div>
+            <a class="image-delete" title="Delete" {{action 'removeImage'}}>
+                {{svg-jar "trash"}}
+                <span class="hidden">Delete</span>
+            </a>
+        </div>
+    {{else}}
+        <GhImageUploader
+            @image={{this.newUrl}}
+            @saveButton={{false}}
+            @update={{action "fileUploaded"}}
+            @uploadStarted={{action "isUploading"}}
+            @uploadFinished={{action "isUploading"}}
+            @accept={{this.model.accept}}
+            @extensions={{this.model.extensions}}
+            @uploadUrl={{this.model.uploadUrl}}
+            @paramsHash={{this.model.paramsHas}}
+        />
+    {{/if}}
+</div>
+
+<div class="modal-footer">
+    <button class="gh-btn" type="button" {{action "closeModal"}}><span>Cancel</span></button>
+    {{#if this._isUploading}}
+        <button class="gh-btn gh-btn-black right gh-btn-icon disabled" type="button"><span>Save</span></button>
+    {{else}}
+        <GhTaskButton @task={{this.uploadImage}} @class="gh-btn gh-btn-black right gh-btn-icon" data-test-modal-accept-button={{true}} />
+    {{/if}}
+</div>

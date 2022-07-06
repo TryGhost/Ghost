@@ -1,0 +1,778 @@
+/* Global styles
+/* ---------------------------------------------------------- */
+
+
+/* Variables
+/* ---------------------------------------------------------- */
+
+:root {
+    /* Primary colours */
+    --black: #15171A;
+    --white: #fff;
+    --lime: #B5FF18;
+
+    /* Secondary colours */
+    --blue: #14b8ff;
+    --green: #30cf43;
+    --purple: #8e42ff;
+    --yellow: #ffb41f;
+    --red: #f50b23;
+    --pink: #fb2d8d;
+
+    /* Gradients */
+    --lgr-blue: linear-gradient(135deg,#14b8ff 40%,#0083f5);
+    --lgr-pink: linear-gradient(135deg,#fb2d8d 40%,#ff1453);
+    --lgr-green: linear-gradient(135deg,#30cf43 40%,#00c687);
+    --lgr-yellow: linear-gradient(135deg,#ffb41f 40%,#ff8c00);
+    --lrg-black: linear-gradient(135deg,#4e6b77 40%,#0f2230);
+
+    /* Greys */
+    --blackgrey: #15171A;
+    --darkgrey: #394047;
+    --middarkgrey: #626D79;
+    --midgrey: #7C8B9A;
+    --midlightgrey: #ABB4BE;
+    --lightgrey: #CED4D9;
+    --whitegrey: #EBEEF0;
+
+    /* Tones */
+    --white-10: rgba(255, 255, 255, 0.1);
+    --white-20: rgba(255, 255, 255, 0.2);
+    --white-30: rgba(255, 255, 255, 0.3);
+    --white-40: rgba(255, 255, 255, 0.4);
+    --white-50: rgba(255, 255, 255, 0.5);
+    --white-60: rgba(255, 255, 255, 0.6);
+    --white-70: rgba(255, 255, 255, 0.7);
+    --white-80: rgba(255, 255, 255, 0.8);
+    --white-90: rgba(255, 255, 255, 0.9);
+
+    --black-10: rgba(21, 23, 26, 0.1);
+    --black-20: rgba(21, 23, 26, 0.2);
+    --black-30: rgba(21, 23, 26, 0.3);
+    --black-40: rgba(21, 23, 26, 0.4);
+    --black-50: rgba(21, 23, 26, 0.5);
+    --black-60: rgba(21, 23, 26, 0.6);
+    --black-70: rgba(21, 23, 26, 0.7);
+    --black-80: rgba(21, 23, 26, 0.8);
+    --black-90: rgba(21, 23, 26, 0.9);
+
+    --blue-l3: color-mod(var(--blue) l(+15%));
+    --blue-l2: color-mod(var(--blue) l(+10%));
+    --blue-l1: color-mod(var(--blue) l(+5%));
+    --blue-d1: color-mod(var(--blue) l(-5%));
+    --blue-d2: color-mod(var(--blue) l(-10%));
+    --blue-d3: color-mod(var(--blue) l(-15%));
+
+    --green-l3: color-mod(var(--green) l(+15%));
+    --green-l2: color-mod(var(--green) l(+10%));
+    --green-l1: color-mod(var(--green) l(+5%));
+    --green-d1: color-mod(var(--green) l(-5%));
+    --green-d2: color-mod(var(--green) l(-10%));
+    --green-d3: color-mod(var(--green) l(-15%));
+
+    --purple-l3: color-mod(var(--purple) l(+15%));
+    --purple-l2: color-mod(var(--purple) l(+10%));
+    --purple-l1: color-mod(var(--purple) l(+5%));
+    --purple-d1: color-mod(var(--purple) l(-5%));
+    --purple-d2: color-mod(var(--purple) l(-10%));
+    --purple-d3: color-mod(var(--purple) l(-15%));
+
+    --yellow-l3: color-mod(var(--yellow) l(+15%));
+    --yellow-l2: color-mod(var(--yellow) l(+10%));
+    --yellow-l1: color-mod(var(--yellow) l(+5%));
+    --yellow-d1: color-mod(var(--yellow) l(-5%));
+    --yellow-d2: color-mod(var(--yellow) l(-10%));
+    --yellow-d3: color-mod(var(--yellow) l(-13%));
+
+    --red-l3: color-mod(var(--red) l(+15%));
+    --red-l2: color-mod(var(--red) l(+10%));
+    --red-l1: color-mod(var(--red) l(+5%));
+    --red-d1: color-mod(var(--red) l(-5%));
+    --red-d2: color-mod(var(--red) l(-10%));
+    --red-d3: color-mod(var(--red) l(-15%));
+
+    --pink-l3: color-mod(var(--pink) l(+15%));
+    --pink-l2: color-mod(var(--pink) l(+10%));
+    --pink-l1: color-mod(var(--pink) l(+5%));
+    --pink-d1: color-mod(var(--pink) l(-5%));
+    --pink-d2: color-mod(var(--pink) l(-10%));
+    --pink-d3: color-mod(var(--pink) l(-15%));
+
+    --black-l2: color-mod(var(--black) h(-1) l(+7%));
+    --black-l1: color-mod(var(--black) h(+1) l(+3%));
+    --black-d1: color-mod(var(--black) l(-3%));
+    --black-d2: color-mod(var(--black) l(-6%));
+
+    --darkgrey-l2: color-mod(var(--darkgrey) h(-1) l(+7%));
+    --darkgrey-l1: color-mod(var(--darkgrey) h(+1) l(+3%));
+    --darkgrey-d1: color-mod(var(--darkgrey) l(-3%));
+    --darkgrey-d2: color-mod(var(--darkgrey) l(-6%));
+
+    --middarkgrey-l2: color-mod(var(--middarkgrey) h(+1) l(+7%));
+    --middarkgrey-l1: color-mod(var(--middarkgrey) h(+2) l(+4%));
+    --middarkgrey-d1: color-mod(var(--middarkgrey) h(+2) l(-3%));
+    --middarkgrey-d2: color-mod(var(--middarkgrey) h(+1) l(-7%));
+
+    --midgrey-l2: color-mod(var(--midgrey) h(+2) s(+2%) l(+7%));
+    --midgrey-l1: color-mod(var(--midgrey) h(+1) s(+1%) l(+4%));
+    --midgrey-d1: color-mod(var(--midgrey) h(+1) l(-3%));
+    --midgrey-d2: color-mod(var(--midgrey) l(-7%));
+
+    --midlightgrey-l2: color-mod(var(--midlightgrey) h(-3) s(+2%) l(+8%));
+    --midlightgrey-l1: color-mod(var(--midlightgrey) h(-1) s(+1%) l(+4%));
+    --midlightgrey-d1: color-mod(var(--midlightgrey) h(+1) s(-1%) l(-3%));
+    --midlightgrey-d2: color-mod(var(--midlightgrey) h(-3) s(-2%) l(-7%));
+
+    --lightgrey-l2: color-mod(var(--lightgrey) h(+1) s(+4%) l(+8%));
+    --lightgrey-l1: color-mod(var(--lightgrey) h(+1) s(+3%) l(+6%));
+    --lightgrey-d1: color-mod(var(--lightgrey) s(-1%) l(-4%));
+    --lightgrey-d2: color-mod(var(--lightgrey) h(-2) s(-2%) l(-7%));
+
+    --whitegrey-l2: color-mod(var(--whitegrey) h(+7) s(-4%) l(+5%));
+    --whitegrey-l1: color-mod(var(--whitegrey) h(+1) s(-2%) l(+2%));
+    --whitegrey-d1: color-mod(var(--whitegrey) h(-1) s(-2%) l(-2%));
+    --whitegrey-d2: color-mod(var(--whitegrey) h(-1) s(-11%) l(-6%));
+
+    /* Global, high-level UI colors */
+    --main-bg-color: rgb(255, 255, 255);
+    --main-color-area-divider: var(--whitegrey-d1);
+    --main-color-content-greybg: #f5f6f6;
+
+    --list-color-divider: var(--whitegrey-d1);
+
+    /* Special colours */
+    --transparent:transparent;
+    --errorbg-lightred: rgba(240, 82, 48, 0.05);
+
+    /* Global layout values */
+    --main-layout-content-sidepadding: 48px;
+    --main-layout-content-maxwidth: 1320px;
+    --main-layout-area-padding: 32px;
+    --main-layout-vpanel-height: 96px;
+    --main-layout-section-vpadding: 3vw;
+
+    /* Style values */
+    --border-radius: 3px;
+    --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Droid Sans", "Helvetica Neue", sans-serif;
+    --font-family-mono: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+
+    /* Shadows */
+    --shadow-1: 0 0 1px rgba(0,0,0,.12), 0 1px 6px rgba(0,0,0,0.03), 0 6px 10px -8px rgba(0,0,0,.1);
+    --shadow-2: 0 0 1px rgba(0,0,0,.05), 0 5px 18px rgba(0,0,0,.08);
+    --shadow-3: 0 0 1px rgba(0,0,0,.05), 0 8px 28px rgba(0,0,0,.12);
+
+    --box-shadow-m:
+        0 0 7px rgba(0, 0, 0, 0.08),
+        0 2.1px 2.2px -5px rgba(0, 0, 0, 0.011),
+        0 5.1px 5.3px -5px rgba(0, 0, 0, 0.016),
+        0 9.5px 10px -5px rgba(0, 0, 0, 0.02),
+        0 17px 17.9px -5px rgba(0, 0, 0, 0.024),
+        0 31.8px 33.4px -5px rgba(0, 0, 0, 0.029),
+        0 76px 80px -5px rgba(0, 0, 0, 0.04)
+    ;
+
+    --box-shadow-preview-box:
+        0 2.8px 2.2px rgba(0, 0, 0, 0.02),
+        0 6.7px 5.3px rgba(0, 0, 0, 0.028),
+        0 12.5px 10px rgba(0, 0, 0, 0.035),
+        0 22.3px 17.9px rgba(0, 0, 0, 0.042),
+        0 41.8px 33.4px rgba(0, 0, 0, 0.05),
+        0 100px 80px rgba(0, 0, 0, 0.07)
+    ;
+
+    /* Inputs */
+    --input-bg-color: var(--white);
+    --input-border-color: var(--whitegrey-d2);
+    --input-border: var(--input-border-color) 1px solid;
+}
+
+/* Colour classes
+/* ---------------------------------------------------------- */
+
+.darkgrey {
+    color: var(--darkgrey);
+}
+
+.midgrey {
+    color: var(--midgrey);
+}
+
+.lightgrey {
+    color: var(--lightgrey);
+}
+
+.blue {
+    color: var(--blue);
+}
+
+.red {
+    color: var(--red);
+}
+
+.green {
+    color: var(--green);
+}
+
+
+/* Colour classes (hover)
+/* ---------------------------------------------------------- */
+
+.darkgrey-hover:hover {
+    color: var(--darkgrey);
+}
+
+.midgrey-hover:hover {
+    color: var(--midgrey);
+}
+
+.lightgrey-hover:hover {
+    color: var(--lightgrey);
+}
+
+.blue-hover:hover {
+    color: var(--blue);
+}
+
+.red-hover:hover {
+    color: var(--red);
+}
+
+.green-hover:hover {
+    color: var(--green-d1);
+}
+
+.darkgrey-bg-hover:hover {
+    background: color-mod(var(--darkgrey) a(20%));
+}
+
+.midgrey-bg-hover:hover {
+    background: color-mod(var(--midgrey) a(30%));
+}
+
+.lightgrey-bg-hover:hover {
+    background: color-mod(var(--lightgrey) a(30%));
+}
+
+.blue-bg-hover:hover {
+    background: color-mod(var(--blue) a(30%));
+}
+
+.red-bg-hover:hover {
+    background-color: color-mod(var(--red) a(20%));
+}
+
+.green-bg-hover:hover {
+    background: color-mod(var(--green) a(20%));
+}
+
+
+
+/* Layout
+/* ---------------------------------------------------------- */
+
+
+/*Exclude the editor*/
+*:not(.__mobiledoc-editor),
+*:not(.__mobiledoc-editor):before,
+*:not(.__mobiledoc-editor):after {
+    box-sizing: border-box;
+}
+
+html {
+    overflow: hidden;
+    width: 100%;
+    /* Prevent elastic scrolling on the whole page */
+    height: 100%;
+    font-family: var(--font-family);
+    font-size: 62.5%;
+    line-height: 1.65;
+    letter-spacing: 0.2px;
+
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+body {
+    overflow: auto;
+    overflow-x: hidden;
+    width: 100%;
+    /* Prevent elastic scrolling on the whole page */
+    height: 100%;
+    color: var(--darkgrey);
+    font-size: 1.4rem;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+::selection {
+    background: color-mod(var(--whitegrey-d1));
+}
+
+
+/* Text
+/* ---------------------------------------------------------- */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    margin: 0 0 0.3em 0;
+    color: var(--black);
+    line-height: 1.3em;
+    text-rendering: optimizeLegibility;
+}
+
+h1 {
+    text-indent: -1px;
+    font-size: 2.9rem;
+}
+@media (max-width: 500px) {
+    h1 {
+        font-size: 2.4rem;
+    }
+}
+
+h2 {
+    font-size: 2.2rem;
+}
+@media (max-width: 500px) {
+    h2 {
+        font-size: 1.9rem;
+    }
+}
+
+h3 {
+    font-size: 1.9rem;
+}
+@media (max-width: 500px) {
+    h3 {
+        font-size: 1.7rem;
+    }
+}
+
+h4 {
+    font-size: 1.7rem;
+}
+
+h5 {
+    font-size: 1.5rem;
+}
+
+h6 {
+    font-size: 1.5rem;
+}
+
+.gh-heading-xs {
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    font-weight: 500;
+    letter-spacing: .2px;
+    margin: 0;
+    padding: 0;
+    color: var(--black);
+}
+
+.gh-data-summary {
+    color: var(--black);
+    font-size: 4rem;
+    line-height: 4.4rem;
+    font-weight: 600;
+}
+
+.gh-data-unavailable-label {
+    max-width: 320px;
+    margin: 4px 0;
+    color: var(--midgrey);
+    font-size: 1.25rem;
+    line-height: 1.35em;
+    font-weight: 400;
+}
+
+p,
+ul,
+ol,
+dl {
+    margin: 0 0 1.7em 0;
+}
+
+ol,
+ul {
+    padding-left: 1.2em;
+}
+
+li {
+    margin-bottom: 10px;
+    line-height: 1.4em;
+}
+
+ol ol,
+ul ul,
+ul ol,
+ol ul {
+    margin: 10px 0 0.4em 0;
+    padding-left: 2em;
+    font-size: 0.9em;
+}
+
+mark {
+    background-color: #fdffb6;
+}
+
+a {
+    color: var(--green-d1);
+    text-decoration: none;
+    transition: background 0.3s, color 0.3s;
+}
+
+a:hover {
+    text-decoration: none;
+    transition: background 0.1s, color 0.1s;
+}
+
+a.highlight {
+    color: var(--yellow);
+    font-weight: bold;
+}
+
+hr {
+    display: block;
+    margin: 3.2em 0;
+    padding: 0;
+    height: 1px;
+    border: 0;
+    border-top: 1px solid #dfe1e3;
+}
+
+dl {
+    margin: 1.6em 0;
+}
+
+dl dt {
+    float: left;
+    clear: left;
+    overflow: hidden;
+    margin-bottom: 1em;
+    width: 180px;
+    text-align: right;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: bold;
+}
+
+dl dd {
+    margin-bottom: 1em;
+    margin-left: 200px;
+}
+
+blockquote {
+    margin: 1.6em 0;
+    padding: 0 1.6em 0 1.6em;
+    border-left: #dfe1e3 0.6em solid;;
+}
+
+blockquote p {
+    margin: 0.8em 0;
+    font-size: 1.2em;
+    font-weight: 300;
+}
+
+blockquote small {
+    display: inline-block;
+    margin: 0.8em 0 0.8em 1.5em;
+    color: var(--midgrey);
+    font-size: 0.9em;
+}
+/* Quotation marks */
+blockquote small:before {
+    content: "\2014 \00A0";
+}
+
+blockquote cite {
+    font-weight: bold;
+}
+blockquote cite a {
+    font-weight: normal;
+}
+
+.markdown,
+pre,
+code,
+tt {
+    font-family: var(--font-family-mono);
+}
+
+code,
+tt {
+    padding: 0.2rem 0.3rem 0.1rem;
+    border: color-mod(#f5f7f8 lightness(-10%)) 1px solid;
+    background: #f5f7f8;
+    border-radius: 2px;
+    color: #c25;
+    vertical-align: middle;
+    white-space: pre-wrap;
+    font-size: 0.8em;
+    line-height: 1em;
+}
+
+pre {
+    overflow: auto;
+    margin: 1.6em 0;
+    padding: 10px;
+    width: 100%;
+    border: color-mod(#f5f7f8 lightness(-10%)) 1px solid;
+    background: #f5f7f8;
+    border-radius: 3px;
+    white-space: pre;
+    font-family: var(--font-family-mono);
+    font-size: 0.9em;;
+}
+
+pre code,
+pre tt {
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: inherit;
+    white-space: pre-wrap;
+    font-size: inherit;
+}
+
+.CodeMirror pre {
+    font-family: var(--font-family-mono);
+    font-size: 0.9em;
+}
+
+kbd {
+    display: inline-block;
+    margin-bottom: 0.4em;
+    padding: 1px 8px;
+    border: #ccc 1px solid;
+    background: #f4f4f4;
+    border-radius: 4px;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2),
+    0 1px 0 0 #fff inset;
+    color: var(--darkgrey);
+    text-shadow: #fff 0 1px 0;
+    font-size: 0.9em;
+    font-weight: bold;
+}
+
+button {
+    padding: 0;
+    outline: none;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    line-height: inherit;
+}
+
+i {
+    display: block;
+}
+
+img,
+input[type="image"] {
+    max-width: 100%;
+}
+
+
+/* Utilities
+/* ---------------------------------------------------------- */
+
+.clearfix,
+.clearfix:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.wrapper {
+    position: relative;
+}
+
+.show {
+    display: block !important;
+}
+
+.hidden {
+    visibility: hidden !important;
+    display: none !important;
+}
+
+.invisible {
+    visibility: hidden;
+}
+
+.sr-only {
+    position: absolute;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    margin: -1px;
+    padding: 0;
+    width: 1px;
+    height: 1px;
+    border: 0;
+}
+
+.sr-only-focusable:focus {
+    z-index: 900;
+    overflow: visible;
+    clip: auto;
+    margin: 0;
+    padding: 0 10px;
+    width: auto;
+    height: auto;
+    background-color: #f5f5f5;
+    color: #333;
+    text-decoration: none;
+    line-height: 49px;
+    font-weight: bold;
+}
+
+.right {
+    float: right;
+}
+
+.left {
+    float: left;
+}
+
+.vertical {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.flex {
+    display: flex;
+}
+
+.avoid-break-out {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+
+    word-break: break-all;
+    word-break: break-word;
+
+    hyphens: auto;
+}
+
+
+/* Animations
+/* ---------------------------------------------------------- */
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fade-in-snap {
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fade-in-scale {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes fade-out {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes keyboard-focus-style-fade-out {
+    from {
+        box-shadow: inset 0 0 30px 1px color-mod(var(--midgrey) lightness(+20%));
+    }
+    to {
+        box-shadow: none;
+    }
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.fade-in {
+    animation: fade-in 0.2s;
+    animation-fill-mode: forwards;
+}
+
+.fade-in-scale {
+    animation: fade-in-scale 0.2s;
+    animation-fill-mode: forwards;
+}
+
+.fade-out {
+    animation: fade-out 0.5s;
+    animation-fill-mode: forwards;
+}
+
+/*
+ * for use with {{css-transition "anim-fade-in-scale"}}
+ * used on elements that are added/removed rather than shown/hidden
+ */
+.anim-fade-in-scale-enter,
+.anim-fade-in-scale-leave-to {
+    opacity: 0;
+}
+.anim-fade-in-scale-enter-to,
+.anim-fade-in-scale-leave {
+    opacity: 1;
+}
+.anim-fade-in-scale-enter-active {
+    animation: fade-in 0.2s;
+    animation-fill-mode: forwards;
+}
+.anim-fade-in-scale-leave-active {
+    animation: fade-out 0.5s;
+    animation-fill-mode: forwards;
+}
+
+/*
+ * liquid-fire normally hides overflow so that the container size can grow to
+ * reveal it's contents but that hidden overflow will cut off tooltips or other
+ * floating elements. Adding class="show-overflow" adjusts behaviour to only
+ * hide overflow whilst animation is in progress
+ */
+.liquid-container.show-overflow,
+.liquid-container.show-overflow .liquid-child {
+    overflow: visible;
+}
+.liquid-container.show-overflow.liquid-animating,
+.liquid-container.show-overflow.liquid-animating .liquid-child {
+    overflow: hidden;
+}
+
+.site-frame {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    transform: translate3d(0, 0, 0);
+}

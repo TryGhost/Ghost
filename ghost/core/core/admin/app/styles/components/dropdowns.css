@@ -1,0 +1,325 @@
+/* Dropdowns
+/* ---------------------------------------------------------- */
+
+.ember-basic-dropdown-content {
+    z-index: 1100;
+}
+
+.dropdown {
+    position: relative;
+    z-index: 1100;
+}
+
+.dropdown-toggle:focus {
+    outline: 0;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    float: left;
+    margin: 2px 0 0;
+    padding: 6px 0;
+    min-width: 200px;
+    background-color: #fff;
+    background-clip: padding-box;
+    border-radius: 3px;
+    box-shadow: 0 0 0 1px rgba(0,0,0,.04), 0 8px 20px -3px rgba(0,0,0,.2);
+    list-style: none;
+    text-align: left;
+    text-transform: none;
+    font-size: 1.4rem;
+    font-weight: normal;
+}
+
+.relative-dropdown-menu .dropdown-menu {
+    position: relative;
+    float: none;
+    top: auto;
+    left: auto;
+}
+
+.dropdown-menu.pull-right {
+    right: 0;
+    left: auto;
+}
+
+.dropdown-menu .divider {
+    overflow: hidden;
+    margin: 8px 0;
+    height: 1px;
+    background: color-mod(#dfe1e3 lightness(+5%));
+}
+
+.dropdown-menu li {
+    margin: 0;
+}
+
+.dropdown-menu li > a,
+.dropdown-menu li > button {
+    display: flex;
+    align-items: center;
+    clear: both;
+    padding: 6px 14px;
+    width: 100%;
+    color: var(--darkgrey);
+    text-align: left;
+    white-space: nowrap;
+    font-size: 1.3rem;
+    line-height: 1.4em;
+    font-weight: normal;
+    transition: none;
+}
+
+.dropdown-menu svg {
+    margin-right: 10px;
+    height: 14px;
+    width: 14px;
+    line-height: 1em;
+    fill: color-mod(var(--darkgrey) lightness(+20%));
+}
+
+.dropdown-align-right {
+    top: calc(100% + 6px);
+    right: 10px;
+    left: auto;
+}
+
+@media (max-width: 500px) {
+    .dropdown-menu li > a,
+    .dropdown-menu li > button {
+        padding: 7px 8px;
+        font-size: 1.5rem;
+    }
+    .dropdown-menu svg {
+        height: 16px;
+    }
+}
+
+
+/* States
+/* ---------------------------------------------------------- */
+
+/* Hover/Focus */
+.dropdown-menu li > a:hover,
+.dropdown-menu li > a:focus,
+.dropdown-menu li > button:hover,
+.dropdown-menu li > button:focus {
+    background: color-mod(var(--whitegrey) a(60%) s(-12%));
+    color: var(--darkgrey);
+    text-decoration: none;
+}
+
+.dropdown-menu li > a:hover svg,
+.dropdown-menu li > a:focus svg,
+.dropdown-menu li > button:hover svg,
+.dropdown-menu li > button:focus svg {
+    fill: var(--darkgrey);
+}
+
+/* Active */
+.dropdown-menu > .active > a,
+.dropdown-menu > .active > a:hover,
+.dropdown-menu > .active > a:focus,
+.dropdown-menu > .active > button,
+.dropdown-menu > .active > button:hover,
+.dropdown-menu > .active > button:focus {
+    outline: 0;
+    background-color: var(--blue);
+    color: #fff;
+    text-decoration: none;
+}
+
+/* Disabled */
+.dropdown-menu > .disabled > a,
+.dropdown-menu > .disabled > a:hover,
+.dropdown-menu > .disabled > a:focus,
+.dropdown-menu > .disabled > button,
+.dropdown-menu > .disabled > button:hover,
+.dropdown-menu > .disabled > button:focus {
+    color: var(--midlightgrey-l1);
+}
+
+.dropdown-menu > .disabled > a:hover,
+.dropdown-menu > .disabled > a:focus,
+.dropdown-menu > .disabled > button:hover,
+.dropdown-menu > .disabled > button:focus {
+    background-color: transparent;
+    background-image: none;
+    text-decoration: none;
+    cursor: auto;
+}
+
+
+/* Open / Close
+/* ---------------------------------------------------------- */
+
+.open > .dropdown-menu {
+    display: block;
+}
+
+.open > a {
+    outline: 0;
+}
+
+.closed > .dropdown-menu {
+    display: none;
+}
+
+
+/* Action dropdown
+/* Dropdowns that can have secondary action button
+/* ---------------------------------------------------------- */
+.dropdown-action {
+    top: calc(100% + 6px);
+    left: auto;
+    width: 210px;
+    overflow-x: hidden;
+}
+
+.dropdown-action li {
+    cursor: pointer;
+}
+
+.dropdown-action li a {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-right: 0;
+    padding: 0;
+    color: var(--darkgrey);
+}
+
+.dropdown-action .dropdown-content {
+    flex-grow: 1;
+    max-height: 50vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.dropdown-action .dropdown-label {
+    padding: 6px 14px;
+    width: 184px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.dropdown-action li.selected .dropdown-label {
+    font-weight: 700;
+}
+
+.dropdown-action li.selected a:hover {
+    background: none;
+}
+
+.dropdown-action .dropdown-action-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity ease-in-out 0.15s;
+    padding: 4px;
+    margin-top: -2px;
+    margin-bottom: -2px;
+    margin-right: 4px;
+    border-radius: 3px;
+}
+
+.dropdown-action a:hover .dropdown-action-icon {
+    opacity: 1.0;
+}
+
+.dropdown-action .dropdown-action-icon:hover {
+    background: var(--whitegrey-d1);
+}
+
+.dropdown-action .dropdown-action-icon svg {
+    margin: 0;
+}
+
+.dropdown-action .dropdown-action-icon svg path {
+    fill: var(--midgrey);
+}
+
+.dropdown-action .dropdown-action-icon:hover svg path {
+    fill: var(--darkgrey);
+}
+
+.dropdown-action .dropdown-footer {
+    list-style: none;
+    padding: 0;
+    margin: 6px 0 0;
+    border-top: 1px solid var(--whitegrey);
+}
+
+.dropdown-action .dropdown-footer li:first-of-type {
+    margin-top: 6px;
+}
+
+.dropdown-action .dropdown-footer a {
+    padding: 6px 14px;
+}
+
+.dropdown-action .dropdown-footer a span {
+    display: flex;
+    align-items: center;
+}
+
+.dropdown-action .dropdown-footer a span svg {
+    width: 12px;
+    height: 12px;
+    margin-right: 6px;
+}
+
+.dropdown-action.fade-out {
+    animation-duration: .001s;
+    pointer-events: none;
+}
+
+.dropdown-menu .label-token svg {
+    margin-right: 0;
+}
+
+.gh-member-label-input .dropdown-action-icon {
+    opacity: 0;
+    transition: opacity ease-in-out 0.15s;
+    padding: 4px;
+    margin-top: -2px;
+    margin-bottom: -2px;
+    margin-right: 4px;
+    border-radius: 3px;
+}
+
+.gh-member-settings .gh-member-label-input .dropdown-action-icon {
+    margin-right: -8px;
+    padding: 4px 6px;
+}
+
+.gh-member-label-input li:hover .dropdown-action-icon {
+    opacity: 1.0;
+}
+
+.gh-member-label-input .dropdown-action-icon:hover {
+    background: var(--whitegrey-d1);
+}
+
+.gh-member-label-input .dropdown-action-icon svg {
+    margin: 0;
+    height: 14px;
+    width: 14px;
+    line-height: 1em;
+    fill: #667380;
+}
+
+.gh-member-label-input .dropdown-action-icon svg path {
+    fill: var(--midgrey);
+}
+
+.gh-member-label-input .dropdown-action-icon:hover svg path {
+    fill: var(--darkgrey);
+}

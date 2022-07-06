@@ -1,0 +1,167 @@
+.gh-filter-builder {
+    padding: 20px;
+    max-width: 780px;
+    min-width: 400px;
+}
+
+.gh-filter-builder h3 {
+    font-size: 1.9rem;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+}
+
+.gh-filter-builder .gh-filters {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-gap: 12px;
+    background: var(--whitegrey-l1);
+    border-radius: 3px;
+    padding: 16px;
+    margin-top: 20px;
+}
+
+.gh-filter-builder .gh-filter-block {
+    display: flex;
+    align-items: center;
+}
+
+.gh-filter-builder .gh-filter-block .form-group {
+    margin: 0;
+}
+
+.gh-filter-builder .gh-filter-inputgroup {
+    display: grid;
+    grid-template-columns: 1fr 146px 1fr 18px;
+    grid-column-gap: 8px;
+}
+
+.gh-filter-builder .gh-input,
+.gh-filter-builder .gh-select,
+.gh-filter-builder select {
+    height: 33px;
+    font-size: 1.35rem;
+}
+
+.gh-filter-builder .gh-select svg {
+    width: 9px;
+    height: 9px;
+    margin-right: 0;
+}
+
+.gh-filter-builder .gh-delete-filter {
+    width: 20px;
+    height: 33px;
+    margin-left: 4px;
+}
+
+.gh-filter-builder .gh-delete-filter svg {
+    width: 10px;
+    height: 10px;
+}
+
+.gh-filter-builder .gh-delete-filter svg path {
+    stroke: var(--middarkgrey);
+}
+
+.gh-filter-builder .gh-delete-filter:hover svg path {
+    stroke: var(--red);
+}
+
+.gh-add-filter svg {
+    margin-right: 7px;
+}
+
+.gh-add-filter svg path {
+    stroke: none !important;
+    fill: var(--green-d1);
+}
+
+.gh-filter-builder .gh-filter-block-divider {
+    display: flex;
+    align-items: center;
+    font-size: 1.1rem;
+    font-weight: 500;
+    letter-spacing: .1px;
+    color: var(--midgrey);
+    text-transform: uppercase;
+    margin: 12px 0;
+}
+
+.gh-filter-builder .gh-filter-block-divider::before {
+    content: "";
+    display: block;
+    width: 16px;
+    height: 1px;
+    background: var(--whitegrey-d2);
+    margin: 0 4px 0 -16px;
+}
+
+.gh-filter-builder .gh-filter-block-divider::after {
+    content: "";
+    flex-grow: 1;
+    display: block;
+    height: 1px;
+    background: var(--whitegrey-d2);
+    margin: 0 -16px 0 4px;
+}
+
+.gh-filter-builder-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.gh-filter-block .label-token {
+    margin: 2px !important;
+}
+
+.gh-filter-block .token-segment-tier {
+    margin: 2px !important;
+}
+
+.gh-filter-block .token-segment-tier .ember-power-select-multiple-remove-btn svg {
+    margin-right: 0!important;
+}
+
+.gh-filter-builder .ember-power-select-multiple-trigger {
+    padding: 2px;
+}
+
+.gh-filter-builder .ember-power-select-dropdown.ember-basic-dropdown-content--below {
+    font-size: 1.3rem;
+}
+
+.gh-filter-builder .ember-power-select-trigger {
+    max-height: 72px;
+}
+
+.gh-filter-builder .ember-power-select-option {
+    padding: 6px 0px 6px 12px;
+}
+
+.gh-filter-builder .ember-power-select-multiple-option {
+    padding: 1px 6px;
+}
+
+.gh-filter-builder .ember-power-select-trigger-multiple-input {
+    height: 23px;
+}
+
+@media (max-width: 690px) {
+    .gh-filter-builder .gh-filter-inputgroup {
+        grid-template-columns: 1fr 18px;
+        grid-template-rows: 3fr;
+        grid-row-gap: 4px;
+        margin-bottom: 12px;
+    }
+
+    .gh-filter-builder .gh-filter-inputgroup :not(.gh-delete-filter) {
+        grid-column: 1 / 2;
+    }
+
+    .gh-filter-builder .gh-filter-inputgroup .gh-delete-filter {
+        grid-row: 1/2;
+        grid-column: 2/3;
+    }
+}

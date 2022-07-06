@@ -1,0 +1,445 @@
+<section class="gh-canvas">
+    <GhCanvasHeader class="gh-canvas-header">
+        <h2 class="gh-canvas-title" data-test-screen-title>
+            <LinkTo @route="settings">Settings</LinkTo>
+            <span>{{svg-jar "arrow-right"}}</span>
+            General
+        </h2>
+        <section class="view-actions">
+            <GhTaskButton @buttonText="Save" @task={{this.saveTask}} @class="gh-btn gh-btn-primary gh-btn-icon" data-test-button="save" />
+        </section>
+    </GhCanvasHeader>
+
+    {{#if this.showLeaveSettingsModal}}
+        <GhFullscreenModal @modal="leave-settings"
+            @confirm={{action "leaveSettings"}}
+            @close={{action "toggleLeaveSettingsModal"}}
+            @modifier="action wide" />
+    {{/if}}
+
+
+    <div class="gh-main-section">
+        <h4 class="gh-main-section-header small bn">Publication info</h4>
+        <section class="gh-expandable">
+            <div class="gh-expandable-block">
+                <div class="gh-expandable-header">
+                    <div>
+                        <h4 class="gh-expandable-title">Title &amp; description</h4>
+                        <p class="gh-expandable-description">The details used to identify your publication around the web</p>
+                    </div>
+                    <button type="button" class="gh-btn" {{action (toggle "pubInfoOpen" this)}} data-test-toggle-pub-info><span>{{if this.pubInfoOpen "Close" "Expand"}}</span></button>
+                </div>
+                <div class="gh-expandable-content">
+                    {{#liquid-if this.pubInfoOpen}}
+                    <div class="gh-setting-content-extended">
+                        <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="title">
+                            <GhTextInput
+                                @value={{readonly this.settings.title}}
+                                @input={{action (mut this.settings.title) value="target.value"}}
+                                @focus-out={{action "validate" "title" target=this.settings}}
+                                data-test-title-input={{true}}
+                            />
+                            <GhErrorMessage @errors={{this.settings.errors}} @property="title" />
+                            <p>The name of your site</p>
+                        </GhFormGroup>
+
+                        <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="description" @class="description-container">
+                            <GhTextInput
+                                @value={{readonly this.settings.description}}
+                                @input={{action (mut this.settings.description) value="target.value"}}
+                                @focus-out={{action "validate" "description" target=this.settings}}
+                                data-test-description-input={{true}}
+                            />
+                            <GhErrorMessage @errors={{this.settings.errors}} @property="description"/>
+                            <p>Used in your theme, meta data and search results</p>
+                        </GhFormGroup>
+                    </div>
+                    {{/liquid-if}}
+                </div>
+            </div>
+
+            <div class="gh-expandable-block">
+                <div class="gh-expandable-header">
+                    <div>
+                        <h4 class="gh-expandable-title">Site timezone</h4>
+                        <p class="gh-expandable-description">Set the time and date of your publication, used for all published posts</p>
+                    </div>
+                    <button type="button" class="gh-btn" {{action (toggle "timezoneOpen" this)}} data-test-toggle-timezone><span>{{if this.timezoneOpen "Close" "Expand"}}</span></button>
+                </div>
+                <div class="gh-expandable-content">
+                    {{#liquid-if this.timezoneOpen}}
+                    <div class="gh-setting-content-extended">
+                        <GhTimezoneSelect
+                            @timezone={{this.settings.timezone}}
+                            @availableTimezones={{this.availableTimezones}}
+                            @update={{action "setTimezone"}} />
+                    </div>
+                    {{/liquid-if}}
+                </div>
+            </div>
+
+            <div class="gh-expandable-block">
+                <div class="gh-expandable-header">
+                    <div>
+                        <h4 class="gh-expandable-title">Publication Language</h4>
+                        <p class="gh-expandable-description">Set the language/locale which is used on your site</p>
+                    </div>
+                    <button type="button" class="gh-btn" {{action (toggle "langOpen" this)}} data-test-toggle-lang><span>{{if this.langOpen "Close" "Expand"}}</span></button>
+                </div>
+                <div class="gh-expandable-content">
+                    {{#liquid-if this.langOpen}}
+                    <div class="gh-setting-content-extended">
+                        <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="locale">
+                            <GhTextInput
+                                @value={{readonly this.settings.locale}}
+                                @input={{action (mut this.settings.locale) value="target.value"}}
+                                @focus-out={{action "validate" "locale" target=this.settings}}
+                                data-test-input="locale"
+                            />
+                            <GhErrorMessage @errors={{this.settings.errors}} @property="locale" />
+                            <p>Default: English (<strong>en</strong>); you can add translation files to your theme for <a href="https://ghost.org/docs/themes/helpers/translate/" target="_blank" rel="noopener noreferrer">any language</a></p>
+                        </GhFormGroup>
+                    </div>
+                    {{/liquid-if}}
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="gh-main-section">
+        <h4 class="gh-main-section-header small bn">Site meta settings</h4>
+        <section class="gh-expandable">
+            <div class="gh-expandable-block">
+                <div class="gh-expandable-header">
+                    <div>
+                        <h4 class="gh-expandable-title">Meta data</h4>
+                        <p class="gh-expandable-description">Extra content for search engines</p>
+                    </div>
+                    <button type="button" class="gh-btn" {{action (toggle "metaDataOpen" this)}} data-test-toggle-meta><span>{{if this.metaDataOpen "Close" "Expand"}}</span></button>
+                </div>
+                <div class="gh-expandable-content">
+                    {{#liquid-if this.metaDataOpen}}
+                        <div class="gh-setting-content-extended">
+                            <div class="gh-seo-settings">
+                                <div class="gh-seo-settings-left flex-basis-1-2-m flex-basis-2-3-l">
+                                    <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="metaTitle">
+                                        <label for="metaTitle">Meta title</label>
+                                        <GhTextInput
+                                            @id="metaTitle"
+                                            @type="text"
+                                            @placeholder={{truncate this.settings.title 70}}
+                                            @value={{readonly this.settings.metaTitle}}
+                                            @input={{action (mut this.settings.metaTitle) value="target.value"}}
+                                            data-test-input="metaTitle"
+                                        />
+                                        <GhErrorMessage @errors={{this.settings.errors}} @property="metaTitle" data-test-error="metaTitle" />
+                                        <p>Recommended: <b>70</b> characters. You’ve used <b>{{gh-count-down-characters this.settings.metaTitle 70}}</b></p>
+                                    </GhFormGroup>
+                                    <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="metaDescription">
+                                        <label for="metaDescription">Meta description</label>
+                                        <GhTextarea
+                                            @id="metaDescription"
+                                            @type="text"
+                                            @placeholder={{truncate this.settings.description 300}}
+                                            @value={{readonly this.settings.metaDescription}}
+                                            @input={{action (mut this.settings.metaDescription) value="target.value"}}
+                                            data-test-input="metaDescription"
+                                        />
+                                        <GhErrorMessage @errors={{this.settings.errors}} @property="metaDescription" data-test-error="metaDescription" />
+                                        <p>Recommended: <b>156</b> characters. You’ve used <b>{{gh-count-down-characters this.settings.metaDescription 156}}</b></p>
+                                    </GhFormGroup>
+                                </div>
+                                <div class="flex-basis-1-2-m flex-basis-1-3-l">
+                                    <label>Search engine result preview</label>
+                                    <div class="gh-seo-container">
+                                        <div class="gh-seo-preview">
+                                            <div class="flex mb6">
+                                                {{svg-jar "google"}}
+                                                <div class="gh-seo-search-bar">{{svg-jar "google-search"}}</div>
+                                            </div>
+                                            <div class="gh-seo-preview-link">{{this.config.blogDomain}}</div>
+                                            <div class="gh-seo-preview-title">{{or this.settings.metaTitle this.settings.title}}</div>
+                                            <div class="gh-seo-preview-desc">
+                                                {{truncate (or this.settings.metaDescription this.settings.description) 159}}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {{/liquid-if}}
+                </div>
+            </div>
+
+            <div class="gh-expandable-block">
+                <div class="gh-expandable-header">
+                    <div>
+                        <h4 class="gh-expandable-title">Twitter card</h4>
+                        <p class="gh-expandable-description">Customize structured data of your site for Twitter</p>
+                    </div>
+                    <button type="button" class="gh-btn" {{action (toggle "twitterCardOpen" this)}} data-test-toggle-twitter><span>{{if this.twitterCardOpen "Close" "Expand"}}</span></button>
+                </div>
+                <div class="gh-expandable-content">
+                    {{#liquid-if this.twitterCardOpen}}
+                    <div class="gh-setting-content-extended">
+                        <div class="gh-twitter-settings">
+                            <div class="gh-twitter-settings-left flex-basis-1-2-m flex-basis-2-3-l">
+                                <label>Twitter image</label>
+                                <GhFormGroup>
+                                    <GhImageUploaderWithPreview
+                                        @image={{this.settings.twitterImage}}
+                                        @text="Add Twitter image"
+                                        @allowUnsplash={{true}}
+                                        @update={{action (mut this.settings.twitterImage)}}
+                                        @remove={{action (mut this.settings.twitterImage) ""}}
+                                    />
+                                </GhFormGroup>
+                                <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="twitterTitle">
+                                    <label for="twitterTitle">Twitter title</label>
+                                    <GhTextInput
+                                        @id="twitterTitle"
+                                        @type="text"
+                                        @placeholder={{truncate this.settings.title 70}}
+                                        @value={{readonly this.settings.twitterTitle}}
+                                        @input={{action (mut this.settings.twitterTitle) value="target.value"}}
+                                        data-test-input="twitterTitle"
+                                    />
+                                    <GhErrorMessage @errors={{this.settings.errors}} @property="twitterTitle" data-test-error="twitterTitle" />
+                                </GhFormGroup>
+                                <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="twitterDescription">
+                                    <label for="twitterDescription">Twitter description</label>
+                                    <GhTextarea
+                                        @id="twitterDescription"
+                                        @placeholder={{truncate this.settings.description 300}}
+                                        @value={{readonly this.settings.twitterDescription}}
+                                        @input={{action (mut this.settings.twitterDescription) value="target.value"}}
+                                        data-test-input="twitterDescription"
+                                    />
+                                    <GhErrorMessage @errors={{this.settings.errors}} @property="twitterDescription" data-test-error="twitterDescription" />
+                                </GhFormGroup>
+                            </div>
+                            <div class="flex-basis-1-2-m flex-basis-1-3-l">
+                                <label>Twitter preview</label>
+                                <div class="gh-twitter-container">
+                                    <div class="flex ma4">
+                                        <span>{{svg-jar "social-twitter" class="social-icon"}}</span>
+                                        <div class="w-100">
+                                            <span class="gh-social-og-title">{{or this.settings.metaTitle this.settings.title}}</span>
+                                            <span class="gh-social-og-time">12 hrs</span>
+                                            <div class="flex flex-column mt2 mb3">
+                                                <span class="gh-social-og-desc w-100 mb2" />
+                                                <span class="gh-social-og-desc w-60" />
+                                            </div>
+                                            <div class="gh-social-twitter-post-preview">
+                                                {{#if this.settings.twitterImage}}
+                                                    <div class="gh-social-twitter-preview-image" style={{background-image-style this.settings.twitterImage}}></div>
+                                                {{/if}}
+                                                <div class="gh-social-twitter-preview-content">
+                                                    <div class="gh-social-twitter-preview-title">{{or this.settings.twitterTitle this.settings.title}}</div>
+                                                    <div class="gh-social-twitter-preview-desc">{{truncate (or this.settings.twitterDescription this.settings.description)}}</div>
+                                                    <div class="gh-social-twitter-preview-meta">
+                                                        {{svg-jar "twitter-link"}}
+                                                        {{this.config.blogDomain}}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="gh-social-twitter-reactions">
+                                                <div class="flex items-center">{{svg-jar "twitter-comment"}}2</div>
+                                                <div class="flex items-center">{{svg-jar "twitter-retweet"}}11</div>
+                                                <div class="flex items-center">{{svg-jar "twitter-like"}}32</div>
+                                                <div class="flex items-center">{{svg-jar "twitter-share"}}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {{/liquid-if}}
+                </div>
+            </div>
+
+            <div class="gh-expandable-block">
+                <div class="gh-expandable-header">
+                    <div>
+                        <h4 class="gh-expandable-title">Facebook card</h4>
+                        <p class="gh-expandable-description">Customize structured data of your site</p>
+                    </div>
+                    <button type="button" class="gh-btn" {{action (toggle "facebookCardOpen" this)}} data-test-toggle-facebook><span>{{if this.facebookCardOpen "Close" "Expand"}}</span></button>
+                </div>
+                <div class="gh-expandable-content">
+                    {{#liquid-if this.facebookCardOpen}}
+                        <div class="gh-setting-content-extended">
+                            <div class="gh-og-settings">
+                                <div class="gh-og-settings-left flex-basis-1-2-m flex-basis-2-3-l">
+                                    <label>Facebook image</label>
+                                    <GhFormGroup>
+                                        <GhImageUploaderWithPreview
+                                            @image={{this.settings.ogImage}}
+                                            @text="Add Facebook image"
+                                            @allowUnsplash={{true}}
+                                            @update={{action (mut this.settings.ogImage)}}
+                                            @remove={{action (mut this.settings.ogImage) ""}}
+                                        />
+                                    </GhFormGroup>
+                                    <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="ogTitle">
+                                        <label for="ogTitle">Facebook title</label>
+                                        <GhTextInput
+                                            @id="ogTitle"
+                                            @type="text"
+                                            @placeholder={{truncate this.settings.title 70}}
+                                            @value={{readonly this.settings.ogTitle}}
+                                            @input={{action (mut this.settings.ogTitle) value="target.value"}}
+                                            data-test-input="ogTitle"
+                                        />
+                                        <GhErrorMessage @errors={{this.settings.errors}} @property="ogTitle" data-test-error="ogTitle" />
+                                    </GhFormGroup>
+                                    <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="ogDescription">
+                                        <label for="ogDescription">Facebook description</label>
+                                        <GhTextarea
+                                            @id="ogDescription"
+                                            @placeholder={{truncate this.settings.description 300}}
+                                            @value={{readonly this.settings.ogDescription}}
+                                            @input={{action (mut this.settings.ogDescription) value="target.value"}}
+                                            data-test-input="ogDescription"
+                                        />
+                                        <GhErrorMessage @errors={{this.settings.errors}} @property="ogDescription" data-test-error="ogDescription" />
+                                    </GhFormGroup>
+                                </div>
+                                <div class="flex-basis-1-2-m flex-basis-1-3-l">
+                                    <label>Facebook preview</label>
+                                    <div class="gh-og-container">
+                                        <div class="flex ma3 mb2">
+                                            <span>{{svg-jar "social-facebook" class="social-icon"}}</span>
+                                            <div>
+                                                <div class="gh-social-og-title">{{or this.settings.metaTitle this.settings.title}}</div>
+                                                <div class="gh-social-og-time">12 hrs</div>
+                                            </div>
+                                        </div>
+                                        <div class="flex flex-column ma3 mt2">
+                                            <span class="gh-social-og-desc w-100 mb2" />
+                                            <span class="gh-social-og-desc w-60" />
+                                        </div>
+                                        <div class="gh-social-og-preview">
+                                            {{#if this.settings.ogImage}}
+                                                <div class="gh-social-og-preview-image" style={{background-image-style this.settings.ogImage}}></div>
+                                            {{/if}}
+                                            <div class="gh-social-og-preview-bookmark">
+                                                {{!-- Ensures description is hidden if title exceeds one line --}}
+                                                <div class="gh-social-og-preview-content">
+                                                    <div class="gh-social-og-preview-meta">
+                                                        {{this.config.blogDomain}}
+                                                    </div>
+                                                    <div class="gh-social-og-preview-title">{{truncate (or this.settings.ogTitle this.settings.title)}}</div>
+                                                    <div class="gh-social-og-preview-desc">{{truncate (or this.settings.ogDescription this.settings.description)}}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="gh-social-og-reactions">
+                                            <span class="gh-social-og-likes">{{svg-jar "facebook-like" class="z-999"}}{{svg-jar "facebook-heart" class="nl1"}}182</span>
+                                            <span class="gh-social-og-comments">7 comments</span>
+                                            <span class="gh-social-og-comments ml2">2 shares</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {{/liquid-if}}
+                </div>
+            </div>
+
+            <div class="gh-expandable-block">
+                <div class="gh-expandable-header">
+                    <div>
+                        <h4 class="gh-expandable-title">Social accounts</h4>
+                        <p class="gh-expandable-description">Link your social accounts for full structured data and rich card support</p>
+                    </div>
+                    <button type="button" class="gh-btn" {{action (toggle "socialOpen" this)}} data-test-toggle-social><span>{{if this.socialOpen "Close" "Expand"}}</span></button>
+                </div>
+                <div class="gh-expandable-content">
+                    {{#liquid-if this.socialOpen}}
+                    <div class="gh-setting-content-extended">
+                        <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="facebook">
+                            <GhTextInput
+                                @type="url"
+                                @placeholder="https://www.facebook.com/ghost"
+                                @autocorrect="off"
+                                @value={{readonly this.settings.facebook}}
+                                @input={{action (mut this._scratchFacebook) value="target.value"}}
+                                @focus-out={{action "validateFacebookUrl"}}
+                                data-test-facebook-input={{true}}
+                            />
+                            <GhErrorMessage @errors={{this.settings.errors}} @property="facebook" data-test-facebook-error=true />
+                            <p>URL of your publication's Facebook Page</p>
+                        </GhFormGroup>
+                        <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="twitter">
+                            <GhTextInput
+                                @type="url"
+                                @placeholder="https://twitter.com/ghost"
+                                @autocorrect="off"
+                                @value={{readonly this.settings.twitter}}
+                                @input={{action (mut this._scratchTwitter) value="target.value"}}
+                                @focus-out={{action "validateTwitterUrl"}}
+                                data-test-twitter-input={{true}}
+                            />
+                            <GhErrorMessage @errors={{this.settings.errors}} @property="twitter" data-test-twitter-error=true />
+                            <p>URL of your publication's Twitter profile</p>
+                        </GhFormGroup>
+                    </div>
+                    {{/liquid-if}}
+                </div>
+            </div>
+
+        </section>
+    </div>
+
+    <div class="gh-main-section">
+        <h4 class="gh-main-section-header small bn">Advanced settings</h4>
+        <section class="gh-expandable">
+            <div class="gh-expandable-block">
+                <div class="gh-expandable-header">
+                    <div>
+                        <h4 class="gh-expandable-title">Make this site private</h4>
+                        <p class="gh-expandable-description">
+                            Enable protection with a simple shared password. All search engine optimization and social features will be disabled.
+                        </p>
+                    </div>
+                    <div class="for-switch">
+                        <label class="switch" for="settings-private">
+                            <input
+                                type="checkbox"
+                                checked={{this.settings.isPrivate}}
+                                id="settings-private"
+                                onclick={{action "toggleIsPrivate" value="target.checked"}}
+                                data-test-private-checkbox
+                            >
+                            <span class="input-toggle-component"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="gh-expandable-content">
+                    {{#if this.settings.isPrivate}}
+                        <div class="gh-setting-content-extended pt4 pb4">
+                            <span class="avoid-break-out">
+                                A private RSS feed is available at
+                                <a href="{{this.privateRSSUrl}}" target="_blank" rel="noopener noreferrer">{{this.privateRSSUrl}}</a>
+                            </span>
+                            <GhFormGroup @class="no-margin pt2" @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="password">
+                                <GhTextInput
+                                    @value={{readonly this.settings.password}}
+                                    @name="general[password]"
+                                    @focus-out={{action "validate" "password" target=this.settings}}
+                                    @input={{action (mut this.settings.password) value="target.value"}}
+                                    data-test-password-input={{true}}
+                                />
+                                <GhErrorMessage @errors={{this.settings.errors}} @property="password" data-test-password-error=true />
+                                <p>Set the password for this site</p>
+                            </GhFormGroup>
+                        </div>
+                    {{/if}}
+                </div>
+            </div>
+        </section>
+    </div>
+</section>
+{{outlet}}

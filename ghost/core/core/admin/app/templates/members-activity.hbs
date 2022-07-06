@@ -1,0 +1,48 @@
+<section class="gh-canvas gh-members-activity {{if this.memberRecord "gh-members-activity-single"}}">
+    <GhCanvasHeader class="gh-canvas-header">
+        <h2 class="gh-canvas-title" data-test-screen-title>
+            <LinkTo @route="members-activity" @query={{reset-query-params "members-activity"}} data-test-link="members-activity-back">Activity</LinkTo>
+            {{#if this.memberRecord}}
+                <span>{{svg-jar "arrow-right"}}</span>
+                <span class="truncate">{{or this.memberRecord.name this.memberRecord.email}}</span>
+            {{/if}}
+        </h2>
+
+        <div class="view-actions">
+            <MembersActivity::EventTypeFilter
+                @excludedEvents={{this.excludedEvents}}
+                @hiddenEvents={{this.hiddenEvents}}
+                @onChange={{this.changeExcludedEvents}} />
+
+            <MembersActivity::MemberFilter
+                @selected={{this.memberRecord}}
+                @onChange={{this.changeMember}} />
+        </div>
+    </GhCanvasHeader>
+    <div class="view-container">
+        {{#let (members-event-fetcher filter=(members-event-filter excludedEvents=this.fullExcludedEvents member=this.member) pageSize=50) as |eventsFetcher|}}
+            {{#if eventsFetcher.data}}
+                {{#if this.memberRecord}}
+                    <GhMemberDetailsActivity @member={{this.memberRecord}} />
+                {{/if}}
+                <div class="gh-list-scrolling">   
+                    <MembersActivity::Table @hideMemberColumn={{if this.member true}} @events={{eventsFetcher.data}} @hasMultipleNewsletters={{eventsFetcher.hasMultipleNewsletters}} />
+
+                    {{#if (not (or eventsFetcher.isLoading eventsFetcher.hasReachedEnd))}}
+                        <GhScrollTrigger @enter={{eventsFetcher.loadNextPage}} @triggerOffset={{250}} />
+                    {{/if}}
+                </div>
+            {{else}}
+                {{#unless eventsFetcher.isLoading}}
+                    <MembersActivity::NoEvents @filter={{this.filter}} />
+                {{/unless}}
+            {{/if}}
+
+            {{#if eventsFetcher.isLoading}}
+                <div class="no-posts-box"><GhLoadingSpinner /></div>
+            {{/if}}
+        {{/let}}
+    </div>
+</section>
+
+{{outlet}}

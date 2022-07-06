@@ -1,0 +1,21 @@
+<header class="modal-header">
+    <h1>Update this snippet?</h1>
+</header>
+<a class="close" href="" role="button" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
+
+<div class="modal-body">
+    <p>
+        "<strong>{{this.snippet.name}}</strong>" will be overwritten.
+        Don't worry, this will only affect using the snippet in the future.
+        Any older posts using this snippet will stay the same.
+    </p>
+</div>
+
+<div class="modal-footer">
+    <button class="gh-btn" type="button" {{action "closeModal"}}><span>Cancel</span></button>
+    <GhTaskButton
+        @buttonText="Update"
+        @successText="Updated"
+        @task={{this.updateSnippet}}
+        @class="gh-btn gh-btn-black gh-btn-icon" />
+</div>

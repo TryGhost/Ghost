@@ -1,0 +1,59 @@
+<KoenigCard
+    @class={{concat "ba b--white relative kg-card-hover miw-100" (if this.isEditing " bw2 pt1 pb1 pl2 nl6 pr6 nr6")}}
+    @style={{this.cardStyle}}
+    @headerOffset={{this.headerOffset}}
+    @toolbar={{this.toolbar}}
+    @payload={{this.payload}}
+    @isSelected={{this.isSelected}}
+    @isEditing={{this.isEditing}}
+    @selectCard={{action this.selectCard}}
+    @deselectCard={{action this.deselectCard}}
+    @editCard={{action this.editCard}}
+    @saveCard={{action this.saveCard}}
+    @saveAsSnippet={{this.saveAsSnippet}}
+    @onEnterEdit={{action "enterEditMode"}}
+    @onLeaveEdit={{action "leaveEditMode"}}
+    @addParagraphAfterCard={{this.addParagraphAfterCard}}
+    @moveCursorToPrevSection={{this.moveCursorToPrevSection}}
+    @moveCursorToNextSection={{this.moveCursorToNextSection}}
+    @editor={{this.editor}}
+    as |card|
+>
+    {{#if this.isEditing}}
+        <GhCmEditor @value={{this.payload.code}}
+            @class="koenig-card-code--editor koenig-card-html--editor"
+            @textareaClass="o-0"
+            @autofocus={{true}}
+            @lineWrapping={{true}}
+            @update={{action "updateCode"}}
+            @mode={{this.cmMode}}
+        />
+        <input
+            type="text"
+            value={{readonly this.payload.language}}
+            onblur={{action (mut this.payload.language) value="target.value"}}
+            placeholder="Language..."
+            class="absolute w-20 pa1 ba b--lightgrey br2 f8 tracked-2 fw4 z-999 outline-0 anim-normal"
+            style={{this.languageInputStyle}}
+        />
+    {{else}}
+        <div class="koenig-card-html-rendered">
+            <pre><code class="line-numbers {{if this.payload.language (concat "language-" this.payload.language)}}">{{this.escapedCode}}</code></pre>
+        </div>
+        {{#if this.payload.language}}
+            <div class="absolute top-2 right-2 flex justify-center items-center pa2">
+                <span class="db nudge-top--2 fw5 f8 midlightgrey">{{this.payload.language}}</span>
+            </div>
+        {{/if}}
+        <div class="koenig-card-click-overlay"></div>
+    {{/if}}
+
+    {{#if (and (not this.isEditing) (or this.isSelected (clean-basic-html this.payload.caption)))}}
+        <card.CaptionInput
+            @class="z-999"
+            @caption={{this.payload.caption}}
+            @update={{action "updateCaption"}}
+            @placeholder="Type caption for code block (optional)"
+        />
+    {{/if}}
+</KoenigCard>

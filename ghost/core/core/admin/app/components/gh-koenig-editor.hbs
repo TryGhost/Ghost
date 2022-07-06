@@ -1,0 +1,58 @@
+<div class="gh-koenig-editor relative w-100 vh-100 overflow-x-hidden overflow-y-auto z-0" {{did-insert this.registerElement}} ...attributes>
+    {{!-- full height content pane --}}
+    <div
+        class="gh-koenig-editor-pane flex flex-column mih-100"
+        {{on "mousedown" this.trackMousedown}}
+        {{on "mouseup" this.focusEditor}}
+    >
+        <GhEditorFeatureImage
+            @image={{@featureImage}}
+            @updateImage={{@setFeatureImage}}
+            @clearImage={{@clearFeatureImage}}
+            @alt={{@featureImageAlt}}
+            @updateAlt={{@setFeatureImageAlt}}
+            @caption={{@featureImageCaption}}
+            @updateCaption={{@setFeatureImageCaption}}
+            @forceButtonDisplay={{or (not @title) (eq @title "(Untitled)") this.titleIsHovered this.titleIsFocused}}
+        />
+
+        <GhTextarea
+            @class="gh-editor-title"
+            @placeholder={{@titlePlaceholder}}
+            @shouldFocus={{or @titleAutofocus false}}
+            @tabindex="1"
+            @autoExpand=".gh-koenig-editor"
+            @value={{readonly this.title}}
+            @input={{this.updateTitle}}
+            @focus-out={{optional @onTitleBlur}}
+            @keyDown={{this.onTitleKeydown}}
+            @didCreateTextarea={{this.registerTitleElement}}
+            {{on "focus" (fn (mut this.titleIsFocused) true)}}
+            {{on "blur" (fn (mut this.titleIsFocused) false)}}
+            {{on "mouseover" (fn (mut this.titleIsHovered) true)}}
+            {{on "mouseleave" (fn (mut this.titleIsHovered) false)}}
+            data-test-editor-title-input={{true}}
+        />
+
+        <KoenigEditor
+            @mobiledoc={{@body}}
+            @placeholder={{@bodyPlaceholder}}
+            @spellcheck={{true}}
+            @onChange={{@onBodyChange}}
+            @didCreateEditor={{this.onEditorCreated}}
+            @cursorDidExitAtTop={{this.focusTitle}}
+            @headerOffset={{@headerOffset}}
+            @dropTargetSelector=".gh-koenig-editor-pane"
+            @scrollContainerSelector={{@scrollContainerSelector}}
+            @scrollOffsetTopSelector={{@scrollOffsetTopSelector}}
+            @scrollOffsetBottomSelector={{@scrollOffsetBottomSelector}}
+            @wordCountDidChange={{@onWordCountChange}}
+            @snippets={{@snippets}}
+            @saveSnippet={{@saveSnippet}}
+            @updateSnippet={{@updateSnippet}}
+            @deleteSnippet={{@deleteSnippet}}
+            @cardOptions={{@cardOptions}}
+            @postType={{@postType}}
+        />
+    </div>
+</div>

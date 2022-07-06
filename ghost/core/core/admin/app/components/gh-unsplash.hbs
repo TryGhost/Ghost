@@ -1,0 +1,96 @@
+{{#in-element (query-selector "#unsplash-selector-wormhole")}}
+    {{!-- TODO: why does this modal background not cover the PSM without style override? --}}
+    <div class="fullscreen-modal-background" role="button" {{on "click" @close}} style="z-index: 999"></div>
+    <div
+        class="absolute top-8 right-8 bottom-8 left-8 br4 overflow-hidden bg-white z-9999"
+        {{on-resize this.handleResize}}
+        {{on-key "Escape" this.handleEscape}}
+    >
+        {{!-- close button --}}
+        <button type="button" class="absolute top-6 right-6" {{on "click" @close}}>
+            {{svg-jar "close" class="w4 stroke-midlightgrey-l2"}}
+        </button>
+
+        <div class="flex flex-column h-100">
+            {{!-- static header --}}
+            <header class="flex-shrink-0 flex flex-row-l flex-column justify-between pt6 pr8 pb6 pl8 pt10-l pr20-l pb10-l pl20-l items-center">
+                <h1 class="flex items-center darkgrey-d2 w-100 nudge-top--4">
+                    <a class="dib w8 mr2" href="https://unsplash.com/?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit" target="_blank" rel="noopener noreferrer">{{svg-jar "unsplash" class="fill-darkgrey-d2"}}</a>
+                    Unsplash
+                </h1>
+                <span class="gh-input-icon mw88-l flex-auto w-100 mt3 mt0-l">
+                    {{svg-jar "search"}}
+                    <input
+                        type="text"
+                        class="gh-unsplash-search"
+                        name="searchKeyword"
+                        placeholder="Search free high-resolution photos"
+                        tabindex="0"
+                        autocorrect="off"
+                        value={{readonly this.unsplash.searchTerm}}
+                        aria-label="Search Unsplash photos"
+                        {{on "input" this.search}}
+                        {{on-key "Escape" this.clearSearch}}
+                        {{autofocus}}
+                    />
+                </span>
+            </header>
+
+            {{!-- content container --}}
+            <div class="relative h-100 overflow-hidden">
+                {{!-- scrollable image container --}}
+                <div class="overflow-auto h-100 w-100 pr8 pl8 pr20-l pl20-l">
+                    {{#if this.unsplash.photos}}
+                        <section class="gh-unsplash-grid">
+                            {{#each this.unsplash.columns as |photos|}}
+                                <div class="gh-unsplash-grid-column">
+                                    {{#each photos as |photo|}}
+                                        <GhUnsplashPhoto @photo={{photo}} @zoom={{this.zoomPhoto}} @select={{this.select}} />
+                                    {{/each}}
+                                </div>
+                            {{/each}}
+                        </section>
+                    {{else if (and this.unsplash.searchTerm (not this.unsplash.error this.unsplash.isLoading))}}
+                        <section class="gh-unsplash-error h-100 flex items-center justify-center pb30">
+                            <div>
+                                <img class="gh-unsplash-error-404" src="assets/img/unsplash-404.png" alt="No photos found" />
+                                <h4>No photos found for '{{this.unsplash.searchTerm}}'</h4>
+                            </div>
+                        </section>
+                    {{/if}}
+
+                    {{#if this.unsplash.error}}
+                        {{!-- TODO: add better error styles? --}}
+                        <section class="gh-unsplash-error h-100 flex items-center justify-center pb30">
+                            <div>
+                                <img class="gh-unsplash-error-404" src="assets/img/unsplash-404.png" alt="Network error" />
+                                <h4>{{this.unsplash.error}} (<a href="#" {{on "click" this.retry}}>retry</a>)</h4>
+                            </div>
+                        </section>
+                    {{/if}}
+
+                    {{#if this.unsplash.isLoading}}
+                        <div class="gh-unsplash-loading h-100 flex items-center justify-center pb30">
+                            <div class="gh-loading-spinner"></div>
+                        </div>
+                    {{/if}}
+
+                    <GhScrollTrigger
+                        @enter={{this.loadNextPage}}
+                        @triggerOffset={{1000}} />
+                </div>
+
+                {{!-- zoomed image overlay --}}
+                {{#if this.zoomedPhoto}}
+                    <a href="#" class="absolute flex justify-center top-0 right-0 bottom-0 left-0 pr20 pb10 pl20 bg-white overflow-hidden" {{on "click" this.closeZoom}}>
+                        <GhUnsplashPhoto
+                            @photo={{this.zoomedPhoto}}
+                            @zoomed={{true}}
+                            @zoom={{this.closeZoom}}
+                            @select={{this.select}} />
+                    </a>
+                {{/if}}
+            </div>
+        </div>
+    </div>
+{{/in-element}}

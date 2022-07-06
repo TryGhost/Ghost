@@ -1,0 +1,13 @@
+<header class="modal-header">
+    <h1>Would you really like to delete all content from your blog?</h1>
+</header>
+<a class="close" href="" role="button" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
+
+<div class="modal-body">
+    <p>This is permanent! No backups, no restores, no magic undo button. We warned you, k?</p>
+</div>
+
+<div class="modal-footer">
+    <button class="gh-btn" type="button" {{action "closeModal"}}><span>Cancel</span></button>
+    <GhTaskButton @buttonText="Delete" @successText="Deleted" @task={{this.deleteAll}} @class="gh-btn gh-btn-red gh-btn-icon" />
+</div>

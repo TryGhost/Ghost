@@ -1,0 +1,542 @@
+/* Content /ghost/
+
+/* Header
+/* ---------------------------------------------------------- */
+
+.gh-contentfilter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 24px;
+    padding: 0;
+    list-style: none;
+}
+
+.gh-contentfilter li {
+    position: relative;
+    display: inline-block;
+    margin: 0 25px 0 0;
+}
+
+.gh-contentfilter li.active:after {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 1px;
+    background: var(--darkgrey);
+    position: absolute;
+    top: -1px;
+    opacity: 0.5;
+}
+
+.gh-contentfilter li a {
+    display: block;
+    padding: 13px 1px 0;
+    color: color-mod(var(--midgrey) l(+8%));
+    font-size: 1.5rem;
+    font-weight: 400;
+    letter-spacing: 0.3px;
+}
+
+.gh-contentfilter a.active {
+    font-weight: 500;
+    color: var(--darkgrey);
+}
+
+.gh-contentfilter-menu-trigger,
+.gh-contentfilter-menu-trigger:focus,
+.gh-contentfilter-menu-trigger--active {
+    background: var(--white);
+    font-size: 1.35rem;
+    font-weight: 400;
+    color: var(--darkgrey);
+    letter-spacing: 0.2px;
+    height: 34px;
+    padding: 6px 12px 6px;
+    margin-right: 8px;
+    outline: none;
+    border: none;
+    border-radius: 2px !important;
+    white-space: nowrap;
+    transition: all 0.25s ease;
+    overflow: hidden;
+}
+
+.gh-contentfilter-menu-trigger:hover {
+    cursor: pointer;
+    color: var(--darkgrey);
+    background: var(--whitegrey);
+}
+
+.gh-contentfilter-selected .gh-contentfilter-menu-trigger,
+.gh-contentfilter-selected .gh-contentfilter-menu-trigger:hover {
+    font-weight: 600;
+    background: var(--whitegrey-l1);
+}
+
+.gh-contentfilter-selected:not(.no-highlight) .gh-contentfilter-menu-trigger,
+.gh-contentfilter-selected:not(.no-highlight) .gh-contentfilter-menu-trigger:hover {
+    color: var(--green)
+}
+
+.gh-canvas-header.grey .gh-contentfilter-menu-trigger,
+.gh-canvas-header.grey .gh-contentfilter-menu-trigger:focus,
+.gh-canvas-header.grey .gh-contentfilter-menu-trigger--active {
+    background: var(--main-color-content-greybg);
+}
+
+.gh-contentfilter-menu-trigger svg path {
+    stroke: var(--black);
+}
+
+.gh-btn-save-view svg {
+    margin-top: 3px !important;
+}
+
+.gh-contentfilter .ember-power-select-selected-item,
+.gh-contentfilter .ember-power-select-placeholder {
+    margin-left: 0;
+}
+
+.gh-contentfilter-menu-dropdown {
+    width: 180px;
+    margin-top: 6px;
+    padding: 6px 0;
+    border: none !important;
+    font-size: 1.35rem;
+    box-shadow: 0 0 0 1px rgba(0,0,0,.04), 0 7px 20px -5px rgba(0,0,0,.15);
+    border-radius: 5px !important;
+}
+
+.gh-contentfilter-menu-dropdown .ember-power-select-search input {
+    display: block !important;
+    margin: 0 14px !important;
+    border-bottom: 1px solid var(--lightgrey) !important;
+    width: calc(100% - 28px) !important;
+}
+
+.gh-contentfilter-menu-dropdown .ember-power-select-option {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.gh-contentfilter-sort .gh-contentfilter-menu-trigger .ember-power-select-selected-item::before {
+    content: "Sort by: ";
+}
+
+.gh-contentfilter-actions svg {
+    width: 18px;
+    height: 18px;
+    margin: 2px 0 0;
+    color: var(--black);
+}
+
+.gh-contentfilter-actions svg g {
+    stroke: var(--black);
+}
+
+.gh-contentfilter-button {
+    display: flex;
+    height: 33px;
+    line-height: 33px;
+    background: color-mod(var(--whitegrey-l1) l(-3%));
+}
+
+
+/* Content List
+/* ---------------------------------------------------------- */
+
+.content-list {
+    position: relative;
+}
+
+.gh-posts-list-item {
+    position: relative;
+}
+
+.gh-posts-list-item a:hover {
+    text-decoration: none;
+}
+
+.content-list .gh-list-header.no-padding {
+    padding: 0 !important;
+}
+
+.gh-posts-title-header {
+    padding-left: 10px;
+}
+
+.gh-posts-sends-header,
+.gh-posts-opens-header {
+    width: 120px;
+}
+
+.gh-posts-status-header {
+    width: 140px;
+}
+
+.gh-post-list-title {
+    padding-left: 10px;
+}
+
+.gh-post-list-external {
+    width: 13px;
+    height: 13px;
+    margin-left: 6px;
+    opacity: 0;
+}
+
+.gh-post-list-external path {
+    fill: var(--midgrey);
+}
+
+.gh-list-row:hover .gh-post-list-external {
+    opacity: 1;
+}
+
+.gh-post-list-featured {
+    padding: 15px 0px 20px 10px;
+    width: 1px;
+    vertical-align: top;
+}
+
+.gh-post-list-updated,
+.gh-post-list-author,
+.gh-post-list-recipients,
+.gh-post-list-opens {
+    color: var(--middarkgrey);
+    font-size: 1.3rem;
+}
+
+.gh-content-entry-title {
+    display: flex;
+    align-items: center;
+    margin: 0 0 3px 0;
+    font-size: 1.6rem !important;
+    font-weight: 600;
+}
+
+.gh-content-entry-title a {
+    color: var(--darkgrey);
+}
+
+.gh-posts-list-item p {
+    margin: 2px 0 0;
+    font-size: 1.3rem;
+    overflow-wrap: break-word;
+    color: var(--middarkgrey);
+}
+
+.gh-schedule-plan {
+    color: var(--green-d1);
+}
+
+.gh-schedule-subtext {
+    max-width: 200px;
+}
+
+.gh-content-entry-meta {
+    margin: 4px 0 0 0;
+    font-size: 1.3rem;
+    color: var(--midlightgrey);
+}
+
+.gh-content-entry-meta .gh-badge {
+    margin-right: 3px;
+}
+
+.gh-content-email-stats-mobile {
+    display: none;
+}
+
+.gh-content-status-draft,
+.gh-content-status-published,
+.gh-content-status-scheduled,
+.gh-content-status-emailed {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 20px;
+    padding: 0 9px;
+}
+
+.gh-content-status-published {
+    color: var(--midgrey-d1);
+    background: var(--whitegrey);
+    border-radius: 999px;
+    text-transform: uppercase;
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+.gh-content-status-featured {
+    color: var(--blue);
+    text-transform: uppercase;
+    font-size: 1.2rem;
+    font-weight: 500;
+    padding: 0 3px 0 0;
+}
+
+.gh-content-status-featured svg {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-left: -4px;
+}
+
+.gh-content-status-featured svg path {
+    fill: var(--blue);
+}
+
+.gh-content-status-emailed {
+    margin: 0px 6px;
+    color: var(--midgrey-d1);
+    background: var(--whitegrey);
+    border-radius: 999px;
+}
+
+.gh-content-status-emailed svg,
+.gh-content-status-published svg,
+.gh-content-status-scheduled svg {
+    width: 12px;
+    height: 12px;
+}
+
+.gh-content-status-emailed svg path,
+.gh-content-status-published svg path {
+    stroke: var(--midgrey-d1);
+    stroke-width: 2;
+}
+
+.gh-content-status-scheduled svg path {
+    stroke: var(--green-d2);
+    stroke-width: 2;
+}
+
+.gh-content-status-published svg,
+.gh-content-status-scheduled svg {
+    margin-left: 6px;
+}
+
+.gh-content-status-emailed.error {
+    background: color-mod(var(--red) a(10%));
+}
+
+.gh-content-status-emailed.scheduled {
+    background: color-mod(var(--green) a(20%));
+}
+
+.gh-content-entry-author {
+    color: var(--middarkgrey);
+}
+
+.gh-posts-placeholder {
+    width: 60px;
+    fill: var(--lightgrey);
+}
+
+.gh-pages-placeholder {
+    width: 60px;
+    fill: var(--lightgrey);
+}
+
+.gh-post-list-email {
+    padding: 0 15px 2px;
+    width: 1px;
+}
+
+/* Mobile style of post list */
+@media (max-width: 1000px) {
+    .gh-posts-list-item {
+        display: flex;
+        flex-wrap: wrap;
+        border-bottom: 1px solid var(--whitegrey);
+        margin: 0;
+    }
+
+    .gh-posts-list-item:nth-of-type(2) {
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+    }
+
+    .gh-posts-list-item:hover {
+        background: var(--whitegrey-l2);
+    }
+
+    .gh-posts-list-item:hover .gh-list-data {
+        background: none !important;
+    }
+
+    .gh-post-list-featured {
+        display: block;
+        order: 1;
+        border-bottom: none;
+        position: absolute;
+        left: -6px;
+        top: 4px;
+        border: none;
+    }
+
+    .gh-post-list-title {
+        display: block;
+        order: 2;
+        flex: 1 1 100%;
+        border: none;
+        padding: 20px 28px 4px;
+    }
+
+    .gh-post-list-status,
+    .gh-post-list-recipients,
+    .gh-post-list-opens {
+        display: inline-block;
+        border: none;
+        padding: 0 4px 20px 0;
+        font-size: 1.3rem;
+        max-width: 140px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .gh-post-list-status {
+        order: 3;
+    }
+
+    .gh-post-list-recipients {
+        order: 4;
+    }
+
+    .gh-post-list-opens {
+        order: 5;
+    }
+
+    .gh-post-list-updated {
+        display: inline-block;
+        order: 6;
+        border: none;
+        padding: 0 4px 20px;
+        font-size: 1.3rem;
+        max-width: calc((100% - 140px) * 1/4);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .gh-post-list-author {
+        display: inline-block;
+        order: 7;
+        border: none;
+        padding: 0 4px 20px 0;
+        font-size: 1.3rem;
+        max-width: calc((100% - 140px) * 3/4);;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .gh-post-list-author:before {
+        content: "- by";
+    }
+
+    .gh-post-headers,
+    .gh-post-list-actions {
+        display: none;
+    }
+
+    .gh-content-email-stats {
+        display: none;
+    }
+
+    .gh-content-email-stats-mobile {
+        display: inherit;
+    }
+}
+
+@media (max-width: 800px) {
+    .post-header {
+        left: 0;
+    }
+
+    .post-header .gh-canvas-title {
+        left: 25px;
+    }
+
+    .gh-post-list-updated {
+        display: none;
+    }
+
+    .gh-post-list-author {
+        max-width: calc(100% - 140px);
+    }
+}
+
+@media (max-width: 430px) {
+    .post-header .view-actions .gh-contentfilter {
+        border-right: 1px solid var(--whitegrey-d1);
+    }
+
+    .gh-contentfilter-menu:last-of-type {
+        padding-right: 8px;
+    }
+}
+
+@media (min-width: 901px) {
+    .gh-posts-list-item a:after {
+        display: none;
+    }
+}
+
+
+/* Empty State
+/* ---------------------------------------------------------- */
+.no-posts {
+    background: none;
+    box-shadow: none;
+    border: none !important;
+}
+
+.no-posts + .infinity-loader {
+    padding: 0 !important;
+}
+
+.no-posts-box {
+    position: relative;
+    z-index: 600;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+    padding: 0 0 24px;
+    height: calc(100vh - 200px);
+}
+
+.no-posts-box .no-posts {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: -32px;
+}
+
+.no-posts-box .no-posts h4 {
+    margin: 32px 0;
+}
+
+
+/* Keyboard Focus Effects
+/* ---------------------------------------------------------- */
+
+
+/* This has to be a pseudo element to sit over the top of everything else in the content list */
+.tag-list-content.keyboard-focused:before,
+.tag-settings.keyboard-focused:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 500;
+    animation: keyboard-focus-style-fade-out 1.5s 1 forwards;
+    pointer-events: none;
+}

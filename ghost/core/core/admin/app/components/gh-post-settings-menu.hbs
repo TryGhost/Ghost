@@ -1,0 +1,447 @@
+<div
+    class="settings-menu-container {{if (and this.isViewingSubview (not (eq this.subview "email-settings"))) "settings-menu-container-wide"}}"
+    {{did-insert this.setSidebarWidthFromElement}}
+    {{did-update this.setSidebarWidthFromElement this.isViewingSubview}}
+>
+    <div id="entry-controls">
+        <div class="settings-menu settings-menu-pane settings-menu-pane-main">
+            <div class="settings-menu-header">
+                <h4>{{capitalize this.post.displayName}} settings</h4>
+            </div>
+            <div class="settings-menu-content">
+                <form>
+                <div class="form-group">
+                    <label for="url">{{capitalize this.post.displayName}} URL</label>
+                    {{!-- new posts don't have a preview link --}}
+                    {{#unless this.post.isNew}}
+                        {{#if (or this.post.isPublished this.post.isSent)}}
+                        <a class="post-view-link" target="_blank" href="{{this.post.url}}" rel="noopener noreferrer">
+                            View {{this.post.displayName}} {{svg-jar "external"}}
+                        </a>
+                        {{else if this.post.isScheduled}}
+                        <a class="post-view-link" target="_blank" href="{{this.post.previewUrl}}" rel="noopener noreferrer">
+                            Preview {{svg-jar "external"}}
+                        </a>
+                        {{/if}}
+                    {{/unless}}
+
+                    <div class="gh-input-icon gh-icon-link">
+                        {{svg-jar "link"}}
+                        <GhTextInput
+                            @class="post-setting-slug"
+                            @id="url"
+                            @name="post-setting-slug"
+                            @value={{readonly this.slugValue}}
+                            @input={{action (mut this.slugValue) value="target.value"}}
+                            @focus-out={{action "updateSlug" this.slugValue}}
+                            @stopEnterKeyDownPropagation={{true}} />
+                    </div>
+                    {{#if this.post.isSent}}
+                        <GhUrlPreview @prefix="email" @slug={{this.uuidValue}} @tagName="p" @classNames="description" />
+                    {{else}}
+                        <GhUrlPreview @slug={{this.slugValue}} @tagName="p" @classNames="description" />
+                    {{/if}}
+                </div>
+
+                <div class="form-group">
+                    {{#if (or this.post.isDraft this.post.isPublished this.post.pastScheduledTime this.post.isSent)}}
+                        <label>Publish date</label>
+                    {{else}}
+                        <label>Scheduled date</label>
+                    {{/if}}
+                    <GhDateTimePicker
+                        @date={{this.post.publishedAtBlogDate}}
+                        @time={{this.post.publishedAtBlogTime}}
+                        @setDate={{action "setPublishedAtBlogDate"}}
+                        @setTime={{action "setPublishedAtBlogTime"}}
+                        @errors={{this.post.errors}}
+                        @dateErrorProperty="publishedAtBlogDate"
+                        @timeErrorProperty="publishedAtBlogTime"
+                        @maxDate="now"
+                        @disabled={{this.post.isScheduled}}
+                        @isActive={{not this.isViewingSubview}}
+                    />
+                    {{#unless (or this.post.isDraft this.post.isPublished this.post.pastScheduledTime this.post.isSent)}}
+                    <p>Use the publish menu to re-schedule</p>
+                    {{/unless}}
+                </div>
+
+                {{#unless this.session.user.isContributor}}
+                <div class="form-group">
+                    <label for="tag-input">Tags</label>
+                    <GhPsmTagsInput @post={{this.post}} @triggerId="tag-input" />
+                </div>
+                {{/unless}}
+
+                {{#if this.showVisibilityInput}}
+                    <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="visibility">
+                        <label for="visibility-input">{{capitalize @post.displayName}} access</label>
+                        <GhPsmVisibilityInput @post={{this.post}} @triggerId="visibility-input" />
+                    </GhFormGroup>
+
+                    {{#if (eq this.post.visibility "tiers")}}
+                        <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="tiers" @class="nt3">
+                            <GhPostSettingsMenu::VisibilitySegmentSelect
+                                @tiers={{this.post.tiers}}
+                                @onChange={{action "setVisibility"}}
+                                @renderInPlace={{true}}
+                                @hideOptionsWhenAllSelected={{true}}
+                            />
+                            <GhErrorMessage @errors={{this.post.errors}} @property="tiers" data-test-error="tiers" />
+                        </GhFormGroup>
+                    {{/if}}
+                {{/if}}
+
+
+                <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="customExcerpt">
+                    <label for="custom-excerpt">Excerpt</label>
+                    <GhTextarea
+                        @class="post-setting-custom-excerpt"
+                        @id="custom-excerpt"
+                        @name="post-setting-custom-excerpt"
+                        @value={{readonly this.customExcerptScratch}}
+                        @input={{action (mut this.customExcerptScratch) value="target.value"}}
+                        @focus-out={{action "setCustomExcerpt" this.customExcerptScratch}}
+                        @stopEnterKeyDownPropagation="true"
+                        data-test-field="custom-excerpt"
+                    />
+                    <GhErrorMessage @errors={{this.post.errors}} @property="customExcerpt" data-test-error="custom-excerpt" />
+                </GhFormGroup>
+
+                {{#unless this.session.user.isAuthorOrContributor}}
+                    <GhFormGroup @class="for-select" @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="authors" data-test-input="authors">
+                        <label for="author-list">Authors</label>
+                        <GhPsmAuthorsInput @selectedAuthors={{this.post.authors}} @updateAuthors={{action "changeAuthors"}} @triggerId="author-list" />
+                        <GhErrorMessage @errors={{this.post.errors}} @property="authors" data-test-error="authors" />
+                    </GhFormGroup>
+                {{/unless}}
+
+                <ul class="nav-list nav-list-block">
+                    <li class="nav-list-item">
+                        <button type="button" {{action "showSubview" "meta-data"}} data-test-button="meta-data">
+                            <b>Meta data</b>
+                            <span>Extra content for search engines</span>
+                        </button>
+                        {{svg-jar "arrow-right"}}
+                    </li>
+                    <li class="nav-list-item">
+                        <button type="button"  {{action "showSubview" "twitter-data"}} data-test-button="twitter-data">
+                            <b>Twitter card</b>
+                            <span>Customize structured data for Twitter</span>
+                        </button>
+                        {{svg-jar "arrow-right"}}
+                    </li>
+                    <li class="nav-list-item">
+                        <button type="button" {{action "showSubview" "facebook-data"}} data-test-button="facebook-data">
+                            <b>Facebook card</b>
+                            <span>Customize Open Graph data</span>
+                        </button>
+                        {{svg-jar "arrow-right"}}
+                    </li>
+                    {{#if (and this.post.isPost this.showEmailNewsletter (not-eq this.settings.membersSignupAccess "none") (not-eq this.settings.editorDefaultEmailRecipients "disabled"))}}
+                        <li class="nav-list-item">
+                            <button type="button" {{action "showSubview" "email-settings"}} data-test-button="email-settings">
+                                <b>Email newsletter</b>
+                                <span>Customize email settings</span>
+                            </button>
+                            {{svg-jar "arrow-right"}}
+                        </li>
+                    {{/if}}
+                    <li class="nav-list-item">
+                        <button type="button" {{action "showSubview" "codeinjection"}} data-test-button="codeinjection">
+                            <b>Code injection</b>
+                            <span>Add styles/scripts to the header &amp; footer</span>
+                        </button>
+                        {{svg-jar "arrow-right"}}
+                    </li>
+                </ul>
+
+                {{#unless this.session.user.isAuthorOrContributor}}
+                <div class="form-group for-checkbox">
+                    <label class="checkbox" for="featured" {{action "toggleFeatured" bubbles="false"}}>
+                        <input
+                            type="checkbox"
+                            checked={{this.post.featured}}
+                            class="gh-input post-settings-featured"
+                            onclick={{action (mut this.post.featured) value="target.checked"}}
+                            data-test-checkbox="featured"
+                        >
+                        <span class="input-toggle-component"></span>
+                        <p>Feature this {{this.post.displayName}}</p>
+                    </label>
+                </div>
+                {{/unless}}
+
+                <GhPsmTemplateSelect
+                    @post={{this.post}}
+                    @onTemplateSelect={{action (mut this.post.customTemplate)}} />
+
+                {{#unless this.post.isNew}}
+                    <button type="button" class="gh-btn gh-btn-hover-red gh-btn-icon settings-menu-delete-button" {{action "deletePostInternal"}}><span>{{svg-jar "trash"}} Delete {{this.post.displayName}}</span></button>
+                {{/unless}}
+
+                </form>
+            </div>{{! .settings-menu-content }}
+        </div>{{! .post-settings-menu }}
+
+        {{#if this.isViewingSubview}}
+        <div class="settings-menu settings-menu-pane {{unless (eq this.subview "email-settings") "settings-menu-pane-wide"}}">
+            <div class="active">
+                    {{#if (eq this.subview "meta-data")}}
+                        <div class="settings-menu-header subview">
+                            <button aria-label="Back" class="back settings-menu-header-action" data-test-button="close-psm-subview" type="button" {{action "closeSubview"}}>{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
+                            <h4>Meta data</h4>
+                            <div style="width:23px;"></div>
+                        </div>
+
+                        <div class="settings-menu-content">
+                            <form {{action "discardEnter" on="submit"}}>
+                                <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="metaTitle">
+                                    <label for="meta-title">Meta title</label>
+                                    <GhTextInput
+                                        @class="post-setting-meta-title"
+                                        @id="meta-title"
+                                        @name="post-setting-meta-title"
+                                        @placeholder={{this.seoTitle}}
+                                        @value={{readonly this.metaTitleScratch}}
+                                        @input={{action (mut this.metaTitleScratch) value="target.value"}}
+                                        @focus-out={{action "setMetaTitle" this.metaTitleScratch}}
+                                        @stopEnterKeyDownPropagation={{true}}
+                                        data-test-field="meta-title" />
+                                    <p>Recommended: <b>60</b> characters. You’ve used {{gh-count-down-characters this.metaTitleScratch 60}}</p>
+                                    <GhErrorMessage @errors={{this.post.errors}} @property="meta-title" />
+                                </GhFormGroup>
+
+                                <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="metaDescription">
+                                    <label for="meta-description">Meta description</label>
+                                    <GhTextarea
+                                        @class="post-setting-meta-description"
+                                        @id="meta-description"
+                                        @name="post-setting-meta-description"
+                                        @placeholder={{truncate this.seoDescription 150}}
+                                        @value={{readonly this.metaDescriptionScratch}}
+                                        @input={{action (mut this.metaDescriptionScratch) value="target.value"}}
+                                        @focus-out={{action "setMetaDescription" this.metaDescriptionScratch}}
+                                        @stopEnterKeyDownPropagation="true"
+                                        data-test-field="meta-description" />
+                                    <p>Recommended: <b>145</b> characters. You’ve used {{gh-count-down-characters this.metaDescriptionScratch 145}}</p>
+                                    <GhErrorMessage @errors={{this.post.errors}} @property="meta-description" />
+                                </GhFormGroup>
+
+                                <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="canonicalUrl">
+                                    <label for="canonicalUrl">Canonical URL</label>
+                                    <GhTextInput
+                                        @class="post-setting-canonicalUrl"
+                                        @name="post-setting-canonicalUrl"
+                                        @value={{readonly this.canonicalUrlScratch}}
+                                        @input={{action (mut this.canonicalUrlScratch) value="target.value"}}
+                                        @focus-out={{action "setCanonicalUrl" this.canonicalUrlScratch}}
+                                        @stopEnterKeyDownPropagation="true"
+                                        data-test-field="canonicalUrl" />
+                                    <GhErrorMessage @errors={{this.post.errors}} @property="canonicalUrl" />
+                                </GhFormGroup>
+
+                                <div class="form-group">
+                                    <label>Search Engine Result Preview</label>
+                                    <div class="gh-seo-container">
+                                        <div class="gh-seo-preview">
+                                            <div class="flex mb7">
+                                                {{svg-jar "google"}}
+                                                <div class="gh-seo-search-bar">{{svg-jar "google-search"}}</div>
+                                            </div>
+                                            <div class="gh-seo-preview-link">{{this.seoURL}}</div>
+                                            <div class="gh-seo-preview-title">{{truncate this.seoTitle 60}}</div>
+                                            <div class="gh-seo-preview-desc">{{moment-format (now) "DD MMM YYYY"}} — {{truncate this.seoDescription 149}}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    {{/if}}
+
+                    {{#if (eq this.subview "twitter-data")}}
+                        <div class="settings-menu-header subview">
+                            <button aria-label="Back" class="back settings-menu-header-action" data-test-button="close-psm-subview" type="button" {{action "closeSubview"}}>{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
+                            <h4>Twitter card</h4>
+                            <div style="width:23px;"></div>
+                        </div>
+
+                        <div class="settings-menu-content">
+
+                            <form {{action "discardEnter" on="submit"}}>
+                                <GhImageUploaderWithPreview
+                                    @image={{this.post.twitterImage}}
+                                    @text="Add Twitter image"
+                                    @allowUnsplash={{true}}
+                                    @update={{action "setTwitterImage"}}
+                                    @remove={{action "clearTwitterImage"}}
+                                />
+                                <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="twitterTitle">
+                                    <label for="twitter-title">Twitter title</label>
+                                    <GhTextInput
+                                        @class="post-setting-twitter-title"
+                                        @id="twitter-title"
+                                        @name="post-setting-twitter-title"
+                                        @placeholder={{truncate this.twitterTitle 40}}
+                                        @value={{readonly this.twitterTitleScratch}}
+                                        @input={{action (mut this.twitterTitleScratch) value="target.value"}}
+                                        @focus-out={{action "setTwitterTitle" this.twitterTitleScratch}}
+                                        @stopEnterKeyDownPropagation={{true}}
+                                        data-test-field="twitter-title" />
+                                    <GhErrorMessage @errors={{this.post.errors}} @property="twitterTitle" data-test-error="twitter-title" />
+                                </GhFormGroup>
+
+                                <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="twitterDescription">
+                                    <label for="twitter-description">Twitter description</label>
+                                    <GhTextarea
+                                        @class="post-setting-twitter-description"
+                                        @id="twitter-description"
+                                        @name="post-setting-twitter-description"
+                                        @placeholder={{truncate this.twitterDescription 150}}
+                                        @stopEnterKeyDownPropagation="true"
+                                        @value={{readonly this.twitterDescriptionScratch}}
+                                        @input={{action (mut this.twitterDescriptionScratch) value="target.value"}}
+                                        @focus-out={{action "setTwitterDescription" this.twitterDescriptionScratch}}
+                                        data-test-field="twitter-description" />
+                                    <GhErrorMessage @errors={{this.post.errors}} @property="twitterDescription" data-test-error="twitter-description" />
+                                </GhFormGroup>
+
+                                <div class="form-group">
+                                    <label>Twitter preview</label>
+                                    <div class="gh-social-twitter-post-preview">
+                                        {{#if this.twitterImage}}
+                                            <div class="gh-social-twitter-preview-image" style={{background-image-style this.twitterImage}}></div>
+                                        {{/if}}
+                                        <div class="gh-social-twitter-preview-content">
+                                            <div class="gh-social-twitter-preview-title">{{this.twitterTitle}}</div>
+                                            <div class="gh-social-twitter-preview-desc">{{truncate this.twitterDescription}}</div>
+                                            <div class="gh-social-twitter-preview-meta">
+                                                {{svg-jar "twitter-link"}}
+                                                {{this.config.blogDomain}}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </form>
+                        </div>
+                    {{/if}}
+
+                    {{#if (eq this.subview "email-settings")}}
+                        <GhPostSettingsMenu::Email
+                            @post={{this.post}}
+                            @savePostTask={{this.savePostTask}}
+                            @close={{action "closeSubview"}}
+                        />
+                    {{/if}}
+
+                    {{#if (eq this.subview "facebook-data")}}
+                        <div class="settings-menu-header subview">
+                            <button aria-label="Back" class="back settings-menu-header-action" data-test-button="close-psm-subview" type="button" {{action "closeSubview"}}>{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
+                            <h4>Facebook card</h4>
+                            <div style="width:23px;"></div>
+                        </div>
+
+                        <div class="settings-menu-content">
+                            <form {{action "discardEnter" on="submit"}}>
+                                <GhImageUploaderWithPreview
+                                    @image={{this.post.ogImage}}
+                                    @text="Add Facebook image"
+                                    @allowUnsplash={{true}}
+                                    @update={{action "setOgImage"}}
+                                    @remove={{action "clearOgImage"}}
+                                />
+                                <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="ogTitle">
+                                    <label for="og-title">Facebook title</label>
+                                    <GhTextInput
+                                        @class="post-setting-og-title"
+                                        @id="og-title"
+                                        @name="post-setting-og-title"
+                                        @placeholder={{truncate this.facebookTitle 40}}
+                                        @value={{readonly this.ogTitleScratch}}
+                                        @input={{action (mut this.ogTitleScratch) value="target.value"}}
+                                        @focus-out={{action "setOgTitle" this.ogTitleScratch}}
+                                        @stopEnterKeyDownPropagation={{true}}
+                                        data-test-field="og-title" />
+                                    <GhErrorMessage @errors={{this.post.errors}} @property="ogTitle" data-test-error="og-title" />
+                                </GhFormGroup>
+
+                                <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="ogDescription">
+                                    <label for="og-description">Facebook description</label>
+                                    <GhTextarea
+                                        @class="post-setting-og-description"
+                                        @id="og-description" @name="post-setting-og-description"
+                                        @placeholder={{truncate this.facebookDescription 150}}
+                                        @value={{readonly this.ogDescriptionScratch}}
+                                        @input={{action (mut this.ogDescriptionScratch) value="target.value"}}
+                                        @focus-out={{action "setOgDescription" this.ogDescriptionScratch}}
+                                        @stopEnterKeyDownPropagation="true"
+                                        data-test-field="og-description" />
+                                    <GhErrorMessage @errors={{this.post.errors}} @property="ogDescription" data-test-error="og-description" />
+                                </GhFormGroup>
+
+                                <div class="form-group">
+                                    <label>Facebook preview</label>
+                                    <div class="gh-social-og-preview no-container">
+                                        {{#if this.facebookImage}}
+                                            <div class="gh-social-og-preview-image" style={{background-image-style this.facebookImage}}></div>
+                                        {{/if}}
+                                        <div class="gh-social-og-preview-bookmark">
+                                            {{!-- Ensures description is hidden if title exceeds one line --}}
+                                            <div class="gh-social-og-preview-content">
+                                                <div class="gh-social-og-preview-meta">
+                                                    {{this.config.blogDomain}}
+                                                </div>
+                                                <div class="gh-social-og-preview-title">{{truncate this.facebookTitle}}</div>
+                                                <div class="gh-social-og-preview-desc">{{truncate this.facebookDescription}}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </form>
+                        </div>
+                    {{/if}}
+
+                    {{#if (eq this.subview "codeinjection")}}
+                        <div class="settings-menu-header subview">
+                            <button aria-label="Back" class="back settings-menu-header-action" data-test-button="close-psm-subview" type="button" {{action "closeSubview"}}>{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
+                            <h4>Code injection</h4>
+                            <div style="width:23px;"></div>
+                        </div>
+
+                        <div class="settings-menu-content settings-menu-content-codeinjection">
+                            <form {{action "discardEnter" on="submit"}}>
+                                <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="codeinjectionHead">
+                                    <label for="codeinjection-head">{{capitalize this.post.displayName}} header <code>\{{ghost_head}}</code></label>
+                                    <GhCmEditor @value={{this.codeinjectionHeadScratch}}
+                                        @id="post-setting-codeinjection-head"
+                                        @class="post-setting-codeinjection"
+                                        @name="post-setting-codeinjection-head"
+                                        @focusOut={{action "setHeaderInjection" this.codeinjectionHeadScratch}}
+                                        @stopEnterKeyDownPropagation="true"
+                                        @update={{action (mut this.codeinjectionHeadScratch)}}
+                                        data-test-field="codeinjection-head" />
+                                    <GhErrorMessage @errors={{this.post.errors}} @property="codeinjectionHead" data-test-error="codeinjection-head" />
+                                </GhFormGroup>
+
+                                <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="codeinjectionFoot">
+                                    <label for="codeinjection-foot">{{capitalize this.post.displayName}} footer <code>\{{ghost_foot}}</code></label>
+                                    <GhCmEditor @value={{this.codeinjectionFootScratch}}
+                                        @id="post-setting-codeinjection-foot"
+                                        @class="post-setting-codeinjection"
+                                        @name="post-setting-codeinjection-foot"
+                                        @focusOut={{action "setFooterInjection" this.codeinjectionFootScratch}}
+                                        @stopEnterKeyDownPropagation="true"
+                                        @update={{action (mut this.codeinjectionFootScratch)}}
+                                        data-test-field="codeinjection-foot" />
+                                    <GhErrorMessage @errors={{this.post.errors}} @property="codeinjectionFoot" data-test-error="codeinjection-foot" />
+                                </GhFormGroup>
+                            </form>
+                        </div>
+                    {{/if}}
+            </div>
+        </div>
+        {{/if}}
+    </div>
+</div>

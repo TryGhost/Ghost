@@ -1,0 +1,5 @@
+<aside class="gh-alerts" ...attributes>
+    {{#each this.notifications.alerts as |message|}}
+        <GhAlert @message={{message}} />
+    {{/each}}
+</aside>

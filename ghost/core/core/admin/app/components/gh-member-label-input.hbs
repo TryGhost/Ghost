@@ -1,0 +1,32 @@
+<GhTokenInput
+    @extra={{hash
+        tokenComponent="gh-token-input/label-token"
+    }}
+    @class="gh-member-label-input"
+    @onChange={{this.updateLabels}}
+    @onCreate={{this.createLabel}}
+    @options={{this.availableLabels}}
+    @renderInPlace={{true}}
+    @selected={{this.selectedLabels}}
+    @showCreateWhen={{this.hideCreateOptionOnMatchingLabel}}
+    @triggerId={{this.triggerId}}
+    @selectedItemComponent="gh-token-input/label-selected-item"
+    @disabled={{@disabled}}
+    @allowCreation={{@allowCreation}}
+    as |label|
+>
+    <div style="display: flex">
+        <span
+            class="dropdown-label"
+            style="flex-grow: 1"
+            title="{{label.name}}"
+            data-test-label-filter={{label.name}}>
+            {{label.name}}
+        </span>
+        {{#if (and @allowEdit label.slug)}}
+            <button type="button" class="dropdown-action-icon" {{on "mouseup" (fn this.editLabel label)}} aria-label="Edit label {{label.name}}" data-test-edit-label={{label.name}}>
+                {{svg-jar "pen"}}
+            </button>
+        {{/if}}
+    </div>
+</GhTokenInput>

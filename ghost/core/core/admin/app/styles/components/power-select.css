@@ -1,0 +1,393 @@
+.ember-power-select-trigger {
+    padding: 0 16px 0 8px;
+    border: var(--input-border);
+    border-radius: var(--border-radius);
+    background: transparent;
+}
+
+.ember-power-select-trigger:focus, .ember-power-select-trigger--active {
+    border: var(--input-border);
+}
+
+.ember-power-select-trigger:not(.gh-setting-dropdown):not(.ember-power-select-multiple-trigger) svg {
+    height: 4px;
+    width: 6.11px;
+    margin-left: 2px;
+    margin-top: -2px;
+    vertical-align: middle;
+}
+
+.ember-power-select-trigger:not(.gh-setting-dropdown):not(.ember-power-select-multiple-trigger) svg path {
+    stroke: var(--darkgrey);
+}
+
+.ember-power-select-search {
+    padding: 2px 0 3px 0 !important;
+}
+
+.ember-power-select-selected-item {
+    margin-left: 0;
+}
+
+.ember-basic-dropdown--opened > .ember-power-select-trigger,
+.ember-power-select-trigger[aria-expanded="true"],
+.ember-power-select-search input {
+    outline: 0;
+    border-color: var(--input-border-color);
+}
+
+.ember-power-select-dropdown {
+    position: absolute;
+    z-index: 1000;
+    box-sizing: border-box;
+    margin: 0;
+    border: var(--input-border);
+    border-top: 0 none;
+    background: #fff;
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
+    box-shadow: 0 18px 45px -5px rgba(0, 0, 0, 0.15);
+}
+
+.ember-power-select-dropdown.ember-basic-dropdown-content--in-place {
+    padding: 4px 0;
+    border-bottom-color: color-mod(var(--whitegrey) a(70%) s(-10%));
+    border-top: 1px solid color-mod(var(--whitegrey) a(70%) s(-10%));
+}
+
+.ember-power-select-dropdown.ember-basic-dropdown-content--below {
+    border: 1px solid var(--input-border-color);
+    border-top: none;
+}
+
+.ember-power-select-dropdown.ember-basic-dropdown-content--above {
+    border-top: 1px solid var(--input-border-color);
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+.ember-power-select-option {
+    margin: 0;
+    padding: 6px 14px;
+    color: var(--darkgrey);
+}
+
+.ember-power-select-option[aria-current="true"] {
+    background: color-mod(var(--whitegrey) a(60%) s(-12%));
+    color: var(--darkgrey);
+}
+
+.ember-power-select-option[aria-selected="true"] {
+    color: var(--darkgrey);
+    font-weight: 700;
+    background: transparent;
+}
+
+.ember-power-select-options:not([role="group"]) {
+    max-height: 50vh;
+}
+
+.ember-power-select-options li {
+    margin-bottom: 0;
+}
+
+.ember-power-select-search input {
+    display: inline-block !important;
+    margin: 0 1px !important;
+    padding: 0 !important;
+    min-height: 0 !important;
+    height: 27px;
+    width: calc(100% - 8px) !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    border: 0 none !important;
+    background: none !important;
+    box-shadow: none !important;
+    text-indent: 0 !important;
+    font-size: 1.4rem;
+    font-weight: 400;
+    line-height: inherit !important;
+}
+
+.ember-power-select-group {
+    float: left;
+    box-sizing: border-box;
+    width: 100%;
+    border-top: 0 none;
+}
+
+.ember-power-select-group .ember-power-select-group-name {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    margin-top: 6px;
+    padding: 10px 12px 8px;
+    cursor: default;
+    border-top: 1px solid var(--list-color-divider);
+    text-transform: uppercase;
+    color: var(--midlightgrey);
+    white-space: nowrap;
+    letter-spacing: 0.1px;
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+@media (max-width: 900px) {
+    .ember-power-select-group .ember-power-select-group-name:after {
+        width: calc(524px - 100%);
+    }
+}
+
+@media (max-width: 600px) {
+    .ember-power-select-group .ember-power-select-group-name:after {
+        width: calc(80vw - 45px - 100%);
+    }
+}
+
+.ember-power-select-options .ember-power-select-group:first-child .ember-power-select-group-name {
+    border-top: none;
+}
+
+.ember-power-select-group:first-of-type .ember-power-select-group-name {
+    margin: 8px 0;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.ember-power-select-group:first-of-type .ember-power-select-group-name:after {
+    top: 66%;
+}
+
+.ember-power-select-group:last-of-type {
+    margin-bottom: 4px;
+}
+
+.ember-power-select-group .ember-power-select-option {
+    overflow: hidden;
+    padding: 7px 12px;
+    line-height: 1.35em;
+    cursor: pointer;
+    font-size: 1.4rem;
+}
+
+.ember-power-select-group .ember-power-select-option .highlight {
+    background: #fff6b8;
+    border-radius: 1px;
+    color: color-mod(var(--darkgrey) l(-10%));
+}
+
+.ember-power-select-group .ember-power-select-option[aria-current="true"] {
+    background: color-mod(var(--whitegrey) a(60%) s(-12%));
+    color: var(--darkgrey);
+}
+
+/* Reset - Useful for custom trigger components */
+.ember-power-select-trigger-reset {
+    padding: 0;
+    border: none;
+    border-radius: unset;
+    line-height: 0;
+    min-height: fit-content;
+}
+.ember-power-select-trigger-reset:focus,
+.ember-power-select-trigger-reset--active {
+    border: none;
+}
+
+
+/*
+    HACK: ember-power-select has no separate class for the loading message
+    Issue: https://github.com/cibernox/ember-power-select/issues/479
+ */
+.ember-power-select-option--no-matches-message {
+    padding: 7px 8px;
+    color: var(--midgrey);
+    font-size: 0.9em;
+}
+
+.ember-power-select-option[aria-current="true"] {
+
+}
+
+/* Multiple */
+.ember-power-select-multiple-trigger {
+    background: #fff;
+    padding: 4px;
+    border: var(--input-border);
+    border-radius: 3px;
+    outline: none;
+}
+
+.ember-power-select-multiple-option {
+    margin: 2px;
+    padding: 2px 6px 3px;
+    border-radius: 3px;
+    font-size: 0.93em;
+    font-weight: 500;
+    border: 1px solid transparent;
+    color: var(--darkgrey);
+    background: var(--whitegrey-d1);
+}
+
+.ember-power-select-multiple-remove-btn {
+    padding: 2px;
+}
+
+.ember-power-select-multiple-remove-btn:not(:hover) {
+    opacity: 1;
+}
+
+.ember-power-select-multiple-remove-btn svg {
+    width: 8px;
+    height: 8px;
+}
+
+.ember-power-select-multiple-remove-btn svg path {
+    stroke-width: 2px;
+    stroke: var(--black);
+    fill: var(--black);
+}
+
+.ember-power-select-trigger-multiple-input {
+    height: 24px;
+    margin: 2px;
+}
+
+.ember-power-select-status-icon {
+    top: -4px;
+    right: 13px;
+    border: solid var(--midlightgrey);
+    border-width: 0 1px 1px 0;
+    padding: 3px;
+    transform: rotate(45deg);
+}
+
+.ember-basic-dropdown-trigger[aria-expanded="true"] .ember-power-select-status-icon {
+    transform: rotate(45deg);
+}
+
+/* Token input */
+.gh-token-input .ember-power-select-options {
+    max-height: 172px; /* 5.5 options */
+}
+
+/* Recipient Token input with groups */
+.gh-token-input.select-members-recipient .ember-power-select-options[role="group"] {
+    max-height: unset;
+}
+
+.ember-power-select-options[role="listbox"] {
+    overflow-x: hidden;
+}
+
+/* Tag input */
+
+.tag-token--internal {
+    background: var(--lightgrey-l1);
+    border: 1px solid var(--lightgrey-l1);
+    color: var(--black);
+}
+
+.tag-token--internal svg path {
+    stroke: var(--black);
+    fill: var(--black);
+}
+
+/* Segment input */
+
+.token-segment-status-free {
+    border: 1px solid var(--green-d1);
+    color: var(--white);
+    background: var(--green-d1);
+}
+
+.token-segment-status-paid {
+    border: 1px solid var(--pink-d1);
+    color: var(--white);
+    background: var(--pink-d1);
+}
+
+.token-segment-label {
+    border: 1px solid var(--whitegrey-d1);
+    color: var(--darkgrey);
+    background: var(--whitegrey-d1);
+}
+
+.token-segment-label svg path {
+    stroke: var(--middarkgrey);
+    fill: var(--middarkgrey);
+}
+
+.token-segment-tier {
+    background: var(--black);
+    color: var(--white);
+}
+
+.token-segment-status-free svg path,
+.token-segment-status-paid svg path,
+.token-segment-tier svg path {
+    stroke: var(--white);
+    fill: var(--white);
+}
+
+/* Inline input */
+.ember-power-select-inline {
+    display: inline-block;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-height: auto;
+    vertical-align: bottom;
+    font-weight: 600;
+    line-height: 1.6em;
+    cursor: pointer;
+}
+
+.ember-power-select-inline.ember-power-select-trigger--active,
+.ember-power-select-inline.ember-power-select-trigger:focus {
+    border: 0;
+}
+
+/* Input with power select */
+.gh-input-with-select-trigger.ember-power-select-trigger--active {
+    border-color: color-mod(var(--green)) !important;
+    box-shadow: inset 0 0 0 1px var(--green);
+}
+
+.gh-input-with-select-input {
+    border: none;
+    width: 100%;
+    line-height: normal;
+}
+
+.gh-input-with-select-input:active,
+.gh-input-with-select-input:focus {
+    border: none;
+    outline: 0;
+}
+
+.gh-snippet-dropdown {
+    margin-top: -1px;
+    border-top: 1px solid var(--input-border-color) !important;
+}
+
+.gh-snippet-dropdown li:not(.ember-power-select-group) {
+    padding: 8px 12px;
+}
+
+.gh-snippet-dropdown .ember-power-select-group-name {
+    margin-top: 0;
+}
+
+.gh-btn-create-snippet {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 2px 0;
+    color: var(--green-d1);
+    font-weight: 500;
+}
+
+.gh-btn-create-snippet svg {
+    width: 1.4rem;
+    height: 1.4rem;
+    fill: var(--green-d1)
+}

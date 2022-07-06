@@ -1,0 +1,882 @@
+/* Forms
+/* ---------------------------------------------------------- */
+
+form label {
+    display: block;
+    color: var(--black);
+    font-size: 1.3rem;
+    font-weight: 500;
+    user-select: text;
+}
+
+form .word-count {
+    font-weight: bold;
+}
+
+fieldset {
+    margin: 0 0 3em 0;
+    padding: 0;
+    border: none;
+    user-select: text;
+}
+
+legend {
+    display: block;
+    width: 100%;
+    margin: 2em 0;
+    border-bottom: color-mod(var(--lightgrey) l(-5%) s(-10%)) 1px solid;
+    color: var(--midgrey);
+    font-size: 1.2em;
+    line-height: 2.0em;
+    user-select: text;
+}
+
+input {
+    user-select: text;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    appearance: none;
+    margin: 0;
+    display: none;
+}
+
+
+input[type=number] {
+    appearance: textfield;
+}
+
+::-webkit-input-placeholder {
+    color: var(--midlightgrey);
+    font-weight: 400;
+}
+
+:-ms-input-placeholder {
+    color: var(--midlightgrey);
+    font-weight: 400;
+}
+
+::-moz-placeholder {
+    color: var(--midlightgrey);
+    font-weight: 400;
+    opacity: 1;
+}
+
+.error .response {
+    color: var(--red);
+}
+
+.disabled-overlay {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+.form-col2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-column-gap: 24px;
+}
+
+/* Form Groups
+/* ---------------------------------------------------------- */
+
+.form-group {
+    position: relative;
+    width: 100%;
+    max-width: 620px;
+    margin-bottom: 1.6em;
+    user-select: text;
+}
+
+.form-group.no-margin {
+    margin-bottom: 0;
+}
+
+.form-group.right {
+    text-align: right;
+}
+
+.form-group p {
+    margin: 4px 0 0 0;
+    color: var(--midgrey-d1);
+    font-size: 1.25rem;
+    font-weight: 400;
+}
+
+.form-group p.green {
+    color: var(--green);
+}
+
+.form-group h3 {
+    margin-bottom: 1.6em;
+    font-size: 1.5rem;
+}
+
+.form-group label {
+    margin-bottom: 4px;
+}
+
+.form-group.max-width {
+    max-width: 100%;
+}
+
+.form-group.pa5 {
+    max-width: 100%;
+    padding-left: calc(var(--grid-size) * 5);
+    padding-right: calc(var(--grid-size) * 5);
+}
+
+.form-group.mb0 {
+    margin-bottom: 0;
+}
+
+@media (max-width: 550px) {
+    .form-group {
+        max-width: 100%;
+    }
+}
+
+
+/* Input Icons
+/* ---------------------------------------------------------- */
+
+.gh-input svg {
+    position: absolute;
+    top: 50%;
+    right: 1.2rem;
+    left: inherit;
+    width: 12px;
+    height: 6px;
+    margin-top: -0.2em;
+    transform: inherit;
+    pointer-events: none;
+
+    speak: none;
+}
+
+.gh-input svg path {
+    stroke: var(--midlightgrey);
+}
+
+.gh-input-icon {
+    position: relative;
+    display: block;
+}
+
+.gh-input-icon svg {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    width: 14px;
+    height: 14px;
+    fill: color-mod(var(--lightgrey) l(-15%) s(-10%));
+    transform: translateY(-7px);
+}
+
+.gh-input-icon.gh-icon-link svg path {
+    stroke: color-mod(var(--lightgrey) l(-15%) s(-10%));
+}
+
+.gh-input-icon input {
+    padding-left: 35px;
+}
+
+.gh-input-icon .gh-select select {
+    padding-left: 35px;
+}
+
+/* Inputs
+/* ---------------------------------------------------------- */
+
+.gh-input,
+.gh-select,
+select {
+    display: block;
+    width: 100%;
+    height: 38px;
+    padding: 6px 12px;
+    border: var(--input-border);
+    background: var(--input-bg-color);
+    color: var(--darkgrey);
+    font-size: 1.5rem;
+    font-weight: 400;
+    user-select: text;
+    border-radius: var(--border-radius);
+
+    -webkit-appearance: none;
+}
+
+.gh-select,
+select {
+    cursor: pointer;
+}
+
+.gh-input.error,
+.error .gh-input,
+.error .gh-select select,
+.error .ember-power-select-multiple-trigger,
+.gh-select.error,
+.error .gh-input-append,
+select.error {
+    border-color: var(--red);
+}
+
+.gh-input:focus,
+.gh-input.focus {
+    outline: 0;
+    border-color: color-mod(var(--green)) !important;
+    box-shadow: inset 0 0 0 1px var(--green);
+    background: var(--white);
+}
+
+.error .gh-input:focus,
+.error .gh-input.focus {
+    border-color: color-mod(var(--red)) !important;
+    box-shadow: inset 0 0 0 1px var(--red);
+}
+
+.gh-select:focus,
+select:focus {
+    border-color: var(--lightgrey-d1);
+}
+
+textarea {
+    width: 100%;
+    height: auto;
+    min-width: 250px;
+    min-height: 10rem;
+    max-width: 500px;
+    line-height: 1.5em;
+    user-select: text;
+    resize: vertical;
+}
+
+.gh-input[disabled],
+.gh-select select[disabled] {
+    background: color-mod(var(--input-bg-color) l(-1%));
+    color: var(--midlightgrey-d2);
+    border-color: var(--whitegrey);
+    opacity: 1.0;
+}
+
+.gh-select select[disabled] {
+    cursor: auto;
+}
+
+.gh-input-percentage-label {
+    display: block;
+    content: "hello";
+    position: absolute;
+    right: 10px;
+    top: 6px;
+    font-size: 1.3rem;
+    color: var(--midgrey);
+}
+
+
+/* Radio / Checkboxes
+/* ---------------------------------------------------------- */
+
+.for-radio label,
+.for-checkbox label {
+    display: block;
+    padding-bottom: 4px;
+    cursor: pointer;
+}
+
+.for-radio label p,
+.for-checkbox label p {
+    overflow: auto;
+    color: var(--darkgrey);
+    font-weight: normal;
+}
+
+.for-radio input,
+.for-checkbox input {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    display: none;
+}
+
+.for-radio .input-toggle-component,
+.for-checkbox .input-toggle-component {
+    position: relative;
+    top: 1px;
+    display: inline-block;
+    float: left;
+    width: 18px;
+    height: 18px;
+    margin-right: 7px;
+    border: 1px solid color-mod(var(--lightgrey) l(-5%) s(-10%));
+    background: var(--lightgrey);
+}
+
+.for-checkbox label:hover input:not(:checked) + .input-toggle-component,
+.for-radio label:hover input:not(:checked) + .input-toggle-component {
+    border-color: color-mod(var(--lightgrey) l(-15%) s(-10%));
+}
+
+.for-checkbox .input-toggle-component {
+    border-color: var(--lightgrey);
+    background: var(--lightgrey);
+}
+
+.for-checkbox .input-toggle-component {
+    border-radius: 4px;
+}
+
+.for-checkbox .input-toggle-component {
+    transition: background 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+
+.for-checkbox .input-toggle-component:before {
+    content: "";
+    position: absolute;
+    top: 4px;
+    left: 3px;
+    width: 10px;
+    height: 6px;
+    border: 2px solid #fff;
+    border-top: none;
+    border-right: none;
+    opacity: 0;
+    transition: opacity 0.15s ease-in-out;
+    transform: rotate(-45deg);
+}
+
+.for-checkbox input:checked + .input-toggle-component {
+    border-color: var(--black);
+    background: var(--black);
+}
+
+.for-checkbox input:checked + .input-toggle-component:before {
+    opacity: 1;
+}
+
+.for-radio .input-toggle-component {
+    border-radius: 100px;
+}
+
+.for-radio .input-toggle-component {
+    transition: background 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+
+.for-radio .input-toggle-component:before {
+    content: "";
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 8px;
+    height: 8px;
+    background: #fff;
+    border-radius: 100%;
+    opacity: 0;
+    transition: opacity 0.15s ease-in-out;
+}
+
+.for-radio input:checked + .input-toggle-component {
+    border-color: color-mod(var(--green) lightness(-10%));
+    background: var(--green);
+}
+
+.for-radio input:checked + .input-toggle-component:before {
+    opacity: 1;
+}
+
+.gh-radio {
+    display: flex;
+    margin: 0 0 24px;
+}
+
+.gh-radio-button {
+    flex-shrink: 0;
+    position: relative;
+    width: 17px;
+    height: 17px;
+    border: color-mod(var(--lightgrey) l(-10%)) 1px solid;
+    border-radius: 100%;
+    background: #fff;
+}
+
+.gh-radio-content {
+    display: flex;
+    flex-direction: column;
+    margin: 0 0 0 15px;
+    width: 100%;
+}
+
+.gh-radio-label {
+    font-size: 1.4rem;
+    line-height: 1.2em;
+    font-weight: 600;
+}
+
+.gh-radio-desc {
+    margin: 4px 0 0;
+    color: var(--midgrey);
+    font-size: 1.3rem;
+    line-height: 1.2em;
+    font-weight: 400;
+}
+
+.gh-radio-label:hover,
+.gh-radio-button:hover {
+    cursor: pointer;
+}
+
+.gh-radio.active .gh-radio-button {
+    border-color: color-mod(var(--black) l(-12%));
+    background: var(--black);
+}
+
+.gh-radio.active .gh-radio-button:before {
+    display: block;
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 9px;
+    height: 9px;
+    background: var(--white);
+    border-radius: 100%;
+    box-shadow: rgba(0,0,0,0.25) 0 1px 3px;
+}
+
+
+.gh-radio-color {
+    position: relative;
+}
+
+.gh-radio-color > input[type="radio"] {
+    -moz-appearance: none;
+	-webkit-appearance: none;
+	appearance: none;
+	background: none;
+	opacity: .00001;
+	z-index: 2;
+}
+
+.gh-radio-color > label {
+    position: relative;
+    display: inline-block;
+    width: 25px;
+    height: 25px;
+    cursor: pointer;
+}
+
+.gh-radio-color label span {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 999px;
+    transition: transform .2s ease-in-out;
+}
+
+.gh-radio-color input[type="radio"]:checked + label:after {
+    position: absolute;
+    content: "";
+    display: block;
+    top: -4px;
+    right: -4px;
+    bottom: -4px;
+    left: -4px;
+    border-radius: 999px;
+    border: 2px solid var(--blue);
+}
+
+.gh-radio-color label span.gh-radio-color-blue {
+    background-color: var(--blue);
+}
+
+.gh-radio-color label span.gh-radio-color-green {
+    background-color: var(--green);
+}
+
+.gh-radio-color label span.gh-radio-color-purple {
+    background-color: var(--purple);
+}
+
+.gh-radio-color label span.gh-radio-color-yellow {
+    background-color: var(--yellow);
+}
+
+.gh-radio-color label span.gh-radio-color-red {
+    background-color: var(--red);
+}
+
+.gh-radio-color label span.gh-radio-color-pink {
+    background-color: var(--pink);
+}
+
+.gh-radio-color label span.gh-radio-color-midgrey {
+    background-color: var(--midgrey);
+}
+
+.gh-radio-color label span.gh-radio-color-teal {
+    background-color: #4dcddc;
+}
+
+.gh-radio-color label span.gh-radio-color-orange {
+    background-color: #fe8b05;
+}
+
+
+
+/* Switch
+/* ---------------------------------------------------------- */
+.for-switch label,
+.for-switch .container {
+    cursor: pointer;
+    position: relative;
+    display: inline-block;
+    width: 50px !important;
+    height: 28px !important;
+}
+
+.for-switch label p,
+.for-switch .container p {
+    overflow: auto;
+    color: var(--darkgrey);
+    font-weight: normal;
+}
+
+.for-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.for-switch .input-toggle-component {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--lightgrey);
+    transition: .3s;
+    width: 48px !important;
+    height: 26px !important;
+    border-radius: 999px;
+    transition: background 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+
+.for-switch label:hover input:not(:checked) + .input-toggle-component,
+.for-switch .container:hover input:not(:checked) + .input-toggle-component {
+    border-color: color-mod(var(--lightgrey) l(-10%) s(-10%));
+}
+
+.for-switch .input-toggle-component:before {
+    position: absolute;
+    content: "";
+    height: 22px !important;
+    width: 22px !important;
+    left: 2px !important;
+    top: 2px !important;
+    background-color: white;
+    transition: .3s;
+    box-shadow: 0 1px 3px rgba(0,0,0,.15);
+    border-radius: 999px;
+}
+
+.for-switch input:checked + .input-toggle-component {
+    background: var(--black);
+    border-color: transparent;
+}
+
+.for-switch input:checked + .input-toggle-component:before {
+    transform: translateX(22px);
+    box-shadow: 0 2px 3px rgba(0,0,0,.2);
+    border-color: transparent;
+}
+
+.for-switch .container {
+    width: 38px !important;
+    height: 22px !important;
+}
+
+.for-switch.small .input-toggle-component {
+    width: 38px !important;
+    height: 22px !important;
+}
+
+.for-switch.small .input-toggle-component:before {
+    height: 18px !important;
+    width: 18px !important;
+}
+
+.for-switch.small input:checked + .input-toggle-component:before {
+    transform: translateX(16px);
+}
+
+.for-switch.x-small .input-toggle-component {
+    width: 34px !important;
+    height: 20px !important;
+}
+
+.for-switch.x-small .input-toggle-component:before {
+    height: 16px !important;
+    width: 16px !important;
+}
+
+.for-switch.x-small input:checked + .input-toggle-component:before {
+    transform: translateX(14px);
+}
+
+.for-switch.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* Select
+/* ---------------------------------------------------------- */
+
+.gh-select {
+    position: relative;
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    padding: 0;
+    border-width: 0;
+}
+
+.gh-select svg {
+    position: absolute;
+    top: 50%;
+    right: 1.2rem;
+    left: inherit;
+    width: 12px;
+    height: 6px;
+    margin-top: -0.2em;
+    transform: inherit;
+    pointer-events: none;
+
+    speak: none;
+}
+
+.gh-select svg path {
+    stroke: var(--midlightgrey);
+}
+
+.gh-select select {
+    padding: 6px 12px;
+    outline: none;
+    line-height: normal;
+    text-indent: 0.01px;
+    text-overflow: "";
+
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: window;
+}
+
+.gh-select select::-ms-expand {
+    display: none;
+}
+
+.gh-select select:-moz-focusring {
+    color: transparent;
+    text-shadow: 0 0 0 #000;
+}
+
+.gh-select.disabled select {
+    color: color-mod(var(--midgrey) l(+18%));
+    cursor: default;
+}
+
+.gh-select.disabled svg path {
+    stroke: color-mod(var(--midgrey) l(+30%));
+}
+
+
+/* File Uploads
+/* ---------------------------------------------------------- */
+
+.gh-input-file {
+    width: auto;
+    height: auto;
+    font-size: 1.2rem;
+}
+
+.gh-input-file + .gh-btn {
+    margin-left: 10px;
+}
+
+/* Input appends
+/* ---------------------------------------------------------- */
+.gh-input-group {
+    display: flex;
+    align-items: center;
+}
+
+.gh-input-group .gh-input {
+    border-right: none;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    padding-right: 2px;
+    min-width: 0; /* Firefox fix */
+}
+
+.gh-input-group .gh-input:focus + .gh-input-append,
+.gh-input-group .gh-input:focus + .gh-input-append:before {
+    background: var(--white);
+}
+
+.gh-input-append {
+    display: block;
+    position: relative;
+    width: 100%;
+    height: 38px;
+    padding: 6px 12px;
+    border: var(--input-border);
+    background: var(--input-bg-color);
+    color: var(--darkgrey);
+    font-size: 1.5rem;
+    font-weight: 400;
+    user-select: text;
+    border-radius: var(--border-radius);
+    word-wrap: none;
+    border-left: none;
+    white-space: nowrap;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    flex: 1;
+    color: var(--midlightgrey);
+}
+
+@media (max-width: 430px) {
+    .gh-input-append {
+        padding: 6px 8px;
+    }
+}
+
+.gh-expandable-content .gh-input-append {
+    border-color: var(--whitegrey-d1);
+}
+
+.form-group:not(.error) .gh-input-group .gh-input:focus + .gh-input-append {
+    border-color: color-mod(var(--green));
+    box-shadow: inset 0 0 0 1px var(--green);
+}
+
+.gh-input-append:before {
+    position: absolute;
+    content: "";
+    top: 1px;
+    left: -2px;
+    bottom: 1px;
+    width: 4px;
+    background: var(--input-bg-color);
+}
+
+.gh-input-group .gh-btn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.gh-input-group .gh-btn span {
+    height: 38px;
+    line-height: 38px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.form-group.error .gh-input-group .gh-input,
+.form-group.error .gh-input-group .gh-input + .gh-input-append {
+    border-color: color-mod(var(--red));
+}
+
+.form-group.error .gh-input-group .gh-input:focus + .gh-input-append {
+    box-shadow: inset 0 0 0 1px var(--red);
+}
+
+
+/* Email newsletter design settings
+/* -------------------------------------------------------- */
+.form-rich-radio .gh-radio {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: -1px 0 0;
+    padding: 0;
+}
+
+.form-rich-radio .gh-radio-content {
+    border: 1px solid var(--whitegrey);
+    margin: 0 -32px 0 0;
+}
+
+.form-rich-radio .gh-radio:first-of-type .gh-radio-content {
+    border-radius: 3px 3px 0 0;
+}
+
+.form-rich-radio .gh-radio:last-of-type .gh-radio-content {
+    border-radius: 0 0 3px 3px;
+}
+
+.form-rich-radio .active .gh-radio-content {
+    border: 1px solid transparent;
+    box-shadow: 0px 0px 0px 2px var(--green);
+    z-index: 9999;
+}
+
+.form-rich-radio .gh-radio-button {
+    margin-right: 12px;
+    opacity: 0;
+}
+
+.form-rich-radio .gh-radio-label {
+    position: relative;
+    padding: 12px 40px 12px 14px;
+}
+
+.form-rich-radio .gh-radio-label .description h4 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+    padding: 0;
+    line-height: 1.4em;
+}
+
+.form-rich-radio .gh-radio-label .description p {
+    font-size: 1.3rem !important;
+    font-weight: 400;
+    line-height: 1.45em;
+    margin: 0;
+    padding: 0;
+}
+
+.form-rich-radio .check {
+    position: absolute;
+    top: calc(50% - 7px);
+    right: 12px;
+    color: var(--darkgrey);
+    width: 14px;
+    height: 14px;
+    margin-right: 4px;
+    overflow: visible;
+}
+
+.form-rich-radio .check path {
+    stroke-width: 2px;
+}
+
+.form-rich-radio .gh-radio:not(.active) .check {
+    display: none;
+}
+
+
+/* FFF: Fucking Firefox Fixes
+/* ---------------------------------------------------------- */
+
+@-moz-document url-prefix() {
+    .gh-select select {
+        padding: 7px 10px 7px 8px;
+    }
+    .gh-select:focus {
+        border-color: color-mod(var(--lightgrey) l(-15%) s(-10%));
+    }
+}
