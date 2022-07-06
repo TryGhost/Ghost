@@ -14,7 +14,8 @@ export default class App extends React.Component {
         });
 
         this.state = {
-            searchIndex
+            searchIndex,
+            showPopup: true
         };
     }
 
@@ -29,7 +30,7 @@ export default class App extends React.Component {
         return (
             <AppContext.Provider value={{
                 page: 'search',
-                showPopup: true,
+                showPopup: this.state.showPopup,
                 siteUrl: this.props.siteUrl,
                 appVersion: this.props.appVersion,
                 searchIndex: this.state.searchIndex,
