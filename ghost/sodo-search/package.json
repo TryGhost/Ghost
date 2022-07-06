@@ -1,9 +1,22 @@
 {
-  "name": "sodo-search",
+  "name": "@tryghost/sodo-search",
   "version": "0.1.0",
   "license": "MIT",
-  "repository": "git@github.com:TryGhost/sodo-search.git",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:TryGhost/sodo-search.git"
+  },
   "author": "Ghost Foundation",
+  "unpkg": "umd/sodo-search.min.js",
+  "files": [
+    "umd/",
+    "LICENSE",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "dependencies": {
     "@testing-library/jest-dom": "5.16.2",
     "@testing-library/react": "12.1.2",
@@ -54,6 +67,13 @@
       "last 1 chrome version",
       "last 1 firefox version",
       "last 1 safari version"
+    ]
+  },
+  "jest": {
+    "coverageReporters": [
+      "cobertura",
+      "text-summary",
+      "html"
     ]
   },
   "devDependencies": {
