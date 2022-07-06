@@ -56,7 +56,7 @@ class Comment extends React.Component {
             );
         } else {
             return (
-                <div className="flex flex-col mb-2">
+                <div className="flex flex-col   ">
                     <div>
                         <div className="flex mb-2 space-x-4 justify-start items-center">
                             <Avatar comment={comment} />
