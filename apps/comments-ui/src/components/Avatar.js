@@ -15,7 +15,7 @@ class Avatar extends React.Component {
     }
 
     render() {
-        let dimensionClasses = (this.props.size === 'small' ? 'w-8 h-8' : 'w-10 h-10');
+        let dimensionClasses = (this.props.size === 'small' ? 'w-8 h-8' : 'w-12 h-12');
         let initialsClasses = (this.props.size === 'small' ? 'text-sm' : 'text-base');
         let commentMember = (this.props.comment ? this.props.comment.member : this.context.member);
 

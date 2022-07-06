@@ -57,26 +57,26 @@ class Comment extends React.Component {
             );
         } else {
             return (
-                <div className={`flex flex-col ${!hasReplies ? 'mb-10' : ''}`}>
+                <div className={`flex flex-col ${!hasReplies ? 'mb-14' : ''}`}>
                     <div>
-                        <div className="flex mb-2 space-x-4 justify-start items-center">
+                        <div className="flex mb-4 space-x-4 justify-start items-center">
                             <Avatar comment={comment} />
                             <div>
                                 <h4 className="text-lg font-sans font-bold mb-1 tracking-tight dark:text-neutral-300">{comment.member.name}</h4>
-                                <h6 className="text-xs text-neutral-400 font-sans">{formatRelativeTime(comment.created_at)}</h6>
+                                <h6 className="text-[13px] text-neutral-400 font-sans">{formatRelativeTime(comment.created_at)}</h6>
                             </div>
                         </div>
-                        <div className="ml-14 mb-2.5 pr-4 font-sans leading-normal dark:text-neutral-300">
+                        <div className="mb-4 pr-4 font-sans leading-normal dark:text-neutral-300">
                             <p dangerouslySetInnerHTML={html} className="whitespace-pre-wrap"></p>
                         </div>
-                        <div className="ml-14 flex gap-4">
+                        <div className="flex gap-6">
                             <Like comment={comment} />
                             <Reply comment={comment} />
                             <More comment={comment} show={this.hasMoreContextMenu} toggleEdit={this.toggleEditMode} />
                         </div>
                     </div>    
                     {hasReplies && 
-                        <div className="ml-14 mt-10">
+                        <div className="ml-14 mt-14">
                             <Replies replies={comment.replies} />
                         </div>
                     }

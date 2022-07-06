@@ -9,8 +9,8 @@ function Reply() {
     };
 
     return (
-        <button className="flex font-sans text-[14px] items-center dark:text-white" onClick={toggleReply}>
-            <ReplyIcon className={`mr-1 stroke-dark dark:stroke-white ${replied ? 'fill-black dark:fill-white' : ''}`} />Reply
+        <button className="flex font-sans items-center dark:text-white" onClick={toggleReply}>
+            <ReplyIcon className={`mr-[6px] stroke-dark dark:stroke-white ${replied ? 'fill-black dark:fill-white' : ''}`} />Reply
         </button>
     );
 }

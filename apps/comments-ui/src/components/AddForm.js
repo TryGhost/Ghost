@@ -131,10 +131,14 @@ class AddForm extends React.Component {
         return (
             <form onSubmit={this.submitForm} className="comment-form">
                 <div className="w-full">
-                    <div className="flex mb-2 space-x-4 justify-start items-center">
+                    <div className="flex mb-4 space-x-4 justify-start items-center">
                         <Avatar />
+                        <div>
+                            <h4 className="text-lg font-sans font-bold mb-1 tracking-tight dark:text-neutral-300">{this.context.member.name}</h4>
+                            <h6 className="text-[13px] text-neutral-400 font-sans">Now</h6>
+                        </div>
                     </div>
-                    <div className="-mt-[51px] ml-14 pr-3 font-sans leading-normal dark:text-neutral-300">
+                    <div className="pr-3 font-sans leading-normal dark:text-neutral-300">
                         <div className="relative w-full">
                             <textarea
                                 className={`transition-[height] duration-150 w-full resize-none rounded-md border border-slate-200 p-3 font-sans mb-1 leading-normal focus:outline-0 dark:bg-[rgba(255,255,255,0.08)] dark:border-none dark:text-neutral-300 ${this.state.focused ? 'cursor-text h-40' : 'cursor-pointer overflow-hidden h-12 hover:border-slate-300'}`}
