@@ -69,7 +69,7 @@ describe('Comments API', function () {
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
-                    comments: new Array(3).fill(commentMatcherWithMember)
+                    comments: new Array(2).fill(commentMatcherWithMember)
                 });
         });
 

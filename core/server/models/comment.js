@@ -48,7 +48,12 @@ const Comment = ghostBookshelf.Model.extend({
         }
 
         model.emitChange('added', options);
+    },
+
+    enforcedFilters: function enforcedFilters() {
+        return 'parent_id:null';
     }
+
 }, {
     destroy: function destroy(unfilteredOptions) {
         let options = this.filterOptions(unfilteredOptions, 'destroy', {extraAllowedProperties: ['id']});
