@@ -92,7 +92,22 @@ module.exports = {
             '7xl': ['7.2rem', '1'],
             '8xl': ['9.6rem', '1'],
             '9xl': ['12.8rem', '1']
-        }
+        },
+        animation: {
+            'popup': 'popup 0.25s ease-in-out',
+            'fadein': 'fadein 0.2s'
+        },
+        keyframes: {
+            popup: {
+              '0%': { transform: 'translateY(-20px)', opacity: '0' },
+              '1%': { transform: 'translateY(20px)', opacity: '0'  },
+              '100%': { transform: 'translateY(0)', opacity: '1.0' }
+            },
+            fadein: {
+                '0%': { opacity: '0' },
+                '100%': { opacity: '1' }
+            }
+        }    
     },
     content: [
         './src/**/*.{js,jsx,ts,tsx}'
