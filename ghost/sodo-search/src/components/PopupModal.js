@@ -251,14 +251,15 @@ function PostListItem({post, selectedResult, setSelectedResult}) {
 }
 
 function ShowMoreButton() {
-    return (
-        <button
-            className='w-full my-3 p-[1rem] border border-neutral-200 hover:border-neutral-300 text-neutral-800 hover:text-black font-semibold rounded transition duration-150 ease hover:ease'
+    return null;
+    // return (
+    //     <button
+    //         className='w-full my-3 p-[1rem] border border-neutral-200 hover:border-neutral-300 text-neutral-800 hover:text-black font-semibold rounded transition duration-150 ease hover:ease'
 
-        >
-            Show more results
-        </button>
-    );
+    //     >
+    //         Show more results
+    //     </button>
+    // );
 }
 
 function PostResults({posts, selectedResult, setSelectedResult}) {
