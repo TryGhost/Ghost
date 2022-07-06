@@ -8,6 +8,8 @@ Object {
       "edited_at": null,
       "html": "<p>First.</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "liked": Any<Boolean>,
+      "likes_count": Any<Number>,
       "member": Object {
         "avatar_image": null,
         "bio": null,
@@ -21,6 +23,8 @@ Object {
       "edited_at": null,
       "html": "<p>Really original</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "liked": Any<Boolean>,
+      "likes_count": Any<Number>,
       "member": Object {
         "avatar_image": null,
         "bio": null,
@@ -34,6 +38,8 @@ Object {
       "edited_at": null,
       "html": "This is a message",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "liked": Any<Boolean>,
+      "likes_count": Any<Number>,
       "member": Object {
         "avatar_image": null,
         "bio": null,
@@ -60,7 +66,7 @@ exports[`Comments API when authenticated Can browse all comments of a post 2: [h
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "782",
+  "content-length": "872",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -76,6 +82,8 @@ Object {
       "edited_at": null,
       "html": "This is a message",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "liked": false,
+      "likes_count": 0,
       "member": null,
       "status": "published",
     },
@@ -87,7 +95,7 @@ exports[`Comments API when authenticated Can comment on a post 2: [headers] 1`] 
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "167",
+  "content-length": "197",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,

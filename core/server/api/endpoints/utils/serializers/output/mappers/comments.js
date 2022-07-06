@@ -26,5 +26,14 @@ module.exports = (model, frame) => {
         response.member = null;
     }
 
+    if (jsonModel.likes) {
+        response.likes_count = jsonModel.likes.length;
+    } else {
+        response.likes_count = 0;
+    }
+
+    // todo
+    response.liked = false;
+
     return response;
 };

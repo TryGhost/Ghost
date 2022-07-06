@@ -2,7 +2,7 @@ const Promise = require('bluebird');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
-const ALLOWED_INCLUDES = ['post', 'member'];
+const ALLOWED_INCLUDES = ['post', 'member', 'likes'];
 const UNSAFE_ATTRS = ['status'];
 
 const messages = {
