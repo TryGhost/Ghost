@@ -17,7 +17,7 @@ class CommentContextMenu extends React.Component {
     }
 
     get isAdmin() {
-        return false;
+        return !!this.context.admin;
     }
 
     render() {

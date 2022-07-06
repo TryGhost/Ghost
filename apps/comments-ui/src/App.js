@@ -58,6 +58,7 @@ export default class App extends React.Component {
             action: 'init:running',
             initStatus: 'running',
             member: null,
+            admin: null,
             comments: null,
             pagination: null,
             popupNotification: null,
@@ -262,12 +263,13 @@ export default class App extends React.Component {
 
     /**Get final App level context from App state*/
     getContextFromState() {
-        const {action, popupNotification, customSiteUrl, member, comments, pagination, postId} = this.state;
+        const {action, popupNotification, customSiteUrl, member, comments, pagination, postId, admin} = this.state;
         return {
             action,
             popupNotification,
             customSiteUrl,
             member,
+            admin,
             comments,
             pagination,
             postId,
