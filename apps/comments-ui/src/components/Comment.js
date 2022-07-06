@@ -56,7 +56,7 @@ class Comment extends React.Component {
             );
         } else {
             return (
-                <div className="flex mb-10">
+                <div className="flex flex-col mb-2">
                     <div>
                         <div className="flex mb-2 space-x-4 justify-start items-center">
                             <Avatar comment={comment} />
@@ -71,11 +71,13 @@ class Comment extends React.Component {
 
                         <div className="ml-14 flex gap-5">
                             <Like comment={comment} />
-
-                            {comment.replies && comment.replies.length > 0 && <Replies replies={comment.replies} />}
+                        
                             {/* <Reply comment={comment} /> */}
                             <More comment={comment} show={this.hasMoreContextMenu} toggleEdit={this.toggleEditMode} />
                         </div>
+                    </div>
+                    <div className="ml-14 mt-8">
+                        {comment.replies && comment.replies.length > 0 && <Replies replies={comment.replies} />}
                     </div>
                 </div>
             );
