@@ -1,22 +1,26 @@
 const {promises: fs} = require('fs');
 const path = require('path');
+const moment = require('moment');
 const {ghostMailer} = require('../newsletters');
 
 class CommentsService {
-    constructor({config, logging, models, mailer, settingsCache, urlUtils}) {
+    constructor({config, logging, models, mailer, settingsCache, urlService, urlUtils}) {
         this.config = config;
         this.logging = logging;
         this.models = models;
         this.mailer = mailer;
         this.settingsCache = settingsCache;
+        this.urlService = urlService;
         this.urlUtils = urlUtils;
 
         this.Handlebars = require('handlebars');
     }
 
     get siteDomain() {
-        return this.urlUtils.getSiteUrl()
+        const [, siteDomain] = this.urlUtils.getSiteUrl()
             .match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
+
+        return siteDomain;
     }
 
     get membersAddress() {
@@ -38,6 +42,12 @@ class CommentsService {
 
     get notificationFromAddress() {
         return this.supportAddress || this.membersAddress;
+    }
+
+    extractInitials(name = '') {
+        const names = name.split(' ');
+        const initials = names.length > 1 ? [names[0][0], names[names.length - 1][0]] : [names[0][0]];
+        return initials.join('').toUpperCase();
     }
 
     async sendMail(message) {
@@ -63,6 +73,7 @@ class CommentsService {
 
     async notifyPostAuthors(comment) {
         const post = await this.models.Post.findOne({id: comment.get('post_id')}, {withRelated: ['authors']});
+        const member = await this.models.Member.findOne({id: comment.get('member_id')});
 
         for (const author of post.related('authors')) {
             if (!author.get('comment_notifications')) {
@@ -70,14 +81,23 @@ class CommentsService {
             }
 
             const to = author.get('email');
-            const subject = 'You have a new comment on one of your posts';
+            const subject = '💬 You have a new comment on one of your posts';
 
             const templateData = {
                 siteTitle: this.settingsCache.get('title'),
                 siteUrl: this.urlUtils.getSiteUrl(),
                 siteDomain: this.siteDomain,
+                postTitle: post.get('title'),
+                postUrl: this.urlService.getUrlByResourceId(post.get('id'), {absolute: true}),
+                commentHtml: comment.get('html'),
+                commentDate: moment(comment.get('created_at')).tz(this.settingsCache.get('timezone')).format('D MMM YYYY'),
+                memberName: member.get('name'),
+                memberBio: member.get('bio'),
+                memberInitials: this.extractInitials(member.get('name')),
                 accentColor: this.settingsCache.get('accent_color'),
-                fromEmail: this.notificationFromAddress
+                fromEmail: this.notificationFromAddress,
+                toEmail: to,
+                staffUrl: `${this.urlUtils.getAdminUrl()}ghost/#/settings/staff/${author.get('slug')}`
             };
 
             const {html, text} = await this.renderEmailTemplate('new-comment', templateData);
@@ -96,7 +116,7 @@ class CommentsService {
         const parent = await this.models.Comment.findOne({id: comment.get('parent_id')});
 
         if (parent && parent.get('status') === 'published') {
-            // do the things
+
         }
     }
 
