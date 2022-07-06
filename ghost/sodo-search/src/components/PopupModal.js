@@ -239,7 +239,7 @@ function PostResults({posts}) {
 }
 
 function AuthorListItem({author}) {
-    const {name, avatar, url} = author;
+    const {name, profile_image: profileImage, url} = author;
     return (
         <div
             className='py-3 -mx-7 px-7 hover:bg-neutral-100 cursor-pointer flex items-center'
@@ -249,15 +249,14 @@ function AuthorListItem({author}) {
                 }
             }}
         >
-            <AuthorAvatar name={name} avatar={avatar} />
+            <AuthorAvatar name={name} avatar={profileImage} />
             <h2 className='text-[1.65rem] font-medium leading-tight text-neutral-900'>{name}</h2>
         </div>
     );
 }
 
 function AuthorAvatar({name, avatar}) {
-    const Avatar = avatar?.length;
-    if (Avatar) {
+    if (avatar) {
         return (
             <img className='rounded-full bg-neutral-300 w-6 h-6 mr-2' src={avatar} alt={name}/>
         );
