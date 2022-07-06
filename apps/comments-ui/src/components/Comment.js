@@ -24,6 +24,14 @@ class Comment extends React.Component {
         }));
     }
 
+    /**
+     * Whether we have at least one action inside the context menu
+     * (to hide the 'more' icon if we don't have any actions)
+     */
+    get hasMoreContextMenu() {
+        return !!this.context.member || !!this.context.admin;
+    }
+
     render() {
         const comment = this.props.comment;
         const html = {__html: comment.html};
@@ -48,7 +56,7 @@ class Comment extends React.Component {
                     <div className="ml-14 flex">
                         <button className="flex font-sans mr-5"><LikeIcon className='gh-comments-icon gh-comments-icon-like mr-1' />3</button>
                         <div className="relative">
-                            <button onClick={this.toggleContextMenu}><MoreIcon className='gh-comments-icon gh-comments-icon-more -m-[3px]' /></button>
+                            {this.hasMoreContextMenu ? <button onClick={this.toggleContextMenu}><MoreIcon className='gh-comments-icon gh-comments-icon-more -m-[3px]' /></button> : null}
                             {this.state.isContextMenuOpen ? <CommentContextMenu comment={comment} close={this.toggleContextMenu} /> : null}
                         </div>
                     </div>
