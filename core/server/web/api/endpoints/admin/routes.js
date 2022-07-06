@@ -20,6 +20,9 @@ module.exports = function apiRoutes() {
     // ## Configuration
     router.get('/config', mw.authAdminApi, http(api.config.read));
 
+    // ## Ghost Explore
+    router.get('/explore', mw.authAdminApi, http(api.explore.read));
+
     // ## Posts
     router.get('/posts', mw.authAdminApi, http(api.posts.browse));
     router.post('/posts', mw.authAdminApi, http(api.posts.add));

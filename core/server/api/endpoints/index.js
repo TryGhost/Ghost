@@ -137,6 +137,10 @@ module.exports = {
         return shared.pipeline(require('./config'), localUtils);
     },
 
+    get explore() {
+        return shared.pipeline(require('./explore'), localUtils);
+    },
+
     get themes() {
         return shared.pipeline(require('./themes'), localUtils);
     },
