@@ -13,6 +13,11 @@ class NotAuthorContextMenu extends React.Component {
 
     reportComment(event) {
         // todo
+        this.close();
+    }
+
+    close() {
+        this.props.close();
     }
 
     render() {

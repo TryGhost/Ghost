@@ -13,6 +13,11 @@ class AdminContextMenu extends React.Component {
 
     hideComment(event) {
         this.context.onAction('hideComment', this.props.comment);
+        this.close();
+    }
+
+    close() {
+        this.props.close();
     }
 
     render() {
