@@ -80,18 +80,6 @@ class PopupContent extends React.Component {
     static contextType = AppContext;
 
     componentDidMount() {
-        // Handle Esc to close popup
-        if (this.node) {
-            this.node.focus();
-            this.keyUphandler = (event) => {
-                const eventTargetTag = (event.target && event.target.tagName);
-                if (event.key === 'Escape' && eventTargetTag !== 'INPUT') {
-                    // this.context.onAction('closePopup');
-                }
-            };
-            this.node.ownerDocument.removeEventListener('keyup', this.keyUphandler);
-            this.node.ownerDocument.addEventListener('keyup', this.keyUphandler);
-        }
         this.sendContainerHeightChangeEvent();
     }
 
@@ -101,12 +89,6 @@ class PopupContent extends React.Component {
 
     componentDidUpdate() {
         this.sendContainerHeightChangeEvent();
-    }
-
-    componentWillUnmount() {
-        if (this.node) {
-            this.node.ownerDocument.removeEventListener('keyup', this.keyUphandler);
-        }
     }
 
     handlePopupClose(e) {

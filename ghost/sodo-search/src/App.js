@@ -67,6 +67,7 @@ export default class App extends React.Component {
                 this.setState({
                     showPopup: true
                 });
+                return false;
             }
         };
         document.addEventListener('keydown', this.handleKeyDown);
