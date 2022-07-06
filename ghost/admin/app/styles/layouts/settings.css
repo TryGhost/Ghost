@@ -2163,6 +2163,10 @@ p.theme-validation-details {
 }
 
 /* Membership */
+.gh-setting-membership {
+    margin-bottom: 32px;
+}
+
 @media (max-width: 1140px) {
     .gh-setting-members-canvas::before {
         display: none;
@@ -2173,12 +2177,12 @@ p.theme-validation-details {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    max-height: 680px;
 }
 
 .gh-setting-members-basicsform .intro {
     margin: 0;
     font-size: 1.6rem;
+    margin-bottom: 12px;
 }
 
 .gh-setting-members-portalcta {
@@ -2204,10 +2208,6 @@ p.theme-validation-details {
 .gh-setting-members-portalcta .gh-expandable-description {
     padding-top: 2px;
     line-height: 1.4;
-}
-
-.gh-setting-rich-dropdown {
-    margin-bottom: 30px;
 }
 
 .gh-setting-members-portalpreview {
@@ -2252,7 +2252,7 @@ p.theme-validation-details {
 .gh-setting-dropdown .gh-setting-dropdown-content {
     display: flex;
     align-items: center;
-    margin: 1.6rem 2.4rem 1.6rem 1rem;
+    margin: 1.2rem 2.4rem 1.2rem 0.8rem;
 }
 
 .gh-setting-dropdown-list {
@@ -2277,7 +2277,7 @@ p.theme-validation-details {
 }
 
 .gh-setting-richdd-container {
-    margin: 36px 0;
+    margin: 36px 0 0;
 }
 
 .gh-expandable-content .gh-setting-richdd-container {
@@ -2294,6 +2294,10 @@ p.theme-validation-details {
 
 .gh-setting-large-dropdown .segment-totals {
     display: none;
+}
+
+.gh-setting-rich-dropdown {
+    margin-bottom: 32px;
 }
 
 .gh-setting-rich-dropdown .ember-power-select-status-icon {
