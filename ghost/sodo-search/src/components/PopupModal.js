@@ -261,13 +261,15 @@ function AuthorListItem({author}) {
 }
 
 function AuthorAvatar({name, avatar}) {
-    if (avatar) {
+    const Avatar = avatar?.length;
+    const Character = name.charAt(0);
+    if (Avatar) {
         return (
-            <img className='rounded-full bg-neutral-300 w-6 h-6 mr-2' src={avatar} alt={name}/>
+            <img className='rounded-full bg-neutral-300 w-6 h-6 mr-2 object-cover' src={avatar} alt={name}/>
         );
     }
     return (
-        <img className='rounded-full bg-neutral-300 w-6 h-6 mr-2' src='https://thumbs.dreamstime.com/b/omita-al-avatar-placeholder-de-la-foto-icono-del-perfil-124557887.jpg' alt={name}/>
+        <div className='rounded-full bg-neutral-200 w-6 h-6 mr-2 flex items-center justify-center'><span className="text-neutral-500">{Character}</span></div> 
     );
 }
 
