@@ -31,6 +31,7 @@ export default class App extends React.Component {
                 page: 'search',
                 showPopup: true,
                 siteUrl: this.props.siteUrl,
+                appVersion: this.props.appVersion,
                 searchIndex: this.state.searchIndex,
                 indexComplete: this.state.indexComplete,
                 searchValue: this.state.searchValue,
