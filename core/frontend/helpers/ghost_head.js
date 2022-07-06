@@ -62,7 +62,7 @@ function getSearchHelper(frontendKey) {
         return '';
     }
 
-    let helper = `<script defer src="${config.get('sodoSearch:url')}" data-sodo-search="${urlUtils.getSiteUrl()}" data-key="${frontendKey}" data-api="${urlUtils.urlFor('api', {type: 'content'}, true)}" crossorigin="anonymous"></script>`;
+    let helper = `<script defer src="${config.get('sodoSearch:url')}" data-sodo-search="${urlUtils.getSiteUrl()}" data-version="${config.get('sodoSearch:version')}" data-key="${frontendKey}" data-api="${urlUtils.urlFor('api', {type: 'content'}, true)}" crossorigin="anonymous"></script>`;
 
     return helper;
 }
