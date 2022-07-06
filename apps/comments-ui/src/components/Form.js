@@ -1,6 +1,6 @@
 import React from 'react';
 import AppContext from '../AppContext';
-import {getInitials} from '../utils/helpers';
+import Avatar from './Avatar';
 
 class Form extends React.Component {
     static contextType = AppContext;
@@ -51,23 +51,11 @@ class Form extends React.Component {
         this.setState({message: event.target.value});
     }
 
-    getInitials() {
-        if (!this.context.member || !this.context.member.name) {
-            return '';
-        }
-        return getInitials(this.context.member.name);
-    }
-
     render() {
         return (
             <form onSubmit={this.submitForm} className="comment-form">         
                 <div className="flex bg-neutral-50 p-3 space-x-3 rounded-md dark:bg-transparent">
-                    <figure>
-                        {this.context.member ?
-                            <img className="w-8 h-8 rounded-full" src={this.context.member.avatar_image} alt="Avatar"/> :
-                            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-black">{ this.getInitials() }</div>
-                        }
-                    </figure>
+                    <Avatar size="small" />
                     <div className="w-full">
                         <textarea className="w-full resize-none rounded-md border h-24 p-3 font-sans mb-1 leading-normal focus:outline-0 dark:bg-[rgba(255,255,255,0.08)] dark:border-none dark:text-neutral-300" value={this.state.message} onChange={this.handleChange} placeholder="Join the conversation" />
                         <button type="submit" className="w-full rounded-md border p-3 py-3 font-sans text-sm text-center bg-black font-semibold text-white dark:bg-[rgba(255,255,255,0.8)] dark:text-neutral-800">Add your comment</button>
