@@ -8,16 +8,16 @@ class AdminContextMenu extends React.Component {
         super(props);
         this.state = {};
 
-        this.deleteComment = this.deleteComment.bind(this);
+        this.hideComment = this.hideComment.bind(this);
     }
 
-    deleteComment(event) {
-        // todo
+    hideComment(event) {
+        this.context.onAction('hideComment', this.props.comment);
     }
 
     render() {
         return (
-            <button onClick={this.deleteComment}>
+            <button onClick={this.hideComment}>
                 Hide comment
             </button>
         );

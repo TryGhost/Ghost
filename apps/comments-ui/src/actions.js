@@ -27,17 +27,34 @@ async function addComment({state, api, data: comment}) {
     };
 }
 
+async function hideComment({state, adminApi, data: comment}) {
+    await adminApi.hideComment(comment.id);
+
+    return {
+        comments: state.comments.map((c) => {
+            if (c.id === comment.id) {
+                return {
+                    ...c,
+                    status: 'hidden'
+                };
+            }
+            return c;
+        })
+    };
+}
+
 const Actions = {
     // Put your actions here
     addComment,
+    hideComment,
     loadMoreComments
 };
 
 /** Handle actions in the App, returns updated state */
-export default async function ActionHandler({action, data, state, api}) {
+export default async function ActionHandler({action, data, state, api, adminApi}) {
     const handler = Actions[action];
     if (handler) {
-        return await handler({data, state, api}) || {};
+        return await handler({data, state, api, adminApi}) || {};
     }
     return {};
 }

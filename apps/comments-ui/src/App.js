@@ -19,7 +19,7 @@ function AuthFrame({adminUrl, onLoad}) {
     };
 
     return (
-        <iframe data-frame="admin-auth" src={adminUrl + 'auth-frame'} style={iframeStyle}></iframe>
+        <iframe data-frame="admin-auth" src={adminUrl + 'auth-frame/'} style={iframeStyle}></iframe>
     );
 }
 
@@ -117,7 +117,7 @@ export default class App extends React.Component {
             action: `${action}:running`
         });
         try {
-            const updatedState = await ActionHandler({action, data, state: this.state, api: this.GhostApi});
+            const updatedState = await ActionHandler({action, data, state: this.state, api: this.GhostApi, adminApi: this.adminApi});
             this.setState(updatedState);
 
             /** Reset action state after short timeout if not failed*/
@@ -129,6 +129,9 @@ export default class App extends React.Component {
                 }, 2000);
             }
         } catch (error) {
+            // todo: Keep this error log here until we implement popup notifications?
+            // eslint-disable-next-line no-console
+            console.error(error);
             const popupNotification = createPopupNotification({
                 type: `${action}:failed`,
                 autoHide: true, closeable: true, status: 'error', state: this.state,
@@ -224,11 +227,11 @@ export default class App extends React.Component {
                 const result = await callApi('getUser');
                 return result.users[0];
             },
-            hideComment(id) {
-                return callApi('hideComment', {id});
+            async hideComment(id) {
+                return await callApi('hideComment', {id});
             },
-            showComment(id) {
-                return callApi('showComment', {id});
+            async showComment(id) {
+                return await callApi('showComment', {id});
             }
         };
 
