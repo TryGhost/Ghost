@@ -6,6 +6,32 @@ Object {
     Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
+      "html": "<p>First.</p>",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "member": Object {
+        "avatar_image": null,
+        "bio": null,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Mr Egg",
+      },
+      "status": "published",
+    },
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "edited_at": null,
+      "html": "<p>Really original</p>",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "member": Object {
+        "avatar_image": null,
+        "bio": null,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": null,
+      },
+      "status": "published",
+    },
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "edited_at": null,
       "html": "This is a message",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "member": Object {
@@ -24,7 +50,7 @@ Object {
       "page": 1,
       "pages": 1,
       "prev": null,
-      "total": 1,
+      "total": 3,
     },
   },
 }
@@ -34,7 +60,7 @@ exports[`Comments API when authenticated Can browse all comments of a post 2: [h
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "327",
+  "content-length": "782",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",

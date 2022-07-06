@@ -780,6 +780,20 @@ DataGenerator.Content = {
             type: 'select',
             value: 'Full'
         }
+    ],
+
+    comments: [
+        {
+            id: '6195c6a1e792de832cd08144',
+            html: '<p>First.</p>',
+            member_index: 0
+        },
+        {
+            id: '6195c6a1e792de832cd08145',
+            html: '<p>Really original</p>',
+            parent_id: '6195c6a1e792de832cd08144',
+            member_index: 1
+        }
     ]
 };
 
@@ -1192,6 +1206,19 @@ DataGenerator.forKnex = (function () {
         });
     }
 
+    function createComment(overrides) {
+        const memberIndex = overrides.member_index || 0;
+        delete overrides.memberIndex;
+
+        const newObj = _.cloneDeep(overrides);
+
+        return _.defaults(newObj, {
+            id: ObjectId().toHexString(),
+            member_id: DataGenerator.Content.members[memberIndex].id,
+            post_id: DataGenerator.Content.posts[0].id
+        });
+    }
+
     const posts = [
         createPost(DataGenerator.Content.posts[0]),
         createPost(DataGenerator.Content.posts[1]),
@@ -1548,6 +1575,11 @@ DataGenerator.forKnex = (function () {
         createBasic(DataGenerator.Content.custom_theme_settings[1])
     ];
 
+    const comments = [
+        createComment(DataGenerator.Content.comments[0]),
+        createComment(DataGenerator.Content.comments[1])
+    ];
+
     return {
         createPost,
         createGenericPost,
@@ -1578,6 +1610,7 @@ DataGenerator.forKnex = (function () {
         createProduct,
         createNewsletter,
         createOffer,
+        createComment,
 
         invites,
         posts,
@@ -1606,6 +1639,7 @@ DataGenerator.forKnex = (function () {
         stripe_products,
         snippets,
         custom_theme_settings,
+        comments,
 
         members_paid_subscription_events
     };

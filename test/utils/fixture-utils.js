@@ -609,6 +609,12 @@ const fixtures = {
         });
     },
 
+    insertComments: async function insertComments() {
+        return Promise.map(DataGenerator.forKnex.comments, function (comment) {
+            return models.Comment.add(comment, context.internal);
+        });
+    },
+
     insertSnippets: function insertSnippets() {
         return Promise.map(DataGenerator.forKnex.snippets, function (snippet) {
             return models.Snippet.add(snippet, context.internal);
@@ -742,6 +748,9 @@ const toDoList = {
     },
     'tiers:archived': function insertArchivedTiers() {
         return fixtures.insertArchivedTiers();
+    },
+    comments: function insertComments() {
+        return fixtures.insertComments();
     }
 };
 
