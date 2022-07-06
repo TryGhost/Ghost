@@ -165,11 +165,19 @@ function ClearButton() {
     );
 }
 
-function TagListItem({title}) {
+function TagListItem({tag}) {
+    const {name, url} = tag;
     return (
-        <div className='flex items-center py-3 -mx-7 px-7 hover:bg-gray-100 cursor-pointer'>
+        <div
+            className='flex items-center py-3 -mx-7 px-7 hover:bg-gray-100 cursor-pointer'
+            onClick={() => {
+                if (url) {
+                    window.location.href = url;
+                }
+            }}
+        >
             <p className='mr-2 text-sm font-bold text-neutral-400'>#</p>
-            <h2 className='text-[1.65rem] font-medium leading-tight text-neutral-900'>{title}</h2>
+            <h2 className='text-[1.65rem] font-medium leading-tight text-neutral-900'>{name}</h2>
         </div>
     );
 }
@@ -183,7 +191,7 @@ function TagResults({tags}) {
         return (
             <TagListItem
                 key={d.name}
-                title={d.name}
+                tag={d}
             />
         );
     });
@@ -195,12 +203,12 @@ function TagResults({tags}) {
     );
 }
 
-function PostListItem({title, excerpt, slug}) {
-    const {siteUrl} = useContext(AppContext);
+function PostListItem({post}) {
+    const {title, excerpt, url} = post;
     return (
         <div className='py-3 -mx-7 px-7 hover:bg-neutral-100 cursor-pointer' onClick={() => {
-            if (slug) {
-                window.location.href = `${siteUrl}${slug}`;
+            if (url) {
+                window.location.href = url;
             }
         }}>
             <h2 className='text-[1.65rem] font-medium leading-tight text-neutral-900'>{title}</h2>
@@ -218,9 +226,7 @@ function PostResults({posts}) {
         return (
             <PostListItem
                 key={d.title}
-                title={d.title}
-                excerpt={d.excerpt}
-                slug={d.slug}
+                post={d}
             />
         );
     });
@@ -232,9 +238,17 @@ function PostResults({posts}) {
     );
 }
 
-function AuthorListItem({name, avatar}) {
+function AuthorListItem({author}) {
+    const {name, avatar, url} = author;
     return (
-        <div className='py-3 -mx-7 px-7 hover:bg-neutral-100 cursor-pointer flex items-center'>
+        <div
+            className='py-3 -mx-7 px-7 hover:bg-neutral-100 cursor-pointer flex items-center'
+            onClick={() => {
+                if (url) {
+                    window.location.href = url;
+                }
+            }}
+        >
             <AuthorAvatar name={name} avatar={avatar} />
             <h2 className='text-[1.65rem] font-medium leading-tight text-neutral-900'>{name}</h2>
         </div>
@@ -262,8 +276,7 @@ function AuthorResults({authors}) {
         return (
             <AuthorListItem
                 key={d.name}
-                name={d.name}
-                avatar={d.avatar}
+                author={d}
             />
         );
     });
