@@ -6527,6 +6527,13 @@ human-interval@^2.0.0:
   dependencies:
     numbered "^1.1.0"
 
+human-number@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/human-number/-/human-number-2.0.0.tgz#ffdfa7954c40d32c02aa0ebb3b0f54f8fc4ed410"
+  integrity sha512-hMb3DuF2aMTaFy795TU65AfQnZDd+UF6q8f29m3t6n648I3VCJyYXd1pJnnJsOJRYi7yBvYG29RdkrS59GwSEw==
+  dependencies:
+    round-to "~5.0.0"
+
 humanize-ms@^1.2.1:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/humanize-ms/-/humanize-ms-1.2.1.tgz#c46e3159a293f6b896da29316d8b6fe8bb79bbed"
@@ -10578,6 +10585,11 @@ rimraf@~2.4.0:
   integrity sha1-7nEM5dk6j9uFb7Xqj/Di11k0sto=
   dependencies:
     glob "^6.0.1"
+
+round-to@~5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/round-to/-/round-to-5.0.0.tgz#a66292701a93b194f630a0d57f04c08821b6eeed"
+  integrity sha512-i4+Ntwmo5kY7UWWFSDEVN3RjT2PX1FqkZ9iCcAO3sKML3Ady9NgsjM/HLdYKUAnrxK4IlSvXzpBMDvMHZQALRQ==
 
 rss@1.2.2:
   version "1.2.2"
