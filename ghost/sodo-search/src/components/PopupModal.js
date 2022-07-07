@@ -45,8 +45,8 @@ const authorsData = [
     }
 ];
 
-const DEFAULT_MAX_POSTS = 1;
-const STEP_MAX_POSTS = 1;
+const DEFAULT_MAX_POSTS = 10;
+const STEP_MAX_POSTS = 10;
 
 const StylesWrapper = () => {
     return {
@@ -230,6 +230,7 @@ function TagResults({tags, selectedResult, setSelectedResult}) {
 }
 
 function PostListItem({post, selectedResult, setSelectedResult}) {
+    const {searchValue} = useContext(AppContext);
     const {title, excerpt, url, id} = post;
     let className = 'py-3 -mx-4 sm:-mx-7 px-4 sm:px-7 cursor-pointer';
     if (id === selectedResult) {
@@ -247,9 +248,85 @@ function PostListItem({post, selectedResult, setSelectedResult}) {
                 setSelectedResult(id);
             }}
         >
-            <h2 className='text-[1.65rem] font-medium leading-tight text-neutral-900'><span dangerouslySetInnerHTML={{__html: title}} /></h2>
-            <p className='text-neutral-400 leading-normal text-sm mt-0 mb-0 truncate'><span dangerouslySetInnerHTML={{__html: excerpt}} /></p>
+            <h2 className='text-[1.65rem] font-medium leading-tight text-neutral-900'>
+                <HighlightedSection text={title} highlight={searchValue} />
+            </h2>
+            <p className='text-neutral-400 leading-normal text-sm mt-0 mb-0 truncate'>
+                <HighlightedSection text={excerpt} highlight={searchValue} />
+            </p>
         </div>
+    );
+}
+
+function HighlightedSection({text, highlight}) {
+    const highlightStartIndex = text.toLowerCase().indexOf(highlight.toLowerCase());
+    let parts = [];
+    if (highlightStartIndex === 0) {
+        parts.push({
+            text: text?.slice(0, highlight?.length),
+            type: 'highlight'
+        });
+        let nextSection = text?.slice(highlight?.length, text?.length);
+        if (nextSection) {
+            parts.push({
+                text: nextSection,
+                type: 'normal'
+            });
+        }
+    } else if (highlightStartIndex > 0) {
+        parts.push({
+            text: text?.slice(0, highlightStartIndex),
+            type: 'normal'
+        });
+        let highlightSection = text?.slice(highlightStartIndex, highlightStartIndex + highlight?.length);
+        if (highlightSection) {
+            parts.push({
+                text: highlightSection,
+                type: 'highlight'
+            });
+        }
+        if (highlightStartIndex + highlight?.length < text.length) {
+            let nextSection = text?.slice(highlightStartIndex + highlight?.length);
+            parts.push({
+                text: nextSection,
+                type: 'normal'
+            });
+        }
+    } else {
+        parts.push({
+            text: text,
+            type: 'normal'
+        });
+    }
+    const wordMap = parts.map((d, idx) => {
+        if (d?.type === 'highlight') {
+            return (
+                <React.Fragment key={idx}>
+                    <HighlightWord word={d.text} highlight={highlight} />
+                </React.Fragment>
+            );
+        } else {
+            return (
+                <React.Fragment key={idx}>
+                    {d.text}
+                </React.Fragment>
+            );
+        }
+    });
+    return (
+        <>
+            {wordMap}
+        </>
+    );
+}
+
+function HighlightWord({word, highlight}) {
+    const firstHalf = word.slice(0, (highlight?.length || 0)) || '';
+    const secondHalf = word.slice((highlight?.length || 0), (word?.length || 1000)) || '';
+    return (
+        <>
+            <span className='font-bold'>{firstHalf}</span>{secondHalf}
+        </>
     );
 }
 
