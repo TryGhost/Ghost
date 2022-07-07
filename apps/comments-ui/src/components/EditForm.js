@@ -1,4 +1,3 @@
-import {formatRelativeTime} from '../utils/helpers';
 import React, {useContext, useState} from 'react';
 import Avatar from './Avatar';
 import AppContext from '../AppContext';
@@ -36,21 +35,35 @@ const EditForm = (props) => {
     const comment = props.comment;
 
     return (
-        <form onSubmit={submitForm} className="comment-form mb-14">
-            <div className="w-full">
-                <div className="flex mb-4 justify-start items-center">
-                    <Avatar />
-                    <div className="ml-[14px]">
-                        <h4 className="text-lg font-sans font-bold mb-1 tracking-tight dark:text-neutral-300">{comment.member.name}</h4>
-                        <h6 className="text-[13px] text-neutral-400 font-sans">{formatRelativeTime(comment.created_at)}</h6>
+        <form onSubmit={submitForm} className={`comment-form transition duration-200 border border-neutral-150 hover:border-neutral-200 rounded-md px-3 pt-3 pb-2 -ml-[13px] -mr-3 -mt-[13px] mb-10 shadow-lg shadow-neutral-50 hover:shadow-xl hover:shadow-neutral-100`}>
+            <div>
+                <div className="flex justify-start items-center">
+                    <Avatar saturation={props.avatarSaturation} />
+                    <div className="ml-3">
+                        <h4 className="text-lg font-sans font-semibold mb-1 tracking-tight dark:text-neutral-300">{comment.member.name ? comment.member.name : 'Anonymous'}</h4>
                     </div>
                 </div>
                 <div className="pr-3 font-sans leading-normal dark:text-neutral-300">
                     <div className="relative w-full">
-                        <textarea className="w-full resize-none rounded-md border h-32 p-3 font-sans mb-1 leading-normal focus:outline-0 dark:bg-[rgba(255,255,255,0.08)] dark:border-none dark:text-neutral-300" value={message} onChange={handleChange} autoFocus={true} />
-                        <div className="flex flex-start">
-                            <button type="submit" className="rounded-md border py-2 px-3 font-sans text-sm text-center bg-black font-semibold text-white dark:bg-[rgba(255,255,255,0.8)] dark:text-neutral-800">Edit comment</button>
+                        <textarea
+                            className={`w-full h-40 pl-[56px] border-none resize-none p-0 font-sans text-[16.5px] mb-1 leading-normal placeholder:text-neutral-300 focus:outline-0 dark:bg-[rgba(255,255,255,0.08)] dark:border-none dark:text-neutral-300`}
+                            value={message}
+                            onChange={handleChange}
+                            onFocus={function (e) {
+                                var val = e.target.value;
+                                e.target.value = '';
+                                e.target.value = val;
+                            }}
+                            autoFocus
+                            placeholder='Join the discussion'
+                        />
+                        <div className="flex space-x-4 transition-[opacity] duration-150 absolute -right-3 bottom-2">
                             <button type="button" className="font-sans text-sm font-medium ml-2.5 text-neutral-500 dark:text-neutral-400" onClick={props.toggle}>Cancel</button>
+                            <button
+                                className={`rounded-md border py-3 px-4 font-sans text-sm text-center bg-black font-semibold text-white dark:bg-[rgba(255,255,255,0.8)] dark:text-neutral-800`}
+                                type="submit">
+                                Edit comment
+                            </button>
                         </div>
                     </div>
                 </div>
