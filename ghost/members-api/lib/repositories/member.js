@@ -317,6 +317,7 @@ module.exports = class MemberRepository {
             'geolocation',
             'products',
             'newsletters',
+            'enable_comment_notifications',
             'last_seen_at'
         ]);
 
