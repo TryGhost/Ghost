@@ -8,15 +8,15 @@ describe('search index', function () {
         const searchIndex = new SearchIndex({adminUrl, apiKey, storage: localStorage});
 
         const scope = nock('http://localhost/ghost/api/content')
-            .get('/posts/?key=69010382388f9de5869ad6e558&limit=all&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC&formats=plaintext')
+            .get('/posts/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC')
             .reply(200, {
                 posts: []
             })
-            .get('/authors/?key=69010382388f9de5869ad6e558&limit=all&fields=id,slug,name,url,profile_image')
+            .get('/authors/?key=69010382388f9de5869ad6e558&limit=10000&fields=id,slug,name,url,profile_image&order=updated_at%20DESC')
             .reply(200, {
                 authors: []
             })
-            .get('/tags/?key=69010382388f9de5869ad6e558&&limit=all&fields=id,slug,name,url')
+            .get('/tags/?key=69010382388f9de5869ad6e558&&limit=10000&fields=id,slug,name,url&order=updated_at%20DESC')
             .reply(200, {
                 tags: []
             });
@@ -38,7 +38,7 @@ describe('search index', function () {
         const searchIndex = new SearchIndex({adminUrl, apiKey, storage: localStorage});
 
         nock('http://localhost/ghost/api/content')
-            .get('/posts/?key=69010382388f9de5869ad6e558&limit=all&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC&formats=plaintext')
+            .get('/posts/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC')
             .reply(200, {
                 posts: [{
                     id: 'sounique',
@@ -47,7 +47,7 @@ describe('search index', function () {
                     url: 'http://localhost/ghost/awesome-barcelona-life/'
                 }]
             })
-            .get('/authors/?key=69010382388f9de5869ad6e558&limit=all&fields=id,slug,name,url,profile_image')
+            .get('/authors/?key=69010382388f9de5869ad6e558&limit=10000&fields=id,slug,name,url,profile_image&order=updated_at%20DESC')
             .reply(200, {
                 authors: [{
                     id: 'different_uniq',
@@ -63,7 +63,7 @@ describe('search index', function () {
                     url: 'http://localhost/ghost/authors/bob/'
                 }]
             })
-            .get('/tags/?key=69010382388f9de5869ad6e558&&limit=all&fields=id,slug,name,url')
+            .get('/tags/?key=69010382388f9de5869ad6e558&&limit=10000&fields=id,slug,name,url&order=updated_at%20DESC')
             .reply(200, {
                 tags: [{
                     id: 'uniq_tag',
@@ -75,7 +75,7 @@ describe('search index', function () {
 
         await searchIndex.init();
 
-        let searchResults = searchIndex.search('Barcelona');
+        let searchResults = searchIndex.search('Barcelo');
         expect(searchResults.posts.length).toEqual(1);
         expect(searchResults.posts[0].title).toEqual('Awesome Barcelona Life');
         expect(searchResults.posts[0].url).toEqual('http://localhost/ghost/awesome-barcelona-life/');
