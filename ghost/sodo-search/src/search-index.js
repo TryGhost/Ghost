@@ -11,6 +11,7 @@ export default class SearchIndex {
 
         this.postsIndex = null;
         this.authorsIndex = null;
+        this.tagsIndex = null;
 
         this.init = this.init.bind(this);
         this.search = this.search.bind(this);
