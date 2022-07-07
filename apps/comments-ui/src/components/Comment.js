@@ -28,14 +28,12 @@ const Comment = (props) => {
     const isNotPublished = comment.status !== 'published';
     const html = {__html: comment.html};
 
-    // Hide a comment if it has been deleted by the user and has no replies
-    // But keep showing comments if hidden by admin and logged in as admin
-    if ((comment.status === 'deleted' && !hasReplies) || (comment.status === 'hidden' && !hasReplies && !admin)) {
-        return null;
-    }
-
     if (isNotPublished) {
-        html.__html = '<i>This comment has been removed.</i>';
+        if (admin && comment.status === 'hidden') {
+            html.__html = '<i>This comment has been hidden.</i>';
+        } else {
+            html.__html = '<i>This comment has been removed.</i>';
+        }
     }
 
     if (isInEditMode) {
