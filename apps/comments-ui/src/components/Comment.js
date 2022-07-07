@@ -21,22 +21,11 @@ const Comment = (props) => {
     };
 
     const comment = props.comment;
-    const isReply = props.isReply;
     const hasReplies = comment.replies && comment.replies.length > 0;
+    const isNotPublished = comment.status !== 'published';
     const html = {__html: comment.html};
 
-    let commentMarginBottom;
-    if (!hasReplies) {
-        commentMarginBottom = 'mb-10';
-    }
-    if (hasReplies) {
-        commentMarginBottom = 'mb-4';
-    }
-    if (isReply) {
-        commentMarginBottom = 'mb-10';
-    }
-
-    if (comment.status !== 'published') {
+    if (isNotPublished) {
         html.__html = '<i>This comment has been removed.</i>';
     }
 
@@ -46,35 +35,37 @@ const Comment = (props) => {
         );
     } else {
         return (
-            <div className={`flex flex-col ${commentMarginBottom}`}>
-                <div>
-                    <div className="flex mb-4 space-x-4 justify-start items-center">
-                        <Avatar comment={comment} saturation={props.avatarSaturation} />
-                        <div>
-                            <h4 className="text-lg font-sans font-bold mb-1 tracking-tight dark:text-neutral-300">{comment.member.name}</h4>
-                            <h6 className="text-[13px] text-neutral-400 font-sans">{formatRelativeTime(comment.created_at)}</h6>
+            <>
+                <div className={`flex flex-col ${hasReplies ? 'mb-4' : 'mb-10'}`}>
+                    <div>
+                        <div className="flex mb-3 justify-start items-center">
+                            <Avatar comment={comment} saturation={props.avatarSaturation} />
+                            <div className="ml-[14px]">
+                                <h4 className="text-lg font-sans font-bold mb-1 tracking-tight dark:text-neutral-300">{comment.member.name}</h4>
+                                <h6 className="text-[13px] text-neutral-400 font-sans">{formatRelativeTime(comment.created_at)}</h6>
+                            </div>
                         </div>
-                    </div>
-                    <div className="mb-4 pr-4 font-sans leading-normal dark:text-neutral-300">
-                        <p dangerouslySetInnerHTML={html} className="whitespace-pre-wrap"></p>
-                    </div>
-                    <div className="flex gap-6">
-                        <Like comment={comment} />
-                        {!props.parent && <Reply comment={comment} toggleReply={toggleReplyMode} isReplying={isInReplyMode} />}
-                        <More comment={comment} toggleEdit={toggleEditMode} />
-                    </div>
-                </div>    
+                        <div className={`mb-3 pr-4 font-sans leading-normal ${isNotPublished && 'text-neutral-500'} dark:text-neutral-300`}>
+                            <p dangerouslySetInnerHTML={html} className="whitespace-pre-wrap"></p>
+                        </div>
+                        <div className="flex gap-6">
+                            <Like comment={comment} />
+                            {!props.parent && <Reply comment={comment} toggleReply={toggleReplyMode} isReplying={isInReplyMode} />}
+                            <More comment={comment} toggleEdit={toggleEditMode} />
+                        </div>
+                    </div>    
+                </div>
                 {hasReplies && 
-                    <div className="ml-14 mt-14">
+                    <div className="ml-14 mt-10">
                         <Replies comment={comment} avatarSaturation={props.avatarSaturation} />
                     </div>
                 }
                 {isInReplyMode &&
-                    <div className={`ml-14 ${!hasReplies && 'mt-10'}`}>
+                    <div className={`ml-14 mb-10 ${!hasReplies && 'mt-10'}`}>
                         <ReplyForm parent={comment} toggle={toggleReplyMode} />
                     </div>
                 }
-            </div>
+            </>
         );
     }
 };
