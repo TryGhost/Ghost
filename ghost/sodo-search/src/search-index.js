@@ -2,9 +2,9 @@ import elasticlunr from 'elasticlunr';
 import GhostContentAPI from '@tryghost/content-api';
 
 export default class SearchIndex {
-    constructor({siteURL, apiKey}) {
+    constructor({adminUrl, apiKey}) {
         this.api = new GhostContentAPI({
-            url: siteURL,
+            url: adminUrl,
             key: apiKey,
             version: 'v5.0'
         });

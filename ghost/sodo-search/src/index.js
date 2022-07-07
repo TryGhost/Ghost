@@ -17,26 +17,26 @@ function getSiteData() {
      */
     const scriptTag = document.querySelector('script[data-sodo-search]');
     if (scriptTag) {
-        const siteUrl = scriptTag.dataset.sodoSearch;
+        const adminUrl = scriptTag.dataset.sodoSearch;
         const apiKey = scriptTag.dataset.key;
         const appVersion = scriptTag.dataset.version;
-        return {siteUrl, apiKey, appVersion};
+        return {adminUrl, apiKey, appVersion};
     }
     return {};
 }
 
-function setup({siteUrl}) {
+function setup() {
     addRootDiv();
 }
 
 function init() {
-    const {siteUrl: customSiteUrl, apiKey, apiUrl, appVersion} = getSiteData();
-    const siteUrl = customSiteUrl || window.location.origin;
-    setup({siteUrl});
+    const {adminUrl, apiKey, appVersion} = getSiteData();
+    const adminBaseUrl = (adminUrl || window.location.origin)?.replace(/\/+$/, '');
+    setup();
     ReactDOM.render(
         <React.StrictMode>
             <App
-                siteUrl={siteUrl} apiKey={apiKey} apiUrl={apiUrl}
+                adminUrl={adminBaseUrl} apiKey={apiKey}
                 appVersion={appVersion}
             />
         </React.StrictMode>,
