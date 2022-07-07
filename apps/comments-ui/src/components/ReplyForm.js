@@ -59,7 +59,7 @@ const ReplyForm = (props) => {
         <form onSubmit={submitForm} className="comment-form mb-4">
             <div className="w-full">
                 <div className="flex mb-4 space-x-4 justify-start items-center">
-                    <Avatar />
+                    <Avatar saturation={props.avatarSaturation} />
                     <div>
                         <h4 className="text-lg font-sans font-bold mb-1 tracking-tight dark:text-neutral-300">{member.name}</h4>
                         <h6 className="text-[13px] text-neutral-400 font-sans">Now</h6>

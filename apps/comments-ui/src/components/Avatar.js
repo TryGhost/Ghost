@@ -25,11 +25,11 @@ class Avatar extends React.Component {
             return [0,0,10];
         }
 
-        const saturation = this.props.saturation ? this.props.saturation : 50;
+        const saturation = isNaN(this.props.saturation) ? 50 : this.props.saturation;
 
         const hRange = [0, 360];
-        const lRangeTop = Math.round(saturation / (100 / 30)) + 20;
-        const lRangeBottom = lRangeTop - 10;
+        const lRangeTop = Math.round(saturation / (100 / 30)) + 30;
+        const lRangeBottom = lRangeTop - 20;
         const lRange = [lRangeBottom, lRangeTop];
 
         const hash = this.getHashOfString(commentMember.name);

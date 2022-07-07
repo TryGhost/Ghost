@@ -58,7 +58,7 @@ class CommentsBox extends React.Component {
                     {comments}
                 </div>
                 <div>
-                    { this.context.member ? <AddForm /> : <NotSignedInBox /> }
+                    { this.context.member ? <AddForm avatarSaturation={this.props.avatarSaturation} /> : <NotSignedInBox /> }
                 </div>
             </section>
         );

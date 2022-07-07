@@ -62,7 +62,7 @@ const Comment = (props) => {
                 }
                 {isInReplyMode &&
                     <div className={`ml-14 mb-10 ${!hasReplies && 'mt-10'}`}>
-                        <ReplyForm parent={comment} toggle={toggleReplyMode} />
+                        <ReplyForm parent={comment} toggle={toggleReplyMode} avatarSaturation={props.avatarSaturation} />
                     </div>
                 }
             </>
