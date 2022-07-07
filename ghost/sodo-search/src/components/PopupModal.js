@@ -277,8 +277,9 @@ function PostListItem({post, selectedResult, setSelectedResult}) {
     );
 }
 
-function HighlightedSection({text, highlight}) {
-    const highlightStartIndex = text.toLowerCase().indexOf(highlight.toLowerCase());
+function HighlightedSection({text = '', highlight = ''}) {
+    let highlightStartIndex = text?.toLowerCase().indexOf(highlight.toLowerCase());
+
     let parts = [];
     if (highlightStartIndex === 0) {
         parts.push({
