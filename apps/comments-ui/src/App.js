@@ -276,6 +276,12 @@ export default class App extends React.Component {
             comments,
             pagination,
             postId,
+            dispatchAction: (_action, data) => this.dispatchAction(_action, data),
+            
+            /**
+             * @deprecated
+             * Use dispatchAction instead
+             */
             onAction: (_action, data) => this.dispatchAction(_action, data)
         };
     }

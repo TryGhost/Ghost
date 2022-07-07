@@ -1,13 +1,27 @@
 import {formatRelativeTime} from '../utils/helpers';
-import React, {useState} from 'react';
+import React, {useContext, useState} from 'react';
 import Avatar from './Avatar';
+import AppContext from '../AppContext';
 
 const EditForm = (props) => {
     // todo: we need to convert the HTML back to an editable state instead of putting it into the textarea
     const [message, setMessage] = useState(props.comment.html);
+    const {dispatchAction} = useContext(AppContext);
+
+    const getHTML = () => {
+        // Convert newlines to <br> for now (until we add a real editor)
+        return message.replace('\n', '<br>');
+    };
 
     const submitForm = async (event) => {
         event.preventDefault();
+
+        await dispatchAction('editComment', {
+            id: props.comment.id,
+            html: getHTML()
+        });
+
+        props.toggle();
         
         return false;
     };

@@ -115,9 +115,27 @@ async function deleteComment({state, api, data: comment}) {
     };
 }
 
+async function editComment({state, api, data: comment}) {
+    const data = await api.comments.edit({
+        comment
+    });
+    comment = data.comments[0];
+
+    // Replace the comment in the state with the new one
+    return {
+        comments: state.comments.map((c) => {
+            if (c.id === comment.id) {
+                return comment;
+            }
+            return c;
+        })
+    };
+}
+
 const Actions = {
     // Put your actions here
     addComment,
+    editComment,
     hideComment,
     deleteComment,
     showComment,
