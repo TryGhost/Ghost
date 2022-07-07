@@ -56,7 +56,7 @@ const ReplyForm = (props) => {
     };
 
     return (
-        <form onSubmit={submitForm} onClick={handleFocus} className={`comment-form transition duration-200 border border-neutral-150 hover:border-neutral-200 rounded-md px-3 pt-3 pb-2 -ml-[13px] -mr-[12px] -mt-[15px] shadow-lg shadow-neutral-50 hover:shadow-xl hover:shadow-neutral-100 ${focused ? 'cursor-default' : 'cursor-pointer'}`}>
+        <form onSubmit={submitForm} onClick={handleFocus} className={`comment-form transition duration-200 rounded-md px-3 pt-3 pb-2 -ml-[13px] -mr-[12px] -mt-[15px] shadow-lg hover:shadow-xl ${focused ? 'cursor-default' : 'cursor-pointer'}`}>
             <div className="w-full relative">
                 <div className="pr-3 font-sans leading-normal dark:text-neutral-300">
                     <div className="relative w-full">

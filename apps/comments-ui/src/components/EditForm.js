@@ -35,7 +35,7 @@ const EditForm = (props) => {
     const comment = props.comment;
 
     return (
-        <form onSubmit={submitForm} className={`comment-form transition duration-200 border border-neutral-150 hover:border-neutral-200 rounded-md px-3 pt-3 pb-2 -ml-[13px] -mr-3 -mt-[13px] mb-10 shadow-lg shadow-neutral-50 hover:shadow-xl hover:shadow-neutral-100`}>
+        <form onSubmit={submitForm} className={`comment-form transition duration-200 rounded-md px-3 pt-3 pb-2 -ml-[13px] -mr-3 -mt-[13px] mb-10 shadow-lg hover:shadow-xl`}>
             <div>
                 <div className="flex justify-start items-center">
                     <Avatar saturation={props.avatarSaturation} />
