@@ -52,14 +52,14 @@ const Comment = (props) => {
                         <More comment={comment} toggleEdit={toggleEditMode} />
                     </div>
                 </div>    
-                {isInReplyMode &&
-                    <div className={`ml-14 mt-8`}>
-                        <ReplyForm parent={comment} />
-                    </div>
-                }
                 {hasReplies && 
                     <div className={`ml-14 ${isInReplyMode ? 'mt-8' : 'mt-14'}`}>
                         <Replies replies={comment.replies} />
+                    </div>
+                }
+                {isInReplyMode &&
+                    <div className={`ml-14 mt-8`}>
+                        <ReplyForm parent={comment} toggle={toggleReplyMode} />
                     </div>
                 }
             </div>

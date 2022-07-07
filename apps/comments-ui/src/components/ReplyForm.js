@@ -34,6 +34,7 @@ const ReplyForm = (props) => {
             // Clear message on success
             setMessage('');
             setFocused(false);
+            props.toggle();
         } catch (e) {
             // eslint-disable-next-line no-console
             console.error(e);
