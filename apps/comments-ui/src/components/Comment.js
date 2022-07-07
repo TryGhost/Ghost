@@ -53,7 +53,7 @@ const Comment = (props) => {
                     </div>
                 </div>    
                 {isInReplyMode &&
-                    <div className={`ml-14 mt-8 ${!hasReplies ? 'mb-8' : ''}`}>
+                    <div className={`ml-14 mt-8`}>
                         <ReplyForm />
                     </div>
                 }
