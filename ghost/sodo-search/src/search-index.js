@@ -55,7 +55,7 @@ export default class SearchIndex {
 
     async init() {
         let posts = await this.api.posts.browse({
-            limit: 'all',
+            limit: '10000',
             fields: 'id,slug,title,excerpt,url,updated_at,visibility',
             order: 'updated_at DESC'
         });
@@ -68,8 +68,9 @@ export default class SearchIndex {
         }
 
         let authors = await this.api.authors.browse({
-            limit: 'all',
-            fields: 'id,slug,name,url,profile_image'
+            limit: '10000',
+            fields: 'id,slug,name,url,profile_image',
+            order: 'updated_at DESC'
         });
 
         if (authors || authors.length > 0) {
@@ -81,8 +82,9 @@ export default class SearchIndex {
         }
 
         let tags = await this.api.tags.browse({
-            limit: 'all',
-            fields: 'id,slug,name,url'
+            limit: '10000',
+            fields: 'id,slug,name,url',
+            order: 'updated_at DESC'
         });
 
         if (tags || tags.length > 0) {
