@@ -57,7 +57,7 @@ const Comment = (props) => {
                         <div className="ml-14 flex gap-5 items-center">
                             <Like comment={comment} />
                             {isNotPublished || !props.parent && <Reply comment={comment} toggleReply={toggleReplyMode} isReplying={isInReplyMode} />}
-                            <h6 className="text-sm text-neutral-400 font-sans">{formatRelativeTime(comment.created_at)}</h6>
+                            <h6 className="text-sm text-neutral-400 dark:text-[rgba(255,255,255,0.5)] font-sans">{formatRelativeTime(comment.created_at)}</h6>
                             <More comment={comment} toggleEdit={toggleEditMode} />
                         </div>
                     </div>    
