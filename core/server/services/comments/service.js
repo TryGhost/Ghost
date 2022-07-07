@@ -106,17 +106,47 @@ class CommentsService {
                 to,
                 subject,
                 html,
-                text,
-                forceTextContent: true
+                text
             });
         }
     }
 
-    async notifyParentCommentAuthor(comment) {
-        const parent = await this.models.Comment.findOne({id: comment.get('parent_id')});
+    async notifyParentCommentAuthor(reply) {
+        const parent = await this.models.Comment.findOne({id: reply.get('parent_id')});
+        const parentMember = parent.related('member');
 
-        if (parent && parent.get('status') === 'published') {
+        if (parent && parent.get('status') === 'published' && parentMember.get('enable_comment_notifications')) {
+            const to = parentMember.get('email');
+            const subject = '💬 You have a new reply on one of your comments';
 
+            const post = await this.models.Post.findOne({id: reply.get('post_id')});
+            const member = await this.models.Member.findOne({id: reply.get('member_id')});
+
+            const templateData = {
+                siteTitle: this.settingsCache.get('title'),
+                siteUrl: this.urlUtils.getSiteUrl(),
+                siteDomain: this.siteDomain,
+                postTitle: post.get('title'),
+                postUrl: this.urlService.getUrlByResourceId(post.get('id'), {absolute: true}),
+                replyHtml: reply.get('html'),
+                replyDate: moment(reply.get('created_at')).tz(this.settingsCache.get('timezone')).format('D MMM YYYY'),
+                memberName: member.get('name'),
+                memberBio: member.get('bio'),
+                memberInitials: this.extractInitials(member.get('name')),
+                accentColor: this.settingsCache.get('accent_color'),
+                fromEmail: this.notificationFromAddress,
+                toEmail: to,
+                profileUrl: `${this.urlUtils.getSiteUrl()}#/portal/account/profile`
+            };
+
+            const {html, text} = await this.renderEmailTemplate('new-comment-reply', templateData);
+
+            return this.sendMail({
+                to,
+                subject,
+                html,
+                text
+            });
         }
     }
 
