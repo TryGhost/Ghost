@@ -30,14 +30,20 @@ class CommentsBox extends React.Component {
     }
 
     darkMode() {
-        const containerColor = getComputedStyle(document.querySelector('#ghost-comments-root').parentNode).getPropertyValue('color');
+        if (this.props.colorScheme === 'light') {
+            return false;
+        } else if (this.props.colorScheme === 'dark') {
+            return true;
+        } else {
+            const containerColor = getComputedStyle(document.querySelector('#ghost-comments-root').parentNode).getPropertyValue('color');
 
-        const colorsOnly = containerColor.substring(containerColor.indexOf('(') + 1, containerColor.lastIndexOf(')')).split(/,\s*/);
-        const red = colorsOnly[0];
-        const green = colorsOnly[1];
-        const blue = colorsOnly[2];
+            const colorsOnly = containerColor.substring(containerColor.indexOf('(') + 1, containerColor.lastIndexOf(')')).split(/,\s*/);
+            const red = colorsOnly[0];
+            const green = colorsOnly[1];
+            const blue = colorsOnly[2];
 
-        return this.contrast([255, 255, 255], [red, green, blue]) < 5;
+            return this.contrast([255, 255, 255], [red, green, blue]) < 5;
+        }
     }
 
     render() {

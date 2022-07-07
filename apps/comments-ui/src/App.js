@@ -23,13 +23,13 @@ function AuthFrame({adminUrl, onLoad}) {
     );
 }
 
-function CommentsBoxContainer({done}) {
+function CommentsBoxContainer({done, colorScheme}) {
     if (!done) {
         return null;
     }
     return (
         <ShadowRoot>
-            <CommentsBox />
+            <CommentsBox colorScheme={colorScheme} />
         </ShadowRoot>
     );
 }
@@ -297,7 +297,7 @@ export default class App extends React.Component {
         return (
             <SentryErrorBoundary dsn={this.props.sentryDsn}>
                 <AppContext.Provider value={this.getContextFromState()}>
-                    <CommentsBoxContainer done={done}/>
+                    <CommentsBoxContainer done={done} colorScheme={this.props.colorScheme} />
                     <AuthFrame adminUrl={this.props.adminUrl} onLoad={this.initSetup.bind(this)}/>
                 </AppContext.Provider>
             </SentryErrorBoundary>
