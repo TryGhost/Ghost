@@ -83,6 +83,8 @@ class CommentsService {
             const to = author.get('email');
             const subject = '💬 You have a new comment on one of your posts';
 
+            const memberName = member.get('name') || 'Anonymous';
+
             const templateData = {
                 siteTitle: this.settingsCache.get('title'),
                 siteUrl: this.urlUtils.getSiteUrl(),
@@ -91,9 +93,9 @@ class CommentsService {
                 postUrl: this.urlService.getUrlByResourceId(post.get('id'), {absolute: true}),
                 commentHtml: comment.get('html'),
                 commentDate: moment(comment.get('created_at')).tz(this.settingsCache.get('timezone')).format('D MMM YYYY'),
-                memberName: member.get('name'),
+                memberName: memberName,
                 memberBio: member.get('bio'),
-                memberInitials: this.extractInitials(member.get('name')),
+                memberInitials: this.extractInitials(memberName),
                 accentColor: this.settingsCache.get('accent_color'),
                 fromEmail: this.notificationFromAddress,
                 toEmail: to,
@@ -122,6 +124,8 @@ class CommentsService {
             const post = await this.models.Post.findOne({id: reply.get('post_id')});
             const member = await this.models.Member.findOne({id: reply.get('member_id')});
 
+            const memberName = member.get('name') || 'Anonymous';
+
             const templateData = {
                 siteTitle: this.settingsCache.get('title'),
                 siteUrl: this.urlUtils.getSiteUrl(),
@@ -130,9 +134,9 @@ class CommentsService {
                 postUrl: this.urlService.getUrlByResourceId(post.get('id'), {absolute: true}),
                 replyHtml: reply.get('html'),
                 replyDate: moment(reply.get('created_at')).tz(this.settingsCache.get('timezone')).format('D MMM YYYY'),
-                memberName: member.get('name'),
+                memberName: memberName,
                 memberBio: member.get('bio'),
-                memberInitials: this.extractInitials(member.get('name')),
+                memberInitials: this.extractInitials(memberName),
                 accentColor: this.settingsCache.get('accent_color'),
                 fromEmail: this.notificationFromAddress,
                 toEmail: to,
