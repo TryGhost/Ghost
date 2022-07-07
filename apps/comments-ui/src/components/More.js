@@ -1,37 +1,30 @@
 import {ReactComponent as MoreIcon} from '../images/icons/more.svg';
-import React from 'react';
-import AppContext from '../AppContext';
+import React, {useContext, useState} from 'react';
 import CommentContextMenu from './modals/CommentContextMenu';
+import AppContext from '../AppContext';
 
-class More extends React.Component {
-    static contextType = AppContext;
+const More = (props) => {
+    const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
+    const {member, admin} = useContext(AppContext);
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            isContextMenuOpen: false
-        };
+    const toggleContextMenu = () => {
+        setIsContextMenuOpen(current => !current);
+    };
 
-        this.toggleContextMenu = this.toggleContextMenu.bind(this);
-    }
+    const comment = props.comment;
 
-    toggleContextMenu() {
-        this.setState(state => ({
-            isContextMenuOpen: !state.isContextMenuOpen
-        }));
-    }
+    /*
+     * Whether we have at least one action inside the context menu
+     * (to hide the 'more' icon if we don't have any actions)
+    */
+    const show = (!!member && comment.status === 'published') || !!admin;
 
-    render() {
-        const comment = this.props.comment;
-        const show = this.props.show;
-
-        return (
-            <div className="relative">
-                {show ? <button onClick={this.toggleContextMenu}><MoreIcon className='gh-comments-icon gh-comments-icon-more dark:fill-white' /></button> : null}
-                {this.state.isContextMenuOpen ? <CommentContextMenu comment={comment} close={this.toggleContextMenu} toggleEdit={this.props.toggleEdit} /> : null}
-            </div>
-        );
-    }
-}
+    return (
+        <div className="relative">
+            {show ? <button onClick={toggleContextMenu}><MoreIcon className='gh-comments-icon gh-comments-icon-more dark:fill-white' /></button> : null}
+            {isContextMenuOpen ? <CommentContextMenu comment={comment} close={toggleContextMenu} toggleEdit={props.toggleEdit} /> : null}
+        </div>
+    );
+};
 
 export default More;

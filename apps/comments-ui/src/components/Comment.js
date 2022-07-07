@@ -34,14 +34,6 @@ class Comment extends React.Component {
         }));
     }
 
-    /**
-     * Whether we have at least one action inside the context menu
-     * (to hide the 'more' icon if we don't have any actions)
-     */
-    get hasMoreContextMenu() {
-        return (!!this.context.member && this.props.comment.status === 'published') || !!this.context.admin;
-    }
-
     render() {
         const comment = this.props.comment;
         const hasReplies = comment.replies && comment.replies.length > 0;
@@ -72,7 +64,7 @@ class Comment extends React.Component {
                         <div className="flex gap-6">
                             <Like comment={comment} />
                             <Reply comment={comment} />
-                            <More comment={comment} show={this.hasMoreContextMenu} toggleEdit={this.toggleEditMode} />
+                            <More comment={comment} toggleEdit={this.toggleEditMode} />
                         </div>
                     </div>    
                     {hasReplies && 
