@@ -94,8 +94,8 @@ module.exports = {
             '9xl': ['12.8rem', '1']
         },
         animation: {
-            'popup': 'popup 0.2s ease-in-out',
-            'fadein': 'fadein 0.2s'
+            'popup': 'popup 0.15s ease',
+            'fadein': 'fadein 0.15s'
         },
         keyframes: {
             popup: {
