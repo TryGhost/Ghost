@@ -36,5 +36,6 @@ module.exports = {
     portal_button_icon: 'portal_button_icon',
     portal_plans: 'portal_plans',
     portal_name: 'portal_name',
-    portal_button: 'portal_button'
+    portal_button: 'portal_button',
+    comments_enabled: 'comments_enabled'
 };

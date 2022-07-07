@@ -36,7 +36,11 @@ async function updateGlobalTemplateOptions(req, res, next) {
     {
         hbs.updateTemplateOptions({
             data: {
-                site: siteData,
+                site: {
+                    ...siteData,
+                    comments_enabled: siteData.comments_enabled !== 'off',
+                    comments_access: siteData.comments_enabled
+                },
                 labs: labsData,
                 config: themeData,
                 custom: themeSettingsData
