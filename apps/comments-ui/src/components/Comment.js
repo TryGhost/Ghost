@@ -54,7 +54,7 @@ const Comment = (props) => {
                 </div>    
                 {isInReplyMode &&
                     <div className={`ml-14 mt-8`}>
-                        <ReplyForm />
+                        <ReplyForm parent={comment} />
                     </div>
                 }
                 {hasReplies && 

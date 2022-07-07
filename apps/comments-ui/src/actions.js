@@ -28,6 +28,33 @@ async function addComment({state, api, data: comment}) {
     };
 }
 
+async function addReply({state, api, data: {reply, parent}}) {
+    let comment = reply;
+    comment.parent_id = parent.id;
+
+    const data = await api.comments.add({comment});
+    comment = data.comments[0];
+
+    // Temporary workaround for missing member relation (bug in API)
+    comment = {
+        ...comment,
+        member: state.member
+    };
+    
+    // Replace the comment in the state with the new one
+    return {
+        comments: state.comments.map((c) => {
+            if (c.id === parent.id) {
+                return {
+                    ...parent,
+                    replies: [...parent.replies, comment]
+                };
+            }
+            return c;
+        })
+    };
+}
+
 async function hideComment({state, adminApi, data: comment}) {
     await adminApi.hideComment(comment.id);
 
@@ -141,6 +168,7 @@ const Actions = {
     showComment,
     likeComment,
     unlikeComment,
+    addReply,
     loadMoreComments
 };
 
