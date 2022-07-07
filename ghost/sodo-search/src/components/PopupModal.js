@@ -1,7 +1,7 @@
 import Frame from './Frame';
 import AppContext from '../AppContext';
 import {ReactComponent as SearchIcon} from '../icons/search.svg';
-import {ReactComponent as CloseIcon} from '../icons/close.svg';
+import {ReactComponent as CloseIcon} from '../icons/x.svg';
 import {useContext, useEffect, useMemo, useRef, useState} from 'react';
 import {getBundledCssLink} from '../utils/helpers';
 
@@ -18,7 +18,7 @@ const tagsData = [
 
 const postsData = [
     {
-        title: 'How to ergonomically optimize your <span class=\'font-bold\'>work</span>space',
+        title: 'How to ergonomically optimize your <span class=\'font-bold\'>work</span>space fkds gfd jgkf gjg jkfg fjkg fkgj fkgjf jgkf jgkfj <span class=\'font-bold\'>work</span> gkjf jgkfj ',
         excerpt: 'Organically grow the holistic world view of disruptive innovation via workplace diversity and empowerment.'
     },
     {
@@ -141,7 +141,11 @@ function SearchBox() {
 
     return (
         <div className={className} ref={containerRef}>
-            <SearchIcon className='mr-3 text-neutral-900' alt='Search' />
+            <div className='flex items-center justify-center w-4 h-4 mr-3'>
+                <SearchClearIcon />
+            </div>
+                
+            {/* <SearchIcon className='mr-3 text-neutral-900' alt='Search' /> */}
             <input
                 ref={inputRef}
                 value={searchValue || ''}
@@ -158,30 +162,46 @@ function SearchBox() {
                 className='grow -my-5 py-5 -ml-3 pl-3 text-[1.65rem] focus-visible:outline-none placeholder:text-gray-400 outline-none'
                 placeholder='Search posts, tags, authors..'
             />
-            <ClearButton />
-            <CloseIcon className='ml-4 text-neutral-300 cursor-pointer w-5 h-5 sm:hidden' alt='Close' />
         </div>
     );
 }
 
-function ClearButton() {
+function SearchClearIcon() {
     const {searchValue = '', dispatch} = useContext(AppContext);
     if (!searchValue) {
-        return null;
+        return (
+            <SearchIcon className='text-neutral-900' alt='Search' />
+        );
     }
     return (
-        <button
-            className='ml-3 text-sm text-neutral-500 underline' alt='Clear'
-            onClick={() => {
-                dispatch('update', {
-                    searchValue: ''
-                });
-            }}
-        >
-            Clear
+        <button alt='Clear' className='-mb-[1px]' onClick={() => {
+            dispatch('update', {
+                searchValue: ''
+            });
+        }}>
+            <CloseIcon className='text-neutral-900 hover:text-neutral-500 h-3 w-3' />
         </button>
     );
 }
+
+// function ClearButton() {
+//     const {searchValue = '', dispatch} = useContext(AppContext);
+//     if (!searchValue) {
+//         return null;
+//     }
+//     return (
+//         <button
+//             className='ml-3 text-sm text-neutral-500 underline' alt='Clear'
+//             onClick={() => {
+//                 dispatch('update', {
+//                     searchValue: ''
+//                 });
+//             }}
+//         >
+//             Clear
+//         </button>
+//     );
+// }
 
 function TagListItem({tag, selectedResult, setSelectedResult}) {
     const {name, url, id} = tag;
