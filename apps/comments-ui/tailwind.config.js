@@ -67,6 +67,28 @@ module.exports = {
             fit: 'fit-content',
             prose: '65ch'
         },
+        minWidth: {
+            none: 'none',
+            0: '0rem',
+            xs: '32rem',
+            sm: '38.4rem',
+            md: '44.8rem',
+            lg: '51.2rem',
+            xl: '57.6rem',
+            '2xl': '67.2rem',
+            '3xl': '76.8rem',
+            '4xl': '89.6rem',
+            '5xl': '102.4rem',
+            '6xl': '115.2rem',
+            '7xl': '128rem',
+            '8xl': '140rem',
+            '9xl': '156rem',
+            full: '100%',
+            min: 'min-content',
+            max: 'max-content',
+            fit: 'fit-content',
+            prose: '65ch'
+        },
         borderRadius: {
             sm: '0.2rem',
             DEFAULT: '0.4rem',
