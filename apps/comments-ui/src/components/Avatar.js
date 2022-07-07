@@ -53,8 +53,8 @@ class Avatar extends React.Component {
     }
 
     render() {
-        let dimensionClasses = (this.props.size === 'small' ? 'w-8 h-8' : 'w-12 h-12');
-        let initialsClasses = (this.props.size === 'small' ? 'text-sm' : 'text-base');
+        let dimensionClasses = (this.props.size === 'small' ? 'w-8 h-8' : 'w-11 h-11');
+        let initialsClasses = (this.props.size === 'small' ? 'text-sm' : 'text-lg');
         let commentMember = (this.props.comment ? this.props.comment.member : this.context.member);
 
         const bgColor = this.HSLtoString(this.generateHSL());

@@ -14,8 +14,8 @@ function Like(props) {
     };
 
     return (
-        <button className="flex font-sans items-center dark:text-white" onClick={toggleLike}>
-            <LikeIcon className={`mr-[6px] stroke-black dark:stroke-white ${props.comment.liked ? 'fill-black dark:fill-white' : ''}`} />
+        <button className={`flex font-sans items-center text-sm dark:text-white ${props.comment.liked ? 'text-neutral-900' : 'text-neutral-400'}`} onClick={toggleLike}>
+            <LikeIcon className={`mr-[6px] stroke-neutral-400 ${props.comment.liked ? 'fill-neutral-900 stroke-neutral-900 dark:fill-white dark:stroke-white' : ''}`} />
             {props.comment.likes_count}
         </button>
     );

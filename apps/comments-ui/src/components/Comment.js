@@ -36,21 +36,21 @@ const Comment = (props) => {
     } else {
         return (
             <>
-                <div className={`flex flex-col ${hasReplies ? 'mb-4' : 'mb-10'}`}>
+                <div className={`flex flex-col ${hasReplies ? 'mb-4' : 'mb-12'}`}>
                     <div>
-                        <div className="flex mb-3 justify-start items-center">
+                        <div className="flex justify-start items-center">
                             <Avatar comment={comment} saturation={props.avatarSaturation} />
-                            <div className="ml-[14px]">
-                                <h4 className="text-lg font-sans font-bold mb-1 tracking-tight dark:text-neutral-300">{comment.member.name}</h4>
-                                <h6 className="text-[13px] text-neutral-400 font-sans">{formatRelativeTime(comment.created_at)}</h6>
+                            <div className="ml-3">
+                                <h4 className="text-lg font-sans font-semibold mb-1 tracking-tight dark:text-neutral-300">{comment.member.name}</h4>
                             </div>
                         </div>
-                        <div className={`mb-3 pr-4 font-sans leading-normal ${isNotPublished && 'text-neutral-500'} dark:text-neutral-300`}>
-                            <p dangerouslySetInnerHTML={html} className="whitespace-pre-wrap"></p>
+                        <div className={`ml-14 mb-4 pr-4 font-sans leading-normal ${isNotPublished ? 'text-neutral-400' : 'text-neutral-900'} dark:text-neutral-300`}>
+                            <p dangerouslySetInnerHTML={html} className="whitespace-pre-wrap text-[16.5px] leading-normal"></p>
                         </div>
-                        <div className="flex gap-6">
+                        <div className="ml-14 flex gap-5 items-center">
                             <Like comment={comment} />
                             {isNotPublished || !props.parent && <Reply comment={comment} toggleReply={toggleReplyMode} isReplying={isInReplyMode} />}
+                            <h6 className="text-sm text-neutral-400 font-sans">{formatRelativeTime(comment.created_at)}</h6>
                             <More comment={comment} toggleEdit={toggleEditMode} />
                         </div>
                     </div>    

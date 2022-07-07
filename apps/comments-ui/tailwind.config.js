@@ -91,6 +91,15 @@ module.exports = {
             '7xl': ['7.2rem', '1'],
             '8xl': ['9.6rem', '1'],
             '9xl': ['12.8rem', '1']
+        },
+        letterSpacing: {
+            tightest: '-.075em',
+            tighter: '-.05em',
+            tight: '-.018em',
+            normal: '0',
+            wide: '.018em',
+            wider: '.05em',
+            widest: '.1em'
         }
     },
     content: [
