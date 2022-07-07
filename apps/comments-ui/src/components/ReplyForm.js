@@ -56,7 +56,7 @@ const ReplyForm = (props) => {
     };
 
     return (
-        <form onSubmit={submitForm} className="comment-form">
+        <form onSubmit={submitForm} className="comment-form mb-4">
             <div className="w-full">
                 <div className="flex mb-4 space-x-4 justify-start items-center">
                     <Avatar />
@@ -75,11 +75,11 @@ const ReplyForm = (props) => {
                             onBlur={handleBlur}
                             placeholder={focused ? '' : 'Reply to this comment'}
                         />
-                        <button
+                        {focused && <button
                             className={`transition-[opacity] duration-150 rounded-md border py-2 px-3 font-sans text-sm text-center bg-black font-semibold text-white dark:bg-[rgba(255,255,255,0.8)] dark:text-neutral-800 ${focused ? 'opacity-100' : 'opacity-0'}`}
                             type="submit">
                             Add your reply
-                        </button>
+                        </button>}
                         <button
                             className={`transition-[opacity] duration-100 absolute top-2 right-2 rounded-md border py-1 px-2 font-sans text-sm text-center bg-black font-semibold text-white pointer-events-none dark:bg-[rgba(255,255,255,0.8)] dark:text-neutral-800 ${focused ? 'opacity-0' : 'opacity-100'}`}
                             disabled={true}>

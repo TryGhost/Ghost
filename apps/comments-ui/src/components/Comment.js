@@ -21,8 +21,20 @@ const Comment = (props) => {
     };
 
     const comment = props.comment;
+    const isReply = props.isReply;
     const hasReplies = comment.replies && comment.replies.length > 0;
     const html = {__html: comment.html};
+
+    let commentMarginBottom;
+    if (!hasReplies) {
+        commentMarginBottom = 'mb-10';
+    }
+    if (hasReplies) {
+        commentMarginBottom = 'mb-4';
+    }
+    if (isReply) {
+        commentMarginBottom = 'mb-10';
+    }
 
     if (comment.status !== 'published') {
         html.__html = '<i>This comment has been removed.</i>';
@@ -34,7 +46,7 @@ const Comment = (props) => {
         );
     } else {
         return (
-            <div className={`flex flex-col ${!hasReplies && 'mb-14'} last:mb-6`}>
+            <div className={`flex flex-col ${commentMarginBottom}`}>
                 <div>
                     <div className="flex mb-4 space-x-4 justify-start items-center">
                         <Avatar comment={comment} />
@@ -53,12 +65,12 @@ const Comment = (props) => {
                     </div>
                 </div>    
                 {hasReplies && 
-                    <div className={`ml-14 ${isInReplyMode ? 'mt-8' : 'mt-14'}`}>
+                    <div className="ml-14 mt-14">
                         <Replies comment={comment} />
                     </div>
                 }
                 {isInReplyMode &&
-                    <div className={`ml-14 mt-8`}>
+                    <div className={`ml-14 ${!hasReplies && 'mt-10'}`}>
                         <ReplyForm parent={comment} toggle={toggleReplyMode} />
                     </div>
                 }
