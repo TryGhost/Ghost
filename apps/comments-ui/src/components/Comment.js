@@ -1,5 +1,5 @@
-import {formatRelativeTime} from '../utils/helpers';
 import React, {useContext, useState} from 'react';
+import {Transition} from '@headlessui/react';
 import Avatar from './Avatar';
 import Like from './Like';
 import Reply from './Reply';
@@ -8,6 +8,7 @@ import EditForm from './EditForm';
 import Replies from './Replies';
 import ReplyForm from './ReplyForm';
 import AppContext from '../AppContext';
+import {formatRelativeTime} from '../utils/helpers';
 
 const Comment = (props) => {
     const [isInEditMode, setIsInEditMode] = useState(false);
@@ -63,11 +64,19 @@ const Comment = (props) => {
                         </div>
                     </div>    
                 </div>
-                {isInReplyMode &&
-                    <div className={`ml-14 mb-10 ${!hasReplies && 'mt-10'}`}>
+                <Transition
+                    show={isInReplyMode}
+                    enter="transition duration-500 ease-in-out"
+                    enterFrom="opacity-0 -translate-y-2"
+                    enterTo="opacity-100 translate-x-0"
+                    leave="transition-none duration-0"
+                    leaveFrom="opacity-100"
+                    leaveTo="opacity-0"
+                >
+                    <div className="ml-14 my-10">
                         <ReplyForm parent={comment} toggle={toggleReplyMode} avatarSaturation={props.avatarSaturation} />
                     </div>
-                }
+                </Transition>
                 {hasReplies && 
                     <div className="ml-14 mt-10">
                         <Replies comment={comment} avatarSaturation={props.avatarSaturation} />

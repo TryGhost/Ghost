@@ -5,7 +5,7 @@ import Avatar from './Avatar';
 const ReplyForm = (props) => {
     const [message, setMessage] = useState('');
     const [focused, setFocused] = useState(false);
-    const {member, postId, dispatchAction} = useContext(AppContext);
+    const {postId, dispatchAction} = useContext(AppContext);
 
     const getHTML = () => {
         // Convert newlines to <br> for now (until we add a real editor)
@@ -47,7 +47,7 @@ const ReplyForm = (props) => {
 
     const handleBlur = (event) => {
         if (message === '') {
-            setFocused(false);
+            props.toggle();
         }
     };
 
@@ -56,36 +56,28 @@ const ReplyForm = (props) => {
     };
 
     return (
-        <form onSubmit={submitForm} className="comment-form mb-4">
-            <div className="w-full">
-                <div className="flex mb-4 space-x-4 justify-start items-center">
-                    <Avatar saturation={props.avatarSaturation} />
-                    <div>
-                        <h4 className="text-lg font-sans font-bold mb-1 tracking-tight dark:text-neutral-300">{member.name}</h4>
-                        <h6 className="text-[13px] text-neutral-400 font-sans">Now</h6>
-                    </div>
-                </div>
+        <form onSubmit={submitForm} onClick={handleFocus} className={`comment-form transition duration-200 border border-neutral-150 hover:border-neutral-200 rounded-md px-3 pt-3 pb-2 -ml-[13px] -mr-[12px] -mt-[15px] shadow-lg shadow-neutral-50 hover:shadow-xl hover:shadow-neutral-100 ${focused ? 'cursor-default' : 'cursor-pointer'}`}>
+            <div className="w-full relative">
                 <div className="pr-3 font-sans leading-normal dark:text-neutral-300">
                     <div className="relative w-full">
                         <textarea
-                            className={`transition-[height] duration-150 w-full resize-none rounded-md border border-slate-200 p-3 font-sans mb-1 leading-normal focus:outline-0 dark:bg-[rgba(255,255,255,0.08)] dark:border-none dark:text-neutral-300 ${focused ? 'cursor-text h-40' : 'cursor-pointer overflow-hidden h-12 hover:border-slate-300'}`}
+                            className={`transition-[height] pl-[56px] mt-0 duration-150 w-full placeholder:text-neutral-300 border-none resize-none rounded-md border border-slate-50 px-0 py-3 font-sans mb-1 leading-normal focus:outline-0 dark:bg-[rgba(255,255,255,0.08)] dark:border-none dark:text-neutral-300 ${focused ? 'cursor-text h-40' : 'cursor-pointer overflow-hidden h-12 hover:border-slate-300'}`}
                             value={message}
                             onChange={handleChange}
                             onFocus={handleFocus}
                             onBlur={handleBlur}
-                            placeholder={focused ? '' : 'Reply to this comment'}
+                            autofocus={true}
+                            placeholder='Reply to comment'
                         />
-                        {focused && <button
-                            className={`transition-[opacity] duration-150 rounded-md border py-2 px-3 font-sans text-sm text-center bg-black font-semibold text-white dark:bg-[rgba(255,255,255,0.8)] dark:text-neutral-800 ${focused ? 'opacity-100' : 'opacity-0'}`}
-                            type="submit">
-                            Add your reply
-                        </button>}
                         <button
-                            className={`transition-[opacity] duration-100 absolute top-2 right-2 rounded-md border py-1 px-2 font-sans text-sm text-center bg-black font-semibold text-white pointer-events-none dark:bg-[rgba(255,255,255,0.8)] dark:text-neutral-800 ${focused ? 'opacity-0' : 'opacity-100'}`}
-                            disabled={true}>
-                            Reply
+                            className={`transition-[opacity] duration-150 absolute -right-3 bottom-2 rounded-md border py-3 px-4 font-sans text-sm text-center bg-black font-semibold text-white dark:bg-[rgba(255,255,255,0.8)] dark:text-neutral-800`}
+                            type="submit">
+                            Add reply
                         </button>
                     </div>
+                </div>
+                <div className="flex mb-1 justify-start items-center absolute top-[2px] left-0">
+                    <Avatar saturation={props.avatarSaturation} />
                 </div>
             </div>
         </form>

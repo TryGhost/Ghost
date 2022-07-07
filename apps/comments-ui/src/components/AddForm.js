@@ -1,6 +1,5 @@
-// import React, {useState} from 'react';
-import {Transition} from '@headlessui/react';
 import React, {useContext, useState} from 'react';
+import {Transition} from '@headlessui/react';
 import AppContext from '../AppContext';
 import Avatar from './Avatar';
 
@@ -18,7 +17,6 @@ const AddForm = (props) => {
         event.preventDefault();
 
         if (message.length === 0) {
-            // alert('Please enter a message'); TODO: Check, but don't think we really need this
             return;
         }
 
