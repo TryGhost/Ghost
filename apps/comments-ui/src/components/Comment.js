@@ -55,14 +55,14 @@ const Comment = (props) => {
                         </div>
                     </div>    
                 </div>
-                {hasReplies && 
-                    <div className="ml-14 mt-10">
-                        <Replies comment={comment} avatarSaturation={props.avatarSaturation} />
-                    </div>
-                }
                 {isInReplyMode &&
                     <div className={`ml-14 mb-10 ${!hasReplies && 'mt-10'}`}>
                         <ReplyForm parent={comment} toggle={toggleReplyMode} avatarSaturation={props.avatarSaturation} />
+                    </div>
+                }
+                {hasReplies && 
+                    <div className="ml-14 mt-10">
+                        <Replies comment={comment} avatarSaturation={props.avatarSaturation} />
                     </div>
                 }
             </>
