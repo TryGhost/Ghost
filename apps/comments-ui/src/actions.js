@@ -16,10 +16,11 @@ async function addComment({state, api, data: comment}) {
     const data = await api.comments.add({comment});
     comment = data.comments[0];
 
+    // Temporary workaround for missing member relation (bug in API)
     const commentStructured = {
         ...comment,
-        // Temporary workaround for missing member relation (bug in API)
-        member: state.member
+        member: state.member,
+        replies: []
     };
     
     return {
