@@ -50,6 +50,7 @@ class CommentsBox extends React.Component {
         const comments = !this.context.comments ? 'Loading...' : this.context.comments.slice().reverse().map(comment => <Comment comment={comment} key={comment.id} avatarSaturation={this.props.avatarSaturation} />);
 
         const containerClass = this.darkMode() ? 'dark' : '';
+        const commentsCount = comments.length;
 
         return (
             <section className={containerClass}>
@@ -58,7 +59,7 @@ class CommentsBox extends React.Component {
                     {comments}
                 </div>
                 <div>
-                    { this.context.member ? <AddForm avatarSaturation={this.props.avatarSaturation} /> : <NotSignedInBox /> }
+                    { this.context.member ? <AddForm commentsCount={commentsCount} avatarSaturation={this.props.avatarSaturation} /> : <NotSignedInBox /> }
                 </div>
             </section>
         );
