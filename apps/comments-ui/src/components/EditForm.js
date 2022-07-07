@@ -47,7 +47,7 @@ const EditForm = (props) => {
                         <textarea className="w-full resize-none rounded-md border h-32 p-3 font-sans mb-1 leading-normal focus:outline-0 dark:bg-[rgba(255,255,255,0.08)] dark:border-none dark:text-neutral-300" value={message} onChange={handleChange} autoFocus={true} />
                         <div className="flex flex-start">
                             <button type="submit" className="rounded-md border py-2 px-3 font-sans text-sm text-center bg-black font-semibold text-white dark:bg-[rgba(255,255,255,0.8)] dark:text-neutral-800">Edit comment</button>
-                            <button className="font-sans text-sm font-medium ml-2.5 text-neutral-500 dark:text-neutral-400" onClick={props.toggle}>Cancel</button>
+                            <button type="button" className="font-sans text-sm font-medium ml-2.5 text-neutral-500 dark:text-neutral-400" onClick={props.toggle}>Cancel</button>
                         </div>
                     </div>
                 </div>
