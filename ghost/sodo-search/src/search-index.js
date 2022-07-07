@@ -1,4 +1,4 @@
-import elasticlunr from 'elasticlunr';
+import {Document} from 'flexsearch';
 import GhostContentAPI from '@tryghost/content-api';
 
 export default class SearchIndex {
@@ -9,9 +9,27 @@ export default class SearchIndex {
             version: 'v5.0'
         });
 
-        this.postsIndex = null;
-        this.authorsIndex = null;
-        this.tagsIndex = null;
+        this.postsIndex = new Document({
+            document: {
+                id: 'id',
+                index: ['title', 'excerpt'],
+                store: true
+            }
+        });
+        this.authorsIndex = new Document({
+            document: {
+                id: 'id',
+                index: ['name'],
+                store: true
+            }
+        });
+        this.tagsIndex = new Document({
+            document: {
+                id: 'id',
+                index: ['name'],
+                store: true
+            }
+        });
 
         this.init = this.init.bind(this);
         this.search = this.search.bind(this);
@@ -19,53 +37,29 @@ export default class SearchIndex {
 
     #updatePostIndex(posts) {
         posts.forEach((post) => {
-            this.postsIndex.addDoc({
-                id: post.id,
-                title: post.title,
-                excerpt: post.excerpt,
-                slug: post.slug,
-                url: post.url
-            });
+            this.postsIndex.add(post);
         });
     }
 
     #updateAuthorsIndex(authors) {
         authors.forEach((author) => {
-            this.authorsIndex.addDoc({
-                id: author.id,
-                name: author.name,
-                url: author.url,
-                profile_image: author.profile_image
-            });
+            this.authorsIndex.add(author);
         });
     }
 
     #updateTagsIndex(tags) {
         tags.forEach((tag) => {
-            this.tagsIndex.addDoc({
-                id: tag.id,
-                name: tag.name,
-                url: tag.url
-            });
+            this.tagsIndex.add(tag);
         });
     }
 
     async init() {
-        // remove default stop words to search of *any* word
-        elasticlunr.clearStopWords();
-
         let posts = await this.api.posts.browse({
             limit: 'all',
             fields: 'id,slug,title,excerpt,url,updated_at,visibility',
             order: 'updated_at DESC',
             formats: 'plaintext'
         });
-
-        this.postsIndex = elasticlunr();
-        this.postsIndex.addField('title');
-        this.postsIndex.addField('url');
-        this.postsIndex.addField('excerpt');
-        this.postsIndex.setRef('id');
 
         if (posts || posts.length > 0) {
             if (!posts.length) {
@@ -79,12 +73,6 @@ export default class SearchIndex {
             fields: 'id,slug,name,url,profile_image'
         });
 
-        this.authorsIndex = elasticlunr();
-        this.authorsIndex.addField('name');
-        this.authorsIndex.addField('url');
-        this.authorsIndex.addField('profile_image');
-        this.authorsIndex.setRef('id');
-
         if (authors || authors.length > 0) {
             if (!authors.length) {
                 authors = [authors];
@@ -97,10 +85,6 @@ export default class SearchIndex {
             limit: 'all',
             fields: 'id,slug,name,url'
         });
-        this.tagsIndex = elasticlunr();
-        this.tagsIndex.addField('name');
-        this.tagsIndex.addField('url');
-        this.tagsIndex.setRef('id');
 
         if (tags || tags.length > 0) {
             if (!tags.length) {
@@ -111,37 +95,37 @@ export default class SearchIndex {
         }
     }
 
+    #normalizeSearchResult(result) {
+        const normalized = [];
+        const usedIds = {};
+
+        result.forEach((resultItem) => {
+            resultItem.result.forEach((doc) => {
+                if (!usedIds[doc.id]) {
+                    normalized.push(doc.doc);
+                    usedIds[doc.id] = true;
+                }
+            });
+        });
+
+        return normalized;
+    }
+
     search(value) {
         const posts = this.postsIndex.search(value, {
-            fields: {
-                title: {boost: 1},
-                excerpt: {boost: 1}
-            },
-            expand: true
+            enrich: true
         });
         const authors = this.authorsIndex.search(value, {
-            fields: {
-                name: {boost: 1}
-            },
-            expand: true
+            enrich: true
         });
         const tags = this.tagsIndex.search(value, {
-            fields: {
-                name: {boost: 1}
-            },
-            expand: true
+            enrich: true
         });
 
         return {
-            posts: posts.map((doc) => {
-                return this.postsIndex.documentStore.docs[doc.ref];
-            }),
-            authors: authors.map((doc) => {
-                return this.authorsIndex.documentStore.docs[doc.ref];
-            }),
-            tags: tags.map((doc) => {
-                return this.tagsIndex.documentStore.docs[doc.ref];
-            })
+            posts: this.#normalizeSearchResult(posts),
+            authors: this.#normalizeSearchResult(authors),
+            tags: this.#normalizeSearchResult(tags)
         };
     }
 }

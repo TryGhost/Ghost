@@ -43,7 +43,7 @@ describe('search index', function () {
                 posts: [{
                     id: 'sounique',
                     title: 'Awesome Barcelona Life',
-                    excerpt: 'We are sitting by the pool and smashing out search features',
+                    excerpt: 'We are sitting by the pool and smashing out search features. Barcelona life is great!',
                     url: 'http://localhost/ghost/awesome-barcelona-life/'
                 }]
             })
