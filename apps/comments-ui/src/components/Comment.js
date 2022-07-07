@@ -50,7 +50,7 @@ const Comment = (props) => {
                         </div>
                         <div className="flex gap-6">
                             <Like comment={comment} />
-                            {!props.parent && <Reply comment={comment} toggleReply={toggleReplyMode} isReplying={isInReplyMode} />}
+                            {isNotPublished || !props.parent && <Reply comment={comment} toggleReply={toggleReplyMode} isReplying={isInReplyMode} />}
                             <More comment={comment} toggleEdit={toggleEditMode} />
                         </div>
                     </div>    
