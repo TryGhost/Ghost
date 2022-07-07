@@ -3,9 +3,9 @@ import nock from 'nock';
 
 describe('search index', function () {
     test('initializes search index', async () => {
-        const siteURL = 'http://localhost';
+        const adminUrl = 'http://localhost';
         const apiKey = '69010382388f9de5869ad6e558';
-        const searchIndex = new SearchIndex({siteURL, apiKey, storage: localStorage});
+        const searchIndex = new SearchIndex({adminUrl, apiKey, storage: localStorage});
 
         const scope = nock('http://localhost/ghost/api/content')
             .get('/posts/?key=69010382388f9de5869ad6e558&limit=all&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC&formats=plaintext')
@@ -21,7 +21,7 @@ describe('search index', function () {
                 tags: []
             });
 
-        await searchIndex.init({siteURL, apiKey});
+        await searchIndex.init();
 
         expect(scope.isDone()).toBeTruthy();
 
@@ -33,9 +33,9 @@ describe('search index', function () {
     });
 
     test('allows to search for indexed posts and authors', async () => {
-        const siteURL = 'http://localhost';
+        const adminUrl = 'http://localhost';
         const apiKey = '69010382388f9de5869ad6e558';
-        const searchIndex = new SearchIndex({siteURL, apiKey, storage: localStorage});
+        const searchIndex = new SearchIndex({adminUrl, apiKey, storage: localStorage});
 
         nock('http://localhost/ghost/api/content')
             .get('/posts/?key=69010382388f9de5869ad6e558&limit=all&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC&formats=plaintext')
@@ -73,7 +73,7 @@ describe('search index', function () {
                 }]
             });
 
-        await searchIndex.init({siteURL, apiKey});
+        await searchIndex.init();
 
         let searchResults = searchIndex.search('Barcelona');
         expect(searchResults.posts.length).toEqual(1);
