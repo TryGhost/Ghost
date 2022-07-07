@@ -5,7 +5,7 @@ const Replies = (props) => {
 
     return (
         <div>
-            {comment.replies.map((reply => <Comment comment={reply} parent={comment} key={reply.id} isReply={true} />))}
+            {comment.replies.map((reply => <Comment comment={reply} parent={comment} key={reply.id} isReply={true} avatarSaturation={props.avatarSaturation} />))}
         </div>
     );
 };

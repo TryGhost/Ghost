@@ -35,7 +35,9 @@ function getSiteData() {
         const sentryDsn = scriptTag.dataset.sentryDsn;
         const postId = scriptTag.dataset.postId;
         const colorScheme = scriptTag.dataset.colorScheme;
-        return {siteUrl, apiKey, apiUrl, sentryDsn, postId, adminUrl, colorScheme};
+        const avatarSaturation = scriptTag.dataset.avatarSaturation;
+
+        return {siteUrl, apiKey, apiUrl, sentryDsn, postId, adminUrl, colorScheme, avatarSaturation};
     }
     return {};
 }
@@ -55,12 +57,13 @@ function setup({siteUrl}) {
 
 function init() {
     // const customSiteUrl = getSiteUrl();
-    const {siteUrl: customSiteUrl, sentryDsn, postId, adminUrl, colorScheme} = getSiteData();
+    const {siteUrl: customSiteUrl, sentryDsn, postId, adminUrl, colorScheme, avatarSaturation} = getSiteData();
     const siteUrl = customSiteUrl || window.location.origin;
     setup({siteUrl});
+
     ReactDOM.render(
         <React.StrictMode>
-            {<App adminUrl={adminUrl} siteUrl={siteUrl} customSiteUrl={customSiteUrl} sentryDsn={sentryDsn} postId={postId} colorScheme={colorScheme} />}
+            {<App adminUrl={adminUrl} siteUrl={siteUrl} customSiteUrl={customSiteUrl} sentryDsn={sentryDsn} postId={postId} colorScheme={colorScheme} avatarSaturation={avatarSaturation} />}
         </React.StrictMode>,
         document.getElementById(ROOT_DIV_ID)
     );
