@@ -1,7 +1,7 @@
 import Frame from './Frame';
 import AppContext from '../AppContext';
 import {ReactComponent as SearchIcon} from '../icons/search.svg';
-import {ReactComponent as CloseIcon} from '../icons/x.svg';
+import {ReactComponent as ClearIcon} from '../icons/clear.svg';
 import {useContext, useEffect, useMemo, useRef, useState} from 'react';
 import {getBundledCssLink} from '../utils/helpers';
 
@@ -162,6 +162,7 @@ function SearchBox() {
                 className='grow -my-5 py-5 -ml-3 pl-3 text-[1.65rem] focus-visible:outline-none placeholder:text-gray-400 outline-none'
                 placeholder='Search posts, tags, authors..'
             />
+            <CancelButton />
         </div>
     );
 }
@@ -179,29 +180,27 @@ function SearchClearIcon() {
                 searchValue: ''
             });
         }}>
-            <CloseIcon className='text-neutral-900 hover:text-neutral-500 h-3 w-3' />
+            <ClearIcon className='text-neutral-900 hover:text-neutral-500 h-3 w-3' />
         </button>
     );
 }
 
-// function ClearButton() {
-//     const {searchValue = '', dispatch} = useContext(AppContext);
-//     if (!searchValue) {
-//         return null;
-//     }
-//     return (
-//         <button
-//             className='ml-3 text-sm text-neutral-500 underline' alt='Clear'
-//             onClick={() => {
-//                 dispatch('update', {
-//                     searchValue: ''
-//                 });
-//             }}
-//         >
-//             Clear
-//         </button>
-//     );
-// }
+function CancelButton() {
+    const {dispatch} = useContext(AppContext);
+
+    return (
+        <button 
+            className='ml-3 text-sm text-neutral-500 sm:hidden' alt='Cancel'
+            onClick={() => {
+                dispatch('update', {
+                    showPopup: false
+                });
+            }}
+        >
+            Cancel
+        </button>
+    );
+}
 
 function TagListItem({tag, selectedResult, setSelectedResult}) {
     const {name, url, id} = tag;
