@@ -52,12 +52,12 @@ const AddForm = (props) => {
     };
 
     return (
-        <form onSubmit={submitForm} onClick={handleFocus} className={`comment-form transition duration-200 rounded-md px-3 pt-3 pb-2 -ml-[13px] -mr-3 -mt-[15px] mb-10 shadow-lg hover:shadow-xl ${focused ? 'cursor-default' : 'cursor-pointer'}`}>
+        <form onSubmit={submitForm} onClick={handleFocus} className={`bg-white comment-form transition duration-200 rounded-md px-3 pt-3 pb-2 -ml-[13px] -mr-3 -mt-[15px] mb-10 shadow-lg dark:bg-[rgba(255,255,255,0.08)] hover:shadow-xl ${focused ? 'cursor-default' : 'cursor-pointer'}`}>
             <div className="w-full relative">
                 <div className="pr-3 font-sans leading-normal dark:text-neutral-300">
                     <div className="relative w-full ">
                         <textarea
-                            className={`transition-[height] pl-[56px] px-0 py-[14px] ${focused ? 'mt-8' : '-mt-[2px] mb-1'} duration-150 w-full placeholder:text-neutral-300 border-none resize-none rounded-md border border-slate-50 font-sans text-[16.5px] leading-normal focus:outline-0 dark:bg-[rgba(255,255,255,0.08)] dark:border-none dark:text-neutral-300 ${focused ? 'cursor-text h-40' : 'cursor-pointer overflow-hidden h-11 hover:border-slate-300'}`}
+                            className={`transition-[height] pl-[56px] px-0 py-[14px] ${focused ? 'mt-8' : '-mt-[2px] mb-1'} duration-150 bg-transparent w-full placeholder:text-neutral-300 dark:placeholder:text-neutral-600 border-none resize-none rounded-md border border-slate-50 font-sans text-[16.5px] leading-normal focus:outline-0 dark:border-none dark:text-neutral-300 ${focused ? 'cursor-text h-40' : 'cursor-pointer overflow-hidden h-11 hover:border-slate-300'}`}
                             value={message}
                             onChange={handleChange}
                             onFocus={handleFocus}
@@ -66,7 +66,7 @@ const AddForm = (props) => {
                             placeholder='Join the discussion'
                         />
                         <button
-                            className={`transition-[opacity] duration-150 absolute -right-[9px] bottom-[4px] rounded-md border py-3 px-4 font-sans text-sm text-center bg-black font-semibold text-white dark:bg-[rgba(255,255,255,0.8)] dark:text-neutral-800`}
+                            className={`transition-[opacity] duration-150 absolute -right-[9px] bottom-[4px] rounded-[4px] border py-3 px-4 font-sans text-sm text-center bg-neutral-900 font-semibold text-white dark:bg-[rgba(255,255,255,0.9)] dark:text-neutral-800`}
                             type="submit">
                             Add comment
                         </button>
