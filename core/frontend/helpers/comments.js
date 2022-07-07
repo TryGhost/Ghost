@@ -15,6 +15,11 @@ async function comments(options) {
         colorScheme = options.hash.color_scheme;
     }
 
+    let avatarSaturation = parseInt(options.hash.avatar_saturation);
+    if (isNaN(avatarSaturation)) {
+        avatarSaturation = 50;
+    }
+
     const frontendKey = await getFrontendKey();
 
     const data = {
@@ -24,7 +29,8 @@ async function comments(options) {
         key: frontendKey,
         'post-id': this.id,
         'sentry-dsn': '', /* todo: insert sentry dsn key here */
-        'color-scheme': colorScheme
+        'color-scheme': colorScheme,
+        'avatar-saturation': avatarSaturation
     };
 
     let dataAttributes = '';
