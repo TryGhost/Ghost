@@ -30,7 +30,7 @@ const Comment = (props) => {
 
     if (isInEditMode) {
         return (
-            <EditForm comment={comment} toggle={toggleEditMode} />
+            <EditForm comment={comment} toggle={toggleEditMode} parent={props.parent} />
         );
     } else {
         return (
@@ -48,13 +48,13 @@ const Comment = (props) => {
                     </div>
                     <div className="flex gap-6">
                         <Like comment={comment} />
-                        {!props.isReply && <Reply comment={comment} toggleReply={toggleReplyMode} isReplying={isInReplyMode} />}
+                        {!props.parent && <Reply comment={comment} toggleReply={toggleReplyMode} isReplying={isInReplyMode} />}
                         <More comment={comment} toggleEdit={toggleEditMode} />
                     </div>
                 </div>    
                 {hasReplies && 
                     <div className={`ml-14 ${isInReplyMode ? 'mt-8' : 'mt-14'}`}>
-                        <Replies replies={comment.replies} />
+                        <Replies comment={comment} />
                     </div>
                 }
                 {isInReplyMode &&

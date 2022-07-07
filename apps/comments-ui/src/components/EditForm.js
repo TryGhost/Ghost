@@ -17,8 +17,11 @@ const EditForm = (props) => {
         event.preventDefault();
 
         await dispatchAction('editComment', {
-            id: props.comment.id,
-            html: getHTML()
+            comment: {
+                id: props.comment.id,
+                html: getHTML()
+            },
+            parent: props.parent
         });
 
         props.toggle();
