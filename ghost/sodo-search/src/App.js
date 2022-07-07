@@ -9,7 +9,7 @@ export default class App extends React.Component {
         super(props);
 
         const searchIndex = new SearchIndex({
-            siteURL: props.siteURL,
+            adminUrl: props.adminUrl,
             apiKey: props.apiKey
         });
 
@@ -98,7 +98,7 @@ export default class App extends React.Component {
             <AppContext.Provider value={{
                 page: 'search',
                 showPopup: this.state.showPopup,
-                siteUrl: this.props.siteUrl,
+                adminUrl: this.props.adminUrl,
                 appVersion: this.props.appVersion,
                 searchIndex: this.state.searchIndex,
                 indexComplete: this.state.indexComplete,
