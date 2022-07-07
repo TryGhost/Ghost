@@ -120,6 +120,8 @@ module.exports = {
 
             if (frame.options?.context?.member?.id) {
                 data.member_id = frame.options.context.member.id;
+
+                // todo: add validation that the parent comment is on the same post, and not deleted
                 return models.Comment.add(data, frame.options);
             } else {
                 return Promise.reject(new errors.NotFoundError({
