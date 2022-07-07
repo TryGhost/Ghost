@@ -57,8 +57,7 @@ export default class SearchIndex {
         let posts = await this.api.posts.browse({
             limit: 'all',
             fields: 'id,slug,title,excerpt,url,updated_at,visibility',
-            order: 'updated_at DESC',
-            formats: 'plaintext'
+            order: 'updated_at DESC'
         });
 
         if (posts || posts.length > 0) {
