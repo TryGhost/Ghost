@@ -1,7 +1,7 @@
-import {ReactComponent as MoreIcon} from '../images/icons/more.svg';
 import React, {useContext, useState} from 'react';
 import CommentContextMenu from './modals/CommentContextMenu';
 import AppContext from '../AppContext';
+import {ReactComponent as MoreIcon} from '../images/icons/more.svg';
 
 const More = (props) => {
     const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);

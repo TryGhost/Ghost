@@ -34,7 +34,7 @@ const Comment = (props) => {
         );
     } else {
         return (
-            <div className={`flex flex-col ${!hasReplies ? 'mb-14' : ''}`}>
+            <div className={`flex flex-col ${!hasReplies && 'mb-14'} last:mb-6`}>
                 <div>
                     <div className="flex mb-4 space-x-4 justify-start items-center">
                         <Avatar comment={comment} />
