@@ -45,6 +45,9 @@ const authorsData = [
     }
 ];
 
+const DEFAULT_MAX_POSTS = 1;
+const STEP_MAX_POSTS = 1;
+
 const StylesWrapper = () => {
     return {
         modalContainer: {
@@ -250,24 +253,34 @@ function PostListItem({post, selectedResult, setSelectedResult}) {
     );
 }
 
-function ShowMoreButton() {
-    return null;
-    // return (
-    //     <button
-    //         className='w-full my-3 p-[1rem] border border-neutral-200 hover:border-neutral-300 text-neutral-800 hover:text-black font-semibold rounded transition duration-150 ease hover:ease'
-
-    //     >
-    //         Show more results
-    //     </button>
-    // );
+function ShowMoreButton({posts, maxPosts, setMaxPosts}) {
+    if (!posts?.length || maxPosts >= posts?.length) {
+        return null;
+    }
+    return (
+        <button
+            className='w-full my-3 p-[1rem] border border-neutral-200 hover:border-neutral-300 text-neutral-800 hover:text-black font-semibold rounded transition duration-150 ease hover:ease'
+            onClick={() => {
+                const updatedMaxPosts = maxPosts + STEP_MAX_POSTS;
+                setMaxPosts(updatedMaxPosts);
+            }}
+        >
+            Show more results
+        </button>
+    );
 }
 
 function PostResults({posts, selectedResult, setSelectedResult}) {
+    const [maxPosts, setMaxPosts] = useState(DEFAULT_MAX_POSTS);
+    useEffect(() => {
+        setMaxPosts(DEFAULT_MAX_POSTS);
+    }, [posts]);
+
     if (!posts?.length) {
         return null;
     }
-
-    const PostItems = posts.map((d) => {
+    const paginatedPosts = posts?.slice(0, maxPosts);
+    const PostItems = paginatedPosts.map((d) => {
         return (
             <PostListItem
                 key={d.title}
@@ -280,7 +293,7 @@ function PostResults({posts, selectedResult, setSelectedResult}) {
         <div className='border-t border-neutral-200 py-3 px-4 sm:px-7'>
             <h1 className='uppercase text-xs text-neutral-400 font-semibold mb-1 tracking-wide'>Posts</h1>
             {PostItems}
-            <ShowMoreButton />
+            <ShowMoreButton setMaxPosts={setMaxPosts} maxPosts={maxPosts} posts={posts} />
         </div>
     );
 }
