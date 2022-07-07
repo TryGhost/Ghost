@@ -6,12 +6,18 @@ import Reply from './Reply';
 import More from './More';
 import EditForm from './EditForm';
 import Replies from './Replies';
+import ReplyForm from './ReplyForm';
 
 const Comment = (props) => {
     const [isInEditMode, setIsInEditMode] = useState(false);
+    const [isInReplyMode, setIsInReplyMode] = useState(false);
 
     const toggleEditMode = () => {
         setIsInEditMode(current => !current);
+    };
+
+    const toggleReplyMode = () => {
+        setIsInReplyMode(current => !current);
     };
 
     const comment = props.comment;
@@ -42,12 +48,17 @@ const Comment = (props) => {
                     </div>
                     <div className="flex gap-6">
                         <Like comment={comment} />
-                        <Reply comment={comment} />
+                        {!props.isReply && <Reply comment={comment} toggleReply={toggleReplyMode} isReplying={isInReplyMode} />}
                         <More comment={comment} toggleEdit={toggleEditMode} />
                     </div>
                 </div>    
+                {isInReplyMode &&
+                    <div className={`ml-14 mt-8 ${!hasReplies ? 'mb-8' : ''}`}>
+                        <ReplyForm />
+                    </div>
+                }
                 {hasReplies && 
-                    <div className="ml-14 mt-14">
+                    <div className={`ml-14 ${isInReplyMode ? 'mt-8' : 'mt-14'}`}>
                         <Replies replies={comment.replies} />
                     </div>
                 }
