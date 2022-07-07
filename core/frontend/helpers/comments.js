@@ -1,12 +1,18 @@
 const {SafeString} = require('../services/handlebars');
 const {config, urlUtils, getFrontendKey, labs} = require('../services/proxy');
 
-async function comments() {
+async function comments(options) {
     // todo: For now check on the comment id to exclude normal pages (we probably have a better way to do this)
-    const commentId = this.comment_id;
 
+    const commentId = this.comment_id;
+        
     if (!commentId) {
         return;
+    }
+    
+    let colorScheme = 'auto';
+    if (options.hash.color_scheme === 'dark' || options.hash.color_scheme === 'light') {
+        colorScheme = options.hash.color_scheme;
     }
 
     const frontendKey = await getFrontendKey();
@@ -17,7 +23,8 @@ async function comments() {
         admin: urlUtils.urlFor('admin', true),
         key: frontendKey,
         'post-id': this.id,
-        'sentry-dsn': '' /* todo: insert sentry dsn key here */
+        'sentry-dsn': '', /* todo: insert sentry dsn key here */
+        'color-scheme': colorScheme
     };
 
     let dataAttributes = '';
