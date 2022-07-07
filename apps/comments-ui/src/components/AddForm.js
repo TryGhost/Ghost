@@ -66,7 +66,7 @@ const AddForm = (props) => {
                             placeholder='Join the discussion'
                         />
                         <button
-                            className={`transition-[opacity] duration-150 absolute -right-[9px] bottom-[2px] rounded-md border py-3 px-4 font-sans text-sm text-center bg-black font-semibold text-white dark:bg-[rgba(255,255,255,0.8)] dark:text-neutral-800`}
+                            className={`transition-[opacity] duration-150 absolute -right-[9px] bottom-2 rounded-md border py-3 px-4 font-sans text-sm text-center bg-black font-semibold text-white dark:bg-[rgba(255,255,255,0.8)] dark:text-neutral-800`}
                             type="submit">
                             Add comment
                         </button>
