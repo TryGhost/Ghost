@@ -6,22 +6,22 @@ const getMemberStats = async () => {
     const {free, paid, comped} = memberStats.meta.totals;
     let total = free + paid + comped;
     return {free, paid, comped, total};
-}
+};
 
 const numberWithCommas = (n) => {
     return n.toLocaleString();
-  }
+};
 
 const rounding = (n, roundTo) => {
     return Math.floor(n / roundTo) * roundTo;
-}
+};
 
 // Rounding strategy https://github.com/TryGhost/Team/issues/1667
 const memberCountRounding = (memberCount) => {
-
     if (memberCount <= 50) {
         return memberCount;
     }
+
     if (memberCount > 50 && memberCount <= 100) {
         return `${numberWithCommas(rounding(memberCount, 10))}+`;
     }
@@ -45,6 +45,6 @@ const memberCountRounding = (memberCount) => {
     if (memberCount > 1000000) {
         return `${humanNumber(rounding(memberCount, 100000))}+`;
     }
-}
+};
 
 module.exports = {memberCountRounding, getMemberStats};
