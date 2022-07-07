@@ -52,12 +52,12 @@ const AddForm = (props) => {
     };
 
     return (
-        <form onSubmit={submitForm} onClick={handleFocus} className={`comment-form transition duration-200 hover:border-neutral-200 rounded-md p-3 -m-3 mt-14 shadow-lg hover:shadow-xl ${focused ? 'cursor-default' : 'cursor-pointer'}`}>
+        <form onSubmit={submitForm} onClick={handleFocus} className={`comment-form transition duration-200 border border-neutral-150 hover:border-neutral-200 rounded-md px-3 pt-3 pb-2 -ml-[13px] -mr-3 -mt-[15px] mb-10 shadow-lg shadow-neutral-50 hover:shadow-xl hover:shadow-neutral-100 ${focused ? 'cursor-default' : 'cursor-pointer'}`}>
             <div className="w-full relative">
                 <div className="pr-3 font-sans leading-normal dark:text-neutral-300">
-                    <div className="relative w-full">
+                    <div className="relative w-full ">
                         <textarea
-                            className={`transition-[height] pl-[56px] ${focused ? 'mt-8' : 'mt-0'} duration-150 w-full placeholder:text-neutral-300 border-none resize-none rounded-md border border-slate-50 px-0 py-3 font-sans text-[16.5px] leading-normal focus:outline-0 dark:bg-[rgba(255,255,255,0.08)] dark:border-none dark:text-neutral-300 ${focused ? 'cursor-text h-40' : 'cursor-pointer overflow-hidden h-11 hover:border-slate-300'}`}
+                            className={`transition-[height] pl-[56px] px-0 py-[14px] ${focused ? 'mt-8' : 'mt-0'} duration-150 w-full placeholder:text-neutral-300 border-none resize-none rounded-md border border-slate-50 font-sans text-[16.5px] mb-1 leading-normal focus:outline-0 dark:bg-[rgba(255,255,255,0.08)] dark:border-none dark:text-neutral-300 ${focused ? 'cursor-text h-40' : 'cursor-pointer overflow-hidden h-12 hover:border-slate-300'}`}
                             value={message}
                             onChange={handleChange}
                             onFocus={handleFocus}
