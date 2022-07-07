@@ -134,9 +134,9 @@ function SearchBox() {
         };
     }, [dispatch]);
 
-    let className = 'z-10 relative flex items-center py-5 px-4 sm:px-7 mt-10 sm:mt-0 bg-white rounded-t-lg shadow';
+    let className = 'z-10 relative flex items-center py-5 px-4 sm:px-7 bg-white rounded-t-lg shadow';
     if (!searchValue) {
-        className = 'z-10 relative flex items-center py-5 px-4 sm:px-7 mt-10 sm:mt-0 bg-white rounded-lg';
+        className = 'z-10 relative flex items-center py-5 px-4 sm:px-7 bg-white rounded-lg';
     }
 
     return (
@@ -543,7 +543,7 @@ function Results({posts, authors, tags}) {
         return null;
     }
     return (
-        <div className='overflow-y-auto max-h-[calc(100vh-212px)] sm:max-h-[70vh] -mt-[1px]' ref={containerRef}>
+        <div className='overflow-y-auto max-h-[calc(100vh-172px)] sm:max-h-[70vh] -mt-[1px]' ref={containerRef}>
             <AuthorResults
                 authors={authors}
                 selectedResult={selectedResult}
