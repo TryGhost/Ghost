@@ -49,7 +49,9 @@ describe('Themes middleware', function () {
 
         fakeActiveThemeName = 'bacon-sensation';
 
-        fakeSiteData = {};
+        fakeSiteData = {
+            comments_enabled: 'all'
+        };
 
         fakeLabsData = {
             // labs data is deep cloned,
@@ -159,9 +161,16 @@ describe('Themes middleware', function () {
                     // Check labs config
                     should.deepEqual(data.labs, fakeLabsData);
 
-                    should.equal(data.site, fakeSiteData);
-                    should.exist(data.site.signup_url);
-                    data.site.signup_url.should.equal('#/portal');
+                    should.deepEqual(data.site, {
+                        ...fakeSiteData,
+
+                        // signup_url should get added
+                        signup_url: '#/portal',
+                        
+                        // the comments_enabled setting should be mapped to comments_access, and comments_enabled should be a boolean
+                        comments_enabled: true,
+                        comments_access: 'all'
+                    });
 
                     should.deepEqual(data.custom, fakeCustomThemeSettingsData);
 
