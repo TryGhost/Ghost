@@ -14,14 +14,3 @@ html {
 body {
     font-size: 1.5rem;
 }
-
-/* The following lines are needed for the editor */
-/* Placeholder */
-.ProseMirror p.is-editor-empty:first-child::before {
-    content: attr(data-placeholder);
-    float: left;
-    height: 0;
-    pointer-events: none;
-    --tw-text-opacity: 1;
-    color: rgb(212 212 212 / var(--tw-text-opacity));
-}
