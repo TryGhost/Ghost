@@ -16,7 +16,8 @@ module.exports.formattedMemberResponse = function formattedMemberResponse(member
         avatar_image: member.avatar_image,
         subscribed: !!member.subscribed,
         subscriptions: member.subscriptions || [],
-        paid: member.status !== 'free'
+        paid: member.status !== 'free',
+        enable_comment_notifications: member.enable_comment_notifications
     };
     if (member.newsletters) {
         data.newsletters = formatNewsletterResponse(member.newsletters);

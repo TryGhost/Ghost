@@ -22,7 +22,8 @@ describe('Members Service - utils', function () {
                 avatar_image: 'https://gravatar.com/avatar/7d8efd2c2a781111599a8cae293cf704?s=250&d=blank',
                 subscribed: true,
                 status: 'free',
-                extra: 'property'
+                extra: 'property',
+                enable_comment_notifications: true
             });
             should(member1).deepEqual({
                 uuid: 'uuid-1',
@@ -32,7 +33,8 @@ describe('Members Service - utils', function () {
                 avatar_image: 'https://gravatar.com/avatar/7d8efd2c2a781111599a8cae293cf704?s=250&d=blank',
                 subscribed: true,
                 subscriptions: [],
-                paid: false
+                paid: false,
+                enable_comment_notifications: true
             });
         });
 
@@ -52,7 +54,8 @@ describe('Members Service - utils', function () {
                     sender_name: 'Jamie',
                     sender_email: 'jamie@example.com',
                     sort_order: 0
-                }]
+                }],
+                enable_comment_notifications: false
             });
             should(member1).deepEqual({
                 uuid: 'uuid-1',
@@ -68,7 +71,8 @@ describe('Members Service - utils', function () {
                     name: 'Daily brief',
                     description: 'One email daily',
                     sort_order: 0
-                }]
+                }],
+                enable_comment_notifications: false
             });
         });
     });
