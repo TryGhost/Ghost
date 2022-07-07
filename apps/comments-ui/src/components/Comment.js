@@ -53,7 +53,7 @@ class Comment extends React.Component {
 
         if (this.state.isInEditMode) {
             return (
-                <EditForm value={html} comment={comment} toggle={this.toggleEditMode} />
+                <EditForm comment={comment} toggle={this.toggleEditMode} />
             );
         } else {
             return (

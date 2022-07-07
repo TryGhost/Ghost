@@ -79,7 +79,7 @@ const AddForm = (props) => {
                         </button>
                         <button
                             className={`transition-[opacity] duration-100 absolute top-2 right-2 rounded-md border py-1 px-2 font-sans text-sm text-center bg-black font-semibold text-white pointer-events-none dark:bg-[rgba(255,255,255,0.8)] dark:text-neutral-800 ${focused ? 'opacity-0' : 'opacity-100'}`}
-                            disabled="true">
+                            disabled={true}>
                             Comment
                         </button>
                     </div>
