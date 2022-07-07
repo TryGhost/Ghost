@@ -10,6 +10,7 @@ export default class SearchIndex {
         });
 
         this.postsIndex = new Document({
+            tokenize: 'forward',
             document: {
                 id: 'id',
                 index: ['title', 'excerpt'],
@@ -17,6 +18,7 @@ export default class SearchIndex {
             }
         });
         this.authorsIndex = new Document({
+            tokenize: 'forward',
             document: {
                 id: 'id',
                 index: ['name'],
@@ -24,6 +26,7 @@ export default class SearchIndex {
             }
         });
         this.tagsIndex = new Document({
+            tokenize: 'forward',
             document: {
                 id: 'id',
                 index: ['name'],
