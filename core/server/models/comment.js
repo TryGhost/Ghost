@@ -44,6 +44,19 @@ const Comment = ghostBookshelf.Model.extend({
         ghostBookshelf.Model.prototype.emitChange.bind(this)(this, eventToTrigger, options);
     },
 
+    onSaving() {
+        ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
+
+        if (this.hasChanged('html')) {
+            const sanitizeHtml = require('sanitize-html');
+
+            this.set('html', sanitizeHtml(this.get('html'), {
+                allowedTags: ['p', 'br'],
+                selfClosing: ['br']
+            }));
+        }
+    },
+
     onCreated: function onCreated(model, options) {
         ghostBookshelf.Model.prototype.onCreated.apply(this, arguments);
 
