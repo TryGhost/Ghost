@@ -56,12 +56,12 @@ const ReplyForm = (props) => {
     };
 
     return (
-        <form onSubmit={submitForm} onClick={handleFocus} className={`comment-form transition duration-200 rounded-md px-3 pt-3 pb-2 -ml-[13px] -mr-[12px] -mt-[15px] shadow-lg hover:shadow-xl ${focused ? 'cursor-default' : 'cursor-pointer'}`}>
+        <form onSubmit={submitForm} onClick={handleFocus} className={`bg-white dark:bg-[rgba(255,255,255,0.08)] comment-form transition duration-200 rounded-md px-3 pt-3 pb-2 -ml-[13px] -mr-[12px] -mt-[15px] shadow-lg hover:shadow-xl ${focused ? 'cursor-default' : 'cursor-pointer'}`}>
             <div className="w-full relative">
                 <div className="pr-3 font-sans leading-normal dark:text-neutral-300">
                     <div className="relative w-full">
                         <textarea
-                            className={`transition-[height] pl-[56px] mt-0 duration-150 w-full placeholder:text-neutral-300 text-[16.5px] border-none resize-none rounded-md border border-slate-50 px-0 py-3 font-sans mb-1 leading-normal focus:outline-0 dark:bg-[rgba(255,255,255,0.08)] dark:border-none dark:text-neutral-300 ${focused ? 'cursor-text h-40' : 'cursor-pointer overflow-hidden h-12 hover:border-slate-300'}`}
+                            className={`transition-[height] pl-[56px] mt-0 duration-150 w-full dark:placeholder:text-neutral-600 placeholder:text-neutral-300 text-[16.5px] border-none resize-none rounded-md border border-slate-50 px-0 py-3 font-sans mb-1 leading-normal focus:outline-0 bg-transparent dark:text-neutral-300 ${focused ? 'cursor-text h-40' : 'cursor-pointer overflow-hidden h-12 hover:border-slate-300'}`}
                             value={message}
                             onChange={handleChange}
                             onFocus={handleFocus}

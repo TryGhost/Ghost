@@ -35,7 +35,7 @@ const EditForm = (props) => {
     const comment = props.comment;
 
     return (
-        <form onSubmit={submitForm} className={`comment-form transition duration-200 rounded-md px-3 pt-3 pb-2 -ml-[13px] -mr-3 -mt-[13px] mb-10 shadow-lg hover:shadow-xl`}>
+        <form onSubmit={submitForm} className={`comment-form transition duration-200 bg-white dark:bg-[rgba(255,255,255,0.08)] rounded-md px-3 pt-3 pb-2 -ml-[13px] -mr-3 -mt-[13px] mb-10 shadow-lg dark:shadow-transparent hover:shadow-xl`}>
             <div>
                 <div className="flex justify-start items-center">
                     <Avatar saturation={props.avatarSaturation} />
@@ -46,7 +46,7 @@ const EditForm = (props) => {
                 <div className="pr-3 font-sans leading-normal dark:text-neutral-300">
                     <div className="relative w-full">
                         <textarea
-                            className={`w-full h-40 pl-[56px] border-none resize-none p-0 font-sans text-[16.5px] mb-1 leading-normal placeholder:text-neutral-300 focus:outline-0 dark:bg-[rgba(255,255,255,0.08)] dark:border-none dark:text-neutral-300`}
+                            className={`w-full h-40 pl-[56px] border-none resize-none p-0 font-sans text-[16.5px] mb-1 leading-normal placeholder:text-neutral-300 focus:outline-0 bg-transparent dark:border-none dark:text-neutral-300`}
                             value={message}
                             onChange={handleChange}
                             onFocus={function (e) {
@@ -60,7 +60,7 @@ const EditForm = (props) => {
                         <div className="flex space-x-4 transition-[opacity] duration-150 absolute -right-3 bottom-2">
                             <button type="button" className="font-sans text-sm font-medium ml-2.5 text-neutral-500 dark:text-neutral-400" onClick={props.toggle}>Cancel</button>
                             <button
-                                className={`rounded-md border py-3 px-4 font-sans text-sm text-center bg-black font-semibold text-white dark:bg-[rgba(255,255,255,0.8)] dark:text-neutral-800`}
+                                className={`rounded-md border py-3 px-4 font-sans text-sm text-center bg-black font-semibold text-white dark:bg-[rgba(255,255,255,0.9)] dark:text-neutral-800`}
                                 type="submit">
                                 Edit comment
                             </button>

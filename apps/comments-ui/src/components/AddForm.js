@@ -52,7 +52,7 @@ const AddForm = (props) => {
     };
 
     return (
-        <form onSubmit={submitForm} onClick={handleFocus} className={`bg-white comment-form transition duration-200 rounded-md px-3 pt-3 pb-2 -ml-[13px] -mr-3 -mt-[15px] mb-10 shadow-lg dark:bg-[rgba(255,255,255,0.08)] hover:shadow-xl ${focused ? 'cursor-default' : 'cursor-pointer'}`}>
+        <form onSubmit={submitForm} onClick={handleFocus} className={`bg-white comment-form transition duration-200 rounded-md px-3 pt-3 pb-2 -ml-[13px] -mr-3 mt-8 mb-10 shadow-lg dark:bg-[rgba(255,255,255,0.08)] dark:shadow-transparent hover:shadow-xl ${focused ? 'cursor-default' : 'cursor-pointer'}`}>
             <div className="w-full relative">
                 <div className="pr-3 font-sans leading-normal dark:text-neutral-300">
                     <div className="relative w-full ">

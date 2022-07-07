@@ -48,10 +48,10 @@ const Comment = (props) => {
                         <div className="flex justify-start items-center">
                             <Avatar comment={comment} saturation={props.avatarSaturation} />
                             <div className="ml-3">
-                                <h4 className="text-lg font-sans font-semibold mb-1 tracking-tight dark:text-neutral-300">{comment.member.name}</h4>
+                                <h4 className="text-lg font-sans font-semibold mb-1 tracking-tight dark:text-[rgba(255,255,255,0.85)]">{comment.member.name}</h4>
                             </div>
                         </div>
-                        <div className={`ml-14 mb-4 pr-4 font-sans leading-normal ${isNotPublished ? 'text-neutral-400' : 'text-neutral-900'} dark:text-neutral-300`}>
+                        <div className={`ml-14 mb-4 pr-4 font-sans leading-normal ${isNotPublished ? 'text-neutral-400' : 'text-neutral-900'} dark:text-[rgba(255,255,255,0.85)]`}>
                             <p dangerouslySetInnerHTML={html} className="whitespace-pre-wrap text-[16.5px] leading-normal"></p>
                         </div>
                         <div className="ml-14 flex gap-5 items-center">
