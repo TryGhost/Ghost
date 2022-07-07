@@ -61,13 +61,29 @@ async function hideComment({state, adminApi, data: comment}) {
 
     return {
         comments: state.comments.map((c) => {
+            const replies = c.replies.map((r) => {
+                if (r.id === comment.id) {
+                    return {
+                        ...r,
+                        status: 'hidden'
+                    };
+                }
+
+                return r;
+            });
+
             if (c.id === comment.id) {
                 return {
                     ...c,
-                    status: 'hidden'
+                    status: 'hidden',
+                    replies
                 };
             }
-            return c;
+
+            return {
+                ...c,
+                replies
+            };
         })
     };
 }
