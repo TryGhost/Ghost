@@ -180,7 +180,7 @@ function SearchClearIcon() {
                 searchValue: ''
             });
         }}>
-            <ClearIcon className='text-neutral-900 hover:text-neutral-500 h-3 w-3' />
+            <ClearIcon className='text-neutral-900 hover:text-neutral-500 h-[1.1rem] w-[1.1rem]' />
         </button>
     );
 }
