@@ -125,14 +125,31 @@ async function likeComment({state, api, data: comment}) {
 
     return {
         comments: state.comments.map((c) => {
+            const replies = c.replies.map((r) => {
+                if (r.id === comment.id) {
+                    return {
+                        ...r,
+                        liked: true,
+                        likes_count: r.likes_count + 1
+                    };
+                }
+
+                return r;
+            });
+
             if (c.id === comment.id) {
                 return {
                     ...c,
                     liked: true,
-                    likes_count: c.likes_count + 1
+                    likes_count: c.likes_count + 1,
+                    replies
                 };
             }
-            return c;
+
+            return {
+                ...c,
+                replies
+            };
         })
     };
 }
@@ -142,14 +159,30 @@ async function unlikeComment({state, api, data: comment}) {
 
     return {
         comments: state.comments.map((c) => {
+            const replies = c.replies.map((r) => {
+                if (r.id === comment.id) {
+                    return {
+                        ...r,
+                        liked: false,
+                        likes_count: r.likes_count - 1
+                    };
+                }
+
+                return r;
+            });
+
             if (c.id === comment.id) {
                 return {
                     ...c,
                     liked: false,
-                    likes_count: c.likes_count - 1
+                    likes_count: c.likes_count - 1,
+                    replies
                 };
             }
-            return c;
+            return {
+                ...c,
+                replies
+            };
         })
     };
 }
