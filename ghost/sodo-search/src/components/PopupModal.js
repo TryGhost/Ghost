@@ -18,16 +18,16 @@ const tagsData = [
 
 const postsData = [
     {
-        title: 'How to ergonomically optimize your workspace',
+        title: 'How to ergonomically optimize your <span class=\'font-bold\'>work</span>space',
         excerpt: 'Organically grow the holistic world view of disruptive innovation via workplace diversity and empowerment.'
     },
     {
-        title: 'The economical advantage of design',
-        excerpt: 'New data show the end of pandemic relief coincided with a 49 percent increase in the number of families struggling to survive.'
+        title: 'The economical advantage of <span class=\'font-bold\'>work</span>',
+        excerpt: 'New data show the end of pandemic coincided with a 49 percent increase in the number of families struggling to survive.'
     },
     {
         title: 'When tech brands get illustration right',
-        excerpt: 'Leverage agile frameworks to provide a robust synopsis for high level overviews.'
+        excerpt: 'Leverage agile <span class=\'font-bold\'>work</span> to provide a robust synopsis for high level overviews.'
     }
 ];
 
@@ -244,8 +244,8 @@ function PostListItem({post, selectedResult, setSelectedResult}) {
                 setSelectedResult(id);
             }}
         >
-            <h2 className='text-[1.65rem] font-medium leading-tight text-neutral-900'>{title}</h2>
-            <p className='text-neutral-400 leading-normal text-sm mt-0 mb-0 truncate'>{excerpt}</p>
+            <h2 className='text-[1.65rem] font-medium leading-tight text-neutral-900'><span dangerouslySetInnerHTML={{__html: title}} /></h2>
+            <p className='text-neutral-400 leading-normal text-sm mt-0 mb-0 truncate'><span dangerouslySetInnerHTML={{__html: excerpt}} /></p>
         </div>
     );
 }
