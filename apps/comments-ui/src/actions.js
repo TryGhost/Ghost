@@ -4,7 +4,7 @@ async function loadMoreComments({state, api}) {
         page = state.pagination.page + 1;
     }
     const data = await api.comments.browse({page, postId: state.postId});
-    
+
     // Note: we store the comments from new to old, and show them in reverse order
     return {
         comments: [...state.comments, ...data.comments],
@@ -22,7 +22,7 @@ async function addComment({state, api, data: comment}) {
         member: state.member,
         replies: []
     };
-    
+
     return {
         comments: [commentStructured, ...state.comments]
         // todo: fix pagination now?
@@ -41,7 +41,7 @@ async function addReply({state, api, data: {reply, parent}}) {
         ...comment,
         member: state.member
     };
-    
+
     // Replace the comment in the state with the new one
     return {
         comments: state.comments.map((c) => {
@@ -77,13 +77,29 @@ async function showComment({state, adminApi, data: comment}) {
 
     return {
         comments: state.comments.map((c) => {
+            const replies = c.replies.map((r) => {
+                if (r.id === comment.id) {
+                    return {
+                        ...r,
+                        status: 'published'
+                    };
+                }
+
+                return r;
+            });
+
             if (c.id === comment.id) {
                 return {
                     ...c,
-                    status: 'published'
+                    status: 'published',
+                    replies
                 };
             }
-            return c;
+
+            return {
+                ...c,
+                replies
+            };
         })
     };
 }
@@ -132,13 +148,29 @@ async function deleteComment({state, api, data: comment}) {
 
     return {
         comments: state.comments.map((c) => {
+            const replies = c.replies.map((r) => {
+                if (r.id === comment.id) {
+                    return {
+                        ...r,
+                        status: 'deleted'
+                    };
+                }
+
+                return r;
+            });
+
             if (c.id === comment.id) {
                 return {
                     ...c,
-                    status: 'deleted'
+                    status: 'deleted',
+                    replies
                 };
             }
-            return c;
+
+            return {
+                ...c,
+                replies
+            };
         })
     };
 }
@@ -165,7 +197,7 @@ async function editComment({state, api, data: {comment, parent}}) {
             } else if (c.id === comment.id) {
                 return comment;
             }
-            
+
             return c;
         })
     };
