@@ -16,7 +16,7 @@ describe('search index', function () {
             .reply(200, {
                 authors: []
             })
-            .get('/tags/?key=69010382388f9de5869ad6e558&&limit=10000&fields=id,slug,name,url&order=updated_at%20DESC')
+            .get('/tags/?key=69010382388f9de5869ad6e558&&limit=10000&fields=id,slug,name,url&order=updated_at%20DESC&filter=visibility%3Apublic')
             .reply(200, {
                 tags: []
             });
@@ -63,7 +63,7 @@ describe('search index', function () {
                     url: 'http://localhost/ghost/authors/bob/'
                 }]
             })
-            .get('/tags/?key=69010382388f9de5869ad6e558&&limit=10000&fields=id,slug,name,url&order=updated_at%20DESC')
+            .get('/tags/?key=69010382388f9de5869ad6e558&&limit=10000&fields=id,slug,name,url&order=updated_at%20DESC&filter=visibility%3Apublic')
             .reply(200, {
                 tags: [{
                     id: 'uniq_tag',
