@@ -51,7 +51,7 @@ const Comment = ghostBookshelf.Model.extend({
             const sanitizeHtml = require('sanitize-html');
 
             this.set('html', sanitizeHtml(this.get('html'), {
-                allowedTags: ['p', 'br', 'a'],
+                allowedTags: ['p', 'br', 'a', 'blockquote'],
                 allowedAttributes: {
                     a: ['href', 'target', 'rel']
                 },
