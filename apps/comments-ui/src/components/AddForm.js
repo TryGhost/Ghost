@@ -3,7 +3,7 @@ import {Transition} from '@headlessui/react';
 import AppContext from '../AppContext';
 import Avatar from './Avatar';
 import {useEditor, EditorContent} from '@tiptap/react';
-import { getEditorConfig } from '../utils/editor';
+import {getEditorConfig} from '../utils/editor';
 
 const AddForm = (props) => {
     const {member, postId, onAction} = useContext(AppContext);
@@ -14,11 +14,6 @@ const AddForm = (props) => {
     });
 
     const focused = editor?.isFocused || !editor?.isEmpty;
-
-    const getHTML = () => {
-        // Convert newlines to <br> for now (until we add a real editor)
-        return editor.getHTML();
-    };
 
     const submitForm = async (event) => {
         event.preventDefault();
@@ -32,7 +27,7 @@ const AddForm = (props) => {
             await onAction('addComment', {
                 post_id: postId,
                 status: 'published',
-                html: getHTML()
+                html: editor.getHTML()
             });
 
             // Clear message and blur on success

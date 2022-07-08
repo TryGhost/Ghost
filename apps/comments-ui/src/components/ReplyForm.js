@@ -1,22 +1,25 @@
-import React, {useState, useContext} from 'react';
+import React, {useContext} from 'react';
 import AppContext from '../AppContext';
 import Avatar from './Avatar';
+import {useEditor, EditorContent} from '@tiptap/react';
+import {getEditorConfig} from '../utils/editor';
 
 const ReplyForm = (props) => {
-    const [message, setMessage] = useState('');
-    const [focused, setFocused] = useState(false);
     const {postId, dispatchAction} = useContext(AppContext);
 
-    const getHTML = () => {
-        // Convert newlines to <br> for now (until we add a real editor)
-        return message.replace('\n', '<br>');
-    };
+    const editor = useEditor({
+        ...getEditorConfig({
+            placeholder: 'Reply to comment',
+            autofocus: true
+        })
+    });
+
+    const focused = editor?.isFocused || !editor?.isEmpty;
 
     const submitForm = async (event) => {
         event.preventDefault();
 
-        if (message.length === 0) {
-            // alert('Please enter a message'); TODO: Check, but don't think we really need this
+        if (editor.isEmpty) {
             return;
         }
 
@@ -27,13 +30,12 @@ const ReplyForm = (props) => {
                 reply: {
                     post_id: postId,
                     status: 'published',
-                    html: getHTML()
+                    html: editor.getHTML()
                 }
             });
 
-            // Clear message on success
-            setMessage('');
-            setFocused(false);
+            // Clear message and blur on success
+            editor.chain().clearContent().blur().run();
             props.toggle();
         } catch (e) {
             // eslint-disable-next-line no-console
@@ -41,37 +43,24 @@ const ReplyForm = (props) => {
         }
     };
 
-    const handleChange = (event) => {
-        setMessage(event.target.value);
-    };
-
-    const handleBlur = (event) => {
-        if (message === '') {
-            props.toggle();
-        }
-    };
-
-    const handleFocus = (event) => {
-        setFocused(true);
+    const focusEditor = (event) => {
+        editor.commands.focus();
     };
 
     return (
-        <form onSubmit={submitForm} onClick={handleFocus} className={`bg-white dark:bg-[rgba(255,255,255,0.08)] comment-form transition duration-200 rounded-md px-3 pt-3 pb-2 -ml-[13px] -mr-[12px] -mt-[15px] shadow-lg hover:shadow-xl ${focused ? 'cursor-default' : 'cursor-pointer'}`}>
+        <form onClick={focusEditor} className={`bg-white dark:bg-[rgba(255,255,255,0.08)] comment-form transition duration-200 rounded-md px-3 pt-3 pb-2 -ml-[13px] -mr-[12px] -mt-[15px] shadow-lg hover:shadow-xl ${focused ? 'cursor-default' : 'cursor-pointer'}`}>
             <div className="w-full relative">
                 <div className="pr-3 font-sans leading-normal dark:text-neutral-300">
                     <div className="relative w-full">
-                        <textarea
-                            className={`transition-[height] pl-[56px] mt-0 duration-150 w-full dark:placeholder:text-[rgba(255,255,255,0.3)] placeholder:text-neutral-300 text-[16.5px] border-none resize-none rounded-md border border-slate-50 px-0 py-3 font-sans mb-1 leading-normal focus:outline-0 bg-transparent dark:text-[rgba(255,255,255,0.9)] ${focused ? 'cursor-text h-40' : 'cursor-pointer overflow-hidden h-12 hover:border-slate-300'}`}
-                            value={message}
-                            onChange={handleChange}
-                            onFocus={handleFocus}
-                            onBlur={handleBlur}
-                            autofocus={true}
-                            placeholder='Reply to comment'
+                        <EditorContent
+                            className={`transition-[height] pl-[56px] pt-0 duration-150 w-full dark:placeholder:text-[rgba(255,255,255,0.3)] placeholder:text-neutral-300 text-[16.5px] border-none resize-none rounded-md border border-slate-50 px-0 py-3 font-sans mb-1 leading-normal focus:outline-0 bg-transparent dark:text-[rgba(255,255,255,0.9)] ${focused ? 'cursor-text h-40' : 'cursor-pointer overflow-hidden h-12 hover:border-slate-300'}`}
+                            editor={editor} 
                         />
                         <button
                             className={`transition-[opacity] duration-150 absolute -right-3 bottom-2 rounded-md border py-3 px-4 font-sans text-sm text-center bg-black font-semibold text-white dark:bg-[rgba(255,255,255,0.8)] dark:text-neutral-800`}
-                            type="submit">
+                            type="button"
+                            onClick={submitForm}
+                        >
                             Add reply
                         </button>
                     </div>
