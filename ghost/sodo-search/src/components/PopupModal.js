@@ -2,6 +2,7 @@ import Frame from './Frame';
 import AppContext from '../AppContext';
 import {ReactComponent as SearchIcon} from '../icons/search.svg';
 import {ReactComponent as ClearIcon} from '../icons/clear.svg';
+import {ReactComponent as CircleAnimated} from '../icons/circle-anim.svg';
 import {useContext, useEffect, useMemo, useRef, useState} from 'react';
 import {getBundledCssLink} from '../utils/helpers';
 
@@ -145,7 +146,6 @@ function SearchBox() {
                 <SearchClearIcon />
             </div>
                 
-            {/* <SearchIcon className='mr-3 text-neutral-900' alt='Search' /> */}
             <input
                 ref={inputRef}
                 value={searchValue || ''}
@@ -160,8 +160,9 @@ function SearchBox() {
                     }
                 }}
                 className='grow -my-5 py-5 -ml-3 pl-3 text-[1.65rem] focus-visible:outline-none placeholder:text-gray-400 outline-none'
-                placeholder='Search posts, tags, authors..'
+                placeholder='Search posts, tags, authors...'
             />
+            <Loading />
             <CancelButton />
         </div>
     );
@@ -182,6 +183,12 @@ function SearchClearIcon() {
         }}>
             <ClearIcon className='text-neutral-900 hover:text-neutral-500 h-[1.1rem] w-[1.1rem]' />
         </button>
+    );
+}
+
+function Loading() {
+    return (
+        <CircleAnimated className='shrink-0' />
     );
 }
 
