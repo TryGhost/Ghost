@@ -148,6 +148,7 @@ module.exports = {
         meta_description: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 500}}},
         tour: {type: 'text', maxlength: 65535, nullable: true},
         last_seen: {type: 'dateTime', nullable: true},
+        comment_notifications: {type: 'boolean', nullable: false, defaultTo: true},
         created_at: {type: 'dateTime', nullable: false},
         created_by: {type: 'string', maxlength: 24, nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
@@ -392,12 +393,15 @@ module.exports = {
             }
         },
         name: {type: 'string', maxlength: 191, nullable: true},
+        bio: {type: 'string', maxlength: 191, nullable: true, validations: {isLength: {max: 50}}},
         note: {type: 'string', maxlength: 2000, nullable: true},
         geolocation: {type: 'string', maxlength: 2000, nullable: true},
+        enable_comment_notifications: {type: 'boolean', nullable: false, defaultTo: true},
         email_count: {type: 'integer', unsigned: true, nullable: false, defaultTo: 0},
         email_opened_count: {type: 'integer', unsigned: true, nullable: false, defaultTo: 0},
         email_open_rate: {type: 'integer', unsigned: true, nullable: true, index: true},
-        last_seen_at: {type: 'dateTime',nullable: true},
+        last_seen_at: {type: 'dateTime', nullable: true},
+        last_commented_at: {type: 'dateTime', nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         created_by: {type: 'string', maxlength: 24, nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
@@ -742,5 +746,31 @@ module.exports = {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
         newsletter_id: {type: 'string', maxlength: 24, nullable: false, references: 'newsletters.id', cascadeDelete: true}
+    },
+    comments: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        post_id: {type: 'string', maxlength: 24, nullable: false, unique: false, references: 'posts.id', cascadeDelete: true},
+        member_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'members.id'},
+        parent_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'comments.id'},
+        status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'published', validations: {isIn: [['published', 'hidden', 'deleted']]}},
+        html: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
+        edited_at: {type: 'dateTime', nullable: true},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: false}
+    },
+    comment_likes: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        comment_id: {type: 'string', maxlength: 24, nullable: false, unique: false, references: 'comments.id', cascadeDelete: true},
+        member_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'members.id'},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: false}
+    },
+    comment_reports: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        comment_id: {type: 'string', maxlength: 24, nullable: false, unique: false, references: 'comments.id', cascadeDelete: true},
+        member_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'members.id'},
+        reason: {type: 'text', maxlength: 65535, nullable: false},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: false}
     }
 };

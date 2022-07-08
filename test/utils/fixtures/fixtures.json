@@ -70,6 +70,10 @@
                     "description": "External Apps"
                 },
                 {
+                    "name": "Ghost Explore Integration",
+                    "description": "Internal Integration for the Ghost Explore directory"
+                },
+                {
                     "name": "DB Backup Integration",
                     "description": "Internal DB Backup Client"
                 },
@@ -82,6 +86,11 @@
         {
             "name": "Permission",
             "entries": [
+                {
+                    "name": "Read explore data",
+                    "action_type": "read",
+                    "object_type": "explore"
+                },
                 {
                     "name": "Export database",
                     "action_type": "exportContent",
@@ -561,6 +570,46 @@
                     "name": "Edit newsletters",
                     "action_type": "edit",
                     "object_type": "newsletter"
+                },
+                {
+                    "name": "Browse comments",
+                    "action_type": "browse",
+                    "object_type": "comment"
+                },
+                {
+                    "name": "Read comments",
+                    "action_type": "read",
+                    "object_type": "comment"
+                },
+                {
+                    "name": "Edit comments",
+                    "action_type": "edit",
+                    "object_type": "comment"
+                },
+                {
+                    "name": "Add comments",
+                    "action_type": "add",
+                    "object_type": "comment"
+                },
+                {
+                    "name": "Delete comments",
+                    "action_type": "destroy",
+                    "object_type": "comment"
+                },
+                {
+                    "name": "Moderate comments",
+                    "action_type": "moderate",
+                    "object_type": "comment"
+                },
+                {
+                    "name": "Like comments",
+                    "action_type": "like",
+                    "object_type": "comment"
+                },
+                {
+                    "name": "Unlike comments",
+                    "action_type": "unlike",
+                    "object_type": "comment"
                 }
             ]
         },
@@ -788,6 +837,13 @@
                     "api_keys": [{"type": "admin"}]
                 },
                 {
+                    "slug": "ghost-explore",
+                    "name": "Ghost Explore",
+                    "description": "Built-in Ghost Explore integration",
+                    "type": "internal",
+                    "api_keys": [{"type": "admin", "role": "Ghost Explore Integration"}]
+                },
+                {
                     "slug": "ghost-backup",
                     "name": "Ghost Backup",
                     "description": "Internal DB Backup integration",
@@ -851,13 +907,18 @@
                     "offer": "all",
                     "authentication": "resetAllPasswords",
                     "members_stripe_connect": "auth",
-                    "newsletter": "all"
+                    "newsletter": "all",
+                    "explore": "read",
+                    "comment": "all"
                 },
                 "DB Backup Integration": {
                     "db": "all"
                 },
                 "Scheduler Integration": {
                     "post": "publish"
+                },
+                "Ghost Explore Integration": {
+                    "explore": "read"
                 },
                 "Admin Integration": {
                     "mail": "all",
@@ -880,7 +941,9 @@
                     "snippet": "all",
                     "product": ["browse", "read", "add", "edit"],
                     "offer": ["browse", "read", "add", "edit"],
-                    "newsletter": ["browse", "read", "add", "edit"]
+                    "newsletter": ["browse", "read", "add", "edit"],
+                    "explore": "read",
+                    "comment": "all"
                 },
                 "Editor": {
                     "notification": "all",
