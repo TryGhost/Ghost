@@ -12,7 +12,7 @@ import {useEffect} from 'react';
 function AuthFrame({adminUrl, onLoad}) {
     useEffect(function () {
         onLoad();
-    }, [onLoad]);
+    }, []);
 
     const iframeStyle = {
         display: 'none'
