@@ -5,12 +5,21 @@ import Avatar from './Avatar';
 import {useEditor, EditorContent} from '@tiptap/react';
 import {getEditorConfig} from '../utils/editor';
 
-const AddForm = (props) => {
-    const {member, postId, onAction} = useContext(AppContext);
+const Form = (props) => {
+    const {member, postId, dispatchAction, onAction} = useContext(AppContext);
+
+    const editorAddConfig = {
+        placeholder: 'Join the discussion',
+        autofocus: false
+    };
+
+    const editorReplyConfig = {
+        placeholder: 'Reply to comment',
+        autofocus: false
+    };
+
     const editor = useEditor({
-        ...getEditorConfig({
-            placeholder: 'Join the discussion'
-        })
+        ...getEditorConfig(props.isReply ? editorReplyConfig : editorAddConfig)
     });
 
     const focused = editor?.isFocused || !editor?.isEmpty;
@@ -22,19 +31,40 @@ const AddForm = (props) => {
             return;
         }
 
-        try {
-            // Send comment to server
-            await onAction('addComment', {
-                post_id: postId,
-                status: 'published',
-                html: editor.getHTML()
-            });
+        if (props.isReply) {
+            try {
+                // Send comment to server
+                await dispatchAction('addReply', {
+                    parent: props.parent,
+                    reply: {
+                        post_id: postId,
+                        status: 'published',
+                        html: editor.getHTML()
+                    }
+                });
+    
+                // Clear message and blur on success
+                editor.chain().clearContent().blur().run();
+                props.toggle();
+            } catch (e) {
+                // eslint-disable-next-line no-console
+                console.error(e);
+            }
+        } else {
+            try {
+                // Send comment to server
+                await onAction('addComment', {
+                    post_id: postId,
+                    status: 'published',
+                    html: editor.getHTML()
+                });
 
-            // Clear message and blur on success
-            editor.chain().clearContent().blur().run();
-        } catch (e) {
-            // eslint-disable-next-line no-console
-            console.error(e);
+                // Clear message and blur on success
+                editor.chain().clearContent().blur().run();
+            } catch (e) {
+                // eslint-disable-next-line no-console
+                console.error(e);
+            }
         }
     };
 
@@ -56,7 +86,7 @@ const AddForm = (props) => {
                             type="button"
                             onClick={submitForm}
                         >
-                            Add comment
+                            Add {props.isReply ? 'reply' : 'comment'} 
                         </button>
                     </div>
                 </div>
@@ -81,4 +111,4 @@ const AddForm = (props) => {
     );
 };
   
-export default AddForm;
+export default Form;

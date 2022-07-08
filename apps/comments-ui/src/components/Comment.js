@@ -6,7 +6,7 @@ import Reply from './Reply';
 import More from './More';
 import EditForm from './EditForm';
 import Replies from './Replies';
-import ReplyForm from './ReplyForm';
+import Form from './Form';
 import AppContext from '../AppContext';
 import {formatRelativeTime} from '../utils/helpers';
 
@@ -72,7 +72,7 @@ const Comment = (props) => {
                     leaveTo="opacity-0"
                 >
                     <div className="ml-14 my-10">
-                        <ReplyForm parent={comment} toggle={toggleReplyMode} avatarSaturation={props.avatarSaturation} />
+                        <Form parent={comment} toggle={toggleReplyMode} avatarSaturation={props.avatarSaturation} isReply={true} />
                     </div>
                 </Transition>
                 {hasReplies && 
