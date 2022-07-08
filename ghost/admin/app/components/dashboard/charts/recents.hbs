@@ -51,7 +51,7 @@
                                 </div>
                             {{else}}
                                 <div class="gh-dashboard-list-item-sub">
-                                    <span class="gh-dashboard-list-subtext">{{moment-format post.published_at "D MMM YYYY HH:mm"}}</span>
+                                    <span class="gh-dashboard-list-subtext">{{moment-format (moment-site-tz post.publishedAtUTC) "D MMM YYYY HH:mm"}}</span>
                                 </div>
                             {{/if}}
                         </LinkTo>
