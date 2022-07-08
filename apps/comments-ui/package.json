@@ -1,9 +1,19 @@
 {
-  "name": "comments-ui",
+  "name": "@tryghost/comments-ui",
   "version": "0.1.0",
   "license": "MIT",
   "repository": "git@github.com:TryGhost/comments-ui.git",
   "author": "Ghost Foundation",
+  "unpkg": "umd/comments-ui.umd.js",
+  "files": [
+    "umd/",
+    "LICENSE",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "dependencies": {
     "@sentry/react": "^7.5.0",
     "@testing-library/jest-dom": "5.16.2",

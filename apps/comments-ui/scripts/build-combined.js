@@ -1,3 +1,4 @@
+const fs = require('fs');
 const rewire = require('rewire');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const defaults = rewire('react-scripts/scripts/build.js');
@@ -26,4 +27,10 @@ config.module.rules[1].oneOf = config.module.rules[1].oneOf.map((rule) => {
             ? {loader: require.resolve('style-loader'), options: {}}
             : options))
     });
+});
+
+fs.copyFile('./public/main.css', './umd/main.css', (err) => {
+    if (err) {
+        throw err;
+    }
 });

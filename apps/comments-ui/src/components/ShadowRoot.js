@@ -1,12 +1,14 @@
 import React from 'react';
 import root from 'react-shadow';
+import {getBundledCssLink} from '../utils/helpers';
 
 const ShadowRoot = ({
     children,
     ...props
 }) => {
+    const cssLink = getBundledCssLink({appVersion: props.appVersion});
     const head = (
-        <link rel="stylesheet" href="http://localhost:4000/main.css" />
+        <link rel="stylesheet" href={cssLink} />
     );
 
     return (

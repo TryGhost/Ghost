@@ -104,3 +104,11 @@ export function getInitials(name) {
 
     return parts[0].substring(0, 1) + parts[parts.length - 1].substring(0, 1);
 }
+
+export function getBundledCssLink({appVersion}) {
+    if (process.env.NODE_ENV === 'production' && appVersion) {
+        return `https://unpkg.com/@tryghost/comments-ui@~${appVersion}/umd/main.css`;
+    } else {
+        return 'http://localhost:3000/main.css';
+    }
+}

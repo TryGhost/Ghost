@@ -37,8 +37,9 @@ function getSiteData() {
         const colorScheme = scriptTag.dataset.colorScheme;
         const avatarSaturation = scriptTag.dataset.avatarSaturation;
         const accentColor = scriptTag.dataset.accentColor;
+        const appVersion = scriptTag.dataset.appVersion;
 
-        return {siteUrl, apiKey, apiUrl, sentryDsn, postId, adminUrl, colorScheme, avatarSaturation, accentColor};
+        return {siteUrl, apiKey, apiUrl, sentryDsn, postId, adminUrl, colorScheme, avatarSaturation, accentColor, appVersion};
     }
     return {};
 }
@@ -58,13 +59,13 @@ function setup({siteUrl}) {
 
 function init() {
     // const customSiteUrl = getSiteUrl();
-    const {siteUrl: customSiteUrl, sentryDsn, postId, adminUrl, colorScheme, avatarSaturation, accentColor} = getSiteData();
+    const {siteUrl: customSiteUrl, sentryDsn, postId, adminUrl, colorScheme, avatarSaturation, accentColor, appVersion} = getSiteData();
     const siteUrl = customSiteUrl || window.location.origin;
     setup({siteUrl});
 
     ReactDOM.render(
         <React.StrictMode>
-            {<App adminUrl={adminUrl} siteUrl={siteUrl} customSiteUrl={customSiteUrl} sentryDsn={sentryDsn} postId={postId} colorScheme={colorScheme} avatarSaturation={avatarSaturation} accentColor={accentColor} />}
+            {<App appVersion={appVersion} adminUrl={adminUrl} siteUrl={siteUrl} customSiteUrl={customSiteUrl} sentryDsn={sentryDsn} postId={postId} colorScheme={colorScheme} avatarSaturation={avatarSaturation} accentColor={accentColor} />}
         </React.StrictMode>,
         document.getElementById(ROOT_DIV_ID)
     );
