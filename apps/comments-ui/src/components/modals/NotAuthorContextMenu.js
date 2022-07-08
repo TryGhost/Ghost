@@ -1,32 +1,18 @@
 import React from 'react';
-import AppContext from '../../AppContext';
 
-class NotAuthorContextMenu extends React.Component {
-    static contextType = AppContext;
+const NotAuthorContextMenu = (props) => {
+    const reportComment = (event) => {
+        // report
+        props.close();
+    };
 
-    constructor(props) {
-        super(props);
-        this.state = {};
-
-        this.reportComment = this.reportComment.bind(this);
-    }
-
-    reportComment(event) {
-        // todo
-        this.close();
-    }
-
-    close() {
-        this.props.close();
-    }
-
-    render() {
-        return (
-            <button className="text-[14px]" onClick={this.reportComment}>
+    return (
+        <div className="flex flex-col">
+            <button className="text-[14px]" onClick={reportComment}>
                 Report comment
             </button>
-        );
-    }
-}
-  
+        </div>
+    );
+};
+
 export default NotAuthorContextMenu;
