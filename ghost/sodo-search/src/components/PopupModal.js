@@ -120,7 +120,7 @@ function SearchBox() {
                         e.preventDefault();
                     }
                 }}
-                className='grow -my-5 py-5 -ml-3 pl-3 text-[1.65rem] focus-visible:outline-none placeholder:text-gray-400 outline-none'
+                className='grow -my-5 py-5 -ml-3 pl-3 text-[1.65rem] focus-visible:outline-none placeholder:text-gray-400 outline-none truncate'
                 placeholder='Search posts, tags, authors...'
             />
             <Loading />
