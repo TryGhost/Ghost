@@ -73,12 +73,17 @@ export default class App extends React.Component {
                 showPopup: true
             });
         };
-        const customTriggerSelector = '[data-ghost-search]';
-        this.customTriggerButtons = document.querySelectorAll(customTriggerSelector) || [];
+
+        this.customTriggerButtons = this.getCustomTriggerButtons();
         this.customTriggerButtons.forEach((customTriggerButton) => {
             customTriggerButton.removeEventListener('click', this.clickHandler);
             customTriggerButton.addEventListener('click', this.clickHandler);
         });
+    }
+
+    getCustomTriggerButtons() {
+        const customTriggerSelector = '[data-ghost-search]';
+        return document.querySelectorAll(customTriggerSelector) || [];
     }
 
     handleSearchUrl() {
@@ -92,6 +97,10 @@ export default class App extends React.Component {
     }
 
     addKeyboardShortcuts() {
+        const customTriggerButtons = this.getCustomTriggerButtons();
+        if (!customTriggerButtons?.length) {
+            return;
+        }
         this.handleKeyDown = (e) => {
             if (e.key === 'k' && e.metaKey) {
                 this.setState({
