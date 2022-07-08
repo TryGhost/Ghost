@@ -20,6 +20,11 @@ async function comments(options) {
         avatarSaturation = 50;
     }
 
+    let accentColor = '';
+    if (options.data.site.accent_color) {
+        accentColor = options.data.site.accent_color;
+    }
+
     const frontendKey = await getFrontendKey();
 
     const data = {
@@ -30,7 +35,8 @@ async function comments(options) {
         'post-id': this.id,
         'sentry-dsn': '', /* todo: insert sentry dsn key here */
         'color-scheme': colorScheme,
-        'avatar-saturation': avatarSaturation
+        'avatar-saturation': avatarSaturation,
+        'accent-color': accentColor
     };
 
     let dataAttributes = '';
