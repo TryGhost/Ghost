@@ -19,7 +19,7 @@ function AuthFrame({adminUrl, onLoad}) {
     };
 
     return (
-        <iframe data-frame="admin-auth" src={adminUrl + 'auth-frame/'} style={iframeStyle}></iframe>
+        <iframe data-frame="admin-auth" src={adminUrl + 'auth-frame/'} style={iframeStyle} title="auth-frame"></iframe>
     );
 }
 
