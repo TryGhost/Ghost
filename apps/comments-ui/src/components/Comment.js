@@ -37,7 +37,7 @@ const Comment = (props) => {
 
     if (isInEditMode) {
         return (
-            <Form comment={comment} toggle={toggleEditMode} parent={props.parent} isEdit={true} />
+            <Form comment={comment} toggle={toggleEditMode} parent={props.parent} isEdit={true} avatarSaturation={props.avatarSaturation} />
         );
     } else {
         return (
@@ -63,9 +63,9 @@ const Comment = (props) => {
                 </div>
                 <Transition
                     show={isInReplyMode}
-                    enter="transition duration-500 ease-in-out"
+                    enter="transition duration-500 delay-50 ease-in-out"
                     enterFrom="opacity-0 -translate-y-2"
-                    enterTo="opacity-100 translate-x-0"
+                    enterTo="opacity-100 translate-y-0"
                     leave="transition-none duration-0"
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"

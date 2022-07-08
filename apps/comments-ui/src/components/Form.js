@@ -117,7 +117,7 @@ const Form = (props) => {
             pt-3
             pb-2
             mb-10
-            -mt-[16px]
+            -mt-[12px]
             -ml-[12px]
             -mr-3
             shadow-lg
@@ -131,10 +131,10 @@ const Form = (props) => {
                 <div className="pr-3 font-sans leading-normal dark:text-neutral-300">
                     <div className="relative w-full">
                         <EditorContent
-                            className={`transition-[min-height] pl-[56px] px-0 py-[14px] ${focused ? 'pt-[48px] pb-[68px]' : 'mb-1'} duration-150 bg-transparent w-full placeholder:text-neutral-300 dark:placeholder:text-[rgba(255,255,255,0.3)] border-none resize-none rounded-md border border-slate-50 font-sans text-[16.5px] leading-normal focus:outline-0 dark:border-none dark:text-neutral-300 ${focused ? 'cursor-text min-h-[144px]' : 'cursor-pointer overflow-hidden min-h-[56px] hover:border-slate-300'}`}
+                            className={`transition-[min-height] pl-[56px] px-0 py-[10px] pr-4 ${focused ? 'pt-[44px] pb-[68px]' : ''} duration-150 bg-transparent w-full placeholder:text-neutral-300 dark:placeholder:text-[rgba(255,255,255,0.3)] border-none resize-none rounded-md border border-slate-50 font-sans text-[16.5px] leading-normal focus:outline-0 dark:border-none dark:text-neutral-300 ${focused ? 'cursor-text min-h-[144px]' : 'cursor-pointer overflow-hidden min-h-[48px] hover:border-slate-300'}`}
                             editor={editor} 
                         />
-                        <div className="flex space-x-4 transition-[opacity] duration-150 absolute -right-3 bottom-1">
+                        <div className="flex space-x-4 transition-[opacity] duration-150 absolute -right-3 bottom-[2px]">
                             {props.isEdit && <button type="button" className="font-sans text-sm font-medium ml-2.5 text-neutral-500 dark:text-neutral-400" onClick={props.toggle}>Cancel</button>}
                             <button
                                 className={`transition-[opacity] duration-150 rounded-[4px] border py-3 px-4 font-sans text-sm text-center bg-neutral-900 font-semibold text-white dark:bg-[rgba(255,255,255,0.9)] dark:text-neutral-800`}
@@ -146,8 +146,8 @@ const Form = (props) => {
                         </div>
                     </div>
                 </div>
-                <div className="flex mb-1 justify-start items-center absolute top-[4px] left-0">
-                    <Avatar saturation={avatarSaturation} />
+                <div className="flex mb-1 justify-start items-center absolute top-0 left-0">
+                    <Avatar comment={comment} saturation={avatarSaturation} />
                     <Transition
                         show={focused}
                         enter="transition duration-500 ease-in-out"
