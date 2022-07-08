@@ -4,9 +4,8 @@ import Avatar from './Avatar';
 import Like from './Like';
 import Reply from './Reply';
 import More from './More';
-import EditForm from './EditForm';
-import Replies from './Replies';
 import Form from './Form';
+import Replies from './Replies';
 import AppContext from '../AppContext';
 import {formatRelativeTime} from '../utils/helpers';
 
@@ -38,7 +37,7 @@ const Comment = (props) => {
 
     if (isInEditMode) {
         return (
-            <EditForm comment={comment} toggle={toggleEditMode} parent={props.parent} />
+            <Form comment={comment} toggle={toggleEditMode} parent={props.parent} isEdit={true} />
         );
     } else {
         return (
