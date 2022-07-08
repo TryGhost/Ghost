@@ -385,20 +385,9 @@ export default Controller.extend({
         this.user.commentNotifications = event.target.checked;
     }),
 
-    _exportDb(filename) {
-        this.utils.downloadFile(`${this.ghostPaths.url.api('db')}?filename=${filename}`);
-    },
-
     deleteUser: task(function *() {
         try {
-            const result = yield this.user.destroyRecord();
-
-            if (result._meta && result._meta.filename) {
-                this._exportDb(result._meta.filename);
-                // give the iframe some time to trigger the download before
-                // it's removed from the dom when transitioning
-                yield timeout(300);
-            }
+            yield this.user.destroyRecord();
 
             this.notifications.closeAlerts('user.delete');
             this.store.unloadAll('post');
