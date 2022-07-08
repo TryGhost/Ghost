@@ -12,7 +12,7 @@ const Form = (props) => {
     if (props.isReply) {
         config = {
             placeholder: 'Reply to comment',
-            autofocus: false
+            autofocus: true
         };
     } else if (props.isEdit) {
         config = {
