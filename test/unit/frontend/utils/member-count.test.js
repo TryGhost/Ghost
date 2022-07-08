@@ -35,8 +35,8 @@ const getMemberStatsMock = [
 describe('Member Count', function () {
     it('should return total members', async function () {
         const meta = {data: {
-            meta: { totals: { paid: 1000, free: 500, comped: 500 } }
-        }}
+            meta: {totals: {paid: 1000, free: 500, comped: 500}}
+        }};
         const members = await getMemberStats.call(meta);
         return should.equal(members.total, 2000);
     });
