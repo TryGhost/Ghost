@@ -148,8 +148,8 @@ function SearchClearIcon() {
 }
 
 function Loading() {
-    const {indexComplete} = useContext(AppContext);
-    if (!indexComplete) {
+    const {indexComplete, searchValue} = useContext(AppContext);
+    if (!indexComplete && searchValue) {
         return (
             <CircleAnimated className='shrink-0' />
         );
@@ -447,6 +447,16 @@ function SearchResultBox() {
         filteredAuthors = searchResults?.authors || [];
         filteredTags = searchResults?.tags || [];
     }
+
+    filteredAuthors = filteredAuthors.filter((author) => {
+        const invalidUrlRegex = /\/404\/$/;
+        return !(author?.url && invalidUrlRegex.test(author?.url));
+    });
+
+    filteredTags = filteredTags.filter((tag) => {
+        const invalidUrlRegex = /\/404\/$/;
+        return !(tag?.url && invalidUrlRegex.test(tag?.url));
+    });
 
     const hasResults = filteredPosts?.length || filteredAuthors?.length || filteredTags?.length;
 
