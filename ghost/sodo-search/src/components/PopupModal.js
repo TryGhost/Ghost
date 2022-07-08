@@ -148,9 +148,13 @@ function SearchClearIcon() {
 }
 
 function Loading() {
-    return (
-        <CircleAnimated className='shrink-0' />
-    );
+    const {indexComplete} = useContext(AppContext);
+    if (!indexComplete) {
+        return (
+            <CircleAnimated className='shrink-0' />
+        );
+    }
+    return null;
 }
 
 function CancelButton() {
