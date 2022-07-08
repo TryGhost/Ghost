@@ -113,17 +113,11 @@ describe('User API', function () {
         });
 
         describe('Destroy', function () {
-            it('[failure] Destroy unknown user id', function (done) {
-                request.delete(localUtils.API.getApiQuery('users/' + ObjectId().toHexString()))
+            it('[failure] Destroy unknown user id', function () {
+                return request
+                    .delete(localUtils.API.getApiQuery('users/' + ObjectId().toHexString()))
                     .set('Origin', config.get('url'))
-                    .expect(404)
-                    .end(function (err) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        done();
-                    });
+                    .expect(404);
             });
         });
     });
