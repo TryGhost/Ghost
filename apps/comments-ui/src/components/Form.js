@@ -119,7 +119,7 @@ const Form = (props) => {
             dark:bg-[rgba(255,255,255,0.08)]
             dark:shadow-transparent
             hover:shadow-xl
-            ${!commentsCount && !props.isEdit && '-mt-0 -mr-0 -ml-0'}
+            ${!commentsCount && !props.isEdit && !props.isReply && '-mt-0 -mr-0 -ml-0'}
             ${focused ? 'cursor-default' : 'cursor-pointer'}`
         }>
             <div className="w-full relative">
