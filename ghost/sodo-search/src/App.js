@@ -25,8 +25,24 @@ export default class App extends React.Component {
         this.initSetup();
     }
 
-    componentDidUpdate(_prevProps, _prevState) {
-        if (this.state.showPopup !== _prevState?.showPopup && !this.state.showPopup) {
+    componentDidUpdate(_prevProps, prevState) {
+        if (prevState.showPopup !== this.state.showPopup) {
+            /** Remove background scroll when popup is opened */
+            try {
+                if (this.state.showPopup) {
+                    /** When modal is opened, store current overflow and set as hidden */
+                    this.bodyScroll = window.document?.body?.style?.overflow;
+                    window.document.body.style.overflow = 'hidden';
+                } else {
+                    /** When the modal is hidden, reset overflow property for body */
+                    window.document.body.style.overflow = this.bodyScroll || '';
+                }
+            } catch (e) {
+                /** Ignore any errors for scroll handling */
+            }
+        }
+
+        if (this.state.showPopup !== prevState?.showPopup && !this.state.showPopup) {
             this.setState({
                 searchValue: ''
             });
