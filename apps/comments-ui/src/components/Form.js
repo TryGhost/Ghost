@@ -94,7 +94,7 @@ const Form = (props) => {
         editor.commands.focus();
     };
 
-    const comment = props.comment;
+    const {comment, commentsCount} = props;
     const memberName = (props.isEdit ? comment.member.name : member.name); 
 
     let submitText;
@@ -107,7 +107,26 @@ const Form = (props) => {
     }
 
     return (
-        <form onClick={focusEditor} className={`bg-white comment-form transition duration-200 rounded-md px-3 pt-3 pb-2 ${props.commentsCount && '-ml-[13px] -mr-3'} mt-8 mb-10 shadow-lg dark:bg-[rgba(255,255,255,0.08)] dark:shadow-transparent hover:shadow-xl ${focused ? 'cursor-default' : 'cursor-pointer'}`}>
+        <form onClick={focusEditor} className={`
+            comment-form
+            bg-white
+            transition
+            duration-200
+            rounded-md
+            px-3
+            pt-3
+            pb-2
+            mb-10
+            -mt-[16px]
+            -ml-[12px]
+            -mr-3
+            shadow-lg
+            dark:bg-[rgba(255,255,255,0.08)]
+            dark:shadow-transparent
+            hover:shadow-xl
+            ${commentsCount && '-ml-[12px] -mr-3'}
+            ${focused ? 'cursor-default' : 'cursor-pointer'}`
+        }>
             <div className="w-full relative">
                 <div className="pr-3 font-sans leading-normal dark:text-neutral-300">
                     <div className="relative w-full">
@@ -115,7 +134,7 @@ const Form = (props) => {
                             className={`transition-[min-height] pl-[56px] px-0 py-[14px] ${focused ? 'pt-[48px] pb-[68px]' : 'mb-1'} duration-150 bg-transparent w-full placeholder:text-neutral-300 dark:placeholder:text-[rgba(255,255,255,0.3)] border-none resize-none rounded-md border border-slate-50 font-sans text-[16.5px] leading-normal focus:outline-0 dark:border-none dark:text-neutral-300 ${focused ? 'cursor-text min-h-[144px]' : 'cursor-pointer overflow-hidden min-h-[56px] hover:border-slate-300'}`}
                             editor={editor} 
                         />
-                        <div className="flex space-x-4 transition-[opacity] duration-150 absolute -right-3 bottom-2">
+                        <div className="flex space-x-4 transition-[opacity] duration-150 absolute -right-3 bottom-1">
                             {props.isEdit && <button type="button" className="font-sans text-sm font-medium ml-2.5 text-neutral-500 dark:text-neutral-400" onClick={props.toggle}>Cancel</button>}
                             <button
                                 className={`transition-[opacity] duration-150 rounded-[4px] border py-3 px-4 font-sans text-sm text-center bg-neutral-900 font-semibold text-white dark:bg-[rgba(255,255,255,0.9)] dark:text-neutral-800`}
