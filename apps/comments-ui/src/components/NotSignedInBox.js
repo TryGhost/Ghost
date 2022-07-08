@@ -24,6 +24,6 @@ const NotSignedInBox = (props) => {
             </p>
         </section>
     );
-}
+};
 
 export default NotSignedInBox;
