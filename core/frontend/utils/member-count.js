@@ -1,12 +1,12 @@
 const humanNumber = require('human-number');
 const {api} = require('../services/proxy');
 
-const getMemberStats = async () => {
-    let memberStats = await api.stats.memberCountHistory.query();
+async function getMemberStats() {
+    let memberStats = this.data || await api.stats.memberCountHistory.query();
     const {free, paid, comped} = memberStats.meta.totals;
     let total = free + paid + comped;
     return {free, paid, comped, total};
-};
+}
 
 const numberWithCommas = (n) => {
     return n.toLocaleString();

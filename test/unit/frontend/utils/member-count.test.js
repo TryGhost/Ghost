@@ -33,13 +33,12 @@ const getMemberStatsMock = [
 ];
 
 describe('Member Count', function () {
-    it('should return members count', async function () {
-        const {free, paid, comped, total} = await getMemberStats();
-        should.exist(free);
-        should.exist(paid);
-        should.exist(comped);
-        should.exist(total);
-        should.equal(total, free + paid + comped);
+    it('should return total members', async function () {
+        const meta = {data: {
+            meta: { totals: { paid: 1000, free: 500, comped: 500 } }
+        }}
+        const members = await getMemberStats.call(meta);
+        return should.equal(members.total, 2000);
     });
 
     it('should return rounded numbers in correct format', function () {
