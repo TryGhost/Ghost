@@ -3,38 +3,14 @@ import {Transition} from '@headlessui/react';
 import AppContext from '../AppContext';
 import Avatar from './Avatar';
 import {useEditor, EditorContent} from '@tiptap/react';
-import Placeholder from '@tiptap/extension-placeholder';
-import Text from '@tiptap/extension-text';
-import Link from '@tiptap/extension-link';
-import Paragraph from '@tiptap/extension-paragraph';
-import Document from '@tiptap/extension-document';
+import { getEditorConfig } from '../utils/editor';
 
 const AddForm = (props) => {
     const {member, postId, onAction} = useContext(AppContext);
     const editor = useEditor({
-        extensions: [
-            Document,
-            Text,
-            Paragraph,
-            Link.configure({
-                openOnClick: false,
-                // Add these HTML attributes to all the <a> links
-                // Warning: we need to do backend changes to make sure the sanitizer always picks the same class for links
-                HTMLAttributes: {
-                    class: 'underline'
-                }
-            }),
-            Placeholder.configure({
-                placeholder: 'Join the discussion'
-            })
-        ],
-        content: '',
-        autofocus: false,
-        editorProps: {
-            attributes: {
-                class: `focus:outline-0`
-            }
-        }
+        ...getEditorConfig({
+            placeholder: 'Join the discussion'
+        })
     });
 
     const focused = editor?.isFocused || !editor?.isEmpty;
