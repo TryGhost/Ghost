@@ -149,6 +149,7 @@
         "url": "https://www.gravatar.com/avatar/{hash}?s={size}&r={rating}&d={_default}"
     },
     "comments": {
-        "url": "https://unpkg.com/@tryghost/comments@~0.0.0/umd/portal.min.js"
+        "url": "https://unpkg.com/@tryghost/comments-ui@~0.1.0/umd/comments-ui.min.js",
+        "version": "0.1.0"
     }
 }

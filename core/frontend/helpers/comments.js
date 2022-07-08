@@ -36,7 +36,8 @@ async function comments(options) {
         'sentry-dsn': '', /* todo: insert sentry dsn key here */
         'color-scheme': colorScheme,
         'avatar-saturation': avatarSaturation,
-        'accent-color': accentColor
+        'accent-color': accentColor,
+        'app-version': config.get('comments:version')
     };
 
     let dataAttributes = '';
