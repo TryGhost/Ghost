@@ -61,7 +61,7 @@ const ReplyForm = (props) => {
                 <div className="pr-3 font-sans leading-normal dark:text-neutral-300">
                     <div className="relative w-full">
                         <textarea
-                            className={`transition-[height] pl-[56px] mt-0 duration-150 w-full dark:placeholder:text-neutral-600 placeholder:text-neutral-300 text-[16.5px] border-none resize-none rounded-md border border-slate-50 px-0 py-3 font-sans mb-1 leading-normal focus:outline-0 bg-transparent dark:text-neutral-300 ${focused ? 'cursor-text h-40' : 'cursor-pointer overflow-hidden h-12 hover:border-slate-300'}`}
+                            className={`transition-[height] pl-[56px] mt-0 duration-150 w-full dark:placeholder:text-[rgba(255,255,255,0.3)] placeholder:text-neutral-300 text-[16.5px] border-none resize-none rounded-md border border-slate-50 px-0 py-3 font-sans mb-1 leading-normal focus:outline-0 bg-transparent dark:text-[rgba(255,255,255,0.9)] ${focused ? 'cursor-text h-40' : 'cursor-pointer overflow-hidden h-12 hover:border-slate-300'}`}
                             value={message}
                             onChange={handleChange}
                             onFocus={handleFocus}

@@ -57,7 +57,7 @@ const AddForm = (props) => {
                 <div className="pr-3 font-sans leading-normal dark:text-neutral-300">
                     <div className="relative w-full ">
                         <textarea
-                            className={`transition-[height] pl-[56px] px-0 py-[14px] ${focused ? 'mt-8' : '-mt-[2px] mb-1'} duration-150 bg-transparent w-full placeholder:text-neutral-300 dark:placeholder:text-neutral-600 border-none resize-none rounded-md border border-slate-50 font-sans text-[16.5px] leading-normal focus:outline-0 dark:border-none dark:text-neutral-300 ${focused ? 'cursor-text h-40' : 'cursor-pointer overflow-hidden h-11 hover:border-slate-300'}`}
+                            className={`transition-[height] pl-[56px] px-0 py-[14px] ${focused ? 'mt-8' : '-mt-[2px] mb-1'} duration-150 bg-transparent w-full placeholder:text-neutral-300 dark:placeholder:text-[rgba(255,255,255,0.3)] border-none resize-none rounded-md border border-slate-50 font-sans text-[16.5px] leading-normal focus:outline-0 dark:border-none dark:text-neutral-300 ${focused ? 'cursor-text h-40' : 'cursor-pointer overflow-hidden h-11 hover:border-slate-300'}`}
                             value={message}
                             onChange={handleChange}
                             onFocus={handleFocus}

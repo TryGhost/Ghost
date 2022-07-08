@@ -46,7 +46,7 @@ const EditForm = (props) => {
                 <div className="pr-3 font-sans leading-normal dark:text-neutral-300">
                     <div className="relative w-full">
                         <textarea
-                            className={`w-full h-40 pl-[56px] border-none resize-none p-0 font-sans text-[16.5px] mb-1 leading-normal placeholder:text-neutral-300 focus:outline-0 bg-transparent dark:border-none dark:text-neutral-300`}
+                            className={`w-full h-40 pl-[56px] border-none resize-none p-0 font-sans text-[16.5px] mb-1 leading-normal placeholder:text-neutral-300 focus:outline-0 bg-transparent dark:placeholder:text-[rgba(255,255,255,0.3)] dark:border-none dark:text-[rgba(255,255,255,0.9)] dark:shadow-transparent`}
                             value={message}
                             onChange={handleChange}
                             onFocus={function (e) {
