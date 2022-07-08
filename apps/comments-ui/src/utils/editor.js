@@ -4,7 +4,7 @@ import Link from '@tiptap/extension-link';
 import Paragraph from '@tiptap/extension-paragraph';
 import Document from '@tiptap/extension-document';
 
-export function getEditorConfig({placeholder, autofocus = false}) {
+export function getEditorConfig({placeholder, autofocus = false, content = ''}) {
     return {
         extensions: [
             Document,
@@ -22,7 +22,7 @@ export function getEditorConfig({placeholder, autofocus = false}) {
                 placeholder
             })
         ],
-        content: '',
+        content,
         autofocus,
         editorProps: {
             attributes: {
