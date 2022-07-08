@@ -1,51 +1,35 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import AppContext from '../../AppContext';
 
-class AdminContextMenu extends React.Component {
-    static contextType = AppContext;
+const AdminContextMenu = (props) => {
+    const {dispatchAction} = useContext(AppContext);
 
-    constructor(props) {
-        super(props);
-        this.state = {};
+    const hideComment = (event) => {
+        dispatchAction('hideComment', props.comment);
+        props.close();
+    };
 
-        this.hideComment = this.hideComment.bind(this);
-        this.showComment = this.showComment.bind(this);
-    }
+    const showComment = (event) => {
+        dispatchAction('showComment', props.comment);
+        props.close();
+    };
 
-    hideComment(event) {
-        this.context.onAction('hideComment', this.props.comment);
-        this.close();
-    }
+    const isHidden = props.comment.status !== 'published';
 
-    showComment(event) {
-        this.context.onAction('showComment', this.props.comment);
-        this.close();
-    }
+    return (
+        <div className="flex flex-col">
+            {
+                isHidden ? 
+                    <button className="text-[14px]" onClick={showComment}>
+                        Show comment
+                    </button> 
+                    : 
+                    <button className="text-[14px]" onClick={hideComment}>
+                        Hide comment
+                    </button>
+            }
+        </div>
+    );
+};
 
-    get isHidden() {
-        return this.props.comment.status !== 'published';
-    }
-
-    close() {
-        this.props.close();
-    }
-
-    render() {
-        return (
-            <div className="flex flex-col">
-                {
-                    this.isHidden ? 
-                        <button className="text-[14px]" onClick={this.showComment}>
-                            Show comment
-                        </button> 
-                        : 
-                        <button className="text-[14px]" onClick={this.hideComment}>
-                            Hide comment
-                        </button>
-                }
-            </div>
-        );
-    }
-}
-  
 export default AdminContextMenu;
