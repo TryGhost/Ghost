@@ -9,7 +9,10 @@ const AppContext = React.createContext({
     lastPage: '',
     page: '',
     pageData: {},
-    dispatch: (_action, _data) => {}
+    dispatch: (_action, _data) => {},
+    searchIndex: null,
+    indexComplete: false,
+    searchValue: ''
 });
 
 export default AppContext;
