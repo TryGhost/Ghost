@@ -16,7 +16,7 @@ const rounding = (n, roundTo) => {
     return Math.floor(n / roundTo) * roundTo;
 };
 
-// Rounding strategy https://github.com/TryGhost/Team/issues/1667
+// Rounding https://github.com/TryGhost/Team/issues/1667
 const memberCountRounding = (memberCount) => {
     if (memberCount <= 50) {
         return memberCount;
@@ -39,11 +39,11 @@ const memberCountRounding = (memberCount) => {
     }
 
     if (memberCount > 100000 && memberCount <= 1000000) {
-        return `${humanNumber(rounding(memberCount, 10000))}+`;
+        return `${humanNumber(rounding(memberCount, 10000)).toLowerCase()}+`;
     }
 
     if (memberCount > 1000000) {
-        return `${humanNumber(rounding(memberCount, 100000))}+`;
+        return `${humanNumber(rounding(memberCount, 100000)).toLowerCase()}+`;
     }
 };
 
