@@ -25,7 +25,7 @@ describe('Roles API', function () {
         should.exist(response);
         should.exist(response.roles);
         localUtils.API.checkResponse(response, 'roles');
-        response.roles.should.have.length(8);
+        response.roles.should.have.length(9);
         localUtils.API.checkResponse(response.roles[0], 'role');
         localUtils.API.checkResponse(response.roles[1], 'role');
         localUtils.API.checkResponse(response.roles[2], 'role');
@@ -34,6 +34,7 @@ describe('Roles API', function () {
         localUtils.API.checkResponse(response.roles[5], 'role');
         localUtils.API.checkResponse(response.roles[6], 'role');
         localUtils.API.checkResponse(response.roles[7], 'role');
+        localUtils.API.checkResponse(response.roles[8], 'role');
     });
 
     it('Can request roles which i am able to assign to other users', async function () {
