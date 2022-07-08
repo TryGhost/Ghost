@@ -11,12 +11,7 @@ export function getEditorConfig({placeholder, autofocus = false, content = ''}) 
             Text,
             Paragraph,
             Link.configure({
-                openOnClick: false,
-                // Add these HTML attributes to all the <a> links
-                // Warning: we need to do backend changes to make sure the sanitizer always picks the same class for links
-                HTMLAttributes: {
-                    class: 'underline'
-                }
+                openOnClick: false
             }),
             Placeholder.configure({
                 placeholder
@@ -26,8 +21,10 @@ export function getEditorConfig({placeholder, autofocus = false, content = ''}) 
         autofocus,
         editorProps: {
             attributes: {
-                class: `focus:outline-0`
+                class: `gh-comment-content focus:outline-0`
             }
         }
     };
 }
+
+/** We need to post process the HTML from tiptap, because tiptap by default */

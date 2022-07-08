@@ -52,7 +52,7 @@ const Comment = (props) => {
                             </div>
                         </div>
                         <div className={`ml-14 mb-4 pr-4 font-sans leading-normal ${isNotPublished ? 'text-neutral-400' : 'text-neutral-900'} dark:text-[rgba(255,255,255,0.85)]`}>
-                            <p dangerouslySetInnerHTML={html} className="whitespace-pre-wrap text-[16.5px] leading-normal"></p>
+                            <p dangerouslySetInnerHTML={html} className="gh-comment-content text-[16.5px] leading-normal"></p>
                         </div>
                         <div className="ml-14 flex gap-5 items-center">
                             <Like comment={comment} />
