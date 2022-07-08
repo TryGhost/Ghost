@@ -50,7 +50,7 @@ const CommentsBox = (props) => {
     };
 
     return (
-        <section className={containerClass} style={style}>
+        <section className={'ghost-display' + containerClass} style={style}>
             <Pagination />
             <div className={!pagination ? 'mt-4' : ''}>
                 {commentsElements}

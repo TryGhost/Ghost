@@ -7,8 +7,18 @@ const ShadowRoot = ({
     ...props
 }) => {
     const cssLink = getBundledCssLink({appVersion: props.appVersion});
+
+    const styles = `
+        .ghost-display {
+            display: none;
+        }
+    `;
+
     const head = (
-        <link rel="stylesheet" href={cssLink} />
+        <>
+            <link rel="stylesheet" href={cssLink} />
+            <style dangerouslySetInnerHTML={{__html: styles}} />
+        </>
     );
 
     return (

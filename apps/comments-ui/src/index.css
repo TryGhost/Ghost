@@ -54,3 +54,7 @@ body {
 [contenteditable]:focus {
     outline: 0px solid transparent;
 }
+
+.ghost-display {
+    display: block !important;
+}
