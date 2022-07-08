@@ -9,10 +9,12 @@ import setupGhostApi from './utils/api';
 import CommentsBox from './components/CommentsBox';
 import {useEffect} from 'react';
 
-function AuthFrame({adminUrl, onLoad}) {
+function AuthFrame({adminUrl, onLoad, initStatus}) {
     useEffect(function () {
-        onLoad();
-    }, []);
+        if (initStatus !== 'success') {
+            onLoad();
+        }
+    }, [onLoad, initStatus]);
 
     const iframeStyle = {
         display: 'none'
@@ -302,7 +304,7 @@ export default class App extends React.Component {
             <SentryErrorBoundary dsn={this.props.sentryDsn}>
                 <AppContext.Provider value={this.getContextFromState()}>
                     <CommentsBoxContainer done={done} appVersion={this.props.appVersion} />
-                    <AuthFrame adminUrl={this.props.adminUrl} onLoad={this.initSetup.bind(this)}/>
+                    <AuthFrame adminUrl={this.props.adminUrl} onLoad={this.initSetup.bind(this)} initStatus={this.state.initStatus}/>
                 </AppContext.Provider>
             </SentryErrorBoundary>
         );
