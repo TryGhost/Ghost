@@ -25,6 +25,9 @@ export function getEditorConfig({placeholder, autofocus = false, content = ''}) 
             attributes: {
                 class: `gh-comment-content focus:outline-0`
             }
+        },
+        parseOptions: {
+            preserveWhitespace: 'full'
         }
     };
 }

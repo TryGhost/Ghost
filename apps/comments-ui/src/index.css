@@ -46,6 +46,11 @@ body {
     color: rgb(212 212 212 / var(--tw-text-opacity));
 }
 
+.ProseMirror * {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
 [contenteditable]:focus {
     outline: 0px solid transparent;
 }
