@@ -18,11 +18,11 @@ const tagsData = [
 
 const postsData = [
     {
-        title: 'How to ergonomically optimize your <span class=\'font-bold\'>work</span>space fkds gfd jgkf gjg jkfg fjkg fkgj fkgjf jgkf jgkfj <span class=\'font-bold\'>work</span> gkjf jgkfj ',
+        title: 'How to ergonomically optimize your <span class=\'font-bold text-neutral-900\'>work</span>space fkds gfd jgkf gjg jkfg fjkg fkgj fkgjf jgkf jgkfj <span class=\'font-bold\'>work</span> gkjf jgkfj ',
         excerpt: 'Organically grow the holistic world view of disruptive innovation via workplace diversity and empowerment.'
     },
     {
-        title: 'The economical advantage of <span class=\'font-bold\'>work</span>',
+        title: 'The economical advantage of <span class=\'font-bold text-neutral-900\'>work</span>',
         excerpt: 'New data show the end of pandemic coincided with a 49 percent increase in the number of families struggling to survive.'
     },
     {
@@ -267,17 +267,17 @@ function PostListItem({post, selectedResult, setSelectedResult}) {
                 setSelectedResult(id);
             }}
         >
-            <h2 className='text-[1.65rem] font-medium leading-tight text-neutral-900'>
+            <h2 className='text-[1.65rem] font-medium leading-tight text-neutral-800'>
                 <HighlightedSection text={title} highlight={searchValue} />
             </h2>
             <p className='text-neutral-400 leading-normal text-sm mt-0 mb-0 truncate'>
-                <HighlightedSection text={excerpt} highlight={searchValue} />
+                <HighlightedSection text={excerpt} highlight={searchValue} isExcerpt={true} />
             </p>
         </div>
     );
 }
 
-function HighlightedSection({text = '', highlight = ''}) {
+function HighlightedSection({text = '', highlight = '', isExcerpt}) {
     let highlightStartIndex = text?.toLowerCase().indexOf(highlight.toLowerCase());
 
     let parts = [];
@@ -322,7 +322,7 @@ function HighlightedSection({text = '', highlight = ''}) {
         if (d?.type === 'highlight') {
             return (
                 <React.Fragment key={idx}>
-                    <HighlightWord word={d.text} highlight={highlight} />
+                    <HighlightWord word={d.text} highlight={highlight} isExcerpt={isExcerpt}/>
                 </React.Fragment>
             );
         } else {
@@ -340,12 +340,19 @@ function HighlightedSection({text = '', highlight = ''}) {
     );
 }
 
-function HighlightWord({word, highlight}) {
+function HighlightWord({word, highlight, isExcerpt}) {
     const firstHalf = word.slice(0, (highlight?.length || 0)) || '';
     const secondHalf = word.slice((highlight?.length || 0), (word?.length || 1000)) || '';
+    if (isExcerpt) {
+        return (
+            <>
+                <span className='font-bold'>{firstHalf}</span>{secondHalf}
+            </>
+        );       
+    }
     return (
         <>
-            <span className='font-bold'>{firstHalf}</span>{secondHalf}
+            <span className='font-bold text-neutral-900'>{firstHalf}</span>{secondHalf}
         </>
     );
 }
