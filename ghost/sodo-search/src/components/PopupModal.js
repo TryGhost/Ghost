@@ -107,12 +107,6 @@ function SearchBox() {
             <div className='flex items-center justify-center w-4 h-4 mr-3'>
                 <SearchClearIcon />
             </div>
-<<<<<<< HEAD
-
-=======
-
-            {/* <SearchIcon className='mr-3 text-neutral-900' alt='Search' /> */}
->>>>>>> 0c65571 (Removed dummy data)
             <input
                 ref={inputRef}
                 value={searchValue || ''}
