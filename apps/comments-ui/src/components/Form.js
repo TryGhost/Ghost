@@ -119,14 +119,34 @@ const Form = (props) => {
             dark:bg-[rgba(255,255,255,0.08)]
             dark:shadow-transparent
             hover:shadow-xl
-            ${!commentsCount && '-mt-0 -mr-0 -ml-0'}
+            ${!commentsCount && !props.isEdit && '-mt-0 -mr-0 -ml-0'}
             ${focused ? 'cursor-default' : 'cursor-pointer'}`
         }>
             <div className="w-full relative">
                 <div className="pr-3 font-sans leading-normal dark:text-neutral-300">
                     <div className="relative w-full">
                         <EditorContent
-                            className={`transition-[min-height] pl-[56px] px-0 py-[10px] pr-4 ${focused ? 'pt-[44px] pb-[68px]' : ''} duration-150 bg-transparent w-full placeholder:text-neutral-300 dark:placeholder:text-[rgba(255,255,255,0.3)] border-none resize-none rounded-md border border-slate-50 font-sans text-[16.5px] leading-normal focus:outline-0 dark:border-none dark:text-neutral-300 ${focused ? 'cursor-text min-h-[144px]' : 'cursor-pointer overflow-hidden min-h-[48px] hover:border-slate-300'}`}
+                            className={`
+                                transition-[min-height]
+                                pl-[56px] px-0 py-[10px] pr-4
+                                duration-150
+                                bg-transparent
+                                w-full
+                                border-none
+                                resize-none
+                                rounded-md
+                                border
+                                border-slate-50 
+                                font-sans
+                                text-[16.5px]
+                                leading-normal
+                                focus:outline-0
+                                placeholder:text-neutral-300
+                                dark:placeholder:text-[rgba(255,255,255,0.3)]
+                                dark:border-none
+                                dark:text-neutral-300
+                                ${focused ? 'cursor-text min-h-[144px] pt-[44px] pb-[68px]' : 'cursor-pointer overflow-hidden min-h-[48px] hover:border-slate-300'}
+                            `}
                             editor={editor} 
                         />
                         <div className="flex space-x-4 transition-[opacity] duration-150 absolute -right-3 bottom-[2px]">
