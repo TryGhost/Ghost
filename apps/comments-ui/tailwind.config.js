@@ -134,6 +134,15 @@ module.exports = {
                 '0px 13px 20px rgba(0, 0, 0, 0.04)', 
                 '0px 14px 57px rgba(0, 0, 0, 0.06)'
             ]
+        },
+        animation: {
+            heartbeat: 'heartbeat 0.35s ease-in-out forwards'
+        },
+        keyframes: {
+            heartbeat: {
+                '0%, 100%': {transform: 'scale(1)'},
+                '50%': {transform: 'scale(1.3)'}
+            }
         }
     },
     content: [
