@@ -1,40 +1,20 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import AppContext from '../../AppContext';
 import AdminContextMenu from './AdminContextMenu';
 import AuthorContextMenu from './AuthorContextMenu';
 import NotAuthorContextMenu from './NotAuthorContextMenu';
 
-class CommentContextMenu extends React.Component {
-    static contextType = AppContext;
+const CommentContextMenu = (props) => {
+    const {member, admin} = useContext(AppContext);
+    const comment = props.comment;
+    const isAuthor = comment.member.uuid === member?.uuid;
+    const isAdmin = !!admin;
 
-    constructor(props) {
-        super(props);
-        this.state = {};
+    return (
+        <div className="min-w-[170px] bg-white absolute font-sans rounded py-3 px-4 shadow-lg text-sm whitespace-nowrap z-10 dark:bg-zinc-900 dark:text-white">
+            {isAuthor && comment.status === 'published' ? <AuthorContextMenu comment={comment} close={props.close} toggleEdit={props.toggleEdit} /> : (isAdmin ? <AdminContextMenu comment={comment} close={props.close}/> : <NotAuthorContextMenu comment={comment} close={props.close}/>)}
+        </div>
+    );
+};
 
-        this.close = this.close.bind(this);
-    }
-
-    get isAuthor() {
-        return this.props.comment.member.uuid === this.context?.member?.uuid;
-    }
-
-    get isAdmin() {
-        return !!this.context.admin;
-    }
-
-    close() {
-        this.props.close();
-    }
-
-    render() {
-        const comment = this.props.comment;
-
-        return (
-            <div className="min-w-[170px] bg-white absolute font-sans rounded py-3 px-4 shadow-lg text-sm whitespace-nowrap z-10 dark:bg-zinc-900 dark:text-white">
-                {this.isAuthor && comment.status === 'published' ? <AuthorContextMenu comment={comment} close={this.close} toggleEdit={this.props.toggleEdit} /> : (this.isAdmin ? <AdminContextMenu comment={comment} close={this.close}/> : <NotAuthorContextMenu comment={comment} close={this.close}/>)}
-            </div>
-        );
-    }
-}
-  
 export default CommentContextMenu;
