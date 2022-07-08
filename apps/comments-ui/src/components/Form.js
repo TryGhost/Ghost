@@ -6,7 +6,7 @@ import {useEditor, EditorContent} from '@tiptap/react';
 import {getEditorConfig} from '../utils/editor';
 
 const Form = (props) => {
-    const {member, postId, dispatchAction, onAction} = useContext(AppContext);
+    const {member, postId, dispatchAction, onAction, avatarSaturation} = useContext(AppContext);
 
     let config;
     if (props.isReply) {
@@ -128,7 +128,7 @@ const Form = (props) => {
                     </div>
                 </div>
                 <div className="flex mb-1 justify-start items-center absolute top-[4px] left-0">
-                    <Avatar saturation={props.avatarSaturation} />
+                    <Avatar saturation={avatarSaturation} />
                     <Transition
                         show={focused}
                         enter="transition duration-500 ease-in-out"

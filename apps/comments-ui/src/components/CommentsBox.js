@@ -31,9 +31,9 @@ class CommentsBox extends React.Component {
     }
 
     darkMode() {
-        if (this.props.colorScheme === 'light') {
+        if (this.context.colorScheme === 'light') {
             return false;
-        } else if (this.props.colorScheme === 'dark') {
+        } else if (this.context.colorScheme === 'dark') {
             return true;
         } else {
             const containerColor = getComputedStyle(document.querySelector('#ghost-comments-root').parentNode).getPropertyValue('color');
@@ -48,7 +48,7 @@ class CommentsBox extends React.Component {
     }
 
     render() {
-        const comments = !this.context.comments ? 'Loading...' : this.context.comments.slice().reverse().map(comment => <Comment comment={comment} key={comment.id} avatarSaturation={this.props.avatarSaturation} />);
+        const comments = !this.context.comments ? 'Loading...' : this.context.comments.slice().reverse().map(comment => <Comment comment={comment} key={comment.id} avatarSaturation={this.context.avatarSaturation} />);
 
         const containerClass = this.darkMode() ? 'dark' : '';
         const commentsCount = comments.length;
@@ -60,7 +60,7 @@ class CommentsBox extends React.Component {
                     {comments}
                 </div>
                 <div>
-                    { this.context.member ? <Form commentsCount={commentsCount} avatarSaturation={this.props.avatarSaturation} /> : <NotSignedInBox /> }
+                    { this.context.member ? <Form commentsCount={commentsCount} /> : <NotSignedInBox /> }
                 </div>
             </section>
         );

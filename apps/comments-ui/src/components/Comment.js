@@ -21,7 +21,7 @@ const Comment = (props) => {
         setIsInReplyMode(current => !current);
     };
 
-    const {admin} = useContext(AppContext);
+    const {admin, avatarSaturation} = useContext(AppContext);
     const comment = props.comment;
     const hasReplies = comment.replies && comment.replies.length > 0;
     const isNotPublished = comment.status !== 'published';
@@ -45,7 +45,7 @@ const Comment = (props) => {
                 <div className={`flex flex-col ${hasReplies ? 'mb-4' : 'mb-12'}`}>
                     <div>
                         <div className="flex justify-start items-center">
-                            <Avatar comment={comment} saturation={props.avatarSaturation} />
+                            <Avatar comment={comment} saturation={avatarSaturation} />
                             <div className="ml-3">
                                 <h4 className="text-lg font-sans font-semibold mb-1 tracking-tight dark:text-[rgba(255,255,255,0.85)]">{comment.member.name}</h4>
                             </div>
@@ -71,12 +71,12 @@ const Comment = (props) => {
                     leaveTo="opacity-0"
                 >
                     <div className="ml-14 my-10">
-                        <Form parent={comment} toggle={toggleReplyMode} avatarSaturation={props.avatarSaturation} isReply={true} />
+                        <Form parent={comment} toggle={toggleReplyMode} isReply={true} />
                     </div>
                 </Transition>
                 {hasReplies && 
                     <div className="ml-14 mt-10">
-                        <Replies comment={comment} avatarSaturation={props.avatarSaturation} />
+                        <Replies comment={comment} />
                     </div>
                 }
             </>

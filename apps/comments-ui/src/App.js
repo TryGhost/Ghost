@@ -23,13 +23,13 @@ function AuthFrame({adminUrl, onLoad}) {
     );
 }
 
-function CommentsBoxContainer({done, colorScheme, avatarSaturation}) {
+function CommentsBoxContainer({done}) {
     if (!done) {
         return null;
     }
     return (
         <ShadowRoot>
-            <CommentsBox colorScheme={colorScheme} avatarSaturation={avatarSaturation} />
+            <CommentsBox />
         </ShadowRoot>
     );
 }
@@ -276,6 +276,9 @@ export default class App extends React.Component {
             comments,
             pagination,
             postId,
+            colorScheme: this.props.colorScheme,
+            avatarSaturation: this.props.avatarSaturation,
+            accentColor: this.props.accentColor,
             dispatchAction: (_action, data) => this.dispatchAction(_action, data),
             
             /**
@@ -297,7 +300,7 @@ export default class App extends React.Component {
         return (
             <SentryErrorBoundary dsn={this.props.sentryDsn}>
                 <AppContext.Provider value={this.getContextFromState()}>
-                    <CommentsBoxContainer done={done} colorScheme={this.props.colorScheme} avatarSaturation={this.props.avatarSaturation} />
+                    <CommentsBoxContainer done={done} />
                     <AuthFrame adminUrl={this.props.adminUrl} onLoad={this.initSetup.bind(this)}/>
                 </AppContext.Provider>
             </SentryErrorBoundary>
