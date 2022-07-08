@@ -87,6 +87,11 @@
             "name": "Permission",
             "entries": [
                 {
+                    "name": "Read explore data",
+                    "action_type": "read",
+                    "object_type": "explore"
+                },
+                {
                     "name": "Export database",
                     "action_type": "exportContent",
                     "object_type": "db"
@@ -862,13 +867,17 @@
                     "offer": "all",
                     "authentication": "resetAllPasswords",
                     "members_stripe_connect": "auth",
-                    "newsletter": "all"
+                    "newsletter": "all",
+                    "explore": "read"
                 },
                 "DB Backup Integration": {
                     "db": "all"
                 },
                 "Scheduler Integration": {
                     "post": "publish"
+                },
+                "Ghost Explore Integration": {
+                    "explore": "read"
                 },
                 "Admin Integration": {
                     "mail": "all",
@@ -891,7 +900,8 @@
                     "snippet": "all",
                     "product": ["browse", "read", "add", "edit"],
                     "offer": ["browse", "read", "add", "edit"],
-                    "newsletter": ["browse", "read", "add", "edit"]
+                    "newsletter": ["browse", "read", "add", "edit"],
+                    "explore": "read"
                 },
                 "Editor": {
                     "notification": "all",
