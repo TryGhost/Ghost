@@ -18,6 +18,7 @@ const themeEngine = require('./frontend/services/theme-engine');
 const appService = require('./frontend/services/apps');
 const cardAssetService = require('./frontend/services/card-assets');
 const commentCountsAssetService = require('./frontend/services/comment-counts-assets');
+const adminAuthAssetService = require('./frontend/services/admin-auth-assets');
 const routerManager = require('./frontend/services/routing').routerManager;
 const settingsCache = require('./shared/settings-cache');
 const urlService = require('./server/services/url');
@@ -68,6 +69,7 @@ class Bridge {
             // TODO: is this in the right place?
             // rebuild asset files
             await commentCountsAssetService.load();
+            await adminAuthAssetService.load();
         } catch (err) {
             logging.error(new errors.InternalServerError({
                 message: tpl(messages.activateFailed, {theme: loadedTheme.name}),
