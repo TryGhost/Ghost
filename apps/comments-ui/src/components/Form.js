@@ -52,7 +52,7 @@ const Form = (props) => {
                 });
             })
             .run();
-    }, [editor]);
+    }, [editor, props.isEdit]);
    
     const focused = editor?.isFocused || !editor?.isEmpty;
 
