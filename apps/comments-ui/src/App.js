@@ -63,7 +63,8 @@ export default class App extends React.Component {
             pagination: null,
             popupNotification: null,
             customSiteUrl: props.customSiteUrl,
-            postId: props.postId
+            postId: props.postId,
+            accentColor: props.accentColor
         };
     }
 

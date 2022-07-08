@@ -1,39 +1,31 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import AppContext from '../AppContext';
 import NotSignedInBox from './NotSignedInBox';
-// import AddForm from './AddForm';
 import Form from './Form';
 import Comment from './Comment';
 import Pagination from './Pagination';
 
-class CommentsBox extends React.Component {
-    static contextType = AppContext;
-
-    constructor(props) {
-        super(props);
-        this.state = {};
-    }
-
-    luminance(r, g, b) {
+const CommentsBox = (props) => {
+    const luminance = (r, g, b) => {
         var a = [r, g, b].map(function (v) {
             v /= 255;
             return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
         });
         return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
-    }
+    };
 
-    contrast(rgb1, rgb2) {
-        var lum1 = this.luminance(rgb1[0], rgb1[1], rgb1[2]);
-        var lum2 = this.luminance(rgb2[0], rgb2[1], rgb2[2]);
+    const contrast = (rgb1, rgb2) => {
+        var lum1 = luminance(rgb1[0], rgb1[1], rgb1[2]);
+        var lum2 = luminance(rgb2[0], rgb2[1], rgb2[2]);
         var brightest = Math.max(lum1, lum2);
         var darkest = Math.min(lum1, lum2);
         return (brightest + 0.05) / (darkest + 0.05);
-    }
+    };
 
-    darkMode() {
-        if (this.context.colorScheme === 'light') {
+    const darkMode = () => {
+        if (props.colorScheme === 'light') {
             return false;
-        } else if (this.context.colorScheme === 'dark') {
+        } else if (props.colorScheme === 'dark') {
             return true;
         } else {
             const containerColor = getComputedStyle(document.querySelector('#ghost-comments-root').parentNode).getPropertyValue('color');
@@ -43,28 +35,31 @@ class CommentsBox extends React.Component {
             const green = colorsOnly[1];
             const blue = colorsOnly[2];
 
-            return this.contrast([255, 255, 255], [red, green, blue]) < 5;
+            return contrast([255, 255, 255], [red, green, blue]) < 5;
         }
-    }
+    };
 
-    render() {
-        const comments = !this.context.comments ? 'Loading...' : this.context.comments.slice().reverse().map(comment => <Comment comment={comment} key={comment.id} avatarSaturation={this.context.avatarSaturation} />);
+    const {accentColor, pagination, member, comments} = useContext(AppContext);
 
-        const containerClass = this.darkMode() ? 'dark' : '';
-        const commentsCount = comments.length;
+    const commentsElements = !comments ? 'Loading...' : comments.slice().reverse().map(comment => <Comment comment={comment} key={comment.id} avatarSaturation={props.avatarSaturation} />);
 
-        return (
-            <section className={containerClass}>
-                <Pagination />
-                <div className={!this.context.pagination ? 'mt-4' : ''}>
-                    {comments}
-                </div>
-                <div>
-                    { this.context.member ? <Form commentsCount={commentsCount} /> : <NotSignedInBox /> }
-                </div>
-            </section>
-        );
-    }
-}
+    const containerClass = darkMode() ? 'dark' : '';
+    const commentsCount = comments.length;
+    const style = {
+        '--gh-accent-color': accentColor ?? 'blue'
+    };
+
+    return (
+        <section className={containerClass} style={style}>
+            <Pagination />
+            <div className={!pagination ? 'mt-4' : ''}>
+                {commentsElements}
+            </div>
+            <div>
+                { member ? <Form commentsCount={commentsCount} avatarSaturation={props.avatarSaturation} /> : <NotSignedInBox /> }
+            </div>
+        </section>
+    );
+};
 
 export default CommentsBox;

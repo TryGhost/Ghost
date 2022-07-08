@@ -25,6 +25,7 @@ body {
 /* Links */
 .gh-comment-content a {
     text-decoration: underline;
+    color: var(--gh-accent-color);
 }
 
 /* Blockquotes */
