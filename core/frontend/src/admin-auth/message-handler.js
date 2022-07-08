@@ -1,3 +1,5 @@
+const adminUrl = window.location.href.replace('auth-frame/', '');
+
 window.addEventListener('message', async function (event) {
     if (event.origin !== '*') {
         // return;
@@ -20,7 +22,7 @@ window.addEventListener('message', async function (event) {
     if (data.action === 'getUser') {
         try {
             const res = await fetch(
-                'https://admin.egg/blog/ghost/api/canary/admin/users/me/'
+                adminUrl + 'api/canary/admin/users/me/'
             );
             const json = await res.json();
             respond(null, json);
@@ -31,7 +33,7 @@ window.addEventListener('message', async function (event) {
 
     if (data.action === 'hideComment') {
         try {
-            const res = await fetch('https://admin.egg/blog/ghost/api/canary/admin/comments/' + data.id + '/', {
+            const res = await fetch(adminUrl + 'api/canary/admin/comments/' + data.id + '/', {
                 method: 'PUT',
                 body: JSON.stringify({
                     comments: [{
@@ -52,7 +54,7 @@ window.addEventListener('message', async function (event) {
 
     if (data.action === 'showComment') {
         try {
-            const res = await fetch('https://admin.egg/blog/ghost/api/canary/admin/comments/' + data.id + '/', {
+            const res = await fetch(adminUrl + 'api/canary/admin/comments/' + data.id + '/', {
                 method: 'PUT',
                 body: JSON.stringify({
                     comments: [{
