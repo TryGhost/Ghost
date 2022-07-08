@@ -24,7 +24,7 @@ const Comment = (props) => {
 
     const {admin} = useContext(AppContext);
     const comment = props.comment;
-    const hasReplies = comment.replies && comment.replies.length > 0 && !!comment.replies.find(r => r.status === 'published');
+    const hasReplies = comment.replies && comment.replies.length > 0;
     const isNotPublished = comment.status !== 'published';
     const html = {__html: comment.html};
 
