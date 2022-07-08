@@ -8,44 +8,6 @@ import {getBundledCssLink} from '../utils/helpers';
 
 const React = require('react');
 
-const tagsData = [
-    {
-        title: 'Nomad life'
-    },
-    {
-        title: 'Technology'
-    }
-];
-
-const postsData = [
-    {
-        title: 'How to ergonomically optimize your <span class=\'font-bold text-neutral-900\'>work</span>space fkds gfd jgkf gjg jkfg fjkg fkgj fkgjf jgkf jgkfj <span class=\'font-bold\'>work</span> gkjf jgkfj ',
-        excerpt: 'Organically grow the holistic world view of disruptive innovation via workplace diversity and empowerment.'
-    },
-    {
-        title: 'The economical advantage of <span class=\'font-bold text-neutral-900\'>work</span>',
-        excerpt: 'New data show the end of pandemic coincided with a 49 percent increase in the number of families struggling to survive.'
-    },
-    {
-        title: 'When tech brands get illustration right',
-        excerpt: 'Leverage agile <span class=\'font-bold\'>work</span> to provide a robust synopsis for high level overviews.'
-    }
-];
-
-const authorsData = [
-    {
-        name: 'Norman Foster'
-    },
-    {
-        name: 'John O\'Nolan',
-        avatar: 'https://pbs.twimg.com/profile_images/1064595509472456704/XyL-qE64_400x400.jpg'
-
-    },
-    {
-        name: 'Ann Jensen'
-    }
-];
-
 const DEFAULT_MAX_POSTS = 10;
 const STEP_MAX_POSTS = 10;
 
@@ -145,7 +107,12 @@ function SearchBox() {
             <div className='flex items-center justify-center w-4 h-4 mr-3'>
                 <SearchClearIcon />
             </div>
-                
+<<<<<<< HEAD
+
+=======
+
+            {/* <SearchIcon className='mr-3 text-neutral-900' alt='Search' /> */}
+>>>>>>> 0c65571 (Removed dummy data)
             <input
                 ref={inputRef}
                 value={searchValue || ''}
@@ -196,7 +163,7 @@ function CancelButton() {
     const {dispatch} = useContext(AppContext);
 
     return (
-        <button 
+        <button
             className='ml-3 text-sm text-neutral-500 sm:hidden' alt='Cancel'
             onClick={() => {
                 dispatch('update', {
@@ -355,7 +322,7 @@ function HighlightWord({word, highlight, isExcerpt}) {
             <>
                 <span className='font-bold'>{firstHalf}</span>{secondHalf}
             </>
-        );       
+        );
     }
     return (
         <>
@@ -472,20 +439,12 @@ function AuthorResults({authors, selectedResult, setSelectedResult}) {
 function SearchResultBox() {
     const {searchValue = '', searchIndex, indexComplete} = useContext(AppContext);
     let searchResults = null;
-    let filteredTags = tagsData.filter((d) => {
-        return d.title?.toLowerCase().includes(searchValue?.toLowerCase());
-    });
-
-    let filteredPosts = postsData.filter((d) => {
-        return d.title?.toLowerCase().includes(searchValue.toLowerCase()) || d.excerpt?.toLowerCase().includes(searchValue?.toLowerCase());
-    });
-
-    let filteredAuthors = authorsData.filter((d) => {
-        return d.name?.toLowerCase().includes(searchValue?.toLowerCase());
-    });
+    let filteredTags = [];
+    let filteredPosts = [];
+    let filteredAuthors = [];
 
     if (indexComplete && searchValue) {
-        searchResults = searchIndex.search(searchValue);
+        searchResults = searchIndex?.search(searchValue);
         filteredPosts = searchResults?.posts || [];
         filteredAuthors = searchResults?.authors || [];
         filteredTags = searchResults?.tags || [];
@@ -497,11 +456,13 @@ function SearchResultBox() {
         return (
             <Results posts={filteredPosts} authors={filteredAuthors} tags={filteredTags} />
         );
+    } else if (searchValue) {
+        return (
+            <NoResultsBox />
+        );
     }
 
-    return (
-        <NoResultsBox />
-    );
+    return null;
 }
 
 function Results({posts, authors, tags}) {
