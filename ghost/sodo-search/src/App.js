@@ -15,16 +15,14 @@ export default class App extends React.Component {
 
         this.state = {
             searchIndex,
-            showPopup: false
+            showPopup: false,
+            indexStarted: false,
+            indexComplete: false
         };
     }
 
-    async componentDidMount() {
+    componentDidMount() {
         this.initSetup();
-        await this.state.searchIndex.init();
-        this.setState({
-            indexComplete: true
-        });
     }
 
     componentDidUpdate(_prevProps, _prevState) {
@@ -33,6 +31,20 @@ export default class App extends React.Component {
                 searchValue: ''
             });
         }
+
+        if (this.state.showPopup && !this.state.indexStarted) {
+            this.setupSearchIndex();
+        }
+    }
+
+    async setupSearchIndex() {
+        this.setState({
+            indexStarted: true
+        });
+        await this.state.searchIndex.init();
+        this.setState({
+            indexComplete: true
+        });
     }
 
     componentWillUnmount() {
