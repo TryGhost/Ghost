@@ -1,39 +1,28 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import AppContext from '../AppContext';
 
-class Pagination extends React.Component {
-    static contextType = AppContext;
+const Pagination = (props) => {
+    const {pagination, dispatchAction} = useContext(AppContext);
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            message: ''
-        };
+    const loadMore = () => {
+        dispatchAction('loadMoreComments');
+    };
 
-        this.loadMore = this.loadMore.bind(this);
+    if (!pagination) {
+        return null;
     }
 
-    loadMore() {
-        this.context.onAction('loadMoreComments');
+    const left = pagination.total - pagination.page * pagination.limit;
+
+    if (left <= 0) {
+        return null;
     }
 
-    render() {
-        if (!this.context.pagination) {
-            return null;
-        }
+    return (
+        <button className="w-full rounded-md bg-neutral-100 text-neutral-700 font-semibold px-3 py-3.5 mb-12 font-sans text-md text-center dark:bg-[rgba(255,255,255,0.08)] dark:text-white" onClick={loadMore}>
+            ↑ Show {left} previous comments
+        </button>
+    );
+};
 
-        const left = this.context.pagination.total - this.context.pagination.page * this.context.pagination.limit;
-
-        if (left <= 0) {
-            return null;
-        }
-
-        return (
-            <button className="w-full rounded-md bg-neutral-100 text-neutral-700 font-semibold px-3 py-3.5 mb-12 font-sans text-md text-center dark:bg-[rgba(255,255,255,0.08)] dark:text-white" onClick={this.loadMore}>
-                ↑ Show {left} previous comments
-            </button>
-        );
-    }
-}
-  
 export default Pagination;
