@@ -1287,14 +1287,14 @@
     "@sentry/utils" "6.19.7"
     tslib "^1.9.3"
 
-"@sentry/core@7.5.1":
-  version "7.5.1"
-  resolved "https://registry.yarnpkg.com/@sentry/core/-/core-7.5.1.tgz#6ad186e671d0398dfa4552a2e5686bff6c1938d3"
-  integrity sha512-1ac5eaJi9LBIpCaert+IrttyaL8rnrK5fcdB6tyqDf8jNV5s9O32PyqjvjpWCrGOvZ4kmp+6UXB9bw/NNtvpkQ==
+"@sentry/core@7.6.0":
+  version "7.6.0"
+  resolved "https://registry.yarnpkg.com/@sentry/core/-/core-7.6.0.tgz#5e5efd54af7b63957ac4d446fb5a69af33da3e51"
+  integrity sha512-vXIuUZbHVSAXh2xZ3NyXYXqVvVQSbGEpgtQxLutwocvD88JFK6aZqO+WQG69GY1b1fKSeE9faEDDS6WGAi46mQ==
   dependencies:
-    "@sentry/hub" "7.5.1"
-    "@sentry/types" "7.5.1"
-    "@sentry/utils" "7.5.1"
+    "@sentry/hub" "7.6.0"
+    "@sentry/types" "7.6.0"
+    "@sentry/utils" "7.6.0"
     tslib "^1.9.3"
 
 "@sentry/hub@6.19.7":
@@ -1306,13 +1306,13 @@
     "@sentry/utils" "6.19.7"
     tslib "^1.9.3"
 
-"@sentry/hub@7.5.1":
-  version "7.5.1"
-  resolved "https://registry.yarnpkg.com/@sentry/hub/-/hub-7.5.1.tgz#15817d30aec9e4c1b1bbf7ded6735813f8613e66"
-  integrity sha512-q14zzf5GlE4xvwFP7lZaAI4UnuqWMc3nD62Md5XBptY35bm42CGzawx9aDQ8cegZoQ5bHyX1GPzFju4lDO3O6g==
+"@sentry/hub@7.6.0":
+  version "7.6.0"
+  resolved "https://registry.yarnpkg.com/@sentry/hub/-/hub-7.6.0.tgz#69a0d11e50ee61f3f93665948c4acbe56a9ce676"
+  integrity sha512-TbieNZInpnR5STXykT1zXoKVAsm8ju1RZyzMqYR8nzURbjlMVVEzFRglNY1Ap5MRkbEuYpAc6zUvgLQe8b6Q3w==
   dependencies:
-    "@sentry/types" "7.5.1"
-    "@sentry/utils" "7.5.1"
+    "@sentry/types" "7.6.0"
+    "@sentry/utils" "7.6.0"
     tslib "^1.9.3"
 
 "@sentry/minimal@6.19.7":
@@ -1338,15 +1338,15 @@
     lru_map "^0.3.3"
     tslib "^1.9.3"
 
-"@sentry/node@7.5.1":
-  version "7.5.1"
-  resolved "https://registry.yarnpkg.com/@sentry/node/-/node-7.5.1.tgz#b0c94ed4bc24891c51809e75199e6d1f8de284f2"
-  integrity sha512-XSpNbxBVIpcklLpk9NtQSkTZM0/mEj0TYMnzQmE2UR7UChpGhZyc19nbQWceSsaLMrrAgOX4Zzo28ENk/QY5FA==
+"@sentry/node@7.6.0":
+  version "7.6.0"
+  resolved "https://registry.yarnpkg.com/@sentry/node/-/node-7.6.0.tgz#8a6c042ff87a13c7ec4b884bc1d708670804b9a4"
+  integrity sha512-B6DAle4xMUnmY1SlEyO+zAnS+HHae75GiD4zliYMA8plhd3+UcsYN3LpmhgYSfxvckYBjG/YcqQl9HWJV+s3tw==
   dependencies:
-    "@sentry/core" "7.5.1"
-    "@sentry/hub" "7.5.1"
-    "@sentry/types" "7.5.1"
-    "@sentry/utils" "7.5.1"
+    "@sentry/core" "7.6.0"
+    "@sentry/hub" "7.6.0"
+    "@sentry/types" "7.6.0"
+    "@sentry/utils" "7.6.0"
     cookie "^0.4.1"
     https-proxy-agent "^5.0.0"
     lru_map "^0.3.3"
@@ -1357,10 +1357,10 @@
   resolved "https://registry.yarnpkg.com/@sentry/types/-/types-6.19.7.tgz#c6b337912e588083fc2896eb012526cf7cfec7c7"
   integrity sha512-jH84pDYE+hHIbVnab3Hr+ZXr1v8QABfhx39KknxqKWr2l0oEItzepV0URvbEhB446lk/S/59230dlUUIBGsXbg==
 
-"@sentry/types@7.5.1":
-  version "7.5.1"
-  resolved "https://registry.yarnpkg.com/@sentry/types/-/types-7.5.1.tgz#3dd647973fee256588f92d3d74d8ce560b73758b"
-  integrity sha512-+OHxQL4lXCEsUA31qlhcPABOjxtbuL+VTpgamXJjxEpQQDPUPyPK0pu7c+uTc7x4Re96Ss3pwUYE9tl3WW3xIg==
+"@sentry/types@7.6.0":
+  version "7.6.0"
+  resolved "https://registry.yarnpkg.com/@sentry/types/-/types-7.6.0.tgz#7352bcc5621177ceefb18733d0a6b0cdb0307822"
+  integrity sha512-POimbDwr9tmHSKksJTXe5VQpvjkFO4/UWUptigwqf8684rkS7Ie2BT2uyp5GD2EgYFf0BwUOWi98FTYTvUGT+Q==
 
 "@sentry/utils@6.19.7":
   version "6.19.7"
@@ -1370,12 +1370,12 @@
     "@sentry/types" "6.19.7"
     tslib "^1.9.3"
 
-"@sentry/utils@7.5.1":
-  version "7.5.1"
-  resolved "https://registry.yarnpkg.com/@sentry/utils/-/utils-7.5.1.tgz#10877a19372040ebf5bc0342fed69b8147a8d269"
-  integrity sha512-5w5dEDilAkH/4x5h8VMlfFcGKdDQ8tbSEfxnMOheD3/bwk18lTVTgp6kk+VxmugGdvxsTLiPEoORsuofufWvGQ==
+"@sentry/utils@7.6.0":
+  version "7.6.0"
+  resolved "https://registry.yarnpkg.com/@sentry/utils/-/utils-7.6.0.tgz#50b44fd9b06686a358ef2c7c0fd3b80970e1f9ee"
+  integrity sha512-p0Byi6hgawp/sBMY88RY8OmkiAR2jxbjnl8gSo+y3YEu+KeXBUxXMBsI7YeW+1lSb6z8DGhUAOBszTeI4wAr2w==
   dependencies:
-    "@sentry/types" "7.5.1"
+    "@sentry/types" "7.6.0"
     tslib "^1.9.3"
 
 "@simple-dom/document@^1.4.0":
