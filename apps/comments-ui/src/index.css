@@ -45,3 +45,7 @@ body {
     --tw-text-opacity: 1;
     color: rgb(212 212 212 / var(--tw-text-opacity));
 }
+
+[contenteditable]:focus {
+    outline: 0px solid transparent;
+}
