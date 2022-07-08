@@ -113,18 +113,13 @@ const Form = (props) => {
             transition
             duration-200
             rounded-md
-            px-3
-            pt-3
-            pb-2
-            mb-10
-            -mt-[12px]
-            -ml-[12px]
-            -mr-3
+            pt-3 pb-2 px-3
+            -mt-[12px] -mr-3 mb-10 -ml-[12px]
             shadow-lg
             dark:bg-[rgba(255,255,255,0.08)]
             dark:shadow-transparent
             hover:shadow-xl
-            ${commentsCount && '-ml-[12px] -mr-3'}
+            ${!commentsCount && '-mt-0 -mr-0 -ml-0'}
             ${focused ? 'cursor-default' : 'cursor-pointer'}`
         }>
             <div className="w-full relative">
