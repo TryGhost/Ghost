@@ -1,37 +1,24 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import AppContext from '../../AppContext';
 
-class AuthorContextMenu extends React.Component {
-    static contextType = AppContext;
+const AuthorContextMenu = (props) => {
+    const {dispatchAction} = useContext(AppContext);
 
-    constructor(props) {
-        super(props);
-        this.state = {};
+    const deleteComment = (event) => {
+        dispatchAction('deleteComment', props.comment);
+        props.close();
+    };
 
-        this.deleteComment = this.deleteComment.bind(this);
-    }
+    return (
+        <div className="flex flex-col">
+            <button className="w-full mb-3 text-left text-[14px]" onClick={props.toggleEdit}>
+                Edit
+            </button>
+            <button className="w-full text-left text-[14px]" onClick={deleteComment}>
+                Delete
+            </button>
+        </div>
+    );
+};
 
-    deleteComment(event) {
-        this.context.onAction('deleteComment', this.props.comment);
-        this.close();
-    }
-
-    close() {
-        this.props.close();
-    }
-
-    render() {
-        return (
-            <div className="flex flex-col">
-                <button className="w-full mb-3 text-left text-[14px]" onClick={this.props.toggleEdit}>
-                    Edit
-                </button>
-                <button className="w-full text-left text-[14px]" onClick={this.deleteComment}>
-                    Delete
-                </button>
-            </div>
-        );
-    }
-}
-  
 export default AuthorContextMenu;
