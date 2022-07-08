@@ -215,6 +215,10 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
                 head.push(`<link rel="stylesheet" type="text/css" href="${getAssetUrl('public/cards.min.css')}">`);
             }
 
+            if (labs.isSet('comments') && settingsCache.get('enable_comments') !== 'off') {
+                head.push(`<script defer src="${getAssetUrl('public/comment-counts.min.js')}" data-ghost-comments-counts-api="${urlUtils.getSiteUrl(true)}members/api/comments/counts/"></script>`);
+            }
+
             if (!_.isEmpty(globalCodeinjection)) {
                 head.push(globalCodeinjection);
             }
