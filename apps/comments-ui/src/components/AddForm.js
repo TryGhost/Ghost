@@ -29,7 +29,7 @@ const AddForm = (props) => {
             })
         ],
         content: '',
-        autofocus: true,
+        autofocus: false,
         editorProps: {
             attributes: {
                 class: `focus:outline-0`
