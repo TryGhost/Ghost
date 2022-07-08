@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React, {useContext, useEffect} from 'react';
 import {Transition} from '@headlessui/react';
 import AppContext from '../AppContext';
 import Avatar from './Avatar';
@@ -17,7 +17,7 @@ const Form = (props) => {
     } else if (props.isEdit) {
         config = {
             placeholder: 'Edit this comment',
-            autofocus: true,
+            autofocus: false, // don't use autofocus, because else the useEffect thing won't work
             content: props.comment.html
         };
     } else {
@@ -31,6 +31,29 @@ const Form = (props) => {
         ...getEditorConfig(config)
     });
 
+    useEffect(() => {
+        if (!editor) {
+            return;
+        }
+
+        // Focus editor + jump to end
+        if (!props.isEdit) {
+            return;
+        }
+
+        // jump to end
+        editor
+            .chain()
+            .focus()
+            .command(({tr, commands}) => {
+                return commands.setTextSelection({
+                    from: tr.doc.content.size,
+                    to: tr.doc.content.size
+                });
+            })
+            .run();
+    }, [editor]);
+   
     const focused = editor?.isFocused || !editor?.isEmpty;
 
     const submitForm = async (event) => {
