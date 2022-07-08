@@ -6,14 +6,11 @@
 <div class="modal-body">
     {{#if this.user.count.posts}}
         <p>
-            <strong>{{this.user.name}}</strong> and their <strong data-test-text="user-post-count">{{gh-pluralize this.user.count.posts 'post'}}</strong> will be permanently deleted. If you don’t want to lose these posts, you should assign them to a different author.
-        </p>
-        <p>
-            A backup will be automatically downloaded to your device before deletion.
+            <strong>{{this.user.name}}</strong> and their <strong data-test-text="user-post-count">{{gh-pluralize this.user.count.posts 'post'}}</strong> will be permanently deleted.
         </p>
     {{else}}
         <p>
-            <strong>{{this.user.name}}</strong> will be permanently deleted. A backup will be automatically downloaded to your device before deletion.
+            <strong>{{this.user.name}}</strong> will be permanently deleted.
         </p>
     {{/if}}
 </div>
@@ -22,7 +19,7 @@
     <button class="gh-btn" data-test-button="cancel-delete-user" type="button" {{action "closeModal"}}>
         <span>Cancel</span>
     </button>
-    <GhTaskButton @buttonText="Download backup & delete user"
+    <GhTaskButton @buttonText="Delete user"
         @successText="Deleted"
         @task={{this.deleteUser}}
         @class="gh-btn gh-btn-red gh-btn-icon"
