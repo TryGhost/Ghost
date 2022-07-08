@@ -3,6 +3,7 @@ import Text from '@tiptap/extension-text';
 import Link from '@tiptap/extension-link';
 import Paragraph from '@tiptap/extension-paragraph';
 import Document from '@tiptap/extension-document';
+import Blockquote from '@tiptap/extension-blockquote';
 
 export function getEditorConfig({placeholder, autofocus = false, content = ''}) {
     return {
@@ -15,7 +16,8 @@ export function getEditorConfig({placeholder, autofocus = false, content = ''}) 
             }),
             Placeholder.configure({
                 placeholder
-            })
+            }),
+            Blockquote.configure({})
         ],
         content,
         autofocus,

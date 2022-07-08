@@ -27,6 +27,12 @@ body {
     text-decoration: underline;
 }
 
+/* Blockquotes */
+.gh-comment-content blockquote {
+    border-left: 3px solid rgba(13,13,13,.1);
+    padding-left: 1rem;
+}
+
 /* The following lines are needed for the editor */
 
 /* Placeholder */

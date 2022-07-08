@@ -10,6 +10,7 @@
     "@testing-library/react": "12.1.2",
     "@testing-library/user-event": "14.0.0",
     "@tiptap/core": "^2.0.0-beta.182",
+    "@tiptap/extension-blockquote": "^2.0.0-beta.29",
     "@tiptap/extension-document": "^2.0.0-beta.17",
     "@tiptap/extension-link": "^2.0.0-beta.43",
     "@tiptap/extension-paragraph": "^2.0.0-beta.26",
