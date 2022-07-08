@@ -87,7 +87,8 @@ export default class SearchIndex {
         let tags = await this.api.tags.browse({
             limit: '10000',
             fields: 'id,slug,name,url',
-            order: 'updated_at DESC'
+            order: 'updated_at DESC',
+            filter: 'visibility:public'
         });
 
         if (tags || tags.length > 0) {
