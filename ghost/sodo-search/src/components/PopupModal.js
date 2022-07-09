@@ -240,7 +240,7 @@ function PostListItem({post, selectedResult, setSelectedResult}) {
             }}
         >
             <h2 className='text-[1.65rem] font-medium leading-tight text-neutral-800'>
-                <HighlightedSection text={title} highlight={searchValue} />
+                <HighlightedSection text={title} highlight={searchValue} isExcerpt={false} />
             </h2>
             <p className='text-neutral-400 leading-normal text-sm mt-0 mb-0 truncate'>
                 <HighlightedSection text={excerpt} highlight={searchValue} isExcerpt={true} />
@@ -249,52 +249,79 @@ function PostListItem({post, selectedResult, setSelectedResult}) {
     );
 }
 
-function HighlightedSection({text = '', highlight = '', isExcerpt}) {
-    let highlightStartIndex = text?.toLowerCase().indexOf(highlight.toLowerCase());
-
-    let parts = [];
-    if (highlightStartIndex === 0) {
-        parts.push({
-            text: text?.slice(0, highlight?.length),
-            type: 'highlight'
-        });
-        let nextSection = text?.slice(highlight?.length, text?.length);
-        if (nextSection) {
-            parts.push({
-                text: nextSection,
-                type: 'normal'
-            });
+function getMatchIndexes({text, highlight}) {
+    let highlightRegexText = '';
+    highlight?.split(' ').forEach((d, idx) => {
+        if (idx > 0) {
+            highlightRegexText += `|^${d}|\\s${d}`;
+        } else {
+            highlightRegexText = `^${d}|\\s${d}`;
         }
-    } else if (highlightStartIndex > 0) {
-        parts.push({
-            text: text?.slice(0, highlightStartIndex),
-            type: 'normal'
+    });
+    const matchRegex = new RegExp(`${highlightRegexText}`, 'ig');
+    let matches = text.matchAll(matchRegex);
+    const indexes = [];
+    for (const match of matches) {
+        indexes.push({
+            startIdx: match?.index,
+            endIdx: (match?.index || 0) + (match?.[0].length || 0)
         });
-        let highlightSection = text?.slice(highlightStartIndex, highlightStartIndex + highlight?.length);
-        if (highlightSection) {
+    }
+    return indexes;
+}
+
+function getHighlightParts({text, highlight}) {
+    const highlightIndexes = getMatchIndexes({text, highlight});
+    const parts = [];
+    let lastIdx = 0;
+
+    highlightIndexes.forEach((highlightIdx) => {
+        if (lastIdx === highlightIdx.startIdx) {
             parts.push({
-                text: highlightSection,
+                text: text?.slice(highlightIdx.startIdx, highlightIdx.endIdx),
                 type: 'highlight'
             });
-        }
-        if (highlightStartIndex + highlight?.length < text.length) {
-            let nextSection = text?.slice(highlightStartIndex + highlight?.length);
+            lastIdx = highlightIdx.endIdx;
+        } else {
             parts.push({
-                text: nextSection,
+                text: text?.slice(lastIdx, highlightIdx.startIdx),
                 type: 'normal'
             });
+            parts.push({
+                text: text?.slice(highlightIdx.startIdx, highlightIdx.endIdx),
+                type: 'highlight'
+            });
+            lastIdx = highlightIdx.endIdx;
         }
-    } else {
+    });
+    if (lastIdx < text?.length) {
         parts.push({
-            text: text,
+            text: text?.slice(lastIdx, text.length),
             type: 'normal'
         });
     }
+    return {
+        parts,
+        highlightIndexes
+    };
+}
+
+function HighlightedSection({text = '', highlight = '', isExcerpt}) {
+    let {parts, highlightIndexes} = getHighlightParts({text, highlight});
+    if (isExcerpt && highlightIndexes?.[0]) {
+        const startIdx = highlightIndexes?.[0]?.startIdx;
+        if (startIdx > 50) {
+            text = '...' + text?.slice(startIdx - 20);
+            const {parts: updatedParts} = getHighlightParts({text, highlight});
+            parts = updatedParts;
+        }
+    }
+
     const wordMap = parts.map((d, idx) => {
         if (d?.type === 'highlight') {
             return (
                 <React.Fragment key={idx}>
-                    <HighlightWord word={d.text} highlight={highlight} isExcerpt={isExcerpt}/>
+                    <HighlightWord word={d.text} isExcerpt={isExcerpt}/>
                 </React.Fragment>
             );
         } else {
@@ -312,19 +339,17 @@ function HighlightedSection({text = '', highlight = '', isExcerpt}) {
     );
 }
 
-function HighlightWord({word, highlight, isExcerpt}) {
-    const firstHalf = word.slice(0, (highlight?.length || 0)) || '';
-    const secondHalf = word.slice((highlight?.length || 0), (word?.length || 1000)) || '';
+function HighlightWord({word, isExcerpt}) {
     if (isExcerpt) {
         return (
             <>
-                <span className='font-bold'>{firstHalf}</span>{secondHalf}
+                <span className='font-bold'>{word}</span>
             </>
         );
     }
     return (
         <>
-            <span className='font-bold text-neutral-900'>{firstHalf}</span>{secondHalf}
+            <span className='font-bold text-neutral-900'>{word}</span>
         </>
     );
 }
