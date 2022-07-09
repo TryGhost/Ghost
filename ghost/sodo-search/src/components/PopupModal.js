@@ -253,9 +253,9 @@ function getMatchIndexes({text, highlight}) {
     let highlightRegexText = '';
     highlight?.split(' ').forEach((d, idx) => {
         if (idx > 0) {
-            highlightRegexText += `|^${d}|\\s${d}`;
+            highlightRegexText += `|^` + d + `|\\s` + d;
         } else {
-            highlightRegexText = `^${d}|\\s${d}`;
+            highlightRegexText = `^` + d + `|\\s` + d;
         }
     });
     const matchRegex = new RegExp(`${highlightRegexText}`, 'ig');
