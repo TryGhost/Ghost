@@ -610,9 +610,17 @@ const fixtures = {
     },
 
     insertComments: async function insertComments() {
-        return Promise.map(DataGenerator.forKnex.comments, function (comment) {
+        // First create the parents (can happen in parallel), because the children depend on those
+        const parents = DataGenerator.forKnex.comments.filter(c => !c.parent_id);
+        const children = DataGenerator.forKnex.comments.filter(c => !!c.parent_id);
+
+        await Promise.all(parents.map((comment) => {
             return models.Comment.add(comment, context.internal);
-        });
+        }));
+
+        await Promise.all(children.map((comment) => {
+            return models.Comment.add(comment, context.internal);
+        }));
     },
 
     insertSnippets: function insertSnippets() {
