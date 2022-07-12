@@ -468,7 +468,8 @@ describe('Acceptance: Settings - Integrations - Custom', function () {
                 .to.have.string('Not triggered');
 
             // click edit webhook link
-            await click('[data-test-webhook-row="1"] [data-test-link="edit-webhook"]');
+            await click('[data-test-webhook-row="1"] [data-test-newsletter-menu-trigger]');
+            await click('[data-test-link="edit-webhook"]');
 
             // modal appears and has correct title
             expect(find('[data-test-modal="webhook-form"]')).to.exist;
