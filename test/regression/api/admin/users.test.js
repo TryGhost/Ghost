@@ -15,9 +15,10 @@ describe('User API', function () {
             request = supertest.agent(config.get('url'));
 
             // create inactive user
+            const authorRole = testUtils.DataGenerator.Content.roles[2].name;
             otherAuthor = await testUtils.createUser({
                 user: testUtils.DataGenerator.forKnex.createUser({email: 'test+3@ghost.org'}),
-                role: testUtils.DataGenerator.Content.roles[2].name
+                role: authorRole
             });
 
             // by default we login with the owner
@@ -113,11 +114,41 @@ describe('User API', function () {
         });
 
         describe('Destroy', function () {
+            before(async function () {
+                // login with the owner
+                request = supertest.agent(config.get('url'));
+                await localUtils.doAuth(request);
+            });
+
             it('[failure] Destroy unknown user id', function () {
                 return request
                     .delete(localUtils.API.getApiQuery('users/' + ObjectId().toHexString()))
                     .set('Origin', config.get('url'))
                     .expect(404);
+            });
+
+            it('Destroy known user and reassign post tags', async function () {
+                const otherAuthorPost = await testUtils.createPost({
+                    post: {
+                        tags: [{
+                            slug: 'existing-tag'
+                        }, {
+                            slug: 'second-one'
+                        }],
+                        authors: [otherAuthor]
+                    }
+                });
+
+                await request
+                    .delete(localUtils.API.getApiQuery(`users/${otherAuthor.id}`))
+                    .set('Origin', config.get('url'))
+                    .expect(200);
+
+                const tags = await otherAuthorPost.related('tags').fetch();
+
+                should.equal(tags.length, 3);
+                should.equal(tags.models[2].get('slug'), `hash-${otherAuthor.slug}`);
+                should.equal(tags.models[2].get('name'), `#${otherAuthor.slug}`);
             });
         });
     });
