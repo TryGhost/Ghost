@@ -195,14 +195,36 @@
                             <td class="gh-list-data" data-test-text="targetUrl">{{webhook.targetUrl}}</td>
                             <td class="gh-list-data" data-test-text="last-triggered">{{or webhook.lastTriggeredAtUTC "Not triggered"}}</td>
                             <td class="w1 gh-list-data nowrap">
-                                <div class="child flex items-center">
+                                {{!-- <div class="child flex items-center">
                                     <LinkTo @route="settings.integration.webhooks.edit" @models={{array this.integration webhook}} data-test-link="edit-webhook">
                                         {{svg-jar "pen" class="w6 h6 fill-midgrey pa1 mr1"}}
                                     </LinkTo>
                                     <button data-test-button="delete-webhook" type="button" {{on "click" (fn this.confirmWebhookDeletion webhook)}}>
                                         {{svg-jar "trash" class="w6 fill-red pa1"}}
                                     </button>
-                                </div>
+                                </div> --}}
+                                <GhBasicDropdown @verticalPosition="below" @horizontalPosition="right" @renderInPlace={{true}} as |dd|>
+                                    <dd.Trigger class="gh-btn gh-btn-action-icon gh-btn-icon gh-btn-outline gh-tier-card-actions-button icon-only">
+                                        <span data-test-newsletter-menu-trigger>
+                                            {{svg-jar "dotdotdot"}}
+                                            <span class="hidden">Actions</span>
+                                        </span>
+                                    </dd.Trigger>
+                                    <dd.Content class="relative-dropdown-menu gh-newsletter-actions-menu">
+                                        <ul class="dropdown-menu dropdown-triangle-top-right" role="listbox" {{css-transition "anim-fade-in-scale"}}>
+                                            <li>
+                                                <LinkTo @route="settings.integration.webhooks.edit" @models={{array this.integration webhook}} data-test-link="edit-webhook">
+                                                    Edit
+                                                </LinkTo>                                            
+                                            </li>
+                                            <li>
+                                                <button data-test-button="delete-webhook" type="button" {{on "click" (fn this.confirmWebhookDeletion webhook)}}>
+                                                    Delete
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    </dd.Content>
+                                </GhBasicDropdown>
                             </td>
                         </tr>
                     {{else}}
