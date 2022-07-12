@@ -50,6 +50,8 @@ export default function UnsubscribePage() {
     const [hasInteracted, setHasInteracted] = useState(false);
     const [subscribedNewsletters, setSubscribedNewsletters] = useState(defaultNewsletters);
     const [showPrefs, setShowPrefs] = useState(false);
+    const {comments_enabled: commentsEnabled} = site;
+    const {enable_comment_notifications: enableCommentNotifications = false} = member || {};
 
     useEffect(() => {
         const ghostApi = setupGhostApi({siteUrl: site.url});
@@ -123,7 +125,9 @@ export default function UnsubscribePage() {
         });
         const hideClassName = hasInteracted ? 'gh-portal-hide' : '';
         return (
-            <p className={`gh-portal-text-center gh-portal-header-message ${hideClassName}`}><strong>{member?.email}</strong> will no longer receive <strong>{unsubscribedNewsletter?.name}</strong> newsletter.</p>
+            <>
+                <p className={`gh-portal-text-center gh-portal-header-message ${hideClassName}`}><strong>{member?.email}</strong> will no longer receive <strong>{unsubscribedNewsletter?.name}</strong> newsletter.</p>
+            </>
         );
     };
 
@@ -136,16 +140,22 @@ export default function UnsubscribePage() {
                 setHasInteracted(true);
                 await api.member.updateNewsletters({uuid: pageData.uuid, newsletters});
             }}
+            updateCommentNotifications={async (enabled) => {
+                const updatedMember = await api.member.updateNewsletters({uuid: pageData.uuid, enableCommentNotifications: enabled});
+                setMember(updatedMember);
+            }}
             unsubscribeAll={async () => {
                 setHasInteracted(true);
                 setSubscribedNewsletters([]);
                 onAction('showPopupNotification', {
                     action: 'updated:success',
-                    message: `Newsletter preference updated.`
+                    message: `Email preference updated.`
                 });
-                await api.member.updateNewsletters({uuid: pageData.uuid, newsletters: []});
+                await api.member.updateNewsletters({uuid: pageData.uuid, newsletters: [], enableCommentNotifications: false});
             }}
             isPaidMember={member?.status !== 'free'}
+            isCommentsEnabled={commentsEnabled !== 'off'}
+            enableCommentNotifications={enableCommentNotifications}
         />
     );
 }

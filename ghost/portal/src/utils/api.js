@@ -177,13 +177,17 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
         },
 
-        update({name, subscribed, newsletters}) {
+        update({name, subscribed, newsletters, enableCommentNotifications}) {
             const url = endpointFor({type: 'members', resource: 'member'});
             const body = {
                 name,
                 subscribed,
                 newsletters
             };
+            if (enableCommentNotifications !== undefined) {
+                body.enable_comment_notifications = enableCommentNotifications;
+            }
+
             const analyticsData = getAnalyticsMetadata();
             if (analyticsData) {
                 body.metadata = analyticsData;
@@ -264,12 +268,16 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
         },
 
-        async updateNewsletters({uuid, newsletters}) {
+        async updateNewsletters({uuid, newsletters, enableCommentNotifications}) {
             let url = endpointFor({type: 'members', resource: `member/newsletters`});
             url = url + `?uuid=${uuid}`;
             const body = {
                 newsletters
             };
+
+            if (enableCommentNotifications !== undefined) {
+                body.enable_comment_notifications = enableCommentNotifications;
+            }
 
             return makeRequest({
                 url,
@@ -282,7 +290,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 if (res.ok) {
                     return res.json();
                 } else {
-                    throw new Error('Failed to upadte newsletter preferences');
+                    throw new Error('Failed to update email preferences');
                 }
             });
         },
