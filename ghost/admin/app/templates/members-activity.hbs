@@ -34,7 +34,7 @@
                 </div>
             {{else}}
                 {{#unless eventsFetcher.isLoading}}
-                    <MembersActivity::NoEvents @filter={{this.filter}} />
+                    <MembersActivity::NoEvents @filter={{or this.member this.excludedEvents}} />
                 {{/unless}}
             {{/if}}
 
