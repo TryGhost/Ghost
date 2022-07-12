@@ -2,6 +2,8 @@
 .build
 .dist
 .tmp
+Gruntfile.js
+ghost-*.tgz
 .eslintignore
 .eslintrc.json
 .eslintrc.js
@@ -48,6 +50,7 @@ content/themes/casper/SECURITY.md
 SECURITY.md
 renovate.json
 *.html
+!core/frontend/src/admin-auth/*.html
 !core/server/views/**
 !core/server/web/admin/views/**
 core/server/web/admin/views/.gitkeep
