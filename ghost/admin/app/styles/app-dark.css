@@ -989,10 +989,6 @@ input:focus,
     background: var(--dark-main-bg-color);
 }
 
-.gh-members-empty .gh-members-placeholder {
-    fill: var(--midgrey-d2);
-}
-
 /* Members activity */
 .gh-members-activity-icon svg path,
 .gh-member-feed-icon svg path {
@@ -1010,10 +1006,6 @@ input:focus,
 /* Offers */
 .gh-btn-green svg {
     fill: #fff !important;
-}
-
-.gh-offers-list-cta .discount-bubble {
-    color: var(--midgrey-d2);
 }
 
 .gh-offers-help-card .gh-btn {
@@ -1210,4 +1202,16 @@ kbd {
 
 .gh-editor-post-status-btn::after {
     background: var(--hairline-color-2);
+}
+
+/* Empty states */
+/* ---------------------------------------------------- */
+
+.gh-pages-placeholder, 
+.gh-posts-placeholder,
+.gh-tags-placeholder,
+.gh-members-empty .gh-members-placeholder,
+.gh-offers-list-cta .discount-bubble,
+.no-posts .gh-members-placeholder {
+    fill: var(--midgrey-d2);
 }
