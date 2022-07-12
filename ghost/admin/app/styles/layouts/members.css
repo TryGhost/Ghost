@@ -498,7 +498,7 @@ p.gh-members-list-email {
     fill: var(--lightgrey);
     width: 60px;
     height: 60px;
-    margin-bottom: 20px;
+    margin-bottom: 32px;
 }
 
 .gh-members-empty h4 {
