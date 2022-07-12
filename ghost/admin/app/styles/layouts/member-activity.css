@@ -31,6 +31,13 @@
     margin: 0 -4px;
 }
 
+.no-posts .gh-members-placeholder {
+    fill: var(--lightgrey);
+    width: 60px;
+    height: 60px;
+    margin-bottom: 20px;
+}
+
 .gh-member-details-activity h3 {
     margin: 0 0 2px;
     padding: 0;
