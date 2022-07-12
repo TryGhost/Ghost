@@ -50,7 +50,9 @@
             "period": "1d",
             "count": 10
         },
-        "transports": ["stdout"],
+        "transports": [
+            "stdout"
+        ],
         "slowHelper": {
             "level": "warn",
             "threshold": 200
@@ -72,19 +74,19 @@
             "minWait": 3600000,
             "maxWait": 3600000,
             "lifetime": 3600,
-            "freeRetries":4
+            "freeRetries": 4
         },
         "global_block": {
             "minWait": 3600000,
             "maxWait": 3600000,
             "lifetime": 3600,
-            "freeRetries":99
+            "freeRetries": 99
         },
         "private_block": {
             "minWait": 3600000,
             "maxWait": 3600000,
             "lifetime": 3600,
-            "freeRetries":99
+            "freeRetries": 99
         },
         "content_api_key": {
             "minWait": 3600000,
@@ -128,8 +130,8 @@
         "emailAnalytics": true
     },
     "portal": {
-        "url": "https://unpkg.com/@tryghost/portal@~2.2.0/umd/portal.min.js",
-        "version": "2.2"
+        "url": "https://unpkg.com/@tryghost/portal@~2.3.0/umd/portal.min.js",
+        "version": "2.3"
     },
     "sodoSearch": {
         "url": "https://unpkg.com/@tryghost/sodo-search@~0.1.0/umd/sodo-search.min.js",
