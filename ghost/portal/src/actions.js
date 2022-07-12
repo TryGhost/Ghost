@@ -268,14 +268,21 @@ async function showPopupNotification({data, state}) {
 
 async function updateNewsletterPreference({data, state, api}) {
     try {
-        const {newsletters} = data;
-        if (!newsletters) {
+        const {newsletters, enableCommentNotifications} = data;
+        if (!newsletters && enableCommentNotifications === undefined) {
             return {};
         }
-        const member = await api.member.update({newsletters});
+        const updateData = {};
+        if (newsletters) {
+            updateData.newsletters = newsletters;
+        }
+        if (enableCommentNotifications !== undefined) {
+            updateData.enableCommentNotifications = enableCommentNotifications;
+        }
+        const member = await api.member.update(updateData);
         const action = 'updateNewsletterPref:success';
         return {
-            action,
+            action, 
             member
         };
     } catch (e) {

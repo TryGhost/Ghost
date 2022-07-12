@@ -85,6 +85,38 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
     );
 }
 
+function CommentsSection({updateCommentNotifications, isCommentsEnabled, enableCommentNotifications}) {
+    const isChecked = !!enableCommentNotifications;
+
+    const [showUpdated, setShowUpdated] = useState(false);
+    const [timeoutId, setTimeoutId] = useState(null);
+
+    if (!isCommentsEnabled) {
+        return null;
+    }
+
+    return (
+        <section className='gh-portal-list-toggle-wrapper'>
+            <div className='gh-portal-list-detail'>
+                <h3>Comments</h3>
+                <p>Likes and replies to my comments</p>
+            </div>
+            <div style={{display: 'flex', alignItems: 'center'}}>
+                <SuccessIcon show={showUpdated} checked={isChecked} />
+                <Switch id="comments" onToggle={(e, checked) => {
+                    setShowUpdated(true);
+                    clearTimeout(timeoutId);
+                    let newTimeoutId = setTimeout(() => {
+                        setShowUpdated(false);
+                    }, 2000);
+                    setTimeoutId(newTimeoutId);
+                    updateCommentNotifications(checked);
+                }} checked={isChecked} />
+            </div>
+        </section>
+    );
+}
+
 function NewsletterPrefs({subscribedNewsletters, setSubscribedNewsletters}) {
     const {site} = useContext(AppContext);
     const newsletters = getSiteNewsletters({site});
@@ -113,11 +145,14 @@ export default function NewsletterManagement({
     notification,
     subscribedNewsletters,
     updateSubscribedNewsletters,
+    updateCommentNotifications,
     unsubscribeAll,
-    isPaidMember
+    isPaidMember,
+    isCommentsEnabled,
+    enableCommentNotifications
 }) {
-    const isDisabled = !subscribedNewsletters?.length;
     const {brandColor, site} = useContext(AppContext);
+    const isDisabled = !subscribedNewsletters?.length && ((isCommentsEnabled && !enableCommentNotifications) || !isCommentsEnabled);
     const EmptyNotification = () => {
         return null;
     };
@@ -139,6 +174,11 @@ export default function NewsletterManagement({
                             });
                             updateSubscribedNewsletters(newsletters);
                         }}
+                    />
+                    <CommentsSection 
+                        isCommentsEnabled={isCommentsEnabled}
+                        enableCommentNotifications={enableCommentNotifications}
+                        updateCommentNotifications={updateCommentNotifications}
                     />
                 </div>
             </div>
