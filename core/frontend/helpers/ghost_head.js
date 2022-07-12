@@ -58,10 +58,6 @@ function getMembersHelper(data, frontendKey) {
 }
 
 function getSearchHelper(frontendKey) {
-    if (!labs.isSet('sodoSearch')) {
-        return '';
-    }
-
     const adminUrl = urlUtils.getAdminUrl() || urlUtils.getSiteUrl();
 
     let helper = `<script defer src="${config.get('sodoSearch:url')}" data-sodo-search="${adminUrl}" data-version="${config.get('sodoSearch:version')}" data-key="${frontendKey}" crossorigin="anonymous"></script>`;
