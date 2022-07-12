@@ -121,7 +121,7 @@ function SearchBox() {
                     }
                 }}
                 className='grow -my-5 py-5 -ml-3 pl-3 text-[1.65rem] focus-visible:outline-none placeholder:text-gray-400 outline-none truncate'
-                placeholder='Search posts, tags, authors...'
+                placeholder='Search posts, tags and authors'
             />
             <Loading />
             <CancelButton />
@@ -574,7 +574,7 @@ function Results({posts, authors, tags}) {
 function NoResultsBox() {
     return (
         <div className='py-4 px-7'>
-            <p className='text-[1.65rem] text-neutral-400 leading-normal'>No matches found...</p>
+            <p className='text-[1.65rem] text-neutral-400 leading-normal'>No matches found</p>
         </div>
     );
 }
@@ -594,7 +594,7 @@ function Search() {
                     }
                 }}
             >
-                <div className='bg-white w-full max-w-[95vw] sm:max-w-lg rounded-lg shadow-xl m-auto relative translate-y-0 animate-popup'>
+                <div className='bg-white w-full max-w-[95vw] sm:max-w-lg rounded-lg shadow-xl m-auto relative translate-z-0 animate-popup'>
                     <SearchBox />
                     <SearchResultBox />
                 </div>
