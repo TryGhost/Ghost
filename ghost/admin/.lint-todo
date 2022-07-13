@@ -1243,3 +1243,4 @@ remove|ember-template-lint|no-action|64|39|64|39|ba128af5dc9e5cd8c8bc648b08aaaab
 remove|ember-template-lint|no-passed-in-event-handlers|23|28|23|28|8783ae3cd90695c7887bd2e591215c27c071c564|1652054400000|1662422400000|1665014400000|app/templates/signup.hbs
 remove|ember-template-lint|no-passed-in-event-handlers|43|28|43|28|2a0c55d8aff6a65585f9451556a1d3f6e581a234|1652054400000|1662422400000|1665014400000|app/templates/signup.hbs
 remove|ember-template-lint|no-passed-in-event-handlers|63|28|63|28|46235ba79ee3e75e5527f44ce60a8e731c97311e|1652054400000|1662422400000|1665014400000|app/templates/signup.hbs
+remove|ember-template-lint|no-duplicate-landmark-elements|205|28|205|28|1d07af4dcd463bad33a6ccd858386094a7074a66|1652054400000|1662422400000|1665014400000|app/components/gh-post-settings-menu.hbs
