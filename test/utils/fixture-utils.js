@@ -609,6 +609,20 @@ const fixtures = {
         });
     },
 
+    insertComments: async function insertComments() {
+        // First create the parents (can happen in parallel), because the children depend on those
+        const parents = DataGenerator.forKnex.comments.filter(c => !c.parent_id);
+        const children = DataGenerator.forKnex.comments.filter(c => !!c.parent_id);
+
+        await Promise.all(parents.map((comment) => {
+            return models.Comment.add(comment, context.internal);
+        }));
+
+        await Promise.all(children.map((comment) => {
+            return models.Comment.add(comment, context.internal);
+        }));
+    },
+
     insertSnippets: function insertSnippets() {
         return Promise.map(DataGenerator.forKnex.snippets, function (snippet) {
             return models.Snippet.add(snippet, context.internal);
@@ -742,6 +756,9 @@ const toDoList = {
     },
     'tiers:archived': function insertArchivedTiers() {
         return fixtures.insertArchivedTiers();
+    },
+    comments: function insertComments() {
+        return fixtures.insertComments();
     }
 };
 

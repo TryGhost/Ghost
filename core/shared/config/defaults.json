@@ -50,7 +50,9 @@
             "period": "1d",
             "count": 10
         },
-        "transports": ["stdout"],
+        "transports": [
+            "stdout"
+        ],
         "slowHelper": {
             "level": "warn",
             "threshold": 200
@@ -72,19 +74,19 @@
             "minWait": 3600000,
             "maxWait": 3600000,
             "lifetime": 3600,
-            "freeRetries":4
+            "freeRetries": 4
         },
         "global_block": {
             "minWait": 3600000,
             "maxWait": 3600000,
             "lifetime": 3600,
-            "freeRetries":99
+            "freeRetries": 99
         },
         "private_block": {
             "minWait": 3600000,
             "maxWait": 3600000,
             "lifetime": 3600,
-            "freeRetries":99
+            "freeRetries": 99
         },
         "content_api_key": {
             "minWait": 3600000,
@@ -128,12 +130,12 @@
         "emailAnalytics": true
     },
     "portal": {
-        "url": "https://unpkg.com/@tryghost/portal@~2.2.0/umd/portal.min.js",
-        "version": "2.2"
+        "url": "https://unpkg.com/@tryghost/portal@~2.3.0/umd/portal.min.js",
+        "version": "2.3"
     },
     "sodoSearch": {
-        "url": "https://unpkg.com/@tryghost/sodo-search@~0.1.0/umd/sodo-search.min.js",
-        "version": "0.1.0"
+        "url": "https://unpkg.com/@tryghost/sodo-search@~1.0.0/umd/sodo-search.min.js",
+        "version": "1.0.0"
     },
     "tenor": {
         "publicReadOnlyApiKey": null,
@@ -149,6 +151,7 @@
         "url": "https://www.gravatar.com/avatar/{hash}?s={size}&r={rating}&d={_default}"
     },
     "comments": {
-        "url": "https://unpkg.com/@tryghost/comments@~0.0.0/umd/portal.min.js"
+        "url": "https://unpkg.com/@tryghost/comments-ui@~0.1.0/umd/comments-ui.min.js",
+        "version": "0.1.0"
     }
 }

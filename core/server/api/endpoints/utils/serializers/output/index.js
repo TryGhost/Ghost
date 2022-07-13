@@ -13,12 +13,20 @@ module.exports = {
         return require('./default');
     },
 
+    get comments() {
+        return require('./comments');
+    },
+
     get authentication() {
         return require('./authentication');
     },
 
     get db() {
         return require('./db');
+    },
+
+    get explore() {
+        return require('./explore');
     },
 
     get pages() {

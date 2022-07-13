@@ -7,7 +7,27 @@ const tierSnapshot = {
     updated_at: anyISODateTime
 };
 
-const buildPostSnapshotWithTiers = ({published, tiersCount}) => {
+const buildAuthorSnapshot = (roles = false) => {
+    const authorSnapshot = {
+        last_seen: anyISODateTime,
+        created_at: anyISODateTime,
+        updated_at: anyISODateTime
+    };
+
+    // NOTE: this is such a bad hack! for the reasons I did not investigate the "add" event does not include
+    //       the roles but the "published" does! massive inconsistency and needs to be fixed one day
+    if (roles) {
+        authorSnapshot.roles = new Array(1).fill({
+            id: anyObjectId,
+            created_at: anyISODateTime,
+            updated_at: anyISODateTime
+        });
+    }
+
+    return authorSnapshot;
+};
+
+const buildPostSnapshotWithTiers = ({published, tiersCount, roles = false}) => {
     return {
         id: anyObjectId,
         uuid: anyUuid,
@@ -18,7 +38,9 @@ const buildPostSnapshotWithTiers = ({published, tiersCount}) => {
         // @TODO: hack here! it's due to https://github.com/TryGhost/Toolbox/issues/341
         //        this matcher should be removed once the issue is solved
         url: stringMatching(/http:\/\/127.0.0.1:2369\/\w+\//),
-        tiers: new Array(tiersCount).fill(tierSnapshot)
+        tiers: new Array(tiersCount).fill(tierSnapshot),
+        primary_author: buildAuthorSnapshot(roles),
+        authors: new Array(1).fill(buildAuthorSnapshot(roles))
     };
 };
 
@@ -47,7 +69,7 @@ describe('post.* events', function () {
         mockManager.restore();
     });
 
-    it('post.published even is triggered', async function () {
+    it('post.published event is triggered', async function () {
         const webhookURL = 'https://test-webhook-receiver.com/post-published/';
         await webhookMockReceiver.mock(webhookURL);
         await fixtureManager.insertWebhook({
@@ -83,14 +105,17 @@ describe('post.* events', function () {
                 post: {
                     current: buildPostSnapshotWithTiers({
                         published: true,
-                        tiersCount: 2
+                        tiersCount: 2,
+                        roles: true
                     }),
-                    previous: buildPreviousPostSnapshotWithTiers({tiersCount: 2})
+                    previous: buildPreviousPostSnapshotWithTiers({
+                        tiersCount: 2
+                    })
                 }
             });
     });
 
-    it('post.added even is triggered', async function () {
+    it('post.added event is triggered', async function () {
         const webhookURL = 'https://test-webhook-receiver.com/post-added/';
         await webhookMockReceiver.mock(webhookURL);
         await fixtureManager.insertWebhook({

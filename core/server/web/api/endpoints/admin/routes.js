@@ -20,6 +20,9 @@ module.exports = function apiRoutes() {
     // ## Configuration
     router.get('/config', mw.authAdminApi, http(api.config.read));
 
+    // ## Ghost Explore
+    router.get('/explore', mw.authAdminApi, http(api.explore.read));
+
     // ## Posts
     router.get('/posts', mw.authAdminApi, http(api.posts.browse));
     router.post('/posts', mw.authAdminApi, http(api.posts.add));
@@ -27,6 +30,8 @@ module.exports = function apiRoutes() {
     router.get('/posts/slug/:slug', mw.authAdminApi, http(api.posts.read));
     router.put('/posts/:id', mw.authAdminApi, http(api.posts.edit));
     router.del('/posts/:id', mw.authAdminApi, http(api.posts.destroy));
+
+    router.put('/comments/:id', mw.authAdminApi, http(api.comments.edit));
 
     // ## Pages
     router.get('/pages', mw.authAdminApi, http(api.pages.browse));

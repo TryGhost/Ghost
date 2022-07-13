@@ -72,6 +72,9 @@ module.exports = function setupSiteApp(routerConfig) {
     siteApp.use(mw.servePublicFile('built', 'public/cards.min.css', 'text/css', constants.ONE_YEAR_S));
     siteApp.use(mw.servePublicFile('built', 'public/cards.min.js', 'application/javascript', constants.ONE_YEAR_S));
 
+    // Comment counts
+    siteApp.use(mw.servePublicFile('built', 'public/comment-counts.min.js', 'application/javascript', constants.ONE_YEAR_S));
+
     // Serve blog images using the storage adapter
     siteApp.use(STATIC_IMAGE_URL_PREFIX, mw.handleImageSizes, storage.getStorage('images').serve());
     // Serve blog media using the storage adapter

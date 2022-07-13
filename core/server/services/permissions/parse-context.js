@@ -12,6 +12,7 @@ module.exports = function parseContext(context) {
         user: null,
         api_key: null,
         integration: null,
+        member: null,
         public: true
     };
 
@@ -35,6 +36,10 @@ module.exports = function parseContext(context) {
         parsed.api_key = context.api_key;
         parsed.integration = context.integration;
         parsed.public = (context.api_key.type === 'content');
+    }
+
+    if (context && context.member) {
+        parsed.member = context.member;
     }
 
     return parsed;

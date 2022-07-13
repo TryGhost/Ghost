@@ -13,9 +13,14 @@ module.exports = (event, model) => {
         ops.push(() => {
             let frame = {options: {previous: false, context: {user: true}}};
 
+            // NOTE: below options are lost in the during event processing, a more holistic approach would be
+            //       to pass them somehow along with the model
             if (['posts', 'pages'].includes(docName)) {
                 frame.options.formats = ['mobiledoc', 'html', 'plaintext'];
                 frame.options.withRelated = ['tags', 'authors'];
+                model._originalOptions = {
+                    withRelated: ['tags', 'authors']
+                };
             }
 
             return apiShared
