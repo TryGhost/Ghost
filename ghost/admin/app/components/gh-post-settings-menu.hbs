@@ -233,6 +233,7 @@
                                     <GhTextInput
                                         @class="post-setting-canonicalUrl"
                                         @name="post-setting-canonicalUrl"
+                                        @placeholder={{this.post.url}}
                                         @value={{readonly this.canonicalUrlScratch}}
                                         @input={{action (mut this.canonicalUrlScratch) value="target.value"}}
                                         @focus-out={{action "setCanonicalUrl" this.canonicalUrlScratch}}
