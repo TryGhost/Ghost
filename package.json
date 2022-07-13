@@ -118,7 +118,7 @@
     "@tryghost/vhost-middleware": "1.0.26",
     "@tryghost/zip": "1.1.26",
     "amperize": "0.6.1",
-    "analytics-node": "6.0.0",
+    "analytics-node": "6.1.0",
     "bluebird": "3.7.2",
     "body-parser": "1.20.0",
     "bookshelf": "1.2.0",
