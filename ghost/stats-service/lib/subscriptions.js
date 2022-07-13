@@ -105,6 +105,18 @@ class SubscriptionStatsService {
                     ELSE 0
                 END
             ) as negative_delta`))
+            .select(knex.raw(`SUM(
+                CASE
+                    WHEN members_paid_subscription_events.type IN ('created','reactivated') AND members_paid_subscription_events.mrr_delta != 0 THEN 1
+                    ELSE 0
+                END
+            ) as signups`))
+            .select(knex.raw(`SUM(
+                CASE
+                    WHEN members_paid_subscription_events.type IN ('canceled', 'expired') AND members_paid_subscription_events.mrr_delta != 0 THEN 1
+                    ELSE 0
+                END
+            ) as cancellations`))
             .groupBy('date', 'tier', 'cadence')
             .orderBy('date');
 
@@ -147,6 +159,8 @@ class SubscriptionStatsService {
  * @prop {string} date
  * @prop {number} positive_delta
  * @prop {number} negative_delta
+ * @prop {number} signups
+ * @prop {number} cancellations
  **/
 
 /**
@@ -156,6 +170,8 @@ class SubscriptionStatsService {
  * @prop {string} date
  * @prop {number} positive_delta
  * @prop {number} negative_delta
+ * @prop {number} signups
+ * @prop {number} cancellations
  * @prop {number} count
  **/
 
