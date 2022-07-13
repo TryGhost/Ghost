@@ -6573,7 +6573,7 @@ human-interval@^2.0.0:
   dependencies:
     numbered "^1.1.0"
 
-human-number@^2.0.0:
+human-number@2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/human-number/-/human-number-2.0.0.tgz#ffdfa7954c40d32c02aa0ebb3b0f54f8fc4ed410"
   integrity sha512-hMb3DuF2aMTaFy795TU65AfQnZDd+UF6q8f29m3t6n648I3VCJyYXd1pJnnJsOJRYi7yBvYG29RdkrS59GwSEw==
