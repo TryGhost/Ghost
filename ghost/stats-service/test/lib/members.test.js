@@ -41,10 +41,10 @@ describe('MembersStatsService', function () {
         let db;
 
         before(function () {
-            todayDate = moment(today).toDate();
-            tomorrowDate = moment(tomorrow).toDate();
-            yesterdayDate = moment(yesterday).toDate();
-            dayBeforeYesterdayDate = moment(dayBeforeYesterday).toDate();
+            todayDate = moment.utc(today).toDate();
+            tomorrowDate = moment.utc(tomorrow).toDate();
+            yesterdayDate = moment.utc(yesterday).toDate();
+            dayBeforeYesterdayDate = moment.utc(dayBeforeYesterday).toDate();
             sinon.useFakeTimers(todayDate.getTime());
         });
 
