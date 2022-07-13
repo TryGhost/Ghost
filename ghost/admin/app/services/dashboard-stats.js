@@ -243,10 +243,12 @@ export default class DashboardStatsService extends Service {
                 free: obj.free,
                 comped: obj.comped,
                 paidCanceled: 0,
-                paidSubscribed: 0
+                paidSubscribed: 0,
+                signups: 0,
+                cancellations: 0
             };
         }
-        return this.fillMissingDates(this.memberCountStats, {paid: 0, free: 0, comped: 0, paidCanceled: 0, paidSubscribed: 0}, copyData, this.chartDays);
+        return this.fillMissingDates(this.memberCountStats, {paid: 0, free: 0, comped: 0, paidCanceled: 0, paidSubscribed: 0, signups: 0, cancellations: 0}, copyData, this.chartDays);
     }
 
     get filledMrrStats() {
@@ -411,7 +413,9 @@ export default class DashboardStatsService extends Service {
                     date: current.date,
                     count: current.count,
                     positiveDelta: current.positive_delta,
-                    negativeDelta: current.negative_delta
+                    negativeDelta: current.negative_delta,
+                    signups: current.signups,
+                    cancellations: current.cancellations
                 });
             }
 
@@ -420,7 +424,9 @@ export default class DashboardStatsService extends Service {
                     date: entry.date,
                     count: entry.count + current.count,
                     positiveDelta: entry.positiveDelta + current.positive_delta,
-                    negativeDelta: entry.negativeDelta + current.negative_delta
+                    negativeDelta: entry.negativeDelta + current.negative_delta,
+                    signups: entry.signups + current.signups,
+                    cancellations: entry.cancellations + current.cancellations
                 });
             }
 
