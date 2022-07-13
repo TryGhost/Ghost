@@ -244,26 +244,36 @@ describe('SubscriptionStatsService', function () {
             assert(firstDayBasicMonthly);
             assert(firstDayBasicMonthly.positive_delta === 1);
             assert(firstDayBasicMonthly.negative_delta === 0);
+            assert(firstDayBasicMonthly.signups === 1);
+            assert(firstDayBasicMonthly.cancellations === 0);
             assert(firstDayBasicMonthly.count === 1);
 
             assert(firstDayAdvancedYearly);
             assert(firstDayAdvancedYearly.positive_delta === 1);
             assert(firstDayAdvancedYearly.negative_delta === 0);
+            assert(firstDayAdvancedYearly.signups === 1);
+            assert(firstDayAdvancedYearly.cancellations === 0);
             assert(firstDayAdvancedYearly.count === 1);
 
             assert(secondDayAdvancedYearly);
             assert(secondDayAdvancedYearly.positive_delta === 0);
             assert(secondDayAdvancedYearly.negative_delta === 1);
+            assert(secondDayAdvancedYearly.signups === 0);
+            assert(secondDayAdvancedYearly.cancellations === 1);
             assert(secondDayAdvancedYearly.count === 0);
 
             assert(secondDayAdvancedMonthly);
             assert(secondDayAdvancedMonthly.positive_delta === 1);
             assert(secondDayAdvancedMonthly.negative_delta === 0);
+            assert(secondDayAdvancedMonthly.signups === 1);
+            assert(secondDayAdvancedMonthly.cancellations === 0);
             assert(secondDayAdvancedMonthly.count === 1);
 
             assert(thirdDayBasicMonthly);
             assert(thirdDayBasicMonthly.positive_delta === 1);
             assert(thirdDayBasicMonthly.negative_delta === 1);
+            assert(thirdDayBasicMonthly.signups === 1);
+            assert(thirdDayBasicMonthly.cancellations === 1);
             assert(thirdDayBasicMonthly.count === 1);
         });
 
@@ -338,25 +348,39 @@ describe('SubscriptionStatsService', function () {
             // First day
             assert.equal(days[0].basic.monthly.positive_delta, 1);
             assert.equal(days[0].basic.monthly.negative_delta, 0);
+            assert.equal(days[0].basic.monthly.signups, 0); // We only have a subscription that switched tier
+            assert.equal(days[0].basic.monthly.cancellations, 0);
 
             assert.equal(days[0].basic.yearly.positive_delta, 2);
             assert.equal(days[0].basic.yearly.negative_delta, 2);
+            assert.equal(days[0].basic.yearly.signups, 2);
+            assert.equal(days[0].basic.yearly.cancellations, 1);
 
             assert.equal(days[0].beyond.monthly.positive_delta, 1);
             assert.equal(days[0].beyond.monthly.negative_delta, 1);
+            assert.equal(days[0].beyond.monthly.signups, 1);
+            assert.equal(days[0].beyond.monthly.cancellations, 0);
 
             assert.equal(days[0].beyond.yearly.positive_delta, 2);
             assert.equal(days[0].beyond.yearly.negative_delta, 0);
+            assert.equal(days[0].beyond.yearly.signups, 1);
+            assert.equal(days[0].beyond.yearly.cancellations, 0);
 
             // Second day
             assert.equal(days[1].basic.yearly.positive_delta, 1);
             assert.equal(days[1].basic.yearly.negative_delta, 0);
+            assert.equal(days[1].basic.yearly.signups, 1);
+            assert.equal(days[1].basic.yearly.cancellations, 0);
 
             assert.equal(days[1].beyond.monthly.positive_delta, 1);
             assert.equal(days[1].beyond.monthly.negative_delta, 0);
+            assert.equal(days[1].beyond.monthly.signups, 1);
+            assert.equal(days[1].beyond.monthly.cancellations, 0);
 
             assert.equal(days[1].beyond.yearly.positive_delta, 1);
             assert.equal(days[1].beyond.yearly.negative_delta, 0);
+            assert.equal(days[1].beyond.yearly.signups, 1);
+            assert.equal(days[1].beyond.yearly.cancellations, 0);
         });
     });
 });
