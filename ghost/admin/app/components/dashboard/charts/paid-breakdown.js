@@ -198,8 +198,8 @@ export default class PaidBreakdown extends Component {
     get chartData() {
         const stats = this.dashboardStats.filledSubscriptionCountStats;
         const labels = stats.map(stat => stat.date);
-        const newData = stats.map(stat => stat.positiveDelta);
-        const canceledData = stats.map(stat => -stat.negativeDelta);
+        const newData = stats.map(stat => stat.signups);
+        const canceledData = stats.map(stat => -stat.cancellations);
         let barThickness = 5;
 
         if (newData.length >= 30 + 1 && newData.length < 90) {
