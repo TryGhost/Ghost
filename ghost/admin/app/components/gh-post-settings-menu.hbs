@@ -9,7 +9,7 @@
                 <h4>{{capitalize this.post.displayName}} settings</h4>
             </div>
             <div class="settings-menu-content">
-                <form>
+                <form aria-label="Post settings">
                 <div class="form-group">
                     <label for="url">{{capitalize this.post.displayName}} URL</label>
                     {{!-- new posts don't have a preview link --}}
@@ -195,7 +195,7 @@
                         </div>
 
                         <div class="settings-menu-content">
-                            <form {{action "discardEnter" on="submit"}}>
+                            <form {{action "discardEnter" on="submit"}} aria-label="Meta data settings">
                                 <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="metaTitle">
                                     <label for="meta-title">Meta title</label>
                                     <GhTextInput
@@ -269,7 +269,7 @@
 
                         <div class="settings-menu-content">
 
-                            <form {{action "discardEnter" on="submit"}}>
+                            <form {{action "discardEnter" on="submit"}} aria-label="Twitter card settings">
                                 <GhImageUploaderWithPreview
                                     @image={{this.post.twitterImage}}
                                     @text="Add Twitter image"
@@ -344,7 +344,7 @@
                         </div>
 
                         <div class="settings-menu-content">
-                            <form {{action "discardEnter" on="submit"}}>
+                            <form {{action "discardEnter" on="submit"}} aria-label="Facebook card settings">
                                 <GhImageUploaderWithPreview
                                     @image={{this.post.ogImage}}
                                     @text="Add Facebook image"
@@ -412,7 +412,7 @@
                         </div>
 
                         <div class="settings-menu-content settings-menu-content-codeinjection">
-                            <form {{action "discardEnter" on="submit"}}>
+                            <form {{action "discardEnter" on="submit"}} aria-label="Code injection settings">
                                 <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="codeinjectionHead">
                                     <label for="codeinjection-head">{{capitalize this.post.displayName}} header <code>\{{ghost_head}}</code></label>
                                     <GhCmEditor @value={{this.codeinjectionHeadScratch}}
