@@ -113,6 +113,9 @@
         },
         "robotstxt": {
             "maxAge": 3600000
+        },
+        "cors": {
+            "maxAge": 86400
         }
     },
     "imageOptimization": {
