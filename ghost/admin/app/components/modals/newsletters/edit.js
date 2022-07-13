@@ -9,7 +9,8 @@ export default class EditNewsletterModal extends Component {
     @service modals;
 
     static modalOptions = {
-        className: 'fullscreen-modal-full-overlay fullscreen-modal-portal-settings'
+        className: 'fullscreen-modal-full-overlay fullscreen-modal-portal-settings',
+        ignoreBackdropClick: true
     };
 
     @tracked openSection = null;
