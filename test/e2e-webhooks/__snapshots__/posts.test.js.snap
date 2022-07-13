@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`post.* events post.added even is triggered 1: [body] 1`] = `
+exports[`post.* events post.added event is triggered 1: [body] 1`] = `
 Object {
   "post": Object {
     "current": Object {
@@ -8,6 +8,7 @@ Object {
         Object {
           "accessibility": null,
           "bio": "bio",
+          "comment_notifications": true,
           "cover_image": null,
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "email": "jbloggs@example.com",
@@ -53,6 +54,29 @@ Object {
       "og_description": null,
       "og_image": null,
       "og_title": null,
+      "primary_author": Object {
+        "accessibility": null,
+        "bio": "bio",
+        "comment_notifications": true,
+        "cover_image": null,
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "email": "jbloggs@example.com",
+        "facebook": null,
+        "id": "1",
+        "last_seen": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "location": "location",
+        "meta_description": null,
+        "meta_title": null,
+        "name": "Joe Bloggs",
+        "profile_image": "https://example.com/super_photo.jpg",
+        "slug": "joe-bloggs",
+        "status": "active",
+        "tour": null,
+        "twitter": null,
+        "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "url": "http://127.0.0.1:2369/author/joe-bloggs/",
+        "website": null,
+      },
       "primary_tag": null,
       "published_at": null,
       "slug": "testing-post-added-webhook",
@@ -102,7 +126,7 @@ Object {
 }
 `;
 
-exports[`post.* events post.published even is triggered 1: [body] 1`] = `
+exports[`post.* events post.published event is triggered 1: [body] 1`] = `
 Object {
   "post": Object {
     "current": Object {
@@ -110,6 +134,7 @@ Object {
         Object {
           "accessibility": null,
           "bio": "bio",
+          "comment_notifications": true,
           "cover_image": null,
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "email": "jbloggs@example.com",
@@ -123,11 +148,11 @@ Object {
           "profile_image": "https://example.com/super_photo.jpg",
           "roles": Array [
             Object {
-              "created_at": "2022-06-03T09:31:02.000Z",
+              "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
               "description": "Blog Owner",
-              "id": "6299d4d6cf0c0f6aabf10096",
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
               "name": "Owner",
-              "updated_at": "2022-06-03T09:31:02.000Z",
+              "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
             },
           ],
           "slug": "joe-bloggs",
@@ -163,6 +188,38 @@ Object {
       "og_description": null,
       "og_image": null,
       "og_title": null,
+      "primary_author": Object {
+        "accessibility": null,
+        "bio": "bio",
+        "comment_notifications": true,
+        "cover_image": null,
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "email": "jbloggs@example.com",
+        "facebook": null,
+        "id": "1",
+        "last_seen": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "location": "location",
+        "meta_description": null,
+        "meta_title": null,
+        "name": "Joe Bloggs",
+        "profile_image": "https://example.com/super_photo.jpg",
+        "roles": Array [
+          Object {
+            "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+            "description": "Blog Owner",
+            "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+            "name": "Owner",
+            "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          },
+        ],
+        "slug": "joe-bloggs",
+        "status": "active",
+        "tour": null,
+        "twitter": null,
+        "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "url": "http://127.0.0.1:2369/author/joe-bloggs/",
+        "website": null,
+      },
       "primary_tag": null,
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "slug": "webhookz",
