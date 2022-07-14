@@ -50,7 +50,7 @@
                 {{/if}}
 
                 <ul class="gh-env-list">
-                    <li><strong>Version:</strong> {{this.config.version}}</li>
+                    <li><strong>Version:</strong> <a href="https://github.com/TryGhost/Ghost/releases/tag/v{{this.config.version}}" target="_blank" rel="noopener noreferrer">{{this.config.version}}</a></li>
                     {{#if this.showSystemInfo}}
                     <li><strong>Environment:</strong> <span class="ttc">{{this.config.environment}}</span></li>
                     <li class="gh-env-list-database-type"><strong>Database:</strong> {{this.config.database}}</li>
