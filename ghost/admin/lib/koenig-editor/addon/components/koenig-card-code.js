@@ -118,6 +118,11 @@ export default class KoenigCardCode extends Component {
     }
 
     @action
+    updateLanguage(event) {
+        this._updatePayloadAttr('language', event.target.value);
+    }
+
+    @action
     enterEditMode() {
         this._addMousemoveHandler();
     }
