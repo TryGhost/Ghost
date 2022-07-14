@@ -686,6 +686,14 @@ module.exports = class MemberRepository {
         return subscription;
     }
 
+    /**
+     *
+     * @param {Object} data
+     * @param {String} data.id - member ID
+     * @param {Object} data.subscription
+     * @param {*} options
+     * @returns
+     */
     async linkSubscription(data, options = {}) {
         if (!this._stripeAPIService.configured) {
             throw new errors.BadRequestError({message: tpl(messages.noStripeConnection, {action: 'link Stripe Subscription'})});
@@ -1187,6 +1195,13 @@ module.exports = class MemberRepository {
         }, options);
     }
 
+    /**
+     *
+     * @param {Object} data
+     * @param {String} data.id - member ID
+     * @param {Object} options
+     * @param {Object} [options.transacting]
+     */
     async setComplimentarySubscription(data, options = {}) {
         if (!options.transacting) {
             return this._Member.transaction((transacting) => {
@@ -1316,13 +1331,18 @@ module.exports = class MemberRepository {
         }
     }
 
-    async cancelComplimentarySubscription(data) {
+    /**
+     *
+     * @param {Object} data
+     * @param {String} data.id - member ID
+     */
+    async cancelComplimentarySubscription({id}) {
         if (!this._stripeAPIService.configured) {
             throw new errors.BadRequestError({message: tpl(messages.noStripeConnection, {action: 'cancel Complimentary Subscription'})});
         }
 
         const member = await this._Member.findOne({
-            id: data.id
+            id: id
         });
 
         const subscriptions = await member.related('stripeSubscriptions').fetch();
@@ -1335,7 +1355,7 @@ module.exports = class MemberRepository {
                     );
                     // Only needs to update `status`
                     await this.linkSubscription({
-                        id: data.id,
+                        id: id,
                         subscription: updatedSubscription
                     });
                 } catch (err) {
