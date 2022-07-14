@@ -1245,6 +1245,20 @@ body:not([data-user-is-dragging]) .gh-newsletter-card-draggable:hover .grab-news
     }
 }
 
+.theme-validation-container .gh-image-uploader {
+    justify-content: center;
+}
+
+.theme-validation-container .gh-image-uploader .description {
+    color: var(--green-d1);
+    font-weight: 500;
+}
+
+.theme-validation-container .gh-image-uploader .x-file-input.try-again,
+.theme-validation-container .gh-image-uploader .x-file-input.try-again label {
+    display: inline;
+}
+
 .theme-validation-item {
     margin: 12px 0 0;
     padding: 12px 16px;

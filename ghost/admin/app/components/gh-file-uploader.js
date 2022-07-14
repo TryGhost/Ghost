@@ -145,6 +145,11 @@ export default Component.extend({
             this.set('file', null);
             this.set('uploadPercentage', 0);
             this.set('failureMessage', null);
+        },
+
+        retry() {
+            this.send('reset');
+            this.send('fileSelected', ...arguments);
         }
     },
 
