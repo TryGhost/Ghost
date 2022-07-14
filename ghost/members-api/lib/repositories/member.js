@@ -402,7 +402,7 @@ module.exports = class MemberRepository {
         if (needsNewsletters) {
             const existingNewsletters = initialMember.related('newsletters').models;
 
-            // This maps the old susbcribed property to the new newsletters field
+            // This maps the old subscribed property to the new newsletters field
             if (!memberData.newsletters) {
                 if (memberData.subscribed === false) {
                     memberData.newsletters = [];
