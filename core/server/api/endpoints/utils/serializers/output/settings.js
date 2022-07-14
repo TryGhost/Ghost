@@ -52,7 +52,7 @@ function serializeSettings(models, apiConfig, frame) {
 
     frame.response = {
         settings: mappers.settings(filteredSettings),
-        meta: {}
+        meta: models.meta ?? {}
     };
 
     if (frame.options.group) {

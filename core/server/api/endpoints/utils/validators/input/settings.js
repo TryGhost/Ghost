@@ -2,11 +2,12 @@ const Promise = require('bluebird');
 const _ = require('lodash');
 const {ValidationError, BadRequestError} = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
+const tpl = require('@tryghost/tpl');
 
 const messages = {
     invalidEmailReceived: 'Please send a valid email',
-    invalidEmailTypeReceived: 'Invalid email type received',
-    problemFindingSetting: 'Problem finding setting: {key}'
+    invalidEmailValueReceived: 'Value in {key} should be a valid email.',
+    invalidEmailTypeReceived: 'Invalid email type received'
 };
 
 module.exports = {
@@ -20,6 +21,10 @@ module.exports = {
                 'notifications',
                 'navigation',
                 'secondary_navigation'
+            ];
+
+            const emailTypeSettings = [
+                'members_support_address'
             ];
 
             if (arrayTypeSettings.includes(setting.key)) {
@@ -41,6 +46,18 @@ module.exports = {
                     } catch (err) {
                         errors.push(typeError);
                     }
+                }
+            }
+
+            if (emailTypeSettings.includes(setting.key)) {
+                const email = setting.value;
+
+                if (typeof email !== 'string' || (!validator.isEmail(email) && email !== 'noreply')) {
+                    const typeError = new ValidationError({
+                        message: tpl(messages.invalidEmailValueReceived, {key: setting.key}),
+                        property: setting.key
+                    });
+                    errors.push(typeError);
                 }
             }
         });

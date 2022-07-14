@@ -64,8 +64,12 @@ module.exports = function apiRoutes() {
 
     router.get('/settings', mw.authAdminApi, http(api.settings.browse));
     router.put('/settings', mw.authAdminApi, http(api.settings.edit));
+    router.put('/settings/verifications/', mw.authAdminApi, http(api.settings.verifyKeyUpdate));
+
+    /**
+     * @deprecated: remove in one of the next releases
+     */
     router.get('/settings/members/email', http(api.settings.validateMembersEmailUpdate));
-    router.post('/settings/members/email', mw.authAdminApi, http(api.settings.updateMembersEmail));
     router.del('/settings/stripe/connect', mw.authAdminApi, http(api.settings.disconnectStripeConnectIntegration));
 
     // ## Users
