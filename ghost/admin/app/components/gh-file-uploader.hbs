@@ -1,16 +1,18 @@
 {{#if this.file}}
     {{!-- Upload in progress! --}}
     {{#if this.failureMessage}}
-        <div class="failed">{{this.failureMessage}}</div>
-    {{/if}}
-    <div class="progress-container">
-        <div class="progress">
-            <div class="bar {{if this.failureMessage "fail"}}" style={{this.progressStyle}}></div>
+        <div class="failed">
+            {{this.failureMessage}}
+            <GhFileInput @multiple={{false}} @alt={{this.labelText}} @action={{action "retry"}} @accept={{this.accept}} class="try-again">
+                <span class="red fw5 nl1" data-test-upload-try-again-button>Try again</span>
+            </GhFileInput>
         </div>
-    </div>
-    {{#if this.failureMessage}}
-        <button class="gh-btn gh-btn-green" data-test-upload-try-again-button type="button" {{action "reset"}}><span>Try Again</span></button>
+    {{else}}
+        <div class="progress">
+            <div class="bar" style={{this.progressStyle}}></div>
+        </div>
     {{/if}}
+
 {{else}}
     <div class="upload-form">
         <GhFileInput @multiple={{false}} @alt={{this.labelText}} @action={{action "fileSelected"}} @accept={{this.accept}}>

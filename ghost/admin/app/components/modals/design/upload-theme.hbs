@@ -102,7 +102,7 @@
                     @url={{this.uploadUrl}}
                     @paramName="file"
                     @accept={{this.accept}}
-                    @labelText="Click to select or drag-and-drop your theme zip file here."
+                    @labelText="Select or drop your theme zip file"
                     @validate={{this.validateTheme}}
                     @uploadStarted={{fn (mut this.themeManagement.isUploading) true}}
                     @uploadFinished={{fn (mut this.themeManagement.isUploading) false}}

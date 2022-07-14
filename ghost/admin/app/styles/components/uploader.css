@@ -7,7 +7,7 @@
     flex-direction: column;
     align-items: center;
     width: 100%;
-    min-height: 130px;
+    min-height: 140px;
     overflow: hidden;
     margin: 1.6em 0;
     color: var(--middarkgrey);
@@ -127,10 +127,8 @@
     background: var(--red);
 }
 
-/* Try Again button */
-.gh-image-uploader .gh-btn-green:last-child {
-    margin-top: 1em;
-    margin-bottom: 3em;
+.gh-image-uploader .bar.hidden {
+    display: none;
 }
 
 

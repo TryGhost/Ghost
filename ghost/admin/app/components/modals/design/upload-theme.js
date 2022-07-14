@@ -92,7 +92,7 @@ export default class UploadThemeModal extends Component {
         }
 
         if (file.name.match(/^casper\.zip$/i)) {
-            return {payload: {errors: [{message: 'Sorry, the default Casper theme cannot be overwritten.<br>Please rename your zip file and try again.'}]}};
+            return {payload: {errors: [{message: 'Sorry, the default Casper theme cannot be overwritten.<br>Please rename your zip file to continue.'}]}};
         }
 
         if (!this._allowOverwrite && this.currentThemeNames.includes(themeName)) {
