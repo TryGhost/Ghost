@@ -172,8 +172,8 @@ describe('Integration: Component: gh-file-uploader', function () {
 
         expect(findAll('.failed').length, 'error message is displayed').to.equal(1);
         expect(find('.failed').textContent).to.match(/The file type you uploaded is not supported/);
-        expect(findAll('.gh-btn-green').length, 'reset button is displayed').to.equal(1);
-        expect(find('.gh-btn-green').textContent).to.equal('Try Again');
+        expect(findAll('[data-test-upload-try-again-button]').length, 'reset button is displayed').to.equal(1);
+        expect(find('[data-test-upload-try-again-button]').textContent).to.equal('Try again');
     });
 
     it('displays file too large for server error', async function () {
@@ -245,7 +245,7 @@ describe('Integration: Component: gh-file-uploader', function () {
         stubFailedUpload(server, 400, 'UnknownError');
         await render(hbs`{{gh-file-uploader url=uploadUrl}}`);
         await fileUpload('input[type="file"]', ['test'], {name: 'test.csv'});
-        await click('.gh-btn-green');
+        await click('[data-test-upload-try-again-button]');
 
         expect(findAll('input[type="file"]').length).to.equal(1);
     });
