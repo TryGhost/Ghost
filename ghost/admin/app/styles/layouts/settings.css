@@ -783,6 +783,10 @@
     background: var(--white);
 }
 
+.gh-email-design-typography-wrapper .gh-setting-dropdown .ember-power-select-status-icon {
+    right: 16px;
+}
+
 .gh-update-support-address {
     margin: 4px 0 0;
     color: var(--green);
