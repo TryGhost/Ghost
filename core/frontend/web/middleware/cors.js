@@ -13,7 +13,8 @@ function corsOptionsDelegate(req, callback) {
     const origin = req.header('Origin');
     const corsOptions = {
         origin: false, // disallow cross-origin requests by default
-        credentials: true // required to allow admin-client to login to private sites
+        credentials: true, // required to allow admin-client to login to private sites
+        maxAge: config.get('caching:cors:maxAge')
     };
 
     if (!origin || origin === 'null') {
