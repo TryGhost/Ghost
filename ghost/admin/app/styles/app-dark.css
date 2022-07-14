@@ -738,6 +738,14 @@ input:focus,
     background: var(--whitegrey);
 }
 
+.gh-list-scrolling tbody tr:hover > a:first-of-type {
+    background: linear-gradient(315deg, var(--whitegrey) 60%, var(--white) 100%);
+}
+
+.gh-list-scrolling tbody tr:hover > a:not(:first-of-type) {
+    background: var(--whitegrey);
+}
+
 .gh-content-status-published {
     background: var(--whitegrey-l1);
 }
