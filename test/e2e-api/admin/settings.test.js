@@ -279,22 +279,6 @@ describe('Settings API', function () {
 
     // @TODO Fixing https://github.com/TryGhost/Team/issues/584 should result in thes tests changing
     describe('deprecated', function () {
-        it('can do updateMembersEmail', async function () {
-            await agent
-                .post('settings/members/email/')
-                .body({
-                    email: 'test@test.com',
-                    type: 'supportAddressUpdate'
-                })
-                .expectStatus(204)
-                .expectEmptyBody()
-                .matchHeaderSnapshot({
-                    etag: anyEtag
-                });
-
-            mockManager.assert.sentEmail({to: 'test@test.com'});
-        });
-
         it('can do validateMembersEmailUpdate', async function () {
             const magicLink = await membersService.api.getMagicLink('test@test.com');
             const magicLinkUrl = new URL(magicLink);
