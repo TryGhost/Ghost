@@ -20,6 +20,10 @@ module.exports = class CustomThemeSettingsService {
         this.activeThemeName = null;
 
         /** @private */
+        this._activatingPromise = null;
+        this._activatingName = null;
+        this._activatingSettings = null;
+
         this._repository = new BREAD({model});
         this._valueCache = cache;
         this._activeThemeSettings = {};
@@ -27,21 +31,53 @@ module.exports = class CustomThemeSettingsService {
 
     /**
      * The service only deals with one theme at a time,
-     * that theme is changed by calling this method with the output from gscan
+     * that theme is changed by calling this method with the output from gscan.
+     *
+     * To avoid syncing issues with activateTheme being called in quick succession,
+     * any previous/still-running activation promise is awaited before re-starting
+     * if necessary.
      *
      * @param {string} name - the name of the theme (Ghost has different names to themes with duplicate package.json names)
      * @param {Object} theme - checked theme output from gscan
      */
     async activateTheme(name, theme) {
-        this.activeThemeName = name;
+        const activate = async () => {
+            this.activeThemeName = name;
 
-        // add/remove/edit key/value records in the respository to match theme settings
-        const settings = await this._syncRepositoryWithTheme(name, theme);
+            // add/remove/edit key/value records in the respository to match theme settings
+            const settings = await this._syncRepositoryWithTheme(name, theme);
 
-        // populate the shared cache with all key/value pairs for this theme
-        this._populateValueCacheForTheme(theme, settings);
-        // populate the cache used for exposing full setting details for editing
-        this._populateInternalCacheForTheme(theme, settings);
+            // populate the shared cache with all key/value pairs for this theme
+            this._populateValueCacheForTheme(theme, settings);
+            // populate the cache used for exposing full setting details for editing
+            this._populateInternalCacheForTheme(theme, settings);
+        };
+
+        if (this._activatingPromise) {
+            // NOTE: must be calculated before awaiting promise as the promise finishing will clear the properties
+            const isSameName = name === this._activatingName;
+            const isSameSettings = JSON.stringify(theme.customSettings) === this._activatingSettings;
+
+            // wait for previous activation to finish
+            await this._activatingPromise;
+
+            // skip sync if we're re-activating exactly the same theme settings
+            if (isSameName && isSameSettings) {
+                return;
+            }
+        }
+
+        try {
+            this._activatingName = name;
+            this._activatingSettings = JSON.stringify(theme.customSettings);
+            this._activatingPromise = activate();
+
+            await this._activatingPromise;
+        } finally {
+            this._activatingPromise = null;
+            this._activatingName = null;
+            this._activatingSettings = null;
+        }
     }
 
     /**
