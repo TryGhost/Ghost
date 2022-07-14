@@ -10,6 +10,7 @@ module.exports = {
     settings: require('./settings'),
     snippets: require('./snippets'),
     tags: require('./tags'),
+    offers: require('./offers'),
     newsletters: require('./newsletters'),
     users: require('./users')
 };
