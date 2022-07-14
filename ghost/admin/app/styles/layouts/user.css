@@ -162,6 +162,14 @@
     }
 }
 
+/* Delete user modal
+/* ---------------------------------------------------------- */
+
+.gh-transfer-tag strong {
+    color: var(--midgrey);
+    font-weight: 600;
+}
+
 /* Notifications */
 .user-settings-heading {
     border-top: 1px solid var(--lightgrey);
