@@ -35,11 +35,13 @@
                                 <div class="gh-loading-spinner"></div>
                             </div>      
                         {{else}}
-                            <EmberChart
-                                @type={{this.chartType}}
-                                @data={{this.chartData}}
-                                @options={{this.chartOptions}}
-                                @height={{200}} />
+                            <div class="gh-dashboard-fader">
+                                <EmberChart
+                                    @type={{this.chartType}}
+                                    @data={{this.chartData}}
+                                    @options={{this.chartOptions}}
+                                    @height={{200}} />
+                            </div>
                         {{/if}}
                     </div>
                     <div id="gh-dashboard-anchor-tooltip" class="gh-dashboard-tooltip">
