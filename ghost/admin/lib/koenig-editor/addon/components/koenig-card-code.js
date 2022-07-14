@@ -1,11 +1,11 @@
-import Component from '@ember/component';
+import Component from '@glimmer/component';
 import Ember from 'ember';
-import classic from 'ember-classic-decorator';
-import {action, computed, set} from '@ember/object';
+import {action} from '@ember/object';
 import {utils as ghostHelperUtils} from '@tryghost/helpers';
 import {htmlSafe} from '@ember/template';
 import {isBlank} from '@ember/utils';
 import {run} from '@ember/runloop';
+import {tracked} from '@glimmer/tracking';
 
 const {Handlebars} = Ember;
 const {countWords} = ghostHelperUtils;
@@ -17,39 +17,19 @@ const CM_MODE_MAP = {
     js: 'javascript'
 };
 
-@classic
 export default class KoenigCardCode extends Component {
-    // attrs
-    payload = null;
-    isSelected = false;
-    isEditing = false;
-    headerOffset = 0;
-    showLanguageInput = true;
+    @tracked showLanguageInput = true;
 
-    // closure actions
-    editCard() {}
-    saveCard() {}
-    selectCard() {}
-    deselectCard() {}
-    deleteCard() {}
-    registerComponent() {}
-    moveCursorToNextSection() {}
-    moveCursorToPrevSection() {}
-    addParagraphAfterCard() {}
-
-    @computed('payload.code')
     get isEmpty() {
-        return isBlank(this.payload.code);
+        return isBlank(this.args.payload.code);
     }
 
-    @computed('payload.code')
     get counts() {
-        return {wordCount: countWords(this.payload.code)};
+        return {wordCount: countWords(this.args.payload.code)};
     }
 
-    @computed('isEditing')
     get toolbar() {
-        if (this.isEditing) {
+        if (this.args.isEditing) {
             return false;
         }
 
@@ -60,30 +40,26 @@ export default class KoenigCardCode extends Component {
                 iconClass: 'fill-white',
                 title: 'Edit',
                 text: '',
-                action: run.bind(this, this.editCard)
+                action: this.args.editCard
             }]
         };
     }
 
-    @computed('payload.code')
     get escapedCode() {
-        let escapedCode = Handlebars.Utils.escapeExpression(this.payload.code);
+        let escapedCode = Handlebars.Utils.escapeExpression(this.args.payload.code);
         return htmlSafe(escapedCode);
     }
 
-    @computed('payload.language')
     get cmMode() {
-        let {language} = this.payload;
+        let {language} = this.args.payload;
         return CM_MODE_MAP[language] || language;
     }
 
-    @computed('isEditing')
     get cardStyle() {
-        let style = this.isEditing ? 'background-color: #f4f8fb; border-color: #f4f8fb' : '';
+        let style = this.args.isEditing ? 'background-color: #f4f8fb; border-color: #f4f8fb' : '';
         return htmlSafe(style);
     }
 
-    @computed('showLanguageInput')
     get languageInputStyle() {
         let styles = ['top: 6px', 'right: 6px'];
         if (!this.showLanguageInput) {
@@ -92,18 +68,18 @@ export default class KoenigCardCode extends Component {
         return htmlSafe(styles.join('; '));
     }
 
-    init() {
-        super.init(...arguments);
-        let payload = this.payload || {};
+    constructor() {
+        super(...arguments);
+        let payload = this.args.payload || {};
 
         // CodeMirror errors on a `null` or `undefined` value
         if (!payload.code) {
-            set(payload, 'code', '');
+            payload.code = '';
         }
 
-        this.set('payload', payload);
+        this.payload = payload;
 
-        this.registerComponent(this);
+        this.args.registerComponent(this);
     }
 
     @action
@@ -134,26 +110,26 @@ export default class KoenigCardCode extends Component {
         if (this.isEmpty) {
             // afterRender is required to avoid double modification of `isSelected`
             // TODO: see if there's a way to avoid afterRender
-            run.scheduleOnce('afterRender', this, this.deleteCard);
+            run.scheduleOnce('afterRender', this, this.args.deleteCard);
         }
     }
 
     _updatePayloadAttr(attr, value) {
-        let payload = this.payload;
-        let save = this.saveCard;
+        let payload = this.args.payload;
+        let save = this.args.saveCard;
 
-        set(payload, attr, value);
+        payload[attr] = value;
 
         // update the mobiledoc and stay in edit mode
         save(payload, false);
     }
 
     _hideLanguageInput() {
-        this.set('showLanguageInput', false);
+        this.showLanguageInput = false;
     }
 
     _showLanguageInput() {
-        this.set('showLanguageInput', true);
+        this.showLanguageInput = true;
     }
 
     _addMousemoveHandler() {
