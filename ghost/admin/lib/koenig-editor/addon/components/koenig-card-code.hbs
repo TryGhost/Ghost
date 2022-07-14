@@ -31,7 +31,7 @@
         <input
             type="text"
             value={{readonly this.payload.language}}
-            onblur={{action (mut this.payload.language) value="target.value"}}
+            {{on "blur" this.updateLanguage}}
             placeholder="Language..."
             class="absolute w-20 pa1 ba b--lightgrey br2 f8 tracked-2 fw4 z-999 outline-0 anim-normal"
             style={{this.languageInputStyle}}
