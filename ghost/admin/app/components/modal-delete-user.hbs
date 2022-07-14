@@ -9,7 +9,7 @@
             <strong>{{this.user.name}}</strong> will be permanently deleted and their <strong data-test-text="user-post-count">{{gh-pluralize this.user.count.posts 'post'}}</strong> will be automatically assigned to <strong>{{this.ownerUser.name}}</strong>.
         </p>
 
-        <p>
+        <p class="gh-transfer-tag">
             To make these easy to find in the future, each post will be given an internal tag of <strong>#{{this.user.slug}}</strong>
         </p>
     {{else}}
