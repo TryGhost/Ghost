@@ -147,5 +147,37 @@ describe('Members Service Middleware', function () {
             res.redirect.calledOnce.should.be.true();
             res.redirect.firstCall.args[0].should.eql('https://custom.com/paid/');
         });
+
+        it('redirects member to referrer param path on signup if it is on the site', async function () {
+            req.url = '/members?token=test&action=signin&r=https%3A%2F%2Fsite.com%2Fblah%2Fmy-post%2F';
+            req.query = {token: 'test', action: 'signin', r: 'https://site.com/blah/my-post/'};
+
+            // Fake token handling failure
+            membersService.ssr.exchangeTokenForSession.resolves();
+
+            // Call the middleware
+            await membersMiddleware.createSessionFromMagicLink(req, res, next);
+
+            // Check behaviour
+            next.calledOnce.should.be.false();
+            res.redirect.calledOnce.should.be.true();
+            res.redirect.firstCall.args[0].should.eql('/blah/my-post/?success=true&action=signin');
+        });
+
+        it('does not redirect to referrer param if it is external', async function () {
+            req.url = '/members?token=test&action=signin&r=https%3A%2F%2Fexternal.com%2Fwhatever%2F';
+            req.query = {token: 'test', action: 'signin', r: 'https://external.com/whatever/'};
+
+            // Fake token handling failure
+            membersService.ssr.exchangeTokenForSession.resolves();
+
+            // Call the middleware
+            await membersMiddleware.createSessionFromMagicLink(req, res, next);
+
+            // Check behaviour
+            next.calledOnce.should.be.false();
+            res.redirect.calledOnce.should.be.true();
+            res.redirect.firstCall.args[0].should.eql('/blah/?action=signin&success=true');
+        });
     });
 });
