@@ -2,9 +2,10 @@ const cors = require('cors');
 const url = require('url');
 const os = require('os');
 const urlUtils = require('../../../../shared/url-utils');
+const config = require('../../../../shared/config');
 
 let allowlist = [];
-const ENABLE_CORS = {origin: true, maxAge: 86400};
+const ENABLE_CORS = {origin: true, maxAge: config.get('caching:cors:maxAge')};
 const DISABLE_CORS = {origin: false};
 
 /**
