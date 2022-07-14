@@ -787,6 +787,15 @@ Dashboard Overview */
 /* --------------------------------- 
 Dashboard Anchor */
 
+@keyframes chartFadeIn {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 100;
+    }
+}
+
 .gh-dashboard-anchor {
     position: relative;
 }
@@ -1847,6 +1856,10 @@ Dashboard Tooltips */
 
 .gh-dashboard-totals {
     margin-top: 24px;
+}
+
+.gh-dashboard-fader {
+    animation: chartFadeIn 150ms;
 }
 
 .gh-dashboard-totals .gh-dashboard-loading,
