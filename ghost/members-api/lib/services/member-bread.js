@@ -126,24 +126,24 @@ module.exports = class MemberBREADService {
         try {
             for (const subscriptionModel of subscriptions) {
                 const offerId = subscriptionModel.get('offer_id');
-    
+
                 if (!offerId) {
                     continue;
                 }
-                
+
                 let offer = fetchedOffers.get(offerId);
                 if (!offer) {
                     offer = await this.offersAPI.getOffer({id: offerId});
                     fetchedOffers.set(offerId, offer);
                 }
-    
+
                 subscriptionOffers.set(subscriptionModel.get('subscription_id'), offer);
             }
         } catch (e) {
             logging.error(`Failed to load offers for subscriptions - ${subscriptions.map(s => s.id).join(', ')}.`);
             logging.error(e);
         }
-        
+
         return subscriptionOffers;
     }
 
@@ -262,6 +262,10 @@ module.exports = class MemberBREADService {
             });
         }
 
+        if (data.comped) {
+            await this.memberRepository.setComplimentarySubscription(model, options);
+        }
+
         return this.read({id: model.id}, options);
     }
 
@@ -281,6 +285,24 @@ module.exports = class MemberBREADService {
             }
 
             throw error;
+        }
+
+        if (this.stripeService.configured) {
+            const hasCompedSubscription = !!model.related('stripeSubscriptions').find(sub => sub.get('plan_nickname') === 'Complimentary' && sub.get('status') === 'active');
+
+            if (typeof data.comped === 'boolean') {
+                if (data.comped && !hasCompedSubscription) {
+                    await this.memberRepository.setComplimentarySubscription(model, {
+                        context: options.context,
+                        transacting: options.transacting
+                    });
+                } else if (!(data.comped) && hasCompedSubscription) {
+                    await this.memberRepository.cancelComplimentarySubscription(model, {
+                        context: options.context,
+                        transacting: options.transacting
+                    });
+                }
+            }
         }
 
         return this.read({id: model.id}, options);

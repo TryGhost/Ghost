@@ -1335,8 +1335,10 @@ module.exports = class MemberRepository {
      *
      * @param {Object} data
      * @param {String} data.id - member ID
+     * @param {Object} options
+     * @param {Object} [options.transacting]
      */
-    async cancelComplimentarySubscription({id}) {
+    async cancelComplimentarySubscription({id}, options) {
         if (!this._stripeAPIService.configured) {
             throw new errors.BadRequestError({message: tpl(messages.noStripeConnection, {action: 'cancel Complimentary Subscription'})});
         }
@@ -1357,7 +1359,7 @@ module.exports = class MemberRepository {
                     await this.linkSubscription({
                         id: id,
                         subscription: updatedSubscription
-                    });
+                    }, options);
                 } catch (err) {
                     logging.error(`There was an error cancelling subscription ${subscription.get('subscription_id')}`);
                     logging.error(err);
