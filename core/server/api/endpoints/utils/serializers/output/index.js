@@ -125,10 +125,6 @@ module.exports = {
         return require('./session');
     },
 
-    get offers() {
-        return require('./offers');
-    },
-
     get members_stripe_connect() {
         return require('./members-stripe-connect');
     }

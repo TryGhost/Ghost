@@ -20,8 +20,8 @@ module.exports = {
                 });
             }
 
-            frame.response = {
-                offers: [offer]
+            return {
+                data: [offer]
             };
         }
     }
