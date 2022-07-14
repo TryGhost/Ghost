@@ -7,6 +7,7 @@ module.exports = (model, frame) => {
     if (utils.isContentAPI(frame)) {
         const serialized = {
             id: jsonModel.id,
+            name: jsonModel.name,
             display_title: jsonModel.display_title,
             display_description: jsonModel.display_description,
             type: jsonModel.type,
