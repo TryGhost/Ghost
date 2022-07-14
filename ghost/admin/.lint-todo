@@ -1247,3 +1247,5 @@ remove|ember-template-lint|no-duplicate-landmark-elements|205|28|205|28|1d07af4d
 remove|ember-template-lint|no-duplicate-landmark-elements|278|28|278|28|124be7b36d59b05c2999ee8b6f2a5606c949bf8f|1652054400000|1662422400000|1665014400000|app/components/gh-post-settings-menu.hbs
 remove|ember-template-lint|no-duplicate-landmark-elements|353|28|353|28|38d3be086c7797607685245964ac615eb0fb6bb9|1652054400000|1662422400000|1665014400000|app/components/gh-post-settings-menu.hbs
 remove|ember-template-lint|no-duplicate-landmark-elements|421|28|421|28|345501bb9545198904b82e4c073b11d792ae2ea6|1652054400000|1662422400000|1665014400000|app/components/gh-post-settings-menu.hbs
+add|ember-template-lint|no-action|6|77|6|77|76726a13a086d82dab219df12e86db1773a9de32|1657756800000|1668128400000|1673312400000|app/components/gh-file-uploader.hbs
+remove|ember-template-lint|no-action|12|92|12|92|031d04576149d3034549aa3d14bc26da704cd70c|1652054400000|1662422400000|1665014400000|app/components/gh-file-uploader.hbs
