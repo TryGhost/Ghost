@@ -89,6 +89,7 @@ module.exports = {
     browse: serializeSettings,
     read: serializeSettings,
     edit: serializeSettings,
+    verifyKeyUpdate: serializeSettings,
 
     download: serializeData,
     upload: serializeData,

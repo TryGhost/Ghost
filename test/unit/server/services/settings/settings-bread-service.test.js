@@ -192,7 +192,7 @@ describe('UNIT > Settings BREAD Service:', function () {
             ], {}, null);
 
             assert.equal(settings.length, 0);
-            assert.equal(settings.meta.sent_email_verification, 'members_support_address');
+            assert.deepEqual(settings.meta.sent_email_verification, ['members_support_address']);
 
             mockManager.assert.sentEmail({
                 subject: 'Verify email address',

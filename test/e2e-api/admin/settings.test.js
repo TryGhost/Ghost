@@ -1,7 +1,11 @@
 const assert = require('assert');
+const SingleUseTokenProvider = require('../../../core/server/services/members/SingleUseTokenProvider');
+const settingsService = require('../../../core/server/services/settings/settings-service');
 const settingsCache = require('../../../core/shared/settings-cache');
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
 const {stringMatching, anyEtag, anyUuid} = matchers;
+const models = require('../../../core/server/models');
+const {anyErrorId} = matchers;
 
 const CURRENT_SETTINGS_COUNT = 67;
 
@@ -210,6 +214,73 @@ describe('Settings API', function () {
                 .expect(({body}) => {
                     const emailVerificationRequired = body.settings.find(setting => setting.key === 'email_verification_required');
                     assert.strictEqual(emailVerificationRequired.value, false);
+                });
+        });
+
+        it('editing members_support_address triggers email verification flow', async function () {
+            await agent.put('settings/')
+                .body({
+                    settings: [{key: 'members_support_address', value: 'support@example.com'}]
+                })
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
+                })
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .expect(({body}) => {
+                    const membersSupportAddress = body.settings.find(setting => setting.key === 'members_support_address');
+                    assert.strictEqual(membersSupportAddress.value, 'noreply');
+
+                    assert.deepEqual(body.meta, {
+                        sent_email_verification: ['members_support_address']
+                    });
+                });
+            
+            mockManager.assert.sentEmail({
+                subject: 'Verify email address',
+                to: 'support@example.com'
+            });  
+        });
+    });
+
+    describe('verify key update', function () {
+        it('can update members_support_address via token', async function () {
+            const token = await (new SingleUseTokenProvider(models.SingleUseToken, 24 * 60 * 60 * 1000)).create({key: 'members_support_address', value: 'support@example.com'});
+            await agent.put('settings/verifications/')
+                .body({
+                    token
+                })
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
+                })
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .expect(({body}) => {
+                    const membersSupportAddress = body.settings.find(setting => setting.key === 'members_support_address');
+                    assert.strictEqual(membersSupportAddress.value, 'support@example.com');
+                });
+        });
+
+        it('cannot update invalid keys via token', async function () {
+            const token = await (new SingleUseTokenProvider(models.SingleUseToken, 24 * 60 * 60 * 1000)).create({key: 'members_support_address_invalid', value: 'support@example.com'});
+            await agent.put('settings/verifications/')
+                .body({
+                    token
+                })
+                .expectStatus(400)
+                .matchBodySnapshot({
+                    errors: [
+                        {
+                            id: anyErrorId
+                        }
+                    ]
+                })
+                .matchHeaderSnapshot({
+                    etag: anyEtag
                 });
         });
     });
