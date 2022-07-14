@@ -3,11 +3,12 @@ const cors = require('cors');
 const api = require('../../../../api').endpoints;
 const http = require('../../../../api').shared.http;
 const mw = require('./middleware');
+const config = require('../../../../../shared/config');
 
 module.exports = function apiRoutes() {
     const router = express.Router('content api');
 
-    router.use(cors());
+    router.use(cors({maxAge: config.get('caching:cors:maxAge')}));
 
     // ## Posts
     router.get('/posts', mw.authenticatePublic, http(api.postsPublic.browse));
