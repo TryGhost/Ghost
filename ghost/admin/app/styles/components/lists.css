@@ -403,6 +403,14 @@ ul.nostyle li {
     border-bottom: var(--whitegrey) 1px solid;
 }
 
+.gh-list-scrolling tbody tr:hover > a:first-of-type {
+    background: linear-gradient(315deg, var(--whitegrey-l2) 60%, var(--white) 100%);
+}
+
+.gh-list-scrolling tbody tr:hover > a:not(:first-of-type) {
+    background: var(--whitegrey-l2);
+}
+
 @media (max-width: 800px) {
     .gh-list-scrolling {
         max-width: calc(100% + 8vw);
