@@ -51,12 +51,31 @@ export default class Anchor extends Component {
     @service dashboardStats;
     @service feature;
     @tracked chartDisplay = 'total';
+    @tracked resizing = false;
+    @tracked resizeTimer = null;
 
     displayOptions = DISPLAY_OPTIONS;
+
+    willDestroy(...args) {
+        super.willDestroy(...args);
+        window.removeEventListener('resize', this.resizer, false);
+    }
+
+    // this helps with ChartJS resizing stretching bug when resizing
+    resizer = () => {
+        this.resizing = true;
+
+        clearTimeout(this.resizeTimer); // this uses a trick to trigger only when resize is done
+        this.resizeTimer = setTimeout(() => {
+            this.resizing = false;
+        }, 500);
+    };
 
     @action
     loadCharts() {
         this.dashboardStats.loadMemberCountStats();
+
+        window.addEventListener('resize', this.resizer, false);
 
         if (this.hasPaidTiers) {
             this.dashboardStats.loadMrrStats();
@@ -73,7 +92,7 @@ export default class Anchor extends Component {
     }
 
     get loading() {
-        return this.dashboardStats.memberCountStats === null;
+        return this.dashboardStats.memberCountStats === null || this.resizing;
     }
 
     get totalMembers() {
