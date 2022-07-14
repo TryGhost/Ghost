@@ -6,7 +6,7 @@ const tpl = require('@tryghost/tpl');
 
 const messages = {
     invalidEmailReceived: 'Please send a valid email',
-    invalidEmailValueReceived: 'Value in {key} should be a valid email.',
+    invalidEmailValueReceived: 'Please enter a valid email address.',
     invalidEmailTypeReceived: 'Invalid email type received'
 };
 
@@ -54,7 +54,7 @@ module.exports = {
 
                 if (typeof email !== 'string' || (!validator.isEmail(email) && email !== 'noreply')) {
                     const typeError = new ValidationError({
-                        message: tpl(messages.invalidEmailValueReceived, {key: setting.key}),
+                        message: tpl(messages.invalidEmailValueReceived),
                         property: setting.key
                     });
                     errors.push(typeError);
