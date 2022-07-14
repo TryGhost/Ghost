@@ -1,92 +1,17 @@
 /* --------------------------------- 
-Dashboard v5 Prototype */
+Dashboard Control Panel */
 
 .prototype-control-panel {
     margin-top: 50vh; /* Keep it out of view */
 }
 
-.prototype-states-buttons {
-    margin-top: 15px;
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
-}
-
-.prototype-paid-mix-dropdown {
-    position: absolute;
-    right: 0px;
-    top: 8px;
-}
-
-.prototype-counts {
-    display: flex;
-    flex-direction: row;
-    align-items: stretch;
-    gap: 28px;
-}
-
-.prototype-section {
-    margin-bottom: 40px;
-}
-
-.prototype-section > h2 {
-    font-size: 1.65rem;
-    font-weight: 600;
-    line-height: 1.4em;
-    margin-bottom: 8px;
-    color: var(--black);
-}
-
-.prototype-counts.col {
-    flex-direction: column;
-}
-
-.prototype-counts > * {
-    flex-grow: 1;
-    min-width: 0;
-    flex-basis: 0;
-}
-
-.prototype-box {
-    border: 1px solid var(--whitegrey);
-    padding: 28px;
-    position: relative;
-}
-
-.prototype-box .number {
-    font-size: 24px;
-}
-
-
 /* --------------------------------- 
-Dashboard v5 Layout */
-
-.gh-dashboard {
-
-}
+Dashboard Layout */
 
 .gh-dashboard-layout {
     position: relative;
     max-width: 1230px;
     margin: 0 auto;
-}
-
-.gh-dashboard-rows {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
-
-.gh-dashboard-row {
-    flex: 1;
-    padding: 0 0 16px 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-}
-
-.gh-dashboard-row:last-child {
-    padding-top: 32px;
 }
 
 .gh-dashboard-section {
@@ -112,25 +37,6 @@ Dashboard v5 Layout */
     .gh-dashboard-split {
         grid-template-columns: 1fr 1fr;
     }
-}
-
-.gh-dashboard-thirds {
-    flex: 1;
-    display: flex;
-    flex-direction: row;
-}
-
-.gh-dashboard-thirds .gh-dashboard-thirds-main {
-    flex: 70%;
-    padding-right: 32px;
-    display: flex;
-    flex-direction: column;
-}
-
-.gh-dashboard-thirds .gh-dashboard-thirds-sub {
-    flex: 30%;
-    display: flex;
-    flex-direction: column;
 }
 
 .gh-dashboard-title {
@@ -483,7 +389,7 @@ Dashboard v5 Layout */
 
 
 /* --------------------------------- 
-Dashboard v5 Chart */
+Dashboard Chart */
 
 .gh-dashboard-chart {
     display: flex;
@@ -579,7 +485,7 @@ Dashboard v5 Chart */
 
 
 /* --------------------------------- 
-Dashboard v5 Percentage */
+Dashboard Percentage */
 
 .gh-dashboard-percentage {
     flex: 0;
@@ -603,7 +509,7 @@ Dashboard v5 Percentage */
 
 
 /* --------------------------------- 
-Dashboard v5 Metric */
+Dashboard Metric */
 
 .gh-dashboard-metric {
     display: flex;
@@ -720,7 +626,7 @@ Dashboard v5 Metric */
 
 
 /* --------------------------------- 
-Dashboard v5 List */
+Dashboard List */
 
 .gh-dashboard-list {
     flex: 1;
@@ -845,7 +751,7 @@ Dashboard v5 List */
 
 
 /* --------------------------------- 
-Dashboard v5 Overview */
+Dashboard Overview */
 
 .gh-dashboard-overview {
     position: relative;
@@ -879,7 +785,7 @@ Dashboard v5 Overview */
 
 
 /* --------------------------------- 
-Dashboard v5 Anchor */
+Dashboard Anchor */
 
 .gh-dashboard-anchor {
     position: relative;
@@ -978,7 +884,7 @@ Dashboard v5 Anchor */
 
 
 /* --------------------------------- 
-Dashboard v5 Zero */
+Dashboard Zero */
 
 .gh-dashboard-zero {
     position: absolute;
@@ -1050,7 +956,7 @@ Dashboard v5 Zero */
 
 
 /* --------------------------------- 
-Dashboard v5 Engagement */
+Dashboard Engagement */
 
 .gh-dashboard-engagement {
     position: relative;
@@ -1067,7 +973,7 @@ Dashboard v5 Engagement */
 
 
 /* --------------------------------- 
-Dashboard v5 Recent Posts */
+Dashboard Recent Posts */
 
 .gh-dashboard-recent-posts {
     position: relative;
@@ -1127,7 +1033,7 @@ Dashboard v5 Recent Posts */
 
 
 /* --------------------------------- 
-Dashboard v5 Recent Activity */
+Dashboard Recent Activity */
 
 .gh-dashboard-recent-activity {
     position: relative;
@@ -1180,7 +1086,7 @@ Dashboard v5 Recent Activity */
 
 
 /* --------------------------------- 
-Dashboard v5 Recents */
+Dashboard Recents */
 
 .gh-dashboard-recents {
     position: relative;
@@ -1279,7 +1185,7 @@ Dashboard v5 Recents */
 
 
 /* --------------------------------- 
-Dashboard v5 Resources */
+Dashboard Resources */
 
 .gh-dashboard-resources {
     position: relative;
@@ -1367,7 +1273,7 @@ Dashboard v5 Resources */
 
 
 /* --------------------------------- 
-Dashboard v5 Multi */
+Dashboard Multi */
 
 .gh-dashboard-multi {
     position: relative;
@@ -1417,13 +1323,9 @@ Dashboard v5 Multi */
     padding-top: 32px;
 }
 
-.gh-dashboard-multi .gh-dashboard-thirds-main .gh-dashboard-list-header {
-    border-bottom: 0 none;
-}
-
 
 /* --------------------------------- 
-Dashboard v5 Latest Newsletters */
+Dashboard Latest Newsletters */
 
 .gh-dashboard-newsletter {
     position: relative;
@@ -1464,7 +1366,7 @@ Dashboard v5 Latest Newsletters */
 
 
 /* --------------------------------- 
-Dashboard v5 Community */
+Dashboard Community */
 
 .gh-dashboard-community {
     position: relative;
@@ -1512,11 +1414,7 @@ Dashboard v5 Community */
 
 
 /* --------------------------------- 
-Dashboard v5 Misc */
-
-.gh-dashboard .gh-offers-help {
-    margin: 0;
-}
+Dashboard Misc */
 
 .gh-dashboard .gh-list-header {
     border-bottom: 0;
@@ -1556,7 +1454,7 @@ Dashboard v5 Misc */
 
 
 /* --------------------------------- 
-Dashboard v5 Resource */
+Dashboard Resource */
 
 .gh-dashboard-resource {
     position: relative;
@@ -1689,12 +1587,6 @@ Dashboard v5 Resource */
     padding: 0;
 }
 
-.gh-dashboard-resource-smallarticles {
-    flex: 1;
-    display: flex;
-    flex-direction: row;
-}
-
 .gh-dashboard-resource-smallarticle {
     flex: 1;
     margin: 0 24px 0 0;
@@ -1814,7 +1706,7 @@ Dashboard v5 Resource */
 
 
 /* --------------------------------- 
-Dashboard v5 Tooltips */
+Dashboard Tooltips */
 
 .gh-dashboard-tooltip {
     opacity: 0;
@@ -2051,7 +1943,8 @@ Dashboard v5 Tooltips */
 }
 
 
-/* No data list */
+/* --------------------------------- 
+Dashboard No Data */
 
 .gh-no-data-list {
     display: flex;
