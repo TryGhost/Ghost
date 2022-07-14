@@ -78,6 +78,14 @@ function buildMemberWithIncludesSnapshot(options) {
     };
 }
 
+const tierMatcher = {
+    id: anyObjectId,
+    created_at: anyISODateTime,
+    updated_at: anyISODateTime,
+    monthly_price_id: anyObjectId,
+    yearly_price_id: anyObjectId
+};
+
 const memberMatcherShallowIncludes = {
     id: anyObjectId,
     uuid: anyUuid,
@@ -88,9 +96,16 @@ const memberMatcherShallowIncludes = {
     newsletters: anyArray
 };
 
-const memberMatcherShallowIncludesWithTiers = {
-    ...memberMatcherShallowIncludes,
-    tiers: anyArray
+const buildMemberMatcherShallowIncludesWithTiers = (tiersCount) => {
+    let tiers = anyArray;
+    if (tiersCount) {
+        tiers = new Array(tiers).fill(tierMatcher);
+    }
+
+    return {
+        ...memberMatcherShallowIncludes,
+        tiers
+    };
 };
 
 let agent;
@@ -340,7 +355,7 @@ describe('Members API', function () {
             .get(`/members/${testUtils.DataGenerator.Content.members[0].id}/?include=tiers`)
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludesWithTiers)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers())
             })
             .matchHeaderSnapshot({
                 etag: anyEtag
@@ -554,12 +569,12 @@ describe('Members API', function () {
 
         const newMember = body.members[0];
 
-        const {body: body2} = await agent
+        await agent
             .put(`/members/${newMember.id}/`)
             .body({members: [compedPayload]})
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(1).fill(memberMatcherShallowIncludes)
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(1))
             })
             .matchHeaderSnapshot({
                 etag: anyEtag
@@ -571,6 +586,9 @@ describe('Members API', function () {
             asserts: [{
                 from_status: null,
                 to_status: 'free'
+            }, {
+                from_status: 'free',
+                to_status: 'comped'
             }]
         });
 
@@ -872,7 +890,7 @@ describe('Members API', function () {
                     updated_at: anyISODateTime,
                     labels: anyArray,
                     subscriptions: anyArray,
-                    tiers: anyArray,
+                    tiers: new Array(1).fill(tierMatcher),
                     newsletters: new Array(1).fill(newsletterSnapshot)
                 })
             })
@@ -913,9 +931,7 @@ describe('Members API', function () {
         await assertMemberEvents({
             eventType: 'MemberPaidSubscriptionEvent',
             memberId: newMember.id,
-            asserts: [{
-                mrr_delta: 0
-            }]
+            asserts: []
         });
     });
 
@@ -1637,11 +1653,11 @@ describe('Members API', function () {
     });
 
     it('Can filter on tier slug', async function () {
-        const res = await agent
+        await agent
             .get('/members/?include=tiers&filter=tier:default-product')
             .expectStatus(200)
             .matchBodySnapshot({
-                members: new Array(7).fill(memberMatcherShallowIncludesWithTiers)
+                members: new Array(8).fill(buildMemberMatcherShallowIncludesWithTiers())
             })
             .matchHeaderSnapshot({
                 etag: anyEtag
@@ -2036,7 +2052,7 @@ describe('Members API Bulk operations', function () {
             .matchHeaderSnapshot({
                 etag: anyEtag
             });
-        
+
         const updatedModel = await models.Member.findOne({id: member.id}, {withRelated: 'newsletters'});
         should(updatedModel.relations.newsletters.models.length).equal(0, 'This member should be unsubscribed from all newsletters');
 
