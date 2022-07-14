@@ -1249,3 +1249,13 @@ remove|ember-template-lint|no-duplicate-landmark-elements|353|28|353|28|38d3be08
 remove|ember-template-lint|no-duplicate-landmark-elements|421|28|421|28|345501bb9545198904b82e4c073b11d792ae2ea6|1652054400000|1662422400000|1665014400000|app/components/gh-post-settings-menu.hbs
 add|ember-template-lint|no-action|6|77|6|77|76726a13a086d82dab219df12e86db1773a9de32|1657756800000|1668128400000|1673312400000|app/components/gh-file-uploader.hbs
 remove|ember-template-lint|no-action|12|92|12|92|031d04576149d3034549aa3d14bc26da704cd70c|1652054400000|1662422400000|1665014400000|app/components/gh-file-uploader.hbs
+remove|ember-template-lint|no-action|9|16|9|16|822c6a91d06436c87443aba1c5316874b4de7e93|1652054400000|1662422400000|1665014400000|lib/koenig-editor/addon/components/koenig-card-code.hbs
+remove|ember-template-lint|no-action|10|18|10|18|40a9eaaf8ee3a30448bd8f5c51e4f57ad6f637cb|1652054400000|1662422400000|1665014400000|lib/koenig-editor/addon/components/koenig-card-code.hbs
+remove|ember-template-lint|no-action|11|14|11|14|45b936fe4ae520e86dc577dced7e4de626004fba|1652054400000|1662422400000|1665014400000|lib/koenig-editor/addon/components/koenig-card-code.hbs
+remove|ember-template-lint|no-action|12|14|12|14|c27072dba50f6e36c62d708160adb2e96b8244e3|1652054400000|1662422400000|1665014400000|lib/koenig-editor/addon/components/koenig-card-code.hbs
+remove|ember-template-lint|no-action|14|17|14|17|2ecb8ec2db47e693d292cac348977b4c83e5b0a4|1652054400000|1662422400000|1665014400000|lib/koenig-editor/addon/components/koenig-card-code.hbs
+remove|ember-template-lint|no-action|15|17|15|17|b562d5c8ffc834037fff995329aa4cd49218776b|1652054400000|1662422400000|1665014400000|lib/koenig-editor/addon/components/koenig-card-code.hbs
+remove|ember-template-lint|no-action|28|20|28|20|b96b7bd3d4b17c4761201d3a44c6876b119611f9|1652054400000|1662422400000|1665014400000|lib/koenig-editor/addon/components/koenig-card-code.hbs
+remove|ember-template-lint|no-action|34|19|34|19|bb54609cede4c2f20ae22de5cbc2771d396aaaf4|1652054400000|1662422400000|1665014400000|lib/koenig-editor/addon/components/koenig-card-code.hbs
+remove|ember-template-lint|no-action|55|20|55|20|ee695277e2f7dac9fbe5570ebfbe9c738280a976|1652054400000|1662422400000|1665014400000|lib/koenig-editor/addon/components/koenig-card-code.hbs
+remove|ember-template-lint|require-input-label|31|8|31|8|615e3b52bcc28f911cc3b8e3630bd77324e357a6|1652054400000|1662422400000|1665014400000|lib/koenig-editor/addon/components/koenig-card-code.hbs
