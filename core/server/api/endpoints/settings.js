@@ -6,8 +6,12 @@ const {BadRequestError} = require('@tryghost/errors');
 const settingsService = require('../../services/settings/settings-service');
 const membersService = require('../../services/members');
 const stripeService = require('../../services/stripe');
-
+const tpl = require('@tryghost/tpl');
 const settingsBREADService = settingsService.getSettingsBREADServiceInstance();
+
+const messages = {
+    failedSendingEmail: 'Failed Sending Email'
+};
 
 async function getStripeConnectData(frame) {
     const stripeConnectIntegrationToken = frame.data.settings.find(setting => setting.key === 'stripe_connect_integration_token');
