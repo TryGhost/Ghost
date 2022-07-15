@@ -275,23 +275,16 @@
                             </button>
                             {{#liquid-if isOpen}}
                                 <div class="modal-fullsettings-tab-expanded" onclick={{action "switchPreviewPage" "accountHome"}}>
-                                    <GhFormGroup @classNames="space-l mt5">
+                                    <GhFormGroup @classNames="space-l mt5" @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="members_support_address">
                                         <h4 class="gh-portal-setting-title">Support email address</h4>
                                         <div class="mt2">
                                             <GhTextInput
                                                 @value={{readonly this.supportAddress}}
                                                 @input={{action "setSupportAddress" value="target.value"}}
-                                            />
-                                            <GhTaskButton
-                                                @buttonText="Update support address"
-                                                @runningText="Sending..."
-                                                @successText="Confirmation email sent"
-                                                @disabled={{this.disableUpdateSupportAddressButton}}
-                                                @task={{this.updateSupportAddress}}
-                                                @class="gh-btn gh-btn-green gh-btn-icon gh-btn-textfield-group gh-portal-emailupdate-button"
-                                                data-test-button="update-support-address"
+                                                @name="members_support_address"
                                             />
                                         </div>
+                                        <GhErrorMessage @errors={{this.settings.errors}} @property="members_support_address" />
                                         <p>How members can reach you for help with their account (public)</p>
                                     </GhFormGroup>
                                 </div>

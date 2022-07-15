@@ -82,5 +82,9 @@ export default Model.extend(ValidationEngine, {
     editorDefaultEmailRecipientsFilter: attr('members-segment-string'),
     emailVerificationRequired: attr('boolean'),
 
-    mailgunIsConfigured: and('mailgunApiKey', 'mailgunDomain', 'mailgunBaseUrl')
+    mailgunIsConfigured: and('mailgunApiKey', 'mailgunDomain', 'mailgunBaseUrl'),
+
+    // HACK - not a real model attribute but a workaround for Ember Data not
+    //        exposing meta from save responses
+    _meta: attr()
 });

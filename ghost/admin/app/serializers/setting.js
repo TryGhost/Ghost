@@ -12,6 +12,7 @@ export default class Setting extends ApplicationSerializer {
         let payload = [];
 
         delete data.id;
+        delete data._meta;
 
         Object.keys(data).forEach((k) => {
             payload.push({key: k, value: data[k]});
@@ -36,6 +37,15 @@ export default class Setting extends ApplicationSerializer {
         _payload.settings.forEach((setting) => {
             payload[setting.key] = setting.value;
         });
+
+        // HACK: Ember Data doesn't expose `meta` properties consistently
+        //  - https://github.com/emberjs/data/issues/2905
+        //
+        // We need the `meta` data returned when saving so we extract it and dump
+        // it onto the model as an attribute then delete it again when serializing.
+        if (_payload.meta) {
+            payload._meta = _payload.meta;
+        }
 
         return payload;
     }
