@@ -74,6 +74,41 @@ module.exports = {
     },
 
     /**
+     * @deprecated
+     */
+    updateMembersEmail: {
+        statusCode: 204,
+        permissions: {
+            method: 'edit'
+        },
+        data: [
+            'email',
+            'type'
+        ],
+        async query(frame) {
+            const {email, type} = frame.data;
+
+            try {
+                // Mapped internally to the newer method of changing emails
+                const actionToKeyMapping = {
+                    supportAddressUpdate: 'members_support_address'
+                };
+                const edit = {
+                    key: actionToKeyMapping[type],
+                    value: email
+                };
+
+                await settingsBREADService.edit([edit], frame.options, null);
+            } catch (err) {
+                throw new BadRequestError({
+                    err,
+                    message: tpl(messages.failedSendingEmail)
+                });
+            }
+        }
+    },
+
+    /**
      * @todo can get removed, since this is moved to verifyKeyUpdate
      * @deprecated: keep to not break existing email verification links, but remove after 1 - 2 releases
      */

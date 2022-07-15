@@ -66,10 +66,12 @@ module.exports = function apiRoutes() {
     router.put('/settings', mw.authAdminApi, http(api.settings.edit));
     router.put('/settings/verifications/', mw.authAdminApi, http(api.settings.verifyKeyUpdate));
 
-    /**
-     * @deprecated: remove in one of the next releases
-     */
+    /** @deprecated This endpoint is part of the old email verification flow for the support email */
     router.get('/settings/members/email', http(api.settings.validateMembersEmailUpdate));
+    
+    /** @deprecated This endpoint is part of the old email verification flow for the support email */
+    router.post('/settings/members/email', mw.authAdminApi, http(api.settings.updateMembersEmail));
+
     router.del('/settings/stripe/connect', mw.authAdminApi, http(api.settings.disconnectStripeConnectIntegration));
 
     // ## Users

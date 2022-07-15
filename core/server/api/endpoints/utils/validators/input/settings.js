@@ -73,6 +73,9 @@ module.exports = {
         }
     },
 
+    /**
+     * @deprecated
+     */
     updateMembersEmail(apiConfig, frame) {
         const {email, type} = frame.data;
 
