@@ -148,7 +148,8 @@ module.exports = function (req, res, next) {
     }).then(() => {
         if (format) {
             // File extension won't match the new format, so we need to update the Content-Type header manually here
-            res.type(format);
+            // Express JS still uses an out of date mime package, which doesn't support avif
+            res.type(format === 'avif' ? 'image/avif' : format);
         }
         next();
     }).catch(function (err) {
