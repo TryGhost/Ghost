@@ -12,6 +12,7 @@ const url = require('url');
 const _ = require('lodash');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
+const imageTransform = require('@tryghost/image-transform');
 
 const messages = {
     attrIsRequired: 'Attribute is required e.g. {{img_url feature_image}}'
@@ -116,8 +117,14 @@ function getUnsplashImage(imagePath, sizeOptions) {
     const parsedUrl = new URL(imagePath);
     const {requestedSize, imageSizes, requestedFormat} = sizeOptions;
 
-    if (requestedFormat) {
-        parsedUrl.searchParams.set('fm', requestedFormat);
+    if (requestedFormat) {        
+        const supportedFormats = ['avif', 'gif', 'jpg', 'png', 'webp'];
+        if (supportedFormats.includes(requestedFormat)) {
+            parsedUrl.searchParams.set('fm', requestedFormat);
+        } else if (requestedFormat === 'jpeg') {
+            // Map to alias
+            parsedUrl.searchParams.set('fm', 'jpg');
+        }
     }
 
     if (!imageSizes || !imageSizes[requestedSize]) {
@@ -176,7 +183,7 @@ function getImageWithSize(imagePath, sizeOptions) {
     const [imgBlogUrl, imageName] = imagePath.split(STATIC_IMAGE_URL_PREFIX);
 
     const sizeDirectoryName = prefixIfPresent('w', width) + prefixIfPresent('h', height);
-    const formatPrefix = requestedFormat ? `/format/${requestedFormat}` : '';
+    const formatPrefix = requestedFormat && imageTransform.canTransformToFormat(requestedFormat) ? `/format/${requestedFormat}` : '';
 
     return [imgBlogUrl, STATIC_IMAGE_URL_PREFIX, `/size/${sizeDirectoryName}`, formatPrefix, imageName].join('');
 }
