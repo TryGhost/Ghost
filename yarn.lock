@@ -1996,10 +1996,10 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.11"
 
-"@tryghost/members-stripe-service@0.10.5", "@tryghost/members-stripe-service@^0.10.5":
-  version "0.10.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-stripe-service/-/members-stripe-service-0.10.5.tgz#17adc845a0c279c14fa0a2d6fc920ce8cdda0c6c"
-  integrity sha512-MOVquZaZ+WfDVY6DjJUrAyVKQy7cTWXcv8mWMnAcGL+aE526XPX3hrvA8BRilKjwN7hVNI9kBnxoALPsqZHHCw==
+"@tryghost/members-stripe-service@0.10.6", "@tryghost/members-stripe-service@^0.10.5":
+  version "0.10.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-stripe-service/-/members-stripe-service-0.10.6.tgz#d63a52563e350efebaccb2ebce4469263ec20dd1"
+  integrity sha512-810xhRTWfSJEoD79m1L8rXCbzZagE5LFa/C430qgjZjdbIkl0l5E0C7DnYcFbwHKWaUFTOSE/XU0rhxxYZLhew==
   dependencies:
     "@tryghost/debug" "^0.1.4"
     "@tryghost/domain-events" "^0.1.14"
