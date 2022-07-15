@@ -298,10 +298,6 @@
     opacity: 0.15;
 }
 
-.tag-token--internal {
-    background: var(--whitegrey-l1);
-}
-
 .tag-token span {
     position: relative;
     z-index: 2;
@@ -316,6 +312,37 @@
 .tag-token--internal svg path {
     stroke: var(--black);
     fill: var(--black);
+}
+
+/* Author input */
+
+#author-list ul li:first-of-type {
+    position: relative;
+    color: var(--accent-color);
+    background: none;
+}
+
+#author-list ul li:first-of-type::after {
+    position: absolute;
+    top: -1px;
+    right: -1px;
+    bottom: -1px;
+    left: -1px;
+    content: "";
+    border-radius: 3px;
+    background: var(--accent-color);
+    opacity: 0.15;
+}
+
+#author-list ul li:first-of-type span {
+    position: relative;
+    z-index: 2;
+    opacity: 0.8;
+}
+
+#author-list ul li:first-of-type svg path {
+    stroke: var(--accent-color);
+    fill: var(--accent-color);
 }
 
 /* Segment input */

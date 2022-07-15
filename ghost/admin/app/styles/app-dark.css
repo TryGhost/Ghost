@@ -513,6 +513,19 @@ input:focus,
     background: var(--white);
 }
 
+#author-list ul li:first-of-type {
+    color: var(--black);
+}
+
+#author-list ul li:first-of-type::before {
+    opacity: 0.3;
+}
+
+#author-list ul li:first-of-type svg path {
+    stroke: var(--black);
+    fill: var(--black);
+}
+
 .fullscreen-modal-background, .epm-backdrop {
     background: #000;
 }
