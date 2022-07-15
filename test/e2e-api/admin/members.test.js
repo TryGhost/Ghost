@@ -827,7 +827,7 @@ describe('Members API', function () {
         };
 
         const fakeSubscription = {
-            id: 'sub_1',
+            id: 'sub_2',
             customer: 'cus_1234',
             status: 'active',
             cancel_at_period_end: false,
@@ -931,7 +931,9 @@ describe('Members API', function () {
         await assertMemberEvents({
             eventType: 'MemberPaidSubscriptionEvent',
             memberId: newMember.id,
-            asserts: []
+            asserts: [{
+                mrr_delta: 0
+            }]
         });
     });
 
