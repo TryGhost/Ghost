@@ -1,3 +1,4 @@
+import ConfirmEmailModal from './modals/settings/confirm-email';
 import ModalComponent from 'ghost-admin/components/modal-base';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import {action, computed} from '@ember/object';
@@ -8,6 +9,7 @@ const ICON_EXTENSIONS = ['gif', 'jpg', 'jpeg', 'png', 'svg'];
 
 export default ModalComponent.extend({
     config: service(),
+    modals: service(),
     membersUtils: service(),
     settings: service(),
     store: service(),
@@ -32,14 +34,6 @@ export default ModalComponent.extend({
     backgroundStyle: computed('settings.accentColor', function () {
         let color = this.settings.get('accentColor') || '#ffffff';
         return htmlSafe(`background-color: ${color}`);
-    }),
-
-    disableUpdateSupportAddressButton: computed('supportAddress', function () {
-        const savedSupportAddress = this.get('settings.membersSupportAddress') || '';
-        if (!savedSupportAddress.includes('@') && this.config.emailDomain) {
-            return !this.supportAddress || (this.supportAddress === `${savedSupportAddress}@${this.config.emailDomain}`);
-        }
-        return !this.supportAddress || (this.supportAddress === savedSupportAddress);
     }),
 
     showModalLinkOrAttribute: computed('isShowModalLink', function () {
@@ -256,6 +250,12 @@ export default ModalComponent.extend({
 
         setSupportAddress(supportAddress) {
             this.set('supportAddress', supportAddress);
+
+            if (this.config.emailDomain && supportAddress === `noreply@${this.config.emailDomain}`) {
+                this.settings.set('membersSupportAddress', 'noreply');
+            } else {
+                this.settings.set('membersSupportAddress', supportAddress);
+            }
         }
     },
 
@@ -355,6 +355,10 @@ export default ModalComponent.extend({
     saveTask: task(function* () {
         this.send('validateFreeSignupRedirect');
         this.send('validatePaidSignupRedirect');
+
+        this.settings.errors.remove('members_support_address');
+        this.settings.hasValidated.removeObject('members_support_address');
+
         if (this.settings.get('errors').length !== 0) {
             return;
         }
@@ -369,25 +373,30 @@ export default ModalComponent.extend({
             })
         );
 
-        yield this.settings.save();
+        const newEmail = this.settings.get('membersSupportAddress');
 
-        this.closeModal();
-    }).drop(),
-
-    updateSupportAddress: task(function* () {
-        let url = this.get('ghostPaths.url').api('/settings/members/email');
         try {
-            yield this.ajax.post(url, {
-                data: {
-                    email: this.supportAddress,
-                    type: 'supportAddressUpdate'
-                }
-            });
+            const result = yield this.settings.save();
+            if (result._meta?.sent_email_verification) {
+                yield this.modals.open(ConfirmEmailModal, {
+                    newEmail,
+                    currentEmail: this.settings.get('membersSupportAddress')
+                });
+            }
 
-            return true;
-        } catch (e) {
-            // Failed to send email, retry
-            return false;
+            this.closeModal();
+        } catch (error) {
+            // Do we have an error that we can show inline?
+            if (error.payload && error.payload.errors) {
+                for (const payloadError of error.payload.errors) {
+                    if (payloadError.type === 'ValidationError' && payloadError.property && (payloadError.context || payloadError.message)) {
+                        // Context has a better error message for validation errors
+                        this.settings.errors.add(payloadError.property, payloadError.context || payloadError.message);
+                        this.settings.hasValidated.pushObject(payloadError.property);
+                    }
+                }
+            }
+            throw error;
         }
     }).drop()
 });
