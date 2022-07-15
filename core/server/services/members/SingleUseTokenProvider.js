@@ -1,5 +1,5 @@
 // @ts-check
-const {UnauthorizedError} = require('@tryghost/errors');
+const {ValidationError} = require('@tryghost/errors');
 
 class SingleUseTokenProvider {
     /**
@@ -41,7 +41,7 @@ class SingleUseTokenProvider {
         const model = await this.model.findOne({token});
 
         if (!model) {
-            throw new UnauthorizedError({
+            throw new ValidationError({
                 message: 'Invalid token provided'
             });
         }
@@ -51,7 +51,7 @@ class SingleUseTokenProvider {
         const tokenLifetimeMilliseconds = Date.now() - createdAtEpoch;
 
         if (tokenLifetimeMilliseconds > this.validity) {
-            throw new UnauthorizedError({
+            throw new ValidationError({
                 message: 'Token expired'
             });
         }

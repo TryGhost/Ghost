@@ -31,6 +31,7 @@ const EDITABLE_SETTINGS = [
     'default_content_visibility',
     'default_content_visibility_tiers',
     'members_signup_access',
+    'members_support_address',
     'stripe_secret_key',
     'stripe_publishable_key',
     'stripe_connect_integration_token',

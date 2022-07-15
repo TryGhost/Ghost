@@ -2,11 +2,12 @@ const Promise = require('bluebird');
 const _ = require('lodash');
 const {ValidationError, BadRequestError} = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
+const tpl = require('@tryghost/tpl');
 
 const messages = {
     invalidEmailReceived: 'Please send a valid email',
-    invalidEmailTypeReceived: 'Invalid email type received',
-    problemFindingSetting: 'Problem finding setting: {key}'
+    invalidEmailValueReceived: 'Please enter a valid email address.',
+    invalidEmailTypeReceived: 'Invalid email type received'
 };
 
 module.exports = {
@@ -20,6 +21,10 @@ module.exports = {
                 'notifications',
                 'navigation',
                 'secondary_navigation'
+            ];
+
+            const emailTypeSettings = [
+                'members_support_address'
             ];
 
             if (arrayTypeSettings.includes(setting.key)) {
@@ -43,6 +48,18 @@ module.exports = {
                     }
                 }
             }
+
+            if (emailTypeSettings.includes(setting.key)) {
+                const email = setting.value;
+
+                if (typeof email !== 'string' || (!validator.isEmail(email) && email !== 'noreply')) {
+                    const typeError = new ValidationError({
+                        message: tpl(messages.invalidEmailValueReceived),
+                        property: setting.key
+                    });
+                    errors.push(typeError);
+                }
+            }
         });
 
         // Prevent setting icon to the resized one when sending all settings received from browse again in the edit endpoint
@@ -56,6 +73,9 @@ module.exports = {
         }
     },
 
+    /**
+     * @deprecated
+     */
     updateMembersEmail(apiConfig, frame) {
         const {email, type} = frame.data;
 

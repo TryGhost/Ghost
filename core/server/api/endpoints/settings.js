@@ -2,17 +2,15 @@ const Promise = require('bluebird');
 const _ = require('lodash');
 const models = require('../../models');
 const routeSettings = require('../../services/route-settings');
-const tpl = require('@tryghost/tpl');
 const {BadRequestError} = require('@tryghost/errors');
 const settingsService = require('../../services/settings/settings-service');
 const membersService = require('../../services/members');
 const stripeService = require('../../services/stripe');
-
+const tpl = require('@tryghost/tpl');
 const settingsBREADService = settingsService.getSettingsBREADServiceInstance();
 
 const messages = {
     failedSendingEmail: 'Failed Sending Email'
-
 };
 
 async function getStripeConnectData(frame) {
@@ -59,6 +57,65 @@ module.exports = {
         }
     },
 
+    verifyKeyUpdate: {
+        headers: {
+            cacheInvalidate: true
+        },
+        permissions: {
+            method: 'edit'
+        },
+        data: [
+            'token'
+        ],
+        async query(frame) {
+            await settingsBREADService.verifyKeyUpdate(frame.data.token);
+            
+            // We need to return all settings here, because we have calculated settings that might change
+            const browse = await settingsBREADService.browse(frame.options.context);
+
+            return browse;
+        }
+    },
+
+    /**
+     * @deprecated
+     */
+    updateMembersEmail: {
+        statusCode: 204,
+        permissions: {
+            method: 'edit'
+        },
+        data: [
+            'email',
+            'type'
+        ],
+        async query(frame) {
+            const {email, type} = frame.data;
+
+            try {
+                // Mapped internally to the newer method of changing emails
+                const actionToKeyMapping = {
+                    supportAddressUpdate: 'members_support_address'
+                };
+                const edit = {
+                    key: actionToKeyMapping[type],
+                    value: email
+                };
+
+                await settingsBREADService.edit([edit], frame.options, null);
+            } catch (err) {
+                throw new BadRequestError({
+                    err,
+                    message: tpl(messages.failedSendingEmail)
+                });
+            }
+        }
+    },
+
+    /**
+     * @todo can get removed, since this is moved to verifyKeyUpdate
+     * @deprecated: keep to not break existing email verification links, but remove after 1 - 2 releases
+     */
     validateMembersEmailUpdate: {
         options: [
             'token',
@@ -105,33 +162,6 @@ module.exports = {
                     }));
                 }
             };
-        }
-    },
-
-    updateMembersEmail: {
-        statusCode: 204,
-        permissions: {
-            method: 'edit'
-        },
-        data: [
-            'email',
-            'type'
-        ],
-        async query(frame) {
-            const {email, type} = frame.data;
-
-            try {
-                // Send magic link to update fromAddress
-                await membersService.settings.sendEmailAddressUpdateMagicLink({
-                    email,
-                    type
-                });
-            } catch (err) {
-                throw new BadRequestError({
-                    err,
-                    message: tpl(messages.failedSendingEmail)
-                });
-            }
         }
     },
 
@@ -197,6 +227,8 @@ module.exports = {
 
             // We need to return all settings here, because we have calculated settings that might change
             const browse = await settingsBREADService.browse(frame.options.context);
+            browse.meta = result.meta || {};
+
             return browse;
         }
     },
