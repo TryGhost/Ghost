@@ -496,6 +496,23 @@ input:focus,
     color: var(--black);
 }
 
+.tag-token:not(.tag-token--internal) {
+    color: var(--black);
+}
+
+.tag-token:not(.tag-token--internal)::before {
+    opacity: 0.3;
+}
+
+.tag-token svg path {
+    stroke: var(--black);
+    fill: var(--black);
+}
+
+.tag-token--internal {
+    background: var(--white);
+}
+
 .fullscreen-modal-background, .epm-backdrop {
     background: #000;
 }
