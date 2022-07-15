@@ -33,6 +33,7 @@ const shouldResizeFileExtension = ext => !['.ico', '.svg', '.svgz'].includes(ext
 
 /**
  * Can we output animation (prevents outputting animated JPGs that are just all the pages listed under each other)
+ * Sharp doesn't support AVIF image sequences yet (animation)
  * @param {keyof import('sharp').FormatEnum} format the extension to check, EXCLUDING the leading dot
  */
 const doesFormatSupportAnimation = format => ['webp', 'gif'].includes(format);
@@ -47,7 +48,8 @@ const canTransformToFormat = format => [
     'jpeg',
     'jpg',
     'png',
-    'webp'
+    'webp',
+    'avif'
 ].includes(format);
 
 /**
