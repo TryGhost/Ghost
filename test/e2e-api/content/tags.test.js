@@ -1,3 +1,4 @@
+const assert = require('assert');
 const should = require('should');
 const supertest = require('supertest');
 const _ = require('lodash');
@@ -103,5 +104,43 @@ describe('Tags Content API', function () {
         _.find(jsonResponse.tags, {name: 'kitchen sink'}).count.posts.should.eql(2);
         _.find(jsonResponse.tags, {name: 'bacon'}).count.posts.should.eql(2);
         _.find(jsonResponse.tags, {name: 'chorizo'}).count.posts.should.eql(1);
+    });
+
+    it('Can use multiple fields and have valid url fields', async function () {
+        const res = await request.get(localUtils.API.getApiQuery(`tags/?key=${validKey}&fields=url,name`))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        const jsonResponse = res.body;
+
+        assert(jsonResponse.tags);
+
+        const getTag = name => jsonResponse.tags.find(tag => tag.name === name);
+
+        assert(getTag('Getting Started').url.endsWith('/tag/getting-started/'));
+        assert(getTag('kitchen sink').url.endsWith('/tag/kitchen-sink/'));
+        assert(getTag('bacon').url.endsWith('/tag/bacon/'));
+        assert(getTag('chorizo').url.endsWith('/tag/chorizo/'));
+    });
+
+    it('Can use single url field and have valid url fields', async function () {
+        const res = await request.get(localUtils.API.getApiQuery(`tags/?key=${validKey}&fields=url`))
+            .set('Origin', testUtils.API.getURL())
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        const jsonResponse = res.body;
+
+        assert(jsonResponse.tags);
+
+        const getTag = path => jsonResponse.tags.find(tag => tag.url.endsWith(path));
+
+        assert(getTag('/tag/getting-started/'));
+        assert(getTag('/tag/kitchen-sink/'));
+        assert(getTag('/tag/bacon/'));
+        assert(getTag('/tag/chorizo/'));
     });
 });

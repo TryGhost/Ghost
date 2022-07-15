@@ -154,6 +154,10 @@ Tag = ghostBookshelf.Model.extend({
             actor_id: actor.id,
             actor_type: actor.type
         };
+    },
+
+    defaultColumnsToFetch() {
+        return ['id'];
     }
 }, {
     orderDefaultOptions: function orderDefaultOptions() {
