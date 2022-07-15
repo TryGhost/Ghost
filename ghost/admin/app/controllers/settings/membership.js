@@ -43,7 +43,8 @@ export default class MembersAccessController extends Controller {
 
     portalPreviewGuid = Date.now().valueOf();
 
-    queryParams = ['showPortalSettings'];
+    queryParams = ['showPortalSettings', 'verifyEmail'];
+    @tracked verifyEmail = null;
 
     get freeTier() {
         return this.tiers?.find(tier => tier.type === 'free');
