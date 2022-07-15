@@ -143,8 +143,8 @@ const createSessionFromMagicLink = async function (req, res, next) {
     // req.query is a plain object, copy it to a URLSearchParams object so we can call toString()
     const searchParams = new URLSearchParams('');
     Object.keys(req.query).forEach((param) => {
-        // don't copy the token param
-        if (param !== 'token') {
+        // don't copy the "token" or "r" params
+        if (param !== 'token' && param !== 'r') {
             searchParams.set(param, req.query[param]);
         }
     });
@@ -179,6 +179,18 @@ const createSessionFromMagicLink = async function (req, res, next) {
                 const redirectUrl = new URL(removeLeadingSlash(ensureEndsWith(customRedirect, '/')), ensureEndsWith(baseUrl, '/'));
 
                 return res.redirect(redirectUrl.href);
+            }
+        }
+
+        if (action === 'signin') {
+            const referrer = req.query.r;
+            const siteUrl = urlUtils.getSiteUrl();
+
+            if (referrer && referrer.startsWith(siteUrl)) {
+                const redirectUrl = new URL(referrer);
+                redirectUrl.searchParams.set('success', true);
+                redirectUrl.searchParams.set('action', 'signin');
+                return res.redirect(redirectUrl.pathname + redirectUrl.search);
             }
         }
 
