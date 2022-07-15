@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/members-stripe-service",
-  "version": "0.10.5",
+  "version": "0.10.6",
   "repository": "https://github.com/TryGhost/Members/tree/main/packages/stripe",
   "author": "Ghost Foundation",
   "license": "MIT",
