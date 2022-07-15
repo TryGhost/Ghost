@@ -280,10 +280,37 @@
 
 /* Tag input */
 
+.tag-token:not(.tag-token--internal) {
+    position: relative;
+    color: var(--accent-color);
+    background: none;
+}
+  
+.tag-token:not(.tag-token--internal)::after {
+    position: absolute;
+    top: -1px;
+    right: -1px;
+    bottom: -1px;
+    left: -1px;
+    content: "";
+    border-radius: 3px;
+    background: var(--accent-color);
+    opacity: 0.15;
+}
+
 .tag-token--internal {
-    background: var(--lightgrey-l1);
-    border: 1px solid var(--lightgrey-l1);
-    color: var(--black);
+    background: var(--whitegrey-l1);
+}
+
+.tag-token span {
+    position: relative;
+    z-index: 2;
+    opacity: 0.8;
+}
+
+.tag-token svg path {
+    stroke: var(--accent-color);
+    fill: var(--accent-color);
 }
 
 .tag-token--internal svg path {
