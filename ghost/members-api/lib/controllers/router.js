@@ -345,11 +345,11 @@ module.exports = class RouterController {
                 const member = await this._memberRepository.get({email});
                 if (member) {
                     const tokenData = {};
-                    await this._sendEmailWithMagicLink({email, tokenData, requestedType: emailType});
+                    await this._sendEmailWithMagicLink({email, tokenData, requestedType: emailType, referrer: req.get('referer')});
                 }
             } else {
                 const tokenData = _.pick(req.body, ['labels', 'name', 'newsletters']);
-                await this._sendEmailWithMagicLink({email, tokenData, requestedType: emailType});
+                await this._sendEmailWithMagicLink({email, tokenData, requestedType: emailType, referrer: req.get('referer')});
             }
             res.writeHead(201);
             return res.end('Created.');
