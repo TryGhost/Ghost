@@ -154,11 +154,14 @@ class MembersConfigProvider {
         };
     }
 
-    getSigninURL(token, type) {
+    getSigninURL(token, type, referrer) {
         const siteUrl = this._urlUtils.urlFor({relativeUrl: '/members/'}, true);
         const signinURL = new URL(siteUrl);
         signinURL.searchParams.set('token', token);
         signinURL.searchParams.set('action', type);
+        if (referrer) {
+            signinURL.searchParams.set('r', referrer);
+        }
         return signinURL.toString();
     }
 }
