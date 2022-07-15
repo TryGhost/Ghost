@@ -52,7 +52,7 @@ function serializeSettings(models, apiConfig, frame) {
 
     frame.response = {
         settings: mappers.settings(filteredSettings),
-        meta: {}
+        meta: models.meta ?? {}
     };
 
     if (frame.options.group) {
@@ -89,6 +89,7 @@ module.exports = {
     browse: serializeSettings,
     read: serializeSettings,
     edit: serializeSettings,
+    verifyKeyUpdate: serializeSettings,
 
     download: serializeData,
     upload: serializeData,

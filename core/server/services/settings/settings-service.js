@@ -12,12 +12,17 @@ const config = require('../../../shared/config');
 const SettingsCache = require('../../../shared/settings-cache');
 const SettingsBREADService = require('./settings-bread-service');
 const {obfuscatedSetting, isSecretSetting, hideValueIfSecret} = require('./settings-utils');
+const mail = require('../mail');
+const SingleUseTokenProvider = require('../members/SingleUseTokenProvider');
+const urlUtils = require('../../../shared/url-utils');
 
 const ObjectId = require('bson-objectid');
 
 const messages = {
     incorrectKeyType: 'type must be one of "direct" or "connect".'
 };
+
+const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
 
 /**
  * @returns {SettingsBREADService} instance of the PostsService
@@ -26,7 +31,10 @@ const getSettingsBREADServiceInstance = () => {
     return new SettingsBREADService({
         SettingsModel: models.Settings,
         settingsCache: SettingsCache,
-        labsService: labs
+        labsService: labs,
+        mail,
+        singleUseTokenProvider: new SingleUseTokenProvider(models.SingleUseToken, MAGIC_LINK_TOKEN_VALIDITY),
+        urlUtils
     });
 };
 

@@ -1876,10 +1876,10 @@
     json-stringify-safe "^5.0.1"
     lodash "^4.17.21"
 
-"@tryghost/magic-link@1.0.26", "@tryghost/magic-link@^1.0.26":
-  version "1.0.26"
-  resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-1.0.26.tgz#9c87edfe52abc3c628c4052078c5f485396a2fb3"
-  integrity sha512-Rt/a6VDRzPkdbDQuh2Ah3sYTVOlG2kBcfPl5EpCeRqI7KF/BlsqLgRhDW+aewVhuquNWtjqDKdz+glZbmcJczg==
+"@tryghost/magic-link@1.1.0", "@tryghost/magic-link@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-1.1.0.tgz#d34983e9dae9db2a53334c03096702017c5958e0"
+  integrity sha512-V6J0dUcsytwE7ZjTO1IcgwUJQIMEbH9YB2OFpmOBeKG/KLFQebxZ6+1ovwNvO7lXnttvf4SB8EsgCgHPpP7+uw==
   dependencies:
     bluebird "^3.5.5"
     jsonwebtoken "^8.5.1"
@@ -1909,22 +1909,22 @@
     "@tryghost/domain-events" "^0.1.14"
     "@tryghost/member-events" "^0.4.6"
 
-"@tryghost/members-api@8.2.1":
-  version "8.2.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-8.2.1.tgz#c2edc1a6613e9ea707493ba680de026615736c0b"
-  integrity sha512-MTrb0t6wHGIap4mSl95BvWi0JfCoaw2xs5bQEbGRNxVzG2G3e7XgLylrucM30QIVt4AtNT1afCnOBlYMcfPbiQ==
+"@tryghost/members-api@8.3.0":
+  version "8.3.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-api/-/members-api-8.3.0.tgz#1981e5cde57c083a5ba8d5b648c76a131bf97f8f"
+  integrity sha512-QjepTMgLXo7GX7aeo7oi2y0jxq9XgorIjf0IOfm6wvUJ7qVwwhsQpZRZh1TzEdcS50ASD9OSfxH2dgLJW7RqPw==
   dependencies:
     "@nexes/nql" "^0.6.0"
     "@tryghost/debug" "^0.1.2"
     "@tryghost/domain-events" "^0.1.14"
     "@tryghost/errors" "^1.1.1"
     "@tryghost/logging" "^2.0.0"
-    "@tryghost/magic-link" "^1.0.26"
+    "@tryghost/magic-link" "^1.1.0"
     "@tryghost/member-analytics-service" "^0.1.16"
     "@tryghost/member-events" "^0.4.6"
     "@tryghost/members-analytics-ingress" "^0.1.17"
     "@tryghost/members-payments" "^0.3.6"
-    "@tryghost/members-stripe-service" "^0.10.5"
+    "@tryghost/members-stripe-service" "^0.10.6"
     "@tryghost/tpl" "^0.1.2"
     "@types/jsonwebtoken" "^8.5.1"
     bluebird "^3.5.4"
@@ -1996,10 +1996,10 @@
     jsonwebtoken "^8.5.1"
     lodash "^4.17.11"
 
-"@tryghost/members-stripe-service@0.10.5", "@tryghost/members-stripe-service@^0.10.5":
-  version "0.10.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-stripe-service/-/members-stripe-service-0.10.5.tgz#17adc845a0c279c14fa0a2d6fc920ce8cdda0c6c"
-  integrity sha512-MOVquZaZ+WfDVY6DjJUrAyVKQy7cTWXcv8mWMnAcGL+aE526XPX3hrvA8BRilKjwN7hVNI9kBnxoALPsqZHHCw==
+"@tryghost/members-stripe-service@0.10.6", "@tryghost/members-stripe-service@^0.10.6":
+  version "0.10.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/members-stripe-service/-/members-stripe-service-0.10.6.tgz#d63a52563e350efebaccb2ebce4469263ec20dd1"
+  integrity sha512-810xhRTWfSJEoD79m1L8rXCbzZagE5LFa/C430qgjZjdbIkl0l5E0C7DnYcFbwHKWaUFTOSE/XU0rhxxYZLhew==
   dependencies:
     "@tryghost/debug" "^0.1.4"
     "@tryghost/domain-events" "^0.1.14"
@@ -11185,6 +11185,17 @@ sqlite3@5.0.8:
   version "5.0.8"
   resolved "https://registry.yarnpkg.com/sqlite3/-/sqlite3-5.0.8.tgz#b4b7eab7156debec80866ef492e01165b4688272"
   integrity sha512-f2ACsbSyb2D1qFFcqIXPfFscLtPVOWJr5GmUzYxf4W+0qelu5MWrR+FAQE1d5IUArEltBrzSDxDORG8P/IkqyQ==
+  dependencies:
+    "@mapbox/node-pre-gyp" "^1.0.0"
+    node-addon-api "^4.2.0"
+    tar "^6.1.11"
+  optionalDependencies:
+    node-gyp "8.x"
+
+sqlite3@5.0.9:
+  version "5.0.9"
+  resolved "https://registry.yarnpkg.com/sqlite3/-/sqlite3-5.0.9.tgz#421b9c065480f1c589f89cabd6d0ea9575a69855"
+  integrity sha512-e2lEKevUF65UJu4IIuuFytgW7yNMkmCkfyn66jXWeb7OcdHvRo7nXhF+IQ25iW6x2grB0DyKdGCpx8Rd8EkA2Q==
   dependencies:
     "@mapbox/node-pre-gyp" "^1.0.0"
     node-addon-api "^4.2.0"
