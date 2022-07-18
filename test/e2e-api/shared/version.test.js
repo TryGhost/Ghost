@@ -195,6 +195,8 @@ describe('API Versioning', function () {
                         id: anyErrorId
                     }]
                 });
+
+            mockManager.assert.sentEmailCount(0);
         });
 
         it('Does an internal rewrite for canary URLs with accept version set', async function () {
@@ -269,6 +271,14 @@ describe('API Versioning', function () {
     describe('Content API', function () {
         let agentContentAPI;
 
+        beforeEach(function () {
+            mockManager.mockMail();
+        });
+
+        afterEach(function () {
+            mockManager.restore();
+        });
+
         before(async function () {
             agentContentAPI = await agentProvider.getContentAPIAgent();
             await fixtureManager.init('api_keys');
@@ -311,6 +321,25 @@ describe('API Versioning', function () {
                         id: anyObjectId
                     }]
                 });
+        });
+
+        it('responds with 404 error when the resource cannot be found', async function () {
+            await agentContentAPI
+                .get('/posts/5ddc9141c35e7700383b2937/')
+                .header('Accept-Version', 'v5.0')
+                .expectStatus(404)
+                .matchHeaderSnapshot({
+                    etag: anyEtag,
+                    'content-version': anyContentVersion,
+                    'content-length': anyContentLength
+                })
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                });
+
+            mockManager.assert.sentEmailCount(0);
         });
     });
 });
