@@ -51,7 +51,7 @@
                 gh-koenig-editor acts as a wrapper around the title input and
                 koenig editor canvas to support Ghost-specific editor behaviour
             --}}
-            <GhKoenigEditor
+            <GhKoenigEditorReact
                 @title={{readonly this.post.titleScratch}}
                 @titleAutofocus={{this.shouldFocusTitle}}
                 @titlePlaceholder={{concat (capitalize this.post.displayName) " title"}}
