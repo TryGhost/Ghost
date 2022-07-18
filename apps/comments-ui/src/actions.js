@@ -154,6 +154,12 @@ async function likeComment({state, api, data: comment}) {
     };
 }
 
+async function reportComment({state, api, data: comment}) {
+    await api.comments.report({comment});
+
+    return {};
+}
+
 async function unlikeComment({state, api, data: comment}) {
     await api.comments.unlike({comment});
 
@@ -261,6 +267,7 @@ const Actions = {
     showComment,
     likeComment,
     unlikeComment,
+    reportComment,
     addReply,
     loadMoreComments
 };

@@ -1,8 +1,11 @@
-import React from 'react';
+import React, {useContext} from 'react';
+import AppContext from '../../AppContext';
 
 const NotAuthorContextMenu = (props) => {
+    const {dispatchAction} = useContext(AppContext);
+
     const reportComment = (event) => {
-        // report
+        dispatchAction('reportComment', props.comment);
         props.close();
     };
 

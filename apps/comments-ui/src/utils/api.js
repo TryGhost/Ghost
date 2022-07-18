@@ -142,17 +142,13 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
         },
         like({comment}) {
-            const body = {
-                comments: [comment]
-            };
             const url = endpointFor({type: 'members', resource: `comments/${comment.id}/like`});
             return makeRequest({
                 url,
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(body)
+                }
             }).then(function (res) {
                 if (res.ok) {
                     return 'Success';
@@ -178,6 +174,22 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                     return 'Success';
                 } else {
                     throw new Error('Failed to unlike comment');
+                }
+            });
+        },
+        report({comment}) {
+            const url = endpointFor({type: 'members', resource: `comments/${comment.id}/report`});
+            return makeRequest({
+                url,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(function (res) {
+                if (res.ok) {
+                    return 'Success';
+                } else {
+                    throw new Error('Failed to report comment');
                 }
             });
         }
