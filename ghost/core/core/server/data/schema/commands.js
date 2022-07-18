@@ -50,6 +50,8 @@ function addTableColumn(tableName, table, columnName, columnSpec = schema[tableN
     }
     if (Object.prototype.hasOwnProperty.call(columnSpec, 'cascadeDelete') && columnSpec.cascadeDelete === true) {
         column.onDelete('CASCADE');
+    } else if (Object.prototype.hasOwnProperty.call(columnSpec, 'setNullDelete') && columnSpec.setNullDelete === true) {
+        column.onDelete('SET NULL');
     }
     if (Object.prototype.hasOwnProperty.call(columnSpec, 'defaultTo')) {
         column.defaultTo(columnSpec.defaultTo);
@@ -206,10 +208,11 @@ async function hasForeignSQLite({fromTable, fromColumn, toTable, toColumn, trans
  * @param {string} configuration.fromColumn - column of the table to add the foreign key to
  * @param {string} configuration.toTable - name of the table to point the foreign key to
  * @param {string} configuration.toColumn - column of the table to point the foreign key to
- * @param {Boolean} configuration.cascadeDelete - adds the "on delete cascade" option if true
+ * @param {Boolean} [configuration.cascadeDelete] - adds the "on delete cascade" option if true
+ * @param {Boolean} [configuration.setNullDelete] - adds the "on delete SET NULL" option if true
  * @param {import('knex')} configuration.transaction - connection object containing knex reference
  */
-async function addForeign({fromTable, fromColumn, toTable, toColumn, cascadeDelete = false, transaction = db.knex}) {
+async function addForeign({fromTable, fromColumn, toTable, toColumn, cascadeDelete = false, setNullDelete = false, transaction = db.knex}) {
     if (DatabaseInfo.isSQLite(transaction)) {
         const foreignKeyExists = await hasForeignSQLite({fromTable, fromColumn, toTable, toColumn, transaction});
         if (foreignKeyExists) {
@@ -232,6 +235,8 @@ async function addForeign({fromTable, fromColumn, toTable, toColumn, cascadeDele
         await transaction.schema.table(fromTable, function (table) {
             if (cascadeDelete) {
                 table.foreign(fromColumn).references(`${toTable}.${toColumn}`).onDelete('CASCADE');
+            } else if (setNullDelete) {
+                table.foreign(fromColumn).references(`${toTable}.${toColumn}`).onDelete('SET NULL');
             } else {
                 table.foreign(fromColumn).references(`${toTable}.${toColumn}`);
             }
