@@ -112,6 +112,11 @@ if (process.env.CI) {
 module.exports = function (defaults) {
     let app = new EmberApp(defaults, {
         addons: {denylist},
+        babel: {
+            plugins: [
+                require.resolve('babel-plugin-transform-react-jsx')
+            ]
+        },
         'ember-cli-babel': {
             optional: ['es6.spec.symbols'],
             includePolyfill: false
@@ -229,6 +234,9 @@ module.exports = function (defaults) {
                     fs: 'empty',
                     path: true
                 }
+            },
+            alias: {
+                'react-mobiledoc-editor': 'react-mobiledoc-editor/dist/main.js'
             }
         }
     });
@@ -256,6 +264,20 @@ module.exports = function (defaults) {
         app.import('vendor/codemirror/lib/codemirror.js', {type: 'test'});
         app.import('vendor/simplemde/debug/simplemde.js', {type: 'test'});
     }
+
+    // Support react components
+    // React and ReactDOM globals
+    app.import({
+        development: 'node_modules/react/umd/react.development.js',
+        production: 'node_modules/react/umd/react.production.min.js'
+    });
+    app.import({
+        development: 'node_modules/react-dom/umd/react-dom.development.js',
+        production: 'node_modules/react-dom/umd/react-dom.production.min.js'
+    });
+    // support `import React from 'react'`
+    app.import('vendor/shims/react.js');
+    app.import('vendor/shims/react-dom.js');
 
     return app.toTree();
 };
