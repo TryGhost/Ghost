@@ -1259,3 +1259,4 @@ remove|ember-template-lint|no-action|28|20|28|20|b96b7bd3d4b17c4761201d3a44c6876
 remove|ember-template-lint|no-action|34|19|34|19|bb54609cede4c2f20ae22de5cbc2771d396aaaf4|1652054400000|1662422400000|1665014400000|lib/koenig-editor/addon/components/koenig-card-code.hbs
 remove|ember-template-lint|no-action|55|20|55|20|ee695277e2f7dac9fbe5570ebfbe9c738280a976|1652054400000|1662422400000|1665014400000|lib/koenig-editor/addon/components/koenig-card-code.hbs
 remove|ember-template-lint|require-input-label|31|8|31|8|615e3b52bcc28f911cc3b8e3630bd77324e357a6|1652054400000|1662422400000|1665014400000|lib/koenig-editor/addon/components/koenig-card-code.hbs
+remove|ember-template-lint|no-action|1|34|1|34|d2485778c690a27dccd6859c3550b7e1d605975e|1652054400000|1662422400000|1665014400000|app/templates/editor/edit-loading.hbs
