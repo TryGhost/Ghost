@@ -35,7 +35,11 @@
             data-test-editor-title-input={{true}}
         />
 
-        <KoenigEditor
+        <KoenigReactEditor
+            @mobiledoc={{@body}}
+        />
+
+        {{!-- <KoenigEditor
             @mobiledoc={{@body}}
             @placeholder={{@bodyPlaceholder}}
             @spellcheck={{true}}
@@ -54,6 +58,6 @@
             @deleteSnippet={{@deleteSnippet}}
             @cardOptions={{@cardOptions}}
             @postType={{@postType}}
-        />
+        /> --}}
     </div>
 </div>
