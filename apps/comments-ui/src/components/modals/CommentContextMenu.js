@@ -7,7 +7,7 @@ import NotAuthorContextMenu from './NotAuthorContextMenu';
 const CommentContextMenu = (props) => {
     const {member, admin} = useContext(AppContext);
     const comment = props.comment;
-    const isAuthor = comment.member.uuid === member?.uuid;
+    const isAuthor = member && comment.member?.uuid === member?.uuid;
     const isAdmin = !!admin;
 
     return (
