@@ -140,6 +140,9 @@
         "url": "https://unpkg.com/@tryghost/sodo-search@~1.0.0/umd/sodo-search.min.js",
         "version": "1.0.0"
     },
+    "editor": {
+        "url": ""
+    },
     "tenor": {
         "publicReadOnlyApiKey": null,
         "contentFilter": "off"
