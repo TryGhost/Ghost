@@ -1,8 +1,8 @@
-import {render, screen} from '@testing-library/react';
+import {render} from '@testing-library/react';
 import App from './App';
 
-test('renders learn react link', () => {
-    render(<App />);
-    const linkElement = screen.getByText(/hello world/i);
-    expect(linkElement).toBeInTheDocument();
+test('renders the auth frame', () => {
+    const {container} = render(<App />);
+    const iframeElement = container.querySelector('iframe[data-frame="admin-auth"]');
+    expect(iframeElement).toBeInTheDocument();
 });
