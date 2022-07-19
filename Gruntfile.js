@@ -27,15 +27,6 @@ module.exports = function (grunt) {
     grunt.registerTask('build', 'Build admin app in development mode',
         ['subgrunt:init', 'clean:tmp', 'ember']);
 
-    // Helpers for common deprecated tasks
-    grunt.registerTask('main', function () {
-        grunt.log.error('@deprecated: Run `yarn main` instead');
-    });
-
-    grunt.registerTask('validate', function () {
-        grunt.log.error('@deprecated: Run `yarn test` instead');
-    });
-
     // Runs the asset generation tasks for production and duplicates default-prod.html to default.html
     grunt.registerTask('release', 'Release task - creates a final built zip', ['clean:built', 'prod', 'copy:admin_html']);
 
