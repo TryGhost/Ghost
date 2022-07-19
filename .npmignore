@@ -26,6 +26,8 @@ content/images/**
 !content/images/README.md
 content/logs/**
 !content/logs/README.md
+content/settings/**
+!content/settings/README.md
 content/themes/**
 !content/themes/casper/**
 content/themes/casper/assets/css/.csscomb.json
