@@ -24,7 +24,6 @@ jobs:
           cache: yarn
 
       - run: yarn
-      - run: grunt release --skip-tests
       - run: npm config set //registry.npmjs.org/:_authToken=$NODE_AUTH_TOKEN
       - run: npm publish
       - uses: tryghost/action-ghost-release@main
