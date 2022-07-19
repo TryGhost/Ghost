@@ -259,7 +259,7 @@ function getMatchIndexes({text, highlight}) {
         }
     });
     const matchRegex = new RegExp(`${highlightRegexText}`, 'ig');
-    let matches = text.matchAll(matchRegex);
+    let matches = text?.matchAll(matchRegex);
     const indexes = [];
     for (const match of matches) {
         indexes.push({
@@ -307,6 +307,8 @@ function getHighlightParts({text, highlight}) {
 }
 
 function HighlightedSection({text = '', highlight = '', isExcerpt}) {
+    text = text || '';
+    highlight = highlight || '';
     let {parts, highlightIndexes} = getHighlightParts({text, highlight});
     if (isExcerpt && highlightIndexes?.[0]) {
         const startIdx = highlightIndexes?.[0]?.startIdx;
