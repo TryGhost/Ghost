@@ -167,6 +167,8 @@ describe('Settings API', function () {
                 .matchHeaderSnapshot({
                     etag: anyEtag
                 });
+
+            mockManager.assert.sentEmailCount(0);
         });
 
         it('removes image size prefixes when setting the icon', async function () {
@@ -197,6 +199,8 @@ describe('Settings API', function () {
             // Check if not changed (also check internal ones)
             const afterValue = settingsCache.get('icon');
             assert.equal(afterValue, 'http://127.0.0.1:2369/content/images/2019/07/icon.png');
+
+            mockManager.assert.sentEmailCount(0);
         });
 
         it('cannot edit uneditable settings', async function () {
@@ -215,6 +219,7 @@ describe('Settings API', function () {
                     const emailVerificationRequired = body.settings.find(setting => setting.key === 'email_verification_required');
                     assert.strictEqual(emailVerificationRequired.value, false);
                 });
+            mockManager.assert.sentEmailCount(0);
         });
 
         it('editing members_support_address triggers email verification flow', async function () {
@@ -269,7 +274,7 @@ describe('Settings API', function () {
                     assert.deepEqual(body.meta, {});
                 });
 
-            mockManager.assert.sentEmailCount(0);  
+            mockManager.assert.sentEmailCount(0);
         });
     });
 
