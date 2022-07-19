@@ -1,13 +1,16 @@
 const _ = require('lodash');
+const nql = require('@tryghost/nql');
 const template = require('./template');
 const settingsCache = require('../../../shared/settings-cache');
 const urlUtils = require('../../../shared/url-utils');
+const labs = require('../../../shared/labs');
 const moment = require('moment-timezone');
 const api = require('../../api').endpoints;
 const apiShared = require('../../api').shared;
 const {URL} = require('url');
 const mobiledocLib = require('../../lib/mobiledoc');
 const htmlToPlaintext = require('../../../shared/html-to-plaintext');
+const membersService = require('../members');
 const {isUnsplashImage, isLocalContentImage} = require('@tryghost/kg-default-cards/lib/utils');
 const {textColorForBackgroundColor, darkenToContrastThreshold} = require('@tryghost/color-utils');
 const logging = require('@tryghost/logging');
@@ -72,6 +75,22 @@ const createUnsubscribeUrl = (uuid, newsletterUuid) => {
     }
 
     return unsubscribeUrl.href;
+};
+
+/**
+ * createPostSignupUrl
+ *
+ * Takes a post slug. Returns the url that should be used to signup from newsletter
+ *
+ * @param {string} slug post slug
+ */
+const createPostSignupUrl = (slug) => {
+    const siteUrl = urlUtils.getSiteUrl();
+    const signupUrl = new URL(siteUrl);
+    signupUrl.pathname = `${signupUrl.pathname}/${slug}/`.replace('//', '/');
+    signupUrl.hash = `/portal/signup`;
+
+    return signupUrl.href;
 };
 
 // NOTE: serialization is needed to make sure we do post transformations such as image URL transformation from relative to absolute
@@ -297,18 +316,82 @@ const serialize = async (postModel, newsletter, options = {isBrowserPreview: fal
         html: formatHtmlForEmail(htmlTemplate),
         plaintext: post.plaintext
     });
-
-    return {
+    const data = {
         subject: post.email_subject || post.title,
         html,
         plaintext
     };
+    if (labs.isSet('newsletterPaywall')) {
+        data.post = post;
+    }
+    return data;
 };
+
+/**
+ * renderPaywallCTA
+ *
+ * outputs html for rendering paywall CTA in newsletter
+ *
+ * @param {Object} post Post Object
+ */
+
+function renderPaywallCTA(post) {
+    const accentColor = settingsCache.get('accent_color');
+    const siteTitle = settingsCache.get('title') || 'Ghost site';
+    const signupUrl = createPostSignupUrl(post.slug);
+
+    return `<div class="align-center" style="text-align: center;">
+    <hr
+        style="position: relative; display: block; width: 100%; margin: 3em 0; padding: 0; height: 1px; border: 0; border-top: 1px solid #e5eff5;">
+    <h2
+        style="margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 26px;">
+        Subscribe to continue reading.</h2>
+    <p style="margin: 0 0 1.5em 0; line-height: 1.6em;">Become a paid member of ${siteTitle} to get access to all
+        subscriber-only content.</p>
+    <p style="margin: 0 0 1.5em 0; line-height: 1.6em;"></p>
+    <div class="btn btn-accent" style="box-sizing: border-box; width: 100%; display: table;">
+        <table border="0" cellspacing="0" cellpadding="0" align="center"
+            style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;">
+            <tbody>
+                <tr>
+                    <td align="center"
+                        style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 18px; vertical-align: top; color: #15212A; border-radius: 5px; text-align: center; background-color: #6D2EFF;"
+                        valign="top" bgcolor="${accentColor}"><a href="${signupUrl}"
+                            style="overflow-wrap: anywhere; border: solid 1px #3498db; border-radius: 5px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 14px; font-weight: bold; margin: 0; padding: 12px 25px; text-decoration: none; background-color: ${accentColor}; border-color: ${accentColor}; color: #FFFFFF;"
+                            target="_blank">Subscribe</a></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <p style="margin: 0 0 1.5em 0; line-height: 1.6em;"></p>
+</div>`;
+}
 
 function renderEmailForSegment(email, memberSegment) {
     const cheerio = require('cheerio');
 
     const result = {...email};
+
+    /** Checks and hides content for newsletter behind paywall card
+     *  based on member's status and post access
+     *  Adds CTA in case content is hidden.
+    */
+    if (labs.isSet('newsletterPaywall')) {
+        const paywallIndex = (result.html || '').indexOf('<!--members-only-->');
+        if (paywallIndex !== -1 && memberSegment) {
+            let statusFilter = nql(memberSegment).toJSON();
+            const memberHasAccess = membersService.contentGating.checkPostAccess(result.post, statusFilter);
+
+            if (!memberHasAccess) {
+                const postContentEndIdx = result.html.search(/[\s\n\r]+?<!-- POST CONTENT END -->/);
+                if (paywallIndex !== -1) {
+                    result.html = result.html.slice(0, paywallIndex) + renderPaywallCTA(result.post) + result.html.slice(postContentEndIdx);
+                    result.plaintext = htmlToPlaintext.excerpt(result.html);
+                }
+            }
+        }
+    }
+
     const $ = cheerio.load(result.html);
 
     $('[data-gh-segment]').get().forEach((node) => {

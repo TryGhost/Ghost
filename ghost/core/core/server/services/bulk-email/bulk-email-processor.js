@@ -7,6 +7,7 @@ const logging = require('@tryghost/logging');
 const models = require('../../models');
 const mailgunProvider = require('./mailgun');
 const sentry = require('../../../shared/sentry');
+const labs = require('../../../shared/labs');
 const debug = require('@tryghost/debug')('mega');
 const postEmailSerializer = require('../mega/post-email-serializer');
 
@@ -169,6 +170,11 @@ module.exports = {
         try {
             // Load newsletter data on email
             await emailBatchModel.relations.email.getLazyRelation('newsletter', {require: false, ...knexOptions});
+
+            if (labs.isSet('newsletterPaywall')) {
+                // Load post data on email - for content gating on paywall
+                await emailBatchModel.relations.email.getLazyRelation('post', {require: false, ...knexOptions});
+            }
 
             // send the email
             const sendResponse = await this.send(emailBatchModel.relations.email.toJSON(), recipientRows, memberSegment);
