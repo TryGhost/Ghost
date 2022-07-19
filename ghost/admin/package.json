@@ -150,7 +150,6 @@
     "pretender": "3.4.7",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-mobiledoc-editor": "^0.13.1",
     "reframe.js": "3.0.3",
     "simplemde": "https://github.com/kevinansfield/simplemde-markdown-editor.git#ghost",
     "testem": "3.7.0",

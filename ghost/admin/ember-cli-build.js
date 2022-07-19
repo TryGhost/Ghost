@@ -278,6 +278,9 @@ module.exports = function (defaults) {
     // support `import React from 'react'`
     app.import('vendor/shims/react.js');
     app.import('vendor/shims/react-dom.js');
+    // required dependency for dynamically fetched react-mobiledoc-editor
+    app.import('node_modules/prop-types/prop-types.min.js');
+    app.import('vendor/shims/prop-types.js');
 
     return app.toTree();
 };
