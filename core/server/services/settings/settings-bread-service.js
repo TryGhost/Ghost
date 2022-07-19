@@ -297,7 +297,7 @@ class SettingsBREADService {
             if (EMAIL_KEYS.includes(setting.key)) {
                 const email = setting.value;
                 const key = setting.key;
-                const hasChanged = getSetting(setting) !== email;
+                const hasChanged = getSetting(setting).value !== email;
 
                 if (await this.requiresEmailVerification({email, hasChanged})) {
                     emailsToVerify.push({email, key});
