@@ -44,6 +44,10 @@ const Avatar = (props) => {
     };
 
     const commentGetInitials = () => {
+        if (props.comment && !props.comment.member) {
+            return getInitials('Deleted member');
+        }
+        
         let commentMember = (props.comment ? props.comment.member : member);
 
         if (!commentMember || !commentMember.name) {
@@ -66,7 +70,7 @@ const Avatar = (props) => {
             <div className={`flex justify-center items-center rounded-full ${dimensionClasses}`} style={avatarStyle}>
                 <p className={`text-white font-sans font-semibold ${initialsClasses}`}>{ commentGetInitials() }</p>
             </div>
-            <img className={`absolute top-0 left-0 rounded-full ${dimensionClasses}`} src={commentMember.avatar_image} alt="Avatar"/>
+            {commentMember && <img className={`absolute top-0 left-0 rounded-full ${dimensionClasses}`} src={commentMember.avatar_image} alt="Avatar"/>}
         </figure>
     );
 };

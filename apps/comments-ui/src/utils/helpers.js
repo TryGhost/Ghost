@@ -99,10 +99,10 @@ export function getInitials(name) {
     }
 
     if (parts.length === 1) {
-        return parts[0].substring(0, 1);
+        return parts[0].substring(0, 1).toLocaleUpperCase();
     }
 
-    return parts[0].substring(0, 1) + parts[parts.length - 1].substring(0, 1);
+    return parts[0].substring(0, 1).toLocaleUpperCase() + parts[parts.length - 1].substring(0, 1).toLocaleUpperCase();
 }
 
 export function getBundledCssLink({appVersion}) {
