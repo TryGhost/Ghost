@@ -1,3 +1,4 @@
+/* global GhostAdmin */
 import React, {Suspense} from 'react';
 
 class ErrorHandler extends React.Component {
@@ -29,7 +30,12 @@ const fetchMobiledocEditor = function () {
             return window.ReactMobiledocEditor;
         }
 
-        await import('https://unpkg.com/kevinansfield-react-mobiledoc-editor@~0.13.2/dist/main.js');
+        // the removal of `https://` and it's manual addition to the import template string is
+        // required to work around ember-auto-import complaining about an unknown dynamic import
+        // during the build step
+        const url = GhostAdmin.__container__.lookup('service:config').get('editor.url').replace('https://', '');
+        await import(`https://${url}`);
+
         return window.ReactMobiledocEditor;
     };
 
