@@ -237,11 +237,39 @@ describe('Settings API', function () {
                         sent_email_verification: ['members_support_address']
                     });
                 });
-            
+
+            mockManager.assert.sentEmailCount(1);  
             mockManager.assert.sentEmail({
                 subject: 'Verify email address',
                 to: 'support@example.com'
             });  
+        });
+
+        it('does not trigger email verification flow if members_support_address remains the same', async function () {
+            await models.Settings.edit({
+                key: 'members_support_address',
+                value: 'support@example.com'
+            });
+
+            await agent.put('settings/')
+                .body({
+                    settings: [{key: 'members_support_address', value: 'support@example.com'}]
+                })
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
+                })
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .expect(({body}) => {
+                    const membersSupportAddress = body.settings.find(setting => setting.key === 'members_support_address');
+                    assert.strictEqual(membersSupportAddress.value, 'support@example.com');
+
+                    assert.deepEqual(body.meta, {});
+                });
+
+            mockManager.assert.sentEmailCount(0);  
         });
     });
 
@@ -263,6 +291,7 @@ describe('Settings API', function () {
                     const membersSupportAddress = body.settings.find(setting => setting.key === 'members_support_address');
                     assert.strictEqual(membersSupportAddress.value, 'support@example.com');
                 });
+            mockManager.assert.sentEmailCount(0);
         });
 
         it('cannot update invalid keys via token', async function () {
