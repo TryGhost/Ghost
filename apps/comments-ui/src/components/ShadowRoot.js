@@ -4,9 +4,10 @@ import {getBundledCssLink} from '../utils/helpers';
 
 const ShadowRoot = ({
     children,
+    appVersion,
     ...props
 }) => {
-    const cssLink = getBundledCssLink({appVersion: props.appVersion});
+    const cssLink = getBundledCssLink({appVersion});
 
     const styles = `
         .ghost-display {
