@@ -1,6 +1,7 @@
 import React, {useContext} from 'react';
 import AppContext from '../AppContext';
 import NotSignedInBox from './NotSignedInBox';
+import Loading from './Loading';
 import Form from './Form';
 import Comment from './Comment';
 import Pagination from './Pagination';
@@ -41,7 +42,7 @@ const CommentsBox = (props) => {
 
     const {accentColor, pagination, member, comments} = useContext(AppContext);
 
-    const commentsElements = !comments ? 'Loading...' : comments.slice().reverse().map(comment => <Comment comment={comment} key={comment.id} avatarSaturation={props.avatarSaturation} />);
+    const commentsElements = comments.slice().reverse().map(comment => <Comment comment={comment} key={comment.id} avatarSaturation={props.avatarSaturation} />);
 
     const containerClass = darkMode() ? 'dark' : '';
     const commentsCount = comments.length;
@@ -52,12 +53,16 @@ const CommentsBox = (props) => {
     return (
         <section className={'ghost-display ' + containerClass} style={style}>
             <Pagination />
-            <div className={!pagination ? 'mt-4' : ''}>
-                {commentsElements}
-            </div>
-            <div>
-                { member ? <Form commentsCount={commentsCount} avatarSaturation={props.avatarSaturation} /> : <NotSignedInBox /> }
-            </div>
+            {comments ?
+                <>
+                    <div className={!pagination ? 'mt-4' : ''}>
+                        {commentsElements}
+                    </div>
+                    <div>
+                        { member ? <Form commentsCount={commentsCount} avatarSaturation={props.avatarSaturation} /> : <NotSignedInBox /> }
+                    </div>
+                </>
+                : <Loading />}
         </section>
     );
 };

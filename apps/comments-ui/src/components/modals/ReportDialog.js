@@ -18,14 +18,14 @@ const ReportDialog = (props) => {
 
     let buttonIcon = null;
     if (props.progress === 'sending') {
-        buttonIcon = <SpinnerIcon className="w-[16px] h-[16px] mr-2" />;
+        buttonIcon = <SpinnerIcon className="w-[20px] h-[20px] mr-2 fill-white" />;
     } else if (props.progress === 'sent') {
         buttonIcon = <SuccessIcon className="w-[16px] h-[16px] mr-2" />;
     }
 
     return (
         <GenericDialog show={props.show} cancel={props.cancel}>
-            <h1 className="font-sans font-bold tracking-tight text-[24px] mb-3">You sure you want to report?</h1>
+            <h1 className="font-sans font-bold tracking-tight text-[24px] mb-3 text-black">You sure you want to report?</h1>
             <p className="font-sans text-[1.45rem] text-neutral-500">You request will be sent to the owner of this site.</p>
             <div className="mt-10">
                 <button
