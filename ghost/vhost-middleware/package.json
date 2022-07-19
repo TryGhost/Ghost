@@ -19,7 +19,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "c8": "7.11.3",
+    "c8": "7.12.0",
     "mocha": "10.0.0",
     "supertest": "6.2.4"
   }
