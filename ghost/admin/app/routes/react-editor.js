@@ -4,11 +4,19 @@ import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
 export default AuthenticatedRoute.extend({
+    config: service(),
     feature: service(),
     notifications: service(),
+    router: service(),
     ui: service(),
 
     classNames: ['editor'],
+
+    beforeModel() {
+        if (!this.config.get('editor.url')) {
+            return this.router.transitionTo('posts');
+        }
+    },
 
     activate() {
         this._super(...arguments);
