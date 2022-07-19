@@ -90,6 +90,7 @@
     overflow: auto;
     background-color: var(--white);
     opacity: 1;
+    z-index: 0;
 }
 
 .settings-menu-container-wide .settings-menu-pane {
