@@ -18,7 +18,8 @@ module.exports = {
             'mailgunIsConfigured',
             'emailAnalytics',
             'hostSettings',
-            'tenor'
+            'tenor',
+            'editor'
         ];
 
         frame.response = {

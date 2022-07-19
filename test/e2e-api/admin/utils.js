@@ -28,7 +28,21 @@ const expectedProperties = {
 
     action: ['id', 'resource_type', 'actor_type', 'event', 'created_at', 'actor'],
 
-    config: ['version', 'environment', 'database', 'mail', 'labs', 'clientExtensions', 'enableDeveloperExperiments', 'useGravatar', 'stripeDirect', 'emailAnalytics', 'tenor', 'mailgunIsConfigured'],
+    config: [
+        'version',
+        'environment',
+        'database',
+        'mail',
+        'labs',
+        'clientExtensions',
+        'enableDeveloperExperiments',
+        'useGravatar',
+        'stripeDirect',
+        'emailAnalytics',
+        'tenor',
+        'mailgunIsConfigured',
+        'editor'
+    ],
 
     post: [
         'id',
