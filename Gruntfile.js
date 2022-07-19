@@ -1,6 +1,4 @@
 const config = require('./core/shared/config');
-const fs = require('fs-extra');
-const path = require('path');
 
 // Utility for outputting messages indicating that the admin is building, as it can take a while.
 let hasBuiltAdmin = false;
@@ -37,6 +35,9 @@ module.exports = function (grunt) {
     grunt.registerTask('validate', function () {
         grunt.log.error('@deprecated: Run `yarn test` instead');
     });
+
+    // Runs the asset generation tasks for production and duplicates default-prod.html to default.html
+    grunt.registerTask('release', 'Release task - creates a final built zip', ['clean:built', 'prod', 'copy:admin_html']);
 
     // --- Sub Commands
     // Used to make other commands work
@@ -271,6 +272,16 @@ module.exports = function (grunt) {
                 src: ['*'],
                 dest: '.git/hooks'
             }
+        },
+
+        copy: {
+            admin_html: {
+                files: [{
+                    cwd: '.',
+                    src: 'core/server/web/admin/views/default-prod.html',
+                    dest: 'core/server/web/admin/views/default.html'
+                }]
+            }
         }
     };
 
@@ -280,7 +291,6 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('@lodder/grunt-postcss');
     grunt.loadNpmTasks('grunt-bg-shell');
     grunt.loadNpmTasks('grunt-contrib-clean');
-    grunt.loadNpmTasks('grunt-contrib-compress');
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-symlink');
     grunt.loadNpmTasks('grunt-contrib-watch');
@@ -301,84 +311,4 @@ module.exports = function (grunt) {
 
     // Load the configuration
     grunt.initConfig(cfg);
-
-    // --- Release Tooling
-
-    // grunt release
-    // - create a Ghost release zip file.
-    // Uses the files specified by `.npmignore` to know what should and should not be included.
-    // Runs the asset generation tasks for production and duplicates default-prod.html to default.html
-    grunt.registerTask('release',
-        'Release task - creates a final built zip\n' +
-        ' - Do our standard build steps \n' +
-        ' - Copy files to release-folder/#/#{version} directory\n' +
-        ' - Clean out unnecessary files (.git*, etc)\n' +
-        ' - Zip files in release-folder to dist-folder/#{version} directory',
-        function () {
-            const escapeChar = process.platform.match(/^win/) ? '^' : '\\';
-            const cwd = process.cwd().replace(/( |\(|\))/g, escapeChar + '$1');
-            const buildDirectory = path.resolve(cwd, '.build');
-            const distDirectory = path.resolve(cwd, '.dist');
-
-            // Common paths used by release
-            grunt.config.set('paths', {
-                build: buildDirectory,
-                releaseBuild: path.join(buildDirectory, 'release'),
-                dist: distDirectory,
-                releaseDist: path.join(distDirectory, 'release')
-            });
-
-            // Load package.json so that we can create correctly versioned releases.
-            grunt.config.set('pkg', grunt.file.readJSON('package.json'));
-
-            // grunt-contrib-copy
-            grunt.config.set('copy.release', {
-                expand: true,
-                // A list of files and patterns to include when creating a release zip.
-                // This is read from the `.npmignore` file and all patterns are inverted as we want to define what to include
-                src: fs.readFileSync('.npmignore', 'utf8').split('\n').filter(Boolean).map(function (pattern) {
-                    return pattern[0] === '!' ? pattern.slice(1) : '!' + pattern;
-                }),
-                dest: '<%= paths.releaseBuild %>/'
-            });
-
-            grunt.config.set('copy.admin_html', {
-                files: [{
-                    cwd: '.',
-                    src: 'core/server/web/admin/views/default-prod.html',
-                    dest: 'core/server/web/admin/views/default.html'
-                }]
-            });
-
-            // grunt-contrib-compress
-            grunt.config.set('compress.release', {
-                options: {
-                    archive: '<%= paths.releaseDist %>/Ghost-<%= pkg.version %>.zip'
-                },
-                expand: true,
-                cwd: '<%= paths.releaseBuild %>/',
-                src: ['**']
-            });
-
-            // grunt-contrib-clean
-            grunt.config.set('clean.release', {
-                src: ['<%= paths.releaseBuild %>/**']
-            });
-
-            if (!grunt.option('skip-update')) {
-                grunt.task
-                    .run('update_submodules:pinned')
-                    .run('subgrunt:init');
-            }
-
-            grunt.task
-                .run('clean:built')
-                .run('clean:tmp')
-                .run('prod')
-                .run('clean:release')
-                .run('copy:admin_html')
-                .run('copy:release')
-                .run('compress:release');
-        }
-    );
 };

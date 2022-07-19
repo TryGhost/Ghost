@@ -48,7 +48,8 @@
     "lint": "yarn lint:server && yarn lint:shared && yarn lint:frontend && yarn lint:test",
     "fix:admin": "yarn cache clean && cd core/admin && rm -rf node_modules tmp dist && yarn && cd ../../",
     "fix:server": "yarn cache clean && rm -rf node_modules && yarn",
-    "fix": "yarn fix:admin && yarn fix:server"
+    "fix": "yarn fix:admin && yarn fix:server",
+    "prepack": "grunt release"
   },
   "engines": {
     "node": "^14.17.0 || ^16.13.0",
@@ -204,7 +205,6 @@
     "grunt": "1.5.3",
     "grunt-bg-shell": "2.3.3",
     "grunt-contrib-clean": "2.0.1",
-    "grunt-contrib-compress": "2.0.0",
     "grunt-contrib-copy": "1.0.0",
     "grunt-contrib-symlink": "1.0.0",
     "grunt-contrib-watch": "1.1.0",
