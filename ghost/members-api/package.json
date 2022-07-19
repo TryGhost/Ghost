@@ -19,10 +19,10 @@
   ],
   "devDependencies": {
     "@types/node-jose": "1.1.8",
-    "c8": "7.11.3",
+    "c8": "7.12.0",
     "jwk-to-pem": "2.0.5",
     "mocha": "10.0.0",
-    "nock": "13.2.8",
+    "nock": "13.2.9",
     "should": "13.2.3",
     "sinon": "14.0.0"
   },
