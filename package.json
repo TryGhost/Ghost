@@ -15,7 +15,8 @@
   "scripts": {
     "dev": "yarn workspace ghost run dev",
     "lint": "yarn workspaces run lint",
-    "start": "yarn workspace ghost run start"
+    "start": "yarn workspace ghost run start",
+    "test": "yarn workspaces run test"
   },
   "resolutions": {
     "@tryghost/logging": "2.2.3",
