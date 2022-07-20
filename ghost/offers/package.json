@@ -1,0 +1,31 @@
+{
+  "name": "@tryghost/members-offers",
+  "version": "0.11.6",
+  "repository": "https://github.com/TryGhost/Members/tree/main/packages/offers",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "test": "NODE_ENV=testing c8 --all --reporter text --reporter cobertura mocha './test/**/*.test.js'",
+    "lint": "eslint . --ext .js --cache",
+    "posttest": "yarn lint"
+  },
+  "files": [
+    "index.js",
+    "lib"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "c8": "7.12.0",
+    "mocha": "10.0.0",
+    "should": "13.2.3",
+    "sinon": "14.0.0"
+  },
+  "dependencies": {
+    "@nexes/mongo-utils": "^0.3.1",
+    "@tryghost/string": "^0.1.20"
+  }
+}
