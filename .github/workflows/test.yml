@@ -132,12 +132,7 @@ jobs:
           cache: yarn
 
       - run: yarn
-
-      - run: yarn test:unit
-        if: matrix.node == '16.13.0'
-
-      - run: yarn test:unit:base
-        if: matrix.node != '16.13.0'
+      - run: yarn test
 
       - uses: codecov/codecov-action@v2
 
