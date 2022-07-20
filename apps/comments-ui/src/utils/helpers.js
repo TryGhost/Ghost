@@ -109,6 +109,11 @@ export function getBundledCssLink({appVersion}) {
     if (process.env.NODE_ENV === 'production' && appVersion) {
         return `https://unpkg.com/@tryghost/comments-ui@~${appVersion}/umd/main.css`;
     } else {
+        if (document.currentScript) {
+            // Dynamically determine the current path
+            const url = new URL(document.currentScript.src);
+            return url.origin + '/main.css';
+        }
         return 'http://localhost:4000/main.css';
     }
 }
