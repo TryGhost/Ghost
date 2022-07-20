@@ -405,6 +405,7 @@ function renderEmailForSegment(email, memberSegment) {
 
     result.html = formatHtmlForEmail($.html());
     result.plaintext = htmlToPlaintext.email(result.html);
+    delete result.post;
 
     return result;
 }
