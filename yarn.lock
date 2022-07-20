@@ -1246,7 +1246,7 @@
   resolved "https://registry.yarnpkg.com/@nexes/nql-lang/-/nql-lang-0.0.1.tgz#a13c023873f9bc11b9e4e284449c6cfbeccc8011"
   integrity sha512-FFCgmHVvWTLsKnM2wLkO3uDkbQs0aTpJz0/iARRK4bbloVxlvyPjEYbM8z0gUxjlI5+TFgctwAMx7z0168/IzA==
 
-"@nexes/nql@^0.6.0":
+"@nexes/nql@0.6.0", "@nexes/nql@^0.6.0":
   version "0.6.0"
   resolved "https://registry.yarnpkg.com/@nexes/nql/-/nql-0.6.0.tgz#aec2d36d0ff5300b79e950a37f8c29b195f8152b"
   integrity sha512-iI5fQPVfBAX9iM6P3S35XQhp7z7OS+7Ju7GMJGPxouBSDOkppNKh3zc4QGnrt9oMwbUN4hkZ2dsMwLs9VLmDAQ==
@@ -1670,16 +1670,6 @@
   resolved "https://registry.yarnpkg.com/@tryghost/constants/-/constants-1.0.6.tgz#1dcb921ef7aad58d3b19c54d86ef8002827529e6"
   integrity sha512-zxfAizGJPqlet1ug5GsWu2AGvZUzISvuSQJ9FR42SbkkoDD9xoIAXduhU4O5K1EkNcsqq2EPhJgMWIUGDjEiGw==
 
-"@tryghost/custom-theme-settings-service@0.3.3":
-  version "0.3.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/custom-theme-settings-service/-/custom-theme-settings-service-0.3.3.tgz#0e7c2408e1523cca03e7b52e880fc0a463a93f0f"
-  integrity sha512-kr7z5/NKXo6QgkV/nfPL8hMWMHNnA2D3kw86jH6stxyHZh/tGB9mEuEPzjOchh5g3C63rf/BDBS3SkoSij+e9w==
-  dependencies:
-    "@tryghost/debug" "^0.1.5"
-    "@tryghost/errors" "^1.0.0"
-    "@tryghost/tpl" "^0.1.4"
-    lodash "^4.17.21"
-
 "@tryghost/database-info@0.3.7":
   version "0.3.7"
   resolved "https://registry.yarnpkg.com/@tryghost/database-info/-/database-info-0.3.7.tgz#370c4d43bdd349fb423ebd95c56ffda0dbc8da70"
@@ -1707,17 +1697,7 @@
     "@tryghost/debug" "^0.1.17"
     split2 "4.1.0"
 
-"@tryghost/email-analytics-provider-mailgun@1.0.9":
-  version "1.0.9"
-  resolved "https://registry.yarnpkg.com/@tryghost/email-analytics-provider-mailgun/-/email-analytics-provider-mailgun-1.0.9.tgz#4e850949d485bb4ccba22d2fd4e6defad6a98f7d"
-  integrity sha512-2RpDIg8K68pUSbnTfhSHkuPOMdRuaGrOCQKtzVVDy31LWwV70anlhoX34quMDkPkeUar47UoKrfQ99OQoKbVxQ==
-  dependencies:
-    "@tryghost/email-analytics-service" "^1.0.7"
-    "@tryghost/logging" "^2.0.0"
-    mailgun-js "^0.22.0"
-    moment "^2.29.1"
-
-"@tryghost/email-analytics-service@1.0.7", "@tryghost/email-analytics-service@^1.0.7":
+"@tryghost/email-analytics-service@^1.0.7":
   version "1.0.7"
   resolved "https://registry.yarnpkg.com/@tryghost/email-analytics-service/-/email-analytics-service-1.0.7.tgz#49bfe404aa74319353e04405821a4e301b4316cf"
   integrity sha512-cHVHiiwtWkTBBV05QSYSbcoKI+BB+N4qDSRWuhXImdhXJZhgf51g+ufj/njDYMQ5ELLfX85hYcET2BbBKur6kw==
@@ -3305,6 +3285,24 @@ c8@7.11.3:
   version "7.11.3"
   resolved "https://registry.yarnpkg.com/c8/-/c8-7.11.3.tgz#88c8459c1952ed4f701b619493c9ae732b057163"
   integrity sha512-6YBmsaNmqRm9OS3ZbIiL2EZgi1+Xc4O24jL3vMYGE6idixYuGdy76rIfIdltSKDj9DpLNrcXSonUTR1miBD0wA==
+  dependencies:
+    "@bcoe/v8-coverage" "^0.2.3"
+    "@istanbuljs/schema" "^0.1.3"
+    find-up "^5.0.0"
+    foreground-child "^2.0.0"
+    istanbul-lib-coverage "^3.2.0"
+    istanbul-lib-report "^3.0.0"
+    istanbul-reports "^3.1.4"
+    rimraf "^3.0.2"
+    test-exclude "^6.0.0"
+    v8-to-istanbul "^9.0.0"
+    yargs "^16.2.0"
+    yargs-parser "^20.2.9"
+
+c8@7.12.0:
+  version "7.12.0"
+  resolved "https://registry.yarnpkg.com/c8/-/c8-7.12.0.tgz#402db1c1af4af5249153535d1c84ad70c5c96b14"
+  integrity sha512-CtgQrHOkyxr5koX1wEUmN/5cfDa2ckbHRA4Gy5LAL0zaCFtVWJS5++n+w4/sr2GWGerBxgTjpKeDclk/Qk6W/A==
   dependencies:
     "@bcoe/v8-coverage" "^0.2.3"
     "@istanbuljs/schema" "^0.1.3"
@@ -9062,6 +9060,16 @@ nock@13.2.8:
   version "13.2.8"
   resolved "https://registry.yarnpkg.com/nock/-/nock-13.2.8.tgz#e2043ccaa8e285508274575e090a7fe1e46b90f1"
   integrity sha512-JT42FrXfQRpfyL4cnbBEJdf4nmBpVP0yoCcSBr+xkT8Q1y3pgtaCKHGAAOIFcEJ3O3t0QbVAmid0S0f2bj3Wpg==
+  dependencies:
+    debug "^4.1.0"
+    json-stringify-safe "^5.0.1"
+    lodash "^4.17.21"
+    propagate "^2.0.0"
+
+nock@13.2.9:
+  version "13.2.9"
+  resolved "https://registry.yarnpkg.com/nock/-/nock-13.2.9.tgz#4faf6c28175d36044da4cfa68e33e5a15086ad4c"
+  integrity sha512-1+XfJNYF1cjGB+TKMWi29eZ0b82QOvQs2YoLNzbpWGqFMtRQHTa57osqdGj4FrFPgkO4D4AZinzUJR9VvW3QUA==
   dependencies:
     debug "^4.1.0"
     json-stringify-safe "^5.0.1"
