@@ -2,7 +2,7 @@
 // const testUtils = require('./utils');
 require('./utils');
 
-const Cache = require('../lib/cache');
+const {Cache} = require('../');
 
 describe('Cache', function () {
     describe('populate()', function () {
