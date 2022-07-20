@@ -5,7 +5,7 @@ require('./utils');
 const _ = require('lodash');
 const sinon = require('sinon');
 const {ValidationError} = require('@tryghost/errors');
-const nql = require('@nexes/nql-lang');
+const nql = require('@tryghost/nql-lang');
 
 const {Cache, Service} = require('../');
 

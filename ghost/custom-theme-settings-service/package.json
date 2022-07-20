@@ -17,7 +17,7 @@
     "lib"
   ],
   "devDependencies": {
-    "@nexes/nql": "0.6.0",
+    "@tryghost/nql-lang": "0.3.2",
     "c8": "7.12.0",
     "mocha": "10.0.0",
     "should": "13.2.3",
