@@ -1,0 +1,33 @@
+{
+  "name": "@tryghost/email-analytics-provider-mailgun",
+  "version": "1.0.9",
+  "repository": "https://github.com/TryGhost/Publishing/tree/main/packages/email-analytics-provider-mailgun",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "test": "NODE_ENV=testing c8 --all --reporter text --reporter cobertura --check-coverage mocha './test/**/*.test.js'",
+    "lint": "eslint . --ext .js --cache",
+    "posttest": "yarn lint"
+  },
+  "files": [
+    "index.js",
+    "lib"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "mocha": "10.0.0",
+    "nock": "13.2.9",
+    "should": "13.2.3",
+    "sinon": "14.0.0"
+  },
+  "dependencies": {
+    "@tryghost/email-analytics-service": "^1.0.7",
+    "@tryghost/logging": "^2.0.0",
+    "mailgun-js": "^0.22.0",
+    "moment": "^2.29.1"
+  }
+}
