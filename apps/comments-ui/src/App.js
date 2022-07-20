@@ -8,6 +8,7 @@ import {hasMode} from './utils/check-mode';
 import setupGhostApi from './utils/api';
 import CommentsBox from './components/CommentsBox';
 import {useEffect} from 'react';
+import Loading from './components/Loading';
 
 function AuthFrame({adminUrl, onLoad, initStatus}) {
     useEffect(function () {
@@ -26,12 +27,9 @@ function AuthFrame({adminUrl, onLoad, initStatus}) {
 }
 
 function CommentsBoxContainer({done, appVersion}) {
-    if (!done) {
-        return null;
-    }
     return (
         <ShadowRoot appVersion={appVersion}>
-            <CommentsBox />
+            {done ? <CommentsBox /> : <Loading />}
         </ShadowRoot>
     );
 }

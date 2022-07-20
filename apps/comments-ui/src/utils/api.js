@@ -203,7 +203,8 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
         let settings = {};
 
         try {
-            settings = await api.site.settings();
+            // for now we don't need to fetch all the settings (the ones we need are passed via the script tag data attributes)
+            //settings = await api.site.settings();
             site = {
                 ...settings
             };

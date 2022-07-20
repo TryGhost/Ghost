@@ -1,7 +1,6 @@
 import React, {useContext} from 'react';
 import AppContext from '../AppContext';
 import NotSignedInBox from './NotSignedInBox';
-import Loading from './Loading';
 import Form from './Form';
 import Comment from './Comment';
 import Pagination from './Pagination';
@@ -57,16 +56,12 @@ const CommentsBox = (props) => {
     return (
         <section className={'ghost-display ' + containerClass} style={style}>
             <Pagination />
-            {comments ?
-                <>
-                    <div className={!pagination ? 'mt-4' : ''}>
-                        {commentsElements}
-                    </div>
-                    <div>
-                        { member ? (isPaidMember || !paidOnly ? <Form commentsCount={commentsCount} avatarSaturation={props.avatarSaturation} /> : <NotPaidBox />) : <NotSignedInBox /> }
-                    </div>
-                </>
-                : <Loading />}
+            <div className={!pagination ? 'mt-4' : ''}>
+                {commentsElements}
+            </div>
+            <div>
+                { member ? (isPaidMember || !paidOnly ? <Form commentsCount={commentsCount} avatarSaturation={props.avatarSaturation} /> : <NotPaidBox />) : <NotSignedInBox /> }
+            </div>
         </section>
     );
 };

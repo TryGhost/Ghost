@@ -109,6 +109,6 @@ export function getBundledCssLink({appVersion}) {
     if (process.env.NODE_ENV === 'production' && appVersion) {
         return `https://unpkg.com/@tryghost/comments-ui@~${appVersion}/umd/main.css`;
     } else {
-        return 'https://comments.localhost/main.css';
+        return 'http://localhost:4000/main.css';
     }
 }
