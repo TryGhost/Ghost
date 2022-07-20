@@ -3,8 +3,8 @@ on:
   pull_request_target:
     types: [opened]
     paths:
-      - 'core/server/data/schema/**'
-      - 'core/server/data/migrations/versions/**'
+      - 'ghost/core/core/server/data/schema/**'
+      - 'ghost/core/core/server/data/migrations/versions/**'
 jobs:
   createComment:
     runs-on: ubuntu-latest
