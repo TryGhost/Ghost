@@ -24,12 +24,19 @@ const commentMatcherWithReply = {
     id: anyObjectId,
     created_at: anyISODateTime,
     member: {
-        id: anyObjectId
+        id: anyObjectId,
+        uuid: anyUuid
     },
     likes_count: anyNumber,
     liked: anyBoolean,
     replies: [commentMatcher]
 };
+
+async function sleep(ms) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
+}
 
 describe('Comments API', function () {
     before(async function () {
@@ -38,6 +45,10 @@ describe('Comments API', function () {
         await fixtureManager.init('posts', 'members', 'comments');
 
         postId = fixtureManager.get('posts', 0).id;
+    });
+
+    beforeEach(function () {
+        mockManager.mockMail();
     });
 
     afterEach(function () {
@@ -70,6 +81,16 @@ describe('Comments API', function () {
                 });
             // Save for other tests
             commentId = body.comments[0].id;
+
+            // Wait for the emails (because this happens async)
+            await sleep(100);
+            
+            // Check if author got an email
+            mockManager.assert.sentEmailCount(1);
+            mockManager.assert.sentEmail({
+                subject: '💬 You have a new comment on one of your posts',
+                to: fixtureManager.get('users', 0).email
+            });
         });
 
         it('Can browse all comments of a post', async function () {
@@ -84,6 +105,65 @@ describe('Comments API', function () {
                 });
         });
 
+        it('Can reply to your own comment', async function () {
+            const {body} = await membersAgent
+                .post(`/api/comments/`)
+                .body({comments: [{
+                    post_id: postId,
+                    parent_id: commentId,
+                    html: 'This is a reply'
+                }]})
+                .expectStatus(201)
+                .matchHeaderSnapshot({
+                    etag: anyEtag,
+                    location: anyLocationFor('comments')
+                })
+                .matchBodySnapshot({
+                    comments: [commentMatcherNoMember]
+                });
+
+            // Wait for the emails (because this happens async)
+            await sleep(100);
+
+            // Check only the author got an email (because we are the author of this parent comment)
+            mockManager.assert.sentEmailCount(1);
+            mockManager.assert.sentEmail({
+                subject: '💬 You have a new comment on one of your posts',
+                to: fixtureManager.get('users', 0).email
+            });
+        });
+
+        it('Can reply to a comment', async function () {
+            const {body} = await membersAgent
+                .post(`/api/comments/`)
+                .body({comments: [{
+                    post_id: postId,
+                    parent_id: fixtureManager.get('comments', 0).id,
+                    html: 'This is a reply'
+                }]})
+                .expectStatus(201)
+                .matchHeaderSnapshot({
+                    etag: anyEtag,
+                    location: anyLocationFor('comments')
+                })
+                .matchBodySnapshot({
+                    comments: [commentMatcherNoMember]
+                });
+
+            // Wait for the emails (because this happens async)
+            await sleep(100);
+            mockManager.assert.sentEmailCount(2);
+            mockManager.assert.sentEmail({
+                subject: '💬 You have a new comment on one of your posts',
+                to: fixtureManager.get('users', 0).email
+            });
+
+            mockManager.assert.sentEmail({
+                subject: '💬 You have a new reply on one of your comments',
+                to: fixtureManager.get('members', 0).email
+            });
+        });
+
         it('Can like a comment', async function () {
             // Check not liked
             await membersAgent
@@ -93,7 +173,7 @@ describe('Comments API', function () {
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
-                    comments: new Array(1).fill(commentMatcher)
+                    comments: new Array(1).fill(commentMatcherWithReply)
                 })
                 .expect(({body}) => {
                     body.comments[0].liked.should.eql(false);
@@ -116,7 +196,7 @@ describe('Comments API', function () {
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
-                    comments: new Array(1).fill(commentMatcher)
+                    comments: new Array(1).fill(commentMatcherWithReply)
                 })
                 .expect(({body}) => {
                     body.comments[0].liked.should.eql(true);
@@ -156,7 +236,7 @@ describe('Comments API', function () {
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
-                    comments: new Array(1).fill(commentMatcher)
+                    comments: new Array(1).fill(commentMatcherWithReply)
                 })
                 .expect(({body}) => {
                     body.comments[0].liked.should.eql(false);
