@@ -1,12 +1,14 @@
-import React, {useContext, useEffect} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {Transition} from '@headlessui/react';
 import AppContext from '../AppContext';
 import Avatar from './Avatar';
 import {useEditor, EditorContent} from '@tiptap/react';
 import {getEditorConfig} from '../utils/editor';
+import AddNameDialog from './modals/AddNameDialog';
 
 const Form = (props) => {
     const {member, postId, dispatchAction, onAction, avatarSaturation} = useContext(AppContext);
+    const [isAddNameShowing, setAddNameShowing] = useState(false);
 
     let config;
     if (props.isReply) {
@@ -116,12 +118,23 @@ const Form = (props) => {
         return false;
     };
 
-    const focusEditor = (event) => {
-        editor.commands.focus();
-    };
-
     const {comment, commentsCount} = props;
     const memberName = (props.isEdit ? comment.member.name : member.name); 
+
+    const focusEditor = (event) => {
+        event.stopPropagation();
+
+        if (memberName) {
+            editor.commands.focus();
+        } else {
+            setAddNameShowing(true);
+        }
+        return false;
+    };
+
+    const closeAddName = () => {
+        setAddNameShowing(false);
+    };
 
     let submitText;
     if (props.isReply) {
@@ -133,72 +146,75 @@ const Form = (props) => {
     }
 
     return (
-        <form onClick={focusEditor} className={`
-            transition duration-200
-            -mt-[12px] -mr-3 mb-10 -ml-[12px] pt-3 pb-2 px-3
-            bg-white dark:bg-[rgba(255,255,255,0.08)]
-            rounded-md shadow-lg dark:shadow-transparent hover:shadow-xl
-            ${!commentsCount && !props.isEdit && !props.isReply && '-mt-0 -mr-0 -ml-0'}
-            ${focused ? 'cursor-default' : 'cursor-pointer'}`
-        }>
-            <div className="w-full relative">
-                <div className="pr-3 font-sans leading-normal dark:text-neutral-300">
-                    <div className="relative w-full">
-                        <EditorContent
-                            className={`
-                                transition-all duration-150
-                                w-full pl-[56px] px-0 py-[10px] pr-4
-                                bg-transparent rounded-md border-none border border-slate-50 dark:border-none
-                                font-sans text-[16.5px] leading-normal dark:text-neutral-300 
-                                focus:outline-0
-                                placeholder:text-neutral-300 dark:placeholder:text-[rgba(255,255,255,0.3)]  
-                                resize-none
-                                ${focused ? `cursor-textmin-h-[144px] pt-[44px] pb-[68px]` : 'cursor-pointer overflow-hidden min-h-[48px] hover:border-slate-300'}
-                            `}
-                            editor={editor} 
-                        />
-                        <div className="
-                            absolute -right-3 bottom-[2px]
-                            flex space-x-4
-                            transition-[opacity] duration-150 
-                        ">
-                            {props.isEdit &&
-                                <button type="button" onClick={props.toggle} className="font-sans text-sm font-medium ml-2.5 text-neutral-500 dark:text-neutral-400">Cancel</button>}
-                            <button
+        <>
+            <form onClick={focusEditor} className={`
+                transition duration-200
+                -mt-[12px] -mr-3 mb-10 -ml-[12px] pt-3 pb-2 px-3
+                bg-white dark:bg-[rgba(255,255,255,0.08)]
+                rounded-md shadow-lg dark:shadow-transparent hover:shadow-xl
+                ${!commentsCount && !props.isEdit && !props.isReply && '-mt-0 -mr-0 -ml-0'}
+                ${focused ? 'cursor-default' : 'cursor-pointer'}`
+            }>
+                <div className="w-full relative">
+                    <div className="pr-3 font-sans leading-normal dark:text-neutral-300">
+                        <div className="relative w-full">
+                            <EditorContent
                                 className={`
-                                    transition-[opacity] duration-150
-                                    bg-neutral-900 dark:bg-[rgba(255,255,255,0.9)]
-                                    rounded-[4px] border
-                                    py-3 px-4
-                                    text-sm text-center font-sans font-semibold
-                                    text-white dark:text-neutral-800
+                                    transition-all duration-150
+                                    w-full pl-[56px] px-0 py-[10px] pr-4
+                                    bg-transparent rounded-md border-none border border-slate-50 dark:border-none
+                                    font-sans text-[16.5px] leading-normal dark:text-neutral-300 
+                                    focus:outline-0
+                                    placeholder:text-neutral-300 dark:placeholder:text-[rgba(255,255,255,0.3)]  
+                                    resize-none
+                                    ${focused ? `cursor-textmin-h-[144px] pt-[44px] pb-[68px]` : 'cursor-pointer overflow-hidden min-h-[48px] hover:border-slate-300'}
                                 `}
-                                type="button"
-                                onClick={submitForm}
-                            >
-                                {submitText}
-                            </button>
+                                editor={editor} 
+                            />
+                            <div className="
+                                absolute -right-3 bottom-[2px]
+                                flex space-x-4
+                                transition-[opacity] duration-150 
+                            ">
+                                {props.isEdit &&
+                                    <button type="button" onClick={props.toggle} className="font-sans text-sm font-medium ml-2.5 text-neutral-500 dark:text-neutral-400">Cancel</button>}
+                                <button
+                                    className={`
+                                        transition-[opacity] duration-150
+                                        bg-neutral-900 dark:bg-[rgba(255,255,255,0.9)]
+                                        rounded-[4px] border
+                                        py-3 px-4
+                                        text-sm text-center font-sans font-semibold
+                                        text-white dark:text-neutral-800
+                                    `}
+                                    type="button"
+                                    onClick={submitForm}
+                                >
+                                    {submitText}
+                                </button>
+                            </div>
                         </div>
                     </div>
+                    <div className="flex mb-1 justify-start items-center absolute top-0 left-0">
+                        <Avatar comment={comment} saturation={avatarSaturation} />
+                        <Transition
+                            show={focused}
+                            enter="transition duration-500 ease-in-out"
+                            enterFrom="opacity-0 -translate-x-2"
+                            enterTo="opacity-100 translate-x-0"
+                            leave="transition-none duration-0"
+                            leaveFrom="opacity-100"
+                            leaveTo="opacity-0"
+                        >
+                            <div className="ml-3">
+                                <h4 className="text-lg font-sans font-semibold mb-1 tracking-tight dark:text-neutral-300">{memberName ? memberName : 'Anonymous'}</h4>
+                            </div>
+                        </Transition>
+                    </div>
                 </div>
-                <div className="flex mb-1 justify-start items-center absolute top-0 left-0">
-                    <Avatar comment={comment} saturation={avatarSaturation} />
-                    <Transition
-                        show={focused}
-                        enter="transition duration-500 ease-in-out"
-                        enterFrom="opacity-0 -translate-x-2"
-                        enterTo="opacity-100 translate-x-0"
-                        leave="transition-none duration-0"
-                        leaveFrom="opacity-100"
-                        leaveTo="opacity-0"
-                    >
-                        <div className="ml-3">
-                            <h4 className="text-lg font-sans font-semibold mb-1 tracking-tight dark:text-neutral-300">{memberName ? memberName : 'Anonymous'}</h4>
-                        </div>
-                    </Transition>
-                </div>
-            </div>
-        </form>
+            </form>
+            <AddNameDialog show={isAddNameShowing} submit={closeAddName} cancel={closeAddName} />
+        </>
     );
 };
   
