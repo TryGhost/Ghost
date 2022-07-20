@@ -6,6 +6,29 @@ import Comment from './Comment';
 import Pagination from './Pagination';
 import NotPaidBox from './NotPaidBox';
 import Empty from './Empty';
+import Loading from './Loading';
+
+const CommentsBoxContent = (props) => {
+    const {pagination, member, comments, commentsEnabled} = useContext(AppContext);
+    const commentsElements = comments.slice().reverse().map(comment => <Comment comment={comment} key={comment.id} />);
+
+    const commentsCount = comments.length;
+
+    const paidOnly = commentsEnabled === 'paid';
+    const isPaidMember = member && !!member.paid;
+
+    return (
+        <>
+            <Pagination />
+            <div className={!pagination ? 'mt-4' : ''}>
+                {commentsCount === 0 ? <Empty /> : commentsElements}
+            </div>
+            <div>
+                { member ? (isPaidMember || !paidOnly ? <Form commentsCount={commentsCount} /> : <NotPaidBox isFirst={commentsCount === 0} />) : <NotSignedInBox isFirst={commentsCount === 0} /> }
+            </div>
+        </>
+    );
+};
 
 const CommentsBox = (props) => {
     const luminance = (r, g, b) => {
@@ -23,11 +46,12 @@ const CommentsBox = (props) => {
         var darkest = Math.min(lum1, lum2);
         return (brightest + 0.05) / (darkest + 0.05);
     };
+    const {accentColor, colorScheme} = useContext(AppContext);
 
     const darkMode = () => {
-        if (props.colorScheme === 'light') {
+        if (colorScheme === 'light') {
             return false;
-        } else if (props.colorScheme === 'dark') {
+        } else if (colorScheme === 'dark') {
             return true;
         } else {
             const containerColor = getComputedStyle(document.querySelector('#ghost-comments-root').parentNode).getPropertyValue('color');
@@ -41,28 +65,15 @@ const CommentsBox = (props) => {
         }
     };
 
-    const {accentColor, pagination, member, comments, commentsEnabled} = useContext(AppContext);
-
-    const commentsElements = comments.slice().reverse().map(comment => <Comment comment={comment} key={comment.id} avatarSaturation={props.avatarSaturation} />);
-
     const containerClass = darkMode() ? 'dark' : '';
-    const commentsCount = comments.length;
     const style = {
         '--gh-accent-color': accentColor ?? 'blue'
     };
-
-    const paidOnly = commentsEnabled === 'paid';
-    const isPaidMember = member && !!member.paid;
-
     return (
         <section className={'ghost-display ' + containerClass} style={style}>
-            <Pagination />
-            <div className={!pagination ? 'mt-4' : ''}>
-                {commentsCount === 0 ? <Empty /> : commentsElements}
-            </div>
-            <div>
-                { member ? (isPaidMember || !paidOnly ? <Form commentsCount={commentsCount} avatarSaturation={props.avatarSaturation} /> : <NotPaidBox isFirst={commentsCount === 0} />) : <NotSignedInBox isFirst={commentsCount === 0} /> }
-            </div>
+            {props.done ? <>
+                <CommentsBoxContent />
+            </> : <Loading />}
         </section>
     );
 };

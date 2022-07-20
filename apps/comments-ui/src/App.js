@@ -7,7 +7,6 @@ import AppContext from './AppContext';
 import {hasMode} from './utils/check-mode';
 import setupGhostApi from './utils/api';
 import CommentsBox from './components/CommentsBox';
-import Loading from './components/Loading';
 
 function AuthFrame({adminUrl, onLoad}) {
     const iframeStyle = {
@@ -22,7 +21,7 @@ function AuthFrame({adminUrl, onLoad}) {
 function CommentsBoxContainer({done, appVersion}) {
     return (
         <ShadowRoot appVersion={appVersion}>
-            {done ? <CommentsBox /> : <Loading />}
+            <CommentsBox done={done} />
         </ShadowRoot>
     );
 }

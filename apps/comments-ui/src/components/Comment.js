@@ -41,7 +41,7 @@ const Comment = (props) => {
 
     if (isInEditMode) {
         return (
-            <Form comment={comment} toggle={toggleEditMode} parent={props.parent} isEdit={true} avatarSaturation={props.avatarSaturation} />
+            <Form comment={comment} toggle={toggleEditMode} parent={props.parent} isEdit={true} />
         );
     } else {
         return (
