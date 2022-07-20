@@ -17,6 +17,9 @@ concurrency:
 jobs:
   lint:
     runs-on: ubuntu-18.04
+    defaults:
+      run:
+        working-directory: ghost/core
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     name: Lint
     steps:
@@ -38,6 +41,9 @@ jobs:
 
   migrations:
     runs-on: ubuntu-18.04
+    defaults:
+      run:
+        working-directory: ghost/core
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     strategy:
       matrix:
@@ -108,6 +114,9 @@ jobs:
 
   unit-tests:
     runs-on: ubuntu-18.04
+    defaults:
+      run:
+        working-directory: ghost/core
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     strategy:
       matrix:
@@ -141,6 +150,9 @@ jobs:
 
   database-tests:
     runs-on: ubuntu-18.04
+    defaults:
+      run:
+        working-directory: ghost/core
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     strategy:
       matrix:
@@ -250,6 +262,9 @@ jobs:
     name: Ghost-CLI
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     runs-on: ubuntu-18.04
+    defaults:
+      run:
+        working-directory: ghost/core
     steps:
       - uses: actions/checkout@v2
         with:
@@ -269,19 +284,19 @@ jobs:
       - name: Clean Install
         run: |
           DIR=$(mktemp -d)
-          ghost install local -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
+          ghost install local -d $DIR --zip $(pwd)/ghost.zip
 
       - name: Latest Release
         run: |
           DIR=$(mktemp -d)
           ghost install local -d $DIR
-          ghost update -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
+          ghost update -d $DIR --zip $(pwd)/ghost.zip
 
       - name: Update from latest v3
         run: |
           DIR=$(mktemp -d)
           ghost install v3 --local -d $DIR
-          ghost update -f -d $DIR --zip $GITHUB_WORKSPACE/ghost.zip
+          ghost update -f -d $DIR --zip $(pwd)/ghost.zip
 
       - name: Print debug logs
         if: failure()
