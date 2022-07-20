@@ -1,5 +1,5 @@
 const {SafeString} = require('../services/handlebars');
-const {config, urlUtils, getFrontendKey, labs} = require('../services/proxy');
+const {config, urlUtils, getFrontendKey, labs, settingsCache} = require('../services/proxy');
 
 async function comments(options) {
     // todo: For now check on the comment id to exclude normal pages (we probably have a better way to do this)
@@ -7,6 +7,18 @@ async function comments(options) {
     const commentId = this.comment_id;
         
     if (!commentId) {
+        return;
+    }
+
+    /**
+     * We need to check if comments enabled, because the theme might not be using the other available helpers to check
+     * if comments is enabled + the member has access
+     * @type {'all'|'paid'|'off'}
+     */
+    const commentsEnabled = settingsCache.get('comments_enabled');
+    const hasAccess = !!this.access;
+
+    if (commentsEnabled === 'off' || !hasAccess) {
         return;
     }
     
@@ -37,7 +49,8 @@ async function comments(options) {
         'color-scheme': colorScheme,
         'avatar-saturation': avatarSaturation,
         'accent-color': accentColor,
-        'app-version': config.get('comments:version')
+        'app-version': config.get('comments:version'),
+        'comments-enabled': commentsEnabled
     };
 
     let dataAttributes = '';
