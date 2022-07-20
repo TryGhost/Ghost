@@ -12,9 +12,11 @@ const NotSignedInBox = (props) => {
         color: accentColor
     };
 
+    const titleText = (props.isFirst ? 'Want to be the first to comment?' : 'Want to join the discussion?');
+
     return (
         <section className="text-center mb-1 bg-neutral-900 rounded-lg pt-12 pb-10 px-8" style={boxStyle}>
-            <h1 className="text-center text-white text-[28px] font-sans font-semibold mb-6 tracking-tight">Want to join the discussion?</h1>
+            <h1 className="text-center text-white text-[28px] font-sans font-semibold mb-6 tracking-tight">{titleText}</h1>
             <a className="bg-white font-sans py-3 px-4 mb-6 rounded inline-block font-medium" style={buttonStyle} href="#/portal/signup">
                 Subscribe now
             </a>

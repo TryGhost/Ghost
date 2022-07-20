@@ -5,6 +5,7 @@ import Form from './Form';
 import Comment from './Comment';
 import Pagination from './Pagination';
 import NotPaidBox from './NotPaidBox';
+import Empty from './Empty';
 
 const CommentsBox = (props) => {
     const luminance = (r, g, b) => {
@@ -57,10 +58,10 @@ const CommentsBox = (props) => {
         <section className={'ghost-display ' + containerClass} style={style}>
             <Pagination />
             <div className={!pagination ? 'mt-4' : ''}>
-                {commentsElements}
+                {commentsCount === 0 ? <Empty /> : commentsElements}
             </div>
             <div>
-                { member ? (isPaidMember || !paidOnly ? <Form commentsCount={commentsCount} avatarSaturation={props.avatarSaturation} /> : <NotPaidBox />) : <NotSignedInBox /> }
+                { member ? (isPaidMember || !paidOnly ? <Form commentsCount={commentsCount} avatarSaturation={props.avatarSaturation} /> : <NotPaidBox isFirst={commentsCount === 0} />) : <NotSignedInBox isFirst={commentsCount === 0} /> }
             </div>
         </section>
     );
