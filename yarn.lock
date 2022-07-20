@@ -8504,10 +8504,10 @@ metascraper-url@5.29.15:
   dependencies:
     "@metascraper/helpers" "^5.29.15"
 
-metascraper@5.29.15:
-  version "5.29.15"
-  resolved "https://registry.yarnpkg.com/metascraper/-/metascraper-5.29.15.tgz#df2c0600a4e34db39ba19f0e10772c2e86dab3f9"
-  integrity sha512-CyusguXZ+J5q1Sb3zj4bHsWBpJDRMWsGvtooGuM0UxKba6xRXYIZUq0YLrodOU9C4m8YnhbBMvefxgBccomk0Q==
+metascraper@5.29.18:
+  version "5.29.18"
+  resolved "https://registry.yarnpkg.com/metascraper/-/metascraper-5.29.18.tgz#45b8a3fd89e72ba95bbde1d7915a82473193121f"
+  integrity sha512-aVwKhYrLfwJozzJMy/Fo03TwLpQIDl+6vBNPFg/MSmmzOn7XKnX8wkQe+SbWkPKBCMstrayY6xsvPVFE5qc33g==
   dependencies:
     "@metascraper/helpers" "^5.29.15"
     cheerio "~1.0.0-rc.12"
