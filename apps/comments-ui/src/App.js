@@ -7,22 +7,15 @@ import AppContext from './AppContext';
 import {hasMode} from './utils/check-mode';
 import setupGhostApi from './utils/api';
 import CommentsBox from './components/CommentsBox';
-import {useEffect} from 'react';
 import Loading from './components/Loading';
 
-function AuthFrame({adminUrl, onLoad, initStatus}) {
-    useEffect(function () {
-        if (initStatus !== 'success') {
-            onLoad();
-        }
-    }, [onLoad, initStatus]);
-
+function AuthFrame({adminUrl, onLoad}) {
     const iframeStyle = {
         display: 'none'
     };
 
     return (
-        <iframe data-frame="admin-auth" src={adminUrl + 'auth-frame/'} style={iframeStyle} title="auth-frame"></iframe>
+        <iframe data-frame="admin-auth" src={adminUrl + 'auth-frame/'} style={iframeStyle} title="auth-frame" onLoad={onLoad}></iframe>
     );
 }
 
