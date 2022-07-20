@@ -16,9 +16,6 @@
     "index.js",
     "lib"
   ],
-  "publishConfig": {
-    "access": "public"
-  },
   "devDependencies": {
     "@nexes/nql": "0.6.0",
     "c8": "7.12.0",
