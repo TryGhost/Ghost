@@ -1,0 +1,64 @@
+{
+  "items": [
+    {
+      "event": "delivered",
+      "recipient": "recipient1@gmail.com",
+      "user-variables": {
+        "email-id": "5fbe5d9607bdfa3765dc3819"
+      },
+      "message": {
+        "headers": {
+          "message-id": "0201125133533.1.C55897076DBD42F2@domain.com"
+        }
+      },
+      "timestamp": 1606399301.266528
+    },
+    {
+      "event": "failed",
+      "severity": "temporary",
+      "recipient": "recipient2@gmail.com",
+      "user-variables": {
+        "email-id": "5fbe5d9607bdfa3765dc3819"
+      },
+      "message": {
+        "headers": {
+          "message-id": "0201125133533.1.C55897076DBD42F2@domain.com"
+        }
+      },
+      "timestamp": 1606399301.266528
+    },
+    {
+      "event": "failed",
+      "severity": "permanent",
+      "recipient": "recipient3@gmail.com",
+      "user-variables": {
+        "email-id": "5fbe5d9607bdfa3765dc3819"
+      },
+      "message": {
+        "headers": {
+          "message-id": "0201125133533.1.C55897076DBD42F2@domain.com"
+        }
+      },
+      "timestamp": 1606399301.266528
+    },
+    {
+      "event": "unsubscribed",
+      "recipient": "recipient4@gmail.com",
+      "user-variables": {
+        "email-id": "5fbe5d9607bdfa3765dc3819"
+      },
+      "message": {
+        "headers": {
+          "message-id": "0201125133533.1.C55897076DBD42F2@domain.com"
+        }
+      },
+      "timestamp": 1606399301.266528
+    }
+  ],
+  "paging": {
+      "previous": "https://api.mailgun.net/v3/domain.com/events/latest-1-previous",
+      "first": "https://api.mailgun.net/v3/domain.com/events/latest-1-first",
+      "last": "https://api.mailgun.net/v3/domain.com/events/latest-1-last",
+      "next": "https://api.mailgun.net/v3/domain.com/events/latest-1-next"
+  }
+}
