@@ -1293,13 +1293,13 @@
   resolved "https://registry.yarnpkg.com/@panva/asn1.js/-/asn1.js-1.0.0.tgz#dd55ae7b8129e02049f009408b97c61ccf9032f6"
   integrity sha512-UdkG3mLEqXgnlKsWanWcgb6dOjUzJ+XC5f+aWw30qrtjxeNUSfKX1cd5FBzOaXQumoe9nIqeZUvrRJS03HCCtw==
 
-"@playwright/test@1.23.3":
-  version "1.23.3"
-  resolved "https://registry.yarnpkg.com/@playwright/test/-/test-1.23.3.tgz#7f9dd982f2b1a5edbe9e58fedf7bb2691d6309b4"
-  integrity sha512-kR4vo2UGHC84DGqE6EwvAeaehj3xCAK6LoC1P1eu6ZGdC79rlqRKf8cFDx6q6c9T8MQSL1O9eOlup0BpwqNF0w==
+"@playwright/test@1.23.4":
+  version "1.23.4"
+  resolved "https://registry.yarnpkg.com/@playwright/test/-/test-1.23.4.tgz#d742ed34fc3eb09e29c2e652c2a646ba1e3c6b08"
+  integrity sha512-iIsoMJDS/lyuhw82FtcV/B3PXikgVD3hNe5hyvOpRM0uRr1OIpN3LgPeRbBjhzBWmyf6RgRg5fqK5sVcpA03yA==
   dependencies:
     "@types/node" "*"
-    playwright-core "1.23.3"
+    playwright-core "1.23.4"
 
 "@segment/loosely-validate-event@^2.0.0":
   version "2.0.0"
@@ -9771,10 +9771,10 @@ pirates@^4.0.4:
   resolved "https://registry.yarnpkg.com/pirates/-/pirates-4.0.5.tgz#feec352ea5c3268fb23a37c702ab1699f35a5f3b"
   integrity sha512-8V9+HQPupnaXMA23c5hvl69zXvTwTzyAYasnkb0Tts4XvO4CliqONMOnvlq26rkhLC3nWDFBJf73LU1e1VZLaQ==
 
-playwright-core@1.23.3:
-  version "1.23.3"
-  resolved "https://registry.yarnpkg.com/playwright-core/-/playwright-core-1.23.3.tgz#f27ad80fbf0ba9b53d142d94f052b010eaa0527b"
-  integrity sha512-x35yzsXDyo0BIXYimLnUFNyb42c//NadUNH6IPGOteZm96oTGA1kn4Hq6qJTI1/f9wEc1F9O1DsznXIgXMil7A==
+playwright-core@1.23.4:
+  version "1.23.4"
+  resolved "https://registry.yarnpkg.com/playwright-core/-/playwright-core-1.23.4.tgz#e8a45e549faf6bfad24a0e9998e451979514d41e"
+  integrity sha512-h5V2yw7d8xIwotjyNrkLF13nV9RiiZLHdXeHo+nVJIYGVlZ8U2qV0pMxNJKNTvfQVT0N8/A4CW6/4EW2cOcTiA==
 
 pluralize@8.0.0, pluralize@^8.0.0:
   version "8.0.0"
