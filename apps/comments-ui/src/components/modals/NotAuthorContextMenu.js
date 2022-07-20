@@ -1,10 +1,9 @@
-import React, {useState} from 'react';
-// import React, {useContext, useState} from 'react';
+import React, {useContext, useState} from 'react';
 import ReportDialog from './ReportDialog';
-// import AppContext from '../../AppContext';
+import AppContext from '../../AppContext';
 
 const NotAuthorContextMenu = (props) => {
-    // const {dispatchAction} = useContext(AppContext);
+    const {dispatchAction} = useContext(AppContext);
     let [isOpen, setOpen] = useState(false);
     let [reportProgress, setProgress] = useState('default'); // states for button: default, sending, sent
 
@@ -23,10 +22,10 @@ const NotAuthorContextMenu = (props) => {
 
         setProgress('sending');
 
-        // faked timing of the report being sent for user feedback purposes
+        // purposely faking the timing of the report being sent for user feedback purposes
         setTimeout(() => {
             setProgress('sent');
-            // dispatchAction('reportComment', props.comment);
+            dispatchAction('reportComment', props.comment);
 
             setTimeout(() => {
                 setOpen(false);
