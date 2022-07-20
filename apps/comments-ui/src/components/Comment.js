@@ -21,7 +21,7 @@ const Comment = (props) => {
         setIsInReplyMode(current => !current);
     };
 
-    const {admin, avatarSaturation} = useContext(AppContext);
+    const {admin, avatarSaturation, member, commentsEnabled} = useContext(AppContext);
     const comment = props.comment;
     const hasReplies = comment.replies && comment.replies.length > 0;
     const isNotPublished = comment.status !== 'published';
@@ -34,6 +34,10 @@ const Comment = (props) => {
             html.__html = '<i>This comment has been removed.</i>';
         }
     }
+
+    const paidOnly = commentsEnabled === 'paid';
+    const isPaidMember = member && !!member.paid;
+    const canReply = member && (isPaidMember || !paidOnly);
 
     if (isInEditMode) {
         return (
@@ -55,7 +59,7 @@ const Comment = (props) => {
                         </div>
                         <div className="ml-14 flex gap-5 items-center">
                             <Like comment={comment} />
-                            {(isNotPublished || !props.parent) && <Reply comment={comment} toggleReply={toggleReplyMode} isReplying={isInReplyMode} />}
+                            {canReply && (isNotPublished || !props.parent) && <Reply comment={comment} toggleReply={toggleReplyMode} isReplying={isInReplyMode} />}
                             <div className="text-sm text-neutral-400 dark:text-[rgba(255,255,255,0.5)] font-sans">{formatRelativeTime(comment.created_at)}</div>
                             <More comment={comment} toggleEdit={toggleEditMode} />
                         </div>

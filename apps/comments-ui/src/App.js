@@ -282,6 +282,7 @@ export default class App extends React.Component {
             colorScheme: this.props.colorScheme,
             avatarSaturation: this.props.avatarSaturation,
             accentColor: this.props.accentColor,
+            commentsEnabled: this.props.commentsEnabled,
             dispatchAction: (_action, data) => this.dispatchAction(_action, data),
             
             /**

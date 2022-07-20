@@ -5,6 +5,7 @@ import Loading from './Loading';
 import Form from './Form';
 import Comment from './Comment';
 import Pagination from './Pagination';
+import NotPaidBox from './NotPaidBox';
 
 const CommentsBox = (props) => {
     const luminance = (r, g, b) => {
@@ -40,7 +41,7 @@ const CommentsBox = (props) => {
         }
     };
 
-    const {accentColor, pagination, member, comments} = useContext(AppContext);
+    const {accentColor, pagination, member, comments, commentsEnabled} = useContext(AppContext);
 
     const commentsElements = comments.slice().reverse().map(comment => <Comment comment={comment} key={comment.id} avatarSaturation={props.avatarSaturation} />);
 
@@ -49,6 +50,9 @@ const CommentsBox = (props) => {
     const style = {
         '--gh-accent-color': accentColor ?? 'blue'
     };
+
+    const paidOnly = commentsEnabled === 'paid';
+    const isPaidMember = member && !!member.paid;
 
     return (
         <section className={'ghost-display ' + containerClass} style={style}>
@@ -59,7 +63,7 @@ const CommentsBox = (props) => {
                         {commentsElements}
                     </div>
                     <div>
-                        { member ? <Form commentsCount={commentsCount} avatarSaturation={props.avatarSaturation} /> : <NotSignedInBox /> }
+                        { member ? (isPaidMember || !paidOnly ? <Form commentsCount={commentsCount} avatarSaturation={props.avatarSaturation} /> : <NotPaidBox />) : <NotSignedInBox /> }
                     </div>
                 </>
                 : <Loading />}
