@@ -65,6 +65,11 @@ class CommentsServiceEmails {
             return;
         }
 
+        // Don't send a notification if you reply to your own comment
+        if (parentMember.id === reply.get('member_id')) {
+            return;
+        }
+
         const to = parentMember.get('email');
         const subject = '💬 You have a new reply on one of your comments';
 
