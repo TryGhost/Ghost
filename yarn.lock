@@ -1697,14 +1697,6 @@
     "@tryghost/debug" "^0.1.17"
     split2 "4.1.0"
 
-"@tryghost/email-analytics-service@^1.0.7":
-  version "1.0.7"
-  resolved "https://registry.yarnpkg.com/@tryghost/email-analytics-service/-/email-analytics-service-1.0.7.tgz#49bfe404aa74319353e04405821a4e301b4316cf"
-  integrity sha512-cHVHiiwtWkTBBV05QSYSbcoKI+BB+N4qDSRWuhXImdhXJZhgf51g+ufj/njDYMQ5ELLfX85hYcET2BbBKur6kw==
-  dependencies:
-    "@tryghost/debug" "^0.1.9"
-    lodash "^4.17.20"
-
 "@tryghost/email-content-generator@0.1.3", "@tryghost/email-content-generator@^0.1.3":
   version "0.1.3"
   resolved "https://registry.yarnpkg.com/@tryghost/email-content-generator/-/email-content-generator-0.1.3.tgz#43500b3c1eaa77c39eedb66514a8a7f2a15d7719"

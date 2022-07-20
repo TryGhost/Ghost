@@ -23,7 +23,7 @@
     "sinon": "14.0.0"
   },
   "dependencies": {
-    "@tryghost/email-analytics-service": "^1.0.7",
+    "@tryghost/email-analytics-service": "^0.0.0",
     "@tryghost/logging": "^2.0.0",
     "mailgun-js": "^0.22.0",
     "moment": "^2.29.1"
