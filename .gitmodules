@@ -1,6 +1,6 @@
-[submodule "content/themes/casper"]
-	path = content/themes/casper
-	url = ../../TryGhost/Casper.git
-[submodule "core/admin"]
-	path = core/admin
-	url = ../../TryGhost/Admin.git
+[submodule "ghost/core/content/themes/casper"]
+	path = ghost/core/content/themes/casper
+	url = https://github.com/TryGhost/Casper/
+[submodule "ghost/core/core/admin"]
+	path = ghost/core/core/admin
+	url = https://github.com/TryGhost/Admin/
