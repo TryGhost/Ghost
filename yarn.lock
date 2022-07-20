@@ -1246,7 +1246,7 @@
   resolved "https://registry.yarnpkg.com/@nexes/nql-lang/-/nql-lang-0.0.1.tgz#a13c023873f9bc11b9e4e284449c6cfbeccc8011"
   integrity sha512-FFCgmHVvWTLsKnM2wLkO3uDkbQs0aTpJz0/iARRK4bbloVxlvyPjEYbM8z0gUxjlI5+TFgctwAMx7z0168/IzA==
 
-"@nexes/nql@0.6.0", "@nexes/nql@^0.6.0":
+"@nexes/nql@^0.6.0":
   version "0.6.0"
   resolved "https://registry.yarnpkg.com/@nexes/nql/-/nql-0.6.0.tgz#aec2d36d0ff5300b79e950a37f8c29b195f8152b"
   integrity sha512-iI5fQPVfBAX9iM6P3S35XQhp7z7OS+7Ju7GMJGPxouBSDOkppNKh3zc4QGnrt9oMwbUN4hkZ2dsMwLs9VLmDAQ==
@@ -2112,7 +2112,7 @@
     nodemailer-direct-transport "^3.3.2"
     nodemailer-stub-transport "^1.1.0"
 
-"@tryghost/nql-lang@^0.3.2":
+"@tryghost/nql-lang@0.3.2", "@tryghost/nql-lang@^0.3.2":
   version "0.3.2"
   resolved "https://registry.yarnpkg.com/@tryghost/nql-lang/-/nql-lang-0.3.2.tgz#618bff56963d58b211873a4d3f86d9ff04ceb26a"
   integrity sha512-KlO+x32nTi7q7HAinF1e2XyH0zeDBQOPL6TCDjV+bjDGaJ4h0GzR406/79MosoYbPE3kiMGVIrIdMeQcysGoyg==
