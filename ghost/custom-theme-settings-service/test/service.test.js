@@ -7,8 +7,7 @@ const sinon = require('sinon');
 const {ValidationError} = require('@tryghost/errors');
 const nql = require('@nexes/nql-lang');
 
-const Service = require('../lib/service');
-const Cache = require('../lib/cache');
+const {Cache, Service} = require('../');
 
 function makeModelInstance(data) {
     const instance = Object.assign({}, data, {
