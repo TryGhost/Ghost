@@ -58,8 +58,8 @@ const Comment = (props) => {
                             <p dangerouslySetInnerHTML={html} className="gh-comment-content text-[16.5px] leading-normal"></p>
                         </div>
                         <div className="ml-14 flex gap-5 items-center">
-                            <Like comment={comment} />
-                            {canReply && (isNotPublished || !props.parent) && <Reply comment={comment} toggleReply={toggleReplyMode} isReplying={isInReplyMode} />}
+                            {!isNotPublished && <Like comment={comment} />}
+                            {!isNotPublished && (canReply && (isNotPublished || !props.parent) && <Reply comment={comment} toggleReply={toggleReplyMode} isReplying={isInReplyMode} />)}
                             <div className="text-sm text-neutral-400 dark:text-[rgba(255,255,255,0.5)] font-sans">{formatRelativeTime(comment.created_at)}</div>
                             <More comment={comment} toggleEdit={toggleEditMode} />
                         </div>
