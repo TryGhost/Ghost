@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/members-api",
-  "version": "8.3.0",
+  "version": "0.0.0",
   "repository": "https://github.com/TryGhost/Members/tree/main/packages/members-api",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -8,8 +8,7 @@
   "scripts": {
     "dev": "echo \"Implement me!\"",
     "test": "NODE_ENV=testing c8 --all --reporter text --reporter cobertura mocha --reporter dot './test/**/*.test.js'",
-    "lint": "eslint '**/*.js'",
-    "posttest": "yarn lint"
+    "lint": "eslint '**/*.js'"
   },
   "files": [
     "index.js",
@@ -27,17 +26,17 @@
     "sinon": "14.0.0"
   },
   "dependencies": {
-    "@nexes/nql": "^0.6.0",
     "@tryghost/debug": "^0.1.2",
-    "@tryghost/domain-events": "^0.1.14",
+    "@tryghost/domain-events": "^0.0.0",
     "@tryghost/errors": "^1.1.1",
     "@tryghost/logging": "^2.0.0",
-    "@tryghost/magic-link": "^1.1.0",
-    "@tryghost/member-analytics-service": "^0.1.16",
-    "@tryghost/member-events": "^0.4.6",
-    "@tryghost/members-analytics-ingress": "^0.1.17",
-    "@tryghost/members-payments": "^0.3.6",
-    "@tryghost/members-stripe-service": "^0.10.6",
+    "@tryghost/magic-link": "^0.0.0",
+    "@tryghost/member-analytics-service": "^0.0.0",
+    "@tryghost/member-events": "^0.0.0",
+    "@tryghost/members-analytics-ingress": "^0.0.0",
+    "@tryghost/members-payments": "^0.0.0",
+    "@tryghost/members-stripe-service": "^0.0.0",
+    "@tryghost/nql": "^0.9.2",
     "@tryghost/tpl": "^0.1.2",
     "@types/jsonwebtoken": "^8.5.1",
     "bluebird": "^3.5.4",
