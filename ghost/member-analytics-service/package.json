@@ -24,9 +24,9 @@
   },
   "dependencies": {
     "@tryghost/domain-events": "^0.0.0",
-    "@tryghost/errors": "^1.0.0",
+    "@tryghost/errors": "1.2.14",
     "@tryghost/member-events": "^0.0.0",
-    "@tryghost/tpl": "^0.1.4",
-    "bson-objectid": "^2.0.1"
+    "@tryghost/tpl": "0.1.17",
+    "bson-objectid": "2.0.3"
   }
 }
