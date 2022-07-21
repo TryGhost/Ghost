@@ -22,7 +22,7 @@
     "sinon": "14.0.0"
   },
   "dependencies": {
-    "@tryghost/domain-events": "^0.0.0",
-    "@tryghost/members-offers": "^0.0.0"
+    "@tryghost/domain-events": "0.0.0",
+    "@tryghost/members-offers": "0.0.0"
   }
 }
