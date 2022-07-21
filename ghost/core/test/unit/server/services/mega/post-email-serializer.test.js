@@ -125,6 +125,40 @@ describe('Post Email Serializer', function () {
             output.plaintext.should.equal(`Free content\n\nMembers content`);
         });
 
+        it('should show paywall content for free members on specific tier posts', function () {
+            sinon.stub(urlService, 'getUrlByResourceId').returns('https://site.com/blah/');
+            sinon.stub(labs, 'isSet').returns(true);
+            const email = {
+                post: {
+                    status: 'published',
+                    visibility: 'tiers'
+                },
+                html: '<p>Free content</p><!--members-only--><p>Members content</p>',
+                plaintext: 'Free content. Members content'
+            };
+
+            let output = renderEmailForSegment(email, 'status:free');
+            output.html.should.equal(`<p>Free content</p><div class="align-center" style="text-align: center;">\n    <hr style="position: relative; display: block; width: 100%; margin: 3em 0; padding: 0; height: 1px; border: 0; border-top: 1px solid #e5eff5;">\n    <h2 style="margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 26px;">\n        Subscribe to continue reading.</h2>\n    <p style="margin: 0 auto 1.5em auto; line-height: 1.6em; max-width: 480px;">Become a paid member of Ghost to get access to all\n        subscriber-only content.</p>\n    <div class="btn btn-accent" style="box-sizing: border-box; width: 100%; display: table;">\n        <table border="0" cellspacing="0" cellpadding="0" align="center" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;">\n            <tbody>\n                <tr>\n                    <td align="center" style="font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; text-align: center; border-radius: 5px;" valign="top" bgcolor="undefined">\n                        <a href="https://site.com/blah/#/portal/signup" style="overflow-wrap: anywhere; border: solid 1px #3498db; border-radius: 5px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 14px; font-weight: bold; margin: 0; padding: 12px 25px; text-decoration: none; background-color: undefined; border-color: undefined; color: #FFFFFF;" target="_blank">Subscribe\n                        </a>\n                    </td>\n                </tr>\n            </tbody>\n        </table>\n    </div>\n    <p style="margin: 0 0 1.5em 0; line-height: 1.6em;"></p>\n</div>&gt;`);
+            output.plaintext.should.equal(`Free content\n\n\n----------------------------------------\n\n\n\n\nSubscribe to continue reading.\n\n\nBecome a paid member of Ghost to get access to all\nsubscriber-only content.\n\n\n\n\n\n\n\nSubscribe\n[https://site.com/blah/#/portal/signup]\n\n\n\n\n\n\n\n\n\n\n>`);
+        });
+
+        it('should show full cta for paid members on specific tier posts', function () {
+            sinon.stub(urlService, 'getUrlByResourceId').returns('https://site.com/blah/');
+            sinon.stub(labs, 'isSet').returns(true);
+            const email = {
+                post: {
+                    status: 'published',
+                    visibility: 'paid'
+                },
+                html: '<p>Free content</p><!--members-only--><p>Members content</p>',
+                plaintext: 'Free content. Members content'
+            };
+
+            let output = renderEmailForSegment(email, 'status:-free');
+            output.html.should.equal(`<p>Free content</p><!--members-only--><p>Members content</p>`);
+            output.plaintext.should.equal(`Free content\n\nMembers content`);
+        });
+
         it('should show full content for free members on free posts', function () {
             sinon.stub(urlService, 'getUrlByResourceId').returns('https://site.com/blah/');
             sinon.stub(labs, 'isSet').returns(true);

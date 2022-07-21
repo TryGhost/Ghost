@@ -387,6 +387,10 @@ function renderEmailForSegment(email, memberSegment) {
         const paywallIndex = (result.html || '').indexOf('<!--members-only-->');
         if (paywallIndex !== -1 && memberSegment) {
             let statusFilter = memberSegment === 'status:free' ? {status: 'free'} : {status: 'paid'};
+            const postVisiblity = result.post.visibility;
+
+            // For newsletter paywall, specific tiers visibility is considered on par to paid tiers
+            result.post.visibility = postVisiblity === 'tiers' ? 'paid' : postVisiblity;
 
             const memberHasAccess = membersService.contentGating.checkPostAccess(result.post, statusFilter);
 
