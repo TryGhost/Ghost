@@ -56,7 +56,7 @@ class JobManager {
      * @prop {Object} [GhostJob.data] - data to be passed into the job
      * @prop {Boolean} [GhostJob.offloaded] - creates an "offloaded" job running in a worker thread by default. If set to "false" runs an "inline" job on the same event loop
      */
-    async addJob({name, at, job, data, offloaded = true}) {
+    addJob({name, at, job, data, offloaded = true}) {
         if (offloaded) {
             logging.info('Adding offloaded job to the queue');
             let schedule;
