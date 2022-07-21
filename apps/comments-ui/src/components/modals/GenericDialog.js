@@ -11,6 +11,10 @@ const GenericDialog = (props) => {
         dispatchAction('closePopup');
     };
 
+    const stopPropagation = (event) => {
+        event.stopPropagation();
+    };
+
     return (
         <Transition show={props.show} appear={true}>
             <Frame type="fixed">
@@ -32,7 +36,7 @@ const GenericDialog = (props) => {
                                 leaveFrom="translate-y-0 opacity-100"
                                 leaveTo="translate-y-4 opacity-0"
                             >
-                                <div className="bg-white w-[500px] p-8 rounded-xl text-center shadow-modal">
+                                <div className="bg-white w-[500px] p-8 rounded-xl text-center shadow-modal" onClick={stopPropagation}>
                                     {props.children}
                                 </div>
                             </Transition.Child>
