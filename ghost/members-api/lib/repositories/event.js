@@ -1,5 +1,5 @@
 const errors = require('@tryghost/errors');
-const nql = require('@nexes/nql');
+const nql = require('@tryghost/nql');
 
 module.exports = class EventRepository {
     constructor({
