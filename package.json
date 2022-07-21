@@ -16,7 +16,8 @@
     "dev": "yarn workspace ghost run dev",
     "lint": "yarn workspaces run lint",
     "start": "yarn workspace ghost run start",
-    "test": "yarn workspaces run test"
+    "test": "yarn workspaces run test",
+    "main": "git pull && yarn && yarn workspace ghost run main"
   },
   "resolutions": {
     "@tryghost/logging": "2.2.3",
