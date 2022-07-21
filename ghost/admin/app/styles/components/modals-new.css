@@ -207,7 +207,7 @@
     font-size: 2.2rem;
     line-height: 1.15em;
     font-weight: 600;
-    letter-spacing: 0.2px;
+    letter-spacing: -0.0035em;
 }
 
 .modal-header.icon-center {
