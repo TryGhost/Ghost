@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/members-events-service",
-  "version": "0.4.3",
+  "version": "0.0.0",
   "repository": "https://github.com/TryGhost/Members/tree/main/packages/members-events-service",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -25,8 +25,8 @@
     "sinon": "14.0.0"
   },
   "dependencies": {
-    "@tryghost/domain-events": "^0.1.14",
-    "@tryghost/member-events": "^0.4.6",
+    "@tryghost/domain-events": "^0.0.0",
+    "@tryghost/member-events": "^0.0.0",
     "moment-timezone": "^0.5.34"
   }
 }
