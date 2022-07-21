@@ -7,6 +7,7 @@ const {UnhandledJobError, IncorrectUsageError} = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const isCronExpression = require('./is-cron-expression');
 const assembleBreeJob = require('./assemble-bree-job');
+const JobsRepository = require('./jobs-repository');
 
 const worker = async (task, callback) => {
     try {
@@ -31,8 +32,9 @@ class JobManager {
      * @param {Object} options
      * @param {Function} [options.errorHandler] - custom job error handler
      * @param {Function} [options.workerMessageHandler] - custom message handler coming from workers
+     * @param {Object} [options.JobModel] - a model which can persist job data in the storage
      */
-    constructor({errorHandler, workerMessageHandler}) {
+    constructor({errorHandler, workerMessageHandler, JobModel}) {
         this.queue = fastq(this, worker, 1);
 
         this.bree = new Bree({
@@ -43,6 +45,8 @@ class JobManager {
             errorHandler: errorHandler,
             workerMessageHandler: workerMessageHandler
         });
+
+        this._jobsRepository = new JobsRepository({JobModel});
     }
 
     /**
@@ -116,6 +120,33 @@ class JobManager {
                 }
             }, handler);
         }
+    }
+
+    /**
+    * Adds a job that could ever be executed once.
+    *
+    * @param {Object} GhostJob - job options
+    * @prop {Function | String} GhostJob.job - function or path to a module defining a job
+    * @prop {String} [GhostJob.name] - unique job name, if not provided takes function name or job script filename
+    * @prop {String | Date} [GhostJob.at] - Date, cron or human readable schedule format. Manage will do immediate execution if not specified. Not supported for "inline" jobs
+    * @prop {Object} [GhostJob.data] - data to be passed into the job
+    * @prop {Boolean} [GhostJob.offloaded] - creates an "offloaded" job running in a worker thread by default. If set to "false" runs an "inline" job on the same event loop
+    */
+    async addOneOffJob({name, job, data, offloaded = true}) {
+        const persistedJob = await this._jobsRepository.read(name);
+
+        if (persistedJob) {
+            throw new IncorrectUsageError({
+                message: `A "${name}" one off job has already been executed.`
+            });
+        }
+
+        await this._jobsRepository.add({
+            name,
+            status: 'queued'
+        });
+
+        this.addJob({name, job, data, offloaded});
     }
 
     /**
