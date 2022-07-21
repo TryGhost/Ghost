@@ -34,6 +34,7 @@ describe('Exporter', function () {
                 'emails',
                 'integrations',
                 'invites',
+                'jobs',
                 'labels',
                 'members',
                 'members_cancel_events',
