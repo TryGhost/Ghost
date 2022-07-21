@@ -1241,19 +1241,19 @@
   dependencies:
     lodash "^4.17.11"
 
-"@nexes/nql-lang@^0.0.1":
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/@nexes/nql-lang/-/nql-lang-0.0.1.tgz#a13c023873f9bc11b9e4e284449c6cfbeccc8011"
-  integrity sha512-FFCgmHVvWTLsKnM2wLkO3uDkbQs0aTpJz0/iARRK4bbloVxlvyPjEYbM8z0gUxjlI5+TFgctwAMx7z0168/IzA==
+"@nexes/nql-lang@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@nexes/nql-lang/-/nql-lang-0.1.0.tgz#801a616711461a9c1ee765f8338202742036b056"
+  integrity sha512-p16GyCzvfpW7DoblHdjssACSpavU0phKZKgyhbDCuD1GYru5xbJGfI7AGBaf1grAa31gpChnPKUx2xqnSesQaw==
 
-"@nexes/nql@^0.6.0":
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/@nexes/nql/-/nql-0.6.0.tgz#aec2d36d0ff5300b79e950a37f8c29b195f8152b"
-  integrity sha512-iI5fQPVfBAX9iM6P3S35XQhp7z7OS+7Ju7GMJGPxouBSDOkppNKh3zc4QGnrt9oMwbUN4hkZ2dsMwLs9VLmDAQ==
+"@nexes/nql@0.7.0":
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/@nexes/nql/-/nql-0.7.0.tgz#87660dc2b338fdeb0a8514df158004457ae5ef55"
+  integrity sha512-eAevZfmrowJufuxV35N9Sj9xdqetsEL01RODCMBV/5ksiamw+JQWLE+kyJsfdo+OYVej5kBlhv6sYtJx5D+GIA==
   dependencies:
     "@nexes/mongo-knex" "0.5.0"
     "@nexes/mongo-utils" "^0.3.1"
-    "@nexes/nql-lang" "^0.0.1"
+    "@nexes/nql-lang" "0.1.0"
     mingo "^2.2.2"
 
 "@npmcli/fs@^1.0.0":
