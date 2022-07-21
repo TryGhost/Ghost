@@ -17,9 +17,6 @@ concurrency:
 jobs:
   lint:
     runs-on: ubuntu-18.04
-    defaults:
-      run:
-        working-directory: ghost/core
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     name: Lint
     steps:
@@ -114,9 +111,6 @@ jobs:
 
   unit-tests:
     runs-on: ubuntu-18.04
-    defaults:
-      run:
-        working-directory: ghost/core
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     strategy:
       matrix:
