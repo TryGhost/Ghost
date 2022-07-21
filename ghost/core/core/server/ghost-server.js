@@ -213,9 +213,6 @@ class GhostServer {
      * Internal Method for TestMode.
      */
     _startTestMode() {
-        // This is horrible and very temporary
-        const jobService = require('./services/jobs');
-
         // Output how many connections are open every 5 seconds
         const connectionInterval = setInterval(() => this.httpServer.getConnections(
             (err, connections) => logging.warn(`${connections} connections currently open`)
@@ -226,25 +223,6 @@ class GhostServer {
             clearInterval(connectionInterval);
             logging.warn('Server has fully closed');
         });
-
-        // Output job queue length every 5 seconds
-        setInterval(() => {
-            logging.warn(`${jobService.queue.length()} jobs in the queue. Idle: ${jobService.queue.idle()}`);
-
-            const runningScheduledjobs = Object.keys(jobService.bree.workers);
-            if (Object.keys(jobService.bree.workers).length) {
-                logging.warn(`${Object.keys(jobService.bree.workers).length} jobs running: ${runningScheduledjobs}`);
-            }
-
-            const scheduledJobs = Object.keys(jobService.bree.intervals);
-            if (Object.keys(jobService.bree.intervals).length) {
-                logging.warn(`${Object.keys(jobService.bree.intervals).length} scheduled jobs: ${scheduledJobs}`);
-            }
-
-            if (runningScheduledjobs.length === 0 && scheduledJobs.length === 0) {
-                logging.warn('No scheduled or running jobs');
-            }
-        }, 5000);
     }
 
     /**
