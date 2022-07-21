@@ -30,7 +30,7 @@ const CommentContextMenu = (props) => {
     }
 
     return (
-        <div className="min-w-[170px] bg-white absolute font-sans rounded py-3 px-4 shadow-lg text-sm whitespace-nowrap z-10 dark:bg-zinc-900 dark:text-white">
+        <div className="min-w-[170px] bg-white absolute font-sans rounded py-3 px-4 shadow-lg text-sm whitespace-nowrap z-10 dark:bg-zinc-900 dark:text-white outline-0">
             {contextMenu}
         </div>
     );

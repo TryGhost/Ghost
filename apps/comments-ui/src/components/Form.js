@@ -140,7 +140,7 @@ const Form = (props) => {
     if (props.isReply) {
         submitText = 'Add reply';
     } else if (props.isEdit) {
-        submitText = 'Edit comment';
+        submitText = 'Save';
     } else {
         submitText = 'Add comment';
     }
@@ -167,7 +167,8 @@ const Form = (props) => {
                                     focus:outline-0
                                     placeholder:text-neutral-300 dark:placeholder:text-[rgba(255,255,255,0.3)]  
                                     resize-none
-                                    ${focused ? `cursor-textmin-h-[144px] pt-[44px] pb-[68px]` : 'cursor-pointer overflow-hidden min-h-[48px] hover:border-slate-300'}
+                                    ${focused ? 'cursor-textmin-h-[144px] pt-[44px] pb-[68px]' : 'cursor-pointer overflow-hidden min-h-[48px] hover:border-slate-300'}
+                                    ${props.isEdit && 'cursor-text'}
                                 `}
                                 editor={editor} 
                             />
@@ -182,7 +183,7 @@ const Form = (props) => {
                                     className={`
                                         transition-[opacity] duration-150
                                         bg-neutral-900 dark:bg-[rgba(255,255,255,0.9)]
-                                        rounded-[4px] border
+                                        rounded-[6px] border
                                         py-3 px-4
                                         text-sm text-center font-sans font-semibold
                                         text-white dark:text-neutral-800
@@ -196,7 +197,7 @@ const Form = (props) => {
                         </div>
                     </div>
                     <div className="flex mb-1 justify-start items-center absolute top-0 left-0">
-                        <Avatar comment={comment} saturation={avatarSaturation} />
+                        <Avatar comment={comment} saturation={avatarSaturation} className="pointer-events-none" />
                         <Transition
                             show={focused}
                             enter="transition duration-500 ease-in-out"
