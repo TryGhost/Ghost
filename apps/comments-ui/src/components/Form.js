@@ -59,8 +59,6 @@ const Form = (props) => {
             .run();
     }, [editor, props.isEdit]);
 
-    const focused = editor?.isFocused || !editor?.isEmpty;
-
     const submitForm = async (event) => {
         event.preventDefault();
 
@@ -120,6 +118,7 @@ const Form = (props) => {
 
     const {comment, commentsCount} = props;
     const memberName = (props.isEdit ? comment.member.name : member.name); 
+    const isFocused = editor?.isFocused || !editor?.isEmpty;
 
     const focusEditor = (event) => {
         event.stopPropagation();
@@ -129,11 +128,15 @@ const Form = (props) => {
         } else {
             setAddNameShowing(true);
         }
-        return false;
     };
 
     const closeAddName = () => {
         setAddNameShowing(false);
+    };
+
+    const saveAddName = () => {
+        setAddNameShowing(false);
+        editor.commands.focus();
     };
 
     let submitText;
@@ -153,7 +156,7 @@ const Form = (props) => {
                 bg-white dark:bg-[rgba(255,255,255,0.08)]
                 rounded-md shadow-lg dark:shadow-transparent hover:shadow-xl
                 ${!commentsCount && !props.isEdit && !props.isReply && '-mt-0 -mr-0 -ml-0'}
-                ${focused ? 'cursor-default' : 'cursor-pointer'}`
+                ${isFocused ? 'cursor-default' : 'cursor-pointer'}`
             }>
                 <div className="w-full relative">
                     <div className="pr-3 font-sans leading-normal dark:text-neutral-300">
@@ -167,8 +170,9 @@ const Form = (props) => {
                                     focus:outline-0
                                     placeholder:text-neutral-300 dark:placeholder:text-[rgba(255,255,255,0.3)]  
                                     resize-none
-                                    ${focused ? 'cursor-textmin-h-[144px] pt-[44px] pb-[68px]' : 'cursor-pointer overflow-hidden min-h-[48px] hover:border-slate-300'}
+                                    ${isFocused ? 'cursor-textmin-h-[144px] pt-[44px] pb-[68px]' : 'cursor-pointer overflow-hidden min-h-[48px] hover:border-slate-300'}
                                     ${props.isEdit && 'cursor-text'}
+                                    ${!memberName && 'pointer-events-none'}
                                 `}
                                 editor={editor} 
                             />
@@ -199,7 +203,7 @@ const Form = (props) => {
                     <div className="flex mb-1 justify-start items-center absolute top-0 left-0">
                         <Avatar comment={comment} saturation={avatarSaturation} className="pointer-events-none" />
                         <Transition
-                            show={focused}
+                            show={isFocused}
                             enter="transition duration-500 ease-in-out"
                             enterFrom="opacity-0 -translate-x-2"
                             enterTo="opacity-100 translate-x-0"
@@ -214,7 +218,7 @@ const Form = (props) => {
                     </div>
                 </div>
             </form>
-            <AddNameDialog show={isAddNameShowing} submit={closeAddName} cancel={closeAddName} />
+            <AddNameDialog show={isAddNameShowing} submit={saveAddName} cancel={closeAddName} />
         </>
     );
 };
