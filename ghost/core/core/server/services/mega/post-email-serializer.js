@@ -351,19 +351,21 @@ function renderPaywallCTA(post) {
     <h2
         style="margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 26px;">
         Subscribe to continue reading.</h2>
-    <p style="margin: 0 0 1.5em 0; line-height: 1.6em;">Become a paid member of ${siteTitle} to get access to all
+    <p style="margin: 0 auto 1.5em auto; line-height: 1.6em; max-width: 480px;">Become a paid member of ${siteTitle} to get access to all
         subscriber-only content.</p>
-    <p style="margin: 0 0 1.5em 0; line-height: 1.6em;"></p>
     <div class="btn btn-accent" style="box-sizing: border-box; width: 100%; display: table;">
         <table border="0" cellspacing="0" cellpadding="0" align="center"
             style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;">
             <tbody>
                 <tr>
                     <td align="center"
-                        style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 18px; vertical-align: top; color: #15212A; border-radius: 5px; text-align: center; background-color: #6D2EFF;"
-                        valign="top" bgcolor="${accentColor}"><a href="${signupUrl}"
+                        style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; vertical-align: top; text-align: center; border-radius: 5px;"
+                        valign="top" bgcolor="${accentColor}">
+                        <a href="${signupUrl}"
                             style="overflow-wrap: anywhere; border: solid 1px #3498db; border-radius: 5px; box-sizing: border-box; cursor: pointer; display: inline-block; font-size: 14px; font-weight: bold; margin: 0; padding: 12px 25px; text-decoration: none; background-color: ${accentColor}; border-color: ${accentColor}; color: #FFFFFF;"
-                            target="_blank">Subscribe</a></td>
+                            target="_blank">Subscribe
+                        </a>
+                    </td>
                 </tr>
             </tbody>
         </table>
