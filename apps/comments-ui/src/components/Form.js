@@ -35,11 +35,6 @@ const Form = (props) => {
         ...getEditorConfig(config)
     });
 
-    // const isInViewport = () => {
-    //     const top = formEl.current.getBoundingClientRect().top;
-    //     return (top >= 0 && top <= window.innerHeight);
-    // };
-
     const getScrollToPosition = () => {
         let yOffset = -100; 
         const element = formEl.current;
@@ -86,9 +81,12 @@ const Form = (props) => {
             }, 100);
         }
 
-        editor.on('blur', (editorObj) => {
+        editor.on('blur', () => {
             if (editor?.isEmpty) {
                 setFormOpen(false);
+                if (props.isReply && props.toggleReplyMode) {
+                    props.toggleReplyMode();
+                }
             }
         });
 
@@ -108,7 +106,7 @@ const Form = (props) => {
                 });
             })
             .run();
-    }, [editor, props.isEdit, props.isReply, formEl]);
+    }, [editor, props, props.isEdit, props.isReply, props.toggleReplyMode]);
 
     const submitForm = async (event) => {
         event.preventDefault();

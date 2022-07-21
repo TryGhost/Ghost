@@ -80,7 +80,7 @@ const Comment = (props) => {
                     leaveTo="opacity-0"
                 >
                     <div className="ml-14 my-10">
-                        <Form parent={comment} toggle={toggleReplyMode} isReply={true} />
+                        <Form parent={comment} toggle={toggleReplyMode} isReply={true} toggleReplyMode={toggleReplyMode} />
                     </div>
                 </Transition>
             </>
