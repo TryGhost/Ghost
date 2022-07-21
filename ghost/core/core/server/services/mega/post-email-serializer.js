@@ -337,7 +337,7 @@ const serialize = async (postModel, newsletter, options = {isBrowserPreview: fal
 
 function renderPaywallCTA(post) {
     const accentColor = settingsCache.get('accent_color');
-    const siteTitle = settingsCache.get('title') || 'Ghost site';
+    const siteTitle = settingsCache.get('title') || 'Ghost';
     const signupUrl = createPostSignupUrl(post.slug);
 
     return `<div class="align-center" style="text-align: center;">
@@ -384,10 +384,8 @@ function renderEmailForSegment(email, memberSegment) {
 
             if (!memberHasAccess) {
                 const postContentEndIdx = result.html.search(/[\s\n\r]+?<!-- POST CONTENT END -->/);
-                if (paywallIndex !== -1) {
-                    result.html = result.html.slice(0, paywallIndex) + renderPaywallCTA(result.post) + result.html.slice(postContentEndIdx);
-                    result.plaintext = htmlToPlaintext.excerpt(result.html);
-                }
+                result.html = result.html.slice(0, paywallIndex) + renderPaywallCTA(result.post) + result.html.slice(postContentEndIdx);
+                result.plaintext = htmlToPlaintext.excerpt(result.html);
             }
         }
     }
