@@ -165,8 +165,6 @@ const Form = (props) => {
     const isFocused = editor?.isFocused || !editor?.isEmpty;
 
     const focusEditor = (event) => {
-        event.stopPropagation();
-
         if (memberName) {
             editor.commands.focus();
         } else {

@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React, {useContext, useEffect, useRef} from 'react';
 import AppContext from '../../AppContext';
 import AdminContextMenu from './AdminContextMenu';
 import AuthorContextMenu from './AuthorContextMenu';
@@ -9,6 +9,33 @@ const CommentContextMenu = (props) => {
     const comment = props.comment;
     const isAuthor = member && comment.member?.uuid === member?.uuid;
     const isAdmin = !!admin;
+    const element = useRef();
+
+    useEffect(() => {
+        const listener = () => {
+            props.close();
+        };
+
+        // We need to listen for the window outside the iframe, and also the iframe window events
+        window.addEventListener('click', listener, {passive: true});
+        const el = element.current?.ownerDocument?.defaultView;
+
+        if (el && el !== window) {
+            el.addEventListener('click', listener, {passive: true});
+        }
+
+        return () => {
+            window.removeEventListener('click', listener, {passive: true});
+            if (el && el !== window) {
+                el.removeEventListener('click', listener, {passive: true});
+            }
+        };
+    }, [props]);
+
+    // Prevent closing the context menu when clicking inside of it
+    const stopPropagation = (event) => {
+        event.stopPropagation();
+    };
 
     let contextMenu = null;
     if (comment.status === 'published') {
@@ -30,8 +57,10 @@ const CommentContextMenu = (props) => {
     }
 
     return (
-        <div className="min-w-[170px] bg-white absolute font-sans rounded py-3 px-4 shadow-lg text-sm whitespace-nowrap z-10 dark:bg-zinc-900 dark:text-white outline-0">
-            {contextMenu}
+        <div ref={element} onClick={stopPropagation}>
+            <div className="min-w-[170px] bg-white absolute font-sans rounded py-3 px-4 shadow-lg text-sm whitespace-nowrap z-10 dark:bg-zinc-900 dark:text-white outline-0">
+                {contextMenu}
+            </div>
         </div>
     );
 };
