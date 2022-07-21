@@ -25,12 +25,12 @@
     "sinon": "14.0.0"
   },
   "dependencies": {
-    "@tryghost/debug": "^0.1.2",
-    "@tryghost/errors": "^1.1.0",
-    "bluebird": "^3.5.3",
-    "concat-stream": "^2.0.0",
-    "cookies": "^0.8.0",
-    "jsonwebtoken": "^8.5.1",
-    "lodash": "^4.17.11"
+    "@tryghost/debug": "0.1.17",
+    "@tryghost/errors": "1.2.14",
+    "bluebird": "3.7.2",
+    "concat-stream": "2.0.0",
+    "cookies": "0.8.0",
+    "jsonwebtoken": "8.5.1",
+    "lodash": "4.17.21"
   }
 }
