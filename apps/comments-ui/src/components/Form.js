@@ -130,6 +130,9 @@ const Form = (props) => {
                 // Clear message and blur on success
                 editor.chain().clearContent().blur().run();
                 props.toggle();
+
+                setFormOpen(false);
+                props.toggleReplyMode();
             } catch (e) {
                 // eslint-disable-next-line no-console
                 console.error(e);
