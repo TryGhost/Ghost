@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState, useRef} from 'react';
 import {Transition} from '@headlessui/react';
 import AppContext from '../AppContext';
 import Avatar from './Avatar';
@@ -9,6 +9,7 @@ import AddNameDialog from './modals/AddNameDialog';
 const Form = (props) => {
     const {member, postId, dispatchAction, onAction, avatarSaturation} = useContext(AppContext);
     const [isAddNameShowing, setAddNameShowing] = useState(false);
+    const formEl = useRef(null);
 
     let config;
     if (props.isReply) {
@@ -35,10 +36,34 @@ const Form = (props) => {
         ...getEditorConfig(config)
     });
 
+    // const isInViewport = () => {
+    //     const top = formEl.current.getBoundingClientRect().top;
+    //     return (top >= 0 && top <= window.innerHeight);
+    // };
+
+    const getScrollToPosition = () => {
+        const yOffset = -100; 
+        const element = formEl.current;
+        const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+
+        return y;
+    };
+
     // Set the cursor position at the end of the form, instead of the beginning (= when using autofocus)
     useEffect(() => {
         if (!editor) {
             return;
+        }
+
+        // Scroll to view if it's a reply
+        if (props.isReply) {
+            setTimeout(() => {
+                window.scrollTo({
+                    top: getScrollToPosition(),
+                    left: 0,
+                    behavior: 'smooth'
+                });
+            }, 100);
         }
 
         // Focus editor + jump to end
@@ -57,7 +82,7 @@ const Form = (props) => {
                 });
             })
             .run();
-    }, [editor, props.isEdit]);
+    }, [editor, props.isEdit, props.isReply]);
 
     const submitForm = async (event) => {
         event.preventDefault();
@@ -150,7 +175,7 @@ const Form = (props) => {
 
     return (
         <>
-            <form onClick={focusEditor} className={`
+            <form ref={formEl} onClick={focusEditor} className={`
                 transition duration-200
                 -mt-[12px] -mr-3 mb-10 -ml-[12px] pt-3 pb-2 px-3
                 bg-white dark:bg-[rgba(255,255,255,0.08)]
@@ -158,9 +183,9 @@ const Form = (props) => {
                 ${!commentsCount && !props.isEdit && !props.isReply && '-mt-0 -mr-0 -ml-0'}
                 ${isFocused ? 'cursor-default' : 'cursor-pointer'}`
             }>
-                <div className="w-full relative">
-                    <div className="pr-3 font-sans leading-normal dark:text-neutral-300">
-                        <div className="relative w-full">
+                <div className='w-full relative'>
+                    <div className='pr-3 font-sans leading-normal dark:text-neutral-300'>
+                        <div className='relative w-full'>
                             <EditorContent
                                 className={`
                                     transition-all duration-150 delay-100
@@ -176,13 +201,13 @@ const Form = (props) => {
                                 `}
                                 editor={editor} 
                             />
-                            <div className="
+                            <div className='
                                 absolute -right-3 bottom-[2px]
                                 flex space-x-4
                                 transition-[opacity] duration-150 
-                            ">
+                            '>
                                 {props.isEdit &&
-                                    <button type="button" onClick={props.toggle} className="font-sans text-sm font-medium ml-2.5 text-neutral-500 dark:text-neutral-400">Cancel</button>}
+                                    <button type='button' onClick={props.toggle} className='font-sans text-sm font-medium ml-2.5 text-neutral-500 dark:text-neutral-400'>Cancel</button>}
                                 <button
                                     className={`
                                         transition-[opacity] duration-150
@@ -192,7 +217,7 @@ const Form = (props) => {
                                         text-sm text-center font-sans font-semibold
                                         text-white dark:text-neutral-800
                                     `}
-                                    type="button"
+                                    type='button'
                                     onClick={submitForm}
                                 >
                                     {submitText}
@@ -200,19 +225,19 @@ const Form = (props) => {
                             </div>
                         </div>
                     </div>
-                    <div className="flex mb-1 justify-start items-center absolute top-0 left-0">
-                        <Avatar comment={comment} saturation={avatarSaturation} className="pointer-events-none" />
+                    <div className='flex mb-1 justify-start items-center absolute top-0 left-0'>
+                        <Avatar comment={comment} saturation={avatarSaturation} className='pointer-events-none' />
                         <Transition
                             show={isFocused}
-                            enter="transition duration-500 delay-100 ease-in-out"
-                            enterFrom="opacity-0 -translate-x-2"
-                            enterTo="opacity-100 translate-x-0"
-                            leave="transition-none duration-0"
-                            leaveFrom="opacity-100"
-                            leaveTo="opacity-0"
+                            enter='transition duration-500 delay-100 ease-in-out'
+                            enterFrom='opacity-0 -translate-x-2'
+                            enterTo='opacity-100 translate-x-0'
+                            leave='transition-none duration-0'
+                            leaveFrom='opacity-100'
+                            leaveTo='opacity-0'
                         >
-                            <div className="ml-3">
-                                <h4 className="text-lg font-sans font-semibold mb-1 tracking-tight dark:text-neutral-300">{memberName ? memberName : 'Anonymous'}</h4>
+                            <div className='ml-3'>
+                                <h4 className='text-lg font-sans font-semibold mb-1 tracking-tight dark:text-neutral-300'>{memberName ? memberName : 'Anonymous'}</h4>
                             </div>
                         </Transition>
                     </div>
