@@ -183,9 +183,9 @@ const Form = (props) => {
                 ${!commentsCount && !props.isEdit && !props.isReply && '-mt-0 -mr-0 -ml-0'}
                 ${isFocused ? 'cursor-default' : 'cursor-pointer'}`
             }>
-                <div className='w-full relative'>
-                    <div className='pr-3 font-sans leading-normal dark:text-neutral-300'>
-                        <div className='relative w-full'>
+                <div className="w-full relative">
+                    <div className="pr-3 font-sans leading-normal dark:text-neutral-300">
+                        <div className="relative w-full">
                             <EditorContent
                                 className={`
                                     transition-all duration-150 delay-100
@@ -201,13 +201,13 @@ const Form = (props) => {
                                 `}
                                 editor={editor} 
                             />
-                            <div className='
+                            <div className="
                                 absolute -right-3 bottom-[2px]
                                 flex space-x-4
                                 transition-[opacity] duration-150 
-                            '>
+                            ">
                                 {props.isEdit &&
-                                    <button type='button' onClick={props.toggle} className='font-sans text-sm font-medium ml-2.5 text-neutral-500 dark:text-neutral-400'>Cancel</button>}
+                                    <button type="button" onClick={props.toggle} className="font-sans text-sm font-medium ml-2.5 text-neutral-500 dark:text-neutral-400">Cancel</button>}
                                 <button
                                     className={`
                                         transition-[opacity] duration-150
@@ -217,7 +217,7 @@ const Form = (props) => {
                                         text-sm text-center font-sans font-semibold
                                         text-white dark:text-neutral-800
                                     `}
-                                    type='button'
+                                    type="button"
                                     onClick={submitForm}
                                 >
                                     {submitText}
@@ -225,19 +225,19 @@ const Form = (props) => {
                             </div>
                         </div>
                     </div>
-                    <div className='flex mb-1 justify-start items-center absolute top-0 left-0'>
-                        <Avatar comment={comment} saturation={avatarSaturation} className='pointer-events-none' />
+                    <div className="flex mb-1 justify-start items-center absolute top-0 left-0">
+                        <Avatar comment={comment} saturation={avatarSaturation} className="pointer-events-none" />
                         <Transition
                             show={isFocused}
-                            enter='transition duration-500 delay-100 ease-in-out'
-                            enterFrom='opacity-0 -translate-x-2'
-                            enterTo='opacity-100 translate-x-0'
-                            leave='transition-none duration-0'
-                            leaveFrom='opacity-100'
-                            leaveTo='opacity-0'
+                            enter="transition duration-500 delay-100 ease-in-out"
+                            enterFrom="opacity-0 -translate-x-2"
+                            enterTo="opacity-100 translate-x-0"
+                            leave="transition-none duration-0"
+                            leaveFrom="opacity-100"
+                            leaveTo="opacity-0"
                         >
-                            <div className='ml-3'>
-                                <h4 className='text-lg font-sans font-semibold mb-1 tracking-tight dark:text-neutral-300'>{memberName ? memberName : 'Anonymous'}</h4>
+                            <div className="ml-3">
+                                <h4 className="text-lg font-sans font-semibold mb-1 tracking-tight dark:text-neutral-300">{memberName ? memberName : 'Anonymous'}</h4>
                             </div>
                         </Transition>
                     </div>
