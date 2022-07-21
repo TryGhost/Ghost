@@ -120,6 +120,11 @@ async function initCore({ghostServer, config, bootLogger, frontend}) {
         // Job Service allows parts of Ghost to run in the background
         debug('Begin: Job Service');
         const jobService = require('./server/services/jobs');
+
+        if (config.get('server:testmode')) {
+            jobService.initTestMode();
+        }
+
         ghostServer.registerCleanupTask(async () => {
             await jobService.shutdown();
         });
