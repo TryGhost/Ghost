@@ -1,6 +1,7 @@
 // Switch these lines once there are useful utils
 // const testUtils = require('./utils');
 require('./utils');
+const assert = require('assert');
 const path = require('path');
 const sinon = require('sinon');
 const delay = require('delay');
@@ -248,6 +249,46 @@ describe('Job Manager', function () {
                 should(workerMessageHandlerSpy.args[0][0].name).equal('will-send-msg');
                 should(workerMessageHandlerSpy.args[0][0].message).equal('Worker received: hello from Ghost!');
             });
+        });
+    });
+
+    describe('Add one off job', function () {
+        it('adds job to the queue when it is a unique one', async function () {
+            const spy = sinon.spy();
+            const JobModel = {
+                findOne: sinon.stub().resolves(undefined),
+                add: sinon.stub().resolves()
+            };
+
+            const jobManager = new JobManager({JobModel});
+            await jobManager.addOneOffJob({
+                job: spy,
+                name: 'unique name',
+                data: 'test data'
+            });
+
+            assert.equal(JobModel.add.called, true);
+        });
+
+        it('does not add a job to the queue when it already exists', async function () {
+            const spy = sinon.spy();
+            const JobModel = {
+                findOne: sinon.stub().resolves({name: 'I am the only one'}),
+                add: sinon.stub().throws('should not be called')
+            };
+
+            const jobManager = new JobManager({JobModel});
+
+            try {
+                await jobManager.addOneOffJob({
+                    job: spy,
+                    name: 'I am the only one',
+                    data: 'test data'
+                });
+                throw new Error('should not reach this point');
+            } catch (error) {
+                assert.equal(error.message, 'A "I am the only one" one off job has already been executed.');
+            }
         });
     });
 
