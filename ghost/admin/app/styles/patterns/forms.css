@@ -111,6 +111,7 @@ input[type=number] {
 .form-group h3 {
     margin-bottom: 1.6em;
     font-size: 1.5rem;
+    letter-spacing: 0;
 }
 
 .form-group label {
@@ -200,6 +201,7 @@ select {
     background: var(--input-bg-color);
     color: var(--darkgrey);
     font-size: 1.5rem;
+    letter-spacing: 0;
     font-weight: 400;
     user-select: text;
     border-radius: var(--border-radius);
@@ -735,6 +737,7 @@ textarea {
     background: var(--input-bg-color);
     color: var(--darkgrey);
     font-size: 1.5rem;
+    letter-spacing: 0;
     font-weight: 400;
     user-select: text;
     border-radius: var(--border-radius);
@@ -835,6 +838,7 @@ textarea {
 
 .form-rich-radio .gh-radio-label .description h4 {
     font-size: 1.5rem;
+    letter-spacing: 0;
     font-weight: 600;
     margin: 0;
     padding: 0;

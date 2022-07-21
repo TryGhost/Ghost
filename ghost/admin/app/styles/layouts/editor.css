@@ -871,7 +871,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
 .gh-markdown-editor-preview h5,
 .gh-editor .editor-preview h6,
 .gh-markdown-editor-preview h6 {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Open Sans", "Helvetica Neue", sans-serif;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Open Sans", "Helvetica Neue", sans-serif;
 }
 
 .gh-markdown-editor-preview-title {

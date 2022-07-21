@@ -687,9 +687,9 @@
 .gh-tier-form-tierpreview .billing-period {
     align-self: flex-end;
     font-size: 1.5rem;
+    letter-spacing: 0;
     line-height: 1.4em;
     color: #686868;
-    letter-spacing: 0.3px;
     margin-left: 5px;
     font-weight: 400;
 }
@@ -724,6 +724,7 @@
 
 .gh-tier-form-tierpreview .gh-portal-tier-benefits {
     font-size: 1.5rem;
+    letter-spacing: 0;
     line-height: 1.4em;
     width: 100%;
     margin-top: 16px;

@@ -252,6 +252,7 @@
     border: var(--input-border);
     box-shadow: none; /* Remove some default styling for Firefox (required attribute) */
     font-size: 1.5rem;
+    letter-spacing: 0;
     line-height: 1.8rem;
 }
 
