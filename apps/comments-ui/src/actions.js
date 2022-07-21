@@ -281,6 +281,18 @@ async function updateMemberName({data, state, api}) {
     return null;
 }
 
+function openPopup({data}) {
+    return {
+        popup: data
+    };
+}
+
+function closePopup() {
+    return {
+        popup: null
+    };
+}
+
 const Actions = {
     // Put your actions here
     addComment,
@@ -293,7 +305,9 @@ const Actions = {
     reportComment,
     addReply,
     loadMoreComments,
-    updateMemberName
+    updateMemberName,
+    openPopup,
+    closePopup
 };
 
 /** Handle actions in the App, returns updated state */

@@ -1,14 +1,12 @@
-import React, {useContext, useEffect, useState, useRef} from 'react';
+import React, {useContext, useEffect, useRef} from 'react';
 import {Transition} from '@headlessui/react';
 import AppContext from '../AppContext';
 import Avatar from './Avatar';
 import {useEditor, EditorContent} from '@tiptap/react';
 import {getEditorConfig} from '../utils/editor';
-import AddNameDialog from './modals/AddNameDialog';
 
 const Form = (props) => {
     const {member, postId, dispatchAction, onAction, avatarSaturation} = useContext(AppContext);
-    const [isAddNameShowing, setAddNameShowing] = useState(false);
     const formEl = useRef(null);
 
     let config;
@@ -172,17 +170,11 @@ const Form = (props) => {
         if (memberName) {
             editor.commands.focus();
         } else {
-            setAddNameShowing(true);
+            dispatchAction('openPopup', {
+                type: 'addNameDialog',
+                callback: () => editor.commands.focus()
+            });
         }
-    };
-
-    const closeAddName = () => {
-        setAddNameShowing(false);
-    };
-
-    const saveAddName = () => {
-        setAddNameShowing(false);
-        editor.commands.focus();
     };
 
     let submitText;
@@ -264,7 +256,6 @@ const Form = (props) => {
                     </div>
                 </div>
             </form>
-            <AddNameDialog show={isAddNameShowing} submit={saveAddName} cancel={closeAddName} />
         </>
     );
 };

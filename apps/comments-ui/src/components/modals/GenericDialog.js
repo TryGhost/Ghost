@@ -1,12 +1,19 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import {Transition} from '@headlessui/react';
-import Modal from './Modal';
+import Frame from '../Frame';
+import AppContext from '../../AppContext';
 
 const GenericDialog = (props) => {
     // The modal will cover the whole screen, so while it is hidden, we need to disable pointer events
+    const {dispatchAction} = useContext(AppContext);
+
+    const close = (event) => {
+        dispatchAction('closePopup');
+    };
+
     return (
-        <Transition show={props.show}>
-            <Modal>
+        <Transition show={props.show} appear={true}>
+            <Frame type="fixed">
                 <div>
                     <Transition.Child
                         enter="transition duration-200 linear"
@@ -16,7 +23,7 @@ const GenericDialog = (props) => {
                         leaveFrom="opacity-100"
                         leaveTo="opacity-0"
                     >
-                        <div className="fixed top-0 left-0 overflow-hidden w-screen h-screen flex pt-12 justify-center bg-gradient-to-b from-[rgba(0,0,0,0.2)] to-rgba(0,0,0,0.1) backdrop-blur-[2px]" onClick={props.cancel}>
+                        <div className="fixed top-0 left-0 overflow-hidden w-screen h-screen flex pt-12 justify-center bg-gradient-to-b from-[rgba(0,0,0,0.2)] to-rgba(0,0,0,0.1) backdrop-blur-[2px]" onClick={close}>
                             <Transition.Child
                                 enter="transition duration-200 delay-150 linear"
                                 enterFrom="translate-y-4 opacity-0"
@@ -32,7 +39,7 @@ const GenericDialog = (props) => {
                         </div>
                     </Transition.Child>
                 </div>
-            </Modal>
+            </Frame>
         </Transition>
     );
 };

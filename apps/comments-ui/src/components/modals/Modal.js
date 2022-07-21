@@ -1,10 +1,14 @@
-import {Component} from 'react';
-import {createPortal} from 'react-dom';
 import Frame from '../Frame';
 
-/**
- * Full screen iframe, that is displayed fixed, and that can be used anywhere ('portalled' outside of existing iframes)
- */
+export default function Modal(props) {
+    return (
+        <Frame type="fixed" style={props.style}>
+            {props.children}
+        </Frame>
+    );
+}
+
+/*
 export default class Modal extends Component {
     constructor(props) {
         super(props);
@@ -41,3 +45,4 @@ export default class Modal extends Component {
         );
     }
 }
+*/

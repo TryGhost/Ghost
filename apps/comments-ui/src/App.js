@@ -7,6 +7,7 @@ import AppContext from './AppContext';
 import {hasMode} from './utils/check-mode';
 import setupGhostApi from './utils/api';
 import CommentsBox from './components/CommentsBox';
+import PopupModal from './components/PopupModal';
 
 function AuthFrame({adminUrl, onLoad}) {
     const iframeStyle = {
@@ -56,6 +57,7 @@ export default class App extends React.Component {
             popupNotification: null,
             customSiteUrl: props.customSiteUrl,
             postId: props.postId,
+            popup: null,
             accentColor: props.accentColor
         };
     }
@@ -259,7 +261,7 @@ export default class App extends React.Component {
 
     /**Get final App level context from App state*/
     getContextFromState() {
-        const {action, popupNotification, customSiteUrl, member, comments, pagination, postId, admin} = this.state;
+        const {action, popupNotification, customSiteUrl, member, comments, pagination, postId, admin, popup} = this.state;
         return {
             action,
             popupNotification,
@@ -274,6 +276,7 @@ export default class App extends React.Component {
             accentColor: this.props.accentColor,
             commentsEnabled: this.props.commentsEnabled,
             appVersion: this.props.appVersion,
+            popup,
             dispatchAction: (_action, data) => this.dispatchAction(_action, data),
             
             /**
@@ -297,7 +300,7 @@ export default class App extends React.Component {
                 <AppContext.Provider value={this.getContextFromState()}>
                     <CommentsBoxContainer done={done} />
                     <AuthFrame adminUrl={this.props.adminUrl} onLoad={this.initSetup.bind(this)} initStatus={this.state.initStatus}/>
-                    <div id="ghost-comments-modal-root"></div>
+                    <PopupModal />
                 </AppContext.Provider>
             </SentryErrorBoundary>
         );
