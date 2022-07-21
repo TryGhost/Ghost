@@ -1,0 +1,74 @@
+{
+  "name": "@tryghost/koenig-react",
+  "version": "0.0.0",
+  "repository": "https://github.com/TryGhost/Koenig/tree/main/packages/koenig-react",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "scripts": {
+    "start": "export PORT=1337;react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "lint": "eslint src --ext .js --cache",
+    "posttest": "yarn lint",
+    "build:bundle": "yarn webpack --config webpack.config.js",
+    "serve": "yarn webpack serve"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.18.9",
+    "@babel/preset-env": "^7.18.9",
+    "autoprefixer": "^10.4.7",
+    "babel-loader": "^8.2.5",
+    "c8": "7.11.3",
+    "copy-webpack-plugin": "^11.0.0",
+    "eslint-config-react-app": "^7.0.1",
+    "eslint-plugin-ghost": "2.12.0",
+    "glob": "^8.0.3",
+    "mocha": "10.0.0",
+    "node-static": "^0.7.11",
+    "nodemon": "^2.0.19",
+    "postcss": "^8.4.14",
+    "should": "13.2.3",
+    "sinon": "14.0.0",
+    "tailwindcss": "^3.1.6",
+    "uglifyjs-webpack-plugin": "^2.2.0",
+    "webpack-cli": "^4.10.0"
+  },
+  "dependencies": {
+    "@testing-library/jest-dom": "^5.14.1",
+    "@testing-library/react": "^13.0.0",
+    "@testing-library/user-event": "^13.2.1",
+    "express": "^4.18.1",
+    "mobiledoc-kit": "^0.14.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-mobiledoc-editor": "0.13.0",
+    "react-scripts": "5.0.1",
+    "web-vitals": "^2.1.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest",
+      "plugin:ghost/browser"
+    ],
+    "plugins": [
+      "ghost"
+    ]
+  }
+}

@@ -1,0 +1,6 @@
+{
+    "events": {
+        "restart": "yarn build:bundle"
+    },
+    "ignore": ["dist", "build"]
+}
