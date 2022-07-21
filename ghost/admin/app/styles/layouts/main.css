@@ -191,6 +191,7 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     font-size: 1.5rem;
+    letter-spacing: 0;
     line-height: 1.3em;
     font-weight: 700;
     color: var(--black);
@@ -287,6 +288,7 @@
     padding: 0;
     word-break: break-all;
     font-size: 1.5rem;
+    letter-spacing: 0;
     font-weight: 600;
     line-height: 1.2em;
     max-width: 160px;
@@ -436,7 +438,8 @@
     transition: none;
     font-weight: 400;
     padding: 7px var(--mainmenu-padding) 7px calc(var(--mainmenu-padding) + 7px);
-    font-size: 1.45rem;
+    font-size: 1.4rem;
+    height: 34px;
     margin: 0;
     border-radius: 0;
     box-sizing: border-box;
@@ -534,13 +537,17 @@
     stroke: color-mod(var(--darkgrey) l(-5%));
 }
 
+.gh-nav-list a[data-test-nav='posts'] svg {
+    margin-top: -3px;
+}
+
 .gh-nav-list .gh-secondary-action {
     position: absolute;
     z-index: 999;
     padding: 10px;
     margin: 0;
     right: 12px;
-    top: -11px;
+    top: 0px;
     opacity: 0;
     transition: opacity ease 0.2s;
 }
@@ -643,7 +650,7 @@
 
 .gh-nav-view-list a {
     position: relative;
-    padding-left: calc(var(--mainmenu-padding) + 42px);
+    padding-left: calc(var(--mainmenu-padding) + 40px);
 }
 
 .gh-nav-viewname {
@@ -937,6 +944,7 @@
 
     .gh-nav-list {
         font-size: 1.5rem;
+        letter-spacing: 0;
     }
 
     .gh-nav-list-h {
@@ -1188,7 +1196,7 @@
 .gh-main-section-header.small {
     font-size: 1.1rem;
     text-transform: uppercase;
-    letter-spacing: 0.2px;
+    letter-spacing: 0.03em;
     font-weight: 500;
     padding: 12px 0;
 }
@@ -1344,6 +1352,7 @@
 
 .gh-expandable-header .gh-expandable-title {
     font-size: 1.5rem;
+    letter-spacing: 0;
     font-weight: 600;
     color: var(--black);
     margin: 0;
@@ -1439,7 +1448,7 @@
     font-size: 3.1rem;
     line-height: 1.3em;
     font-weight: 700;
-    letter-spacing: 0px;
+    letter-spacing: -0.021em;
     /* match button height to avoid jump on navigation between screens*/
     min-height: 35px;
     color: var(--black);
@@ -1958,6 +1967,7 @@ section.gh-ds h2 {
     grid-column: 2;
     margin: 0 0 6px;
     font-size: 1.5rem;
+    letter-spacing: 0;
     font-weight: 600;
 }
 

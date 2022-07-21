@@ -1,6 +1,14 @@
 /* Global styles
 /* ---------------------------------------------------------- */
 
+/* Fonts
+/* ---------------------------------------------------------- */
+@font-face {
+    font-family: "Inter";
+    src: url("fonts/Inter.ttf") format("truetype-variations");
+    font-weight: 100 900;
+}
+
 
 /* Variables
 /* ---------------------------------------------------------- */
@@ -153,7 +161,7 @@
 
     /* Style values */
     --border-radius: 3px;
-    --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Droid Sans", "Helvetica Neue", sans-serif;
+    --font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Droid Sans", "Helvetica Neue", sans-serif;
     --font-family-mono: Consolas, "Liberation Mono", Menlo, Courier, monospace;
 
     /* Shadows */
@@ -286,7 +294,7 @@ html {
     font-family: var(--font-family);
     font-size: 62.5%;
     line-height: 1.65;
-    letter-spacing: 0.2px;
+    letter-spacing: 0.01em;
 
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }
@@ -357,10 +365,12 @@ h4 {
 
 h5 {
     font-size: 1.5rem;
+    letter-spacing: 0;
 }
 
 h6 {
     font-size: 1.5rem;
+    letter-spacing: 0;
 }
 
 .gh-heading-xs {

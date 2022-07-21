@@ -91,6 +91,7 @@
     .dropdown-menu li > button {
         padding: 7px 8px;
         font-size: 1.5rem;
+        letter-spacing: 0;
     }
     .dropdown-menu svg {
         height: 16px;
