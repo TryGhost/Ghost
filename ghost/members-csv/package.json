@@ -22,10 +22,10 @@
     "sinon": "14.0.0"
   },
   "dependencies": {
-    "bluebird": "^3.7.2",
-    "fs-extra": "^10.0.0",
-    "lodash": "^4.17.21",
-    "papaparse": "^5.3.2",
+    "bluebird": "3.7.2",
+    "fs-extra": "10.1.0",
+    "lodash": "4.17.21",
+    "papaparse": "5.3.2",
     "pump": "^3.0.0"
   }
 }
