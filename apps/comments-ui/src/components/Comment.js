@@ -48,14 +48,15 @@ const Comment = (props) => {
             <>
                 <div className={`flex flex-row ${hasReplies ? 'mb-4' : 'mb-10'}`}>
                     <div className="mr-3">
-                        <Avatar comment={comment} saturation={avatarSaturation} />
+                        <Avatar comment={comment} saturation={avatarSaturation} isBlank={isNotPublished} />
                     </div>
-                    <div>        
+                    <div>      
+                        {!isNotPublished &&  
                         <div className="mb-[4px] mt-[2px]">
                             <h4 className="text-lg font-sans font-semibold tracking-tight dark:text-[rgba(255,255,255,0.85)]">{!comment.member ? 'Deleted member' : (comment.member.name ? comment.member.name : 'Anonymous')}</h4>
-                        </div>
+                        </div>}
    
-                        <div className={`mb-2 pr-4 font-sans leading-normal ${isNotPublished ? 'text-neutral-400' : 'text-neutral-900'} dark:text-[rgba(255,255,255,0.85)]`}>
+                        <div className={`mb-2 pr-4 font-sans leading-normal ${isNotPublished ? 'text-neutral-400 mt-[4px]' : 'text-neutral-900'} dark:text-[rgba(255,255,255,0.85)]`}>
                             <p dangerouslySetInnerHTML={html} className="gh-comment-content text-[16.5px] leading-normal"></p>
                         </div>
                         <div className="flex gap-5 items-center">

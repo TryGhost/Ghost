@@ -1,6 +1,7 @@
 import React, {useContext} from 'react';
 import AppContext from '../AppContext';
 import {getInitials} from '../utils/helpers';
+import {ReactComponent as AvatarIcon} from '../images/icons/avatar.svg';
 
 const Avatar = (props) => {
     const {member} = useContext(AppContext);
@@ -66,12 +67,18 @@ const Avatar = (props) => {
     };
 
     return (
-        <figure className={`relative ${dimensionClasses}`}>
-            <div className={`flex justify-center items-center rounded-full ${dimensionClasses}`} style={avatarStyle}>
-                <p className={`text-white font-sans font-semibold ${initialsClasses}`}>{ commentGetInitials() }</p>
-            </div>
-            {commentMember && <img className={`absolute top-0 left-0 rounded-full ${dimensionClasses}`} src={commentMember.avatar_image} alt="Avatar"/>}
-        </figure>
+        props.isBlank ?
+            (<figure className={`relative ${dimensionClasses}`}>
+                <div className={`flex justify-center items-center rounded-full bg-neutral-300 ${dimensionClasses}`}>
+                    <AvatarIcon />
+                </div>
+            </figure>) :
+            (<figure className={`relative ${dimensionClasses}`}>
+                <div className={`flex justify-center items-center rounded-full ${dimensionClasses}`} style={avatarStyle}>
+                    <p className={`text-white font-sans font-semibold ${initialsClasses}`}>{ commentGetInitials() }</p>
+                </div>
+                {commentMember && <img className={`absolute top-0 left-0 rounded-full ${dimensionClasses}`} src={commentMember.avatar_image} alt="Avatar"/>}
+            </figure>)
     );
 };
 

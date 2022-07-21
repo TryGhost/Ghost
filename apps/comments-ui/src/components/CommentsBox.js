@@ -5,7 +5,7 @@ import Form from './Form';
 import Comment from './Comment';
 import Pagination from './Pagination';
 import NotPaidBox from './NotPaidBox';
-import Empty from './Empty';
+// import Empty from './Empty';
 import Loading from './Loading';
 
 const CommentsBoxContent = (props) => {
@@ -21,7 +21,8 @@ const CommentsBoxContent = (props) => {
         <>
             <Pagination />
             <div className={!pagination ? 'mt-4' : ''}>
-                {commentsCount === 0 ? <Empty /> : commentsElements}
+                {/* {commentsCount === 0 ? (member && <Empty />) : commentsElements} */}
+                {commentsCount > 0 && commentsElements}
             </div>
             <div>
                 { member ? (isPaidMember || !paidOnly ? <Form commentsCount={commentsCount} /> : <NotPaidBox isFirst={commentsCount === 0} />) : <NotSignedInBox isFirst={commentsCount === 0} /> }
@@ -69,10 +70,10 @@ const CommentsBox = (props) => {
     const style = {
         '--gh-accent-color': accentColor ?? 'blue',
         // need careful padding adjustments to match iFrame negative margins and to not cut off top editing form
-        paddingLeft: 'min(4vmin,20px)',
-        paddingRight: 'min(4vmin,20px)',
+        paddingLeft: 20,
+        paddingRight: 20,
         paddingTop: 16,
-        paddingBottom: 16
+        paddingBottom: 32
     };
     return (
         <section className={'ghost-display ' + containerClass} style={style}>

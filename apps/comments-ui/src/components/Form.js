@@ -10,6 +10,9 @@ const Form = (props) => {
     const [isFormOpen, setFormOpen] = useState(props.isReply || props.isEdit ? true : false);
     const formEl = useRef(null);
 
+    const {comment, commentsCount} = props;
+    const memberName = (props.isEdit ? comment.member.name : member.name); 
+
     let config;
     if (props.isReply) {
         config = {
@@ -26,7 +29,7 @@ const Form = (props) => {
         };
     } else {
         config = {
-            placeholder: 'Join the discussion',
+            placeholder: (commentsCount === 0 ? 'Be first to start the conversation' : 'Join the discussion'),
             autofocus: false
         };
     }
@@ -169,9 +172,6 @@ const Form = (props) => {
         return false;
     };
 
-    const {comment, commentsCount} = props;
-    const memberName = (props.isEdit ? comment.member.name : member.name); 
-
     const focusEditor = (event) => {
         event.stopPropagation();
 
@@ -202,10 +202,11 @@ const Form = (props) => {
         <>
             <form ref={formEl} onClick={focusEditor} className={`
                 transition duration-200
-                -mt-[12px] -mr-3 mb-10 -ml-[12px] pt-3 pb-2 px-3
+                pt-3 pb-2 px-3
+                -mt-[12px] -mr-3 mb-10 -ml-[12px]
                 bg-white dark:bg-[rgba(255,255,255,0.08)]
                 rounded-md shadow-formlg dark:shadow-transparent hover:shadow-formxl
-                ${!commentsCount && !props.isEdit && !props.isReply && '-mt-0 -mr-0 -ml-0'}
+                ${!commentsCount && !props.isEdit && !props.isReply && 'mt-0 ml-0 mr-0'}
                 ${isFormOpen ? 'cursor-default' : 'cursor-pointer'}`
             }>
                 <div className="w-full relative">
@@ -220,6 +221,7 @@ const Form = (props) => {
                                     focus:outline-0
                                     placeholder:text-neutral-300 dark:placeholder:text-[rgba(255,255,255,0.3)]  
                                     resize-none
+                                    ${commentsCount === 0 && 'placeholder:text-neutral-700'}
                                     ${isFormOpen ? 'cursor-textmin-h-[144px] pt-[33px] pb-[68px]' : 'cursor-pointer overflow-hidden min-h-[48px] hover:border-slate-300'}
                                     ${props.isEdit && 'cursor-text'}
                                     ${!memberName && 'pointer-events-none'}
