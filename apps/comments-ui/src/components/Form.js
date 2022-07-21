@@ -42,10 +42,31 @@ const Form = (props) => {
     // };
 
     const getScrollToPosition = () => {
-        const yOffset = -100; 
+        let yOffset = -100; 
         const element = formEl.current;
-        const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
 
+        // Because we are working in an iframe, we need to resolve the position inside this iframe to the position in the top window
+        // Get the window of the element, not the window (which is the top window)
+        let currentWindow = element.ownerDocument.defaultView;
+
+        // Loop all iframe parents (if we have multiple)
+        while (currentWindow !== window) {
+            const currentParentWindow = currentWindow.parent;
+            for (let idx = 0; idx < currentParentWindow.frames.length; idx++) {
+                if (currentParentWindow.frames[idx] === currentWindow) {
+                    for (let frameElement of currentParentWindow.document.getElementsByTagName('iframe')) {
+                        if (frameElement.contentWindow === currentWindow) {
+                            const rect = frameElement.getBoundingClientRect();
+                            yOffset += rect.top + currentWindow.pageYOffset;
+                        }
+                    }
+                    currentWindow = currentParentWindow;
+                    break;
+                }
+            }
+        }
+
+        const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
         return y;
     };
 
