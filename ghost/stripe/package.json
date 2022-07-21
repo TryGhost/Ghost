@@ -24,10 +24,10 @@
   },
   "dependencies": {
     "@tryghost/debug": "0.1.17",
-    "@tryghost/domain-events": "^0.0.0",
+    "@tryghost/domain-events": "0.0.0",
     "@tryghost/errors": "1.2.14",
     "@tryghost/logging": "2.2.3",
-    "@tryghost/member-events": "^0.0.0",
+    "@tryghost/member-events": "0.0.0",
     "leaky-bucket": "2.2.0",
     "lodash": "4.17.21",
     "stripe": "8.222.0"
