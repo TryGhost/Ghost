@@ -1,0 +1,32 @@
+{
+  "name": "@tryghost/members-events-service",
+  "version": "0.4.3",
+  "repository": "https://github.com/TryGhost/Members/tree/main/packages/members-events-service",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "test": "NODE_ENV=testing c8 --all --check-coverage mocha './test/**/*.test.js'",
+    "lint": "eslint . --ext .js --cache",
+    "posttest": "yarn lint"
+  },
+  "files": [
+    "index.js",
+    "lib"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "c8": "7.12.0",
+    "mocha": "10.0.0",
+    "should": "13.2.3",
+    "sinon": "14.0.0"
+  },
+  "dependencies": {
+    "@tryghost/domain-events": "^0.1.14",
+    "@tryghost/member-events": "^0.4.6",
+    "moment-timezone": "^0.5.34"
+  }
+}
