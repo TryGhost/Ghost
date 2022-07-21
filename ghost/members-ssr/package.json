@@ -1,0 +1,39 @@
+{
+  "name": "@tryghost/members-ssr",
+  "version": "1.0.28",
+  "repository": "https://github.com/TryGhost/Members/tree/main/packages/members-ssr",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "test": "NODE_ENV=testing c8 --all --reporter text --reporter cobertura mocha './test/**/*.test.js'",
+    "lint": "eslint '**/*.js'",
+    "posttest": "yarn lint"
+  },
+  "files": [
+    "index.js",
+    "lib"
+  ],
+  "devDependencies": {
+    "@types/cookies": "0.7.7",
+    "@types/node": "16.11.45",
+    "c8": "7.12.0",
+    "keypair": "1.0.4",
+    "mocha": "10.0.0",
+    "should": "13.2.3",
+    "sinon": "14.0.0"
+  },
+  "dependencies": {
+    "@tryghost/debug": "^0.1.2",
+    "@tryghost/errors": "^1.1.0",
+    "bluebird": "^3.5.3",
+    "concat-stream": "^2.0.0",
+    "cookies": "^0.8.0",
+    "jsonwebtoken": "^8.5.1",
+    "lodash": "^4.17.11"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
