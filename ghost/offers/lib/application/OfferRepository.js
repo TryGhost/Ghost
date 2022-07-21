@@ -1,5 +1,5 @@
 const {flowRight} = require('lodash');
-const {mapKeyValues, mapQuery} = require('@nexes/mongo-utils');
+const {mapKeyValues, mapQuery} = require('@tryghost/mongo-utils');
 const DomainEvents = require('@tryghost/domain-events');
 const OfferCodeChangeEvent = require('../domain/events/OfferCodeChange');
 const OfferCreatedEvent = require('../domain/events/OfferCreated');
