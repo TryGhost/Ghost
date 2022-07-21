@@ -11,6 +11,10 @@ const More = (props) => {
         setIsContextMenuOpen(current => !current);
     };
 
+    const closeContextMenu = () => {
+        setIsContextMenuOpen(false);
+    };
+
     const comment = props.comment;
 
     /*
@@ -26,7 +30,7 @@ const More = (props) => {
     return (
         <div className="relative">
             {show ? <button onClick={toggleContextMenu} className="outline-0"><MoreIcon className='gh-comments-icon gh-comments-icon-more outline-0 fill-neutral-400 dark:fill-rgba(255,255,255,0.5)' /></button> : null}
-            {isContextMenuOpen ? <CommentContextMenu comment={comment} close={toggleContextMenu} toggleEdit={props.toggleEdit} /> : null}
+            {isContextMenuOpen ? <CommentContextMenu comment={comment} close={closeContextMenu} toggleEdit={props.toggleEdit} /> : null}
         </div>
     );
 };
