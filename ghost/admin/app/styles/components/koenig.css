@@ -60,7 +60,7 @@
 .koenig-editor__editor h4,
 .koenig-editor__editor h5,
 .koenig-editor__editor h6 {
-    font-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
     font-weight: 700;
     color: var(--black);
 }
@@ -1222,6 +1222,7 @@
     font-size: 1.5rem;
     line-height: 1.5em;
     font-weight: 600;
+    letter-spacing: 0;
 }
 
 .kg-bookmark-container:hover .kg-bookmark-title {
@@ -1434,6 +1435,7 @@
     padding: 4px;
     border: 0;
     font-size: 1.5rem;
+    letter-spacing: 0;
     font-weight: 500;
     text-align: center;
     user-select: auto;
@@ -1445,6 +1447,7 @@
     margin-right: .8rem;
     color: var(--black);
     font-size: 1.5rem;
+    letter-spacing: 0;
     font-weight: 400;
     user-select: auto;
 }
@@ -1454,6 +1457,7 @@
     padding: 4px 12px;
     color: var(--black);
     font-size: 1.5rem;
+    letter-spacing: 0;
     font-weight: 400;
 }
 
@@ -1468,6 +1472,7 @@
 
 .kg-email-cta-card .gh-btn-accent span {
     font-size: 1.5rem;
+    letter-spacing: 0;
     height: 40px;
     line-height: 40px;
     padding: 0 20px;
@@ -1476,7 +1481,7 @@
 .gh-email-cta-segment-indicator p {
     padding: 6px 0 29px !important;
     color: var(--midlightgrey-d1);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     text-transform: uppercase;
     font-size: 1.2rem;
     font-weight: 600;
@@ -1800,14 +1805,14 @@ button.emoji-picker__category-button.active {
 
 .kg-product-card-title, .kg-product-card-title h4 {
     text-decoration: none;
-    font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Droid Sans,Helvetica Neue,sans-serif;
+    font-family: "Inter", -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Droid Sans,Helvetica Neue,sans-serif;
     font-weight: 700 !important;
 }
 
 .kg-product-card-title ::after {
     font-weight: 700 !important;
     font-size: 2.2rem !important;
-    font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Droid Sans,Helvetica Neue,sans-serif;
+    font-family: "Inter", -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Droid Sans,Helvetica Neue,sans-serif;
     letter-spacing: .02rem;
     line-height: 1.4em;
 }
@@ -1819,7 +1824,7 @@ button.emoji-picker__category-button.active {
 .kg-product-card-description p, .kg-product-card-description li {
     font-size: 1.6rem !important;
     line-height: 1.4em !important;
-    font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Droid Sans,Helvetica Neue,sans-serif !important;
+    font-family: "Inter", -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Droid Sans,Helvetica Neue,sans-serif !important;
     color: #656E7A;
 }
 
@@ -1830,7 +1835,7 @@ button.emoji-picker__category-button.active {
 .kg-product-card-description ::after {
     font-size: 1.6rem !important;
     line-height: 1.6em;
-    font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Droid Sans,Helvetica Neue,sans-serif !important;
+    font-family: "Inter", -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Droid Sans,Helvetica Neue,sans-serif !important;
 }
 
 .kg-product-card-button {
@@ -1882,6 +1887,7 @@ button.emoji-picker__category-button.active {
 
 .kg-button-card .gh-btn span {
     font-size: 1.5rem;
+    letter-spacing: 0;
     height: 40px;
     line-height: 40px;
     padding: 0 20px;
@@ -2822,8 +2828,9 @@ button.emoji-picker__category-button.active {
     max-width: 60%;
     height: auto;
     color: var(--red);
-    font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Droid Sans,Helvetica Neue,sans-serif;
+    font-family: "Inter", -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Droid Sans,Helvetica Neue,sans-serif;
     font-size: 1.5rem;
+    letter-spacing: 0;
     font-weight: 600;
     line-height: 1.6em;
     text-align: center;

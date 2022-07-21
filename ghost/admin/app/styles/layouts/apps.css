@@ -258,6 +258,7 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     font-size: 1.5rem;
+    letter-spacing: 0;
     line-height: 1.3em;
     font-weight: 600;
 }
@@ -265,6 +266,7 @@
     .apps-card-app-title {
         white-space: normal;
         font-size: 1.5rem;
+        letter-spacing: 0;
     }
 }
 

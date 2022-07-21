@@ -451,6 +451,7 @@
     justify-content: flex-start;
     overflow: hidden;
     font-size: 1.5rem;
+    letter-spacing: 0;
     text-align: left;
     letter-spacing: 0;
     text-rendering: optimizeLegibility;

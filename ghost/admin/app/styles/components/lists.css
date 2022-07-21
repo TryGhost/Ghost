@@ -51,7 +51,7 @@ ul.nostyle li {
     border-bottom: var(--main-color-area-divider) 1px solid;
     font-size: 1.1rem;
     font-weight: 500;
-    letter-spacing: 0.1px;
+    letter-spacing: 0.03em;
     color: var(--black);
     padding: 10px 20px;
     text-transform: uppercase;
@@ -157,6 +157,7 @@ ul.nostyle li {
 .gh-list h3 {
     margin: 0 0 3px 0;
     font-size: 1.5rem;
+    letter-spacing: 0;
     font-weight: 600;
 }
 
@@ -340,7 +341,7 @@ ul.nostyle li {
     vertical-align: middle;
     font-size: 1.1rem;
     font-weight: 500;
-    letter-spacing: 0.1px;
+    letter-spacing: 0.03em;
     color: var(--black);
     border-bottom: var(--whitegrey) 1px solid;
     padding: 10px 20px;

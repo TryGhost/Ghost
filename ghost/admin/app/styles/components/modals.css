@@ -636,6 +636,7 @@
     padding: 8px 16px;
     color: var(--black);
     font-size: 1.5rem;
+    letter-spacing: 0;
     font-weight: 600;
     line-height: 1.3em;
 }

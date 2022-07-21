@@ -34,6 +34,7 @@
     padding: 13px 1px 0;
     color: color-mod(var(--midgrey) l(+8%));
     font-size: 1.5rem;
+    letter-spacing: 0;
     font-weight: 400;
     letter-spacing: 0.3px;
 }

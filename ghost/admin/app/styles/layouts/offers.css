@@ -162,6 +162,7 @@
     right: 12px;
     color: var(--midgrey);
     font-size: 1.5rem;
+    letter-spacing: 0;
 }
 
 .gh-offer-url .gh-input {

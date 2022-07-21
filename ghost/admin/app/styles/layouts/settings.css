@@ -115,6 +115,7 @@
 
 .gh-settings-main-grid .gh-setting-group h4 {
     font-size: 1.5rem;
+    letter-spacing: 0;
     font-weight: 600;
     margin: 4px 0 2px;
 }
@@ -144,8 +145,8 @@
     color: var(--black);
     text-transform: uppercase;
     font-weight: 500;
-    letter-spacing: 0.35px;
-    font-size: 1.2rem;
+    letter-spacing: 0.03em;
+    font-size: 1.1rem;
     padding: 8px 0;
     border-bottom: 1px solid var(--main-color-area-divider);
     margin: 0 0 0 1px;
@@ -194,6 +195,7 @@
 .gh-setting-title {
     margin-bottom: 2px;
     font-size: 1.5rem;
+    letter-spacing: 0;
     line-height: 1.15em;
     font-weight: 600;
     color: var(--black);
@@ -247,6 +249,7 @@
 
 .gh-setting-content-extended textarea {
     font-size: 1.5rem;
+    letter-spacing: 0;
     line-height: 1.4em;
     max-width: initial;
 }
@@ -839,6 +842,7 @@
 
 .gh-newsletters .gh-expandable-title {
     font-size: 1.5rem;
+    letter-spacing: 0;
     font-weight: 600;
     color: var(--black);
     margin: 0;
@@ -1079,6 +1083,7 @@ body:not([data-user-is-dragging]) .gh-newsletter-card-draggable:hover .grab-news
 
 .settings-code label {
     font-size: 1.5rem;
+    letter-spacing: 0;
     margin-bottom: 2px;
 }
 
@@ -1697,6 +1702,7 @@ p.theme-validation-details {
     padding: 8px 16px;
     color: var(--black);
     font-size: 1.5rem;
+    letter-spacing: 0;
     font-weight: 600;
     line-height: 1.3em;
     border-radius: var(--border-radius);
@@ -1738,6 +1744,7 @@ p.theme-validation-details {
     align-items: center;
     color: var(--black);
     font-size: 1.5rem;
+    letter-spacing: 0;
     font-weight: 600;
 }
 
@@ -2384,6 +2391,7 @@ p.theme-validation-details {
 
 .gh-setting-members-portal-disabled h4 {
     font-size: 1.5rem;
+    letter-spacing: 0;
     font-weight: 500;
     color: var(--darkgrey);
 }
@@ -2680,6 +2688,7 @@ p.theme-validation-details {
 
 .gh-setting-nossl-container h4 {
     font-size: 1.5rem;
+    letter-spacing: 0;
     font-weight: 600;
 }
 
