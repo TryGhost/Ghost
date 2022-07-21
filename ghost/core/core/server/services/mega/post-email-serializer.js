@@ -14,6 +14,7 @@ const membersService = require('../members');
 const {isUnsplashImage, isLocalContentImage} = require('@tryghost/kg-default-cards/lib/utils');
 const {textColorForBackgroundColor, darkenToContrastThreshold} = require('@tryghost/color-utils');
 const logging = require('@tryghost/logging');
+const urlService = require('../../services/url');
 
 const ALLOWED_REPLACEMENTS = ['first_name'];
 
@@ -80,14 +81,19 @@ const createUnsubscribeUrl = (uuid, newsletterUuid) => {
 /**
  * createPostSignupUrl
  *
- * Takes a post slug. Returns the url that should be used to signup from newsletter
+ * Takes a post object. Returns the url that should be used to signup from newsletter
  *
- * @param {string} slug post slug
+ * @param {Object} post post object
  */
-const createPostSignupUrl = (slug) => {
-    const siteUrl = urlUtils.getSiteUrl();
-    const signupUrl = new URL(siteUrl);
-    signupUrl.pathname = `${signupUrl.pathname}/${slug}/`.replace('//', '/');
+const createPostSignupUrl = (post) => {
+    let url = urlService.getUrlByResourceId(post.id, {absolute: true});
+
+    // For email-only posts, use site url as base
+    if (post.status !== 'published' && url.match(/\/404\//)) {
+        url = urlUtils.getSiteUrl();
+    }
+
+    const signupUrl = new URL(url);
     signupUrl.hash = `/portal/signup`;
 
     return signupUrl.href;
@@ -338,7 +344,7 @@ const serialize = async (postModel, newsletter, options = {isBrowserPreview: fal
 function renderPaywallCTA(post) {
     const accentColor = settingsCache.get('accent_color');
     const siteTitle = settingsCache.get('title') || 'Ghost';
-    const signupUrl = createPostSignupUrl(post.slug);
+    const signupUrl = createPostSignupUrl(post);
 
     return `<div class="align-center" style="text-align: center;">
     <hr
