@@ -28,8 +28,10 @@ const Frame = ({
 
     // For now we don't listen for type changes, we could consider adding useEffect, but that won't be used
     const defaultStyle = type === 'dynamic' ? {
-        width: '100%',
-        height: '400px'
+        width: 'calc(100% + 64px)',
+        height: '400px',
+        marginLeft: '-32px', // negative margins to handle comment alignments and shadows
+        marginRight: '-32px'
     } : {
         zIndex: '3999999',
         position: 'fixed',
@@ -65,7 +67,7 @@ const Frame = ({
         </>
     );
 
-    const mergedStyle = {...iframeStyle, ...style, marginLeft: -32, marginRight: -32, width: 'calc(100% + 64px)'}; // negative margins to handle comment form shadows
+    const mergedStyle = {...iframeStyle, ...style};
 
     // For now we're using <NewFrame> because using a functional component with portal caused some weird issues with modals
     return (
