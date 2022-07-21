@@ -105,13 +105,16 @@ export function getInitials(name) {
     return parts[0].substring(0, 1).toLocaleUpperCase() + parts[parts.length - 1].substring(0, 1).toLocaleUpperCase();
 }
 
+// Keep a reference outside, because document.currentScript is only returned on the initial script load.
+const currentScript = document.currentScript;
+
 export function getBundledCssLink({appVersion}) {
     if (process.env.NODE_ENV === 'production' && appVersion) {
         return `https://unpkg.com/@tryghost/comments-ui@~${appVersion}/umd/main.css`;
     } else {
-        if (document.currentScript) {
+        if (currentScript) {
             // Dynamically determine the current path
-            const url = new URL(document.currentScript.src);
+            const url = new URL(currentScript.src);
             return url.origin + '/main.css';
         }
         return 'http://localhost:4000/main.css';

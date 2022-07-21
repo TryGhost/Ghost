@@ -1,4 +1,4 @@
-import ShadowRoot from './components/ShadowRoot';
+import Frame from './components/Frame';
 import * as Sentry from '@sentry/react';
 import React from 'react';
 import ActionHandler from './actions';
@@ -20,9 +20,9 @@ function AuthFrame({adminUrl, onLoad}) {
 
 function CommentsBoxContainer({done, appVersion}) {
     return (
-        <ShadowRoot appVersion={appVersion}>
+        <Frame>
             <CommentsBox done={done} />
-        </ShadowRoot>
+        </Frame>
     );
 }
 
@@ -273,6 +273,7 @@ export default class App extends React.Component {
             avatarSaturation: this.props.avatarSaturation,
             accentColor: this.props.accentColor,
             commentsEnabled: this.props.commentsEnabled,
+            appVersion: this.props.appVersion,
             dispatchAction: (_action, data) => this.dispatchAction(_action, data),
             
             /**
@@ -294,8 +295,9 @@ export default class App extends React.Component {
         return (
             <SentryErrorBoundary dsn={this.props.sentryDsn}>
                 <AppContext.Provider value={this.getContextFromState()}>
-                    <CommentsBoxContainer done={done} appVersion={this.props.appVersion} />
+                    <CommentsBoxContainer done={done} />
                     <AuthFrame adminUrl={this.props.adminUrl} onLoad={this.initSetup.bind(this)} initStatus={this.state.initStatus}/>
+                    <div id="ghost-comments-modal-root"></div>
                 </AppContext.Provider>
             </SentryErrorBoundary>
         );
