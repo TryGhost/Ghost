@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useRef} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import {Transition} from '@headlessui/react';
 import AppContext from '../AppContext';
 import Avatar from './Avatar';
@@ -7,6 +7,7 @@ import {getEditorConfig} from '../utils/editor';
 
 const Form = (props) => {
     const {member, postId, dispatchAction, onAction, avatarSaturation} = useContext(AppContext);
+    const [isFormOpen, setFormOpen] = useState(props.isReply || props.isEdit ? true : false);
     const formEl = useRef(null);
 
     let config;
@@ -85,6 +86,12 @@ const Form = (props) => {
             }, 100);
         }
 
+        editor.on('blur', (editorObj) => {
+            if (editor?.isEmpty) {
+                setFormOpen(false);
+            }
+        });
+
         // Focus editor + jump to end
         if (!props.isEdit) {
             return;
@@ -101,7 +108,7 @@ const Form = (props) => {
                 });
             })
             .run();
-    }, [editor, props.isEdit, props.isReply]);
+    }, [editor, props.isEdit, props.isReply, formEl]);
 
     const submitForm = async (event) => {
         event.preventDefault();
@@ -151,6 +158,7 @@ const Form = (props) => {
 
                 // Clear message and blur on success
                 editor.chain().clearContent().blur().run();
+                setFormOpen(false);
             } catch (e) {
                 // eslint-disable-next-line no-console
                 console.error(e);
@@ -162,15 +170,20 @@ const Form = (props) => {
 
     const {comment, commentsCount} = props;
     const memberName = (props.isEdit ? comment.member.name : member.name); 
-    const isFocused = editor?.isFocused || !editor?.isEmpty;
 
     const focusEditor = (event) => {
+        event.stopPropagation();
+
         if (memberName) {
+            setFormOpen(true);
             editor.commands.focus();
         } else {
             dispatchAction('openPopup', {
                 type: 'addNameDialog',
-                callback: () => editor.commands.focus()
+                callback: () => {
+                    setFormOpen(true);
+                    editor.commands.focus();
+                }
             });
         }
     };
@@ -192,7 +205,7 @@ const Form = (props) => {
                 bg-white dark:bg-[rgba(255,255,255,0.08)]
                 rounded-md shadow-formlg dark:shadow-transparent hover:shadow-formxl
                 ${!commentsCount && !props.isEdit && !props.isReply && '-mt-0 -mr-0 -ml-0'}
-                ${isFocused ? 'cursor-default' : 'cursor-pointer'}`
+                ${isFormOpen ? 'cursor-default' : 'cursor-pointer'}`
             }>
                 <div className="w-full relative">
                     <div className="pr-3 font-sans leading-normal dark:text-neutral-300">
@@ -206,7 +219,7 @@ const Form = (props) => {
                                     focus:outline-0
                                     placeholder:text-neutral-300 dark:placeholder:text-[rgba(255,255,255,0.3)]  
                                     resize-none
-                                    ${isFocused ? 'cursor-textmin-h-[144px] pt-[44px] pb-[68px]' : 'cursor-pointer overflow-hidden min-h-[48px] hover:border-slate-300'}
+                                    ${isFormOpen ? 'cursor-textmin-h-[144px] pt-[44px] pb-[68px]' : 'cursor-pointer overflow-hidden min-h-[48px] hover:border-slate-300'}
                                     ${props.isEdit && 'cursor-text'}
                                     ${!memberName && 'pointer-events-none'}
                                 `}
@@ -239,7 +252,7 @@ const Form = (props) => {
                     <div className="flex mb-1 justify-start items-center absolute top-0 left-0">
                         <Avatar comment={comment} saturation={avatarSaturation} className="pointer-events-none" />
                         <Transition
-                            show={isFocused}
+                            show={isFormOpen}
                             enter="transition duration-500 delay-100 ease-in-out"
                             enterFrom="opacity-0 -translate-x-2"
                             enterTo="opacity-100 translate-x-0"
@@ -247,7 +260,7 @@ const Form = (props) => {
                             leaveFrom="opacity-100"
                             leaveTo="opacity-0"
                         >
-                            <div className="ml-3">
+                            <div className="ml-3 pointer-events-none">
                                 <h4 className="text-lg font-sans font-semibold mb-1 tracking-tight dark:text-neutral-300">{memberName ? memberName : 'Anonymous'}</h4>
                             </div>
                         </Transition>
