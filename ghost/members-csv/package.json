@@ -1,0 +1,34 @@
+{
+  "name": "@tryghost/members-csv",
+  "version": "1.2.16",
+  "repository": "https://github.com/TryGhost/Members/tree/main/packages/members-csv",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "test": "NODE_ENV=testing c8 --all --reporter text --reporter cobertura mocha './test/**/*.test.js'",
+    "lint": "eslint . --ext .js --cache",
+    "posttest": "yarn lint"
+  },
+  "files": [
+    "index.js",
+    "lib"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "c8": "7.12.0",
+    "mocha": "10.0.0",
+    "should": "13.2.3",
+    "sinon": "14.0.0"
+  },
+  "dependencies": {
+    "bluebird": "^3.7.2",
+    "fs-extra": "^10.0.0",
+    "lodash": "^4.17.21",
+    "papaparse": "^5.3.2",
+    "pump": "^3.0.0"
+  }
+}
