@@ -46,18 +46,19 @@ const Comment = (props) => {
     } else {
         return (
             <>
-                <div className={`flex flex-col ${hasReplies ? 'mb-4' : 'mb-12'}`}>
-                    <div>
-                        <div className="flex justify-start items-center">
-                            <Avatar comment={comment} saturation={avatarSaturation} />
-                            <div className="ml-3">
-                                <h4 className="text-lg font-sans font-semibold mb-1 tracking-tight dark:text-[rgba(255,255,255,0.85)]">{!comment.member ? 'Deleted member' : (comment.member.name ? comment.member.name : 'Anonymous')}</h4>
-                            </div>
+                <div className={`flex flex-row ${hasReplies ? 'mb-4' : 'mb-10'}`}>
+                    <div className="mr-3">
+                        <Avatar comment={comment} saturation={avatarSaturation} />
+                    </div>
+                    <div>        
+                        <div className="mb-[4px] mt-[2px]">
+                            <h4 className="text-lg font-sans font-semibold tracking-tight dark:text-[rgba(255,255,255,0.85)]">{!comment.member ? 'Deleted member' : (comment.member.name ? comment.member.name : 'Anonymous')}</h4>
                         </div>
-                        <div className={`ml-14 mb-4 pr-4 font-sans leading-normal ${isNotPublished ? 'text-neutral-400' : 'text-neutral-900'} dark:text-[rgba(255,255,255,0.85)]`}>
+   
+                        <div className={`mb-2 pr-4 font-sans leading-normal ${isNotPublished ? 'text-neutral-400' : 'text-neutral-900'} dark:text-[rgba(255,255,255,0.85)]`}>
                             <p dangerouslySetInnerHTML={html} className="gh-comment-content text-[16.5px] leading-normal"></p>
                         </div>
-                        <div className="ml-14 flex gap-5 items-center">
+                        <div className="flex gap-5 items-center">
                             {!isNotPublished && <Like comment={comment} />}
                             {!isNotPublished && (canReply && (isNotPublished || !props.parent) && <Reply comment={comment} toggleReply={toggleReplyMode} isReplying={isInReplyMode} />)}
                             <div className="text-sm text-neutral-400 dark:text-[rgba(255,255,255,0.5)] font-sans">{formatRelativeTime(comment.created_at)}</div>

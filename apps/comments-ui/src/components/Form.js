@@ -220,7 +220,7 @@ const Form = (props) => {
                                     focus:outline-0
                                     placeholder:text-neutral-300 dark:placeholder:text-[rgba(255,255,255,0.3)]  
                                     resize-none
-                                    ${isFormOpen ? 'cursor-textmin-h-[144px] pt-[44px] pb-[68px]' : 'cursor-pointer overflow-hidden min-h-[48px] hover:border-slate-300'}
+                                    ${isFormOpen ? 'cursor-textmin-h-[144px] pt-[33px] pb-[68px]' : 'cursor-pointer overflow-hidden min-h-[48px] hover:border-slate-300'}
                                     ${props.isEdit && 'cursor-text'}
                                     ${!memberName && 'pointer-events-none'}
                                 `}
@@ -261,7 +261,7 @@ const Form = (props) => {
                             leaveFrom="opacity-100"
                             leaveTo="opacity-0"
                         >
-                            <div className="ml-3 pointer-events-none">
+                            <div className="-mt-[9px] ml-3 pointer-events-none">
                                 <h4 className="text-lg font-sans font-semibold mb-1 tracking-tight dark:text-neutral-300">{memberName ? memberName : 'Anonymous'}</h4>
                             </div>
                         </Transition>
