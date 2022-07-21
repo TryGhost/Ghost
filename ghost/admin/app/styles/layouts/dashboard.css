@@ -1412,6 +1412,7 @@ Dashboard Community */
     margin-bottom: 0;
     transition: color .3s;
     color: #fff;
+    letter-spacing: -0.02em;
 }
 
 .gh-dashboard-community .gh-dashboard-resource-footer {
