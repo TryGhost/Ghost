@@ -67,7 +67,9 @@ const CommentsBox = (props) => {
 
     const containerClass = darkMode() ? 'dark' : '';
     const style = {
-        '--gh-accent-color': accentColor ?? 'blue'
+        '--gh-accent-color': accentColor ?? 'blue',
+        paddingLeft: 32,
+        paddingRight: 32
     };
     return (
         <section className={'ghost-display ' + containerClass} style={style}>

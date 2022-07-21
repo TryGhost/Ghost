@@ -65,7 +65,7 @@ const Frame = ({
         </>
     );
 
-    const mergedStyle = {...iframeStyle, ...style};
+    const mergedStyle = {...iframeStyle, ...style, marginLeft: -32, marginRight: -32, width: 'calc(100% + 64px)'}; // negative margins to handle comment form shadows
 
     // For now we're using <NewFrame> because using a functional component with portal caused some weird issues with modals
     return (

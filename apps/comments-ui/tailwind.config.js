@@ -134,6 +134,16 @@ module.exports = {
                 '0px 13px 20px rgba(0, 0, 0, 0.04)', 
                 '0px 14px 57px rgba(0, 0, 0, 0.06)'
             ],
+            formlg: [
+                '0px 0px 1px rgba(0, 0, 0, 0.12)', 
+                '0px 4px 8px rgba(0, 0, 0, 0.03)', 
+                '0px 6px 16px rgba(0, 0, 0, 0.04)'
+            ],
+            formxl: [
+                '0px 0px 1px rgba(0, 0, 0, 0.12)', 
+                '0px 8px 12px rgba(0, 0, 0, 0.04)', 
+                '0px 12px 20px rgba(0, 0, 0, 0.06)'
+            ],
             modal: [
                 '0 3.8px 2.2px rgba(0, 0, 0, 0.028)',
                 '0 9.2px 5.3px rgba(0, 0, 0, 0.04)',

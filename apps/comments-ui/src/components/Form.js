@@ -200,7 +200,7 @@ const Form = (props) => {
                 transition duration-200
                 -mt-[12px] -mr-3 mb-10 -ml-[12px] pt-3 pb-2 px-3
                 bg-white dark:bg-[rgba(255,255,255,0.08)]
-                rounded-md shadow-lg dark:shadow-transparent hover:shadow-xl
+                rounded-md shadow-formlg dark:shadow-transparent hover:shadow-formxl
                 ${!commentsCount && !props.isEdit && !props.isReply && '-mt-0 -mr-0 -ml-0'}
                 ${isFocused ? 'cursor-default' : 'cursor-pointer'}`
             }>
