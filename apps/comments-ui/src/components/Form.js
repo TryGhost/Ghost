@@ -14,7 +14,7 @@ const Form = (props) => {
     if (props.isReply) {
         config = {
             placeholder: 'Reply to comment',
-            autofocus: false
+            autofocus: true
         };
     } else if (props.isEdit) {
         config = {
@@ -163,7 +163,7 @@ const Form = (props) => {
                         <div className="relative w-full">
                             <EditorContent
                                 className={`
-                                    transition-all duration-150
+                                    transition-all duration-150 delay-100
                                     w-full pl-[56px] px-0 py-[10px] pr-4
                                     bg-transparent rounded-md border-none border border-slate-50 dark:border-none
                                     font-sans text-[16.5px] leading-normal dark:text-neutral-300 
@@ -204,7 +204,7 @@ const Form = (props) => {
                         <Avatar comment={comment} saturation={avatarSaturation} className="pointer-events-none" />
                         <Transition
                             show={isFocused}
-                            enter="transition duration-500 ease-in-out"
+                            enter="transition duration-500 delay-100 ease-in-out"
                             enterFrom="opacity-0 -translate-x-2"
                             enterTo="opacity-100 translate-x-0"
                             leave="transition-none duration-0"

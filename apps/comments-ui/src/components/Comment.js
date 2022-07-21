@@ -65,11 +65,16 @@ const Comment = (props) => {
                         </div>
                     </div>    
                 </div>
+                {hasReplies && 
+                    <div className="ml-14 mt-10">
+                        <Replies comment={comment} />
+                    </div>
+                }
                 <Transition
                     show={isInReplyMode}
                     enter="transition duration-500 delay-50 ease-in-out"
-                    enterFrom="opacity-0 -translate-y-2"
-                    enterTo="opacity-100 translate-y-0"
+                    enterFrom="opacity-0"
+                    enterTo="opacity-100"
                     leave="transition-none duration-0"
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
@@ -78,11 +83,6 @@ const Comment = (props) => {
                         <Form parent={comment} toggle={toggleReplyMode} isReply={true} />
                     </div>
                 </Transition>
-                {hasReplies && 
-                    <div className="ml-14 mt-10">
-                        <Replies comment={comment} />
-                    </div>
-                }
             </>
         );
     }
