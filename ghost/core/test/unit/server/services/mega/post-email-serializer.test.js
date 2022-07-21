@@ -9,10 +9,6 @@ const labs = require('../../../../../core/shared/labs');
 const {parseReplacements, renderEmailForSegment, _getTemplateSettings, createUnsubscribeUrl, createPostSignupUrl} = require('../../../../../core/server/services/mega/post-email-serializer');
 
 describe('Post Email Serializer', function () {
-    afterEach(function () {
-        sinon.restore();
-    });
-
     it('creates replacement pattern for valid format and value', function () {
         const html = '<html>Hey %%{first_name}%%, what is up?</html>';
         const plaintext = 'Hey %%{first_name}%%, what is up?';
@@ -43,6 +39,10 @@ describe('Post Email Serializer', function () {
     });
 
     describe('renderEmailForSegment', function () {
+        afterEach(function () {
+            sinon.restore();
+        });
+
         it('shouldn\'t change an email that has no member segment', function () {
             const email = {
                 otherProperty: true,
