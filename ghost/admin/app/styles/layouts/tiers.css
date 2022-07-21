@@ -176,8 +176,8 @@
     letter-spacing: -.2px;
     line-height: 1;
     margin-right: 2px;
+    margin-left: 1px;
     font-size: 2.2rem;
-    letter-spacing: 0.1px;
 }
 
 .gh-tier-card-price .currency {
