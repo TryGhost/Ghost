@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const nql = require('@tryghost/nql');
 const template = require('./template');
 const settingsCache = require('../../../shared/settings-cache');
 const urlUtils = require('../../../shared/url-utils');
