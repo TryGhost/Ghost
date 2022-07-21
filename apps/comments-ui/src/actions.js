@@ -258,6 +258,29 @@ async function editComment({state, api, data: {comment, parent}}) {
     };
 }
 
+async function updateMemberName({data, state, api}) {
+    const {name} = data;
+    const originalName = state?.member?.name;
+    if (originalName !== name) {
+        try {
+            const member = await api.member.update({name});
+            if (!member) {
+                throw new Error('Failed to update member');
+            }
+            return {
+                member,
+                success: true
+            };
+        } catch (err) {
+            return {
+                success: false,
+                error: err
+            };
+        }
+    }
+    return null;
+}
+
 const Actions = {
     // Put your actions here
     addComment,
@@ -269,7 +292,8 @@ const Actions = {
     unlikeComment,
     reportComment,
     addReply,
-    loadMoreComments
+    loadMoreComments,
+    updateMemberName
 };
 
 /** Handle actions in the App, returns updated state */
