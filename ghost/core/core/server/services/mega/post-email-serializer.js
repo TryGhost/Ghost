@@ -385,7 +385,8 @@ function renderEmailForSegment(email, memberSegment) {
     if (labs.isSet('newsletterPaywall')) {
         const paywallIndex = (result.html || '').indexOf('<!--members-only-->');
         if (paywallIndex !== -1 && memberSegment) {
-            let statusFilter = nql(memberSegment).toJSON();
+            let statusFilter = memberSegment === 'status:free' ? {status: 'free'} : {status: 'paid'};
+
             const memberHasAccess = membersService.contentGating.checkPostAccess(result.post, statusFilter);
 
             if (!memberHasAccess) {
@@ -417,6 +418,7 @@ function renderEmailForSegment(email, memberSegment) {
 module.exports = {
     serialize,
     createUnsubscribeUrl,
+    createPostSignupUrl,
     renderEmailForSegment,
     parseReplacements,
     // Export for tests
