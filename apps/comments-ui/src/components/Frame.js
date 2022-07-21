@@ -28,10 +28,10 @@ const Frame = ({
 
     // For now we don't listen for type changes, we could consider adding useEffect, but that won't be used
     const defaultStyle = type === 'dynamic' ? {
-        width: 'calc(100% + 64px)',
+        width: 'calc(100% + min(8vmin, 40px))',
         height: '400px',
-        marginLeft: '-32px', // negative margins to handle comment alignments and shadows
-        marginRight: '-32px'
+        marginLeft: 'max(-4vmin,-20px)', // negative margins to handle comment alignments and shadows
+        marginRight: 'max(-4vmin,-20px)'
     } : {
         zIndex: '3999999',
         position: 'fixed',
