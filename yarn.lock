@@ -1503,13 +1503,13 @@
     ajv "^6.12.6"
     lodash "^4.17.11"
 
-"@tryghost/api-version-compatibility-service@0.4.3":
-  version "0.4.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/api-version-compatibility-service/-/api-version-compatibility-service-0.4.3.tgz#8229ce8f0e9591e0a341f5b4c431b9911ffae3fa"
-  integrity sha512-xAU5LL8VX71k48ydXzaNF9HyHcxZPRJXdCtqq05Bqk/7md6I32hySNUgwO5EyA6nmOcCcVhFBbpFTY0IZrVryA==
+"@tryghost/api-version-compatibility-service@0.4.4":
+  version "0.4.4"
+  resolved "https://registry.yarnpkg.com/@tryghost/api-version-compatibility-service/-/api-version-compatibility-service-0.4.4.tgz#b3f5abeb5d3706f60fb12876f87a4aed28038c55"
+  integrity sha512-5qtDlLURitHywFT3VhF09SubL0xq0kpZ9h7gitTU+aLutMxH7YgMRZnWMq1j9N6qq6D6KoWHI8ZMR4UKH9irIQ==
   dependencies:
-    "@tryghost/email-content-generator" "^0.1.3"
-    "@tryghost/version-notifications-data-service" "^0.2.1"
+    "@tryghost/email-content-generator" "^0.1.4"
+    "@tryghost/version-notifications-data-service" "^0.2.2"
 
 "@tryghost/bookshelf-collision@^0.1.24":
   version "0.1.24"
@@ -1662,10 +1662,17 @@
     "@tryghost/debug" "^0.1.17"
     split2 "4.1.0"
 
-"@tryghost/email-content-generator@0.1.3", "@tryghost/email-content-generator@^0.1.3":
+"@tryghost/email-content-generator@0.1.3":
   version "0.1.3"
   resolved "https://registry.yarnpkg.com/@tryghost/email-content-generator/-/email-content-generator-0.1.3.tgz#43500b3c1eaa77c39eedb66514a8a7f2a15d7719"
   integrity sha512-ZXk+jeboZFLSNw2IaBSPXlC3vKNoKP98wbJ7CYjopaRJ6Mrt+QJXNfHSyww5EtSQNIliyd0FYvR4qcp20ER3FQ==
+  dependencies:
+    html-to-text "^5.1.1"
+
+"@tryghost/email-content-generator@^0.1.4":
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/@tryghost/email-content-generator/-/email-content-generator-0.1.4.tgz#79d4cc922c9fad86b21246f97c639ea77a9f1afc"
+  integrity sha512-ioyeM+zh7rwqo08QCy2FIdfJ3Hwone6qIommMkwaRhkfby1ILr2A4AL8C3OfUVFYKs7uHhe5JPv1kOcZYrL6vg==
   dependencies:
     html-to-text "^5.1.1"
 
@@ -2108,10 +2115,10 @@
     moment-timezone "^0.5.23"
     validator "7.2.0"
 
-"@tryghost/version-notifications-data-service@^0.2.1":
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/version-notifications-data-service/-/version-notifications-data-service-0.2.1.tgz#6ac1ab7af87ed069a376ac57532d9347ded4caaf"
-  integrity sha512-szYs674FfaNR6yFyITYfN5nxJctikkPlvvPHobwTs8Xl/2Z9llFExNz0UW+xHb/KWubF56uUbOkgiXj24RApCA==
+"@tryghost/version-notifications-data-service@^0.2.2":
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/version-notifications-data-service/-/version-notifications-data-service-0.2.2.tgz#b6f8f2486840dfefeeb4b64a0ff159324b38935b"
+  integrity sha512-1Ob4vgYRNu3W2D5mNqPmjhft9rfM4eNkcjNcIL9/716UqNb1bYVxaHZqMadGwCjHNfN49i0WhLJRQUy4qM78Vw==
 
 "@tryghost/version@0.1.15", "@tryghost/version@^0.1.15":
   version "0.1.15"
