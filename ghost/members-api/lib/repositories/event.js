@@ -9,6 +9,7 @@ module.exports = class EventRepository {
         MemberStatusEvent,
         MemberLoginEvent,
         MemberPaidSubscriptionEvent,
+        Comment,
         labsService
     }) {
         this._MemberSubscribeEvent = MemberSubscribeEvent;
@@ -17,6 +18,7 @@ module.exports = class EventRepository {
         this._MemberStatusEvent = MemberStatusEvent;
         this._MemberLoginEvent = MemberLoginEvent;
         this._EmailRecipient = EmailRecipient;
+        this._Comment = Comment;
         this._labsService = labsService;
     }
 
@@ -165,6 +167,35 @@ module.exports = class EventRepository {
         const data = models.map((model) => {
             return {
                 type: 'signup_event',
+                data: model.toJSON(options)
+            };
+        });
+
+        return {
+            data,
+            meta
+        };
+    }
+
+    async getCommentEvents(options = {}, filters = {}) {
+        options = {
+            ...options,
+            withRelated: ['member', 'post', 'parent'],
+            filter: ['member_id:-null']
+        };
+        if (filters['data.created_at']) {
+            options.filter.push(filters['data.created_at'].replace(/data.created_at:/g, 'created_at:'));
+        }
+        if (filters['data.member_id']) {
+            options.filter.push(filters['data.member_id'].replace(/data.member_id:/g, 'member_id:'));
+        }
+        options.filter = options.filter.join('+');
+
+        const {data: models, meta} = await this._Comment.findPage(options);
+
+        const data = models.map((model) => {
+            return {
+                type: 'comment_event',
                 data: model.toJSON(options)
             };
         });
@@ -358,7 +389,8 @@ module.exports = class EventRepository {
             {type: 'subscription_event', action: 'getSubscriptionEvents'},
             {type: 'login_event', action: 'getLoginEvents'},
             {type: 'payment_event', action: 'getPaymentEvents'},
-            {type: 'signup_event', action: 'getSignupEvents'}
+            {type: 'signup_event', action: 'getSignupEvents'},
+            {type: 'comment_event', action: 'getCommentEvents'}
         ];
         if (this._EmailRecipient) {
             pageActions.push({type: 'email_delivered_event', action: 'getEmailDeliveredEvents'});
