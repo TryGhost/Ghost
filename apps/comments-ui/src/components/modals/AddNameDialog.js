@@ -1,4 +1,4 @@
-import React, {useContext, useState, useRef} from 'react';
+import React, {useContext, useState, useRef, useEffect} from 'react';
 import {Transition} from '@headlessui/react';
 import CloseButton from './CloseButton';
 import AppContext from '../../AppContext';
@@ -21,9 +21,20 @@ const AddNameDialog = (props) => {
         } else {
             setError('Enter your name');
             setName('');
-            inputRef.current.focus();
+            inputRef.current?.focus();
         }
     };
+
+    // using <input autofocus> breaks transitions in browsers. So we need to use a timer
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            inputRef.current?.focus();
+        }, 200);
+
+        return () => {
+            clearTimeout(timer);
+        };
+    }, [inputRef]);
 
     const [name, setName] = useState('');
     const [error, setError] = useState('');
@@ -54,7 +65,6 @@ const AddNameDialog = (props) => {
                     ref={inputRef}
                     value={name}
                     placeholder="Jamie Larson"
-                    autoFocus={true}
                     onChange={(e) => {
                         setName(e.target.value);
                     }}

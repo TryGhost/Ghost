@@ -20,7 +20,7 @@ export default function PopupModal(props) {
         return null;
     }
 
-    const {type, ...popupProps} = lastPopup;
+    const {type, ...popupProps} = popup ?? lastPopup;
     const PageComponent = Pages[type];
 
     if (!PageComponent) {
