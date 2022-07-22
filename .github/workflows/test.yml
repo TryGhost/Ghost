@@ -301,7 +301,7 @@ jobs:
 
   canary:
     runs-on: ubuntu-18.04
-    needs: [lint, migrations, unit-tests, database-tests, ghost-cli]
+    needs: [lint, migrations, unit-tests, database-tests]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     name: Canary
     steps:
