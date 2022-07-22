@@ -179,13 +179,15 @@ const Form = (props) => {
             setFormOpen(true);
             editor.commands.focus();
         } else {
-            dispatchAction('openPopup', {
-                type: 'addNameDialog',
-                callback: () => {
-                    setFormOpen(true);
-                    editor.commands.focus();
-                }
-            });
+            if (!props.isEdit) {
+                dispatchAction('openPopup', {
+                    type: 'addNameDialog',
+                    callback: () => {
+                        setFormOpen(true);
+                        editor.commands.focus();
+                    }
+                });
+            }
         }
     };
 
