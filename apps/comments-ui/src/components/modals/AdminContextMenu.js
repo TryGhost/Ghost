@@ -21,11 +21,11 @@ const AdminContextMenu = (props) => {
             {
                 isHidden ? 
                     <button className="w-full text-left text-[14px]" onClick={showComment}>
-                        Show comment
+                        <span>Show </span><span className="hidden sm:inline">comment</span>
                     </button> 
                     : 
                     <button className="w-full text-left text-[14px]" onClick={hideComment}>
-                        Hide comment
+                        <span>Hide </span><span className="hidden sm:inline">comment</span>
                     </button>
             }
         </div>
