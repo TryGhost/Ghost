@@ -93,10 +93,6 @@ const Form = (props) => {
         // Scroll to view if it's a reply
         if (props.isReply) {
             timer = setTimeout(() => {
-                if (!formEl.current) {
-                    // Unmounted
-                    return;
-                }
                 window.scrollTo({
                     top: getScrollToPosition(),
                     left: 0,
@@ -107,7 +103,11 @@ const Form = (props) => {
 
         // Focus editor + jump to end
         if (!props.isEdit) {
-            return;
+            return () => {
+                if (timer) {
+                    clearTimeout(timer);
+                }
+            };
         }
 
         // jump to end
@@ -144,7 +144,7 @@ const Form = (props) => {
                 if (props.isReply && props.toggle) {
                     // TODO: we cannot toggle the form when this happens, because when the member doesn't have a name we'll always loose focus to input the name...
                     // Need to find a different way for this behaviour
-                    //props.toggle();
+                    props.toggle();
                 }
             }
         });     
