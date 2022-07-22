@@ -1914,10 +1914,10 @@
     lodash "^4.17.21"
     semver "^7.3.6"
 
-"@tryghost/mw-session-from-token@0.1.33":
-  version "0.1.33"
-  resolved "https://registry.yarnpkg.com/@tryghost/mw-session-from-token/-/mw-session-from-token-0.1.33.tgz#5a6c6a22f1146a002064dfe73c7b727e258908d9"
-  integrity sha512-uneGwvhkXZcw4olOY1oIUq+xixHKhEREh3T90b/mXeQTBrw2HLxnjWDmAqJDkBUZu3rthu/YPDD+wHsohtkzjw==
+"@tryghost/mw-session-from-token@0.1.34":
+  version "0.1.34"
+  resolved "https://registry.yarnpkg.com/@tryghost/mw-session-from-token/-/mw-session-from-token-0.1.34.tgz#9e4527801943b63b02db2619eb81e25dae7c7db2"
+  integrity sha512-ARQmnepZF/vpU7yYI/u9e9ltKK6Lr1G3VonNym6hvbw/mN2xiRmhiHrYpUzMKaQq/t+wAkf1JMmUJvGMXaiUjw==
 
 "@tryghost/nodemailer@0.3.24":
   version "0.3.24"
