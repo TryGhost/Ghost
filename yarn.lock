@@ -2026,10 +2026,10 @@
   dependencies:
     "@tryghost/errors" "^1.2.1"
 
-"@tryghost/settings-path-manager@0.1.8":
-  version "0.1.8"
-  resolved "https://registry.yarnpkg.com/@tryghost/settings-path-manager/-/settings-path-manager-0.1.8.tgz#8b94d29c4a58f5c74ce56a02e3826a64fed6b8df"
-  integrity sha512-z368TVP3cnOPMo4IjbjBP/3tqiSyFAkMuAeAtcclrpn5TnidXs1+NqtYQhZVgK2vJovfJXPuiH2nLsoU/8Ad0w==
+"@tryghost/settings-path-manager@0.1.9":
+  version "0.1.9"
+  resolved "https://registry.yarnpkg.com/@tryghost/settings-path-manager/-/settings-path-manager-0.1.9.tgz#4c88a30a79cf91e097442e58eba83ce157af1024"
+  integrity sha512-Xil1gczJsxORahy+5e4nvRBOxCmIbml+GprRyKkLfZidHUceFxFlMwO+sm+gKVi9UQw48g3qV3RYYeJTg6iQhw==
   dependencies:
     date-fns "^2.24.0"
     tpl "^0.3.0"
