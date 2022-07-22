@@ -161,6 +161,9 @@ module.exports = {
                 '0%, 100%': {transform: 'scale(1)'},
                 '50%': {transform: 'scale(1.3)'}
             }
+        },
+        screens: {
+            'sm': '481px'
         }
     },
     content: [

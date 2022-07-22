@@ -27,7 +27,7 @@ const GenericDialog = (props) => {
                         leaveFrom="opacity-100"
                         leaveTo="opacity-0"
                     >
-                        <div className="fixed top-0 left-0 overflow-hidden w-screen h-screen flex pt-12 justify-center bg-gradient-to-b from-[rgba(0,0,0,0.2)] to-rgba(0,0,0,0.1) backdrop-blur-[2px]" onClick={close}>
+                        <div className="fixed top-0 left-0 overflow-hidden w-screen h-screen flex pt-0 sm:pt-12 justify-center bg-gradient-to-b from-[rgba(0,0,0,0.2)] to-rgba(0,0,0,0.1) backdrop-blur-[2px]" onClick={close}>
                             <Transition.Child
                                 enter="transition duration-200 delay-150 linear"
                                 enterFrom="translate-y-4 opacity-0"
@@ -36,7 +36,7 @@ const GenericDialog = (props) => {
                                 leaveFrom="translate-y-0 opacity-100"
                                 leaveTo="translate-y-4 opacity-0"
                             >
-                                <div className="bg-white w-[500px] p-8 rounded-xl text-center shadow-modal" onClick={stopPropagation}>
+                                <div className="bg-white w-screen sm:w-[500px] h-screen sm:h-auto p-8 rounded-none sm:rounded-xl text-center shadow-modal" onClick={stopPropagation}>
                                     {props.children}
                                 </div>
                             </Transition.Child>
