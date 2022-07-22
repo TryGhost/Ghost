@@ -5,6 +5,7 @@
 
 const JobManager = require('@tryghost/job-manager');
 const logging = require('@tryghost/logging');
+const models = require('../../models');
 const sentry = require('../../../shared/sentry');
 
 const errorHandler = (error, workerMeta) => {
@@ -38,7 +39,7 @@ const initTestMode = () => {
     }, 5000);
 };
 
-const jobManager = new JobManager({errorHandler, workerMessageHandler});
+const jobManager = new JobManager({errorHandler, workerMessageHandler, JobModel: models.Job});
 
 module.exports = jobManager;
 module.exports.initTestMode = initTestMode;
