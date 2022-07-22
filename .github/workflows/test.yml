@@ -249,7 +249,7 @@ jobs:
 
   ghost-cli:
     name: Ghost-CLI
-    if: false && github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
+    if: false
     runs-on: ubuntu-18.04
     defaults:
       run:
