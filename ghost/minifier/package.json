@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/minifier",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "repository": "https://github.com/TryGhost/Utils/tree/main/packages/minifier",
   "author": "Ghost Foundation",
   "license": "MIT",
