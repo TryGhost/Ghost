@@ -129,7 +129,7 @@ function getAction(event) {
     }
 
     if (event.type === 'comment_event') {
-        if (event.data.parent_id) {
+        if (event.data.parent) {
             return 'replied on';
         }
         return 'commented on';
@@ -157,7 +157,7 @@ function getObject(event, hasMultipleNewsletters) {
     }
 
     if (event.type === 'comment_event') {
-        if (event.data.parent_id) {
+        if (event.data.parent) {
             return 'a comment';
         }
 
