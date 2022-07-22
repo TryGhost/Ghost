@@ -58,7 +58,7 @@
   },
   "dependencies": {
     "@sentry/node": "7.7.0",
-    "@tryghost/adapter-manager": "0.2.32",
+    "@tryghost/adapter-manager": "0.2.33",
     "@tryghost/admin-api-schema": "4.0.0",
     "@tryghost/api-version-compatibility-service": "0.4.3",
     "@tryghost/bookshelf-plugins": "0.4.3",
