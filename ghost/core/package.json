@@ -117,7 +117,7 @@
     "@tryghost/validator": "0.1.26",
     "@tryghost/verification-trigger": "0.0.0",
     "@tryghost/version": "0.1.15",
-    "@tryghost/vhost-middleware": "1.0.26",
+    "@tryghost/vhost-middleware": "1.0.28",
     "@tryghost/zip": "1.1.26",
     "amperize": "0.6.1",
     "analytics-node": "6.1.0",
