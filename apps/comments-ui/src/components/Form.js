@@ -87,8 +87,8 @@ const Form = (props) => {
         editor.on('blur', () => {
             if (editor?.isEmpty) {
                 setFormOpen(false);
-                if (props.isReply && props.toggleReplyMode) {
-                    props.toggleReplyMode();
+                if (props.isReply && props.toggle) {
+                    props.toggle();
                 }
             }
         });
@@ -109,7 +109,7 @@ const Form = (props) => {
                 });
             })
             .run();
-    }, [editor, props, props.isEdit, props.isReply, props.toggleReplyMode]);
+    }, [editor, props, props.isEdit, props.isReply, props.toggle]);
 
     const submitForm = async (event) => {
         event.preventDefault();
@@ -135,7 +135,7 @@ const Form = (props) => {
                 props.toggle();
 
                 setFormOpen(false);
-                props.toggleReplyMode();
+                props.toggle();
             } catch (e) {
                 // eslint-disable-next-line no-console
                 console.error(e);
