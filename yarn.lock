@@ -2019,10 +2019,10 @@
     "@tryghost/debug" "^0.1.17"
     "@tryghost/logging" "^2.2.3"
 
-"@tryghost/session-service@0.1.43":
-  version "0.1.43"
-  resolved "https://registry.yarnpkg.com/@tryghost/session-service/-/session-service-0.1.43.tgz#f175e358987daacaab073431500f97e25dc607ec"
-  integrity sha512-pq1PvfbKQ1An+2jbIfMcUAiaOPVKmNN71gjpfI2lfog588ERb74WgVUa2RwDPCGbS5A0E8bvdncDRcStr1th8w==
+"@tryghost/session-service@0.1.44":
+  version "0.1.44"
+  resolved "https://registry.yarnpkg.com/@tryghost/session-service/-/session-service-0.1.44.tgz#14a991af3820ac1dcc4491fa56156b5050fcef53"
+  integrity sha512-EkEbuD51OjvaXCUtyD/rDmEYrdnoTL7M8dl9vbfADW3bBf3nFcvaU1Go5jEFh1JOuGbr1DFTI7nSaagJf4Rb1g==
   dependencies:
     "@tryghost/errors" "^1.2.1"
 
