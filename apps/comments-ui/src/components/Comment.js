@@ -46,13 +46,13 @@ const Comment = (props) => {
     } else {
         return (
             <>
-                <div className={`flex flex-row ${hasReplies ? 'mb-4' : 'mb-10'}`}>
+                <div className={`flex flex-row ${hasReplies ? 'mb-2 sm:mb-4' : 'mb-6 sm:mb-10'}`}>
                     <div className="mr-3">
                         <Avatar comment={comment} saturation={avatarSaturation} isBlank={isNotPublished} />
                     </div>
                     <div>      
                         {!isNotPublished &&  
-                        <div className="mb-[4px] mt-[2px]">
+                        <div className="mb-[2px] sm:mb-[4px] mt-[2px]">
                             <h4 className="text-lg font-sans font-semibold tracking-tight dark:text-[rgba(255,255,255,0.85)]">{!comment.member ? 'Deleted member' : (comment.member.name ? comment.member.name : 'Anonymous')}</h4>
                         </div>}
    
@@ -68,7 +68,7 @@ const Comment = (props) => {
                     </div>    
                 </div>
                 {hasReplies && 
-                    <div className="ml-14 mt-10">
+                    <div className="ml-11 sm:ml-14 mt-8 sm:mt-10 mb-4 sm:mb-0">
                         <Replies comment={comment} />
                     </div>
                 }

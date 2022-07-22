@@ -57,7 +57,7 @@ const Avatar = (props) => {
         return getInitials(commentMember.name);
     };
 
-    let dimensionClasses = (props.size === 'small' ? 'w-8 h-8' : 'w-11 h-11');
+    let dimensionClasses = (props.size === 'small' ? 'w-6 h-6 sm:w-8 sm:h-8' : 'w-9 h-9 sm:w-11 sm:h-11');
     let initialsClasses = (props.size === 'small' ? 'text-sm' : 'text-lg');
     let commentMember = (props.comment ? props.comment.member : member);
 

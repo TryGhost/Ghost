@@ -120,3 +120,9 @@ export function getBundledCssLink({appVersion}) {
         return 'http://localhost:4000/main.css';
     }
 }
+
+// Rudimentary check for screen width
+// Note, this should be the same as breakpoint defined in Tailwind config
+export function isMobile() {
+    return (Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) < 480);
+}
