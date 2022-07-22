@@ -3,6 +3,7 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
 const db = require('../../data/db');
+const service = require('../../services/comments');
 const ALLOWED_INCLUDES = ['post', 'member', 'likes', 'replies'];
 const UNSAFE_ATTRS = ['status'];
 
@@ -242,6 +243,24 @@ module.exports = {
                     message: tpl(messages.memberNotFound)
                 }));
             }
+        }
+    },
+
+    report: {
+        statusCode: 204,
+        options: [
+            'id'
+        ],
+        validation: {},
+        permissions: true,
+        async query(frame) {
+            if (!frame.options?.context?.member?.id) {
+                return Promise.reject(new errors.UnauthorizedError({
+                    message: tpl(messages.memberNotFound)
+                }));
+            }
+
+            await service.api.reportComment(frame.options.id, frame.options?.context?.member);
         }
     }
 };
