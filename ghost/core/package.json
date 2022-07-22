@@ -105,7 +105,7 @@
     "@tryghost/promise": "0.1.19",
     "@tryghost/request": "0.1.28",
     "@tryghost/root-utils": "0.3.15",
-    "@tryghost/security": "0.3.2",
+    "@tryghost/security": "0.3.3",
     "@tryghost/session-service": "0.1.43",
     "@tryghost/settings-path-manager": "0.1.8",
     "@tryghost/social-urls": "0.1.32",
