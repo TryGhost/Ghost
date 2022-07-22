@@ -19,6 +19,29 @@ class CommentsService {
             this.emails.notifyParentCommentAuthor(comment);
         }
     }
+
+    async reportComment(commentId, reporter) {
+        const comment = await this.models.Comment.findOne({id: commentId}, {require: true});
+
+        // Check if this reporter already reported this comment (then don't send an email)?
+        const existing = await this.models.CommentReport.findOne({
+            comment_id: comment.id,
+            member_id: reporter.id
+        });
+
+        if (existing) {
+            // Ignore silently for now
+            return;
+        }
+
+        // Save report model
+        await this.models.CommentReport.add({
+            comment_id: comment.id,
+            member_id: reporter.id
+        });
+
+        await this.emails.notifiyReport(comment, reporter);
+    }
 }
 
 module.exports = CommentsService;

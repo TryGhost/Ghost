@@ -1,8 +1,9 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyEtag, anyObjectId, anyLocationFor, anyISODateTime, anyUuid, anyNumber, anyBoolean} = matchers;
-require('should');
+const should = require('should');
+const models = require('../../../core/server/models');
 
-let membersAgent, membersService, postId, commentId;
+let membersAgent, member, postId, commentId;
 
 const commentMatcherNoMember = {
     id: anyObjectId,
@@ -56,12 +57,40 @@ describe('Comments API', function () {
     });
 
     describe('when not authenticated', function () {
-        it('can browse posts');
+        it('Can browse all comments of a post', async function () {
+            const {body} = await membersAgent
+                .get(`/api/comments/?filter=post_id:${postId}`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    comments: [commentMatcherWithReply]
+                });
+        });
+
+        it('cannot report a comment', async function () {
+            commentId = fixtureManager.get('comments', 0).id;
+
+            // Create a temporary comment
+            await membersAgent
+                .post(`/api/comments/${commentId}/report/`)
+                .expectStatus(401)
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyUuid
+                    }]
+                });
+        });
     });
 
     describe('when authenticated', function () {
         before(async function () {
             await membersAgent.loginAs('member@example.com');
+            member = await models.Member.findOne({email: 'member@example.com'}, {require: true});
         });
 
         it('Can comment on a post', async function () {
@@ -241,6 +270,49 @@ describe('Comments API', function () {
                 .expect(({body}) => {
                     body.comments[0].liked.should.eql(false);
                 });
+        });
+
+        it('Can report a comment', async function () {
+            // Create a temporary comment
+            await membersAgent
+                .post(`/api/comments/${commentId}/report/`)
+                .expectStatus(204)
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .expectEmptyBody();
+
+            // Check report
+            const reports = await models.CommentReport.findAll({filter: 'comment_id:' + commentId});
+            reports.models.length.should.eql(1);
+
+            const report = reports.models[0];
+            report.get('member_id').should.eql(member.id);
+
+            mockManager.assert.sentEmail({
+                subject: '🚩 A comment has been reported on your post',
+                to: fixtureManager.get('users', 0).email
+            });  
+        });
+
+        it('Cannot report a comment twice', async function () {
+            // Create a temporary comment
+            await membersAgent
+                .post(`/api/comments/${commentId}/report/`)
+                .expectStatus(204)
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .expectEmptyBody();
+
+            // Check report should be the same (no extra created)
+            const reports = await models.CommentReport.findAll({filter: 'comment_id:' + commentId});
+            reports.models.length.should.eql(1);
+
+            const report = reports.models[0];
+            report.get('member_id').should.eql(member.id);
+
+            mockManager.assert.sentEmailCount(0);
         });
     });
 });
