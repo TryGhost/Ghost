@@ -60,6 +60,8 @@ export default class App extends React.Component {
             popup: null,
             accentColor: props.accentColor
         };
+        this.adminApi = null;
+        this.GhostApi = null;
     }
 
     /** Initialize comments setup on load, fetch data and setup state*/
@@ -68,25 +70,10 @@ export default class App extends React.Component {
             // Fetch data from API, links, preview, dev sources
             const {site, member} = await this.fetchApiData();
             const {comments, pagination} = await this.fetchComments();
-            this.adminApi = this.setupAdminAPI();
-
-            let admin = null;
-            try {
-                admin = await this.adminApi.getUser();
-
-                /* eslint-disable no-console */
-                console.log(admin);
-                /* eslint-enable no-console */
-            } catch (e) {
-                // Loading of admin failed. Could be not signed in, or a different error (not important)
-                // eslint-disable-next-line no-console
-                console.error(e);
-            }
             
             const state = {
                 site,
                 member,
-                admin,
                 action: 'init:success',
                 initStatus: 'success',
                 comments,
@@ -102,6 +89,34 @@ export default class App extends React.Component {
                 action: 'init:failed',
                 initStatus: 'failed'
             });
+        }
+    }
+
+    async initAdminAuth() {
+        try {
+            this.adminApi = this.setupAdminAPI();
+
+            let admin = null;
+            try {
+                admin = await this.adminApi.getUser();
+
+                /* eslint-disable no-console */
+                console.log(admin);
+                /* eslint-enable no-console */
+            } catch (e) {
+                // Loading of admin failed. Could be not signed in, or a different error (not important)
+                // eslint-disable-next-line no-console
+                console.warn(`[Comments] Failed to fetch current admin user:`, e);
+            }
+            
+            const state = {
+                admin
+            };
+
+            this.setState(state);
+        } catch (e) {
+            /* eslint-disable no-console */
+            console.error(`[Comments] Failed to initialize admin authentication:`, e);
         }
     }
 
@@ -287,6 +302,10 @@ export default class App extends React.Component {
         };
     }
 
+    componentDidMount() {
+        this.initSetup();
+    }
+
     componentWillUnmount() {
         /**Clear timeouts and event listeners on unmount */
         clearTimeout(this.timeoutId);
@@ -299,7 +318,7 @@ export default class App extends React.Component {
             <SentryErrorBoundary dsn={this.props.sentryDsn}>
                 <AppContext.Provider value={this.getContextFromState()}>
                     <CommentsBoxContainer done={done} />
-                    <AuthFrame adminUrl={this.props.adminUrl} onLoad={this.initSetup.bind(this)} initStatus={this.state.initStatus}/>
+                    <AuthFrame adminUrl={this.props.adminUrl} onLoad={this.initAdminAuth.bind(this)}/>
                     <PopupModal />
                 </AppContext.Provider>
             </SentryErrorBoundary>
