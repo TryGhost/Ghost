@@ -610,6 +610,11 @@
                     "name": "Unlike comments",
                     "action_type": "unlike",
                     "object_type": "comment"
+                },
+                {
+                    "name": "Report comments",
+                    "action_type": "report",
+                    "object_type": "comment"
                 }
             ]
         },

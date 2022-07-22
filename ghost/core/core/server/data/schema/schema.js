@@ -750,7 +750,7 @@ module.exports = {
     comments: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         post_id: {type: 'string', maxlength: 24, nullable: false, unique: false, references: 'posts.id', cascadeDelete: true},
-        member_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'members.id'},
+        member_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'members.id', setNullDelete: true},
         parent_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'comments.id'},
         status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'published', validations: {isIn: [['published', 'hidden', 'deleted']]}},
         html: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
@@ -761,15 +761,14 @@ module.exports = {
     comment_likes: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         comment_id: {type: 'string', maxlength: 24, nullable: false, unique: false, references: 'comments.id', cascadeDelete: true},
-        member_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'members.id'},
+        member_id: {type: 'string', maxlength: 24, nullable: false, unique: false, references: 'members.id', cascadeDelete: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: false}
     },
     comment_reports: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         comment_id: {type: 'string', maxlength: 24, nullable: false, unique: false, references: 'comments.id', cascadeDelete: true},
-        member_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'members.id'},
-        reason: {type: 'text', maxlength: 65535, nullable: false},
+        member_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'members.id', setNullDelete: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: false}
     }
