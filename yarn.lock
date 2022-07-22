@@ -1896,10 +1896,10 @@
   dependencies:
     lodash "^4.17.11"
 
-"@tryghost/mw-api-version-mismatch@0.2.2":
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/mw-api-version-mismatch/-/mw-api-version-mismatch-0.2.2.tgz#e080cd1fc3f1a3dcd5077ab008cf376fd36050c8"
-  integrity sha512-xAKbTqfcDzXxVDgpTZKyiAUzXs31t8t6oAGKi8X4W/XH2NAMX9k/Jt2Jra/I+JPrWd+UsonvHvU7Dq4Wtzue7Q==
+"@tryghost/mw-api-version-mismatch@0.2.3":
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/mw-api-version-mismatch/-/mw-api-version-mismatch-0.2.3.tgz#e4e81ced39ca325d52c92de8547171623402e020"
+  integrity sha512-k/rjOoDNxkuoHaDBnHxkwVWoYy6gK757ZqTJAamDD69fTyg3WkiICSPsCz/8BKY+wznWiwxKIyAZd3D/MJcpEw==
   dependencies:
     "@tryghost/extract-api-key" "^0.1.0"
 
