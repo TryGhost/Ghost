@@ -74,14 +74,13 @@ const Form = (props) => {
             dispatchAction('openPopup', {
                 type: 'addNameDialog',
                 callback: () => {
-                    setFormOpen(true);
                     editor.commands.focus();
                 }
             });
         } else {
             setFormOpen(true);
         }
-    }, [editor, dispatchAction, memberName, props]);
+    }, [editor, dispatchAction, memberName, props.isEdit]);
 
     // Set the cursor position at the end of the form, instead of the beginning (= when using autofocus)
     useEffect(() => {
@@ -104,19 +103,6 @@ const Form = (props) => {
             }, 100);
         }
 
-        editor.on('focus', () => {
-            onFormFocus();
-        });
-
-        editor.on('blur', () => {
-            if (editor?.isEmpty) {
-                setFormOpen(false);
-                if (props.isReply && props.toggle) {
-                    props.toggle();
-                }
-            }
-        });
-
         // Focus editor + jump to end
         if (!props.isEdit) {
             return;
@@ -133,7 +119,32 @@ const Form = (props) => {
                 });
             })
             .run();
-    }, [editor, props, props.isEdit, props.isReply, props.toggle, onFormFocus]);
+    }, [editor, props]);
+
+    useEffect(() => {
+        if (!editor) {
+            return;
+        }
+
+        // Remove previous events
+        editor.off('focus');
+        editor.off('blur');
+
+        editor.on('focus', () => {
+            onFormFocus();
+        });
+
+        editor.on('blur', () => {
+            if (editor?.isEmpty) {
+                setFormOpen(false);
+                if (props.isReply && props.toggle) {
+                    // TODO: we cannot toggle the form when this happens, because when the member doesn't have a name we'll always loose focus to input the name...
+                    // Need to find a different way for this behaviour
+                    //props.toggle();
+                }
+            }
+        });
+    }, [editor, props, onFormFocus]);
 
     const submitForm = async (event) => {
         event.preventDefault();
@@ -203,6 +214,13 @@ const Form = (props) => {
         }
     };
 
+    const stopIfFocused = (event) => {
+        if (editor.isFocused) {
+            event.stopPropagation();
+            return;
+        }
+    };
+
     const focusEditor = (event) => {
         if (editor.isFocused) {
             return;
@@ -237,7 +255,7 @@ const Form = (props) => {
                 <div className="w-full relative">
                     <div className="pr-3 font-sans leading-normal dark:text-neutral-300">
                         <div className="relative w-full">
-                            <EditorContent
+                            <EditorContent onMouseDown={stopIfFocused} onTouchStart={stopIfFocused}
                                 className={`
                                     transition-all duration-150 delay-100
                                     w-full pl-[50px] sm:pl-[56px] px-0 py-[10px] pr-4
