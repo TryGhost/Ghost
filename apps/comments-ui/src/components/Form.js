@@ -143,7 +143,7 @@ const Form = (props) => {
                     //props.toggle();
                 }
             }
-        });
+        });        
     }, [editor, props, onFormFocus]);
 
     const submitForm = async (event) => {
@@ -241,7 +241,7 @@ const Form = (props) => {
 
     return (
         <>
-            <form ref={formEl} onClick={focusEditor} onMouseDown={preventIfFocused} onTouchStart={preventIfFocused} className={`
+            <form ref={formEl} onClick={focusEditor} onMouseDown={preventIfFocused} onTouchStart={preventIfFocused} for="ghost-editor" className={`
                 transition duration-200
                 pt-3 pb-2 px-3
                 -mt-[12px] -mr-3 mb-10 -ml-[12px]
@@ -255,23 +255,26 @@ const Form = (props) => {
                 <div className="w-full relative">
                     <div className="pr-3 font-sans leading-normal dark:text-neutral-300">
                         <div className="relative w-full">
-                            <EditorContent onMouseDown={stopIfFocused} onTouchStart={stopIfFocused}
+                            <div
                                 className={`
-                                    transition-all duration-150 delay-100
-                                    w-full pl-[50px] sm:pl-[56px] px-0 py-[10px] pr-4
-                                    bg-transparent rounded-md border-none border border-slate-50 dark:border-none
-                                    font-sans text-[16.5px] leading-normal dark:text-neutral-300 
-                                    focus:outline-0
-                                    placeholder:text-neutral-300 dark:placeholder:text-[rgba(255,255,255,0.3)]  
-                                    resize-none
-                                    ${commentsCount === 0 && 'placeholder:text-neutral-700'}
-                                    ${isFormOpen ? 'cursor-text min-h-[144px] pt-[33px] pb-[68px]' : 'cursor-pointer overflow-hidden min-h-[48px] hover:border-slate-300'}
-                                    ${props.isEdit && 'cursor-text'}
-                                    ${!memberName && 'pointer-events-none'}
-                                    ${shouldFormBeReduced && 'pl-1'}
-                                `}
-                                editor={editor} 
-                            />
+                                transition-all duration-150 delay-100
+                                w-full pl-[50px] sm:pl-[56px] px-0 py-[10px] pr-4
+                                bg-transparent rounded-md border-none border border-slate-50 dark:border-none
+                                font-sans text-[16.5px] leading-normal dark:text-neutral-300 
+                                focus:outline-0
+                                placeholder:text-neutral-300 dark:placeholder:text-[rgba(255,255,255,0.3)]  
+                                resize-none
+                                ${commentsCount === 0 && 'placeholder:text-neutral-700'}
+                                ${isFormOpen ? 'cursor-text min-h-[144px] pt-[33px] pb-[68px]' : 'cursor-pointer overflow-hidden min-h-[48px] hover:border-slate-300'}
+                                ${props.isEdit && 'cursor-text'}
+                                ${!memberName && 'pointer-events-none'}
+                                ${shouldFormBeReduced && 'pl-1'}
+                            `}>
+                                <EditorContent
+                                    onMouseDown={stopIfFocused} onTouchStart={stopIfFocused}
+                                    editor={editor} 
+                                />
+                            </div>
                             <div className="
                                 absolute -right-3 bottom-[2px]
                                 flex space-x-4
