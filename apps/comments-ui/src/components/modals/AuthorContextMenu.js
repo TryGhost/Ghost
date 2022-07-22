@@ -14,7 +14,7 @@ const AuthorContextMenu = (props) => {
             <button className="w-full mb-3 text-left text-[14px]" onClick={props.toggleEdit}>
                 Edit
             </button>
-            <button className="w-full text-left text-[14px]" onClick={deleteComment}>
+            <button className="w-full text-left text-[14px] text-red-600" onClick={deleteComment}>
                 Delete
             </button>
         </div>

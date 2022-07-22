@@ -14,7 +14,7 @@ const NotAuthorContextMenu = (props) => {
 
     return (
         <div className="flex flex-col">
-            <button className="text-[14px]" onClick={openModal}>
+            <button className="w-full text-left text-[14px]" onClick={openModal}>
                 Report comment
             </button>
         </div>

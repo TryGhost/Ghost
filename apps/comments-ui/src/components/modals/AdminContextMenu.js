@@ -20,11 +20,11 @@ const AdminContextMenu = (props) => {
         <div className="flex flex-col">
             {
                 isHidden ? 
-                    <button className="text-[14px]" onClick={showComment}>
+                    <button className="w-full text-left text-[14px]" onClick={showComment}>
                         Show comment
                     </button> 
                     : 
-                    <button className="text-[14px]" onClick={hideComment}>
+                    <button className="w-full text-left text-[14px]" onClick={hideComment}>
                         Hide comment
                     </button>
             }
