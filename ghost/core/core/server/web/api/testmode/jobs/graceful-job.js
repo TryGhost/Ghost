@@ -37,7 +37,7 @@ const internalContext = {context: {internal: true}};
 
     if (shutdown) {
         postParentPortMessage(`Job shutting down gracefully`);
-        process.exit(0);
+        parentPort.postMessage('done');
     }
 
     postParentPortMessage(`Fetching posts`);
@@ -46,5 +46,5 @@ const internalContext = {context: {internal: true}};
     postParentPortMessage(`Found ${posts.data.length} posts. First one: ${posts.data[0].toJSON().slug}`);
     postParentPortMessage('Graceful job has completed!');
 
-    process.exit(0);
+    parentPort.postMessage('done');
 })();
