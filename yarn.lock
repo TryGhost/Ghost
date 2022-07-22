@@ -8445,10 +8445,10 @@ metascraper-image@5.29.15:
   dependencies:
     "@metascraper/helpers" "^5.29.15"
 
-metascraper-logo-favicon@5.29.15:
-  version "5.29.15"
-  resolved "https://registry.yarnpkg.com/metascraper-logo-favicon/-/metascraper-logo-favicon-5.29.15.tgz#7a574e4bc012456128c68043991b4dc59ce35444"
-  integrity sha512-RNnHURyAhsvvrixOdg0xxdDJ1Xd5e388cCbv2VOKyqfTu/n5zpBpNmIl18+FjBj697T0/GiuJkTWuTRAj/INtw==
+metascraper-logo-favicon@5.30.0:
+  version "5.30.0"
+  resolved "https://registry.yarnpkg.com/metascraper-logo-favicon/-/metascraper-logo-favicon-5.30.0.tgz#bfd54e89ad764d149d01c250fa8e270c08218579"
+  integrity sha512-9XnPpR71MZ0PwcyeZdX/qROwMFwNzUemxiA1obklbzRNhlTcsqsuflJGTLBuVh6DtX8UsaQLFpU1i0OXqaWfpw==
   dependencies:
     "@keyvhq/memoize" "~1.6.14"
     "@metascraper/helpers" "^5.29.15"
