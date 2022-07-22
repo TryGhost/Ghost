@@ -17,8 +17,16 @@ const Comment = (props) => {
         setIsInEditMode(current => !current);
     };
 
+    const closeEditMode = () => {
+        setIsInEditMode(false);
+    };
+
     const toggleReplyMode = () => {
         setIsInReplyMode(current => !current);
+    };
+
+    const closeReplyMode = () => {
+        setIsInReplyMode(false);
     };
 
     const {admin, avatarSaturation, member, commentsEnabled} = useContext(AppContext);
@@ -41,7 +49,7 @@ const Comment = (props) => {
 
     if (isInEditMode) {
         return (
-            <Form comment={comment} toggle={toggleEditMode} parent={props.parent} isEdit={true} />
+            <Form comment={comment} close={closeEditMode} parent={props.parent} isEdit={true} />
         );
     } else {
         return (
@@ -82,7 +90,7 @@ const Comment = (props) => {
                     leaveTo="opacity-0"
                 >
                     <div className="ml-14 my-10">
-                        <Form parent={comment} toggle={toggleReplyMode} isReply={true} />
+                        <Form parent={comment} close={closeReplyMode} isReply={true} />
                     </div>
                 </Transition>
             </>

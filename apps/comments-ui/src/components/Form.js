@@ -141,10 +141,10 @@ const Form = (props) => {
         editor.on('blur', () => {
             if (editor?.isEmpty) {
                 setFormOpen(false);
-                if (props.isReply && props.toggle) {
+                if (props.isReply && props.close) {
                     // TODO: we cannot toggle the form when this happens, because when the member doesn't have a name we'll always loose focus to input the name...
                     // Need to find a different way for this behaviour
-                    props.toggle();
+                    props.close();
                 }
             }
         });     
@@ -177,10 +177,7 @@ const Form = (props) => {
     
                 // Clear message and blur on success
                 editor.chain().clearContent().blur().run();
-                props.toggle();
-
-                setFormOpen(false);
-                props.toggle();
+                props.close();
             } catch (e) {
                 // eslint-disable-next-line no-console
                 console.error(e);
@@ -195,7 +192,7 @@ const Form = (props) => {
                 parent: props.parent
             });
             
-            props.toggle();
+            props.close();
         } else {
             try {
                 // Send comment to server
@@ -291,7 +288,7 @@ const Form = (props) => {
                                 transition-[opacity] duration-150 
                             ">
                                 {props.isEdit &&
-                                    <button type="button" onClick={props.toggle} className="font-sans text-sm font-medium ml-2.5 text-neutral-500 dark:text-neutral-400">Cancel</button>}
+                                    <button type="button" onClick={props.close} className="font-sans text-sm font-medium ml-2.5 text-neutral-500 dark:text-neutral-400">Cancel</button>}
                                 <button
                                     className={`
                                         transition-[opacity] duration-150
