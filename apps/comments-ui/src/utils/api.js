@@ -107,7 +107,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             const filter = encodeURIComponent(`post_id:${postId}+created_at:<=${firstCommentsLoadedAt}`);
             const order = encodeURIComponent('created_at DESC');
 
-            const url = endpointFor({type: 'members', resource: 'comments', params: `?limit=5&include=member&order=${order}&filter=${filter}&page=${page}`});
+            const url = endpointFor({type: 'members', resource: 'comments', params: `?limit=5&order=${order}&filter=${filter}&page=${page}`});
             return makeRequest({
                 url,
                 method: 'GET',
