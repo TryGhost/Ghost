@@ -69,8 +69,8 @@ const Avatar = (props) => {
     return (
         props.isBlank ?
             (<figure className={`relative ${dimensionClasses}`}>
-                <div className={`flex justify-center items-center rounded-full bg-neutral-300 ${dimensionClasses}`}>
-                    <AvatarIcon />
+                <div className={`flex justify-center items-center rounded-full bg-neutral-300 dark:opacity-70 ${dimensionClasses}`}>
+                    <AvatarIcon className="stroke-white dark:stroke-neutral-600" />
                 </div>
             </figure>) :
             (<figure className={`relative ${dimensionClasses}`}>

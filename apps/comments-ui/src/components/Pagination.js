@@ -19,7 +19,7 @@ const Pagination = (props) => {
     }
 
     return (
-        <button className="w-full rounded-md bg-neutral-100 text-neutral-700 font-semibold px-3 py-3.5 mb-12 font-sans text-md text-center dark:bg-[rgba(255,255,255,0.08)] dark:text-white" onClick={loadMore}>
+        <button className="transition-[background-color] duration-200 ease-out w-full rounded-md bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-semibold px-3 py-3.5 mb-12 font-sans text-md text-center dark:bg-[rgba(255,255,255,0.08)] dark:text-white" onClick={loadMore}>
             ↑ Show {left} previous comments
         </button>
     );
