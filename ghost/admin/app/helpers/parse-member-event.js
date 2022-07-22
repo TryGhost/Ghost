@@ -68,6 +68,10 @@ function getIcon(event) {
         icon = 'email-delivery-failed';
     }
 
+    if (event.type === 'comment_event') {
+        icon = 'comment';
+    }
+
     return 'event-' + icon;
 }
 
@@ -123,6 +127,13 @@ function getAction(event) {
     if (event.type === 'email_failed_event') {
         return 'failed to receive';
     }
+
+    if (event.type === 'comment_event') {
+        if (event.data.parent_id) {
+            return 'replied on';
+        }
+        return 'commented on';
+    }
 }
 
 function getObject(event, hasMultipleNewsletters) {
@@ -141,6 +152,18 @@ function getObject(event, hasMultipleNewsletters) {
         return 'an email';
     }
 
+    if (event.type === 'subscription_event') {
+        return 'their subscription';
+    }
+
+    if (event.type === 'comment_event') {
+        if (event.data.parent_id) {
+            return 'a comment';
+        }
+
+        return 'a post';
+    }
+
     return '';
 }
 
@@ -154,5 +177,12 @@ function getInfo(event) {
         let symbol = getSymbol(event.data.currency);
         return `(MRR ${sign}${symbol}${Math.abs(mrrDelta)})`;
     }
+
+    // TODO: we can include the post title
+    /*if (event.type === 'comment_event') {
+        if (event.data.post) {
+            return event.data.post.title;
+        }
+    }*/
     return;
 }
