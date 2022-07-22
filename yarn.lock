@@ -1819,10 +1819,10 @@
   dependencies:
     semver "^7.3.5"
 
-"@tryghost/limit-service@1.2.1":
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-1.2.1.tgz#596a1a2db237608f082e43a41562f66a07daa82f"
-  integrity sha512-utfcWaEFhqEaMKYS2f/Qudbll6RghFYRHwsqLnsL/6ivsr3BucCOaErc4ZrwTiI10Z2+mfgRJeLGUZWdiTZ+4w==
+"@tryghost/limit-service@1.2.2":
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-1.2.2.tgz#c137a00f636eaaab22c4290b63c29f1b2bb6ffdd"
+  integrity sha512-onlpgn0iZLuFt2yNyHTNx5m7gqYxJnAqUa83G7EgJTZ2yhFYNyw/trVOV46mrJs3+DtEIrNzMCtx50MiqFHb/Q==
   dependencies:
     "@tryghost/errors" "^1.2.1"
     lodash "^4.17.21"
