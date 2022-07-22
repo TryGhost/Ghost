@@ -36,17 +36,69 @@ class JobManager {
      */
     constructor({errorHandler, workerMessageHandler, JobModel}) {
         this.queue = fastq(this, worker, 1);
+        this._jobMessageHandler = this._jobMessageHandler.bind(this);
+        this._jobErrorHandler = this._jobErrorHandler.bind(this);
+
+        const combinedMessageHandler = workerMessageHandler
+            ? ({name, message}) => {
+                workerMessageHandler({name, message});
+                this._jobMessageHandler({name, message});
+            }
+            : this._jobMessageHandler;
+
+        const combinedErrorHandler = errorHandler
+            ? (error, workerMeta) => {
+                errorHandler(error, workerMeta);
+                this._jobErrorHandler(error, workerMeta);
+            }
+            : this._jobErrorHandler;
 
         this.bree = new Bree({
             root: false, // set this to `false` to prevent requiring a root directory of jobs
             hasSeconds: true, // precision is needed to avoid task overlaps after immediate execution
             outputWorkerMetadata: true,
             logger: logging,
-            errorHandler: errorHandler,
-            workerMessageHandler: workerMessageHandler
+            errorHandler: combinedErrorHandler,
+            workerMessageHandler: combinedMessageHandler
         });
 
+        this.bree.on('worker created', (name) => {
+            this._jobMessageHandler({name, message: 'started'});
+          });
+
         this._jobsRepository = new JobsRepository({JobModel});
+    }
+
+    async _jobMessageHandler({name, message}) {
+        if (message === 'started') {
+            const job = await this._jobsRepository.read(name);
+
+            if (job) {
+                await this._jobsRepository.update(job.id, {
+                    status: 'started',
+                    started_at: new Date()
+                });
+            }
+        } else if (message === 'done') {
+            const job = await this._jobsRepository.read(name);
+
+            if (job) {
+                await this._jobsRepository.update(job.id, {
+                    status: 'finished',
+                    finished_at: new Date()
+                });
+            }
+        }
+    }
+
+    async _jobErrorHandler(error, workerMeta) {
+        const job = await this._jobsRepository.read(workerMeta.name);
+
+        if (job) {
+            await this._jobsRepository.update(job.id, {
+                status: 'failed'
+            });
+        }
     }
 
     /**

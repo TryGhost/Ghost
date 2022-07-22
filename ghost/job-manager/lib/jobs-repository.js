@@ -14,6 +14,10 @@ class JobsRepository {
 
         return job;
     }
+
+    async update(id, data) {
+        await this._JobModel.edit(data, {id});
+    }
 }
 
 module.exports = JobsRepository;

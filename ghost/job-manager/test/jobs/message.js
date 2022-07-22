@@ -15,6 +15,6 @@ if (parentPort) {
 
         // post the message back
         parentPort.postMessage(`Worker received: ${message}`);
-        process.exit(0);
+        parentPort.postMessage('done');
     });
 }
