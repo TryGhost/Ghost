@@ -64,7 +64,7 @@ class JobManager {
 
         this.bree.on('worker created', (name) => {
             this._jobMessageHandler({name, message: 'started'});
-          });
+        });
 
         this._jobsRepository = new JobsRepository({JobModel});
     }
