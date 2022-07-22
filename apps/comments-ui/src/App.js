@@ -99,10 +99,6 @@ export default class App extends React.Component {
             let admin = null;
             try {
                 admin = await this.adminApi.getUser();
-
-                /* eslint-disable no-console */
-                console.log(admin);
-                /* eslint-enable no-console */
             } catch (e) {
                 // Loading of admin failed. Could be not signed in, or a different error (not important)
                 // eslint-disable-next-line no-console
