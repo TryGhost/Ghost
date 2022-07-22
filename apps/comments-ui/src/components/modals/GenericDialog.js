@@ -16,7 +16,7 @@ const GenericDialog = (props) => {
     };
 
     return (
-        <Transition show={props.show}>
+        <Transition show={props.show} appear={true}>
             <Frame type="fixed">
                 <div>
                     <Transition.Child

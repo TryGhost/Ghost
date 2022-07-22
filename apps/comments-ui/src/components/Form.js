@@ -241,7 +241,7 @@ const Form = (props) => {
 
     return (
         <>
-            <form ref={formEl} onClick={focusEditor} onMouseDown={preventIfFocused} onTouchStart={preventIfFocused} for="ghost-editor" className={`
+            <form ref={formEl} onClick={focusEditor} onMouseDown={preventIfFocused} onTouchStart={preventIfFocused} className={`
                 transition duration-200
                 pt-3 pb-2 px-3
                 -mt-[12px] -mr-3 mb-10 -ml-[12px]
