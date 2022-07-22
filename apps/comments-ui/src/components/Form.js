@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useContext, useEffect, useRef, useState} from 'react';
 import {Transition} from '@headlessui/react';
 import AppContext from '../AppContext';
 import Avatar from './Avatar';
@@ -67,6 +67,21 @@ const Form = (props) => {
         return y;
     };
 
+    const onFormFocus = useCallback(() => {
+        if (!memberName && !props.isEdit) {
+            editor.commands.blur();
+            dispatchAction('openPopup', {
+                type: 'addNameDialog',
+                callback: () => {
+                    setFormOpen(true);
+                    editor.commands.focus();
+                }
+            });
+        } else {
+            setFormOpen(true);
+        }
+    }, [editor, dispatchAction, memberName, props]);
+
     // Set the cursor position at the end of the form, instead of the beginning (= when using autofocus)
     useEffect(() => {
         if (!editor) {
@@ -76,6 +91,10 @@ const Form = (props) => {
         // Scroll to view if it's a reply
         if (props.isReply) {
             setTimeout(() => {
+                if (!formEl.current) {
+                    // Unmounted
+                    return;
+                }
                 window.scrollTo({
                     top: getScrollToPosition(),
                     left: 0,
@@ -83,6 +102,10 @@ const Form = (props) => {
                 });
             }, 100);
         }
+
+        editor.on('focus', () => {
+            onFormFocus();
+        });
 
         editor.on('blur', () => {
             if (editor?.isEmpty) {
@@ -109,7 +132,7 @@ const Form = (props) => {
                 });
             })
             .run();
-    }, [editor, props, props.isEdit, props.isReply, props.toggle]);
+    }, [editor, props, props.isEdit, props.isReply, props.toggle, onFormFocus]);
 
     const submitForm = async (event) => {
         event.preventDefault();
@@ -172,23 +195,18 @@ const Form = (props) => {
         return false;
     };
 
-    const focusEditor = (event) => {
-        event.stopPropagation();
-
-        if (memberName) {
-            setFormOpen(true);
-            editor.commands.focus();
-        } else {
-            if (!props.isEdit) {
-                dispatchAction('openPopup', {
-                    type: 'addNameDialog',
-                    callback: () => {
-                        setFormOpen(true);
-                        editor.commands.focus();
-                    }
-                });
-            }
+    const preventIfFocused = (event) => {
+        if (editor.isFocused) {
+            event.preventDefault();
+            return;
         }
+    };
+
+    const focusEditor = (event) => {
+        if (editor.isFocused) {
+            return;
+        }
+        editor.commands.focus();
     };
 
     let submitText;
@@ -202,7 +220,7 @@ const Form = (props) => {
 
     return (
         <>
-            <form ref={formEl} onClick={focusEditor} className={`
+            <form ref={formEl} onClick={focusEditor} onMouseDown={preventIfFocused} onTouchStart={preventIfFocused} className={`
                 transition duration-200
                 pt-3 pb-2 px-3
                 -mt-[12px] -mr-3 mb-10 -ml-[12px]
