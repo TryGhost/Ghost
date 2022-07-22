@@ -1966,6 +1966,14 @@
     chalk "^4.1.0"
     sywac "^1.3.0"
 
+"@tryghost/pretty-cli@1.2.29":
+  version "1.2.29"
+  resolved "https://registry.yarnpkg.com/@tryghost/pretty-cli/-/pretty-cli-1.2.29.tgz#1484e0aae195f7766d38807e00d5b4094cfb9172"
+  integrity sha512-J+rA4D+VFCVG/hBZaPqaD5wXp9A+6TNYEqIYPpREvLpOL+fD5bP4W+xiYHEQa4aQoq0MNm5X7bXmtgxPFfdX+g==
+  dependencies:
+    chalk "^4.1.0"
+    sywac "^1.3.0"
+
 "@tryghost/pretty-stream@^0.1.11":
   version "0.1.11"
   resolved "https://registry.yarnpkg.com/@tryghost/pretty-stream/-/pretty-stream-0.1.11.tgz#5e0bcb4a0041147cc43a95057ac4a957d69f0757"
