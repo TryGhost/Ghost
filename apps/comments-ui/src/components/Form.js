@@ -193,11 +193,11 @@ const Form = (props) => {
 
     let submitText;
     if (props.isReply) {
-        submitText = 'Add reply';
+        submitText = <><span className="hidden sm:inline">Add </span><span className="capitalize sm:normal-case">reply</span></>;
     } else if (props.isEdit) {
         submitText = 'Save';
     } else {
-        submitText = 'Add comment';
+        submitText = <><span className="hidden sm:inline">Add </span><span className="capitalize sm:normal-case">comment</span></>;
     }
 
     return (
