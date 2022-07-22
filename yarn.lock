@@ -1669,15 +1669,6 @@
   dependencies:
     html-to-text "^5.1.1"
 
-"@tryghost/errors@1.2.13":
-  version "1.2.13"
-  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.13.tgz#09a680f81e5b14a008427d772689683d1280e221"
-  integrity sha512-uZmPndO4UriA+n1qw+X6V25SG1X3WLNy1sgHflDlMAYiKtwDlKl6N5128BXoydLrATLAqb+to+G3QorM4+4nKw==
-  dependencies:
-    lodash "^4.17.21"
-    utils-copy-error "^1.0.1"
-    uuid "^8.3.2"
-
 "@tryghost/errors@1.2.14", "@tryghost/errors@^1.0.0", "@tryghost/errors@^1.2.1", "@tryghost/errors@^1.2.14", "@tryghost/errors@^1.2.3":
   version "1.2.14"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.14.tgz#af5e0ea1450b6fac7bde94585177943f85f0e41f"
@@ -1903,13 +1894,13 @@
   dependencies:
     "@tryghost/extract-api-key" "^0.1.0"
 
-"@tryghost/mw-error-handler@1.0.3":
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/mw-error-handler/-/mw-error-handler-1.0.3.tgz#15917f58115ae811f2ef8b62cd3ab79445fdfced"
-  integrity sha512-6BfAhDXZo75wWTqz11525Gsd/M99ZP2w1o9+UYgVp6NU7znBlnsEGFilPRvwEaopDK/BX4J0sfe2JnxUUD5//w==
+"@tryghost/mw-error-handler@1.0.5":
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/@tryghost/mw-error-handler/-/mw-error-handler-1.0.5.tgz#a3259d606f41dd50e741a24374bf503a20a6da46"
+  integrity sha512-Ee0Rq58h4iVNYs9noQFJofaEA1edylY8LGpM+f7CNWHnb/pav8ajYmUNo19SPmafTLb+k63DpHKEiwpS9NTGDA==
   dependencies:
     "@tryghost/debug" "^0.1.9"
-    "@tryghost/errors" "1.2.13"
+    "@tryghost/errors" "1.2.14"
     "@tryghost/tpl" "^0.1.8"
     lodash "^4.17.21"
     semver "^7.3.6"
