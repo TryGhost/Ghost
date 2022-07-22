@@ -88,9 +88,11 @@ const Form = (props) => {
             return;
         }
 
+        let timer;
+
         // Scroll to view if it's a reply
         if (props.isReply) {
-            setTimeout(() => {
+            timer = setTimeout(() => {
                 if (!formEl.current) {
                     // Unmounted
                     return;
@@ -119,16 +121,18 @@ const Form = (props) => {
                 });
             })
             .run();
+
+        return () => {
+            if (timer) {
+                clearTimeout(timer);
+            }
+        };
     }, [editor, props]);
 
     useEffect(() => {
         if (!editor) {
             return;
         }
-
-        // Remove previous events
-        editor.off('focus');
-        editor.off('blur');
 
         editor.on('focus', () => {
             onFormFocus();
@@ -143,7 +147,13 @@ const Form = (props) => {
                     //props.toggle();
                 }
             }
-        });        
+        });     
+        
+        return () => {
+            // Remove previous events
+            editor?.off('focus');
+            editor?.off('blur');
+        };
     }, [editor, props, onFormFocus]);
 
     const submitForm = async (event) => {
