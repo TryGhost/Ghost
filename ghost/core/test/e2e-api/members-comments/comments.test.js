@@ -351,7 +351,7 @@ describe('Comments API', function () {
             await membersAgent2
                 .put(`/api/comments/${commentId}`)
                 .body({comments: [{
-                    html: 'Illegal comment update',
+                    html: 'Illegal comment update'
                 }]})
                 .expectStatus(403)
                 .matchHeaderSnapshot({
