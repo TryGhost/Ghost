@@ -15,7 +15,7 @@ describe('Config API', function () {
     });
 
     afterEach(function () {
-        configUtils.set('tenor:publicReadOnlyApiKey', undefined);
+        configUtils.set('tenor:apiKey', undefined);
     });
 
     it('can retrieve config and all expected properties', async function () {
