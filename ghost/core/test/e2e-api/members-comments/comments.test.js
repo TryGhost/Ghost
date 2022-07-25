@@ -1,9 +1,10 @@
+const assert = require('assert');
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyEtag, anyObjectId, anyLocationFor, anyISODateTime, anyUuid, anyNumber, anyBoolean} = matchers;
 const should = require('should');
 const models = require('../../../core/server/models');
 
-let membersAgent, member, postId, commentId;
+let membersAgent, membersAgent2, member, postId, commentId;
 
 const commentMatcherNoMember = {
     id: anyObjectId,
@@ -42,6 +43,7 @@ async function sleep(ms) {
 describe('Comments API', function () {
     before(async function () {
         membersAgent = await agentProvider.getMembersAPIAgent();
+        membersAgent2 = await agentProvider.getMembersAPIAgent();
 
         await fixtureManager.init('posts', 'members', 'comments');
 
@@ -91,6 +93,7 @@ describe('Comments API', function () {
         before(async function () {
             await membersAgent.loginAs('member@example.com');
             member = await models.Member.findOne({email: 'member@example.com'}, {require: true});
+            await membersAgent2.loginAs('member2@example.com');
         });
 
         it('Can comment on a post', async function () {
@@ -113,7 +116,7 @@ describe('Comments API', function () {
 
             // Wait for the emails (because this happens async)
             await sleep(100);
-            
+
             // Check if author got an email
             mockManager.assert.sentEmailCount(1);
             mockManager.assert.sentEmail({
@@ -292,7 +295,7 @@ describe('Comments API', function () {
             mockManager.assert.sentEmail({
                 subject: '🚩 A comment has been reported on your post',
                 to: fixtureManager.get('users', 0).email
-            });  
+            });
         });
 
         it('Cannot report a comment twice', async function () {
@@ -313,6 +316,181 @@ describe('Comments API', function () {
             report.get('member_id').should.eql(member.id);
 
             mockManager.assert.sentEmailCount(0);
+        });
+
+        it('Can edit a comment on a post', async function () {
+            await membersAgent
+                .put(`/api/comments/${commentId}`)
+                .body({comments: [{
+                    html: 'Updated comment'
+                }]})
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    comments: [commentMatcherWithReply]
+                });
+        });
+
+        it('Can not edit a comment post_id', async function () {
+            const anotherPostId = fixtureManager.get('posts', 1).id;
+            await membersAgent
+                .put(`/api/comments/${commentId}`)
+                .body({comments: [{
+                    post_id: anotherPostId
+                }]});
+
+            const {body} = await membersAgent
+                .get(`/api/comments/?filter=post_id:${anotherPostId}`);
+
+            assert(!body.comments.find(comment => comment.id === commentId), 'The comment should not have moved post');
+        });
+
+        it('Can not edit a comment which does not belong to you', async function () {
+            await membersAgent2
+                .put(`/api/comments/${commentId}`)
+                .body({comments: [{
+                    html: 'Illegal comment update'
+                }]})
+                .expectStatus(403)
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    errors: [{
+                        type: 'NoPermissionError',
+                        id: anyUuid
+                    }]
+                });
+        });
+
+        it('Can not edit a comment as a member who is not you', async function () {
+            const memberId = fixtureManager.get('members', 1).id;
+            await membersAgent
+                .put(`/api/comments/${commentId}`)
+                .body({comments: [{
+                    html: 'Illegal comment update',
+                    member_id: memberId
+                }]});
+
+            const {
+                body: {
+                    comments: [
+                        comment
+                    ]
+                }
+            } = await membersAgent.get(`/api/comments/${commentId}`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    comments: [commentMatcherWithReply]
+                });
+
+            assert(comment.member.id !== memberId);
+        });
+
+        it('Can not reply to a reply', async function () {
+            const {
+                body: {
+                    comments: [{
+                        id: parentId
+                    }]
+                }
+            } = await membersAgent
+                .post(`/api/comments/`)
+                .body({comments: [{
+                    post_id: postId,
+                    html: 'Parent'
+                }]});
+
+            const {
+                body: {
+                    comments: [{
+                        id: replyId
+                    }]
+                }
+            } = await membersAgent
+                .post(`/api/comments/`)
+                .body({comments: [{
+                    post_id: postId,
+                    parent_id: parentId,
+                    html: 'Reply'
+                }]});
+
+            await membersAgent
+                .post(`/api/comments/`)
+                .body({comments: [{
+                    post_id: postId,
+                    parent_id: replyId,
+                    html: 'Reply to a reply!'
+                }]})
+                .expectStatus(400)
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    errors: [{
+                        type: 'BadRequestError',
+                        id: anyUuid
+                    }]
+                });
+        });
+
+        it('Can not edit a replies parent', async function () {
+            const {
+                body: {
+                    comments: [{
+                        id: parentId
+                    }]
+                }
+            } = await membersAgent
+                .post(`/api/comments/`)
+                .body({comments: [{
+                    post_id: postId,
+                    html: 'Parent'
+                }]});
+
+            const {
+                body: {
+                    comments: [{
+                        id: newParentId
+                    }]
+                }
+            } = await membersAgent
+                .post(`/api/comments/`)
+                .body({comments: [{
+                    post_id: postId,
+                    html: 'New Parent'
+                }]});
+
+            const {
+                body: {
+                    comments: [{
+                        id: replyId
+                    }]
+                }
+            } = await membersAgent
+                .post(`/api/comments/`)
+                .body({comments: [{
+                    post_id: postId,
+                    parent_id: parentId,
+                    html: 'Reply'
+                }]});
+
+            // Attempt to edit the parent
+            await membersAgent
+                .put(`/api/comments/${replyId}/`)
+                .body({comments: [{
+                    parent_id: newParentId,
+                    html: 'Changed parent'
+                }]});
+
+            const {body: {comments: [comment]}} = await membersAgent.get(`api/comments/${newParentId}`);
+
+            assert(comment.replies.length === 0, 'The parent comment should not have changed');
         });
     });
 });
