@@ -26,7 +26,8 @@ const ALPHA_FEATURES = [
     'urlCache',
     'beforeAfterCard',
     'comments',
-    'newsletterPaywall'
+    'newsletterPaywall',
+    'explore'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
