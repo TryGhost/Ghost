@@ -49,7 +49,7 @@ class CommentsServiceEmails {
 
             const {html, text} = await this.renderEmailTemplate('new-comment', templateData);
 
-            this.sendMail({
+            await this.sendMail({
                 to,
                 subject,
                 html,
@@ -148,7 +148,7 @@ class CommentsServiceEmails {
 
         const {html, text} = await this.renderEmailTemplate('report', templateData);
 
-        this.sendMail({
+        await this.sendMail({
             to,
             subject,
             html,
