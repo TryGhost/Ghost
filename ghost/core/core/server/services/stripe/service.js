@@ -25,7 +25,15 @@ const debouncedConfigureApi = _.debounce(() => {
 
 module.exports = new StripeService({
     membersService,
-    models: _.pick(models, ['Product', 'StripePrice', 'StripeCustomerSubscription', 'StripeProduct', 'MemberStripeCustomer', 'Offer', 'Settings']),
+    models: _.pick(models, [
+        'Product',
+        'StripePrice',
+        'StripeCustomerSubscription',
+        'StripeProduct',
+        'MemberStripeCustomer',
+        'Offer',
+        'Settings'
+    ]),
     StripeWebhook: {
         async get() {
             return {
