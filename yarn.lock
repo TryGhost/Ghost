@@ -1748,10 +1748,10 @@
     "@tryghost/errors" "^1.2.14"
     jest-snapshot "^28.0.0"
 
-"@tryghost/job-manager@0.8.25":
-  version "0.8.25"
-  resolved "https://registry.yarnpkg.com/@tryghost/job-manager/-/job-manager-0.8.25.tgz#9c208e4fa4ca4719c64a432b67039396cfdc0796"
-  integrity sha512-gkhhfWZFcpsfS4NqECqJvDIi8yIR+V7dngSsT9N011BOriwu5jr/weoGkGhIkZdIK79GNzVIHR9PBaAAEjZXNw==
+"@tryghost/job-manager@0.9.0":
+  version "0.9.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/job-manager/-/job-manager-0.9.0.tgz#ca6733f75cb927de3a52d633bc4ae3e73a026164"
+  integrity sha512-UGB1qqwLvqjPLGKAiC/qgCAhSGIZHUD6nxcdHtjIB9G1yGFGi6Ki2bu7QQRsmuttUWHxZzYeKLmhuCBuuEOZmw==
   dependencies:
     "@breejs/later" "^4.0.2"
     "@tryghost/logging" "^2.0.0"
@@ -11191,6 +11191,17 @@ sprintf-js@~1.0.2:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/sprintf-js/-/sprintf-js-1.0.3.tgz#04e6926f662895354f3dd015203633b857297e2c"
   integrity sha512-D9cPgkvLlV3t3IzL0D0YLvGA9Ahk4PcvVwUbN0dSGr1aP0Nrt4AEnTUbuGvquEC0mA64Gqt1fzirlRs5ibXx8g==
+
+sqlite3@5.0.10:
+  version "5.0.10"
+  resolved "https://registry.yarnpkg.com/sqlite3/-/sqlite3-5.0.10.tgz#64e1efb1b5a1ae343d2cc64ce9e582e5f5db24ba"
+  integrity sha512-xG4XPp7+b/lIlb/acs4XzBmmahI1Qq3Yhy+jZnZJivwB6DXpoOpGR6QinRbsQkHJIvMZyUsJDXouSva/JXcWFA==
+  dependencies:
+    "@mapbox/node-pre-gyp" "^1.0.0"
+    node-addon-api "^4.2.0"
+    tar "^6.1.11"
+  optionalDependencies:
+    node-gyp "8.x"
 
 sqlite3@5.0.9:
   version "5.0.9"

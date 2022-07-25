@@ -44,6 +44,20 @@ module.exports = function testRoutes() {
         res.sendStatus(202);
     });
 
+    router.get('/oneoff/:name', (req, res) => {
+        logging.info('Create Slow Job with timeout of', req.params.name);
+
+        const options = {};
+
+        options.solo = true;
+        options.name = req.params.name;
+        options.job = path.resolve(__dirname, 'jobs', `${options.name}.js`);
+
+        jobsService.addOneOffJob(options);
+
+        res.sendStatus(202);
+    });
+
     router.get('/schedule/:schedule/:name*?', (req, res) => {
         if (!req.params.schedule) {
             return res.sendStatus(400, 'schedule parameter cannot be mepty');
