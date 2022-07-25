@@ -1669,7 +1669,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             })).then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.containEql('<script defer src="https://unpkg.com/@tryghost/portal');
+                rendered.string.should.containEql('<script defer src="https://cdn.jsdelivr.net/npm/@tryghost/portal');
                 rendered.string.should.containEql('data-ghost="http://127.0.0.1:2369/" data-key="xyz" data-api="http://127.0.0.1:2369/ghost/api/content/"');
                 rendered.string.should.containEql('<style id="gh-members-styles">');
                 done();
@@ -1688,7 +1688,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             })).then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.containEql('<script defer src="https://unpkg.com/@tryghost/portal');
+                rendered.string.should.containEql('<script defer src="https://cdn.jsdelivr.net/npm/@tryghost/portal');
                 rendered.string.should.containEql('data-ghost="http://127.0.0.1:2369/" data-key="xyz" data-api="http://127.0.0.1:2369/ghost/api/content/"');
                 rendered.string.should.containEql('<style id="gh-members-styles">');
                 rendered.string.should.containEql('<script async src="https://js.stripe.com');
@@ -1708,7 +1708,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             })).then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.not.containEql('<script defer src="https://unpkg.com/@tryghost/portal');
+                rendered.string.should.not.containEql('<script defer src="https://cdn.jsdelivr.net/npm/@tryghost/portal');
                 rendered.string.should.not.containEql('data-ghost="http://127.0.0.1:2369/" data-key="xyz" data-api="http://127.0.0.1:2369/ghost/api/content/"');
                 rendered.string.should.not.containEql('<style id="gh-members-styles">');
                 rendered.string.should.not.containEql('<script async src="https://js.stripe.com');
@@ -1728,7 +1728,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             })).then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.containEql('<script defer src="https://unpkg.com/@tryghost/portal');
+                rendered.string.should.containEql('<script defer src="https://cdn.jsdelivr.net/npm/@tryghost/portal');
                 rendered.string.should.containEql('data-ghost="http://127.0.0.1:2369/" data-key="xyz" data-api="http://127.0.0.1:2369/ghost/api/content/"');
                 rendered.string.should.containEql('<style id="gh-members-styles">');
                 rendered.string.should.not.containEql('<script async src="https://js.stripe.com');
@@ -1749,8 +1749,8 @@ describe('{{ghost_head}} helper', function () {
                 }
             })).then(function (rendered) {
                 should.exist(rendered);
-                rendered.string.should.containEql('<script defer src="https://unpkg.com/@tryghost/sodo-search');
-                rendered.string.should.containEql('data-sodo-search="http://127.0.0.1:2369/" data-version="0.1.0" data-key="xyz"');
+                rendered.string.should.containEql('<script defer src="https://cdn.jsdelivr.net/npm/@tryghost/sodo-search');
+                rendered.string.should.containEql('data-key="xyz" data-styles="https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@~1.0/umd/main.css" data-sodo-search="http://127.0.0.1:2369/"');
 
                 done();
             }).catch(done);

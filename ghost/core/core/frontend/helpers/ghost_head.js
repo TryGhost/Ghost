@@ -13,6 +13,7 @@ const logging = require('@tryghost/logging');
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('ghost_head');
 const templateStyles = require('./tpl/styles');
+const {getFrontendAppConfig, getDataAttributes} = require('../utils/frontend-apps');
 
 const {get: getMetaData, getAssetUrl} = metaData;
 
@@ -47,9 +48,20 @@ function getMembersHelper(data, frontendKey) {
     if (!settingsCache.get('members_enabled')) {
         return '';
     }
+    const {scriptUrl} = getFrontendAppConfig('portal');
 
-    const colorString = _.has(data, 'site._preview') && data.site.accent_color ? ` data-accent-color="${data.site.accent_color}"` : '';
-    let membersHelper = `<script defer src="${config.get('portal:url')}" data-ghost="${urlUtils.getSiteUrl()}"${colorString} data-key="${frontendKey}" data-api="${urlUtils.urlFor('api', {type: 'content'}, true)}" crossorigin="anonymous"></script>`;
+    const colorString = (_.has(data, 'site._preview') && data.site.accent_color) ? data.site.accent_color : '';
+    const attributes = {
+        ghost: urlUtils.getSiteUrl(),
+        key: frontendKey,
+        api: urlUtils.urlFor('api', {type: 'content'}, true)
+    };
+    if (colorString) {
+        attributes['accent-color'] = colorString;
+    }
+    const dataAttributes = getDataAttributes(attributes);
+
+    let membersHelper = `<script defer src="${scriptUrl}" ${dataAttributes} crossorigin="anonymous"></script>`;
     membersHelper += (`<style id="gh-members-styles">${templateStyles}</style>`);
     if (settingsCache.get('paid_members_enabled')) {
         membersHelper += '<script async src="https://js.stripe.com/v3/"></script>';
@@ -59,8 +71,14 @@ function getMembersHelper(data, frontendKey) {
 
 function getSearchHelper(frontendKey) {
     const adminUrl = urlUtils.getAdminUrl() || urlUtils.getSiteUrl();
-
-    let helper = `<script defer src="${config.get('sodoSearch:url')}" data-sodo-search="${adminUrl}" data-version="${config.get('sodoSearch:version')}" data-key="${frontendKey}" crossorigin="anonymous"></script>`;
+    const {scriptUrl, stylesUrl} = getFrontendAppConfig('sodoSearch');
+    const attrs = {
+        key: frontendKey,
+        styles: stylesUrl,
+        'sodo-search': adminUrl
+    };
+    const dataAttrs = getDataAttributes(attrs);
+    let helper = `<script defer src="${scriptUrl}" ${dataAttrs} crossorigin="anonymous"></script>`;
 
     return helper;
 }
