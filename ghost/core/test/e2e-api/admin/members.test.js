@@ -1,5 +1,5 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyObjectId, anyUuid, anyISODateTime, anyISODate, anyString, anyArray, anyLocationFor, anyErrorId} = matchers;
+const {anyEtag, anyObjectId, anyUuid, anyISODateTime, anyISODate, anyString, anyArray, anyLocationFor, anyErrorId, anyObject} = matchers;
 const ObjectId = require('bson-objectid');
 
 const assert = require('assert');
@@ -155,7 +155,7 @@ describe('Members API', function () {
 
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
-        await fixtureManager.init('newsletters', 'members:newsletters');
+        await fixtureManager.init('posts', 'newsletters', 'members:newsletters', 'comments');
         await agent.loginAsOwner();
 
         newsletters = await getNewsletters();
@@ -168,6 +168,26 @@ describe('Members API', function () {
 
     afterEach(function () {
         mockManager.restore();
+    });
+
+    // Activity feed
+    it('Returns comments in activity feed', async function () {
+        // Check activity feed
+        await agent
+            .get(`/members/events`)
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                events: new Array(5).fill({
+                    type: anyString,
+                    data: anyObject
+                })
+            })
+            .expect(({body}) => {
+                should(body.events.find(e => e.type === 'comment_event')).not.be.undefined();
+            });
     });
 
     // List Members

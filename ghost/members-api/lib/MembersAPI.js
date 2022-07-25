@@ -53,7 +53,8 @@ module.exports = function MembersAPI({
         StripeProduct,
         StripePrice,
         Product,
-        Settings
+        Settings,
+        Comment
     },
     stripeAPIService,
     offersAPI,
@@ -103,6 +104,7 @@ module.exports = function MembersAPI({
         MemberPaymentEvent,
         MemberStatusEvent,
         MemberLoginEvent,
+        Comment,
         labsService
     });
 
