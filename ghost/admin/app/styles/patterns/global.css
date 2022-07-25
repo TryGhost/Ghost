@@ -334,43 +334,50 @@ h6 {
 h1 {
     text-indent: -1px;
     font-size: 2.9rem;
+    letter-spacing: -0.021em;
 }
 @media (max-width: 500px) {
     h1 {
         font-size: 2.4rem;
+        letter-spacing: -0.019em;
     }
 }
 
 h2 {
     font-size: 2.2rem;
+    letter-spacing: -0.019em;
 }
 @media (max-width: 500px) {
     h2 {
         font-size: 1.9rem;
+        letter-spacing: -0.017em;
     }
 }
 
 h3 {
     font-size: 1.9rem;
+    letter-spacing: -0.017em;
 }
 @media (max-width: 500px) {
     h3 {
         font-size: 1.7rem;
+        letter-spacing: -0.015em;
     }
 }
 
 h4 {
     font-size: 1.7rem;
+    letter-spacing: -0.013em;
 }
 
 h5 {
     font-size: 1.5rem;
-    letter-spacing: 0;
+    letter-spacing: -0.009em;
 }
 
 h6 {
     font-size: 1.5rem;
-    letter-spacing: 0;
+    letter-spacing: -0.009em;
 }
 
 .gh-heading-xs {
