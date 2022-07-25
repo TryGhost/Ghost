@@ -139,12 +139,12 @@
     "sodoSearch": {
         "url": "https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@~{version}/umd/sodo-search.min.js",
         "styles": "https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@~{version}/umd/main.css",
-        "version": "1.0"
+        "version": "1.1"
     },
     "comments": {
         "url": "https://cdn.jsdelivr.net/npm/@tryghost/comments-ui@~{version}/umd/comments-ui.min.js",
         "styles": "https://cdn.jsdelivr.net/npm/@tryghost/comments-ui@~{version}/umd/main.css",
-        "version": "0.1"
+        "version": "0.2"
     },
     "editor": {
         "url": ""
