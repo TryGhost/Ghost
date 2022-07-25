@@ -148,11 +148,7 @@ module.exports = {
             }
         })();
 
-        try {
-            await stripeService.migrations.execute();
-        } catch (err) {
-            logging.error(err);
-        }
+        await stripeService.migrations.execute();
     },
     contentGating: require('./content-gating'),
 
