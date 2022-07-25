@@ -1,6 +1,7 @@
 class CommentsServiceWrapper {
     init() {
         const CommentsService = require('./service');
+        const CommentsController = require('./controller');
 
         const config = require('../../../shared/config');
         const logging = require('@tryghost/logging');
@@ -20,6 +21,8 @@ class CommentsServiceWrapper {
             urlService,
             urlUtils
         });
+
+        this.controller = new CommentsController(this.api);
     }
 }
 

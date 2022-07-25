@@ -57,6 +57,15 @@ class CommentsService {
     }
 
     /**
+     * @param {any} options
+     */
+    async getComments(options) {
+        const page = await this.models.Comment.findPage(options);
+
+        return page;
+    }
+
+    /**
      * @param {string} id - The ID of the Comment to get
      * @param {any} options
      */

@@ -34,7 +34,7 @@ module.exports = {
         },
         permissions: true,
         query(frame) {
-            return models.Comment.findPage(frame.options);
+            return commentsService.controller.browse(frame);
         }
     },
 
@@ -52,8 +52,8 @@ module.exports = {
             }
         },
         permissions: true,
-        async query(frame) {
-            return await commentsService.api.getCommentByID(frame.data.id, frame.options);
+        query(frame) {
+            return commentsService.controller.read(frame);
         }
     },
 
@@ -74,21 +74,8 @@ module.exports = {
             }
         },
         permissions: true,
-        async query(frame) {
-            if (frame.data.comments[0].status === 'deleted') {
-                return await commentsService.api.deleteComment(
-                    frame.options.id,
-                    frame?.options?.context?.member?.id,
-                    frame.options
-                );
-            }
-
-            return await commentsService.api.editCommentContent(
-                frame.options.id,
-                frame?.options?.context?.member?.id,
-                frame.data.comments[0].html,
-                frame.options
-            );
+        query(frame) {
+            return commentsService.controller.edit(frame);
         }
     },
 
@@ -111,24 +98,8 @@ module.exports = {
         permissions: {
             unsafeAttrs: UNSAFE_ATTRS
         },
-        async query(frame) {
-            const data = frame.data.comments[0];
-
-            if (data.parent_id) {
-                return await commentsService.api.replyToComment(
-                    data.parent_id,
-                    frame.options.context.member.id,
-                    data.html,
-                    frame.options
-                );
-            }
-
-            return await commentsService.api.commentOnPost(
-                data.post_id,
-                frame.options.context.member.id,
-                data.html,
-                frame.options
-            );
+        query(frame) {
+            return commentsService.controller.add(frame);
         }
     },
 
@@ -145,15 +116,7 @@ module.exports = {
         },
         permissions: true,
         query(frame) {
-            frame.options.require = true;
-
-            return models.Comment.destroy(frame.options)
-                .then(() => null)
-                .catch(models.Comment.NotFoundError, () => {
-                    return Promise.reject(new errors.NotFoundError({
-                        message: tpl(messages.commentNotFound)
-                    }));
-                });
+            return commentsService.controller.destroy(frame);
         }
     },
 
