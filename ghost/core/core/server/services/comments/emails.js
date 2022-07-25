@@ -1,6 +1,7 @@
 const {promises: fs} = require('fs');
 const path = require('path');
 const moment = require('moment');
+const htmlToPlaintext = require('../../../shared/html-to-plaintext');
 
 class CommentsServiceEmails {
     constructor({config, logging, models, mailer, settingsCache, urlService, urlUtils}) {
@@ -128,7 +129,7 @@ class CommentsServiceEmails {
             postTitle: post.get('title'),
             postUrl: this.urlService.getUrlByResourceId(post.get('id'), {absolute: true}),
             commentHtml: comment.get('html'),
-            commentText: 'todo: we need to convert html to text first!',
+            commentText: htmlToPlaintext.email(comment.get('html')),
             commentDate: moment(comment.get('created_at')).tz(this.settingsCache.get('timezone')).format('D MMM YYYY'),
             
             reporterName: reporter.name,

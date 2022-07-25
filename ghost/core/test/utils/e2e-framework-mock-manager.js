@@ -85,6 +85,12 @@ const sentEmail = (matchers) => {
 
         // We use assert, rather than sinon.assert.calledWith, as we end up with much better error messaging
         assert.notEqual(spyCall.args[0][key], undefined, `Expected email to have property ${key}`);
+
+        if (value instanceof RegExp) {
+            assert.match(spyCall.args[0][key], value, `Expected Email ${emailCount} to have ${key} that matches ${value}, got ${spyCall.args[0][key]}`);
+            return;
+        }
+        
         assert.equal(spyCall.args[0][key], value, `Expected Email ${emailCount} to have ${key} of ${value}`);
     });
 };

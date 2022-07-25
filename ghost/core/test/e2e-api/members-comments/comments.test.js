@@ -40,6 +40,10 @@ async function sleep(ms) {
     });
 }
 
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 describe('Comments API', function () {
     before(async function () {
         membersAgent = await agentProvider.getMembersAPIAgent();
@@ -101,7 +105,7 @@ describe('Comments API', function () {
                 .post(`/api/comments/`)
                 .body({comments: [{
                     post_id: postId,
-                    html: 'This is a message'
+                    html: '<p>This is a <strong>message</strong></p><p>New line</p>'
                 }]})
                 .expectStatus(201)
                 .matchHeaderSnapshot({
@@ -121,7 +125,9 @@ describe('Comments API', function () {
             mockManager.assert.sentEmailCount(1);
             mockManager.assert.sentEmail({
                 subject: '💬 You have a new comment on one of your posts',
-                to: fixtureManager.get('users', 0).email
+                to: fixtureManager.get('users', 0).email,
+                // Note that the <strong> tag is removed by the sanitizer
+                html: new RegExp(escapeRegExp('<p>This is a message</p><p>New line</p>'))
             });
         });
 
@@ -294,7 +300,9 @@ describe('Comments API', function () {
 
             mockManager.assert.sentEmail({
                 subject: '🚩 A comment has been reported on your post',
-                to: fixtureManager.get('users', 0).email
+                to: fixtureManager.get('users', 0).email,
+                html: new RegExp(escapeRegExp('<p>This is a message</p><p>New line</p>')),
+                text: new RegExp(escapeRegExp('This is a message\n\nNew line'))
             });
         });
 
