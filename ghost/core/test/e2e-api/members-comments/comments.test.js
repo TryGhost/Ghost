@@ -126,7 +126,7 @@ describe('Comments API', function () {
             });
 
             // Wait for the dispatched events (because this happens async)
-            await sleep(250);
+            await sleep(200);
 
             // Check last_updated_at changed?
             member = await models.Member.findOne({id: member.id});
@@ -178,7 +178,7 @@ describe('Comments API', function () {
             });
 
             // Wait for the dispatched events (because this happens async)
-            await sleep(250);
+            await sleep(200);
 
             // Check last updated_at is not changed?
             member = await models.Member.findOne({id: member.id});

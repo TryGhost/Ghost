@@ -34,7 +34,7 @@ class LastSeenAtUpdater {
         });
 
         this._domainEventsService.subscribe(MemberCommentEvent, async (event) => {
-            await this.updateLastCommentedAt(event.data.memberId, event.data.memberLastSeenAt, event.data.memberLastCommentedAt, event.timestamp);
+            await this.updateLastCommentedAt(event.data.memberId, event.timestamp);
         });
     }
 
@@ -65,14 +65,17 @@ class LastSeenAtUpdater {
      * - memberLastSeenAt is 2022-02-27 23:00:00, timestamp is current time, then `last_seen_at` is set to the current time
      * - memberLastSeenAt is 2022-02-28 01:00:00, timestamp is current time, then `last_seen_at` isn't changed
      * @param {string} memberId The id of the member to be udpated
-     * @param {string} memberLastSeenAt The previous last_seen_at property value for the current member
-     * @param {string} memberLastCommentedAt The previous last_commented_at property value for the current member
      * @param {Date} timestamp The event timestamp
      */
-    async updateLastCommentedAt(memberId, memberLastSeenAt, memberLastCommentedAt, timestamp) {
+    async updateLastCommentedAt(memberId, timestamp) {
+        const membersApi = await this._getMembersApi();
+        const member = await membersApi.members.get({id: memberId}, {require: true});
         const timezone = this._settingsCacheService.get('timezone');
+
+        const memberLastSeenAt = member.get('last_seen_at');
+        const memberLastCommentedAt = member.get('last_commented_at');
+
         if (memberLastSeenAt === null || moment(moment.utc(timestamp).tz(timezone).startOf('day')).isAfter(memberLastSeenAt) || memberLastCommentedAt === null || moment(moment.utc(timestamp).tz(timezone).startOf('day')).isAfter(memberLastCommentedAt)) {
-            const membersApi = await this._getMembersApi();
             await membersApi.members.update({
                 last_seen_at: moment.utc(timestamp).format('YYYY-MM-DD HH:mm:ss'),
                 last_commented_at: moment.utc(timestamp).format('YYYY-MM-DD HH:mm:ss')

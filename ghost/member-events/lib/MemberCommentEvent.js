@@ -1,8 +1,8 @@
 /**
  * @typedef {object} MemberCommentEventData
  * @prop {string} memberId
- * @prop {string} memberLastSeenAt
- * @prop {string} memberLastCommentedAt
+ * @prop {string} commentId
+ * @prop {string} postId
  */
 
 /**

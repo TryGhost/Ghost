@@ -33,18 +33,6 @@ class CommentsService {
         }
     }
 
-    /**
-     * Dispatch an event that we created a new comments posted by given member
-     * @param {Object} member member model that posted the comment
-     */
-    dispatchCommentEvent(member) {
-        DomainEvents.dispatch(MemberCommentEvent.create({
-            memberId: member.id, 
-            memberLastSeenAt: member.get('last_seen_at'), 
-            memberLastCommentedAt: member.get('last_commented_at')
-        }, new Date()));
-    }
-
     async reportComment(commentId, reporter) {
         const comment = await this.models.Comment.findOne({id: commentId}, {require: true});
 
@@ -91,7 +79,7 @@ class CommentsService {
      * @param {any} options
      */
     async commentOnPost(post, member, comment, options) {
-        const memberModel = await this.models.Member.findOne({
+        await this.models.Member.findOne({
             id: member
         }, {
             require: true,
@@ -110,7 +98,11 @@ class CommentsService {
             await this.sendNewCommentNotifications(model);
         }
 
-        this.dispatchCommentEvent(memberModel);
+        DomainEvents.dispatch(MemberCommentEvent.create({
+            memberId: member,
+            postId: post,
+            commentId: model.id
+        }));
 
         return model;
     }
@@ -122,7 +114,7 @@ class CommentsService {
      * @param {any} options
      */
     async replyToComment(parent, member, comment, options) {
-        const memberModel = await this.models.Member.findOne({
+        await this.models.Member.findOne({
             id: member
         }, {
             require: true,
@@ -153,7 +145,12 @@ class CommentsService {
         if (!options.context.internal) {
             await this.sendNewCommentNotifications(model);
         }
-        this.dispatchCommentEvent(memberModel);
+
+        DomainEvents.dispatch(MemberCommentEvent.create({
+            memberId: member,
+            postId: parentComment.get('post_id'),
+            commentId: model.id
+        }));
 
         return model;
     }
