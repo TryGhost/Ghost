@@ -3,7 +3,7 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
 const db = require('../../data/db');
-const service = require('../../services/comments');
+const commentsService = require('../../services/comments');
 const ALLOWED_INCLUDES = ['post', 'member', 'likes', 'replies'];
 const UNSAFE_ATTRS = ['status'];
 
@@ -52,17 +52,8 @@ module.exports = {
             }
         },
         permissions: true,
-        query(frame) {
-            return models.Comment.findOne(frame.data, frame.options)
-                .then((model) => {
-                    if (!model) {
-                        return Promise.reject(new errors.NotFoundError({
-                            message: tpl(messages.commentNotFound)
-                        }));
-                    }
-
-                    return model;
-                });
+        async query(frame) {
+            return await commentsService.api.getCommentByID(frame.data.id, frame.options);
         }
     },
 
@@ -83,17 +74,21 @@ module.exports = {
             }
         },
         permissions: true,
-        query(frame) {
-            return models.Comment.edit(frame.data.comments[0], frame.options)
-                .then((model) => {
-                    if (!model) {
-                        return Promise.reject(new errors.NotFoundError({
-                            message: tpl(messages.commentNotFound)
-                        }));
-                    }
+        async query(frame) {
+            if (frame.data.comments[0].status === 'deleted') {
+                return await commentsService.api.deleteComment(
+                    frame.options.id,
+                    frame?.options?.context?.member?.id,
+                    frame.options
+                );
+            }
 
-                    return model;
-                });
+            return await commentsService.api.editCommentContent(
+                frame.options.id,
+                frame?.options?.context?.member?.id,
+                frame.data.comments[0].html,
+                frame.options
+            );
         }
     },
 
@@ -116,20 +111,24 @@ module.exports = {
         permissions: {
             unsafeAttrs: UNSAFE_ATTRS
         },
-        query(frame) {
-            // TODO: move to comment service
+        async query(frame) {
             const data = frame.data.comments[0];
 
-            if (frame.options?.context?.member?.id) {
-                data.member_id = frame.options.context.member.id;
-
-                // todo: add validation that the parent comment is on the same post, and not deleted
-                return models.Comment.add(data, frame.options);
-            } else {
-                return Promise.reject(new errors.NotFoundError({
-                    message: tpl(messages.memberNotFound)
-                }));
+            if (data.parent_id) {
+                return await commentsService.api.replyToComment(
+                    data.parent_id,
+                    frame.options.context.member.id,
+                    data.html,
+                    frame.options
+                );
             }
+
+            return await commentsService.api.commentOnPost(
+                data.post_id,
+                frame.options.context.member.id,
+                data.html,
+                frame.options
+            );
         }
     },
 
@@ -260,7 +259,7 @@ module.exports = {
                 }));
             }
 
-            await service.api.reportComment(frame.options.id, frame.options?.context?.member);
+            await commentsService.api.reportComment(frame.options.id, frame.options?.context?.member);
         }
     }
 };
