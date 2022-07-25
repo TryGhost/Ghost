@@ -19,7 +19,10 @@
     "**/node_modules/**"
   ],
   "scripts": {
-    "dev": "yarn workspace ghost run dev",
+    "dev:debug": "DEBUG=@tryghost*,ghost:* yarn dev",
+    "dev:admin": "yarn workspace ghost run dev:admin",
+    "dev:ghost": "nodemon -q -i ghost/admin -i ghost/core/content -i ghost/core/core/built ghost/core/index.js",
+    "dev": "concurrently -c \"blue,green\" --kill-others -n ghost,admin \"yarn dev:ghost\" \"yarn dev:admin\"",
     "fix": "yarn cache clean && rm -rf node_modules && yarn",
     "knex-migrator": "yarn workspace ghost run knex-migrator",
     "lint": "yarn workspaces run lint",
@@ -94,5 +97,9 @@
         "enabled": false
       }
     ]
+  },
+  "devDependencies": {
+    "concurrently": "7.3.0",
+    "nodemon": "2.0.19"
   }
 }
