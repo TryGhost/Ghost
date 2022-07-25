@@ -56,7 +56,8 @@
         "urlCache": "test/utils/fixtures/urls"
     },
     "sodoSearch": {
-        "url": "https://unpkg.com/@tryghost/sodo-search@~0.1.0/umd/sodo-search.min.js",
-        "version": "0.1.0"
+        "url": "https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@~{version}/umd/sodo-search.min.js",
+        "styles": "https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@~{version}/umd/main.css",
+        "version": "1.0"
     }
 }
