@@ -189,7 +189,8 @@ function createApiInstance(config) {
             StripeProduct: models.StripeProduct,
             StripePrice: models.StripePrice,
             Product: models.Product,
-            Settings: models.Settings
+            Settings: models.Settings,
+            Comment: models.Comment
         },
         stripeAPIService: stripeService.api,
         offersAPI: offersService.api,

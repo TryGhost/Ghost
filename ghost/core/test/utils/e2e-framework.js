@@ -316,6 +316,7 @@ module.exports = {
         anyBoolean: any(Boolean),
         anyString: any(String),
         anyArray: any(Array),
+        anyObject: any(Object),
         anyNumber: any(Number),
         anyStringNumber: stringMatching(/\d+/),
         anyISODateTime: stringMatching(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z/),
