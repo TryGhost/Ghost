@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - '5.0'
       - 'v5.*'
       - 3.x
       - 2.x
