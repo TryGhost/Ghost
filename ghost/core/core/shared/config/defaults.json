@@ -133,12 +133,18 @@
         "emailAnalytics": true
     },
     "portal": {
-        "url": "https://unpkg.com/@tryghost/portal@~2.3.0/umd/portal.min.js",
+        "url": "https://cdn.jsdelivr.net/npm/@tryghost/portal@~{version}/umd/portal.min.js",
         "version": "2.3"
     },
     "sodoSearch": {
-        "url": "https://unpkg.com/@tryghost/sodo-search@~1.0.0/umd/sodo-search.min.js",
-        "version": "1.0.0"
+        "url": "https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@~{version}/umd/sodo-search.min.js",
+        "styles": "https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@~{version}/umd/main.css",
+        "version": "1.0"
+    },
+    "comments": {
+        "url": "https://cdn.jsdelivr.net/npm/@tryghost/comments-ui@~{version}/umd/comments-ui.min.js",
+        "styles": "https://cdn.jsdelivr.net/npm/@tryghost/comments-ui@~{version}/umd/main.css",
+        "version": "0.1"
     },
     "editor": {
         "url": ""
@@ -155,9 +161,5 @@
     },
     "gravatar": {
         "url": "https://www.gravatar.com/avatar/{hash}?s={size}&r={rating}&d={_default}"
-    },
-    "comments": {
-        "url": "https://unpkg.com/@tryghost/comments-ui@~0.1.0/umd/comments-ui.min.js",
-        "version": "0.1.0"
     }
 }
