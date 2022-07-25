@@ -70,7 +70,7 @@ export default class App extends React.Component {
             // Fetch data from API, links, preview, dev sources
             const {site, member} = await this.fetchApiData();
             const {comments, pagination} = await this.fetchComments();
-            
+
             const state = {
                 site,
                 member,
@@ -104,7 +104,7 @@ export default class App extends React.Component {
                 // eslint-disable-next-line no-console
                 console.warn(`[Comments] Failed to fetch current admin user:`, e);
             }
-            
+
             const state = {
                 admin
             };
@@ -264,7 +264,8 @@ export default class App extends React.Component {
                     return null;
                 },
                 allowUrls: [
-                    /https?:\/\/((www)\.)?unpkg\.com\/@tryghost\/comments/
+                    /https?:\/\/((www)\.)?unpkg\.com\/@tryghost\/comments/,
+                    /https?:\/\/((cdn)\.)?jsdelivr\.net\/npm\/@tryghost\/comments/
                 ]
             });
         }
@@ -287,9 +288,10 @@ export default class App extends React.Component {
             accentColor: this.props.accentColor,
             commentsEnabled: this.props.commentsEnabled,
             appVersion: this.props.appVersion,
+            stylesUrl: this.props.stylesUrl,
             popup,
             dispatchAction: (_action, data) => this.dispatchAction(_action, data),
-            
+
             /**
              * @deprecated
              * Use dispatchAction instead
