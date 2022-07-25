@@ -1,6 +1,7 @@
 //@ts-check
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output:members');
 const {unparse} = require('@tryghost/members-csv');
+const mappers = require('./mappers');
 
 module.exports = {
     browse: createSerializer('browse', paginatedMembers),
@@ -18,7 +19,7 @@ module.exports = {
     importCSV: createSerializer('importCSV', passthrough),
     memberStats: createSerializer('memberStats', passthrough),
     mrrStats: createSerializer('mrrStats', passthrough),
-    activityFeed: createSerializer('activityFeed', passthrough)
+    activityFeed: createSerializer('activityFeed', activityFeed)
 };
 
 /**
@@ -70,6 +71,16 @@ function bulkAction(bulkActionResult, _apiConfig, frame) {
                 unsuccessfulData: bulkActionResult.unsuccessfulData
             }
         }
+    };
+}
+
+/**
+ *
+ * @returns {{events: any[]}}
+ */
+function activityFeed(data, _apiConfig, frame) {
+    return {
+        events: data.events.map(e => mappers.activityFeedEvents(e, frame))
     };
 }
 
