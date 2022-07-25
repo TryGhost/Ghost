@@ -38,7 +38,7 @@ describe('Member Count', function () {
             meta: {totals: {paid: 1000, free: 500, comped: 500}}
         }};
         const members = await getMemberStats.call(meta);
-        return should.equal(members.total, 2000);
+        should.equal(members.total, 2000);
     });
 
     it('should return rounded numbers in correct format', function () {
