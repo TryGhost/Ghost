@@ -1,14 +1,5 @@
 # Members Csv
 
-## Install
-
-`npm install @tryghost/members-csv --save`
-
-or
-
-`yarn add @tryghost/members-csv`
-
-
 ## Usage
 There are 2 parts to this package: CSV to JSON serialization and JSON to CSV serialization. The module exposes 2 methods to fullfil these: `parse` and `unparse` respectively.
 
@@ -48,29 +39,3 @@ const membersCSV = unparse(members);
 console.log(membersCSV);
 // -> "id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels\r\n,email@example.com,Sam Memberino,Early supporter,,,,,,"
 ```
-
-## Develop
-
-This is a mono repository, managed with [lerna](https://lernajs.io/).
-
-Follow the instructions for the top-level repo.
-1. `git clone` this repo & `cd` into it as usual
-2. Run `yarn` to install top-level dependencies.
-
-
-## Run
-
-- `yarn dev`
-
-
-## Test
-
-- `yarn lint` run just eslint
-- `yarn test` run lint and tests
-
-
-
-
-# Copyright & License 
-
-Copyright (c) 2013-2022 Ghost Foundation - Released under the [MIT license](LICENSE).
