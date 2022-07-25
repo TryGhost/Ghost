@@ -1,5 +1,4 @@
 import React, {useContext, useState} from 'react';
-import {getBundledCssLink} from '../utils/helpers';
 import AppContext from '../AppContext';
 import IFrame from './IFrame';
 
@@ -9,8 +8,7 @@ const Frame = ({
     style,
     ...props
 }) => {
-    const {appVersion} = useContext(AppContext);
-    const cssLink = getBundledCssLink({appVersion});
+    const {stylesUrl} = useContext(AppContext);
 
     const styles = `
         body, html {
@@ -47,7 +45,7 @@ const Frame = ({
     const onResize = (iframeRoot) => {
         setIframeStyle((current) => {
             return {
-                ...current, 
+                ...current,
                 height: `${iframeRoot.scrollHeight}px`
             };
         });
@@ -61,7 +59,7 @@ const Frame = ({
 
     const head = (
         <>
-            <link rel="stylesheet" href={cssLink} onLoad={onLoadCSS} />
+            <link rel="stylesheet" href={stylesUrl} onLoad={onLoadCSS} />
             <style dangerouslySetInnerHTML={{__html: styles}} />
             <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
         </>

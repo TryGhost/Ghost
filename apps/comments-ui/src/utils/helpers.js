@@ -53,7 +53,7 @@ export function formatRelativeTime(dateString) {
         return `${Math.floor(diff)} minutes ago`;
     }
 
-    // First check for yesterday 
+    // First check for yesterday
     // (we ignore setting 'yesterday' if close to midnight and keep using minutes until 1 hour difference)
     const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
     if (date.getFullYear() === yesterday.getFullYear() && date.getMonth() === yesterday.getMonth() && date.getDate() === yesterday.getDate()) {
@@ -103,22 +103,6 @@ export function getInitials(name) {
     }
 
     return parts[0].substring(0, 1).toLocaleUpperCase() + parts[parts.length - 1].substring(0, 1).toLocaleUpperCase();
-}
-
-// Keep a reference outside, because document.currentScript is only returned on the initial script load.
-const currentScript = document.currentScript;
-
-export function getBundledCssLink({appVersion}) {
-    if (process.env.NODE_ENV === 'production' && appVersion) {
-        return `https://unpkg.com/@tryghost/comments-ui@~${appVersion}/umd/main.css`;
-    } else {
-        if (currentScript) {
-            // Dynamically determine the current path
-            const url = new URL(currentScript.src);
-            return url.origin + '/main.css';
-        }
-        return 'http://localhost:4000/main.css';
-    }
 }
 
 // Rudimentary check for screen width

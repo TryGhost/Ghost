@@ -38,8 +38,9 @@ function getSiteData() {
         const accentColor = scriptTag.dataset.accentColor;
         const appVersion = scriptTag.dataset.appVersion;
         const commentsEnabled = scriptTag.dataset.commentsEnabled;
+        const stylesUrl = scriptTag.dataset.styles;
 
-        return {siteUrl, apiKey, apiUrl, sentryDsn, postId, adminUrl, colorScheme, avatarSaturation, accentColor, appVersion, commentsEnabled};
+        return {siteUrl, stylesUrl, apiKey, apiUrl, sentryDsn, postId, adminUrl, colorScheme, avatarSaturation, accentColor, appVersion, commentsEnabled};
     }
     return {};
 }
