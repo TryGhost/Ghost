@@ -37,7 +37,6 @@ describe('LastSeenAtUpdater', function () {
 
     it('Calls updateLastCommentedAt on MemberCommentEvents', async function () {
         const now = moment('2022-02-28T18:00:00Z').utc();
-        const previousLastSeen = moment('2022-02-27T23:00:00Z').toISOString();
         const stub = sinon.stub().resolves();
         const settingsCache = sinon.stub().returns('Etc/UTC');
         const updater = new LastSeenAtUpdater({
@@ -56,8 +55,8 @@ describe('LastSeenAtUpdater', function () {
             }
         });
         sinon.stub(updater, 'updateLastCommentedAt');
-        DomainEvents.dispatch(MemberCommentEvent.create({memberId: '1', memberLastSeenAt: previousLastSeen, memberLastCommentedAt: previousLastSeen, url: '/'}, now.toDate()));
-        assert(updater.updateLastCommentedAt.calledOnceWithExactly('1', previousLastSeen, previousLastSeen, now.toDate()));
+        DomainEvents.dispatch(MemberCommentEvent.create({memberId: '1'}, now.toDate()));
+        assert(updater.updateLastCommentedAt.calledOnceWithExactly('1', now.toDate()));
     });
 
     it('works correctly on another timezone (not updating last_seen_at)', async function () {
@@ -99,12 +98,20 @@ describe('LastSeenAtUpdater', function () {
             async getMembersApi() {
                 return {
                     members: {
-                        update: stub
+                        update: stub,
+                        get: () => {
+                            return {
+                                id: '1',
+                                get: () => {
+                                    return previousLastSeen;
+                                }
+                            };
+                        }
                     }
                 };
             }
         });
-        await updater.updateLastCommentedAt('1', previousLastSeen, previousLastSeen, now.toDate());
+        await updater.updateLastCommentedAt('1', now.toDate());
         assert(stub.notCalled, 'The LastSeenAtUpdater should attempt a member update when the new timestamp is within the same day in the publication timezone.');
     });
 
@@ -175,12 +182,20 @@ describe('LastSeenAtUpdater', function () {
             async getMembersApi() {
                 return {
                     members: {
-                        update: stub
+                        update: stub,
+                        get: () => {
+                            return {
+                                id: '1',
+                                get: () => {
+                                    return previousLastSeen;
+                                }
+                            };
+                        }
                     }
                 };
             }
         });
-        await updater.updateLastCommentedAt('1', previousLastSeen, previousLastSeen, now.toDate());
+        await updater.updateLastCommentedAt('1', now.toDate());
         assert(stub.notCalled, 'The LastSeenAtUpdater should\'t update a member when the previous last_seen_at is close to the event timestamp.');
     });
 
