@@ -140,45 +140,6 @@ module.exports = function (grunt) {
             }
         },
 
-        // grunt-shell
-        // Command line tools where it's easier to run a command directly than configure a grunt plugin
-        shell: {
-            main: {
-                command: function () {
-                    const upstream = grunt.option('upstream') || process.env.GHOST_UPSTREAM || 'upstream';
-                    grunt.log.writeln('Pulling down the latest main from ' + upstream);
-                    return `
-                        git submodule sync && \
-                        git submodule update
-
-                        if ! git diff --exit-code --quiet --ignore-submodules=untracked; then
-                            echo "Working directory is not clean, do you have uncommitted changes? Please commit, stash or discard changes to continue."
-                            exit 1
-                        fi
-
-                        git checkout main
-
-                        if git config remote.${upstream}.url > /dev/null; then
-                            git pull ${upstream} main
-                        else
-                            git pull origin main
-                        fi
-
-                        yarn && \
-                        git submodule foreach "
-                            git checkout main
-
-                            if git config remote.${upstream}.url > /dev/null; then
-                                git pull ${upstream} main
-                            else
-                                git pull origin main
-                            fi
-                        "
-                    `;
-                }
-            }
-        },
-
         // grunt-contrib-clean
         // Clean up files as part of other tasks
         clean: {
@@ -286,7 +247,6 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-symlink');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-express-server');
-    grunt.loadNpmTasks('grunt-shell');
     grunt.loadNpmTasks('grunt-subgrunt');
     grunt.loadNpmTasks('grunt-update-submodules');
 

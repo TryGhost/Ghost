@@ -21,7 +21,9 @@
     "setup": "yarn && yarn workspace ghost run setup",
     "start": "yarn workspace ghost run start",
     "test": "yarn workspaces run test",
-    "main": "git pull && yarn && yarn workspace ghost run main"
+    "main": "yarn main:monorepo && yarn main:submodules",
+    "main:monorepo": "git checkout main && git pull ${GHOST_UPSTREAM:-origin} main && yarn && yarn workspace ghost run grunt subgrunt:init",
+    "main:submodules": "git submodule sync && git submodule update && git submodule foreach \"git checkout main && git pull ${GHOST_UPSTREAM:-origin} main && yarn\""
   },
   "resolutions": {
     "@tryghost/logging": "2.2.3",
