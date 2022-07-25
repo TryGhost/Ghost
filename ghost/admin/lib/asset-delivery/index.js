@@ -23,6 +23,7 @@ module.exports = {
         const walkSync = this.project.require('walk-sync');
 
         const assetsOut = `../core/core/built/admin`;
+        fs.removeSync(assetsOut);
         fs.ensureDirSync(assetsOut);
 
         // the dist folder contains more than just index.html and /assets, especially
