@@ -27,16 +27,20 @@ module.exports = class StripeMigrations {
             return;
         }
 
-        await this.populateProductsAndPrices();
-        await this.populateStripePricesFromStripePlansSetting();
-        await this.populateMembersMonthlyPriceIdSettings();
-        await this.populateMembersYearlyPriceIdSettings();
-        await this.populateDefaultProductMonthlyPriceId();
-        await this.populateDefaultProductYearlyPriceId();
-        await this.revertPortalPlansSetting();
-        await this.removeInvalidSubscriptions();
-        await this.setDefaultProductName();
-        await this.updateStripeProductNamesFromDefaultProduct();
+        try {
+            await this.populateProductsAndPrices();
+            await this.populateStripePricesFromStripePlansSetting();
+            await this.populateMembersMonthlyPriceIdSettings();
+            await this.populateMembersYearlyPriceIdSettings();
+            await this.populateDefaultProductMonthlyPriceId();
+            await this.populateDefaultProductYearlyPriceId();
+            await this.revertPortalPlansSetting();
+            await this.removeInvalidSubscriptions();
+            await this.setDefaultProductName();
+            await this.updateStripeProductNamesFromDefaultProduct();
+        } catch (err) {
+            logging.error(err);
+        }
     }
 
     async populateProductsAndPrices(options) {
