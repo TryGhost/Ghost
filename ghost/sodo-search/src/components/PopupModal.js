@@ -4,7 +4,6 @@ import {ReactComponent as SearchIcon} from '../icons/search.svg';
 import {ReactComponent as ClearIcon} from '../icons/clear.svg';
 import {ReactComponent as CircleAnimated} from '../icons/circle-anim.svg';
 import {useContext, useEffect, useMemo, useRef, useState} from 'react';
-import {getBundledCssLink} from '../utils/helpers';
 
 const React = require('react');
 
@@ -639,10 +638,18 @@ export default class PopupModal extends React.Component {
             }
         `;
 
-        const cssLink = getBundledCssLink({appVersion: this.context.appVersion});
+        const stylesUrl = this.context.stylesUrl;
+        if (stylesUrl) {
+            return (
+                <>
+                    <link rel='stylesheet' href={stylesUrl} />
+                    <style dangerouslySetInnerHTML={{__html: styles}} />
+                    <meta name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1' />
+                </>
+            );
+        }
         return (
             <>
-                <link rel='stylesheet' href={cssLink} />
                 <style dangerouslySetInnerHTML={{__html: styles}} />
                 <meta name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1' />
             </>
