@@ -3,6 +3,8 @@ const {agentProvider, mockManager, fixtureManager, matchers} = require('../../ut
 const {anyEtag, anyObjectId, anyLocationFor, anyISODateTime, anyUuid, anyNumber, anyBoolean} = matchers;
 const should = require('should');
 const models = require('../../../core/server/models');
+const moment = require('moment-timezone');
+const settingsCache = require('../../../core/shared/settings-cache');
 
 let membersAgent, membersAgent2, member, postId, commentId;
 
@@ -97,6 +99,8 @@ describe('Comments API', function () {
         });
 
         it('Can comment on a post', async function () {
+            await models.Member.edit({last_seen_at: null, last_commented_at: null}, {id: member.get('id')});
+
             const {body} = await membersAgent
                 .post(`/api/comments/`)
                 .body({comments: [{
@@ -114,15 +118,22 @@ describe('Comments API', function () {
             // Save for other tests
             commentId = body.comments[0].id;
 
-            // Wait for the emails (because this happens async)
-            await sleep(100);
-
             // Check if author got an email
             mockManager.assert.sentEmailCount(1);
             mockManager.assert.sentEmail({
                 subject: '💬 You have a new comment on one of your posts',
                 to: fixtureManager.get('users', 0).email
             });
+
+            // Wait for the dispatched events (because this happens async)
+            await sleep(250);
+
+            // Check last_updated_at changed?
+            member = await models.Member.findOne({id: member.id});
+            should.notEqual(member.get('last_seen_at'), null, 'The member should have a `last_seen_at` property after posting a comment.');
+
+            // Check last_commented_at changed?
+            should.notEqual(member.get('last_commented_at'), null, 'The member should have a `last_commented_at` property after posting a comment.');
         });
 
         it('Can browse all comments of a post', async function () {
@@ -138,6 +149,11 @@ describe('Comments API', function () {
         });
 
         it('Can reply to your own comment', async function () {
+            // Should not update last_seen_at or last_commented_at when both are already set to a value on the same day
+            const timezone = settingsCache.get('timezone');
+            const date = moment.utc(new Date()).tz(timezone).startOf('day').toDate();
+            await models.Member.edit({last_seen_at: date, last_commented_at: date}, {id: member.get('id')});
+
             const {body} = await membersAgent
                 .post(`/api/comments/`)
                 .body({comments: [{
@@ -154,18 +170,28 @@ describe('Comments API', function () {
                     comments: [commentMatcherNoMember]
                 });
 
-            // Wait for the emails (because this happens async)
-            await sleep(100);
-
             // Check only the author got an email (because we are the author of this parent comment)
             mockManager.assert.sentEmailCount(1);
             mockManager.assert.sentEmail({
                 subject: '💬 You have a new comment on one of your posts',
                 to: fixtureManager.get('users', 0).email
             });
+
+            // Wait for the dispatched events (because this happens async)
+            await sleep(250);
+
+            // Check last updated_at is not changed?
+            member = await models.Member.findOne({id: member.id});
+            should.equal(member.get('last_seen_at').getTime(), date.getTime(), 'The member should not update `last_seen_at` if last seen at is same day');
+
+            // Check last_commented_at changed?
+            should.equal(member.get('last_commented_at').getTime(), date.getTime(), 'The member should not update `last_commented_at` f last seen at is same day');
         });
 
         it('Can reply to a comment', async function () {
+            const date = new Date(0);
+            await models.Member.edit({last_seen_at: date, last_commented_at: date}, {id: member.get('id')});
+
             const {body} = await membersAgent
                 .post(`/api/comments/`)
                 .body({comments: [{
@@ -182,8 +208,6 @@ describe('Comments API', function () {
                     comments: [commentMatcherNoMember]
                 });
 
-            // Wait for the emails (because this happens async)
-            await sleep(100);
             mockManager.assert.sentEmailCount(2);
             mockManager.assert.sentEmail({
                 subject: '💬 You have a new comment on one of your posts',
@@ -194,6 +218,16 @@ describe('Comments API', function () {
                 subject: '💬 You have a new reply on one of your comments',
                 to: fixtureManager.get('members', 0).email
             });
+
+            // Wait for the dispatched events (because this happens async)
+            await sleep(250);
+
+            // Check last_updated_at changed?
+            member = await models.Member.findOne({id: member.id});
+            should.notEqual(member.get('last_seen_at').getTime(), date.getTime(), 'Should update `last_seen_at` property after posting a comment.');
+ 
+            // Check last_commented_at changed?
+            should.notEqual(member.get('last_commented_at').getTime(), date.getTime(), 'Should update `last_commented_at` property after posting a comment.');
         });
 
         it('Can like a comment', async function () {

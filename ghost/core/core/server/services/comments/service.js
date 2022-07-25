@@ -1,5 +1,7 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
+const {MemberCommentEvent} = require('@tryghost/member-events');
+const DomainEvents = require('@tryghost/domain-events');
 
 const messages = {
     commentNotFound: 'Comment could not be found',
@@ -24,11 +26,23 @@ class CommentsService {
     }
 
     async sendNewCommentNotifications(comment) {
-        this.emails.notifyPostAuthors(comment);
+        await this.emails.notifyPostAuthors(comment);
 
         if (comment.get('parent_id')) {
-            this.emails.notifyParentCommentAuthor(comment);
+            await this.emails.notifyParentCommentAuthor(comment);
         }
+    }
+
+    /**
+     * Dispatch an event that we created a new comments posted by given member
+     * @param {Object} member member model that posted the comment
+     */
+    dispatchCommentEvent(member) {
+        DomainEvents.dispatch(MemberCommentEvent.create({
+            memberId: member.id, 
+            memberLastSeenAt: member.get('last_seen_at'), 
+            memberLastCommentedAt: member.get('last_commented_at')
+        }, new Date()));
     }
 
     async reportComment(commentId, reporter) {
@@ -77,7 +91,7 @@ class CommentsService {
      * @param {any} options
      */
     async commentOnPost(post, member, comment, options) {
-        await this.models.Member.findOne({
+        const memberModel = await this.models.Member.findOne({
             id: member
         }, {
             require: true,
@@ -92,6 +106,12 @@ class CommentsService {
             status: 'published'
         }, options);
 
+        if (!options.context.internal) {
+            await this.sendNewCommentNotifications(model);
+        }
+
+        this.dispatchCommentEvent(memberModel);
+
         return model;
     }
 
@@ -102,7 +122,7 @@ class CommentsService {
      * @param {any} options
      */
     async replyToComment(parent, member, comment, options) {
-        await this.models.Member.findOne({
+        const memberModel = await this.models.Member.findOne({
             id: member
         }, {
             require: true,
@@ -129,6 +149,11 @@ class CommentsService {
             html: comment,
             status: 'published'
         }, options);
+
+        if (!options.context.internal) {
+            await this.sendNewCommentNotifications(model);
+        }
+        this.dispatchCommentEvent(memberModel);
 
         return model;
     }
