@@ -1,11 +1,12 @@
 const {SafeString} = require('../services/handlebars');
-const {config, urlUtils, getFrontendKey, labs, settingsCache} = require('../services/proxy');
+const {urlUtils, getFrontendKey, labs, settingsCache} = require('../services/proxy');
+const {getFrontendAppConfig, getDataAttributes} = require('../utils/frontend-apps');
 
 async function comments(options) {
     // todo: For now check on the comment id to exclude normal pages (we probably have a better way to do this)
 
     const commentId = this.comment_id;
-        
+
     if (!commentId) {
         return;
     }
@@ -21,7 +22,7 @@ async function comments(options) {
     if (commentsEnabled === 'off' || !hasAccess) {
         return;
     }
-    
+
     let colorScheme = 'auto';
     if (options.hash.color_scheme === 'dark' || options.hash.color_scheme === 'light') {
         colorScheme = options.hash.color_scheme;
@@ -38,29 +39,27 @@ async function comments(options) {
     }
 
     const frontendKey = await getFrontendKey();
+    const {scriptUrl, stylesUrl, appVersion} = getFrontendAppConfig('comments');
 
     const data = {
         'ghost-comments': urlUtils.getSiteUrl(),
         api: urlUtils.urlFor('api', {type: 'content'}, true),
         admin: urlUtils.urlFor('admin', true),
         key: frontendKey,
+        styles: stylesUrl,
         'post-id': this.id,
         'sentry-dsn': '', /* todo: insert sentry dsn key here */
         'color-scheme': colorScheme,
         'avatar-saturation': avatarSaturation,
         'accent-color': accentColor,
-        'app-version': config.get('comments:version'),
+        'app-version': appVersion,
         'comments-enabled': commentsEnabled
     };
 
-    let dataAttributes = '';
-
-    Object.entries(data).forEach(([key, value]) => {
-        dataAttributes += `data-${key}="${value}" `;
-    });
+    const dataAttributes = getDataAttributes(data);
 
     return new SafeString(`
-        <script defer src="${config.get('comments:url')}" ${dataAttributes} crossorigin="anonymous"></script>
+        <script defer src="${scriptUrl}" ${dataAttributes} crossorigin="anonymous"></script>
     `);
 }
 
