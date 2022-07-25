@@ -1,5 +1,7 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
+const {MemberCommentEvent} = require('@tryghost/member-events');
+const DomainEvents = require('@tryghost/domain-events');
 
 const messages = {
     commentNotFound: 'Comment could not be found',
@@ -24,10 +26,10 @@ class CommentsService {
     }
 
     async sendNewCommentNotifications(comment) {
-        this.emails.notifyPostAuthors(comment);
+        await this.emails.notifyPostAuthors(comment);
 
         if (comment.get('parent_id')) {
-            this.emails.notifyParentCommentAuthor(comment);
+            await this.emails.notifyParentCommentAuthor(comment);
         }
     }
 
@@ -92,6 +94,16 @@ class CommentsService {
             status: 'published'
         }, options);
 
+        if (!options.context.internal) {
+            await this.sendNewCommentNotifications(model);
+        }
+
+        DomainEvents.dispatch(MemberCommentEvent.create({
+            memberId: member,
+            postId: post,
+            commentId: model.id
+        }));
+
         return model;
     }
 
@@ -129,6 +141,16 @@ class CommentsService {
             html: comment,
             status: 'published'
         }, options);
+
+        if (!options.context.internal) {
+            await this.sendNewCommentNotifications(model);
+        }
+
+        DomainEvents.dispatch(MemberCommentEvent.create({
+            memberId: member,
+            postId: parentComment.get('post_id'),
+            commentId: model.id
+        }));
 
         return model;
     }
