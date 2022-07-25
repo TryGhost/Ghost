@@ -3645,11 +3645,6 @@ colorette@1.2.1:
   resolved "https://registry.yarnpkg.com/colorette/-/colorette-1.2.1.tgz#4d0b921325c14faf92633086a536db6e89564b1b"
   integrity sha512-puCDz0CzydiSYOrnXpz/PKd69zRrribezjtE9yd4zvytoRc8+RY/KJPvtPFKZS3E3wP6neGyMe0vOTlHO5L3Pw==
 
-colorette@2.0.16:
-  version "2.0.16"
-  resolved "https://registry.yarnpkg.com/colorette/-/colorette-2.0.16.tgz#713b9af84fdb000139f04546bd4a93f62a5085da"
-  integrity sha512-hUewv7oMjCp+wkBv5Rm0v87eJhq4woh5rSR+42YSQJKecCqgIqNkZ6lAlQms/BwHPJA5NKMRlpxPRv0n8HQW6g==
-
 colorette@2.0.19:
   version "2.0.19"
   resolved "https://registry.yarnpkg.com/colorette/-/colorette-2.0.19.tgz#cdf044f47ad41a0f4b56b3a0d5b4e6e1a2d5a798"
@@ -7673,10 +7668,10 @@ kind-of@^6.0.0, kind-of@^6.0.2:
   resolved "https://registry.yarnpkg.com/kind-of/-/kind-of-6.0.3.tgz#07c05034a6c349fa06e24fa35aa76db4580ce4dd"
   integrity sha512-dcS1ul+9tmeD95T+x28/ehLgd9mENa3LsvDTtzm3vyBEO7RPptvAD+t44WVXaUjTBRcrpFeFlC8WCruUR456hw==
 
-knex-migrator@5.0.1:
-  version "5.0.1"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-5.0.1.tgz#02d59b046b3fc318f13fb8284e0af33bafbce1e1"
-  integrity sha512-eVgIldWGaaMOiJ6qY+RV9jlLb/6++tmNoEiPciEAFMD8QfFgkLrkPYFdrVfpgL+tE8pTot9shpkThIuW3u/3QA==
+knex-migrator@5.0.2:
+  version "5.0.2"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-5.0.2.tgz#e5d88ac3595e7d2dd884dc0ec595daa7f598b2e1"
+  integrity sha512-VYdX+G+5GSU91Hcpvpmg1vzsethUP4cC7v1QfdfAmuziyydAV2IJHN1kzdIxtYyYs78sQsFDQYhqGRAyn67LDw==
   dependencies:
     "@tryghost/database-info" "0.3.7"
     "@tryghost/errors" "1.2.14"
@@ -7685,34 +7680,14 @@ knex-migrator@5.0.1:
     commander "5.1.0"
     compare-ver "2.0.2"
     debug "4.3.4"
-    knex "2.1.0"
+    knex "2.2.0"
     lodash "4.17.21"
     moment "2.24.0"
     mysql2 "2.3.3"
     nconf "0.12.0"
     resolve "1.22.1"
   optionalDependencies:
-    sqlite3 "5.0.9"
-
-knex@2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/knex/-/knex-2.1.0.tgz#9348aace3a08ff5be26eb1c8e838416ddf1aa216"
-  integrity sha512-vVsnD6UJdSJy55TvCXfFF9syfwyXNxfE9mvr2hJL/4Obciy2EPGoqjDpgRSlMruHuPWDOeYAG25nyrGvU+jJog==
-  dependencies:
-    colorette "2.0.16"
-    commander "^9.1.0"
-    debug "4.3.4"
-    escalade "^3.1.1"
-    esm "^3.2.25"
-    get-package-type "^0.1.0"
-    getopts "2.3.0"
-    interpret "^2.2.0"
-    lodash "^4.17.21"
-    pg-connection-string "2.5.0"
-    rechoir "^0.8.0"
-    resolve-from "^5.0.0"
-    tarn "^3.0.2"
-    tildify "2.0.0"
+    sqlite3 "5.0.10"
 
 knex@2.2.0:
   version "2.2.0"
@@ -11196,17 +11171,6 @@ sqlite3@5.0.10:
   version "5.0.10"
   resolved "https://registry.yarnpkg.com/sqlite3/-/sqlite3-5.0.10.tgz#64e1efb1b5a1ae343d2cc64ce9e582e5f5db24ba"
   integrity sha512-xG4XPp7+b/lIlb/acs4XzBmmahI1Qq3Yhy+jZnZJivwB6DXpoOpGR6QinRbsQkHJIvMZyUsJDXouSva/JXcWFA==
-  dependencies:
-    "@mapbox/node-pre-gyp" "^1.0.0"
-    node-addon-api "^4.2.0"
-    tar "^6.1.11"
-  optionalDependencies:
-    node-gyp "8.x"
-
-sqlite3@5.0.9:
-  version "5.0.9"
-  resolved "https://registry.yarnpkg.com/sqlite3/-/sqlite3-5.0.9.tgz#421b9c065480f1c589f89cabd6d0ea9575a69855"
-  integrity sha512-e2lEKevUF65UJu4IIuuFytgW7yNMkmCkfyn66jXWeb7OcdHvRo7nXhF+IQ25iW6x2grB0DyKdGCpx8Rd8EkA2Q==
   dependencies:
     "@mapbox/node-pre-gyp" "^1.0.0"
     node-addon-api "^4.2.0"
