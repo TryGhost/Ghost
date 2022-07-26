@@ -179,12 +179,18 @@ class JobManager {
     *
     * @param {Object} GhostJob - job options
     * @prop {Function | String} GhostJob.job - function or path to a module defining a job
-    * @prop {String} [GhostJob.name] - unique job name, if not provided takes function name or job script filename
+    * @prop {String} GhostJob.name - unique job name, if not provided takes function name or job script filename
     * @prop {String | Date} [GhostJob.at] - Date, cron or human readable schedule format. Manage will do immediate execution if not specified. Not supported for "inline" jobs
     * @prop {Object} [GhostJob.data] - data to be passed into the job
     * @prop {Boolean} [GhostJob.offloaded] - creates an "offloaded" job running in a worker thread by default. If set to "false" runs an "inline" job on the same event loop
     */
     async addOneOffJob({name, job, data, offloaded = true}) {
+        if (!name) {
+            throw new IncorrectUsageError({
+                message: `The name parameter is required for a one off job.`
+            });
+        }
+
         const persistedJob = await this._jobsRepository.read(name);
 
         if (persistedJob) {
