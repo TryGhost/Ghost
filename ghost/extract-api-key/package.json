@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/extract-api-key",
+  "private": true,
   "version": "0.0.0",
-  "repository": "https://github.com/TryGhost/Utils/tree/main/packages/extract-api-key",
   "author": "Ghost Foundation",
   "license": "MIT",
   "main": "index.js",
@@ -17,9 +17,6 @@
     "index.js",
     "lib"
   ],
-  "publishConfig": {
-    "access": "public"
-  },
   "dependencies": {
     "jsonwebtoken": "^8.5.1"
   }

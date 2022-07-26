@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/update-check-service",
+  "private": true,
   "version": "0.0.0",
-  "repository": "https://github.com/TryGhost/Utils/tree/main/packages/update-check-service",
   "author": "Ghost Foundation",
   "license": "MIT",
   "main": "./lib/update-check-service.js",
@@ -15,9 +15,6 @@
   "files": [
     "lib"
   ],
-  "publishConfig": {
-    "access": "public"
-  },
   "devDependencies": {
     "mocha": "10.0.0",
     "should": "13.2.3",
