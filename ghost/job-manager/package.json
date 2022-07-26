@@ -1,0 +1,38 @@
+{
+  "name": "@tryghost/job-manager",
+  "version": "0.9.0",
+  "repository": "https://github.com/TryGhost/Utils/tree/main/packages/job-manager",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "test": "NODE_ENV=testing c8 --all --reporter text --reporter cobertura mocha './test/**/*.test.js'",
+    "lint": "eslint . --ext .js --cache",
+    "posttest": "yarn lint"
+  },
+  "files": [
+    "index.js",
+    "lib"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@sinonjs/fake-timers": "9.1.2",
+    "c8": "7.12.0",
+    "date-fns": "2.29.1",
+    "delay": "5.0.0",
+    "mocha": "10.0.0",
+    "should": "13.2.3",
+    "sinon": "14.0.0"
+  },
+  "dependencies": {
+    "@breejs/later": "^4.0.2",
+    "@tryghost/logging": "^2.0.0",
+    "bree": "^6.2.0",
+    "cron-validate": "^1.4.3",
+    "fastq": "^1.11.0",
+    "p-wait-for": "^3.2.0"
+  }
+}
