@@ -8,23 +8,75 @@ const messages = {
     memberNotFound: 'Unable to find member',
     likeNotFound: 'Unable to find like',
     alreadyLiked: 'This comment was liked already',
-    replyToReply: 'Can not reply to a reply'
+    replyToReply: 'Can not reply to a reply',
+    commentsNotEnabled: 'Comments are not enabled for this site.',
+    cannotCommentOnPost: 'You do not have permission to comment on this post.'
 };
 
 class CommentsService {
-    constructor({config, logging, models, mailer, settingsCache, urlService, urlUtils}) {
-        this.config = config;
-        this.logging = logging;
+    constructor({config, logging, models, mailer, settingsCache, urlService, urlUtils, contentGating}) {
+        /** @private */
         this.models = models;
-        this.mailer = mailer;
+
+        /** @private */
         this.settingsCache = settingsCache;
-        this.urlService = urlService;
-        this.urlUtils = urlUtils;
+
+        /** @private */
+        this.contentGating = contentGating;
 
         const Emails = require('./emails');
-        this.emails = new Emails(this);
+        /** @private */
+        this.emails = new Emails({
+            config,
+            logging,
+            models,
+            mailer,
+            settingsCache,
+            urlService,
+            urlUtils
+        });
     }
 
+    /**
+     * @returns {'off'|'all'|'paid'}
+     */
+    get enabled() {
+        const setting = this.settingsCache.get('comments_enabled');
+        if (setting === 'off' || setting === 'all' || setting === 'paid') {
+            return setting;
+        }
+        return 'off';
+    }
+
+    /** @private */
+    checkEnabled() {
+        if (this.enabled === 'off') {
+            throw new errors.MethodNotAllowedError({
+                message: tpl(messages.commentsNotEnabled)
+            });
+        }
+    }
+
+    /** @private */
+    checkCommentAccess(memberModel) {
+        if (this.enabled === 'paid' && memberModel.get('status') === 'free') {
+            throw new errors.NoPermissionError({
+                message: tpl(messages.cannotCommentOnPost)
+            });
+        }
+    }
+
+    /** @private */
+    checkPostAccess(postModel, memberModel) {
+        const access = this.contentGating.checkPostAccess(postModel.toJSON(), memberModel.toJSON());
+        if (access === this.contentGating.BLOCK_ACCESS) {
+            throw new errors.NoPermissionError({
+                message: tpl(messages.cannotCommentOnPost)
+            });
+        }
+    }
+
+    /** @private */
     async sendNewCommentNotifications(comment) {
         await this.emails.notifyPostAuthors(comment);
 
@@ -34,6 +86,7 @@ class CommentsService {
     }
 
     async reportComment(commentId, reporter) {
+        this.checkEnabled();
         const comment = await this.models.Comment.findOne({id: commentId}, {require: true});
 
         // Check if this reporter already reported this comment (then don't send an email)?
@@ -60,6 +113,7 @@ class CommentsService {
      * @param {any} options
      */
     async getComments(options) {
+        this.checkEnabled();
         const page = await this.models.Comment.findPage(options);
 
         return page;
@@ -70,6 +124,7 @@ class CommentsService {
      * @param {any} options
      */
     async getCommentByID(id, options) {
+        this.checkEnabled();
         const model = await this.models.Comment.findOne({id}, options);
 
         if (!model) {
@@ -88,12 +143,24 @@ class CommentsService {
      * @param {any} options
      */
     async commentOnPost(post, member, comment, options) {
-        await this.models.Member.findOne({
+        this.checkEnabled();
+        const memberModel = await this.models.Member.findOne({
             id: member
         }, {
             require: true,
             ...options
         });
+
+        this.checkCommentAccess(memberModel);
+
+        const postModel = await this.models.Post.findOne({
+            id: post
+        }, {
+            require: true,
+            ...options
+        });
+
+        this.checkPostAccess(postModel, memberModel);
 
         const model = await this.models.Comment.add({
             post_id: post,
@@ -123,12 +190,15 @@ class CommentsService {
      * @param {any} options
      */
     async replyToComment(parent, member, comment, options) {
-        await this.models.Member.findOne({
+        this.checkEnabled();
+        const memberModel = await this.models.Member.findOne({
             id: member
         }, {
             require: true,
             ...options
         });
+
+        this.checkCommentAccess(memberModel);
 
         const parentComment = await this.getCommentByID(parent, options);
         if (!parentComment) {
@@ -142,6 +212,14 @@ class CommentsService {
                 message: tpl(messages.replyToReply)
             });
         }
+        const postModel = await this.models.Post.findOne({
+            id: parentComment.get('post_id')
+        }, {
+            require: true,
+            ...options
+        });
+
+        this.checkPostAccess(postModel, memberModel);
 
         const model = await this.models.Comment.add({
             post_id: parentComment.get('post_id'),
@@ -170,6 +248,7 @@ class CommentsService {
      * @param {any} options
      */
     async deleteComment(id, member, options) {
+        this.checkEnabled();
         const existingComment = await this.getCommentByID(id, options);
 
         if (existingComment.get('member_id') !== member) {
@@ -197,6 +276,7 @@ class CommentsService {
      * @param {any} options
      */
     async editCommentContent(id, member, comment, options) {
+        this.checkEnabled();
         const existingComment = await this.getCommentByID(id, options);
 
         if (!comment) {
