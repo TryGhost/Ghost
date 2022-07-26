@@ -66,38 +66,44 @@ class JobManager {
             this._jobMessageHandler({name, message: 'started'});
         });
 
-        this._jobsRepository = new JobsRepository({JobModel});
+        if (JobModel) {
+            this._jobsRepository = new JobsRepository({JobModel});
+        }
     }
 
     async _jobMessageHandler({name, message}) {
-        if (message === 'started') {
-            const job = await this._jobsRepository.read(name);
+        if (this._jobsRepository) {
+            if (message === 'started') {
+                const job = await this._jobsRepository.read(name);
 
-            if (job) {
-                await this._jobsRepository.update(job.id, {
-                    status: 'started',
-                    started_at: new Date()
-                });
-            }
-        } else if (message === 'done') {
-            const job = await this._jobsRepository.read(name);
+                if (job) {
+                    await this._jobsRepository.update(job.id, {
+                        status: 'started',
+                        started_at: new Date()
+                    });
+                }
+            } else if (message === 'done') {
+                const job = await this._jobsRepository.read(name);
 
-            if (job) {
-                await this._jobsRepository.update(job.id, {
-                    status: 'finished',
-                    finished_at: new Date()
-                });
+                if (job) {
+                    await this._jobsRepository.update(job.id, {
+                        status: 'finished',
+                        finished_at: new Date()
+                    });
+                }
             }
         }
     }
 
-    async _jobErrorHandler(error, workerMeta) {
-        const job = await this._jobsRepository.read(workerMeta.name);
+    async _jobErrorHandler(error, jobMeta) {
+        if (this._jobsRepository) {
+            const job = await this._jobsRepository.read(jobMeta.name);
 
-        if (job) {
-            await this._jobsRepository.update(job.id, {
-                status: 'failed'
-            });
+            if (job) {
+                await this._jobsRepository.update(job.id, {
+                    status: 'failed'
+                });
+            }
         }
     }
 
