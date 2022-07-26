@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/mw-api-version-mismatch",
-  "version": "0.2.3",
+  "version": "0.0.0",
   "repository": "https://github.com/TryGhost/Utils/tree/main/packages/mw-api-version-mismatch",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -26,6 +26,6 @@
     "sinon": "14.0.0"
   },
   "dependencies": {
-    "@tryghost/extract-api-key": "^0.1.0"
+    "@tryghost/extract-api-key": "0.0.0"
   }
 }

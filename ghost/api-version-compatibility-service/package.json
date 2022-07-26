@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/api-version-compatibility-service",
-  "version": "0.4.4",
+  "version": "0.0.0",
   "repository": "https://github.com/TryGhost/Utils/tree/main/packages/api-version-compatibility-service",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -26,7 +26,7 @@
     "sinon": "14.0.0"
   },
   "dependencies": {
-    "@tryghost/email-content-generator": "^0.1.4",
-    "@tryghost/version-notifications-data-service": "^0.2.2"
+    "@tryghost/email-content-generator": "0.0.0",
+    "@tryghost/version-notifications-data-service": "0.0.0"
   }
 }

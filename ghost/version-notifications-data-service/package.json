@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/version-notifications-data-service",
-  "version": "0.2.2",
+  "version": "0.0.0",
   "repository": "https://github.com/TryGhost/Utils/tree/main/packages/version-notifications-data-service",
   "author": "Ghost Foundation",
   "license": "MIT",
