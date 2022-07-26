@@ -30,7 +30,7 @@ const Comment = (props) => {
     };
 
     const {admin, avatarSaturation, member, commentsEnabled} = useContext(AppContext);
-    const comment = props.comment;
+    let comment = props.comment;
     const hasReplies = comment.replies && comment.replies.length > 0;
     const isNotPublished = comment.status !== 'published';
     const html = {__html: comment.html};
@@ -47,6 +47,8 @@ const Comment = (props) => {
     const isPaidMember = member && !!member.paid;
     const canReply = member && (isPaidMember || !paidOnly);
 
+    // comment.member.bio = 'Head of marketing'; FOR TESTING
+
     if (isInEditMode) {
         return (
             <Form comment={comment} close={closeEditMode} parent={props.parent} isEdit={true} />
@@ -60,17 +62,21 @@ const Comment = (props) => {
                     </div>
                     <div>      
                         {!isNotPublished &&  
-                        <div className="mb-[2px] sm:mb-[4px] mt-[2px]">
-                            <h4 className="text-lg font-sans font-semibold tracking-tight dark:text-[rgba(255,255,255,0.85)]">{!comment.member ? 'Deleted member' : (comment.member.name ? comment.member.name : 'Anonymous')}</h4>
+                        <div className="mb-[2px] sm:mb-[8px] -mt-[2px]">
+                            <h4 className="text-[17px] font-sans font-bold tracking-tight dark:text-[rgba(255,255,255,0.85)]">{!comment.member ? 'Deleted member' : (comment.member.name ? comment.member.name : 'Anonymous')}</h4>
+                            <div className="flex items-baseline font-sans text-[14px] tracking-tight text-neutral-400 dark:text-[rgba(255,255,255,0.5)]">
+                                {comment.member.bio && <div className="font-semibold">Head of Marketing<span className="font-bold mx-[0.3em]">·</span></div>}
+                                <div className={`${!comment.member.bio && 'font-semibold'}`}>{formatRelativeTime(comment.created_at)}</div>
+                                {comment.edited_at && <div><span className="font-bold mx-[0.3em]">·</span>Edited</div>}
+                            </div>
                         </div>}
    
-                        <div className={`mb-2 pr-4 font-sans leading-normal ${isNotPublished ? 'text-neutral-400 mt-[4px]' : 'text-neutral-900'} dark:text-[rgba(255,255,255,0.85)]`}>
-                            <p dangerouslySetInnerHTML={html} className="gh-comment-content text-[16.5px] leading-normal"></p>
+                        <div className={`mb-[6px] pr-4 font-sans leading-normal ${isNotPublished ? 'text-neutral-400 mt-[4px]' : 'text-neutral-900'} dark:text-[rgba(255,255,255,0.85)]`}>
+                            <p dangerouslySetInnerHTML={html} className="gh-comment-content text-[16px] leading-normal"></p>
                         </div>
                         <div className="flex gap-5 items-center">
                             {!isNotPublished && <Like comment={comment} />}
                             {!isNotPublished && (canReply && (isNotPublished || !props.parent) && <Reply comment={comment} toggleReply={toggleReplyMode} isReplying={isInReplyMode} />)}
-                            <div className="text-sm text-neutral-400 dark:text-[rgba(255,255,255,0.5)] font-sans">{formatRelativeTime(comment.created_at)}</div>
                             <More comment={comment} toggleEdit={toggleEditMode} />
                         </div>
                     </div>    
