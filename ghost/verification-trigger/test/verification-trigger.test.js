@@ -233,4 +233,40 @@ describe('Email verification flow', function () {
             amountImported: 10
         });
     });
+
+    it('Does not fetch events and trigger when threshold is Infinity', async function () {
+        const emailStub = sinon.stub().resolves(null);
+        const settingsStub = sinon.stub().resolves(null);
+        const eventStub = sinon.stub().resolves({
+            meta: {
+                pagination: {
+                    total: 10
+                }
+            }
+        });
+
+        const trigger = new VerificationTrigger({
+            configThreshold: Infinity,
+            Settings: {
+                edit: settingsStub
+            },
+            membersStats: {
+                getTotalMembers: () => 15
+            },
+            isVerified: () => false,
+            isVerificationRequired: () => false,
+            sendVerificationEmail: emailStub,
+            eventRepository: {
+                getNewsletterSubscriptionEvents: eventStub
+            }
+        });
+
+        await trigger.testImportThreshold();
+
+        // We shouldn't be fetching the events if the threshold is Infinity
+        eventStub.callCount.should.eql(0);
+
+        // We shouldn't be sending emails if the threshold is infinity
+        emailStub.callCount.should.eql(0);
+    });
 });
