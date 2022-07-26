@@ -67,3 +67,8 @@ typings/
 
 # OSX
 .DS_Store
+
+# Koenig Custom
+
+dist/
+build/
