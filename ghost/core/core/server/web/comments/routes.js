@@ -13,18 +13,18 @@ module.exports = function apiRoutes() {
     // Global handling for member session, ensures a member is logged in to the frontend
     router.use(membersService.middleware.loadMemberSession);
 
-    router.post('/counts', http(api.commentsComments.counts));
+    router.post('/counts', http(api.commentsMembers.counts));
 
-    router.get('/', http(api.commentsComments.browse));
-    router.get('/:id', http(api.commentsComments.read));
-    router.post('/', http(api.commentsComments.add));
-    router.put('/:id', http(api.commentsComments.edit));
-    router.delete('/:id', http(api.commentsComments.destroy));
+    router.get('/', http(api.commentsMembers.browse));
+    router.get('/:id', http(api.commentsMembers.read));
+    router.post('/', http(api.commentsMembers.add));
+    router.put('/:id', http(api.commentsMembers.edit));
+    router.delete('/:id', http(api.commentsMembers.destroy));
 
-    router.post('/:id/like', http(api.commentsComments.like));
-    router.delete('/:id/like', http(api.commentsComments.unlike));
+    router.post('/:id/like', http(api.commentsMembers.like));
+    router.delete('/:id/like', http(api.commentsMembers.unlike));
 
-    router.post('/:id/report', http(api.commentsComments.report));
+    router.post('/:id/report', http(api.commentsMembers.report));
 
     return router;
 };
