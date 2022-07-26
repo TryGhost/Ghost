@@ -2,7 +2,7 @@
 // const testUtils = require('./utils');
 require('./utils');
 
-const updateUserLastSeenMiddleware = require('../lib/mw-update-user-last-seen');
+const updateUserLastSeenMiddleware = require('../');
 
 class UserMock {
     constructor(initialProps) {
