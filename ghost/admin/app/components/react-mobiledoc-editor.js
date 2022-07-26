@@ -77,6 +77,7 @@ export default function ReactMobiledocEditorComponent(props) {
             <Suspense fallback={<p>Loading editor...</p>}>
                 <Koenig
                     mobiledoc={props.mobiledoc}
+                    onChange={props.onChange}
                 />
             </Suspense>
         </ErrorHandler>
