@@ -190,7 +190,7 @@
   },
   "devDependencies": {
     "@lodder/grunt-postcss": "3.1.1",
-    "@playwright/test": "1.24.0",
+    "@playwright/test": "1.24.1",
     "@tryghost/express-test": "0.11.1",
     "@tryghost/webhook-mock-receiver": "0.1.1",
     "c8": "7.12.0",
