@@ -13,7 +13,8 @@ const Form = (props) => {
 
     const {comment, commentsCount} = props;
     const memberName = (props.isEdit ? comment.member.name : member.name); 
-
+    const memberBio = false; // FOR TESTING
+    
     let config;
     if (props.isReply) {
         config = {
@@ -253,29 +254,30 @@ const Form = (props) => {
                 pt-3 pb-2 px-3
                 -mt-[12px] -mr-3 mb-10 -ml-[12px]
                 bg-white dark:bg-[rgba(255,255,255,0.08)]
-                rounded-md shadow-formlg dark:shadow-transparent hover:shadow-formxl
+                rounded-md
                 ${!commentsCount && !props.isEdit && !props.isReply && 'mt-0 ml-0 mr-0'}
                 ${isFormOpen ? 'cursor-default' : 'cursor-pointer'}
                 ${(!props.isReply && !props.isEdit) && '-mt-[4px]'}
-                ${props.isReply && '-ml-[12px]'}`
-            }>
+                ${(props.isReply || props.isEdit) && '-mt-[16px]'}
+                ${shouldFormBeReduced && 'pl-1'}
+            `}>
                 <div className="w-full relative">
-                    <div className="pr-3 font-sans leading-normal dark:text-neutral-300">
-                        <div className="relative w-full">
+                    <div className="pr-[1px] font-sans leading-normal dark:text-neutral-300">
+                        <div className={`transition-[padding] duration-150 delay-100 relative w-full pl-12 ${shouldFormBeReduced && 'pl-0'} ${isFormOpen && 'pt-[64px]'}`}>
                             <div
                                 className={`
                                 transition-all duration-150 delay-100
-                                w-full pl-[50px] sm:pl-[56px] px-0 py-[10px] pr-4
+                                w-full px-2 py-4
                                 bg-transparent rounded-md border-none border border-slate-50 dark:border-none
                                 font-sans text-[16.5px] leading-normal dark:text-neutral-300 
                                 focus:outline-0
                                 placeholder:text-neutral-300 dark:placeholder:text-[rgba(255,255,255,0.3)]  
                                 resize-none
+                                shadow-formnew dark:shadow-transparent
                                 ${commentsCount === 0 && 'placeholder:text-neutral-700'}
-                                ${isFormOpen ? 'cursor-text min-h-[144px] pt-[33px] pb-[68px]' : 'cursor-pointer overflow-hidden min-h-[48px] hover:border-slate-300'}
+                                ${isFormOpen ? 'cursor-text min-h-[144px] pb-[68px] pt-2' : 'cursor-pointer overflow-hidden min-h-[48px] hover:border-slate-300'}
                                 ${props.isEdit && 'cursor-text'}
                                 ${!memberName && 'pointer-events-none'}
-                                ${shouldFormBeReduced && 'pl-1'}
                             `}>
                                 <EditorContent
                                     onMouseDown={stopIfFocused} onTouchStart={stopIfFocused}
@@ -283,7 +285,7 @@ const Form = (props) => {
                                 />
                             </div>
                             <div className="
-                                absolute -right-3 bottom-[2px]
+                                absolute right-2 bottom-2
                                 flex space-x-4
                                 transition-[opacity] duration-150 
                             ">
@@ -294,7 +296,7 @@ const Form = (props) => {
                                         transition-[opacity] duration-150
                                         bg-neutral-900 dark:bg-[rgba(255,255,255,0.9)]
                                         rounded-[6px] border
-                                        py-3 px-4
+                                        py-2 px-3
                                         text-sm text-center font-sans font-semibold
                                         text-white dark:text-neutral-800
                                     `}
@@ -306,21 +308,28 @@ const Form = (props) => {
                             </div>
                         </div>
                     </div>
-                    <div className="flex mb-1 justify-start items-center absolute top-0 left-0">
-                        {!shouldFormBeReduced && <Avatar comment={comment} saturation={avatarSaturation} className="pointer-events-none" />}
-                        <Transition
-                            show={isFormOpen}
-                            enter="transition duration-500 delay-100 ease-in-out"
-                            enterFrom="opacity-0 -translate-x-2"
-                            enterTo="opacity-100 translate-x-0"
-                            leave="transition-none duration-0"
-                            leaveFrom="opacity-100"
-                            leaveTo="opacity-0"
-                        >
-                            <div className={`${!shouldFormBeReduced ? 'ml-3 -mt-[9px]' : 'ml-1 mt-0'} pointer-events-none`}>
-                                <h4 className="text-lg font-sans font-semibold mb-1 tracking-tight dark:text-neutral-300">{memberName ? memberName : 'Anonymous'}</h4>
-                            </div>
-                        </Transition>
+                    <div className='absolute top-1 left-0 flex justify-start items-center h-12'>
+                        <div className="mr-3">
+                            <Avatar comment={comment} saturation={avatarSaturation} className="pointer-events-none" />
+                        </div>
+                        <div>
+                            <Transition
+                                show={isFormOpen}
+                                enter="transition duration-500 delay-100 ease-in-out"
+                                enterFrom="opacity-0 -translate-x-2"
+                                enterTo="opacity-100 translate-x-0"
+                                leave="transition-none duration-0"
+                                leaveFrom="opacity-100"
+                                leaveTo="opacity-0"
+                            >
+                                <h4 className="text-[17px] font-sans font-bold tracking-tight dark:text-[rgba(255,255,255,0.85)]">{memberName ? memberName : 'Anonymous'}</h4>
+                                <div className="flex items-baseline font-sans font-semibold text-[14px] tracking-tight text-neutral-400 dark:text-[rgba(255,255,255,0.5)]">
+                                    {memberBio ?
+                                        <div>{memberBio}</div> :
+                                        <div>Add your bio</div>}
+                                </div>
+                            </Transition>
+                        </div>
                     </div>
                 </div>
             </form>
