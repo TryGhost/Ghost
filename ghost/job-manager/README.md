@@ -2,15 +2,6 @@
 
 A manager for jobs (aka tasks) that have to be performed asynchronously, optionally recurring, scheduled or one-off in their nature. The job queue is manage in memory without additional dependencies.
 
-## Install
-
-`npm install @tryghost/job-manager --save`
-
-or
-
-`yarn add @tryghost/job-manager`
-
-
 ## Usage
 
 Below is a sample code to wire up job manger and initialize jobs:
@@ -108,29 +99,3 @@ const {isMainThread, parentPort} = require('bthreads');
 ```
 
 It should be possible to use native `worker_threads` module once Node v10 [hits EOL](https://nodejs.org/en/about/releases/) (2021-04-30).
-
-## Develop
-
-This is a mono repository, managed with [lerna](https://lernajs.io/).
-
-Follow the instructions for the top-level repo.
-1. `git clone` this repo & `cd` into it as usual
-2. Run `yarn` to install top-level dependencies.
-
-
-## Run
-
-- `yarn dev`
-
-
-## Test
-
-- `yarn lint` run just eslint
-- `yarn test` run lint and tests
-
-
-
-
-# Copyright & License
-
-Copyright (c) 2013-2022 Ghost Foundation - Released under the [MIT license](LICENSE).
