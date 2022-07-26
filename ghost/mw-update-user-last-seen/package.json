@@ -8,8 +8,7 @@
   "scripts": {
     "dev": "echo \"Implement me!\"",
     "test": "NODE_ENV=testing c8 --all --check-coverage --reporter text --reporter cobertura mocha './test/**/*.test.js'",
-    "lint": "eslint . --ext .js --cache",
-    "posttest": "yarn lint"
+    "lint": "eslint . --ext .js --cache"
   },
   "files": [
     "index.js",
