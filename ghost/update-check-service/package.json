@@ -8,13 +8,14 @@
   "exports": "./lib/update-check-service.js",
   "scripts": {
     "dev": "echo \"Implement me!\"",
-    "test": "NODE_ENV=testing mocha './test/**/*.test.js'",
+    "test": "NODE_ENV=testing c8 --all --check-coverage --reporter text --reporter cobertura mocha './test/**/*.test.js'",
     "lint": "eslint . --ext .js --cache"
   },
   "files": [
     "lib"
   ],
   "devDependencies": {
+    "c8": "7.12.0",
     "mocha": "10.0.0",
     "should": "13.2.3",
     "sinon": "14.0.0"
