@@ -637,7 +637,7 @@ Object {
 }
 `;
 
-exports[`Comments API when not authenticated Can browse all comments of a post 1: [body] 1`] = `
+exports[`Comments API when not authenticated but enabled Can browse all comments of a post 1: [body] 1`] = `
 Object {
   "comments": Array [
     Object {
@@ -688,7 +688,7 @@ Object {
 }
 `;
 
-exports[`Comments API when not authenticated Can browse all comments of a post 2: [headers] 1`] = `
+exports[`Comments API when not authenticated but enabled Can browse all comments of a post 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
@@ -700,7 +700,7 @@ Object {
 }
 `;
 
-exports[`Comments API when not authenticated Can report a comment 1: [headers] 1`] = `
+exports[`Comments API when not authenticated but enabled Can report a comment 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
@@ -709,7 +709,7 @@ Object {
 }
 `;
 
-exports[`Comments API when not authenticated cannot report a comment 1: [body] 1`] = `
+exports[`Comments API when not authenticated but enabled cannot report a comment 1: [body] 1`] = `
 Object {
   "errors": Array [
     Object {
@@ -727,7 +727,7 @@ Object {
 }
 `;
 
-exports[`Comments API when not authenticated cannot report a comment 1: [headers] 1`] = `
+exports[`Comments API when not authenticated but enabled cannot report a comment 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
@@ -736,7 +736,7 @@ Object {
 }
 `;
 
-exports[`Comments API when not authenticated cannot report a comment 2: [headers] 1`] = `
+exports[`Comments API when not authenticated but enabled cannot report a comment 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
