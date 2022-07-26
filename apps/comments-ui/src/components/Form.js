@@ -72,7 +72,7 @@ const Form = (props) => {
         if (!memberName && !props.isEdit) {
             editor.commands.blur();
             dispatchAction('openPopup', {
-                type: 'addNameDialog',
+                type: 'addDetailsDialog',
                 callback: () => {
                     editor.commands.focus();
                 }
