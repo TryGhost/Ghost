@@ -1,14 +1,26 @@
 import * as React from 'react';
+import root from 'react-shadow';
 import Koenig from './components/Koenig';
-import './index.css';
+import styles from './index.css';
 
-function koenigEditor({mobiledoc, onChange}) {
+const resetStyles = `
+* {
+    color: initial;
+    font-size: initial;
+}
+`;
+
+const KoenigEditor = ({mobiledoc, onChange}) => {
     return (
-        <>
+        <root.div mode={'closed'}>
             <h1 className='font-bold text-5xl'>The Editor!</h1>
             <Koenig mobiledoc={mobiledoc} onChange={onChange} />
-        </>
+            <style>
+                {resetStyles}
+                {styles}
+            </style>
+        </root.div>
     );
-}
+};
 
-export default koenigEditor;
+export default KoenigEditor;

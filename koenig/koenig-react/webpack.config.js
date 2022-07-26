@@ -10,12 +10,16 @@ module.exports = {
         library: 'koenigEditor',
         libraryTarget: 'umd'
     },
+    externals: {
+        react: 'React',
+        'react-dom': 'ReactDOM'
+    },
     module: {
         rules: [
             {
                 test: /\.css$/i,
                 include: path.resolve(__dirname, 'src'),
-                use: ['style-loader', 'css-loader', 'postcss-loader']
+                use: ['to-string-loader', 'css-loader', 'postcss-loader']
             },
             {
                 test: /\.m?js$/,

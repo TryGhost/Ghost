@@ -35,6 +35,7 @@
     "should": "13.2.3",
     "sinon": "14.0.0",
     "tailwindcss": "^3.1.6",
+    "to-string-loader": "^1.2.0",
     "uglifyjs-webpack-plugin": "^2.2.0",
     "webpack-cli": "^4.10.0"
   },
@@ -48,6 +49,7 @@
     "react-dom": "^18.2.0",
     "react-mobiledoc-editor": "0.13.0",
     "react-scripts": "5.0.1",
+    "react-shadow": "^19.0.3",
     "web-vitals": "^2.1.0"
   },
   "browserslist": {
