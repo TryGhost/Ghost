@@ -71,7 +71,7 @@ const Koenig = (props) => {
     return <KoenigEditor {...props} />;
 };
 
-export default function ReactMobiledocEditorComponent(props) {
+const ReactMobiledocEditor = (props) => {
     return (
         <ErrorHandler>
             <Suspense fallback={<p>Loading editor...</p>}>
@@ -82,4 +82,6 @@ export default function ReactMobiledocEditorComponent(props) {
             </Suspense>
         </ErrorHandler>
     );
-}
+};
+
+export default ReactMobiledocEditor;
