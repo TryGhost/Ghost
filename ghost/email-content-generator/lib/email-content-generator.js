@@ -1,7 +1,8 @@
 const _ = require('lodash').runInContext();
 const fs = require('fs-extra');
 const path = require('path');
-const htmlToText = require('html-to-text');
+
+const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 
 _.templateSettings.interpolate = /{{([\s\S]+?)}}/g;
 
@@ -42,7 +43,7 @@ class EmailContentGenerator {
         const htmlContent = compiled(data);
 
         // generate a plain-text version of the same email
-        const textContent = htmlToText.fromString(htmlContent);
+        const textContent = htmlToPlaintext.email(htmlContent);
 
         return {
             html: htmlContent,

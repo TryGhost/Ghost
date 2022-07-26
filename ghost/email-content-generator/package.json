@@ -23,6 +23,6 @@
     "sinon": "14.0.0"
   },
   "dependencies": {
-    "html-to-text": "5.1.1"
+    "@tryghost/html-to-plaintext": "0.0.0"
   }
 }
