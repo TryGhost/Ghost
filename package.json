@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/limit-service",
   "version": "1.2.2",
-  "repository": "https://github.com/TryGhost/Utils/tree/main/packages/limit-service",
+  "repository": "https://github.com/TryGhost/SDK/tree/main/packages/limit-service",
   "author": "Ghost Foundation",
   "license": "MIT",
   "main": "./lib/limit-service.js",
