@@ -12,19 +12,10 @@ const JobsRepository = require('./jobs-repository');
 const worker = async (task, callback) => {
     try {
         let result = await task();
-        callback(null, result);
+        await callback(null, result);
     } catch (error) {
-        callback(error);
+        await callback(error);
     }
-};
-
-const handler = (error, result) => {
-    if (error) {
-        // TODO: this handler should not be throwing as this blocks the queue
-        // throw error;
-    }
-    // Can potentially standardise the result here
-    return result;
 };
 
 class JobManager {
@@ -69,6 +60,24 @@ class JobManager {
         if (JobModel) {
             this._jobsRepository = new JobsRepository({JobModel});
         }
+    }
+
+    inlineJobHandler(jobName) {
+        return async (error, result) => {
+            if (error) {
+                await this._jobErrorHandler(error, {
+                    name: jobName
+                });
+            } else {
+                await this._jobMessageHandler({
+                    name: jobName,
+                    message: 'done'
+                });
+            }
+
+            // Can potentially standardise the result here
+            return result;
+        };
     }
 
     async _jobMessageHandler({name, message}) {
@@ -161,6 +170,13 @@ class JobManager {
 
             this.queue.push(async () => {
                 try {
+                    // NOTE: setting the status here otherwise it is impossible to
+                    //       distinguish between states when the job fails immediately
+                    await this._jobMessageHandler({
+                        name: name,
+                        message: 'started'
+                    });
+
                     if (typeof job === 'function') {
                         await job(data);
                     } else {
@@ -176,7 +192,7 @@ class JobManager {
 
                     throw err;
                 }
-            }, handler);
+            }, this.inlineJobHandler(name));
         }
     }
 
