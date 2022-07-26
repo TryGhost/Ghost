@@ -1,0 +1,35 @@
+{
+  "name": "@tryghost/update-check-service",
+  "version": "0.3.4",
+  "repository": "https://github.com/TryGhost/Utils/tree/main/packages/update-check-service",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "./lib/update-check-service.js",
+  "exports": "./lib/update-check-service.js",
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "test": "NODE_ENV=testing mocha './test/**/*.test.js'",
+    "lint": "eslint . --ext .js --cache",
+    "posttest": "yarn lint"
+  },
+  "files": [
+    "lib"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "mocha": "10.0.0",
+    "should": "13.2.3",
+    "sinon": "14.0.0"
+  },
+  "dependencies": {
+    "@tryghost/debug": "^0.1.5",
+    "@tryghost/errors": "^1.0.0",
+    "@tryghost/logging": "^2.0.0",
+    "@tryghost/tpl": "^0.1.3",
+    "bluebird": "^3.7.2",
+    "lodash": "^4.17.21",
+    "moment": "^2.24.0"
+  }
+}
