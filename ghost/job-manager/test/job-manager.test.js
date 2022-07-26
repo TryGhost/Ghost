@@ -253,6 +253,19 @@ describe('Job Manager', function () {
     });
 
     describe('Add one off job', function () {
+        it('throws if name parameter is not provided', async function () {
+            const jobManager = new JobManager({});
+
+            try {
+                await jobManager.addOneOffJob({
+                    job: () => {}
+                });
+                throw new Error('should have thrown');
+            } catch (err) {
+                should.equal(err.message, 'The name parameter is required for a one off job.');
+            }
+        });
+
         it('adds job to the queue when it is a unique one', async function () {
             const spy = sinon.spy();
             const JobModel = {
