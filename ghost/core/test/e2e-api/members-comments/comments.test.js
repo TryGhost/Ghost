@@ -110,7 +110,7 @@ describe('Comments API', function () {
         });
     });
 
-    describe('when not enabled', function() {
+    describe('when not enabled', function () {
         beforeEach(async function () {
             await membersAgent.loginAs('member@example.com');
             const getStub = sinon.stub(settingsCache, 'get');
@@ -134,8 +134,6 @@ describe('Comments API', function () {
                     html: '<p>This is a <strong>message</strong></p><p>New line</p>'
                 }]})
                 .expectStatus(405);
-
-            console.log(body);
         });
     });
 
