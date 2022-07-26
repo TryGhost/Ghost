@@ -1,5 +1,5 @@
 const TestAgent = require('./test-agent');
-const DataGenerator = require('./fixtures/data-generator');
+const DataGenerator = require('../fixtures/data-generator');
 
 const defaultContentAPISecretKey = DataGenerator.Content.api_keys[1].secret;
 

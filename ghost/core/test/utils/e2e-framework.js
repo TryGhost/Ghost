@@ -27,10 +27,7 @@ const urlServiceUtils = require('./url-service-utils');
 const mockManager = require('./e2e-framework-mock-manager');
 
 const boot = require('../../core/boot');
-const AdminAPITestAgent = require('./admin-api-test-agent');
-const MembersAPITestAgent = require('./members-api-test-agent');
-const ContentAPITestAgent = require('./content-api-test-agent');
-const GhostAPITestAgent = require('./ghost-api-test-agent');
+const {AdminAPITestAgent, ContentAPITestAgent, GhostAPITestAgent, MembersAPITestAgent} = require('./agents');
 const db = require('./db-utils');
 
 // Services that need resetting
