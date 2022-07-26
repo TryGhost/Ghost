@@ -21,13 +21,13 @@ class ErrorHandler extends React.Component {
     }
 }
 
-const fetchMobiledocEditor = function () {
+const fetchKoenig = function () {
     let status = 'pending';
     let response;
 
     const fetchPackage = async () => {
-        if (window.ReactMobiledocEditor) {
-            return window.ReactMobiledocEditor;
+        if (window.koenigEditor) {
+            return window.koenigEditor.default;
         }
 
         // the removal of `https://` and it's manual addition to the import template string is
@@ -36,7 +36,7 @@ const fetchMobiledocEditor = function () {
         const url = GhostAdmin.__container__.lookup('service:config').get('editor.url').replace('https://', '');
         await import(`https://${url}`);
 
-        return window.ReactMobiledocEditor;
+        return window.koenigEditor.default;
     };
 
     const suspender = fetchPackage().then(
@@ -64,27 +64,20 @@ const fetchMobiledocEditor = function () {
     return {read};
 };
 
-const editorResource = fetchMobiledocEditor();
+const editorResource = fetchKoenig();
 
-const Container = (props) => {
-    const MobiledocEditor = editorResource.read();
-    return <MobiledocEditor.Container {...props} />;
-};
-
-const Editor = (props) => {
-    const MobiledocEditor = editorResource.read();
-    return <MobiledocEditor.Editor {...props} />;
+const Koenig = (props) => {
+    const KoenigEditor = editorResource.read();
+    return <KoenigEditor {...props} />;
 };
 
 export default function ReactMobiledocEditorComponent(props) {
     return (
         <ErrorHandler>
             <Suspense fallback={<p>Loading editor...</p>}>
-                <Container
+                <Koenig
                     mobiledoc={props.mobiledoc}
-                >
-                    <Editor />
-                </Container>
+                />
             </Suspense>
         </ErrorHandler>
     );
