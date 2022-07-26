@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/job-manager",
+  "private": true,
   "version": "0.0.0",
-  "repository": "https://github.com/TryGhost/Utils/tree/main/packages/job-manager",
   "author": "Ghost Foundation",
   "license": "MIT",
   "main": "index.js",
@@ -15,9 +15,6 @@
     "index.js",
     "lib"
   ],
-  "publishConfig": {
-    "access": "public"
-  },
   "devDependencies": {
     "@sinonjs/fake-timers": "9.1.2",
     "c8": "7.12.0",
