@@ -36,7 +36,11 @@ class EmailPreview {
             );
         });
 
-        return emailContent;
+        return {
+            subject: emailContent.subject,
+            html: emailContent.html,
+            plaintext: emailContent.plaintext
+        };
     }
 }
 
