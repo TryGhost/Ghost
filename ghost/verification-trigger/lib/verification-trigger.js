@@ -69,17 +69,17 @@ class VerificationTrigger {
     }
 
     async testImportThreshold() {
+        if (!isFinite(this._configThreshold)) {
+            // Infinite threshold, quick path
+            return;
+        }
+
         const createdAt = new Date();
         createdAt.setDate(createdAt.getDate() - 30);
         const events = await this._eventRepository.getNewsletterSubscriptionEvents({}, {
             'data.source': `data.source:'import'`,
             'data.created_at': `data.created_at:>'${createdAt.toISOString().replace('T', ' ').substring(0, 19)}'`
         });
-
-        if (!isFinite(this._configThreshold)) {
-            // Inifinte threshold, quick path
-            return;
-        }
 
         const membersTotal = await this._membersStats.getTotalMembers();
 
