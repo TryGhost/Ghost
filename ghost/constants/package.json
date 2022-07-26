@@ -1,0 +1,27 @@
+{
+  "name": "@tryghost/constants",
+  "version": "1.0.7",
+  "repository": "https://github.com/TryGhost/Utils/tree/main/packages/constants",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "test": "NODE_ENV=testing c8 --all --reporter text --reporter cobertura mocha './test/**/*.test.js'",
+    "lint": "eslint . --ext .js --cache",
+    "posttest": "yarn lint"
+  },
+  "files": [
+    "index.js",
+    "lib"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "c8": "7.12.0",
+    "mocha": "10.0.0",
+    "should": "13.2.3",
+    "sinon": "14.0.0"
+  }
+}
