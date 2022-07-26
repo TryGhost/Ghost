@@ -70,10 +70,8 @@ const CommentsBox = (props) => {
     const style = {
         '--gh-accent-color': accentColor ?? 'blue',
         // need careful padding adjustments to match iFrame negative margins and to not cut off top editing form
-        paddingLeft: 20,
-        paddingRight: 20,
         paddingTop: 16,
-        paddingBottom: 32
+        paddingBottom: 48
     };
     return (
         <section className={'ghost-display ' + containerClass} style={style}>

@@ -144,6 +144,11 @@ module.exports = {
                 '0px 8px 12px rgba(0, 0, 0, 0.04)', 
                 '0px 12px 20px rgba(0, 0, 0, 0.06)'
             ],
+            formnew: [
+                '0px 78px 57px -57px rgba(0, 0, 0, 0.1)',
+                '0px 15px 20px -8px rgba(0, 0, 0, 0.08)',
+                '0px 0px 1px 0px rgba(0, 0, 0, 0.25)'
+            ],
             modal: [
                 '0 3.8px 2.2px rgba(0, 0, 0, 0.028)',
                 '0 9.2px 5.3px rgba(0, 0, 0, 0.04)',
