@@ -24,11 +24,11 @@
     "sinon": "14.0.0"
   },
   "dependencies": {
-    "@breejs/later": "^4.0.2",
-    "@tryghost/logging": "^2.0.0",
-    "bree": "^6.2.0",
-    "cron-validate": "^1.4.3",
-    "fastq": "^1.11.0",
-    "p-wait-for": "^3.2.0"
+    "@breejs/later": "4.1.0",
+    "@tryghost/logging": "2.2.3",
+    "bree": "6.5.0",
+    "cron-validate": "1.4.3",
+    "fastq": "1.13.0",
+    "p-wait-for": "3.2.0"
   }
 }

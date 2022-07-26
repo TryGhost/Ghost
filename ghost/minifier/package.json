@@ -21,11 +21,11 @@
     "sinon": "14.0.0"
   },
   "dependencies": {
-    "@tryghost/debug": "^0.1.8",
-    "@tryghost/errors": "^1.2.1",
-    "@tryghost/tpl": "^0.1.7",
+    "@tryghost/debug": "0.1.17",
+    "@tryghost/errors": "1.2.14",
+    "@tryghost/tpl": "0.1.17",
     "csso": "^5.0.0",
     "terser": "^5.9.0",
-    "tiny-glob": "^0.2.9"
+    "tiny-glob": "0.2.9"
   }
 }
