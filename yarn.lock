@@ -9293,6 +9293,11 @@ p-timeout@^3.0.0:
   dependencies:
     p-finally "^1.0.0"
 
+p-timeout@^5.0.0:
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/p-timeout/-/p-timeout-5.1.0.tgz#b3c691cf4415138ce2d9cfe071dba11f0fee085b"
+  integrity sha512-auFDyzzzGZZZdHz3BtET9VEz0SE/uMEAx7uWfGPucfzEwwe/xH0iVeZibQmANYE/hp9T2+UUZT5m+BKyrDp3Ew==
+
 p-try@^2.0.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/p-try/-/p-try-2.2.0.tgz#cb2868540e313d61de58fafbe35ce9004d5540e6"
@@ -9305,12 +9310,12 @@ p-wait-for@3.1.0:
   dependencies:
     p-timeout "^3.0.0"
 
-p-wait-for@3.2.0:
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/p-wait-for/-/p-wait-for-3.2.0.tgz#640429bcabf3b0dd9f492c31539c5718cb6a3f1f"
-  integrity sha512-wpgERjNkLrBiFmkMEjuZJEWKKDrNfHCKA1OhyN1wg1FrLkULbviEy6py1AyJUgZ72YWFbZ38FIpnqvVqAlDUwA==
+p-wait-for@4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/p-wait-for/-/p-wait-for-4.1.0.tgz#290f126f49bbd7c84e0cedccb342cd631aaa0f16"
+  integrity sha512-i8nE5q++9h8oaQHWltS1Tnnv4IoMDOlqN7C0KFG2OdbK0iFJIt6CROZ8wfBM+K4Pxqfnq4C4lkkpXqTEpB5DZw==
   dependencies:
-    p-timeout "^3.0.0"
+    p-timeout "^5.0.0"
 
 pac-proxy-agent@^3.0.1:
   version "3.0.1"

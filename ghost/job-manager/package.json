@@ -29,6 +29,6 @@
     "bree": "6.5.0",
     "cron-validate": "1.4.3",
     "fastq": "1.13.0",
-    "p-wait-for": "3.2.0"
+    "p-wait-for": "4.1.0"
   }
 }
