@@ -4,11 +4,11 @@ Forked from https://github.com/expressjs/vhost/ which appears abandoned.
 
 ## Install
 
-`npm install @tryghost/vhost-middleware --save`
+`npm install @tryghost/mw-vhost --save`
 
 or
 
-`yarn add @tryghost/vhost-middleware`
+`yarn add @tryghost/mw-vhost`
 
 
 ## API

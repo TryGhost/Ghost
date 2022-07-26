@@ -208,7 +208,7 @@ async function initExpressApps({frontend, backend, config}) {
     debug('Begin: initExpressApps');
 
     const parentApp = require('./server/web/parent/app')();
-    const vhost = require('@tryghost/vhost-middleware');
+    const vhost = require('@tryghost/mw-vhost');
 
     // Mount the express apps on the parentApp
     if (backend) {

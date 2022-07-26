@@ -1,5 +1,5 @@
 {
-  "name": "@tryghost/vhost-middleware",
+  "name": "@tryghost/mw-vhost",
   "private": true,
   "version": "0.0.0",
   "author": "Ghost Foundation",
