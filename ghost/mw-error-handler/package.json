@@ -21,10 +21,10 @@
     "sinon": "14.0.0"
   },
   "dependencies": {
-    "@tryghost/debug": "^0.1.9",
+    "@tryghost/debug": "0.1.17",
     "@tryghost/errors": "1.2.14",
-    "@tryghost/tpl": "^0.1.8",
-    "lodash": "^4.17.21",
-    "semver": "^7.3.6"
+    "@tryghost/tpl": "0.1.17",
+    "lodash": "4.17.21",
+    "semver": "7.3.7"
   }
 }
