@@ -48,7 +48,7 @@ const Comment = (props) => {
     const isPaidMember = member && !!member.paid;
     const canReply = member && (isPaidMember || !paidOnly);
 
-    // comment.member.bio = 'Head of Marketing'; // FOR TESTING
+    comment.member.bio = 'Head of Marketing'; // FOR TESTING
 
     if (isInEditMode) {
         return (
@@ -72,7 +72,7 @@ const Comment = (props) => {
                                     <div className="flex items-baseline font-sans font-semibold text-[14px] tracking-tight text-neutral-400 dark:text-[rgba(255,255,255,0.5)]">
                                         {comment.member.bio && <div>{comment.member.bio}<span className="mx-[0.3em]">·</span></div>}
                                         <div>{formatRelativeTime(comment.created_at)}</div>
-                                        {comment.edited_at && <div><span className="mx-[0.3em]">·</span>Edited</div>}
+                                        <div><span className="mx-[0.3em]">·</span>Edited</div>
                                     </div>
                                 </div>}
                         </div>

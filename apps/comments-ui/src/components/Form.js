@@ -236,6 +236,17 @@ const Form = (props) => {
         editor.commands.focus();
     };
 
+    const handleAddBio = (event) => {
+        event.preventDefault();
+
+        dispatchAction('openPopup', {
+            type: 'addDetailsDialog',
+            callback: () => {
+                editor.commands.focus();
+            }
+        });
+    };
+
     let submitText;
     if (props.isReply) {
         submitText = <><span className="hidden sm:inline">Add </span><span className="capitalize sm:normal-case">reply</span></>;
@@ -326,7 +337,7 @@ const Form = (props) => {
                                 <div className="flex items-baseline font-sans font-semibold text-[14px] tracking-tight text-neutral-400 dark:text-[rgba(255,255,255,0.5)]">
                                     {memberBio ?
                                         <div>{memberBio}</div> :
-                                        <div>Add your bio</div>}
+                                        <button className="transition duration-150 hover:text-neutral-500" onClick={handleAddBio}>Add your bio</button>}
                                 </div>
                             </Transition>
                         </div>
