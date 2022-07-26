@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/mw-update-user-last-seen",
-  "version": "0.1.8",
+  "version": "0.0.0",
   "repository": "https://github.com/TryGhost/Utils/tree/main/packages/mw-update-user-last-seen",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -25,6 +25,6 @@
     "sinon": "14.0.0"
   },
   "dependencies": {
-    "@tryghost/constants": "^1.0.7"
+    "@tryghost/constants": "0.0.0"
   }
 }
