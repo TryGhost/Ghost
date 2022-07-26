@@ -1,6 +1,6 @@
 const TestAgent = require('./test-agent');
 const errors = require('@tryghost/errors');
-const DataGenerator = require('./fixtures/data-generator');
+const DataGenerator = require('../fixtures/data-generator');
 
 const ownerUser = {
     email: DataGenerator.Content.users[0].email,
