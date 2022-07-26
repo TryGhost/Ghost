@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {Transition} from '@headlessui/react';
 import Avatar from './Avatar';
 import Like from './Like';
@@ -9,10 +9,12 @@ import Replies from './Replies';
 import AppContext from '../AppContext';
 import {formatRelativeTime} from '../utils/helpers';
 
-const Comment = (props) => {
+const Comment = ({updateIsInReplyMode = null, ...props}) => {
     const [isInEditMode, setIsInEditMode] = useState(false);
     const [isInReplyMode, setIsInReplyMode] = useState(false);
-
+    useEffect(() => {
+        updateIsInReplyMode?.(isInReplyMode);
+    }, [updateIsInReplyMode, isInReplyMode]);
     const toggleEditMode = () => {
         setIsInEditMode(current => !current);
     };
@@ -63,7 +65,7 @@ const Comment = (props) => {
                             <div className="mr-3">
                                 <Avatar comment={comment} saturation={avatarSaturation} isBlank={isNotPublished} />
                             </div>
-                            {isNotPublished ? 
+                            {isNotPublished ?
                                 <div>
                                     <p className="font-sans text-[16px] leading-normal text-neutral-400 italic mt-[4px]">{notPublishedMessage}</p>
                                 </div> :
@@ -76,8 +78,8 @@ const Comment = (props) => {
                                     </div>
                                 </div>}
                         </div>
-   
-                        {!isNotPublished && 
+
+                        {!isNotPublished &&
                         <div className={`ml-12 sm:ml-[52px] mb-2 pr-4 font-sans leading-normal text-neutral-900 dark:text-[rgba(255,255,255,0.85)]`}>
                             <p dangerouslySetInnerHTML={html} className="gh-comment-content text-[16px] leading-normal"></p>
                         </div>}
@@ -87,9 +89,9 @@ const Comment = (props) => {
                             {!isNotPublished && (canReply && (isNotPublished || !props.parent) && <Reply comment={comment} toggleReply={toggleReplyMode} isReplying={isInReplyMode} />)}
                             <More comment={comment} toggleEdit={toggleEditMode} />
                         </div>
-                    </div>    
+                    </div>
                 </div>
-                {hasReplies && 
+                {hasReplies &&
                     <div className="ml-11 sm:ml-14 mt-8 sm:mt-10 mb-4 sm:mb-0">
                         <Replies comment={comment} />
                     </div>
