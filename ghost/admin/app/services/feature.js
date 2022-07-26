@@ -59,6 +59,7 @@ export default class FeatureService extends Service {
     @feature('urlCache') urlCache;
     @feature('beforeAfterCard') beforeAfterCard;
     @feature('comments') comments;
+    @feature('newsletterPaywall') newsletterPaywall;
 
     _user = null;
 

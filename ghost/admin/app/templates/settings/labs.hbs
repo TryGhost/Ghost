@@ -226,6 +226,19 @@
                         </div>
                     </div>
                 </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Newsletter Paywall</h4>
+                            <p class="gh-expandable-description">
+                               Extends public preview card for newsletters
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                           <GhFeatureFlag @flag="newsletterPaywall" />
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         {{/if}}
