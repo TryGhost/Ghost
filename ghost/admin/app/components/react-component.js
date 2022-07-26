@@ -1,6 +1,6 @@
+/* global ReactDOM */
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
-import {createRoot} from 'react-dom/client';
 
 export default class ReactComponent extends Component {
     @action
@@ -19,7 +19,7 @@ export default class ReactComponent extends Component {
         }
 
         this.elem = element;
-        this.root = createRoot(this.elem);
+        this.root = ReactDOM.createRoot(this.elem);
         this.root.render(reactComponent);
     }
 
