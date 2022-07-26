@@ -78,20 +78,20 @@ const startGhost = async (options = {}) => {
  * Slightly simplified copy-paste from e2e-utils.
  * @param {Object} options
  */
-const prepareContentFolder = ({contentFolder, redirectsFile = true, routesFile = true}) => {
+const prepareContentFolder = async ({contentFolder, redirectsFile = true, routesFile = true}) => {
     const contentFolderForTests = contentFolder;
 
-    fs.ensureDir(contentFolderForTests);
-    fs.ensureDir(path.join(contentFolderForTests, 'data'));
-    fs.ensureDir(path.join(contentFolderForTests, 'themes'));
-    fs.ensureDir(path.join(contentFolderForTests, 'images'));
-    fs.ensureDir(path.join(contentFolderForTests, 'logs'));
-    fs.ensureDir(path.join(contentFolderForTests, 'adapters'));
-    fs.ensureDir(path.join(contentFolderForTests, 'settings'));
+    await fs.ensureDir(contentFolderForTests);
+    await fs.ensureDir(path.join(contentFolderForTests, 'data'));
+    await fs.ensureDir(path.join(contentFolderForTests, 'themes'));
+    await fs.ensureDir(path.join(contentFolderForTests, 'images'));
+    await fs.ensureDir(path.join(contentFolderForTests, 'logs'));
+    await fs.ensureDir(path.join(contentFolderForTests, 'adapters'));
+    await fs.ensureDir(path.join(contentFolderForTests, 'settings'));
 
     // Copy all themes into the new test content folder. Default active theme is always casper.
     // If you want to use a different theme, you have to set the active theme (e.g. stub)
-    fs.copySync(
+    await fs.copy(
         path.join(__dirname, 'fixtures', 'themes'),
         path.join(contentFolderForTests, 'themes')
     );
@@ -101,7 +101,7 @@ const prepareContentFolder = ({contentFolder, redirectsFile = true, routesFile =
     }
 
     if (routesFile) {
-        fs.copySync(
+        await fs.copy(
             path.join(__dirname, 'fixtures', 'settings', 'routes.yaml'),
             path.join(contentFolderForTests, 'settings', 'routes.yaml')
         );
