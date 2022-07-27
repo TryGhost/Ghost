@@ -502,6 +502,73 @@ describe('Job Manager', function () {
         });
     });
 
+    describe('Job execution progress', function () {
+        it('checks if job has ever been executed', async function () {
+            const spy = sinon.spy();
+            const JobModel = {
+                findOne: sinon.stub()
+                    .withArgs('solovei')
+                    .onCall(0)
+                    .resolves(null)
+                    .onCall(1)
+                    .resolves(null)
+                    .resolves({id: 'unique', name: 'solovei'}),
+                add: sinon.stub().resolves()
+            };
+
+            const jobManager = new JobManager({JobModel});
+            let executed = await jobManager.hasExecuted('solovei');
+            should.equal(executed, false);
+
+            await jobManager.addOneOffJob({
+                job: spy,
+                name: 'solovei'
+            });
+
+            assert.equal(JobModel.add.called, true);
+            executed = await jobManager.hasExecuted('solovei');
+            should.equal(executed, true);
+        });
+
+        it('can wait for job completion', async function () {
+            const spy = sinon.spy();
+            let status = 'queued';
+            const jobWithDelay = async () => {
+                await delay(80);
+                status = 'finished';
+                spy();
+            };
+            const JobModel = {
+                findOne: sinon.stub()
+                    // first call when adding a job
+                    .withArgs('solovei')
+                    .onCall(0)
+                    // first call when adding a job
+                    .resolves(null)
+                    .onCall(1)
+                    .resolves(null)
+
+                    .resolves({
+                        id: 'unique',
+                        get: () => status
+                    }),
+                add: sinon.stub().resolves()
+            };
+
+            const jobManager = new JobManager({JobModel});
+
+            await jobManager.addOneOffJob({
+                job: jobWithDelay,
+                name: 'solovei',
+                offloaded: false
+            });
+
+            should.equal(spy.called, false);
+            await jobManager.awaitCompletion('solovei');
+            should.equal(spy.called, true);
+        });
+    });
+
     describe('Remove a job', function () {
         it('removes a scheduled job from the queue', async function () {
             const jobManager = new JobManager({});
