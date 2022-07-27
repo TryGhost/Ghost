@@ -282,9 +282,8 @@ const Form = (props) => {
                                 bg-transparent rounded-md border-none border border-slate-50 dark:border-none
                                 font-sans text-[16.5px] leading-normal dark:text-neutral-300 
                                 focus:outline-0
-                                placeholder:text-neutral-300 dark:placeholder:text-[rgba(255,255,255,0.3)]  
-                                resize-none
-                                shadow-formnew dark:shadow-transparent
+                                placeholder:text-neutral-300 dark:placeholder:text-[rgba(255,255,255,0.3)]
+                                shadow-form hover:shadow-formxl dark:shadow-transparent
                                 ${commentsCount === 0 && 'placeholder:text-neutral-700'}
                                 ${isFormOpen ? 'cursor-text min-h-[144px] pb-[68px] pt-2' : 'cursor-pointer overflow-hidden min-h-[48px] hover:border-slate-300'}
                                 ${props.isEdit && 'cursor-text'}
