@@ -5,7 +5,7 @@
   "author": "Ghost Foundation",
   "license": "MIT",
   "scripts": {
-    "start": "export PORT=1337;react-scripts start",
+    "start": "yarn webpack serve --config webpack.config.dev.js",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",

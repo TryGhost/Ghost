@@ -1,18 +1,14 @@
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const HtmlWebPackPlugin = require('html-webpack-plugin');
 const path = require('path');
 
 module.exports = {
-    mode: 'production',
-    entry: './src/app.js',
+    mode: 'development',
+    entry: './src/index.js',
     output: {
-        filename: 'koenig-react.min.js',
-        path: __dirname + '/dist/umd',
-        library: 'koenigEditor',
-        libraryTarget: 'umd'
-    },
-    externals: {
-        react: 'React',
-        'react-dom': 'ReactDOM'
+        path: path.resolve(__dirname, 'dist'),
+        filename: 'main.js',
+        publicPath: '/'
     },
     module: {
         rules: [
@@ -33,7 +29,10 @@ module.exports = {
             }
         ]
     },
-    plugins: [new UglifyJsPlugin()],
+    plugins: [new UglifyJsPlugin(), new HtmlWebPackPlugin({
+        template: './public/index.html',
+        filename: 'index.html'
+    })],
     devServer: {
         compress: true,
         port: 1337,
@@ -49,16 +48,16 @@ module.exports = {
         // some third party packages may ship miss-configured sourcemaps, that interrupts the build
         // See: https://github.com/facebook/create-react-app/discussions/11278#discussioncomment-1780169
         /**
-         *
-         * @param {import('webpack').WebpackError} warning
-         * @returns {boolean}
-         */
+     *
+     * @param {import('webpack').WebpackError} warning
+     * @returns {boolean}
+     */
         function ignoreSourcemapsloaderWarnings(warning) {
             return (
                 warning.module &&
-            warning.module.resource.includes('node_modules') &&
-            warning.details &&
-            warning.details.includes('source-map-loader')
+        warning.module.resource.includes('node_modules') &&
+        warning.details &&
+        warning.details.includes('source-map-loader')
             );
         }
     ]
