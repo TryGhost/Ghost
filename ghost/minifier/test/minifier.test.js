@@ -4,7 +4,7 @@ require('./utils');
 const path = require('path');
 const fs = require('fs').promises;
 const os = require('os');
-const Minifier = require('../lib/minifier');
+const Minifier = require('../');
 
 describe('Minifier', function () {
     let minifier;
