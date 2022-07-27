@@ -266,7 +266,6 @@ const Form = (props) => {
                 transition duration-200
                 pt-3 pb-2 px-3
                 -mt-[12px] -mr-3 mb-10 -ml-[12px]
-                bg-white dark:bg-[rgba(255,255,255,0.08)]
                 rounded-md
                 ${!commentsCount && !props.isEdit && !props.isReply && 'mt-0 ml-0 mr-0'}
                 ${isFormOpen ? 'cursor-default' : 'cursor-pointer'}
@@ -281,10 +280,10 @@ const Form = (props) => {
                                 className={`
                                 transition-all duration-150 delay-100
                                 w-full px-2 py-4
-                                bg-transparent rounded-md border-none border border-slate-50 dark:border-none
+                                bg-transparent dark:bg-[rgba(255,255,255,0.08)]
+                                rounded-md border-none border border-slate-50 dark:border-none
                                 font-sans text-[16.5px] leading-normal dark:text-neutral-300 
                                 focus:outline-0
-                                placeholder:text-neutral-300 dark:placeholder:text-[rgba(255,255,255,0.3)]
                                 shadow-form hover:shadow-formxl dark:shadow-transparent
                                 ${commentsCount === 0 && 'placeholder:text-neutral-700'}
                                 ${isFormOpen ? 'cursor-text min-h-[144px] pb-[68px] pt-2' : 'cursor-pointer overflow-hidden min-h-[48px] hover:border-slate-300'}
