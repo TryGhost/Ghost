@@ -5819,7 +5819,7 @@ globule@^1.0.0:
     lodash "^4.17.21"
     minimatch "~3.0.2"
 
-got@9.6.0, got@^9.6.0:
+got@9.6.0:
   version "9.6.0"
   resolved "https://registry.yarnpkg.com/got/-/got-9.6.0.tgz#edf45e7d67f99545705de1f7bbeeeb121765ed85"
   integrity sha512-R7eWptXuGYxwijs0eV+v3o6+XH1IqVK8dJOEecQfTmkncw9AV4dcw/Dhxi8MdlqPthxxpZyizMzyg8RTmEsG+Q==
@@ -8630,14 +8630,14 @@ mock-knex@TryGhost/mock-knex#8ecb8c227bf463c991c3d820d33f59efc3ab9682:
     lodash "^4.14.2"
     semver "^5.3.0"
 
-moment-timezone@0.5.23, moment-timezone@^0.5.23, moment-timezone@^0.5.31, moment-timezone@^0.5.33, moment-timezone@^0.5.34:
+moment-timezone@0.5.23, moment-timezone@0.5.34, moment-timezone@^0.5.23, moment-timezone@^0.5.31, moment-timezone@^0.5.33:
   version "0.5.23"
   resolved "https://registry.yarnpkg.com/moment-timezone/-/moment-timezone-0.5.23.tgz#7cbb00db2c14c71b19303cb47b0fb0a6d8651463"
   integrity sha512-WHFH85DkCfiNMDX5D3X7hpNH3/PUhjTGcD0U1SgfBGZxJ3qUmJh5FdvaFjcClxOvB3rzdfj4oRffbI38jEnC1w==
   dependencies:
     moment ">= 2.9.0"
 
-moment@2.24.0, moment@2.27.0, "moment@>= 2.9.0", moment@^2.18.1, moment@^2.19.3, moment@^2.24.0, moment@^2.27.0, moment@^2.29.1, moment@^2.29.3:
+moment@2.24.0, moment@2.27.0, moment@2.29.1, "moment@>= 2.9.0", moment@^2.18.1, moment@^2.19.3, moment@^2.27.0, moment@^2.29.1, moment@^2.29.3:
   version "2.24.0"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.24.0.tgz#0d055d53f5052aa653c9f6eb68bb5d12bf5c2b5b"
   integrity sha512-bV7f+6l2QigeBBZSM/6yTNq4P2fNpSWj/0e7jQcy87A8e7o2nAfP/34/2ky5Vw4B9S446EtIhodAzkFCcR4dQg==
