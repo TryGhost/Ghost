@@ -1,0 +1,121 @@
+.fullscreen-explore-container {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1000;
+    height: 100vh;
+    background: linear-gradient(180deg, var(--white) 0%, #E1E1E1 100%);
+    overflow: hidden;
+}
+
+.explore-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 18px;
+    height: 18px;
+}
+
+.explore-close svg {
+    stroke: var(--middarkgrey);
+}
+
+.explore-close svg path {
+    stroke-width: 1px;
+}
+
+.explore-close:hover svg {
+    stroke: var(--darkgrey);
+}
+
+.explore-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: column;
+    padding: 14rem 2vmin 4vmin;
+}
+
+.explore-header {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.explore-header h1 {
+    margin: 2rem 0 0;
+    font-size: 3.7rem;
+    text-align: center;
+    font-weight: 700;
+    letter-spacing: -.03em;
+    line-height: 45px;
+}
+
+.explore-api {
+    margin-bottom: 50px;
+    color: rgba(0, 0, 0, 0.52);
+    font-size: 2.3rem;
+    font-weight: 400;
+    line-height: 30px;
+    text-align: center;
+    letter-spacing: -0.03em;
+}
+
+.explore-permissions {
+    background: var(--white);
+    padding: 3rem 3.5rem;
+    max-width: 457px;
+    width: 100%;
+    border-radius: 6px;
+}
+
+.explore-permissions svg path {
+    stroke: #86C600;
+}
+
+.explore-permissions > div {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row;
+    align-items: baseline;
+}
+
+.explore-permissions p {
+    color: rgba(0, 0, 0, 0.66);
+    margin: 0;
+    font-size: 1.9rem;
+    font-weight: 400;
+    letter-spacing: -0.03em;
+    line-height: 1.32;
+}
+
+.explore-permissions div:not(:last-of-type) {
+    margin-bottom: 3rem;
+}
+
+.explore-permissions > div span {
+    padding-right: 18px;
+}
+
+.explore button {
+    margin-top: 4vmin;
+    max-width: 457px;
+    width: 100%;
+    height: 50px;
+    border-radius: 6px;
+}
+
+.explore button span {
+    font-size: 1.7rem;
+    font-weight: 500;
+    color: var(--white);
+}
+
+.explore button svg {
+    fill: var(--white);
+    margin-left: 0.1em;
+    height: 14px;
+}
