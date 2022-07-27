@@ -1,4 +1,6 @@
 const path = require('path');
+const util = require('util');
+const setTimeoutPromise = util.promisify(setTimeout);
 const fastq = require('fastq');
 const later = require('@breejs/later');
 const Bree = require('bree');
@@ -227,6 +229,40 @@ class JobManager {
         });
 
         this.addJob({name, job, data, offloaded});
+    }
+
+    /**
+     * Checks if the one-off job has ever been successfully executed
+     * @param {String} name one-off job name
+     */
+    async hasExecuted(name) {
+        // TODO: return false if the job has failed?
+        if (this._jobsRepository) {
+            const persistedJob = await this._jobsRepository.read(name);
+            return !!persistedJob;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     *
+     * @param {String} name one-off job name
+     * @returns
+     */
+    async awaitCompletion(name) {
+        const persistedJob = await this._jobsRepository.read({
+            name
+        });
+
+        if (!persistedJob || !['finished', 'failed'].includes(persistedJob.get('status'))) {
+            // NOTE: can implement exponential backoff here if that's ever needed
+            await setTimeoutPromise(500);
+
+            return this.awaitCompletion(name);
+        }
+
+        return !!persistedJob;
     }
 
     /**
