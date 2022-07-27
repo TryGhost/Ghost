@@ -14,7 +14,7 @@ const CommentsBoxContent = (props) => {
     const {pagination, member, comments, commentsEnabled} = useContext(AppContext);
     const commentsElements = comments.slice().reverse().map(comment => <Comment isEditing={isEditing} comment={comment} key={comment.id} updateIsEditing={setIsEditing} />);
 
-    const commentsCount = comments.length;
+    const commentsCount = pagination?.total || 0;
 
     const paidOnly = commentsEnabled === 'paid';
     const isPaidMember = member && !!member.paid;
