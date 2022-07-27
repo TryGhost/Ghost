@@ -29,6 +29,7 @@ module.exports = createTransactionalMigration(
         logging.info('Deleting Ghost Explore Integration');
 
         await knex('integrations').where({
+            type: 'internal',
             name: 'Ghost Explore',
             slug: 'ghost-explore'
         }).del();
