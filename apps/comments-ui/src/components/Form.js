@@ -301,7 +301,7 @@ const Form = (props) => {
                                 flex space-x-4
                                 transition-[opacity] duration-150 
                             ">
-                                {props.isEdit &&
+                                {(props.isEdit || props.isReply) &&
                                     <button type="button" onClick={props.close} className="font-sans text-sm font-medium ml-2.5 text-neutral-500 dark:text-neutral-400">Cancel</button>}
                                 <button
                                     className={`
