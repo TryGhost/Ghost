@@ -2,7 +2,6 @@ require('should');
 const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
 const moment = require('moment');
 const ObjectId = require('bson-objectid');
-const {_sendEmailJob} = require('../../../core/server/services/mega/mega');
 const models = require('../../../core/server/models');
 const sinon = require('sinon');
 const mailgunProvider = require('../../../core/server/services/bulk-email/mailgun');
@@ -46,17 +45,20 @@ async function createPublishedPostEmail() {
 }
 
 describe('MEGA', function () {
+    let _sendEmailJob;
+
     describe('sendEmailJob', function () {
         before(async function () {
             agent = await agentProvider.getAdminAPIAgent();
             await fixtureManager.init('newsletters', 'members:newsletters');
             await agent.loginAsOwner();
+            _sendEmailJob = require('../../../core/server/services/mega/mega')._sendEmailJob;
         });
 
         afterEach(function () {
             mockManager.restore();
         });
-        
+
         it('Can send a scheduled post email', async function () {
             sinon.stub(mailgunProvider, 'getInstance').returns({});
             sinon.stub(mailgunProvider, 'send').callsFake(async () => {
