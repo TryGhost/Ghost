@@ -291,7 +291,8 @@ class CommentsService {
         }
 
         const model = await this.models.Comment.edit({
-            html: comment
+            html: comment,
+            edited_at: new Date()
         }, {
             id,
             require: true,
