@@ -24,6 +24,6 @@
     "@tryghost/email-analytics-service": "0.0.0",
     "@tryghost/logging": "2.2.3",
     "mailgun-js": "0.22.0",
-    "moment": "^2.29.1"
+    "moment": "2.29.1"
   }
 }

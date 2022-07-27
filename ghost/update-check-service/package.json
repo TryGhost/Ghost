@@ -27,6 +27,6 @@
     "@tryghost/tpl": "0.1.17",
     "bluebird": "3.7.2",
     "lodash": "4.17.21",
-    "moment": "^2.24.0"
+    "moment": "2.24.0"
   }
 }
