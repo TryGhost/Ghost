@@ -3941,10 +3941,10 @@ cssnano@5.1.12:
     lilconfig "^2.0.3"
     yaml "^1.10.2"
 
-csso@5.0.3:
-  version "5.0.3"
-  resolved "https://registry.yarnpkg.com/csso/-/csso-5.0.3.tgz#10986ad2546e877b8b7bfbf930702239407af4d4"
-  integrity sha512-93gBHTJ6EQlLNhIX5Ho8VAJD2t2T2wg1xHDjbIUm/oQ7iFiSUTo9jSojiQK0pEZ3lMhYDrQO7Rcd70M68+VrtA==
+csso@5.0.4:
+  version "5.0.4"
+  resolved "https://registry.yarnpkg.com/csso/-/csso-5.0.4.tgz#ea5e6c023faf0baa9230e69b4f91ccaaa0a3db8b"
+  integrity sha512-AxnuDS5yBhDT5TQMdNS+6o2OdWTKC8ioi7C+G5a30Zgo8XMAQSuMItktj/jvqh8QWOH85kDf0/S6mH1DMgyq1Q==
   dependencies:
     css-tree "~2.0.4"
 
