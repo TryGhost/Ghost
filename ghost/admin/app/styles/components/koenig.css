@@ -981,9 +981,9 @@
 }
 
 
-@media (max-width: 1024px) {
+@media (max-width: 500px) {
   .koenig-plus-menu-button {
-        right:10px;
+        right: -34px;
   }
 }
 
