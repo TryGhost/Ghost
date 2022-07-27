@@ -23,7 +23,10 @@ const CommentsBoxContent = (props) => {
         <>
             {/* {TODO: Put in conditionals and variables for the new comment helper} */}
             <div className="w-full flex justify-between items-baseline font-sans mb-10">
-                <h2 className="font-bold text-[2.8rem] tracking-tight">Member discussion</h2>
+                <h2 className="font-bold text-[2.8rem] tracking-tight dark:text-[rgba(255,255,255,0.85)]">
+                    {/* This will truncate to "Discussion" on mobile screens to save space */}
+                    <span className="hidden sm:inline">Member </span><span className="capitalize sm:normal-case">discussion</span>
+                </h2>
                 <div className="text-neutral-400 text-[1.6rem] font-medium">{commentsCount} comments</div>
             </div>
             <Pagination />
