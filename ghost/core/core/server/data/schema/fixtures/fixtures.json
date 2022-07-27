@@ -672,7 +672,7 @@
                     "slug": "ghost-explore",
                     "name": "Ghost Explore",
                     "description": "Built-in Ghost Explore integration",
-                    "type": "internal",
+                    "type": "builtin",
                     "api_keys": [{"type": "admin", "role": "Ghost Explore Integration"}]
                 },
                 {
