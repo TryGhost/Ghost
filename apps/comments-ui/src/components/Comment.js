@@ -61,7 +61,7 @@ const Comment = ({updateIsEditing = null, isEditing, ...props}) => {
     const isPaidMember = member && !!member.paid;
     const canReply = member && (isPaidMember || !paidOnly);
 
-    comment.member.bio = 'Head of Marketing'; // FOR TESTING
+    // comment.member.bio = 'Head of Marketing'; // FOR TESTING
 
     if (isInEditMode) {
         return (
