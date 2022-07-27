@@ -24,7 +24,7 @@ const CommentsBoxContent = (props) => {
             {/* {TODO: Put in conditionals and variables for the new comment helper} */}
             <div className="w-full flex justify-between items-baseline font-sans mb-10">
                 <h2 className="font-bold text-[2.8rem] tracking-tight">Member discussion</h2>
-                <div className="text-neutral-400 text-[1.6rem] font-medium">x comments</div>
+                <div className="text-neutral-400 text-[1.6rem] font-medium">{commentsCount} comments</div>
             </div>
             <Pagination />
             <div className={!pagination ? 'mt-4' : ''}>
