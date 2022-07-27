@@ -426,7 +426,10 @@ describe('Comments API', function () {
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
-                    comments: [commentMatcherWithReply]
+                    comments: [{
+                        ...commentMatcherWithReply,
+                        edited_at: anyISODateTime
+                    }]
                 });
 
             assert(body.comments[0].edited_at, 'The edited_at field should be populated');
@@ -485,7 +488,10 @@ describe('Comments API', function () {
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
-                    comments: [commentMatcherWithReply]
+                    comments: [{
+                        ...commentMatcherWithReply,
+                        edited_at: anyISODateTime
+                    }]
                 });
 
             assert(comment.member.id !== memberId);
