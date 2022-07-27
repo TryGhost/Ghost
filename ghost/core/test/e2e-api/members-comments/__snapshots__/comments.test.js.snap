@@ -115,7 +115,7 @@ Object {
   "comments": Array [
     Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "edited_at": null,
+      "edited_at": "2022-07-27T12:30:32.000Z",
       "html": "Updated comment",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "liked": Any<Boolean>,
@@ -155,7 +155,7 @@ exports[`Comments API when authenticated Can edit a comment on a post 2: [header
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "624",
+  "content-length": "646",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -314,7 +314,7 @@ Object {
   "comments": Array [
     Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "edited_at": null,
+      "edited_at": "2022-07-27T12:30:32.000Z",
       "html": "Illegal comment update",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "liked": Any<Boolean>,
@@ -354,7 +354,7 @@ exports[`Comments API when authenticated Can not edit a comment as a member who 
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "631",
+  "content-length": "653",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",

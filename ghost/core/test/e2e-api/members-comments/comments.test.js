@@ -416,7 +416,7 @@ describe('Comments API', function () {
         });
 
         it('Can edit a comment on a post', async function () {
-            await membersAgent
+            const {body} = await await membersAgent
                 .put(`/api/comments/${commentId}`)
                 .body({comments: [{
                     html: 'Updated comment'
@@ -428,6 +428,8 @@ describe('Comments API', function () {
                 .matchBodySnapshot({
                     comments: [commentMatcherWithReply]
                 });
+
+            assert(body.comments[0].edited_at, 'The edited_at field should be populated');
         });
 
         it('Can not edit a comment post_id', async function () {
