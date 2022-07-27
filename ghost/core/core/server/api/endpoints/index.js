@@ -225,11 +225,7 @@ module.exports = {
         return shared.pipeline(require('./offers-public'), localUtils, 'content');
     },
 
-    /**
-     * Comment API
-     */
-
-    get commentsComments() {
-        return shared.pipeline(require('./comments-comments'), localUtils, 'comments');
+    get commentsMembers() {
+        return shared.pipeline(require('./comments-members'), localUtils, 'comments');
     }
 };
