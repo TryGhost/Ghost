@@ -33,7 +33,9 @@ describe('Job Manager', function () {
         describe('Inline jobs', function () {
             it('adds a job to a queue', async function () {
                 const spy = sinon.spy();
-                const jobManager = new JobManager({});
+                const jobManager = new JobManager({
+                    JobModel: sinon.stub().resolves()
+                });
 
                 jobManager.addJob({
                     job: spy,
