@@ -9,10 +9,10 @@ import NotPaidBox from './NotPaidBox';
 import Loading from './Loading';
 
 const CommentsBoxContent = (props) => {
-    const [isInReplyMode, setIsInReplyMode] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
 
     const {pagination, member, comments, commentsEnabled} = useContext(AppContext);
-    const commentsElements = comments.slice().reverse().map(comment => <Comment comment={comment} key={comment.id} updateIsInReplyMode={setIsInReplyMode} />);
+    const commentsElements = comments.slice().reverse().map(comment => <Comment isEditing={isEditing} comment={comment} key={comment.id} updateIsEditing={setIsEditing} />);
 
     const commentsCount = comments.length;
 
@@ -27,7 +27,7 @@ const CommentsBoxContent = (props) => {
                 {commentsCount > 0 && commentsElements}
             </div>
             <div>
-                { !isInReplyMode
+                { !isEditing
                     ? (member ? (isPaidMember || !paidOnly ? <Form commentsCount={commentsCount} /> : <NotPaidBox isFirst={commentsCount === 0} />) : <NotSignedInBox isFirst={commentsCount === 0} />)
                     : null
                 }
