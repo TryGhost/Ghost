@@ -206,6 +206,19 @@ describe('Post Email Serializer', function () {
             output.html.should.equal(`<p>Free content</p><!--members-only--><p>Members content</p>`);
             output.plaintext.should.equal(`Free content\n\nMembers content`);
         });
+
+        it('should not crash on missing post for email with paywall', function () {
+            sinon.stub(urlService, 'getUrlByResourceId').returns('https://site.com/blah/');
+            sinon.stub(labs, 'isSet').returns(true);
+            const email = {
+                html: '<p>Free content</p><!--members-only--><p>Members content</p>',
+                plaintext: 'Free content. Members content'
+            };
+
+            let output = renderEmailForSegment(email, 'status:-free');
+            output.html.should.equal(`<p>Free content</p><!--members-only--><p>Members content</p>`);
+            output.plaintext.should.equal(`Free content\n\nMembers content`);
+        });
     });
 
     describe('createUnsubscribeUrl', function () {

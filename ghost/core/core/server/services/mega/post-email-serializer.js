@@ -385,7 +385,7 @@ function renderEmailForSegment(email, memberSegment) {
     */
     if (labs.isSet('newsletterPaywall')) {
         const paywallIndex = (result.html || '').indexOf('<!--members-only-->');
-        if (paywallIndex !== -1 && memberSegment) {
+        if (paywallIndex !== -1 && memberSegment && result.post) {
             let statusFilter = memberSegment === 'status:free' ? {status: 'free'} : {status: 'paid'};
             const postVisiblity = result.post.visibility;
 
