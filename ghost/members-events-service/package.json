@@ -7,7 +7,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "echo \"Implement me!\"",
-    "test": "NODE_ENV=testing c8 --all --check-coverage mocha './test/**/*.test.js'",
+    "test": "NODE_ENV=testing c8 --all --reporter text --reporter cobertura --check-coverage mocha './test/**/*.test.js'",
     "lint": "eslint . --ext .js --cache"
   },
   "files": [
@@ -23,6 +23,6 @@
   "dependencies": {
     "@tryghost/domain-events": "0.0.0",
     "@tryghost/member-events": "0.0.0",
-    "moment-timezone": "^0.5.34"
+    "moment-timezone": "0.5.34"
   }
 }

@@ -3,8 +3,10 @@ const sinon = require('sinon');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const models = require('../../../../../core/server/models');
 const urlUtils = require('../../../../../core/shared/url-utils');
+const urlService = require('../../../../../core/server/services/url');
+const labs = require('../../../../../core/shared/labs');
 
-const {parseReplacements, renderEmailForSegment, _getTemplateSettings, createUnsubscribeUrl} = require('../../../../../core/server/services/mega/post-email-serializer');
+const {parseReplacements, renderEmailForSegment, _getTemplateSettings, createUnsubscribeUrl, createPostSignupUrl} = require('../../../../../core/server/services/mega/post-email-serializer');
 
 describe('Post Email Serializer', function () {
     it('creates replacement pattern for valid format and value', function () {
@@ -37,6 +39,10 @@ describe('Post Email Serializer', function () {
     });
 
     describe('renderEmailForSegment', function () {
+        afterEach(function () {
+            sinon.restore();
+        });
+
         it('shouldn\'t change an email that has no member segment', function () {
             const email = {
                 otherProperty: true,
@@ -84,6 +90,122 @@ describe('Post Email Serializer', function () {
             output.html.should.equal('hello');
             output.plaintext.should.equal('hello');
         });
+
+        it('should show paywall content for free members on paid posts', function () {
+            sinon.stub(urlService, 'getUrlByResourceId').returns('https://site.com/blah/');
+            sinon.stub(labs, 'isSet').returns(true);
+            const email = {
+                post: {
+                    status: 'published',
+                    visibility: 'paid'
+                },
+                html: '<p>Free content</p><!--members-only--><p>Members content</p>',
+                plaintext: 'Free content. Members content'
+            };
+
+            let output = renderEmailForSegment(email, 'status:free');
+            output.html.should.containEql(`<p>Free content</p>`);
+            output.html.should.containEql(`Subscribe to continue reading`);
+            output.html.should.containEql(`https://site.com/blah/#/portal/signup`);
+            output.html.should.not.containEql(`<p>Members content</p>`);
+
+            output.plaintext.should.containEql(`Free content`);
+            output.plaintext.should.containEql(`Subscribe to continue reading`);
+            output.plaintext.should.containEql(`https://site.com/blah/#/portal/signup`);
+            output.plaintext.should.not.containEql(`Members content`);
+        });
+
+        it('should show full cta for paid members on paid posts', function () {
+            sinon.stub(urlService, 'getUrlByResourceId').returns('https://site.com/blah/');
+            sinon.stub(labs, 'isSet').returns(true);
+            const email = {
+                post: {
+                    status: 'published',
+                    visibility: 'paid'
+                },
+                html: '<p>Free content</p><!--members-only--><p>Members content</p>',
+                plaintext: 'Free content. Members content'
+            };
+
+            let output = renderEmailForSegment(email, 'status:-free');
+            output.html.should.equal(`<p>Free content</p><!--members-only--><p>Members content</p>`);
+            output.plaintext.should.equal(`Free content\n\nMembers content`);
+        });
+
+        it('should show paywall content for free members on specific tier posts', function () {
+            sinon.stub(urlService, 'getUrlByResourceId').returns('https://site.com/blah/');
+            sinon.stub(labs, 'isSet').returns(true);
+            const email = {
+                post: {
+                    status: 'published',
+                    visibility: 'tiers'
+                },
+                html: '<p>Free content</p><!--members-only--><p>Members content</p>',
+                plaintext: 'Free content. Members content'
+            };
+
+            let output = renderEmailForSegment(email, 'status:free');
+            output.html.should.containEql(`<p>Free content</p>`);
+            output.html.should.containEql(`Subscribe to continue reading`);
+            output.html.should.containEql(`https://site.com/blah/#/portal/signup`);
+            output.html.should.not.containEql(`<p>Members content</p>`);
+
+            output.plaintext.should.containEql(`Free content`);
+            output.plaintext.should.containEql(`Subscribe to continue reading`);
+            output.plaintext.should.containEql(`https://site.com/blah/#/portal/signup`);
+            output.plaintext.should.not.containEql(`Members content`);
+        });
+
+        it('should show full cta for paid members on specific tier posts', function () {
+            sinon.stub(urlService, 'getUrlByResourceId').returns('https://site.com/blah/');
+            sinon.stub(labs, 'isSet').returns(true);
+            const email = {
+                post: {
+                    status: 'published',
+                    visibility: 'paid'
+                },
+                html: '<p>Free content</p><!--members-only--><p>Members content</p>',
+                plaintext: 'Free content. Members content'
+            };
+
+            let output = renderEmailForSegment(email, 'status:-free');
+            output.html.should.equal(`<p>Free content</p><!--members-only--><p>Members content</p>`);
+            output.plaintext.should.equal(`Free content\n\nMembers content`);
+        });
+
+        it('should show full content for free members on free posts', function () {
+            sinon.stub(urlService, 'getUrlByResourceId').returns('https://site.com/blah/');
+            sinon.stub(labs, 'isSet').returns(true);
+            const email = {
+                post: {
+                    status: 'published',
+                    visibility: 'public'
+                },
+                html: '<p>Free content</p><!--members-only--><p>Members content</p>',
+                plaintext: 'Free content. Members content'
+            };
+
+            let output = renderEmailForSegment(email, 'status:free');
+            output.html.should.equal(`<p>Free content</p><!--members-only--><p>Members content</p>`);
+            output.plaintext.should.equal(`Free content\n\nMembers content`);
+        });
+
+        it('should show full content for paid members on free posts', function () {
+            sinon.stub(urlService, 'getUrlByResourceId').returns('https://site.com/blah/');
+            sinon.stub(labs, 'isSet').returns(true);
+            const email = {
+                post: {
+                    status: 'published',
+                    visibility: 'public'
+                },
+                html: '<p>Free content</p><!--members-only--><p>Members content</p>',
+                plaintext: 'Free content. Members content'
+            };
+
+            let output = renderEmailForSegment(email, 'status:-free');
+            output.html.should.equal(`<p>Free content</p><!--members-only--><p>Members content</p>`);
+            output.plaintext.should.equal(`Free content\n\nMembers content`);
+        });
     });
 
     describe('createUnsubscribeUrl', function () {
@@ -111,6 +233,35 @@ describe('Post Email Serializer', function () {
             sinon.stub(urlUtils, 'getSiteUrl').returns('https://site.com/blah');
             const unsubscribeUrl = createUnsubscribeUrl('post-abcd', 'newsletter-abcd');
             unsubscribeUrl.should.eql('https://site.com/blah/unsubscribe/?uuid=post-abcd&newsletter=newsletter-abcd');
+        });
+    });
+
+    describe('createPostSignupUrl', function () {
+        before(function () {
+            models.init();
+        });
+
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        it('generates signup url on post for published post', function () {
+            sinon.stub(urlService, 'getUrlByResourceId').returns('https://site.com/blah/');
+            const unsubscribeUrl = createPostSignupUrl({
+                status: 'published',
+                id: 'abc123'
+            });
+            unsubscribeUrl.should.eql('https://site.com/blah/#/portal/signup');
+        });
+
+        it('generates signup url on homepage for email only post', function () {
+            sinon.stub(urlService, 'getUrlByResourceId').returns('https://site.com/test/404/');
+            sinon.stub(urlUtils, 'getSiteUrl').returns('https://site.com/test/');
+            const unsubscribeUrl = createPostSignupUrl({
+                status: 'sent',
+                id: 'abc123'
+            });
+            unsubscribeUrl.should.eql('https://site.com/test/#/portal/signup');
         });
     });
 
