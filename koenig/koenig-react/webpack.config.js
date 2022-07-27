@@ -14,6 +14,11 @@ module.exports = {
         react: 'React',
         'react-dom': 'ReactDOM'
     },
+    resolve: {
+        alias: {
+            'mobiledoc-kit': require.resolve('@tryghost/mobiledoc-kit-experimental')
+        }
+    },
     module: {
         rules: [
             {
