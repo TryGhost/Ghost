@@ -9,6 +9,7 @@ export default class KoenigReactEditor extends ReactComponent {
             element,
             <ReactMobiledocEditor
                 mobiledoc={this.args.mobiledoc}
+                didCreateEditor={this.args.didCreateEditor}
                 onChange={this.args.onChange}
             />
         );
