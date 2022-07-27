@@ -21,7 +21,8 @@
     "sinon": "14.0.0"
   },
   "dependencies": {
-    "date-fns": "2.29.1",
-    "tpl": "0.3.0"
+    "@tryghost/errors": "1.2.14",
+    "@tryghost/tpl": "0.1.17",
+    "date-fns": "2.29.1"
   }
 }
