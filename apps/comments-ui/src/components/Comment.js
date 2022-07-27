@@ -9,12 +9,23 @@ import Replies from './Replies';
 import AppContext from '../AppContext';
 import {formatRelativeTime} from '../utils/helpers';
 
-const Comment = ({updateIsInReplyMode = null, ...props}) => {
+function EditedInfo({comment}) {
+    if (!comment.edited_at) {
+        return null;
+    }
+    return (
+        <div>
+            <span className="mx-[0.3em]">·</span>Edited
+        </div>
+    );
+}
+
+const Comment = ({updateIsEditing = null, isEditing, ...props}) => {
     const [isInEditMode, setIsInEditMode] = useState(false);
     const [isInReplyMode, setIsInReplyMode] = useState(false);
     useEffect(() => {
-        updateIsInReplyMode?.(isInReplyMode);
-    }, [updateIsInReplyMode, isInReplyMode]);
+        updateIsEditing?.(isInReplyMode || isInEditMode);
+    }, [updateIsEditing, isInReplyMode, isInEditMode]);
     const toggleEditMode = () => {
         setIsInEditMode(current => !current);
     };
@@ -74,7 +85,7 @@ const Comment = ({updateIsInReplyMode = null, ...props}) => {
                                     <div className="flex items-baseline font-sans font-semibold text-[14px] tracking-tight text-neutral-400 dark:text-[rgba(255,255,255,0.5)]">
                                         {comment.member.bio && <div>{comment.member.bio}<span className="mx-[0.3em]">·</span></div>}
                                         <div>{formatRelativeTime(comment.created_at)}</div>
-                                        <div><span className="mx-[0.3em]">·</span>Edited</div>
+                                        <EditedInfo comment={comment} />
                                     </div>
                                 </div>}
                         </div>
@@ -86,7 +97,7 @@ const Comment = ({updateIsInReplyMode = null, ...props}) => {
 
                         <div className="ml-12 sm:ml-[52px] flex gap-5 items-center">
                             {!isNotPublished && <Like comment={comment} />}
-                            {!isNotPublished && (canReply && (isNotPublished || !props.parent) && <Reply comment={comment} toggleReply={toggleReplyMode} isReplying={isInReplyMode} />)}
+                            {!isNotPublished && (canReply && (isNotPublished || !props.parent) && <Reply disabled={!!isEditing} comment={comment} toggleReply={toggleReplyMode} isReplying={isInReplyMode} />)}
                             <More comment={comment} toggleEdit={toggleEditMode} />
                         </div>
                     </div>
