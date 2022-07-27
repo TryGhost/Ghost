@@ -5,6 +5,7 @@ const should = require('should');
 const models = require('../../../core/server/models');
 const moment = require('moment-timezone');
 const settingsCache = require('../../../core/shared/settings-cache');
+const sinon = require('sinon');
 
 let membersAgent, membersAgent2, member, postId, commentId;
 
@@ -64,7 +65,21 @@ describe('Comments API', function () {
         mockManager.restore();
     });
 
-    describe('when not authenticated', function () {
+    describe('when not authenticated but enabled', function () {
+        beforeEach(function () {
+            const getStub = sinon.stub(settingsCache, 'get');
+            getStub.callsFake((key, options) => {
+                if (key === 'comments_enabled') {
+                    return 'all';
+                }
+                return getStub.wrappedMethod.call(settingsCache, key, options);
+            });
+        });
+
+        after(async function () {
+            sinon.restore();
+        });
+
         it('Can browse all comments of a post', async function () {
             const {body} = await membersAgent
                 .get(`/api/comments/?filter=post_id:${postId}`)
@@ -95,11 +110,51 @@ describe('Comments API', function () {
         });
     });
 
+    describe('when not enabled', function () {
+        beforeEach(async function () {
+            await membersAgent.loginAs('member@example.com');
+            const getStub = sinon.stub(settingsCache, 'get');
+            getStub.callsFake((key, options) => {
+                if (key === 'comments_enabled') {
+                    return 'off';
+                }
+                return getStub.wrappedMethod.call(settingsCache, key, options);
+            });
+        });
+
+        afterEach(async function () {
+            sinon.restore();
+        });
+
+        it('Can comment on a post', async function () {
+            const {body} = await membersAgent
+                .post(`/api/comments/`)
+                .body({comments: [{
+                    post_id: postId,
+                    html: '<p>This is a <strong>message</strong></p><p>New line</p>'
+                }]})
+                .expectStatus(405);
+        });
+    });
+
     describe('when authenticated', function () {
         before(async function () {
             await membersAgent.loginAs('member@example.com');
             member = await models.Member.findOne({email: 'member@example.com'}, {require: true});
             await membersAgent2.loginAs('member2@example.com');
+        });
+        beforeEach(function () {
+            const getStub = sinon.stub(settingsCache, 'get');
+            getStub.callsFake((key, options) => {
+                if (key === 'comments_enabled') {
+                    return 'all';
+                }
+                return getStub.wrappedMethod.call(settingsCache, key, options);
+            });
+        });
+
+        afterEach(async function () {
+            sinon.restore();
         });
 
         it('Can comment on a post', async function () {
@@ -231,7 +286,7 @@ describe('Comments API', function () {
             // Check last_updated_at changed?
             member = await models.Member.findOne({id: member.id});
             should.notEqual(member.get('last_seen_at').getTime(), date.getTime(), 'Should update `last_seen_at` property after posting a comment.');
- 
+
             // Check last_commented_at changed?
             should.notEqual(member.get('last_commented_at').getTime(), date.getTime(), 'Should update `last_commented_at` property after posting a comment.');
         });
@@ -361,7 +416,7 @@ describe('Comments API', function () {
         });
 
         it('Can edit a comment on a post', async function () {
-            await membersAgent
+            const {body} = await await membersAgent
                 .put(`/api/comments/${commentId}`)
                 .body({comments: [{
                     html: 'Updated comment'
@@ -371,8 +426,13 @@ describe('Comments API', function () {
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
-                    comments: [commentMatcherWithReply]
+                    comments: [{
+                        ...commentMatcherWithReply,
+                        edited_at: anyISODateTime
+                    }]
                 });
+
+            assert(body.comments[0].edited_at, 'The edited_at field should be populated');
         });
 
         it('Can not edit a comment post_id', async function () {
@@ -428,7 +488,10 @@ describe('Comments API', function () {
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
-                    comments: [commentMatcherWithReply]
+                    comments: [{
+                        ...commentMatcherWithReply,
+                        edited_at: anyISODateTime
+                    }]
                 });
 
             assert(comment.member.id !== memberId);
