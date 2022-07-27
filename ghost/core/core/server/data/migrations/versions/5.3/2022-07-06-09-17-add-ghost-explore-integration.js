@@ -6,7 +6,6 @@ module.exports = createTransactionalMigration(
     async function up(knex) {
         logging.info('Creating Ghost Explore Integration');
         const existingIntegration = await knex('integrations').where({
-            type: 'internal',
             name: 'Ghost Explore',
             slug: 'ghost-explore'
         }).first();
@@ -30,7 +29,6 @@ module.exports = createTransactionalMigration(
         logging.info('Deleting Ghost Explore Integration');
 
         await knex('integrations').where({
-            type: 'internal',
             name: 'Ghost Explore',
             slug: 'ghost-explore'
         }).del();
