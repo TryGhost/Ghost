@@ -69,7 +69,16 @@ const Comment = ({updateIsEditing = null, isEditing, ...props}) => {
         );
     } else {
         return (
-            <>
+            <Transition
+                appear
+                show={true}
+                enter="transition-opacity duration-300 ease-out"
+                enterFrom="opacity-0"
+                enterTo="opacity-100"
+                leave="transition-opacity duration-100"
+                leaveFrom="opacity-100"
+                leaveTo="opacity-0"
+            >
                 <div className={`flex flex-row ${hasReplies ? 'mb-2 sm:mb-4' : 'mb-6 sm:mb-10'}`}>
                     <div>
                         <div className="flex items-center mb-2 h-12">
@@ -120,7 +129,7 @@ const Comment = ({updateIsEditing = null, isEditing, ...props}) => {
                         <Form parent={comment} close={closeReplyMode} isReply={true} />
                     </div>
                 </Transition>
-            </>
+            </Transition>
         );
     }
 };
