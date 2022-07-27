@@ -77,6 +77,7 @@ const ReactMobiledocEditor = (props) => {
             <Suspense fallback={<p>Loading editor...</p>}>
                 <Koenig
                     mobiledoc={props.mobiledoc}
+                    didCreateEditor={props.didCreateEditor}
                     onChange={props.onChange}
                 />
             </Suspense>

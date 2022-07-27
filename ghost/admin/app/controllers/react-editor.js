@@ -290,9 +290,10 @@ export default class ReactEditorController extends Controller {
         // - empty cards may be left in draft posts due to autosave occuring
         //   whilst an empty card is present then the user closing the browser
         //   or refreshing the page
-        if (this.post.isDraft) {
-            this._koenig.cleanup();
-        }
+        // TODO: not yet implemented in react editor
+        // if (this.post.isDraft) {
+        //     this._koenig.cleanup();
+        // }
     }
 
     @action
