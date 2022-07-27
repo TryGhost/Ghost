@@ -81,7 +81,7 @@ class JobManager {
     }
 
     async _jobMessageHandler({name, message}) {
-        if (this._jobsRepository) {
+        if (this._jobsRepository && name) {
             if (message === 'started') {
                 const job = await this._jobsRepository.read(name);
 
