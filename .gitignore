@@ -68,4 +68,5 @@ typings/
 # OSX
 .DS_Store
 
-# Ghost Custom
+# Caddyfile - for local development with ssl + caddy
+Caddyfile
