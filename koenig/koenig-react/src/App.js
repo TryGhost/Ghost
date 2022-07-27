@@ -10,11 +10,17 @@ const resetStyles = `
 }
 `;
 
-const KoenigEditor = ({mobiledoc, onChange}) => {
+const KoenigEditor = ({mobiledoc, atoms, keyCommands, didCreateEditor, onChange}) => {
     return (
         <root.div mode={'closed'}>
             <h1 className='font-bold text-5xl'>The Editor!</h1>
-            <Koenig mobiledoc={mobiledoc} onChange={onChange} />
+            <Koenig
+                mobiledoc={mobiledoc}
+                atoms={atoms}
+                keyCommands={keyCommands}
+                didCreateEditor={didCreateEditor}
+                onChange={onChange}
+            />
             <style>
                 {resetStyles}
                 {styles}
