@@ -91,3 +91,11 @@
     width: 16px;
     height: 16px;
 }
+
+.gh-browserpreview-browser .site-title {
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 200px;
+}
