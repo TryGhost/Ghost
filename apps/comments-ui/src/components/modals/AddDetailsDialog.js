@@ -5,8 +5,11 @@ import AppContext from '../../AppContext';
 
 const AddNameDialog = (props) => {
     const inputNameRef = useRef(null);
-    const inputBioRef = useRef(null);
+    // const inputBioRef = useRef(null);  // TODO: needed for bio to be wired up
     const {dispatchAction} = useContext(AppContext);
+    const [name, setName] = useState('');
+    // const [bio, setBio] = useState('');  // TODO: needed for bio to be wired up
+    const [error, setError] = useState({name: '', bio: ''});
 
     const close = () => {
         dispatchAction('closePopup');
@@ -19,6 +22,9 @@ const AddNameDialog = (props) => {
             });
 
             // TODO: need to save the bio, too
+            // await dispatchAction('updateMemberBio', {
+            //     bio
+            // });
 
             props.callback();
             close();
@@ -40,9 +46,6 @@ const AddNameDialog = (props) => {
         };
     }, [inputNameRef]);
 
-    const [name, setName] = useState('');
-    const [bio, setBio] = useState('');
-    const [error, setError] = useState({name: '', bio: ''});
     return (
         <>
             <h1 className="font-sans font-bold tracking-tight text-[24px] mb-3 text-black">Add context to your comments</h1>
@@ -81,6 +84,8 @@ const AddNameDialog = (props) => {
                     }}
                     maxLength="64"
                 />
+                {/* TODO: bio text field ready for wiring up
+
                 <div className="flex flex-row mt-4 mb-2 justify-between">
                     <label htmlFor="comments-name" className="font-sans font-medium text-sm">Bio</label>
                     <Transition
@@ -113,9 +118,9 @@ const AddNameDialog = (props) => {
                         }
                     }}
                     maxLength="50"
-                />
+                /> */}
                 <button
-                    className="transition-opacity duration-200 ease-linear w-full h-[44px] mt-10 px-8 flex items-center justify-center rounded-md text-white font-sans font-semibold text-[15px] bg-[#3204F5] opacity-100 hover:opacity-90"
+                    className="transition-opacity duration-200 ease-linear w-full h-[44px] mt-8 px-8 flex items-center justify-center rounded-md text-white font-sans font-semibold text-[15px] bg-[#3204F5] opacity-100 hover:opacity-90"
                     onClick={submit}
                 >
                     Save

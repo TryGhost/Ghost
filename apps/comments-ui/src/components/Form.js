@@ -5,6 +5,7 @@ import Avatar from './Avatar';
 import {useEditor, EditorContent} from '@tiptap/react';
 import {getEditorConfig} from '../utils/editor';
 import {isMobile} from '../utils/helpers';
+import {formatRelativeTime} from '../utils/helpers';
 
 const Form = (props) => {
     const {member, postId, dispatchAction, onAction, avatarSaturation} = useContext(AppContext);
@@ -13,7 +14,7 @@ const Form = (props) => {
 
     const {comment, commentsCount} = props;
     const memberName = (props.isEdit ? comment.member.name : member.name); 
-    const memberBio = false; // FOR TESTING
+    // const memberBio = false; // TODO: needed for bio to be wired up
     
     let config;
     if (props.isReply) {
@@ -236,16 +237,17 @@ const Form = (props) => {
         editor.commands.focus();
     };
 
-    const handleAddBio = (event) => {
-        event.preventDefault();
+    // TODO: needed for bio to be wired up
+    // const handleAddBio = (event) => {
+    //     event.preventDefault();
 
-        dispatchAction('openPopup', {
-            type: 'addDetailsDialog',
-            callback: () => {
-                editor.commands.focus();
-            }
-        });
-    };
+    //     dispatchAction('openPopup', {
+    //         type: 'addDetailsDialog',
+    //         callback: () => {
+    //             editor.commands.focus();
+    //         }
+    //     });
+    // };
 
     let submitText;
     if (props.isReply) {
@@ -334,9 +336,12 @@ const Form = (props) => {
                             >
                                 <h4 className="text-[17px] font-sans font-bold tracking-tight dark:text-[rgba(255,255,255,0.85)]">{memberName ? memberName : 'Anonymous'}</h4>
                                 <div className="flex items-baseline font-sans font-semibold text-[14px] tracking-tight text-neutral-400 dark:text-[rgba(255,255,255,0.5)]">
+                                    {/* TODO: bio text field ready for wiring up
                                     {memberBio ?
                                         <div>{memberBio}</div> :
-                                        <button className="transition duration-150 hover:text-neutral-500" onClick={handleAddBio}>Add your bio</button>}
+                                        <button className="transition duration-150 hover:text-neutral-500" onClick={handleAddBio}>Add your bio</button>
+                                    } */}
+                                    <div>{props.isEdit ? formatRelativeTime(comment.created_at) : 'Now'}</div>
                                 </div>
                             </Transition>
                         </div>
