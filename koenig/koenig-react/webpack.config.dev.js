@@ -18,8 +18,14 @@ module.exports = {
     module: {
         rules: [
             {
+                test: /frame-styles\.css$/i,
+                include: path.resolve(__dirname, 'src'),
+                use: ['style-loader', 'css-loader', 'postcss-loader']
+            },
+            {
                 test: /\.css$/i,
                 include: path.resolve(__dirname, 'src'),
+                exclude: path.resolve(__dirname, 'src', 'frame-styles.css'),
                 use: ['to-string-loader', 'css-loader', 'postcss-loader']
             },
             {

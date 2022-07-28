@@ -53,9 +53,9 @@
     "mobiledoc-kit": "npm:@tryghost/mobiledoc-kit-experimental",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-frame-component": "^5.2.3",
     "react-mobiledoc-editor": "0.13.0",
     "react-scripts": "5.0.1",
-    "react-shadow": "^19.0.3",
     "web-vitals": "^2.1.0"
   },
   "browserslist": {

@@ -1,37 +1,24 @@
-import * as React from 'react';
-import root from 'react-shadow';
+import Frame from 'react-frame-component';
 import Koenig from './components/Koenig';
 import styles from './index.css';
+import './frame-styles.css';
 
-const resetStyles = `
-* {
-    color: initial;
-    font-size: initial;
-}
-`;
+const intialContent = `<!DOCTYPE html><html><style>${styles}</style><head></head><body><div></div></body></html>`;
 
-const Styles = () => {
+const KoenigEditor = ({...props}) => {
     return (
-        <style>
-            {resetStyles}
-            {styles}
-        </style>
-    );
-};
-
-const KoenigEditor = ({mobiledoc, atoms, keyCommands, didCreateEditor, onChange}) => {
-    return (
-        <root.div mode={'closed'}>
-            <h1 className='font-bold text-5xl'>The Editor!</h1>
+        <Frame
+            initialContent={intialContent}
+            className="koenig-react-frame"
+        >
             <Koenig
-                mobiledoc={mobiledoc}
-                atoms={atoms}
-                keyCommands={keyCommands}
-                didCreateEditor={didCreateEditor}
-                onChange={onChange}
+                mobiledoc={props.mobiledoc}
+                atoms={props.atoms}
+                keyCommands={props.keyCommands}
+                didCreateEditor={props.didCreateEditor}
+                onChange={props.onChange}
             />
-            <Styles />
-        </root.div>
+        </Frame>
     );
 };
 
