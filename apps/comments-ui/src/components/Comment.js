@@ -107,7 +107,7 @@ const Comment = ({updateIsEditing = null, isEditing, ...props}) => {
                         <div className="ml-12 sm:ml-[52px] flex gap-5 items-center">
                             {!isNotPublished && <Like comment={comment} />}
                             {!isNotPublished && (canReply && (isNotPublished || !props.parent) && <Reply disabled={!!isEditing} comment={comment} toggleReply={toggleReplyMode} isReplying={isInReplyMode} />)}
-                            <More comment={comment} toggleEdit={toggleEditMode} />
+                            <More comment={comment} toggleEdit={toggleEditMode} disableEditing={isEditing} />
                         </div>
                     </div>
                 </div>

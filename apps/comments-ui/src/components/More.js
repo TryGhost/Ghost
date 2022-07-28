@@ -30,7 +30,7 @@ const More = (props) => {
     return (
         <div className="relative">
             {show ? <button onClick={toggleContextMenu} className="outline-0"><MoreIcon className='transition duration-50 ease-linear gh-comments-icon gh-comments-icon-more outline-0 fill-neutral-400 dark:fill-rgba(255,255,255,0.5) hover:fill-neutral-600' /></button> : null}
-            {isContextMenuOpen ? <CommentContextMenu comment={comment} close={closeContextMenu} toggleEdit={props.toggleEdit} /> : null}
+            {isContextMenuOpen ? <CommentContextMenu comment={comment} close={closeContextMenu} toggleEdit={props.toggleEdit} disableEditing={props.disableEditing} /> : null}
         </div>
     );
 };
