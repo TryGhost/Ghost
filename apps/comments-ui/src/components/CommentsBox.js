@@ -24,7 +24,7 @@ const CommentsBoxContent = (props) => {
             {/* {TODO: Put in conditionals and variables for the new comment helper} */}
             <div className="w-full flex justify-between items-baseline font-sans mb-10">
                 <h2 className="font-bold text-[2.8rem] tracking-tight dark:text-[rgba(255,255,255,0.85)]">
-                    {title ? title : <><span className="hidden sm:inline">Member </span><span className="capitalize sm:normal-case">discussion</span></>}
+                    {title !== null ? title : <><span className="hidden sm:inline">Member </span><span className="capitalize sm:normal-case">discussion</span></>}
                 </h2>
                 {count ? <div className="text-neutral-400 text-[1.6rem]">{commentsCount} comments</div> : null}
             </div>
