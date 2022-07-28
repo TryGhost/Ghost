@@ -57,7 +57,20 @@ describe('{{comments}} helper', function () {
         });
         should.exist(rendered);
         rendered.string.should.containEql('<script defer src="https://cdn.jsdelivr.net/npm/@tryghost/comments-ui');
-        rendered.string.should.containEql('data-ghost-comments="http://127.0.0.1:2369/" data-api="http://127.0.0.1:2369/ghost/api/content/" data-admin="http://127.0.0.1:2369/ghost/" data-key="xyz" data-styles="https://cdn.jsdelivr.net/npm/@tryghost/comments-ui@~test.version/umd/main.css" data-post-id="post_id_123" data-sentry-dsn="" data-color-scheme="auto" data-avatar-saturation="50" data-accent-color="" data-app-version="test.version" data-comments-enabled="all"');
+        rendered.string.should.containEql('data-ghost-comments="http://127.0.0.1:2369/"');
+        rendered.string.should.containEql('data-api="http://127.0.0.1:2369/ghost/api/content/"');
+        rendered.string.should.containEql('data-admin="http://127.0.0.1:2369/ghost/"');
+        rendered.string.should.containEql('data-key="xyz"');
+        rendered.string.should.containEql('data-styles="https://cdn.jsdelivr.net/npm/@tryghost/comments-ui@~test.version/umd/main.css"');
+        rendered.string.should.containEql('data-title="null"');
+        rendered.string.should.containEql('data-count="true"');
+        rendered.string.should.containEql('data-post-id="post_id_123"');
+        rendered.string.should.containEql('data-sentry-dsn=""');
+        rendered.string.should.containEql('data-color-scheme="auto"');
+        rendered.string.should.containEql('data-avatar-saturation="60"');
+        rendered.string.should.containEql('data-accent-color=""');
+        rendered.string.should.containEql('data-app-version="test.version"');
+        rendered.string.should.containEql('data-comments-enabled="all"');
     });
 
     it('returns a script tag for paid only commenting', async function () {
@@ -76,7 +89,20 @@ describe('{{comments}} helper', function () {
         });
         should.exist(rendered);
         rendered.string.should.containEql('<script defer src="https://cdn.jsdelivr.net/npm/@tryghost/comments-ui');
-        rendered.string.should.containEql('data-ghost-comments="http://127.0.0.1:2369/" data-api="http://127.0.0.1:2369/ghost/api/content/" data-admin="http://127.0.0.1:2369/ghost/" data-key="xyz" data-styles="https://cdn.jsdelivr.net/npm/@tryghost/comments-ui@~test.version/umd/main.css" data-post-id="post_id_123" data-sentry-dsn="" data-color-scheme="auto" data-avatar-saturation="50" data-accent-color="" data-app-version="test.version" data-comments-enabled="paid"');
+        rendered.string.should.containEql('data-ghost-comments="http://127.0.0.1:2369/"');
+        rendered.string.should.containEql('data-api="http://127.0.0.1:2369/ghost/api/content/"');
+        rendered.string.should.containEql('data-admin="http://127.0.0.1:2369/ghost/"');
+        rendered.string.should.containEql('data-key="xyz"');
+        rendered.string.should.containEql('data-styles="https://cdn.jsdelivr.net/npm/@tryghost/comments-ui@~test.version/umd/main.css"');
+        rendered.string.should.containEql('data-title="null"');
+        rendered.string.should.containEql('data-count="true"');
+        rendered.string.should.containEql('data-post-id="post_id_123"');
+        rendered.string.should.containEql('data-sentry-dsn=""');
+        rendered.string.should.containEql('data-color-scheme="auto"');
+        rendered.string.should.containEql('data-avatar-saturation="60"');
+        rendered.string.should.containEql('data-accent-color=""');
+        rendered.string.should.containEql('data-app-version="test.version"');
+        rendered.string.should.containEql('data-comments-enabled="paid"');
     });
 
     it('returns undefined when comments are disabled', async function () {
