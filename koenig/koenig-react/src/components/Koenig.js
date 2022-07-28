@@ -2,11 +2,13 @@ import * as React from 'react';
 import {Editor, Container, Toolbar} from 'react-mobiledoc-editor';
 import DEFAULT_ATOMS from '../atoms';
 import DEFAULT_KEY_COMMANDS from '../key-commands';
+import DEFAULT_TEXT_EXPANSIONS from '../text-expansions';
 
 const Koenig = ({
     mobiledoc,
     atoms = DEFAULT_ATOMS,
     keyCommands = DEFAULT_KEY_COMMANDS,
+    textExpansions = DEFAULT_TEXT_EXPANSIONS,
     didCreateEditor,
     onChange
 }) => {
@@ -19,6 +21,13 @@ const Koenig = ({
                         return command.run(editor);
                     }
                 });
+            });
+        }
+
+        if (textExpansions?.length) {
+            textExpansions.forEach((textExpansion) => {
+                textExpansion.unregister?.forEach(key => editor.unregisterTextInputHandler(key));
+                textExpansion.register?.forEach(expansion => editor.onTextInput(expansion));
             });
         }
 
