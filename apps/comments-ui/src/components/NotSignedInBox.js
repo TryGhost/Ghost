@@ -12,9 +12,7 @@ const NotSignedInBox = (props) => {
         color: accentColor
     };
 
-    const firstComment = (props.isFirst ? {borderTop: '0px', paddingTop: '0'} : {});
-
-    const titleText = (props.isFirst ? 'Want to be the first to comment?' : 'Want to join the discussion?');
+    const titleText = (props.isFirst ? 'Be first to start the conversation' : 'Want to join the discussion?');
 
     const handleSubscribeClick = (event) => {
         window.location.href = '#/portal/signup';
@@ -25,14 +23,14 @@ const NotSignedInBox = (props) => {
     };
 
     return (
-        <section className="text-center mb-1 pt-12 pb-10 px-8 border-t border-[#f1f1f1]" style={firstComment}>
-            <h1 className="text-center text-black text-[22px] font-sans font-semibold mb-4 tracking-tight dark:text-white">{titleText}</h1>
-            <button onClick={handleSubscribeClick} className="text-white font-sans py-3 px-4 mb-6 rounded inline-block font-medium" style={buttonStyle}>
+        <section className={`flex flex-col items-center mb-1 pt-12 pb-12 px-8 border-t-2 border-gray-100 ` + (props.isFirst && ` border-b-2`)}>
+            <h1 className={`text-center text-black text-[22px] font-sans mb-4 tracking-tight dark:text-white ` + (props.isFirst ? `font-semibold` : `font-bold`)}>{titleText}</h1>
+            <button onClick={handleSubscribeClick} className="text-white font-sans py-3 px-5 mb-4 rounded inline-block font-medium leading-none hover:opacity-90 transition-all" style={buttonStyle}>
                 Subscribe now
             </button>
-            <p className="font-sans text-center text-neutral-500 dark:text-[rgba(255,255,255,0.5)]">
+            <p className="text-sm font-sans text-center text-neutral-400 dark:text-[rgba(255,255,255,0.5)]">
                 <span className='inline-block mr-1'>Already have an account?</span>
-                <button onClick={handleSignInClick} clasName="rounded-md" style={linkStyle}>Sign in</button>
+                <button onClick={handleSignInClick} className="rounded-md hover:opacity-90 transition-all text-sm font-semibold" style={linkStyle}>Sign in</button>
             </p>
         </section>
     );

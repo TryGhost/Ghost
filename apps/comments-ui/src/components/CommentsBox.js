@@ -26,7 +26,7 @@ const CommentsBoxContent = (props) => {
                 <h2 className="font-bold text-[2.8rem] tracking-tight dark:text-[rgba(255,255,255,0.85)]">
                     {title ? title : <><span className="hidden sm:inline">Member </span><span className="capitalize sm:normal-case">discussion</span></>}
                 </h2>
-                {count ? <div className="text-neutral-400 text-[1.6rem] font-medium">{commentsCount} comments</div> : null}
+                {count ? <div className="text-neutral-400 text-[1.6rem]">{commentsCount} comments</div> : null}
             </div>
             <Pagination />
             <div className={!pagination ? 'mt-4' : ''}>
