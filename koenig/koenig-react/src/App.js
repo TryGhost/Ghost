@@ -10,6 +10,15 @@ const resetStyles = `
 }
 `;
 
+const Styles = () => {
+    return (
+        <style>
+            {resetStyles}
+            {styles}
+        </style>
+    );
+};
+
 const KoenigEditor = ({mobiledoc, atoms, keyCommands, didCreateEditor, onChange}) => {
     return (
         <root.div mode={'closed'}>
@@ -21,10 +30,7 @@ const KoenigEditor = ({mobiledoc, atoms, keyCommands, didCreateEditor, onChange}
                 didCreateEditor={didCreateEditor}
                 onChange={onChange}
             />
-            <style>
-                {resetStyles}
-                {styles}
-            </style>
+            <Styles />
         </root.div>
     );
 };

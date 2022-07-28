@@ -7,7 +7,7 @@
   "scripts": {
     "start": "yarn webpack serve --config webpack.config.dev.js",
     "build": "react-scripts build",
-    "test": "react-scripts test",
+    "test": "jest",
     "eject": "react-scripts eject",
     "lint": "eslint src --ext .js --cache",
     "posttest": "yarn lint",
@@ -50,8 +50,7 @@
     "react-mobiledoc-editor": "0.13.0",
     "react-scripts": "5.0.1",
     "react-shadow": "^19.0.3",
-    "web-vitals": "^2.1.0",
-    "mobiledoc-kit": "yarn:@tryghost/mobiledoc-kit-experimental"
+    "web-vitals": "^2.1.0"
   },
   "browserslist": {
     "production": [
@@ -74,5 +73,29 @@
     "plugins": [
       "ghost"
     ]
-  }
+  },
+    "jest": {
+      "moduleFileExtensions": ["js", "jsx"],
+      "moduleDirectories": ["node_modules", "src"],
+      "testEnvironment": "jsdom",
+      "moduleNameMapper": {
+        "\\.(css|less)$": "<rootDir>/__mocks__/styleMock.js",
+        "\\.(gif|ttf|eot|svg)$": "<rootDir>/__mocks__/fileMock.js"
+      },
+      "collectCoverageFrom": [
+        "src/**/*.js",
+        "!**/node_modules/**"
+      ],
+      "coverageReporters": [
+        "text-summary",
+        "lcov",
+        "cobertura"
+      ],
+      "testMatch": [
+        "**/*.test.js"
+      ],
+      "setupFilesAfterEnv": [
+        "@testing-library/jest-dom/extend-expect"
+      ]
+    }
 }
