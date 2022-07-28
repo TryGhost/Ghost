@@ -102,6 +102,10 @@ const post = (attrs, frame) => {
         if (columns && columns.includes('visibility') && fields && !fields.includes('visibility')) {
             delete attrs.visibility;
         }
+
+        if (fields && !fields.includes('comments')) {
+            delete attrs.comments;
+        }
     }
 
     if (columns && columns.includes('email_segment') && fields && !fields.includes('email_segment')) {
