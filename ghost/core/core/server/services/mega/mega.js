@@ -69,6 +69,7 @@ const getEmailData = async (postModel, options) => {
     }
 
     return {
+        post: postModel.toJSON(), // for content paywalling
         subject,
         html,
         plaintext,
@@ -87,9 +88,6 @@ const sendTestEmail = async (postModel, toEmails, memberSegment) => {
     let emailData = await getEmailData(postModel);
     emailData.subject = `[Test] ${emailData.subject}`;
 
-    if (memberSegment) {
-        emailData = postEmailSerializer.renderEmailForSegment(emailData, memberSegment);
-    }
     // fetch any matching members so that replacements use expected values
     const recipients = await Promise.all(toEmails.map(async (email) => {
         const member = await membersService.api.members.get({email});
@@ -109,7 +107,7 @@ const sendTestEmail = async (postModel, toEmails, memberSegment) => {
     // enable tracking for previews to match real-world behaviour
     emailData.track_opens = !!settingsCache.get('email_track_opens');
 
-    const response = await bulkEmailService.send(emailData, recipients);
+    const response = await bulkEmailService.send(emailData, recipients, memberSegment);
 
     if (response instanceof bulkEmailService.FailedBatch) {
         return Promise.reject(response.error);
