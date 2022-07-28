@@ -12,6 +12,15 @@ const JobManager = require('../index');
 
 const sandbox = sinon.createSandbox();
 
+const jobModelInstance = {
+    id: 'unique',
+    get: (field) => {
+        if (field === 'status') {
+            return 'finished';
+        }
+    }
+};
+
 describe('Job Manager', function () {
     beforeEach(function () {
         sandbox.stub(logging, 'info');
@@ -290,7 +299,7 @@ describe('Job Manager', function () {
             it('does not add a job to the queue when it already exists', async function () {
                 const spy = sinon.spy();
                 const JobModel = {
-                    findOne: sinon.stub().resolves({name: 'I am the only one'}),
+                    findOne: sinon.stub().resolves(jobModelInstance),
                     add: sinon.stub().throws('should not be called')
                 };
 
@@ -404,7 +413,7 @@ describe('Job Manager', function () {
             it('does not add a job to the queue when it already exists', async function () {
                 const spy = sinon.spy();
                 const JobModel = {
-                    findOne: sinon.stub().resolves({name: 'I am the only one'}),
+                    findOne: sinon.stub().resolves(jobModelInstance),
                     add: sinon.stub().throws('should not be called')
                 };
 
@@ -463,7 +472,7 @@ describe('Job Manager', function () {
                     findOne: sinon.stub()
                         .onCall(0)
                         .resolves(null)
-                        .resolves({id: 'unique', name: 'failed-oneoff'}),
+                        .resolves(jobModelInstance),
                     add: sinon.stub().resolves({name: 'failed-oneoff'}),
                     edit: sinon.stub().resolves({name: 'failed-oneoff'})
                 };
