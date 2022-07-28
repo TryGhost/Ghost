@@ -10,6 +10,11 @@ module.exports = {
         filename: 'main.js',
         publicPath: '/'
     },
+    resolve: {
+        alias: {
+            'mobiledoc-kit': require.resolve('@tryghost/mobiledoc-kit-experimental')
+        }
+    },
     module: {
         rules: [
             {
