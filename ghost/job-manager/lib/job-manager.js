@@ -20,6 +20,13 @@ const worker = async (task, callback) => {
     }
 };
 
+const ALL_STATUSES = {
+    started: 'started',
+    finished: 'finished',
+    failed: 'failed',
+    queued: 'queued'
+};
+
 class JobManager {
     /**
      * @param {Object} options
@@ -56,7 +63,7 @@ class JobManager {
         });
 
         this.bree.on('worker created', (name) => {
-            this._jobMessageHandler({name, message: 'started'});
+            this._jobMessageHandler({name, message: ALL_STATUSES.started});
         });
 
         if (JobModel) {
@@ -84,12 +91,12 @@ class JobManager {
 
     async _jobMessageHandler({name, message}) {
         if (this._jobsRepository && name) {
-            if (message === 'started') {
+            if (message === ALL_STATUSES.started) {
                 const job = await this._jobsRepository.read(name);
 
                 if (job) {
                     await this._jobsRepository.update(job.id, {
-                        status: 'started',
+                        status: ALL_STATUSES.started,
                         started_at: new Date()
                     });
                 }
@@ -98,7 +105,7 @@ class JobManager {
 
                 if (job) {
                     await this._jobsRepository.update(job.id, {
-                        status: 'finished',
+                        status: ALL_STATUSES.finished,
                         finished_at: new Date()
                     });
                 }
@@ -112,7 +119,7 @@ class JobManager {
 
             if (job) {
                 await this._jobsRepository.update(job.id, {
-                    status: 'failed'
+                    status: ALL_STATUSES.failed
                 });
             }
         }
@@ -176,7 +183,7 @@ class JobManager {
                     //       distinguish between states when the job fails immediately
                     await this._jobMessageHandler({
                         name: name,
-                        message: 'started'
+                        message: ALL_STATUSES.started
                     });
 
                     if (typeof job === 'function') {
@@ -225,7 +232,7 @@ class JobManager {
 
         await this._jobsRepository.add({
             name,
-            status: 'queued'
+            status: ALL_STATUSES.queued
         });
 
         this.addJob({name, job, data, offloaded});
@@ -256,7 +263,7 @@ class JobManager {
             name
         });
 
-        if (!persistedJob || !['finished', 'failed'].includes(persistedJob.get('status'))) {
+        if (!persistedJob || ![ALL_STATUSES.finished, ALL_STATUSES.failed].includes(persistedJob.get('status'))) {
             // NOTE: can implement exponential backoff here if that's ever needed
             await setTimeoutPromise(500);
 
