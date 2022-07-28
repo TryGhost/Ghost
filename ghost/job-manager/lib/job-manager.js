@@ -246,9 +246,10 @@ class JobManager {
     }
 
     /**
-     *
+     * Awaits completion of the offloaded job.
+     * CAUTION: it might take a long time to resolve!
      * @param {String} name one-off job name
-     * @returns
+     * @returns resolves with a Job model at current state
      */
     async awaitCompletion(name) {
         const persistedJob = await this._jobsRepository.read({
@@ -262,7 +263,7 @@ class JobManager {
             return this.awaitCompletion(name);
         }
 
-        return !!persistedJob;
+        return persistedJob;
     }
 
     /**
