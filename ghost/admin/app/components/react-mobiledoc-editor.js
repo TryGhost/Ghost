@@ -1,4 +1,3 @@
-/* global GhostAdmin */
 import React, {Suspense} from 'react';
 
 class ErrorHandler extends React.Component {
@@ -33,6 +32,7 @@ const fetchKoenig = function () {
         // the removal of `https://` and it's manual addition to the import template string is
         // required to work around ember-auto-import complaining about an unknown dynamic import
         // during the build step
+        const GhostAdmin = window.Ember.Namespace.NAMESPACES.find(ns => ns.name === 'ghost-admin');
         const url = GhostAdmin.__container__.lookup('service:config').get('editor.url').replace('https://', '');
         await import(`https://${url}`);
 
