@@ -39,8 +39,10 @@ function getSiteData() {
         const appVersion = scriptTag.dataset.appVersion;
         const commentsEnabled = scriptTag.dataset.commentsEnabled;
         const stylesUrl = scriptTag.dataset.styles;
+        const title = scriptTag.dataset.title === 'null' ? null : scriptTag.dataset.title;
+        const showCount = scriptTag.dataset.count === 'true';
 
-        return {siteUrl, stylesUrl, apiKey, apiUrl, sentryDsn, postId, adminUrl, colorScheme, avatarSaturation, accentColor, appVersion, commentsEnabled};
+        return {siteUrl, stylesUrl, apiKey, apiUrl, sentryDsn, postId, adminUrl, colorScheme, avatarSaturation, accentColor, appVersion, commentsEnabled, title, showCount};
     }
     return {};
 }

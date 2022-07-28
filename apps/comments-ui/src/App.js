@@ -283,6 +283,8 @@ export default class App extends React.Component {
             comments,
             pagination,
             postId,
+            title: this.props.title,
+            count: this.props.count,
             colorScheme: this.props.colorScheme,
             avatarSaturation: this.props.avatarSaturation,
             accentColor: this.props.accentColor,
