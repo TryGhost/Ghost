@@ -36,6 +36,8 @@ describe('Job Manager', function () {
         const jobManager = new JobManager({});
 
         should.exist(jobManager.addJob);
+        should.exist(jobManager.hasExecutedSuccessfully);
+        should.exist(jobManager.awaitCompletion);
     });
 
     describe('Add a job', function () {
@@ -513,30 +515,40 @@ describe('Job Manager', function () {
 
     describe('Job execution progress', function () {
         it('checks if job has ever been executed', async function () {
-            const spy = sinon.spy();
             const JobModel = {
                 findOne: sinon.stub()
                     .withArgs('solovei')
                     .onCall(0)
                     .resolves(null)
                     .onCall(1)
-                    .resolves(null)
-                    .resolves({id: 'unique', name: 'solovei'}),
-                add: sinon.stub().resolves()
+                    .resolves({
+                        id: 'unique',
+                        get: (field) => {
+                            if (field === 'status') {
+                                return 'finished';
+                            }
+                        }
+                    })
+                    .onCall(2)
+                    .resolves({
+                        id: 'unique',
+                        get: (field) => {
+                            if (field === 'status') {
+                                return 'failed';
+                            }
+                        }
+                    })
             };
 
             const jobManager = new JobManager({JobModel});
-            let executed = await jobManager.hasExecuted('solovei');
+            let executed = await jobManager.hasExecutedSuccessfully('solovei');
             should.equal(executed, false);
 
-            await jobManager.addOneOffJob({
-                job: spy,
-                name: 'solovei'
-            });
-
-            assert.equal(JobModel.add.called, true);
-            executed = await jobManager.hasExecuted('solovei');
+            executed = await jobManager.hasExecutedSuccessfully('solovei');
             should.equal(executed, true);
+
+            executed = await jobManager.hasExecutedSuccessfully('solovei');
+            should.equal(executed, false);
         });
 
         it('can wait for job completion', async function () {
@@ -556,7 +568,6 @@ describe('Job Manager', function () {
                     .resolves(null)
                     .onCall(1)
                     .resolves(null)
-
                     .resolves({
                         id: 'unique',
                         get: () => status
