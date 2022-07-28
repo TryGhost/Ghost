@@ -294,7 +294,7 @@ const Form = (props) => {
             `}>
                 <div className="w-full relative">
                     <div className="pr-[1px] font-sans leading-normal dark:text-neutral-300">
-                        <div className={`transition-[padding] duration-150 delay-100 relative w-full pl-12 ${shouldFormBeReduced && 'pl-0'} ${isFormOpen && 'pt-[64px]'}`}>
+                        <div className={`transition-[padding] duration-150 delay-100 relative w-full pl-[52px] ${shouldFormBeReduced && 'pl-0'} ${isFormOpen && 'pt-[64px]'}`}>
                             <div
                                 className={`
                                 transition-all duration-150 delay-100
@@ -355,7 +355,7 @@ const Form = (props) => {
                                 leaveTo="opacity-0"
                             >
                                 <h4 className="text-[17px] font-sans font-bold tracking-tight dark:text-[rgba(255,255,255,0.85)]">{memberName ? memberName : 'Anonymous'}</h4>
-                                <div className="flex items-baseline font-sans font-semibold text-[14px] tracking-tight text-neutral-400 dark:text-[rgba(255,255,255,0.5)]">
+                                <div className="flex items-baseline font-sans text-[14px] tracking-tight text-neutral-400 dark:text-[rgba(255,255,255,0.5)]">
                                     {/* TODO: bio text field ready for wiring up
                                     {memberBio ?
                                         <div>{memberBio}</div> :
