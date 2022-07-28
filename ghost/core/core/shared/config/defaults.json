@@ -147,7 +147,7 @@
         "version": "0.2"
     },
     "editor": {
-        "url": ""
+        "url": "https://cdn.jsdelivr.net/npm/@tryghost/koenig-react/dist/umd/koenig-react.min.js"
     },
     "tenor": {
         "publicReadOnlyApiKey": null,
