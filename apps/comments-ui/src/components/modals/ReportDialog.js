@@ -20,7 +20,7 @@ const ReportDialog = (props) => {
 
     let buttonIcon = null;
     if (progress === 'sending') {
-        buttonIcon = <SpinnerIcon className="w-[20px] h-[20px] mr-2 fill-white" />;
+        buttonIcon = <SpinnerIcon className="w-[24px] h-[24px] mr-2 fill-white" />;
     } else if (progress === 'sent') {
         buttonIcon = <SuccessIcon className="w-[16px] h-[16px] mr-2" />;
     }

@@ -6,15 +6,24 @@ import {useEditor, EditorContent} from '@tiptap/react';
 import {getEditorConfig} from '../utils/editor';
 import {isMobile} from '../utils/helpers';
 import {formatRelativeTime} from '../utils/helpers';
+import {ReactComponent as SpinnerIcon} from '../images/icons/spinner.svg';
 
 const Form = (props) => {
     const {member, postId, dispatchAction, onAction, avatarSaturation} = useContext(AppContext);
     const [isFormOpen, setFormOpen] = useState(props.isReply || props.isEdit ? true : false);
     const formEl = useRef(null);
+    const [progress, setProgress] = useState('default');
 
     const {comment, commentsCount} = props;
     const memberName = (props.isEdit ? comment.member.name : member.name); 
     // const memberBio = false; // TODO: needed for bio to be wired up
+
+    let buttonIcon = null;
+    if (progress === 'sending') {
+        buttonIcon = <SpinnerIcon className="w-[24px] h-[24px] fill-white" />;
+    } else if (progress === 'sent') {
+        buttonIcon = null;
+    }
     
     let config;
     if (props.isReply) {
@@ -165,6 +174,8 @@ const Form = (props) => {
             return;
         }
 
+        setProgress('sending');
+
         if (props.isReply) {
             try {
                 // Send comment to server
@@ -176,9 +187,11 @@ const Form = (props) => {
                         html: editor.getHTML()
                     }
                 });
-    
+
                 // Clear message and blur on success
                 editor.chain().clearContent().blur().run();
+                setProgress('sent');
+
                 props.close();
             } catch (e) {
                 // eslint-disable-next-line no-console
@@ -193,7 +206,8 @@ const Form = (props) => {
                 },
                 parent: props.parent
             });
-            
+
+            setProgress('sent');
             props.close();
         } else {
             try {
@@ -207,6 +221,7 @@ const Form = (props) => {
                 // Clear message and blur on success
                 editor.chain().clearContent().blur().run();
                 setFormOpen(false);
+                setProgress('sent');
             } catch (e) {
                 // eslint-disable-next-line no-console
                 console.error(e);
@@ -258,6 +273,10 @@ const Form = (props) => {
         submitText = <><span className="hidden sm:inline">Add </span><span className="capitalize sm:normal-case">comment</span></>;
     }
 
+    if (progress === 'sending') {
+        submitText = null;
+    }
+
     const shouldFormBeReduced = (isMobile() && props.isReply) || (isMobile() && props.isEdit);
 
     return (
@@ -279,7 +298,7 @@ const Form = (props) => {
                             <div
                                 className={`
                                 transition-all duration-150 delay-100
-                                w-full px-2 py-4
+                                w-full px-3 py-4
                                 bg-transparent dark:bg-[rgba(255,255,255,0.08)]
                                 rounded-md border-none border border-slate-50 dark:border-none
                                 font-sans text-[16.5px] leading-normal dark:text-neutral-300 
@@ -296,7 +315,7 @@ const Form = (props) => {
                                 />
                             </div>
                             <div className="
-                                absolute right-2 bottom-2
+                                absolute right-[9px] bottom-[9px]
                                 flex space-x-4
                                 transition-[opacity] duration-150 
                             ">
@@ -304,6 +323,7 @@ const Form = (props) => {
                                     <button type="button" onClick={props.close} className="font-sans text-sm font-medium ml-2.5 text-neutral-500 dark:text-neutral-400">Cancel</button>}
                                 <button
                                     className={`
+                                        flex items-center justify-center w-32 h-[39px]
                                         transition-[opacity] duration-150
                                         bg-neutral-900 dark:bg-[rgba(255,255,255,0.9)]
                                         rounded-[6px] border
@@ -314,7 +334,8 @@ const Form = (props) => {
                                     type="button"
                                     onClick={submitForm}
                                 >
-                                    {submitText}
+                                    <span>{buttonIcon}</span>
+                                    {submitText && <span>{submitText}</span>}
                                 </button>
                             </div>
                         </div>
