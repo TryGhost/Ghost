@@ -245,7 +245,7 @@ describe('Job Manager', function () {
                 jobManager.bree.workers['will-send-msg'].postMessage('hello from Ghost!');
 
                 // Give time for worker (worker thread) <-> parent process (job manager) communication
-                await delay(1000);
+                await delay(100);
 
                 should(workerMessageHandlerSpy.called).be.true();
                 should(workerMessageHandlerSpy.args[0][0].name).equal('will-send-msg');
