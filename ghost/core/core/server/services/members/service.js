@@ -149,7 +149,7 @@ module.exports = {
         })();
 
         const membersMigrationJobName = 'members-migrations';
-        if (!(await jobsService.hasExecuted(membersMigrationJobName))) {
+        if (!(await jobsService.hasExecutedSuccessfully(membersMigrationJobName))) {
             jobsService.addOneOffJob({
                 name: membersMigrationJobName,
                 offloaded: false,
