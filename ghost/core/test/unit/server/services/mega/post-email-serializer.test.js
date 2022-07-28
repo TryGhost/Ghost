@@ -105,12 +105,12 @@ describe('Post Email Serializer', function () {
 
             let output = renderEmailForSegment(email, 'status:free');
             output.html.should.containEql(`<p>Free content</p>`);
-            output.html.should.containEql(`Subscribe to continue reading`);
+            output.html.should.containEql(`Subscribe to`);
             output.html.should.containEql(`https://site.com/blah/#/portal/signup`);
             output.html.should.not.containEql(`<p>Members content</p>`);
 
             output.plaintext.should.containEql(`Free content`);
-            output.plaintext.should.containEql(`Subscribe to continue reading`);
+            output.plaintext.should.containEql(`Subscribe to`);
             output.plaintext.should.containEql(`https://site.com/blah/#/portal/signup`);
             output.plaintext.should.not.containEql(`Members content`);
         });
@@ -146,12 +146,12 @@ describe('Post Email Serializer', function () {
 
             let output = renderEmailForSegment(email, 'status:free');
             output.html.should.containEql(`<p>Free content</p>`);
-            output.html.should.containEql(`Subscribe to continue reading`);
+            output.html.should.containEql(`Subscribe to`);
             output.html.should.containEql(`https://site.com/blah/#/portal/signup`);
             output.html.should.not.containEql(`<p>Members content</p>`);
 
             output.plaintext.should.containEql(`Free content`);
-            output.plaintext.should.containEql(`Subscribe to continue reading`);
+            output.plaintext.should.containEql(`Subscribe to`);
             output.plaintext.should.containEql(`https://site.com/blah/#/portal/signup`);
             output.plaintext.should.not.containEql(`Members content`);
         });
