@@ -239,14 +239,18 @@ class JobManager {
     }
 
     /**
-     * Checks if the one-off job has ever been successfully executed
+     * Checks if the one-off job has ever been executed successfully.
      * @param {String} name one-off job name
      */
-    async hasExecuted(name) {
-        // TODO: return false if the job has failed?
+    async hasExecutedSuccessfully(name) {
         if (this._jobsRepository) {
             const persistedJob = await this._jobsRepository.read(name);
-            return !!persistedJob;
+
+            if (!persistedJob) {
+                return false;
+            } else {
+                return (persistedJob.get('status') !== ALL_STATUSES.failed);
+            }
         } else {
             return false;
         }
