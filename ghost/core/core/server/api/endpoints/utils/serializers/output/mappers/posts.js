@@ -17,6 +17,8 @@ const postsMetaSchema = require('../../../../../../data/schema').tables.posts_me
 const getPostServiceInstance = require('../../../../../../services/posts/posts-service');
 const postsService = getPostServiceInstance();
 
+const commentsService = require('../../../../../../services/comments');
+
 module.exports = async (model, frame, options = {}) => {
     const {tiers: tiersData} = options || {};
     const extendedOptions = Object.assign(_.cloneDeep(frame.options), {
@@ -54,6 +56,15 @@ module.exports = async (model, frame, options = {}) => {
     if (utils.isContentAPI(frame)) {
         date.forPost(jsonModel);
         gating.forPost(jsonModel, frame);
+        if (jsonModel.access) {
+            if (commentsService?.api?.enabled !== 'off') {
+                jsonModel.comments = true;
+            } else {
+                jsonModel.comments = false;
+            }
+        } else {
+            jsonModel.comments = false;
+        }
     }
 
     // Transforms post/page metadata to flat structure
