@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "start": "yarn webpack serve --config webpack.config.dev.js",
-    "test": "eslint src --ext .js --cache && jest",
+    "test": "jest",
     "eject": "react-scripts eject",
     "lint": "eslint src --ext .js --cache",
     "posttest": "yarn lint",

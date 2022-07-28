@@ -41,7 +41,7 @@ module.exports = {
     plugins: [new UglifyJsPlugin()],
     devServer: {
         compress: true,
-        port: 1338,
+        port: 1337,
         headers: {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
