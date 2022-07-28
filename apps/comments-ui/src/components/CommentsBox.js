@@ -11,7 +11,7 @@ import Loading from './Loading';
 const CommentsBoxContent = (props) => {
     const [isEditing, setIsEditing] = useState(false);
 
-    const {pagination, member, comments, commentsEnabled, title, count} = useContext(AppContext);
+    const {pagination, member, comments, commentsEnabled, title, showCount} = useContext(AppContext);
     const commentsElements = comments.slice().reverse().map(comment => <Comment isEditing={isEditing} comment={comment} key={comment.id} updateIsEditing={setIsEditing} />);
 
     const commentsCount = pagination?.total || 0;
@@ -26,7 +26,7 @@ const CommentsBoxContent = (props) => {
                 <h2 className="font-bold text-[2.8rem] tracking-tight dark:text-[rgba(255,255,255,0.85)]">
                     {title !== null ? title : <><span className="hidden sm:inline">Member </span><span className="capitalize sm:normal-case">discussion</span></>}
                 </h2>
-                {count ? <div className="text-neutral-400 text-[1.6rem]">{commentsCount} comments</div> : null}
+                {showCount ? <div className="text-neutral-400 text-[1.6rem]">{commentsCount} comments</div> : null}
             </div>
             <Pagination />
             <div className={!pagination ? 'mt-4' : ''}>
