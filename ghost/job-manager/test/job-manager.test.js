@@ -392,6 +392,56 @@ describe('Job Manager', function () {
                 should(JobModel.edit.args[1][0].status).equal('failed');
                 should(JobModel.edit.args[1][1].id).equal('unique');
             });
+
+            it('adds job to the queue after failing', async function () {
+                const JobModel = {
+                    findOne: sinon.stub()
+                        .onCall(0)
+                        .resolves(null)
+                        .onCall(1)
+                        .resolves({id: 'unique'})
+                        .resolves({
+                            id: 'unique',
+                            get: (field) => {
+                                if (field === 'status') {
+                                    return 'failed';
+                                }
+                            }
+                        }),
+                    add: sinon.stub().resolves({}),
+                    edit: sinon.stub().resolves()
+                };
+
+                let job = function namedJob() {
+                    throw new Error('job error');
+                };
+                const spyHandler = sinon.spy();
+                const jobManager = new JobManager({errorHandler: spyHandler, JobModel});
+
+                await jobManager.addOneOffJob({
+                    job,
+                    name: 'failed-oneoff',
+                    offloaded: false
+                });
+
+                // give time to execute the job and fail
+                await delay(50);
+                should(JobModel.edit.args[1][0].status).equal('failed');
+
+                // simulate process restart and "fresh" slate to add the job
+                jobManager.removeJob('failed-oneoff');
+
+                await jobManager.addOneOffJob({
+                    job,
+                    name: 'failed-oneoff',
+                    offloaded: false
+                });
+
+                // give time to execute the job and fail AGAIN
+                await delay(50);
+                should(JobModel.edit.args[3][0].status).equal('started');
+                should(JobModel.edit.args[4][0].status).equal('failed');
+            });
         });
 
         describe('Offloaded jobs', function () {

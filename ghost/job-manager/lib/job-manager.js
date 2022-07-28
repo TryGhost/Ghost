@@ -206,7 +206,8 @@ class JobManager {
     }
 
     /**
-    * Adds a job that could ever be executed once.
+    * Adds a job that could ever be executed once. In case the job fails
+    * can be "added" again, effectively restarting the failed job.
     *
     * @param {Object} GhostJob - job options
     * @prop {Function | String} GhostJob.job - function or path to a module defining a job
@@ -224,17 +225,28 @@ class JobManager {
 
         const persistedJob = await this._jobsRepository.read(name);
 
-        if (persistedJob) {
+        if (persistedJob && (persistedJob.get('status') !== ALL_STATUSES.failed)) {
             throw new IncorrectUsageError({
                 message: `A "${name}" one off job has already been executed.`
             });
         }
 
-        await this._jobsRepository.add({
-            name,
-            status: ALL_STATUSES.queued
-        });
+        if (persistedJob && (persistedJob.get('status') === ALL_STATUSES.failed)) {
+            await this._jobsRepository.update(persistedJob.id, {
+                status: ALL_STATUSES.queued
+            });
+        } else {
+            await this._jobsRepository.add({
+                name,
+                status: ALL_STATUSES.queued
+            });
+        }
 
+        // NOTE: there's a assumption the job with the same name failed while
+        //       running under different instance of job manager (bree).
+        //       For example, it failed and the process was restarted.
+        //       If we want to be able to restart within the same instance,
+        //       we'd need to handle job restart/removal in Bree first
         this.addJob({name, job, data, offloaded});
     }
 
