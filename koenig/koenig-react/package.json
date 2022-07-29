@@ -39,7 +39,7 @@
     "postcss": "^8.4.14",
     "should": "13.2.3",
     "sinon": "14.0.0",
-    "tailwindcss": "^3.1.6",
+    "tailwindcss": "3.1.7",
     "to-string-loader": "^1.2.0",
     "uglifyjs-webpack-plugin": "^2.2.0",
     "webpack-cli": "^4.10.0"
