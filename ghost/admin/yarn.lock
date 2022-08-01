@@ -1469,7 +1469,7 @@
     resolve "^1.8.1"
     semver "^7.3.2"
 
-"@embroider/macros@1.8.3", "@embroider/macros@^0.50.0 || ^1.0.0", "@embroider/macros@^1.0.0", "@embroider/macros@^1.6.0":
+"@embroider/macros@1.8.3", "@embroider/macros@^0.50.0 || ^1.0.0", "@embroider/macros@^1.0.0", "@embroider/macros@^1.6.0", "@embroider/macros@^1.8.0":
   version "1.8.3"
   resolved "https://registry.yarnpkg.com/@embroider/macros/-/macros-1.8.3.tgz#2f0961ab8871f6ad819630208031d705b357757e"
   integrity sha512-gnIOfTL/pUkoD6oI7JyWOqXlVIUgZM+CnbH10/YNtZr2K0hij9eZQMdgjOZZVgN0rKOFw9dIREqc1ygrJHRYQA==
@@ -7574,11 +7574,12 @@ ember-text-measurer@^0.6.0:
     ember-cli-babel "^7.19.0"
     ember-cli-htmlbars "^4.3.1"
 
-ember-tooltips@3.5.2:
-  version "3.5.2"
-  resolved "https://registry.yarnpkg.com/ember-tooltips/-/ember-tooltips-3.5.2.tgz#4dbc57735ac1ccdd05f36249cafebe7b3d30eb58"
-  integrity sha512-sSU8EJ5xh4bpHB/kFShnUGXYhtFeUPAXlXRpCs/tWn26a+z8zudsAZVtKMiOGlYe5Eeyvoi5ErXraRU32lBoxg==
+ember-tooltips@3.6.0:
+  version "3.6.0"
+  resolved "https://registry.yarnpkg.com/ember-tooltips/-/ember-tooltips-3.6.0.tgz#15223e6fa50dec2fcf8dac16be9b12b46f395436"
+  integrity sha512-DsqF6vvL3DKWSUHJKuMJ8KSxbE/T+eZAE2xtzAuHRqjl1AYIOkugGBVynGYYP8+2/10NMwk05LYbT1dirAcEBQ==
   dependencies:
+    "@embroider/macros" "^1.8.0"
     broccoli-file-creator "^2.1.1"
     broccoli-merge-trees "^4.2.0"
     ember-auto-import "^1.11.3"
