@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import AppContext from '../AppContext';
 import NotSignedInBox from './NotSignedInBox';
 import Form from './Form';
@@ -7,6 +7,7 @@ import Pagination from './Pagination';
 import NotPaidBox from './NotPaidBox';
 // import Empty from './Empty';
 import Loading from './Loading';
+import {ROOT_DIV_ID} from '../utils/constants';
 
 const CommentsBoxContent = (props) => {
     const [isEditing, setIsEditing] = useState(false);
@@ -18,6 +19,24 @@ const CommentsBoxContent = (props) => {
 
     const paidOnly = commentsEnabled === 'paid';
     const isPaidMember = member && !!member.paid;
+
+    useEffect(() => {
+        const elem = document.getElementById(ROOT_DIV_ID);
+        
+        // Check scroll position
+        if (elem && window.location.hash === `#ghost-comments`) {
+            // Only scroll if the user didn't scroll by the time we loaded the comments
+            // We could remove this, but if the network connection is slow, we risk having a page jump when the user already started scrolling
+            if (window.scrollY === 0) {                
+                // This is a bit hacky, but one animation frame is not enough to wait for the iframe height to have changed and the DOM to be updated correctly before scrolling
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        elem.scrollIntoView();
+                    });
+                });
+            }
+        }
+    }, []);
 
     return (
         <>
@@ -67,7 +86,7 @@ const CommentsBox = (props) => {
         } else if (colorScheme === 'dark') {
             return true;
         } else {
-            const containerColor = getComputedStyle(document.querySelector('#ghost-comments-root').parentNode).getPropertyValue('color');
+            const containerColor = getComputedStyle(document.getElementById(ROOT_DIV_ID).parentNode).getPropertyValue('color');
 
             const colorsOnly = containerColor.substring(containerColor.indexOf('(') + 1, containerColor.lastIndexOf(')')).split(/,\s*/);
             const red = colorsOnly[0];
@@ -85,6 +104,7 @@ const CommentsBox = (props) => {
         paddingTop: 8,
         paddingBottom: 64
     };
+
     return (
         <section className={'ghost-display ' + containerClass} style={style}>
             {props.done ? <>
