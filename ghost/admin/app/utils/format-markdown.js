@@ -2,6 +2,8 @@ import markdownit from 'markdown-it';
 import markdownitFootnote from 'markdown-it-footnote';
 import markdownitLazyHeaders from 'markdown-it-lazy-headers';
 import markdownitMark from 'markdown-it-mark';
+import markdownitSubscript from 'markdown-it-sub';
+import markdownitSuperscript from 'markdown-it-sup';
 import {sanitizeHtml} from 'koenig-editor/helpers/sanitize-html';
 
 let slugify = function slugify(inputString, usedHeaders) {
@@ -47,7 +49,9 @@ let md = markdownit({
     .use(markdownitFootnote)
     .use(markdownitLazyHeaders)
     .use(markdownitMark)
-    .use(markdownitNamedHeaders);
+    .use(markdownitNamedHeaders)
+    .use(markdownitSubscript)
+    .use(markdownitSuperscript);
 
 // configure linkify-it
 md.linkify.set({
