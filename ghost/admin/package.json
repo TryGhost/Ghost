@@ -41,7 +41,7 @@
     "@tryghost/color-utils": "0.1.19",
     "@tryghost/ember-promise-modals": "2.0.1",
     "@tryghost/helpers": "1.1.71",
-    "@tryghost/kg-clean-basic-html": "2.2.10",
+    "@tryghost/kg-clean-basic-html": "2.2.11",
     "@tryghost/kg-parser-plugins": "2.11.7",
     "@tryghost/limit-service": "1.1.3",
     "@tryghost/members-csv": "1.2.16",
