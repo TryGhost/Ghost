@@ -119,7 +119,7 @@
     "ember-template-lint": "4.1.0",
     "ember-test-selectors": "6.0.0",
     "ember-tooltips": "3.5.2",
-    "ember-truth-helpers": "3.0.0",
+    "ember-truth-helpers": "3.1.1",
     "emberx-file-input": "1.2.1",
     "eslint": "8.9.0",
     "eslint-plugin-babel": "^5.3.1",
