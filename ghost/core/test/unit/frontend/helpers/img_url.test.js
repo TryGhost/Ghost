@@ -266,6 +266,23 @@ describe('{{img_url}} helper', function () {
             configUtils.restore();
         });
 
+        it('works without size option', function () {
+            const rendered = img_url('https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=2000', {
+                hash: {},
+                data: {
+                    config: {
+                        image_sizes: {
+                            medium: {
+                                width: 400
+                            }
+                        }
+                    }
+                }
+            });
+            should.exist(rendered);
+            rendered.should.equal('https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=2000');
+        });
+
         it('can change the output size', function () {
             const rendered = img_url('https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=2000', {
                 hash: {
@@ -283,6 +300,26 @@ describe('{{img_url}} helper', function () {
             });
             should.exist(rendered);
             rendered.should.equal('https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=400');
+        });
+
+        it('ignores invalid urls', function () {
+            const invalid = ':https://images.unsplash.com/test';
+            const rendered = img_url(invalid, {
+                hash: {
+                    size: 'medium'
+                },
+                data: {
+                    config: {
+                        image_sizes: {
+                            medium: {
+                                width: 400
+                            }
+                        }
+                    }
+                }
+            });
+            should.exist(rendered);
+            rendered.should.equal(invalid);
         });
 
         it('ignores invalid sizes', function () {

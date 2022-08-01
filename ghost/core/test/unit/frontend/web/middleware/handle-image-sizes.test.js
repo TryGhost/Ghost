@@ -74,7 +74,8 @@ describe('handleImageSizes middleware', function () {
                         return {
                             l: {
                                 width: 1000
-                            }
+                            },
+                            missing: {}
                         };
                     }
                 }
@@ -93,6 +94,52 @@ describe('handleImageSizes middleware', function () {
             const fakeReq = {
                 url: '/size/w1000/format/test/image.jpg',
                 originalUrl: '/blog/content/images/size/w1000/format/test/image.jpg'
+            };
+            const fakeRes = {
+                redirect(url) {
+                    try {
+                        url.should.equal('/blog/content/images/image.jpg');
+                    } catch (e) {
+                        return done(e);
+                    }                    
+                    done();
+                }
+            };
+            handleImageSizes(fakeReq, fakeRes, function next(err) {
+                if (err) {
+                    return done(err);
+                }
+                done(new Error('Should not have called next'));
+            });
+        });
+
+        it('redirects for invalid sizes', function (done) {
+            const fakeReq = {
+                url: '/size/w123/image.jpg',
+                originalUrl: '/blog/content/images/size/w123/image.jpg'
+            };
+            const fakeRes = {
+                redirect(url) {
+                    try {
+                        url.should.equal('/blog/content/images/image.jpg');
+                    } catch (e) {
+                        return done(e);
+                    }                    
+                    done();
+                }
+            };
+            handleImageSizes(fakeReq, fakeRes, function next(err) {
+                if (err) {
+                    return done(err);
+                }
+                done(new Error('Should not have called next'));
+            });
+        });
+
+        it('redirects for invalid configured size', function (done) {
+            const fakeReq = {
+                url: '/size/missing/image.jpg',
+                originalUrl: '/blog/content/images/size/missing/image.jpg'
             };
             const fakeRes = {
                 redirect(url) {
@@ -408,6 +455,40 @@ describe('handleImageSizes middleware', function () {
                 try {
                     resizeFromBufferStub.calledOnceWithExactly(buffer, {withoutEnlargement: true, width: 1000, format: 'webp'}).should.be.true();
                     typeStub.calledOnceWithExactly('webp').should.be.true();
+                } catch (e) {
+                    return done(e);
+                }
+                done();
+            });
+        });
+
+        it('can format PNG to AVIF', function (done) {
+            dummyStorage.exists = async function (path) {
+                return false;
+            };
+            dummyStorage.read = async function (path) {
+                return buffer;
+            };
+
+            const fakeReq = {
+                url: '/size/w1000/format/avif/blank.png',
+                originalUrl: '/size/w1000/format/avif/blank.png'
+            };
+            const fakeRes = {
+                redirect(url) {
+                    done(new Error('Should not have called redirect'));
+                },
+                type: function () {}
+            };
+            const typeStub = sinon.spy(fakeRes, 'type');
+
+            handleImageSizes(fakeReq, fakeRes, function next(err) {
+                if (err) {
+                    return done(err);
+                }
+                try {
+                    resizeFromBufferStub.calledOnceWithExactly(buffer, {withoutEnlargement: true, width: 1000, format: 'avif'}).should.be.true();
+                    typeStub.calledOnceWithExactly('image/avif').should.be.true();
                 } catch (e) {
                     return done(e);
                 }
