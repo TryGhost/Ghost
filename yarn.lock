@@ -1639,11 +1639,6 @@
     "@tryghost/root-utils" "^0.3.15"
     nconf "^0.12.0"
 
-"@tryghost/database-info@0.3.7":
-  version "0.3.7"
-  resolved "https://registry.yarnpkg.com/@tryghost/database-info/-/database-info-0.3.7.tgz#370c4d43bdd349fb423ebd95c56ffda0dbc8da70"
-  integrity sha512-+kTVHmLkeBzvS3HJ4a+T8ejhgAN60JIs6cHg++QWyoiaPRKBDKf7gO0VsTI/A8erlhygURThtTZ/K7ffY10Oyw==
-
 "@tryghost/database-info@0.3.8":
   version "0.3.8"
   resolved "https://registry.yarnpkg.com/@tryghost/database-info/-/database-info-0.3.8.tgz#77af1a8a930986d3b3cef14e4dd5928be4c4bdcc"
@@ -7539,12 +7534,12 @@ kind-of@^6.0.0, kind-of@^6.0.2:
   resolved "https://registry.yarnpkg.com/kind-of/-/kind-of-6.0.3.tgz#07c05034a6c349fa06e24fa35aa76db4580ce4dd"
   integrity sha512-dcS1ul+9tmeD95T+x28/ehLgd9mENa3LsvDTtzm3vyBEO7RPptvAD+t44WVXaUjTBRcrpFeFlC8WCruUR456hw==
 
-knex-migrator@5.0.2:
-  version "5.0.2"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-5.0.2.tgz#e5d88ac3595e7d2dd884dc0ec595daa7f598b2e1"
-  integrity sha512-VYdX+G+5GSU91Hcpvpmg1vzsethUP4cC7v1QfdfAmuziyydAV2IJHN1kzdIxtYyYs78sQsFDQYhqGRAyn67LDw==
+knex-migrator@5.0.3:
+  version "5.0.3"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-5.0.3.tgz#c3f8f3a4f1fe59adbc68e5bbd9f1931297d75bb9"
+  integrity sha512-p0ffo+5MBftGa+FKVYL6nVK/fznMXchf6gTaM+lwT4kJtdZ0N2iUwPQEIXo/LPlfQHA6waomivGmnGh2Ef+h1g==
   dependencies:
-    "@tryghost/database-info" "0.3.7"
+    "@tryghost/database-info" "0.3.8"
     "@tryghost/errors" "1.2.14"
     "@tryghost/logging" "2.2.3"
     bluebird "3.7.2"
@@ -7558,7 +7553,7 @@ knex-migrator@5.0.2:
     nconf "0.12.0"
     resolve "1.22.1"
   optionalDependencies:
-    sqlite3 "5.0.10"
+    sqlite3 "5.0.11"
 
 knex@2.2.0:
   version "2.2.0"
@@ -11021,17 +11016,6 @@ sprintf-js@~1.0.2:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/sprintf-js/-/sprintf-js-1.0.3.tgz#04e6926f662895354f3dd015203633b857297e2c"
   integrity sha512-D9cPgkvLlV3t3IzL0D0YLvGA9Ahk4PcvVwUbN0dSGr1aP0Nrt4AEnTUbuGvquEC0mA64Gqt1fzirlRs5ibXx8g==
-
-sqlite3@5.0.10:
-  version "5.0.10"
-  resolved "https://registry.yarnpkg.com/sqlite3/-/sqlite3-5.0.10.tgz#64e1efb1b5a1ae343d2cc64ce9e582e5f5db24ba"
-  integrity sha512-xG4XPp7+b/lIlb/acs4XzBmmahI1Qq3Yhy+jZnZJivwB6DXpoOpGR6QinRbsQkHJIvMZyUsJDXouSva/JXcWFA==
-  dependencies:
-    "@mapbox/node-pre-gyp" "^1.0.0"
-    node-addon-api "^4.2.0"
-    tar "^6.1.11"
-  optionalDependencies:
-    node-gyp "8.x"
 
 sqlite3@5.0.11:
   version "5.0.11"
