@@ -200,6 +200,24 @@ describe('{{img_url}} helper', function () {
             logWarnStub.called.should.be.false();
         });
 
+        it('ignores misconfigured sizes', function () {
+            const rendered = img_url('/content/images/author-image-relative-url.png', {
+                hash: {
+                    size: 'medium'
+                }, 
+                data: {
+                    config: {
+                        image_sizes: {
+                            medium: {typo: 600}
+                        }
+                    }
+                }
+            });
+            should.exist(rendered);
+            rendered.should.equal('/content/images/author-image-relative-url.png');
+            logWarnStub.called.should.be.false();
+        });
+
         it('ignores format if size is missing', function () {
             const rendered = img_url('/content/images/author-image-relative-url.png', {
                 hash: {
@@ -283,7 +301,7 @@ describe('{{img_url}} helper', function () {
             rendered.should.equal('https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=2000');
         });
 
-        it('can change the output size', function () {
+        it('can change the output width', function () {
             const rendered = img_url('https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=2000', {
                 hash: {
                     size: 'medium'
@@ -300,6 +318,44 @@ describe('{{img_url}} helper', function () {
             });
             should.exist(rendered);
             rendered.should.equal('https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&w=400');
+        });
+
+        it('can change the output height', function () {
+            const rendered = img_url('https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80', {
+                hash: {
+                    size: 'medium'
+                },
+                data: {
+                    config: {
+                        image_sizes: {
+                            medium: {
+                                height: 400
+                            }
+                        }
+                    }
+                }
+            });
+            should.exist(rendered);
+            rendered.should.equal('https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80&h=400');
+        });
+
+        it('ignores invalid image size configurations', function () {
+            const rendered = img_url('https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80', {
+                hash: {
+                    size: 'medium'
+                },
+                data: {
+                    config: {
+                        image_sizes: {
+                            medium: {
+                                typo: 400
+                            }
+                        }
+                    }
+                }
+            });
+            should.exist(rendered);
+            rendered.should.equal('https://images.unsplash.com/photo-1657816793628-191deb91e20f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8YWxsfDJ8fHx8fHwyfHwxNjU3ODkzNjU5&ixlib=rb-1.2.1&q=80');
         });
 
         it('ignores invalid urls', function () {

@@ -58,11 +58,6 @@ module.exports = function (req, res, next) {
     const themeImageSizes = activeTheme.get().config('image_sizes');
     const imageSizes = _.merge({}, themeImageSizes, internalImageSizes, contentImageSizes);
 
-    // CASE: no image_sizes config (NOTE - unlikely to be reachable now we have content sizes)
-    if (!imageSizes) {
-        return redirectToOriginal();
-    }
-
     // build a new object with keys that match the strings used in size paths like "w640h480"
     const imageDimensions = {};
     Object.keys(imageSizes).forEach((size) => {
@@ -106,14 +101,14 @@ module.exports = function (req, res, next) {
         return redirectToOriginal();
     }
 
+    // exit early if sharp isn't installed to avoid extra file reads
+    if (!imageTransform.canTransformFiles()) {
+        return redirectToOriginal();
+    }
+
     storageInstance.exists(req.url).then((exists) => {
         if (exists) {
             return;
-        }
-
-        // exit early if sharp isn't installed to avoid extra file reads
-        if (!imageTransform.canTransformFiles()) {
-            return redirectToOriginal();
         }
 
         const {dir, name, ext} = path.parse(imagePath);
