@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './App';
-const ROOT_DIV_ID = 'ghost-comments-root';
+import {ROOT_DIV_ID} from './utils/constants';
 
 function addRootDiv() {
     const scriptTag = document.querySelector('script[data-ghost-comments]');
