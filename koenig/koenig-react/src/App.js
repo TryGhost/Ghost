@@ -4,7 +4,6 @@ import Koenig from './components/Koenig';
 import useResizeObserver from './effects/use-resize-observer';
 import styles from './index.css';
 import './frame-styles.css';
-
 const intialContent = `<!DOCTYPE html><html><style>${styles}</style><head></head><body><div></div></body></html>`;
 
 const EditorResizeObserver = ({children, ...props}) => {
@@ -28,7 +27,7 @@ const KoenigEditor = ({...props}) => {
             initialContent={intialContent}
             className="koenig-react-frame"
             ref={iframeRef}
-        >
+        >   
             <EditorResizeObserver onResize={handleResize}>
                 <Koenig
                     mobiledoc={props.mobiledoc}
@@ -36,6 +35,7 @@ const KoenigEditor = ({...props}) => {
                     keyCommands={props.keyCommands}
                     didCreateEditor={props.didCreateEditor}
                     onChange={props.onChange}
+                    selectedRange={props.selectedRange}
                 />
             </EditorResizeObserver>
         </Frame>

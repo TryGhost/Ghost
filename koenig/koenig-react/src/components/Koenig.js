@@ -1,8 +1,9 @@
 import * as React from 'react';
-import {Editor, Container, Toolbar} from 'react-mobiledoc-editor';
+import {Container, Toolbar} from 'react-mobiledoc-editor';
 import DEFAULT_ATOMS from '../atoms';
 import DEFAULT_KEY_COMMANDS from '../key-commands';
 import DEFAULT_TEXT_EXPANSIONS from '../text-expansions';
+import Editor from './Editor';
 
 const Koenig = ({
     mobiledoc,
@@ -10,8 +11,11 @@ const Koenig = ({
     keyCommands = DEFAULT_KEY_COMMANDS,
     textExpansions = DEFAULT_TEXT_EXPANSIONS,
     didCreateEditor,
-    onChange
+    onChange,
+    selectedRange
 }) => {
+    const [range, setRange] = React.useState(selectedRange); //eslint-disable-line
+    
     function _didCreateEditor(editor) {
         if (keyCommands?.length) {
             keyCommands.forEach((command) => {
@@ -41,9 +45,10 @@ const Koenig = ({
             atoms={atoms}
             onChange={onChange}
             didCreateEditor={_didCreateEditor}
-        >
+        >   
             <Toolbar className="flex" />
-            <Editor className="prose"/>
+            <Editor selectedRange={selectedRange} setRange={setRange} />
+            
         </Container>
     );
 };
