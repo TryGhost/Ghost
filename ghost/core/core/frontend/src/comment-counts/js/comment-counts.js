@@ -27,8 +27,23 @@
         for (const [id, count] of Object.entries(countsMap)) {
             const countElems = document.querySelectorAll(`[data-ghost-comment-count="${id}"]`);
             countElems.forEach((e) => {
-                e.innerHTML = e.innerHTML.replace('#', count);
-                e.style.display = '';
+                let text = e.dataset.ghostCommentCountEmpty;
+                if (count === 1) {
+                    if (e.dataset.ghostCommentCountSingular) {
+                        text = `${count} ${e.dataset.ghostCommentCountSingular}`;
+                    } else {
+                        text = count;
+                    }
+                }
+                if (count > 1) {
+                    if (e.dataset.ghostCommentCountPlural) {
+                        text = `${count} ${e.dataset.ghostCommentCountPlural}`;
+                    } else {
+                        text = count;
+                    }
+                }
+                e.insertAdjacentText('afterend', text);
+                e.remove();
             });
         }
     };
