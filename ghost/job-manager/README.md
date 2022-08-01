@@ -1,6 +1,6 @@
 # Job Manager
 
-A manager for jobs (aka tasks) that have to be performed asynchronously, optionally recurring, scheduled or one-off in their nature. The job queue is manage in memory without additional dependencies.
+A manager for jobs (aka tasks) that have to be performed asynchronously, optionally recurring, scheduled or one-off in their nature. The job queue is managed in memory. One-off jobs are persisted in a storage through "JobModel" passed in the constructor.
 
 ## Usage
 
@@ -51,6 +51,35 @@ jobManager.addJob({
     job: './path/to/jobs/check-emails.js',
     name: 'email-checker-now'
 });
+
+// register a one-off job to be executed immediately within current event loop
+jobsService.addOneOffJob({
+    name: 'members-migrations',
+    offloaded: false,
+    job: stripeService.migrations.execute.bind(stripeService.migrations)
+});
+
+// register a one-off job to be executed immediately outside of current even loop
+jobsService.addOneOffJob({
+    name: 'generate-backup-2022-09-15',
+    job: './path/to/jobs/backup.js',
+});
+
+// optionally await completion of the one-off job in case 
+// there are state changes expected to execute the rest of the process
+await jobsService.awaitCompletion('members-migrations');
+
+// check if previously registered one-off job has been executed 
+// successfully - it exists and doesn't have a "failed" state.
+const backupSuccessful = await jobsService.hasExecutedSuccessfully('generate-backup-2022-09-15');
+
+if (!backupSuccessful) {
+    // One-off jobs with "failed" state can be rescheduled
+    jobsService.addOneOffJob({
+        name: 'generate-backup-2022-09-15',
+        job: './path/to/jobs/backup.js',
+    });
+}
 ```
 
 For more examples of JobManager initialization check [test/examples](https://github.com/TryGhost/Utils/tree/master/packages/job-manager/test/examples) directory.
@@ -60,6 +89,7 @@ For more examples of JobManager initialization check [test/examples](https://git
 There are two types of jobs distinguished based on purpose and environment they run in:
 - **"inline"** - job which is run in the same even loop as the caller. Should be used in situations when there is no even loop blocking operations and no need to manage memory leaks in sandboxed way. Sometimes
 - **"offloaded"** - job which is executed in separate to caller's event loop. For Node >v12 clients it spawns a [Worker thread](https://nodejs.org/dist/latest-v12.x/docs/api/worker_threads.html#worker_threads_new_worker_filename_options), for older Node runtimes it is executed in separate process through [child_process](https://nodejs.org/docs/latest-v10.x/api/child_process.html). Comparing to **inline** jobs, **offloaded** jobs are safer to execute as they are run on a dedicated thread (or process) acting like a sandbox. These jobs also give better utilization of multi-core CPUs. This type of jobs is useful when there are heavy computations needed to be done blocking the event loop or need a sandboxed environment to run in safely. Example jobs would be: statistical information processing, memory intensive computations (e.g. recursive algorithms), processing that requires blocking I/O operations etc.
+- **"one-off"** - job that would only ever run once. It is persisted in storage keeping the record of the job state between process restarts. One-off jobs can be of both "inline" and "offloaded" types. They do not support scheduled recurring execution as that's against the nature of being *one-off*. Apart from being persisted one-off jobs can be rescheduled for execution in case they have a "failed" execution state.
 
 Job manager's instance registers jobs through `addJob` method. The `offloaded` parameter controls if the job is **inline** (executed in the same event loop) or is **offloaded** (executed in worker thread/separate process). By default `offloaded` is set to `true` - creates an "offloaded" job.
 
