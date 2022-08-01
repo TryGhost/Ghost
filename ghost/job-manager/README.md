@@ -8,13 +8,7 @@ Below is a sample code to wire up job manger and initialize jobs:
 ```js
 const JobManager = require('@tryghost/job-manager');
 
-const logging = {
-    info: console.log,
-    warn: console.log,
-    error: console.error
-};
-
-const jobManager = new JobManager(logging);
+const jobManager = new JobManager({JobModel: models.Job});
 
 // register a job "function" with queued execution in current event loop
 jobManager.addJob({
@@ -46,7 +40,7 @@ jobManager.addJob({
     name: 'email-checker-cron'
 });
 
-// register a job to un immediately running outside of current even loop
+// register a job to run immediately running outside of current even loop
 jobManager.addJob({
     job: './path/to/jobs/check-emails.js',
     name: 'email-checker-now'
@@ -91,11 +85,11 @@ There are two types of jobs distinguished based on purpose and environment they 
 - **"offloaded"** - job which is executed in separate to caller's event loop. For Node >v12 clients it spawns a [Worker thread](https://nodejs.org/dist/latest-v12.x/docs/api/worker_threads.html#worker_threads_new_worker_filename_options), for older Node runtimes it is executed in separate process through [child_process](https://nodejs.org/docs/latest-v10.x/api/child_process.html). Comparing to **inline** jobs, **offloaded** jobs are safer to execute as they are run on a dedicated thread (or process) acting like a sandbox. These jobs also give better utilization of multi-core CPUs. This type of jobs is useful when there are heavy computations needed to be done blocking the event loop or need a sandboxed environment to run in safely. Example jobs would be: statistical information processing, memory intensive computations (e.g. recursive algorithms), processing that requires blocking I/O operations etc.
 - **"one-off"** - job that would only ever run once. It is persisted in storage keeping the record of the job state between process restarts. One-off jobs can be of both "inline" and "offloaded" types. They do not support scheduled recurring execution as that's against the nature of being *one-off*. Apart from being persisted one-off jobs can be rescheduled for execution in case they have a "failed" execution state.
 
-Job manager's instance registers jobs through `addJob` method. The `offloaded` parameter controls if the job is **inline** (executed in the same event loop) or is **offloaded** (executed in worker thread/separate process). By default `offloaded` is set to `true` - creates an "offloaded" job.
+Job manager's instance registers jobs through `addJob` and `addOneOffJob` methods. The `offloaded` parameter controls if the job is **inline** (executed in the same event loop) or is **offloaded** (executed in worker thread/separate process). By default `offloaded` is set to `true` - creates an "offloaded" job.
 
-When `offloaded: false` parameter is passed into `addJob` method, job manager registers an **inline** function for execution in FIFO queue. The job should not be computationally intensive and should have small amount of asynchronous operations. The developer should always account that the function will be executed on the **same event loop, thread and process as caller's process**. **inline** jobs should be [JavaScript functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function) or a path to a module that exports a function as default. Note, at the moment it's not possible to defined scheduled or recurring **inline** job.
+When `offloaded: false` parameter is passed to job registering methods, job manager registers an **inline** function for execution in FIFO queue. This type of job should not be computationally intensive and should have small amount of asynchronous operations. The developer should always account that the function will be executed on the **same event loop, thread and process as caller's process**. **inline** jobs should be [JavaScript functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function) or a path to a module that exports a function as default. Note, at the moment it's not possible to defined scheduled or recurring **inline** job.
 
-When skipped or `offloaded: true` parameter is passed into `addJob` method, job manager registers execution of an **offloaded** job. The job can be scheduled to run immediately, in the future, or in recurring manner (through `at` parameter). Jobs created this way are managed by [bree](https://github.com/breejs/bree) job scheduling library. For examples of job scripts check out [this section](https://github.com/breejs/bree#nodejs-email-queue-job-scheduling-example) of bree's documentation, test [job examples](https://github.com/TryGhost/Utils/tree/master/packages/job-manager/test/jobs).
+When skipped or `offloaded: true` parameter is passed into job registering methods, job manager registers execution of an **offloaded** job. The job can be scheduled to run immediately, in the future, or in recurring manner (through `at` parameter). Jobs created this way are managed by [bree](https://github.com/breejs/bree) job scheduling library. For examples of job scripts check out [this section](https://github.com/breejs/bree#nodejs-email-queue-job-scheduling-example) of bree's documentation, test [job examples](https://github.com/TryGhost/Utils/tree/master/packages/job-manager/test/jobs).
 
 
 ### Offloaded jobs rules of thumb
