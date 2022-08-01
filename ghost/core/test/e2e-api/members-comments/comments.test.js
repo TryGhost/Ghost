@@ -598,5 +598,22 @@ describe('Comments API', function () {
 
             assert(comment.replies.length === 0, 'The parent comment should not have changed');
         });
+
+        it('Can fetch counts', async function () {
+            await membersAgent
+                .post(`api/comments/counts`)
+                .body({
+                    ids: [
+                        postId = fixtureManager.get('posts', 0).id,
+                        postId = fixtureManager.get('posts', 1).id,
+                        postId = fixtureManager.get('posts', 2).id
+                    ]
+                })
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .matchBodySnapshot();
+        });
     });
 });
