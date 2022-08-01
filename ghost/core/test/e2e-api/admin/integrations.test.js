@@ -23,7 +23,7 @@ describe('Integrations API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        should.equal(res.body.integrations.length, 2);
+        should.equal(res.body.integrations.length, 3);
 
         // there is no enforced order for integrations which makes order different on SQLite and MySQL
         const zapierIntegration = _.find(res.body.integrations, {name: 'Zapier'}); // from migrations

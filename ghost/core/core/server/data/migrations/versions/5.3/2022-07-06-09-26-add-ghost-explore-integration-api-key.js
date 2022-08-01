@@ -10,7 +10,6 @@ module.exports = createTransactionalMigration(
 
         const integration = await knex('integrations').where({
             slug: 'ghost-explore',
-            type: 'internal',
             name: 'Ghost Explore'
         }).first();
 
