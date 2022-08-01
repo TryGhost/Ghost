@@ -495,18 +495,18 @@ describe('Job Manager', function () {
 
                 const jobManager = new JobManager({JobModel});
 
-                jobManager.addOneOffJob({
+                await jobManager.addOneOffJob({
                     job: path.resolve(__dirname, './jobs/message.js'),
                     name: 'successful-oneoff'
                 });
 
                 // allow job to get picked up and executed
-                await delay(100);
+                await delay(50);
 
                 jobManager.bree.workers['successful-oneoff'].postMessage('be done!');
 
                 // allow the message to be passed around
-                await delay(100);
+                await delay(50);
 
                 // tracks the job start
                 should(JobModel.edit.args[0][0].status).equal('started');
@@ -519,7 +519,7 @@ describe('Job Manager', function () {
                 should(JobModel.edit.args[1][1].id).equal('unique');
             });
 
-            it('sets a failed state on a job', async function () {
+            it('handles a failed job', async function () {
                 const JobModel = {
                     findOne: sinon.stub()
                         .onCall(0)
@@ -535,7 +535,7 @@ describe('Job Manager', function () {
                 const spyHandler = sinon.spy();
                 const jobManager = new JobManager({errorHandler: spyHandler, JobModel});
 
-                jobManager.addOneOffJob({
+                await jobManager.addOneOffJob({
                     job,
                     name: 'failed-oneoff'
                 });
