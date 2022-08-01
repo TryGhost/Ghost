@@ -1703,10 +1703,10 @@
     "@tryghost/errors" "^1.2.14"
     "@tryghost/request" "^0.1.28"
 
-"@tryghost/image-transform@1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/image-transform/-/image-transform-1.1.0.tgz#23f1abc7eca781cd65e6c99d1bfc463a744b40c1"
-  integrity sha512-8gSTIqPOnEBSOMc1s9xR43l8U0z7gorPVbBQWMQ6ZXM3hFAT8UubLdvqpO3OBDbsi115DRxVtH4RkkZVMHBfIQ==
+"@tryghost/image-transform@1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/image-transform/-/image-transform-1.2.0.tgz#fe00ac76c412ce9bfa29030f2869f118e753c1e2"
+  integrity sha512-Y2KTbhUttdXp2xvA3hKfjiRV3WcbEkmeI+ipYxrdAdp8jwj97BeF//5lTakq2zb+0L0HE9EaYsHgbdvW3YTHhw==
   dependencies:
     "@tryghost/errors" "^1.2.1"
     bluebird "^3.7.2"
