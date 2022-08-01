@@ -36,7 +36,7 @@ const Koenig = ({
 
     return (
         <Container
-            className="my-2 px-2 md:mx-auto md:my-16 max-w-xl w-full"
+            className="md:mx-auto md:py-16 max-w-xl w-full"
             mobiledoc={mobiledoc}
             atoms={atoms}
             onChange={onChange}
