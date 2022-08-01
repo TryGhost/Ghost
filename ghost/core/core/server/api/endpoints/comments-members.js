@@ -2,7 +2,6 @@ const Promise = require('bluebird');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
-const db = require('../../data/db');
 const commentsService = require('../../services/comments');
 const ALLOWED_INCLUDES = ['post', 'member', 'likes', 'replies'];
 const UNSAFE_ATTRS = ['status'];
@@ -123,23 +122,7 @@ module.exports = {
     counts: {
         permissions: false,
         async query(frame) {
-            const query = db.knex('comments')
-                .select(db.knex.raw(`COUNT(*) AS count, post_id`))
-                .groupBy('post_id');
-
-            if (Array.isArray(frame?.data?.ids)) {
-                query.whereIn('post_id', frame.data.ids);
-            }
-
-            const results = await query;
-
-            const counts = {};
-
-            for (const row of results) {
-                counts[row.post_id] = row.count;
-            }
-
-            return counts;
+            return commentsService.controller.count(frame);
         }
     },
 

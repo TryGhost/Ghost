@@ -12,9 +12,11 @@ const messages = {
 module.exports = class CommentsController {
     /**
      * @param {import('./service')} service
+     * @param {import('./stats')} stats
      */
-    constructor(service) {
+    constructor(service, stats) {
         this.service = service;
+        this.stats = stats;
     }
 
     /**
@@ -78,5 +80,13 @@ module.exports = class CommentsController {
         throw new MethodNotAllowedError({
             message: tpl(messages.cannotDestroyComments)
         });
+    }
+
+    async count(frame) {
+        if (!frame?.data?.ids) {
+            return await this.stats.getAllCounts();
+        }
+
+        return await this.stats.getCountsByPost(frame.data.ids);
     }
 };
