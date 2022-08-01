@@ -6474,10 +6474,10 @@ ember-cli-htmlbars-inline-precompile@^2.1.0:
     heimdalljs-logger "^0.1.9"
     silent-error "^1.1.0"
 
-ember-cli-htmlbars@6.0.1:
-  version "6.0.1"
-  resolved "https://registry.yarnpkg.com/ember-cli-htmlbars/-/ember-cli-htmlbars-6.0.1.tgz#5487831d477e61682bc867fd138808269e5d2152"
-  integrity sha512-IDsl9uty+MXtMfp/BUTEc/Q36EmlHYj8ZdPekcoRa8hmdsigHnK4iokfaB7dJFktlf6luruei+imv7JrJrBQPQ==
+ember-cli-htmlbars@6.1.0, ember-cli-htmlbars@^6.0.0, ember-cli-htmlbars@^6.0.1:
+  version "6.1.0"
+  resolved "https://registry.yarnpkg.com/ember-cli-htmlbars/-/ember-cli-htmlbars-6.1.0.tgz#97150c2a6f9a981475599d74817df66f5d816c2b"
+  integrity sha512-kT+MA2JsNLk10HpxAjpB5HHtR0WCoxZEUwLsy/BBww5lXmsrf34QzmTw7SL6DabZVxs+YCb9RhU9KTmFygGxCg==
   dependencies:
     "@ember/edition-utils" "^1.2.0"
     babel-plugin-ember-template-compilation "^1.0.0"
@@ -6489,10 +6489,9 @@ ember-cli-htmlbars@6.0.1:
     fs-tree-diff "^2.0.1"
     hash-for-dep "^1.5.1"
     heimdalljs-logger "^0.1.10"
-    json-stable-stringify "^1.0.1"
+    js-string-escape "^1.0.1"
     semver "^7.3.4"
     silent-error "^1.1.1"
-    strip-bom "^4.0.0"
     walk-sync "^2.2.0"
 
 ember-cli-htmlbars@^2.0.1, ember-cli-htmlbars@^2.0.3:
@@ -6555,26 +6554,6 @@ ember-cli-htmlbars@^5.0.0, ember-cli-htmlbars@^5.1.0, ember-cli-htmlbars@^5.1.2,
     semver "^7.3.4"
     silent-error "^1.1.1"
     strip-bom "^4.0.0"
-    walk-sync "^2.2.0"
-
-ember-cli-htmlbars@^6.0.0, ember-cli-htmlbars@^6.0.1:
-  version "6.1.0"
-  resolved "https://registry.yarnpkg.com/ember-cli-htmlbars/-/ember-cli-htmlbars-6.1.0.tgz#97150c2a6f9a981475599d74817df66f5d816c2b"
-  integrity sha512-kT+MA2JsNLk10HpxAjpB5HHtR0WCoxZEUwLsy/BBww5lXmsrf34QzmTw7SL6DabZVxs+YCb9RhU9KTmFygGxCg==
-  dependencies:
-    "@ember/edition-utils" "^1.2.0"
-    babel-plugin-ember-template-compilation "^1.0.0"
-    babel-plugin-htmlbars-inline-precompile "^5.3.0"
-    broccoli-debug "^0.6.5"
-    broccoli-persistent-filter "^3.1.2"
-    broccoli-plugin "^4.0.3"
-    ember-cli-version-checker "^5.1.2"
-    fs-tree-diff "^2.0.1"
-    hash-for-dep "^1.5.1"
-    heimdalljs-logger "^0.1.10"
-    js-string-escape "^1.0.1"
-    semver "^7.3.4"
-    silent-error "^1.1.1"
     walk-sync "^2.2.0"
 
 ember-cli-import-polyfill@^0.2.0:

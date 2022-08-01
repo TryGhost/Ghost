@@ -77,7 +77,7 @@
     "ember-cli-dependency-checker": "3.3.1",
     "ember-cli-deprecation-workflow": "2.1.0",
     "ember-cli-eslint": "5.1.0",
-    "ember-cli-htmlbars": "6.0.1",
+    "ember-cli-htmlbars": "6.1.0",
     "ember-cli-inject-live-reload": "2.1.0",
     "ember-cli-mirage": "2.4.0",
     "ember-cli-moment-shim": "3.8.0",
