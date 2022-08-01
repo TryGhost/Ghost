@@ -4,7 +4,7 @@ module.exports = function (data) {
 
 Someone just replied to your comment on "${data.postTitle}"
 
-${data.postUrl}#ghost-comments-root
+${data.postUrl}#ghost-comments
 
 ---
 
