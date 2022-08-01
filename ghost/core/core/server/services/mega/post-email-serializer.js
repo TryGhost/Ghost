@@ -351,8 +351,8 @@ function renderPaywallCTA(post) {
     <h2
         style="margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; line-height: 1.11em; font-weight: 700; text-rendering: optimizeLegibility; margin: 1.5em 0 0.5em 0; font-size: 26px;">
         Subscribe to <span style="white-space: nowrap; font-size: 26px !important;">continue reading.</span></h2>
-    <p style="margin: 0 auto 1.5em auto; line-height: 1.6em; max-width: 440px;">Become a paid member of ${siteTitle} to get access to 
-    <span style="white-space: nowrap;">all subscriber-only content.</span></p>
+    <p style="margin: 0 auto 1.5em auto; line-height: 1.6em; max-width: 440px;">Become a paid member of ${siteTitle} to get access to all 
+    <span style="white-space: nowrap;">subscriber-only content.</span></p>
     <div class="btn btn-accent" style="box-sizing: border-box; width: 100%; display: table;">
         <table border="0" cellspacing="0" cellpadding="0" align="center"
             style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;">
