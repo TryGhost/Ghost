@@ -1,10 +1,8 @@
-const _ = require('lodash');
 const slugify = require('@tryghost/string').slugify;
 
-module.exports.safe = function safe(string, options) {
-    options = options || {};
+module.exports.safe = function safe(string, options = {}) {
     let opts = {requiredChangesOnly: true};
-    if (!_.has(options, 'importing') || !options.importing) {
+    if (!('importing' in options) || !options.importing) {
         opts.requiredChangesOnly = false;
     }
     return slugify(string, opts);
