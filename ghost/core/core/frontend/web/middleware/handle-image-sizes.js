@@ -58,11 +58,6 @@ module.exports = function (req, res, next) {
     const themeImageSizes = activeTheme.get().config('image_sizes');
     const imageSizes = _.merge({}, themeImageSizes, internalImageSizes, contentImageSizes);
 
-    // CASE: no image_sizes config (NOTE - unlikely to be reachable now we have content sizes)
-    if (!imageSizes) {
-        return redirectToOriginal();
-    }
-
     // build a new object with keys that match the strings used in size paths like "w640h480"
     const imageDimensions = {};
     Object.keys(imageSizes).forEach((size) => {
@@ -106,14 +101,14 @@ module.exports = function (req, res, next) {
         return redirectToOriginal();
     }
 
+    // exit early if sharp isn't installed to avoid extra file reads
+    if (!imageTransform.canTransformFiles()) {
+        return redirectToOriginal();
+    }
+
     storageInstance.exists(req.url).then((exists) => {
         if (exists) {
             return;
-        }
-
-        // exit early if sharp isn't installed to avoid extra file reads
-        if (!imageTransform.canTransformFiles()) {
-            return redirectToOriginal();
         }
 
         const {dir, name, ext} = path.parse(imagePath);
@@ -148,7 +143,8 @@ module.exports = function (req, res, next) {
     }).then(() => {
         if (format) {
             // File extension won't match the new format, so we need to update the Content-Type header manually here
-            res.type(format);
+            // Express JS still uses an out of date mime package, which doesn't support avif
+            res.type(format === 'avif' ? 'image/avif' : format);
         }
         next();
     }).catch(function (err) {
