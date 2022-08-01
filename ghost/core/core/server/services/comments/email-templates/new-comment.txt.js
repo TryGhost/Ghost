@@ -5,7 +5,7 @@ Hey there,
 
 Someone just posted a comment on your post "${data.postTitle}"
 
-${data.postUrl}#ghost-comments-root
+${data.postUrl}#ghost-comments
 
 ---
 
