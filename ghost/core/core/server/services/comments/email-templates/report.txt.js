@@ -7,7 +7,7 @@ ${data.reporter} has reported the comment below on ${data.postTitle}. This comme
 ${data.memberName} (${data.memberEmail}):
 ${data.commentText}
 
-${data.postUrl}#ghost-comments-root
+${data.postUrl}#ghost-comments
 
 ---
 
