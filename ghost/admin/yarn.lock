@@ -1359,6 +1359,14 @@
     ember-cli-version-checker "^5.1.2"
     semver "^7.3.5"
 
+"@embroider/addon-shim@^0.50.2":
+  version "0.50.2"
+  resolved "https://registry.yarnpkg.com/@embroider/addon-shim/-/addon-shim-0.50.2.tgz#9be2ed8cee1086cef63c5baecf8dde8dcdacc24e"
+  integrity sha512-a+pFlXZPovcCNFo05HxXBW9ole43mPyFZnkhvZlLF0f1sHEn9j0sD1Ld2BM/NCERmHcYz9eXQnX1FPNLCDoGEA==
+  dependencies:
+    "@embroider/shared-internals" "^0.50.2"
+    semver "^7.3.5"
+
 "@embroider/addon-shim@^1.5.0":
   version "1.8.3"
   resolved "https://registry.yarnpkg.com/@embroider/addon-shim/-/addon-shim-1.8.3.tgz#2368510b8ce42d50d02cb3289c32e260dfa34bd9"
@@ -1562,6 +1570,19 @@
     resolve-package-path "^1.2.2"
     semver "^7.3.2"
     typescript-memoize "^1.0.0-alpha.3"
+
+"@embroider/shared-internals@^0.50.2":
+  version "0.50.2"
+  resolved "https://registry.yarnpkg.com/@embroider/shared-internals/-/shared-internals-0.50.2.tgz#567c5451db31a1f3edc2f64376ce5a0dcaaabacb"
+  integrity sha512-l3SKn1YdxTFBjY3ylYTLHxFY0dG2XxIsjbtZt7Mm6QyZFssWBDg3oWYwBoUpkw/ysjNJf8IcI7reXhB23WXwDw==
+  dependencies:
+    babel-import-util "^1.1.0"
+    ember-rfc176-data "^0.3.17"
+    fs-extra "^9.1.0"
+    lodash "^4.17.21"
+    resolve-package-path "^4.0.1"
+    semver "^7.3.5"
+    typescript-memoize "^1.0.1"
 
 "@embroider/util@^0.36.0":
   version "0.36.0"
@@ -6653,7 +6674,7 @@ ember-cli-babel@7.26.11, ember-cli-babel@^7.0.0, ember-cli-babel@^7.1.0, ember-c
     rimraf "^3.0.1"
     semver "^5.5.0"
 
-ember-cli-babel@^6.0.0-beta.4, ember-cli-babel@^6.12.0, ember-cli-babel@^6.6.0, ember-cli-babel@^6.7.2, ember-cli-babel@^6.8.1, ember-cli-babel@^6.8.2:
+ember-cli-babel@^6.0.0-beta.4, ember-cli-babel@^6.12.0, ember-cli-babel@^6.6.0, ember-cli-babel@^6.8.1, ember-cli-babel@^6.8.2:
   version "6.18.0"
   resolved "https://registry.yarnpkg.com/ember-cli-babel/-/ember-cli-babel-6.18.0.tgz#3f6435fd275172edeff2b634ee7b29ce74318957"
   integrity sha512-7ceC8joNYxY2wES16iIBlbPSxwKDBhYwC8drU3ZEvuPDMwVv1KzxCNu1fvxyFEBWhwaRNTUxSCsEVoTd9nosGA==
@@ -7427,7 +7448,7 @@ ember-get-config@:
     ember-cli-babel "^7.26.6"
     ember-cli-htmlbars "^5.7.1"
 
-"ember-getowner-polyfill@^1.1.0 || ^2.0.0", ember-getowner-polyfill@^2.0.0, ember-getowner-polyfill@^2.0.1, ember-getowner-polyfill@^2.2.0:
+"ember-getowner-polyfill@^1.1.0 || ^2.0.0", ember-getowner-polyfill@^2.0.0, ember-getowner-polyfill@^2.0.1:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/ember-getowner-polyfill/-/ember-getowner-polyfill-2.2.0.tgz#38e7dccbcac69d5ec694000329ec0b2be651d2b2"
   integrity sha512-rwGMJgbGzxIAiWYjdpAh04Abvt0s3HuS/VjHzUFhVyVg2pzAuz45B9AzOxYXzkp88vFC7FPaiA4kE8NxNk4A4Q==
@@ -7508,15 +7529,6 @@ ember-load@0.0.17:
     ember-cli-htmlbars "^3.0.0"
     ember-cli-version-checker "^3.0.0"
 
-ember-macro-helpers@^4.2.2:
-  version "4.2.2"
-  resolved "https://registry.yarnpkg.com/ember-macro-helpers/-/ember-macro-helpers-4.2.2.tgz#dfb28b2b21f9fd49ade599f68c99e73ce5692cdc"
-  integrity sha512-E46MnpjMu+ZXRw/5A1tADZKFJADGpSAcsclcaBNfV/B1aRPV3PTTnCpDvYC1wfJ4kwwUh0DRLDH/OpBv+/41pQ==
-  dependencies:
-    ember-cli-babel "^7.7.3"
-    ember-cli-string-utils "^1.1.0"
-    ember-cli-test-info "^1.0.0"
-
 ember-maybe-import-regenerator@^0.1.6:
   version "0.1.6"
   resolved "https://registry.yarnpkg.com/ember-maybe-import-regenerator/-/ember-maybe-import-regenerator-0.1.6.tgz#35d41828afa6d6a59bc0da3ce47f34c573d776ca"
@@ -7594,14 +7606,12 @@ ember-modifier@^2.1.0:
     ember-cli-typescript "^5.0.0"
     ember-compatibility-helpers "^1.2.5"
 
-ember-moment@8.0.2:
-  version "8.0.2"
-  resolved "https://registry.yarnpkg.com/ember-moment/-/ember-moment-8.0.2.tgz#6e5034045e9d1447fa6c0af80983b93ee62bb1be"
-  integrity sha512-2S4byvP7sSj8vn30280EA6mA62moe9TCpg2mtuioWYQV3shAUAX4FrfC2oCzNBU+TcKw3dSXnhGi9Pt5krMhAg==
+ember-moment@10.0.0:
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/ember-moment/-/ember-moment-10.0.0.tgz#db2affde4574b7d679ad1a34e8a5675fda0b72fe"
+  integrity sha512-vpnWVn3QfVBVP0MUnOkFI8fqqjskTh2LxOxyBaaRY7Smbcymq3b8wVB9GSNRasmyaclQVGY8jZsqi5ue7O2TUw==
   dependencies:
-    ember-cli-babel "^6.7.2"
-    ember-getowner-polyfill "^2.2.0"
-    ember-macro-helpers "^4.2.2"
+    "@embroider/addon-shim" "^0.50.2"
 
 ember-one-way-select@4.0.1:
   version "4.0.1"
