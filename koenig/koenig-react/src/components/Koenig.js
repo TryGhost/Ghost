@@ -47,18 +47,17 @@ const Koenig = ({
     };
     return (
         <Container
-            className="md:mx-auto md:py-16 max-w-xl w-full"
+            className="md:mx-auto md:py-16 max-w-6xl w-full"
             mobiledoc={mobiledoc}
             atoms={atoms}
             onChange={onChange}
             didCreateEditor={_didCreateEditor}
         >   
-            <Toolbar className={`flex ${range?.direction ? '' : 'invisible'}`} />
+            <Toolbar className={`toolbar-temporary ${range?.direction ? '' : 'invisible'}`} />
             <Editor
                 className="prose"
                 onMouseUp={handleSelection}
                 onMouseDown={clearRange} />
-            
         </Container>
     );
 };
