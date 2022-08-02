@@ -26,7 +26,7 @@ class CommentsServiceEmails {
             }
 
             const to = author.get('email');
-            const subject = '💬 You have a new comment on one of your posts';
+            const subject = '💬 New comment on your post: ' + post.get('title');
 
             const memberName = member.get('name') || 'Anonymous';
 
@@ -72,7 +72,7 @@ class CommentsServiceEmails {
         }
 
         const to = parentMember.get('email');
-        const subject = '💬 You have a new reply on one of your comments';
+        const subject = '↪️ New reply to your comment on ' + this.settingsCache.get('title');
 
         const post = await this.models.Post.findOne({id: reply.get('post_id')});
         const member = await this.models.Member.findOne({id: reply.get('member_id')});
