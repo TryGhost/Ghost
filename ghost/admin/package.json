@@ -67,7 +67,7 @@
     "element-resize-detector": "1.2.4",
     "ember-ajax": "5.1.1",
     "ember-assign-helper": "0.4.0",
-    "ember-auto-import": "1.12.2",
+    "ember-auto-import": "2.4.2",
     "ember-classic-decorator": "3.0.0",
     "ember-cli": "3.24.0",
     "ember-cli-app-version": "5.0.0",
@@ -150,6 +150,7 @@
     "postcss-custom-properties": "10.0.0",
     "postcss-import": "12.0.1",
     "pretender": "3.4.7",
+    "process": "^0.11.10",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "reframe.js": "3.0.3",
@@ -157,6 +158,7 @@
     "testem": "3.8.0",
     "top-gh-contribs": "2.0.4",
     "tracked-built-ins": "2.0.1",
+    "util": "^0.12.4",
     "validator": "7.2.0",
     "walk-sync": "3.0.0"
   },
@@ -171,5 +173,9 @@
   },
   "ember": {
     "edition": "octane"
+  },
+  "dependencies": {
+    "path-browserify": "^1.0.1",
+    "webpack": "5"
   }
 }

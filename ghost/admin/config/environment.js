@@ -5,7 +5,7 @@ module.exports = function (environment) {
     let ENV = {
         modulePrefix: 'ghost-admin',
         environment,
-        rootURL: '/',
+        rootURL: '',
         locationType: 'trailing-hash',
         EmberENV: {
             FEATURES: {
@@ -58,6 +58,7 @@ module.exports = function (environment) {
 
     if (environment === 'test') {
         // Testem prefers this...
+        ENV.rootURL = '/';
         ENV.locationType = 'none';
 
         // keep test console output quieter
