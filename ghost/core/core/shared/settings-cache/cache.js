@@ -22,6 +22,12 @@ class CacheManager {
         this.publicSettings = publicSettings;
         this.calculatedFields = [];
 
+        this.get = this.get.bind(this);
+        this.set = this.set.bind(this);
+        this.getAll = this.getAll.bind(this);
+        this.getPublic = this.getPublic.bind(this);
+        this.reset = this.reset.bind(this);
+        this._doGet = this._doGet.bind(this);
         this._updateSettingFromModel = this._updateSettingFromModel.bind(this);
         this._updateCalculatedField = this._updateCalculatedField.bind(this);
     }
