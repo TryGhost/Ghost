@@ -7,7 +7,7 @@ const moment = require('moment-timezone');
 const settingsCache = require('../../../core/shared/settings-cache');
 const sinon = require('sinon');
 
-let membersAgent, membersAgent2, member, postId, commentId;
+let membersAgent, membersAgent2, member, postId, postTitle, commentId;
 
 const commentMatcherNoMember = {
     id: anyObjectId,
@@ -55,6 +55,7 @@ describe('Comments API', function () {
         await fixtureManager.init('posts', 'members', 'comments');
 
         postId = fixtureManager.get('posts', 0).id;
+        postTitle = fixtureManager.get('posts', 0).title;
     });
 
     beforeEach(function () {
@@ -180,7 +181,7 @@ describe('Comments API', function () {
             // Check if author got an email
             mockManager.assert.sentEmailCount(1);
             mockManager.assert.sentEmail({
-                subject: '💬 You have a new comment on one of your posts',
+                subject: '💬 New comment on your post: ' + postTitle,
                 to: fixtureManager.get('users', 0).email,
                 // Note that the <strong> tag is removed by the sanitizer
                 html: new RegExp(escapeRegExp('<p>This is a message</p><p>New line</p>'))
@@ -234,7 +235,7 @@ describe('Comments API', function () {
             // Check only the author got an email (because we are the author of this parent comment)
             mockManager.assert.sentEmailCount(1);
             mockManager.assert.sentEmail({
-                subject: '💬 You have a new comment on one of your posts',
+                subject: '💬 New comment on your post: ' + postTitle,
                 to: fixtureManager.get('users', 0).email
             });
 
@@ -271,12 +272,12 @@ describe('Comments API', function () {
 
             mockManager.assert.sentEmailCount(2);
             mockManager.assert.sentEmail({
-                subject: '💬 You have a new comment on one of your posts',
+                subject: '💬 New comment on your post: ' + postTitle,
                 to: fixtureManager.get('users', 0).email
             });
 
             mockManager.assert.sentEmail({
-                subject: '💬 You have a new reply on one of your comments',
+                subject: '↪️ New reply to your comment on Ghost',
                 to: fixtureManager.get('members', 0).email
             });
 
