@@ -40,7 +40,7 @@ Object {
     Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
-      "html": "<p>This is a message</p><p>New line</p>",
+      "html": "<p>This is a message</p><p></p><p>New line</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "liked": Any<Boolean>,
       "likes_count": Any<Number>,
@@ -72,7 +72,7 @@ exports[`Comments API when authenticated Can browse all comments of a post 2: [h
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1057",
+  "content-length": "1064",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -86,7 +86,7 @@ Object {
     Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
-      "html": "<p>This is a message</p><p>New line</p>",
+      "html": "<p>This is a message</p><p></p><p>New line</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "liked": false,
       "likes_count": 0,
@@ -101,7 +101,7 @@ exports[`Comments API when authenticated Can comment on a post 2: [headers] 1`] 
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "219",
+  "content-length": "226",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -169,7 +169,7 @@ Object {
     Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
-      "html": "<p>This is a message</p><p>New line</p>",
+      "html": "<p>This is a message</p><p></p><p>New line</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "liked": Any<Boolean>,
       "likes_count": Any<Number>,
@@ -239,7 +239,7 @@ exports[`Comments API when authenticated Can like a comment 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "648",
+  "content-length": "655",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -262,7 +262,7 @@ Object {
     Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
-      "html": "<p>This is a message</p><p>New line</p>",
+      "html": "<p>This is a message</p><p></p><p>New line</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "liked": Any<Boolean>,
       "likes_count": Any<Number>,
@@ -301,7 +301,7 @@ exports[`Comments API when authenticated Can like a comment 5: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "647",
+  "content-length": "654",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -473,7 +473,7 @@ Object {
     Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
-      "html": "<p>This is a message</p><p>New line</p>",
+      "html": "<p>This is a message</p><p></p><p>New line</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "liked": Any<Boolean>,
       "likes_count": Any<Number>,
@@ -512,7 +512,7 @@ exports[`Comments API when authenticated Can remove a like 3: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "648",
+  "content-length": "655",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
