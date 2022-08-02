@@ -35,10 +35,6 @@ html {
     -moz-font-feature-settings: "liga" on;
 }
 
-.prose:focus-visible {
-    outline: none;
-}
-
 /* Toolbar (to be removed upon implementation of custom toolbar) */
 
 .toolbar-temporary {
@@ -567,4 +563,44 @@ blockquote + aside {
 /* Mobiledoc cards can be selected by their wrapper div element */
 div + aside {
     margin: 2.8rem 0 0;
+}
+
+
+/* Mobiledoc-kit base styles
+/* NOTE: adapted from https://github.com/bustle/mobiledoc-kit/blob/master/src/css/mobiledoc-kit.css
+/* --------------------------------------------------------------- */
+
+.__mobiledoc-editor {
+    position: relative;
+    resize: none;
+    min-height: 1em;
+}
+
+.__mobiledoc-editor:focus {
+    outline: none;
+}
+
+.__mobiledoc-editor > * {
+    position: relative;
+}
+
+.__mobiledoc-editor i {
+    display: inline;
+}
+
+.__mobiledoc-card {
+    display: inline-block;
+    width: 100%;
+}
+
+.__mobiledoc-editor.__has-no-content:after {
+    min-width: 100%;
+    content: attr(data-placeholder);
+    cursor: text;
+    position: absolute;
+    top: 0;
+    left: 0;
+    color: #abb4be;
+    font-family: georgia,serif;
+    font-size: 2rem;
 }
