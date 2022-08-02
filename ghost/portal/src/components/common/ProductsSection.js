@@ -225,6 +225,10 @@ export const ProductsSectionStyles = ({site}) => {
             color: var(--grey0);
         }
 
+        .gh-portal-product-price .amount.trial-duration {
+            letter-spacing: -0.022em;
+        }
+
         .gh-portal-product-price .billing-period {
             align-self: flex-end;
             font-size: 1.5rem;
@@ -240,6 +244,14 @@ export const ProductsSectionStyles = ({site}) => {
             color: var(--grey8);
             letter-spacing: 0.3px;
             display: none;
+        }
+
+        .after-trial-amount {
+            display: block;
+            font-size: 1.5rem;
+            color: var(--grey6);
+            margin-top: 12px;
+            line-height: 1;
         }
 
         .gh-portal-product-card-detaildata {
@@ -538,6 +550,15 @@ function ProductCardPrice({product}) {
             {(selectedInterval === 'year' ? <YearlyDiscount discount={yearlyDiscount} /> : '')}
             <ProductCardAlternatePrice price={alternatePrice} />
         </div>
+        // Static HTML template for variant of product card for tiers with free trial enabled
+        // <div className="gh-portal-product-card-pricecontainer">
+        //     <div className="gh-portal-product-price">
+        //         <span className="amount trial-duration">30 days free</span>
+        //     </div>
+        //     {(selectedInterval === 'year' ? <YearlyDiscount discount={yearlyDiscount} /> : '')}
+        //     <ProductCardAlternatePrice price={alternatePrice} />
+        // </div>
+        // <span className="after-trial-amount">Then $30/month</span>
     );
 }
 
