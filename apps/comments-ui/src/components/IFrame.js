@@ -24,6 +24,17 @@ export default class IFrame extends Component {
             if (this.props.onResize) {
                 (new ResizeObserver(_ => this.props.onResize(this.iframeRoot)))?.observe?.(this.iframeRoot);
             }
+
+            // This is a bit hacky, but prevents us to need to attach even listeners to all the iframes we have
+            // because when we want to listen for keydown events, those are only send in the window of iframe that is focused
+            // To get around this, we pass down the keydown events to the main window
+            // No need to detach, because the iframe would get removed
+            this.node.contentWindow.addEventListener('keydown', (e) => {              
+                // dispatch a new event
+                window.dispatchEvent(
+                    new KeyboardEvent('keydown', e)
+                );
+            });
         }
     }
 

@@ -9,7 +9,7 @@ import {formatRelativeTime} from '../utils/helpers';
 import {ReactComponent as SpinnerIcon} from '../images/icons/spinner.svg';
 
 const Form = (props) => {
-    const {member, postId, dispatchAction, onAction, avatarSaturation} = useContext(AppContext);
+    const {member, postId, dispatchAction, avatarSaturation} = useContext(AppContext);
     const [isFormOpen, setFormOpen] = useState(props.isReply || props.isEdit ? true : false);
     const formEl = useRef(null);
     const [progress, setProgress] = useState('default');
@@ -92,7 +92,9 @@ const Form = (props) => {
                     if (succeeded) {
                         editor.commands.focus();
                     } else {
-                        props.close();
+                        if (props.close) {
+                            props.close();
+                        }
                     }
                     setPreventClosing(false);
                 }
@@ -100,7 +102,7 @@ const Form = (props) => {
         } else {
             setFormOpen(true);
         }
-    }, [editor, dispatchAction, memberName, props.isEdit]);
+    }, [editor, dispatchAction, memberName, props]);
 
     // Set the cursor position at the end of the form, instead of the beginning (= when using autofocus)
     useEffect(() => {
@@ -149,36 +151,7 @@ const Form = (props) => {
         };
     }, [editor, props]);
 
-    useEffect(() => {
-        if (!editor) {
-            return;
-        }
-
-        editor.on('focus', () => {
-            onFormFocus();
-        });
-
-        editor.on('blur', () => {
-            if (editor?.isEmpty) {
-                setFormOpen(false);
-                if (props.isReply && props.close && !preventClosing) {
-                    // TODO: we cannot toggle the form when this happens, because when the member doesn't have a name we'll always loose focus to input the name...
-                    // Need to find a different way for this behaviour
-                    props.close();
-                }
-            }
-        });     
-        
-        return () => {
-            // Remove previous events
-            editor?.off('focus');
-            editor?.off('blur');
-        };
-    }, [editor, props, onFormFocus, preventClosing]);
-
-    const submitForm = async (event) => {
-        event.preventDefault();
-
+    const submitForm = useCallback(async () => {
         if (editor.isEmpty) {
             return;
         }
@@ -221,7 +194,7 @@ const Form = (props) => {
         } else {
             try {
                 // Send comment to server
-                await onAction('addComment', {
+                await dispatchAction('addComment', {
                     post_id: postId,
                     status: 'published',
                     html: editor.getHTML()
@@ -238,7 +211,75 @@ const Form = (props) => {
         }
 
         return false;
-    };
+    }, [editor, props, dispatchAction, postId]);
+
+    useEffect(() => {
+        if (!editor) {
+            return;
+        }
+
+        editor.on('focus', () => {
+            onFormFocus();
+        });
+
+        editor.on('blur', () => {
+            if (editor?.isEmpty) {
+                setFormOpen(false);
+                if (props.isReply && props.close && !preventClosing) {
+                    // TODO: we cannot toggle the form when this happens, because when the member doesn't have a name we'll always loose focus to input the name...
+                    // Need to find a different way for this behaviour
+                    props.close();
+                }
+            }
+        });
+
+        // Add some basic keyboard shortcuts
+        // ESC to blur the editor
+        const keyDownListener = (event) => {
+            if (event.metaKey) {
+                // CMD on MacOS
+
+                if (event.key === 'Escape' && editor?.isFocused) {
+                    // Try submit
+                    submitForm();
+                }
+
+                return;
+            }
+            if (event.key === 'Escape') {
+                if (editor?.isFocused && !preventClosing) {
+                    if (props.close) {
+                        props.close();
+                    } else {
+                        editor?.commands.blur();
+                    }
+                }
+                return;
+            }
+
+            if (event.key === 'c' && !props.isEdit && !props.isReply && !editor?.isFocused) {
+                editor?.commands.focus();
+                window.scrollTo({
+                    top: getScrollToPosition(),
+                    left: 0,
+                    behavior: 'smooth'
+                });
+                return;
+            }
+        };
+
+        // Note: normally we would need to attach this listener to the window + the iframe window. But we made listener
+        // in the Iframe component that passes down all the keydown events to the main window to prevent that
+        window.addEventListener('keydown', keyDownListener, {passive: true});
+
+        return () => {
+            window.removeEventListener('keydown', keyDownListener, {passive: true});
+
+            // Remove previous events
+            editor?.off('focus');
+            editor?.off('blur');
+        };
+    }, [editor, props, onFormFocus, preventClosing, submitForm]);
 
     const preventIfFocused = (event) => {
         if (editor.isFocused) {
