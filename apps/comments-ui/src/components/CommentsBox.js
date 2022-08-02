@@ -40,7 +40,6 @@ const CommentsBoxContent = (props) => {
 
     return (
         <>
-            {/* {TODO: Put in conditionals and variables for the new comment helper} */}
             <div className="w-full flex justify-between items-baseline font-sans mb-10">
                 <h2 className="font-bold text-[2.8rem] tracking-tight dark:text-[rgba(255,255,255,0.85)]">
                     {title !== null ? title : <><span className="hidden sm:inline">Member </span><span className="capitalize sm:normal-case">discussion</span></>}
@@ -49,7 +48,6 @@ const CommentsBoxContent = (props) => {
             </div>
             <Pagination />
             <div className={!pagination ? 'mt-4' : ''}>
-                {/* {commentsCount === 0 ? (member && <Empty />) : commentsElements} */}
                 {commentsCount > 0 && commentsElements}
             </div>
             <div>
