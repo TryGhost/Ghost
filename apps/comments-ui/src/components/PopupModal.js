@@ -32,7 +32,7 @@ export default function PopupModal(props) {
     const show = popup === lastPopup;
 
     return (
-        <GenericDialog show={show}>
+        <GenericDialog show={show} callback={popupProps.callback}>
             <PageComponent {...popupProps}/>
         </GenericDialog>
     );

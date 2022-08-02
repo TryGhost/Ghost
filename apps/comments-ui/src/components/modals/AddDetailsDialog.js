@@ -11,8 +11,9 @@ const AddNameDialog = (props) => {
     // const [bio, setBio] = useState('');  // TODO: needed for bio to be wired up
     const [error, setError] = useState({name: '', bio: ''});
 
-    const close = () => {
+    const close = (succeeded) => {
         dispatchAction('closePopup');
+        props.callback(succeeded);
     };
 
     const submit = async () => {
@@ -26,8 +27,7 @@ const AddNameDialog = (props) => {
             //     bio
             // });
 
-            props.callback();
-            close();
+            close(true);
         } else {
             setError({name: 'Enter your name'});
             setName('');
@@ -126,7 +126,7 @@ const AddNameDialog = (props) => {
                     Save
                 </button>
             </section>
-            <CloseButton close={close} />
+            <CloseButton close={() => close(false)} />
         </>
     );
 };
