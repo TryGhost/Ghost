@@ -129,7 +129,7 @@ class CommentsServiceEmails {
             postTitle: post.get('title'),
             postUrl: this.urlService.getUrlByResourceId(post.get('id'), {absolute: true}),
             commentHtml: comment.get('html'),
-            commentText: htmlToPlaintext.email(comment.get('html')),
+            commentText: htmlToPlaintext.comment(comment.get('html')),
             commentDate: moment(comment.get('created_at')).tz(this.settingsCache.get('timezone')).format('D MMM YYYY'),
             
             reporterName: reporter.name,

@@ -34,6 +34,7 @@ const baseSettings = {
 
 let excerptConverter;
 let emailConverter;
+let commentConverter;
 
 const loadConverters = () => {
     if (excerptConverter && emailConverter) {
@@ -63,8 +64,19 @@ const loadConverters = () => {
         ]
     });
 
+    const commentSettings = mergeSettings({
+        preserveNewlines: false,
+        selectors: [
+            // equiv hideLinkHrefIfSameAsText: true
+            {selector: 'a', options: {hideLinkHrefIfSameAsText: true}},
+            // No space between <p> tags. An empty <p> is needed
+            {selector: 'p', options: {leadingLineBreaks: 1, trailingLineBreaks: 1}}
+        ]
+    });
+
     excerptConverter = compile(excerptSettings);
     emailConverter = compile(emailSettings);
+    commentConverter = compile(commentSettings);
 };
 
 module.exports.excerpt = (html) => {
@@ -77,4 +89,10 @@ module.exports.email = (html) => {
     loadConverters();
 
     return emailConverter(html);
+};
+
+module.exports.comment = (html) => {
+    loadConverters();
+
+    return commentConverter(html);
 };

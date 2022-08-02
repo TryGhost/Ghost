@@ -165,7 +165,7 @@ describe('Comments API', function () {
                 .post(`/api/comments/`)
                 .body({comments: [{
                     post_id: postId,
-                    html: '<p>This is a <strong>message</strong></p><p>New line</p>'
+                    html: '<div></div><p></p><p>This is a <strong>message</strong></p><p></p><p></p><p>New line</p><p></p>'
                 }]})
                 .expectStatus(201)
                 .matchHeaderSnapshot({
@@ -184,7 +184,7 @@ describe('Comments API', function () {
                 subject: '💬 New comment on your post: ' + postTitle,
                 to: fixtureManager.get('users', 0).email,
                 // Note that the <strong> tag is removed by the sanitizer
-                html: new RegExp(escapeRegExp('<p>This is a message</p><p>New line</p>'))
+                html: new RegExp(escapeRegExp('<p>This is a message</p><p></p><p>New line</p>'))
             });
 
             // Wait for the dispatched events (because this happens async)
@@ -391,7 +391,7 @@ describe('Comments API', function () {
             mockManager.assert.sentEmail({
                 subject: '🚩 A comment has been reported on your post',
                 to: fixtureManager.get('users', 0).email,
-                html: new RegExp(escapeRegExp('<p>This is a message</p><p>New line</p>')),
+                html: new RegExp(escapeRegExp('<p>This is a message</p><p></p><p>New line</p>')),
                 text: new RegExp(escapeRegExp('This is a message\n\nNew line'))
             });
         });

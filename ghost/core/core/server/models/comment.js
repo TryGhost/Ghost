@@ -9,6 +9,24 @@ const messages = {
     notYourCommentToDestroy: 'You may only delete your own comments'
 };
 
+function escapeRegex(string) {
+    return string.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+}
+
+/**
+ * Remove empty paragraps from the start and end
+ * + remove duplicate empty paragrapsh (only one empty line allowed)
+ */
+function trimParagraphs(str) {
+    const paragraph = '<p></p>';
+    const escapedParagraph = escapeRegex(paragraph);
+
+    const startReg = new RegExp('^(' + escapedParagraph + ')+');
+    const endReg = new RegExp('(' + escapedParagraph + ')+$');
+    const duplicates = new RegExp('(' + escapedParagraph + ')+');
+    return str.replace(startReg, '').replace(endReg, '').replace(duplicates, paragraph);
+}
+
 const Comment = ghostBookshelf.Model.extend({
     tableName: 'comments',
 
@@ -49,20 +67,22 @@ const Comment = ghostBookshelf.Model.extend({
         if (this.hasChanged('html')) {
             const sanitizeHtml = require('sanitize-html');
 
-            this.set('html', sanitizeHtml(this.get('html'), {
-                allowedTags: ['p', 'br', 'a', 'blockquote'],
-                allowedAttributes: {
-                    a: ['href', 'target', 'rel']
-                },
-                selfClosing: ['br'],
-                // Enforce _blank and safe URLs
-                transformTags: {
-                    a: sanitizeHtml.simpleTransform('a', {
-                        target: '_blank', 
-                        rel: 'ugc noopener noreferrer nofollow'
-                    })
-                }
-            }));
+            this.set('html', trimParagraphs(
+                sanitizeHtml(this.get('html'), {
+                    allowedTags: ['p', 'br', 'a', 'blockquote'],
+                    allowedAttributes: {
+                        a: ['href', 'target', 'rel']
+                    },
+                    selfClosing: ['br'],
+                    // Enforce _blank and safe URLs
+                    transformTags: {
+                        a: sanitizeHtml.simpleTransform('a', {
+                            target: '_blank', 
+                            rel: 'ugc noopener noreferrer nofollow'
+                        })
+                    }
+                })
+            ));
         }
     },
 
