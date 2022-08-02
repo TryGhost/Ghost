@@ -169,7 +169,7 @@
     ]
   },
   "resolutions": {
-    "ember-basic-dropdown": "3.0.16"
+    "ember-basic-dropdown": "4.0.5"
   },
   "ember": {
     "edition": "octane"
