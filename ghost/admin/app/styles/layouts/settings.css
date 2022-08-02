@@ -1183,6 +1183,7 @@ body:not([data-user-is-dragging]) .gh-newsletter-card-draggable:hover .grab-news
     letter-spacing: 0.2px;
     background: #fff;
     border-radius: 5px;
+    margin-top: 18px;
     margin-bottom: 25px;
 }
 
