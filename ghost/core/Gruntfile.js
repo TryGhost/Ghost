@@ -42,8 +42,7 @@ module.exports = function (grunt) {
         ['subgrunt:dev']);
 
     // Production asset build
-    grunt.registerTask('prod', 'Build JS & templates for production',
-        ['subgrunt:prod', 'postcss:prod']);
+    grunt.registerTask('prod', 'Build JS & templates for production', 'subgrunt:prod');
 
     // --- Configuration
     const cfg = {
@@ -163,21 +162,6 @@ module.exports = function (grunt) {
             }
         },
 
-        // @lodder/grunt-postcss
-        // Generate processed, minified css files
-        postcss: {
-            prod: {
-                options: {
-                    processors: [
-                        require('cssnano')() // minify the result
-                    ]
-                },
-                files: {
-                    'core/frontend/public/ghost.min.css': 'core/frontend/public/ghost.css'
-                }
-            }
-        },
-
         // grunt-subgrunt
         // Run grunt tasks in submodule Gruntfiles
         subgrunt: {
@@ -240,7 +224,6 @@ module.exports = function (grunt) {
     // --- Grunt Initialisation
 
     // Load all grunt tasks
-    grunt.loadNpmTasks('@lodder/grunt-postcss');
     grunt.loadNpmTasks('grunt-bg-shell');
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-contrib-copy');

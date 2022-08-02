@@ -46,7 +46,8 @@
     "lint:test": "eslint -c test/.eslintrc.js --ignore-path test/.eslintignore 'test/**/*.js'",
     "lint:code": "yarn lint:server && yarn lint:shared && yarn lint:frontend",
     "lint": "yarn lint:server && yarn lint:shared && yarn lint:frontend && yarn lint:test",
-    "prepack": "grunt release"
+    "build:css": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
+    "prepack": "grunt release && yarn build:css"
   },
   "engines": {
     "node": "^14.17.0 || ^16.13.0",
@@ -189,7 +190,6 @@
     "sqlite3": "5.0.11"
   },
   "devDependencies": {
-    "@lodder/grunt-postcss": "3.1.1",
     "@playwright/test": "1.24.2",
     "@tryghost/express-test": "0.11.1",
     "@tryghost/webhook-mock-receiver": "0.1.1",
@@ -216,6 +216,7 @@
     "nock": "13.2.9",
     "papaparse": "5.3.2",
     "postcss": "8.4.14",
+    "postcss-cli": "10.0.0",
     "rewire": "6.0.0",
     "should": "13.2.3",
     "sinon": "14.0.0",
