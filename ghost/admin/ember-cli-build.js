@@ -6,8 +6,10 @@ const concat = require('broccoli-concat');
 const mergeTrees = require('broccoli-merge-trees');
 const Terser = require('broccoli-terser-sourcemap');
 const Funnel = require('broccoli-funnel');
+const webpack = require('webpack');
 const environment = EmberApp.env();
 const isProduction = environment === 'production';
+const isTesting = environment === 'test';
 
 const postcssImport = require('postcss-import');
 const postcssCustomProperties = require('postcss-custom-properties');
@@ -15,13 +17,6 @@ const postcssColorModFunction = require('postcss-color-mod-function');
 const postcssCustomMedia = require('postcss-custom-media');
 const autoprefixer = require('autoprefixer');
 const cssnano = require('cssnano');
-
-const assetLocation = function (fileName) {
-    if (isProduction) {
-        fileName = fileName.replace('.', '.min.');
-    }
-    return `/assets/${fileName}`;
-};
 
 const codemirrorAssets = function () {
     let codemirrorFiles = [
@@ -129,17 +124,12 @@ module.exports = function (defaults) {
         },
         outputPaths: {
             app: {
-                html: isProduction ? 'index.min.html' : 'index.html',
-                js: assetLocation('ghost.js'),
+                js: 'assets/ghost.js',
                 css: {
-                    app: assetLocation('ghost.css'),
+                    app: 'assets/ghost.css',
                     // TODO: find a way to use the .min file with the lazyLoader
                     'app-dark': 'assets/ghost-dark.css'
                 }
-            },
-            vendor: {
-                js: assetLocation('vendor.js'),
-                css: assetLocation('vendor.css')
             }
         },
         fingerprint: {
@@ -228,12 +218,20 @@ module.exports = function (defaults) {
             }
         },
         autoImport: {
+            publicAssetURL: isTesting ? undefined : 'assets/',
             webpack: {
-                node: {
-                    util: true,
-                    fs: 'empty',
-                    path: true
-                }
+                resolve: {
+                    fallback: {
+                        util: require.resolve('util'),
+                        path: require.resolve('path-browserify'),
+                        fs: false
+                    }
+                },
+                plugins: [
+                    new webpack.ProvidePlugin({
+                        process: 'process/browser'
+                    })
+                ]
             },
             alias: {
                 'react-mobiledoc-editor': 'react-mobiledoc-editor/dist/main.js'
