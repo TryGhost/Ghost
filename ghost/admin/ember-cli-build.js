@@ -265,16 +265,5 @@ module.exports = function (defaults) {
         app.import('vendor/simplemde/debug/simplemde.js', {type: 'test'});
     }
 
-    // Support react components
-    // adds React and ReactDOM to window.
-    app.import({
-        development: 'node_modules/react/umd/react.development.js',
-        production: 'node_modules/react/umd/react.production.min.js'
-    });
-    app.import({
-        development: 'node_modules/react-dom/umd/react-dom.development.js',
-        production: 'node_modules/react-dom/umd/react-dom.production.min.js'
-    });
-
     return app.toTree();
 };
