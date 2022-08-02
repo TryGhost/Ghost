@@ -11,6 +11,8 @@ export const AVAILABLE_EVENTS = [
     {event: 'post.published', name: 'Post published', group: 'Posts'},
     {event: 'post.published.edited', name: 'Published post updated', group: 'Posts'},
     {event: 'post.unpublished', name: 'Post unpublished', group: 'Posts'},
+    {event: 'post.scheduled', name: 'Post scheduled', group: 'Posts'},
+    {event: 'post.unscheduled', name: 'Post unscheduled', group: 'Posts'},
     {event: 'post.tag.attached', name: 'Tag added to post', group: 'Posts'},
     {event: 'post.tag.detached', name: 'Tag removed from post', group: 'Posts'},
 
