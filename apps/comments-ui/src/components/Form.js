@@ -14,6 +14,9 @@ const Form = (props) => {
     const formEl = useRef(null);
     const [progress, setProgress] = useState('default');
 
+    // Prevent closing on blur (required when showing name dialog)
+    const [preventClosing, setPreventClosing] = useState(false);
+
     const {comment, commentsCount} = props;
     const memberName = (props.isEdit ? comment.member.name : member.name); 
     // const memberBio = false; // TODO: needed for bio to be wired up
@@ -81,11 +84,17 @@ const Form = (props) => {
 
     const onFormFocus = useCallback(() => {
         if (!memberName && !props.isEdit) {
+            setPreventClosing(true);
             editor.commands.blur();
             dispatchAction('openPopup', {
                 type: 'addDetailsDialog',
-                callback: () => {
-                    editor.commands.focus();
+                callback: (succeeded) => {
+                    if (succeeded) {
+                        editor.commands.focus();
+                    } else {
+                        props.close();
+                    }
+                    setPreventClosing(false);
                 }
             });
         } else {
@@ -152,7 +161,7 @@ const Form = (props) => {
         editor.on('blur', () => {
             if (editor?.isEmpty) {
                 setFormOpen(false);
-                if (props.isReply && props.close) {
+                if (props.isReply && props.close && !preventClosing) {
                     // TODO: we cannot toggle the form when this happens, because when the member doesn't have a name we'll always loose focus to input the name...
                     // Need to find a different way for this behaviour
                     props.close();
@@ -165,7 +174,7 @@ const Form = (props) => {
             editor?.off('focus');
             editor?.off('blur');
         };
-    }, [editor, props, onFormFocus]);
+    }, [editor, props, onFormFocus, preventClosing]);
 
     const submitForm = async (event) => {
         event.preventDefault();
@@ -279,6 +288,9 @@ const Form = (props) => {
 
     const shouldFormBeReduced = (isMobile() && props.isReply) || (isMobile() && props.isEdit);
 
+    // Keep the form always open when replying or editing (hide on blur)
+    const isFormReallyOpen = props.isReply || props.isEdit || isFormOpen;
+
     return (
         <>
             <form ref={formEl} onClick={focusEditor} onMouseDown={preventIfFocused} onTouchStart={preventIfFocused} className={`
@@ -287,14 +299,14 @@ const Form = (props) => {
                 -mt-[12px] -mr-3 mb-10 -ml-[12px]
                 rounded-md
                 ${!commentsCount && !props.isEdit && !props.isReply && 'mt-0 ml-0 mr-0'}
-                ${isFormOpen ? 'cursor-default' : 'cursor-pointer'}
+                ${isFormReallyOpen ? 'cursor-default' : 'cursor-pointer'}
                 ${(!props.isReply && !props.isEdit) && '-mt-[4px]'}
                 ${(props.isReply || props.isEdit) && '-mt-[16px]'}
                 ${shouldFormBeReduced && 'pl-1'}
             `}>
                 <div className="w-full relative">
                     <div className="pr-[1px] font-sans leading-normal dark:text-neutral-300">
-                        <div className={`transition-[padding] duration-150 delay-100 relative w-full pl-[52px] ${shouldFormBeReduced && 'pl-0'} ${isFormOpen && 'pt-[64px]'}`}>
+                        <div className={`transition-[padding] duration-150 delay-100 relative w-full pl-[52px] ${shouldFormBeReduced && 'pl-0'} ${isFormReallyOpen && 'pt-[64px]'}`}>
                             <div
                                 className={`
                                 transition-all duration-150 delay-100
@@ -305,7 +317,7 @@ const Form = (props) => {
                                 focus:outline-0
                                 shadow-form hover:shadow-formxl dark:shadow-transparent
                                 ${commentsCount === 0 && 'placeholder:text-neutral-700'}
-                                ${isFormOpen ? 'cursor-text min-h-[144px] pb-[68px] pt-2' : 'cursor-pointer overflow-hidden min-h-[48px] hover:border-slate-300'}
+                                ${isFormReallyOpen ? 'cursor-text min-h-[144px] pb-[68px] pt-2' : 'cursor-pointer overflow-hidden min-h-[48px] hover:border-slate-300'}
                                 ${props.isEdit && 'cursor-text'}
                                 ${!memberName && 'pointer-events-none'}
                             `}>
@@ -346,7 +358,7 @@ const Form = (props) => {
                         </div>
                         <div>
                             <Transition
-                                show={isFormOpen}
+                                show={isFormReallyOpen}
                                 enter="transition duration-500 delay-100 ease-in-out"
                                 enterFrom="opacity-0 -translate-x-2"
                                 enterTo="opacity-100 translate-x-0"

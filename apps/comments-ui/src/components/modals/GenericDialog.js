@@ -9,6 +9,9 @@ const GenericDialog = (props) => {
 
     const close = (event) => {
         dispatchAction('closePopup');
+        if (props.callback) {
+            props.callback(false);
+        }
     };
 
     const stopPropagation = (event) => {
