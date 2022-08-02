@@ -28,7 +28,7 @@ module.exports = function (grunt) {
         ['subgrunt:init', 'clean:tmp', 'ember']);
 
     // Runs the asset generation tasks for production and duplicates default-prod.html to default.html
-    grunt.registerTask('release', 'Release task - creates a final built zip', ['clean:built', 'prod', 'copy:admin_html']);
+    grunt.registerTask('release', 'Release task - creates a final built zip', ['clean:built', 'prod']);
 
     // --- Sub Commands
     // Used to make other commands work
@@ -208,16 +208,6 @@ module.exports = function (grunt) {
                 src: ['*'],
                 dest: '.git/hooks'
             }
-        },
-
-        copy: {
-            admin_html: {
-                files: [{
-                    cwd: '.',
-                    src: 'core/server/web/admin/views/default-prod.html',
-                    dest: 'core/server/web/admin/views/default.html'
-                }]
-            }
         }
     };
 
@@ -226,7 +216,6 @@ module.exports = function (grunt) {
     // Load all grunt tasks
     grunt.loadNpmTasks('grunt-bg-shell');
     grunt.loadNpmTasks('grunt-contrib-clean');
-    grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-symlink');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-express-server');
