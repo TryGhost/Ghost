@@ -9,6 +9,11 @@
   "workspaces": [
     "ghost/*"
   ],
+  "monorepo": {
+    "public": false,
+    "repo": "https://github.com/TryGhost/Ghost",
+    "scope": "@tryghost"
+  },
   "eslintIgnore": [
     "**/node_modules/**"
   ],
