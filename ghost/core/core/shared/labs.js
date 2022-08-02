@@ -28,7 +28,8 @@ const ALPHA_FEATURES = [
     'urlCache',
     'beforeAfterCard',
     'comments',
-    'explore'
+    'explore',
+    'freeTrial'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
