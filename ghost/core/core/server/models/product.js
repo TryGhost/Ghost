@@ -6,7 +6,8 @@ const Product = ghostBookshelf.Model.extend({
 
     defaults: {
         active: true,
-        visibility: 'none'
+        visibility: 'none',
+        trial_period_days: 0
     },
 
     relationships: ['benefits'],

@@ -422,6 +422,7 @@ module.exports = {
             defaultTo: 'none',
             validations: {isIn: [['public', 'none']]}
         },
+        trial_period_days: {type: 'integer', unsigned: true, nullable: false, defaultTo: 0},
         monthly_price_id: {type: 'string', maxlength: 24, nullable: true},
         yearly_price_id: {type: 'string', maxlength: 24, nullable: true},
         description: {type: 'string', maxlength: 191, nullable: true},
