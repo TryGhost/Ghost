@@ -86,7 +86,7 @@ describe('Admin Routing', function () {
     describe('built template', function () {
         beforeEach(function () {
             const configPaths = configUtils.config.get('paths');
-            configPaths.adminViews = path.resolve('test/utils/fixtures/admin-views');
+            configPaths.adminAssets = path.resolve('test/utils/fixtures/admin-build');
             configUtils.set('paths', configPaths);
         });
 
@@ -94,10 +94,10 @@ describe('Admin Routing', function () {
             configUtils.restore();
         });
 
-        it('serves prod file in production', async function () {
+        it('serves prod assets in production', async function () {
             configUtils.set('env', 'production');
 
-            const prodTemplate = fs.readFileSync(path.resolve('test/utils/fixtures/admin-views/default-prod.html')).toString();
+            const prodTemplate = fs.readFileSync(path.resolve('test/utils/fixtures/admin-build/production/index.html')).toString();
 
             const res = await request.get('/ghost/')
                 .set('X-Forwarded-Proto', 'https')
@@ -106,8 +106,8 @@ describe('Admin Routing', function () {
             res.text.should.equal(prodTemplate);
         });
 
-        it('serves dev file when not in production', async function () {
-            const devTemplate = fs.readFileSync(path.resolve('test/utils/fixtures/admin-views/default.html')).toString();
+        it('serves dev assets when not in production', async function () {
+            const devTemplate = fs.readFileSync(path.resolve('test/utils/fixtures/admin-build/development/index.html')).toString();
 
             const res = await request.get('/ghost/')
                 .set('X-Forwarded-Proto', 'https')
