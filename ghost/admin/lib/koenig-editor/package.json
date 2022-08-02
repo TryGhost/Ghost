@@ -18,6 +18,7 @@
     "ember-auto-import": "^2.4.2",
     "ember-classic-decorator": "*",
     "ember-cli-babel": "^7.5.0",
-    "ember-cli-htmlbars": "^6.1.0"
+    "ember-cli-htmlbars": "^6.1.0",
+    "ember-keyboard": "^8.2.0"
   }
 }
