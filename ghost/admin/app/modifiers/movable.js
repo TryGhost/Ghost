@@ -1,6 +1,7 @@
 import Modifier from 'ember-modifier';
 import {action} from '@ember/object';
 import {guidFor} from '@ember/object/internals';
+import {registerDestructor} from '@ember/destroyable';
 import {inject as service} from '@ember/service';
 
 export default class MovableModifier extends Modifier {
@@ -16,53 +17,63 @@ export default class MovableModifier extends Modifier {
     xOffset = 0;
     yOffset = 0;
 
+    constructor(owner, args) {
+        super(owner, args);
+        registerDestructor(this, this.cleanup);
+    }
+
     // Lifecycle hooks ---------------------------------------------------------
 
-    didInstall() {
-        this.addStartEventListeners();
+    modify(element, positional, named) {
+        if (!this.didSetup) {
+            this.elem = element;
+            this.addStartEventListeners();
 
-        if (this.args.named.adjustOnResize) {
-            this._resizeObserver = new ResizeObserver(() => {
-                if (this.currentX === undefined || this.currentY === undefined) {
-                    return;
-                }
+            if (named.adjustOnResize) {
+                this._resizeObserver = new ResizeObserver(() => {
+                    if (this.currentX === undefined || this.currentY === undefined) {
+                        return;
+                    }
 
-                const {x, y} = this.args.named.adjustOnResize(this.element, {x: this.currentX, y: this.currentY});
+                    const {x, y} = named.adjustOnResize(element, {x: this.currentX, y: this.currentY});
 
-                if (x === this.currentX && y === this.currentY) {
-                    return;
-                }
+                    if (x === this.currentX && y === this.currentY) {
+                        return;
+                    }
 
-                this.currentX = x;
-                this.initialX = x;
-                this.xOffset = x;
+                    this.currentX = x;
+                    this.initialX = x;
+                    this.xOffset = x;
 
-                this.currentY = y;
-                this.initialY = y;
-                this.yOffset = y;
+                    this.currentY = y;
+                    this.initialY = y;
+                    this.yOffset = y;
 
-                this.setTranslate(x, y);
-            });
-            this._resizeObserver.observe(this.element);
+                    this.setTranslate(x, y);
+                });
+                this._resizeObserver.observe(element);
+            }
+
+            this.didSetup = true;
         }
     }
 
-    willDestroy() {
+    cleanup = () => {
         this.removeEventListeners();
         this.removeResizeObserver();
         this.enableSelection();
-    }
+    };
 
     // Custom methods -----------------------------------------------------------
 
     addStartEventListeners() {
-        this.element.addEventListener('touchstart', this.dragStart, false);
-        this.element.addEventListener('mousedown', this.dragStart, false);
+        this.elem.addEventListener('touchstart', this.dragStart, false);
+        this.elem.addEventListener('mousedown', this.dragStart, false);
     }
 
     removeStartEventListeners() {
-        this.element.removeEventListener('touchstart', this.dragStart, false);
-        this.element.removeEventListener('mousedown', this.dragStart, false);
+        this.elem.removeEventListener('touchstart', this.dragStart, false);
+        this.elem.removeEventListener('mousedown', this.dragStart, false);
     }
 
     addActiveEventListeners() {
@@ -111,7 +122,7 @@ export default class MovableModifier extends Modifier {
                     break;
                 }
 
-                if (elem === this.element) {
+                if (elem === this.elem) {
                     this.addActiveEventListeners();
                     break;
                 }
@@ -183,16 +194,16 @@ export default class MovableModifier extends Modifier {
     }
 
     setTranslate(xPos, yPos) {
-        this.element.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
+        this.elem.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
     }
 
     disableScroll() {
-        this.originalOverflow = this.element.style.overflow;
-        this.element.style.overflow = 'hidden';
+        this.originalOverflow = this.elem.style.overflow;
+        this.elem.style.overflow = 'hidden';
     }
 
     enableScroll() {
-        this.element.style.overflow = this.originalOverflow;
+        this.elem.style.overflow = this.originalOverflow;
     }
 
     disableSelection() {
@@ -215,12 +226,12 @@ export default class MovableModifier extends Modifier {
     // preventing clicks stops any event handlers that may otherwise result in the
     // movable element being closed when the drag finishes
     disablePointerEvents() {
-        this.element.style.pointerEvents = 'none';
+        this.elem.style.pointerEvents = 'none';
         window.addEventListener('click', this.cancelClick, {capture: true, passive: false});
     }
 
     enablePointerEvents() {
-        this.element.style.pointerEvents = '';
+        this.elem.style.pointerEvents = '';
         window.removeEventListener('click', this.cancelClick, {capture: true, passive: false});
     }
 }

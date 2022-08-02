@@ -1,28 +1,30 @@
 import Modifier from 'ember-modifier';
 import {bind, throttle} from '@ember/runloop';
+import {registerDestructor} from '@ember/destroyable';
 
 export default class RatioZoom extends Modifier {
     resizeHandler = null;
 
-    didReceiveArguments() {
-        const {zoomed} = this.args.named;
+    constructor(owner, args) {
+        super(owner, args);
+        registerDestructor(this, this.cleanup);
+    }
 
+    modify(element, positional, {zoomed, ratio}) {
         if (zoomed) {
-            this.setZoomedSize();
+            this.setZoomedSize(element, {ratio});
         }
     }
 
-    willDestroy() {
+    cleanup = () => {
         this.removeResizeEventListener();
-    }
+    };
 
-    setZoomedSize() {
-        const {ratio} = this.args.named;
+    setZoomedSize(element, {ratio}) {
+        element.style.width = '100%';
+        element.style.height = '100%';
 
-        this.element.style.width = '100%';
-        this.element.style.height = '100%';
-
-        const offsets = this.element.getBoundingClientRect();
+        const offsets = element.getBoundingClientRect();
 
         let maxHeight = {
             width: offsets.height / ratio,
@@ -42,8 +44,8 @@ export default class RatioZoom extends Modifier {
             usableSize = maxHeight.width > offsets.width ? maxWidth : maxHeight;
         }
 
-        this.element.style.width = `${usableSize.width}px`;
-        this.element.style.height = `${usableSize.height}px`;
+        element.style.width = `${usableSize.width}px`;
+        element.style.height = `${usableSize.height}px`;
 
         this.addResizeEventListener();
     }
