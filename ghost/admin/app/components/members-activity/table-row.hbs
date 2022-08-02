@@ -27,6 +27,9 @@
                         "<GhEmailPreviewLink @data={{event.email}} />"
                     {{/if}}
                     <span class="highlight">{{event.info}}</span>
+                    {{#if event.subtitle}}
+                        "<a class="ghost-memebrs-activity-subtitle" href="{{event.url}}" target="_blank" rel="noopener noreferrer">{{event.subtitle}}</a>"
+                    {{/if}}
                 </div>
             </div>
         </div>

@@ -713,6 +713,11 @@ Dashboard List */
     overflow: hidden;
 }
 
+.gh-dashboard-list-subtext > a {
+    color: var(--black);
+    font-weight: 600;
+}
+
 .gh-dashboard-list-item svg {
     width: 20px;
     min-width: 20px;
@@ -1184,7 +1189,7 @@ Dashboard Recents */
 
 .gh-dashboard-recents-activity .gh-dashboard-list-header,
 .gh-dashboard-recents-activity .gh-dashboard-list-item {
-    grid-template-columns: 35% 35% 30%;
+    grid-template-columns: 30% 40% 30%;
 }
 
 .gh-dashboard-recents-activity .gh-dashboard-list-title:nth-child(2),
