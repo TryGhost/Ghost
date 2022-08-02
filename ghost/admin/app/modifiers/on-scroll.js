@@ -1,23 +1,31 @@
 import Modifier from 'ember-modifier';
 import {action} from '@ember/object';
+import {registerDestructor} from '@ember/destroyable';
 
 export default class OnScrollModifier extends Modifier {
-    @action
-    onScroll(event) {
-        this.args.positional[0](this.element, this.scrollContainer, event);
+    constructor(owner, args) {
+        super(owner, args);
+        registerDestructor(this, this.cleanup);
     }
 
-    didInstall() {
-        this.scrollContainer = this.element;
+    modify(element, [callback], named) {
+        this.elem = element;
+        this.callback = callback;
+        this.scrollContainer = element;
 
-        if (this.args.named.scrollContainer) {
-            this.scrollContainer = this.element.closest(this.args.named.scrollContainer);
+        if (named.scrollContainer) {
+            this.scrollContainer = element.closest(named.scrollContainer);
         }
 
         this.scrollContainer?.addEventListener('scroll', this.onScroll, {passive: true});
     }
 
-    willDestroy() {
+    cleanup = () => {
         this.scrollContainer?.removeEventListener('scroll', this.onScroll, {passive: true});
+    };
+
+    @action
+    onScroll(event) {
+        this.callback(this.elem, this.scrollContainer, event);
     }
 }

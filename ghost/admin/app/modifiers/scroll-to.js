@@ -10,4 +10,4 @@ export default modifier((element, positional, {shouldScroll = true}) => {
             scrollParent.scrollTo({top: y, behavior: 'smooth'});
         }, 200);
     }
-});
+}, {eager: false});

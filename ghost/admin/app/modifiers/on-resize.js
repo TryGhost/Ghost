@@ -1,14 +1,27 @@
 import Modifier from 'ember-modifier';
+import {registerDestructor} from '@ember/destroyable';
 import {inject as service} from '@ember/service';
 
 export default class MovableModifier extends Modifier {
     @service resizeDetector;
 
-    didInstall() {
-        this.resizeDetector.setup(this.element, this.args.positional[0]);
+    constructor(owner, args) {
+        super(owner, args);
+        registerDestructor(this, this.cleanup);
     }
 
-    willDestroy() {
-        this.resizeDetector.teardown(this.element, this.args.positional[0]);
+    modify(element, [callback]) {
+        if (!this.didSetup) {
+            this.elem = element;
+            this.callback = callback;
+
+            this.resizeDetector.setup(element, callback);
+
+            this.didSetup = true;
+        }
     }
+
+    cleanup = () => {
+        this.resizeDetector.teardown(this.elem, this.callback);
+    };
 }
