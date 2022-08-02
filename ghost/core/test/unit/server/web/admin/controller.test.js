@@ -15,7 +15,7 @@ describe('Admin App', function () {
             };
 
             configUtils.restore();
-            configUtils.set('paths:adminViews', path.resolve('test/utils/fixtures/admin-views'));
+            configUtils.set('paths:adminAssets', path.resolve('test/utils/fixtures/admin-build'));
         });
 
         afterEach(function () {
