@@ -4,13 +4,19 @@ const _ = require('lodash');
 const events = require('../../../core/server/lib/common/events');
 
 // Testing  the Private API
-let cache = require('../../../core/shared/settings-cache/cache');
+let CacheManager = require('../../../core/shared/settings-cache/cache');
 const publicSettings = require('../../../core/shared/settings-cache/public');
 
 should.equal(true, true);
 
 describe('UNIT: settings cache', function () {
+    let cache;
+
     beforeEach(function () {
+        cache = new CacheManager({
+            cache: {},
+            publicSettings
+        });
         cache.init(events, {}, []);
     });
 
@@ -123,7 +129,7 @@ describe('UNIT: settings cache', function () {
             }]
         };
 
-        cache.init(events, settingsCollection);
+        cache.init(events, settingsCollection, []);
         cache.get('key1').should.equal('init value');
 
         // check handler only called once on settings.edit
@@ -136,7 +142,7 @@ describe('UNIT: settings cache', function () {
         cache.get('key1').should.equal('first edit');
 
         // init does a reset by default
-        cache.init(events, settingsCollection);
+        cache.init(events, settingsCollection, []);
         setSpy.callCount.should.equal(3);
         cache.get('key1').should.equal('init value');
 
