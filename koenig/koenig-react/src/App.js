@@ -35,7 +35,6 @@ const KoenigEditor = ({...props}) => {
                     keyCommands={props.keyCommands}
                     didCreateEditor={props.didCreateEditor}
                     onChange={props.onChange}
-                    selectedRange={props.selectedRange}
                 />
             </EditorResizeObserver>
         </Frame>

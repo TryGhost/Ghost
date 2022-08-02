@@ -1,9 +1,8 @@
 import * as React from 'react';
-import {Container, Toolbar} from 'react-mobiledoc-editor';
+import {Container, Toolbar, Editor} from 'react-mobiledoc-editor';
 import DEFAULT_ATOMS from '../atoms';
 import DEFAULT_KEY_COMMANDS from '../key-commands';
 import DEFAULT_TEXT_EXPANSIONS from '../text-expansions';
-import Editor from './Editor';
 
 const Koenig = ({
     mobiledoc,
@@ -11,11 +10,11 @@ const Koenig = ({
     keyCommands = DEFAULT_KEY_COMMANDS,
     textExpansions = DEFAULT_TEXT_EXPANSIONS,
     didCreateEditor,
-    onChange,
-    selectedRange
+    onChange
 }) => {
-    const [range, setRange] = React.useState(selectedRange); //eslint-disable-line
-    
+    const [editorInstance, setEditorInstance] = React.useState({});
+    const [range, setRange] = React.useState({});
+
     function _didCreateEditor(editor) {
         if (keyCommands?.length) {
             keyCommands.forEach((command) => {
@@ -36,8 +35,16 @@ const Koenig = ({
         }
 
         didCreateEditor?.(editor);
+        setEditorInstance(editor);
     }
 
+    const handleSelection = () => {
+        setRange(editorInstance.range);
+    };
+
+    const clearRange = () => {
+        setRange({});
+    };
     return (
         <Container
             className="md:mx-auto md:py-16 max-w-xl w-full"
@@ -46,8 +53,11 @@ const Koenig = ({
             onChange={onChange}
             didCreateEditor={_didCreateEditor}
         >   
-            <Toolbar className="flex" />
-            <Editor selectedRange={selectedRange} setRange={setRange} />
+            <Toolbar className={`flex ${range?.direction ? '' : 'invisible'}`} />
+            <Editor
+                className="prose"
+                onMouseUp={handleSelection}
+                onMouseDown={clearRange} />
             
         </Container>
     );
