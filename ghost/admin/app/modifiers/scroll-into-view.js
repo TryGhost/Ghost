@@ -51,4 +51,4 @@ export default modifier((element, [shouldScroll = true], {offset = 0, useViewpor
             }
         }
     }
-});
+}, {eager: false});

@@ -169,7 +169,8 @@
     ]
   },
   "resolutions": {
-    "ember-basic-dropdown": "4.0.5"
+    "ember-basic-dropdown": "4.0.5",
+    "ember-in-viewport": "4.0.2"
   },
   "ember": {
     "edition": "octane"

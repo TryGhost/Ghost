@@ -3,4 +3,4 @@ import {modifier} from 'ember-modifier';
 
 export default modifier((element) => {
     getScrollParent(element).scrollTop = 0;
-});
+}, {eager: false});
