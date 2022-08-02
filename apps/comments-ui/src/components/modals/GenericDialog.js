@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React, {useContext, useEffect} from 'react';
 import {Transition} from '@headlessui/react';
 import Frame from '../Frame';
 import AppContext from '../../AppContext';
@@ -17,6 +17,19 @@ const GenericDialog = (props) => {
     const stopPropagation = (event) => {
         event.stopPropagation();
     };
+
+    useEffect(() => {
+        const listener = (event) => {
+            if (event.key === 'Escape') {
+                close();
+            }
+        };
+        window.addEventListener('keydown', listener, {passive: true});
+
+        return () => {
+            window.removeEventListener('keydown', listener, {passive: true});
+        };
+    });
 
     return (
         <Transition show={props.show} appear={true}>

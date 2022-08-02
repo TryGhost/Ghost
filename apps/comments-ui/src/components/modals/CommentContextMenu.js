@@ -32,6 +32,21 @@ const CommentContextMenu = (props) => {
         };
     }, [props]);
 
+    useEffect(() => {
+        const listener = (event) => {
+            if (event.key === 'Escape') {
+                props.close();
+            }
+        };
+        // For keydown, we only need to listen to the main window, because we pass the events
+        // manually in the Iframe component
+        window.addEventListener('keydown', listener, {passive: true});
+
+        return () => {
+            window.removeEventListener('keydown', listener, {passive: true});
+        };
+    });
+
     // Prevent closing the context menu when clicking inside of it
     const stopPropagation = (event) => {
         event.stopPropagation();
