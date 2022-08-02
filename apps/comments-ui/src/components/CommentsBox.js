@@ -9,6 +9,42 @@ import NotPaidBox from './NotPaidBox';
 import Loading from './Loading';
 import {ROOT_DIV_ID} from '../utils/constants';
 
+const CommentsBoxTitle = ({title, showCount, count}) => {
+    // We have to check for null for title because null means default, wheras empty string means empty
+    if (!title && !showCount && title !== null) {
+        return null;
+    }
+
+    const Title = ({title}) => {
+        if (title === null) {
+            return (
+                <><span className="hidden sm:inline">Member </span><span className="capitalize sm:normal-case">discussion</span></>
+            );
+        }
+
+        return title;
+    };
+
+    const Count = ({showCount, count}) => {
+        if (!showCount) {
+            return null;
+        }
+
+        return (
+            <div className="text-neutral-400 text-[1.6rem]">{count} comments</div>
+        );
+    };
+
+    return (
+        <div className="w-full flex justify-between items-baseline font-sans mb-10">
+            <h2 className="font-bold text-[2.8rem] tracking-tight dark:text-[rgba(255,255,255,0.85)]">
+                <Title title={title}/>
+            </h2>
+            <Count showCount={showCount} count={count}/>
+        </div>
+    );
+};
+
 const CommentsBoxContent = (props) => {
     const [isEditing, setIsEditing] = useState(false);
 
@@ -40,12 +76,7 @@ const CommentsBoxContent = (props) => {
 
     return (
         <>
-            <div className="w-full flex justify-between items-baseline font-sans mb-10">
-                <h2 className="font-bold text-[2.8rem] tracking-tight dark:text-[rgba(255,255,255,0.85)]">
-                    {title !== null ? title : <><span className="hidden sm:inline">Member </span><span className="capitalize sm:normal-case">discussion</span></>}
-                </h2>
-                {showCount ? <div className="text-neutral-400 text-[1.6rem]">{commentsCount} comments</div> : null}
-            </div>
+            <CommentsBoxTitle title={title} showCount={showCount} count={commentsCount}/>
             <Pagination />
             <div className={!pagination ? 'mt-4' : ''}>
                 {commentsCount > 0 && commentsElements}
