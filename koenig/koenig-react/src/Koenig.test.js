@@ -1,9 +1,17 @@
 import {render, screen} from '@testing-library/react';
 import Koenig from './components/Koenig';
 
-test('renders "Strong" button in toolbar', () => {
+test('renders Mobiledoc Container', () => {
     render(<Koenig />);
 
-    const strongButton = screen.getByText(/Strong/i);
-    expect(strongButton).toBeInTheDocument();
+    const container = screen.queryByTestId('mobiledoc-container');
+    expect(container).toBeInTheDocument();
 });
+
+test('renders Mobiledoc Editor', () => {
+    render(<Koenig />);
+
+    const editor = screen.queryByTestId('mobiledoc-editor');
+    expect(editor).toBeInTheDocument();
+});
+

@@ -12,8 +12,11 @@ const Koenig = ({
     didCreateEditor,
     onChange
 }) => {
-    const [editorInstance, setEditorInstance] = React.useState({});
-    const [range, setRange] = React.useState({});
+    const [editorInstance, setEditorInstance] = React.useState(null);
+    const [coords, setCoords] = React.useState({x: 0, y: 0});
+    const [showToolbar, setShowToolbar] = React.useState(false);
+    const [head, setHead] = React.useState(null);
+    const [tail, setTail] = React.useState(null);
 
     function _didCreateEditor(editor) {
         if (keyCommands?.length) {
@@ -38,26 +41,56 @@ const Koenig = ({
         setEditorInstance(editor);
     }
 
-    const handleSelection = () => {
-        setRange(editorInstance.range);
+    React.useEffect(() => {
+        if (editorInstance) {
+            editorInstance.cursorDidChange(() => {
+                if (!editorInstance.range.isCollapsed) {
+                    return; 
+                }
+                let section = editorInstance?.range?.head?.section;
+                setShowToolbar(editorInstance.hasCursor());
+                if (section?.isBlank) {
+                    editorInstance.deleteRange(editorInstance.range);
+                    return; 
+                }
+            });
+        }
+    }, [editorInstance, head, tail]);
+
+    const handleMouseUpPosition = (event) => {
+        setTail(editorInstance.range?.head);
+        setCoords({
+            x: event.clientX,
+            y: event.clientY
+        });
     };
 
-    const clearRange = () => {
-        setRange({});
+    const handleMouseDownPosition = (event) => {
+        setHead(editorInstance.range?.tail);
     };
+
+    const positionStyle = {
+        zIndex: '22',
+        left: coords.x - '100',
+        top: coords.y - '45',
+        pointerEvents: 'auto'
+    };
+
     return (
         <Container
+            data-testid="mobiledoc-container"
             className="md:mx-auto md:py-16 max-w-2xl w-full"
             mobiledoc={mobiledoc}
             atoms={atoms}
             onChange={onChange}
             didCreateEditor={_didCreateEditor}
-            placeholder="Begin writing your post..."
-        >   
-            <Toolbar className={`toolbar-temporary ${range?.direction ? '' : 'invisible'}`} />
+            placeholder="Begin writing your post...">  
+            { showToolbar ? <Toolbar style={positionStyle} className={`toolbar-temporary absolute`} /> : null }
             <Editor
-                onMouseUp={handleSelection}
-                onMouseDown={clearRange} />
+                data-testid="mobiledoc-editor"
+                className="prose"
+                onMouseUp={handleMouseUpPosition}
+                onMouseDown={handleMouseDownPosition}/>
         </Container>
     );
 };

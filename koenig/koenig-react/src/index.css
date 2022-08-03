@@ -604,3 +604,8 @@ div + aside {
     font-family: georgia,serif;
     font-size: 2rem;
 }
+
+/* Selection highlight color */
+::selection {
+    background: #e6e9eb;
+}
