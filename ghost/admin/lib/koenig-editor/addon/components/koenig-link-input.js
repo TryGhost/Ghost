@@ -50,6 +50,8 @@ export default class KoenigLinkInput extends Component {
             if (position[style] !== null) {
                 return `${style}: ${position[style]}px`;
             }
+
+            return undefined;
         });
 
         return htmlSafe(styles.compact().join('; '));

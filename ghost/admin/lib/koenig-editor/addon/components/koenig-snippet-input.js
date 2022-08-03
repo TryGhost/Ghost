@@ -190,6 +190,8 @@ export default class KoenigSnippetInputComponent extends Component {
             if (newPosition[style] !== null) {
                 return `${style}: ${newPosition[style]}px`;
             }
+
+            return undefined;
         }).compact().join('; '));
     }
 
