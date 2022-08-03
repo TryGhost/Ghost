@@ -1,0 +1,20 @@
+<div class="modal-content" {{on-key "Enter" (perform this.deleteThemeTask)}} data-test-modal="delete-theme">
+    <header class="modal-header">
+        <h1>Are you sure you want to delete this?</h1>
+    </header>
+    <button type="button" class="close" role="button" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+    <div class="modal-body">
+        <p>You're about to delete "<strong>{{@data.theme.name}}</strong>". This is permanent! We warned you, k? Maybe <a href="#" {{on "click" this.downloadTheme}}>download your theme before continuing</a></p>
+    </div>
+
+    <div class="modal-footer">
+        <button class="gh-btn" data-test-button="cancel" type="button" {{on "click" (fn @close false)}}><span>Stay</span></button>
+        <GhTaskButton
+            @buttonText="Delete"
+            @successText="Deleted"
+            @task={{this.deleteThemeTask}}
+            @class="gh-btn gh-btn-red gh-btn-icon"
+            data-test-button="confirm" />
+    </div>
+</div>

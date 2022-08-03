@@ -1,0 +1,82 @@
+.gh-labs-price-label input::-webkit-outer-spin-button, .gh-labs-price-label input::-webkit-inner-spin-button {
+    /* display: none; <- Crashes Chrome on hover */
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.gh-labs-price-label input[type=number] {
+    -moz-appearance: textfield;
+    /* Firefox */
+}
+
+.gh-labs-toggle-wrapper {
+    padding-top: 6px;
+    padding-bottom: 6px;
+    border-radius: 5px;
+}
+
+.gh-btn-labs-toggle {
+    border: none !important;
+    display: flex;
+    align-items: center;
+    color: var(--blue) !important;
+    background: transparent !important;
+}
+
+.gh-btn-labs-toggle,
+.gh-btn-labs-toggle:hover {
+    box-shadow: none !important;
+}
+
+.gh-btn-labs-toggle svg {
+    width: 10px;
+    height: 10px;
+    margin-right: 5px;
+}
+
+.gh-btn-labs-toggle svg path {
+    stroke: var(--blue);
+}
+
+.gh-labs-disabled .for-checkbox label,
+.gh-labs-disabled .for-checkbox .input-toggle-component,
+.gh-labs-disabled .for-switch label,
+.gh-labs-disabled .for-switch .input-toggle-component
+.gh-labs-disabled .for-radio label,
+.gh-labs-disabled .for-radio .input-toggle-component {
+    cursor: default;
+}
+
+/* Members settings */
+/* ------------------------------------------------ */
+
+.gh-labs-members-radio {
+    cursor: pointer;
+    margin: 0 8px;
+}
+
+.gh-labs-members-radio.active {
+    background: color-mod(var(--blue) alpha(6%));
+    border-color: var(--blue);
+}
+
+.gh-labs-disabled .gh-setting-content, .gh-labs-disabled .gh-setting-action {
+    opacity: 0.25;
+}
+
+.gh-labs-members-emaildropdown {
+    min-width: 208px;
+    margin-left: 8px;
+}
+
+.gh-labs-members-emaildropdown[disabled] {
+    background: var(--whitegrey-d2);
+    color: var(--darkgrey);
+}
+
+.gh-labs-sso-settings svg {
+    position: relative;
+    bottom: 1px;
+    width: 18px;
+    margin-right: 8px;
+}

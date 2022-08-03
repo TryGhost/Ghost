@@ -1,0 +1,17 @@
+<div class="gh-stack-item {{if (eq @index 0) "gh-setting-first" "gh-setting"}}">
+    <div class="flex-grow-1">
+        <label class="gh-setting-title gh-theme-setting-title" for={{this.inputId}}>
+            {{humanize-setting-key @setting.key}}
+        </label>
+
+        <input
+            type="text"
+            class="gh-input"
+            value={{@setting.value}}
+            id={{this.inputId}}
+            name={{this.inputName}}
+            {{on "input" this.updateValue}}
+            {{on "blur" this.triggerOnChange}}
+        />
+    </div>
+</div>

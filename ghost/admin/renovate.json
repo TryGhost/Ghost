@@ -1,0 +1,37 @@
+{
+  "extends": [
+    "@tryghost:quietJS",
+    "@tryghost:groupCSS",
+    "@tryghost:disableTryGhostAutomerge"
+  ],
+  "ignoreDeps": [
+    "ember-drag-drop",
+    "normalize.css",
+    "validator",
+    "codemirror",
+    "faker"
+  ],
+  "ignorePaths": ["lib/koenig-editor/package.json"],
+  "packageRules": [
+    {
+      "groupName": "ember-basic-dropdown addons",
+      "packagePatterns": ["^ember-basic", "^ember-power"]
+    },
+    {
+      "groupName": "ember core",
+      "packageNames": ["ember-source", "ember-cli", "ember-data"]
+    },
+    {
+      "groupName": "disable css",
+      "packagePatterns": [
+        "^postcss",
+        "^css"
+      ],
+      "packageNames": [
+        "autoprefixer",
+        "ember-cli-postcss"
+      ],
+      "enabled": false
+    }
+  ]
+}

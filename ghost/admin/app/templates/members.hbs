@@ -1,0 +1,203 @@
+<section class="gh-canvas">
+    <GhCanvasHeader class="gh-canvas-header break tablet members-header">
+        <h2 class="gh-canvas-title" data-test-screen-title>Members</h2>
+        {{#if (not-eq this.settings.membersSignupAccess "none")}}
+            <section class="view-actions">
+                <div class="view-actions-bottom-row {{if this.hideSearchBar "hidden"}}">
+                    <div class="relative gh-members-header-search">
+                        {{svg-jar "search" class="gh-input-search-icon"}}
+                        <input
+                            type="text"
+                            placeholder="Search members..."
+                            value={{this.searchParam}}
+                            aria-label="Search members"
+                            class="gh-input gh-members-list-searchfield {{if this.searchParam "active"}}"
+                            {{on "input" this.search}}
+                            {{on "focus" (fn (mut this.searchIsFocused) true)}}
+                            {{on "blur" (fn (mut this.searchIsFocused) false)}}
+                            {{will-destroy (fn (mut this.searchIsFocused) false)}}
+                            data-test-input="members-search"
+                        />
+                    </div>
+                </div>
+
+                <div class="view-actions-top-row">
+                    <Members::Filter
+                        @isFiltered={{this.isFiltered}}
+                        @onApplyFilter={{this.applyFilter}}
+                        @defaultFilterParam={{this.filterParam}}
+                        @onApplySoftFilter={{this.applySoftFilter}}
+                        @onResetSoftFilter={{this.resetSoftFilter}}
+                        @onResetFilter={{this.resetFilter}}
+                        @onLabelEdit={{this.editLabel}}
+                    />
+                    <span class="dropdown">
+                        <GhDropdownButton
+                            @dropdownName="members-actions-menu"
+                            @classNames="gh-btn gh-btn-icon icon-only gh-btn-action-icon"
+                            @title="Members Actions"
+                            data-test-button="members-actions"
+                        >
+                            <span>
+                                {{svg-jar "settings"}}
+                                <span class="hidden">Actions</span>
+                            </span>
+                        </GhDropdownButton>
+                        <GhDropdown
+                            @name="members-actions-menu"
+                            @tagName="ul"
+                            @classNames="gh-member-actions-menu dropdown-menu dropdown-triangle-top-right"
+                        >
+                            <li>
+                                <LinkTo @route="members.import" class="mr2" data-test-link="import-csv">
+                                    <span>Import members</span>
+                                </LinkTo>
+                            </li>
+                            <li class="{{if this.members.length "" "disabled"}}">
+                                {{#if this.members.length}}
+                                    <button class="mr2" type="button" {{on "click" this.exportData}} data-test-button="export-members">
+                                        {{#if this.showingAll}}
+                                            <span>Export all members</span>
+                                        {{else}}
+                                            <span>Export selected members ({{this.members.length}})</span>
+                                        {{/if}}
+                                    </button>
+                                {{else}}
+                                    <button class="mr2" disabled="true" type="button" data-test-button="export-members">
+                                        <span>Export selected members (0)</span>
+                                    </button>
+                                {{/if}}
+                            </li>
+                            {{#if (and this.members.length this.isFiltered)}}
+                                <li class="divider"></li>
+                                <li>
+                                    <button class="mr2" data-test-button="add-label-selected" type="button" {{on "click" this.bulkAddLabel}}>
+                                        <span>Add label for selected members ({{this.members.length}})</span>
+                                    </button>
+                                </li>
+                                <li>
+                                    <button class="mr2" data-test-button="remove-label-selected" type="button" {{on "click" this.bulkRemoveLabel}}>
+                                        <span>Remove label from selected members ({{this.members.length}})</span>
+                                    </button>
+                                </li>
+                                <li>
+                                    <button class="mr2" data-test-button="unsubscribe-selected" type="button" {{on "click" this.bulkUnsubscribe}}>
+                                        <span>Unsubscribe selected members ({{this.members.length}})</span>
+                                    </button>
+                                </li>
+                                <li class="divider"></li>
+                                <li>
+                                    <button class="mr2" data-test-button="delete-selected" type="button" {{on "click" this.bulkDelete}}>
+                                        <span class="red">Delete selected members ({{this.members.length}})</span>
+                                    </button>
+                                </li>
+                            {{/if}}
+                        </GhDropdown>
+                    </span>
+                    <LinkTo @route="member.new" class="gh-btn gh-btn-primary" data-test-new-member-button="true"><span>New member</span></LinkTo>
+                </div>
+            </section>
+        {{/if}}
+    </GhCanvasHeader>
+
+    {{#if this.members.loading}}
+        <div class="gh-content">
+            <GhLoadingSpinner />
+        </div>
+    {{else}}
+        <section class="view-container {{if (or (not this.members) (lt this.members.length 6)) "members-list-container-stretch"}}">
+            {{#if this.members}}
+                <div class="gh-list-scrolling {{if (lt this.members.length 6) "gh-list-with-helpsection"}}" data-test-table="members">
+                    <table class="gh-list">
+                        <thead>
+                            <tr>
+                                <th>{{this.listHeader}}</th>
+                                <th data-test-table-column="status">Status</th>
+                                {{#if (not-eq this.settings.editorDefaultEmailRecipients "disabled")}}
+                                    <th data-test-table-column="email_open_rate">Open rate</th>
+                                {{/if}}
+                                <th data-test-table-column="location">Location</th>
+                                <th data-test-table-column="created">Created</th>
+                                {{#each this.filterColumnLabels as |column|}}
+                                    <th data-test-table-column={{column.name}}>{{column.label}}</th>
+                                {{/each}}
+                            </tr>
+                        </thead>
+                        <VerticalCollection @tagName="tbody" @items={{this.members}} @key="id" @containerSelector=".gh-list-scrolling" @estimateHeight={{69}} @staticHeight={{true}} @bufferSize={{20}} as |member|>
+                            <GhMembersListItem
+                                @newsletterEnabled={{not-eq this.settings.editorDefaultEmailRecipients "disabled"}}
+                                @member={{member}}
+                                @filterColumns={{this.filterColumns}}
+                                data-test-member={{member.id}}
+                            />
+                        </VerticalCollection>
+                    </table>
+                </div>
+            {{else}}
+                {{#if this.showingAll}}
+                    <GhMembersNoMembers @afterCreate={{this.refreshData}} @members={{this.members}} />
+                {{else}}
+                    <div class="gh-members-empty" data-test-no-matching-members>
+                        {{svg-jar "members-placeholder" class="gh-members-placeholder"}}
+                        <h4>No members match the current filter</h4>
+                        <LinkTo @route="members" @query={{reset-query-params "members.index"}} class="gh-btn mt4" data-test-button="show-all-members">
+                            <span>Show all members</span>
+                        </LinkTo>
+                    </div>
+                {{/if}}
+            {{/if}}
+            {{#if (lt this.members.length 6)}}
+                <div class="gh-main-section gh-members-help">
+                    <h2 class="gh-main-section-header small bn">Get started with memberships</h2>
+                    <div class="gh-main-section-block">
+                        <div class="gh-main-section-content grey">
+                            <a href="https://ghost.org/resources/build-audience-subscriber-signups/" target="_blank" class="gh-members-help-card" rel="noopener noreferrer">
+                                <div class="gh-members-help-content">
+                                    <div class="thumbnail" style="background-image: url(assets/img/marketing/members-1.jpg);"></div>
+                                    <div class="text">
+                                        <h3>Building your audience with subscriber signups</h3>
+                                        <p>Learn how to turn anonymous visitors into logged-in members with memberships in Ghost.</p>
+                                        <div class="gh-btn gh-btn-link">Start building &rarr;</div>
+                                    </div>
+                                </div>
+                            </a>
+
+                            <a href="https://ghost.org/resources/first-100-email-subscribers/" target="_blank" class="gh-members-help-card" rel="noopener noreferrer">
+                                <div class="gh-members-help-content">
+                                    <div class="thumbnail right" style="background-image: url(assets/img/marketing/members-2.jpg);"></div>
+                                    <div class="text">
+                                        <h3>Get your first 100 email subscribers</h3>
+                                        <p>Starting from zero? Use this guide to find your founding audience members.</p>
+                                        <div class="gh-btn gh-btn-link">Become an expert &rarr;</div>
+                                    </div>
+                                </div>
+                            </a>
+
+                        </div>
+                    </div>
+                </div>
+            {{/if}}
+        </section>
+    {{/if}}
+</section>
+
+{{outlet}}
+
+{{#if this.showUnsubscribeMembersModal}}
+    <GhFullscreenModal
+        @modal="unsubscribe-members"
+        @model={{hash memberCount=this.members.length}}
+        @confirm={{this.unsubscribeMembers}}
+        @close={{this.toggleUnsubscribeMembersModal}}
+        @modifier="action wide"
+    />
+{{/if}}
+
+{{#if this.showLabelModal}}
+    <GhFullscreenModal
+        @modal="members-label-form"
+        @model={{this.labelModalData}}
+        @close={{this.toggleLabelModal}}
+        @modifier="action wide"
+    />
+{{/if}}

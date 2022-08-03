@@ -1,0 +1,24 @@
+<section class="gh-canvas">
+    <GhCanvasHeader class="gh-canvas-header">
+        {{!-- Remove breadcrumbs for Authors and Contributors --}}
+        {{#if this.session.user.isAuthorOrContributor}}
+            <h2 class="gh-canvas-title" data-test-screen-title>Your profile</h2>
+        {{else}}
+            <h2 class="gh-canvas-title" data-test-screen-title>
+                <LinkTo @route="settings">Settings</LinkTo>
+                <span>{{svg-jar "arrow-right"}}</span>
+                <LinkTo @route="settings.staff" data-test-staff-link={{true}}>Staff</LinkTo>
+                <span>{{svg-jar "arrow-right"}}</span>
+                {{this.user.name}}
+            </h2>
+        {{/if}}
+
+        <section class="view-actions">
+            <div class="gh-btn gh-btn-primary"><span>Save</span></div>
+        </section>
+    </GhCanvasHeader>
+
+    <div class="gh-content">
+        <GhLoadingSpinner />
+    </div>
+</section>

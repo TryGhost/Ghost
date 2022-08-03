@@ -1,0 +1,35 @@
+<div class="gh-stack-item {{if (eq @index 0) "gh-setting-first" "gh-setting"}}">
+    <GhUploader
+        @extensions={{this.imageExtensions}}
+        @onComplete={{this.imageUploaded}}
+        as |uploader|
+    >
+        <div class="{{if @setting.value "" "flex flex-grow-1 items-center justify-between"}}">
+            <div class="gh-setting-content">
+                <div class="gh-setting-title {{if @setting.value "gh-theme-setting-title"}}">{{humanize-setting-key @setting.key}}</div>
+                {{#each uploader.errors as |error|}}
+                    <div class="gh-setting-error" data-test-error="icon">{{or error.context error.message}}</div>
+                {{/each}}
+            </div>
+            <div class="gh-setting-action gh-uploadbutton-container flex flex-column items-stretch">
+                {{#if uploader.isUploading}}
+                    {{uploader.progressBar}}
+                {{else if @setting.value}}
+                    <div class="gh-branding-image-container largeimg justify-start">
+                        <img class="blog-cover" src={{@setting.value}} {{on "click" uploader.triggerFileDialog}}>
+                        <button type="button" class="gh-setting-action-largeimg-delete" {{on "click" (fn this.updateValue null)}} data-test-delete-image="icon">
+                            {{svg-jar "trash" class="w4 h4 fill-white"}}
+                        </button>
+                    </div>
+                {{else}}
+                    <button type="button" class="gh-btn gh-btn-white self-start" {{on "click" uploader.triggerFileDialog}} data-test-image-upload-btn="icon">
+                        <span>Upload</span>
+                    </button>
+                {{/if}}
+                <div style="display:none">
+                    <GhFileInput @multiple={{false}} @action={{uploader.setFiles}} @accept={{this.imageMimeTypes}} @onInsert={{uploader.registerFileInput}} data-test-file-input="icon" />
+                </div>
+            </div>
+        </div>
+    </GhUploader>
+</div>

@@ -1,0 +1,32 @@
+<div class="fullscreen-wizard-container" {{will-destroy this.reset}}>
+    <div class="pt7 pb5 pl12 pr12 flex justify-between items-center">
+        <div class="flex flex-column">
+            <div class="ttu gh-launch-wizard-step-indicator">{{this.currentStep.position}}</div>
+            <h2>{{this.currentStep.title}}</h2>
+        </div>
+        <button type="button" class="close gh-btn gh-btn-outline" {{on "click" this.close}} data-test-button="close-wizard">
+            <span>Cancel</span>
+        </button>
+    </div>
+
+    <div class="gh-launch-wizard-content">
+        <div class="gh-launch-wizard-content-left">
+            {{component (concat "gh-launch-wizard/" this.step)
+                nextStep=this.goNextStep
+                backStep=this.goBackStep
+                skipStep=this.skipStep
+                refreshPreview=this.refreshPreview
+                updatePreview=this.updatePreview
+                replacePreviewContents=this.replacePreviewContents
+                storeData=this.storeData
+                getData=this.getData
+            }}
+        </div>
+
+        <div class="gh-launch-wizard-content-right">
+            <GhBrowserPreview class="gh-launch-wizard-preview-container" @icon={{this.settings.icon}} @title={{this.config.blogTitle}}>
+                <GhSiteIframe class="gh-launch-wizard-preview" @src={{this.previewSrc}} @guid={{this.previewGuid}} {{did-insert this.registerPreviewIframe}}></GhSiteIframe>
+            </GhBrowserPreview>
+        </div>
+    </div>
+</div>

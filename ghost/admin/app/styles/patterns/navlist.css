@@ -1,0 +1,77 @@
+/* Nav Lists
+/* ---------------------------------------------------------- */
+
+.nav-list {
+    padding: 0;
+    max-width: 500px;
+    background: var(--main-color-content-greybg);
+    border-radius: var(--border-radius);
+}
+
+.nav-list.nav-list-block {
+    max-width: none;
+}
+
+.nav-list-item {
+    position: relative;
+    display: block;
+    margin: 0;
+    color: var(--darkgrey);
+}
+
+.nav-list-item:hover {
+    background: var(--whitegrey);
+    cursor: pointer;
+}
+
+.nav-list-item:first-of-type {
+    border-top-left-radius: var(--border-radius);
+    border-top-right-radius: var(--border-radius);
+}
+
+.nav-list-item:last-of-type {
+    border-bottom-right-radius: var(--border-radius);
+    border-bottom-left-radius: var(--border-radius);
+}
+
+.nav-list-item:not(:last-of-type) {
+    border-bottom: 1px solid var(--white);
+}
+
+.nav-list-item button {
+    width: 100%;
+    padding: 9px 40px 10px 12px;
+    text-align: left;
+}
+
+.nav-list-item a {
+    color: var(--darkgrey);
+}
+
+.nav-list-item b {
+    display: block;
+    font-size: 1.4rem;
+    line-height: 1.375;
+    font-weight: 600;
+}
+
+.nav-list-item span {
+    display: block;
+    color: var(--midgrey);
+    font-size: 1.2rem;
+    line-height: 1.375;
+    letter-spacing: 0.2px;
+}
+
+.nav-list-item svg {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    margin-top: -0.9rem;
+    height: 1.4rem;
+    width: 1.4rem;
+}
+
+.nav-list-item svg path {
+    fill: var(--midgrey);
+}

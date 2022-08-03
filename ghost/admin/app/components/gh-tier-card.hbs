@@ -1,0 +1,103 @@
+<div class="gh-main-content-card gh-tier-card" data-test-tier-card={{@tier.slug}}>
+    <div class="gh-tier-card-block title-block">
+        <h3 class="gh-tier-card-name" data-test-name>
+            {{@tier.name}}
+        </h3>
+        <p class="gh-tier-card-description" data-test-description>
+        {{#if @tier.description.length}}
+            {{@tier.description}}
+        {{else}}
+            No description added for this tier.
+        {{/if}}
+        </p>
+    </div>
+    <div class="gh-tier-card-block benefits-block" data-test-benefits>
+        <h4>Benefits <span class="counter">({{or @tier.benefits.length "0"}})</span></h4>
+        {{#if @tier.benefits.length}}
+            <ul class="benefits">
+                {{#each @tier.benefits as |benefit|}}
+                    <li>{{svg-jar "check"}} {{benefit.name}} </li>
+                {{/each}}
+            </ul>
+        {{else}}
+            <p class="gh-tier-card-description">No benefits added for this tier.</p>
+        {{/if}}
+    </div>
+    {{#if (eq @tier.type "free" )}}
+        <div class="gh-tier-card-block">
+            <div class="gh-tier-price-container">
+                <div class="gh-tier-card-price" data-test-free-price>
+                    <div class="flex items-start">
+                        <span class="currency">{{currency-symbol this.tierCurrency}}</span>
+                        <span class="amount">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {{/if}}
+    {{#if (eq @tier.type "paid" )}}
+        <div class="gh-tier-card-block">
+            <div class="gh-tier-price-container">
+                <div class="gh-tier-card-price" data-test-monthly-price>
+                    <div class="flex items-start">
+                        <span class="currency">{{currency-symbol this.tierCurrency}}</span>
+                        <span class="amount">{{gh-price-amount @tier.monthlyPrice}}</span>
+                    </div>
+                    <div class="period">Monthly</div>
+                </div>
+                <div class="gh-tier-card-price" data-test-yearly-price>
+                    <div class="flex items-start">
+                        <span class="currency">{{currency-symbol this.tierCurrency}}</span>
+                        <span class="amount">{{gh-price-amount @tier.yearlyPrice}}</span>
+                    </div>
+                    <div class="period">Yearly</div>
+                </div>
+            </div>
+        </div>
+    {{/if}}
+    {{#if (eq @tier.type "paid" )}}
+    <div class="gh-tier-card-button-container">
+        <span class="dropdown">
+            <GhDropdownButton
+                @dropdownName="tiers-actions-menu-{{@tier.name}}"
+                @classNames="gh-btn gh-btn-action-icon gh-btn-icon gh-btn-outline gh-tier-card-actions-button icon-only"
+                @title="Tiers Actions"
+                data-test-button="tiers-actions"
+            >
+                <span>
+                    {{svg-jar "dotdotdot"}}
+                    <span class="hidden">Actions</span>
+                </span>
+            </GhDropdownButton>
+                <GhDropdown
+                    @name="tiers-actions-menu-{{@tier.name}}"
+                    @tagName="ul"
+                    @classNames="gh-tier-actions-menu dropdown-menu dropdown-triangle-top-right"
+                >
+                    <li>
+                        <button class="mr2" type="button" {{on "click" (fn this.openEditTier @tier)}}>
+                            <span>Edit</span>
+                        </button>
+                    </li>
+                    {{#if this.showArchiveOption}}
+                        <li>
+                            <Settings::Members::ArchiveTier
+                                @tier={{@tier}}
+                                @onUnarchive={{@onUnarchive}}
+                                @onArchive={{@onArchive}}
+                            />
+                        </li>
+                    {{/if}}
+                </GhDropdown>
+        </span>
+    </div>
+    {{else}}
+    <div class="gh-tier-card-button-container">
+        <button type="button" {{on "click" (fn this.openEditTier @tier)}} class="gh-btn gh-btn-action-icon gh-btn-icon gh-btn-outline gh-tier-card-edit-button icon-only" data-test-button="edit-tier">
+            <span>
+                {{svg-jar "pen"}}
+            </span>
+        </button>
+    </div>
+    {{/if}}
+</div>

@@ -1,0 +1,8 @@
+<div
+    {{did-insert this.replaceIframeContents}}
+    {{did-update this.replaceIframeContents @html}}
+    ...attributes
+>
+    <iframe class="w-100 h-100" {{did-insert this.registerIframe}} {{on "load" this.didLoad}}></iframe>
+    <iframe class="w-100 h-100" {{did-insert this.registerIframe}} {{on "load" this.didLoad}}></iframe>
+</div>

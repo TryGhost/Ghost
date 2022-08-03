@@ -1,0 +1,76 @@
+<div class="modal-content">
+    <header class="modal-header" data-test-modal="custom-view-form">
+        <h1>{{if @data.customView.isNew "New view" "Edit view"}}</h1>
+    </header>
+    {{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
+    <button class="close" href title="Close" type="button" {{on "click" @close}} {{on "mousedown" (optional this.noop)}}>
+        {{svg-jar "close"}}
+    </button>
+
+    <div class="modal-body">
+        <fieldset>
+            <GhFormGroup @errors={{@data.customView.errors}} @hasValidated={{@data.customView.hasValidated}} @property="name">
+                <label for="view-name" class="dib fw6">View name</label>
+                <GhTextInput
+                    @id="view-name"
+                    @value={{@data.customView.name}}
+                    @placeholder="Breaking news"
+                    @focus-out={{fn this.validate "name"}}
+                    data-test-input="custom-view-name"
+                />
+                {{#if @data.customView.errors}}
+                    <GhErrorMessage @errors={{@data.customView.errors}} @property="name" data-test-error="custom-view-name" />
+                {{else}}
+                    {{#if @data.customView.isNew}}
+                        <p>Saved views appear in the app sidebar.</p>
+                    {{/if}}
+                {{/if}}
+            </GhFormGroup>
+        </fieldset>
+        <div>
+            <label for="view-name" class="dib fw6">Icon color</label>
+            <div class="flex justify-between mt3 nl1">
+                {{#each this.customViews.availableColors as |color|}}
+                    <div class="gh-radio-color">
+                        <input
+                            type="radio"
+                            name="view-color"
+                            id="view-{{color}}"
+                            checked={{eq color @data.customView.color}}
+                            value={{color}}
+                            {{on "change" this.changeColor}}
+                        >
+                        <label for="view-{{color}}"><span class="gh-radio-color-{{color}}"></span></label>
+                    </div>
+                {{/each}}
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        {{#if @data.customView.isNew}}
+            <button
+                class="gh-btn" data-test-button="cancel-custom-view-form" type="button" {{on "click" @close}}
+                {{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
+                {{on "mousedown" (optional this.noop)}}
+            >
+                <span>Cancel</span>
+            </button>
+        {{else}}
+            <button
+                class="gh-btn gh-btn-red gh-btn-icon" data-test-button="delete-custom-view" type="button" {{on "click" (perform this.deleteTask)}}
+                {{on "mousedown" (optional this.noop)}}
+            >
+                <span>{{svg-jar "trash"}} Delete</span>
+            </button>
+        {{/if}}
+
+        <GhTaskButton
+            @buttonText="Save"
+            @successText="Saved"
+            @task={{this.saveTask}}
+            @taskArgs={{this.customView}}
+            @class="gh-btn gh-btn-black gh-btn-icon"
+            data-test-button="save-custom-view" />
+    </div>
+</div>

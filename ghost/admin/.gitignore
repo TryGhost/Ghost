@@ -1,0 +1,63 @@
+b-cov
+*.seed
+*.log
+*.csv
+*.dat
+*.out
+*.pid
+*.gz
+
+pids
+logs
+results
+
+npm-debug.log*
+yarn-error.log
+.nvmrc
+.bowerrc
+.idea/*
+*.iml
+*.sublime-*
+projectFilesBackup
+
+.DS_Store
+
+# vim-related
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+*.un~
+Session.vim
+.netrwhist
+.vimrc
+*~
+
+# TernJS
+.tern-project
+
+# See http://help.github.com/ignore-files/ for more about ignoring files.
+
+# compiled output
+/dist
+/dist-test
+/tmp
+
+# dependencies
+/node_modules
+/bower_components
+
+# IDE
+.idea/*
+*.iml
+*.sublime-*
+.vscode/*
+
+# misc
+/.env*
+/.pnp*
+/.eslintcache
+/connect.lock
+/coverage/
+/libpeerconnection.log
+/testem.log
+/concat-stats-for
+jsconfig.json

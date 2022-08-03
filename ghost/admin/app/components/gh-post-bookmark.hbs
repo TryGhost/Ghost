@@ -1,0 +1,22 @@
+<div class="gh-post-bookmark-container">
+    <div class="gh-post-bookmark">
+        {{#let (or @post.featureImage (get-setting "coverImage")) as |imageUrl|}}
+            {{#if imageUrl}}
+                <div class="gh-post-bookmark-image">
+                    <img src={{imageUrl}} alt="" role="presentation" />
+                </div>
+            {{/if}}
+            <div class="gh-post-bookmark-content {{if imageUrl "" "no-image"}}">
+                <div class="gh-post-bookmark-title">{{@post.title}}</div>
+                <div class="gh-post-bookmark-text truncate">{{@post.excerpt}}</div>
+                <div class="gh-post-bookmark-details">
+                    {{#if (get-setting "icon")}}
+                        <div class="gh-post-bookmark-site-icon"><img src={{get-setting "icon"}} alt="" role="presentation" /></div>
+                    {{/if}}
+                    <div class="gh-post-bookmark-site-title">{{get-setting "title"}}</div>
+                    <div class="gh-post-bookmark-authors">{{post-author-names @post}}</div>
+                </div>
+            </div>
+        {{/let}}
+    </div>
+</div>

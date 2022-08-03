@@ -1,0 +1,69 @@
+<section class="gh-canvas" {{scroll-top}}>
+    <div class="gh-dashboard">
+        <div class="gh-dashboard-inner">
+            <GhCanvasHeader class="gh-canvas-header">
+                <h2 class="gh-canvas-title" data-test-screen-title>
+                    Dashboard
+                </h2>
+            </GhCanvasHeader>
+        </div>
+        <section class="gh-dashboard-layout">
+            {{#if this.isLoading }}
+                <GhLoadingSpinner />
+            {{else}}
+                {{#if this.areMembersEnabled}}
+                    {{#if this.hasPaidTiers}}
+                        <Dashboard::Charts::Overview />
+                    {{/if}}
+
+                    <div class="gh-dashboard-group {{if this.isTotalMembersZero 'is-zero'}}">
+                        <Dashboard::Charts::Anchor />
+
+                        {{#if this.areNewslettersEnabled}}
+                            <Dashboard::Charts::Engagement />
+                        {{/if}}
+
+                        {{#if this.isTotalMembersZero}}
+                            <Dashboard::Parts::Zero />
+                        {{/if}}
+                    </div>
+                {{/if}}
+
+                <Dashboard::Charts::Recents />
+
+                <div class="gh-dashboard-split gh-dashboard-box is-secondary">
+                    <Dashboard::Resources::Resources />
+                    <Dashboard::Resources::Newsletter />
+                </div>
+                <div class="gh-dashboard-split">
+                    <Dashboard::Resources::StaffPicks />
+                    <Dashboard::Resources::WhatsNew />
+                    <Dashboard::Resources::Community />
+                </div>
+            {{/if}}
+
+            {{#unless this.isTotalMembersZero}}
+                <div class="gh-dashboard-select">
+                    <PowerSelect
+                        @selected={{this.selectedDaysOption}}
+                        @options={{this.daysOptions}}
+                        @searchEnabled={{false}}
+                        @onChange={{this.onDaysChange}}
+                        @triggerComponent="gh-power-select/trigger"
+                        @triggerClass="gh-contentfilter-menu-trigger"
+                        @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
+                        @matchTriggerWidth={{false}}
+                        @horizontalPosition="right"
+                        as |option|
+                    >
+                        {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
+                    </PowerSelect>
+                </div>
+            {{/unless}}
+        </section>
+
+        {{#if (enable-developer-experiments)}}
+            <Dashboard::Prototype::ControlPanel />
+        {{/if}}
+    </div>
+</section>

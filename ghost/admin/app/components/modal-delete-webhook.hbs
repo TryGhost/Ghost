@@ -1,0 +1,15 @@
+<header class="modal-header">
+    <h1>Are you sure?</h1>
+</header>
+<a class="close" href="" role="button" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
+
+<div class="modal-body">
+    <p>
+        Deleting this webhook may prevent the integration from functioning.
+    </p>
+</div>
+
+<div class="modal-footer">
+    <button class="gh-btn" type="button" {{action "closeModal"}}><span>Cancel</span></button>
+    <GhTaskButton @buttonText="Delete Webhook" @successText="Deleted" @task={{this.deleteWebhook}} @class="gh-btn gh-btn-red gh-btn-icon" />
+</div>

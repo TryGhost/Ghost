@@ -1,0 +1,22 @@
+<GhTokenInput
+    @options={{this.options}}
+    @selected={{this.selectedOptions}}
+    @disabled={{or @disabled this.fetchOptionsTask.isRunning}}
+    @optionsComponent="power-select/options"
+    @allowCreation={{false}}
+    @renderInPlace={{this.renderInPlace}}
+    @onChange={{this.setSegment}}
+    @class="select-members gh-tier-token-input"
+    @placeholder="Select a tier"
+    as |option|
+>
+    <span data-test-tiers-segment={{option.name}}>{{option.name}}</span>
+</GhTokenInput>
+
+{{#if @showMemberCount}}
+    <GhMembersSegmentCount
+        @segment={{@segment}}
+        @enforcedFilter={{@enforcedCountFilter}}
+        @onSegmentCountChange={{@onSegmentCountChange}}
+    />
+{{/if}}

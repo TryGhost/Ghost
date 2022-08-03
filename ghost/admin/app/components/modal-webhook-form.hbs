@@ -1,0 +1,103 @@
+<header class="modal-header" data-test-modal="webhook-form">
+    <h1 data-test-text="title">{{if this.webhook.isNew "New" "Edit"}} webhook</h1>
+</header>
+<button class="close" href title="Close" type="button" {{action "closeModal"}} {{action (optional this.noop) on="mouseDown"}}>
+    {{svg-jar "close"}}
+</button>
+
+<div class="modal-body">
+    <fieldset>
+        <GhFormGroup @errors={{this.webhook.errors}} @hasValidated={{this.webhook.hasValidated}} @property="name">
+            <label for="webhook-name" class="fw6">Name</label>
+            <GhTextInput
+                @value={{readonly this.webhook.name}}
+                @input={{action (mut this.webhook.name) value="target.value"}}
+                @focus-out={{action "validate" "name" target=this.webhook}}
+                @id="webhook-name"
+                @name="name"
+                @class="gh-input mt1"
+                @shouldFocus={{true}}
+                @autocapitalize="off"
+                @autocorrect="off"
+                data-test-input="webhook-name" />
+            <GhErrorMessage @errors={{this.webhook.errors}} @property="name" data-test-error="webhook-name" />
+        </GhFormGroup>
+    </fieldset>
+    <fieldset>
+        <GhFormGroup @errors={{this.webhook.errors}} @hasValidated={{this.webhook.hasValidated}} @property="event">
+            <label for="webhook-event" class="fw6">Event</label>
+            <span class="gh-select">
+                <OneWaySelect @value={{this.webhook.event}}
+                    @options={{this.availableEvents}}
+                    @optionValuePath="event"
+                    @optionLabelPath="name"
+                    @optionTargetPath="event"
+                    @groupLabelPath="group"
+                    @class="mt1"
+                    @includeBlank={{true}}
+                    @prompt="Select an event"
+                    @update={{action "selectEvent"}}
+                    @id="webhook-event"
+                    @name="event"
+                    data-test-select="webhook-event" />
+                {{svg-jar "arrow-down-small"}}
+            </span>
+            <GhErrorMessage @errors={{this.webhook.errors}} @property="event" data-test-error="webhook-event" />
+        </GhFormGroup>
+    </fieldset>
+    <fieldset>
+        <GhFormGroup @errors={{this.webhook.errors}} @hasValidated={{this.webhook.hasValidated}} @property="targetUrl">
+            <label for="webhook-targetUrl" class="fw6">Target URL</label>
+            <GhTextInput
+                @value={{readonly this.webhook.targetUrl}}
+                @input={{action (mut this.webhook.targetUrl) value="target.value"}}
+                @focus-out={{action "validate" "targetUrl" target=this.webhook}}
+                @id="webhook-targetUrl"
+                @name="targetUrl"
+                @placeholder="https://example.com"
+                @class="gh-input mt1"
+                @shouldFocus={{true}}
+                @autocapitalize="off"
+                @autocorrect="off"
+                data-test-input="webhook-targetUrl" />
+            <GhErrorMessage @errors={{this.webhook.errors}} @property="targetUrl" data-test-error="webhook-targetUrl" />
+        </GhFormGroup>
+    </fieldset>
+    {{#if (enable-developer-experiments)}}
+        <fieldset>
+            <GhFormGroup @errors={{this.webhook.errors}} @hasValidated={{this.webhook.hasValidated}} @property="secret">
+                <label for="webhook-secret" class="fw6">Secret</label>
+                <GhTextInput
+                    @value={{readonly this.webhook.secret}}
+                    @oninput={{action (mut this.webhook.secret) value="target.value"}}
+                    @focus-out={{action "validate" "secret" target=this.webhook}}
+                    @id="webhook-secret"
+                    @name="secret"
+                    @class="gh-input mt1"
+                    @shouldFocus={{true}}
+                    @autocapitalize="off"
+                    @autocorrect="off"
+                    data-test-input="webhook-secret" />
+                <GhErrorMessage @errors={{this.webhook.errors}} @property="secret" data-test-error="webhook-secret" />
+            </GhFormGroup>
+        </fieldset>
+    {{/if}}
+    {{#if this.error}}
+        <p class="red">{{this.error}}</p>
+    {{/if}}
+</div>
+
+<div class="modal-footer">
+    <button
+        class="gh-btn" data-test-button="cancel-webhook" type="button" {{action "closeModal"}}
+        {{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
+        {{action (optional this.noop) on="mouseDown"}}
+    >
+        <span>Cancel</span>
+    </button>
+    <GhTaskButton @buttonText={{this.buttonText}}
+        @successText={{this.successText}}
+        @task={{this.saveWebhook}}
+        @class="gh-btn gh-btn-black gh-btn-icon"
+        data-test-button="save-webhook" />
+</div>

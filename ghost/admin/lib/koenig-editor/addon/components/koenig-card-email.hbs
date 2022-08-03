@@ -1,0 +1,41 @@
+<KoenigCard
+    @icon="koenig/card-indicator-email"
+    @class={{concat (kg-style "container-card") " kg-email-card mih10 miw-100 relative"}}
+    @headerOffset={{this.headerOffset}}
+    @toolbar={{this.toolbar}}
+    @payload={{this.payload}}
+    @isSelected={{this.isSelected}}
+    @isEditing={{this.isEditing}}
+    @selectCard={{action this.selectCard}}
+    @deselectCard={{action this.deselectCard}}
+    @editCard={{action this.editCard}}
+    @saveCard={{action this.saveCard}}
+    @saveAsSnippet={{this.saveAsSnippet}}
+    @onLeaveEdit={{action "leaveEditMode"}}
+    @addParagraphAfterCard={{this.addParagraphAfterCard}}
+    @moveCursorToPrevSection={{this.moveCursorToPrevSection}}
+    @moveCursorToNextSection={{this.moveCursorToNextSection}}
+    @editor={{this.editor}}
+>
+    {{#if this.isEditing}}
+        <KoenigTextReplacementHtmlInput
+            @html={{this.payload.html}}
+            @placeholder="Email only text..."
+            @autofocus={{true}}
+            @class="miw-100 bn bg-transparent"
+            @onChange={{action "updateHtml"}}
+            @onFocus={{action (mut this.isFocused) true}}
+            @onBlur={{action (mut this.isFocused) false}}
+            @didCreateEditor={{action "registerEditor"}}
+        />
+        <div class="kg-card-help">
+            <p>
+                <span>Only visible when delivered by email, this card will not be published on your site.</span>
+                <a href="https://ghost.org/help/email-newsletters/#email-cards" class="dib lh-zero v-mid kg-card-help-icon-link" target="_blank" rel="noopener noreferrer">{{svg-jar "help" class="stroke-midgrey"}}</a>
+            </p>
+        </div>
+    {{else}}
+        <p>{{{this.formattedHtml}}}</p>
+        <div class="koenig-card-click-overlay"></div>
+    {{/if}}
+</KoenigCard>
