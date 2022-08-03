@@ -3,6 +3,8 @@ import Mixin from '@ember/object/mixin';
 import {run} from '@ember/runloop';
 import {typeOf} from '@ember/utils';
 
+import shortcutsCache from '../utils/shortcuts';
+
 // Configure KeyMaster to respond to all shortcuts,
 // even inside of
 // input, textarea, and select.
@@ -58,6 +60,8 @@ export default Mixin.create({
                 action = action.action;
             }
 
+            shortcutsCache.register(shortcut);
+
             key(shortcut, scope, (event) => {
                 // stop things like ctrl+s from actually opening a save dialog
                 event.preventDefault();
@@ -73,6 +77,7 @@ export default Mixin.create({
 
         Object.keys(shortcuts).forEach((shortcut) => {
             let scope = shortcuts[shortcut].scope || 'default';
+            shortcutsCache.unregister(shortcut);
             key.unbind(shortcut, scope);
         });
     },
