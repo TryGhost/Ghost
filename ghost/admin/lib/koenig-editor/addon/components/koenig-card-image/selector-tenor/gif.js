@@ -3,7 +3,7 @@ import {htmlSafe} from '@ember/template';
 
 export default class GhTenorGifComponent extends Component {
     get media() {
-        return this.args.gif.media[0].tinygif;
+        return this.args.gif.media_formats.tinygif;
     }
 
     get imageUrl() {
