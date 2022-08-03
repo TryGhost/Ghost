@@ -2,7 +2,7 @@ const should = require('should');
 
 const ThemeI18n = require('../../../../../core/frontend/services/theme-engine/i18n').ThemeI18n;
 
-describe('ThemeI18n Class Behaviour', function () {
+describe('ThemeI18n Class beharior', function () {
     it('defaults to en', function () {
         const i18n = new ThemeI18n();
         i18n.locale().should.eql('en');
