@@ -29,6 +29,8 @@ export default class extends Component {
             } else if (this.type === 'archived') {
                 return !tier.active;
             }
+
+            return true;
         });
     }
 

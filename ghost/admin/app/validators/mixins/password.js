@@ -72,7 +72,7 @@ export default Mixin.create({
         password = password.toString();
 
         // dissallow password from badPasswords list (e. g. '1234567890')
-        BAD_PASSWORDS.map((badPassword) => {
+        BAD_PASSWORDS.forEach((badPassword) => {
             if (badPassword === password) {
                 model.get('errors').add(errorTarget, 'Sorry, you cannot use an insecure password.');
                 this.invalidate();
@@ -86,7 +86,7 @@ export default Mixin.create({
         }
 
         // password must not contain the words 'ghost', 'password', or 'passw0rd'
-        DISALLOWED_PASSWORDS.map((disallowedPassword) => {
+        DISALLOWED_PASSWORDS.forEach((disallowedPassword) => {
             if (password.toLowerCase().indexOf(disallowedPassword) >= 0) {
                 model.get('errors').add(errorTarget, 'Sorry, you cannot use an insecure password.');
                 this.invalidate();

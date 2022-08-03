@@ -121,6 +121,8 @@ export default class KoenigSlashMenuComponent extends Component {
             if (matches.length > 0) {
                 return Object.assign({}, section, {items: matches});
             }
+
+            return undefined;
         }).compact();
 
         if (this.query !== this._lastQuery) {

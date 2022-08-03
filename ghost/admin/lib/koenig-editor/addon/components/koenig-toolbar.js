@@ -63,6 +63,8 @@ export default class KoenigToolbar extends Component {
             if (position[style] !== null) {
                 return `${style}: ${position[style]}px`;
             }
+
+            return undefined;
         });
 
         // ensure hidden toolbar is non-interactive
