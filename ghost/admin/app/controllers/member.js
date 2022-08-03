@@ -110,6 +110,11 @@ export default class MemberController extends Controller {
     }
 
     @action
+    closeImpersonateMemberModal() {
+        this.showImpersonateMemberModal = false;
+    }
+
+    @action
     save() {
         return this.saveTask.perform();
     }
