@@ -27,10 +27,6 @@ module.exports = function (grunt) {
         },
 
         shell: {
-            'npm-install': {
-                command: 'yarn install'
-            },
-
             ember: {
                 command: function (mode) {
                     let liveReloadBaseUrl = grunt.option('live-reload-base-url') || '/ghost/';
@@ -54,17 +50,9 @@ module.exports = function (grunt) {
                 command: 'csscomb -c app/styles/csscomb.json -lv app/styles'
             },
 
-            test: {
-                command: 'npm test'
-            },
-
             options: {
                 preferLocal: true
             }
         }
     });
-
-    grunt.registerTask('init', 'Install the admin dependencies',
-        ['shell:npm-install']
-    );
 };
