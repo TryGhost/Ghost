@@ -104,6 +104,38 @@
                                 <p class="response w-100"><span class="red">{{this.stripePlanError}}</span></p>
                             {{/if}}
                         </GhFormGroup>
+                        {{#if (feature 'freeTrial')}}
+                            <GhFormGroup @errors={{this.errors}} @property="trialPeriodDays" data-test-formgroup="trialPeriodDays">
+                                <div class="form-group mb0 for-checkbox">
+                                    <label
+                                        class="checkbox"
+                                        for="free-plan"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            checked={{this.freeTrialEnabled}}
+                                            id="free-plan"
+                                            name="free-plan"
+                                            class="gh-input post-settings-featured"
+                                            {{on "click" (action "setFreeTrialEnabled" value="target.checked")}}
+                                        >
+                                        <span class="input-toggle-component"></span>
+                                        <label for="trial" class="fw6">Free trial</label>
+                                    </label>
+                                </div>
+                                <div class="gh-input-group {{if this.freeTrialEnabled "fade-in"}}">
+                                    <GhTextInput
+                                            @value={{readonly this.tier.trialPeriodDays}}
+                                            @type="number"
+                                            @input={{action "setTrialPeriodDays"}}
+                                            @name="trial"
+                                            @id="trial"
+                                            @class="gh-input"
+                                            data-test-input="tier-trial" />
+                                            <span class="gh-input-append">days</span>
+                                </div>
+                            </GhFormGroup>
+                        {{/if}}
                         <GhFormGroup>
                             <label for="welcomePage" class="fw6">Welcome page</label>
                             <GhUrlInput

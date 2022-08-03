@@ -47,6 +47,10 @@ export default class ModalTierPrice extends ModalBase {
         return this.tier.type === 'free';
     }
 
+    get freeTrialEnabled() {
+        return this.tier.trialPeriodDays > 0;
+    }
+
     get allCurrencies() {
         return getCurrencyOptions();
     }
@@ -137,6 +141,7 @@ export default class ModalTierPrice extends ModalBase {
     }
 
     reset() {
+        this.tier.rollbackAttributes();
         this.newBenefit = TierBenefitItem.create({isNew: true, name: ''});
         const finalBenefits = this.savedBenefits || emberA([]);
         this.tier.set('benefits', finalBenefits);
@@ -255,6 +260,19 @@ export default class ModalTierPrice extends ModalBase {
         setCurrency(event) {
             const newCurrency = event.value;
             this.currency = newCurrency;
+        },
+
+        setTrialPeriodDays(event) {
+            const value = parseInt(event.target.value);
+            this.tier.set('trialPeriodDays', value);
+        },
+
+        setFreeTrialEnabled(value) {
+            if (!value) {
+                this.tier.set('trialPeriodDays', 0);
+            } else {
+                this.tier.set('trialPeriodDays', 7);
+            }
         },
         // needed because ModalBase uses .send() for keyboard events
         closeModal() {
