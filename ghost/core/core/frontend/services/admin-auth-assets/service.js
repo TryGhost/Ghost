@@ -44,7 +44,7 @@ class AdminAuthAssetsService {
      */
     async minify(globs, replacements) {
         try {
-            await this.minifier.minify(globs, replacements);
+            await this.minifier.minify(globs, {replacements});
         } catch (error) {
             if (error.code === 'EACCES') {
                 logging.error('Ghost was not able to write admin-auth asset files due to permissions.');
