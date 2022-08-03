@@ -27,7 +27,7 @@
     "start": "yarn workspace ghost run start",
     "test": "yarn workspaces run test",
     "main": "yarn main:monorepo && yarn main:submodules",
-    "main:monorepo": "git checkout main && git pull ${GHOST_UPSTREAM:-origin} main && yarn && yarn workspace ghost run grunt subgrunt:init",
+    "main:monorepo": "git checkout main && git pull ${GHOST_UPSTREAM:-origin} main && yarn",
     "main:submodules": "git submodule sync && git submodule update && git submodule foreach \"git checkout main && git pull ${GHOST_UPSTREAM:-origin} main && yarn\""
   },
   "resolutions": {
