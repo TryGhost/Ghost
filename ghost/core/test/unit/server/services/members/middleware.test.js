@@ -58,7 +58,7 @@ describe('Members Service Middleware', function () {
             // Call the middleware
             await membersMiddleware.createSessionFromMagicLink(req, res, next);
 
-            // Check behaviour
+            // Check beharior
             next.calledOnce.should.be.true();
             next.firstCall.args.should.be.an.Array().with.lengthOf(0);
         });
@@ -80,7 +80,7 @@ describe('Members Service Middleware', function () {
             // Call the middleware
             await membersMiddleware.createSessionFromMagicLink(req, res, next);
 
-            // Check behaviour
+            // Check beharior
             next.calledOnce.should.be.false();
             res.redirect.calledOnce.should.be.true();
             res.redirect.firstCall.args[0].should.eql('/blah/?action=signup&success=true');
@@ -96,7 +96,7 @@ describe('Members Service Middleware', function () {
             // Call the middleware
             await membersMiddleware.createSessionFromMagicLink(req, res, next);
 
-            // Check behaviour
+            // Check beharior
             next.calledOnce.should.be.false();
             res.redirect.calledOnce.should.be.true();
             res.redirect.firstCall.args[0].should.eql('/blah/?action=signup&success=false');
@@ -119,7 +119,7 @@ describe('Members Service Middleware', function () {
             // Call the middleware
             await membersMiddleware.createSessionFromMagicLink(req, res, next);
 
-            // Check behaviour
+            // Check beharior
             next.calledOnce.should.be.false();
             res.redirect.calledOnce.should.be.true();
             res.redirect.firstCall.args[0].should.eql('https://custom.com/redirect/');
@@ -142,7 +142,7 @@ describe('Members Service Middleware', function () {
             // Call the middleware
             await membersMiddleware.createSessionFromMagicLink(req, res, next);
 
-            // Check behaviour
+            // Check beharior
             next.calledOnce.should.be.false();
             res.redirect.calledOnce.should.be.true();
             res.redirect.firstCall.args[0].should.eql('https://custom.com/paid/');
@@ -158,7 +158,7 @@ describe('Members Service Middleware', function () {
             // Call the middleware
             await membersMiddleware.createSessionFromMagicLink(req, res, next);
 
-            // Check behaviour
+            // Check beharior
             next.calledOnce.should.be.false();
             res.redirect.calledOnce.should.be.true();
             res.redirect.firstCall.args[0].should.eql('/blah/my-post/?success=true&action=signin');
@@ -174,7 +174,7 @@ describe('Members Service Middleware', function () {
             // Call the middleware
             await membersMiddleware.createSessionFromMagicLink(req, res, next);
 
-            // Check behaviour
+            // Check beharior
             next.calledOnce.should.be.false();
             res.redirect.calledOnce.should.be.true();
             res.redirect.firstCall.args[0].should.eql('/blah/?action=signin&success=true');

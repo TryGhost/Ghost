@@ -56,7 +56,7 @@ class CacheManager {
             return this.settingsCache[key];
         }
 
-        // Default behaviour is to try to resolve the value and return that
+        // Default behavior is to try to resolve the value and return that
         try {
             // CASE: handle literal false
             if (this.settingsCache[key].value === false || this.settingsCache[key].value === 'false') {

@@ -20,7 +20,7 @@ function assertContentIsAbsent(res) {
     res.text.should.not.containEql('<h2 id="markdown">markdown</h2>');
 }
 
-describe('Front-end members behaviour', function () {
+describe('Front-end members beharior', function () {
     let request;
 
     async function loginAsMember(email) {
