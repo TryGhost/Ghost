@@ -12,6 +12,7 @@ export default class MembersRoute extends AdminRoute {
         super(...arguments);
         this.router.on('routeWillChange', (transition) => {
             this.showUnsavedChangesModal(transition);
+            this.closeImpersonateModal(transition);
         });
     }
 
@@ -62,6 +63,16 @@ export default class MembersRoute extends AdminRoute {
                 controller.toggleUnsavedChangesModal(transition);
                 return;
             }
+        }
+    }
+
+    closeImpersonateModal(transition) {
+        // If user navigates away with forward or back button, ensure returning to page 
+        // hides modal
+        if (transition.from && transition.from.name === this.routeName && transition.targetName) {
+            let {controller} = this;
+
+            controller.closeImpersonateMemberModal(transition);
         }
     }
 }
