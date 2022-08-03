@@ -35,7 +35,7 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-  prod-build:
+  admin-prod-build:
     runs-on: ubuntu-18.04
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     name: Admin - Production Build
@@ -47,6 +47,42 @@ jobs:
 
       - run: yarn
       - run: yarn workspace ghost-admin run grunt shell:ember:prod
+
+      - uses: daniellockyer/action-slack-build@master
+        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          status: ${{ job.status }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  admin-tests:
+    runs-on: ubuntu-18.04
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
+    strategy:
+      matrix:
+        browser: ["Firefox", "Chrome"]
+    name: Admin - ${{ matrix.browser }}
+    env:
+      MOZ_HEADLESS: 1
+      JOBS: 1
+      CI: true
+      COVERAGE: true
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "14.17.0"
+
+      - run: yarn
+      - run: yarn test
+        working-directory: ghost/admin
+        env:
+          BROWSER: ${{ matrix.browser }}
+
+      # Merge coverage reports and upload
+      - run: yarn ember coverage-merge
+        working-directory: ghost/admin
+      - uses: codecov/codecov-action@v3
 
       - uses: daniellockyer/action-slack-build@master
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -318,50 +354,10 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-  test:
-    runs-on: ubuntu-18.04
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
-    strategy:
-      matrix:
-        browser: ["Firefox", "Chrome"]
-    name: Admin - ${{ matrix.browser }}
-    env:
-      MOZ_HEADLESS: 1
-      JOBS: 1
-      CI: true
-      COVERAGE: true
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: "14.17.0"
-
-      - run: yarn
-      - run: yarn test
-        working-directory: ghost/admin
-        env:
-          BROWSER: ${{ matrix.browser }}
-
-      # Merge coverage reports and upload
-      - run: yarn ember coverage-merge
-        working-directory: ghost/admin
-      - uses: codecov/codecov-action@v3
-
-      - uses: daniellockyer/action-slack-build@master
-        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
-        with:
-          status: ${{ job.status }}
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
   canary:
     runs-on: ubuntu-18.04
-    needs: [lint, migrations, unit-tests, database-tests]
+    needs: [lint, admin-tests, admin-prod-build, migrations, unit-tests, database-tests]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     name: Canary
     steps:
-      - name: Invoke Canary Build
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          workflow: Canary Build
-          token: ${{ secrets.RELEASE_TOKEN }}
+      - uses: tryghost/actions/.github/workflows/canary.yml@main
