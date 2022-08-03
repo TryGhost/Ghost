@@ -92,7 +92,7 @@
     "ember-css-transitions": "4.1.0",
     "ember-data": "3.24.0",
     "ember-decorators": "6.1.1",
-    "ember-drag-drop": "0.4.8",
+    "ember-drag-drop": "0.8.2",
     "ember-ella-sparse": "0.16.0",
     "ember-exam": "6.0.1",
     "ember-export-application-global": "2.0.1",
