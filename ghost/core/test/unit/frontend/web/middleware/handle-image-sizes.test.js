@@ -138,7 +138,7 @@ describe('handleImageSizes middleware', function () {
                         url.should.equal('/blog/content/images/image.jpg');
                     } catch (e) {
                         return done(e);
-                    }                    
+                    }
                     done();
                 }
             };
@@ -161,7 +161,7 @@ describe('handleImageSizes middleware', function () {
                         url.should.equal('/blog/content/images/image.jpg');
                     } catch (e) {
                         return done(e);
-                    }                    
+                    }
                     done();
                 }
             };
@@ -184,7 +184,7 @@ describe('handleImageSizes middleware', function () {
                         url.should.equal('/blog/content/images/image.jpg');
                     } catch (e) {
                         return done(e);
-                    }                    
+                    }
                     done();
                 }
             };
@@ -219,7 +219,7 @@ describe('handleImageSizes middleware', function () {
                         url.should.equal('/blog/content/images/blank.png');
                     } catch (e) {
                         return done(e);
-                    }                    
+                    }
                     done();
                 }
             };
@@ -245,7 +245,7 @@ describe('handleImageSizes middleware', function () {
                         url.should.equal('/blog/content/images/blank.png');
                     } catch (e) {
                         return done(e);
-                    }                    
+                    }
                     done();
                 }
             };
@@ -271,7 +271,7 @@ describe('handleImageSizes middleware', function () {
                         url.should.equal('/blog/content/images/blank.png');
                     } catch (e) {
                         return done(e);
-                    }                    
+                    }
                     done();
                 }
             };
@@ -283,7 +283,7 @@ describe('handleImageSizes middleware', function () {
                 done(new Error('Should not have called next'));
             });
         });
-        
+
         it('continues if file exists', function (done) {
             dummyStorage.exists = async function (path) {
                 if (path === '/size/w1000/blank.png') {
@@ -389,7 +389,7 @@ describe('handleImageSizes middleware', function () {
                         url.should.equal('/blog/content/images/blank.svg');
                     } catch (e) {
                         return done(e);
-                    }                    
+                    }
                     done();
                 }
             };
@@ -417,7 +417,7 @@ describe('handleImageSizes middleware', function () {
                         url.should.equal('/blog/content/images/blank.png');
                     } catch (e) {
                         return done(e);
-                    }                    
+                    }
                     done();
                 }
             };
@@ -445,7 +445,7 @@ describe('handleImageSizes middleware', function () {
                         url.should.equal('/blog/content/images/blank.ico');
                     } catch (e) {
                         return done(e);
-                    }                    
+                    }
                     done();
                 }
             };
@@ -473,7 +473,7 @@ describe('handleImageSizes middleware', function () {
                         url.should.equal('/blog/content/images/blank.png');
                     } catch (e) {
                         return done(e);
-                    }                    
+                    }
                     done();
                 }
             };
