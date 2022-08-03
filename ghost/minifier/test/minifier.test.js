@@ -71,6 +71,21 @@ describe('Minifier', function () {
 
             result.should.be.an.Array().with.lengthOf(2);
         });
+
+        it('can replace the content', async function () {
+            let result = await minifier.minify({
+                'card.min.js': 'js/*.js'
+            }, {
+                replacements: {
+                    '.kg-gallery-image': 'randomword'
+                }
+            });
+            result.should.be.an.Array().with.lengthOf(1);
+
+            const outputPath = minifier.getFullDest(result[0]);
+            const content = await fs.readFile(outputPath, {encoding: 'utf8'});
+            content.should.match(/randomword/);
+        });
     });
 
     describe('Bad inputs', function () {

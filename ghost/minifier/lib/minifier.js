@@ -109,14 +109,34 @@ class Minifier {
         }
     }
 
-    async minify(options) {
-        debug('Begin', options);
-        const destinations = Object.keys(options);
+    /**
+     * Minify files
+     * 
+     * @param {Object} globs An object in the form of 
+     * ```js
+     * {
+     *     'destination1.js': 'glob/*.js',
+     *     'destination2.js': 'glob2/*.js'
+     * }
+     * ```
+     * @param {Object} [options]
+     * @param {Object} [options.replacements] Key value pairs that should get replaced in the content before minifying
+     * @returns {Promise<string[]>} List of minified files (keys of globs)
+     */
+    async minify(globs, options) {
+        debug('Begin', globs);
+        const destinations = Object.keys(globs);
         const minifiedFiles = [];
 
         for (const dest of destinations) {
-            const src = options[dest];
-            const contents = await this.getSrcFileContents(src);
+            const src = globs[dest];
+            let contents = await this.getSrcFileContents(src);
+
+            if (options?.replacements) {
+                for (const key of Object.keys(options.replacements)) {
+                    contents = contents.replace(key, options.replacements[key]);
+                }
+            }
             let minifiedContents;
 
             if (dest.endsWith('.css')) {
