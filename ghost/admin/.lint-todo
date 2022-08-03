@@ -944,3 +944,4 @@ remove|ember-template-lint|no-invalid-interactive|5|8|5|8|94046126dd697b080aa162
 remove|ember-template-lint|no-invalid-interactive|6|8|6|8|94046126dd697b080aa16222b00a3d5a545ee001|1658102400000|1668474000000|1673658000000|app/components/gh-koenig-editor.hbs
 remove|ember-template-lint|no-passed-in-event-handlers|26|12|26|12|4ad1176b9a4bb23d79114735b478240166113502|1658102400000|1668474000000|1673658000000|app/components/gh-koenig-editor.hbs
 remove|ember-template-lint|no-passed-in-event-handlers|28|12|28|12|7ffe0a55c81efcfcd46880a930fa69bee73835b3|1658102400000|1668474000000|1673658000000|app/components/gh-koenig-editor.hbs
+remove|ember-template-lint|no-whitespace-within-word|80|20|80|20|5ec988f82d06bb76be61f23dbb9cb65f94326f34|1658102400000|1668474000000|1673658000000|app/components/modal-markdown-help.hbs
