@@ -1,5 +1,5 @@
 const assert = require('assert');
-const htmlToPlaintext = require('../../../core/shared/html-to-plaintext');
+const htmlToPlaintext = require('../');
 
 describe('Html to Plaintext', function () {
     function getEmailandExcert(input) {
@@ -74,7 +74,7 @@ describe('Html to Plaintext', function () {
     describe('Special cases', function () {
         it('Instagram (blockquotes)', function () {
             // This is an instagram embed, but with all the style attributes & svg content removed for brevity
-            const html = '<p>Some text in a paragraph.</p><!--kg-card-begin: html--><blockquote class=\"instagram-media\" data-instgrm-captioned data-instgrm-permalink=\"https://www.instagram.com/p/AbC123dEf/?utm_source=ig_embed&amp;utm_campaign=loading\" data-instgrm-version=\"14\"><div> <a href=\"https://www.instagram.com/p/AbC123dEf/?utm_source=ig_embed&amp;utm_campaign=loading\" target=\"_blank\"><div><div></div><div><div></div><div></div></div></div><div></div><div><svg width=\"50px\" height=\"50px\" viewBox=\"0 0 60 60\" version=\"1.1\" xmlns=\"https://www.w3.org/2000/svg\" xmlns:xlink=\"https://www.w3.org/1999/xlink\"><!-- svg stuff --></svg></div><div><div>View this post on Instagram</div></div><div></div><div><div><div></div><div></div><div></div></div><div><div></div><div><div></div><div></div><div></div></div></div><div><div></div><div></div></div></a><p><a href=\"https://www.instagram.com/p/AbC123dEf/?utm_source=ig_embed&amp;utm_campaign=loading\" target=\"_blank\">A post shared by Some Dude (@somedude)</a></p></div></blockquote><script async src=\"//www.instagram.com/embed.js\"></script><!--kg-card-end: html-->';
+            const html = '<p>Some text in a paragraph.</p><!--kg-card-begin: html--><blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="https://www.instagram.com/p/AbC123dEf/?utm_source=ig_embed&amp;utm_campaign=loading" data-instgrm-version="14"><div> <a href="https://www.instagram.com/p/AbC123dEf/?utm_source=ig_embed&amp;utm_campaign=loading" target="_blank"><div><div></div><div><div></div><div></div></div></div><div></div><div><svg width="50px" height="50px" viewBox="0 0 60 60" version="1.1" xmlns="https://www.w3.org/2000/svg" xmlns:xlink="https://www.w3.org/1999/xlink"><!-- svg stuff --></svg></div><div><div>View this post on Instagram</div></div><div></div><div><div><div></div><div></div><div></div></div><div><div></div><div><div></div><div></div><div></div></div></div><div><div></div><div></div></div></a><p><a href="https://www.instagram.com/p/AbC123dEf/?utm_source=ig_embed&amp;utm_campaign=loading" target="_blank">A post shared by Some Dude (@somedude)</a></p></div></blockquote><script async src="//www.instagram.com/embed.js"></script><!--kg-card-end: html-->';
             const expected = 'Some text in a paragraph.\n\nView this post on Instagram\n\nA post shared by Some Dude (@somedude)';
             const {excerpt} = getEmailandExcert(html);
             assert.equal(excerpt, expected);
