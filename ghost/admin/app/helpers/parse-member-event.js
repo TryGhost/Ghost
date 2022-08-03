@@ -11,7 +11,7 @@ export default function parseMemberEvent(event, hasMultipleNewsletters) {
     let timestamp = moment(event.data.created_at);
 
     return {
-        memberId: event.data.member_id,
+        memberId: event.data.member_id ?? event.data.member?.id,
         member: event.data.member,
         emailId: event.data.email_id,
         email: event.data.email,
