@@ -7,7 +7,6 @@
      "moduleResolution": "node"
   },
   "exclude": [
-    "core/built",
-    "core/admin"
+    "core/built"
   ]
 }
