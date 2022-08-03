@@ -33,6 +33,7 @@
     "copy-webpack-plugin": "^11.0.0",
     "eslint-config-react-app": "^7.0.1",
     "eslint-plugin-ghost": "2.12.0",
+    "eslint-plugin-tailwindcss": "^3.6.0",
     "glob": "^8.0.3",
     "mocha": "10.0.0",
     "node-static": "^0.7.11",
@@ -77,8 +78,18 @@
       "plugin:ghost/browser"
     ],
     "plugins": [
-      "ghost"
-    ]
+      "ghost",
+      "tailwindcss"
+    ],
+    "rules": {
+      "tailwindcss/classnames-order": "off",
+      "tailwindcss/enforces-negative-arbitrary-values": "warn",
+      "tailwindcss/enforces-shorthand": "warn",
+      "tailwindcss/migration-from-tailwind-2": "warn",
+      "tailwindcss/no-arbitrary-value": "off",
+      "tailwindcss/no-custom-classname": "warn",
+      "tailwindcss/no-contradicting-classname": "error"
+    }
   },
   "jest": {
     "moduleFileExtensions": [
