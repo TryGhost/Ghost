@@ -53,6 +53,7 @@ SECURITY.md
 renovate.json
 *.html
 !core/frontend/src/admin-auth/*.html
+!core/built/admin/**/*.html
 !core/server/views/**
 !core/server/services/mail/templates/**
 bower_components/**
