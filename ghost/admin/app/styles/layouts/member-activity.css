@@ -124,9 +124,11 @@
 }
 
 .gh-members-activity-description {
-    display: inline-block;
+    display: block;
     color: var(--middarkgrey);
     font-weight: 500;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .gh-members-activity-icon {

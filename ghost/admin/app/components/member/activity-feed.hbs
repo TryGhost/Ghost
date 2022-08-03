@@ -26,15 +26,17 @@
                                                     <span class="gh-member-feed-event-inner">
                                                         <span class="gh-members-activity-description">
                                                             {{capitalize-first-letter event.action}}
-                                                            {{event.object}}
+                                                            {{#if event.url}}
+                                                                "<a class="ghost-members-activity-object-link" href="{{event.url}}" target="_blank" rel="noopener noreferrer">{{event.object}}</a>"
+                                                            {{else}}
+                                                                {{event.object}}
+                                                            {{/if}}
                                                         </span>
                                                         {{#if event.email}}
                                                             "<GhEmailPreviewLink @data={{event.email}} />"
                                                         {{/if}}
                                                         {{event.info}}
-                                                        {{#if event.subtitle}}
-                                                            "<a class="ghost-memebrs-activity-subtitle" href="{{event.url}}" target="_blank" rel="noopener noreferrer">{{event.subtitle}}</a>"
-                                                        {{/if}}
+                                                        
                                                     </span>
                                                 </div>
                                                 <div class="gh-member-feed-time">

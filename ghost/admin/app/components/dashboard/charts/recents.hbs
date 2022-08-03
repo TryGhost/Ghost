@@ -100,11 +100,12 @@
                                                 {{svg-jar parsedEvent.icon}}
                                                 <span class="gh-dashboard-list-subtext">
                                                     {{capitalize-first-letter parsedEvent.action}}
-                                                    {{parsedEvent.object}}
-                                                    {{parsedEvent.info}}
-                                                    {{#if parsedEvent.subtitle}}
-                                                        "<a class="ghost-memebrs-activity-subtitle" href="{{parsedEvent.url}}" target="_blank" rel="noopener noreferrer">{{parsedEvent.subtitle}}</a>"
+                                                    {{#if parsedEvent.url}}
+                                                        "<a class="ghost-members-activity-object-link" href="{{parsedEvent.url}}" target="_blank" rel="noopener noreferrer">{{parsedEvent.object}}</a>"
+                                                    {{else}}
+                                                         {{parsedEvent.object}}
                                                     {{/if}}
+                                                    {{parsedEvent.info}}
                                                 </span>
                                             </div>
                                             <div class="gh-dashboard-list-item-sub">
