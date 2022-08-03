@@ -42,9 +42,9 @@ class AdminAuthAssetsService {
      * @private
      * @returns {Promise<void>}
      */
-    async minify(globs, replacements) {
+    async minify(globs, options) {
         try {
-            await this.minifier.minify(globs, {replacements});
+            await this.minifier.minify(globs, options);
         } catch (error) {
             if (error.code === 'EACCES') {
                 logging.error('Ghost was not able to write admin-auth asset files due to permissions.');
@@ -100,7 +100,7 @@ class AdminAuthAssetsService {
         const globs = this.generateGlobs();
         const replacements = this.generateReplacements();
         await this.clearFiles();
-        await this.minify(globs, replacements);
+        await this.minify(globs, {replacements});
         await this.copyStatic();
     }
 }
