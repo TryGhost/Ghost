@@ -1,0 +1,129 @@
+/*
+
+   BORDER COLORS
+
+   Border colors can be used to extend the base
+   border classes ba,bt,bb,br,bl found in the _borders.css file.
+
+   The base border class by default will set the color of the border
+   to that of the current text color. These classes are for the cases
+   where you desire for the text and border colors to be different.
+
+   Base:
+     b = border
+
+   Modifiers:
+   --color-name = each color variable name is also a border color name
+
+*/
+
+.b--blue           { border-color: var(--blue); }
+.b--green          { border-color: var(--green); }
+.b--purple          { border-color: var(--purple); }
+.b--yellow         { border-color: var(--yellow); }
+.b--red            { border-color: var(--red); }
+.b--pink           { border-color: var(--pink); }
+.b--white          { border-color: var(--white); }
+
+.b--white-10          { border-color: var(--white-10); }
+.b--white-20          { border-color: var(--white-20); }
+.b--white-30          { border-color: var(--white-30); }
+.b--white-40          { border-color: var(--white-40); }
+.b--white-50          { border-color: var(--white-50); }
+.b--white-60          { border-color: var(--white-60); }
+.b--white-70          { border-color: var(--white-70); }
+.b--white-80          { border-color: var(--white-80); }
+.b--white-90          { border-color: var(--white-90); }
+
+.b--black-10          { border-color: var(--black-10); }
+.b--black-20          { border-color: var(--black-20); }
+.b--black-30          { border-color: var(--black-30); }
+.b--black-40          { border-color: var(--black-40); }
+.b--black-50          { border-color: var(--black-50); }
+.b--black-60          { border-color: var(--black-60); }
+.b--black-70          { border-color: var(--black-70); }
+.b--black-80          { border-color: var(--black-80); }
+.b--black-90          { border-color: var(--black-90); }
+
+.b--darkgrey       { border-color: var(--darkgrey); }
+.b--middarkgrey    { border-color: var(--middarkgrey); }
+.b--midgrey        { border-color: var(--midgrey); }
+.b--midlightgrey   { border-color: var(--midlightgrey); }
+.b--lightgrey      { border-color: var(--lightgrey); }
+.b--whitegrey      { border-color: var(--whitegrey); }
+
+/* Shades */
+.b--blue-l3       { border-color: var(--blue-l3); }
+.b--blue-l2       { border-color: var(--blue-l2); }
+.b--blue-l1       { border-color: var(--blue-l1); }
+.b--blue-d1       { border-color: var(--blue-d1); }
+.b--blue-d2       { border-color: var(--blue-d2); }
+.b--blue-d3       { border-color: var(--blue-d3); }
+
+.b--green-l3       { border-color: var(--green-l3); }
+.b--green-l2       { border-color: var(--green-l2); }
+.b--green-l1       { border-color: var(--green-l1); }
+.b--green-d1       { border-color: var(--green-d1); }
+.b--green-d2       { border-color: var(--green-d2); }
+.b--green-d3       { border-color: var(--green-d3); }
+
+.b--purple-l3       { border-color: var(--purple-l3); }
+.b--purple-l2       { border-color: var(--purple-l2); }
+.b--purple-l1       { border-color: var(--purple-l1); }
+.b--purple-d1       { border-color: var(--purple-d1); }
+.b--purple-d2       { border-color: var(--purple-d2); }
+.b--purple-d3       { border-color: var(--purple-d3); }
+
+.b--yellow-l3       { border-color: var(--yellow-l3); }
+.b--yellow-l2       { border-color: var(--yellow-l2); }
+.b--yellow-l1       { border-color: var(--yellow-l1); }
+.b--yellow-d1       { border-color: var(--yellow-d1); }
+.b--yellow-d2       { border-color: var(--yellow-d2); }
+.b--yellow-d3       { border-color: var(--yellow-d3); }
+
+.b--red-l3       { border-color: var(--red-l3); }
+.b--red-l2       { border-color: var(--red-l2); }
+.b--red-l1       { border-color: var(--red-l1); }
+.b--red-d1       { border-color: var(--red-d1); }
+.b--red-d2       { border-color: var(--red-d2); }
+.b--red-d3       { border-color: var(--red-d3); }
+
+.b--pink-l3       { border-color: var(--pink-l3); }
+.b--pink-l2       { border-color: var(--pink-l2); }
+.b--pink-l1       { border-color: var(--pink-l1); }
+.b--pink-d1       { border-color: var(--pink-d1); }
+.b--pink-d2       { border-color: var(--pink-d2); }
+.b--pink-d3       { border-color: var(--pink-d3); }
+
+.b--darkgrey-l2       { border-color: var(--darkgrey-l2); }
+.b--darkgrey-l1       { border-color: var(--darkgrey-l1); }
+.b--darkgrey-d1       { border-color: var(--darkgrey-d1); }
+.b--darkgrey-d2       { border-color: var(--darkgrey-d2); }
+
+.b--middarkgrey-l2       { border-color: var(--middarkgrey-l2); }
+.b--middarkgrey-l1       { border-color: var(--middarkgrey-l1); }
+.b--middarkgrey-d1       { border-color: var(--middarkgrey-d1); }
+.b--middarkgrey-d2       { border-color: var(--middarkgrey-d2); }
+
+.b--midgrey-l2       { border-color: var(--midgrey-l2); }
+.b--midgrey-l1       { border-color: var(--midgrey-l1); }
+.b--midgrey-d1       { border-color: var(--midgrey-d1); }
+.b--midgrey-d2       { border-color: var(--midgrey-d2); }
+
+.b--midlightgrey-l2       { border-color: var(--midlightgrey-l2); }
+.b--midlightgrey-l1       { border-color: var(--midlightgrey-l1); }
+.b--midlightgrey-d1       { border-color: var(--midlightgrey-d1); }
+.b--midlightgrey-d2       { border-color: var(--midlightgrey-d2); }
+
+.b--lightgrey-l2       { border-color: var(--lightgrey-l2); }
+.b--lightgrey-l1       { border-color: var(--lightgrey-l1); }
+.b--lightgrey-d1       { border-color: var(--lightgrey-d1); }
+.b--lightgrey-d2       { border-color: var(--lightgrey-d2); }
+
+.b--whitegrey-l2       { border-color: var(--whitegrey-l2); }
+.b--whitegrey-l1       { border-color: var(--whitegrey-l1); }
+.b--whitegrey-d1       { border-color: var(--whitegrey-d1); }
+.b--whitegrey-d2       { border-color: var(--whitegrey-d2); }
+
+.b--transparent { border-color: var(--transparent); }
+.b--inherit { border-color: inherit; }

@@ -1,0 +1,67 @@
+<header class="modal-header" data-test-modal="member-tier" {{did-insert this.setup}}>
+    <h1>Add subscription</h1>
+</header>
+<button type="button" class="close" title="Close" {{on "click" this.close}}>
+    {{svg-jar "close"}}<span class="hidden">Close</span>
+</button>
+
+<form>
+    <div class="modal-body">
+        <p class="gh-member-addcomp-subhed" data-test-text="select-tier-desc">
+            Select a tier for <strong>{{or this.member.name this.member.email}}</strong>'s
+            complimentary subscription.
+        </p>
+        {{#if this.activeSubscriptions.length}}
+            <p class="gh-member-addcomp-warning" data-test-text="sub-cancel-warning">
+                Adding a complimentary subscription cancels all existing subscriptions of this member.
+            </p>
+        {{/if}}
+        {{#if this.loadingTiers}}
+            <div class="flex justify-center flex-auto">
+                <div class="gh-loading-spinner"> </div>
+            </div>
+        {{else}}
+            <div class="form-rich-radio">
+                {{#each this.tiers as |tier|}}
+                    <div
+                        class="gh-radio {{if (eq this.selectedTier tier.id) "active"}}"
+                        {{on "click" (fn this.setTier tier.id)}}
+                        data-test-tier-option={{tier.id}}
+                    >
+                        <div class="gh-radio-content">
+                            <div class="gh-radio-label">
+                                <div class="description" data-test-text="tier-desc">
+                                    <h4>{{tier.name}}</h4>
+                                    <p>{{tier.description}}</p>
+                                </div>
+                                {{svg-jar "check" class="check"}}
+                            </div>
+                        </div>
+                        <div class="gh-radio-button"></div>
+                    </div>
+                {{/each}}
+            </div>
+        {{/if}}
+    </div>
+</form>
+
+<div class="modal-footer">
+    <button
+        class="gh-btn"
+        type="button"
+        {{on "click" this.close}}
+        {{!-- disable mouseDown so it does not trigger focus-out validations --}}
+        {{!-- template-lint-disable no-down-event-binding --}}
+        {{on "mousedown" (optional this.noop)}}
+        data-test-button="cancel-webhook"
+    >
+        <span>Cancel</span>
+    </button>
+
+
+    <GhTaskButton @buttonText="Add subscription"
+        @successText={{"Added"}}
+        @task={{this.addTier}}
+        @class="gh-btn gh-btn-green gh-btn-icon gh-btn-add-membertier"
+        data-test-button="save-comp-tier" />
+</div>

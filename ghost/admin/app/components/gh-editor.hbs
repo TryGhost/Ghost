@@ -1,0 +1,15 @@
+{{yield (hash
+    headerHeight=this.headerHeight
+    isDraggedOver=this.isDraggedOver
+    isFullScreen=this.isFullScreen
+    droppedFiles=this.droppedFiles
+    uploadedImageUrls=this.uploadedImageUrls
+    imageMimeTypes=this.imageMimeTypes
+    imageExtensions=this.imageExtensions
+    toggleFullScreen=(action "toggleFullScreen")
+    togglePreview=(action "togglePreview")
+    toggleSplitScreen=(action "toggleSplitScreen")
+    uploadComplete=(action "uploadComplete")
+    uploadCancelled=(action "uploadCancelled")
+    uploadImages=(action "uploadImages")
+)}}

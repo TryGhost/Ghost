@@ -1,0 +1,21 @@
+{{#if this.customTemplates}}
+    <div class="form-group for-select" data-test-custom-template-form>
+        <label for="author-list">Template</label>
+        <span class="gh-input-icon gh-icon-user">
+            {{svg-jar "file-text-document"}}
+            <span class="gh-select {{if this.matchedSlugTemplate "disabled"}}">
+                <OneWaySelect @value={{this.selectedTemplate}}
+                    @options={{this.customTemplates}}
+                    @optionValuePath="filename"
+                    @optionLabelPath="name"
+                    @update={{action "selectTemplate"}}
+                    @disabled={{this.matchedSlugTemplate}}
+                    data-test-select="custom-template" />
+                {{svg-jar "arrow-down-small"}}
+            </span>
+        </span>
+        {{#if this.matchedSlugTemplate}}
+            <p>Post URL matches {{this.matchedSlugTemplate.filename}}</p>
+        {{/if}}
+    </div>
+{{/if}}

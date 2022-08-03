@@ -1,0 +1,47 @@
+<section class="gh-canvas">
+    <GhCanvasHeader class="gh-canvas-header">
+        <h2 class="gh-canvas-title" data-test-screen-title>Themes</h2>
+        <section class="view-actions">
+            <button type="button" class="mr4 gh-btn gh-advanced " {{on "click" this.toggleAdvanced}} data-test-button="toggle-advanced"><span>{{svg-jar (if this.showAdvanced "arrow-up-small" "arrow-down-small")}}Advanced</span></button>
+            <button type="button" class="gh-btn gh-btn-primary" {{on "click" this.startThemeUpload}} data-test-button="upload-theme"><span>Upload theme</span></button>
+        </section>
+    </GhCanvasHeader>
+
+    <section class="view-container">
+        {{#liquid-if this.showAdvanced}}
+            <div class="gh-themes-container">
+                <GhThemeTable @themes={{this.themes}} />
+            </div>
+        {{/liquid-if}}
+
+        <div class="gh-theme-directory-container">
+            <div class="theme-directory">
+                {{#each this.themesList as |theme|}}
+                    <LinkTo @route="settings.design.change-theme.view" @model={{theme.name}} class="td-item td-item-labs" data-test-theme-link={{theme.name}}>
+                        <div class="gh-theme-browser">
+                            <span class="gh-theme-browser-button"></span>
+                        </div>
+                        <div class="td-item-screenshot-labs relative">
+                            <img style="object-fit:contain;" src={{theme.image}} alt="{{theme.name}} Theme" />
+                        </div>
+                        <div class="td-item-desc">
+                            <div class="td-item-name">{{theme.name}}
+                                {{#if theme.isDefault}}
+                                    (Default)
+                                {{/if}}
+                                {{#if theme.isActive}}
+                                    <span class="gh-badge">Active</span>
+                                {{/if}}
+                            </div>
+                            <div class="td-item-category">{{theme.category}}</div>
+                        </div>
+                    </LinkTo>
+                {{/each}}
+            </div>
+        </div>
+    </section>
+</section>
+
+<section class="gh-theme-directory-footer" style="background-image:url(assets/img/footer-marketplace-bg.png);">
+    Find and buy third-party, premium themes from independent developers in the <a href="https://ghost.org/themes/" target="_blank" rel="noopener noreferrer" class="link">Ghost Marketplace →</a>
+</section>

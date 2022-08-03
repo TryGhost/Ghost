@@ -1,0 +1,112 @@
+{{#let @publishOptions.post as |post|}}
+    <div class="gh-publish-title" data-test-publish-flow="complete" data-test-complete-title>
+        {{#if post.isScheduled}}
+            <span class="green">All set!</span>
+
+            Your {{if post.emailOnly "email" post.displayName}} will be
+
+            {{#if post.emailOnly}}
+                sent
+            {{else if post.willEmail}}
+                published and sent
+            {{else}}
+                published
+            {{/if}}
+
+            {{#let (moment-site-tz post.publishedAtUTC) as |scheduledAt|}}
+                {{#if (is-moment-today scheduledAt)}}
+                    today
+                {{else}}
+                    on {{moment-format scheduledAt "MMMM Do"}}
+                {{/if}}
+                at {{moment-format scheduledAt "HH:mm"}}.
+            {{/let}}
+        {{else}}
+            <span class="green">Boom. It’s out there.</span>
+
+            {{#if post.emailOnly}}
+                Your email has been sent.
+            {{else if (and post.isPost @postCount)}}
+                That’s {{gh-pluralize @postCount "post"}} published, keep going!
+            {{else}}
+                Your {{post.displayName}} has been published.
+            {{/if}}
+        {{/if}}
+    </div>
+
+    {{#if post.emailOnly}}
+        <div class="gh-publish-confirmation" data-test-complete-details>
+            <p>
+                Your post
+                {{if post.isScheduled "will be" "was"}}
+                sent to
+
+                {{#let (members-count-fetcher query=(hash filter=post.fullRecipientFilter)) as |countFetcher|}}
+                    <strong>
+                        {{if (eq @recipientType "all") "all"}}
+
+                        {{countFetcher.count}}
+
+                        {{!-- @recipientType = free/paid/all/specific --}}
+                        {{if (not-eq @recipientType "all") @recipientType}}
+
+                        {{gh-pluralize countFetcher.count "subscriber" without-count=true}}
+                    </strong>
+
+                    {{#unless @publishOptions.onlyDefaultNewsletter}}
+                        of <strong>{{@publishOptions.newsletter.name}}</strong>{{if post.isScheduled "," "."}}
+                    {{/unless}}
+                {{/let}}
+
+                {{#let (moment-site-tz post.publishedAtUTC) as |publishedAt|}}
+                    on
+                    {{moment-format publishedAt "D MMM YYYY"}}
+                    at
+                    {{moment-format publishedAt "HH:mm"}}.
+                {{/let}}
+            </p>
+            {{#if post.isScheduled}}
+                <p>
+                    Need to make a change?
+                    <button
+                        type="button"
+                        class="gh-revert-to-draft"
+                        {{on "click" (fn @close (hash afterTask="revertToDraftTask"))}}
+                    >
+                        <span>Unschedule and revert to draft &rarr;</span>
+                    </button>
+                </p>
+            {{/if}}
+        </div>
+    {{else}}
+        <a href={{post.url}} class="gh-post-bookmark-wrapper" target="_blank" rel="noopener noreferrer" data-test-complete-bookmark>
+            <GhPostBookmark @post={{post}} />
+        </a>
+
+        {{#if post.isScheduled}}
+            <p class="gh-publish-confirmation">
+                Need to make a change?
+                <button
+                    type="button"
+                    class="gh-revert-to-draft"
+                    {{on "click" (fn @close (hash afterTask="revertToDraftTask"))}}
+                    data-test-button="revert-to-draft"
+                >
+                    <span>Unschedule and revert to draft &rarr;</span>
+                </button>
+            </p>
+        {{else}}
+            <p class="gh-publish-confirmation">
+                <button
+                    type="button"
+                    class="gh-back-to-editor"
+                    {{on "click" @close}}
+                    data-test-button="back-to-editor"
+                >
+                    <span>Back to editor</span>
+                </button>
+            </p>
+        {{/if}}
+    {{/if}}
+
+{{/let}}

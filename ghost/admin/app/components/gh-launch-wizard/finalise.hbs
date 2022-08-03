@@ -1,0 +1,17 @@
+<div class="gh-launch-wizard-settings-container">
+    <div class="overflow-auto flex-grow-1">
+        <h4>All looks good?</h4>
+        <p>You are all set up to start creating content, grow an audience and make your first sale!</p>
+        <p>You can further customize your site in Settings.</p>
+    </div>
+    <div class="gh-launch-wizard-nav-buttons">
+        <button type="button" class="gh-btn gh-btn-outline gh-btn-icon-dark gh-btn-large w-30" {{on "click" @backStep}}><span>{{svg-jar "arrow-left-tail"}}</span></button>
+        <GhTaskButton
+            @task={{this.finaliseTask}}
+            @buttonText="Launch your site!"
+            @runningText="Launching..."
+            @class="w-70 ml4 gh-btn gh-btn-black gh-btn-large gh-btn-icon gh-launch-wizard-btn"
+            data-test-button="wizard-finish"
+        />
+    </div>
+</div>

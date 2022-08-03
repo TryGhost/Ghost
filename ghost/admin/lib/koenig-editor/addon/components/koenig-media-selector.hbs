@@ -1,0 +1,6 @@
+<div class="kg-media-selector" {{did-insert this.didInsertContainer}} {{on-key "Escape" this.handleEscape}}>
+    {{yield (hash
+        insertCard=this.insertCard
+        close=this.args.close
+    )}}
+</div>

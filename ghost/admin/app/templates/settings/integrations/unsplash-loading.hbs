@@ -1,0 +1,16 @@
+<section class="gh-canvas">
+    <GhCanvasHeader class="gh-canvas-header">
+        <h2 class="gh-canvas-title" data-test-screen-title>
+            <LinkTo @route="settings">Settings</LinkTo>
+            <span>{{svg-jar "arrow-right"}}</span>
+            <LinkTo @route="settings.integrations">Integrations</LinkTo>
+            <span>{{svg-jar "arrow-right"}}</span>
+            Unsplash
+        </h2>
+        <section class="view-actions"></section>
+    </GhCanvasHeader>
+
+    <div class="gh-content">
+        <GhLoadingSpinner />
+    </div>
+</section>

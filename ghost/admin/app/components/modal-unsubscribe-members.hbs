@@ -1,0 +1,66 @@
+<header class="modal-header" data-test-modal="unsubscribe-members">
+    <h1>Unsubscribe members from email?</h1>
+</header>
+<a class="close" href="" role="button" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
+
+{{#if this.confirmed}}
+    <div class="gh-content-box pa" data-test-state="unsubscribe-complete">
+        {{#if this.error}}
+            <div class="flex items-center">
+                {{svg-jar "warning" class="w4 h4 fill-red mr2 nudge-top--3"}}
+                <div>
+                    <p class="ma0 pa0">
+                        <span class="fw5" data-test-text="unsubscribe-error">{{this.error}}</span>
+                    </p>
+                </div>
+            </div>
+        {{else}}
+            <div class="flex items-center">
+                {{svg-jar "check-circle" class="w4 h4 stroke-green mr2"}}
+                <p class="ma0 pa0">
+                    <span class="fw6" data-test-text="unsubscribe-count">{{gh-pluralize this.response.stats.successful "member"}}</span>
+                    successfully unsubscribed
+                </p>
+            </div>
+            {{#if this.response.stats.unsuccessful}}
+                <div class="flex items-start mt2" data-test-bulk-delete-errors>
+                    {{svg-jar "warning" class="w4 h4 fill-red mr2 nudge-top--3"}}
+                    <div>
+                        <p class="ma0 pa0">
+                            <span class="fw5" data-test-text="invalid-count">{{gh-pluralize this.response.stats.unsuccessful "member"}}</span>
+                            failed to unsubscribe
+                        </p>
+                    </div>
+                </div>
+            {{/if}}
+        {{/if}}
+    </div>
+{{else}}
+    <div class="modal-body" data-test-state="unsubscribe-unconfirmed">
+        <p>
+            You're about to unsubscribe
+            <strong data-test-text="unsubscribe-count">{{gh-pluralize this.model.memberCount "member"}}</strong> from email newsletters.
+            Are you sure?
+        </p>
+    </div>
+{{/if}}
+
+<div class="modal-footer">
+    {{#if this.confirmed}}
+        <button class="gh-btn gh-btn-black" data-test-button="close-modal" type="button" {{action "closeModal"}}>
+            <span>Close</span>
+        </button>
+    {{else}}
+        <button class="gh-btn" data-test-button="cancel" type="button" {{action "closeModal"}}>
+            <span>Cancel</span>
+        </button>
+
+        <GhTaskButton
+            @buttonText="Unsubscribe members"
+            @successText="Unsubscribed"
+            @task={{this.unsubscribeMemberTask}}
+            @class="gh-btn gh-btn-red gh-btn-icon"
+            data-test-button="confirm"
+        />
+    {{/if}}
+</div>
