@@ -228,7 +228,7 @@ export default class App extends React.Component {
                     uid,
                     action,
                     ...args
-                }), '*');
+                }), adminOrigin);
             });
         }
 
