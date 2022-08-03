@@ -109,13 +109,26 @@ class Minifier {
         }
     }
 
-    async minify(options, replacements) {
-        debug('Begin', options);
-        const destinations = Object.keys(options);
+    /**
+     * Minify files
+     * 
+     * @param {Object} globs An object in the form of 
+     * ```js
+     * {
+     *     'destination1.js': 'glob/*.js',
+     *     'destination2.js': 'glob2/*.js'
+     * }
+     * ```
+     * @param {Object} [replacements] Key value pairs that should get replaced in the content before minifying
+     * @returns {Promise<string[]>} List of minified files (keys of globs)
+     */
+    async minify(globs, replacements) {
+        debug('Begin', globs);
+        const destinations = Object.keys(globs);
         const minifiedFiles = [];
 
         for (const dest of destinations) {
-            const src = options[dest];
+            const src = globs[dest];
             let contents = await this.getSrcFileContents(src);
 
             if (replacements) {
