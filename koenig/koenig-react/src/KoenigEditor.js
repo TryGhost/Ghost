@@ -14,7 +14,8 @@ class KoenigEditor {
         }
 
         if (textExpansions?.length) {
-            textExpansions.forEach((textExpansion) => {
+            textExpansions.forEach((textExpansionFactory) => {
+                const textExpansion = textExpansionFactory(this);
                 textExpansion.unregister?.forEach(key => this.mobiledocEditor.unregisterTextInputHandler(key));
                 textExpansion.register?.forEach(expansion => this.mobiledocEditor.onTextInput(expansion));
             });
