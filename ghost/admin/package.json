@@ -116,7 +116,7 @@
     "ember-sinon": "5.0.0",
     "ember-source": "3.24.0",
     "ember-svg-jar": "2.3.4",
-    "ember-template-lint": "4.1.0",
+    "ember-template-lint": "4.10.1",
     "ember-test-selectors": "6.0.0",
     "ember-tooltips": "3.6.0",
     "ember-truth-helpers": "3.1.1",
