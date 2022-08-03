@@ -797,6 +797,8 @@ module.exports = class MemberRepository {
             subscription_id: subscription.id,
             status: subscription.status,
             cancel_at_period_end: subscription.cancel_at_period_end,
+            trial_start: subscription.trial_start || null,
+            trial_end: subscription.trial_end || null,
             cancellation_reason: subscription.metadata && subscription.metadata.cancellation_reason || null,
             current_period_end: new Date(subscription.current_period_end * 1000),
             start_date: new Date(subscription.start_date * 1000),
@@ -1371,4 +1373,3 @@ module.exports = class MemberRepository {
         return true;
     }
 };
-
