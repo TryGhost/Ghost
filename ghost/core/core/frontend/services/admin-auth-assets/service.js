@@ -26,11 +26,25 @@ class AdminAuthAssetsService {
 
     /**
      * @private
+     */
+    generateReplacements() {
+        // Clean the URL, only keep schema, host and port (without trailing slashes or subdirectory)
+        const url = new URL(config.get('url'));
+        const origin = url.origin;
+
+        return {
+            // Properly encode the origin
+            '\'{{SITE_ORIGIN}}\'': JSON.stringify(origin)
+        };
+    }
+
+    /**
+     * @private
      * @returns {Promise<void>}
      */
-    async minify(globs) {
+    async minify(globs, replacements) {
         try {
-            await this.minifier.minify(globs);
+            await this.minifier.minify(globs, replacements);
         } catch (error) {
             if (error.code === 'EACCES') {
                 logging.error('Ghost was not able to write admin-auth asset files due to permissions.');
@@ -84,8 +98,9 @@ class AdminAuthAssetsService {
      */
     async load() {
         const globs = this.generateGlobs();
+        const replacements = this.generateReplacements();
         await this.clearFiles();
-        await this.minify(globs);
+        await this.minify(globs, replacements);
         await this.copyStatic();
     }
 }

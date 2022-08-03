@@ -109,14 +109,20 @@ class Minifier {
         }
     }
 
-    async minify(options) {
+    async minify(options, replacements) {
         debug('Begin', options);
         const destinations = Object.keys(options);
         const minifiedFiles = [];
 
         for (const dest of destinations) {
             const src = options[dest];
-            const contents = await this.getSrcFileContents(src);
+            let contents = await this.getSrcFileContents(src);
+
+            if (replacements) {
+                for (const key of Object.keys(replacements)) {
+                    contents = contents.replace(key, replacements[key]);
+                }
+            }
             let minifiedContents;
 
             if (dest.endsWith('.css')) {
