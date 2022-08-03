@@ -56,4 +56,20 @@ describe('{{comment_count}} helper', function () {
             </script>
         `);
     });
+
+    it('correctly sets the defaults', async function () {
+        const templateString = `{{comment_count}}`;
+
+        shouldCompileToExpected(templateString, {
+            id: 'post-id'
+        }, html`
+            <script
+                data-ghost-comment-count="post-id"
+                data-ghost-comment-count-empty=""
+                data-ghost-comment-count-singular="comment"
+                data-ghost-comment-count-plural="comments"
+            >
+            </script>
+        `);
+    });
 });
