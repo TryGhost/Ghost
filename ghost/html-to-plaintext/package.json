@@ -1,0 +1,23 @@
+{
+  "name": "@tryghost/html-to-plaintext",
+  "version": "0.0.0",
+  "repository": "https://github.com/TryGhost/Ghost/tree/main/packages/html-to-plaintext",
+  "author": "Ghost Foundation",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "test": "NODE_ENV=testing c8 --all --check-coverage --reporter text --reporter cobertura mocha './test/**/*.test.js'",
+    "lint:code": "eslint *.js lib/ --ext .js --cache",
+    "lint": "yarn lint:code && yarn lint:test",
+    "lint:test": "eslint -c test/.eslintrc.js test/ --ext .js --cache"
+  },
+  "devDependencies": {
+    "c8": "7.12.0",
+    "mocha": "10.0.0"
+  },
+  "dependencies": {
+    "html-to-text": "8.2.1",
+    "lodash": "4.17.21"
+  }
+}
