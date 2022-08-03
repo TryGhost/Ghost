@@ -25,7 +25,7 @@ module.exports = function (grunt) {
     // grunt build -- use yarn build instead!
     // - Builds the admin without a watch task
     grunt.registerTask('build', 'Build admin app in development mode',
-        ['subgrunt:init', 'clean:tmp', 'ember']);
+        ['clean:tmp', 'ember']);
 
     // Runs the asset generation tasks for production and duplicates default-prod.html to default.html
     grunt.registerTask('release', 'Release task - creates a final built zip', ['clean:built', 'prod']);
@@ -34,8 +34,7 @@ module.exports = function (grunt) {
     // Used to make other commands work
 
     // Updates submodules, then installs and builds the admin for you
-    grunt.registerTask('init', 'Prepare the project for development',
-        ['update_submodules:pinned', 'build']);
+    grunt.registerTask('init', 'Prepare the project for development', 'build');
 
     // Runs ember dev
     grunt.registerTask('ember', 'Build JS & templates for development',
@@ -152,31 +151,12 @@ module.exports = function (grunt) {
             }
         },
 
-        // grunt-update-submodules
-        // Grunt task to update git submodules
-        update_submodules: {
-            pinned: {
-                options: {
-                    params: '--init'
-                }
-            }
-        },
-
         // grunt-subgrunt
         // Run grunt tasks in submodule Gruntfiles
         subgrunt: {
             options: {
                 npmInstall: false,
                 npmPath: 'yarn'
-            },
-
-            init: {
-                options: {
-                    npmInstall: true
-                },
-                projects: {
-                    '../admin': 'init'
-                }
             },
 
             dev: {
@@ -220,7 +200,6 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-express-server');
     grunt.loadNpmTasks('grunt-subgrunt');
-    grunt.loadNpmTasks('grunt-update-submodules');
 
     // This little bit of weirdness gives the express server chance to shutdown properly
     const waitBeforeExit = () => {

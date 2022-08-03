@@ -12929,11 +12929,6 @@ grunt-subgrunt@1.3.0:
     async "^2.1.2"
     glob "^7.0.0"
 
-grunt-update-submodules@0.4.1:
-  version "0.4.1"
-  resolved "https://registry.yarnpkg.com/grunt-update-submodules/-/grunt-update-submodules-0.4.1.tgz#46c485fe6413cc0bdd6988aa2803c4e7d997c366"
-  integrity sha512-Pv3rr6XB3RZJUuCrxANVN8NT5N3+u4541pe+KIve8c6lqpKNJh6yQxO+utsXEKSUm4IFzdWAYOKYKZ77h0EETg==
-
 grunt@1.5.3:
   version "1.5.3"
   resolved "https://registry.yarnpkg.com/grunt/-/grunt-1.5.3.tgz#3214101d11257b7e83cf2b38ea173b824deab76a"
