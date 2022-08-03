@@ -1,6 +1,6 @@
 const {createAddColumnMigration} = require('../../utils');
 
-module.exports = createAddColumnMigration('products', 'trial_period_days', {
+module.exports = createAddColumnMigration('products', 'trial_days', {
     type: 'integer',
     unsigned: true,
     nullable: false,
