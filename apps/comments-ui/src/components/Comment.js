@@ -7,7 +7,7 @@ import More from './More';
 import Form from './Form';
 import Replies from './Replies';
 import AppContext from '../AppContext';
-import {formatRelativeTime} from '../utils/helpers';
+import {formatRelativeTime, formatExplicitTime} from '../utils/helpers';
 
 function EditedInfo({comment}) {
     if (!comment.edited_at) {
@@ -93,7 +93,7 @@ const Comment = ({updateIsEditing = null, isEditing, ...props}) => {
                                     <h4 className="text-[17px] font-sans font-bold tracking-tight dark:text-[rgba(255,255,255,0.85)]">{!comment.member ? 'Deleted member' : (comment.member.name ? comment.member.name : 'Anonymous')}</h4>
                                     <div className="flex items-baseline font-sans text-[14px] tracking-tight text-neutral-400 dark:text-[rgba(255,255,255,0.5)]">
                                         {comment.member.bio && <div>{comment.member.bio}<span className="mx-[0.3em]">·</span></div>}
-                                        <div>{formatRelativeTime(comment.created_at)}</div>
+                                        <div title={formatExplicitTime(comment.created_at)}>{formatRelativeTime(comment.created_at)}</div>
                                         <EditedInfo comment={comment} />
                                     </div>
                                 </div>}

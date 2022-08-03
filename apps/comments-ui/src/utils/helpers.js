@@ -88,6 +88,18 @@ export function formatRelativeTime(dateString) {
     return `${Math.floor(diff)} weeks ago`;
 }
 
+export function formatExplicitTime(dateString) {
+    const date = new Date(dateString);
+
+    let day = date.toLocaleDateString('en-us', {day: '2-digit'}); // eg. 01
+    let month = date.toLocaleString('en-us', {month: 'short'}); // eg. Jan
+    let year = date.getFullYear(); // eg. 2022
+    let hour = (date.getHours() < 10 ? '0' : '') + date.getHours(); // eg. 02
+    let minute = (date.getMinutes() < 10 ? '0' : '') + date.getMinutes(); // eg. 09
+
+    return `${day} ${month} ${year} ${hour}:${minute}`;
+}
+
 export function getInitials(name) {
     if (!name) {
         return '';
