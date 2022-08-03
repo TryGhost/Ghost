@@ -124,7 +124,7 @@
     "eslint-plugin-babel": "5.3.1",
     "eslint-plugin-ghost": "2.14.0",
     "eslint-plugin-react": "7.30.1",
-    "faker": "5.5.3",
+    "faker": "6.6.6",
     "fs-extra": "10.1.0",
     "glob": "8.0.3",
     "google-caja-bower": "https://github.com/acburdine/google-caja-bower#ghost",
