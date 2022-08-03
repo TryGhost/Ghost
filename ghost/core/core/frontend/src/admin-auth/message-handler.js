@@ -20,7 +20,7 @@ window.addEventListener('message', async function (event) {
             uid: data.uid,
             error: error,
             result: result
-        }), '*');
+        }), siteOrigin);
     }
 
     if (data.action === 'getUser') {
