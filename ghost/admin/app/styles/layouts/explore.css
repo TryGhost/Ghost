@@ -46,12 +46,12 @@
 }
 
 .explore-header h1 {
-    margin: 2rem 0 0;
-    font-size: 3.7rem;
+    margin: 1.6rem 0 0;
+    font-size: 3.6rem;
     text-align: center;
     font-weight: 700;
     letter-spacing: -.03em;
-    line-height: 45px;
+    line-height: 40px;
 }
 
 .explore-api {

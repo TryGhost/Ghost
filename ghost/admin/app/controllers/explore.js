@@ -18,7 +18,7 @@ export default class ExploreController extends Controller {
         const explore = this.model.findBy('slug', 'ghost-explore');
         const adminKey = explore.adminKey;
 
-        return `${adminKey.id}:${adminKey.secret}`;
+        return adminKey.secret;
     }
 
     @action
