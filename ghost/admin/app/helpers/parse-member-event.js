@@ -7,7 +7,6 @@ export default function parseMemberEvent(event, hasMultipleNewsletters) {
     let action = getAction(event);
     let object = getObject(event, hasMultipleNewsletters);
     let info = getInfo(event);
-    const subtitle = getSubtitle(event);
     const url = getURL(event);
     let timestamp = moment(event.data.created_at);
 
@@ -21,7 +20,6 @@ export default function parseMemberEvent(event, hasMultipleNewsletters) {
         action,
         object,
         info,
-        subtitle,
         url,
         timestamp
     };
@@ -134,7 +132,7 @@ function getAction(event) {
 
     if (event.type === 'comment_event') {
         if (event.data.parent) {
-            return 'replied on';
+            return 'replied to a comment on';
         }
         return 'commented on';
     }
@@ -161,11 +159,11 @@ function getObject(event, hasMultipleNewsletters) {
     }
 
     if (event.type === 'comment_event') {
-        if (event.data.parent) {
-            return 'a comment';
+        if (event.type === 'comment_event') {
+            if (event.data.post) {
+                return event.data.post.title;
+            }
         }
-
-        return 'a post';
     }
 
     return '';
@@ -192,19 +190,7 @@ function getInfo(event) {
 }
 
 /**
- * subtitle with an optional url property that is shown in gray and can be clickable
- */
-function getSubtitle(event) {
-    if (event.type === 'comment_event') {
-        if (event.data.post) {
-            return event.data.post.title;
-        }
-    }
-    return;
-}
-
-/**
- * Make the event clickable
+ * Make the object clickable
  */
 function getURL(event) {
     if (event.type === 'comment_event') {
