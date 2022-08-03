@@ -1,10 +1,6 @@
 # Ghost-Admin
 
-This is the home of Ember.js based admin app that ships with [Ghost](https://github.com/tryghost/ghost).
-
-**Do you want to set up a Ghost blog?** Check the [getting started guide](https://ghost.org/docs/introduction/)
-
-**Do you want to modify or contribute to Ghost-Admin?** Please read how to [install from source](https://ghost.org/docs/install/source/) and swing by our [forum](https://forum.ghost.org) if you need any help 😄
+This is the home of the Ember.js-based Admin app that ships with [Ghost](https://github.com/tryghost/ghost).
 
 ## Running tests
 
@@ -56,10 +52,6 @@ To have a full list of the available options, run
 ```bash
 ember exam --help
 ```
-
-## Have a bug or issue?
-
-Bugs and issues (even if they only affect the admin app) should be opened on the core [Ghost](https://github.com/tryghost/ghost/issues) repository.
 
 # Copyright & License
 
