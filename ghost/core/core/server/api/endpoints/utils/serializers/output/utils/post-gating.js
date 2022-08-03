@@ -1,5 +1,5 @@
 const membersService = require('../../../../../../services/members');
-const htmlToPlaintext = require('../../../../../../../shared/html-to-plaintext');
+const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 
 // @TODO: reconsider the location of this - it's part of members and adds a property to the API
 const forPost = (attrs, frame) => {

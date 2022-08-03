@@ -1,7 +1,7 @@
 const {promises: fs} = require('fs');
 const path = require('path');
 const moment = require('moment');
-const htmlToPlaintext = require('../../../shared/html-to-plaintext');
+const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 
 class CommentsServiceEmails {
     constructor({config, logging, models, mailer, settingsCache, urlService, urlUtils}) {

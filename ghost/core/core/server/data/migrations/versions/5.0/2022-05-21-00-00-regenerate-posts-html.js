@@ -1,7 +1,7 @@
 const logging = require('@tryghost/logging');
 const {createIrreversibleMigration} = require('../../utils');
 const mobiledocLib = require('../../../../lib/mobiledoc');
-const htmlToPlaintext = require('../../../../../shared/html-to-plaintext');
+const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 
 module.exports = createIrreversibleMigration(async (knex) => {
     logging.info(`Starting regeneration of posts HTML`);

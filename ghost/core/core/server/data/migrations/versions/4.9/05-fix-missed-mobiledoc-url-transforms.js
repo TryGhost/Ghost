@@ -1,6 +1,6 @@
 const logging = require('@tryghost/logging');
 const urlUtils = require('../../../../../shared/url-utils');
-const htmlToPlaintext = require('../../../../../shared/html-to-plaintext');
+const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const mobiledocLib = require('../../../../lib/mobiledoc');
 const {createTransactionalMigration} = require('../../utils');
 
