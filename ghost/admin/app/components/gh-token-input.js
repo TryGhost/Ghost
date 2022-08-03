@@ -1,6 +1,7 @@
 /* global key */
 import Component from '@glimmer/component';
 import Ember from 'ember';
+import shortcuts from '../utils/shortcuts';
 import {A, isArray} from '@ember/array';
 import {action, get} from '@ember/object';
 import {
@@ -91,11 +92,14 @@ export default class GhTokenInput extends Component {
         // ember-power-select stops propagation of events when ctrl/CMD or meta key is down.
         // So, we're dispatching KeyboardEvent directly to the root of ghost app.
         if (event.ctrlKey || event.metaKey) {
-            const copy = new KeyboardEvent(event.type, event);
-            document.getElementsByClassName('gh-app')[0].dispatchEvent(copy);
-            event.preventDefault(); // don't show the save dialog.
+            // Only dispatch KeyboardEvent to the root when it's a registered shortcut.
+            if (shortcuts.includes(event)) {
+                const copy = new KeyboardEvent(event.type, event);
+                document.getElementsByClassName('gh-app')[0].dispatchEvent(copy);
+                event.preventDefault(); // don't show the save dialog.
 
-            return false;
+                return false;
+            }
         }
 
         // fallback to default
