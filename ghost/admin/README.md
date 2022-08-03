@@ -1,7 +1,5 @@
 # Ghost-Admin
 
-![](https://github.com/TryGhost/Admin/workflows/Test%20Suite/badge.svg?branch=main)
-
 This is the home of Ember.js based admin app that ships with [Ghost](https://github.com/tryghost/ghost).
 
 **Do you want to set up a Ghost blog?** Check the [getting started guide](https://ghost.org/docs/introduction/)
