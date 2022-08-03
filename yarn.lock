@@ -1991,7 +1991,7 @@
     "@types/node" "*"
     "@types/responselike" "*"
 
-"@types/common-tags@^1.8.1":
+"@types/common-tags@1.8.1":
   version "1.8.1"
   resolved "https://registry.yarnpkg.com/@types/common-tags/-/common-tags-1.8.1.tgz#a5a49ca5ebbb58e0f8947f3ec98950c8970a68a9"
   integrity sha512-20R/mDpKSPWdJs5TOpz3e7zqbeCNuMCPhV7Yndk9KU2Rbij2r5W4RzwDPkzC+2lzUqXYu9rFzTktCBnDjHuNQg==
