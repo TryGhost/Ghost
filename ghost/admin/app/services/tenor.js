@@ -6,8 +6,8 @@ import {isEmpty} from '@ember/utils';
 import {task, taskGroup, timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
-const API_URL = 'https://g1.tenor.com';
-const API_VERSION = 'v1';
+const API_URL = 'https://tenor.googleapis.com';
+const API_VERSION = 'v2';
 const DEBOUNCE_MS = 600;
 
 export default class TenorService extends Service {
@@ -16,15 +16,17 @@ export default class TenorService extends Service {
     @tracked columnCount = 4;
     @tracked columns = null;
     @tracked error = null;
+    @tracked htmlError = null;
     @tracked gifs = new TrackedArray([]);
     @tracked searchTerm = '';
-    @tracked loadedType = 'trending';
+    @tracked loadedType = '';
 
     _columnHeights = [];
     _nextPos = null;
 
     get apiKey() {
-        return this.config.get('tenor.publicReadOnlyApiKey');
+        // @TODO confirm this!
+        return this.config.get('tenor.apiKey');
     }
 
     get contentfilter() {
@@ -94,9 +96,10 @@ export default class TenorService extends Service {
 
     @task({group: 'loadingTasks'})
     *loadTrendingTask() {
-        this.loadedType = 'trending';
+        this.loadedType = 'featured';
 
         yield this._makeRequest(this.loadedType, {params: {
+            q: 'excited',
             media_filter: 'minimal'
         }});
     }
@@ -134,6 +137,7 @@ export default class TenorService extends Service {
 
         const params = new URLSearchParams(options.params);
         params.set('key', this.apiKey);
+        params.set('client_key', 'ghost-editor');
         params.set('contentfilter', this.contentfilter);
 
         url.search = params.toString();
@@ -153,6 +157,12 @@ export default class TenorService extends Service {
                 if (!options.ignoreErrors && !this.error) {
                     this.error = 'Uh-oh! Trouble reaching the Tenor API, please check your connection';
                 }
+
+                if (this.error && this.error.startsWith('API key not valid')) {
+                    // Added an html error field, so that we don't pass raw API errors from tenor to triple-braces in the frontend
+                    this.htmlError = `This version of the Tenor API is no longer supported. Please update your API key by following our
+<a href="https://ghost.org/docs/config/#tenor" target="_blank" rel="noopener noreferrer"> documentation here</a>.<br />`;
+                }
                 console.error(e); // eslint-disable-line
             });
     }
@@ -165,8 +175,8 @@ export default class TenorService extends Service {
 
         let responseText;
 
-        if (response.headers.map['content-type'] === 'application/json') {
-            responseText = await response.json().then(json => json.errors[0]);
+        if (response.headers.map['content-type'].startsWith('application/json')) {
+            responseText = await response.json().then(json => json.error.message || json.error);
         } else if (response.headers.map['content-type'] === 'text/xml') {
             responseText = await response.text();
         }
@@ -192,7 +202,7 @@ export default class TenorService extends Service {
 
     _addGif(gif) {
         // re-calculate ratio for later use
-        const [width, height] = gif.media[0].tinygif.dims;
+        const [width, height] = gif.media_formats.tinygif.dims;
         gif.ratio = height / width;
 
         // add to general gifs list

@@ -58,7 +58,7 @@ export default class KoenigCardImageTenorSelector extends Component {
         event?.preventDefault();
         event?.stopPropagation();
 
-        const media = gif.media[0].gif;
+        const media = gif.media_formats.gif;
 
         const payload = {
             src: media.url,
