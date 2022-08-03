@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs').promises;
 const logging = require('@tryghost/logging');
 const config = require('../../../shared/config');
+const urlUtils = require('../../../shared/url-utils');
 
 class AdminAuthAssetsService {
     constructor(options = {}) {
@@ -26,11 +27,25 @@ class AdminAuthAssetsService {
 
     /**
      * @private
+     */
+    generateReplacements() {
+        // Clean the URL, only keep schema, host and port (without trailing slashes or subdirectory)
+        const url = new URL(urlUtils.getSiteUrl());
+        const origin = url.origin;
+
+        return {
+            // Properly encode the origin
+            '\'{{SITE_ORIGIN}}\'': JSON.stringify(origin)
+        };
+    }
+
+    /**
+     * @private
      * @returns {Promise<void>}
      */
-    async minify(globs) {
+    async minify(globs, options) {
         try {
-            await this.minifier.minify(globs);
+            await this.minifier.minify(globs, options);
         } catch (error) {
             if (error.code === 'EACCES') {
                 logging.error('Ghost was not able to write admin-auth asset files due to permissions.');
@@ -84,8 +99,9 @@ class AdminAuthAssetsService {
      */
     async load() {
         const globs = this.generateGlobs();
+        const replacements = this.generateReplacements();
         await this.clearFiles();
-        await this.minify(globs);
+        await this.minify(globs, {replacements});
         await this.copyStatic();
     }
 }

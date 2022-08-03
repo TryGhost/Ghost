@@ -1,8 +1,12 @@
 const adminUrl = window.location.href.replace('auth-frame/', '');
 
+// At compile time, we'll replace the value with the actual origin.
+const siteOrigin = '{{SITE_ORIGIN}}';
+
 window.addEventListener('message', async function (event) {
-    if (event.origin !== '*') {
-        // return;
+    if (event.origin !== siteOrigin) {
+        console.warn('Ignored message to admin auth iframe because of mismatch in origin', 'expected', siteOrigin, 'got', event.origin, 'with data', event.data);
+        return;
     }
     let data = null;
     try {
@@ -16,7 +20,7 @@ window.addEventListener('message', async function (event) {
             uid: data.uid,
             error: error,
             result: result
-        }), '*');
+        }), siteOrigin);
     }
 
     if (data.action === 'getUser') {
