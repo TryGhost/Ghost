@@ -1,0 +1,32 @@
+<div class="apps-grid" data-test-themes-list>
+    {{#each this.sortedThemes as |theme index|}}
+        <div class="apps-grid-cell" data-test-theme-id="{{theme.name}}" data-test-theme-active="{{theme.active}}">
+            <div class="apps-card-app {{if theme.active "theme-list-item--active"}}">
+                <div class="apps-card-meta flex-grow-1">
+                    <h3 class="apps-card-app-title" data-test-theme-title>
+                        {{theme.label}}
+                        {{#if theme.active}}<span class="gh-badge gh-badge-green">Active</span>{{/if}}
+                    </h3>
+                    <p class="apps-card-app-desc" data-test-theme-description><span class="description">Version {{theme.version}}</span></p>
+                </div>
+                {{#unless theme.active}}
+                    <button type="button" {{on "click" (fn this.activateTheme theme.model this.dd)}} class="apps-configured-action darkgrey apps-configured-action-activate green-hover green-bg-hover" data-test-button="activate">Activate</button>
+                {{/unless}}
+                <GhBasicDropdown @verticalPosition="below" @horizontalPosition="right" @buttonPosition="right" as |dd|>
+                    <dd.Trigger class="gh-btn gh-btn-icon" data-test-button="actions"><span>{{svg-jar "dotdotdot"}}</span></dd.Trigger>
+
+                    <dd.Content class="relative-dropdown-menu">
+                        <ul class="dropdown-menu" data-test-actions-for={{theme.name}}>
+
+                            <li><button type="button" {{on "click" (fn this.downloadTheme theme.name dd)}} class="darkgrey darkgrey-hover lightgrey-bg-hover" data-test-button="download">Download</button></li>
+
+                            {{#if theme.isDeletable}}
+                                <li><button type="button" {{on "click" (fn this.deleteTheme theme.model dd)}} disabled={{theme.active}} class="gh-list-delete" data-test-button="delete">Delete</button></li>
+                            {{/if}}
+                        </ul>
+                    </dd.Content>
+                </GhBasicDropdown>
+            </div>
+        </div>
+    {{/each}}
+</div>

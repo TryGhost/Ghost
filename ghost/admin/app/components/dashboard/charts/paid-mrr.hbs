@@ -1,0 +1,39 @@
+<div class="gh-dashboard-minichart gh-dashboard-mrr">
+    <div class="gh-dashboard-content">
+        <div class="gh-dashboard-data">
+            <Dashboard::Parts::Metric
+                @label={{this.chartTitle}}
+                @value="{{this.currentMRRFormatted}}"
+                @trends={{this.hasTrends}}
+                @percentage={{this.mrrTrend}} /> 
+        </div>
+        <div class="gh-dashboard-chart">
+            {{#if this.loading}}
+                <div class="gh-dashboard-chart-loading">
+                    <div class="gh-loading-spinner"></div>
+                </div>
+            {{else}}
+                <div class="gh-dashboard-chart-container">
+                    <div class="gh-dashboard-chart-box">
+                        <EmberChart
+                            @type={{this.chartType}}
+                            @data={{this.chartData}}
+                            @options={{this.chartOptions}}
+                            @height={{110}} />
+                    </div>
+    
+                    <div id="gh-dashboard-mrr-tooltip" class="gh-dashboard-tooltip">
+                        <div class="gh-dashboard-tooltip-label">
+                            -
+                        </div>
+                        <div class="gh-dashboard-tooltip-value">
+                            <span class="indicator line"></span>
+                            <span class="value">-</span>
+                            <span class="metric">MRR</span>
+                        </div>
+                    </div> 
+                </div>
+            {{/if}}
+        </div>
+    </div>
+</div>

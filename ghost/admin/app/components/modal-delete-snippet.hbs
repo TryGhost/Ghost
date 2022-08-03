@@ -1,0 +1,20 @@
+<header class="modal-header">
+    <h1>Confirm snippet deletion</h1>
+</header>
+<a class="close" href="" role="button" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
+
+<div class="modal-body">
+    <p>
+        You're about to delete the "<strong>{{this.snippet.name}}</strong>" snippet. This is permanent, and will delete the snippet for all staff users. It will <strong>not</strong> change any posts where you’ve used this snippet in the past.
+    </p>
+</div>
+
+<div class="modal-footer">
+    <button class="gh-btn" type="button" {{action "closeModal"}}><span>Cancel</span></button>
+    <GhTaskButton
+        @buttonText="Delete snippet"
+        @successText="Deleted"
+        @task={{this.deleteSnippet}}
+        @taskArgs={{this.snippet}}
+        @class="gh-btn gh-btn-red gh-btn-icon" />
+</div>

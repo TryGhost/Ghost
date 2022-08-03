@@ -1,0 +1,60 @@
+<KoenigCard
+    @class={{concat "ba b--white relative kg-card-hover miw-100" (if @isEditing " bw2 pt1 pb1 pl2 nl6 pr6 nr6")}}
+    @style={{this.cardStyle}}
+    @headerOffset={{@headerOffset}}
+    @toolbar={{this.toolbar}}
+    @payload={{@payload}}
+    @isSelected={{@isSelected}}
+    @isEditing={{@isEditing}}
+    @selectCard={{@selectCard}}
+    @deselectCard={{@deselectCard}}
+    @editCard={{@editCard}}
+    @saveCard={{@saveCard}}
+    @saveAsSnippet={{@saveAsSnippet}}
+    @onEnterEdit={{this.enterEditMode}}
+    @onLeaveEdit={{this.leaveEditMode}}
+    @addParagraphAfterCard={{@addParagraphAfterCard}}
+    @moveCursorToPrevSection={{@moveCursorToPrevSection}}
+    @moveCursorToNextSection={{@moveCursorToNextSection}}
+    @editor={{@editor}}
+    as |card|
+>
+    {{#if @isEditing}}
+        <GhCmEditor @value={{@payload.code}}
+            @class="koenig-card-code--editor koenig-card-html--editor"
+            @textareaClass="o-0"
+            @autofocus={{true}}
+            @lineWrapping={{true}}
+            @update={{this.updateCode}}
+            @mode={{this.cmMode}}
+        />
+        <input
+            aria-label="Code card language"
+            type="text"
+            value={{@payload.language}}
+            {{on "blur" this.updateLanguage}}
+            placeholder="Language..."
+            class="absolute w-20 pa1 ba b--lightgrey br2 f8 tracked-2 fw4 z-999 outline-0 anim-normal"
+            style={{this.languageInputStyle}}
+        />
+    {{else}}
+        <div class="koenig-card-html-rendered">
+            <pre><code class="line-numbers {{if @payload.language (concat "language-" @payload.language)}}">{{this.escapedCode}}</code></pre>
+        </div>
+        {{#if @payload.language}}
+            <div class="absolute top-2 right-2 flex justify-center items-center pa2">
+                <span class="db nudge-top--2 fw5 f8 midlightgrey">{{@payload.language}}</span>
+            </div>
+        {{/if}}
+        <div class="koenig-card-click-overlay"></div>
+    {{/if}}
+
+    {{#if (and (not @isEditing) (or @isSelected (clean-basic-html @payload.caption)))}}
+        <card.CaptionInput
+            @class="z-999"
+            @caption={{@payload.caption}}
+            @update={{this.updateCaption}}
+            @placeholder="Type caption for code block (optional)"
+        />
+    {{/if}}
+</KoenigCard>

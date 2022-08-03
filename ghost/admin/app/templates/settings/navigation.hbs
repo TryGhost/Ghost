@@ -1,0 +1,82 @@
+<section class="gh-canvas">
+    <GhCanvasHeader class="gh-canvas-header">
+        <h2 class="gh-canvas-title" data-test-screen-title>
+            <LinkTo @route="settings">Settings</LinkTo>
+            <span>{{svg-jar "arrow-right"}}</span>
+            Navigation
+        </h2>
+        <section class="view-actions">
+            <GhTaskButton @task={{this.saveTask}} @class="gh-btn gh-btn-primary gh-btn-icon" data-test-save-button={{true}} />
+        </section>
+    </GhCanvasHeader>
+
+    {{#if this.showLeaveSettingsModal}}
+        <GhFullscreenModal @modal="leave-settings"
+            @confirm={{action "leaveSettings"}}
+            @close={{action "toggleLeaveSettingsModal"}}
+            @modifier="action wide" />
+    {{/if}}
+
+    <section class="gh-main-section">
+        <h4 class="gh-main-section-header small bn">Primary Navigation</h4>
+        <div class="gh-main-section-block">
+            <div class="gh-main-section-content padding-top-s grey">
+                <form id="settings-navigation" class="gh-blognav" novalidate="novalidate">
+                    <SortableObjects @sortableObjectList={{this.settings.navigation}} @useSwap={{false}}>
+                        {{#each this.settings.navigation as |navItem index|}}
+                            <DraggableObject @content={{navItem}} @dragHandle=".gh-blognav-grab" @isSortable={{true}}>
+                                <GhNavitem
+                                    @navItem={{navItem}}
+                                    @baseUrl={{this.blogUrl}}
+                                    @addItem={{action "addNavItem"}}
+                                    @deleteItem={{action "deleteNavItem"}}
+                                    @updateUrl={{action "updateUrl"}}
+                                    @updateLabel={{action "updateLabel"}}
+                                    data-test-navitem={{index}} />
+                            </DraggableObject>
+                        {{/each}}
+                    </SortableObjects>
+                    <GhNavitem
+                        @navItem={{this.newNavItem}}
+                        @baseUrl={{this.blogUrl}}
+                        @addItem={{action "addNavItem"}}
+                        @updateUrl={{action "updateUrl"}}
+                        @updateLabel={{action "updateLabel"}}
+                        data-test-navitem="new" />
+                </form>
+            </div>
+        </div>
+
+        <h4 class="gh-main-section-header small bn">Secondary Navigation</h4>
+        <div class="gh-main-section-block">
+            <div class="gh-main-section-content padding-top-s grey">
+                <form id="secondary-navigation" class="gh-blognav" novalidate="novalidate">
+                    <SortableObjects @sortableObjectList={{this.settings.secondaryNavigation}} @useSwap={{false}}>
+                        {{#each this.settings.secondaryNavigation as |navItem index|}}
+                            <DraggableObject @content={{navItem}} @dragHandle=".gh-blognav-grab" @isSortable={{true}}>
+                                <GhNavitem
+                                    @navItem={{navItem}}
+                                    @baseUrl={{this.blogUrl}}
+                                    @addItem={{action "addNavItem"}}
+                                    @deleteItem={{action "deleteNavItem"}}
+                                    @updateUrl={{action "updateUrl"}}
+                                    @updateLabel={{action "updateLabel"}}
+                                    data-test-navitem={{index}} />
+                            </DraggableObject>
+                        {{/each}}
+                    </SortableObjects>
+                    <GhNavitem
+                        @navItem={{this.newSecondaryNavItem}}
+                        @baseUrl={{this.blogUrl}}
+                        @addItem={{action "addNavItem"}}
+                        @updateUrl={{action "updateUrl"}}
+                        @updateLabel={{action "updateLabel"}}
+                        data-test-navitem="new" />
+                </form>
+            </div>
+        </div>
+    </section>
+</section>
+
+{{outlet}}
+

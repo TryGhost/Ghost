@@ -1,0 +1,143 @@
+<KoenigCard
+    @env={{@env}}
+    @tagName="figure"
+    @class={{concat (kg-style "breakout" size=@payload.cardWidth) " flex flex-column"}}
+    @headerOffset={{@headerOffset}}
+    @toolbar={{this.toolbar}}
+    @payload={{@payload}}
+    @isSelected={{@isSelected}}
+    @isEditing={{@isEditing}}
+    @selectCard={{@selectCard}}
+    @deselectCard={{@deselectCard}}
+    @editCard={{@editCard}}
+    @hasEditMode={{true}}
+    @saveCard={{@saveCard}}
+    @saveAsSnippet={{@saveAsSnippet}}
+    @onLeaveEdit={{this.leaveEditMode}}
+    @addParagraphAfterCard={{@addParagraphAfterCard}}
+    @moveCursorToPrevSection={{@moveCursorToPrevSection}}
+    @moveCursorToNextSection={{@moveCursorToNextSection}}
+    @editor={{@editor}}
+    {{did-insert this.registerElement}}
+    as |card|
+>
+    <GhUploader
+        @files={{this.files}}
+        @accept={{this.imageMimeTypes}}
+        @extensions={{this.imageExtensions}}
+        @onUploadStart={{this.uploadStart}}
+        @onUploadSuccess={{this.uploadSuccess}}
+        @onUploadFailure={{this.uploadFailed}}
+        @onFailed={{this.handleErrors}}
+        as |uploader|
+    >
+    <div class="kg-before-after-card relative margin-auto flex" style="width: {{this.imageWidth}}px">
+            {{#if this.isPopulated}}
+                <div
+                    class="overflow-hidden absolute top-0 left-0"
+                    style="height: 100%; {{this.overlayStyle}}"
+                >
+                    <img
+                        class="kg-before-after-card-before-image"
+                        src={{@payload.beforeImage.src}}
+                        width={{this.imageWidth}}
+                        style="height: 100%; object-fit: cover;"
+                    />
+                </div>
+                <div>
+                    <img
+                        class="kg-before-after-card-after-image"
+                        src={{@payload.afterImage.src}}
+                        width={{this.imageWidth}}
+                    />
+                </div>
+                <input
+                    type="range"
+                    title="Starting position"
+                    min="0"
+                    max="100"
+                    value="{{@payload.startingPosition}}"
+                    {{on "input" this.setStartingPosition}}
+                    {{on "scroll" this.preventDefault}}
+                    {{on "mousedown" this.stopPropagation}}
+                    {{on "change" this.removeFocus}}
+                />
+                <span class="kg-before-after-card-slider-handle" style="left: calc({{@payload.startingPosition}}% - 18px);"></span>
+            {{else}}
+                <div class="overflow-hidden" style="width:49%; height: auto; display: inline-block;">
+                    {{#if @payload.beforeImage}}
+                        <img
+                            class="kg-before-after-card-before-image"
+                            src={{@payload.beforeImage.src}}
+                            width={{this.imageWidth}}
+                            style="height: 100%; object-fit: cover;"
+                        />
+                    {{else}}
+                        <div class="relative miw-100 w-100 h-100 flex items-center kg-media-placeholder">
+                            <button class="flex justify-center h-100 w-100 flex-column items-center center sans-serif fw4 f7 middarkgrey kg-image-button" style="background:#FAFAFB;" type="button" {{on "click" this.selectBeforeImage}}>
+                                <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M46 62C54.8366 62 62 54.8366 62 46C62 37.1634 54.8366 30 46 30C37.1634 30 30 37.1634 30 46C30 54.8366 37.1634 62 46 62Z" stroke="#AABAC2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M22 54H6C4.93913 54 3.92172 53.5786 3.17157 52.8284C2.42143 52.0783 2 51.0609 2 50V6C2 4.93913 2.42143 3.92172 3.17157 3.17157C3.92172 2.42143 4.93913 2 6 2H34.344C35.4041 2.00023 36.4208 2.42128 37.1707 3.17067L44.8293 10.8293C45.5787 11.5792 45.9998 12.5959 46 13.656V22" stroke="#AABAC2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M17 11C17.7911 11 18.5645 11.2346 19.2223 11.6741C19.8801 12.1136 20.3928 12.7384 20.6955 13.4693C20.9983 14.2002 21.0775 15.0044 20.9231 15.7804C20.7688 16.5563 20.3878 17.269 19.8284 17.8284C19.269 18.3878 18.5563 18.7688 17.7804 18.9231C17.0044 19.0775 16.2002 18.9983 15.4693 18.6955C14.7384 18.3928 14.1136 17.8801 13.6741 17.2223C13.2346 16.5645 13 15.7911 13 15C13 13.9391 13.4214 12.9217 14.1716 12.1716C14.9217 11.4214 15.9391 11 17 11Z" stroke="#AABAC2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M32.2267 25.5627L30 22.0001C29.8198 21.729 29.5762 21.5061 29.2902 21.3507C29.0042 21.1954 28.6846 21.1122 28.3592 21.1085C28.0338 21.1048 27.7124 21.1807 27.423 21.3296C27.1336 21.4785 26.8849 21.6958 26.6987 21.9627L21.3653 29.5654L18.08 26.9334C17.8636 26.7599 17.6135 26.6334 17.3455 26.5617C17.0775 26.4901 16.7976 26.475 16.5235 26.5174C16.2494 26.5598 15.9871 26.6587 15.7533 26.8079C15.5195 26.9571 15.3193 27.1533 15.1653 27.3841L10 38.0001H22" stroke="#AABAC2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M43 39H44.5C44.8978 39 45.2794 39.158 45.5607 39.4393C45.842 39.7206 46 40.1022 46 40.5V51" stroke="#AABAC2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M43 51H49" stroke="#AABAC2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                <span class="mt4 midgrey">Click to select an image</span>
+                            </button>
+                        </div>
+                    {{/if}}
+                </div>
+                <div class="overflow-hidden" style="width:49%; height: auto; display: inline-block;">
+                    {{#if @payload.afterImage}}
+                        <img
+                            class="kg-before-after-card-after-image"
+                            src={{@payload.afterImage.src}}
+                            width={{this.imageWidth}}
+                        />
+                    {{else}}
+                        <div class="relative miw-100 w-100 h-100 flex items-center kg-media-placeholder">
+                            <button class="flex justify-center h-100 w-100 bg-lightgrey flex-column items-center center sans-serif fw4 f7 middarkgrey kg-image-button" style="background:#FAFAFB;" type="button" {{on "click" this.selectAfterImage}}>
+                                <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M46 62C54.8366 62 62 54.8366 62 46C62 37.1634 54.8366 30 46 30C37.1634 30 30 37.1634 30 46C30 54.8366 37.1634 62 46 62Z" stroke="#AABAC2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M42 43.8333C42 42.8167 42.4039 41.8416 43.1228 41.1228C43.8416 40.4039 44.8167 40 45.8333 40V40C46.85 40 47.825 40.4039 48.5439 41.1228C49.2628 41.8416 49.6667 42.8167 49.6667 43.8333C49.6671 45.0742 49.2453 46.2782 48.4707 47.2476L42 51.5H49.6667" stroke="#AABAC2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M22 54H6C4.93913 54 3.92172 53.5786 3.17157 52.8284C2.42143 52.0783 2 51.0609 2 50V6C2 4.93913 2.42143 3.92172 3.17157 3.17157C3.92172 2.42143 4.93913 2 6 2H34.344C35.4041 2.00023 36.4208 2.42128 37.1707 3.17067L44.8293 10.8293C45.5787 11.5792 45.9998 12.5959 46 13.656V22" stroke="#AABAC2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M17 11C17.7911 11 18.5645 11.2346 19.2223 11.6741C19.8801 12.1136 20.3928 12.7384 20.6955 13.4693C20.9983 14.2002 21.0775 15.0044 20.9231 15.7804C20.7688 16.5563 20.3878 17.269 19.8284 17.8284C19.269 18.3878 18.5563 18.7688 17.7804 18.9231C17.0044 19.0775 16.2002 18.9983 15.4693 18.6955C14.7384 18.3928 14.1136 17.8801 13.6741 17.2223C13.2346 16.5645 13 15.7911 13 15C13 13.9391 13.4214 12.9217 14.1716 12.1716C14.9217 11.4214 15.9391 11 17 11Z" stroke="#AABAC2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M32.2267 25.5627L30 22.0001C29.8198 21.729 29.5762 21.5061 29.2902 21.3507C29.0042 21.1954 28.6846 21.1122 28.3592 21.1085C28.0338 21.1048 27.7124 21.1807 27.423 21.3296C27.1336 21.4785 26.8849 21.6958 26.6987 21.9627L21.3653 29.5654L18.08 26.9334C17.8636 26.7599 17.6135 26.6334 17.3455 26.5617C17.0775 26.4901 16.7976 26.475 16.5235 26.5174C16.2494 26.5598 15.9871 26.6587 15.7533 26.8079C15.5195 26.9571 15.3193 27.1533 15.1653 27.3841L10 38.0001H22" stroke="#AABAC2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                <span class="mt4 midgrey">Click to select an image</span>
+                            </button>
+                        </div>
+                    {{/if}}
+                </div>
+                <input
+                    type="range"
+                    title="Starting position"
+                    min="0"
+                    max="100"
+                    disabled="disabled"
+                    value="{{@payload.startingPosition}}"
+                />
+            <span class="kg-before-after-card-slider-handle" style="left: calc({{@payload.startingPosition}}% - 18px);"></span>
+            {{/if}}
+            {{#if @payload.beforeImage}}
+                <button class="absolute bg-white-90 pl3 pr3 br3 pb2 pt2 pe-auto kg-product-card-trash-icon" style="top: 20px; left: 20px; font-size: 1.2rem;" type="button" {{on "click" this.selectBeforeImage}}><span>{{svg-jar "koenig/kg-replace"}}</span></button>
+            {{/if}}
+            {{#if @payload.afterImage}}
+                <button class="absolute bg-white-90 pl3 pr3 br3 pb2 pt2 pe-auto kg-product-card-trash-icon" style="top: 20px; right: 20px; font-size: 1.2rem;" type="button" {{on "click" this.selectAfterImage}}><span>{{svg-jar "koenig/kg-replace"}}</span></button>
+            {{/if}}
+        </div>
+
+        <div style="display:none">
+            <GhFileInput @multiple={{false}} @action={{uploader.setFiles}} @accept={{this.imageMimeTypes}} />
+        </div>
+    </GhUploader>
+
+    {{#if (or @isSelected (clean-basic-html @payload.caption))}}
+        <card.CaptionInput
+            @caption={{@payload.caption}}
+            @update={{this.setCaption}}
+            @placeholder="Type caption for before/after (optional)"
+        />
+    {{/if}}
+</KoenigCard>

@@ -1,0 +1,30 @@
+{{#each @itemSections as |section sectionIndex|}}
+    {{#if section.items}}
+        {{#if (or (not section.developerExperiment) (enable-developer-experiments))}}
+            <div class="flex flex-column justify-center flex-shrink-0 {{unless (eq sectionIndex 0) "mt3 bt b--whitegrey"}} mb2 pl4 pr4 pt3 midlightgrey ttu f-supersmall fw5 tracked-3" style="min-width: calc(100% - 3.2rem);">
+                {{section.title}}
+            </div>
+            {{#each section.items as |item|}}
+                {{#if (card-is-available item postType=@postType)}}
+                    <div
+                        class="{{if (eq item @selectedItem) "kg-cardmenu-card-selected"}} {{kg-style "cardmenu-card"}}"
+                        data-kg="cardmenu-card"
+                        role="menuitem"
+                        title="{{item.label}}"
+                        {{on "click" (fn @itemClicked item)}}
+                        {{did-update this.scrollIntoView (eq item @selectedItem)}}
+                    >
+                        <div class="{{kg-style "cardmenu-icon"}} {{item.iconClass}}" aria-hidden="true">{{svg-jar item.icon class="w7 h7"}}</div>
+                        <div class="{{kg-style "cardmenu-text"}}">
+                            <div class="{{kg-style "cardmenu-label"}}">{{item.label}}</div>
+                            <div class="{{kg-style "cardmenu-desc"}}">{{item.desc}}</div>
+                        </div>
+                        {{#if item.deleteClicked}}
+                            <span class="kg-cardmenu-action-icon" {{on "click" item.deleteClicked}}>{{svg-jar "trash"}}</span>
+                        {{/if}}
+                    </div>
+                {{/if}}
+            {{/each}}
+        {{/if}}
+    {{/if}}
+{{/each}}

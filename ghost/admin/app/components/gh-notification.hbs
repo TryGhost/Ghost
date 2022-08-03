@@ -1,0 +1,31 @@
+<article class="gh-notification gh-notification-passive {{this.typeClass}}" {{on "animationend" this.closeOnFadeOut}} ...attributes>
+    <div class="gh-notification-icon">
+        {{#if @message.icon}}
+            {{svg-jar @message.icon}}
+        {{else}}
+            {{#if (eq @message.type "success")}}
+                {{svg-jar "check-circle"}}
+            {{else if (eq @message.type "error")}}
+                {{svg-jar "warning-stroke"}}
+            {{else if (eq @message.type "warn")}}
+                {{svg-jar "warning-stroke"}}
+            {{else}}
+                {{svg-jar "check-circle"}}
+            {{/if}}
+        {{/if}}
+    </div>
+    <div class="gh-notification-content" data-test-text="notification-content">
+        <span class="gh-notification-title">{{@message.message}}</span>
+
+        {{#if @message.description}}
+            <p>{{@message.description}}</p>
+        {{/if}}
+
+        {{#if @message.actions}}
+            <span class="gh-notification-actions">{{@message.actions}}</span>
+        {{/if}}
+    </div>
+    <button class="gh-notification-close" data-test-button="close-notification" type="button" {{on "click" this.closeNotification}}>
+        {{svg-jar "close"}}<span class="hidden">Close</span>
+    </button>
+</article>

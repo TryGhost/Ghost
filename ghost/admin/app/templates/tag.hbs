@@ -1,0 +1,44 @@
+<section class="gh-canvas">
+    <form class="mb15">
+        <GhCanvasHeader class="gh-canvas-header">
+            <h2 class="gh-canvas-title" data-test-screen-title>
+                <LinkTo @route="tags" data-test-link="tags-back">Tags</LinkTo>
+                <span>{{svg-jar "arrow-right"}}</span>
+                {{if this.tag.isNew "New tag" this.tag.name}}
+            </h2>
+            <section class="view-actions">
+                <GhTaskButton @task={{this.saveTask}} @type="button" @class="gh-btn gh-btn-primary gh-btn-icon" @data-test-button="save" />
+            </section>
+        </GhCanvasHeader>
+
+        <GhTagSettingsForm
+            @tag={{this.tag}}
+            @scratchTag={{this.scratchTag}}
+            @setProperty={{action "setProperty"}} />
+    </form>
+
+    {{#unless this.tag.isNew}}
+        <div>
+            <button type="button" class="gh-btn gh-btn-red gh-btn-icon" {{on "click" (action "openDeleteTagModal")}}>
+                <span>Delete tag</span>
+            </button>
+        </div>
+    {{/unless}}
+</section>
+
+{{#if this.showUnsavedChangesModal}}
+    <GhFullscreenModal
+        @modal="leave-settings"
+        @confirm={{action "leaveScreen"}}
+        @close={{action "toggleUnsavedChangesModal"}}
+        @modifier="action wide" />
+{{/if}}
+
+{{#if this.showDeleteTagModal}}
+    <GhFullscreenModal
+        @modal="delete-tag"
+        @model={{this.tag}}
+        @confirm={{action "deleteTag"}}
+        @close={{action "closeDeleteTagModal"}}
+        @modifier="action wide" />
+{{/if}}

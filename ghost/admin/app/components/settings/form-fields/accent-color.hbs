@@ -1,0 +1,49 @@
+<div class="gh-accent-color" ...attributes>
+    <div class="gh-setting-content">
+        <label class="gh-setting-title" for="accent-color">Accent color</label>
+        <div class="gh-setting-desc">Primary color used in your publication theme</div>
+        <div class="w-100 flex flex-column flex-row-ns">
+            <GhErrorMessage @errors={{this.settings.errors}} @property="accentColor" class="w-100 red" />
+        </div>
+    </div>
+
+    <div class="gh-setting-action" data-test-setting="accentColor">
+        <GhFormGroup
+            @errors={{this.settings.errors}}
+            @hasValidated={{this.settings.hasValidated}}
+            @property="accentColor"
+            @class="input-color-form-group"
+        >
+            <div class="input-color">
+                <input
+                    id="accent-color"
+                    type="text"
+                    placeholder="15171A"
+                    name="accent-color"
+                    autocorrect="off"
+                    maxlength="6"
+                    value={{this.accentColor}}
+                    class="gh-input"
+                    {{on "input" (perform this.debounceUpdateAccentColor)}}
+                    {{on "blur" this.updateAccentColor}}
+                    {{on-key "Enter" this.blurElement}}
+                    data-test-input="accentColor"
+                />
+                <div class="color-picker-horizontal-divider"></div>
+                <div
+                    class="color-box-container"
+                    style={{this.accentColorBgStlye}}
+                >
+                    <input
+                        type="color"
+                        name="accent-color"
+                        class="color-picker"
+                        value="{{this.accentColorPickerValue}}"
+                        {{on "input" (perform this.debounceUpdateAccentColor)}}
+                        aria-label="Accent color picker"
+                    >
+                </div>
+            </div>
+        </GhFormGroup>
+    </div>
+</div>

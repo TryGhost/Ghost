@@ -1,0 +1,13 @@
+<div class="no-posts-box">
+    <div class="no-posts">
+        {{svg-jar "activity-placeholder" class="gh-members-placeholder"}}
+        {{#if @filter}}
+            <h4>No activities match the current filter</h4>
+            <LinkTo @route="members-activity" @query={{reset-query-params "members-activity"}} class="gh-btn gh-btn-lg">
+                <span>Show all activity</span>
+            </LinkTo>
+        {{else}}
+            <h4>No member activity yet</h4>
+        {{/if}}
+    </div>
+</div>

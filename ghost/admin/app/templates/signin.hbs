@@ -1,0 +1,79 @@
+<div class="gh-flow">
+    <div class="gh-flow-content-wrap">
+        <section class="gh-flow-content">
+            {{#if this.passwordResetEmailSent}}
+                <div class="gh-auth-email">
+                    <header>
+                        <div class="gh-site-icon" style={{site-icon-style}}></div>
+                        <h1>Update your password.</h1>
+                        <p>
+                            For security, you need to create a new password. An email has been sent to you with instructions.
+                        </p>
+                    </header>
+                </div>
+            {{else}}
+            <form id="login" method="post" class="gh-signin" novalidate="novalidate" {{action "authenticate" on="submit"}}>
+                <header>
+                    <div class="gh-site-icon" style={{site-icon-style}}></div>
+                    <h1>Sign in to {{this.config.blogTitle}}.</h1>
+                </header>
+                <GhFormGroup @errors={{this.signin.errors}} @hasValidated={{this.hasValidated}} @property="identification">
+                    <label>Email address</label>
+                    <span class="gh-input-icon gh-icon-mail">
+                        <GhTrimFocusInput
+                            @class="email"
+                            @type="email"
+                            @placeholder="jamie@example.com"
+                            @name="identification"
+                            @autocapitalize="off"
+                            @autocorrect="off"
+                            @autocomplete="username"
+                            @tabindex="1"
+                            @value={{readonly this.signin.identification}}
+                            @input={{action (mut this.signin.identification) value="target.value"}}
+                            @focus-out={{action "validate" "identification"}}
+                        />
+                    </span>
+                </GhFormGroup>
+                <GhFormGroup @errors={{this.signin.errors}} @hasValidated={{this.hasValidated}} @property="password">
+                    <label>Password</label>
+                    <span class="gh-input-icon gh-icon-lock forgotten-wrap">
+                        <GhTextInput
+                            @class="password"
+                            @type="password"
+                            @placeholder="•••••••••••••••"
+                            @name="password"
+                            @tabindex="2"
+                            @autocomplete="current-password"
+                            @autocorrect="off"
+                            @value={{readonly this.signin.password}}
+                            @input={{action (mut this.signin.password) value="target.value"}} />
+
+                        <GhTaskButton
+                            @task={{this.forgotten}}
+                            @class="forgotten-link gh-btn gh-btn-link gh-btn-icon"
+                            @tabindex="4"
+                            @type="button"
+                            @successClass=""
+                            @failureClass=""
+                            as |task|
+                        >
+                            <span>{{#if task.isRunning}}{{svg-jar "spinner" class="gh-spinner"}}{{else}}Forgot?{{/if}}</span>
+                        </GhTaskButton>
+                    </span>
+                </GhFormGroup>
+
+                <GhTaskButton @buttonText="Sign in &rarr;"
+                    @task={{this.validateAndAuthenticate}}
+                    @showSuccess={{false}}
+                    @class="login gh-btn gh-btn-login gh-btn-block gh-btn-icon js-login-button"
+                    @type="submit"
+                    @tabindex="3"
+                    style={{accent-color-background}} />
+            </form>
+
+            <p class="main-error">{{if this.flowErrors this.flowErrors}}&nbsp;</p>
+            {{/if}}
+        </section>
+    </div>
+</div>

@@ -1,0 +1,105 @@
+<div class="gh-nav-bottom">
+    <div class="flex items-center justify-between">
+        <div class="pe-all">
+            <GhBasicDropdown @horizontalPosition="left" @verticalPosition="above" @calculatePosition={{this.userDropdownPosition}} as |dropdown|>
+                <dropdown.Trigger class="outline-0 pointer">
+                    <div class="flex-auto flex items-center">
+                        <div class="gh-user-avatar relative" style={{background-image-style this.session.user.profileImageUrl}}>
+                            {{#if this.whatsNew.hasNew}}<span class="absolute dib ba b--white br-100 gh-whats-new-badge-account"></span>{{/if}}
+                        </div>
+                        {{svg-jar "arrow-down" class="w3 mr1 fill-darkgrey"}}
+                    </div>
+                </dropdown.Trigger>
+
+                <dropdown.Content class="gh-nav-menu-dropdown {{if this.session.user.isContributor "gh-nav-menu-dropdown-contributor"}}">
+                    <ul class="dropdown-menu dropdown-triangle-top" role="menu">
+                        <li>
+                            <div class="gh-account-menu-header">
+                                <div class="gh-user-avatar relative" style={{background-image-style this.session.user.profileImageUrl}}></div>
+                                <div class="gh-user-info">
+                                    <h4 class="gh-user-name">{{this.session.user.name}}</h4>
+                                    <span class="gh-user-email">{{this.session.user.email}}</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="divider" role="separator"></li>
+                        
+                        {{#if this.session.user.isContributor}}
+                            <li>
+                                <LinkTo @route="posts" @query={{hash entry=null}} class="dropdown-item" @role="menuitem" tabindex="-1" data-test-nav="posts">
+                                    Posts
+                                </LinkTo>
+                            </li>
+                            <li>
+                                <a href="{{this.config.blogUrl}}/" class="dropdown-item" role="menuitem" tabindex="-1" title="Open site in new tab" target="_blank" rel="noopener noreferrer">View site</a>
+                            </li>
+                            <li class="divider" role="separator"></li>
+                        {{else}}
+                            <li>
+                                <LinkTo @route="whatsnew" @query={{hash entry=null}} class="dropdown-item" @role="menuitem" tabindex="-1" data-test-nav="whatsnew">
+                                    What's new?
+                                    {{#if this.whatsNew.hasNew}}
+                                        <div class="flex-grow-1 flex justify-end"><span class="dib w2 h2 top-0 right-0 bg-green br-100"></span></div>
+                                    {{/if}}
+                                </LinkTo>
+                            </li>
+                        {{/if}}
+
+                        <li>
+                            <LinkTo @route="settings.staff.user" @model={{this.session.user.slug}} class="dropdown-item" @role="menuitem" tabindex="-1" data-test-nav="user-profile">
+                                Your profile
+                            </LinkTo>
+                        </li>
+                        
+                        {{#unless this.session.user.isContributor}}
+                            <li class="divider" role="separator"></li>
+                            <li>
+                                <a class="dropdown-item" role="menuitem" tabindex="-1" href="https://ghost.org/help?utm_source=admin&utm_campaign=help" target="_blank" rel="noopener noreferrer">
+                                    Help center
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" role="menuitem" tabindex="-1" href="https://ghost.org/resources?utm_source=admin&utm_campaign=resources" target="_blank" rel="noopener noreferrer">
+                                    Resources & guides
+                                </a>
+                            </li>
+
+                            {{#if this.showDropdownExtension}}
+                                {{#each this.config.clientExtensions.dropdown.items as |menuItem| }}
+                                    {{#if menuItem.divider}}
+                                        <li class="divider" role="separator"></li>
+                                    {{else}}
+                                        <li>
+                                            <a href="{{menuItem.href}}" target="_blank" class="dropdown-item {{menuItem.classes}}" role="menuitem" tabindex="-1" rel="noopener noreferrer">
+                                                {{menuItem.text}}
+                                            </a>
+                                        </li>
+                                    {{/if}}
+                                {{/each}}
+                            {{/if}}
+                        <li class="divider" role="separator"></li>
+                        {{/unless}}
+
+                        <li>
+                            <LinkTo @route="signout" class="dropdown-item user-menu-signout" @role="menuitem" tabindex="-1">
+                                Sign out
+                            </LinkTo>
+                        </li>
+                    </ul>
+                </dropdown.Content>
+            </GhBasicDropdown>
+        </div>
+        <div class="flex items-center pe-all">
+            {{#if (gh-user-can-admin this.session.user)}}
+                <LinkTo class="gh-nav-bottom-tabicon" @route="settings" @current-when={{this.isSettingsRoute}} data-test-nav="settings">{{svg-jar "settings"}}</LinkTo>
+            {{/if}}
+            <div class="nightshift-toggle-container">
+                <div class="nightshift-toggle {{if this.feature.nightShift "on"}}" {{action (toggle "nightShift" this.feature)}}>
+                    <div class="sun">{{svg-jar "sun"}}</div>
+                    <div class="moon">{{svg-jar "moon"}}</div>
+                    <div class="thumb"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

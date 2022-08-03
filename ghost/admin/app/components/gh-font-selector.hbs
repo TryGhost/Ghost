@@ -1,0 +1,16 @@
+<PowerSelect
+    @options={{this.options}}
+    @selected={{this.selectedOption}}
+    @onChange={{this.selectOption}}
+    @disabled={{eq this.settings.membersSignupAccess "none"}}
+    @renderInPlace={{true}}
+    @triggerClass="gh-setting-dropdown"
+    @dropdownClass="gh-setting-dropdown-list"
+    as |option|
+>
+    <div class="gh-radio-label {{dasherize option.value}}">
+        <div class="description">
+            <h4>{{option.name}}</h4>
+        </div>
+    </div>
+</PowerSelect>

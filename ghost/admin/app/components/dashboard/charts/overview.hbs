@@ -1,0 +1,30 @@
+<section class="gh-dashboard-section gh-dashboard-overview {{unless this.isTotalMembersMoreThanZero 'is-hidden'}}">
+    <article {{did-insert this.loadCharts}} class="gh-dashboard-box is-secondary">
+        <div class="gh-dashboard-columns">
+            <div class="gh-dashboard-column">
+                <Dashboard::Parts::Metric
+                    @label={{gh-pluralize this.totalMembers "Total member" without-count=true}}
+                    @value={{this.totalMembersFormatted}}
+                    @trends={{this.hasTrends}}
+                    @percentage={{this.totalMembersTrend}}
+                    @large={{true}} /> 
+            </div>
+            <div class="gh-dashboard-column">
+                <Dashboard::Parts::Metric
+                    @label={{gh-pluralize this.paidMembers "Paid member" without-count=true}}
+                    @value={{this.paidMembersFormatted}}
+                    @trends={{this.hasTrends}}
+                    @percentage={{this.paidMembersTrend}}
+                    @large={{true}} /> 
+            </div>
+            <div class="gh-dashboard-column">
+                <Dashboard::Parts::Metric
+                    @label={{gh-pluralize this.freeMembers "Free member" without-count=true}}
+                    @value={{this.freeMembersFormatted}}
+                    @trends={{this.hasTrends}}
+                    @percentage={{this.freeMembersTrend}}
+                    @large={{true}} /> 
+            </div>
+        </div>
+    </article>
+</section>

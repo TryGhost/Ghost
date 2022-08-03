@@ -1,0 +1,103 @@
+<section class="gh-canvas">
+    <GhCanvasHeader class="gh-canvas-header">
+        <h2 class="gh-canvas-title" data-test-screen-title>
+            <LinkTo @route="members" data-test-link="members-back">Members</LinkTo>
+            <span>{{svg-jar "arrow-right"}}</span>
+            {{#if this.member.isNew}}
+                New member
+            {{else}}
+                {{or this.member.name this.member.email}}
+            {{/if}}
+        </h2>
+
+        <section class="view-actions">
+            {{#if this.session.user.isAdmin}}
+                {{#unless this.member.isNew}}
+                    <span class="dropdown">
+                        <GhDropdownButton
+                            @dropdownName="members-actions-menu"
+                            @classNames="gh-btn gh-btn-icon icon-only gh-btn-action-icon"
+                            @title="Members Actions"
+                        >
+                            <span>
+                                {{svg-jar "settings"}}
+                                <span class="hidden">Actions</span>
+                            </span>
+                        </GhDropdownButton>
+                        <GhDropdown
+                            @name="members-actions-menu"
+                            @tagName="ul"
+                            @classNames="gh-member-actions-menu dropdown-menu dropdown-triangle-top-right"
+                        >
+                            <li>
+                                <button
+                                    class="mr2" type="button" {{on "click" this.toggleImpersonateMemberModal}}>
+                                    <span>Impersonate</span>
+                                </button>
+                            </li>
+                            <li>
+                                <button
+                                    type="button"
+                                    class="mr2"
+                                    {{on "click" this.toggleDeleteMemberModal}}
+                                    data-test-button="delete-member"
+                                >
+                                    <span class="red">Delete member</span>
+                                </button>
+                            </li>
+                        </GhDropdown>
+                    </span>
+                {{/unless}}
+            {{/if}}
+
+            <GhTaskButton @class="gh-btn gh-btn-primary gh-btn-icon" @type="button" @task={{this.saveTask}} @data-test-button="save" />
+        </section>
+    </GhCanvasHeader>
+
+    <div>
+        <form class="member-basic-info-form">
+            <GhMemberSettingsForm
+                @member={{this.member}}
+                @scratchMember={{this.scratchMember}}
+                @setProperty={{this.setProperty}}
+                @onLabelEdit={{this.editLabel}}
+                @saveMember={{this.save}}
+                @isSaveRunning={{this.saveTask.isRunning}}
+                @isLoading={{this.isLoading}} />
+        </form>
+    </div>
+</section>
+
+{{#if this.showUnsavedChangesModal}}
+    <GhFullscreenModal
+        @modal="leave-settings"
+        @confirm={{this.leaveScreen}}
+        @close={{this.toggleUnsavedChangesModal}}
+        @modifier="action wide" />
+{{/if}}
+
+{{#if this.showDeleteMemberModal}}
+    <GhFullscreenModal
+        @modal="delete-member"
+        @model={{this.member}}
+        @confirm={{this.deleteMember}}
+        @close={{this.toggleDeleteMemberModal}}
+        @modifier="action wide" />
+{{/if}}
+
+{{#if this.showImpersonateMemberModal}}
+    <GhFullscreenModal
+        @modal="impersonate-member"
+        @model={{this.member}}
+        @close={{this.toggleImpersonateMemberModal}}
+        @modifier="action wide" />
+{{/if}}
+
+{{#if this.showLabelModal}}
+    <GhFullscreenModal
+        @modal="members-label-form"
+        @model={{this.labelModalData}}
+        @close={{this.toggleLabelModal}}
+        @modifier="action wide"
+    />
+{{/if}}

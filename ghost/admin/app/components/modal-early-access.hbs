@@ -1,0 +1,13 @@
+<header class="modal-header">
+    <h1>Enable early-access feature</h1>
+</header>
+<a class="close" href="" role="button" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
+
+<div class="modal-body">
+    <p>You're about to enable a feature that's not fully finished yet, and <strong>once it's turned on there's no way back</strong>. Are you sure?</p>
+</div>
+
+<div class="modal-footer">
+    <button class="gh-btn" type="button" {{action "closeModal"}}><span>Cancel</span></button>
+    <button class="gh-btn gh-btn-primary" type="button" {{action "closeModal"}}><span>Enable feature</span></button>
+</div>

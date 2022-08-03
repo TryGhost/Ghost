@@ -1,0 +1,13 @@
+{{#if (has-block)}}
+    {{yield (hash
+        isIdle=this.isIdle
+        isRunning=this.isRunning
+        isSuccess=this.isSuccess
+        isFailure=this.isFailure
+    )}}
+{{else}}
+    {{#if this.isRunning}}<span data-test-task-button-state="running">{{#if this.showIcon}}{{svg-jar "spinner" class="gh-icon-spinner"}} {{/if}}{{this.runningText}}</span>{{/if}}
+    {{#if this.isIdle}}<span data-test-task-button-state="idle">{{this.buttonText}}</span>{{/if}}
+    {{#if this.isSuccess}}<span {{did-insert this.handleReset}} data-test-task-button-state="success">{{#if this.showIcon}}{{svg-jar "check-circle"}} {{/if}}{{this.successText}}</span>{{/if}}
+    {{#if this.isFailure}}<span data-test-task-button-state="failure">{{#if this.showIcon}}{{svg-jar "retry"}} {{/if}}{{this.failureText}}</span>{{/if}}
+{{/if}}

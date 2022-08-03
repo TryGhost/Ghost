@@ -1,0 +1,24 @@
+{{#if @extra.inputIcon}}
+    {{svg-jar @extra.inputIcon class=@extra.inputIconClass}}
+{{/if}}
+<input
+    {{did-insert this.registerInput}}
+    {{did-update this.closeWhenEmpty @select.results}}
+    {{on "input" this.handleInput}}
+    {{on "keydown" this.handleKeydown}}
+    {{on "keyup" this.handleKeyup}}
+    {{on "focus" this.handleFocus}}
+    {{on "blur" this.handleBlur}}
+    class="gh-input-with-select-input"
+    type={{or @extra.inputType "text"}}
+    autofocus={{@extra.autofocus}}
+    autocomplete="off"
+    autocorrect="off"
+    autocapitalize="off"
+    value={{@extra.value}}
+    name="selectSearchTerm" {{!-- contains "search" to prevent Safari showing autocomplete --}}
+    spellcheck="false"
+    role="combobox"
+    placeholder={{@placeholder}}
+    disabled={{@select.disabled}}
+>

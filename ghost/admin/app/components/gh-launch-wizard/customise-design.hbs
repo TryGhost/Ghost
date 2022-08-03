@@ -1,0 +1,18 @@
+    <div class="gh-branding-settings">
+        <section class="gh-launch-wizard-settings-container">
+            <GhBrandSettingsForm
+                class="overflow-y-auto flex-grow-1"
+                @replacePreviewContents={{@replacePreviewContents}}
+            />
+
+            <div class="gh-launch-wizard-nav-buttons">
+                <GhTaskButton
+                    @task={{this.saveAndContinueTask}}
+                    @buttonText={{html-safe (concat "Save and continue " (svg-jar "arrow-right-tail"))}}
+                    type="button"
+                    class="gh-btn gh-btn-black gh-btn-icon-right gh-btn-large gh-launch-wizard-btn w-100"
+                    data-test-button="wizard-next"
+                />
+            </div>
+        </section>
+    </div>

@@ -1,0 +1,127 @@
+<div class="gh-main-section gh-newsletters">
+    <div class="flex justify-between items-center">
+        <h4 class="gh-main-section-header small bn">Newsletters</h4>
+        {{#if this.archivedNewsletters}}
+            <div>
+                <div data-test-dropdown="newsletter-status-filter">
+                    <PowerSelect
+                        @selected={{this.statusFilter}}
+                        @options={{this.statusFilters}}
+                        @searchEnabled={{false}}
+                        @onChange={{this.changeStatusFilter}}
+                        @triggerComponent="gh-power-select/trigger"
+                        @triggerClass="gh-dropdown-archived ember-power-select-inline"
+                        @dropdownClass="gh-contentfilter-menu-dropdown"
+                        @horizontalPosition="right"
+                        @matchTriggerWidth={{false}}
+                        as |status|
+                    >
+                        {{titleize status}}
+                    </PowerSelect>
+                </div>
+            </div>
+        {{/if}}
+    </div>
+    <section class="gh-expandable">
+        <div class="gh-expandable-block">
+            {{#if this.loadNewslettersTask.isRunning}}
+                <div class="gh-main-content">... loading</div>
+            {{else}}
+                {{#unless this.displayingDefault}}
+                    {{#if (eq this.statusFilter "archived")}}
+                    <h4 class="gh-expandable-title">Archived newsletters</h4>
+                    <p class="gh-expandable-description">The newsletters below are no longer visible to members.</p>
+                    {{else}}
+                        <h4 class="gh-expandable-title">Active newsletters</h4>
+                        <p class="gh-expandable-description">Drag to set the order viewed by members on your site.</p>
+                    {{/if}}
+                {{/unless}}
+                <SortableObjects
+                    @sortableObjectList={{this.filteredNewsletters}}
+                    @useSwap={{false}}
+                    @sortEndAction={{perform this.reorderNewslettersTask}}
+                >
+                    {{#each this.filteredNewsletters as |newsletter|}}
+                        <DraggableObject
+                            class="gh-newsletter-card-container {{if (and (eq newsletter.status "active") (not this.displayingDefault)) "gh-newsletter-card-draggable"}} {{unless this.displayingDefault "multiple"}}"
+                            @content={{newsletter}}
+                            @dragHandle=".grab-newsletter"
+                            @isSortable={{true}}
+                        >
+                            {{svg-jar "grab" class="grab-newsletter"}}
+                            <div class="gh-main-content-card gh-newsletter-card" data-test-newsletter="{{newsletter.slug}}">
+                                {{#if this.displayingDefault}}
+                                    <div class="gh-newsletter-card-block title-block">
+                                        <h3 class="gh-newsletter-card-name">
+                                            {{newsletter.name}}
+                                        </h3>
+                                        <p class="gh-newsletter-card-description">
+                                            {{newsletter.description}}
+                                        </p>
+                                    </div>
+                                {{else}}
+                                    <LinkTo @route="settings.newsletters.edit-newsletter" @model={{newsletter.id}} class="gh-newsletter-card-block title-block">
+                                        <h3 class="gh-newsletter-card-name">
+                                            {{newsletter.name}}
+                                        </h3>
+                                        <p class="gh-newsletter-card-description">
+                                            {{newsletter.description}}
+                                        </p>
+                                    </LinkTo>
+                                {{/if}}
+                                <div class="gh-newsletter-card-block stats-block {{unless this.displayingDefault "multiple"}}">
+                                    <div>
+                                        <h3 class="gh-newsletter-card-name">{{format-number newsletter.count.members}}</h3>
+                                        <p class="gh-newsletter-card-description">Subscribers</p>
+                                    </div>
+                                    <div>
+                                        <h3 class="gh-newsletter-card-name">{{format-number newsletter.count.posts}}</h3>
+                                        <p class="gh-newsletter-card-description">Posts sent</p>
+                                    </div>
+                                </div>
+                                <div class="gh-newsletter-card-block cta-block">
+                                    {{#if this.displayingDefault}}
+                                        <LinkTo @route="settings.newsletters.edit-newsletter" @model={{newsletter.id}} class="gh-btn gh-btn-green" data-test-button="customize-newsletter"><span>Customize &rarr;</span></LinkTo>
+                                    {{else}}
+                                        <GhBasicDropdown @verticalPosition="below" @horizontalPosition="right" @renderInPlace={{true}} as |dd|>
+                                            <dd.Trigger class="gh-btn gh-btn-action-icon gh-btn-icon gh-btn-outline gh-tier-card-actions-button icon-only">
+                                                <span data-test-newsletter-menu-trigger>
+                                                    {{svg-jar "dotdotdot"}}
+                                                    <span class="hidden">Actions</span>
+                                                </span>
+                                            </dd.Trigger>
+                                            <dd.Content class="relative-dropdown-menu gh-newsletter-actions-menu">
+                                                <ul class="dropdown-menu dropdown-triangle-top-right" role="listbox" {{css-transition "anim-fade-in-scale"}}>
+                                                    <li>
+                                                        <LinkTo @route="settings.newsletters.edit-newsletter" @model={{newsletter.id}} class="mr2" data-test-button="customize-newsletter"><span>Edit</span></LinkTo>
+                                                    </li>
+                                                    {{#if (eq newsletter.status "active")}}
+                                                        <li>
+                                                            <button class="mr2" type="button" {{on "click" (fn this.archiveNewsletter newsletter)}} data-test-button="archive-newsletter">
+                                                                <span>Archive</span>
+                                                            </button>
+                                                        </li>
+                                                    {{/if}}
+                                                    {{#if (eq newsletter.status "archived")}}
+                                                        <li>
+                                                            <button class="mr2" type="button" {{on "click" (fn this.unarchiveNewsletter newsletter)}} data-test-button="reactivate-newsletter">
+                                                                <span>Reactivate</span>
+                                                            </button>
+                                                        </li>
+                                                    {{/if}}
+                                                </ul>
+                                            </dd.Content>
+                                        </GhBasicDropdown>
+                                    {{/if}}
+                                </div>
+                            </div>
+                        </DraggableObject>
+                    {{else}}
+                        <div class="gh-main-content">No newsletters found</div>
+                    {{/each}}
+                </SortableObjects>
+            {{/if}}
+        </div>
+    </section>
+    <LinkTo @route="settings.newsletters.new-newsletter" class="gh-add-newsletter" data-test-button="add-newsletter">{{svg-jar "add-stroke"}}Add newsletter</LinkTo>
+</div>

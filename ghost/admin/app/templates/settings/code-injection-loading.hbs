@@ -1,0 +1,16 @@
+<section class="gh-canvas">
+    <GhCanvasHeader class="gh-canvas-header">
+        <h2 class="gh-canvas-title" data-test-screen-title>
+            <LinkTo @route="settings">Settings</LinkTo>
+            <span>{{svg-jar "arrow-right"}}</span>
+            Code injection
+        </h2>
+        <section class="view-actions">
+            <GhTaskButton @task={{this.saveTask}} @class="gh-btn gh-btn-primary gh-btn-icon" data-test-save-button={{true}} />
+        </section>
+    </GhCanvasHeader>
+
+    <section class="gh-content">
+        <GhLoadingSpinner />
+    </section>
+</section>

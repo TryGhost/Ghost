@@ -1,0 +1,43 @@
+/* Overrides for SVG icons that need different fill/stroke styles
+/* -------------------------------------------------------------------------- */
+
+.gh-icon-user {
+    stroke: none;
+}
+
+.gh-icon-spinner {
+    stroke: #fff;
+}
+
+/*
+/* Animated icons
+/* ---------------------------------------------------------- */
+
+/* Success icon  */
+
+path.animated-check-circle {
+    stroke: white;
+    stroke-dashoffset: 300;
+    stroke-dasharray: 300;
+    animation: dash 4s ease-out forwards;
+}
+
+@keyframes dash {
+    0% {
+        stroke-dashoffset: 300;
+    }
+    100% {
+        stroke-dashoffset: 0;
+    }
+}
+
+/* Failure icon */
+
+svg.retry-animated {
+    animation: rotate-360 0.5s ease-in-out forwards;
+}
+
+@keyframes rotate-360 {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

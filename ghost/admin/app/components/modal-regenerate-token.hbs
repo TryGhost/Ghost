@@ -1,0 +1,20 @@
+<header class="modal-header">
+    <h1>Regenerate your Staff Access Token</h1>
+</header>
+<a class="close" href="" role="button" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
+
+<div class="modal-body">
+    <p>
+        You can regenerate your Staff Access Token any time, but any scripts or applications using it will need to be updated.
+    </p>
+    {{#if this.errorMessage}}
+        <p class='red'> {{this.errorMessage}}</p>
+    {{/if}}
+</div>
+
+<div class="modal-footer">
+    <button class="gh-btn" autofocus type="button" {{action "closeModal"}}><span>Cancel</span></button>
+    <button class="gh-btn gh-btn-icon gh-btn-red" type="button" {{action "confirm"}}>
+        <span>Regenerate your Staff Access Token</span>
+    </button>
+</div>

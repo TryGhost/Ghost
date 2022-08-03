@@ -1,0 +1,7 @@
+<h2 class="gh-canvas-title" data-test-screen-title>
+    <LinkTo @route={{this.router.currentRouteName}} @query={{@query}}>{{or @title "No @title provided"}}</LinkTo>
+    {{#if this.customViews.activeView}}
+        <span>{{svg-jar "arrow-right"}}</span>
+        <span class="truncate">{{this.customViews.activeView.name}}</span>
+    {{/if}}
+</h2>

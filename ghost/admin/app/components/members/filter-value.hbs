@@ -1,0 +1,183 @@
+{{#if (eq @filter.type 'name')}}
+    <input
+        type="text"
+        value={{@filter.value}}
+        class="gh-input"
+        aria-label="Name filter"
+        {{on "input" (fn this.setInputFilterValue @filter)}}
+        {{on "blur" (fn this.updateInputFilterValue @filter)}}
+        {{on "keypress" (fn this.updateInputFilterValueOnEnter @filter)}}
+        data-test-input="members-filter-value"
+    />
+
+{{else if (eq @filter.type 'email')}}
+    <input
+        type="text"
+        value={{@filter.value}}
+        class="gh-input"
+        aria-label="Email filter"
+        {{on "input" (fn this.setInputFilterValue @filter)}}
+        {{on "blur" (fn this.updateInputFilterValue @filter)}}
+        {{on "keypress" (fn this.updateInputFilterValueOnEnter @filter)}}
+        data-test-input="members-filter-value"
+    />
+
+{{else if (eq @filter.type 'label')}}
+    <GhMemberLabelInput
+        @onChange={{fn this.setLabelsFilterValue @filter}}
+        @onLabelEdit={{@onLabelEdit}}
+        @triggerId="label-input"
+        @labels={{@filter.value}}
+        @allowCreation={{false}}
+        @allowEdit={{true}}
+    />
+
+{{else if (eq @filter.type 'tier')}}
+    <div class="relative">
+        <Tiers::SegmentSelect
+            @onChange={{fn this.setTiersFilterValue @filter}}
+            @tiers={{this.tierFilterValue}}
+            @renderInPlace={{true}}
+            @hideOptionsWhenAllSelected={{true}}
+        />
+    </div>
+
+{{else if (eq @filter.type 'subscribed')}}
+    <span class="gh-select">
+        <OneWaySelect
+            @value={{@filter.value}}
+            @options={{this.availableFilterOptions.subscribed}}
+            @optionValuePath="name"
+            @optionLabelPath="label"
+            @optionTargetPath="name"
+            @update={{fn @setFilterValue @filter}}
+            data-test-select="members-filter-value"
+        />
+        {{svg-jar "arrow-down-small"}}
+    </span>
+
+{{else if (eq @filter.type 'last_seen_at')}}
+    <GhDatePicker
+        @value={{@filter.value}}
+        @maxDate={{now}}
+        @maxDateError="Must be in the past"
+        @onChange={{fn @setFilterValue @filter}}
+        data-test-input="members-filter-value"
+    />
+
+{{else if (eq @filter.type 'created_at')}}
+    <GhDatePicker
+        @value={{@filter.value}}
+        @maxDate={{now}}
+        @maxDateError="Must be in the past"
+        @onChange={{fn @setFilterValue @filter}}
+        data-test-input="members-filter-value"
+    />
+
+{{else if (eq @filter.type 'status')}}
+    <span class="gh-select">
+        <OneWaySelect
+            @value={{@filter.value}}
+            @options={{this.availableFilterOptions.status}}
+            @optionValuePath="name"
+            @optionLabelPath="label"
+            @optionTargetPath="name"
+            @update={{fn @setFilterValue @filter}}
+            data-test-select="members-filter-value"
+        />
+        {{svg-jar "arrow-down-small"}}
+    </span>
+
+{{else if (eq @filter.type 'email_count')}}
+    <input
+        type="number"
+        value={{@filter.value}}
+        class="gh-input"
+        aria-label="Email count filter value"
+        {{on "input" (fn this.setInputFilterValue @filter)}}
+        {{on "blur" (fn this.updateInputFilterValue @filter)}}
+        {{on "keypress" (fn this.updateInputFilterValueOnEnter @filter)}}
+        data-test-input="members-filter-value"
+    />
+
+{{else if (eq @filter.type 'email_opened_count')}}
+    <input
+        type="number"
+        value={{@filter.value}}
+        class="gh-input"
+        aria-label="Email opened count filter value"
+        {{on "input" (fn this.setInputFilterValue @filter)}}
+        {{on "blur" (fn this.updateInputFilterValue @filter)}}
+        {{on "keypress" (fn this.updateInputFilterValueOnEnter @filter)}}
+        data-test-input="members-filter-value"
+    />
+
+{{else if (eq @filter.type 'email_open_rate')}}
+    <div class="relative">
+        <span class="gh-input-percentage-label">%</span>
+        <input
+            type="number"
+            value={{@filter.value}}
+            class="gh-input"
+            aria-label="Email open rate filter value"
+            {{on "input" (fn this.setInputFilterValue @filter)}}
+            {{on "blur" (fn this.updateInputFilterValue @filter)}}
+            {{on "keypress" (fn this.updateInputFilterValueOnEnter @filter)}}
+        data-test-input="members-filter-value"
+        />
+    </div>
+
+{{else if (eq @filter.type 'subscriptions.plan_interval')}}
+    <span class="gh-select">
+        <OneWaySelect
+            @value={{@filter.value}}
+            @options={{this.availableFilterOptions.subscriptionPriceInterval}}
+            @optionValuePath="name"
+            @optionLabelPath="label"
+            @optionTargetPath="name"
+            @update={{fn @setFilterValue @filter}}
+            data-test-select="members-filter-value"
+        />
+        {{svg-jar "arrow-down-small"}}
+    </span>
+
+{{else if (eq @filter.type 'subscriptions.status')}}
+    <span class="gh-select">
+        <OneWaySelect
+            @value={{@filter.value}}
+            @options={{this.availableFilterOptions.subscriptionStripeStatus}}
+            @optionValuePath="name"
+            @optionLabelPath="label"
+            @optionTargetPath="name"
+            @update={{fn @setFilterValue @filter}}
+            data-test-select="members-filter-value"
+        />
+        {{svg-jar "arrow-down-small"}}
+    </span>
+
+{{else if (eq @filter.type 'subscriptions.start_date')}}
+    <GhDatePicker
+        @value={{@filter.value}}
+        @onChange={{fn @setFilterValue @filter}}
+        data-test-input="members-filter-value"
+    />
+
+{{else if (eq @filter.type 'subscriptions.current_period_end')}}
+    <GhDatePicker
+        @value={{@filter.value}}
+        @onChange={{fn @setFilterValue @filter}}
+        data-test-input="members-filter-value"
+    />
+
+{{else}}
+    <input
+        type="text"
+        value={{@filter.value}}
+        name={{@index}}
+        class="gh-input"
+        aria-label="filter value"
+        {{on "input" (fn this.setInputFilterValue @filter)}}
+        {{on "blur" (fn this.updateInputFilterValue @filter)}}
+        {{on "keypress" (fn this.updateInputFilterValueOnEnter @filter)}}
+    />
+{{/if}}

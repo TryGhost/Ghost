@@ -1,0 +1,43 @@
+<div class="gh-dashboard-minichart gh-dashboard-breakdown">
+    <div class="gh-dashboard-content">
+        <div class="gh-dashboard-data">
+            <Dashboard::Parts::Metric
+                @label={{this.chartTitle}} />
+
+            <div class="gh-dashboard-legend">
+                <div class="gh-dashboard-legend-item">New</div>
+                <div class="gh-dashboard-legend-item">Canceled</div>
+            </div>
+        </div>
+        <div class="gh-dashboard-chart" {{did-insert this.loadCharts}}>
+            {{#if this.loading}}
+                <div class="gh-dashboard-chart-loading">
+                    <div class="gh-loading-spinner"></div>
+                </div>
+            {{else}}
+                <div class="gh-dashboard-chart-container">
+                    <div class="gh-dashboard-chart-box">
+                        <EmberChart
+                            @type={{this.chartType}}
+                            @data={{this.chartData}}
+                            @options={{this.chartOptions}}
+                            @height={{110}} />
+                    </div>
+
+                    <div id="gh-dashboard-breakdown-tooltip" class="gh-dashboard-tooltip">
+                        <div class="gh-dashboard-tooltip-label">
+                            -
+                        </div>
+                        <div class="gh-dashboard-tooltip-value">
+                            <div class="gh-dashboard-tooltip-value-1"><span class="indicator solid"></span><span class="value"></span></div>
+                            <div class="gh-dashboard-tooltip-value-1"><span class="metric">New</span></div>
+                            <div class="gh-dashboard-tooltip-value-2"><span class="indicator solid"></span><span class="value"></span></div>
+                            <div class="gh-dashboard-tooltip-value-2"><span class="metric">Canceled</span></div>
+                            <div class="gh-dashboard-tooltip-value-3"></div>
+                        </div>
+                    </div> 
+                </div>
+            {{/if}}
+        </div>
+    </div>
+</div>

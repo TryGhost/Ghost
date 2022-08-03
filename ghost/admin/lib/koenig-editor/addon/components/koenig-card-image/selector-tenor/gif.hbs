@@ -1,0 +1,5 @@
+<a class="gh-tenor-gif {{if @isHighlighted "gh-tenor-gif-highlighted"}}" href="#" {{on "click" @select}} data-test-tenor-gif={{@gif.id}} style={{this.style}} ...attributes>
+    <div class="gh-unsplash-photo-container" style={{this.containerStyle}} data-test-tenor-gif-container>
+        <img src={{this.imageUrl}} alt={{@gif.description}} width={{this.width}} height={{this.height}} data-test-tenor-gif-image />
+    </div>
+</a>

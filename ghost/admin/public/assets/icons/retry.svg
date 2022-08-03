@@ -1,0 +1,6 @@
+<svg class="retry-animated" viewBox="0 0 24 24">
+    <g transform="translate(12,12)">
+        <path d="M0 -12V12" transform="rotate(-45deg)"></path>
+        <path d="M0 -12V12" transform="rotate(45deg)"></path>
+    </g>
+</svg>

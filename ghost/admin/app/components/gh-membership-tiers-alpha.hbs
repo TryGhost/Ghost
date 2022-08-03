@@ -1,0 +1,54 @@
+<div class="flex justify-between items-center">
+    <label>Tiers</label>
+    <div>
+        <div class="gh-contentfilter-menu gh-contentfilter-type {{if (not (eq this.selectedType.value "active")) "gh-contentfilter-selected"}}" data-test-type-select="true">
+            <PowerSelect
+                @selected={{this.selectedType}}
+                @options={{this.availableTypes}}
+                @searchEnabled={{false}}
+                @onChange={{this.onTypeChange}}
+                @triggerComponent="gh-power-select/trigger"
+                @triggerClass="gh-contentfilter-menu-trigger gh-contentfilter-menu-trigger-tiers"
+                @dropdownClass="gh-contentfilter-menu-dropdown"
+                @matchTriggerWidth={{false}}
+                as |type|
+            >
+                {{#if type.name}}{{type.name}}{{else}}<span class="red">Unknown type</span>{{/if}}
+            </PowerSelect>
+        </div>
+    </div>
+</div>
+<div class="gh-tier-cards">
+    {{#if this.isEmptyList}}
+    <div class="gh-main-content-card gh-tier-card-empty-state">
+        <p>You have no {{this.selectedType.value}} tiers.</p>
+    </div>
+    {{/if}}
+
+    {{#each this.tiers as |tier|}}
+        <GhTierCard
+            @tier={{tier}}
+            @openEditTier={{this.openEditTier}}
+            @onUnarchive={{this.onUnarchive}}
+            @onArchive={{this.onArchive}}
+        />
+    {{/each}}
+    {{#if (eq this.type "active" )}}
+        <div class="gh-tier-cards-footer">
+            <button class="gh-btn gh-btn-link gh-btn-text gh-btn-icon gh-btn-add-tier green" type="button" {{action "openNewTier" this.tier}}>
+                <span>{{svg-jar "add-stroke" class="stroke-green"}}Add tier</span>
+            </button>
+        </div>
+    {{/if}}
+</div>
+
+{{#if this.showTierModal}}
+    <GhFullscreenModal
+        @modal="tier"
+        @model={{hash
+            tier=this.tierModel
+        }}
+        @confirm={{this.confirmTierSave}}
+        @close={{this.closeTierModal}}
+        @modifier="edit-tier action wide" />
+{{/if}}

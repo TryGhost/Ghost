@@ -1,0 +1,18 @@
+<div
+    id="koenig-slash-menu"
+    class="absolute"
+    {{did-insert this.registerContainerElement}}
+    {{did-update this.registerEditor @editor}}
+    {{did-update this.handleCursorChange @editorRange}}
+    {{did-update this.updateItemSections @snippets}}
+    ...attributes
+>
+    {{#if (and this.showMenu this.itemSections)}}
+        <div class="koenig-cardmenu {{kg-style "cardmenu"}}" role="menu">
+            <KoenigMenuContent
+                @itemSections={{this.itemSections}}
+                @selectedItem={{this.selectedItem}}
+                @itemClicked={{this.itemClicked}} />
+        </div>
+    {{/if}}
+</div>

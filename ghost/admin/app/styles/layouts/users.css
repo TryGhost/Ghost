@@ -1,0 +1,269 @@
+/* Users /ghost/settings/users/
+/* ---------------------------------------------------------- */
+
+.gh-invited-users .apps-grid-cell:hover {
+    background: none;
+}
+
+.gh-invited-users .gh-badge {
+    text-transform: none;
+}
+
+@media (max-width: 500px) {
+    .gh-invited-users .apps-card-meta {
+        max-width: 165px;
+    }
+
+    .gh-invited-users .apps-card-app-title {
+        width: 200px;
+    }
+
+    .gh-invited-users .apps-card-app-desc {
+        max-height: none;
+        display: block;
+    }
+
+    .gh-invited-users .apps-configured {
+        flex-direction: column;
+        align-items: flex-end;
+    }
+
+    .gh-invited-users .apps-configured a {
+        margin-bottom: 7px
+    }
+}
+
+@media (max-width: 600px) {
+    .gh-user-arrow-icon {
+        display: none;
+    }
+}
+
+
+.user-list-item-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-right: 12px;
+    width: 36px;
+    height: 36px;
+    background: #E5EFF5;
+    border-radius: 100%;
+    color: transparent;
+    font-size: 0;
+}
+
+.user-list-item-icon svg {
+    fill: var(--midgrey);
+    height: 14px;
+    width: auto;
+}
+
+.user-list-item-figure {
+    position: relative;
+    display: block;
+    width: 36px;
+    height: 36px;
+    margin-right: 12px;
+    margin-left: 3px;
+    background-position: center center;
+    background-size: cover;
+    border-radius: 100%;
+}
+
+.user-list-item-figure img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+}
+
+.gh-team .apps-configured {
+    justify-content: flex-end;
+}
+
+.gh-team .apps-configured .gh-badge {
+    margin-left: 15px;
+}
+
+@media (max-width: 500px) {
+    .gh-active-users .apps-configured {
+        flex-wrap: nowrap;
+    }
+
+    .gh-active-users .gh-badge:first-child {
+        margin-left: 0;
+    }
+}
+
+/* Role Labels
+/* ---------------------------------------------------------- */
+
+.gh-badge.owner {
+    background: var(--middarkgrey);
+    text-transform: uppercase;
+    color: var(--white);
+}
+
+.gh-badge.administrator {
+    background: color-mod(var(--pink) a(15%));
+    text-transform: uppercase;
+    color: var(--pink-d2);
+}
+
+.gh-badge.editor {
+    background: color-mod(var(--blue) a(20%));
+    text-transform: uppercase;
+    color: var(--blue-d2);
+}
+
+.gh-badge.contributor {
+    background: var(--lightgrey);
+    text-transform: uppercase;
+    color: var(--middarkgrey);
+}
+
+.gh-badge.author {
+    background: color-mod(var(--green) a(20%));
+    text-transform: uppercase;
+    color: var(--green-d2);
+}
+
+.gh-badge.suspended {
+    background: var(--lightgrey);
+    text-transform: uppercase;
+    color: var(--middarkgrey);
+    margin-left: 1.2rem;
+}
+
+.gh-badge.locked {
+    background: none;
+}
+
+/* User invitation modal
+/* ---------------------------------------------------------- */
+
+@media (max-height: 900px) {
+    .fullscreen-modal-invite-user {
+        overflow-y: auto;
+    }
+    .fullscreen-modal-invite-user .modal-content {
+        box-shadow: none !important;
+    }
+}
+
+.gh-modal-invite-user {
+    margin: -32px -32px 0;
+    padding: 32px 32px 0;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+}
+
+.invite-new-user .modal-content {
+    width: 100%;
+    max-width: 600px;
+}
+
+.gh-roles-container .form-group {
+    margin-bottom: 0;
+    padding: 0;
+}
+
+.gh-roles-container .form-group label {
+    position: static;
+    display: block;
+    text-align: left;
+}
+
+.gh-roles-container .form-group input {
+    width: 100%;
+}
+
+.invite-new-user .gh-roles-container {
+    display: flex;
+    flex-direction: column;
+    margin: 2rem 0 0;
+}
+
+.invite-new-user p {
+    margin: 4px 0 20px;
+    color: var(--midgrey);
+    font-size: 1.3rem;
+    line-height: 1.2em;
+    font-weight: 400;
+}
+
+.gh-roles-container .gh-radio {
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--list-color-divider);
+}
+
+.gh-roles-container .gh-radio:first-child {
+    padding-top: 20px;
+}
+
+.gh-roles-container .gh-radio svg {
+    width: 16px;
+    height: 16px;
+    fill: var(--midgrey);
+    margin-left: 2px;
+}
+
+.gh-roles-container .gh-radio-content {
+    margin-right: 2.4rem;
+}
+
+.gh-roles-container .popover {
+    width: 97%;
+    border: 1px solid var(--whitegrey-d1);
+    color: var(--darkgrey);
+    box-shadow: var(--shadow-3);
+}
+
+.gh-roles-container .popover-arrow {
+    display: none;
+}
+
+.gh-roles-container .popover table {
+    margin: .6em 0;
+}
+
+.gh-roles-container .popover td.left {
+    padding-right: 16px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.gh-roles-container .gh-btn-black,
+.gh-roles-container .gh-btn-green {
+    margin: 0;
+    width: 100%;
+}
+
+/* Reset all passwords modal
+/* ---------------------------------------------------------- */
+
+.gh-modal-reset-passwords .for-checkbox .input-toggle-component {
+    background: var(--white);
+}
+
+.gh-modal-reset-passwords h4 {
+    margin-bottom: .4rem;
+    font-size: 1.4rem;
+    font-weight: 600;
+    line-height: 1.4em;
+}
+
+.gh-modal-reset-passwords p {
+    margin: 0 0 2em;
+}
+
+.gh-modal-reset-passwords .description {
+    color: var(--midgrey);
+    font-size: 1.4rem;
+    font-weight: 300;
+}

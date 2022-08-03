@@ -1,0 +1,26 @@
+
+<div class="modal-content" {{on-key "Enter" (perform this.archiveTierTask)}}>
+    <header class="modal-header">
+        <h1>Archive tier</h1>
+    </header>
+    <button type="button" class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+    <div class="modal-body">
+        <p>
+            Members will no longer be able to subscribe to <strong>{{@data.tier.name}}</strong> and it will be removed from the list of available tiers in portal.
+        </p>
+        <p>
+            Existing members on this tier will remain unchanged.
+        </p>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="gh-btn" {{on "click" @close}}><span>Cancel</span></button>
+        <GhTaskButton
+            @buttonText="Archive"
+            @successText="Archived"
+            @task={{this.archiveTierTask}}
+            @class="gh-btn gh-btn-black gh-btn-icon"
+        />
+    </div>
+</div>
