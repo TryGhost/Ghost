@@ -2,7 +2,7 @@ module.exports = class EventProcessor {
     constructor() {
     }
 
-    // override these in a sub-class to define app-specific behaviour
+    // override these in a sub-class to define app-specific beharior
 
     async getEmailId(/*event*/) {
         return undefined;

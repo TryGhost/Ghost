@@ -240,7 +240,7 @@ describe('Importer', function () {
                 it('accepts a zip with a base directory', async function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-with-base-dir');
                     const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
-    
+
                     const zipResult = await ImportManager.processZip(testZip);
                     zipResult.data.should.not.be.undefined();
                     should(zipResult.images).be.undefined();
@@ -270,7 +270,7 @@ describe('Importer', function () {
                 it('accepts a zip with uppercase image extensions', async function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-uppercase-extensions');
                     const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
-    
+
                     const zipResult = await ImportManager.processZip(testZip);
                     zipResult.images.length.should.eql(1);
                     should(zipResult.data).be.undefined();
@@ -280,7 +280,7 @@ describe('Importer', function () {
                 it('throws zipContainsMultipleDataFormats', async function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-multiple-data-formats');
                     const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
-    
+
                     await should(ImportManager.processZip(testZip)).rejectedWith(/multiple data formats/);
                     extractSpy.calledOnce.should.be.true();
                 });
@@ -288,7 +288,7 @@ describe('Importer', function () {
                 it('throws noContentToImport', async function () {
                     const testDir = path.resolve('test/utils/fixtures/import/zips/zip-empty');
                     const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
-    
+
                     await should(ImportManager.processZip(testZip)).rejectedWith(/not include any content/);
                     extractSpy.calledOnce.should.be.true();
                 });
@@ -326,7 +326,7 @@ describe('Importer', function () {
                 });
             });
 
-            describe('Zip behaviour', function () {
+            describe('Zip beharior', function () {
                 it('can call extract and error correctly', function () {
                     return ImportManager
                         // Deliberately pass something that can't be extracted just to check this method signature is working

@@ -195,7 +195,7 @@ const truncateAll = () => {
 
 /**
  * @deprecated Use teardown or reset instead
- * Old method for clearing data from the database that also mixes in url service behaviour
+ * Old method for clearing data from the database that also mixes in url service beharior
  */
 module.exports.clearData = async () => {
     debug('Database reset');
@@ -205,7 +205,7 @@ module.exports.clearData = async () => {
 
 /**
  * @deprecated Use reset instead
- * Old method for clearing data from the database that also mixes in url service behaviour
+ * Old method for clearing data from the database that also mixes in url service beharior
  */
 module.exports.initData = async () => {
     await knexMigrator.init();
