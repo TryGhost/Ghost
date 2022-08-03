@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs').promises;
 const logging = require('@tryghost/logging');
 const config = require('../../../shared/config');
+const urlUtils = require('../../../shared/url-utils');
 
 class AdminAuthAssetsService {
     constructor(options = {}) {
@@ -29,7 +30,7 @@ class AdminAuthAssetsService {
      */
     generateReplacements() {
         // Clean the URL, only keep schema, host and port (without trailing slashes or subdirectory)
-        const url = new URL(config.get('url'));
+        const url = new URL(urlUtils.getSiteUrl());
         const origin = url.origin;
 
         return {
