@@ -185,10 +185,14 @@ export default class App extends React.Component {
         const frame = document.querySelector('iframe[data-frame="admin-auth"]');
         let uid = 1;
         let handlers = {};
+        const adminOrigin = new URL(this.props.adminUrl).origin;
+
         window.addEventListener('message', function (event) {
-            if (event.origin !== '*') {
-                // return;
+            if (event.origin !== adminOrigin) {
+                // Other message that is not intended for us
+                return;
             }
+
             let data = null;
             try {
                 data = JSON.parse(event.data);
