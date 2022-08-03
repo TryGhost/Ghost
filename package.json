@@ -20,9 +20,7 @@
   ],
   "scripts": {
     "dev": "yarn workspace ghost run dev",
-    "fix:admin": "yarn cache clean && cd ghost/core/core/admin && rm -rf node_modules tmp dist && yarn && cd ../../../..",
-    "fix:backend": "yarn cache clean && rm -rf node_modules && yarn",
-    "fix": "yarn fix:admin && yarn fix:backend",
+    "fix": "yarn cache clean && rm -rf node_modules && yarn",
     "knex-migrator": "yarn workspace ghost run knex-migrator",
     "lint": "yarn workspaces run lint",
     "setup": "yarn && yarn workspace ghost run setup",
