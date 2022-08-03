@@ -51,10 +51,16 @@
       "moment",
       "moment-timezone",
       "oembed-parser",
-      "simple-dom"
+      "simple-dom",
+      "ember-drag-drop",
+      "normalize.css",
+      "validator",
+      "codemirror",
+      "faker"
     ],
     "ignorePaths": [
-      "test"
+      "test",
+      "ghost/admin/lib/koenig-editor/package.json"
     ],
     "packageRules": [
       {
@@ -62,6 +68,26 @@
           "metascraper"
         ],
         "groupName": "metascraper"
+      },
+      {
+        "groupName": "ember-basic-dropdown addons",
+        "packagePatterns": ["^ember-basic", "^ember-power"]
+      },
+      {
+        "groupName": "ember core",
+        "packageNames": ["ember-source", "ember-cli", "ember-data"]
+      },
+      {
+        "groupName": "disable css",
+        "packagePatterns": [
+            "^postcss",
+            "^css"
+        ],
+        "packageNames": [
+            "autoprefixer",
+            "ember-cli-postcss"
+        ],
+        "enabled": false
       }
     ]
   }
