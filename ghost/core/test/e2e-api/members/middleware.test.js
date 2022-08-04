@@ -77,5 +77,65 @@ describe('Comments API', function () {
             member = await models.Member.findOne({id: member.id}, {require: true});
             member.get('bio').should.eql('Head of Testing');
         });
+
+        it('can update name', async function () {
+            await membersAgent
+                .put(`/api/member/`)
+                .body({
+                    name: 'Test User'
+                })
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .matchBodySnapshot(memberMatcher)
+                .expect(({body}) => {
+                    body.email.should.eql(member.get('email'));
+                    body.name.should.eql('Test User');
+                    body.firstname.should.eql('Test');
+                });
+            member = await models.Member.findOne({id: member.id}, {require: true});
+            member.get('name').should.eql('Test User');
+        });
+
+        it('can update comment notifications', async function () {
+            member.get('enable_comment_notifications').should.eql(true, 'This test requires the initial value to be true');
+
+            // Via general way
+            await membersAgent
+                .put(`/api/member/`)
+                .body({
+                    enable_comment_notifications: false
+                })
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .matchBodySnapshot(memberMatcher)
+                .expect(({body}) => {
+                    body.email.should.eql(member.get('email'));
+                    body.enable_comment_notifications.should.eql(false);
+                });
+            member = await models.Member.findOne({id: member.id}, {require: true});
+            member.get('enable_comment_notifications').should.eql(false);
+
+            // Via updateMemberNewsletters
+            await membersAgent
+                .put(`/api/member/newsletters/?uuid=${member.get('uuid')}`)
+                .body({
+                    enable_comment_notifications: true
+                })
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .matchBodySnapshot(memberMatcher)
+                .expect(({body}) => {
+                    body.email.should.eql(member.get('email'));
+                    body.enable_comment_notifications.should.eql(true);
+                });
+            member = await models.Member.findOne({id: member.id}, {require: true});
+            member.get('enable_comment_notifications').should.eql(true);
+        });
     });
 });

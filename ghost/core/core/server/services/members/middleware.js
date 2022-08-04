@@ -50,7 +50,6 @@ const getMemberData = async function (req, res) {
             res.json(null);
         }
     } catch (err) {
-        console.error(err);
         res.writeHead(204);
         res.end();
     }
