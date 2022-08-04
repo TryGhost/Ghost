@@ -302,26 +302,13 @@ const Form = (props) => {
         editor.commands.focus();
     };
 
-    const handleAddBoth = (event) => {
+    const handleShowDialog = (event, options) => {
         event.preventDefault();
         setPreventClosing(true);
 
         dispatchAction('openPopup', {
             type: 'addDetailsDialog',
-            callback: () => {
-                editor?.commands.focus();
-                setPreventClosing(false);
-            }
-        });
-    };
-
-    const handleAddBio = (event) => {
-        event.preventDefault();
-        setPreventClosing(true);
-
-        dispatchAction('openPopup', {
-            type: 'addDetailsDialog',
-            bioOnly: true,
+            bioAutofocus: options.bioAutofocus ?? false,
             callback: () => {
                 editor?.commands.focus();
                 setPreventClosing(false);
@@ -422,9 +409,21 @@ const Form = (props) => {
                                 leaveFrom="opacity-100"
                                 leaveTo="opacity-0"
                             >
-                                <button className="text-[17px] font-sans font-bold tracking-tight text-[rgb(23,23,23)] hover:text-black dark:text-[rgba(255,255,255,0.85)]" onClick={handleAddBoth}>{memberName ? memberName : 'Anonymous'}</button>
-                                <div className="flex items-baseline font-sans text-[14px] tracking-tight text-neutral-400 dark:text-[rgba(255,255,255,0.5)]">
-                                    <button className="transition duration-150 hover:text-neutral-500" onClick={memberBio ? handleAddBoth : handleAddBio}>{memberBio ? memberBio : 'Add your bio'}</button>
+                                <button
+                                    className="text-[17px] font-sans font-bold tracking-tight text-[rgb(23,23,23)] dark:text-[rgba(255,255,255,0.85)]"
+                                    onClick={(event) => {
+                                        handleShowDialog(event, {
+                                            bioAutofocus: false
+                                        });
+                                    }}>{memberName ? memberName : 'Anonymous'}</button>
+                                <div className="flex items-baseline">
+                                    <button
+                                        className={`transition duration-150 font-sans text-[14px] tracking-tight text-neutral-400 hover:text-neutral-500 dark:text-[rgba(255,255,255,0.5)] ${!memberBio && 'text-neutral-300 hover:text-neutral-400'}`}
+                                        onClick={(event) => {
+                                            handleShowDialog(event, {
+                                                bioAutofocus: true
+                                            });
+                                        }}>{memberBio ? memberBio : 'Add your bio'}</button>
                                 </div>
                             </Transition>
                         </div>
