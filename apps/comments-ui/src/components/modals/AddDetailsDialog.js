@@ -12,7 +12,11 @@ const AddNameDialog = (props) => {
     const [bio, setBio] = useState(member.bio ?? '');
 
     const maxBioChars = 50;
-    const [bioCharsLeft, setBioCharsLeft] = useState(maxBioChars);
+    let initialBioChars = maxBioChars;
+    if (member.bio) {
+        initialBioChars -= member.bio.length;
+    }
+    const [bioCharsLeft, setBioCharsLeft] = useState(initialBioChars);
 
     const [error, setError] = useState({name: '', bio: ''});
 
