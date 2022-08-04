@@ -13,6 +13,7 @@ module.exports.formattedMemberResponse = function formattedMemberResponse(member
         email: member.email,
         name: member.name,
         firstname: member.name && member.name.split(' ')[0],
+        bio: member.bio,
         avatar_image: member.avatar_image,
         subscribed: !!member.subscribed,
         subscriptions: member.subscriptions || [],
