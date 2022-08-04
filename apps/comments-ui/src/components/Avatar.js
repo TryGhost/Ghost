@@ -66,19 +66,35 @@ const Avatar = (props) => {
         background: bgColor
     };
 
+    let avatarEl = (
+        <>
+            <div className={`flex justify-center items-center rounded-full ${dimensionClasses}`} style={avatarStyle}>
+                <p className={`text-white font-sans font-semibold ${initialsClasses}`}>{ commentGetInitials() }</p>
+            </div>
+            {commentMember && <img className={`absolute top-0 left-0 rounded-full ${dimensionClasses}`} src={commentMember.avatar_image} alt="Avatar"/>}
+        </>
+    );
+
+    // When an avatar has been deleted or hidden
+    if (props.isBlank) {
+        avatarEl = (
+            <div className={`flex justify-center items-center rounded-full bg-neutral-300 dark:opacity-70 ${dimensionClasses}`}>
+                <AvatarIcon className="stroke-white dark:stroke-neutral-600" />
+            </div>
+        );
+    // When an avatar has no name
+    } else if (props.isAnonymous) {
+        avatarEl = (
+            <div className={`flex justify-center items-center rounded-full bg-neutral-900 dark:bg-[rgba(255,255,255,0.7)] ${dimensionClasses}`}>
+                <AvatarIcon className="stroke-white dark:stroke-[rgba(0,0,0,0.6)]" />
+            </div>
+        );
+    }
+
     return (
-        props.isBlank ?
-            (<figure className={`relative ${dimensionClasses}`}>
-                <div className={`flex justify-center items-center rounded-full bg-neutral-300 dark:opacity-70 ${dimensionClasses}`}>
-                    <AvatarIcon className="stroke-white dark:stroke-neutral-600" />
-                </div>
-            </figure>) :
-            (<figure className={`relative ${dimensionClasses}`}>
-                <div className={`flex justify-center items-center rounded-full ${dimensionClasses}`} style={avatarStyle}>
-                    <p className={`text-white font-sans font-semibold ${initialsClasses}`}>{ commentGetInitials() }</p>
-                </div>
-                {commentMember && <img className={`absolute top-0 left-0 rounded-full ${dimensionClasses}`} src={commentMember.avatar_image} alt="Avatar"/>}
-            </figure>)
+        <figure className={`relative ${dimensionClasses}`}>
+            {avatarEl}
+        </figure>
     );
 };
 

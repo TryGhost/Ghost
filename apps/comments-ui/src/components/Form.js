@@ -397,7 +397,7 @@ const Form = (props) => {
                     </div>
                     <div className='absolute top-1 left-0 flex justify-start items-center h-12'>
                         <div className="mr-3">
-                            <Avatar comment={comment} saturation={avatarSaturation} className="pointer-events-none" />
+                            <Avatar comment={comment} saturation={avatarSaturation} isAnonymous={memberName ? false : true} className="pointer-events-none" />
                         </div>
                         <div>
                             <Transition
