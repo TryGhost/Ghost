@@ -13,7 +13,7 @@ class ErrorHandler extends React.Component {
     render() {
         if (this.state.hasError) {
             return (
-                <p>Loading has failed. Try refreshing the browser!</p>
+                <p className="koenig-react-editor-error">Loading has failed. Try refreshing the browser!</p>
             );
         }
 
@@ -80,15 +80,17 @@ const Koenig = (props) => {
 export default class KoenigReactEditor extends Component {
     ReactComponent = () => {
         return (
-            <ErrorHandler>
-                <Suspense fallback={<p>Loading editor...</p>}>
-                    <Koenig
-                        mobiledoc={this.args.mobiledoc}
-                        didCreateEditor={this.args.didCreateEditor}
-                        onChange={this.args.onChange}
-                    />
-                </Suspense>
-            </ErrorHandler>
+            <div className={['koenig-react-editor', this.args.className].filter(Boolean).join(' ')}>
+                <ErrorHandler>
+                    <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
+                        <Koenig
+                            mobiledoc={this.args.mobiledoc}
+                            didCreateEditor={this.args.didCreateEditor}
+                            onChange={this.args.onChange}
+                        />
+                    </Suspense>
+                </ErrorHandler>
+            </div>
         );
     };
 }
