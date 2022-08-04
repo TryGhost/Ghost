@@ -877,6 +877,10 @@ input:focus,
 
 /* Editor  */
 
+.gh-editor-title::placeholder {
+    color: var(--midlightgrey-d2);
+}
+
 .gh-btn-editor {
     background: var(--white) !important;
 }
