@@ -30,12 +30,17 @@ const fetchKoenig = function () {
             return window.koenigEditor.default;
         }
 
-        // the removal of `https://` and it's manual addition to the import template string is
+        // the manual specification of the protocol in the import template string is
         // required to work around ember-auto-import complaining about an unknown dynamic import
         // during the build step
         const GhostAdmin = window.Ember.Namespace.NAMESPACES.find(ns => ns.name === 'ghost-admin');
-        const url = GhostAdmin.__container__.lookup('service:config').get('editor.url').replace('https://', '');
-        await import(`https://${url}`);
+        const url = new URL(GhostAdmin.__container__.lookup('service:config').get('editor.url'));
+
+        if (url.protocol === 'http:') {
+            await import(`http://${url.host}${url.pathname}`);
+        } else {
+            await import(`https://${url.host}${url.pathname}`);
+        }
 
         return window.koenigEditor.default;
     };
