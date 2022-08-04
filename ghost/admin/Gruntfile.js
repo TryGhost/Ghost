@@ -11,18 +11,8 @@ module.exports = function (grunt) {
             built: {
                 src: ['dist/**']
             },
-            dependencies: {
-                src: ['node_modules/**']
-            },
             tmp: {
                 src: ['tmp/**']
-            }
-        },
-
-        watch: {
-            csscomb: {
-                files: ['app/styles/**/*.css'],
-                tasks: ['shell:csscombfix']
             }
         },
 
@@ -40,14 +30,6 @@ module.exports = function (grunt) {
                         return `npm run start -- --live-reload-base-url=${liveReloadBaseUrl} --live-reload-port=4201`;
                     }
                 }
-            },
-
-            csscombfix: {
-                command: 'csscomb -c app/styles/csscomb.json -v app/styles'
-            },
-
-            csscomblint: {
-                command: 'csscomb -c app/styles/csscomb.json -lv app/styles'
             },
 
             options: {
