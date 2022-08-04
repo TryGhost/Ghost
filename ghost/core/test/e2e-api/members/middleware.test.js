@@ -24,7 +24,8 @@ const memberMatcherUnserialised = (newslettersCount) => {
             {
                 id: anyObjectId,
                 uuid: anyUuid,
-                created_at: anyISODateTime
+                created_at: anyISODateTime,
+                updated_at: anyISODateTime
             }
         )
     };
