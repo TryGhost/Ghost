@@ -103,6 +103,17 @@ const Comment = ghostBookshelf.Model.extend({
         }
 
         return 'parent_id:null';
+    },
+
+    toJSON(unfilteredOptions) {
+        const options = Comment.filterOptions(unfilteredOptions, 'toJSON');
+        const attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
+
+        if (attrs.status !== 'published') {
+            attrs.html = null;
+        }
+
+        return attrs;
     }
 
 }, {
