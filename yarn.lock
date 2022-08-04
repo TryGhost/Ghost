@@ -3306,12 +3306,12 @@
     markdown-it-mark "^3.0.0"
     semver "^7.3.5"
 
-"@tryghost/kg-mobiledoc-html-renderer@5.3.5":
-  version "5.3.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-mobiledoc-html-renderer/-/kg-mobiledoc-html-renderer-5.3.5.tgz#e8d1c1fc073846b220e1f1e72f65c2287efdddae"
-  integrity sha512-8d5rddYrN6chzAjBaqzr1nGPkoByeuP4Inpvm79HIKoE90FST/7y4O8nzyoY2ASGZZlt+7rl4hPSagcUQ0EjbA==
+"@tryghost/kg-mobiledoc-html-renderer@5.3.6":
+  version "5.3.6"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-mobiledoc-html-renderer/-/kg-mobiledoc-html-renderer-5.3.6.tgz#61d9700461fe8073bffca1dbbad098daf0a8a83a"
+  integrity sha512-3e59oYAUHJ3uQq0LNOVkfjK2vU0GgZF0zpsXMTdOOoGlwoCb/vGcnIkXjZEixglthhGPLVobj4RUIxA1JkCZDA==
   dependencies:
-    "@tryghost/kg-utils" "^1.0.2"
+    "@tryghost/kg-utils" "^1.0.3"
     mobiledoc-dom-renderer "^0.7.0"
     simple-dom "^1.4.0"
 
@@ -3322,7 +3322,7 @@
   dependencies:
     "@tryghost/kg-clean-basic-html" "^2.2.11"
 
-"@tryghost/kg-utils@^1.0.2", "@tryghost/kg-utils@^1.0.3":
+"@tryghost/kg-utils@^1.0.3":
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-utils/-/kg-utils-1.0.3.tgz#f2e480545b6ded158c39e614fd8d9953ccd1eb58"
   integrity sha512-Q4LAp/EPAOU3lIqAFVEJyX/A4dQu1V7DohC+h4ng7KX9GVQBW5oR46mfVD3kp8ecqbeRqdWCRZChLKA36G9OTA==
