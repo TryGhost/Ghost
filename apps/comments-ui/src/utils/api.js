@@ -73,10 +73,11 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
         },
 
-        update({name}) {
+        update({name, bio}) {
             const url = endpointFor({type: 'members', resource: 'member'});
             const body = {
-                name
+                name,
+                bio
             };
 
             return makeRequest({

@@ -18,8 +18,8 @@ const Form = (props) => {
     const [preventClosing, setPreventClosing] = useState(false);
 
     const {comment, commentsCount} = props;
-    const memberName = (props.isEdit ? comment.member.name : member.name); 
-    const memberBio = false; // TODO: needed for bio to be wired up
+    const memberName = member?.name ?? comment?.member?.name;
+    const memberBio = member?.bio ?? comment?.member?.bio;
 
     let buttonIcon = null;
     if (progress === 'sending') {
@@ -304,12 +304,14 @@ const Form = (props) => {
 
     const handleAddBio = (event) => {
         event.preventDefault();
+        setPreventClosing(true);
 
         dispatchAction('openPopup', {
             type: 'addDetailsDialog',
             bioOnly: true,
             callback: () => {
-                editor.commands.focus();
+                editor?.commands.focus();
+                setPreventClosing(false);
             }
         });
     };
@@ -330,7 +332,7 @@ const Form = (props) => {
     const shouldFormBeReduced = (isMobile() && props.isReply) || (isMobile() && props.isEdit);
 
     // Keep the form always open when replying or editing (hide on blur)
-    const isFormReallyOpen = props.isReply || props.isEdit || isFormOpen;
+    const isFormReallyOpen = props.isReply || props.isEdit || isFormOpen || preventClosing;
 
     return (
         <>
@@ -410,7 +412,7 @@ const Form = (props) => {
                                 <h4 className="text-[17px] font-sans font-bold tracking-tight dark:text-[rgba(255,255,255,0.85)]">{memberName ? memberName : 'Anonymous'}</h4>
                                 <div className="flex items-baseline font-sans text-[14px] tracking-tight text-neutral-400 dark:text-[rgba(255,255,255,0.5)]">
                                     {memberBio ?
-                                        <div>{memberBio}</div> :
+                                        <div onClick={handleAddBio}>{memberBio}</div> :
                                         <button className="transition duration-150 hover:text-neutral-500" onClick={handleAddBio}>Add your bio</button>
                                     }
                                 </div>

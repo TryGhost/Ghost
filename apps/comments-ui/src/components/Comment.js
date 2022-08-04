@@ -61,7 +61,9 @@ const Comment = ({updateIsEditing = null, isEditing, ...props}) => {
     const isPaidMember = member && !!member.paid;
     const canReply = member && (isPaidMember || !paidOnly);
 
-    // comment.member.bio = 'Head of Marketing'; // FOR TESTING
+    // If this comment is from the current member, always override member
+    // with the member from the context, so we update the bio in existing comments when we change it
+    const memberBio = member && comment.member.uuid === member.uuid ? member.bio : comment.member.bio;
 
     if (isInEditMode) {
         return (
@@ -92,7 +94,7 @@ const Comment = ({updateIsEditing = null, isEditing, ...props}) => {
                                 <div>
                                     <h4 className="text-[17px] font-sans font-bold tracking-tight dark:text-[rgba(255,255,255,0.85)]">{!comment.member ? 'Deleted member' : (comment.member.name ? comment.member.name : 'Anonymous')}</h4>
                                     <div className="flex items-baseline font-sans text-[14px] tracking-tight text-neutral-400 dark:text-[rgba(255,255,255,0.5)]">
-                                        {comment.member.bio && <div>{comment.member.bio}<span className="mx-[0.3em]">·</span></div>}
+                                        {memberBio && <div>{memberBio}<span className="mx-[0.3em]">·</span></div>}
                                         <div title={formatExplicitTime(comment.created_at)}>{formatRelativeTime(comment.created_at)}</div>
                                         <EditedInfo comment={comment} />
                                     </div>
