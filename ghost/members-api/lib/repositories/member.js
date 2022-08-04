@@ -319,7 +319,8 @@ module.exports = class MemberRepository {
             'newsletters',
             'enable_comment_notifications',
             'last_seen_at',
-            'last_commented_at'
+            'last_commented_at',
+            'bio'
         ]);
 
         // Determine if we need to fetch the initial member with relations
