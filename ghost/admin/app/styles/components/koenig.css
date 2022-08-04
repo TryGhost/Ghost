@@ -965,6 +965,11 @@
     max-width: 740px;
 }
 
+.koenig-react-editor {
+    max-width: 740px;
+    margin: 0 auto;
+}
+
 /* ⨁ menu
 /* --------------------------------------------------------------- */
 .koenig-plus-menu-button {
