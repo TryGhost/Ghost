@@ -50,30 +50,30 @@ class CacheManager {
         // NOTE: "!this.settingsCache" is for when setting's cache is used
         //       before it had a chance to initialize. Should be fixed when
         //       it is decoupled from the model layer
-        if (!this.settingsCache || !this.settingsCache[key]) {
+        if (!this.settingsCache || !this.settingsCache.get(key)) {
             return;
         }
 
         // Don't try to resolve to the value of the setting
         if (options && options.resolve === false) {
-            return this.settingsCache[key];
+            return this.settingsCache.get(key);
         }
 
         // Default behavior is to try to resolve the value and return that
         try {
             // CASE: handle literal false
-            if (this.settingsCache[key].value === false || this.settingsCache[key].value === 'false') {
+            if (this.settingsCache.get(key).value === false || this.settingsCache.get(key).value === 'false') {
                 return false;
             }
 
             // CASE: if a string contains a number e.g. "1", JSON.parse will auto convert into integer
-            if (!isNaN(Number(this.settingsCache[key].value))) {
-                return this.settingsCache[key].value || null;
+            if (!isNaN(Number(this.settingsCache.get(key).value))) {
+                return this.settingsCache.get(key).value || null;
             }
 
-            return JSON.parse(this.settingsCache[key].value) || null;
+            return JSON.parse(this.settingsCache.get(key).value) || null;
         } catch (err) {
-            return this.settingsCache[key].value || null;
+            return this.settingsCache.get(key).value || null;
         }
     }
 
@@ -111,16 +111,27 @@ class CacheManager {
      * @param {object} value json version of settings model
      */
     set(key, value) {
-        this.settingsCache[key] = _.cloneDeep(value);
+        this.settingsCache.set(key, _.cloneDeep(value));
     }
 
     /**
      * Get the entire cache object
      * Uses clone to prevent modifications from being reflected
+     * This method is dangerous in case the cache is "lazily" initialized
+     * could result in returning only a partially filled cache
      * @return {object} cache
+     * @deprecated this method is not "cache-friendly" and should be avoided from furhter usage
+     *             instead using multiple "get" calls
      */
     getAll() {
-        return _.cloneDeep(this.settingsCache);
+        const keys = this.settingsCache.keys();
+        const all = {};
+
+        keys.forEach((key) => {
+            all[key] = _.cloneDeep(this.settingsCache.get(key));
+        });
+
+        return all;
     }
 
     /**
@@ -139,15 +150,15 @@ class CacheManager {
     }
 
     /**
-     * Initialise the cache
+     * Initialize the cache
      *
      * Optionally takes a collection of settings & can populate the cache with these.
      *
      * @param {EventEmitter} events
      * @param {Bookshelf.Collection<Settings>} settingsCollection
      * @param {Array} calculatedFields
-     * @param {Object} cacheStore - cache storage instance
-     * @return {object}
+     * @param {Object} cacheStore - cache storage instance base on Cache Base Adapter
+     * @return {Object} - filled out instance for Cache Base Adapter
      */
     init(events, settingsCollection, calculatedFields, cacheStore) {
         this.settingsCache = cacheStore;
@@ -182,7 +193,9 @@ class CacheManager {
      * @param {EventEmitter} events
      */
     reset(events) {
-        this.settingsCache = {};
+        if (this.settingsCache) {
+            this.settingsCache.reset();
+        }
 
         events.removeListener('settings.edited', this._updateSettingFromModel);
         events.removeListener('settings.added', this._updateSettingFromModel);
