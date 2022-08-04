@@ -28,7 +28,6 @@ const ALPHA_FEATURES = [
     'urlCache',
     'beforeAfterCard',
     'comments',
-    'explore',
     'freeTrial'
 ];
 
