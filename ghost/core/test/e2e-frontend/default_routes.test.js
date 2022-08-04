@@ -1,5 +1,5 @@
 // # Default Frontend Routing Test
-// These tests check the default out-of-the-box beharior of Ghost is working as expected.
+// These tests check the default out-of-the-box behavior of Ghost is working as expected.
 
 // Test Structure
 // As it stands, these tests depend on the database, and as such are integration tests.

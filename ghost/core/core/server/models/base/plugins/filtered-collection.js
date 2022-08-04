@@ -6,13 +6,13 @@ module.exports = function (Bookshelf) {
         getFilteredCollection: function getFilteredCollection(options) {
             const filteredCollection = this.forge();
 
-            // Apply model-specific query beharior
+            // Apply model-specific query behavior
             filteredCollection.applyCustomQuery(options);
 
-            // Add Filter beharior
+            // Add Filter behavior
             filteredCollection.applyDefaultAndCustomFilters(options);
 
-            // Apply model-specific search beharior
+            // Apply model-specific search behavior
             filteredCollection.applySearchQuery(options);
 
             return filteredCollection;

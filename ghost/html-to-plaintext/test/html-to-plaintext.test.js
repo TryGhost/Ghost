@@ -9,7 +9,7 @@ describe('Html to Plaintext', function () {
         return {email, excerpt};
     }
 
-    describe('excerpt vs email beharior', function () {
+    describe('excerpt vs email behavior', function () {
         it('example case with img & link', function () {
             const input = '<p>Some thing <a href="https://google.com">Google</a> once told me.</p><img src="https://hotlink.com" alt="An important image"><p>And <strong>another</strong> thing.</p>';
 

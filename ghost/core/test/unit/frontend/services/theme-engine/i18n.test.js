@@ -8,7 +8,7 @@ const logging = {
     error: sinon.stub()
 };
 
-describe('I18n Class beharior', function () {
+describe('I18n Class behavior', function () {
     it('defaults to en', function () {
         const i18n = new I18n({logging});
         i18n.locale().should.eql('en');
@@ -19,7 +19,7 @@ describe('I18n Class beharior', function () {
         i18n.locale().should.eql('fr');
     });
 
-    describe('file loading beharior', function () {
+    describe('file loading behavior', function () {
         it('will fallback to en file correctly without changing locale', function () {
             const i18n = new I18n({locale: 'fr', logging});
 
@@ -34,7 +34,7 @@ describe('I18n Class beharior', function () {
         });
     });
 
-    describe('translation key dot notation (default beharior)', function () {
+    describe('translation key dot notation (default behavior)', function () {
         const fakeStrings = {
             test: {string: {path: 'I am correct'}}
         };
@@ -65,7 +65,7 @@ describe('I18n Class beharior', function () {
         });
     });
 
-    describe('translation key fulltext notation (theme beharior)', function () {
+    describe('translation key fulltext notation (theme behavior)', function () {
         const fakeStrings = {'Full text': 'I am correct'};
         let i18n;
 

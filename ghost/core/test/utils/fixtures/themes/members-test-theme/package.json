@@ -1,6 +1,6 @@
 {
     "name": "members-test-theme",
-    "description": "A minimal theme for testing members beharior",
+    "description": "A minimal theme for testing members behavior",
     "version": "1.0.0",
     "license": "MIT",
     "config": {

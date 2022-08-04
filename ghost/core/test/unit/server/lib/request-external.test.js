@@ -172,7 +172,7 @@ describe('External Request', function () {
         });
     });
 
-    describe('general beharior', function () {
+    describe('general behavior', function () {
         beforeEach(function () {
             sinon.stub(dnsPromises, 'lookup').callsFake(function (host) {
                 return Promise.resolve({address: '123.123.123.123'});

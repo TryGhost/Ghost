@@ -38,7 +38,7 @@ describe('{{link}} helper', function () {
         configUtils.restore();
     });
 
-    describe('basic beharior: simple links without context', function () {
+    describe('basic behavior: simple links without context', function () {
         it('throws an error for missing href=""', function () {
             (function compileWith() {
                 compile('{{#link}}text{{/link}}')
@@ -121,7 +121,7 @@ describe('{{link}} helper', function () {
         });
     });
 
-    describe('dynamic beharior: advanced links using context', function () {
+    describe('dynamic behavior: advanced links using context', function () {
         describe('activeClass', function () {
             it('gets applied correctly', function () {
                 // Test matching relative URL

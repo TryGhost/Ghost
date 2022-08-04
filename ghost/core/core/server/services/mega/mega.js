@@ -104,7 +104,7 @@ const sendTestEmail = async (postModel, toEmails, memberSegment) => {
         };
     }));
 
-    // enable tracking for previews to match real-world beharior
+    // enable tracking for previews to match real-world behavior
     emailData.track_opens = !!settingsCache.get('email_track_opens');
 
     const response = await bulkEmailService.send(emailData, recipients, memberSegment);
