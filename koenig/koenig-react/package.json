@@ -38,6 +38,7 @@
     "mocha": "10.0.0",
     "node-static": "^0.7.11",
     "postcss": "^8.4.14",
+    "postcss-import": "^14.1.0",
     "should": "13.2.3",
     "sinon": "14.0.0",
     "tailwindcss": "3.1.7",
@@ -54,7 +55,6 @@
     "mobiledoc-kit": "npm:@tryghost/mobiledoc-kit-experimental",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-frame-component": "^5.2.3",
     "react-mobiledoc-editor": "0.13.0",
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.0"

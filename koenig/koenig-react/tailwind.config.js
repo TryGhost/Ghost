@@ -1,4 +1,8 @@
 module.exports = {
+    corePlugins: {
+        preflight: false // we're providing our own scoped CSS reset
+    },
+    important: '.koenig-react',
     content: [
         './src/**/*.{js,jsx,ts,tsx}'
     ],

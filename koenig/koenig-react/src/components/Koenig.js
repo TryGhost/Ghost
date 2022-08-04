@@ -67,7 +67,7 @@ const Koenig = ({
     return (
         <Container
             data-testid="mobiledoc-container"
-            className="w-full max-w-2xl md:mx-auto md:py-16"
+            className=""
             mobiledoc={mobiledoc}
             atoms={atoms}
             onChange={onChange}
