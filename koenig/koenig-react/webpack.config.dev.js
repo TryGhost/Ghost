@@ -10,6 +10,7 @@ module.exports = {
         filename: 'main.js',
         publicPath: '/'
     },
+    devtool: 'eval-source-map',
     resolve: {
         alias: {
             'mobiledoc-kit': require.resolve('@tryghost/mobiledoc-kit-experimental')
