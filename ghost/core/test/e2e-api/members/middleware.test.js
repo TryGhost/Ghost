@@ -1,24 +1,40 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyObjectId, anyUuid} = matchers;
+const {anyEtag, anyObjectId, anyUuid, anyISODateTime} = matchers;
 const models = require('../../../core/server/models');
 require('should');
 
 let membersAgent;
 
-const memberMatcher = {
-    uuid: anyUuid,
-    newsletters: [
-        {
-            id: anyObjectId
-        }
-    ]
+const memberMatcher = (newslettersCount) => {
+    return {
+        uuid: anyUuid,
+        newsletters: new Array(newslettersCount).fill(
+            {
+                id: anyObjectId
+            }
+        )
+    };
+};
+
+// @todo: we currently don't serialise the output of /api/member/newsletters/, we should fix this
+const memberMatcherUnserialised = (newslettersCount) => {
+    return {
+        uuid: anyUuid,
+        newsletters: new Array(newslettersCount).fill(
+            {
+                id: anyObjectId,
+                uuid: anyUuid,
+                created_at: anyISODateTime
+            }
+        )
+    };
 };
 
 describe('Comments API', function () {
     before(async function () {
         membersAgent = await agentProvider.getMembersAPIAgent();
 
-        await fixtureManager.init('posts', 'members');
+        await fixtureManager.init('newsletters', 'members:newsletters');
     });
 
     beforeEach(function () {
@@ -35,6 +51,29 @@ describe('Comments API', function () {
                 .get(`/api/member/`)
                 .expectStatus(204)
                 .expectEmptyBody();
+        });
+
+        it('can update comment notifications', async function () {
+            // Only via updateMemberNewsletters
+            let member = await models.Member.findOne({id: fixtureManager.get('members', 0).id}, {require: true});
+            member.get('enable_comment_notifications').should.eql(true, 'This test requires the initial value to be true');
+
+            await membersAgent
+                .put(`/api/member/newsletters/?uuid=${member.get('uuid')}`)
+                .body({
+                    enable_comment_notifications: false
+                })
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .matchBodySnapshot(memberMatcherUnserialised(1))
+                .expect(({body}) => {
+                    body.email.should.eql(member.get('email'));
+                    body.enable_comment_notifications.should.eql(false);
+                });
+            member = await models.Member.findOne({id: member.id}, {require: true});
+            member.get('enable_comment_notifications').should.eql(false);
         });
     });
 
@@ -53,7 +92,7 @@ describe('Comments API', function () {
                 .matchHeaderSnapshot({
                     etag: anyEtag
                 })
-                .matchBodySnapshot(memberMatcher)
+                .matchBodySnapshot(memberMatcher(2))
                 .expect(({body}) => {
                     body.email.should.eql(member.get('email'));
                 });
@@ -69,7 +108,7 @@ describe('Comments API', function () {
                 .matchHeaderSnapshot({
                     etag: anyEtag
                 })
-                .matchBodySnapshot(memberMatcher)
+                .matchBodySnapshot(memberMatcher(2))
                 .expect(({body}) => {
                     body.email.should.eql(member.get('email'));
                     body.bio.should.eql('Head of Testing');
@@ -88,7 +127,7 @@ describe('Comments API', function () {
                 .matchHeaderSnapshot({
                     etag: anyEtag
                 })
-                .matchBodySnapshot(memberMatcher)
+                .matchBodySnapshot(memberMatcher(2))
                 .expect(({body}) => {
                     body.email.should.eql(member.get('email'));
                     body.name.should.eql('Test User');
@@ -111,7 +150,7 @@ describe('Comments API', function () {
                 .matchHeaderSnapshot({
                     etag: anyEtag
                 })
-                .matchBodySnapshot(memberMatcher)
+                .matchBodySnapshot(memberMatcher(2))
                 .expect(({body}) => {
                     body.email.should.eql(member.get('email'));
                     body.enable_comment_notifications.should.eql(false);
@@ -129,7 +168,7 @@ describe('Comments API', function () {
                 .matchHeaderSnapshot({
                     etag: anyEtag
                 })
-                .matchBodySnapshot(memberMatcher)
+                .matchBodySnapshot(memberMatcherUnserialised(2))
                 .expect(({body}) => {
                     body.email.should.eql(member.get('email'));
                     body.enable_comment_notifications.should.eql(true);
