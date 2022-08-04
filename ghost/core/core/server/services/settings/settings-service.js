@@ -9,6 +9,7 @@ const events = require('../../lib/common/events');
 const models = require('../../models');
 const labs = require('../../../shared/labs');
 const config = require('../../../shared/config');
+const adapterManager = require('../adapter-manager');
 const SettingsCache = require('../../../shared/settings-cache');
 const SettingsBREADService = require('./settings-bread-service');
 const {obfuscatedSetting, isSecretSetting, hideValueIfSecret} = require('./settings-utils');
@@ -66,8 +67,9 @@ module.exports = {
      * Initialize the cache, used in boot and in testing
      */
     async init() {
+        const cacheStore = adapterManager.getAdapter('cache');
         const settingsCollection = await models.Settings.populateDefaults();
-        SettingsCache.init(events, settingsCollection, this.getCalculatedFields(), {});
+        SettingsCache.init(events, settingsCollection, this.getCalculatedFields(), cacheStore);
     },
 
     /**

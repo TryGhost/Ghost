@@ -23,6 +23,9 @@
     "adapters": {
         "sso": {
             "active": "Default"
+        },
+        "cache": {
+            "active": "Memory"
         }
     },
     "storage": {
