@@ -258,12 +258,25 @@ async function editComment({state, api, data: {comment, parent}}) {
     };
 }
 
-async function updateMemberName({data, state, api}) {
-    const {name} = data;
+async function updateMember({data, state, api}) {
+    const {name, bio} = data;
+    const patchData = {};
+    
     const originalName = state?.member?.name;
-    if (originalName !== name) {
+
+    if (name && originalName !== name) {
+        patchData.name = name;
+    }
+
+    const originalBio = state?.member?.bio;
+    if (bio !== undefined && originalBio !== bio) {
+        // Allow to set it to an empty string or to null
+        patchData.bio = bio;
+    }
+
+    if (Object.keys(patchData).length > 0) {
         try {
-            const member = await api.member.update({name});
+            const member = await api.member.update(patchData);
             if (!member) {
                 throw new Error('Failed to update member');
             }
@@ -305,7 +318,7 @@ const Actions = {
     reportComment,
     addReply,
     loadMoreComments,
-    updateMemberName,
+    updateMember,
     openPopup,
     closePopup
 };

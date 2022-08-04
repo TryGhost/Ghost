@@ -6,9 +6,11 @@ import AppContext from '../../AppContext';
 const AddNameDialog = (props) => {
     const inputNameRef = useRef(null);
     const inputBioRef = useRef(null);
-    const {dispatchAction} = useContext(AppContext);
-    const [name, setName] = useState('');
-    const [bio, setBio] = useState('');
+    const {dispatchAction, member} = useContext(AppContext);
+
+    const [name, setName] = useState(member.name ?? '');
+    const [bio, setBio] = useState(member.bio ?? '');
+
     const [error, setError] = useState({name: '', bio: ''});
 
     const close = (succeeded) => {
@@ -20,15 +22,10 @@ const AddNameDialog = (props) => {
         // When it's both name and bio
         if (!props.bioOnly) {
             if (name.trim() !== '') {
-                await dispatchAction('updateMemberName', {
-                    name
+                await dispatchAction('updateMember', {
+                    name,
+                    bio
                 });
-
-                // TODO: need to save the bio, too
-                // await dispatchAction('updateMemberBio', {
-                //     bio
-                // });
-
                 close(true);
             } else {
                 setError({name: 'Enter your name'});
@@ -37,10 +34,9 @@ const AddNameDialog = (props) => {
             }
         // When it's only bio
         } else {
-            // TODO: need to save the bio, too
-            // await dispatchAction('updateMemberBio', {
-            //     bio
-            // });
+            await dispatchAction('updateMember', {
+                bio
+            });
 
             close(true);
         }
