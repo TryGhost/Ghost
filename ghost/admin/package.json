@@ -63,7 +63,6 @@
     "chai": "4.3.6",
     "chai-dom": "1.11.0",
     "codemirror": "5.48.2",
-    "csscomb": "4.3.0",
     "cssnano": "4.1.10",
     "element-resize-detector": "1.2.4",
     "ember-ajax": "5.1.1",
