@@ -1,0 +1,106 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Comments API when authenticated can get member data 1: [body] 1`] = `
+Object {
+  "avatar_image": null,
+  "bio": null,
+  "email": "member@example.com",
+  "enable_comment_notifications": true,
+  "firstname": null,
+  "name": null,
+  "newsletters": Array [
+    Object {
+      "description": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Default Newsletter",
+      "sort_order": 0,
+    },
+  ],
+  "paid": false,
+  "subscribed": false,
+  "subscriptions": Array [],
+  "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+}
+`;
+
+exports[`Comments API when authenticated can get member data 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "335",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Comments API when authenticated can update member bio 1: [body] 1`] = `
+Object {
+  "avatar_image": null,
+  "bio": "Head of Testing",
+  "email": "member@example.com",
+  "enable_comment_notifications": true,
+  "firstname": null,
+  "name": null,
+  "newsletters": Array [
+    Object {
+      "description": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Default Newsletter",
+      "sort_order": 0,
+    },
+  ],
+  "paid": false,
+  "subscribed": false,
+  "subscriptions": Array [],
+  "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+}
+`;
+
+exports[`Comments API when authenticated can update member bio 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "348",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Comments API when authenticated can update member data 1: [body] 1`] = `
+Object {
+  "avatar_image": null,
+  "bio": "Head of Testing",
+  "email": "member@example.com",
+  "enable_comment_notifications": true,
+  "firstname": null,
+  "name": null,
+  "newsletters": Array [
+    Object {
+      "description": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Default Newsletter",
+      "sort_order": 0,
+    },
+  ],
+  "paid": false,
+  "subscribed": false,
+  "subscriptions": Array [],
+  "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+}
+`;
+
+exports[`Comments API when authenticated can update member data 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "348",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
