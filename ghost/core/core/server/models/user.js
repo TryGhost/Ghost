@@ -234,7 +234,7 @@ User = ghostBookshelf.Model.extend({
          *   - we do some pre-validation checks, because onValidate is called AFTER onSaving
          *   - when importing, we set the password to a random uid and don't validate, just hash it and lock the user
          *   - when importing with `importPersistUser` we check if the password is a bcrypt hash already and fall back to
-         *     normal beharior if not (set random password, lock user, and hash password)
+         *     normal behavior if not (set random password, lock user, and hash password)
          *   - no validations should run, when importing
          */
         if (self.hasChanged('password')) {
@@ -242,7 +242,7 @@ User = ghostBookshelf.Model.extend({
 
             // CASE: import with `importPersistUser` should always be an bcrypt password already,
             // and won't re-hash or overwrite it.
-            // In case the password is not bcrypt hashed we fall back to the standard beharior.
+            // In case the password is not bcrypt hashed we fall back to the standard behavior.
             if (options.importPersistUser && this.get('password').match(/^\$2[ayb]\$.{56}$/i)) {
                 return;
             }

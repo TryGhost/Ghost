@@ -100,7 +100,7 @@ describe('Private Blogging', function () {
             req.session = {};
         });
 
-        describe('Logged Out beharior', function () {
+        describe('Logged Out behavior', function () {
             it('authenticatePrivateSession should redirect', function () {
                 req.path = req.url = '/welcome/';
                 privateBlogging.authenticatePrivateSession(req, res, next);
@@ -182,7 +182,7 @@ describe('Private Blogging', function () {
                 });
 
                 it('should render custom robots.txt', function () {
-                    // Note this test doesn't cover the full site beharior,
+                    // Note this test doesn't cover the full site behavior,
                     // another robots.txt can be incorrectly served if middleware is out of order
                     req.url = req.path = '/robots.txt';
                     res.writeHead = sinon.spy();
@@ -315,7 +315,7 @@ describe('Private Blogging', function () {
             });
         });
 
-        describe('Logged In beharior', function () {
+        describe('Logged In behavior', function () {
             beforeEach(function () {
                 const salt = Date.now().toString();
 

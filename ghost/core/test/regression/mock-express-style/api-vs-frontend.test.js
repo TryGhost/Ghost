@@ -10,7 +10,7 @@ const urlUtils = require('../../utils/urlUtils');
 const routeSettingsService = require('../../../core/server/services/route-settings');
 const themeEngine = require('../../../core/frontend/services/theme-engine');
 
-describe('Frontend beharior tests', function () {
+describe('Frontend behavior tests', function () {
     let app;
 
     before(localUtils.urlService.resetGenerators);
@@ -49,7 +49,7 @@ describe('Frontend beharior tests', function () {
             sinon.restore();
         });
 
-        describe('beharior: default cases', function () {
+        describe('behavior: default cases', function () {
             it('serve post', function () {
                 const req = {
                     method: 'GET',
@@ -232,7 +232,7 @@ describe('Frontend beharior tests', function () {
             });
         });
 
-        describe('beharior: prettify', function () {
+        describe('behavior: prettify', function () {
             it('url without slash', function () {
                 const req = {
                     secure: false,
@@ -249,7 +249,7 @@ describe('Frontend beharior tests', function () {
             });
         });
 
-        describe('beharior: url redirects', function () {
+        describe('behavior: url redirects', function () {
             describe('pagination', function () {
                 it('redirect /page/1/ to /', function () {
                     const req = {

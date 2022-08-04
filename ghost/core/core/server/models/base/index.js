@@ -1,6 +1,6 @@
 // # Base Model
 // This is the model from which all other Ghost models extend. The model is based on Bookshelf.Model, and provides
-// several basic behariors such as UUIDs, as well as a set of Data methods for accessing information from the database.
+// several basic behaviors such as UUIDs, as well as a set of Data methods for accessing information from the database.
 //
 // The models are internal to Ghost, only the API and some internal functions such as migration and import/export
 // accesses the models directly.

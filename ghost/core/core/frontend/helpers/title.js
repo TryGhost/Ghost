@@ -1,7 +1,7 @@
 // # Title Helper
 // Usage: `{{title}}`
 //
-// Overrides the standard beharior of `{[title}}` to ensure the content is correctly escaped
+// Overrides the standard behavior of `{[title}}` to ensure the content is correctly escaped
 
 const {SafeString, escapeExpression} = require('../services/handlebars');
 

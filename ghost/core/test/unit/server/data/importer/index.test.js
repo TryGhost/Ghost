@@ -326,7 +326,7 @@ describe('Importer', function () {
                 });
             });
 
-            describe('Zip beharior', function () {
+            describe('Zip behavior', function () {
                 it('can call extract and error correctly', function () {
                     return ImportManager
                         // Deliberately pass something that can't be extracted just to check this method signature is working

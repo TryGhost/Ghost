@@ -50,7 +50,7 @@ const commentMapper = (model, frame) => {
     }
 
     if (jsonModel.post) {
-        // We could use the post mapper here, but we need less field + don't need al the async beharior support
+        // We could use the post mapper here, but we need less field + don't need al the async behavior support
         url.forPost(jsonModel.post.id, jsonModel.post, frame);
         response.post = _.pick(jsonModel.post, postFields);
     }

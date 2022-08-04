@@ -260,7 +260,7 @@ describe('Match helper', function () {
         // allows us to know if the original value was a boolean or a string
         // These tests make sure that we can compare to the _originaL_ value
         // But that we don't start allowing weird things like boolean true being equal to string true
-        describe('SafeString beharior makes sense(ish)', function () {
+        describe('SafeString behavior makes sense(ish)', function () {
             runTests({
                 // Title equals true value = true
                 '{{match (match title "=" "The Title") "=" "true"}}': 'false',

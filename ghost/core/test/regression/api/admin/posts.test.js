@@ -426,7 +426,7 @@ describe('Posts API', function () {
             res.body.posts[0].tags.length.should.equal(1);
             res.body.posts[0].tags[0].slug.should.equal('five-spaces');
 
-            // Expected beharior when creating a slug with spaces:
+            // Expected behavior when creating a slug with spaces:
             res.body.posts[0].tags[0].name.should.equal('five-spaces');
 
             // If we create another post again now that the five-spaces tag exists,

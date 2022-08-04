@@ -159,7 +159,7 @@ class Resources {
      * @description Call the model layer to fetch a single resource via raw knex queries.
      *
      * This function was invented, because the model event is a generic event, which is independent of any
-     * api version beharior. We have to ensure that a model matches the conditions of the configured api version
+     * api version behavior. We have to ensure that a model matches the conditions of the configured api version
      * in the theme.
      *
      * See https://github.com/TryGhost/Ghost/issues/10124.
