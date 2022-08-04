@@ -11,6 +11,9 @@ const AddNameDialog = (props) => {
     const [name, setName] = useState(member.name ?? '');
     const [bio, setBio] = useState(member.bio ?? '');
 
+    const maxBioCharsLeft = 50;
+    const [bioCharsLeft, setBioCharsLeft] = useState(maxBioCharsLeft);
+
     const [error, setError] = useState({name: '', bio: ''});
 
     const close = (succeeded) => {
@@ -101,28 +104,20 @@ const AddNameDialog = (props) => {
                 }
                 <div className="flex flex-row mt-4 mb-2 justify-between">
                     <label htmlFor="comments-name" className="font-sans font-medium text-sm">Bio</label>
-                    <Transition
-                        show={!!error.bio}
-                        enter="transition duration-300 ease-out"
-                        enterFrom="opacity-0"
-                        enterTo="opacity-100"
-                        leave="transition duration-100 ease-out"
-                        leaveFrom="opacity-100"
-                        leaveTo="opacity-0"
-                    >
-                        <div className="font-sans text-sm text-red-500">{error.bio}</div>
-                    </Transition>
+                    <div className={`font-sans text-sm text-neutral-400 ${(bioCharsLeft === 0) && 'text-red-500'}`}><b>{bioCharsLeft}</b> characters left</div>
                 </div>
                 <input
                     id="comments-bio"
-                    className={`transition-[border-color] duration-200 font-sans px-3 rounded border border-neutral-200 focus:border-neutral-300 w-full outline-0 h-[42px] flex items-center ${error.bio && 'border-red-500 focus:border-red-500'}`}
+                    className={`transition-[border-color] duration-200 font-sans px-3 rounded border border-neutral-200 focus:border-neutral-300 w-full outline-0 h-[42px] flex items-center ${(bioCharsLeft === 0) && 'border-red-500 focus:border-red-500'}`}
                     type="text"
                     name="bio"
                     ref={inputBioRef}
                     value={bio}
                     placeholder="Head of Marketing at Acme, Inc"
                     onChange={(e) => {
-                        setBio(e.target.value);
+                        let bioText = e.target.value;
+                        setBioCharsLeft(maxBioCharsLeft - bioText.length);
+                        setBio(bioText);
                     }}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter') {
