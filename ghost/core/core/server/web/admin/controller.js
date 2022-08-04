@@ -29,8 +29,7 @@ module.exports = function adminController(req, res) {
     // CASE: trigger update check unit and let it run in background, don't block the admin rendering
     updateCheck();
 
-    const envDir = config.get('env') === 'production' ? 'production' : 'development';
-    const templatePath = path.resolve(config.get('paths').adminAssets, envDir, 'index.html');
+    const templatePath = path.resolve(config.get('paths').adminAssets, 'index.html');
     const headers = {};
 
     try {
