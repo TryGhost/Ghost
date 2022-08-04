@@ -2,11 +2,11 @@ const fs = require('fs-extra');
 const path = require('path');
 
 const adminFiles = [
-    'built/admin/development/index.html',
-    'built/admin/development/assets/ghost.js',
-    'built/admin/development/assets/ghost.css',
-    'built/admin/development/assets/vendor.js',
-    'built/admin/development/assets/vendor.css'
+    'built/admin/index.html',
+    'built/admin/assets/ghost.js',
+    'built/admin/assets/ghost.css',
+    'built/admin/assets/vendor.js',
+    'built/admin/assets/vendor.css'
 ];
 
 module.exports.stubAdminFiles = () => {

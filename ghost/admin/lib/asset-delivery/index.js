@@ -22,7 +22,7 @@ module.exports = {
         const fs = this.project.require('fs-extra');
         const walkSync = this.project.require('walk-sync');
 
-        const assetsOut = `../core/core/built/admin/${this.env}`;
+        const assetsOut = `../core/core/built/admin`;
         fs.ensureDirSync(assetsOut);
 
         // the dist folder contains more than just index.html and /assets, especially

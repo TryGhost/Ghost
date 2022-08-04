@@ -94,10 +94,10 @@ describe('Admin Routing', function () {
             configUtils.restore();
         });
 
-        it('serves prod assets in production', async function () {
+        it('serves assets in production', async function () {
             configUtils.set('env', 'production');
 
-            const prodTemplate = fs.readFileSync(path.resolve('test/utils/fixtures/admin-build/production/index.html')).toString();
+            const prodTemplate = fs.readFileSync(path.resolve('test/utils/fixtures/admin-build/index.html')).toString();
 
             const res = await request.get('/ghost/')
                 .set('X-Forwarded-Proto', 'https')
@@ -106,8 +106,8 @@ describe('Admin Routing', function () {
             res.text.should.equal(prodTemplate);
         });
 
-        it('serves dev assets when not in production', async function () {
-            const devTemplate = fs.readFileSync(path.resolve('test/utils/fixtures/admin-build/development/index.html')).toString();
+        it('serves assets when not in production', async function () {
+            const devTemplate = fs.readFileSync(path.resolve('test/utils/fixtures/admin-build/index.html')).toString();
 
             const res = await request.get('/ghost/')
                 .set('X-Forwarded-Proto', 'https')
@@ -122,7 +122,7 @@ describe('Admin Routing', function () {
                 .expect(200);
 
             should.exist(res.headers.etag);
-            res.headers.etag.should.equal('b448e5380dbfc46bc7c6da6045bf3043');
+            res.headers.etag.should.equal('8793333e8e91cde411b1336c58ec6ef3');
         });
     });
 });
