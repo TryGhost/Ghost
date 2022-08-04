@@ -11,8 +11,8 @@ const AddNameDialog = (props) => {
     const [name, setName] = useState(member.name ?? '');
     const [bio, setBio] = useState(member.bio ?? '');
 
-    const maxBioCharsLeft = 50;
-    const [bioCharsLeft, setBioCharsLeft] = useState(maxBioCharsLeft);
+    const maxBioChars = 50;
+    const [bioCharsLeft, setBioCharsLeft] = useState(maxBioChars);
 
     const [error, setError] = useState({name: '', bio: ''});
 
@@ -116,7 +116,7 @@ const AddNameDialog = (props) => {
                     placeholder="Head of Marketing at Acme, Inc"
                     onChange={(e) => {
                         let bioText = e.target.value;
-                        setBioCharsLeft(maxBioCharsLeft - bioText.length);
+                        setBioCharsLeft(maxBioChars - bioText.length);
                         setBio(bioText);
                     }}
                     onKeyDown={(e) => {
@@ -125,7 +125,7 @@ const AddNameDialog = (props) => {
                             submit();
                         }
                     }}
-                    maxLength="50"
+                    maxLength={maxBioChars}
                 />
                 <button
                     className="transition-opacity duration-200 ease-linear w-full h-[44px] mt-8 px-8 flex items-center justify-center rounded-md text-white font-sans font-semibold text-[15px] bg-[#3204F5] opacity-100 hover:opacity-90"
