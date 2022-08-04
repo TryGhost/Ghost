@@ -340,7 +340,7 @@
     background: var(--white) !important;
 }
 
-.gh-btn-editor span {
+.gh-btn-editor:not(.gh-publish-trigger) span {
     color: var(--darkgrey);
 }
 
@@ -353,7 +353,7 @@
 }
 
 .gh-btn-editor.green span {
-    color: var(--green);
+    color: var(--green-d1);
 }
 
 .gh-editor-wordcount-container {
