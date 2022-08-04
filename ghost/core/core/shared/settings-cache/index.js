@@ -1,7 +1,6 @@
 const CacheManager = require('./cache');
 const publicSettings = require('./public');
-const cache = {};
 
-const cacheManager = new CacheManager({cache, publicSettings});
+const cacheManager = new CacheManager({publicSettings});
 
 module.exports = cacheManager;
