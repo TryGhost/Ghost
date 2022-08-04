@@ -56,7 +56,7 @@ const AddNameDialog = (props) => {
 
     return (
         <>
-            <h1 className="font-sans font-bold tracking-tight text-[24px] mb-3 text-black">Add context to your comments</h1>
+            <h1 className="font-sans font-bold tracking-tight text-[24px] mb-3 text-black">Add to your profile</h1>
             <p className="font-sans text-[1.45rem] text-neutral-500 px-4 sm:px-8 leading-9">For a healthy discussion, let other members know who you are when commenting.</p>
             <section className="mt-8 text-left">
                 <div className="flex flex-row mb-2 justify-between">
