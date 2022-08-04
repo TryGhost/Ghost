@@ -14,11 +14,11 @@ const _ = require('lodash');
 class CacheManager {
     /**
      * @prop {Object} options
-     * @prop {{}} options.cache - object of objects. Holds cached settings, keyed by setting.key, contains the JSON version of the model
      * @prop {Object} options.publicSettings - key/value pairs of settings which are publicly accessible
      */
-    constructor({cache, publicSettings}) {
-        this.settingsCache = cache;
+    constructor({publicSettings}) {
+        // settingsCache holds cached settings, keyed by setting.key, contains the JSON version of the model
+        this.settingsCache;
         this.publicSettings = publicSettings;
         this.calculatedFields = [];
 
@@ -47,7 +47,10 @@ class CacheManager {
     }
 
     _doGet(key, options) {
-        if (!this.settingsCache[key]) {
+        // NOTE: "!this.settingsCache" is for when setting's cache is used
+        //       before it had a chance to initialize. Should be fixed when
+        //       it is decoupled from the model layer
+        if (!this.settingsCache || !this.settingsCache[key]) {
             return;
         }
 
@@ -143,9 +146,11 @@ class CacheManager {
      * @param {EventEmitter} events
      * @param {Bookshelf.Collection<Settings>} settingsCollection
      * @param {Array} calculatedFields
+     * @param {Object} cacheStore - cache storage instance
      * @return {object}
      */
-    init(events, settingsCollection, calculatedFields) {
+    init(events, settingsCollection, calculatedFields, cacheStore) {
+        this.settingsCache = cacheStore;
         // First, reset the cache and
         this.reset(events);
 

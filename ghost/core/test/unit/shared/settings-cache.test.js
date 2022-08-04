@@ -14,10 +14,9 @@ describe('UNIT: settings cache', function () {
 
     beforeEach(function () {
         cache = new CacheManager({
-            cache: {},
             publicSettings
         });
-        cache.init(events, {}, []);
+        cache.init(events, {}, [], {});
     });
 
     afterEach(function () {
