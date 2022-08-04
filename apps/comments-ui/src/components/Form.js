@@ -378,7 +378,7 @@ const Form = (props) => {
                                     <button type="button" onClick={props.close} className="font-sans text-sm font-medium ml-2.5 text-neutral-500 dark:text-neutral-400">Cancel</button>}
                                 <button
                                     className={`
-                                        flex items-center justify-center w-32 h-[39px]
+                                        flex items-center justify-center w-auto sm:w-32 h-[39px]
                                         transition-[opacity] duration-150
                                         bg-neutral-900 dark:bg-[rgba(255,255,255,0.9)]
                                         rounded-[6px] border
