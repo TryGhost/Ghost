@@ -60,7 +60,6 @@ export default class FeatureService extends Service {
     @feature('beforeAfterCard') beforeAfterCard;
     @feature('comments') comments;
     @feature('newsletterPaywall') newsletterPaywall;
-    @feature('explore') explore;
 
     _user = null;
 
