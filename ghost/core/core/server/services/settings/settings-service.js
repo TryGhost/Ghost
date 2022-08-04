@@ -67,7 +67,7 @@ module.exports = {
      */
     async init() {
         const settingsCollection = await models.Settings.populateDefaults();
-        SettingsCache.init(events, settingsCollection, this.getCalculatedFields());
+        SettingsCache.init(events, settingsCollection, this.getCalculatedFields(), {});
     },
 
     /**
