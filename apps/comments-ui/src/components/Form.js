@@ -302,6 +302,19 @@ const Form = (props) => {
         editor.commands.focus();
     };
 
+    const handleAddBoth = (event) => {
+        event.preventDefault();
+        setPreventClosing(true);
+
+        dispatchAction('openPopup', {
+            type: 'addDetailsDialog',
+            callback: () => {
+                editor?.commands.focus();
+                setPreventClosing(false);
+            }
+        });
+    };
+
     const handleAddBio = (event) => {
         event.preventDefault();
         setPreventClosing(true);
@@ -409,12 +422,9 @@ const Form = (props) => {
                                 leaveFrom="opacity-100"
                                 leaveTo="opacity-0"
                             >
-                                <h4 className="text-[17px] font-sans font-bold tracking-tight dark:text-[rgba(255,255,255,0.85)]">{memberName ? memberName : 'Anonymous'}</h4>
+                                <button className="text-[17px] font-sans font-bold tracking-tight text-[rgb(23,23,23)] hover:text-black dark:text-[rgba(255,255,255,0.85)]" onClick={handleAddBoth}>{memberName ? memberName : 'Anonymous'}</button>
                                 <div className="flex items-baseline font-sans text-[14px] tracking-tight text-neutral-400 dark:text-[rgba(255,255,255,0.5)]">
-                                    {memberBio ?
-                                        <div onClick={handleAddBio}>{memberBio}</div> :
-                                        <button className="transition duration-150 hover:text-neutral-500" onClick={handleAddBio}>Add your bio</button>
-                                    }
+                                    <button className="transition duration-150 hover:text-neutral-500" onClick={memberBio ? handleAddBoth : handleAddBio}>{memberBio ? memberBio : 'Add your bio'}</button>
                                 </div>
                             </Transition>
                         </div>

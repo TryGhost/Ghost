@@ -92,7 +92,7 @@ const Comment = ({updateIsEditing = null, isEditing, ...props}) => {
                                     <p className="font-sans text-[16px] leading-normal text-neutral-400 italic mt-[4px]">{notPublishedMessage}</p>
                                 </div> :
                                 <div>
-                                    <h4 className="text-[17px] font-sans font-bold tracking-tight dark:text-[rgba(255,255,255,0.85)]">{!comment.member ? 'Deleted member' : (comment.member.name ? comment.member.name : 'Anonymous')}</h4>
+                                    <h4 className="text-[17px] font-sans font-bold tracking-tight text-[rgb(23,23,23] dark:text-[rgba(255,255,255,0.85)]">{!comment.member ? 'Deleted member' : (comment.member.name ? comment.member.name : 'Anonymous')}</h4>
                                     <div className="flex items-baseline font-sans text-[14px] tracking-tight text-neutral-400 dark:text-[rgba(255,255,255,0.5)]">
                                         {memberBio && <div>{memberBio}<span className="mx-[0.3em]">·</span></div>}
                                         <div title={formatExplicitTime(comment.created_at)}>{formatRelativeTime(comment.created_at)}</div>
