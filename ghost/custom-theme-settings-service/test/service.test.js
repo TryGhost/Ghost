@@ -394,6 +394,91 @@ describe('Service', function () {
             should.exist(model.findAll.getCall(1).firstArg.filter);
             should.doesNotThrow(() => nql.parse(model.findAll.getCall(1).firstArg.filter));
         });
+
+        it('does not allow simultaneous calls for same theme', async function () {
+            service.activateTheme('test', {
+                name: 'test',
+                customSettings: {
+                    // no change
+                    one: {
+                        type: 'select',
+                        options: ['1', '2'],
+                        default: '2'
+                    },
+                    // no change
+                    two: {
+                        type: 'select',
+                        options: ['1', '2'],
+                        default: '1'
+                    },
+                    // new setting
+                    three: {
+                        type: 'select',
+                        options: ['uno', 'dos', 'tres'],
+                        default: 'tres'
+                    }
+                }
+            });
+
+            await service.activateTheme('test', {
+                name: 'test',
+                customSettings: {
+                    // no change
+                    one: {
+                        type: 'select',
+                        options: ['1', '2'],
+                        default: '2'
+                    },
+                    // no change
+                    two: {
+                        type: 'select',
+                        options: ['1', '2'],
+                        default: '1'
+                    },
+                    // new setting
+                    three: {
+                        type: 'select',
+                        options: ['uno', 'dos', 'tres'],
+                        default: 'tres'
+                    }
+                }
+            });
+
+            // model methods are only called enough times for one .activate call despite being called twice
+            model.findAll.callCount.should.equal(2);
+            model.add.callCount.should.equal(1);
+
+            // internal cache is correct
+            service.listSettings().should.deepEqual([{
+                id: 1,
+                key: 'one',
+                type: 'select',
+                options: ['1', '2'],
+                default: '2',
+                value: '1'
+            }, {
+                id: 2,
+                key: 'two',
+                type: 'select',
+                options: ['1', '2'],
+                default: '1',
+                value: '2'
+            }, {
+                id: 3,
+                key: 'three',
+                type: 'select',
+                options: ['uno', 'dos', 'tres'],
+                default: 'tres',
+                value: 'tres'
+            }]);
+
+            // external cache is correct
+            cache.getAll().should.deepEqual({
+                one: '1',
+                two: '2',
+                three: 'tres'
+            });
+        });
     });
 
     describe('listSettings()', function () {
