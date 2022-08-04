@@ -45,7 +45,7 @@
             @buttonText="Update"
             @runningText="Updating..."
             @successText="Updated"
-            @class="gh-btn gh-btn-editor gh-editor-save-trigger gh-publish-trigger"
+            @class="gh-btn gh-btn-editor gh-editor-save-trigger"
             @idleClass="green"
             @runningClass="midlightgrey"
             @successClass="midlightgrey"
@@ -59,7 +59,7 @@
         {{#if (not (and @publishManagement.post.isSent (not @publishManagement.post.isPublished)))}}
             <button
                 type="button"
-                class="gh-btn gh-btn-editor darkgrey gh-publish-trigger"
+                class="gh-btn gh-btn-editor darkgrey gh-unpublish-trigger"
                 {{on "click" @publishManagement.openUpdateFlow}}
                 data-test-button="update-flow"
             >
