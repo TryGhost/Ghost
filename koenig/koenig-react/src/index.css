@@ -23,6 +23,7 @@
     font-size: 62.5%;
     line-height: 1.65;
     letter-spacing: 0.01em;
+    position: relative;
 }
 
 .koenig-react > * {

@@ -13,7 +13,7 @@ const Koenig = ({
     textExpansions = DEFAULT_TEXT_EXPANSIONS,
     didCreateEditor,
     onChange,
-    TOOLBAR_MARGIN = 60,
+    TOOLBAR_MARGIN = 15,
     TICK_ADJUSTMENT = 8
 }) => {
     const DEFAULTSTYLES = {
@@ -21,7 +21,7 @@ const Koenig = ({
         left: 0,
         right: 0
     };
-    const editorRef = React.useRef();
+    const toolbarRef = React.useRef();
     const [showToolbar, setShowToolbar] = React.useState(false);
     const [toolbarPosition, setToolbarPosition] = React.useState(DEFAULTSTYLES);
     const [, setKoenigInstance] = React.useState(null);
@@ -93,52 +93,23 @@ const Koenig = ({
     }
 
     function _positionToolbar() {
-        let containerRect = editorRef.current.editor.element.offsetParent.getBoundingClientRect();
+        let containerRect = toolbarRef.current.offsetParent.getBoundingClientRect();
         let range = window.getSelection().getRangeAt(0);
         let rangeRect = range.getBoundingClientRect();
-        let {width} = editorRef.current.editor.element.getBoundingClientRect();
+        let {width, height} = toolbarRef.current.getBoundingClientRect();
         let newPosition = {};
 
         // rangeRect is relative to the viewport so we need to subtract the
         // container measurements to get a position relative to the container
         newPosition = {
-            top: rangeRect.top - containerRect.top - TOOLBAR_MARGIN,
+            top: rangeRect.top - containerRect.top - height - TOOLBAR_MARGIN,
             left: rangeRect.left - containerRect.left + rangeRect.width / 2 - width / 2,
             right: null
         };
-
-        // let tickPosition = 50;
-        // // don't overflow left boundary
-        // if (newPosition.left < 0) {
-        //     newPosition.left = 0;
-
-        //     // calculate the tick percentage position
-        //     let absTickPosition = rangeRect.left - containerRect.left + rangeRect.width / 2;
-        //     tickPosition = absTickPosition / width * 100;
-        //     if (tickPosition < 5) {
-        //         tickPosition = 5;
-        //     }
-        // }
-        // same for right boundary
-        // if (newPosition.left + width > containerRect.width) {
-        //     newPosition.left = null;
-        //     newPosition.right = 0;
-
-        //     // calculate the tick percentage position
-        //     let absTickPosition = rangeRect.right - containerRect.right - rangeRect.width / 2;
-        //     tickPosition = 100 + absTickPosition / width * 100;
-        //     if (tickPosition > 95) {
-        //         tickPosition = 95;
-        //     }
-        // }
-
-        // the tick is a pseudo-element so we the only way we can affect it's
-        // style is by adding a style element to the head
-        // this._removeStyleElement(); // reset to base styles
-        // if (tickPosition !== 50) {
-        //     this._addStyleElement(tickPosition);
-        // }
-        // update the toolbar position
+        // Prevent left overflow
+        if (newPosition.left < 0) {
+            newPosition.left = 0;
+        }
         setToolbarPosition(newPosition);
     }
 
@@ -157,9 +128,9 @@ const Koenig = ({
     const toolbarPositionStyles = {
         top: `${toolbarPosition.top}px`,
         left: `${toolbarPosition.left}px`,
-        right: `${toolbarPosition.right}px`,
-        position: `absolute`,
-        zIndex: `299`
+        zIndex: `${showToolbar ? '999' : '-999'}`,
+        pointerEvents: `${showToolbar ? 'auto !important' : 'none !important'}`,
+        opacity: `${showToolbar ? '1' : '0'}`
     };
 
     React.useEffect(() => {
@@ -178,22 +149,23 @@ const Koenig = ({
 
     return (
         <Container
-            ref={editorRef}
+            className='relative'
             id="mobiledoc-editor"
             data-testid="mobiledoc-container"
-            className=""
             mobiledoc={mobiledoc}
             atoms={atoms}
             onChange={onChange}
             didCreateEditor={_didCreateEditor}
             placeholder="Begin writing your post...">  
-            <div style={toolbarPositionStyles}
-                className={`${showToolbar ? 'absolute' : 'hidden'}`} >
-                <Toolbar editor={mobiledocInstance} /> 
-            </div>
             <Editor
-                data-testid="mobiledoc-editor"
-                className="prose" />
+                data-testid="mobiledoc-editor">
+            </Editor>
+            <div ref={toolbarRef}
+                className={`absolute w-40`}
+                style={toolbarPositionStyles} >
+                <Toolbar 
+                    editor={mobiledocInstance} /> 
+            </div>
         </Container>
     );
 };

@@ -40,7 +40,6 @@ module.exports = {
     },
     plugins: [new UglifyJsPlugin()],
     devServer: {
-        server: 'https',
         compress: true,
         port: 1338,
         headers: {
