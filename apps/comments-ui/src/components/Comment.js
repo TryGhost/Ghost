@@ -118,19 +118,11 @@ const Comment = ({updateIsEditing = null, isEditing, ...props}) => {
                         <Replies comment={comment} />
                     </div>
                 }
-                <Transition
-                    show={isInReplyMode}
-                    enter="transition duration-500 delay-50 ease-in-out"
-                    enterFrom="opacity-0"
-                    enterTo="opacity-100"
-                    leave="transition-none duration-0"
-                    leaveFrom="opacity-100"
-                    leaveTo="opacity-0"
-                >
+                {isInReplyMode && 
                     <div className="ml-14 my-10">
                         <Form parent={comment} close={closeReplyMode} isReply={true} />
                     </div>
-                </Transition>
+                }
             </Transition>
         );
     }
