@@ -53,10 +53,12 @@ module.exports = {
         },
         query({data, options}) {
             return models.Integration.findOne(data, Object.assign(options, {require: true}))
-                .catch(models.Integration.NotFoundError, () => {
-                    throw new errors.NotFoundError({
-                        message: tpl(messages.resourceNotFound, {resource: 'Integration'})
-                    });
+                .catch((e) => {
+                    if (e instanceof models.Integration.NotFoundError) {
+                        throw new errors.NotFoundError({
+                            message: tpl(messages.resourceNotFound, {resource: 'Integration'})
+                        });
+                    }
                 });
         }
     },
@@ -136,10 +138,12 @@ module.exports = {
         },
         query({options}) {
             return models.Integration.destroy(Object.assign(options, {require: true}))
-                .catch(models.Integration.NotFoundError, () => {
-                    return Promise.reject(new errors.NotFoundError({
-                        message: tpl(messages.resourceNotFound, {resource: 'Integration'})
-                    }));
+                .catch((e) => {
+                    if (e instanceof models.Integration.NotFoundError) {
+                        return Promise.reject(new errors.NotFoundError({
+                            message: tpl(messages.resourceNotFound, {resource: 'Integration'})
+                        }));
+                    }
                 });
         }
     }
