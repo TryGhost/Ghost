@@ -539,6 +539,10 @@
         margin: 2.8rem 0 0;
     }
 
+    /* Other elements */
+    hr {
+        margin: 1.6rem 0;
+    }
 
     /* Mobiledoc-kit base styles
     /* NOTE: adapted from https://github.com/bustle/mobiledoc-kit/blob/master/src/css/mobiledoc-kit.css
