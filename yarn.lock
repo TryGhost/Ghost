@@ -3329,10 +3329,10 @@
   dependencies:
     semver "^7.3.5"
 
-"@tryghost/limit-service@1.2.2":
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-1.2.2.tgz#c137a00f636eaaab22c4290b63c29f1b2bb6ffdd"
-  integrity sha512-onlpgn0iZLuFt2yNyHTNx5m7gqYxJnAqUa83G7EgJTZ2yhFYNyw/trVOV46mrJs3+DtEIrNzMCtx50MiqFHb/Q==
+"@tryghost/limit-service@1.2.3":
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-1.2.3.tgz#161acc62f180a47b2a326562a657f0b6c6dd96c0"
+  integrity sha512-rTuUjZigUAxpXuQNZU4nK5XD+MIvO31RFAAn8t2CSvUzfcOdr683qF15UNzVIAOyV3XLkyBQvWJ8dH+pBhZOWg==
   dependencies:
     "@tryghost/errors" "^1.2.1"
     lodash "^4.17.21"
