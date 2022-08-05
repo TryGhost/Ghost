@@ -63,6 +63,12 @@
     "packageRules": [
       {
         "packagePatterns": [
+          "@tryghost"
+        ],
+        "groupName": "@tryghost"
+      },
+      {
+        "packagePatterns": [
           "metascraper"
         ],
         "groupName": "metascraper"
