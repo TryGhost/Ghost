@@ -2,10 +2,10 @@ const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
 const CachedImageSizeFromUrl = require('../../../../../core/server/lib/image/cached-image-size-from-url');
+const InMemoryCache = require('../../../../../core/server/adapters/cache/Memory');
 
 describe('lib/image: image size cache', function () {
     let sizeOfStub;
-    let cachedImagedSize;
 
     beforeEach(function () {
         sizeOfStub = sinon.stub();
@@ -25,9 +25,10 @@ describe('lib/image: image size cache', function () {
             type: 'jpg'
         });
 
+        const cacheStore = new InMemoryCache();
         const cachedImageSizeFromUrl = new CachedImageSizeFromUrl({
             getImageSizeFromUrl: sizeOfStub,
-            cache: new Map()
+            cache: cacheStore
         });
 
         imageSizeSpy = sizeOfStub;
@@ -35,10 +36,10 @@ describe('lib/image: image size cache', function () {
         await cachedImageSizeFromUrl.getCachedImageSizeFromUrl(url);
 
         // first call to get result from `getImageSizeFromUrl`
-        cachedImagedSize = cachedImageSizeFromUrl.cache;
-        should.exist(cachedImagedSize);
-        cachedImagedSize.has(url).should.be.true;
-        const image = cachedImagedSize.get(url);
+
+        should.exist(cacheStore);
+        cacheStore.get(url).should.not.be.undefined;
+        const image = cacheStore.get(url);
         should.exist(image.width);
         image.width.should.be.equal(50);
         should.exist(image.height);
@@ -49,10 +50,9 @@ describe('lib/image: image size cache', function () {
 
         imageSizeSpy.calledOnce.should.be.true();
         imageSizeSpy.calledTwice.should.be.false();
-        cachedImagedSize = cachedImageSizeFromUrl.cache;
-        should.exist(cachedImagedSize);
-        cachedImagedSize.has(url).should.be.true;
-        const image2 = cachedImagedSize.get(url);
+
+        cacheStore.get(url).should.not.be.undefined;
+        const image2 = cacheStore.get(url);
         should.exist(image2.width);
         image2.width.should.be.equal(50);
         should.exist(image2.height);
@@ -64,17 +64,16 @@ describe('lib/image: image size cache', function () {
 
         sizeOfStub.rejects('error');
 
+        const cacheStore = new InMemoryCache()
         const cachedImageSizeFromUrl = new CachedImageSizeFromUrl({
             getImageSizeFromUrl: sizeOfStub,
-            cache: new Map()
+            cache: cacheStore
         });
 
         await cachedImageSizeFromUrl.getCachedImageSizeFromUrl(url);
 
-        cachedImagedSize = cachedImageSizeFromUrl.cache;
-        should.exist(cachedImagedSize);
-        cachedImagedSize.has(url).should.be.true;
-        const image = cachedImagedSize.get(url);
+        cacheStore.get(url).should.not.be.undefined;
+        const image = cacheStore.get(url);
         should.not.exist(image.width);
         should.not.exist(image.height);
     });
@@ -84,25 +83,24 @@ describe('lib/image: image size cache', function () {
 
         sizeOfStub.rejects(new errors.NotFoundError('it iz gone mate!'));
 
+        const cacheStore = new InMemoryCache();
         const cachedImageSizeFromUrl = new CachedImageSizeFromUrl({
             getImageSizeFromUrl: sizeOfStub,
-            cache: new Map()
+            cache: cacheStore
         });
 
         await cachedImageSizeFromUrl.getCachedImageSizeFromUrl(url);
 
-        cachedImagedSize = cachedImageSizeFromUrl.cache;
-        should.exist(cachedImagedSize);
-        cachedImagedSize.has(url).should.be.true;
-        const image = cachedImagedSize.get(url);
+        cacheStore.get(url).should.not.be.undefined;
+        const image = cacheStore.get(url);
         should.not.exist(image.width);
         should.not.exist(image.height);
     });
 
-    it('should return null if url is undefined', async function () {
+    it('should return null if url is null', async function () {
         const cachedImageSizeFromUrl = new CachedImageSizeFromUrl({
             imageSize: {},
-            cache: new Map()
+            cache: new InMemoryCache()
         });
         const url = null;
         let result;
