@@ -3488,10 +3488,10 @@
     "@tryghost/debug" "^0.1.17"
     "@tryghost/logging" "^2.2.3"
 
-"@tryghost/social-urls@0.1.32":
-  version "0.1.32"
-  resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.32.tgz#c8a8a80d758bedff5c594667543fd658ed139301"
-  integrity sha512-TU/nbqKRVxRJyVBpha5u9pw9oJTlCJhIislE0kS6IfGfjO6EDGa20gfXHV8AGeTuB1pNpiBUKcpX+IsHjjCM/w==
+"@tryghost/social-urls@0.1.33":
+  version "0.1.33"
+  resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.33.tgz#40d3ae0442825bd1f2cdf7988b2ed7e37c8249c5"
+  integrity sha512-Pfcs0WzUCTlA1XFfh5qVJmmE+r0+k4TH4dk8v+fkEV9mCFXOy/tNdkXSNXdQS+5/YV4akHBECqQb+KP61jD/Lw==
 
 "@tryghost/stats-service@0.3.0":
   version "0.3.0"
