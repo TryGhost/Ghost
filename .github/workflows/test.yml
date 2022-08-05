@@ -46,7 +46,7 @@ jobs:
           node-version: "14.17.0"
 
       - run: yarn
-      - run: yarn workspace ghost-admin run grunt shell:ember:prod
+      - run: yarn workspace ghost-admin run build:prod
 
       - uses: daniellockyer/action-slack-build@master
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
