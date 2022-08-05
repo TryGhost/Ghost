@@ -7,7 +7,10 @@ class ImageUtils {
     constructor({config, urlUtils, settingsCache, storageUtils, storage, validator, request}) {
         this.blogIcon = new BlogIcon({config, urlUtils, settingsCache, storageUtils});
         this.imageSize = new ImageSize({config, storage, storageUtils, validator, urlUtils, request});
-        this.cachedImageSizeFromUrl = new CachedImageSizeFromUrl({imageSize: this.imageSize});
+        this.cachedImageSizeFromUrl = new CachedImageSizeFromUrl({
+            imageSize: this.imageSize,
+            cache: new Map()
+        });
         this.gravatar = new Gravatar({config, request});
     }
 }
