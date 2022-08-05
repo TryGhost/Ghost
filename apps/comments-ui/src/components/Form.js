@@ -339,9 +339,8 @@ const Form = (props) => {
             <form ref={formEl} onClick={focusEditor} onMouseDown={preventIfFocused} onTouchStart={preventIfFocused} className={`
                 transition duration-200
                 pt-3 pb-2 px-3
-                -mt-[12px] -mr-3 mb-10 -ml-[12px]
+                -mt-[12px] -mx-3 mb-10
                 rounded-md
-                ${!commentsCount && !props.isEdit && !props.isReply && 'mt-0 ml-0 mr-0'}
                 ${isFormReallyOpen ? 'cursor-default' : 'cursor-pointer'}
                 ${(!props.isReply && !props.isEdit) && '-mt-[4px]'}
                 ${(props.isReply || props.isEdit) && '-mt-[16px]'}
