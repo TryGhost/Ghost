@@ -236,10 +236,10 @@ const Form = (props) => {
         // Add some basic keyboard shortcuts
         // ESC to blur the editor
         const keyDownListener = (event) => {
-            if (event.metaKey) {
-                // CMD on MacOS
+            if (event.metaKey || event.ctrlKey) {
+                // CMD on MacOS or CTRL
 
-                if (event.key === 'Escape' && editor?.isFocused) {
+                if (event.key === 'Enter' && editor?.isFocused) {
                     // Try submit
                     submitForm();
                 }
