@@ -323,6 +323,11 @@ module.exports = class MemberRepository {
             'bio'
         ]);
 
+        // Trim whitespaces from bio
+        if (memberData.bio) {
+            memberData.bio = memberData.bio.trim();
+        }
+   
         // Determine if we need to fetch the initial member with relations
         const needsProducts = this._stripeAPIService.configured && data.products;
         const needsNewsletters = memberData.newsletters || typeof memberData.subscribed === 'boolean';
