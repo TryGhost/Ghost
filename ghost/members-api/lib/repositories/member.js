@@ -803,6 +803,9 @@ module.exports = class MemberRepository {
             default_payment_card_last4: paymentMethod && paymentMethod.card && paymentMethod.card.last4 || null,
             stripe_price_id: subscriptionPriceData.id,
             plan_id: subscriptionPriceData.id,
+            // trial start and end are returned as Stripe timestamps and need coversion
+            trial_start_at: subscription.trial_start ? new Date(subscription.trial_start * 1000) : null,
+            trial_end_at: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
             // NOTE: Defaulting to interval as migration to nullable field
             // turned out to be much bigger problem.
             // Ideally, would need nickname field to be nullable on the DB level
@@ -1371,4 +1374,3 @@ module.exports = class MemberRepository {
         return true;
     }
 };
-
