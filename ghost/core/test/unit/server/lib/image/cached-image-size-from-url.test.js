@@ -1,3 +1,4 @@
+const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
 const CachedImageSizeFromUrl = require('../../../../../core/server/lib/image/cached-image-size-from-url');
@@ -60,10 +61,32 @@ describe('lib/image: image size cache', function () {
         image2.height.should.be.equal(50);
     });
 
-    it('can handle image-size errors', async function () {
+    it('can handle generic image-size errors', async function () {
         const url = 'http://mysite.com/content/image/mypostcoverimage.jpg';
 
         sizeOfStub.rejects('error');
+
+        const cachedImageSizeFromUrl = new CachedImageSizeFromUrl({
+            imageSize: {
+                getImageSizeFromUrl: sizeOfStub
+            },
+            cache: new Map()
+        });
+
+        await cachedImageSizeFromUrl.getCachedImageSizeFromUrl(url);
+
+        cachedImagedSize = cachedImageSizeFromUrl.cache;
+        should.exist(cachedImagedSize);
+        cachedImagedSize.has(url).should.be.true;
+        const image = cachedImagedSize.get(url);
+        should.not.exist(image.width);
+        should.not.exist(image.height);
+    });
+
+    it('can handle NotFoundError error', async function () {
+        const url = 'http://mysite.com/content/image/mypostcoverimage.jpg';
+
+        sizeOfStub.rejects(new errors.NotFoundError('it iz gone mate!'));
 
         const cachedImageSizeFromUrl = new CachedImageSizeFromUrl({
             imageSize: {
