@@ -28,7 +28,7 @@ class CachedImageSizeFromUrl {
         }
 
         // image size is not in cache
-        if (!this.cache.has(url)) {
+        if (!this.cache.get(url)) {
             return this.imageSize.getImageSizeFromUrl(url).then((res) => {
                 this.cache.set(url, res);
 
