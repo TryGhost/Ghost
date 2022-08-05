@@ -3,7 +3,7 @@ import MemberAvatar from '../common/MemberGravatar';
 import ActionButton from '../common/ActionButton';
 import CloseButton from '../common/CloseButton';
 import Switch from '../common/Switch';
-import {getMemberSubscription, getMemberTierName, getSiteNewsletters, getSupportAddress, getUpdatedOfferPrice, hasMultipleNewsletters, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember} from '../../utils/helpers';
+import {getMemberSubscription, getMemberTierName, getSiteNewsletters, getSupportAddress, getUpdatedOfferPrice, hasCommentsEnabled, hasMultipleNewsletters, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember} from '../../utils/helpers';
 import {getDateString} from '../../utils/date-time';
 import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
 import {ReactComponent as OfferTagIcon} from '../../images/icons/offer-tag.svg';
@@ -348,7 +348,7 @@ function EmailNewsletterAction() {
     const {member, site, onAction} = useContext(AppContext);
     let {newsletters} = member;
 
-    if (hasMultipleNewsletters({site})) {
+    if (hasMultipleNewsletters({site}) || hasCommentsEnabled({site})) {
         return null;
     }
     const subscribed = !!newsletters?.length;
@@ -380,7 +380,7 @@ function EmailNewsletterAction() {
 
 function EmailPreferencesAction() {
     const {site, onAction} = useContext(AppContext);
-    if (!hasMultipleNewsletters({site})) {
+    if (!hasMultipleNewsletters({site}) && !hasCommentsEnabled({site})) {
         return null;
     }
     return (
