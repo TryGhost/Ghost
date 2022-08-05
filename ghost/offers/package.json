@@ -22,6 +22,6 @@
   },
   "dependencies": {
     "@tryghost/mongo-utils": "0.3.5",
-    "@tryghost/string": "0.1.26"
+    "@tryghost/string": "0.1.27"
   }
 }
