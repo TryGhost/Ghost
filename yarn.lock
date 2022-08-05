@@ -1788,14 +1788,6 @@
   resolved "https://registry.yarnpkg.com/@csstools/selector-specificity/-/selector-specificity-2.0.2.tgz#1bfafe4b7ed0f3e4105837e056e0a89b108ebe36"
   integrity sha512-IkpVW/ehM1hWKln4fCA3NzJU8KwD+kIOvPZA4cqxoJHtE21CCzjyp+Kxbu0i5I4tBNOlXPL9mjwnWlL0VEG4Fg==
 
-"@distributed-systems/callsite@^1.1.0", "@distributed-systems/callsite@^1.1.1":
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/@distributed-systems/callsite/-/callsite-1.1.1.tgz#56a9e1a1d16ae6264ea3f51eea3782848fc27a88"
-  integrity sha512-YSA3kWjClnLmFKNpdQCZlMQoWI4N6KpR/T4MaREEQczaehcagsVorT3YDV17KR6zuJXDs7f+kkSt1o/D6SufAQ==
-  dependencies:
-    ee-log "^3.0.0"
-    section-tests "^1.3.0"
-
 "@elastic/elasticsearch@8.2.1":
   version "8.2.1"
   resolved "https://registry.yarnpkg.com/@elastic/elasticsearch/-/elasticsearch-8.2.1.tgz#7fbced5f4e13b50c6ccaaf642e8ba4e8e62b71e1"
@@ -4546,11 +4538,6 @@ anymatch@^3.0.3, anymatch@~3.1.2:
   dependencies:
     normalize-path "^3.0.0"
     picomatch "^2.0.4"
-
-app-root-path@^2.1.0:
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/app-root-path/-/app-root-path-2.2.1.tgz#d0df4a682ee408273583d43f6f79e9892624bc9a"
-  integrity sha512-91IFKeKk7FjfmezPKkwtaRvSpnUc4gDwPAjA1YZ9Gn0q0PPeW+vbeUsZuyDwjI7+QTHhcLen2v25fi/AmhvbJA==
 
 append-field@^1.0.0:
   version "1.0.0"
@@ -8989,43 +8976,10 @@ editorconfig@^0.15.3:
     semver "^5.6.0"
     sigmund "^1.0.1"
 
-ee-argv@0.1.x:
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/ee-argv/-/ee-argv-0.1.4.tgz#77f459daf980f11d2c6f8e28a21abb88020168ab"
-  integrity sha512-L/bJ7iteO7JlaOmjwWObBAoy2XnqP9sgazSE25xLenBmkN6HELbcZJISBFwvixL8re7HgCn2KrwuC/Ai0/s6hQ==
-
-ee-class@1.x, ee-class@^1.4.0:
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/ee-class/-/ee-class-1.4.0.tgz#2903f622ee1fe40cd8ba989d7ea239a31bd5e255"
-  integrity sha512-0rHVsCh/QNXHkX4HEnh9IR2/VDPc2KoOjvbSp3BqxH/fbvHtniteQOCjYWCTYvkfQj/KRSTcc/eXP7z/Ic20mg==
-
 ee-first@1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/ee-first/-/ee-first-1.1.1.tgz#590c61156b0ae2f4f0255732a158b266bc56b21d"
   integrity sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==
-
-ee-log@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/ee-log/-/ee-log-1.1.0.tgz#31b1ef1bda720ccec29523df05482428ceea3582"
-  integrity sha512-OCVidQvuHmnhQB4A1zb50MFAwCZvHIOpGhCL0FBkUAUx7RQcH+YE+lfklddx5dUjr3QgD14TCPCGemT9H98V4Q==
-  dependencies:
-    ee-class "1.x"
-    ee-types "2.x"
-
-ee-log@^3.0.0, ee-log@^3.0.5:
-  version "3.0.9"
-  resolved "https://registry.yarnpkg.com/ee-log/-/ee-log-3.0.9.tgz#a9ab95414f3eaefab0573ea18fc8dfb1797e8670"
-  integrity sha512-SdIG4RfLPuv8N2cIJWgaW00V6xZsrEZJq/OcKl1SkyeNYYGeQKOUS0JzyvTAiPvy8bLCLSLYwtx37ZUQPe1xJg==
-  dependencies:
-    "@distributed-systems/callsite" "^1.1.1"
-    logd-console-output "^1.2.1"
-
-ee-types@2.x, ee-types@^2.1.4, ee-types@^2.2.0:
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/ee-types/-/ee-types-2.2.1.tgz#1be9b6704ffa200cb0003ece72dca8037c1dd1de"
-  integrity sha512-ZgShE8RXsE+DFAddCmduKwUwoNLZd7Ik6yv6LFEUDfz/6k2s6rTvABQS8dO2EibJpYFWREOx/ealtwuTUXeeYg==
-  dependencies:
-    ee-class "^1.4.0"
 
 electron-to-chromium@^1.3.47, electron-to-chromium@^1.4.202:
   version "1.4.210"
@@ -14917,15 +14871,10 @@ lazystream@^1.0.0:
   dependencies:
     readable-stream "^2.0.5"
 
-leaky-bucket@2.2.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/leaky-bucket/-/leaky-bucket-2.2.0.tgz#d37da29a45f64528c86b6882d2b5e1594588e2de"
-  integrity sha512-87qsyt18gLVb+uB+zVz1zSi3yl6UJD5AoKINNOg3PBfqMis1FGgfOTi6hLkw7lJYZ3Gawf/BLj76WhDqsT0eZA==
-  dependencies:
-    ee-argv "0.1.x"
-    ee-class "1.x"
-    ee-log "^3.0.5"
-    ee-types "^2.1.4"
+leaky-bucket@4.1.4:
+  version "4.1.4"
+  resolved "https://registry.yarnpkg.com/leaky-bucket/-/leaky-bucket-4.1.4.tgz#a578cf73c100a15d56945e3d52466262a8790143"
+  integrity sha512-lz1jxp48XnCtqpV/nxscAwnHL486mL4WaP4nli8x6iVlUr7FS6A087yKrfXQC3GkZIEA8VDGBLJXQTIWrzuwPA==
 
 leek@0.0.24:
   version "0.0.24"
@@ -15552,16 +15501,6 @@ log-symbols@^2.2.0:
   integrity sha512-VeIAFslyIerEJLXHziedo2basKbMKtTw3vfn5IzG0XTjhAVEJyNHnL2p7vc+wBDSdQuUpNw3M2u6xb9QsAY5Eg==
   dependencies:
     chalk "^2.0.1"
-
-logd-console-output@^1.2.1:
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/logd-console-output/-/logd-console-output-1.3.0.tgz#a49eb7a2ca25ce3b3e726b6e49d6639304241bae"
-  integrity sha512-Aau5xxpDXWBRIwl6zgConqmyNRBFq8VoQbzpQJjp9QVfrEtMgWUMbP2CUF9lCmMg0d2TQ79tEJA83+uQY36WAA==
-  dependencies:
-    app-root-path "^2.1.0"
-    chalk "^2.4.1"
-    ee-types "^2.2.0"
-    glob "^7.1.2"
 
 long-timeout@^0.1.1, long-timeout@~0.1.1:
   version "0.1.1"
@@ -20147,17 +20086,6 @@ schema-utils@^4.0.0:
     ajv "^8.8.0"
     ajv-formats "^2.1.1"
     ajv-keywords "^5.0.0"
-
-section-tests@^1.3.0:
-  version "1.3.1"
-  resolved "https://registry.yarnpkg.com/section-tests/-/section-tests-1.3.1.tgz#60c09cc881da75d2921cc5c3487558882461e2cb"
-  integrity sha512-cZFz5XcvYzdHUCOwwrrSFPA9KZdukGENO7ukOgxpcScZaM8zRMIyR6LRySdgoX0nD7NH+XY85F1pQ7n89CZliw==
-  dependencies:
-    "@distributed-systems/callsite" "^1.1.0"
-    chalk "^1.1.3"
-    ee-log "^1.1.0"
-    ee-types "^2.1.4"
-    glob "^7.1.2"
 
 secure-json-parse@^2.4.0:
   version "2.4.0"
