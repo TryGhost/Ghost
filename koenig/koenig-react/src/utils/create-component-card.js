@@ -36,7 +36,7 @@ const createComponentCard = ({name, component, koenigOptions}) => {
             });
 
             onTeardown(() => {
-                options[REMOVE_CARD_HOOK](card);
+                options.cardProps[REMOVE_CARD_HOOK](card);
                 root.unmount();
             });
 
