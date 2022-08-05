@@ -153,12 +153,40 @@ class KoenigEditor {
         console.error('KoenigEditor.toggleHeaderSection not implemented');
     }
 
-    selectCard() {
-        console.error('KoenigEditor.selectCard not implemented');
+    selectCard(card, isEditing = false) {
+        // no-op if card is already selected
+        if (card === this.selectedCard && isEditing === card.isEditing) {
+            return;
+        }
+
+        // deselect any already selected card
+        if (this.selectedCard && card !== this.selectedCard) {
+            this.deselectCard(this.selectedCard);
+        }
+
+        // setting a card as selected trigger's the cards didReceiveAttrs
+        // hook where the actual selection state change happens. Put into edit
+        // mode if necessary
+
+        card.setIsSelected(true);
+        card.setIsEditing(isEditing);
+
+        this.selectedCard = card;
+
+        // hide the cursor and place it after the card so that ENTER can
+        // create a new paragraph and cursorDidExitAtTop gets fired on LEFT
+        // if the card is at the top of the document
+        this._hideCursor();
+        let section = this.getSectionFromCard(card);
+        this.moveCaretToTailOfSection(section);
     }
 
-    deselectCard() {
-        console.error('KoenigEditor.deselectCard not implemented');
+    deselectCard(card) {
+        card.setIsEditing(false);
+        card.setIsSelected(false);
+        this.selectedCard = null;
+        this._showCursor();
+        // this._cardDragDropContainer.enableDrag();
     }
 
     editCard() {
@@ -231,8 +259,8 @@ class KoenigEditor {
         console.error('KoenigEditor.getCardFromElement not implemented');
     }
 
-    getSectionFromCard() {
-        console.error('KoenigEditor.getSectionFromCard not implemented');
+    getSectionFromCard(card) {
+        return card.props.env.postModel;
     }
 
     replaceWithPost() {
@@ -255,12 +283,24 @@ class KoenigEditor {
         console.error('KoenigEditor.moveCursorToPrevSection not implemented');
     }
 
-    moveCaretToHeadOfSection() {
-        console.error('KoenigEditor.moveCaretToHeadOfSection not implemented');
+    moveCaretToHeadOfSection(section, skipCursorChange = true) {
+        this.moveCaretToSection(section, 'head', skipCursorChange);
     }
 
-    moveCaretToTailOfSection() {
-        console.error('KoenigEditor.moveCaretToTailOfSection not implemented');
+    moveCaretToTailOfSection(section, skipCursorChange = true) {
+        this.moveCaretToSection(section, 'tail', skipCursorChange);
+    }
+
+    moveCaretToSection(section, position, skipCursorChange = true) {
+        let sectionPosition = position === 'head' ? section.headPosition() : section.tailPosition();
+        let range = sectionPosition.toRange();
+
+        // don't trigger another cursor change selection after selecting
+        if (skipCursorChange && !range.isEqual(this.mobiledocEditor.range)) {
+            this._skipCursorChange = true;
+        }
+
+        this.mobiledocEditor.selectRange(range);
     }
 
     addParagraphAfterCard() {
@@ -393,6 +433,14 @@ class KoenigEditor {
     _setSelectedRange(range) {
         this.selectedRange = range;
         this.onSelectedRangeChange?.(range);
+    }
+
+    _hideCursor() {
+        this.mobiledocEditor.element.style.caretColor = 'transparent';
+    }
+
+    _showCursor() {
+        this.mobiledocEditor.element.style.caretColor = 'auto';
     }
 
     _scrollCursorIntoView() {

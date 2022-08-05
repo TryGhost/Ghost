@@ -1,7 +1,7 @@
 import createComponentCard from '../utils/create-component-card';
 import Card from '../components/Card';
 
-const HrCardComponent = (...props) => {
+const HrCardComponent = ({...props}) => {
     return (
         <Card
             className="kg-card-hover"

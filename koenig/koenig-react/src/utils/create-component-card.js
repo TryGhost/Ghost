@@ -9,7 +9,7 @@ const DEFAULT_KOENIG_OPTIONS = {
     selectAfterInsert: true
 };
 
-const createComponentCard = ({name, component, koenigOptions}) => {
+const createComponentCard = ({name, component: CardComponent, koenigOptions}) => {
     return {
         name,
         type: RENDER_TYPE,
@@ -31,8 +31,19 @@ const createComponentCard = ({name, component, koenigOptions}) => {
             const {didRender, onTeardown} = env;
 
             didRender(() => {
-                const element = React.createElement(component, card.props);
-                root.render(element);
+                const ComponentWithState = () => {
+                    const {isSelected: _isSelected, isEditing: _isEditing, ...props} = card.props;
+                    const [isSelected, setIsSelected] = React.useState(_isSelected);
+                    const [isEditing, setIsEditing] = React.useState(_isEditing);
+
+                    // hacky way to allow props to be changed inside KoenigEditor
+                    card.setIsSelected = setIsSelected;
+                    card.setIsEditing = setIsEditing;
+
+                    return <CardComponent isSelected={isSelected} isEditing={isEditing} {...props} />;
+                };
+
+                root.render(<ComponentWithState />);
             });
 
             onTeardown(() => {
