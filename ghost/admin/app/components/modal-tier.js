@@ -37,6 +37,7 @@ export default class ModalTierPrice extends ModalBase {
     @tracked previewCadence = 'yearly';
     @tracked discountValue = 0;
     @tracked hasSaved = false;
+    @tracked freeTrialEnabled = false;
     @tracked savedBenefits;
 
     accentColorStyle = '';
@@ -45,6 +46,11 @@ export default class ModalTierPrice extends ModalBase {
 
     get isFreeTier() {
         return this.tier.type === 'free';
+    }
+
+    get hasTrialDaysError() {
+        const trialDays = this.tier.get('trialDays');
+        return this.freeTrialEnabled && (!trialDays || trialDays < 1);
     }
 
     get allCurrencies() {
@@ -74,7 +80,9 @@ export default class ModalTierPrice extends ModalBase {
             name: ''
         });
         this.calculateDiscount();
-
+        if (this.tier.get('trialDays')) {
+            this.freeTrialEnabled = true;
+        }
         this.accentColorStyle = htmlSafe(`color: ${this.settings.get('accentColor')}`);
     }
 
@@ -137,6 +145,7 @@ export default class ModalTierPrice extends ModalBase {
     }
 
     reset() {
+        this.tier.rollbackAttributes();
         this.newBenefit = TierBenefitItem.create({isNew: true, name: ''});
         const finalBenefits = this.savedBenefits || emberA([]);
         this.tier.set('benefits', finalBenefits);
@@ -148,7 +157,7 @@ export default class ModalTierPrice extends ModalBase {
         if (!isEmpty(this.errors) && Object.keys(this.errors).length > 0) {
             return;
         }
-        if (this.stripePlanError) {
+        if (this.stripePlanError || this.hasTrialDaysError) {
             return;
         }
 
@@ -163,6 +172,11 @@ export default class ModalTierPrice extends ModalBase {
             this.tier.set('yearlyPrice', yearlyAmount);
             this.tier.set('currency', this.currency);
         }
+
+        if (!this.freeTrialEnabled) {
+            this.tier.set('trialDays', 0);
+        }
+
         this.tier.set('benefits', this.benefits.filter(benefit => !benefit.get('isBlank')));
         yield this.tier.save();
         this.hasSaved = true;
@@ -200,6 +214,20 @@ export default class ModalTierPrice extends ModalBase {
     @action
     changeCadence(cadence) {
         this.previewCadence = cadence;
+    }
+
+    @action
+    setTrialDays(event) {
+        const value = parseInt(event.target.value);
+        this.tier.set('trialDays', value);
+    }
+
+    @action
+    setFreeTrialEnabled(event) {
+        this.freeTrialEnabled = event.target.checked;
+        if (event.target.checked && !this.tier.get('trialDays')) {
+            this.tier.set('trialDays', 7);
+        }
     }
 
     @action
@@ -256,6 +284,7 @@ export default class ModalTierPrice extends ModalBase {
             const newCurrency = event.value;
             this.currency = newCurrency;
         },
+
         // needed because ModalBase uses .send() for keyboard events
         closeModal() {
             this.close();
