@@ -118,6 +118,25 @@ describe('Comments API', function () {
             member.get('bio').should.eql('Head of Testing');
         });
 
+        it('trims whitespace from bio', async function () {
+            await membersAgent
+                .put(`/api/member/`)
+                .body({
+                    bio: '  test  '
+                })
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .matchBodySnapshot(memberMatcher(2))
+                .expect(({body}) => {
+                    body.email.should.eql(member.get('email'));
+                    body.bio.should.eql('test');
+                });
+            member = await models.Member.findOne({id: member.id}, {require: true});
+            member.get('bio').should.eql('test');
+        });
+
         it('can update name', async function () {
             await membersAgent
                 .put(`/api/member/`)
