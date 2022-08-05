@@ -4,38 +4,43 @@
     right: 0;
     bottom: 0;
     left: 0;
-    z-index: 1000;
+    z-index: 10000;
     height: 100vh;
     background: linear-gradient(180deg, var(--white) 0%, #E1E1E1 100%);
     overflow: hidden;
 }
 
 .explore-close {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 18px;
-    height: 18px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 2rem;
 }
 
-.explore-close svg {
+.explore-close a {
+    color: var(--middarkgrey);
+}
+
+.explore-close a svg {
     stroke: var(--middarkgrey);
+    width: 18px;
+    height: auto;
 }
 
-.explore-close svg path {
+.explore-close a svg path {
     stroke-width: 1px;
 }
 
-.explore-close:hover svg {
+.explore-close a:hover svg {
     stroke: var(--darkgrey);
 }
 
-.explore-container {
+.explore-content {
     display: flex;
-    justify-content: space-between;
     align-items: center;
     flex-direction: column;
-    padding: 14rem 2vmin 4vmin;
+    min-height: 100%;
+    padding: 8vmin 2vmin 4vmin;
 }
 
 .explore-header {
@@ -118,4 +123,47 @@
     fill: var(--white);
     margin-left: 0.1em;
     height: 14px;
+}
+
+@media (max-width: 800px) {
+    .explore-content {
+        padding: 2vmin;
+    }
+    .explore-header {
+        margin-top: 10vmin;
+    }
+    .explore-header svg {
+        width: 7rem;
+    }
+    .explore-header h1 {
+        font-size: 2.8rem;
+    }
+    .explore-api {
+        font-size: 1.8rem;
+    }
+    .explore-permissions {
+        padding: 2rem 2.5rem;
+    }
+    .explore-permissions p {
+        font-size: 1.6rem;
+    }
+}
+
+@media (max-width: 500px) {
+    .explore-header h1 {
+        font-size: 2.4rem;
+    }
+    .explore-api {
+        font-size: 1.6rem;
+        margin-bottom: 20px;
+    }
+    .explore-permissions div:not(:last-of-type) {
+        margin-bottom: 2rem;
+    }
+    .explore-permissions > div span {
+        padding-right: 12px;
+    }
+    .explore-permissions > div span svg {
+        width: 1.8rem;
+    }
 }
