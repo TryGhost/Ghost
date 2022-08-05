@@ -137,7 +137,14 @@ class GhostServer {
      * Called on SIGINT or SIGTERM
      */
     async shutdown(code = 0) {
+        // Prevent this function being run multiple times by checking whether we're
+        // already shutting down
+        if (this.isShuttingDown) {
+            return;
+        }
+
         try {
+            this.isShuttingDown = true;
             logging.warn(tpl(messages.ghostIsShuttingDown));
             await this.stop();
             setTimeout(() => {
