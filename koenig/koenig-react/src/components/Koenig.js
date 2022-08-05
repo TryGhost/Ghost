@@ -83,7 +83,6 @@ const Koenig = ({
         _positionToolbar();
         setShowToolbar(true);
         if (!showToolbar && onMousemoveHandler) {
-            // this._onMousemoveHandler = run.bind(this, this._handleMousemove);
             window.addEventListener('mousemove', onMousemoveHandler);
         }
     }
@@ -139,7 +138,6 @@ const Koenig = ({
         // if (tickPosition !== 50) {
         //     this._addStyleElement(tickPosition);
         // }
-
         // update the toolbar position
         setToolbarPosition(newPosition);
     }
