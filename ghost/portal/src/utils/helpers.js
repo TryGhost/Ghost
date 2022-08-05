@@ -211,7 +211,7 @@ export function hasMultipleProductsFeature({site}) {
 }
 
 export function hasCommentsEnabled({site}) {
-    return !!site?.comments_enabled;
+    return site?.comments_enabled && site?.comments_enabled !== 'off';
 }
 
 export function transformApiSiteData({site}) {
