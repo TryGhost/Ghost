@@ -26,11 +26,12 @@ describe('lib/image: image size cache', function () {
             type: 'jpg'
         }));
 
-        const cachedImageSizeFromUrl = new CachedImageSizeFromUrl({logging: {
-            error: () => {}
-        }, imageSize: {
-            getImageSizeFromUrl: sizeOfStub
-        }});
+        const cachedImageSizeFromUrl = new CachedImageSizeFromUrl({
+            imageSize: {
+                getImageSizeFromUrl: sizeOfStub
+            },
+            cache: new Map()
+        });
 
         imageSizeSpy = sizeOfStub;
 
@@ -70,11 +71,12 @@ describe('lib/image: image size cache', function () {
 
         sizeOfStub.returns(new Promise.reject('error'));
 
-        const cachedImageSizeFromUrl = new CachedImageSizeFromUrl({logging: {
-            error: () => {}
-        }, imageSize: {
-            getImageSizeFromUrl: sizeOfStub
-        }});
+        const cachedImageSizeFromUrl = new CachedImageSizeFromUrl({
+            imageSize: {
+                getImageSizeFromUrl: sizeOfStub
+            },
+            cache: new Map()
+        });
 
         cachedImageSizeResult = Promise.resolve(cachedImageSizeFromUrl.getCachedImageSizeFromUrl(url));
         cachedImageSizeResult.then(function () {
@@ -89,7 +91,10 @@ describe('lib/image: image size cache', function () {
     });
 
     it('should return null if url is undefined', function (done) {
-        const cachedImageSizeFromUrl = new CachedImageSizeFromUrl({logging: {}, imageSize: {}});
+        const cachedImageSizeFromUrl = new CachedImageSizeFromUrl({
+            imageSize: {},
+            cache: new Map()
+        });
         const url = null;
         let result;
 
