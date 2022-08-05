@@ -2,13 +2,26 @@ import * as React from 'react';
 import {Container, Editor} from 'react-mobiledoc-editor';
 import KoenigEditor from '../KoenigEditor';
 import DEFAULT_ATOMS from '../atoms';
+import DEFAULT_CARDS from '../cards';
 import DEFAULT_KEY_COMMANDS from '../key-commands';
 import DEFAULT_TEXT_EXPANSIONS from '../text-expansions';
 import Toolbar from './toolbar';
 
+// "hack" to work around function components not having any constructor-like behavior
+const useConstructor = (callback = function () {}) => {
+    const hasBeenCalled = React.useRef(false);
+    if (hasBeenCalled.current) {
+        return;
+    }
+    callback();
+    hasBeenCalled.current = true;
+};
+
 const Koenig = ({
     mobiledoc,
     atoms = DEFAULT_ATOMS,
+    cards = DEFAULT_CARDS,
+    cardProps = {},
     keyCommands = DEFAULT_KEY_COMMANDS,
     textExpansions = DEFAULT_TEXT_EXPANSIONS,
     didCreateEditor,
@@ -16,6 +29,28 @@ const Koenig = ({
     TOOLBAR_MARGIN = 15,
     TICK_ADJUSTMENT = 8
 }) => {
+    const [selectedRange, setSelectedRange] = React.useState(null);
+
+    // Create an instance of KoenigEditor on first render and store a reference.
+    // - We need an instance of KoenigEditor immediately because it generates
+    //   a `cardProps` object with additional hooks for rendering cards and we
+    //   need that to pass into the very first render of `<Container>`
+    const koenigEditorRef = React.useRef();
+    useConstructor(() => {
+        const kgInstance = new KoenigEditor({
+            atoms,
+            cardProps,
+            cards,
+            keyCommands,
+            textExpansions,
+            onSelectedRangeChange: setSelectedRange
+        });
+
+        koenigEditorRef.current = kgInstance;
+    });
+    // purely for convenience
+    const koenigEditor = koenigEditorRef.current;
+
     const DEFAULTSTYLES = {
         top: 0,
         left: 0,
@@ -24,7 +59,6 @@ const Koenig = ({
     const toolbarRef = React.useRef();
     const [showToolbar, setShowToolbar] = React.useState(false);
     const [toolbarPosition, setToolbarPosition] = React.useState(DEFAULTSTYLES);
-    const [, setKoenigInstance] = React.useState(null);
     const [mobiledocInstance, setMobiledocInstance] = React.useState(null);
     const [, setEditorRange] = React.useState(null);
     const [hasSelectedRange, setHasSelectedRange] = React.useState(false);
@@ -33,11 +67,13 @@ const Koenig = ({
     const [isMouseUp, setIsMouseUp] = React.useState(false);
 
     function _didCreateEditor(mobiledocEditor) {
-        const koenig = new KoenigEditor(mobiledocEditor, {atoms, keyCommands, textExpansions});
-
+        // TODO: keep mobiledoc instance separate or always use koenigEditor.mobiledocEditor
+        // to avoid passing around two editor instances everywhere?
         setMobiledocInstance(mobiledocEditor);
-        setKoenigInstance(koenig);
-        didCreateEditor?.(mobiledocEditor, koenig);
+
+        koenigEditor.initMobiledocEditor(mobiledocEditor);
+
+        didCreateEditor?.(mobiledocEditor, koenigEditor);
     }
 
     function _toggleVisibility(bool) {
@@ -117,7 +153,7 @@ const Koenig = ({
         window.addEventListener('mousemove', _handleMousemove);
         window.addEventListener('mouseup', _handleMouseup);
         window.addEventListener('mousedown', _handleMousedown);
-    
+
         return () => {
             window.addEventListener('mousemove', _handleMousemove);
             window.addEventListener('mouseup', _handleMouseup);
@@ -153,18 +189,19 @@ const Koenig = ({
             id="mobiledoc-editor"
             data-testid="mobiledoc-container"
             mobiledoc={mobiledoc}
-            atoms={atoms}
             onChange={onChange}
             didCreateEditor={_didCreateEditor}
-            placeholder="Begin writing your post...">  
+            placeholder="Begin writing your post..."
+            {...koenigEditor.editorProps}
+        >
             <Editor
                 data-testid="mobiledoc-editor">
             </Editor>
             <div ref={toolbarRef}
                 className={`absolute w-40`}
                 style={toolbarPositionStyles} >
-                <Toolbar 
-                    editor={mobiledocInstance} /> 
+                <Toolbar
+                    editor={mobiledocInstance} />
             </div>
         </Container>
     );

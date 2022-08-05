@@ -7,6 +7,7 @@ const KoenigEditor = ({...props}) => {
             <Koenig
                 mobiledoc={props.mobiledoc}
                 atoms={props.atoms}
+                cards={props.cards}
                 keyCommands={props.keyCommands}
                 didCreateEditor={props.didCreateEditor}
                 onChange={props.onChange}
