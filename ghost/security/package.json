@@ -21,7 +21,7 @@
     "sinon": "14.0.0"
   },
   "dependencies": {
-    "@tryghost/string": "0.1.26",
+    "@tryghost/string": "0.1.27",
     "bcryptjs": "2.4.3"
   }
 }
