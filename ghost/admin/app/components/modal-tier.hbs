@@ -8,7 +8,7 @@
     </header>
 
     <form>
-    <div class="modal-body gh-form-edit-tier">
+    <div class="modal-body gh-form-edit-tier gh-tier-settings">
         <div class="gh-main-section columns-3">
             <div class="gh-main-section-block span-2">
                 <h4 class="gh-main-section-header small bn">Basic</h4>
@@ -104,6 +104,42 @@
                                 <p class="response w-100"><span class="red">{{this.stripePlanError}}</span></p>
                             {{/if}}
                         </GhFormGroup>
+                        {{#if (feature 'freeTrial')}}
+                            <GhFormGroup @errors={{this.errors}} @property="trialDays" data-test-formgroup="trialDays">
+                                <div class="flex justify-between items-center mb2 mt3">
+                                    <div>
+                                        <h4 class="gh-tier-setting-title">Add a free trial</h4>
+                                    </div>
+                                    <div class="for-switch small">
+                                        <label class="switch" for="free-trial">
+                                            <Input
+                                                @checked={{this.freeTrialEnabled}}
+                                                @type="checkbox"
+                                                id="free-trial"
+                                                name="free-trial"
+                                                {{on "click" this.setFreeTrialEnabled}}
+                                            />
+                                            <span class="input-toggle-component"></span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="gh-input-group gh-tier-settings-hide {{if this.freeTrialEnabled "fade-in gh-tier-settings-show"}}">
+                                    <GhTextInput
+                                            @value={{readonly this.tier.trialDays}}
+                                            @type="number"
+                                            {{on "input" this.setTrialDays}}
+                                            @name="trial"
+                                            @id="trial"
+                                            @class="gh-input"
+                                            data-test-input="tier-trial" />
+                                            <span class="gh-input-append">days</span>
+                                </div>
+                                {{#if this.hasTrialDaysError}}
+                                    <p class="response w-100"><span class="red">Trial days must be atleast 1</span></p>
+                                {{/if}}
+                            </GhFormGroup>
+                        {{/if}}
                         <GhFormGroup>
                             <label for="welcomePage" class="fw6">Welcome page</label>
                             <GhUrlInput

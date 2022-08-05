@@ -758,3 +758,22 @@
 .gh-tier-form-tierpreview .placeholder {
     opacity: 0.35;
 }
+
+.gh-tier-setting-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.gh-tier-settings .for-switch.small {
+    width: 36px !important;
+    height: 22px !important;
+}
+
+.gh-tier-settings .gh-tier-settings-hide {
+    display: none !important;
+}
+
+.gh-tier-settings .gh-tier-settings-show {
+    display: flex !important;
+}
