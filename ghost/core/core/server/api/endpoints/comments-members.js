@@ -3,7 +3,7 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
 const commentsService = require('../../services/comments');
-const ALLOWED_INCLUDES = ['post', 'member', 'likes', 'replies'];
+const ALLOWED_INCLUDES = ['post', 'member', 'likes', 'replies', 'parent'];
 const UNSAFE_ATTRS = ['status'];
 
 const messages = {
