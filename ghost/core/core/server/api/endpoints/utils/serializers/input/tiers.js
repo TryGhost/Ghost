@@ -1,4 +1,5 @@
 const localUtils = require('../../index');
+const labs = require('../../../../../../shared/labs');
 
 const forceActiveFilter = (frame) => {
     if (frame.options.filter) {
@@ -21,6 +22,10 @@ function convertTierInput(input) {
         updated_at: input.updated_at,
         visibility: input.visibility
     };
+
+    if (labs.isSet('freeTrial')) {
+        converted.trial_days = input.trial_days;
+    }
 
     if (input.monthly_price && input.currency) {
         converted.monthly_price = {

@@ -4,6 +4,7 @@ const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output
 const allowedIncludes = ['monthly_price', 'yearly_price'];
 const localUtils = require('../../index');
 const utils = require('../../../../shared/utils');
+const labs = require('../../../../../../shared/labs');
 
 module.exports = {
     browse: createSerializer('browse', paginatedTiers),
@@ -68,6 +69,10 @@ function serializeTier(tier, options, frame) {
         visibility: json.visibility,
         benefits: null
     };
+
+    if (labs.isSet('freeTrial')) {
+        serialized.trial_days = json.trial_days;
+    }
 
     if (Array.isArray(json.benefits)) {
         serialized.benefits = json.benefits.map(benefit => benefit.name);
