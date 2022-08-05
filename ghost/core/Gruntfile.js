@@ -148,12 +148,12 @@ module.exports = function (grunt) {
                     const liveReloadBaseUrl = config.getSubdir() || '/ghost/';
 
                     switch (mode) {
-                        case 'dev':
-                            return 'npm run build';
-                        case 'prod':
-                            return 'npm run build:prod';
-                        case 'watch':
-                            return `npm run start -- --live-reload-base-url=${liveReloadBaseUrl} --live-reload-port=4201`;
+                    case 'dev':
+                        return 'npm run build';
+                    case 'prod':
+                        return 'npm run build:prod';
+                    case 'watch':
+                        return `npm run start -- --live-reload-base-url=${liveReloadBaseUrl} --live-reload-port=4201`;
                     }
                 },
                 options: {
