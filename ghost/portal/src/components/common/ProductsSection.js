@@ -531,6 +531,7 @@ function ProductCardPrice({product}) {
     const {selectedInterval} = useContext(ProductsContext);
     const monthlyPrice = product.monthlyPrice;
     const yearlyPrice = product.yearlyPrice;
+    const trialDays = product.trial_days;
     const activePrice = selectedInterval === 'month' ? monthlyPrice : yearlyPrice;
     const alternatePrice = selectedInterval === 'month' ? yearlyPrice : monthlyPrice;
     if (!monthlyPrice || !yearlyPrice) {
@@ -539,6 +540,21 @@ function ProductCardPrice({product}) {
 
     const yearlyDiscount = calculateDiscount(product.monthlyPrice.amount, product.yearlyPrice.amount);
     const currencySymbol = getCurrencySymbol(activePrice.currency);
+
+    if (trialDays) {
+        return (
+            <>
+                <div className="gh-portal-product-card-pricecontainer">
+                    <div className="gh-portal-product-price">
+                        <span className="amount trial-duration">{trialDays} days free</span>
+                    </div>
+                    {(selectedInterval === 'year' ? <YearlyDiscount discount={yearlyDiscount} /> : '')}
+                    <ProductCardAlternatePrice price={alternatePrice} />
+                </div>
+                <span className="after-trial-amount">Then {currencySymbol}{formatNumber(getStripeAmount(activePrice.amount))}/{activePrice.interval}</span>
+            </>
+        );
+    }
 
     return (
         <div className="gh-portal-product-card-pricecontainer">
@@ -550,15 +566,6 @@ function ProductCardPrice({product}) {
             {(selectedInterval === 'year' ? <YearlyDiscount discount={yearlyDiscount} /> : '')}
             <ProductCardAlternatePrice price={alternatePrice} />
         </div>
-        // Static HTML template for variant of product card for tiers with free trial enabled
-        // <div className="gh-portal-product-card-pricecontainer">
-        //     <div className="gh-portal-product-price">
-        //         <span className="amount trial-duration">30 days free</span>
-        //     </div>
-        //     {(selectedInterval === 'year' ? <YearlyDiscount discount={yearlyDiscount} /> : '')}
-        //     <ProductCardAlternatePrice price={alternatePrice} />
-        // </div>
-        // <span className="after-trial-amount">Then $30/month</span>
     );
 }
 
