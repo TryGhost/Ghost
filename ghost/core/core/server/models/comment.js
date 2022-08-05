@@ -82,8 +82,6 @@ const Comment = ghostBookshelf.Model.extend({
                 })
             ).trim();
 
-            console.log(html);
-
             if (html.length === 0) {
                 throw new ValidationError({
                     message: tpl(messages.emptyComment)
