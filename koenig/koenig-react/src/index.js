@@ -13,11 +13,28 @@ const rootStyles = {
     maxWidth: '67.2rem'
 };
 
+const Demo = ({children, ...props}) => {
+    return (
+        <>
+            <style>
+                {`
+                    html {
+                        font-size: 62.5%;
+                        line-height: 1.65;
+                        letter-spacing: 0.01em;
+                    }
+                `}
+            </style>
+            <div {...props}>{children}</div>
+        </>
+    );
+};
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-    <div style={rootStyles}>
+    <Demo style={rootStyles}>
         <App />
-    </div>
+    </Demo>
 );
 
 // If you want to start measuring performance in your app, pass a function
