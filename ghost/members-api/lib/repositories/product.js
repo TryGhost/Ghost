@@ -288,6 +288,7 @@ class ProductRepository {
      * @param {string} data.id
      * @param {string} data.name
      * @param {string} data.description
+     * @param {number} data.trial_days
      * @param {'public'|'none'} data.visibility
      * @param {string} data.welcome_page_url
      * @param {BenefitInput[]} data.benefits
@@ -345,9 +346,14 @@ class ProductRepository {
             productData.active = data.active;
         }
 
+        if (Reflect.has(data, 'trial_days')) {
+            productData.trial_days = data.trial_days;
+        }
+
         if (existingProduct.get('type') === 'free') {
             delete productData.name;
             delete productData.active;
+            delete productData.trial_days;
         }
 
         if (existingProduct.get('active') === true && productData.active === false) {

@@ -214,6 +214,11 @@ module.exports = class RouterController {
         const priceId = price.get('stripe_price_id');
 
         const product = await this._productRepository.get({stripe_price_id: priceId});
+        let trialDays;
+
+        if (this.labsService.isSet('freeTrial')) {
+            trialDays = product.get('trial_days');
+        }
 
         if (product.get('active') !== true) {
             throw new NoPermissionError({
@@ -257,6 +262,7 @@ module.exports = class RouterController {
                 coupon: couponId,
                 successUrl,
                 cancelUrl,
+                trialDays,
                 customerEmail: req.body.customerEmail,
                 metadata: metadata
             });
@@ -311,6 +317,7 @@ module.exports = class RouterController {
                 coupon: couponId,
                 successUrl,
                 cancelUrl,
+                trialDays,
                 metadata: metadata
             });
             const publicKey = this._stripeAPIService.getPublicKey();

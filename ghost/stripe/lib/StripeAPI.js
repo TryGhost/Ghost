@@ -360,6 +360,7 @@ module.exports = class StripeAPI {
      * @param {string} options.successUrl
      * @param {string} options.cancelUrl
      * @param {string} options.customerEmail
+     * @param {number} options.trialDays
      * @param {string} [options.coupon]
      *
      * @returns {Promise<import('stripe').Stripe.Checkout.Session>}
@@ -371,6 +372,22 @@ module.exports = class StripeAPI {
         let discounts;
         if (options.coupon) {
             discounts = [{coupon: options.coupon}];
+        }
+
+        const subscriptionData = {
+            trial_from_plan: true,
+            items: [{
+                plan: priceId
+            }]
+        };
+
+        /**
+         * `trial_from_plan` is deprecated.
+         * Replaces it in favor of custom trial period days stored in Ghost
+         */
+        if (!isNaN(options.trialDays)) {
+            delete subscriptionData.trial_from_plan;
+            subscriptionData.trial_period_days = options.trialDays;
         }
         const session = await this._stripe.checkout.sessions.create({
             payment_method_types: ['card'],
@@ -390,12 +407,7 @@ module.exports = class StripeAPI {
             // It should be replaced with the line_items entry above when possible,
             // however, this would lose the "trial from plan" feature which has also
             // been deprecated by Stripe
-            subscription_data: {
-                trial_from_plan: true,
-                items: [{
-                    plan: priceId
-                }]
-            }
+            subscription_data: subscriptionData
         });
 
         return session;
