@@ -26,9 +26,7 @@ describe('lib/image: image size cache', function () {
         });
 
         const cachedImageSizeFromUrl = new CachedImageSizeFromUrl({
-            imageSize: {
-                getImageSizeFromUrl: sizeOfStub
-            },
+            getImageSizeFromUrl: sizeOfStub,
             cache: new Map()
         });
 
@@ -67,9 +65,7 @@ describe('lib/image: image size cache', function () {
         sizeOfStub.rejects('error');
 
         const cachedImageSizeFromUrl = new CachedImageSizeFromUrl({
-            imageSize: {
-                getImageSizeFromUrl: sizeOfStub
-            },
+            getImageSizeFromUrl: sizeOfStub,
             cache: new Map()
         });
 
@@ -89,9 +85,7 @@ describe('lib/image: image size cache', function () {
         sizeOfStub.rejects(new errors.NotFoundError('it iz gone mate!'));
 
         const cachedImageSizeFromUrl = new CachedImageSizeFromUrl({
-            imageSize: {
-                getImageSizeFromUrl: sizeOfStub
-            },
+            getImageSizeFromUrl: sizeOfStub,
             cache: new Map()
         });
 

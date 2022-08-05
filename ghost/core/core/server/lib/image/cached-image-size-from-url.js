@@ -6,11 +6,11 @@ class CachedImageSizeFromUrl {
     /**
      *
      * @param {Object} options
-     * @param {Object} options.imageSize - instance with "getImageSizeFromUrl" method
+     * @param {Function} options.getImageSizeFromUrl - method that resolves images based on URL
      * @param {Object} options.cache - cache store instance
      */
-    constructor({imageSize, cache}) {
-        this.imageSize = imageSize;
+    constructor({getImageSizeFromUrl, cache}) {
+        this.getImageSizeFromUrl = getImageSizeFromUrl;
         this.cache = cache;
     }
 
@@ -35,7 +35,7 @@ class CachedImageSizeFromUrl {
             return cachedImageSize;
         } else {
             try {
-                const res = await this.imageSize.getImageSizeFromUrl(url);
+                const res = await this.getImageSizeFromUrl(url);
                 this.cache.set(url, res);
 
                 debug('Cached image:', url);
