@@ -29,7 +29,7 @@ const Koenig = ({
     TOOLBAR_MARGIN = 15,
     TICK_ADJUSTMENT = 8
 }) => {
-    const [selectedRange, setSelectedRange] = React.useState(null);
+    const [, setSelectedRange] = React.useState(null);
 
     // Create an instance of KoenigEditor on first render and store a reference.
     // - We need an instance of KoenigEditor immediately because it generates
