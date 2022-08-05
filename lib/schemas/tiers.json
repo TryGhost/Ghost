@@ -41,6 +41,9 @@
         "yearly_price": {
           "type": ["number", "null"]
         },
+        "trial_days": {
+          "type": "number"
+        },
         "benefits": {
           "type": ["array", "null"],
           "items": {
