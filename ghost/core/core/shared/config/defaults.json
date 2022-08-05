@@ -153,7 +153,7 @@
         "url": "https://unpkg.com/@tryghost/koenig-react/dist/umd/koenig-react.min.js"
     },
     "tenor": {
-        "apiKey": null,
+        "googleApiKey": null,
         "contentFilter": "off"
     },
     "opensea": {
