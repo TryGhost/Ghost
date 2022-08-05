@@ -3221,10 +3221,10 @@
     cookiejar "^2.1.3"
     reqresnext "^1.7.0"
 
-"@tryghost/helpers@1.1.71":
-  version "1.1.71"
-  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.71.tgz#0b957ebda1be81cb5f290a2222a855248cc4fde7"
-  integrity sha512-BTaf3DHabg9JNpZNHRH1wxh8vfUIRNs4LWGrXm2l6DfktKPSmOBNxLazuSTrccDzv+7ixwmo2iAyvIlB4+TfKA==
+"@tryghost/helpers@1.1.72":
+  version "1.1.72"
+  resolved "https://registry.yarnpkg.com/@tryghost/helpers/-/helpers-1.1.72.tgz#8e70a34c5579ada0bc5019b837763d0410637692"
+  integrity sha512-tPsd+PmfeTE5asAeqmNJPgSkQoIrUxM9tEHDeYYzmvoF20rtVwLT6iQn9LtuUxoxDGhyKoy2kWhNBKs8r2tUww==
   dependencies:
     lodash-es "^4.17.11"
 
