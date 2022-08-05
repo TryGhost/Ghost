@@ -64,6 +64,19 @@
     line-height: 1.5em;
 }
 
+.gh-env-error {
+    margin: 1.2rem 0;
+    padding: 16px;
+    line-height: 1.4em;
+    border: none;
+    background: color-mod(var(--red) a(6%));
+    border-radius: 3px;
+}
+
+.gh-env-error a {
+    color: var(--red);
+}
+
 .gh-env-help {
     max-width: 200px;
 }

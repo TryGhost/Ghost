@@ -62,11 +62,9 @@
                 </ul>
 
                 {{#if (and this.showSystemInfo this.showDatabaseWarning)}}
-                    <section class="gh-upgrade-notification">
-                        <p>
-                            <strong>Warning:</strong> MySQL 8 will be the required database in the next major release of Ghost. Make sure your database is up to date to ensure forwards compatibility.
-                        </p>
-                    </section>
+                    <div class="gh-env-error">
+                        You are running an unsupported database in production. Please <a href="https://ghost.org/docs/faq/supported-databases/" target="_blank" rel="noopener noreferrer">upgrade to MySQL 8</a>.
+                    </div>
                 {{/if}}
 
                 <footer class="gh-copyright-info">
