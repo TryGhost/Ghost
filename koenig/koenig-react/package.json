@@ -52,6 +52,7 @@
     "@testing-library/user-event": "14.3.0",
     "@tryghost/mobiledoc-kit-experimental": "^0.14.2",
     "express": "^4.18.1",
+    "lodash": "^4.17.21",
     "mobiledoc-kit": "npm:@tryghost/mobiledoc-kit-experimental",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

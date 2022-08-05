@@ -1,5 +1,6 @@
 import {ADD_CARD_HOOK, REMOVE_CARD_HOOK} from './utils/constants';
 import {Range as MobiledocRange} from 'mobiledoc-kit';
+import arrayToMap from './utils/array-to-map';
 
 class KoenigEditor {
     componentCards = [];
@@ -7,13 +8,24 @@ class KoenigEditor {
     editorProps = {};
 
     // sets up the class and populates `editorProps` prior to mobiledoc initialisation
-    constructor({atoms, cards, cardProps, keyCommands, textExpansions, onSelectedRangeChange} = {}) {
+    constructor({
+        atoms,
+        cards,
+        cardProps,
+        keyCommands,
+        textExpansions,
+        onSelectedRangeChange,
+        onActiveMarkupTagsChange,
+        onActiveSectionTagsChange
+    } = {}) {
         this.atoms = atoms;
         this.cards = cards;
         this.keyCommands = keyCommands;
         this.textExpansions = textExpansions;
 
         this.onSelectedRangeChange = onSelectedRangeChange;
+        this.onActiveMarkupTagsChange = onActiveMarkupTagsChange;
+        this.onActiveSectionTagsChange = onActiveSectionTagsChange;
 
         this.selectedCard = null;
 
@@ -114,6 +126,10 @@ class KoenigEditor {
 
         this.mobiledocEditor.cursorDidChange(() => {
             this.cursorDidChange();
+        });
+
+        this.mobiledocEditor.inputModeDidChange(() => {
+            this.inputModeDidChange();
         });
     }
 
@@ -336,8 +352,30 @@ class KoenigEditor {
         this._scrollCursorIntoView();
     }
 
+    // fired when the active section(s) or markup(s) at the current cursor
+    // position or selection have changed. We use this event to update the
+    // activeMarkup/section tag lists which control button states in our popup
+    // toolbar
     inputModeDidChange() {
+        const {mobiledocEditor: editor} = this;
 
+        const markupTags = arrayToMap(editor.activeMarkups.map(m => m.tagName));
+        // editor.activeSections are leaf sections.
+        // Map parent section tag names (e.g. 'p', 'ul', 'ol') so that list buttons
+        // are updated.
+        // eslint-disable-next-line no-confusing-arrow
+        const sectionParentTagNames = editor.activeSections.map(s => s.isNested ? s.parent.tagName : s.tagName);
+        const sectionTags = arrayToMap(sectionParentTagNames);
+
+        // On keyboard cursor movement our `cursorDidChange` toggle for special
+        // formats happens before mobiledoc's readstate updates the edit states
+        // so we have to re-do it here
+        // TODO: can we make the event order consistent in mobiledoc-kit?
+        // TODO: implement special formats
+        // toggleSpecialFormatEditState(editor);
+
+        this.onActiveMarkupTagsChange?.(markupTags);
+        this.onActiveSectionTagsChange?.(sectionTags);
     }
 
     willHandleNewline() {
