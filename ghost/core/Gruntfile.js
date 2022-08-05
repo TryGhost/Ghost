@@ -38,10 +38,10 @@ module.exports = function (grunt) {
 
     // Runs ember dev
     grunt.registerTask('ember', 'Build JS & templates for development',
-        ['subgrunt:dev']);
+        ['shell:ember:dev']);
 
     // Production asset build
-    grunt.registerTask('prod', 'Build JS & templates for production', 'subgrunt:prod');
+    grunt.registerTask('prod', 'Build JS & templates for production', 'shell:ember:prod');
 
     // --- Configuration
     const cfg = {
@@ -96,7 +96,7 @@ module.exports = function (grunt) {
             admin: {
                 cmd: function () {
                     logBuildingAdmin(grunt);
-                    return 'grunt subgrunt:watch';
+                    return 'grunt shell:ember:watch';
                 },
                 bg: grunt.option('admin') ? false : true,
                 stdout: function (chunk) {
@@ -118,17 +118,8 @@ module.exports = function (grunt) {
                     }
                 },
                 stderr: function (chunk) {
-                    const skipFilter = grunt.option('admin') ? false : [
-                        /- building/
-                    ].some(function (regexp) {
-                        return regexp.test(chunk);
-                    });
-
-                    const errorFilter = grunt.option('admin') ? false : [
-                        /^>>/
-                    ].some(function (regexp) {
-                        return regexp.test(chunk);
-                    });
+                    const skipFilter = /- building/.test(chunk);
+                    const errorFilter = /^>>/.test(chunk);
 
                     if (!skipFilter) {
                         hasBuiltAdmin = errorFilter ? hasBuiltAdmin : true;
@@ -151,26 +142,29 @@ module.exports = function (grunt) {
             }
         },
 
-        // grunt-subgrunt
-        // Run grunt tasks in submodule Gruntfiles
-        subgrunt: {
-            options: {
-                npmInstall: false,
-                npmPath: 'yarn'
-            },
+        shell: {
+            ember: {
+                command: function (mode) {
+                    const liveReloadBaseUrl = config.getSubdir() || '/ghost/';
 
-            dev: {
-                '../admin': 'shell:ember:dev'
-            },
-
-            prod: {
-                '../admin': 'shell:ember:prod'
-            },
-
-            watch: {
-                projects: {
-                    '../admin': ['shell:ember:watch', '--live-reload-base-url="' + config.getSubdir() + '/ghost/"']
+                    switch (mode) {
+                        case 'dev':
+                            return 'npm run build';
+                        case 'prod':
+                            return 'npm run build:prod';
+                        case 'watch':
+                            return `npm run start -- --live-reload-base-url=${liveReloadBaseUrl} --live-reload-port=4201`;
+                    }
+                },
+                options: {
+                    execOptions: {
+                        cwd: '../admin'
+                    }
                 }
+            },
+
+            options: {
+                preferLocal: true
             }
         },
 
@@ -199,7 +193,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-symlink');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-express-server');
-    grunt.loadNpmTasks('grunt-subgrunt');
+    grunt.loadNpmTasks('grunt-shell');
 
     // This little bit of weirdness gives the express server chance to shutdown properly
     const waitBeforeExit = () => {
