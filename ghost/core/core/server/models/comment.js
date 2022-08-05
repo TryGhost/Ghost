@@ -2,16 +2,14 @@ const ghostBookshelf = require('./base');
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
+const {ValidationError} = require('@tryghost/errors');
 
 const messages = {
+    emptyComment: 'The body of a comment cannot be empty',
     commentNotFound: 'Comment could not be found',
     notYourCommentToEdit: 'You may only edit your own comments',
     notYourCommentToDestroy: 'You may only delete your own comments'
 };
-
-function escapeRegex(string) {
-    return string.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
-}
 
 /**
  * Remove empty paragraps from the start and end
@@ -19,7 +17,7 @@ function escapeRegex(string) {
  */
 function trimParagraphs(str) {
     const paragraph = '<p></p>';
-    const escapedParagraph = escapeRegex(paragraph);
+    const escapedParagraph = '<p>\\s*?</p>';
 
     const startReg = new RegExp('^(' + escapedParagraph + ')+');
     const endReg = new RegExp('(' + escapedParagraph + ')+$');
@@ -67,7 +65,7 @@ const Comment = ghostBookshelf.Model.extend({
         if (this.hasChanged('html')) {
             const sanitizeHtml = require('sanitize-html');
 
-            this.set('html', trimParagraphs(
+            const html = trimParagraphs(
                 sanitizeHtml(this.get('html'), {
                     allowedTags: ['p', 'br', 'a', 'blockquote'],
                     allowedAttributes: {
@@ -82,7 +80,16 @@ const Comment = ghostBookshelf.Model.extend({
                         })
                     }
                 })
-            ));
+            ).trim();
+
+            console.log(html);
+
+            if (html.length === 0) {
+                throw new ValidationError({
+                    message: tpl(messages.emptyComment)
+                });
+            }
+            this.set('html', html);
         }
     },
 
