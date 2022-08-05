@@ -42,4 +42,22 @@ describe('StripeAPI', function () {
         should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.success_url);
         should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.cancel_url);
     });
+
+    it('createCheckoutSetupSession uses trialDays', async function (){
+        await api.createCheckoutSession('priceId', null, {
+            trialDays: 12
+        });
+
+        should.not.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.subscription_data.trial_from_plan);
+        should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.subscription_data.trial_period_days);
+        should.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.subscription_data.trial_period_days, 12);
+    });
+
+    it('createCheckoutSetupSession uses trial_from_plan without trialDays', async function (){
+        await api.createCheckoutSession('priceId', null, {});
+
+        should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.subscription_data.trial_from_plan);
+        should.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.subscription_data.trial_from_plan, true);
+        should.not.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.subscription_data.trial_period_days);
+    });
 });
