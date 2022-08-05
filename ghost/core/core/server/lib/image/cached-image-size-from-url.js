@@ -34,13 +34,14 @@ class CachedImageSizeFromUrl {
 
             return cachedImageSize;
         } else {
-            return this.imageSize.getImageSizeFromUrl(url).then((res) => {
+            try {
+                const res = await this.imageSize.getImageSizeFromUrl(url);
                 this.cache.set(url, res);
 
                 debug('Cached image:', url);
 
                 return this.cache.get(url);
-            }).catch((err) => {
+            } catch (err) {
                 if (err instanceof errors.NotFoundError) {
                     debug('Cached image (not found):', url);
                 } else {
@@ -52,7 +53,7 @@ class CachedImageSizeFromUrl {
                 this.cache.set(url, url);
 
                 return this.cache.get(url);
-            });
+            }
         }
     }
 }
