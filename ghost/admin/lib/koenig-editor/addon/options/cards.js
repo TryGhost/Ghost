@@ -195,7 +195,7 @@ export const CARD_MENU = [
             payload: {
                 imageSelector: 'tenor'
             },
-            isAvailable: 'config.tenor.publicReadOnlyApiKey'
+            isAvailable: 'config.tenor.googleApiKey'
         },
         {
             label: 'Toggle',
