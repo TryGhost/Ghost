@@ -21,7 +21,7 @@
   "scripts": {
     "dev:debug": "DEBUG=@tryghost*,ghost:* yarn dev",
     "dev:admin": "yarn workspace ghost run dev:admin",
-    "dev:ghost": "nodemon -q -i ghost/admin -i ghost/core/content -i ghost/core/core/built ghost/core/index.js",
+    "dev:ghost": "nodemon -q -i ghost/admin -i ghost/core/content -i ghost/core/core/built",
     "dev": "concurrently -c \"blue,green\" --kill-others -n ghost,admin \"yarn dev:ghost\" \"yarn dev:admin\"",
     "fix": "yarn cache clean && rm -rf node_modules && yarn",
     "knex-migrator": "yarn workspace ghost run knex-migrator",
