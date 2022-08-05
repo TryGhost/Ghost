@@ -5,6 +5,7 @@ import {ReactComponent as AvatarIcon} from '../images/icons/avatar.svg';
 
 const Avatar = (props) => {
     const {member} = useContext(AppContext);
+    const memberName = member?.name ?? props.comment?.member?.name;
 
     const getHashOfString = (str) => {
         let hash = 0;
@@ -68,9 +69,13 @@ const Avatar = (props) => {
 
     let avatarEl = (
         <>
-            <div className={`flex justify-center items-center rounded-full ${dimensionClasses}`} style={avatarStyle}>
-                <p className={`text-white font-sans font-semibold ${initialsClasses}`}>{ commentGetInitials() }</p>
-            </div>
+            {memberName ?
+                (<div className={`flex justify-center items-center rounded-full ${dimensionClasses}`} style={avatarStyle}>
+                    <p className={`text-white font-sans font-semibold ${initialsClasses}`}>{ commentGetInitials() }</p>
+                </div>) :
+                (<div className={`flex justify-center items-center rounded-full bg-neutral-900 dark:bg-[rgba(255,255,255,0.7)] ${dimensionClasses}`}>
+                    <AvatarIcon className="stroke-white dark:stroke-[rgba(0,0,0,0.6)]" />
+                </div>)}
             {commentMember && <img className={`absolute top-0 left-0 rounded-full ${dimensionClasses}`} src={commentMember.avatar_image} alt="Avatar"/>}
         </>
     );
@@ -80,13 +85,6 @@ const Avatar = (props) => {
         avatarEl = (
             <div className={`flex justify-center items-center rounded-full bg-neutral-300 dark:opacity-70 ${dimensionClasses}`}>
                 <AvatarIcon className="stroke-white dark:stroke-neutral-600" />
-            </div>
-        );
-    // When an avatar has no name
-    } else if (props.isAnonymous) {
-        avatarEl = (
-            <div className={`flex justify-center items-center rounded-full bg-neutral-900 dark:bg-[rgba(255,255,255,0.7)] ${dimensionClasses}`}>
-                <AvatarIcon className="stroke-white dark:stroke-[rgba(0,0,0,0.6)]" />
             </div>
         );
     }
