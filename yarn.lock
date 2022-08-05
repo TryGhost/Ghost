@@ -16075,16 +16075,16 @@ metascraper-image@5.29.15:
   dependencies:
     "@metascraper/helpers" "^5.29.15"
 
-metascraper-logo-favicon@5.30.0:
-  version "5.30.0"
-  resolved "https://registry.yarnpkg.com/metascraper-logo-favicon/-/metascraper-logo-favicon-5.30.0.tgz#bfd54e89ad764d149d01c250fa8e270c08218579"
-  integrity sha512-9XnPpR71MZ0PwcyeZdX/qROwMFwNzUemxiA1obklbzRNhlTcsqsuflJGTLBuVh6DtX8UsaQLFpU1i0OXqaWfpw==
+metascraper-logo-favicon@5.30.1:
+  version "5.30.1"
+  resolved "https://registry.yarnpkg.com/metascraper-logo-favicon/-/metascraper-logo-favicon-5.30.1.tgz#ef01c27ef25d2ebac040c4ca9f7f4e31f38a5706"
+  integrity sha512-xamWOhYlGib9Qfi7sKnmh6v5dBrAqWRZhXPM6PfWVZt8yCwb4Nk6EAkfr2DmzBD2hdXIww7fvaDIfDx2KfWLyg==
   dependencies:
     "@keyvhq/memoize" "~1.6.14"
     "@metascraper/helpers" "^5.29.15"
     lodash "~4.17.21"
     reachable-url "~1.6.11"
-    tldts "~5.7.84"
+    tldts "~5.7.87"
 
 metascraper-logo@5.29.15:
   version "5.29.15"
@@ -16115,15 +16115,15 @@ metascraper-url@5.29.15:
   dependencies:
     "@metascraper/helpers" "^5.29.15"
 
-metascraper@5.29.18:
-  version "5.29.18"
-  resolved "https://registry.yarnpkg.com/metascraper/-/metascraper-5.29.18.tgz#45b8a3fd89e72ba95bbde1d7915a82473193121f"
-  integrity sha512-aVwKhYrLfwJozzJMy/Fo03TwLpQIDl+6vBNPFg/MSmmzOn7XKnX8wkQe+SbWkPKBCMstrayY6xsvPVFE5qc33g==
+metascraper@5.30.1:
+  version "5.30.1"
+  resolved "https://registry.yarnpkg.com/metascraper/-/metascraper-5.30.1.tgz#fed866c79db979bcdb68e94999ef5685a2491adc"
+  integrity sha512-KDBbAMdNPYTO10EbIalz2au8nVgCH5oPZe65nw4Vpt407WQEW8nyqvuP5aNCVHKie0gPceSCGgi7IAiyt3Efjw==
   dependencies:
     "@metascraper/helpers" "^5.29.15"
     cheerio "~1.0.0-rc.12"
     lodash "~4.17.21"
-    whoops "~4.1.1"
+    whoops "~4.1.2"
 
 methods@^1.1.2, methods@~1.1.2:
   version "1.1.2"
@@ -21609,17 +21609,17 @@ tlds@^1.228.0:
   resolved "https://registry.yarnpkg.com/tlds/-/tlds-1.231.0.tgz#93880175cd0a06fdf7b5b5b9bcadff9d94813e39"
   integrity sha512-L7UQwueHSkGxZHQBXHVmXW64oi+uqNtzFt2x6Ssk7NVnpIbw16CRs4eb/jmKOZ9t2JnqZ/b3Cfvo97lnXqKrhw==
 
-tldts-core@^5.7.84:
-  version "5.7.84"
-  resolved "https://registry.yarnpkg.com/tldts-core/-/tldts-core-5.7.84.tgz#0e128f7d70c0b91741156e1d3ce072fac687ef2a"
-  integrity sha512-1qKxwSDjmWdqG81cnXGvKI+FHPiVRT6w5DORjp2+YVqDdzFUZO0oQoWu0zbDtWA6HXVk+B15yY9DKbVKZ6fRLg==
+tldts-core@^5.7.87:
+  version "5.7.87"
+  resolved "https://registry.yarnpkg.com/tldts-core/-/tldts-core-5.7.87.tgz#11bc43b543cf31d06076133e93ed754dcffd6269"
+  integrity sha512-I0nEU8tk6W8qDqVqp7n8NHmvGBhz5GJJf6twiv1D+Z+/ntyR/UxyxxAUY9apqFvaFMpHlc5qfecsBk2Gss0r+Q==
 
-tldts@~5.7.84:
-  version "5.7.84"
-  resolved "https://registry.yarnpkg.com/tldts/-/tldts-5.7.84.tgz#c22e8824545ece1cac0a909692d12378b39429d1"
-  integrity sha512-PGkhyObqEEntI/xUDJdagtvNW+O7+5j8vbXSOXL+563At8gH/4LHxHjdPNv7qrahYuL6y6ZgjBxcvWdut7/LtA==
+tldts@~5.7.87:
+  version "5.7.87"
+  resolved "https://registry.yarnpkg.com/tldts/-/tldts-5.7.87.tgz#041a9ea5359e6d2763166c540cd92e8f4c85e099"
+  integrity sha512-goBoBIXNr5T+lSUG1DYulo1W4sEcglcshzhU1/Dm2eQ0L5FolcycaLsc8hD8TQN9PW93thYCXc0u69AAMjoS3A==
   dependencies:
-    tldts-core "^5.7.84"
+    tldts-core "^5.7.87"
 
 tmp@0.0.28:
   version "0.0.28"
@@ -22859,10 +22859,10 @@ which@^2.0.1, which@^2.0.2, which@~2.0.2:
   dependencies:
     isexe "^2.0.0"
 
-whoops@~4.1.1:
-  version "4.1.1"
-  resolved "https://registry.yarnpkg.com/whoops/-/whoops-4.1.1.tgz#fc362098571b151d3b156efb82b339ba797fc25e"
-  integrity sha512-FuLcMHGFfTLJvnwEy6OlxDzRKzjuWibogBVBGBICHQY1LRozEbmNDKea22fNI4fQsMt99aiP/Hyp0Z5CDGxq/Q==
+whoops@~4.1.2:
+  version "4.1.2"
+  resolved "https://registry.yarnpkg.com/whoops/-/whoops-4.1.2.tgz#b8bf080b9b4f4ab93f8249734ac1086fb14b4dd9"
+  integrity sha512-QITkghBnjbKGOtOrJOGrHnupWDX/AHFlcTXL3/A0B5rx2DacLrpuIpcFVmwYb0IOWZ0G3sxYkS8LBSZ4J/ezng==
   dependencies:
     clean-stack "~3.0.0"
     mimic-fn "~3.1.0"
