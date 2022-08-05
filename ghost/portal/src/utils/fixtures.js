@@ -105,6 +105,7 @@ export const site = getSiteData({
     portalButtonSignupText: 'Subscribe now',
     portalButtonStyle: 'icon-and-text',
     membersSupportAddress: 'support@example.com',
+    commentsEnabled: true,
     newsletters: [
         {
             id: 'weekly',

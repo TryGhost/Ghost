@@ -37,7 +37,8 @@ export function getSiteData({
     portalButtonSignupText: portal_button_signup_text = 'Subscribe now',
     portalButtonStyle: portal_button_style = 'icon-and-text',
     membersSupportAddress: members_support_address = 'support@example.com',
-    newsletters = []
+    newsletters = [],
+    commentsEnabled
 } = {}) {
     return {
         title,
@@ -61,6 +62,7 @@ export function getSiteData({
         portal_button_signup_text,
         portal_button_style,
         members_support_address,
+        comments_enabled: !!commentsEnabled,
         newsletters
     };
 }

@@ -210,6 +210,10 @@ export function hasMultipleProductsFeature({site}) {
     return !!portalProducts;
 }
 
+export function hasCommentsEnabled({site}) {
+    return !!site?.comments_enabled;
+}
+
 export function transformApiSiteData({site}) {
     if (!site) {
         return null;
