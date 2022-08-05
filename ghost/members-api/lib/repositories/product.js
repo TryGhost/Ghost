@@ -142,6 +142,7 @@ class ProductRepository {
      * @param {StripePriceInput|null} data.yearly_price
      * @param {string} data.product_id
      * @param {string} data.stripe_product_id
+     * @param {number} data.trial_days
      *
      * @param {object} options
      *
@@ -185,6 +186,10 @@ class ProductRepository {
             benefits: data.benefits,
             welcome_page_url: data.welcome_page_url
         };
+
+        if (Reflect.has(data, 'trial_days')) {
+            productData.trial_days = data.trial_days;
+        }
 
         const product = await this._Product.add(productData, options);
 
