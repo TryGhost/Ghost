@@ -4843,7 +4843,7 @@ async-promise-queue@^1.0.3, async-promise-queue@^1.0.5:
     async "^2.4.1"
     debug "^2.6.8"
 
-async@^2.1.2, async@^2.4.1, async@^2.6.0, async@^2.6.1, async@^2.6.2:
+async@^2.4.1, async@^2.6.0, async@^2.6.1, async@^2.6.2:
   version "2.6.4"
   resolved "https://registry.yarnpkg.com/async/-/async-2.6.4.tgz#706b7ff6084664cd7eae713f6f965433b5504221"
   integrity sha512-mzo5dfJYwAn29PeiJ0zvwTo04zj8HDJj0Mn8TD7sno7q12prdbnasKJHhkm2c1LgrhlJ0teaea8860oxi51mGA==
@@ -12467,7 +12467,7 @@ glob@^6.0.1:
     once "^1.3.0"
     path-is-absolute "^1.0.0"
 
-glob@^7.0.0, glob@^7.0.4, glob@^7.1.2, glob@^7.1.3, glob@^7.1.4, glob@^7.1.6:
+glob@^7.0.4, glob@^7.1.2, glob@^7.1.3, glob@^7.1.4, glob@^7.1.6:
   version "7.2.3"
   resolved "https://registry.yarnpkg.com/glob/-/glob-7.2.3.tgz#b8df0fb802bbfa8e89bd1d938b4e16578ed44f2b"
   integrity sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q==
@@ -12735,14 +12735,6 @@ grunt-shell@4.0.0:
     chalk "^3.0.0"
     npm-run-path "^2.0.0"
     strip-ansi "^6.0.1"
-
-grunt-subgrunt@1.3.0:
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/grunt-subgrunt/-/grunt-subgrunt-1.3.0.tgz#0b77c057a7b22ba15ef5977b7c5992a75f5e4181"
-  integrity sha512-rioBokPl1wlwjvTIAlisB/QE1vZpMtIE8S4T1hxH8fGESriajeLqBr8a9qh7nTAI+M2/yWjGGrQLJtL/VGvPSA==
-  dependencies:
-    async "^2.1.2"
-    glob "^7.0.0"
 
 grunt@1.5.3:
   version "1.5.3"
