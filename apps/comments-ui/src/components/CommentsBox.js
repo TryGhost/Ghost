@@ -79,7 +79,7 @@ const CommentsBoxContent = (props) => {
             <CommentsBoxTitle title={title} showCount={showCount} count={commentsCount}/>
             <Pagination />
             <div className={!pagination ? 'mt-4' : ''}>
-                {commentsCount > 0 && commentsElements}
+                {commentsElements}
             </div>
             <div>
                 { !isEditing
