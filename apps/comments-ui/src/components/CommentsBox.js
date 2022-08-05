@@ -129,9 +129,8 @@ const CommentsBox = (props) => {
     const containerClass = darkMode() ? 'dark' : '';
     const style = {
         '--gh-accent-color': accentColor ?? 'blue',
-        // need careful padding adjustments to match iFrame negative margins and to not cut off top editing form
-        paddingTop: 8,
-        paddingBottom: 64
+        paddingTop: 0,
+        paddingBottom: 24 // remember to allow for bottom shadow on comment text box
     };
 
     return (
