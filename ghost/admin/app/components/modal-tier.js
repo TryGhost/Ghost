@@ -145,10 +145,10 @@ export default class ModalTierPrice extends ModalBase {
     }
 
     reset() {
-        this.tier.rollbackAttributes();
         this.newBenefit = TierBenefitItem.create({isNew: true, name: ''});
         const finalBenefits = this.savedBenefits || emberA([]);
         this.tier.set('benefits', finalBenefits);
+        this.tier.rollbackAttributes();
     }
 
     @task({drop: true})
