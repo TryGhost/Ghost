@@ -1,24 +1,11 @@
-import React, {useContext} from 'react';
-import {ReactMobileDocContext} from 'react-mobiledoc-editor';
+import React from 'react';
 
-export default function MarkupButton({editor, tag}) {
-    const {activeMarkupTags} = useContext(ReactMobileDocContext);
-
-    const [isActive, setIsActive] = React.useState(false);
-    
+export default function MarkupButton({editor, tag, markupTags}) {
     const handleClick = () => {
         editor.toggleMarkup(tag);
     };
 
-    React.useEffect(() => {
-        if (activeMarkupTags?.includes(tag)) {
-            setIsActive(true);
-        } else {
-            setIsActive(false);
-        }
-    }, [activeMarkupTags]);
-
     return (
-        <button className={isActive ? 'font-bold' : ''} onClick={handleClick}>{tag}</button>
+        <button className={markupTags ? 'font-bold' : ''} onClick={handleClick}>{tag}</button>
     );
 }

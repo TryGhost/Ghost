@@ -3,9 +3,10 @@ import MarkupButton from './MarkupButton';
 
 export default function Toolbar({
     editor,
-    activeMarkupTags,
     TOOLBAR_MARGIN = 15,
-    TICK_ADJUSTMENT = 8
+    TICK_ADJUSTMENT = 8,
+    activeMarkupTags,
+    selectedRange
 }) {
     const DEFAULTSTYLES = {
         top: 0,
@@ -16,7 +17,7 @@ export default function Toolbar({
     const toolbarRef = React.useRef();
     const [showToolbar, setShowToolbar] = React.useState(false);
     const [toolbarPosition, setToolbarPosition] = React.useState(DEFAULTSTYLES);
-    const [, setEditorRange] = React.useState(null);
+    const [, setEditorRange] = React.useState(selectedRange || {});
     const [hasSelectedRange, setHasSelectedRange] = React.useState(false);
     const [onMousemoveHandler, setOnMousemoveHandler] = React.useState(null);
     const [, setIsMouseDown] = React.useState(false);
@@ -95,18 +96,6 @@ export default function Toolbar({
         setToolbarPosition(newPosition);
     }
 
-    React.useEffect(() => {
-        window.addEventListener('mousemove', _handleMousemove);
-        window.addEventListener('mouseup', _handleMouseup);
-        window.addEventListener('mousedown', _handleMousedown);
-
-        return () => {
-            window.addEventListener('mousemove', _handleMousemove);
-            window.addEventListener('mouseup', _handleMouseup);
-            window.addEventListener('mousedown', _handleMousedown);
-        };
-    }, [_handleMousemove, _handleMousedown, _handleMouseup]);
-
     const toolbarPositionStyles = {
         top: `${toolbarPosition.top}px`,
         left: `${toolbarPosition.left}px`,
@@ -116,18 +105,14 @@ export default function Toolbar({
     };
 
     React.useEffect(() => {
-        if (isMouseUp) {
-            if (editor?.range?.direction){
-                setEditorRange(editor.range);
-                setHasSelectedRange(true);
-                _toggleVisibility(true);
-            } else {
-                setHasSelectedRange(false);
-                setEditorRange(null);
-                _toggleVisibility(false);
-            }
+        if (selectedRange?.direction){
+            setHasSelectedRange(true);
+            _toggleVisibility(true);
+        } else {
+            setHasSelectedRange(false);
+            _toggleVisibility(false);
         }
-    }, [isMouseUp, editor]);
+    }, [selectedRange]);
 
     return (
         <div ref={toolbarRef}
@@ -135,10 +120,10 @@ export default function Toolbar({
             style={toolbarPositionStyles} >
             <ul className={`toolbar-temporary`} >
                 <li>
-                    <MarkupButton markupTags={activeMarkupTags} editor={editor} tag={'strong'}/>
+                    <MarkupButton markupTags={activeMarkupTags?.isStrong} editor={editor} tag={'strong'}/>
                 </li>
                 <li>
-                    <MarkupButton markupTags={activeMarkupTags} editor={editor} tag={'em'}/>
+                    <MarkupButton markupTags={activeMarkupTags?.isEm} editor={editor} tag={'em'}/>
                 </li>
             </ul>
         </div>
