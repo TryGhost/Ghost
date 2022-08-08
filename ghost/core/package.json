@@ -21,9 +21,8 @@
   "license": "MIT",
   "scripts": {
     "start": "node index",
-    "dev:admin": "grunt dev:admin",
-    "setup": "knex-migrator init && grunt symlink && grunt init || (exit 0)",
-    "build": "grunt build",
+    "setup": "knex-migrator init && grunt symlink && yarn build || (exit 0)",
+    "build": "yarn workspace ghost-admin run build",
     "test": "yarn test:unit",
     "test:single": "mocha --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js --timeout=60000",
     "test:all": "yarn test:unit && yarn test:integration && yarn test:e2e && yarn lint",
@@ -46,7 +45,7 @@
     "lint:code": "yarn lint:server && yarn lint:shared && yarn lint:frontend",
     "lint": "yarn lint:server && yarn lint:shared && yarn lint:frontend && yarn lint:test",
     "build:css": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
-    "prepack": "grunt release && yarn build:css"
+    "prepack": "yarn workspace ghost-admin run build:prod && yarn build:css"
   },
   "engines": {
     "node": "^14.17.0 || ^16.13.0",
