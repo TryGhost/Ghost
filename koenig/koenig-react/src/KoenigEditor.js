@@ -134,6 +134,10 @@ class KoenigEditor {
         this.mobiledocEditor.inputModeDidChange(() => {
             this.inputModeDidChange();
         });
+
+        this.mobiledocEditor.willHandleNewline((event) => {
+            this.willHandleNewline(event);
+        });
     }
 
     // API ---------------------------------------------------------------------
@@ -174,9 +178,8 @@ class KoenigEditor {
         // setting a card as selected trigger's the cards didReceiveAttrs
         // hook where the actual selection state change happens. Put into edit
         // mode if necessary
-
-        card.setIsSelected(true);
-        card.setIsEditing(isEditing);
+        card.setIsSelected ? card.setIsSelected(true) : card.props.isSelected = true;
+        card.setIsEditing ? card.setIsEditing(isEditing) : card.props.isEditing = isEditing;
 
         this.selectedCard = card;
 
@@ -189,15 +192,23 @@ class KoenigEditor {
     }
 
     deselectCard(card) {
-        card.setIsEditing(false);
-        card.setIsSelected(false);
+        card.setIsEditing ? card.setIsEditing(false) : card.props.isEditing = false;
+        card.setIsSelected ? card.setIsSelected(false) : card.props.isSelected = false;
         this.selectedCard = null;
         this._showCursor();
         // this._cardDragDropContainer.enableDrag();
     }
 
-    editCard() {
-        console.error('KoenigEditor.editCard not implemented');
+    editCard(card) {
+        // no-op if card is already being edited
+        if (card === this.selectedCard && card.isEditing) {
+            return;
+        }
+
+        // select the card with edit mode
+        this.selectCard(card, true);
+
+        // this._cardDragDropContainer.disableDrag();
     }
 
     deleteCard(card, cursorDirection) {
@@ -262,24 +273,19 @@ class KoenigEditor {
 
         // cards are pushed on to the `componentCards` array so we can
         // assume that the last card in the list is the one we want to
-        // select. Needs to be scheduled afterRender so that the new card
-        // is actually present
-        const editOrSelectCard = (card) => {
-            if (card.koenigOptions.hasEditMode) {
-                this.editCard(card);
-            } else if (card.koenigOptions.selectAfterInsert) {
-                this.selectCard(card);
-            }
-        };
-
-        // TODO: this requires waiting for render to complete in Ember - how does it behave in React?
+        // select
         const card = this.componentCards[this.componentCards.length - 1];
 
         if (!card) {
             console.warn('replaceWithCardSection: card was not present'); // eslint-disable-line
+            return;
         }
 
-        editOrSelectCard(card);
+        if (card.koenigOptions.hasEditMode) {
+            this.editCard(card);
+        } else if (card.koenigOptions.selectAfterInsert) {
+            this.selectCard(card);
+        }
     }
 
     getCardFromSection(section) {
@@ -357,7 +363,7 @@ class KoenigEditor {
     }
 
     skipNewline() {
-        console.error('KoenigEditor.skipNewline not implemented');
+        this._skipNextNewline = true;
     }
 
     scrollCursorIntoView() {
@@ -392,7 +398,7 @@ class KoenigEditor {
         // card section, clicking and other interactions within a card can cause
         // this to happen and we don't want to select/deselect accidentally.
         // See the up/down/left/right key handlers for the card selection
-        if (this.selectedCard && this.selectedCard.postModel === section) {
+        if (this.selectedCard?.props.postModel === section) {
             return;
         }
 
@@ -459,8 +465,11 @@ class KoenigEditor {
         this.onActiveSectionTagsChange?.(sectionTags);
     }
 
-    willHandleNewline() {
-
+    willHandleNewline(event) {
+        if (this._skipNextNewline) {
+            event.preventDefault();
+            this._skipNextNewline = false;
+        }
     }
 
     // Custom event handlers ---------------------------------------------------

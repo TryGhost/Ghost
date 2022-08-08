@@ -43,6 +43,12 @@ const createComponentCard = ({name, component: CardComponent, koenigOptions}) =>
                     return <CardComponent isSelected={isSelected} isEditing={isEditing} {...props} />;
                 };
 
+                // This is async, the component won't be rendered immediately
+                // meaning the `setIsSelected` etc methods won't be available
+                // to any code running immediately after `didRender()`.
+                //
+                // If required we can use `flushSync(() => root.render())` to
+                // get full synchronous rendering
                 root.render(<ComponentWithState />);
             });
 
