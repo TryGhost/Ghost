@@ -3,7 +3,7 @@ import MemberAvatar from '../common/MemberGravatar';
 import ActionButton from '../common/ActionButton';
 import CloseButton from '../common/CloseButton';
 import Switch from '../common/Switch';
-import {getMemberSubscription, getMemberTierName, getSiteNewsletters, getSubFreeTrialDaysLeft, getSupportAddress, getUpdatedOfferPrice, hasCommentsEnabled, hasMultipleNewsletters, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember, subscriptionHasFreeTrial} from '../../utils/helpers';
+import {getMemberSubscription, getMemberTierName, getSiteNewsletters, getSupportAddress, getUpdatedOfferPrice, hasCommentsEnabled, hasMultipleNewsletters, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember, subscriptionHasFreeTrial} from '../../utils/helpers';
 import {getDateString} from '../../utils/date-time';
 import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
 import {ReactComponent as OfferTagIcon} from '../../images/icons/offer-tag.svg';
@@ -328,7 +328,7 @@ const PaidAccountActions = () => {
         if (hasMultipleProductsFeature({site}) && getMemberTierName({member})) {
             planLabel = getMemberTierName({member});
         }
-        const hasFreeTrial = subscriptionHasFreeTrial({sub: subscription});
+        // const hasFreeTrial = subscriptionHasFreeTrial({sub: subscription});
         // if (hasFreeTrial) {
         //     planLabel += ' (Free Trial)';
         // }
