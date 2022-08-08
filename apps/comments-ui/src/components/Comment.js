@@ -102,8 +102,8 @@ const Comment = ({updateIsEditing = null, isEditing, ...props}) => {
                         </div>
 
                         {!isNotPublished &&
-                        <div className={`ml-12 sm:ml-[52px] mb-2 pr-4 font-sans leading-normal text-neutral-900 dark:text-[rgba(255,255,255,0.85)]`}>
-                            <p dangerouslySetInnerHTML={html} className="gh-comment-content text-[16px] leading-normal"></p>
+                        <div className={`ml-12 sm:ml-[52px] mb-2 pr-4`}>
+                            <p dangerouslySetInnerHTML={html} className="gh-comment-content font-sans leading-normal text-[16px] text-neutral-900 dark:text-[rgba(255,255,255,0.85)]"></p>
                         </div>}
 
                         <div className="ml-12 sm:ml-[52px] flex gap-5 items-center">

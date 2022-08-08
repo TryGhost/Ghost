@@ -295,6 +295,7 @@ export default class App extends React.Component {
             commentsEnabled: this.props.commentsEnabled,
             appVersion: this.props.appVersion,
             stylesUrl: this.props.stylesUrl,
+            publication: this.props.publication,
             popup,
             dispatchAction: (_action, data) => this.dispatchAction(_action, data),
 
