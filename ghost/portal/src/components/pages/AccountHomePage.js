@@ -188,13 +188,12 @@ function getOfferLabel({offer, price, subscriptionStartDate}) {
 
 function FreeTrialLabel({subscription, priceLabel}) {
     if (subscriptionHasFreeTrial({sub: subscription})) {
-        // const trialEnd = getDateString(subscription.trial_end_at);
+        const trialEnd = getDateString(subscription.trial_end_at);
         return (
             <p className="gh-portal-account-discountcontainer">
                 <div>
-
-                    {/* <span>Free Trial till {trialEnd}</span> */}
-                    <span>{getSubFreeTrialDaysLeft({sub: subscription})} days left</span>
+                    <span>Free Trial – Ends {trialEnd}</span>
+                    {/* <span>{getSubFreeTrialDaysLeft({sub: subscription})} days left</span> */}
                 </div>
             </p>
         );
@@ -252,12 +251,15 @@ const PaidAccountActions = () => {
 
         const hasFreeTrial = subscriptionHasFreeTrial({sub: subscription});
         if (hasFreeTrial) {
+            oldPriceClassName = 'gh-portal-account-old-price';
+        }
+        if (hasFreeTrial) {
             return (
                 <>
-                    <FreeTrialLabel subscription={subscription} />
                     <p className={oldPriceClassName}>
-                        then {label}
+                        {label}
                     </p>
+                    <FreeTrialLabel subscription={subscription} />
                 </>
             );
         }
@@ -327,9 +329,9 @@ const PaidAccountActions = () => {
             planLabel = getMemberTierName({member});
         }
         const hasFreeTrial = subscriptionHasFreeTrial({sub: subscription});
-        if (hasFreeTrial) {
-            planLabel += ' (Free Trial)';
-        }
+        // if (hasFreeTrial) {
+        //     planLabel += ' (Free Trial)';
+        // }
         return (
             <>
                 <section>
