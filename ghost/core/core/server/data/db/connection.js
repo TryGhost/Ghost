@@ -31,10 +31,6 @@ function configure(dbConfig) {
             }
         };
 
-        // Force bthreads to use child_process backend until a worker_thread-compatible version of sqlite3 is published
-        // https://github.com/mapbox/node-sqlite3/issues/1386
-        process.env.BTHREADS_BACKEND = 'child_process';
-
         // In the default SQLite test config we set the path to /tmp/ghost-test.db,
         // but this won't work on Windows, so we need to replace the /tmp bit with
         // the Windows temp folder

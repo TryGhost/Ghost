@@ -6780,7 +6780,7 @@ bson-objectid@2.0.3:
   resolved "https://registry.yarnpkg.com/bson-objectid/-/bson-objectid-2.0.3.tgz#d840185172846b2f10c42ce2bcdb4a50956a9db5"
   integrity sha512-WYwVtY9yqk179EPMNuF3vcxufdrGLEo2XwqdRVbfLVe9X6jLt7WKZQgP+ObOcprakBGbHxzl76tgTaieqsH29g==
 
-bthreads@0.5.1, bthreads@^0.5.1:
+bthreads@^0.5.1:
   version "0.5.1"
   resolved "https://registry.yarnpkg.com/bthreads/-/bthreads-0.5.1.tgz#c7a4dacc2d159c50de08b37b1e2a7da836171063"
   integrity sha512-nK7Jo9ll+r1FRMNPWEFRTZMQrX6HhX8JjPAofxmbTNILHqWVIJPmWzCi9JlX/K0DL5AKZTFZg2Qser5C6gVs9A==
@@ -10309,7 +10309,6 @@ ember-power-calendar@^0.16.3:
 
 ember-power-datepicker@cibernox/ember-power-datepicker:
   version "0.8.1"
-  uid da580474a2c449b715444934ddb626b7c07f46a7
   resolved "https://codeload.github.com/cibernox/ember-power-datepicker/tar.gz/da580474a2c449b715444934ddb626b7c07f46a7"
   dependencies:
     ember-basic-dropdown "^3.0.11"
@@ -12644,7 +12643,6 @@ globrex@^0.1.2:
 
 "google-caja-bower@https://github.com/acburdine/google-caja-bower#ghost":
   version "6011.0.0"
-  uid "275cb75249f038492094a499756a73719ae071fd"
   resolved "https://github.com/acburdine/google-caja-bower#275cb75249f038492094a499756a73719ae071fd"
 
 got@9.6.0:
@@ -14815,7 +14813,6 @@ keygrip@~1.1.0:
 
 "keymaster@https://github.com/madrobby/keymaster.git":
   version "1.6.3"
-  uid f8f43ddafad663b505dc0908e72853bcf8daea49
   resolved "https://github.com/madrobby/keymaster.git#f8f43ddafad663b505dc0908e72853bcf8daea49"
 
 keypair@1.0.4:
@@ -16583,7 +16580,6 @@ mocha@^2.5.3:
 
 mock-knex@TryGhost/mock-knex#8ecb8c227bf463c991c3d820d33f59efc3ab9682:
   version "0.4.9"
-  uid "8ecb8c227bf463c991c3d820d33f59efc3ab9682"
   resolved "https://codeload.github.com/TryGhost/mock-knex/tar.gz/8ecb8c227bf463c991c3d820d33f59efc3ab9682"
   dependencies:
     bluebird "^3.4.1"
@@ -20539,7 +20535,6 @@ simple-update-notifier@^1.0.7:
 
 "simplemde@https://github.com/kevinansfield/simplemde-markdown-editor.git#ghost":
   version "1.11.2"
-  uid "4c39702de7d97f9b32d5c101f39237b6dab7c3ee"
   resolved "https://github.com/kevinansfield/simplemde-markdown-editor.git#4c39702de7d97f9b32d5c101f39237b6dab7c3ee"
 
 sinon@14.0.0:

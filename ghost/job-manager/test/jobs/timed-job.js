@@ -1,4 +1,4 @@
-const {isMainThread, parentPort, workerData} = require('bthreads');
+const {isMainThread, parentPort, workerData} = require('worker_threads');
 const util = require('util');
 const setTimeoutPromise = util.promisify(setTimeout);
 
