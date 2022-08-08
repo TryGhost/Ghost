@@ -219,12 +219,10 @@
                                         <span class="amount">0</span>
                                     </div>
                                     {{else}}
-                                        {{#if (feature 'freeTrial')}}
-                                            {{#if this.freeTrialEnabled}}
+                                        {{#if this.isFreeTierEnabled}}
                                             <div class="gh-portal-tier-price">
-                                                <span class="amount">{{ this.trialDays }} days free</span>
+                                                <span class="amount">{{ this.tier.trialDays }} days free</span>
                                             </div>
-                                            {{/if}}
                                         {{/if}}
                                         {{#if this.stripeYearlyAmount}}
                                             {{#if (feature 'freeTrial')}}
@@ -274,16 +272,14 @@
                                         {{/if}}
                                     {{/if}}
                             </div>
-                            {{#if (feature 'freeTrial')}}
-                                {{#if this.freeTrialEnabled}}
-                                    <span class="after-trial-amount">Then 
-                                    {{#if (eq this.previewCadence "yearly")}}
-                                        {{currency-symbol this.currency}}{{ format-number this.stripeYearlyAmount }}/year
-                                    {{else}}
-                                        {{currency-symbol this.currency}}{{ format-number this.stripeMonthlyAmount }}/month
-                                    {{/if}}
-                                    </span>
+                            {{#if this.isFreeTrialEnabled}}
+                                <span class="after-trial-amount">Then
+                                {{#if (eq this.previewCadence "yearly")}}
+                                    {{currency-symbol this.currency}}{{ format-number this.stripeYearlyAmount }}/year
+                                {{else}}
+                                    {{currency-symbol this.currency}}{{ format-number this.stripeMonthlyAmount }}/month
                                 {{/if}}
+                                </span>
                             {{/if}}
                         </div>
 
