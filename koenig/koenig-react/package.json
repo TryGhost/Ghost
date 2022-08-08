@@ -37,7 +37,7 @@
     "glob": "^8.0.3",
     "mocha": "10.0.0",
     "node-static": "^0.7.11",
-    "postcss": "^8.4.14",
+    "postcss": "8.4.16",
     "postcss-import": "^14.1.0",
     "should": "13.2.3",
     "sinon": "14.0.0",
