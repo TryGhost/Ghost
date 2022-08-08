@@ -15,6 +15,7 @@ const EditState = ({payload, save}) => {
     return (
         <>
             <textarea
+                className="h-full w-full bg-transparent p-2 font-mono outline-0"
                 autoFocus={true}
                 value={code}
                 onChange={handleCodeChange}
