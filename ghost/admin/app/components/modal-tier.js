@@ -82,6 +82,7 @@ export default class ModalTierPrice extends ModalBase {
         this.calculateDiscount();
         if (this.tier.get('trialDays')) {
             this.freeTrialEnabled = true;
+            this.trialDays = this.tier.get('trialDays');
         }
         this.accentColorStyle = htmlSafe(`color: ${this.settings.get('accentColor')}`);
     }
