@@ -3,7 +3,7 @@ import MemberAvatar from '../common/MemberGravatar';
 import ActionButton from '../common/ActionButton';
 import CloseButton from '../common/CloseButton';
 import Switch from '../common/Switch';
-import {getMemberSubscription, getMemberTierName, getSiteNewsletters, getSupportAddress, getUpdatedOfferPrice, hasCommentsEnabled, hasMultipleNewsletters, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember, subscriptionHasFreeTrial} from '../../utils/helpers';
+import {getMemberSubscription, getMemberTierName, getSiteNewsletters, getSubFreeTrialDaysLeft, getSupportAddress, getUpdatedOfferPrice, hasCommentsEnabled, hasMultipleNewsletters, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember, subscriptionHasFreeTrial} from '../../utils/helpers';
 import {getDateString} from '../../utils/date-time';
 import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
 import {ReactComponent as OfferTagIcon} from '../../images/icons/offer-tag.svg';
@@ -186,13 +186,16 @@ function getOfferLabel({offer, price, subscriptionStartDate}) {
     return offerLabel;
 }
 
-function FreeTrialLabel({subscription}) {
+function FreeTrialLabel({subscription, priceLabel}) {
     if (subscriptionHasFreeTrial({sub: subscription})) {
-        const trialEnd = getDateString(subscription.trial_end_at);
+        // const trialEnd = getDateString(subscription.trial_end_at);
         return (
             <p className="gh-portal-account-discountcontainer">
-                <OfferTagIcon className="gh-portal-account-tagicon" />
-                <span>Free Trial till {trialEnd}</span>
+                <div>
+
+                    {/* <span>Free Trial till {trialEnd}</span> */}
+                    <span>{getSubFreeTrialDaysLeft({sub: subscription})} days left</span>
+                </div>
             </p>
         );
     }
@@ -247,13 +250,24 @@ const PaidAccountActions = () => {
             return null;
         };
 
+        const hasFreeTrial = subscriptionHasFreeTrial({sub: subscription});
+        if (hasFreeTrial) {
+            return (
+                <>
+                    <FreeTrialLabel subscription={subscription} />
+                    <p className={oldPriceClassName}>
+                        then {label}
+                    </p>
+                </>
+            );
+        }
+
         return (
             <>
                 <p className={oldPriceClassName}>
                     {label}
                 </p>
                 <OfferLabel />
-                <FreeTrialLabel subscription={subscription} />
             </>
         );
     };
@@ -311,6 +325,10 @@ const PaidAccountActions = () => {
         // Show name of tiers if there are multiple tiers
         if (hasMultipleProductsFeature({site}) && getMemberTierName({member})) {
             planLabel = getMemberTierName({member});
+        }
+        const hasFreeTrial = subscriptionHasFreeTrial({sub: subscription});
+        if (hasFreeTrial) {
+            planLabel += ' (Free Trial)';
         }
         return (
             <>
