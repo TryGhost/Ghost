@@ -1,17 +1,22 @@
 import createComponentCard from '../utils/create-component-card';
 import Card from '../components/Card';
+import React from 'react';
 
 const EditState = ({payload, save}) => {
+    const [code, setCode] = React.useState(payload.code || '');
+
     const handleCodeChange = (event) => {
+        setCode(event.target.value); // update inside component with re-render
+
         payload.code = event.target.value;
-        save(payload);
+        save(payload); // update inside mobiledoc (React won't re-render when this changes)
     };
 
     return (
         <>
             <textarea
                 autoFocus={true}
-                value={payload.code}
+                value={code}
                 onChange={handleCodeChange}
             />
         </>
