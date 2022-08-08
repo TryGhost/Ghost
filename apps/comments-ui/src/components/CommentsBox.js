@@ -28,6 +28,12 @@ const CommentsBoxTitle = ({title, showCount, count}) => {
             return null;
         }
 
+        if (count === 1) {
+            return (
+                <div className="text-neutral-400 text-[1.6rem]">1 comment</div>
+            );
+        }
+
         return (
             <div className="text-neutral-400 text-[1.6rem]">{count} comments</div>
         );
