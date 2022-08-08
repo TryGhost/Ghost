@@ -12,25 +12,6 @@ describe('Unit: models/comment', function () {
         sinon.restore();
     });
 
-    describe('toJSON', function () {
-        it('Will not return html unless comment is published', function () {
-            const comment = models.Comment.forge({
-                html: `<p>It's gonna be lights out and away we go for Lewis Hamilton only</p>`,
-                status: 'published'
-            });
-
-            assert(comment.toJSON().html);
-
-            comment.set('status', 'deleted');
-
-            assert(comment.toJSON().html === null);
-
-            comment.set('status', 'hidden');
-
-            assert(comment.toJSON().html === null);
-        });
-    });
-
     describe('permissible', function () {
         function getCommentModel(id, memberId) {
             const obj = {
