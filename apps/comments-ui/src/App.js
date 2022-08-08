@@ -69,7 +69,7 @@ export default class App extends React.Component {
         try {
             // Fetch data from API, links, preview, dev sources
             const {site, member} = await this.fetchApiData();
-            const {comments, pagination} = await this.fetchComments();
+            const {comments, pagination, count} = await this.fetchComments();
 
             const state = {
                 site,
@@ -77,7 +77,8 @@ export default class App extends React.Component {
                 action: 'init:success',
                 initStatus: 'success',
                 comments,
-                pagination
+                pagination,
+                commentCount: count
             };
 
             this.setState(state);
@@ -173,11 +174,15 @@ export default class App extends React.Component {
 
     /** Fetch first few comments  */
     async fetchComments() {
-        const data = await this.GhostApi.comments.browse({page: 1, postId: this.state.postId});
+        const dataPromise = this.GhostApi.comments.browse({page: 1, postId: this.state.postId});
+        const countPromise = this.GhostApi.comments.count({postId: this.state.postId});
+
+        const [data, count] = await Promise.all([dataPromise, countPromise]);
 
         return {
             comments: data.comments,
-            pagination: data.meta.pagination
+            pagination: data.meta.pagination,
+            count: count
         };
     }
 
@@ -277,7 +282,7 @@ export default class App extends React.Component {
 
     /**Get final App level context from App state*/
     getContextFromState() {
-        const {action, popupNotification, customSiteUrl, member, comments, pagination, postId, admin, popup} = this.state;
+        const {action, popupNotification, customSiteUrl, member, comments, pagination, commentCount, postId, admin, popup} = this.state;
         return {
             action,
             popupNotification,
@@ -286,6 +291,7 @@ export default class App extends React.Component {
             admin,
             comments,
             pagination,
+            commentCount,
             postId,
             title: this.props.title,
             showCount: this.props.showCount,

@@ -102,6 +102,24 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
     let firstCommentsLoadedAt = null;
 
     api.comments = {
+        async count({postId}) {
+            const url = endpointFor({type: 'members', resource: 'comments/counts'});
+            const response = await makeRequest({
+                url,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    ids: [postId]
+                })
+            });
+
+            const json = await response.json();
+
+            return json[postId];
+        },
         browse({page, postId}) {
             firstCommentsLoadedAt = firstCommentsLoadedAt ?? new Date().toISOString();
 
