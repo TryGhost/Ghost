@@ -65,7 +65,7 @@ const commentMapper = (model, frame) => {
 
     if (utils.isMembersAPI(frame)) {
         if (jsonModel.status !== 'published') {
-            delete response.html;
+            response.html = null;
         }
     }
 
