@@ -620,7 +620,7 @@ describe('Comments API', function () {
             const {
                 body: {
                     comments: [{
-                        id: commentId
+                        id: commentToDeleteId
                     }]
                 }
             } = await membersAgent
@@ -635,7 +635,7 @@ describe('Comments API', function () {
                     comments: [deletedComment]
                 }
             } = await membersAgent
-                .put(`/api/comments/${commentId}`)
+                .put(`/api/comments/${commentToDeleteId}`)
                 .body({comments: [{
                     status: 'deleted'
                 }]});
