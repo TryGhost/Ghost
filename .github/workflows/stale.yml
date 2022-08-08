@@ -24,3 +24,4 @@ jobs:
           days-before-stale: 120
           stale-issue-label: 'stale'
           stale-pr-label: 'stale'
+          close-issue-reason: 'not_planned'
