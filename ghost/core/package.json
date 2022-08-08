@@ -123,7 +123,6 @@
     "bookshelf-relations": "2.4.0",
     "brute-knex": "4.0.1",
     "bson-objectid": "2.0.3",
-    "bthreads": "0.5.1",
     "chalk": "4.1.2",
     "cheerio": "0.22.0",
     "common-tags": "1.8.2",
