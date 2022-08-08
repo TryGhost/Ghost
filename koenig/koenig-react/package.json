@@ -10,9 +10,9 @@
     "eject": "react-scripts eject",
     "lint": "eslint src --ext .js --cache",
     "posttest": "yarn lint",
-    "build": "yarn webpack --config webpack.config.js",
     "serve": "yarn webpack serve",
-    "ship": "STATUS=$(git status --porcelain); echo $STATUS; if [ -z \"$STATUS\" ]; then yarn publish && git push ${GHOST_UPSTREAM:-upstream} main --follow-tags; fi"
+    "build": "yarn webpack --config webpack.config.js",
+    "prepare": "yarn build"
   },
   "publishConfig": {
     "access": "public"
