@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 
 const setTimeoutPromise = require('util').promisify(setTimeout);
-const {isMainThread, parentPort} = require('bthreads');
+const {isMainThread, parentPort} = require('worker_threads');
 
 let shutdown = false;
 

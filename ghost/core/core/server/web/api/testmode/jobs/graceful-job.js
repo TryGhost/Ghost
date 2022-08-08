@@ -1,4 +1,4 @@
-const {parentPort} = require('bthreads');
+const {parentPort} = require('worker_threads');
 const util = require('util');
 
 let shutdown = false;

@@ -1,4 +1,4 @@
-const {parentPort} = require('bthreads');
+const {parentPort} = require('worker_threads');
 
 const postParentPortMessage = (message) => {
     if (parentPort) {
