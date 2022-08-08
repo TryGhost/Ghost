@@ -4,6 +4,13 @@ import React from 'react';
 
 const EditState = ({payload, save}) => {
     const [code, setCode] = React.useState(payload.code || '');
+    const textareaEl = React.useRef();
+
+    React.useEffect(() => {
+        const end = textareaEl.current.value.length;
+        textareaEl.current.setSelectionRange(end, end);
+        textareaEl.current.focus();
+    });
 
     const handleCodeChange = (event) => {
         setCode(event.target.value); // update inside component with re-render
@@ -15,8 +22,8 @@ const EditState = ({payload, save}) => {
     return (
         <>
             <textarea
+                ref={textareaEl}
                 className="h-full w-full bg-transparent p-2 font-mono outline-0"
-                autoFocus={true}
                 value={code}
                 onChange={handleCodeChange}
             />
