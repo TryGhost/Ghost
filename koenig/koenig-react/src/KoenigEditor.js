@@ -74,9 +74,9 @@ class KoenigEditor {
                     'moveCursorToNextSection',
                     'addParagraphAfterCard'
                 ].forEach((methodName) => {
-                    card.props[methodName] = () => this[methodName](card, ...arguments);
+                    card.props[methodName] = (...args) => this[methodName](card, ...args);
                 });
-                card.props.saveAsSnippet = () => this.saveCardAsSnippet(card, ...arguments);
+                card.props.saveAsSnippet = (...args) => this.saveCardAsSnippet(card, ...args);
 
                 // we keep an array of all cards that are in the editor so this
                 // class can handle card selection and empty card cleanup
