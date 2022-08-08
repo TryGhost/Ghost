@@ -83,7 +83,7 @@ const CommentsBoxContent = (props) => {
             </div>
             <div>
                 { !isEditing
-                    ? (member ? (isPaidMember || !paidOnly ? <Form commentsCount={commentsCount} /> : <NotPaidBox isFirst={commentsCount === 0} />) : <NotSignedInBox isFirst={commentsCount === 0} />)
+                    ? (member ? (isPaidMember || !paidOnly ? <Form commentsCount={commentsCount} /> : <NotPaidBox isFirst={commentsCount === 0} />) : <NotSignedInBox isFirst={commentsCount === 0} isPaid={paidOnly} />)
                     : null
                 }
             </div>
