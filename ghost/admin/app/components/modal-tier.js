@@ -21,6 +21,7 @@ const CURRENCIES = currencies.map((currency) => {
 // TODO: update modals to work fully with Glimmer components
 @classic
 export default class ModalTierPrice extends ModalBase {
+    @service feature;
     @service settings;
     @service config;
     @tracked model;
@@ -61,6 +62,10 @@ export default class ModalTierPrice extends ModalBase {
         return CURRENCIES.findBy('value', this.currency);
     }
 
+    get isFreeTierEnabled() {
+        return this.feature.get('freeTrial') && this.freeTrialEnabled && this.tier.get('trialDays') > 0;
+    }
+
     init() {
         super.init(...arguments);
         this.tier = this.model.tier;
@@ -82,7 +87,6 @@ export default class ModalTierPrice extends ModalBase {
         this.calculateDiscount();
         if (this.tier.get('trialDays')) {
             this.freeTrialEnabled = true;
-            this.trialDays = this.tier.get('trialDays');
         }
         this.accentColorStyle = htmlSafe(`color: ${this.settings.get('accentColor')}`);
     }
