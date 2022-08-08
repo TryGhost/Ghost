@@ -99,7 +99,7 @@ function CommentsSection({updateCommentNotifications, isCommentsEnabled, enableC
         <section className='gh-portal-list-toggle-wrapper'>
             <div className='gh-portal-list-detail'>
                 <h3>Comments</h3>
-                <p>Receive notifications when members comment on one of your posts</p>
+                <p>Get notified when someone replies to your comment</p>
             </div>
             <div style={{display: 'flex', alignItems: 'center'}}>
                 <SuccessIcon show={showUpdated} checked={isChecked} />
