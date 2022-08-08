@@ -1,4 +1,4 @@
-import {ADD_CARD_HOOK, REMOVE_CARD_HOOK} from './utils/constants';
+import {ADD_CARD_HOOK, REMOVE_CARD_HOOK, CURSOR_BEFORE, NO_CURSOR_MOVEMENT} from './utils/constants';
 import {Range as MobiledocRange} from 'mobiledoc-kit';
 import arrayToMap from './utils/array-to-map';
 
@@ -6,6 +6,9 @@ class KoenigEditor {
     componentCards = [];
     mobiledocEditor = null;
     editorProps = {};
+    selectedCard = null;
+
+    SPECIAL_MARKUPS = {};
 
     // sets up the class and populates `editorProps` prior to mobiledoc initialisation
     constructor({
@@ -16,7 +19,8 @@ class KoenigEditor {
         textExpansions,
         onSelectedRangeChange,
         onActiveMarkupTagsChange,
-        onActiveSectionTagsChange
+        onActiveSectionTagsChange,
+        onCursorExitAtTop
     } = {}) {
         this.atoms = atoms;
         this.cards = cards;
@@ -26,8 +30,7 @@ class KoenigEditor {
         this.onSelectedRangeChange = onSelectedRangeChange;
         this.onActiveMarkupTagsChange = onActiveMarkupTagsChange;
         this.onActiveSectionTagsChange = onActiveSectionTagsChange;
-
-        this.selectedCard = null;
+        this.onCursorExitAtTop = onCursorExitAtTop;
 
         const componentHooks = {
             [ADD_CARD_HOOK]: ({env, options, payload}, koenigOptions, destinationElement) => {
@@ -109,8 +112,8 @@ class KoenigEditor {
             keyCommands.forEach((command) => {
                 this.mobiledocEditor.registerKeyCommand({
                     str: command.str,
-                    run() {
-                        return command.run(this.mobiledocEditor);
+                    run: () => {
+                        return command.run(this.mobiledocEditor, this);
                     }
                 });
             });
@@ -138,7 +141,11 @@ class KoenigEditor {
     /* eslint-disable no-console */
 
     exitCursorAtTop() {
-        console.error('KoenigEditor.exitCursorAtTop not implemented');
+        if (this.selectedCard) {
+            this.deselectCard(this.selectedCard);
+        }
+
+        this.onCursorExitAtTop?.();
     }
 
     toggleMarkup() {
@@ -155,7 +162,7 @@ class KoenigEditor {
 
     selectCard(card, isEditing = false) {
         // no-op if card is already selected
-        if (card === this.selectedCard && isEditing === card.isEditing) {
+        if (card === this.selectedCard && isEditing === card.props.isEditing) {
             return;
         }
 
@@ -193,8 +200,38 @@ class KoenigEditor {
         console.error('KoenigEditor.editCard not implemented');
     }
 
-    deleteCard() {
-        console.error('KoenigEditor.deleteCard not implemented');
+    deleteCard(card, cursorDirection) {
+        const section = card.props.env.postModel;
+
+        if (!section.parent) {
+            // card has already been deleted, skip
+            return;
+        }
+
+        this.mobiledocEditor.run((postEditor) => {
+            let nextPosition;
+
+            if (cursorDirection === CURSOR_BEFORE) {
+                nextPosition = section.prev && section.prev.tailPosition();
+            } else {
+                nextPosition = section.next && section.next.headPosition();
+            }
+
+            postEditor.removeSection(section);
+
+            // if there's no prev or next section then the doc is empty, we want
+            // to add a blank paragraph and place the cursor in it
+            if (cursorDirection !== NO_CURSOR_MOVEMENT && !nextPosition) {
+                let {builder} = postEditor;
+                let newPara = builder.createMarkupSection('p');
+                postEditor.insertSectionAtEnd(newPara);
+                return postEditor.setRange(newPara.tailPosition());
+            }
+
+            if (cursorDirection !== NO_CURSOR_MOVEMENT) {
+                return postEditor.setRange(nextPosition);
+            }
+        });
     }
 
     scrollToCard() {
@@ -323,6 +360,10 @@ class KoenigEditor {
         console.error('KoenigEditor.skipNewline not implemented');
     }
 
+    scrollCursorIntoView() {
+
+    }
+
     cleanup() {
         console.error('KoenigEditor.cleanup not implemented');
     }
@@ -343,7 +384,7 @@ class KoenigEditor {
         if (this._skipCursorChange) {
             this._skipCursorChange = false;
             this._setSelectedRange(editor.range);
-            this._scrollCursorIntoView();
+            this.scrollCursorIntoView();
             return;
         }
 
@@ -389,7 +430,7 @@ class KoenigEditor {
 
         // pass the selected range through to the toolbar + menu components
         this._setSelectedRange(editor.range);
-        this._scrollCursorIntoView();
+        this.scrollCursorIntoView();
     }
 
     // fired when the active section(s) or markup(s) at the current cursor
@@ -441,10 +482,6 @@ class KoenigEditor {
 
     _showCursor() {
         this.mobiledocEditor.element.style.caretColor = 'auto';
-    }
-
-    _scrollCursorIntoView() {
-
     }
 }
 
