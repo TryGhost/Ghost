@@ -26,6 +26,10 @@ module.exports = {
         return frame.apiType === 'content';
     },
 
+    isMembersAPI: (frame) => {
+        return frame.apiType === 'members';
+    },
+
     isInternal: (frame) => {
         return frame.options.context && frame.options.context.internal;
     }

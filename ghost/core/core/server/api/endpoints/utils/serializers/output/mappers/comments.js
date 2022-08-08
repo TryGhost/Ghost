@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const utils = require('../../..');
 const url = require('../utils/url');
 
 const commentFields = [
@@ -60,6 +61,12 @@ const commentMapper = (model, frame) => {
     if (jsonModel.likes && frame.original.context.member && frame.original.context.member.id) {
         const id = frame.original.context.member.id;
         response.liked = !!jsonModel.likes.find(l => l.member_id === id);
+    }
+
+    if (utils.isMembersAPI(frame)) {
+        if (jsonModel.status !== 'published') {
+            response.html = null;
+        }
     }
 
     return response;
