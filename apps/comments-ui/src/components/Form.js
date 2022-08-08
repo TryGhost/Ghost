@@ -7,6 +7,7 @@ import {getEditorConfig} from '../utils/editor';
 import {isMobile} from '../utils/helpers';
 // import {formatRelativeTime} from '../utils/helpers';
 import {ReactComponent as SpinnerIcon} from '../images/icons/spinner.svg';
+import {ReactComponent as EditIcon} from '../images/icons/edit.svg';
 
 const Form = (props) => {
     const {member, postId, dispatchAction, avatarSaturation} = useContext(AppContext);
@@ -408,21 +409,23 @@ const Form = (props) => {
                                 leaveFrom="opacity-100"
                                 leaveTo="opacity-0"
                             >
-                                <button
+                                <div
                                     className="text-[17px] font-sans font-bold tracking-tight text-[rgb(23,23,23)] dark:text-[rgba(255,255,255,0.85)]"
                                     onClick={(event) => {
                                         handleShowDialog(event, {
                                             bioAutofocus: false
                                         });
-                                    }}>{memberName ? memberName : 'Anonymous'}</button>
+                                    }}>{memberName ? memberName : 'Anonymous'}</div>
                                 <div className="flex items-baseline">
                                     <button
-                                        className={`transition duration-150 font-sans text-[14px] tracking-tight text-neutral-400 hover:text-neutral-500 dark:text-[rgba(255,255,255,0.5)] ${!memberBio && 'text-neutral-300 hover:text-neutral-400'}`}
+                                        className={`group transition duration-150 flex justify-start items-center font-sans text-[14px] tracking-tight text-neutral-400 hover:text-neutral-500 dark:text-[rgba(255,255,255,0.5)] ${!memberBio && 'text-neutral-300 hover:text-neutral-400'}`}
                                         onClick={(event) => {
                                             handleShowDialog(event, {
                                                 bioAutofocus: true
                                             });
-                                        }}>{memberBio ? memberBio : 'Add your bio'}</button>
+                                        }}>{memberBio ? memberBio : 'Add your bio'}
+                                        {memberBio && <EditIcon className="transition-all duration-100 ease-out opacity-0 -translate-x-[6px] group-hover:opacity-100 group-hover:translate-x-0 w-[12px] h-[12px] stroke-neutral-500 ml-1" />}
+                                    </button>
                                 </div>
                             </Transition>
                         </div>
