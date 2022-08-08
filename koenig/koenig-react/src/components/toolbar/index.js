@@ -17,11 +17,10 @@ export default function Toolbar({
     const toolbarRef = React.useRef();
     const [showToolbar, setShowToolbar] = React.useState(false);
     const [toolbarPosition, setToolbarPosition] = React.useState(DEFAULTSTYLES);
-    const [, setEditorRange] = React.useState(selectedRange || {});
     const [hasSelectedRange, setHasSelectedRange] = React.useState(false);
     const [onMousemoveHandler, setOnMousemoveHandler] = React.useState(null);
     const [, setIsMouseDown] = React.useState(false);
-    const [isMouseUp, setIsMouseUp] = React.useState(false);
+    const [, setIsMouseUp] = React.useState(false);
 
     function _toggleVisibility(bool) {
         if (bool) {
@@ -36,10 +35,6 @@ export default function Toolbar({
         if (event.which === 1) {
             setIsMouseDown(true);
             setIsMouseUp(false);
-            // prevent mousedown on toolbar buttons losing editor focus before the following click event can trigger the buttons behaviour
-            // if (editorRef.current.editor.element.contains(event.target)) {
-            //     // event.preventDefault();
-            // }
         }
     }, []);
 
@@ -113,6 +108,18 @@ export default function Toolbar({
             _toggleVisibility(false);
         }
     }, [selectedRange]);
+
+    React.useEffect(() => {
+        window.addEventListener('mousemove', _handleMousemove);
+        window.addEventListener('mouseup', _handleMouseup);
+        window.addEventListener('mousedown', _handleMousedown);
+
+        return () => {
+            window.addEventListener('mousemove', _handleMousemove);
+            window.addEventListener('mouseup', _handleMouseup);
+            window.addEventListener('mousedown', _handleMousedown);
+        };
+    }, [_handleMousemove, _handleMousedown, _handleMouseup]);
 
     return (
         <div ref={toolbarRef}
