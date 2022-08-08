@@ -63,7 +63,7 @@ const commentMapper = (model, frame) => {
         response.liked = !!jsonModel.likes.find(l => l.member_id === id);
     }
 
-    if (utils.isContentAPI(frame)) {
+    if (utils.isMembersAPI(frame)) {
         if (jsonModel.status !== 'published') {
             delete response.html;
         }

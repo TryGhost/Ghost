@@ -1,4 +1,3 @@
-const assert = require('assert');
 const sinon = require('sinon');
 const models = require('../../../../core/server/models');
 const testUtils = require('../../../utils');
