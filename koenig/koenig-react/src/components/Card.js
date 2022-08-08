@@ -6,6 +6,7 @@ const CardComponent = ({children, isSelected, isEditing, koenigOptions, selectCa
     const [skipMouseUp, setSkipMouseUp] = React.useState(false);
 
     const classes = [
+        'caret-gray-600',
         'hover:shadow-green-500',
         'hover:shadow-[0_0_0_1px]'
     ];
