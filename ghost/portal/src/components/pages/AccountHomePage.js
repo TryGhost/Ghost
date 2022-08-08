@@ -3,7 +3,7 @@ import MemberAvatar from '../common/MemberGravatar';
 import ActionButton from '../common/ActionButton';
 import CloseButton from '../common/CloseButton';
 import Switch from '../common/Switch';
-import {getMemberSubscription, getMemberTierName, getSiteNewsletters, getSupportAddress, getUpdatedOfferPrice, hasCommentsEnabled, hasMultipleNewsletters, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember} from '../../utils/helpers';
+import {getMemberSubscription, getMemberTierName, getSiteNewsletters, getSupportAddress, getUpdatedOfferPrice, hasCommentsEnabled, hasMultipleNewsletters, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember, subscriptionHasFreeTrial} from '../../utils/helpers';
 import {getDateString} from '../../utils/date-time';
 import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
 import {ReactComponent as OfferTagIcon} from '../../images/icons/offer-tag.svg';
@@ -186,6 +186,19 @@ function getOfferLabel({offer, price, subscriptionStartDate}) {
     return offerLabel;
 }
 
+function FreeTrialLabel({subscription}) {
+    if (subscriptionHasFreeTrial({sub: subscription})) {
+        const trialEnd = getDateString(subscription.trial_end_at);
+        return (
+            <p className="gh-portal-account-discountcontainer">
+                <OfferTagIcon className="gh-portal-account-tagicon" />
+                <span>Free Trial till {trialEnd}</span>
+            </p>
+        );
+    }
+    return null;
+}
+
 const PaidAccountActions = () => {
     const {member, site, onAction} = useContext(AppContext);
 
@@ -233,12 +246,14 @@ const PaidAccountActions = () => {
             }
             return null;
         };
+
         return (
             <>
                 <p className={oldPriceClassName}>
                     {label}
                 </p>
                 <OfferLabel />
+                <FreeTrialLabel subscription={subscription} />
             </>
         );
     };
