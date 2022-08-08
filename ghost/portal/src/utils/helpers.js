@@ -457,6 +457,16 @@ export function hasOnlyFreeProduct({site}) {
     return (products.length === 1 && hasFreeProductPrice({site}));
 }
 
+export function getSubFreeTrialDaysLeft({sub} = {}) {
+    if (!subscriptionHasFreeTrial({sub})) {
+        return 0;
+    }
+    const today = (new Date()).setHours(0, 0, 0, 0);
+    const freeTrialEnd = (new Date(sub.trial_end_at)).setHours(0, 0, 0, 0);
+    const ONE_DAY = 1000 * 60 * 60 * 24;
+    return Math.ceil(((freeTrialEnd - today) / ONE_DAY));
+}
+
 export function subscriptionHasFreeTrial({sub} = {}) {
     if (sub?.trial_end_at && !isInThePast(new Date(sub?.trial_end_at))) {
         return true;
