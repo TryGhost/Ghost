@@ -80,7 +80,9 @@ const Koenig = ({
             <Editor
                 data-testid="mobiledoc-editor">
             </Editor>
-            <Toolbar editor={mobiledocInstance} />
+            <Toolbar 
+                editor={mobiledocInstance} 
+            />
         </Container>
     );
 };

@@ -3,6 +3,7 @@ import MarkupButton from './MarkupButton';
 
 export default function Toolbar({
     editor,
+    activeMarkupTags,
     TOOLBAR_MARGIN = 15,
     TICK_ADJUSTMENT = 8
 }) {
@@ -134,10 +135,10 @@ export default function Toolbar({
             style={toolbarPositionStyles} >
             <ul className={`toolbar-temporary`} >
                 <li>
-                    <MarkupButton editor={editor} tag={'strong'}/>
+                    <MarkupButton markupTags={activeMarkupTags} editor={editor} tag={'strong'}/>
                 </li>
                 <li>
-                    <MarkupButton editor={editor} tag={'em'}/>
+                    <MarkupButton markupTags={activeMarkupTags} editor={editor} tag={'em'}/>
                 </li>
             </ul>
         </div>
