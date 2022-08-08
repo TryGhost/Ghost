@@ -457,6 +457,25 @@ export function hasOnlyFreeProduct({site}) {
     return (products.length === 1 && hasFreeProductPrice({site}));
 }
 
+export function subscriptionHasFreeTrial({sub} = {}) {
+    if (sub?.trial_end_at && !isInThePast(new Date(sub?.trial_end_at))) {
+        return true;
+    }
+    return false;
+}
+
+function isInThePast(date) {
+    const today = new Date();
+
+    // 👇️ OPTIONAL!
+    // This line sets the hour of the current date to midnight
+    // so the comparison only returns `true` if the passed in date
+    // is at least yesterday
+    today.setHours(0, 0, 0, 0);
+
+    return date < today;
+}
+
 export function getProductFromPrice({site, priceId}) {
     if (priceId === 'free') {
         return getFreeProduct({site});
