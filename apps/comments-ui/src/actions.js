@@ -24,8 +24,8 @@ async function addComment({state, api, data: comment}) {
     };
 
     return {
-        comments: [commentStructured, ...state.comments]
-        // todo: fix pagination now?
+        comments: [commentStructured, ...state.comments],
+        commentCount: state.commentCount + 1
     };
 }
 
@@ -52,7 +52,8 @@ async function addReply({state, api, data: {reply, parent}}) {
                 };
             }
             return c;
-        })
+        }),
+        commentCount: state.commentCount + 1
     };
 }
 
@@ -84,7 +85,8 @@ async function hideComment({state, adminApi, data: comment}) {
                 ...c,
                 replies
             };
-        })
+        }),
+        commentCount: state.commentCount - 1
     };
 }
 
@@ -116,7 +118,8 @@ async function showComment({state, adminApi, data: comment}) {
                 ...c,
                 replies
             };
-        })
+        }),
+        commentCount: state.commentCount + 1
     };
 }
 
@@ -226,7 +229,8 @@ async function deleteComment({state, api, data: comment}) {
                 ...c,
                 replies
             };
-        })
+        }),
+        commentCount: state.commentCount - 1
     };
 }
 
