@@ -615,5 +615,32 @@ describe('Comments API', function () {
                 })
                 .matchBodySnapshot();
         });
+
+        it('Can delete a comment, and it is redacted from', async function () {
+            const {
+                body: {
+                    comments: [{
+                        id: commentToDeleteId
+                    }]
+                }
+            } = await membersAgent
+                .post(`/api/comments/`)
+                .body({comments: [{
+                    post_id: postId,
+                    html: 'Comment to delete'
+                }]});
+
+            const {
+                body: {
+                    comments: [deletedComment]
+                }
+            } = await membersAgent
+                .put(`/api/comments/${commentToDeleteId}`)
+                .body({comments: [{
+                    status: 'deleted'
+                }]});
+
+            assert(!deletedComment.html);
+        });
     });
 });

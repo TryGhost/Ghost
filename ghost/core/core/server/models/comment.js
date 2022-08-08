@@ -8,7 +8,8 @@ const messages = {
     emptyComment: 'The body of a comment cannot be empty',
     commentNotFound: 'Comment could not be found',
     notYourCommentToEdit: 'You may only edit your own comments',
-    notYourCommentToDestroy: 'You may only delete your own comments'
+    notYourCommentToDestroy: 'You may only delete your own comments',
+    cannotEditDeletedComment: 'You may only edit published comments'
 };
 
 /**
@@ -61,6 +62,12 @@ const Comment = ghostBookshelf.Model.extend({
 
     onSaving() {
         ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
+
+        if (this.hasChanged('html') && this.get('status') !== 'published') {
+            throw new ValidationError({
+                message: tpl(messages.cannotEditDeletedComment)
+            });
+        }
 
         if (this.hasChanged('html')) {
             const sanitizeHtml = require('sanitize-html');

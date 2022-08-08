@@ -10,7 +10,8 @@ const messages = {
     alreadyLiked: 'This comment was liked already',
     replyToReply: 'Can not reply to a reply',
     commentsNotEnabled: 'Comments are not enabled for this site.',
-    cannotCommentOnPost: 'You do not have permission to comment on this post.'
+    cannotCommentOnPost: 'You do not have permission to comment on this post.',
+    cannotEditComment: 'You do not have permission to edit comments'
 };
 
 class CommentsService {
@@ -285,8 +286,7 @@ class CommentsService {
 
         if (existingComment.get('member_id') !== member) {
             throw new errors.NoPermissionError({
-                // todo fix message
-                message: tpl(messages.memberNotFound)
+                message: tpl(messages.cannotEditComment)
             });
         }
 
