@@ -759,6 +759,15 @@
     opacity: 0.35;
 }
 
+.gh-tier-form-tierpreview .after-trial-amount {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: #7f7f7f;
+    margin-top: 12px;
+    line-height: 1;
+}
+
 .gh-tier-setting-title {
     font-size: 1.3rem;
     font-weight: 600;
