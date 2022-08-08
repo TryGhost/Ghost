@@ -241,3 +241,12 @@ svg.gh-date-picker-cal-icon {
     top: 9px;
     font-size: 1.3rem;
 }
+
+.gh-date-picker-cal-icon path,
+.gh-date-picker-cal-icon rect {
+    fill: none;
+    stroke: var(--midgrey);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2px
+}
