@@ -5,7 +5,7 @@ const EditState = ({payload, save}) => {
     const handleCodeChange = (event) => {
         payload.code = event.target.value;
         save(payload);
-    }
+    };
 
     return (
         <>
@@ -15,7 +15,7 @@ const EditState = ({payload, save}) => {
                 onChange={handleCodeChange}
             />
         </>
-    )
+    );
 };
 
 const DisplayState = ({payload}) => {
