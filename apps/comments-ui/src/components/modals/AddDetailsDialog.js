@@ -6,7 +6,7 @@ import AppContext from '../../AppContext';
 const AddNameDialog = (props) => {
     const inputNameRef = useRef(null);
     const inputBioRef = useRef(null);
-    const {dispatchAction, member} = useContext(AppContext);
+    const {dispatchAction, member, accentColor} = useContext(AppContext);
 
     const [name, setName] = useState(member.name ?? '');
     const [bio, setBio] = useState(member.bio ?? '');
@@ -86,6 +86,8 @@ const AddNameDialog = (props) => {
         };
 
         let returnable = [];
+
+        // using URLS over real images for avatars as serving JPG images was not optimal (based on discussion with team)
         let exampleProfiles = [
             {avatar: 'https://randomuser.me/api/portraits/men/32.jpg', name: 'James Fletcher', expertise: 'Full-time parent'},
             {avatar: 'https://randomuser.me/api/portraits/women/30.jpg', name: 'Naomi Schiff', expertise: 'Founder @ Acme Inc'},
@@ -171,7 +173,8 @@ const AddNameDialog = (props) => {
                             maxLength={maxBioChars}
                         />
                         <button
-                            className="transition-opacity duration-200 ease-linear w-full h-[44px] mt-8 px-8 flex items-center justify-center rounded-md text-white font-sans font-semibold text-[15px] bg-[#3204F5] opacity-100 hover:opacity-90"
+                            className={`transition-opacity duration-200 ease-linear w-full h-[44px] mt-8 px-8 flex items-center justify-center rounded-md text-white font-sans font-semibold text-[15px] opacity-100 hover:opacity-90`}
+                            style={{backgroundColor: accentColor ?? '#000000'}}
                             onClick={submit}
                         >
                             Save
