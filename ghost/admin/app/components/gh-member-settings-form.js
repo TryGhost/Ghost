@@ -71,7 +71,7 @@ export default class extends Component {
         let subscriptionData = subscriptions.filter((sub) => {
             return !!sub.price;
         }).map((sub) => {
-            return {
+            const data = {
                 ...sub,
                 startDate: sub.start_date ? moment(sub.start_date).format('D MMM YYYY') : '-',
                 validUntil: sub.current_period_end ? moment(sub.current_period_end).format('D MMM YYYY') : '-',
@@ -83,6 +83,13 @@ export default class extends Component {
                 },
                 isComplimentary: !sub.id
             };
+            if (this.feature.get('freeTrial') && sub.trial_end_at) {
+                const inTrialMode = moment(sub.trial_end_at).isAfter(new Date(), 'day');
+                if (inTrialMode) {
+                    data.trialUntil = moment(sub.trial_end_at).format('D MMM YYYY');
+                }
+            }
+            return data;
         });
         return tiers.map((tier) => {
             let tierSubscriptions = subscriptionData.filter((subscription) => {
