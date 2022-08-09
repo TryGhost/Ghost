@@ -86,6 +86,7 @@
       },
       {
         "groupName": "disable css",
+        "matchFiles": ["ghost/admin/package.json"],
         "packagePatterns": [
             "^postcss",
             "^css"
