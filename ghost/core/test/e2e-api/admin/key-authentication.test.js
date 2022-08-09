@@ -85,16 +85,26 @@ describe('Admin API key authentication', function () {
 
             // NOTE: need to do a full reboot to reinitialize hostSettings
             await localUtils.startGhost();
+            await testUtils.initFixtures('integrations');
             await testUtils.initFixtures('api_keys');
 
-            const response = await request.get(localUtils.API.getApiQuery('posts/'))
+            const firstResponse = await request.get(localUtils.API.getApiQuery('posts/'))
                 .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/admin/')}`)
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(403);
 
-            response.body.errors[0].type.should.equal('HostLimitError');
-            response.body.errors[0].message.should.equal('Custom limit error message');
+            firstResponse.body.errors[0].type.should.equal('HostLimitError');
+            firstResponse.body.errors[0].message.should.equal('Custom limit error message');
+
+            // CASE: Test with a different API key, related to a core integration
+            const secondResponse = await request.get(localUtils.API.getApiQuery('explore/'))
+                .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/admin/', 4)}`)
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200);
+
+            should.exist(secondResponse.body.explore);
         });
     });
 });
