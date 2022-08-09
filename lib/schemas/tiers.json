@@ -42,7 +42,7 @@
           "type": ["number", "null"]
         },
         "trial_days": {
-          "type": "number"
+          "type": ["number", "null"]
         },
         "benefits": {
           "type": ["array", "null"],
