@@ -110,4 +110,20 @@ describe('Tiers API', function () {
 
         assert(updatedTier.visibility === visibility, `The visibility of the Tier should have been updated to ${visibility}`);
     });
+
+    it('Can save with trial_days as null', async function () {
+        const {body: {tiers: [tier]}} = await agent.get('/tiers/?limit=1');
+
+        await agent.put(`/tiers/${tier.id}/`)
+            .body({
+                tiers: [{
+                    trial_days: null
+                }]
+            })
+            .expectStatus(200);
+
+        const {body: {tiers: [updatedTier]}} = await agent.get(`/tiers/${tier.id}/`);
+
+        assert(updatedTier.trial_days === 0, `The trial_days should have been set to 0`);
+    });
 });

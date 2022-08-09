@@ -24,7 +24,7 @@ function convertTierInput(input) {
     };
 
     if (labs.isSet('freeTrial')) {
-        converted.trial_days = input.trial_days;
+        converted.trial_days = input.trial_days || 0;
     }
 
     if (input.monthly_price && input.currency) {

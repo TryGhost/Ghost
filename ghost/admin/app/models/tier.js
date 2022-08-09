@@ -14,6 +14,6 @@ export default Model.extend(ValidationEngine, {
     currency: attr('string'),
     monthlyPrice: attr('number'),
     yearlyPrice: attr('number'),
-    trialDays: attr('number'),
+    trialDays: attr('number', {defaultValue: 0}),
     benefits: attr('tier-benefits')
 });
