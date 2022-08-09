@@ -15,7 +15,7 @@ const CTABox = (props) => {
     const titleText = (props.isFirst ? 'Start the conversation' : 'Join the discussion');
 
     const handleSubscribeClick = (event) => {
-        window.location.href = '#/portal/signup';
+        window.location.href = props.isPaid ? '#/portal/account/plans' : '#/portal/signup';
     };
 
     const handleSignInClick = (event) => {
@@ -23,14 +23,14 @@ const CTABox = (props) => {
     };
 
     return (
-        <section className={`flex flex-col items-center ${props.isFirst ? 'pt-14 pb-16' : 'pt-14 pb-16'} px-8 border-t-2 border-gray-100 dark:border-gray-100/10 border-b-2`}>
-            <h1 className={`mb-2 text-center text-black text-[26px] font-sans tracking-tight dark:text-[rgba(255,255,255,0.85)] ${props.isFirst ? 'font-semibold' : 'font-bold'}`}>
+        <section className={`flex flex-col items-center pt-[40px] pb-[48px] px-8 border-t-2 border-gray-100 dark:border-gray-100/10 border-b-2`}>
+            <h1 className={`mb-[8px] text-center text-black text-[24px] font-sans tracking-tight dark:text-[rgba(255,255,255,0.85)] ${props.isFirst ? 'font-semibold' : 'font-bold'}`}>
                 {titleText}
             </h1>
-            <p className="mb-8 font-sans leading-normal text-[16px] text-neutral-600 dark:text-[rgba(255,255,255,0.85)]">
+            <p className="mb-[28px] px-8 max-w-screen-sm font-sans text-[16px] text-center leading-normal text-neutral-600 dark:text-[rgba(255,255,255,0.85)]">
                 Become a {props.isPaid && 'paid'} member of <span className="font-semibold">{publication}</span> to start commenting.
             </p>
-            <button onClick={handleSubscribeClick} className="mb-2 text-white font-san py-[14px] px-5 rounded inline-block font-medium leading-none hover:opacity-90 transition-all" style={buttonStyle}>
+            <button onClick={handleSubscribeClick} className="mb-[12px] text-white font-san py-[14px] px-5 rounded inline-block font-medium leading-none hover:opacity-90 transition-all" style={buttonStyle}>
                 {props.isPaid ? 'Choose a plan' : 'Subscribe now'}
             </button>
             <p className="text-sm font-sans text-center text-neutral-400 dark:text-[rgba(255,255,255,0.5)]">
