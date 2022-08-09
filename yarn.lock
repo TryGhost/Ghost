@@ -3085,10 +3085,10 @@
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-2.0.0.tgz#f544a148d3ab35801c1f633a7441fd87c2e484bf"
   integrity sha512-XCuKFP5PS55gnMVu3dty8KPatLqUoy/ZYzDzAGCQ8JNFCkLXzmI7vNHCR+XpbZaMWQK/vQubr7PkYq8g470J/A==
 
-"@tryghost/admin-api-schema@4.0.0":
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-4.0.0.tgz#97e528931fab8478d00b6b91e7e3d4a2b4c4c597"
-  integrity sha512-Yo4nV34aZY8M92dVMp+zEI2ZuHyFDcDHHvQ9yY1ZEOKhqkdKw6DxdR2HcAkQi/PSnM99N7CWk5WBKe9Vnm8+jA==
+"@tryghost/admin-api-schema@4.1.1":
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-4.1.1.tgz#9165dce1c40a340fa446b5e9f08ee467f3c0e7f6"
+  integrity sha512-hRze5ZVWJCpcM848s2tz4z3wTMTGjUmDIBfoLzd01AYN9Q5/Ae1ZhqOWbcc+E2hpRXuBjY+bPa29joOTv9sOeg==
   dependencies:
     "@tryghost/errors" "^1.0.0"
     ajv "^6.12.6"
