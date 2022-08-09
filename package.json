@@ -78,22 +78,31 @@
       },
       {
         "groupName": "ember-basic-dropdown addons",
-        "packagePatterns": ["^ember-basic", "^ember-power"]
+        "packagePatterns": [
+          "^ember-basic",
+          "^ember-power"
+        ]
       },
       {
         "groupName": "ember core",
-        "packageNames": ["ember-source", "ember-cli", "ember-data"]
+        "packageNames": [
+          "ember-source",
+          "ember-cli",
+          "ember-data"
+        ]
       },
       {
         "groupName": "disable css",
-        "matchFiles": ["ghost/admin/package.json"],
+        "matchFiles": [
+          "ghost/admin/package.json"
+        ],
         "packagePatterns": [
-            "^postcss",
-            "^css"
+          "^postcss",
+          "^css"
         ],
         "packageNames": [
-            "autoprefixer",
-            "ember-cli-postcss"
+          "autoprefixer",
+          "ember-cli-postcss"
         ],
         "enabled": false
       }
@@ -101,6 +110,7 @@
   },
   "devDependencies": {
     "concurrently": "7.3.0",
+    "eslint-plugin-ghost": "2.15.0",
     "nodemon": "2.0.19"
   }
 }
