@@ -53,8 +53,8 @@ const ReportDialog = (props) => {
 
     return (
         <div className="relative bg-white w-screen sm:w-[500px] h-screen sm:h-auto p-[28px] sm:p-8 rounded-none sm:rounded-xl text-center shadow-modal" onClick={stopPropagation}>
-            <h1 className="font-sans font-bold tracking-tight text-[24px] mb-3 text-black">You sure you want to report?</h1>
-            <p className="font-sans text-[1.45rem] text-neutral-500">You request will be sent to the owner of this site.</p>
+            <h1 className="font-sans font-bold tracking-tight text-[24px] mb-1 text-black">You sure you want to report?</h1>
+            <p className="font-sans text-base text-neutral-500 px-4 leading-9">Your request will be sent to the owner of this site.</p>
             <div className="mt-10">
                 <button
                     className={`transition duration-200 ease-linear w-full h-[44px] px-8 flex items-center justify-center rounded-md text-white font-sans font-semibold text-[15px] ${buttonColor}`}

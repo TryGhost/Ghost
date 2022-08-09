@@ -11,9 +11,6 @@ const AddNameDialog = (props) => {
     const [name, setName] = useState(member.name ?? '');
     const [bio, setBio] = useState(member.bio ?? '');
 
-    const [exampleProfiles, setExampleProfiles] = useState([]);
-    const [exampleExpertise, setExampleExpertise] = useState('Head of Marketing');
-
     const maxBioChars = 50;
     let initialBioChars = maxBioChars;
     if (member.bio) {
@@ -46,49 +43,8 @@ const AddNameDialog = (props) => {
         }
     };
 
-    const generateExampleProfiles = () => {
-        let returnable = [];
-        let dummyData = [
-            {avatar: 'https://images.unsplash.com/photo-1607746882042-944635dfe10e?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80', name: 'Sophie Joan', expertise: 'Freelance Writer'},
-            {avatar: 'https://images.unsplash.com/photo-1569913486515-b74bf7751574?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1289&q=80', name: 'Naomi Schiff', expertise: 'Founder @ Acme Inc'},
-            {avatar: 'https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2667&q=80', name: 'Katrina Klosp', expertise: 'Local Resident'},
-            {avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1361&q=80', name: 'Laura Smith', expertise: 'Craft Maker'},
-            {avatar: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1760&q=80', name: 'Peter Kristy', expertise: 'Design Consultant'},
-            {avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1364&q=80', name: 'Linda Lo', expertise: 'Wedding Photographer'},
-            {avatar: 'https://images.unsplash.com/photo-1527980965255-d3b416303d12?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1760&q=80', name: 'Darren Mckenzie', expertise: 'Senior Engineer'},
-            {avatar: 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1287&q=80', name: 'Jack Tomlin', expertise: 'Mid-level UX Designer'}
-        ];
-
-        // setup fake users
-        for (let i = 0; i < 4; i++) {
-            let dummyIndex = Math.floor(Math.random() * dummyData.length);
-            returnable.push(dummyData[dummyIndex]);
-            dummyData.splice(dummyIndex, 1);
-        }
-
-        return returnable;
-    };
-
-    const generateExampleExpertise = () => {
-        let dummyData = [
-            'Freelance Copywriter',
-            'Head of Marketing',
-            'Junior Developer',
-            'Full-time Parent',
-            'Local Resident',
-            'English Teacher',
-            'Support Officer',
-            'Professional Athlete'
-        ];
-
-        return dummyData[Math.floor(Math.random() * dummyData.length)];
-    };
-
     // using <input autofocus> breaks transitions in browsers. So we need to use a timer
     useEffect(() => {
-        setExampleProfiles(generateExampleProfiles());
-        setExampleExpertise(generateExampleExpertise());
-
         const timer = setTimeout(() => {
             if (props.bioAutofocus) {
                 inputBioRef.current?.focus();
@@ -102,50 +58,59 @@ const AddNameDialog = (props) => {
         };
     }, [inputNameRef, inputBioRef]);
 
-    const renderExampleProfile = (index) => {
-        return (exampleProfiles[index] ? 
-            <Transition
-                appear
-                enter={`transition duration-200 delay-[400ms] ease-out`}
-                enterFrom="opacity-0 translate-y-2"
-                enterTo="opacity-100 translate-y-0"
-                leave="transition duration-200 ease-in"
-                leaveFrom="opacity-100 translate-y-0"
-                leaveTo="opacity-0 translate-y-2"
-            >
-                <div className="flex flex-row justify-start items-center gap-3 my-4 pr-4">
-                    <div className="w-10 h-10 rounded-full border-2 border-white bg-no-repeat bg-cover" style={{backgroundImage: `url(${exampleProfiles[index].avatar})`}} />
-                    <div className="flex flex-col justify-center items-start">
-                        <div className="text-base font-sans font-semibold tracking-tight text-white">
-                            {exampleProfiles[index].name}
-                        </div>
-                        <div className="font-sans text-[14px] tracking-tight text-neutral-400">
-                            {exampleProfiles[index].expertise}
+    const renderExampleProfiles = (index) => {
+        const renderEl = (profile) => {
+            return (
+                <Transition
+                    appear
+                    enter={`transition duration-200 delay-[400ms] ease-out`}
+                    enterFrom="opacity-0 translate-y-2"
+                    enterTo="opacity-100 translate-y-0"
+                    leave="transition duration-200 ease-in"
+                    leaveFrom="opacity-100 translate-y-0"
+                    leaveTo="opacity-0 translate-y-2"
+                >
+                    <div className="flex flex-row justify-start items-center gap-3 my-4 pr-4">
+                        <div className="w-10 h-10 rounded-full border-2 border-white bg-no-repeat bg-cover" style={{backgroundImage: `url(${profile.avatar})`}} />
+                        <div className="flex flex-col justify-center items-start">
+                            <div className="text-base font-sans font-semibold tracking-tight text-white">
+                                {profile.name}
+                            </div>
+                            <div className="font-sans text-[14px] tracking-tight text-neutral-400">
+                                {profile.expertise}
+                            </div>
                         </div>
                     </div>
-                </div>
-            </Transition> : null
-        );
+                </Transition> 
+            );
+        };
+
+        let returnable = [];
+        let exampleProfiles = [
+            {avatar: 'https://randomuser.me/api/portraits/men/32.jpg', name: 'James Fletcher', expertise: 'Full-time parent'},
+            {avatar: 'https://randomuser.me/api/portraits/women/30.jpg', name: 'Naomi Schiff', expertise: 'Founder @ Acme Inc'},
+            {avatar: 'https://randomuser.me/api/portraits/men/4.jpg', name: 'Franz Tost', expertise: 'Neurosurgeon'},
+            {avatar: 'https://randomuser.me/api/portraits/women/51.jpg', name: 'Katrina Klosp', expertise: 'Local resident'}
+        ];
+
+        for (let i = 0; i < exampleProfiles.length; i++) {
+            returnable.push(renderEl(exampleProfiles[i]));
+        }
+
+        return returnable;
     };
 
     return (
         <div className="overflow-hidden relative bg-white w-screen sm:w-[720px] h-screen sm:h-auto p-[28px] sm:p-0 rounded-none sm:rounded-xl text-center shadow-modal" onClick={stopPropagation}>
             <div className="flex">
-                <div className="flex flex-col justify-center items-center w-[40%] bg-[#1C1C1C]">
+                <div className="hidden sm:flex sm:flex-col sm:justify-center sm:items-center sm:w-[40%] bg-[#1C1C1C]">
                     <div className="flex flex-col">
-                        {exampleProfiles.length > 0 && (
-                            <>
-                                <span>{renderExampleProfile(0)}</span>
-                                <span>{renderExampleProfile(1)}</span>
-                                <span>{renderExampleProfile(2)}</span>
-                                <span>{renderExampleProfile(3)}</span>
-                            </>
-                        )}
+                        {renderExampleProfiles()}
                     </div>
                 </div>
-                <div className="w-[60%] p-8">
-                    <h1 className="font-sans font-bold tracking-tight text-[24px] mb-1 text-black text-left">Complete your profile.</h1>
-                    <p className="font-sans text-base text-neutral-500 pr-4 sm:pr-10 leading-9 text-left">Add context to your comment, share your name and expertise to foster a healthy discussion.</p>
+                <div className="w-[100%] sm:w-[60%] p-0 sm:p-8">
+                    <h1 className="font-sans font-bold tracking-tight text-[24px] mb-1 text-black text-center sm:text-left">Complete your profile<span className="hidden sm:inline">.</span></h1>
+                    <p className="font-sans text-base text-neutral-500 pr-0 sm:pr-10 leading-9 text-center sm:text-left">Add context to your comment, share your name and expertise to foster a healthy discussion.</p>
                     <section className="mt-8 text-left">
                         <div className="flex flex-row mb-2 justify-between">
                             <label htmlFor="comments-name" className="font-sans font-medium text-sm">Name</label>
@@ -191,7 +156,7 @@ const AddNameDialog = (props) => {
                             name="bio"
                             ref={inputBioRef}
                             value={bio}
-                            placeholder={exampleExpertise}
+                            placeholder="Head of Marketing at Acme, Inc"
                             onChange={(e) => {
                                 let bioText = e.target.value;
                                 setBioCharsLeft(maxBioChars - bioText.length);
