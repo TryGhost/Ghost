@@ -27,8 +27,8 @@ class PaymentsService {
      * @returns {Promise<{id: string}>}
      */
     async getCouponForOffer(offerId) {
-        const row = await this.OfferModel.where({id: offerId}).query().select('stripe_coupon_id').first();
-        if (!row) {
+        const row = await this.OfferModel.where({id: offerId}).query().select('stripe_coupon_id', 'discount_type').first();
+        if (!row || row.discount_type === 'trial') {
             return null;
         }
         if (!row.stripe_coupon_id) {
