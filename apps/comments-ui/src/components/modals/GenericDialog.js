@@ -14,10 +14,6 @@ const GenericDialog = (props) => {
         }
     };
 
-    const stopPropagation = (event) => {
-        event.stopPropagation();
-    };
-
     useEffect(() => {
         const listener = (event) => {
             if (event.key === 'Escape') {
@@ -52,9 +48,7 @@ const GenericDialog = (props) => {
                                 leaveFrom="translate-y-0 opacity-100"
                                 leaveTo="translate-y-4 opacity-0"
                             >
-                                <div className="relative bg-white w-screen sm:w-[500px] h-screen sm:h-auto p-[28px] sm:p-8 rounded-none sm:rounded-xl text-center shadow-modal" onClick={stopPropagation}>
-                                    {props.children}
-                                </div>
+                                {props.children}
                             </Transition.Child>
                         </div>
                     </Transition.Child>

@@ -27,6 +27,10 @@ const ReportDialog = (props) => {
 
     const {dispatchAction} = useContext(AppContext);
 
+    const stopPropagation = (event) => {
+        event.stopPropagation();
+    };
+
     const close = (event) => {
         dispatchAction('closePopup');
     };
@@ -48,7 +52,7 @@ const ReportDialog = (props) => {
     };
 
     return (
-        <>
+        <div className="relative bg-white w-screen sm:w-[500px] h-screen sm:h-auto p-[28px] sm:p-8 rounded-none sm:rounded-xl text-center shadow-modal" onClick={stopPropagation}>
             <h1 className="font-sans font-bold tracking-tight text-[24px] mb-3 text-black">You sure you want to report?</h1>
             <p className="font-sans text-[1.45rem] text-neutral-500">You request will be sent to the owner of this site.</p>
             <div className="mt-10">
@@ -60,7 +64,7 @@ const ReportDialog = (props) => {
                 </button>
                 <p className="font-sans font-medium text-[1.45rem] text-neutral-500 mt-4 -mb-1">No, <button className="font-sans underline" onClick={close}>I've changed my mind</button></p>
             </div>
-        </>
+        </div>
     );
 };
 
