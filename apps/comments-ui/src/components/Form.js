@@ -423,7 +423,7 @@ const Form = (props) => {
                                             handleShowDialog(event, {
                                                 bioAutofocus: true
                                             });
-                                        }}>{memberBio ? memberBio : 'Add your bio'}
+                                        }}>{memberBio ? memberBio : 'Add your expertise'}
                                         {memberBio && <EditIcon className="transition-all duration-100 ease-out opacity-0 -translate-x-[6px] group-hover:opacity-100 group-hover:translate-x-0 w-[12px] h-[12px] stroke-neutral-500 ml-1" />}
                                     </button>
                                 </div>
