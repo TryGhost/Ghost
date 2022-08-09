@@ -13,6 +13,12 @@ export default class WhatsNewController extends Controller {
         return date.getFullYear();
     }
 
+    get linkToGitHubReleases() {
+        // Don't link to GitHub Releases if the version contains the
+        // pre-release identifier
+        return !this.config.get('version').includes('-pre.');
+    }
+
     get showSystemInfo() {
         const isPro = !!this.config.get('hostSettings')?.siteId;
 

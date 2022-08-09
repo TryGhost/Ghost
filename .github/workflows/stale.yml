@@ -22,6 +22,7 @@ jobs:
           exempt-issue-labels: 'feature,pinned'
           exempt-pr-labels: 'feature,pinned'
           days-before-stale: 120
+          days-before-pr-stale: -1
           stale-issue-label: 'stale'
           stale-pr-label: 'stale'
           close-issue-reason: 'not_planned'
