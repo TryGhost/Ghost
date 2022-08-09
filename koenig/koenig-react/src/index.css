@@ -583,18 +583,4 @@
     ::selection {
         background: #e6e9eb;
     }
-
-    /* Toolbar (to be removed upon implementation of custom toolbar) */
-    .toolbar-temporary li,
-    .toolbar-temporary li:first-child {
-        display: inline;
-        margin: 0;
-        padding: 0;
-    }
-
-    .toolbar-temporary li select {
-        padding: .2rem .6rem;
-        background: rgba(255, 255, 255, .15);
-        border-radius: 3px;
-    }
 }

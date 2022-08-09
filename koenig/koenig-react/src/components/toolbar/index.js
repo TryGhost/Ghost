@@ -126,12 +126,8 @@ export default function Toolbar({
             className='absolute w-40'
             style={toolbarPositionStyles} >
             <ul className='toolbar-temporary m-0 flex items-center justify-evenly rounded bg-black py-1 px-0 font-sans text-md font-normal text-white' >
-                <li>
-                    <MarkupButton markupTags={activeMarkupTags?.isStrong} editor={editor} tag={'strong'}/>
-                </li>
-                <li>
-                    <MarkupButton markupTags={activeMarkupTags?.isEm} editor={editor} tag={'em'}/>
-                </li>
+                <MarkupButton markupTags={activeMarkupTags?.isStrong} editor={editor} tag={'strong'}/>
+                <MarkupButton markupTags={activeMarkupTags?.isEm} editor={editor} tag={'em'}/>
             </ul>
         </div>
     );
