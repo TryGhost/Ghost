@@ -41,6 +41,48 @@ describe('Offer', function () {
             );
         });
 
+        it('Creates a valid instance of a trial Offer', async function () {
+            const offer = await Offer.create({
+                name: 'My Trial Offer',
+                code: 'offer-code-trial',
+                display_title: 'My Offer Title',
+                display_description: 'My Offer Description',
+                cadence: 'month',
+                type: 'trial',
+                amount: 10,
+                duration: 'trial',
+                currency: 'USD',
+                tier: {
+                    id: ObjectID()
+                }
+            }, mockUniqueChecker);
+            should.ok(
+                offer instanceof Offer,
+                'Offer.create should return an instance of Offer'
+            );
+        });
+
+        it('Throws an error if the duration for trial offer is not right', async function () {
+            await Offer.create({
+                name: 'My Trial Offer',
+                code: 'trial-test',
+                display_title: 'My Offer Title',
+                display_description: 'My Offer Description',
+                cadence: 'month',
+                type: 'trial',
+                amount: 10,
+                duration: 'forever',
+                currency: 'USD',
+                tier: {
+                    id: ObjectID()
+                }
+            }, mockUniqueChecker).then(() => {
+                should.fail('Expected an error');
+            }, (err) => {
+                should.ok(err);
+            });
+        });
+
         it('Throws an error if the code is not unique', async function () {
             await Offer.create({
                 name: 'My Offer',
@@ -139,6 +181,27 @@ describe('Offer', function () {
                 type: 'percent',
                 amount: 20,
                 duration: 'once',
+                currency: 'USD',
+                tier: {
+                    id: ObjectID()
+                }
+            };
+
+            const offer = await Offer.create(data, mockUniqueChecker);
+
+            should.equal(offer.currency, null);
+        });
+
+        it('Has a currency of null if the type is trial', async function () {
+            const data = {
+                name: 'My Trial Offer',
+                code: 'offer-code-trial',
+                display_title: 'My Offer Title',
+                display_description: 'My Offer Description',
+                cadence: 'year',
+                type: 'trial',
+                amount: 20,
+                duration: 'trial',
                 currency: 'USD',
                 tier: {
                     id: ObjectID()
