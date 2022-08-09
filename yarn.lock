@@ -3085,10 +3085,10 @@
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-2.0.0.tgz#f544a148d3ab35801c1f633a7441fd87c2e484bf"
   integrity sha512-XCuKFP5PS55gnMVu3dty8KPatLqUoy/ZYzDzAGCQ8JNFCkLXzmI7vNHCR+XpbZaMWQK/vQubr7PkYq8g470J/A==
 
-"@tryghost/admin-api-schema@4.0.0":
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-4.0.0.tgz#97e528931fab8478d00b6b91e7e3d4a2b4c4c597"
-  integrity sha512-Yo4nV34aZY8M92dVMp+zEI2ZuHyFDcDHHvQ9yY1ZEOKhqkdKw6DxdR2HcAkQi/PSnM99N7CWk5WBKe9Vnm8+jA==
+"@tryghost/admin-api-schema@4.1.1":
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/admin-api-schema/-/admin-api-schema-4.1.1.tgz#9165dce1c40a340fa446b5e9f08ee467f3c0e7f6"
+  integrity sha512-hRze5ZVWJCpcM848s2tz4z3wTMTGjUmDIBfoLzd01AYN9Q5/Ae1ZhqOWbcc+E2hpRXuBjY+bPa29joOTv9sOeg==
   dependencies:
     "@tryghost/errors" "^1.0.0"
     ajv "^6.12.6"
@@ -10285,7 +10285,6 @@ ember-power-calendar@^0.16.3:
 
 ember-power-datepicker@cibernox/ember-power-datepicker:
   version "0.8.1"
-  uid da580474a2c449b715444934ddb626b7c07f46a7
   resolved "https://codeload.github.com/cibernox/ember-power-datepicker/tar.gz/da580474a2c449b715444934ddb626b7c07f46a7"
   dependencies:
     ember-basic-dropdown "^3.0.11"
@@ -12620,7 +12619,6 @@ globrex@^0.1.2:
 
 "google-caja-bower@https://github.com/acburdine/google-caja-bower#ghost":
   version "6011.0.0"
-  uid "275cb75249f038492094a499756a73719ae071fd"
   resolved "https://github.com/acburdine/google-caja-bower#275cb75249f038492094a499756a73719ae071fd"
 
 got@9.6.0:
@@ -14781,7 +14779,6 @@ keygrip@~1.1.0:
 
 "keymaster@https://github.com/madrobby/keymaster.git":
   version "1.6.3"
-  uid f8f43ddafad663b505dc0908e72853bcf8daea49
   resolved "https://github.com/madrobby/keymaster.git#f8f43ddafad663b505dc0908e72853bcf8daea49"
 
 keypair@1.0.4:
@@ -16549,7 +16546,6 @@ mocha@^2.5.3:
 
 mock-knex@TryGhost/mock-knex#8ecb8c227bf463c991c3d820d33f59efc3ab9682:
   version "0.4.9"
-  uid "8ecb8c227bf463c991c3d820d33f59efc3ab9682"
   resolved "https://codeload.github.com/TryGhost/mock-knex/tar.gz/8ecb8c227bf463c991c3d820d33f59efc3ab9682"
   dependencies:
     bluebird "^3.4.1"
@@ -20498,7 +20494,6 @@ simple-update-notifier@^1.0.7:
 
 "simplemde@https://github.com/kevinansfield/simplemde-markdown-editor.git#ghost":
   version "1.11.2"
-  uid "4c39702de7d97f9b32d5c101f39237b6dab7c3ee"
   resolved "https://github.com/kevinansfield/simplemde-markdown-editor.git#4c39702de7d97f9b32d5c101f39237b6dab7c3ee"
 
 sinon@14.0.0:
