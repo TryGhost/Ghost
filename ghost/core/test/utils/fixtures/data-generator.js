@@ -651,6 +651,18 @@ DataGenerator.Content = {
             name: 'Test Internal Integration',
             slug: 'test-internal-integration',
             type: 'internal'
+        },
+        {
+            id: ObjectId().toHexString(),
+            name: 'Test Builtin Integration',
+            slug: 'test-builtin-integration',
+            type: 'builtin'
+        },
+        {
+            id: ObjectId().toHexString(),
+            name: 'Test Core Integration',
+            slug: 'test-core-integration',
+            type: 'core'
         }
     ],
 
@@ -670,7 +682,20 @@ DataGenerator.Content = {
         {
             id: ObjectId().toHexString(),
             type: 'admin',
+            secret: _.repeat('b', 64),
             integration_id: undefined // "internal"
+        },
+        {
+            id: ObjectId().toHexString(),
+            type: 'admin',
+            secret: _.repeat('d', 26),
+            integration_id: undefined // "builtin"
+        },
+        {
+            id: ObjectId().toHexString(),
+            type: 'admin',
+            secret: _.repeat('e', 64),
+            integration_id: undefined // "core"
         }
     ],
 
@@ -800,6 +825,8 @@ DataGenerator.Content = {
 // set up belongs_to relationships
 DataGenerator.Content.api_keys[0].integration_id = DataGenerator.Content.integrations[0].id;
 DataGenerator.Content.api_keys[1].integration_id = DataGenerator.Content.integrations[0].id;
+DataGenerator.Content.api_keys[3].integration_id = DataGenerator.Content.integrations[2].id;
+DataGenerator.Content.api_keys[4].integration_id = DataGenerator.Content.integrations[3].id;
 DataGenerator.Content.webhooks[0].integration_id = DataGenerator.Content.integrations[0].id;
 DataGenerator.Content.webhooks[1].integration_id = DataGenerator.Content.integrations[0].id;
 DataGenerator.Content.emails[0].post_id = DataGenerator.Content.posts[0].id;
@@ -1464,13 +1491,17 @@ DataGenerator.forKnex = (function () {
 
     const integrations = [
         createBasic(DataGenerator.Content.integrations[0]),
-        createBasic(DataGenerator.Content.integrations[1])
+        createBasic(DataGenerator.Content.integrations[1]),
+        createBasic(DataGenerator.Content.integrations[2]),
+        createBasic(DataGenerator.Content.integrations[3])
     ];
 
     const api_keys = [
         createBasic(DataGenerator.Content.api_keys[0]),
         createBasic(DataGenerator.Content.api_keys[1]),
-        createBasic(DataGenerator.Content.api_keys[2])
+        createBasic(DataGenerator.Content.api_keys[2]),
+        createBasic(DataGenerator.Content.api_keys[3]),
+        createBasic(DataGenerator.Content.api_keys[4])
     ];
 
     const emails = [
