@@ -385,7 +385,7 @@ module.exports = class StripeAPI {
          * `trial_from_plan` is deprecated.
          * Replaces it in favor of custom trial period days stored in Ghost
          */
-        if (!isNaN(options.trialDays)) {
+        if (typeof options.trialDays === 'number' && options.trialDays > 0) {
             delete subscriptionData.trial_from_plan;
             subscriptionData.trial_period_days = options.trialDays;
         }
