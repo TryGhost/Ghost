@@ -52,7 +52,9 @@ const Comment = ghostBookshelf.Model.extend({
     },
 
     replies() {
-        return this.hasMany('Comment', 'parent_id');
+        return this.hasMany('Comment', 'parent_id', 'id')
+            .query('orderBy', 'id', 'ASC')
+            .query('limit', 3);
     },
 
     emitChange: function emitChange(event, options) {
@@ -111,7 +113,6 @@ const Comment = ghostBookshelf.Model.extend({
 
         return 'parent_id:null';
     }
-
 }, {
     destroy: function destroy(unfilteredOptions) {
         let options = this.filterOptions(unfilteredOptions, 'destroy', {extraAllowedProperties: ['id']});
@@ -181,9 +182,14 @@ const Comment = ghostBookshelf.Model.extend({
      */
     defaultRelations: function defaultRelations(methodName, options) {
         // @todo: the default relations are not working for 'add' when we add it below
-        if (['findAll', 'findPage', 'edit', 'findOne'].indexOf(methodName) !== -1) {
+        if (['findAll', 'findPage', 'edit', 'findOne', 'destroy'].indexOf(methodName) !== -1) {
             if (!options.withRelated || options.withRelated.length === 0) {
-                options.withRelated = ['member', 'likes', 'replies', 'replies.member', 'replies.likes'];
+                options.withRelated = [
+                    // Relations
+                    'member', 'count.replies', 'count.likes', 'count.liked',
+                    // Replies (limited to 3)
+                    'replies', 'replies.member' , 'replies.count.likes', 'replies.count.liked'
+                ];
             }
         }
 

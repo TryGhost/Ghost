@@ -4,6 +4,9 @@ module.exports = {
         node: true,
         mocha: true
     },
+    parserOptions: {
+        ecmaVersion: 2020
+    },
     plugins: [
         'ghost'
     ],

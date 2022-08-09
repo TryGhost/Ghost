@@ -21,21 +21,33 @@ const commentMatcher = {
         id: anyObjectId,
         uuid: anyUuid
     },
-    likes_count: anyNumber,
+    count: {
+        likes: anyNumber
+    },
     liked: anyBoolean
 };
 
-const commentMatcherWithReply = {
-    id: anyObjectId,
-    created_at: anyISODateTime,
-    member: {
+/**
+ * @param {Object} [options] 
+ * @param {number} [options.replies] 
+ * @returns 
+ */
+function commentMatcherWithReplies(options = {replies: 0}) {
+    return {
         id: anyObjectId,
-        uuid: anyUuid
-    },
-    likes_count: anyNumber,
-    liked: anyBoolean,
-    replies: [commentMatcher]
-};
+        created_at: anyISODateTime,
+        member: {
+            id: anyObjectId,
+            uuid: anyUuid
+        },
+        replies: new Array(options?.replies ?? 0).fill(commentMatcher),
+        count: {
+            likes: anyNumber,
+            replies: anyNumber
+        },
+        liked: anyBoolean
+    };
+}
 
 async function sleep(ms) {
     return new Promise((resolve) => {
@@ -89,7 +101,7 @@ describe('Comments API', function () {
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
-                    comments: [commentMatcherWithReply]
+                    comments: [commentMatcherWithReplies({replies: 1})]
                 });
         });
 
@@ -206,7 +218,7 @@ describe('Comments API', function () {
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
-                    comments: [commentMatcherWithReply, commentMatcher]
+                    comments: [commentMatcherWithReplies({replies: 1}), commentMatcher]
                 });
         });
 
@@ -292,6 +304,57 @@ describe('Comments API', function () {
             should.notEqual(member.get('last_commented_at').getTime(), date.getTime(), 'Should update `last_commented_at` property after posting a comment.');
         });
 
+        it('Limits returned replies to 3', async function () {
+            const parentId = fixtureManager.get('comments', 0).id;
+
+            // Check initial status: two replies before test
+            await membersAgent
+                .get(`/api/comments/${parentId}/`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    comments: [commentMatcherWithReplies({replies: 2})]
+                })
+                .expect(({body}) => {
+                    body.comments[0].count.replies.should.eql(2);
+                });
+
+            // Add some replies
+            for (let index = 0; index < 3; index++) {
+                await membersAgent
+                    .post(`/api/comments/`)
+                    .body({comments: [{
+                        post_id: postId,
+                        parent_id: parentId,
+                        html: 'This is a reply ' + index
+                    }]})
+                    .expectStatus(201)
+                    .matchHeaderSnapshot({
+                        etag: anyEtag,
+                        location: anyLocationFor('comments')
+                    })
+                    .matchBodySnapshot({
+                        comments: [commentMatcherNoMember]
+                    });
+            }
+            
+            // Check if we have count.replies = 4, and replies.length == 3
+            await membersAgent
+                .get(`/api/comments/${parentId}/`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    comments: [commentMatcherWithReplies({replies: 3})]
+                })
+                .expect(({body}) => {
+                    body.comments[0].count.replies.should.eql(5);
+                });
+        });
+
         it('Can like a comment', async function () {
             // Check not liked
             await membersAgent
@@ -301,10 +364,11 @@ describe('Comments API', function () {
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
-                    comments: new Array(1).fill(commentMatcherWithReply)
+                    comments: new Array(1).fill(commentMatcherWithReplies({replies: 1}))
                 })
                 .expect(({body}) => {
                     body.comments[0].liked.should.eql(false);
+                    body.comments[0].count.likes.should.eql(0);
                 });
 
             // Create a temporary comment
@@ -324,10 +388,11 @@ describe('Comments API', function () {
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
-                    comments: new Array(1).fill(commentMatcherWithReply)
+                    comments: new Array(1).fill(commentMatcherWithReplies({replies: 1}))
                 })
                 .expect(({body}) => {
                     body.comments[0].liked.should.eql(true);
+                    body.comments[0].count.likes.should.eql(1);
                 });
         });
 
@@ -364,10 +429,11 @@ describe('Comments API', function () {
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
-                    comments: new Array(1).fill(commentMatcherWithReply)
+                    comments: new Array(1).fill(commentMatcherWithReplies({replies: 1}))
                 })
                 .expect(({body}) => {
                     body.comments[0].liked.should.eql(false);
+                    body.comments[0].count.likes.should.eql(0);
                 });
         });
 
@@ -428,7 +494,7 @@ describe('Comments API', function () {
                 })
                 .matchBodySnapshot({
                     comments: [{
-                        ...commentMatcherWithReply,
+                        ...commentMatcherWithReplies({replies: 1}),
                         edited_at: anyISODateTime
                     }]
                 });
@@ -490,7 +556,7 @@ describe('Comments API', function () {
                 })
                 .matchBodySnapshot({
                     comments: [{
-                        ...commentMatcherWithReply,
+                        ...commentMatcherWithReplies({replies: 1}),
                         edited_at: anyISODateTime
                     }]
                 });

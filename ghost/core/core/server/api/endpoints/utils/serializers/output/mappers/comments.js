@@ -25,6 +25,11 @@ const postFields = [
     'url'
 ];
 
+const countFields = [
+    'replies',
+    'likes'
+];
+
 const commentMapper = (model, frame) => {
     const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
 
@@ -34,12 +39,6 @@ const commentMapper = (model, frame) => {
         response.member = _.pick(jsonModel.member, memberFields);
     } else {
         response.member = null;
-    }
-
-    if (jsonModel.likes) {
-        response.likes_count = jsonModel.likes.length;
-    } else {
-        response.likes_count = 0;
     }
 
     if (jsonModel.replies) {
@@ -56,11 +55,12 @@ const commentMapper = (model, frame) => {
         response.post = _.pick(jsonModel.post, postFields);
     }
 
-    // todo
-    response.liked = false;
-    if (jsonModel.likes && frame.original.context.member && frame.original.context.member.id) {
-        const id = frame.original.context.member.id;
-        response.liked = !!jsonModel.likes.find(l => l.member_id === id);
+    if (jsonModel.count && jsonModel.count.liked !== undefined) {
+        response.liked = jsonModel.count.liked > 0;
+    }
+
+    if (jsonModel.count) {
+        response.count = _.pick(jsonModel.count, countFields);
     }
 
     if (utils.isMembersAPI(frame)) {
@@ -68,7 +68,7 @@ const commentMapper = (model, frame) => {
             response.html = null;
         }
     }
-
+    
     return response;
 };
 
