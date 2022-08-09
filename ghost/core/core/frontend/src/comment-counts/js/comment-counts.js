@@ -42,7 +42,18 @@
                         text = count;
                     }
                 }
-                e.insertAdjacentText('afterend', text);
+                if (text) {
+                    if (e.dataset.ghostCommentCountAutowrap !== 'false') {
+                        const el = document.createElement(e.dataset.ghostCommentCountTag);
+                        if (e.dataset.ghostCommentCountClassName) {
+                            el.classList.add(e.dataset.ghostCommentCountClassName);
+                        }
+                        el.textContent = text;
+                        e.insertAdjacentElement('afterend', el);
+                    } else {
+                        e.insertAdjacentText('afterend', text);
+                    }
+                }
                 e.remove();
             });
         }

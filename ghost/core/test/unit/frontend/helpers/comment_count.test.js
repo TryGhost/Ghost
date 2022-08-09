@@ -41,8 +41,8 @@ describe('{{comment_count}} helper', function () {
         configUtils.restore();
     });
 
-    it('returns a script with the post id', async function () {
-        const templateString = `{{comment_count empty="No comments" singular="comment" plural="comments"}}`;
+    it('returns a script with the post id when autowrap is disabled', async function () {
+        const templateString = `{{comment_count empty="No comments" singular="comment" plural="comments" autowrap="false"}}`;
 
         shouldCompileToExpected(templateString, {
             id: 'post-id'
@@ -52,6 +52,28 @@ describe('{{comment_count}} helper', function () {
                 data-ghost-comment-count-empty="No comments"
                 data-ghost-comment-count-singular="comment"
                 data-ghost-comment-count-plural="comments"
+                data-ghost-comment-count-tag="script"
+                data-ghost-comment-count-class-name=""
+                data-ghost-comment-count-autowrap="false"
+            >
+            </script>
+        `);
+    });
+
+    it('applies all the hash params as data attributes', function () {
+        const templateString = `{{comment_count empty="No comments" singular="comment" plural="comments" autowrap="div" class="custom"}}`;
+
+        shouldCompileToExpected(templateString, {
+            id: 'post-id'
+        }, html`
+            <script
+                data-ghost-comment-count="post-id"
+                data-ghost-comment-count-empty="No comments"
+                data-ghost-comment-count-singular="comment"
+                data-ghost-comment-count-plural="comments"
+                data-ghost-comment-count-tag="div"
+                data-ghost-comment-count-class-name="custom"
+                data-ghost-comment-count-autowrap="true"
             >
             </script>
         `);
@@ -68,6 +90,9 @@ describe('{{comment_count}} helper', function () {
                 data-ghost-comment-count-empty=""
                 data-ghost-comment-count-singular="comment"
                 data-ghost-comment-count-plural="comments"
+                data-ghost-comment-count-tag="span"
+                data-ghost-comment-count-class-name=""
+                data-ghost-comment-count-autowrap="true"
             >
             </script>
         `);
