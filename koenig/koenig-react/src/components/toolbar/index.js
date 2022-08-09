@@ -123,9 +123,9 @@ export default function Toolbar({
 
     return (
         <div ref={toolbarRef}
-            className={`absolute w-40`}
+            className='absolute w-40'
             style={toolbarPositionStyles} >
-            <ul className={`toolbar-temporary`} >
+            <ul className='toolbar-temporary m-0 flex items-center justify-evenly rounded bg-black py-1 px-0 font-sans text-md font-normal text-white' >
                 <li>
                     <MarkupButton markupTags={activeMarkupTags?.isStrong} editor={editor} tag={'strong'}/>
                 </li>

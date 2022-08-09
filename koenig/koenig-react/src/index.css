@@ -13,7 +13,7 @@
 /* -------------------------------------------------------------------- */
 
 @font-face {
-    font-family: "Inter";
+    font-family: "Inter", sans-serif;
     src: url("fonts/Inter.ttf") format("truetype-variations");
     font-weight: 100 900;
 }
@@ -539,10 +539,6 @@
         margin: 2.8rem 0 0;
     }
 
-    /* Other elements */
-    hr {
-        margin: 1.6rem 0;
-    }
 
     /* Mobiledoc-kit base styles
     /* NOTE: adapted from https://github.com/bustle/mobiledoc-kit/blob/master/src/css/mobiledoc-kit.css
@@ -589,20 +585,6 @@
     }
 
     /* Toolbar (to be removed upon implementation of custom toolbar) */
-    .toolbar-temporary {
-        display: flex;
-        justify-content: space-evenly;
-        align-items: center;
-        margin: 0 0 4rem;
-        padding: .2rem 0;
-        background: #15171A;
-        color:#fff;
-        font-family: "Inter", -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
-        font-size: 1.6rem;
-        font-weight: 400;
-        border-radius: 3px;
-    }
-
     .toolbar-temporary li,
     .toolbar-temporary li:first-child {
         display: inline;

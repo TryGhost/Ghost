@@ -4,7 +4,7 @@ import Card from '../components/Card';
 const HrCardComponent = ({...props}) => {
     return (
         <Card {...props}>
-            <hr />
+            <hr className='my-4 mx-0 border-grey-light' />
         </Card>
     );
 };

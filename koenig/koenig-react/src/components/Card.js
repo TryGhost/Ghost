@@ -8,12 +8,12 @@ const CardComponent = ({children, isSelected, isEditing, koenigOptions, selectCa
     const classes = [
         'relative',
         'caret-gray-600',
-        'hover:shadow-green-500',
+        'hover:shadow-green',
         'hover:shadow-[0_0_0_1px]'
     ];
 
     if (isSelected) {
-        classes.push('shadow-green-500 shadow-[0_0_0_2px]');
+        classes.push('shadow-green shadow-[0_0_0_2px]');
     }
 
     const handleMouseDown = (event) => {

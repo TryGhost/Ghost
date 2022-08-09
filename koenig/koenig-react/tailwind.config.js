@@ -7,6 +7,28 @@ module.exports = {
         './src/**/*.{js,jsx,ts,tsx}'
     ],
     theme: {
+        colors: {
+            transparent: 'transparent',
+            current: 'currentColor',
+            white: '#ffffff',
+            black: '#15171A',
+            green: '#30cf43',
+            blue: '#14b8ff',
+            purple: '#8e42ff',
+            pink: '#fb2d8d',
+            red: '#f50b23',
+            yellow: '#ffb41f',
+            lime: '#B5FF18',
+
+            grey: {
+                DEFAULT: '7C8B9A',
+                white: '#EBEEF0',
+                light: '#CED4D9',
+                midlight: '#ABB4BE',
+                middark: '#626D79',
+                dark: '#394047'
+            }
+        },
         extend: {
             spacing: {
                 px: '1px',
