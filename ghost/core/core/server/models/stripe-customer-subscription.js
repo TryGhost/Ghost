@@ -1,5 +1,6 @@
 const ghostBookshelf = require('./base');
 const _ = require('lodash');
+const labs = require('../../shared/labs');
 
 const StripeCustomerSubscription = ghostBookshelf.Model.extend({
     tableName: 'members_stripe_customers_subscriptions',
@@ -41,6 +42,11 @@ const StripeCustomerSubscription = ghostBookshelf.Model.extend({
             cancellation_reason: defaultSerializedObject.cancellation_reason,
             current_period_end: defaultSerializedObject.current_period_end
         };
+
+        if (labs.isSet('freeTrial')) {
+            serialized.trial_start_at = defaultSerializedObject.trial_start_at;
+            serialized.trial_end_at = defaultSerializedObject.trial_end_at;
+        }
 
         if (!_.isEmpty(defaultSerializedObject.stripePrice)) {
             serialized.price = {
