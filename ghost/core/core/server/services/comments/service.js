@@ -115,7 +115,18 @@ class CommentsService {
      */
     async getComments(options) {
         this.checkEnabled();
-        const page = await this.models.Comment.findPage(options);
+        const page = await this.models.Comment.findPage({...options, parentId: null});
+
+        return page;
+    }
+
+    /**
+     * @param {string} id - The ID of the Comment to get replies from
+     * @param {any} options
+     */
+    async getReplies(id, options) {
+        this.checkEnabled();
+        const page = await this.models.Comment.findPage({...options, parentId: id});
 
         return page;
     }

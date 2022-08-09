@@ -304,6 +304,7 @@ describe('Comments API', function () {
             should.notEqual(member.get('last_commented_at').getTime(), date.getTime(), 'Should update `last_commented_at` property after posting a comment.');
         });
 
+        let replyId;
         it('Limits returned replies to 3', async function () {
             const parentId = fixtureManager.get('comments', 0).id;
 
@@ -323,7 +324,7 @@ describe('Comments API', function () {
 
             // Add some replies
             for (let index = 0; index < 3; index++) {
-                await membersAgent
+                const {body: reply} = await membersAgent
                     .post(`/api/comments/`)
                     .body({comments: [{
                         post_id: postId,
@@ -338,6 +339,9 @@ describe('Comments API', function () {
                     .matchBodySnapshot({
                         comments: [commentMatcherNoMember]
                     });
+                if (index === 0) {
+                    replyId = reply.comments[0].id;
+                }
             }
             
             // Check if we have count.replies = 4, and replies.length == 3
@@ -408,6 +412,78 @@ describe('Comments API', function () {
                     errors: [{
                         id: anyUuid
                     }]
+                });
+        });
+
+
+        it('Can like a reply', async function () {
+            // Check initial status: two replies before test
+            await membersAgent
+                .post(`/api/comments/${replyId}/like/`)
+                .expectStatus(204)
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .expectEmptyBody();
+
+            // Check liked
+            await membersAgent
+                .get(`/api/comments/${replyId}/`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    comments: new Array(1).fill(commentMatcherWithReplies({replies: 0}))
+                })
+                .expect(({body}) => {
+                    body.comments[0].liked.should.eql(true);
+                    body.comments[0].count.likes.should.eql(1);
+                });
+        });
+
+        it('Can return replies', async function () {
+            const parentId = fixtureManager.get('comments', 0).id;
+
+            // Check initial status: two replies before test
+            await membersAgent
+                .get(`/api/comments/${parentId}/replies/`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    comments: new Array(5).fill(commentMatcher)
+                })
+                .expect(({body}) => {
+                    should(body.comments[0].count.replies).be.undefined();
+                    should(body.meta.pagination.total).eql(5);
+                    should(body.meta.pagination.next).eql(null);
+
+                    // Check liked + likes working for replies too
+                    should(body.comments[2].id).eql(replyId);
+                    should(body.comments[2].count.likes).eql(1);
+                    should(body.comments[2].liked).eql(true);
+                });
+        });
+
+        it('Can request second page of replies', async function () {
+            const parentId = fixtureManager.get('comments', 0).id;
+
+            // Check initial status: two replies before test
+            await membersAgent
+                .get(`/api/comments/${parentId}/replies/?page=2&limit=3`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    comments: new Array(2).fill(commentMatcher)
+                })
+                .expect(({body}) => {
+                    should(body.comments[0].count.replies).be.undefined();
+                    should(body.meta.pagination.total).eql(5);
+                    should(body.meta.pagination.next).eql(null);
                 });
         });
 

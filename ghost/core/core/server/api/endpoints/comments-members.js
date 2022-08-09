@@ -37,6 +37,28 @@ module.exports = {
         }
     },
 
+    replies: {
+        options: [
+            'include',
+            'page',
+            'limit',
+            'fields',
+            'filter',
+            'order',
+            'debug',
+            'id'
+        ],
+        validation: {
+            options: {
+                include: ALLOWED_INCLUDES
+            }
+        },
+        permissions: 'browse',
+        query(frame) {
+            return commentsService.controller.replies(frame);
+        }
+    },
+
     read: {
         options: [
             'include'
