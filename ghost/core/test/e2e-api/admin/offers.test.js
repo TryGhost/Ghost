@@ -16,6 +16,7 @@ async function getFreeProduct() {
 describe('Offers API', function () {
     let defaultTier;
     let savedOffer;
+    let trialOffer;
 
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
@@ -53,7 +54,7 @@ describe('Offers API', function () {
                 id: defaultTier.id
             }
         };
-        
+
         const {body} = await agent
             .post(`offers/`)
             .body({offers: [newOffer]})
@@ -85,7 +86,7 @@ describe('Offers API', function () {
                 id: defaultTier.id
             }
         };
-        
+
         await agent
             .post(`offers/`)
             .body({offers: [newOffer]})
@@ -116,7 +117,7 @@ describe('Offers API', function () {
                 id: defaultTier.id
             }
         };
-        
+
         await agent
             .post(`offers/`)
             .body({offers: [newOffer]})
@@ -151,7 +152,7 @@ describe('Offers API', function () {
                 id: defaultTier.id
             }
         };
-        
+
         await agent
             .post(`offers/`)
             .body({offers: [newOffer]})
@@ -170,6 +171,39 @@ describe('Offers API', function () {
             });
     });
 
+    it('Can add a trial offer', async function () {
+        const newOffer = {
+            name: 'Fourth of July Sales trial',
+            code: '4th-trial',
+            cadence: 'year',
+            amount: 20,
+            duration: 'trial',
+            type: 'trial',
+            currency: 'USD',
+            tier: {
+                id: defaultTier.id
+            }
+        };
+
+        const {body} = await agent
+            .post(`offers/`)
+            .body({offers: [newOffer]})
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                etag: anyEtag,
+                location: anyLocationFor('offers')
+            })
+            .matchBodySnapshot({
+                offers: [{
+                    id: anyObjectId,
+                    tier: {
+                        id: anyObjectId
+                    }
+                }]
+            });
+        trialOffer = body.offers[0];
+    });
+
     it('Cannot create offer with same code', async function () {
         const newOffer = {
             name: 'Fourth of July',
@@ -183,7 +217,7 @@ describe('Offers API', function () {
                 id: defaultTier.id
             }
         };
-        
+
         await agent
             .post(`offers/`)
             .body({offers: [newOffer]})
@@ -211,7 +245,7 @@ describe('Offers API', function () {
                 id: defaultTier.id
             }
         };
-        
+
         await agent
             .post(`offers/`)
             .body({offers: [newOffer]})
@@ -239,7 +273,7 @@ describe('Offers API', function () {
                 id: defaultTier.id
             }
         };
-        
+
         await agent
             .post(`offers/`)
             .body({offers: [newOffer]})
@@ -262,7 +296,7 @@ describe('Offers API', function () {
                 etag: anyEtag
             })
             .matchBodySnapshot({
-                offers: new Array(4).fill({
+                offers: new Array(5).fill({
                     id: anyObjectId,
                     tier: {
                         id: anyObjectId
@@ -281,6 +315,25 @@ describe('Offers API', function () {
             .matchBodySnapshot({
                 offers: new Array(1).fill({
                     id: anyObjectId,
+                    tier: {
+                        id: anyObjectId
+                    }
+                })
+            });
+    });
+
+    it('Can get a trial offer', async function () {
+        await agent
+            .get(`offers/${trialOffer.id}/`)
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                offers: new Array(1).fill({
+                    id: anyObjectId,
+                    type: 'trial',
+                    duration: 'trial',
                     tier: {
                         id: anyObjectId
                     }
@@ -431,7 +484,7 @@ describe('Offers API', function () {
                 etag: anyEtag
             })
             .matchBodySnapshot({
-                offers: new Array(3).fill({
+                offers: new Array(4).fill({
                     id: anyObjectId,
                     tier: {
                         id: anyObjectId
