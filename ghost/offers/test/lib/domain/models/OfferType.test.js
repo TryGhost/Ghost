@@ -5,6 +5,7 @@ describe('OfferType', function () {
         it('Creates an Offer type containing either "fixed" or "percent"', function () {
             OfferType.create('fixed');
             OfferType.create('percent');
+            OfferType.create('trial');
 
             try {
                 OfferType.create('other');
@@ -39,6 +40,13 @@ describe('OfferType', function () {
         it('Is an OfferType with a value of "fixed"', function () {
             should.equal(OfferType.Fixed.value, 'fixed');
             should.ok(OfferType.Fixed.equals(OfferType.create('fixed')));
+        });
+    });
+
+    describe('OfferType.Trial', function () {
+        it('Is an OfferType with a value of "trial"', function () {
+            should.equal(OfferType.Trial.value, 'trial');
+            should.ok(OfferType.Trial.equals(OfferType.create('trial')));
         });
     });
 });
