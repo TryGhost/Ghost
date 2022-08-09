@@ -11,6 +11,7 @@ module.exports = class CommentsStatsService {
         const results = await this.db.knex('comments')
             .select(this.db.knex.raw(`COUNT(*) AS count, post_id`))
             .groupBy('post_id')
+            .where('status', 'published')
             .whereIn('post_id', ids);
 
         const counts = ids.reduce((memo, id) => {
@@ -30,6 +31,7 @@ module.exports = class CommentsStatsService {
     async getAllCounts() {
         const results = await this.db.knex('comments')
             .select(this.db.knex.raw(`COUNT(*) AS count, post_id`))
+            .where('status', 'published')
             .groupBy('post_id');
 
         /** @type Object<string, number> */
