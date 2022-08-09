@@ -1,0 +1,44 @@
+import {useContext} from 'react';
+import AppContext from '../AppContext';
+
+const CTABox = (props) => {
+    const {accentColor, publication} = useContext(AppContext);
+
+    const buttonStyle = {
+        backgroundColor: accentColor
+    };
+
+    const linkStyle = {
+        color: accentColor
+    };
+
+    const titleText = (props.isFirst ? 'Start the conversation' : 'Join the discussion');
+
+    const handleSubscribeClick = (event) => {
+        window.location.href = '#/portal/signup';
+    };
+
+    const handleSignInClick = (event) => {
+        window.location.href = '#/portal/signin';
+    };
+
+    return (
+        <section className={`flex flex-col items-center ${props.isFirst ? 'pt-14 pb-16' : 'pt-14 pb-16'} px-8 border-t-2 border-gray-100 dark:border-gray-100/10 border-b-2`}>
+            <h1 className={`mb-2 text-center text-black text-[26px] font-sans tracking-tight dark:text-[rgba(255,255,255,0.85)] ${props.isFirst ? 'font-semibold' : 'font-bold'}`}>
+                {titleText}
+            </h1>
+            <p className="mb-8 font-sans leading-normal text-[16px] text-neutral-600 dark:text-[rgba(255,255,255,0.85)]">
+                Become a {props.isPaid && 'paid'} member of <span className="font-semibold">{publication}</span> to start commenting.
+            </p>
+            <button onClick={handleSubscribeClick} className="mb-2 text-white font-san py-[14px] px-5 rounded inline-block font-medium leading-none hover:opacity-90 transition-all" style={buttonStyle}>
+                {props.isPaid ? 'Choose a plan' : 'Subscribe now'}
+            </button>
+            <p className="text-sm font-sans text-center text-neutral-400 dark:text-[rgba(255,255,255,0.5)]">
+                <span className='inline-block mr-1 text-[15px]'>Already a member?</span>
+                <button onClick={handleSignInClick} className="rounded-md hover:opacity-90 transition-all text-sm font-semibold" style={linkStyle}>Sign in</button>
+            </p>
+        </section>
+    );
+};
+
+export default CTABox;

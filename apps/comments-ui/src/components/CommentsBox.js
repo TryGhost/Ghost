@@ -1,11 +1,9 @@
 import React, {useContext, useEffect, useState} from 'react';
 import AppContext from '../AppContext';
-import NotSignedInBox from './NotSignedInBox';
+import CTABox from './CTABox';
 import Form from './Form';
 import Comment from './Comment';
 import Pagination from './Pagination';
-import NotPaidBox from './NotPaidBox';
-// import Empty from './Empty';
 import Loading from './Loading';
 import {ROOT_DIV_ID} from '../utils/constants';
 
@@ -83,7 +81,7 @@ const CommentsBoxContent = (props) => {
             </div>
             <div>
                 { !isEditing
-                    ? (member ? (isPaidMember || !paidOnly ? <Form commentsCount={commentsCount} /> : <NotPaidBox isFirst={commentsCount === 0} />) : <NotSignedInBox isFirst={commentsCount === 0} isPaid={paidOnly} />)
+                    ? (member ? (isPaidMember || !paidOnly ? <Form commentsCount={commentsCount} /> : <CTABox isFirst={commentsCount === 0} isPaid={paidOnly} />) : <CTABox isFirst={commentsCount === 0} isPaid={paidOnly} />)
                     : null
                 }
             </div>

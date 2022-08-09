@@ -45,7 +45,7 @@ const Form = (props) => {
         };
     } else {
         config = {
-            placeholder: (commentsCount === 0 ? 'Be first to start the conversation' : 'Join the discussion'),
+            placeholder: (commentsCount === 0 ? 'Start the conversation' : 'Join the discussion'),
             autofocus: false
         };
     }
