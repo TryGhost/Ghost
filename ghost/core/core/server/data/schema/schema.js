@@ -319,7 +319,7 @@ module.exports = {
             maxlength: 50,
             nullable: false,
             defaultTo: 'custom',
-            validations: {isIn: [['internal', 'builtin', 'custom']]}
+            validations: {isIn: [['internal', 'builtin', 'custom', 'core']]}
         },
         name: {type: 'string', maxlength: 191, nullable: false},
         slug: {type: 'string', maxlength: 191, nullable: false, unique: true},

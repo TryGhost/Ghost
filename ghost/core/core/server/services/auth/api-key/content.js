@@ -43,11 +43,7 @@ const authenticateContentApiKey = async function authenticateContentApiKey(req, 
 
         // CASE: blocking all non-internal: "custom" and "builtin" integration requests when the limit is reached
         if (limitService.isLimited('customIntegrations')
-            && (apiKey.relations.integration
-                && !['internal'].includes(apiKey.relations.integration.get('type'))
-                && !['ghost-explore'].includes(apiKey.relations.integration.get('slug'))
-            )
-        ) {
+            && (apiKey.relations.integration && !['internal', 'core'].includes(apiKey.relations.integration.get('type')))) {
             // NOTE: using "checkWouldGoOverLimit" instead of "checkIsOverLimit" here because flag limits don't have
             //       a concept of measuring if the limit has been surpassed
             await limitService.errorIfWouldGoOverLimit('customIntegrations');
