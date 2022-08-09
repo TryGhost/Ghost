@@ -120,6 +120,46 @@ Object {
 }
 `;
 
+exports[`Offers API Can add a trial offer 1: [body] 1`] = `
+Object {
+  "offers": Array [
+    Object {
+      "amount": 20,
+      "cadence": "year",
+      "code": "4th-trial",
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "",
+      "display_title": "",
+      "duration": "trial",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Fourth of July Sales trial",
+      "redemption_count": 0,
+      "status": "active",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      },
+      "type": "trial",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Can add a trial offer 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "359",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/offers\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
+  "vary": "Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
 exports[`Offers API Can archive an offer 1: [body] 1`] = `
 Object {
   "offers": Array [
@@ -243,6 +283,26 @@ Object {
       },
       "type": "fixed",
     },
+    Object {
+      "amount": 20,
+      "cadence": "year",
+      "code": "4th-trial",
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "",
+      "display_title": "",
+      "duration": "trial",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Fourth of July Sales trial",
+      "redemption_count": 0,
+      "status": "active",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Default Product",
+      },
+      "type": "trial",
+    },
   ],
 }
 `;
@@ -251,7 +311,7 @@ exports[`Offers API Can browse 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1491",
+  "content-length": "1863",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -322,6 +382,26 @@ Object {
       },
       "type": "fixed",
     },
+    Object {
+      "amount": 20,
+      "cadence": "year",
+      "code": "4th-trial",
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "",
+      "display_title": "",
+      "duration": "trial",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Fourth of July Sales trial",
+      "redemption_count": 0,
+      "status": "active",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Default Product",
+      },
+      "type": "trial",
+    },
   ],
 }
 `;
@@ -330,7 +410,7 @@ exports[`Offers API Can browse active 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1089",
+  "content-length": "1461",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -449,6 +529,45 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "414",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Can get a trial offer 1: [body] 1`] = `
+Object {
+  "offers": Array [
+    Object {
+      "amount": 20,
+      "cadence": "year",
+      "code": "4th-trial",
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "",
+      "display_title": "",
+      "duration": "trial",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Fourth of July Sales trial",
+      "redemption_count": 0,
+      "status": "active",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Default Product",
+      },
+      "type": "trial",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Can get a trial offer 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "384",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",

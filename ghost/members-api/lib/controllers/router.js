@@ -168,6 +168,7 @@ module.exports = class RouterController {
         }
 
         let couponId = null;
+        let trialDays;
         if (offerId) {
             const offer = await this._offersAPI.getOffer({id: offerId});
             const tier = (await this._productRepository.get(offer.tier)).toJSON();
@@ -183,9 +184,13 @@ module.exports = class RouterController {
             } else {
                 ghostPriceId = tier.yearly_price_id;
             }
-
-            const coupon = await this._paymentsService.getCouponForOffer(offerId);
-            couponId = coupon.id;
+            // Free trial offers don't have a stripe coupon
+            if (offer.type === 'trial') {
+                trialDays = offer.amount;
+            } else {
+                const coupon = await this._paymentsService.getCouponForOffer(offerId);
+                couponId = coupon.id;
+            }
 
             metadata.offer = offer.id;
         }
@@ -214,9 +219,8 @@ module.exports = class RouterController {
         const priceId = price.get('stripe_price_id');
 
         const product = await this._productRepository.get({stripe_price_id: priceId});
-        let trialDays;
 
-        if (this.labsService.isSet('freeTrial')) {
+        if (this.labsService.isSet('freeTrial') && !trialDays) {
             trialDays = product.get('trial_days');
         }
 
