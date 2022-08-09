@@ -5,6 +5,7 @@ describe('OfferDuration', function () {
         it('Will only allow creating a once, repeating or forever duration', function () {
             OfferDuration.create('once');
             OfferDuration.create('forever');
+            OfferDuration.create('trial');
             OfferDuration.create('repeating', 2);
 
             try {
