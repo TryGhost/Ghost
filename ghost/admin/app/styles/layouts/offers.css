@@ -165,6 +165,18 @@
     letter-spacing: 0;
 }
 
+.gh-offer-trial-duration .trial-duration::before {
+    position: absolute;
+    content: "days";
+    top: 31px;
+    right: 12px;
+    color: var(--midgrey);
+    font-size: 1.5rem;
+    letter-spacing: 0;
+}
+
+
+
 .gh-offer-url .gh-input {
     background: var(--main-color-content-greybg);
     border-color: var(--lightgrey-l1);
