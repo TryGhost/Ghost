@@ -52,7 +52,7 @@ const ReportDialog = (props) => {
     };
 
     return (
-        <div className="relative bg-white w-screen sm:w-[500px] h-screen sm:h-auto p-[28px] sm:p-8 rounded-none sm:rounded-xl text-center shadow-modal" onClick={stopPropagation}>
+        <div className="relative bg-white w-screen sm:w-[500px] h-screen sm:h-auto p-[28px] sm:p-8 rounded-none sm:rounded-xl text-center shadow-modal" onMouseDown={stopPropagation}>
             <h1 className="font-sans font-bold tracking-tight text-[24px] mb-1 text-black">You sure you want to report?</h1>
             <p className="font-sans text-base text-neutral-500 px-4 leading-9">Your request will be sent to the owner of this site.</p>
             <div className="mt-10">
