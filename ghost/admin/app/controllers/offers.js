@@ -44,7 +44,11 @@ export default class MembersController extends Controller {
             const price = offer.cadence === 'month' ? tier.monthlyPrice : tier.yearlyPrice;
             offer.finalCurrency = offer.currency || tier.currency;
             offer.originalPrice = price;
-            offer.updatedPrice = offer.type === 'fixed' ? (price - offer.amount) : (price - ((price * offer.amount) / 100));
+            if (offer.type !== 'trial') {
+                offer.updatedPrice = offer.type === 'fixed' ? (price - offer.amount) : (price - ((price * offer.amount) / 100));
+            } else {
+                offer.updatedPrice = offer.originalPrice;
+            }
             return offer;
         });
     }
