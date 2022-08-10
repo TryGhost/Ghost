@@ -66,7 +66,8 @@ async function comments(options) {
         'avatar-saturation': avatarSaturation,
         'accent-color': accentColor,
         'app-version': appVersion,
-        'comments-enabled': commentsEnabled
+        'comments-enabled': commentsEnabled,
+        publication: settingsCache.get('title')
     };
 
     const dataAttributes = getDataAttributes(data);
