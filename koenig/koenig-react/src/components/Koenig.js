@@ -5,8 +5,9 @@ import DEFAULT_ATOMS from '../atoms';
 import DEFAULT_CARDS from '../cards';
 import DEFAULT_KEY_COMMANDS from '../key-commands';
 import DEFAULT_TEXT_EXPANSIONS from '../text-expansions';
-import Toolbar from './toolbar';
 import {useConstructor} from '../utils/useConstructor';
+import Toolbar from './toolbar';
+import PlusMenu from './PlusMenu';
 
 // "hack" to work around function components not having any constructor-like behavior
 
@@ -75,10 +76,18 @@ const Koenig = ({
             <Editor
                 data-testid="mobiledoc-editor">
             </Editor>
+
+            {/* pop-up markup toolbar shown when there's a selection and mouse movement */}
             <Toolbar
                 editor={mobiledocInstance}
                 activeMarkupTags={activeMarkupTags}
                 selectedRange={selectedRange}
+            />
+
+            {/* (+) icon and pop-up card menu */}
+            <PlusMenu
+                selectedRange={selectedRange}
+                koenigEditor={koenigEditor}
             />
         </Container>
     );
