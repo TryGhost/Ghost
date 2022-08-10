@@ -367,6 +367,13 @@ export default class OfferPage extends React.Component {
                 <h5 className="gh-portal-discount-label">{getCurrencySymbol(offer.currency)}{offer.amount / 100} off</h5>
             );
         }
+
+        if (offer.type === 'trial') {
+            return (
+                <h5 className="gh-portal-discount-label">{offer.amount} days free</h5>
+            );
+        }
+
         return (
             <h5 className="gh-portal-discount-label">{offer.amount}% off</h5>
         );
@@ -425,11 +432,13 @@ export default class OfferPage extends React.Component {
             return `${getCurrencySymbol(offer.currency)}${offer.amount / 100}`;
         } else if (offer.type === 'percent') {
             return `${offer.amount}%`;
+        } else if (offer.type === 'trial') {
+            return offer.amount;
         }
         return '';
     }
 
-    renderOfferMessage({offer, product}) {
+    renderOfferMessage({offer, product, price}) {
         const discountDuration = offer.duration;
         let durationLabel = '';
         const originalPrice = this.getOriginalPrice({offer, product});
@@ -448,9 +457,13 @@ export default class OfferPage extends React.Component {
             }
             renewsLabel = `Renews at ${originalPrice}.`;
         }
+        if (discountDuration === 'trial') {
+            return (
+                <p className="after-trial-amount">Then {getCurrencySymbol(price.currency)}{formatNumber(price.amount / 100)}/{price.interval}</p>
+            );
+        }
         return (
             <p className="footnote">{this.getOffAmount({offer})} off {durationLabel}. {renewsLabel}</p>
-            // <p className="after-trial-amount">Then $5/month</p>
         );
     }
 
@@ -467,6 +480,35 @@ export default class OfferPage extends React.Component {
         );
     }
 
+    renderUpdatedTierPrice({offer, currencyClass, updatedPrice, price}) {
+        if (offer.type === 'trial') {
+            return (
+                <div className="gh-portal-product-card-pricecontainer">
+                    <div className="gh-portal-product-price">
+                        <span className="amount trial-duration">{offer.amount} days free</span>
+                    </div>
+                </div>
+            );
+        }
+        return (
+            <div className="gh-portal-product-card-pricecontainer">
+                <div className="gh-portal-product-price">
+                    <span className={'currency-sign ' + currencyClass}>{getCurrencySymbol(price.currency)}</span>
+                    <span className="amount">{formatNumber(this.renderRoundedPrice(updatedPrice))}</span>
+                </div>
+            </div>
+        );
+    }
+
+    renderOldTierPrice({offer, price}) {
+        if (offer.type === 'trial') {
+            return null;
+        }
+        return (
+            <div className="gh-portal-offer-oldprice">{getCurrencySymbol(price.currency)} {formatNumber(price.amount / 100)}</div>
+        );
+    }
+
     renderProductCard({product, offer, currencyClass, updatedPrice, price, benefits}) {
         if (this.state.showNewsletterSelection) {
             return null;
@@ -476,17 +518,9 @@ export default class OfferPage extends React.Component {
                 <div className='gh-portal-product-card top'>
                     <div className='gh-portal-product-card-header'>
                         <h4 className="gh-portal-product-name">{product.name} - {(offer.cadence === 'month' ? 'Monthly' : 'Yearly')}</h4>
-                        <div className="gh-portal-offer-oldprice">{getCurrencySymbol(price.currency)} {formatNumber(price.amount / 100)}</div>
-                        <div className="gh-portal-product-card-pricecontainer">
-                            <div className="gh-portal-product-price">
-                                <span className={'currency-sign ' + currencyClass}>{getCurrencySymbol(price.currency)}</span>
-                                <span className="amount">{formatNumber(this.renderRoundedPrice(updatedPrice))}</span>
-                            </div>
-                            {/* <div className="gh-portal-product-price">
-                                <span className="amount trial-duration">21 days free</span>
-                            </div> */}
-                        </div>
-                        {this.renderOfferMessage({offer, product})}
+                        {this.renderOldTierPrice({offer, price})}
+                        {this.renderUpdatedTierPrice({offer, currencyClass, updatedPrice, price})}
+                        {this.renderOfferMessage({offer, product, price})}
                     </div>
                 </div>
 
