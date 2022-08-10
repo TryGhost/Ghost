@@ -1,7 +1,7 @@
 import React from 'react';
 import ImagePlaceholder from './placeholder';
 
-const Editor = ({isEditing, payload, Alt, editor, env}) => {
+const Editor = ({payload, Alt, env}) => {
     const handleTextChange = (e) => {
         payload.setPayload({...payload.payload, alt: e.target.value});
         env.save({alt: e.target.value, src: payload.payload.src});
@@ -36,10 +36,10 @@ const Image = (props) => {
     });
     const [editAlt, setEditAlt] = React.useState(true);
     const uploadRef = React.useRef(null);
-    const onUploadChange = (e) => {
+    const onUploadChange = async (e) => {
         const formData = new FormData();
         formData.append('file', e.target.files[0]);
-        fetch(props.uploadUrl, {
+        await fetch(props.uploadUrl, {
             method: 'POST',
             body: formData
         }).then(res => res.json())
