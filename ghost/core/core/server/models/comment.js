@@ -201,6 +201,42 @@ const Comment = ghostBookshelf.Model.extend({
         return options;
     },
 
+    countRelations() {
+        return {
+            replies(modelOrCollection) {
+                modelOrCollection.query('columns', 'comments.*', (qb) => {
+                    qb.count('replies.id')
+                        .from('comments AS replies')
+                        .whereRaw('replies.parent_id = comments.id')
+                        .as('count__replies');
+                });
+            },
+            likes(modelOrCollection) {
+                modelOrCollection.query('columns', 'comments.*', (qb) => {
+                    qb.count('comment_likes.id')
+                        .from('comment_likes')
+                        .whereRaw('comment_likes.comment_id = comments.id')
+                        .as('count__likes');
+                });
+            },
+            liked(modelOrCollection, options) {
+                modelOrCollection.query('columns', 'comments.*', (qb) => {
+                    if (options.context && options.context.member && options.context.member.id) {
+                        qb.count('comment_likes.id')
+                            .from('comment_likes')
+                            .whereRaw('comment_likes.comment_id = comments.id')
+                            .where('comment_likes.member_id', options.context.member.id)
+                            .as('count__liked');
+                        return;
+                    }
+
+                    // Return zero
+                    qb.select(ghostBookshelf.knex.raw('0')).as('count__liked');
+                });
+            }
+        };
+    },
+
     /**
      * Returns an array of keys permitted in a method's `options` hash, depending on the current method.
      * @param {String} methodName The name of the method to check valid options for.

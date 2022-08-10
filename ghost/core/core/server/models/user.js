@@ -426,6 +426,26 @@ User = ghostBookshelf.Model.extend({
         return permittedOptionsToReturn;
     },
 
+    countRelations() {
+        return {
+            posts(modelOrCollection, options) {
+                modelOrCollection.query('columns', 'users.*', (qb) => {
+                    qb.count('posts.id')
+                        .from('posts')
+                        .join('posts_authors', 'posts.id', 'posts_authors.post_id')
+                        .whereRaw('posts_authors.author_id = users.id')
+                        .as('count__posts');
+
+                    if (options.context && options.context.public) {
+                        // @TODO use the filter behavior for posts
+                        qb.andWhere('posts.type', '=', 'post');
+                        qb.andWhere('posts.status', '=', 'published');
+                    }
+                });
+            }
+        };
+    },
+
     /**
      * ### Find One
      *

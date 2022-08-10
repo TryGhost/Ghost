@@ -182,6 +182,26 @@ Tag = ghostBookshelf.Model.extend({
         return options;
     },
 
+    countRelations() {
+        return {
+            posts(modelOrCollection, options) {
+                modelOrCollection.query('columns', 'tags.*', (qb) => {
+                    qb.count('posts.id')
+                        .from('posts')
+                        .leftOuterJoin('posts_tags', 'posts.id', 'posts_tags.post_id')
+                        .whereRaw('posts_tags.tag_id = tags.id')
+                        .as('count__posts');
+
+                    if (options.context && options.context.public) {
+                        // @TODO use the filter behavior for posts
+                        qb.andWhere('posts.type', '=', 'post');
+                        qb.andWhere('posts.status', '=', 'published');
+                    }
+                });
+            }
+        };
+    },
+
     destroy: function destroy(unfilteredOptions) {
         const options = this.filterOptions(unfilteredOptions, 'destroy', {extraAllowedProperties: ['id']});
         options.withRelated = ['posts'];
