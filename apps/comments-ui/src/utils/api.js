@@ -124,7 +124,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             firstCommentsLoadedAt = firstCommentsLoadedAt ?? new Date().toISOString();
 
             const filter = encodeURIComponent(`post_id:${postId}+created_at:<=${firstCommentsLoadedAt}`);
-            const order = encodeURIComponent('created_at DESC');
+            const order = encodeURIComponent('created_at DESC, id DESC');
 
             const url = endpointFor({type: 'members', resource: 'comments', params: `?limit=5&order=${order}&filter=${filter}&page=${page}`});
             return makeRequest({
@@ -141,6 +141,25 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                     throw new Error('Failed to fetch comments');
                 }
             });
+        },
+        async replies({page, commentId, afterReplyId, limit}) {
+            const filter = encodeURIComponent(`id:>${afterReplyId}`);
+            const order = encodeURIComponent('created_at ASC, id ASC');
+
+            const url = endpointFor({type: 'members', resource: `comments/${commentId}/replies`, params: `?limit=${limit ?? 5}&order=${order}&filter=${filter}`});
+            const res = await makeRequest({
+                url,
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin'
+            });
+            if (res.ok) {
+                return res.json();
+            } else {
+                throw new Error('Failed to fetch replies');
+            }
         },
         add({comment}) {
             const body = {

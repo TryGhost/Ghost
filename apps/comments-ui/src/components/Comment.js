@@ -23,6 +23,9 @@ function EditedInfo({comment}) {
 const Comment = ({updateIsEditing = null, isEditing, ...props}) => {
     const [isInEditMode, setIsInEditMode] = useState(false);
     const [isInReplyMode, setIsInReplyMode] = useState(false);
+    const {admin, avatarSaturation, member, commentsEnabled, dispatchAction} = useContext(AppContext);
+    let comment = props.comment;
+
     useEffect(() => {
         updateIsEditing?.(isInReplyMode || isInEditMode);
     }, [updateIsEditing, isInReplyMode, isInEditMode]);
@@ -34,7 +37,11 @@ const Comment = ({updateIsEditing = null, isEditing, ...props}) => {
         setIsInEditMode(false);
     };
 
-    const toggleReplyMode = () => {
+    const toggleReplyMode = async () => {
+        if (!isInReplyMode) {
+            // First load all the replies before opening the reply model
+            await dispatchAction('loadMoreReplies', {comment, limit: 'all'});
+        }
         setIsInReplyMode(current => !current);
     };
 
@@ -42,8 +49,6 @@ const Comment = ({updateIsEditing = null, isEditing, ...props}) => {
         setIsInReplyMode(false);
     };
 
-    const {admin, avatarSaturation, member, commentsEnabled} = useContext(AppContext);
-    let comment = props.comment;
     const hasReplies = comment.replies && comment.replies.length > 0;
     const isNotPublished = comment.status !== 'published';
     const html = {__html: comment.html};
