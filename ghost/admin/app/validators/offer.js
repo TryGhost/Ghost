@@ -17,7 +17,11 @@ export default BaseValidator.create({
 
     amount(model) {
         if (!model.amount) {
-            model.errors.add('amount', 'Please enter the amount.');
+            if (model.type === 'trial') {
+                model.errors.add('amount', 'Please enter the trial duration.');
+            } else {
+                model.errors.add('amount', 'Please enter the amount.');
+            }
             this.invalidate();
         }
     },
