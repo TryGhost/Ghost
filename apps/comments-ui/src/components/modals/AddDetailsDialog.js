@@ -69,6 +69,7 @@ const AddNameDialog = (props) => {
                     leave="transition duration-200 ease-in"
                     leaveFrom="opacity-100 translate-y-0"
                     leaveTo="opacity-0 translate-y-2"
+                    key={profile.name}
                 >
                     <div className="flex flex-row justify-start items-center gap-3 my-4 pr-4">
                         <div className="w-10 h-10 rounded-full border-2 border-white bg-no-repeat bg-cover" style={{backgroundImage: `url(${profile.avatar})`}} />
@@ -103,7 +104,7 @@ const AddNameDialog = (props) => {
     };
 
     return (
-        <div className="overflow-hidden relative bg-white w-screen sm:w-[720px] h-screen sm:h-auto p-[28px] sm:p-0 rounded-none sm:rounded-xl text-center shadow-modal" onClick={stopPropagation}>
+        <div className="overflow-hidden relative bg-white w-screen sm:w-[720px] h-screen sm:h-auto p-[28px] sm:p-0 rounded-none sm:rounded-xl text-center shadow-modal" onMouseDown={stopPropagation}>
             <div className="flex">
                 <div className="hidden sm:flex sm:flex-col sm:justify-center sm:items-center sm:w-[40%] bg-[#1C1C1C]">
                     <div className="flex flex-col">
