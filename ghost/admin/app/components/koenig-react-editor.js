@@ -87,6 +87,7 @@ export default class KoenigReactEditor extends Component {
                             mobiledoc={this.args.mobiledoc}
                             didCreateEditor={this.args.didCreateEditor}
                             onChange={this.args.onChange}
+                            uploadUrl={this.args.uploadUrl}
                         />
                     </Suspense>
                 </ErrorHandler>
