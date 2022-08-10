@@ -27,7 +27,7 @@ const CTABox = (props) => {
             <h1 className={`mb-[8px] text-center text-black text-[24px] font-sans tracking-tight dark:text-[rgba(255,255,255,0.85)] ${props.isFirst ? 'font-semibold' : 'font-bold'}`}>
                 {titleText}
             </h1>
-            <p className="mb-[28px] px-8 max-w-screen-sm font-sans text-[16px] text-center leading-normal text-neutral-600 dark:text-[rgba(255,255,255,0.85)]">
+            <p className="mb-[28px] px-0 sm:px-8 max-w-screen-sm font-sans text-[16px] text-center leading-normal text-neutral-600 dark:text-[rgba(255,255,255,0.85)]">
                 Become a {props.isPaid && 'paid'} member of <span className="font-semibold">{publication}</span> to start commenting.
             </p>
             <button onClick={handleSignUpClick} className="mb-[12px] text-white font-san py-[14px] px-5 rounded inline-block font-medium leading-none hover:opacity-90 transition-all" style={buttonStyle}>
