@@ -82,6 +82,14 @@ export default class OffersController extends Controller {
         };
     }
 
+    get isTrialOffer() {
+        return this.offer?.type === 'trial';
+    }
+
+    get isDiscountOffer() {
+        return this.offer?.type !== 'trial';
+    }
+
     get cadence() {
         if (this.offer.tier && this.offer.cadence) {
             const tier = this.tiers.findBy('id', this.offer.tier.id);
@@ -313,6 +321,15 @@ export default class OffersController extends Controller {
     }
 
     @action
+    setTrialDuration(e) {
+        let amount = e.target.value;
+        if (amount !== '') {
+            amount = parseInt(amount);
+        }
+        this._saveOfferProperty('amount', amount);
+    }
+
+    @action
     setOfferName(e) {
         this._saveOfferProperty('name', e.target.value);
         if (!this.isDisplayTitleEdited && this.offer.isNew) {
@@ -415,6 +432,19 @@ export default class OffersController extends Controller {
                     this._saveOfferProperty('duration', 'once');
                 }
             }
+        }
+    }
+
+    @action
+    changeType(type) {
+        if (type === 'trial') {
+            this._saveOfferProperty('type', 'trial');
+            this._saveOfferProperty('amount', 0);
+            this._saveOfferProperty('duration', 'trial');
+        } else {
+            this._saveOfferProperty('type', 'percent');
+            this._saveOfferProperty('amount', 0);
+            this._saveOfferProperty('duration', 'once');
         }
     }
 

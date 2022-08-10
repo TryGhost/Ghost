@@ -46,13 +46,18 @@
                         </h4>
                         <div class="gh-main-section-content grey">
                             {{#if (feature 'freeTrial')}}
-                            <div class="flex justify-between items-center w-100 mb4">
-                                <label class="fw6">Offer type</label>
-                                <div class="gh-btn-group">
-                                    <button class="gh-btn gh-btn-group-selected {{if (eq this.type "public") "gh-btn-group-selected"}}" type="button" {{action "changeType" "public"}}><span>Discount</span></button>
-                                    <button class="gh-btn {{if (eq this.type "internal") "gh-btn-group-selected"}}" type="button" {{action "changeType" "internal"}}><span>Free trial</span></button>
+                                <div class="flex justify-between items-center w-100 mb4">
+                                    <label class="fw6">Offer type</label>
+                                    <div class="gh-btn-group">
+                                        <button class="gh-btn {{if this.isDiscountOffer "gh-btn-group-selected"}}" type="button" {{on "click" (fn this.changeType "discount")}} disabled={{this.isDiscountSectionDisabled}}>
+                                            <span>Discount</span>
+                                        </button>
+                                        <button class="gh-btn {{if this.isTrialOffer "gh-btn-group-selected"}}"
+                                        type="button" {{on "click" (fn this.changeType "trial")}} disabled={{this.isDiscountSectionDisabled}}>
+                                            <span>Free trial</span>
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
                             {{/if}}
                             <GhFormGroup @errors={{this.errors}} @property="product-cadence">
                                 <label for="product-cadence" class="fw6">Tier – cadence</label>
@@ -70,22 +75,28 @@
                                 </span>
                                 <GhErrorMessage @errors={{this.errors}} @property="product-cadence" />
                             </GhFormGroup>
-                            {{!-- <div class="gh-offer-trial-duration">
+                            {{#if this.isTrialOffer}}
+                            <div class="gh-offer-trial-duration">
                                 <GhFormGroup @errors={{this.offer.errors}} @property="trialDuration">
                                     <label for="trial-duration" class="fw6">Trial duration</label>
                                     <div class="trial-duration">
                                         <GhTextInput
                                             @name="trial-duration"
-                                            @value={{readonly this.offer.trialDuration}}
+                                            @type="number"
+                                            @placeholder=""
+                                            @disabled={{this.isDiscountSectionDisabled}}
+                                            @value={{readonly this.offer.amount}}
                                             @input={{this.setTrialDuration}}
                                             @id="trial-duration"
-                                            @class="gh-input" />
+                                            @class="gh-input"
+                                        />
                                     </div>
                                     <span class="error">
-                                        <GhErrorMessage @errors={{this.offer.errors}} @property="durationInMonths" />
+                                        <GhErrorMessage @errors={{this.offer.errors}} @property="amount" />
                                     </span>
                                 </GhFormGroup>
-                            </div> --}}
+                            </div>
+                            {{else}}
                             <div class="gh-offer-discount">
                                 <label for="amount" class="fw6 mb1">Amount off</label>
                                 <div class="flex items-start">
@@ -175,6 +186,7 @@
                                 </GhFormGroup>
                                 {{/if}}
                             </div>
+                            {{/if}}
                         </div>
 
                         <h4 class="gh-main-section-header small bn">Portal settings</h4>
