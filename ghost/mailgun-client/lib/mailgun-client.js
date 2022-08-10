@@ -151,18 +151,7 @@ module.exports = class MailgunClient {
         };
     }
 
-    /**
-     * Returns an instance of the Mailgun client based upon the config or settings values
-     *
-     * We don't cache the instance so we can always get a fresh one based upon changed settings
-     * or config values over time
-     *
-     * Note: if the credentials are not configure, this method returns `null` and it is down to the
-     * consumer to act upon this/log this out
-     *
-     * @returns {import('mailgun-js').Mailgun} the Mailgun client instance
-     */
-    getInstance() {
+    #getConfig() {
         const bulkEmailConfig = this.#config.get('bulkEmail');
         const bulkEmailSetting = {
             apiKey: this.#settings.get('mailgun_api_key'),
@@ -178,6 +167,26 @@ module.exports = class MailgunClient {
         }
 
         const mailgunConfig = hasMailgunConfig ? bulkEmailConfig.mailgun : bulkEmailSetting;
+        return mailgunConfig;
+    }
+
+    /**
+     * Returns an instance of the Mailgun client based upon the config or settings values
+     *
+     * We don't cache the instance so we can always get a fresh one based upon changed settings
+     * or config values over time
+     *
+     * Note: if the credentials are not configure, this method returns `null` and it is down to the
+     * consumer to act upon this/log this out
+     *
+     * @returns {import('mailgun-js').Mailgun} the Mailgun client instance
+     */
+    getInstance() {
+        const mailgunConfig = this.#getConfig();
+        if (!mailgunConfig) {
+            return null;
+        }
+
         const baseUrl = new URL(mailgunConfig.baseUrl);
 
         return mailgun({
