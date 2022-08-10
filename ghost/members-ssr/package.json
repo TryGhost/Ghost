@@ -23,8 +23,8 @@
     "sinon": "14.0.0"
   },
   "dependencies": {
-    "@tryghost/debug": "0.1.17",
-    "@tryghost/errors": "1.2.14",
+    "@tryghost/debug": "0.1.18",
+    "@tryghost/errors": "1.2.15",
     "bluebird": "3.7.2",
     "concat-stream": "2.0.0",
     "cookies": "0.8.0",

@@ -1,3 +1,5 @@
+const _ = require('lodash');
+
 /**
  * @typedef {import('../../api/shared/frame')} Frame
  */
@@ -24,6 +26,13 @@ module.exports = class CommentsController {
      */
     async browse(frame) {
         return this.service.getComments(frame.options);
+    }
+
+    /**
+     * @param {Frame} frame
+     */
+    async replies(frame) {
+        return this.service.getReplies(frame.options.id, _.omit(frame.options, 'id'));
     }
 
     /**
