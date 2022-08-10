@@ -258,7 +258,19 @@ const Form = (props) => {
                 return;
             }
 
-            if (event.key === 'c' && !props.isEdit && !props.isReply && !editor?.isFocused) {
+            let focusedElement = document.activeElement;
+            while (focusedElement && focusedElement.tagName === 'IFRAME') {
+                if (!focusedElement.contentDocument) {
+                    // CORS issue
+                    // disable the C shortcut when we have a focused external iframe
+                    break;
+                }
+
+                focusedElement = focusedElement.contentDocument.activeElement;
+            }
+            const hasInputFocused = focusedElement && (focusedElement.tagName === 'INPUT' || focusedElement.tagName === 'TEXTAREA' || focusedElement.tagName === 'IFRAME' || focusedElement.contentEditable === 'true');
+
+            if (event.key === 'c' && !props.isEdit && !props.isReply && !editor?.isFocused && !hasInputFocused) {
                 editor?.commands.focus();
                 window.scrollTo({
                     top: getScrollToPosition(),
