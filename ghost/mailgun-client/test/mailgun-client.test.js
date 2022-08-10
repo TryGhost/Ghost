@@ -1,4 +1,5 @@
 const assert = require('assert');
+const nock = require('nock');
 const sinon = require('sinon');
 
 // module under test
@@ -44,6 +45,45 @@ describe('MailgunClient', function () {
     it('cannot configure Mailgun if config/settings missing', function () {
         const mailgunClient = new MailgunClient({config, settings});
         assert.equal(mailgunClient.isConfigured(), false);
+    });
+
+    it('respects changes in settings', async function () {
+        const settingsStub = sinon.stub(settings, 'get');
+        settingsStub.withArgs('mailgun_api_key').returns('settingsApiKey');
+        settingsStub.withArgs('mailgun_domain').returns('settingsdomain.com');
+        settingsStub.withArgs('mailgun_base_url').returns('https://example.com/v3');
+
+        const mailgunOptions = {
+            event: 'delivered OR opened OR failed OR unsubscribed OR complained',
+            limit: 300,
+            tags: 'bulk-email'
+        };
+
+        const eventsMock1 = nock('https://example.com')
+            .get('/v3/settingsdomain.com/events')
+            .query(mailgunOptions)
+            .reply(200, {'Content-Type': 'application/json'}, {
+                items: []
+            });
+
+        const mailgunClient = new MailgunClient({config, settings});
+        await mailgunClient.fetchEvents(mailgunOptions, () => {});
+
+        settingsStub.withArgs('mailgun_api_key').returns('settingsApiKey2');
+        settingsStub.withArgs('mailgun_domain').returns('settingsdomain2.com');
+        settingsStub.withArgs('mailgun_base_url').returns('https://example2.com/v3');
+
+        const eventsMock2 = nock('https://example2.com')
+            .get('/v3/settingsdomain2.com/events')
+            .query(mailgunOptions)
+            .reply(200, {'Content-Type': 'application/json'}, {
+                items: []
+            });
+
+        await mailgunClient.fetchEvents(mailgunOptions, () => {});
+
+        assert.equal(eventsMock1.isDone(), true);
+        assert.equal(eventsMock2.isDone(), true);
     });
 
     describe('normalizeEvent()', function () {
