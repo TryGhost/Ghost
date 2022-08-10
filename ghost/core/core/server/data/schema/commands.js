@@ -411,14 +411,6 @@ function getColumns(table, transaction = db.knex) {
     return Promise.reject(tpl(messages.noSupportForDatabase, {client: client}));
 }
 
-function checkTables(transaction = db.knex) {
-    const client = transaction.client.config.client;
-
-    if (DatabaseInfo.isMySQL(transaction)) {
-        return clients[client].checkPostTable();
-    }
-}
-
 function createColumnMigration(...migrations) {
     async function runColumnMigration(conn, migration) {
         const {
@@ -449,7 +441,6 @@ function createColumnMigration(...migrations) {
 }
 
 module.exports = {
-    checkTables: checkTables,
     createTable: createTable,
     deleteTable: deleteTable,
     getTables: getTables,
