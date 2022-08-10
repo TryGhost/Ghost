@@ -86,12 +86,5 @@ describe('Html to Plaintext', function () {
             const {excerpt} = getEmailandExcert(html);
             assert.equal(excerpt, expected);
         });
-
-        it('iframes', function () {
-            const html = '<!--kg-card-begin: html--><iframe frameborder="0" height="200" scrolling="no" src="https://playlist.megaphone.fm?e=1234567" width="100%"></iframe><!--kg-card-end: html--><p>Hello world.</p>';
-            const expected = 'Hello world.';
-            const {excerpt} = getEmailandExcert(html);
-            assert.equal(excerpt, expected);
-        });
     });
 });
