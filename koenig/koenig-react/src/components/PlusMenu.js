@@ -11,7 +11,7 @@ const PlusButton = ({onClick}) => {
             aria-label="Add a card"
             className="relative mt-[-2px] ml-[-66px] flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border bg-white md:h-9 md:w-9"
             onClick={onClick}
-        ><PlusIcon className="stroke-grey-midlight h-4 w-4 stroke-2" /></button>
+        ><PlusIcon className="h-4 w-4 stroke-grey-midlight stroke-2" /></button>
     );
 };
 
