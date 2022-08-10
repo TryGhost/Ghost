@@ -126,6 +126,27 @@ const Newsletter = ghostBookshelf.Model.extend({
         return options;
     },
 
+    countRelations() {
+        return {
+            posts(modelOrCollection) {
+                modelOrCollection.query('columns', 'newsletters.*', (qb) => {
+                    qb.count('posts.id')
+                        .from('posts')
+                        .whereRaw('posts.newsletter_id = newsletters.id')
+                        .as('count__posts');
+                });
+            },
+            members(modelOrCollection) {
+                modelOrCollection.query('columns', 'newsletters.*', (qb) => {
+                    qb.count('members_newsletters.id')
+                        .from('members_newsletters')
+                        .whereRaw('members_newsletters.newsletter_id = newsletters.id')
+                        .as('count__members');
+                });
+            }
+        };
+    },
+
     orderDefaultRaw: function () {
         return 'sort_order ASC, created_at ASC, id ASC';
     },

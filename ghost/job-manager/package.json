@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "@breejs/later": "4.1.0",
-    "@tryghost/logging": "2.2.3",
+    "@tryghost/logging": "2.2.4",
     "bree": "6.5.0",
     "cron-validate": "1.4.3",
     "fastq": "1.13.0",

@@ -115,7 +115,18 @@ class CommentsService {
      */
     async getComments(options) {
         this.checkEnabled();
-        const page = await this.models.Comment.findPage(options);
+        const page = await this.models.Comment.findPage({...options, parentId: null});
+
+        return page;
+    }
+
+    /**
+     * @param {string} id - The ID of the Comment to get replies from
+     * @param {any} options
+     */
+    async getReplies(id, options) {
+        this.checkEnabled();
+        const page = await this.models.Comment.findPage({...options, parentId: id});
 
         return page;
     }
@@ -181,7 +192,8 @@ class CommentsService {
             commentId: model.id
         }));
 
-        return model;
+        // Instead of returning the model, fetch it again, so we have all the relations properly fetched
+        return await this.models.Comment.findOne({id: model.id}, {...options, require: true});
     }
 
     /**
@@ -240,7 +252,8 @@ class CommentsService {
             commentId: model.id
         }));
 
-        return model;
+        // Instead of returning the model, fetch it again, so we have all the relations properly fetched
+        return await this.models.Comment.findOne({id: model.id}, {...options, require: true});
     }
 
     /**

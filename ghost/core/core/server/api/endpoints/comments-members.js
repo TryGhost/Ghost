@@ -3,7 +3,7 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
 const commentsService = require('../../services/comments');
-const ALLOWED_INCLUDES = ['post', 'member', 'likes', 'replies', 'parent'];
+const ALLOWED_INCLUDES = ['member', 'replies', 'replies.member', 'replies.count.likes', 'replies.liked', 'count.replies', 'count.likes', 'liked', 'post', 'parent'];
 const UNSAFE_ATTRS = ['status'];
 
 const messages = {
@@ -34,6 +34,28 @@ module.exports = {
         permissions: true,
         query(frame) {
             return commentsService.controller.browse(frame);
+        }
+    },
+
+    replies: {
+        options: [
+            'include',
+            'page',
+            'limit',
+            'fields',
+            'filter',
+            'order',
+            'debug',
+            'id'
+        ],
+        validation: {
+            options: {
+                include: ALLOWED_INCLUDES
+            }
+        },
+        permissions: 'browse',
+        query(frame) {
+            return commentsService.controller.replies(frame);
         }
     },
 

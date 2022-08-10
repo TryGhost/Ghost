@@ -23,6 +23,7 @@ module.exports = function apiRoutes() {
 
     router.post('/:id/like', http(api.commentsMembers.like));
     router.delete('/:id/like', http(api.commentsMembers.unlike));
+    router.get('/:id/replies', http(api.commentsMembers.replies));
 
     router.post('/:id/report', http(api.commentsMembers.report));
 

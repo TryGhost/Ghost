@@ -26,10 +26,10 @@
     "sinon": "14.0.0"
   },
   "dependencies": {
-    "@tryghost/debug": "0.1.17",
+    "@tryghost/debug": "0.1.18",
     "@tryghost/domain-events": "0.0.0",
-    "@tryghost/errors": "1.2.14",
-    "@tryghost/logging": "2.2.3",
+    "@tryghost/errors": "1.2.15",
+    "@tryghost/logging": "2.2.4",
     "@tryghost/magic-link": "0.0.0",
     "@tryghost/member-analytics-service": "0.0.0",
     "@tryghost/member-events": "0.0.0",
@@ -37,7 +37,7 @@
     "@tryghost/members-payments": "0.0.0",
     "@tryghost/members-stripe-service": "0.0.0",
     "@tryghost/nql": "0.9.2",
-    "@tryghost/tpl": "0.1.17",
+    "@tryghost/tpl": "0.1.18",
     "@types/jsonwebtoken": "8.5.8",
     "bluebird": "3.7.2",
     "body-parser": "1.20.0",

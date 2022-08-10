@@ -107,6 +107,20 @@ Label = ghostBookshelf.Model.extend({
         return options;
     },
 
+    countRelations() {
+        return {
+            members(modelOrCollection) {
+                modelOrCollection.query('columns', 'labels.*', (qb) => {
+                    qb.count('members.id')
+                        .from('members')
+                        .leftOuterJoin('members_labels', 'members.id', 'members_labels.member_id')
+                        .whereRaw('members_labels.label_id = labels.id')
+                        .as('count__members');
+                });
+            }
+        };
+    },
+
     destroy: function destroy(unfilteredOptions) {
         const options = this.filterOptions(unfilteredOptions, 'destroy', {extraAllowedProperties: ['id']});
         options.withRelated = ['members'];
