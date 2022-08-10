@@ -122,6 +122,14 @@ export const OfferPageStyles = ({site}) => {
 .gh-portal-offer-details p {
     margin-bottom: 12px;
 }
+
+.offer .after-trial-amount {
+    margin-bottom: 0;
+}
+
+.offer .trial-duration {
+    margin-top: 16px;
+}
     `;
 };
 
@@ -442,6 +450,7 @@ export default class OfferPage extends React.Component {
         }
         return (
             <p className="footnote">{this.getOffAmount({offer})} off {durationLabel}. {renewsLabel}</p>
+            // <p className="after-trial-amount">Then $5/month</p>
         );
     }
 
@@ -473,6 +482,9 @@ export default class OfferPage extends React.Component {
                                 <span className={'currency-sign ' + currencyClass}>{getCurrencySymbol(price.currency)}</span>
                                 <span className="amount">{formatNumber(this.renderRoundedPrice(updatedPrice))}</span>
                             </div>
+                            {/* <div className="gh-portal-product-price">
+                                <span className="amount trial-duration">21 days free</span>
+                            </div> */}
                         </div>
                         {this.renderOfferMessage({offer, product})}
                     </div>
