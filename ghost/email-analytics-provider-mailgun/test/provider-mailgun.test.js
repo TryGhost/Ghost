@@ -21,56 +21,6 @@ describe('EmailAnalyticsProviderMailgun', function () {
         sinon.restore();
     });
 
-    it('can connect via config', async function () {
-        const configStub = sinon.stub(config, 'get');
-        configStub.withArgs('bulkEmail').returns({
-            mailgun: {
-                apiKey: 'apiKey',
-                domain: 'domain.com',
-                baseUrl: 'https://api.mailgun.net/v3'
-            }
-        });
-
-        const eventsMock = nock('https://api.mailgun.net')
-            .get('/v3/domain.com/events')
-            .query({
-                event: 'delivered OR opened OR failed OR unsubscribed OR complained',
-                limit: 300,
-                tags: 'bulk-email'
-            })
-            .reply(200, {'Content-Type': 'application/json'}, {
-                items: []
-            });
-
-        const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings});
-        await mailgunProvider.fetchAll(() => {});
-
-        eventsMock.isDone().should.be.true();
-    });
-
-    it('can connect via settings', async function () {
-        const settingsStub = sinon.stub(settings, 'get');
-        settingsStub.withArgs('mailgun_api_key').returns('settingsApiKey');
-        settingsStub.withArgs('mailgun_domain').returns('settingsdomain.com');
-        settingsStub.withArgs('mailgun_base_url').returns('https://example.com/v3');
-
-        const eventsMock = nock('https://example.com')
-            .get('/v3/settingsdomain.com/events')
-            .query({
-                event: 'delivered OR opened OR failed OR unsubscribed OR complained',
-                limit: 300,
-                tags: 'bulk-email'
-            })
-            .reply(200, {'Content-Type': 'application/json'}, {
-                items: []
-            });
-
-        const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings});
-        await mailgunProvider.fetchAll(() => {});
-
-        eventsMock.isDone().should.be.true();
-    });
-
     it('respects changes in settings', async function () {
         const settingsStub = sinon.stub(settings, 'get');
         settingsStub.withArgs('mailgun_api_key').returns('settingsApiKey');
@@ -392,37 +342,6 @@ describe('EmailAnalyticsProviderMailgun', function () {
 
             firstPageMock.isDone().should.be.true();
             batchHandler.callCount.should.eql(2); // one per page
-        });
-    });
-
-    describe('normalizeEvent()', function () {
-        it('works', function () {
-            const event = {
-                event: 'testEvent',
-                severity: 'testSeverity',
-                recipient: 'testRecipient',
-                timestamp: 1614275662,
-                message: {
-                    headers: {
-                        'message-id': 'testProviderId'
-                    }
-                },
-                'user-variables': {
-                    'email-id': 'testEmailId'
-                }
-            };
-
-            const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings});
-            const result = mailgunProvider.normalizeEvent(event);
-
-            result.should.deepEqual({
-                type: 'testEvent',
-                severity: 'testSeverity',
-                recipientEmail: 'testRecipient',
-                emailId: 'testEmailId',
-                providerId: 'testProviderId',
-                timestamp: new Date('2021-02-25T17:54:22.000Z')
-            });
         });
     });
 });

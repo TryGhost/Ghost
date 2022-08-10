@@ -1,8 +1,6 @@
-const mailgunJs = require('mailgun-js');
+const MailgunClient = require('@tryghost/mailgun-client');
 const moment = require('moment');
 const {EventProcessingResult} = require('@tryghost/email-analytics-service');
-const debug = require('@tryghost/debug')('email-analytics-provider-mailgun');
-const logging = require('@tryghost/logging');
 
 const EVENT_FILTER = 'delivered OR opened OR failed OR unsubscribed OR complained';
 const PAGE_LIMIT = 300;
@@ -10,50 +8,15 @@ const TRUST_THRESHOLD_S = 30 * 60; // 30 minutes
 const DEFAULT_TAGS = ['bulk-email'];
 
 class EmailAnalyticsProviderMailgun {
-    constructor({config, settings, mailgun} = {}) {
-        this.config = config;
-        this.settings = settings;
+    #mailgunClient;
+
+    constructor({config, settings}) {
+        this.#mailgunClient = new MailgunClient({config, settings});
         this.tags = [...DEFAULT_TAGS];
-        this._mailgun = mailgun;
 
-        if (this.config.get('bulkEmail:mailgun:tag')) {
-            this.tags.push(this.config.get('bulkEmail:mailgun:tag'));
+        if (config.get('bulkEmail:mailgun:tag')) {
+            this.tags.push(config.get('bulkEmail:mailgun:tag'));
         }
-    }
-
-    // unless an instance is passed in to the constructor, generate a new instance each
-    // time the getter is called to account for changes in config/settings over time
-    get mailgun() {
-        if (this._mailgun) {
-            return this._mailgun;
-        }
-
-        const bulkEmailConfig = this.config.get('bulkEmail');
-        const bulkEmailSetting = {
-            apiKey: this.settings.get('mailgun_api_key'),
-            domain: this.settings.get('mailgun_domain'),
-            baseUrl: this.settings.get('mailgun_base_url')
-        };
-        const hasMailgunConfig = !!(bulkEmailConfig && bulkEmailConfig.mailgun);
-        const hasMailgunSetting = !!(bulkEmailSetting && bulkEmailSetting.apiKey && bulkEmailSetting.baseUrl && bulkEmailSetting.domain);
-
-        if (!hasMailgunConfig && !hasMailgunSetting) {
-            logging.warn(`Bulk email service is not configured`);
-            return undefined;
-        }
-
-        const mailgunConfig = hasMailgunConfig ? bulkEmailConfig.mailgun : bulkEmailSetting;
-        const baseUrl = new URL(mailgunConfig.baseUrl);
-
-        return mailgunJs({
-            apiKey: mailgunConfig.apiKey,
-            domain: mailgunConfig.domain,
-            protocol: baseUrl.protocol,
-            host: baseUrl.hostname,
-            port: baseUrl.port,
-            endpoint: baseUrl.pathname,
-            retry: 5
-        });
     }
 
     // do not start from a particular time, grab latest then work back through
@@ -65,7 +28,7 @@ class EmailAnalyticsProviderMailgun {
             tags: this.tags.join(' AND ')
         };
 
-        return this._fetchPages(mailgunOptions, batchHandler, options);
+        return this.#fetchAnalytics(mailgunOptions, batchHandler, options);
     }
 
     // fetch from the last known timestamp-TRUST_THRESHOLD then work forwards
@@ -82,54 +45,19 @@ class EmailAnalyticsProviderMailgun {
             ascending: 'yes'
         };
 
-        return this._fetchPages(mailgunOptions, batchHandler, options);
+        return this.#fetchAnalytics(mailgunOptions, batchHandler, options);
     }
 
-    async _fetchPages(mailgunOptions, batchHandler, {maxEvents = Infinity} = {}) {
-        const {mailgun} = this;
+    async #fetchAnalytics(mailgunOptions, batchHandler, options) {
+        const events = await this.#mailgunClient.fetchEvents(mailgunOptions, batchHandler, options);
 
-        if (!mailgun) {
-            logging.warn(`Bulk email service is not configured`);
-            return new EventProcessingResult();
+        const processingResult = new EventProcessingResult();
+
+        for (const event of events) {
+            processingResult.merge(event);
         }
 
-        const result = new EventProcessingResult();
-
-        debug(`_fetchPages: starting fetching first events page`);
-        let page = await mailgun.events().get(mailgunOptions);
-        let events = page && page.items && page.items.map(this.normalizeEvent) || [];
-        debug(`_fetchPages: finished fetching first page with ${events.length} events`);
-
-        pagesLoop:
-        while (events.length !== 0) {
-            const batchResult = await batchHandler(events);
-            result.merge(batchResult);
-
-            if (result.totalEvents >= maxEvents) {
-                break pagesLoop;
-            }
-
-            const nextPageUrl = page.paging.next.replace(/https:\/\/api\.(eu\.)?mailgun\.net\/v3/, '');
-            debug(`_fetchPages: starting fetching next page ${nextPageUrl}`);
-            page = await mailgun.get(nextPageUrl);
-            events = page && page.items && page.items.map(this.normalizeEvent) || [];
-            debug(`_fetchPages: finished fetching next page with ${events.length} events`);
-        }
-
-        return result;
-    }
-
-    normalizeEvent(event) {
-        let providerId = event.message && event.message.headers && event.message.headers['message-id'];
-
-        return {
-            type: event.event,
-            severity: event.severity,
-            recipientEmail: event.recipient,
-            emailId: event['user-variables'] && event['user-variables']['email-id'],
-            providerId: providerId,
-            timestamp: new Date(event.timestamp * 1000)
-        };
+        return processingResult;
     }
 }
 

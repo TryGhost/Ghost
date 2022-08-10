@@ -5,17 +5,19 @@ const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const models = require('../../models');
-const mailgunProvider = require('./mailgun');
+const MailgunClient = require('@tryghost/mailgun-client');
 const sentry = require('../../../shared/sentry');
 const labs = require('../../../shared/labs');
 const debug = require('@tryghost/debug')('mega');
 const postEmailSerializer = require('../mega/post-email-serializer');
+const configService = require('../../../shared/config');
+const settingsCache = require('../../../shared/settings-cache');
 
 const messages = {
     error: 'The email service was unable to send an email batch.'
 };
 
-const BATCH_SIZE = mailgunProvider.BATCH_SIZE;
+const mailgunClient = new MailgunClient({config: configService, settings: settingsCache});
 
 /**
  * An object representing batch request result
@@ -64,7 +66,7 @@ class FailedBatch extends BatchResultBase {
  */
 
 module.exports = {
-    BATCH_SIZE,
+    BATCH_SIZE: MailgunClient.BATCH_SIZE,
     SuccessfulBatch,
     FailedBatch,
 
@@ -211,11 +213,12 @@ module.exports = {
      * @param {Email-like} emailData - The email to send, must be a POJO so emailModel.toJSON() before calling if needed
      * @param {[EmailRecipient]} recipients - The recipients to send the email to with their associated data
      * @param {string?} memberSegment - The member segment of the recipients
-     * @returns {Object} - {providerId: 'xxx'}
+     * @returns {Promise<Object>} - {providerId: 'xxx'}
      */
-    send(emailData, recipients, memberSegment) {
-        const mailgunInstance = mailgunProvider.getInstance();
-        if (!mailgunInstance) {
+    async send(emailData, recipients, memberSegment) {
+        const mailgunConfigured = mailgunClient.isConfigured();
+        if (!mailgunConfigured) {
+            logging.warn('Bulk email has not been configured');
             return;
         }
 
@@ -247,10 +250,11 @@ module.exports = {
 
         emailData = postEmailSerializer.renderEmailForSegment(emailData, memberSegment);
 
-        return mailgunProvider.send(emailData, recipientData, replacements).then((response) => {
+        try {
+            const response = await mailgunClient.send(emailData, recipientData, replacements);
             debug(`sent message (${Date.now() - startTime}ms)`);
             return response;
-        }).catch((error) => {
+        } catch (error) {
             // REF: possible mailgun errors https://documentation.mailgun.com/en/latest/api-intro.html#errors
             let ghostError = new errors.EmailError({
                 err: error,
@@ -263,6 +267,9 @@ module.exports = {
 
             debug(`failed to send message (${Date.now() - startTime}ms)`);
             throw ghostError;
-        });
-    }
+        }
+    },
+
+    // NOTE: for testing only!
+    _mailgunClient: mailgunClient
 };

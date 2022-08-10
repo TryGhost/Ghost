@@ -4,7 +4,6 @@ const moment = require('moment');
 const ObjectId = require('bson-objectid');
 const models = require('../../../core/server/models');
 const sinon = require('sinon');
-const mailgunProvider = require('../../../core/server/services/bulk-email/mailgun');
 
 let agent;
 
@@ -46,6 +45,7 @@ async function createPublishedPostEmail() {
 
 describe('MEGA', function () {
     let _sendEmailJob;
+    let _mailgunClient;
 
     describe('sendEmailJob', function () {
         before(async function () {
@@ -53,6 +53,7 @@ describe('MEGA', function () {
             await fixtureManager.init('newsletters', 'members:newsletters');
             await agent.loginAsOwner();
             _sendEmailJob = require('../../../core/server/services/mega/mega')._sendEmailJob;
+            _mailgunClient = require('../../../core/server/services/bulk-email')._mailgunClient;
         });
 
         afterEach(function () {
@@ -60,8 +61,8 @@ describe('MEGA', function () {
         });
 
         it('Can send a scheduled post email', async function () {
-            sinon.stub(mailgunProvider, 'getInstance').returns({});
-            sinon.stub(mailgunProvider, 'send').callsFake(async () => {
+            sinon.stub(_mailgunClient, 'getInstance').returns({});
+            sinon.stub(_mailgunClient, 'send').callsFake(async () => {
                 return {
                     id: 'stubbed-email-id'
                 };
@@ -78,8 +79,8 @@ describe('MEGA', function () {
         });
 
         it('Can handle a failed post email', async function () {
-            sinon.stub(mailgunProvider, 'getInstance').returns({});
-            sinon.stub(mailgunProvider, 'send').callsFake(async () => {
+            sinon.stub(_mailgunClient, 'getInstance').returns({});
+            sinon.stub(_mailgunClient, 'send').callsFake(async () => {
                 throw new Error('Failed to send');
             });
 
