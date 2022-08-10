@@ -11,7 +11,6 @@ const ImageCardComponent = ({...props}) => {
             selectCard={props.selectCard}
             deselectCard={props.deselectCard}
             editCard={props.editCard}
-            hasEditMode={true}
             editor={props.editor}
         >
             <Image {...props}/>
@@ -23,7 +22,7 @@ const ImageCard = createComponentCard({
     name: 'image',
     component: ImageCardComponent,
     koenigOptions: {
-        hasEditMode: true,
+        hasEditMode: false,
         selectAfterInsert: true
     }
 });
