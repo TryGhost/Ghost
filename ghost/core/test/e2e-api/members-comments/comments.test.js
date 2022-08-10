@@ -299,7 +299,7 @@ describe('Comments API', function () {
             should.notEqual(member.get('last_commented_at').getTime(), date.getTime(), 'Should update `last_commented_at` property after posting a comment.');
         });
 
-        let replyId;
+        let testReplyId;
         it('Limits returned replies to 3', async function () {
             const parentId = fixtureManager.get('comments', 0).id;
 
@@ -335,7 +335,7 @@ describe('Comments API', function () {
                         comments: [commentMatcher]
                     });
                 if (index === 0) {
-                    replyId = reply.comments[0].id;
+                    testReplyId = reply.comments[0].id;
                 }
             }
             
@@ -413,7 +413,7 @@ describe('Comments API', function () {
         it('Can like a reply', async function () {
             // Check initial status: two replies before test
             await membersAgent
-                .post(`/api/comments/${replyId}/like/`)
+                .post(`/api/comments/${testReplyId}/like/`)
                 .expectStatus(204)
                 .matchHeaderSnapshot({
                     etag: anyEtag
@@ -422,7 +422,7 @@ describe('Comments API', function () {
 
             // Check liked
             await membersAgent
-                .get(`/api/comments/${replyId}/`)
+                .get(`/api/comments/${testReplyId}/`)
                 .expectStatus(200)
                 .matchHeaderSnapshot({
                     etag: anyEtag
@@ -455,7 +455,7 @@ describe('Comments API', function () {
                     should(body.meta.pagination.next).eql(null);
 
                     // Check liked + likes working for replies too
-                    should(body.comments[2].id).eql(replyId);
+                    should(body.comments[2].id).eql(testReplyId);
                     should(body.comments[2].count.likes).eql(1);
                     should(body.comments[2].liked).eql(true);
                 });
