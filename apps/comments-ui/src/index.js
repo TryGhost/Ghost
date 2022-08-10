@@ -41,7 +41,7 @@ function getSiteData() {
         const stylesUrl = scriptTag.dataset.styles;
         const title = scriptTag.dataset.title === 'null' ? null : scriptTag.dataset.title;
         const showCount = scriptTag.dataset.count === 'true';
-        const publication = 'The Off-Season'; // TODO: replace with dynamic data from script
+        const publication = scriptTag.dataset.publication ?? ''; // TODO: replace with dynamic data from script
 
         return {siteUrl, stylesUrl, apiKey, apiUrl, sentryDsn, postId, adminUrl, colorScheme, avatarSaturation, accentColor, appVersion, commentsEnabled, title, showCount, publication};
     }
