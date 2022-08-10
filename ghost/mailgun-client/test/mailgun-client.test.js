@@ -5,6 +5,13 @@ const sinon = require('sinon');
 // module under test
 const MailgunClient = require('../');
 
+// Some sample Mailgun API options we might want to use
+const MAILGUN_OPTIONS = {
+    event: 'delivered OR opened OR failed OR unsubscribed OR complained',
+    limit: 300,
+    tags: 'bulk-email'
+};
+
 describe('MailgunClient', function () {
     let config, settings;
 
@@ -53,21 +60,15 @@ describe('MailgunClient', function () {
         settingsStub.withArgs('mailgun_domain').returns('settingsdomain.com');
         settingsStub.withArgs('mailgun_base_url').returns('https://example.com/v3');
 
-        const mailgunOptions = {
-            event: 'delivered OR opened OR failed OR unsubscribed OR complained',
-            limit: 300,
-            tags: 'bulk-email'
-        };
-
         const eventsMock1 = nock('https://example.com')
             .get('/v3/settingsdomain.com/events')
-            .query(mailgunOptions)
+            .query(MAILGUN_OPTIONS)
             .reply(200, {'Content-Type': 'application/json'}, {
                 items: []
             });
 
         const mailgunClient = new MailgunClient({config, settings});
-        await mailgunClient.fetchEvents(mailgunOptions, () => {});
+        await mailgunClient.fetchEvents(MAILGUN_OPTIONS, () => {});
 
         settingsStub.withArgs('mailgun_api_key').returns('settingsApiKey2');
         settingsStub.withArgs('mailgun_domain').returns('settingsdomain2.com');
@@ -75,15 +76,140 @@ describe('MailgunClient', function () {
 
         const eventsMock2 = nock('https://example2.com')
             .get('/v3/settingsdomain2.com/events')
-            .query(mailgunOptions)
+            .query(MAILGUN_OPTIONS)
             .reply(200, {'Content-Type': 'application/json'}, {
                 items: []
             });
 
-        await mailgunClient.fetchEvents(mailgunOptions, () => {});
+        await mailgunClient.fetchEvents(MAILGUN_OPTIONS, () => {});
 
         assert.equal(eventsMock1.isDone(), true);
         assert.equal(eventsMock2.isDone(), true);
+    });
+
+    describe('fetchEvents()', function () {
+        it('fetches from now and works backwards', async function () {
+            const configStub = sinon.stub(config, 'get');
+            configStub.withArgs('bulkEmail').returns({
+                mailgun: {
+                    apiKey: 'apiKey',
+                    domain: 'domain.com',
+                    baseUrl: 'https://api.mailgun.net/v3'
+                }
+            });
+
+            const firstPageMock = nock('https://api.mailgun.net')
+                .get('/v3/domain.com/events')
+                .query(MAILGUN_OPTIONS)
+                .replyWithFile(200, `${__dirname}/fixtures/all-1.json`, {
+                    'Content-Type': 'application/json'
+                });
+
+            const secondPageMock = nock('https://api.mailgun.net')
+                .get('/v3/domain.com/events/all-1-next')
+                .replyWithFile(200, `${__dirname}/fixtures/all-2.json`, {
+                    'Content-Type': 'application/json'
+                });
+
+            // requests continue until an empty items set is returned
+            nock('https://api.mailgun.net')
+                .get('/v3/domain.com/events/all-2-next')
+                .reply(200, {'Content-Type': 'application/json'}, {
+                    items: []
+                });
+
+            const batchHandler = sinon.spy();
+
+            const mailgunClient = new MailgunClient({config, settings});
+            await mailgunClient.fetchEvents(MAILGUN_OPTIONS, batchHandler);
+
+            assert.equal(firstPageMock.isDone(), true);
+            assert.equal(secondPageMock.isDone(), true);
+            assert.equal(batchHandler.callCount, 2); // one per page
+        });
+
+        it('fetches with a limit', async function () {
+            const configStub = sinon.stub(config, 'get');
+            configStub.withArgs('bulkEmail').returns({
+                mailgun: {
+                    apiKey: 'apiKey',
+                    domain: 'domain.com',
+                    baseUrl: 'https://api.mailgun.net/v3'
+                }
+            });
+
+            const firstPageMock = nock('https://api.mailgun.net')
+                .get('/v3/domain.com/events')
+                .query(MAILGUN_OPTIONS)
+                .replyWithFile(200, `${__dirname}/fixtures/all-1.json`, {
+                    'Content-Type': 'application/json'
+                });
+
+            const secondPageMock = nock('https://api.mailgun.net')
+                .get('/v3/domain.com/events/all-1-next')
+                .replyWithFile(200, `${__dirname}/fixtures/all-2.json`, {
+                    'Content-Type': 'application/json'
+                });
+
+            // requests continue until an empty items set is returned
+            nock('https://api.mailgun.net')
+                .get('/v3/domain.com/events/all-2-next')
+                .reply(200, {'Content-Type': 'application/json'}, {
+                    items: []
+                });
+
+            const batchHandler = sinon.stub().returnsArg(0);
+
+            const maxEvents = 3;
+
+            const mailgunClient = new MailgunClient({config, settings});
+            const events = await mailgunClient.fetchEvents(MAILGUN_OPTIONS, batchHandler, {maxEvents});
+
+            assert.equal(events.length, 4); // `maxEvents` is 3 but the first page contains 4 events
+            assert.equal(firstPageMock.isDone(), true);
+            assert.equal(secondPageMock.isDone(), false);
+            assert.equal(batchHandler.callCount, 1);
+        });
+
+        it('supports EU Mailgun domain', async function () {
+            const configStub = sinon.stub(config, 'get');
+            configStub.withArgs('bulkEmail').returns({
+                mailgun: {
+                    apiKey: 'apiKey',
+                    domain: 'domain.com',
+                    baseUrl: 'https://api.eu.mailgun.net/v3'
+                }
+            });
+
+            const firstPageMock = nock('https://api.eu.mailgun.net')
+                .get('/v3/domain.com/events')
+                .query(MAILGUN_OPTIONS)
+                .replyWithFile(200, `${__dirname}/fixtures/all-1-eu.json`, {
+                    'Content-Type': 'application/json'
+                });
+
+            const secondPageMock = nock('https://api.eu.mailgun.net')
+                .get('/v3/domain.com/events/all-1-next')
+                .replyWithFile(200, `${__dirname}/fixtures/all-2-eu.json`, {
+                    'Content-Type': 'application/json'
+                });
+
+            // requests continue until an empty items set is returned
+            nock('https://api.eu.mailgun.net')
+                .get('/v3/domain.com/events/all-2-next')
+                .reply(200, {'Content-Type': 'application/json'}, {
+                    items: []
+                });
+
+            const batchHandler = sinon.spy();
+
+            const mailgunClient = new MailgunClient({config, settings});
+            await mailgunClient.fetchEvents(MAILGUN_OPTIONS, batchHandler);
+
+            assert.equal(firstPageMock.isDone(), true);
+            assert.equal(secondPageMock.isDone(), true);
+            assert.equal(batchHandler.callCount, 2); // one per page
+        });
     });
 
     describe('normalizeEvent()', function () {
