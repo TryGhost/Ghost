@@ -1,4 +1,5 @@
 import Component from '@glimmer/component';
+import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {action} from '@ember/object';
 import {tracked} from '@glimmer/tracking';
 
@@ -7,6 +8,7 @@ export default class GhKoenigEditorReactComponent extends Component {
     titleElement = null;
     koenigEditor = null;
     mousedownY = 0;
+    uploadUrl = `${ghostPaths().apiRoot}/images/upload/`;
 
     @tracked titleIsHovered = false;
     @tracked titleIsFocused = false;
