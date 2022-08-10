@@ -361,7 +361,7 @@ const Form = (props) => {
             `}>
                 <div className="w-full relative">
                     <div className="pr-[1px] font-sans leading-normal dark:text-neutral-300">
-                        <div className={`transition-[padding] duration-150 delay-100 relative w-full pl-[52px] ${shouldFormBeReduced && 'pl-0'} ${isFormReallyOpen && 'pt-[64px]'}`}>
+                        <div className={`transition-[padding] duration-150 delay-100 relative w-full pl-[52px] ${shouldFormBeReduced && 'pl-0'} ${isFormReallyOpen && 'pt-[64px] pl-[1px] sm:pl-[52px]'}`}>
                             <div
                                 className={`
                                 transition-all duration-150 delay-100
