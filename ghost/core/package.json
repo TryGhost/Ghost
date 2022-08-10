@@ -45,7 +45,7 @@
     "lint:code": "yarn lint:server && yarn lint:shared && yarn lint:frontend",
     "lint": "yarn lint:server && yarn lint:shared && yarn lint:frontend && yarn lint:test",
     "build:css": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
-    "prepack": "yarn workspace ghost-admin run build:prod && yarn build:css"
+    "prepack": "npx --yes daniellockyer/monobundle && yarn workspace ghost-admin run build:prod && yarn build:css"
   },
   "engines": {
     "node": "^14.17.0 || ^16.13.0",
