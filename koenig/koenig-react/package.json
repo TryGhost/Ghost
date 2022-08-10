@@ -56,7 +56,7 @@
     "mobiledoc-kit": "npm:@tryghost/mobiledoc-kit-experimental",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-mobiledoc-editor": "0.13.0",
+    "react-mobiledoc-editor": "0.14.2",
     "react-scripts": "5.0.1",
     "uuid": "^8.3.2",
     "web-vitals": "^2.1.0"
