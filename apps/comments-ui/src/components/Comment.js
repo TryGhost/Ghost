@@ -14,9 +14,9 @@ function EditedInfo({comment}) {
         return null;
     }
     return (
-        <div>
+        <span>
             <span className="mx-[0.3em]">·</span>Edited
-        </div>
+        </span>
     );
 }
 
@@ -99,9 +99,11 @@ const Comment = ({updateIsEditing = null, isEditing, ...props}) => {
                                 <div>
                                     <h4 className="text-[17px] font-sans font-bold tracking-tight text-[rgb(23,23,23] dark:text-[rgba(255,255,255,0.85)]">{!comment.member ? 'Deleted member' : (comment.member.name ? comment.member.name : 'Anonymous')}</h4>
                                     <div className="flex items-baseline font-sans text-[14px] tracking-tight text-neutral-400 dark:text-[rgba(255,255,255,0.5)]">
-                                        {memberBio && <div>{memberBio}<span className="mx-[0.3em]">·</span></div>}
-                                        <div title={formatExplicitTime(comment.created_at)}>{formatRelativeTime(comment.created_at)}</div>
-                                        <EditedInfo comment={comment} />
+                                        <span className="inline-block max-w-full text-ellipsis overflow-hidden ...">
+                                            {memberBio && <span>{memberBio}<span className="mx-[0.3em]">·</span></span>}
+                                            <span title={formatExplicitTime(comment.created_at)}>{formatRelativeTime(comment.created_at)}</span>
+                                            <EditedInfo comment={comment} />
+                                        </span>
                                     </div>
                                 </div>}
                         </div>

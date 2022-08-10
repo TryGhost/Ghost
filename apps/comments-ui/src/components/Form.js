@@ -317,7 +317,9 @@ const Form = (props) => {
 
     const handleShowDialog = (event, options) => {
         event.preventDefault();
+        
         setPreventClosing(true);
+        editor?.commands.blur();
 
         dispatchAction('openPopup', {
             type: 'addDetailsDialog',

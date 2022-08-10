@@ -2,6 +2,7 @@ import React, {useContext, useState, useRef, useEffect} from 'react';
 import {Transition} from '@headlessui/react';
 import CloseButton from './CloseButton';
 import AppContext from '../../AppContext';
+import {isMobile} from '../../utils/helpers';
 
 const AddNameDialog = (props) => {
     const inputNameRef = useRef(null);
@@ -45,17 +46,19 @@ const AddNameDialog = (props) => {
 
     // using <input autofocus> breaks transitions in browsers. So we need to use a timer
     useEffect(() => {
-        const timer = setTimeout(() => {
-            if (props.bioAutofocus) {
-                inputBioRef.current?.focus();
-            } else {
-                inputNameRef.current?.focus();
-            }  
-        }, 200);
+        if (!isMobile()) {
+            const timer = setTimeout(() => {
+                if (props.bioAutofocus) {
+                    inputBioRef.current?.focus();
+                } else {
+                    inputNameRef.current?.focus();
+                }  
+            }, 200);
 
-        return () => {
-            clearTimeout(timer);
-        };
+            return () => {
+                clearTimeout(timer);
+            };
+        }
     }, [inputNameRef, inputBioRef]);
 
     const renderExampleProfiles = (index) => {
@@ -106,12 +109,14 @@ const AddNameDialog = (props) => {
     return (
         <div className="overflow-hidden relative bg-white w-screen sm:w-[720px] h-screen sm:h-auto p-[28px] sm:p-0 rounded-none sm:rounded-xl text-center shadow-modal" onMouseDown={stopPropagation}>
             <div className="flex">
-                <div className="hidden sm:flex sm:flex-col sm:justify-center sm:items-center sm:w-[40%] bg-[#1C1C1C]">
-                    <div className="flex flex-col">
-                        {renderExampleProfiles()}
+                {!isMobile() &&
+                    <div className={`flex flex-col justify-center items-center w-[40%] bg-[#1C1C1C]`}>
+                        <div className="flex flex-col">
+                            {renderExampleProfiles()}
+                        </div>
                     </div>
-                </div>
-                <div className="w-[100%] sm:w-[60%] p-0 sm:p-8">
+                }
+                <div className={`${isMobile() ? 'w-full' : 'w-[60%]'} p-0 sm:p-8`}>
                     <h1 className="font-sans font-bold tracking-tight text-[24px] mb-1 text-black text-center sm:text-left">Complete your profile<span className="hidden sm:inline">.</span></h1>
                     <p className="font-sans text-base text-neutral-500 pr-0 sm:pr-10 leading-9 text-center sm:text-left">Add context to your comment, share your name and expertise to foster a healthy discussion.</p>
                     <section className="mt-8 text-left">
