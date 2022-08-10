@@ -13,6 +13,7 @@ const KoenigEditor = ({...props}) => {
                 onChange={props.onChange}
                 editorRange={props.editorRange}
                 onCursorExitAtTop={props.onCursorExitAtTop}
+                uploadUrl={props.uploadUrl}
             />
         </div>
     );

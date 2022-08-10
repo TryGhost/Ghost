@@ -6,16 +6,9 @@ import DEFAULT_CARDS from '../cards';
 import DEFAULT_KEY_COMMANDS from '../key-commands';
 import DEFAULT_TEXT_EXPANSIONS from '../text-expansions';
 import Toolbar from './toolbar';
+import {useConstructor} from '../utils/useConstructor';
 
 // "hack" to work around function components not having any constructor-like behavior
-const useConstructor = (callback = function () {}) => {
-    const hasBeenCalled = React.useRef(false);
-    if (hasBeenCalled.current) {
-        return;
-    }
-    callback();
-    hasBeenCalled.current = true;
-};
 
 const Koenig = ({
     mobiledoc,
@@ -26,7 +19,8 @@ const Koenig = ({
     textExpansions = DEFAULT_TEXT_EXPANSIONS,
     didCreateEditor,
     onChange,
-    onCursorExitAtTop
+    onCursorExitAtTop,
+    uploadUrl
 }) => {
     const [selectedRange, setSelectedRange] = React.useState(null);
     const [activeMarkupTags, setActiveMarkupTags] = React.useState({});
@@ -47,7 +41,8 @@ const Koenig = ({
             onSelectedRangeChange: setSelectedRange,
             onActiveMarkupTagsChange: setActiveMarkupTags,
             onActiveSectionTagsChange: setActiveSectionTags,
-            onCursorExitAtTop
+            onCursorExitAtTop,
+            uploadUrl
         });
 
         koenigEditorRef.current = kgInstance;
@@ -68,7 +63,7 @@ const Koenig = ({
 
     return (
         <Container
-            className='relative'
+            className="relative"
             id="mobiledoc-editor"
             data-testid="mobiledoc-container"
             mobiledoc={mobiledoc}

@@ -20,7 +20,8 @@ class KoenigEditor {
         onSelectedRangeChange,
         onActiveMarkupTagsChange,
         onActiveSectionTagsChange,
-        onCursorExitAtTop
+        onCursorExitAtTop,
+        uploadUrl
     } = {}) {
         this.atoms = atoms;
         this.cards = cards;
@@ -31,6 +32,7 @@ class KoenigEditor {
         this.onActiveMarkupTagsChange = onActiveMarkupTagsChange;
         this.onActiveSectionTagsChange = onActiveSectionTagsChange;
         this.onCursorExitAtTop = onCursorExitAtTop;
+        this.uploadUrl = uploadUrl;
 
         const componentHooks = {
             [ADD_CARD_HOOK]: ({env, options, payload}, koenigOptions, destinationElement) => {
@@ -56,7 +58,8 @@ class KoenigEditor {
                         name,
                         options,
                         payload: payloadCopy,
-                        postModel
+                        postModel,
+                        uploadUrl
                     },
                     destinationElement,
                     destinationElementId: destinationElement.id,
