@@ -34,21 +34,45 @@ const Image = (props) => {
         alt: props?.payload?.alt || '',
         caption: props?.payload?.caption || 'image caption'
     });
+    const [uploadProgress, setUploadProgress] = React.useState({
+        progress: 0,
+        uploading: false
+    });
+    const [uploadForm, setUploadForm] = React.useState(null);
+
     const [editAlt, setEditAlt] = React.useState(true);
     const uploadRef = React.useRef(null);
     const onUploadChange = async (e) => {
         const formData = new FormData();
         formData.append('file', e.target.files[0]);
-        await fetch(props.uploadUrl, {
-            method: 'POST',
-            body: formData
-        }).then(res => res.json())
-            .then((data) => {
-                setPayload({...payload, src: data?.images?.[0]?.url});
-                props.env.save({src: data?.images?.[0]?.url});
-            }
-            );
+        setUploadForm(formData);
     };
+
+    React.useEffect(() => {
+        const handleUpload = async () => {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', props?.uploadUrl);
+            setUploadProgress({uploading: true, progress: 0});
+            xhr.upload.onprogress = (event) => {
+                const percentComplete = (event.loaded / event.total) * 100;
+                setUploadProgress({
+                    ...uploadProgress,
+                    uploading: true,
+                    progress: percentComplete
+                });
+            };
+            xhr.onload = () => {
+                const response = JSON.parse(xhr.response);
+                setPayload({...payload, src: response?.images[0]?.url});
+                props.env.save({src: response?.images[0]?.url});
+                setUploadProgress({uploading: false, progress: 0});
+            };
+            xhr.send(uploadForm);
+        };
+        if (uploadForm) {
+            handleUpload();
+        }
+    }, [uploadForm]);
     
     return (
         <div>
@@ -58,7 +82,7 @@ const Image = (props) => {
                         payload.src ?
                             <img src={payload?.src || ``} alt={payload?.alt || 'image alt description'} />
                             :
-                            <ImagePlaceholder uploadRef={uploadRef} />
+                            <ImagePlaceholder uploadRef={uploadRef} progress={uploadProgress} />
                     }
                 </div>
                 <form onChange={onUploadChange}>
