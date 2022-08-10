@@ -1,10 +1,12 @@
 import React from 'react';
 import ImagePlaceholder from './placeholder';
+import {Editor, Container} from 'react-mobiledoc-editor';
 
-const Editor = ({payload, Alt, env}) => {
+const CapEditor = ({payload, Alt, env}) => {
     const handleTextChange = (e) => {
-        payload.setPayload({...payload.payload, alt: e.target.value});
-        env.save({alt: e.target.value, src: payload.payload.src});
+        console.log(e);
+        // payload.setPayload({...payload.payload, alt: e.target.value});
+        // env.save({alt: e.target.value, src: payload.payload.src});
     };
 
     return (
@@ -20,7 +22,11 @@ const Editor = ({payload, Alt, env}) => {
                                 onChange={handleTextChange}
                             />
                             :
-                            <p>should be mobiledoc editor here</p>
+                            <Container
+                                onChange={handleTextChange}
+                            >
+                                <Editor/>
+                            </Container>
                     }
                 </div>
             </div>
@@ -32,7 +38,7 @@ const Image = (props) => {
     const [payload, setPayload] = React.useState({
         src: props?.payload?.src || null,
         alt: props?.payload?.alt || '',
-        caption: props?.payload?.caption || 'image caption'
+        caption: props?.payload?.caption || ''
     });
     const [uploadProgress, setUploadProgress] = React.useState({
         progress: 0,
@@ -40,12 +46,18 @@ const Image = (props) => {
     });
     const [uploadForm, setUploadForm] = React.useState(null);
 
-    const [editAlt, setEditAlt] = React.useState(true);
+    const [editAlt, setEditAlt] = React.useState(false);
+
     const uploadRef = React.useRef(null);
-    const onUploadChange = async (e) => {
+
+    const handleFiles = (files) => {
         const formData = new FormData();
-        formData.append('file', e.target.files[0]);
+        formData.append('file', files[0]);
         setUploadForm(formData);
+    };
+    
+    const onUploadChange = async (e) => {
+        handleFiles(e.target.files);
     };
 
     React.useEffect(() => {
@@ -75,14 +87,14 @@ const Image = (props) => {
     }, [uploadForm]);
     
     return (
-        <div>
+        <figure>
             <div className="__mobiledoc-card">
                 <div className='relative'>
                     {
                         payload.src ?
                             <img src={payload?.src || ``} alt={payload?.alt || 'image alt description'} />
                             :
-                            <ImagePlaceholder uploadRef={uploadRef} progress={uploadProgress} />
+                            <ImagePlaceholder uploadRef={uploadRef} progress={uploadProgress} handleFiles={handleFiles} />
                     }
                 </div>
                 <form onChange={onUploadChange}>
@@ -94,10 +106,10 @@ const Image = (props) => {
                         hidden={true}
                     />
                 </form>
-                <Editor Alt={editAlt} payload={{payload, setPayload}} env={props.env} />
-                <button onClick={() => setEditAlt(!editAlt)} className={` absolute bottom-0 right-0 cursor-pointer rounded-lg text-sm shadow-[0_0_0_1px] ${editAlt ? 'bg-green-500' : 'shadow-gray-500'} `}>Alt</button>
+                <CapEditor Alt={editAlt} payload={{payload, setPayload}} env={props.env} />
+                <button onClick={() => setEditAlt(!editAlt)} className={` absolute bottom-0 right-0 cursor-pointer rounded-lg text-sm shadow-[0_0_0_1px] ${editAlt ? 'bg-green' : 'shadow-gray-500'} `}>Alt</button>
             </div>
-        </div>
+        </figure>
     );
 };
 

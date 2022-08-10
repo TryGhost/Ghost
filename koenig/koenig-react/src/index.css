@@ -336,6 +336,9 @@
     div + p { /* Mobiledoc cards can be addressed by their wrapper div element */
         margin: 2.8rem 0 0;
     }
+    div + figure { /* Mobiledoc cards can be addressed by their wrapper div element */
+        margin: 2.8rem 0 0;
+    }
 
     /* Paragraph right after title */
     p:first-child {
