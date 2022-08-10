@@ -5,6 +5,7 @@ import Image from './Image';
 const ImageCardComponent = ({...props}) => {
     return (
         <Card
+            {...props}
             className="kg-card-hover"
             isSelected={props.isSelected}
             isEditing={props.isEditing}
