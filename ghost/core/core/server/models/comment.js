@@ -8,8 +8,7 @@ const messages = {
     emptyComment: 'The body of a comment cannot be empty',
     commentNotFound: 'Comment could not be found',
     notYourCommentToEdit: 'You may only edit your own comments',
-    notYourCommentToDestroy: 'You may only delete your own comments',
-    cannotEditDeletedComment: 'You may only edit published comments'
+    notYourCommentToDestroy: 'You may only delete your own comments'
 };
 
 /**
@@ -52,7 +51,9 @@ const Comment = ghostBookshelf.Model.extend({
     },
 
     replies() {
-        return this.hasMany('Comment', 'parent_id');
+        return this.hasMany('Comment', 'parent_id', 'id')
+            .query('orderBy', 'id', 'ASC')
+            .query('limit', 3);
     },
 
     emitChange: function emitChange(event, options) {
@@ -62,12 +63,6 @@ const Comment = ghostBookshelf.Model.extend({
 
     onSaving() {
         ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
-
-        if (this.hasChanged('html') && this.get('status') !== 'published') {
-            throw new ValidationError({
-                message: tpl(messages.cannotEditDeletedComment)
-            });
-        }
 
         if (this.hasChanged('html')) {
             const sanitizeHtml = require('sanitize-html');
@@ -105,13 +100,16 @@ const Comment = ghostBookshelf.Model.extend({
     },
 
     enforcedFilters: function enforcedFilters(options) {
-        if (options.context && options.context.user) {
-            return null;
+        // Convenicence option to merge all filters with parent_id:null filter
+        if (options.parentId !== undefined) {
+            if (options.parentId === null) {
+                return 'parent_id:null';
+            }
+            return 'parent_id:' + options.parentId;
         }
 
-        return 'parent_id:null';
+        return null;
     }
-
 }, {
     destroy: function destroy(unfilteredOptions) {
         let options = this.filterOptions(unfilteredOptions, 'destroy', {extraAllowedProperties: ['id']});
@@ -181,11 +179,74 @@ const Comment = ghostBookshelf.Model.extend({
      */
     defaultRelations: function defaultRelations(methodName, options) {
         // @todo: the default relations are not working for 'add' when we add it below
-        if (['findAll', 'findPage', 'edit', 'findOne'].indexOf(methodName) !== -1) {
+        if (['findAll', 'findPage', 'edit', 'findOne', 'destroy'].indexOf(methodName) !== -1) {
             if (!options.withRelated || options.withRelated.length === 0) {
-                options.withRelated = ['member', 'likes', 'replies', 'replies.member', 'replies.likes'];
+                if (options.parentId) {
+                    // Do not include replies for replies
+                    options.withRelated = [
+                        // Relations
+                        'member', 'count.likes', 'count.liked'
+                    ];
+                } else {
+                    options.withRelated = [
+                        // Relations
+                        'member', 'count.replies', 'count.likes', 'count.liked',
+                        // Replies (limited to 3)
+                        'replies', 'replies.member' , 'replies.count.likes', 'replies.count.liked'
+                    ];
+                }
             }
         }
+
+        return options;
+    },
+
+    countRelations() {
+        return {
+            replies(modelOrCollection) {
+                modelOrCollection.query('columns', 'comments.*', (qb) => {
+                    qb.count('replies.id')
+                        .from('comments AS replies')
+                        .whereRaw('replies.parent_id = comments.id')
+                        .as('count__replies');
+                });
+            },
+            likes(modelOrCollection) {
+                modelOrCollection.query('columns', 'comments.*', (qb) => {
+                    qb.count('comment_likes.id')
+                        .from('comment_likes')
+                        .whereRaw('comment_likes.comment_id = comments.id')
+                        .as('count__likes');
+                });
+            },
+            liked(modelOrCollection, options) {
+                modelOrCollection.query('columns', 'comments.*', (qb) => {
+                    if (options.context && options.context.member && options.context.member.id) {
+                        qb.count('comment_likes.id')
+                            .from('comment_likes')
+                            .whereRaw('comment_likes.comment_id = comments.id')
+                            .where('comment_likes.member_id', options.context.member.id)
+                            .as('count__liked');
+                        return;
+                    }
+
+                    // Return zero
+                    qb.select(ghostBookshelf.knex.raw('0')).as('count__liked');
+                });
+            }
+        };
+    },
+
+    /**
+     * Returns an array of keys permitted in a method's `options` hash, depending on the current method.
+     * @param {String} methodName The name of the method to check valid options for.
+     * @return {Array} Keys allowed in the `options` hash of the model's method.
+     */
+    permittedOptions: function permittedOptions(methodName) {
+        let options = ghostBookshelf.Model.permittedOptions.call(this, methodName);
+
+        // The comment model additionally supports having a parentId option
+        options.push('parentId');
 
         return options;
     }

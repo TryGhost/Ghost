@@ -45,5 +45,9 @@ module.exports = {
 
     get webhooks() {
         return require('./webhooks');
+    },
+
+    get comments() {
+        return require('./comments');
     }
 };
