@@ -253,9 +253,12 @@ module.exports = class WebhookController {
 
             for (const subscription of customer.subscriptions.data) {
                 try {
+                    const offerId = session.metadata?.offer;
+
                     await this.deps.memberRepository.linkSubscription({
                         id: member.id,
-                        subscription
+                        subscription,
+                        offerId
                     });
                 } catch (err) {
                     if (err.code !== 'ER_DUP_ENTRY' && err.code !== 'SQLITE_CONSTRAINT') {

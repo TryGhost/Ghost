@@ -327,7 +327,7 @@ module.exports = class MemberRepository {
         if (memberData.bio) {
             memberData.bio = memberData.bio.trim();
         }
-   
+
         // Determine if we need to fetch the initial member with relations
         const needsProducts = this._stripeAPIService.configured && data.products;
         const needsNewsletters = memberData.newsletters || typeof memberData.subscribed === 'boolean';
@@ -698,6 +698,7 @@ module.exports = class MemberRepository {
      * @param {Object} data
      * @param {String} data.id - member ID
      * @param {Object} data.subscription
+     * @param {String} data.offerId
      * @param {*} options
      * @returns
      */
@@ -785,7 +786,9 @@ module.exports = class MemberRepository {
         }
 
         let stripeCouponId = subscription.discount && subscription.discount.coupon ? subscription.discount.coupon.id : null;
-        let offerId = null;
+
+        // For trial offers, offer id is passed from metadata as there is no stripe coupon
+        let offerId = data.offerId || null;
 
         if (stripeCouponId) {
             // Get the offer from our database
@@ -831,6 +834,11 @@ module.exports = class MemberRepository {
 
         let eventData = {};
         if (model) {
+            // CASE: Offer is already mapped against sub, don't overwrite it with NULL
+            // Needed for trial offers, which don't have a stripe coupon/discount attached to sub
+            if (!subscriptionData.offer_id) {
+                delete subscriptionData.offer_id;
+            }
             const updated = await this._StripeCustomerSubscription.edit(subscriptionData, {
                 ...options,
                 id: model.id

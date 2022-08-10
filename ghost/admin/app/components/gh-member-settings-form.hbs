@@ -170,16 +170,24 @@
                                             <div class="gh-membertier-cancelreason"><span class="fw6">Cancellation reason:</span> {{sub.cancellationReason}}</div>
                                         {{/if}}
                                         {{#if sub.offer}}
-                                            <div>
-                                                <span class="gh-cp-membertier-pricelabel"> {{sub.offer.name}} </span>
-                                                offer
-                                                {{#if (eq sub.offer.type 'fixed')}}
-                                                    ({{currency-symbol sub.offer.currency}}{{gh-price-amount sub.offer.amount}} off)
-                                                {{else}}
-                                                    ({{sub.offer.amount}}% off)
-                                                {{/if}}
-                                                applied to subscription
-                                            </div>
+                                            {{#if (eq sub.offer.type "trial")}}
+                                                <div>
+                                                    <span class="gh-cp-membertier-pricelabel"> {{sub.offer.name}} </span>
+                                                    offer
+                                                    ({{sub.offer.amount}} days free)
+                                                </div>
+                                            {{else}}
+                                                <div>
+                                                    <span class="gh-cp-membertier-pricelabel"> {{sub.offer.name}} </span>
+                                                    offer
+                                                    {{#if (eq sub.offer.type 'fixed')}}
+                                                        ({{currency-symbol sub.offer.currency}}{{gh-price-amount sub.offer.amount}} off)
+                                                    {{else}}
+                                                        ({{sub.offer.amount}}% off)
+                                                    {{/if}}
+                                                    applied to subscription
+                                                </div>
+                                            {{/if}}
                                         {{/if}}
                                         <div class="gh-membertier-created">
                                             Created on {{sub.startDate}}
