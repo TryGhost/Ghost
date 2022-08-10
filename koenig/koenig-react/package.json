@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/koenig-react",
-  "version": "0.0.21",
+  "version": "0.0.23",
   "repository": "https://github.com/TryGhost/Koenig/tree/main/packages/koenig-react",
   "author": "Ghost Foundation",
   "license": "MIT",
