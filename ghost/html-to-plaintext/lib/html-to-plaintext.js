@@ -17,8 +17,6 @@ const baseSettings = {
     selectors: [
         // Ignore images, equiv ignoreImage: true
         {selector: 'img', format: 'skip'},
-        // Ignore iframes
-        {selector: 'iframe', format: 'skip'},
 
         // disable uppercase headings, equiv uppercaseHeadings: false
         {selector: 'h1', options: {uppercase: false}},
