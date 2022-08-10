@@ -172,12 +172,24 @@
 
 /* Notifications */
 .user-settings-heading {
-    border-top: 1px solid var(--lightgrey);
-    padding-top: 4vw;
-    margin-top: 4vw;
+    margin-bottom: 3rem;
     font-size: 1.55rem;
     font-weight: 700;
     line-height: 1.3em;
+}
+
+.user-settings-subgroup {
+    border-top: 1px solid var(--lightgrey);
+    font-size: 1.55rem;
+    font-weight: 700;
+    line-height: 1.3em;
+    padding-top: 3vw;
+    margin-top: 4vw;
+    margin-bottom: -1vw;
+}
+
+.user-settings-subgroup .form-group {
+    margin-bottom: 0;
 }
 
 .user-setting-toggle {
