@@ -192,7 +192,8 @@ class CommentsService {
             commentId: model.id
         }));
 
-        return model;
+        // Instead of returning the model, fetch it again, so we have all the relations properly fetched
+        return await this.models.Comment.findOne({id: model.id}, {...options, require: true});
     }
 
     /**
@@ -251,7 +252,8 @@ class CommentsService {
             commentId: model.id
         }));
 
-        return model;
+        // Instead of returning the model, fetch it again, so we have all the relations properly fetched
+        return await this.models.Comment.findOne({id: model.id}, {...options, require: true});
     }
 
     /**

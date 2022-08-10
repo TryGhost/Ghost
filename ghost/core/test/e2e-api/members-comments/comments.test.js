@@ -185,7 +185,7 @@ describe('Comments API', function () {
                     location: anyLocationFor('comments')
                 })
                 .matchBodySnapshot({
-                    comments: [commentMatcherNoMember]
+                    comments: [commentMatcher]
                 });
             // Save for other tests
             commentId = body.comments[0].id;
@@ -414,7 +414,6 @@ describe('Comments API', function () {
                     }]
                 });
         });
-
 
         it('Can like a reply', async function () {
             // Check initial status: two replies before test

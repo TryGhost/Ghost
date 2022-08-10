@@ -92,11 +92,23 @@ exports[`Comments API when authenticated Can comment on a post 1: [body] 1`] = `
 Object {
   "comments": Array [
     Object {
+      "count": Object {
+        "likes": Any<Number>,
+        "replies": 0,
+      },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
       "html": "<p>This is a message</p><p></p><p>New line</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "member": null,
+      "liked": Any<Boolean>,
+      "member": Object {
+        "avatar_image": null,
+        "bio": null,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": null,
+        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      },
+      "replies": Array [],
       "status": "published",
     },
   ],
@@ -107,7 +119,7 @@ exports[`Comments API when authenticated Can comment on a post 2: [headers] 1`] 
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "196",
+  "content-length": "373",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -623,11 +635,23 @@ exports[`Comments API when authenticated Can reply to a comment 1: [body] 1`] = 
 Object {
   "comments": Array [
     Object {
+      "count": Object {
+        "likes": 0,
+        "replies": 0,
+      },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
       "html": "This is a reply",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "member": null,
+      "liked": false,
+      "member": Object {
+        "avatar_image": null,
+        "bio": null,
+        "id": "62f3680710e9f40c343c79f8",
+        "name": null,
+        "uuid": "bbb9647c-9c07-46cb-b32d-3416b087c585",
+      },
+      "replies": Array [],
       "status": "published",
     },
   ],
@@ -638,7 +662,7 @@ exports[`Comments API when authenticated Can reply to a comment 2: [headers] 1`]
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "165",
+  "content-length": "342",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -651,11 +675,23 @@ exports[`Comments API when authenticated Can reply to your own comment 1: [body]
 Object {
   "comments": Array [
     Object {
+      "count": Object {
+        "likes": 0,
+        "replies": 0,
+      },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
       "html": "This is a reply",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "member": null,
+      "liked": false,
+      "member": Object {
+        "avatar_image": null,
+        "bio": null,
+        "id": "62f3680710e9f40c343c79f8",
+        "name": null,
+        "uuid": "bbb9647c-9c07-46cb-b32d-3416b087c585",
+      },
+      "replies": Array [],
       "status": "published",
     },
   ],
@@ -666,7 +702,7 @@ exports[`Comments API when authenticated Can reply to your own comment 2: [heade
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "165",
+  "content-length": "342",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -996,11 +1032,23 @@ exports[`Comments API when authenticated Limits returned replies to 3 3: [body] 
 Object {
   "comments": Array [
     Object {
+      "count": Object {
+        "likes": 0,
+        "replies": 0,
+      },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
       "html": "This is a reply 0",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "member": null,
+      "liked": false,
+      "member": Object {
+        "avatar_image": null,
+        "bio": null,
+        "id": "62f3680710e9f40c343c79f8",
+        "name": null,
+        "uuid": "bbb9647c-9c07-46cb-b32d-3416b087c585",
+      },
+      "replies": Array [],
       "status": "published",
     },
   ],
@@ -1011,7 +1059,7 @@ exports[`Comments API when authenticated Limits returned replies to 3 4: [header
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "167",
+  "content-length": "344",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -1024,11 +1072,23 @@ exports[`Comments API when authenticated Limits returned replies to 3 5: [body] 
 Object {
   "comments": Array [
     Object {
+      "count": Object {
+        "likes": 0,
+        "replies": 0,
+      },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
       "html": "This is a reply 1",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "member": null,
+      "liked": false,
+      "member": Object {
+        "avatar_image": null,
+        "bio": null,
+        "id": "62f3680710e9f40c343c79f8",
+        "name": null,
+        "uuid": "bbb9647c-9c07-46cb-b32d-3416b087c585",
+      },
+      "replies": Array [],
       "status": "published",
     },
   ],
@@ -1039,7 +1099,7 @@ exports[`Comments API when authenticated Limits returned replies to 3 6: [header
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "167",
+  "content-length": "344",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -1052,11 +1112,23 @@ exports[`Comments API when authenticated Limits returned replies to 3 7: [body] 
 Object {
   "comments": Array [
     Object {
+      "count": Object {
+        "likes": 0,
+        "replies": 0,
+      },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
       "html": "This is a reply 2",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "member": null,
+      "liked": false,
+      "member": Object {
+        "avatar_image": null,
+        "bio": null,
+        "id": "62f3680710e9f40c343c79f8",
+        "name": null,
+        "uuid": "bbb9647c-9c07-46cb-b32d-3416b087c585",
+      },
+      "replies": Array [],
       "status": "published",
     },
   ],
@@ -1067,7 +1139,7 @@ exports[`Comments API when authenticated Limits returned replies to 3 8: [header
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "167",
+  "content-length": "344",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
