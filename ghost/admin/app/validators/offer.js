@@ -18,10 +18,13 @@ export default BaseValidator.create({
     amount(model) {
         if (!model.amount) {
             if (model.type === 'trial') {
-                model.errors.add('amount', 'Please enter the trial duration.');
+                model.errors.add('amount', 'Please enter trial duration of atleast 1 day.');
             } else {
                 model.errors.add('amount', 'Please enter the amount.');
             }
+            this.invalidate();
+        } else if (model.type === 'trial' && model.amount < 0) {
+            model.errors.add('amount', 'Please enter trial duration of atleast 1 day.');
             this.invalidate();
         }
     },
