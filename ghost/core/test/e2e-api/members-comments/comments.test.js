@@ -9,11 +9,6 @@ const sinon = require('sinon');
 
 let membersAgent, membersAgent2, member, postId, postTitle, commentId;
 
-const commentMatcherNoMember = {
-    id: anyObjectId,
-    created_at: anyISODateTime
-};
-
 const commentMatcher = {
     id: anyObjectId,
     created_at: anyISODateTime,
@@ -241,7 +236,7 @@ describe('Comments API', function () {
                     location: anyLocationFor('comments')
                 })
                 .matchBodySnapshot({
-                    comments: [commentMatcherNoMember]
+                    comments: [commentMatcher]
                 });
 
             // Check only the author got an email (because we are the author of this parent comment)
@@ -279,7 +274,7 @@ describe('Comments API', function () {
                     location: anyLocationFor('comments')
                 })
                 .matchBodySnapshot({
-                    comments: [commentMatcherNoMember]
+                    comments: [commentMatcher]
                 });
 
             mockManager.assert.sentEmailCount(2);
@@ -337,7 +332,7 @@ describe('Comments API', function () {
                         location: anyLocationFor('comments')
                     })
                     .matchBodySnapshot({
-                        comments: [commentMatcherNoMember]
+                        comments: [commentMatcher]
                     });
                 if (index === 0) {
                     replyId = reply.comments[0].id;

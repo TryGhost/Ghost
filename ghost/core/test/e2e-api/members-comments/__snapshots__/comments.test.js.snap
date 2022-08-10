@@ -636,20 +636,20 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
-        "likes": 0,
+        "likes": Any<Number>,
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
       "html": "This is a reply",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "liked": false,
+      "liked": Any<Boolean>,
       "member": Object {
         "avatar_image": null,
         "bio": null,
-        "id": "62f3680710e9f40c343c79f8",
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "name": null,
-        "uuid": "bbb9647c-9c07-46cb-b32d-3416b087c585",
+        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "replies": Array [],
       "status": "published",
@@ -676,20 +676,20 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
-        "likes": 0,
+        "likes": Any<Number>,
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
       "html": "This is a reply",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "liked": false,
+      "liked": Any<Boolean>,
       "member": Object {
         "avatar_image": null,
         "bio": null,
-        "id": "62f3680710e9f40c343c79f8",
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "name": null,
-        "uuid": "bbb9647c-9c07-46cb-b32d-3416b087c585",
+        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "replies": Array [],
       "status": "published",
@@ -1033,20 +1033,20 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
-        "likes": 0,
+        "likes": Any<Number>,
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
       "html": "This is a reply 0",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "liked": false,
+      "liked": Any<Boolean>,
       "member": Object {
         "avatar_image": null,
         "bio": null,
-        "id": "62f3680710e9f40c343c79f8",
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "name": null,
-        "uuid": "bbb9647c-9c07-46cb-b32d-3416b087c585",
+        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "replies": Array [],
       "status": "published",
@@ -1073,20 +1073,20 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
-        "likes": 0,
+        "likes": Any<Number>,
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
       "html": "This is a reply 1",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "liked": false,
+      "liked": Any<Boolean>,
       "member": Object {
         "avatar_image": null,
         "bio": null,
-        "id": "62f3680710e9f40c343c79f8",
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "name": null,
-        "uuid": "bbb9647c-9c07-46cb-b32d-3416b087c585",
+        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "replies": Array [],
       "status": "published",
@@ -1113,20 +1113,20 @@ Object {
   "comments": Array [
     Object {
       "count": Object {
-        "likes": 0,
+        "likes": Any<Number>,
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
       "html": "This is a reply 2",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "liked": false,
+      "liked": Any<Boolean>,
       "member": Object {
         "avatar_image": null,
         "bio": null,
-        "id": "62f3680710e9f40c343c79f8",
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "name": null,
-        "uuid": "bbb9647c-9c07-46cb-b32d-3416b087c585",
+        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "replies": Array [],
       "status": "published",
