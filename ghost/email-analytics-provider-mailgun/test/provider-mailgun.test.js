@@ -21,47 +21,6 @@ describe('EmailAnalyticsProviderMailgun', function () {
         sinon.restore();
     });
 
-    it('respects changes in settings', async function () {
-        const settingsStub = sinon.stub(settings, 'get');
-        settingsStub.withArgs('mailgun_api_key').returns('settingsApiKey');
-        settingsStub.withArgs('mailgun_domain').returns('settingsdomain.com');
-        settingsStub.withArgs('mailgun_base_url').returns('https://example.com/v3');
-
-        const eventsMock1 = nock('https://example.com')
-            .get('/v3/settingsdomain.com/events')
-            .query({
-                event: 'delivered OR opened OR failed OR unsubscribed OR complained',
-                limit: 300,
-                tags: 'bulk-email'
-            })
-            .reply(200, {'Content-Type': 'application/json'}, {
-                items: []
-            });
-
-        const mailgunProvider = new EmailAnalyticsProviderMailgun({config, settings});
-        await mailgunProvider.fetchAll(() => {});
-
-        settingsStub.withArgs('mailgun_api_key').returns('settingsApiKey2');
-        settingsStub.withArgs('mailgun_domain').returns('settingsdomain2.com');
-        settingsStub.withArgs('mailgun_base_url').returns('https://example2.com/v3');
-
-        const eventsMock2 = nock('https://example2.com')
-            .get('/v3/settingsdomain2.com/events')
-            .query({
-                event: 'delivered OR opened OR failed OR unsubscribed OR complained',
-                limit: 300,
-                tags: 'bulk-email'
-            })
-            .reply(200, {'Content-Type': 'application/json'}, {
-                items: []
-            });
-
-        await mailgunProvider.fetchAll(() => {});
-
-        eventsMock1.isDone().should.be.true();
-        eventsMock2.isDone().should.be.true();
-    });
-
     describe('fetchAll()', function () {
         it('fetches from now and works backwards', async function () {
             const configStub = sinon.stub(config, 'get');
