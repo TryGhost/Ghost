@@ -46,18 +46,20 @@
                         </h4>
                         <div class="gh-main-section-content grey">
                             {{#if (feature 'freeTrial')}}
-                                <div class="flex justify-between items-center w-100 mb4">
+                            <GhFormGroup>
+                                <div>
                                     <label class="fw6">Offer type</label>
-                                    <div class="gh-btn-group">
-                                        <button class="gh-btn {{if this.isDiscountOffer "gh-btn-group-selected"}}" type="button" {{on "click" (fn this.changeType "discount")}} disabled={{this.isDiscountSectionDisabled}}>
+                                    <div class="gh-btn-group flex">
+                                        <button class="gh-btn flex-grow-1 {{if this.isDiscountOffer "gh-btn-group-selected"}}" type="button" {{on "click" (fn this.changeType "discount")}} disabled={{this.isDiscountSectionDisabled}}>
                                             <span>Discount</span>
                                         </button>
-                                        <button class="gh-btn {{if this.isTrialOffer "gh-btn-group-selected"}}"
+                                        <button class="gh-btn flex-grow-1 {{if this.isTrialOffer "gh-btn-group-selected"}}"
                                         type="button" {{on "click" (fn this.changeType "trial")}} disabled={{this.isDiscountSectionDisabled}}>
                                             <span>Free trial</span>
                                         </button>
                                     </div>
                                 </div>
+                            </GhFormGroup>
                             {{/if}}
                             <GhFormGroup @errors={{this.errors}} @property="product-cadence">
                                 <label for="product-cadence" class="fw6">Tier – cadence</label>
