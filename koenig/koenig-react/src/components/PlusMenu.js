@@ -10,9 +10,9 @@ const PlusButton = ({onClick}) => {
         <button
             type="button"
             aria-label="Add a card"
-            className="relative mt-[-2px] ml-[-66px] flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border bg-white md:h-9 md:w-9"
+            className="group relative mt-[-2px] ml-[-66px] flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border border-grey-midlight bg-white transition-all ease-linear hover:border-grey-dark md:h-9 md:w-9"
             onClick={onClick}
-        ><PlusIcon className="h-4 w-4 stroke-grey-midlight stroke-2" /></button>
+        ><PlusIcon className="h-4 w-4 stroke-grey-middark stroke-2 group-hover:stroke-grey-dark" /></button>
     );
 };
 
