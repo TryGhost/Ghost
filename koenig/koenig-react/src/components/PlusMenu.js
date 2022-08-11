@@ -1,6 +1,6 @@
 import {v4 as uuidv4} from 'uuid';
 import React, {useEffect} from 'react';
-import PlusIcon from '../icons/Plus';
+import PlusIcon from '../icons/plus.svg';
 import rangeIsABlankParagraph from '../utils/range-is-blank-paragraph';
 import getTopPositionOfRange from '../utils/get-top-position-of-range';
 
