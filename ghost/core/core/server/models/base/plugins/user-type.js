@@ -33,7 +33,7 @@ module.exports = function (Bookshelf) {
             options = options || {};
             options.context = options.context || {};
 
-            if (options.context.user || Bookshelf.Model.isExternalUser(options.context.user)) {
+            if (options.context.user) {
                 return options.context.user;
             } else if (options.context.integration) {
             /**
@@ -64,8 +64,6 @@ module.exports = function (Bookshelf) {
                 return Bookshelf.Model.internalUser;
             } else if (this.get('id')) {
                 return this.get('id');
-            } else if (options.context.external) {
-                return Bookshelf.Model.externalUser;
             } else {
                 throw new errors.NotFoundError({
                     message: tpl(messages.missingContext),
@@ -80,15 +78,9 @@ module.exports = function (Bookshelf) {
          * context.user ? true : false (if context.user is 0 as number, this condition is false)
          */
         internalUser: 1,
-        externalUser: 0,
 
         isInternalUser: function isInternalUser(id) {
             return id === Bookshelf.Model.internalUser || id === Bookshelf.Model.internalUser.toString();
-        },
-
-        isExternalUser: function isExternalUser(id) {
-            return id === Bookshelf.Model.externalUser || id === Bookshelf.Model.externalUser.toString();
         }
-
     });
 };

@@ -763,8 +763,9 @@
     display: block;
     font-size: 1.5rem;
     font-weight: 500;
-    color: #7f7f7f;
-    margin-top: 12px;
+    color: #686868;
+    margin-top: 6px;
+    margin-bottom: 6px;
     line-height: 1;
 }
 
