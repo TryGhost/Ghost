@@ -3,7 +3,7 @@ const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output
 
 const allowedIncludes = ['monthly_price', 'yearly_price'];
 const localUtils = require('../../index');
-const utils = require('../../../../shared/utils');
+const {utils} = require('@tryghost/api-framework');
 const labs = require('../../../../../../shared/labs');
 
 module.exports = {

@@ -1,5 +1,4 @@
-const should = require('should');
-const shared = require('../../../../core/server/api/shared');
+const shared = require('../');
 
 describe('Unit: api/shared/headers', function () {
     it('empty headers config', function () {
@@ -13,7 +12,7 @@ describe('Unit: api/shared/headers', function () {
             return shared.headers.get({}, {disposition: {type: 'json', value: 'value'}})
                 .then((result) => {
                     result.should.eql({
-                        'Content-Disposition': 'Attachment; filename=\"value\"',
+                        'Content-Disposition': 'Attachment; filename="value"',
                         'Content-Type': 'application/json',
                         'Content-Length': 2
                     });
@@ -24,7 +23,7 @@ describe('Unit: api/shared/headers', function () {
             return shared.headers.get({}, {disposition: {type: 'csv', value: 'my.csv'}})
                 .then((result) => {
                     result.should.eql({
-                        'Content-Disposition': 'Attachment; filename=\"my.csv\"',
+                        'Content-Disposition': 'Attachment; filename="my.csv"',
                         'Content-Type': 'text/csv'
                     });
                 });
@@ -34,7 +33,7 @@ describe('Unit: api/shared/headers', function () {
             return shared.headers.get('yaml file', {disposition: {type: 'yaml', value: 'my.yaml'}})
                 .then((result) => {
                     result.should.eql({
-                        'Content-Disposition': 'Attachment; filename=\"my.yaml\"',
+                        'Content-Disposition': 'Attachment; filename="my.yaml"',
                         'Content-Type': 'application/yaml',
                         'Content-Length': 11
                     });
