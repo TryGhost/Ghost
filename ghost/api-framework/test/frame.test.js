@@ -1,5 +1,5 @@
 const should = require('should');
-const shared = require('../../../../core/server/api/shared');
+const shared = require('../');
 
 describe('Unit: api/shared/frame', function () {
     it('constructor', function () {
@@ -37,7 +37,7 @@ describe('Unit: api/shared/frame', function () {
             should.exist(frame.data.posts);
         });
 
-        it('transform', function () {
+        it('transform with query', function () {
             const original = {
                 context: {user: 'id'},
                 body: {posts: []},
@@ -78,7 +78,7 @@ describe('Unit: api/shared/frame', function () {
             should.exist(frame.options.slug);
         });
 
-        it('transform', function () {
+        it('transform with data', function () {
             const original = {
                 context: {user: 'id'},
                 options: {
