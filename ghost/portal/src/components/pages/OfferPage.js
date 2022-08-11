@@ -48,7 +48,7 @@ export const OfferPageStyles = ({site}) => {
 
 .gh-portal-offer-title h4 {
     font-size: 1.8rem;
-    margin: 0 80px 0 0;
+    margin: 0 110px 0 0;
     width: 100%;
 }
 
