@@ -4,7 +4,6 @@ import {Editor, Container} from 'react-mobiledoc-editor';
 
 const CapEditor = ({payload, Alt, env}) => {
     const handleTextChange = (e) => {
-        console.log(e);
         // payload.setPayload({...payload.payload, alt: e.target.value});
         // env.save({alt: e.target.value, src: payload.payload.src});
     };
