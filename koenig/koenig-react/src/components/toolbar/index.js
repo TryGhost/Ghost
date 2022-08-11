@@ -128,10 +128,12 @@ export default function Toolbar({
             className='absolute w-40'
             style={toolbarPositionStyles} >
             <ul className='toolbar-temporary m-0 flex items-center justify-evenly rounded bg-black py-1 px-0 font-sans text-md font-normal text-white' >
-                <SectionButton markupTags={activeSectionTags?.isH1} editor={editor} tag={'h1'} />
-                <SectionButton markupTags={activeSectionTags?.isH2} editor={editor} tag={'h2'} />
-                <MarkupButton markupTags={activeMarkupTags?.isStrong} editor={editor} tag={'strong'}/>
-                <MarkupButton markupTags={activeMarkupTags?.isEm} editor={editor} tag={'em'}/>
+                <MarkupButton markupTags={activeMarkupTags?.isStrong} editor={editor} tag={'strong'} title="B"/>
+                <MarkupButton markupTags={activeMarkupTags?.isEm} editor={editor} tag={'em'} title="I"/>
+                <SectionButton markupTags={activeSectionTags?.isH1} editor={editor} tag={'h1'} title="H1"/>
+                <SectionButton markupTags={activeSectionTags?.isH2} editor={editor} tag={'h2'} title="H2"/>
+                <SectionButton markupTags={activeSectionTags?.isUL} editor={editor} tag={'ul'} title="UL"/>
+                <SectionButton markupTags={activeSectionTags?.isBlockquote} editor={editor} tag={'blockquote'} title="Q"/>
             </ul>
         </div>
     );
