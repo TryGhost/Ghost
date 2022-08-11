@@ -55,7 +55,7 @@ const CommentContextMenu = (props) => {
     let contextMenu = null;
     if (comment.status === 'published') {
         if (isAuthor) {
-            contextMenu = <AuthorContextMenu comment={comment} close={props.close} toggleEdit={props.toggleEdit} disableEditing={props.disableEditing} />;
+            contextMenu = <AuthorContextMenu comment={comment} close={props.close} toggleEdit={props.toggleEdit} />;
         } else {
             if (isAdmin) {
                 contextMenu = <AdminContextMenu comment={comment} close={props.close}/>;
