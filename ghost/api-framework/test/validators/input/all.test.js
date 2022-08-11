@@ -2,7 +2,7 @@ const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
 const Promise = require('bluebird');
-const shared = require('../../../../../../core/server/api/shared');
+const shared = require('../../../');
 
 describe('Unit: api/shared/validators/input/all', function () {
     afterEach(function () {
@@ -287,7 +287,7 @@ describe('Unit: api/shared/validators/input/all', function () {
                 });
         });
 
-        it('fails', function () {
+        it('fails with docName', function () {
             const frame = {
                 data: {
                     docName: true
@@ -305,7 +305,7 @@ describe('Unit: api/shared/validators/input/all', function () {
                 });
         });
 
-        it('fails', function () {
+        it('fails for required field', function () {
             const frame = {
                 data: {
                     docName: [{
@@ -331,7 +331,7 @@ describe('Unit: api/shared/validators/input/all', function () {
                 });
         });
 
-        it('fails', function () {
+        it('fails for invalid field', function () {
             const frame = {
                 data: {
                     docName: [{

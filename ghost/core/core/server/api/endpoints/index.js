@@ -1,4 +1,4 @@
-const shared = require('../shared');
+const apiFramework = require('@tryghost/api-framework');
 const localUtils = require('./utils');
 
 // ESLint Override Notice
@@ -9,19 +9,19 @@ const localUtils = require('./utils');
 
 module.exports = {
     get authentication() {
-        return shared.pipeline(require('./authentication'), localUtils);
+        return apiFramework.pipeline(require('./authentication'), localUtils);
     },
 
     get db() {
-        return shared.pipeline(require('./db'), localUtils);
+        return apiFramework.pipeline(require('./db'), localUtils);
     },
 
     get identities() {
-        return shared.pipeline(require('./identities'), localUtils);
+        return apiFramework.pipeline(require('./identities'), localUtils);
     },
 
     get integrations() {
-        return shared.pipeline(require('./integrations'), localUtils);
+        return apiFramework.pipeline(require('./integrations'), localUtils);
     },
 
     // @TODO: transform
@@ -30,147 +30,147 @@ module.exports = {
     },
 
     get schedules() {
-        return shared.pipeline(require('./schedules'), localUtils);
+        return apiFramework.pipeline(require('./schedules'), localUtils);
     },
 
     get pages() {
-        return shared.pipeline(require('./pages'), localUtils);
+        return apiFramework.pipeline(require('./pages'), localUtils);
     },
 
     get redirects() {
-        return shared.pipeline(require('./redirects'), localUtils);
+        return apiFramework.pipeline(require('./redirects'), localUtils);
     },
 
     get roles() {
-        return shared.pipeline(require('./roles'), localUtils);
+        return apiFramework.pipeline(require('./roles'), localUtils);
     },
 
     get slugs() {
-        return shared.pipeline(require('./slugs'), localUtils);
+        return apiFramework.pipeline(require('./slugs'), localUtils);
     },
 
     get webhooks() {
-        return shared.pipeline(require('./webhooks'), localUtils);
+        return apiFramework.pipeline(require('./webhooks'), localUtils);
     },
 
     get posts() {
-        return shared.pipeline(require('./posts'), localUtils);
+        return apiFramework.pipeline(require('./posts'), localUtils);
     },
 
     get invites() {
-        return shared.pipeline(require('./invites'), localUtils);
+        return apiFramework.pipeline(require('./invites'), localUtils);
     },
 
     get mail() {
-        return shared.pipeline(require('./mail'), localUtils);
+        return apiFramework.pipeline(require('./mail'), localUtils);
     },
 
     get notifications() {
-        return shared.pipeline(require('./notifications'), localUtils);
+        return apiFramework.pipeline(require('./notifications'), localUtils);
     },
 
     get settings() {
-        return shared.pipeline(require('./settings'), localUtils);
+        return apiFramework.pipeline(require('./settings'), localUtils);
     },
 
     get membersStripeConnect() {
-        return shared.pipeline(require('./members-stripe-connect'), localUtils);
+        return apiFramework.pipeline(require('./members-stripe-connect'), localUtils);
     },
 
     get members() {
-        return shared.pipeline(require('./members'), localUtils);
+        return apiFramework.pipeline(require('./members'), localUtils);
     },
 
     get offers() {
-        return shared.pipeline(require('./offers'), localUtils);
+        return apiFramework.pipeline(require('./offers'), localUtils);
     },
 
     get tiers() {
-        return shared.pipeline(require('./tiers'), localUtils);
+        return apiFramework.pipeline(require('./tiers'), localUtils);
     },
 
     get memberSigninUrls() {
-        return shared.pipeline(require('./member-signin-urls.js'), localUtils);
+        return apiFramework.pipeline(require('./member-signin-urls.js'), localUtils);
     },
 
     get labels() {
-        return shared.pipeline(require('./labels'), localUtils);
+        return apiFramework.pipeline(require('./labels'), localUtils);
     },
 
     get images() {
-        return shared.pipeline(require('./images'), localUtils);
+        return apiFramework.pipeline(require('./images'), localUtils);
     },
 
     get media() {
-        return shared.pipeline(require('./media'), localUtils);
+        return apiFramework.pipeline(require('./media'), localUtils);
     },
 
     get files() {
-        return shared.pipeline(require('./files'), localUtils);
+        return apiFramework.pipeline(require('./files'), localUtils);
     },
 
     get tags() {
-        return shared.pipeline(require('./tags'), localUtils);
+        return apiFramework.pipeline(require('./tags'), localUtils);
     },
 
     get users() {
-        return shared.pipeline(require('./users'), localUtils);
+        return apiFramework.pipeline(require('./users'), localUtils);
     },
 
     get previews() {
-        return shared.pipeline(require('./previews'), localUtils);
+        return apiFramework.pipeline(require('./previews'), localUtils);
     },
 
     get emailPost() {
-        return shared.pipeline(require('./email-post'), localUtils);
+        return apiFramework.pipeline(require('./email-post'), localUtils);
     },
 
     get oembed() {
-        return shared.pipeline(require('./oembed'), localUtils);
+        return apiFramework.pipeline(require('./oembed'), localUtils);
     },
 
     get slack() {
-        return shared.pipeline(require('./slack'), localUtils);
+        return apiFramework.pipeline(require('./slack'), localUtils);
     },
 
     get config() {
-        return shared.pipeline(require('./config'), localUtils);
+        return apiFramework.pipeline(require('./config'), localUtils);
     },
 
     get explore() {
-        return shared.pipeline(require('./explore'), localUtils);
+        return apiFramework.pipeline(require('./explore'), localUtils);
     },
 
     get themes() {
-        return shared.pipeline(require('./themes'), localUtils);
+        return apiFramework.pipeline(require('./themes'), localUtils);
     },
 
     get actions() {
-        return shared.pipeline(require('./actions'), localUtils);
+        return apiFramework.pipeline(require('./actions'), localUtils);
     },
 
     get email_previews() {
-        return shared.pipeline(require('./email-previews'), localUtils);
+        return apiFramework.pipeline(require('./email-previews'), localUtils);
     },
 
     get emails() {
-        return shared.pipeline(require('./emails'), localUtils);
+        return apiFramework.pipeline(require('./emails'), localUtils);
     },
 
     get site() {
-        return shared.pipeline(require('./site'), localUtils);
+        return apiFramework.pipeline(require('./site'), localUtils);
     },
 
     get snippets() {
-        return shared.pipeline(require('./snippets'), localUtils);
+        return apiFramework.pipeline(require('./snippets'), localUtils);
     },
 
     get stats() {
-        return shared.pipeline(require('./stats'), localUtils);
+        return apiFramework.pipeline(require('./stats'), localUtils);
     },
 
     get customThemeSettings() {
-        return shared.pipeline(require('./custom-theme-settings'), localUtils);
+        return apiFramework.pipeline(require('./custom-theme-settings'), localUtils);
     },
 
     get serializers() {
@@ -178,11 +178,11 @@ module.exports = {
     },
 
     get newsletters() {
-        return shared.pipeline(require('./newsletters'), localUtils);
+        return apiFramework.pipeline(require('./newsletters'), localUtils);
     },
 
     get comments() {
-        return shared.pipeline(require('./comments'), localUtils);
+        return apiFramework.pipeline(require('./comments'), localUtils);
     },
 
     /**
@@ -194,38 +194,38 @@ module.exports = {
      * `api.admin` soon. Need to figure out how serializers & validation works then.
      */
     get pagesPublic() {
-        return shared.pipeline(require('./pages-public'), localUtils, 'content');
+        return apiFramework.pipeline(require('./pages-public'), localUtils, 'content');
     },
 
     get tagsPublic() {
-        return shared.pipeline(require('./tags-public'), localUtils, 'content');
+        return apiFramework.pipeline(require('./tags-public'), localUtils, 'content');
     },
 
     get publicSettings() {
-        return shared.pipeline(require('./settings-public'), localUtils, 'content');
+        return apiFramework.pipeline(require('./settings-public'), localUtils, 'content');
     },
 
     get postsPublic() {
-        return shared.pipeline(require('./posts-public'), localUtils, 'content');
+        return apiFramework.pipeline(require('./posts-public'), localUtils, 'content');
     },
 
     get authorsPublic() {
-        return shared.pipeline(require('./authors-public'), localUtils, 'content');
+        return apiFramework.pipeline(require('./authors-public'), localUtils, 'content');
     },
 
     get tiersPublic() {
-        return shared.pipeline(require('./tiers-public'), localUtils, 'content');
+        return apiFramework.pipeline(require('./tiers-public'), localUtils, 'content');
     },
 
     get newslettersPublic() {
-        return shared.pipeline(require('./newsletters-public'), localUtils, 'content');
+        return apiFramework.pipeline(require('./newsletters-public'), localUtils, 'content');
     },
 
     get offersPublic() {
-        return shared.pipeline(require('./offers-public'), localUtils, 'content');
+        return apiFramework.pipeline(require('./offers-public'), localUtils, 'content');
     },
 
     get commentsMembers() {
-        return shared.pipeline(require('./comments-members'), localUtils, 'members');
+        return apiFramework.pipeline(require('./comments-members'), localUtils, 'members');
     }
 };

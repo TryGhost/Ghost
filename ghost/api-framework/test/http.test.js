@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const shared = require('../../../../core/server/api/shared');
+const shared = require('../');
 
 describe('Unit: api/shared/http', function () {
     let req;
@@ -73,7 +73,7 @@ describe('Unit: api/shared/http', function () {
         shared.http(apiImpl)(req, res, next);
     });
 
-    it('api response is fn', function (done) {
+    it('api response is fn (data)', function (done) {
         const apiImpl = sinon.stub().resolves('data');
 
         next.callsFake(done);

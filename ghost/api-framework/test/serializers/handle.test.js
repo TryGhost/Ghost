@@ -1,8 +1,7 @@
 const errors = require('@tryghost/errors');
-const should = require('should');
 const Promise = require('bluebird');
 const sinon = require('sinon');
-const shared = require('../../../../../core/server/api/shared');
+const shared = require('../../');
 
 describe('Unit: api/shared/serializers/handle', function () {
     afterEach(function () {

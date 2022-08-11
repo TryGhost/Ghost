@@ -1,6 +1,6 @@
 const express = require('../../../shared/express');
 const api = require('../../api').endpoints;
-const http = require('../../api').shared.http;
+const {http} = require('@tryghost/api-framework');
 
 const bodyParser = require('body-parser');
 const membersService = require('../../../server/services/members');

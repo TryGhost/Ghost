@@ -5,7 +5,7 @@ const urlUtils = require('../../../shared/url-utils');
 const labs = require('../../../shared/labs');
 const moment = require('moment-timezone');
 const api = require('../../api').endpoints;
-const apiShared = require('../../api').shared;
+const apiFramework = require('@tryghost/api-framework');
 const {URL} = require('url');
 const mobiledocLib = require('../../lib/mobiledoc');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
@@ -104,7 +104,7 @@ const serializePostModel = async (model) => {
     const frame = {options: {context: {user: true}, formats: 'mobiledoc'}};
     const docName = 'posts';
 
-    await apiShared
+    await apiFramework
         .serializers
         .handle
         .output(model, {docName: docName, method: 'read'}, api.serializers.output, frame);

@@ -1,6 +1,6 @@
 const express = require('../../../../../shared/express');
 const api = require('../../../../api').endpoints;
-const http = require('../../../../api').shared.http;
+const {http} = require('@tryghost/api-framework');
 const apiMw = require('../../middleware');
 const mw = require('./middleware');
 

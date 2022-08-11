@@ -1,8 +1,7 @@
 const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
-const Promise = require('bluebird');
-const shared = require('../../../../core/server/api/shared');
+const shared = require('../');
 
 describe('Unit: api/shared/pipeline', function () {
     afterEach(function () {

@@ -1,7 +1,7 @@
 const errors = require('@tryghost/errors');
 const Promise = require('bluebird');
 const sinon = require('sinon');
-const shared = require('../../../../../core/server/api/shared');
+const shared = require('../../');
 
 describe('Unit: api/shared/validators/handle', function () {
     afterEach(function () {
