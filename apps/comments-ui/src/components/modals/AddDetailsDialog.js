@@ -74,7 +74,7 @@ const AddNameDialog = (props) => {
                     leaveTo="opacity-0 translate-y-2"
                     key={profile.name}
                 >
-                    <div className="flex flex-row justify-start items-center gap-3 my-4 pr-4">
+                    <div className="flex flex-row justify-start items-center gap-3 pr-4">
                         <div className="w-10 h-10 rounded-full border-2 border-white bg-no-repeat bg-cover" style={{backgroundImage: `url(${profile.avatar})`}} />
                         <div className="flex flex-col justify-center items-start">
                             <div className="text-base font-sans font-semibold tracking-tight text-white">
@@ -111,7 +111,7 @@ const AddNameDialog = (props) => {
             <div className="flex">
                 {!isMobile() &&
                     <div className={`flex flex-col justify-center items-center w-[40%] bg-[#1C1C1C]`}>
-                        <div className="flex flex-col">
+                        <div className="flex flex-col gap-9 -mt-[1px]">
                             {renderExampleProfiles()}
                         </div>
                     </div>
@@ -121,7 +121,7 @@ const AddNameDialog = (props) => {
                     <p className="font-sans text-base text-neutral-500 pr-0 sm:pr-10 leading-9 text-center sm:text-left">Add context to your comment, share your name and expertise to foster a healthy discussion.</p>
                     <section className="mt-8 text-left">
                         <div className="flex flex-row mb-2 justify-between">
-                            <label htmlFor="comments-name" className="font-sans font-medium text-sm">Name</label>
+                            <label htmlFor="comments-name" className="font-sans font-semibold text-[1.3rem]">Name</label>
                             <Transition
                                 show={!!error.name}
                                 enter="transition duration-300 ease-out"
@@ -154,8 +154,8 @@ const AddNameDialog = (props) => {
                             maxLength="64"
                         />
                         <div className="flex flex-row mt-6 mb-2 justify-between">
-                            <label htmlFor="comments-name" className="font-sans font-medium text-sm">Expertise</label>
-                            <div className={`font-sans text-sm text-neutral-400 ${(bioCharsLeft === 0) && 'text-red-500'}`}><b>{bioCharsLeft}</b> characters left</div>
+                            <label htmlFor="comments-name" className="font-sans font-semibold text-[1.3rem]">Expertise</label>
+                            <div className={`font-sans text-[1.3rem] text-neutral-400 ${(bioCharsLeft === 0) && 'text-red-500'}`}><b>{bioCharsLeft}</b> characters left</div>
                         </div>
                         <input
                             id="comments-bio"
@@ -179,7 +179,7 @@ const AddNameDialog = (props) => {
                             maxLength={maxBioChars}
                         />
                         <button
-                            className={`transition-opacity duration-200 ease-linear w-full h-[44px] mt-8 px-8 flex items-center justify-center rounded-md text-white font-sans font-semibold text-[15px] opacity-100 hover:opacity-90`}
+                            className={`transition-opacity duration-200 ease-linear w-full h-[42px] mt-10 px-8 flex items-center justify-center rounded-md text-white font-sans font-semibold text-[15px] opacity-100 hover:opacity-90`}
                             style={{backgroundColor: accentColor ?? '#000000'}}
                             onClick={submit}
                         >
