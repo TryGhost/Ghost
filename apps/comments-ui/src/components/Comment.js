@@ -100,7 +100,7 @@ const Comment = ({updateIsEditing = null, isEditing, ...props}) => {
                         <div className="flex items-start -mt-[3px] mb-2">
                             {isNotPublished ?
                                 <div className="flex flex-row items-center gap-4 pb-[8px] pr-4 h-12">
-                                    <p className="font-sans text-[16px] leading-normal text-neutral-300 italic mt-[4px]">{notPublishedMessage}</p>
+                                    <p className="font-sans text-[16px] leading-normal text-neutral-300 dark:text-[rgba(255,255,255,0.5)] italic mt-[4px]">{notPublishedMessage}</p>
                                     <div className="mt-[4px]">
                                         <More comment={comment} toggleEdit={toggleEditMode} />
                                     </div>
