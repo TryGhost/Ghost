@@ -1,7 +1,6 @@
 const url = require('url');
 const debug = require('@tryghost/debug')('api:shared:http');
 const shared = require('../shared');
-const models = require('../../models');
 
 /**
  * @description HTTP wrapper.
@@ -29,8 +28,7 @@ const http = (apiImpl) => {
             };
         }
 
-        // NOTE: "external user" is only used in the subscriber app. External user is ID "0".
-        if ((req.user && req.user.id) || (req.user && models.User.isExternalUser(req.user.id))) {
+        if (req.user && req.user.id) {
             user = req.user.id;
         }
 
