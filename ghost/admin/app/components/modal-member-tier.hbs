@@ -8,7 +8,7 @@
 <form>
     <div class="modal-body">
         <p class="gh-member-addcomp-subhed" data-test-text="select-tier-desc">
-            Select a tier for <strong>{{or this.member.name this.member.email}}</strong>'s
+            Select a tier and duration for <strong>{{or this.member.name this.member.email}}</strong>'s
             complimentary subscription.
         </p>
         {{#if this.activeSubscriptions.length}}
@@ -21,7 +21,7 @@
                 <div class="gh-loading-spinner"> </div>
             </div>
         {{else}}
-            <div class="form-rich-radio">
+            {{!-- <div class="form-rich-radio">
                 {{#each this.tiers as |tier|}}
                     <div
                         class="gh-radio {{if (eq this.selectedTier tier.id) "active"}}"
@@ -40,6 +40,35 @@
                         <div class="gh-radio-button"></div>
                     </div>
                 {{/each}}
+            </div> --}}
+
+            <div class="gh-main-section-content grey">
+                <GhFormGroup @property="product-cadence">
+                    <label for="product-cadence" class="fw6">Tier</label>
+                    <span class="gh-select">
+                        <OneWaySelect
+                            @value={{this.selectedTier}}
+                            @options={{this.tiers}}
+                            @optionValuePath="name"
+                            @optionLabelPath="name"
+                            @optionTargetPath="name"
+                        />
+                        {{svg-jar "arrow-down-small"}}
+                    </span>
+                </GhFormGroup>
+                <GhFormGroup @property="product-cadence">
+                    <label for="product-cadence" class="fw6">Duration</label>
+                    <span class="gh-select">
+                        <OneWaySelect
+                            @value="Forever"
+                            @options={{this.tiers}}
+                            @optionValuePath="name"
+                            @optionLabelPath="name"
+                            @optionTargetPath="name"
+                        />
+                        {{svg-jar "arrow-down-small"}}
+                    </span>
+                </GhFormGroup>
             </div>
         {{/if}}
     </div>
