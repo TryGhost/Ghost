@@ -1,6 +1,8 @@
 const url = require('url');
 const debug = require('@tryghost/debug')('api:shared:http');
-const shared = require('../shared');
+
+const Frame = require('./frame');
+const headers = require('./headers');
 
 /**
  * @description HTTP wrapper.
@@ -32,7 +34,7 @@ const http = (apiImpl) => {
             user = req.user.id;
         }
 
-        const frame = new shared.Frame({
+        const frame = new Frame({
             body: req.body,
             file: req.file,
             files: req.files,
@@ -62,7 +64,7 @@ const http = (apiImpl) => {
             const result = await apiImpl(frame);
 
             debug(`External API request to ${frame.docName}.${frame.method}`);
-            const headers = await shared.headers.get(result, apiImpl.headers, frame) || {};
+            const apiHeaders = await headers.get(result, apiImpl.headers, frame) || {};
 
             // CASE: api ctrl wants to handle the express response (e.g. streams)
             if (typeof result === 'function') {
@@ -80,7 +82,7 @@ const http = (apiImpl) => {
             res.status(statusCode);
 
             // CASE: generate headers based on the api ctrl configuration
-            res.set(headers);
+            res.set(apiHeaders);
 
             const send = (format) => {
                 if (format === 'plain') {

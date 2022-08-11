@@ -1,9 +1,12 @@
 const debug = require('@tryghost/debug')('api:shared:pipeline');
 const Promise = require('bluebird');
 const _ = require('lodash');
-const shared = require('../shared');
 const errors = require('@tryghost/errors');
 const {sequence} = require('@tryghost/promise');
+
+const Frame = require('./frame');
+const serializers = require('./serializers');
+const validators = require('./validators');
 
 const STAGES = {
     validation: {
@@ -32,7 +35,7 @@ const STAGES = {
             }
 
             tasks.push(function doValidation() {
-                return shared.validators.handle.input(
+                return validators.handle.input(
                     Object.assign({}, apiConfig, apiImpl.validation),
                     apiUtils.validators.input,
                     frame
@@ -60,7 +63,7 @@ const STAGES = {
          */
         input(apiUtils, apiConfig, apiImpl, frame) {
             debug('stages: input serialisation');
-            return shared.serializers.handle.input(
+            return serializers.handle.input(
                 Object.assign({data: apiImpl.data}, apiConfig),
                 apiUtils.serializers.input,
                 frame
@@ -83,7 +86,7 @@ const STAGES = {
          */
         output(response, apiUtils, apiConfig, apiImpl, frame) {
             debug('stages: output serialisation');
-            return shared.serializers.handle.output(response, apiConfig, apiUtils.serializers.output, frame);
+            return serializers.handle.output(response, apiConfig, apiUtils.serializers.output, frame);
         }
     },
 
@@ -203,9 +206,9 @@ const pipeline = (apiController, apiUtils, apiType) => {
             }
 
             // CASE: http helper already creates it's own frame.
-            if (!(options instanceof shared.Frame)) {
+            if (!(options instanceof Frame)) {
                 debug(`Internal API request for ${docName}.${method}`);
-                frame = new shared.Frame({
+                frame = new Frame({
                     body: data,
                     options: _.omit(options, 'context'),
                     context: options.context || {}
