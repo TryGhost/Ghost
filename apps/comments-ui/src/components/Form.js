@@ -158,15 +158,22 @@ const Form = (props) => {
         if (props.isReply) {
             timer = setTimeout(() => {
                 // Is the form already in view?
-                const formHeight = 100;
+                const formHeight = formEl.current.offsetHeight;
+
+                // Start y position of the form
                 const yMin = getScrollToPosition();
+
+                // Y position of the end of the form
                 const yMax = yMin + formHeight;
+
+                // Trigger scrolling when yMin and yMax is closer than this to the border of the viewport
+                const offset = 64;
                 
                 const viewportHeight = window.innerHeight;
                 const viewPortYMin = window.scrollY;
                 const viewPortYMax = viewPortYMin + viewportHeight;
 
-                if (yMin < viewPortYMin || yMax > viewPortYMax) {
+                if (yMin - offset < viewPortYMin || yMax + offset > viewPortYMax) {
                     // Center the form in the viewport
                     const yCenter = (yMin + yMax) / 2;
 
