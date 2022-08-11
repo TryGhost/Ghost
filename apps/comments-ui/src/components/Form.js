@@ -354,11 +354,11 @@ const Form = (props) => {
             <form ref={formEl} onClick={focusEditor} onMouseDown={preventIfFocused} onTouchStart={preventIfFocused} className={`
                 transition duration-200
                 pt-3 pb-2 px-3
-                -mt-[12px] -mx-3 mb-10
+                -mt-[14px] -mx-3 mb-10
                 rounded-md
                 ${isFormReallyOpen ? 'cursor-default' : 'cursor-pointer'}
                 ${(!props.isReply && !props.isEdit) && '-mt-[4px]'}
-                ${(props.isReply || props.isEdit) && '-mt-[16px]'}
+                ${(props.isReply || props.isEdit) && '-mt-[20px]'}
                 ${shouldFormBeReduced && 'pl-1'}
             `}>
                 <div className="w-full relative">
