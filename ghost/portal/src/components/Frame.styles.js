@@ -782,6 +782,11 @@ const MobileStyles = `
     .gh-portal-btn-primary {
         height: 42px;
     }
+
+    .gh-portal-product-price .amount {
+        font-size: 32px;
+        letter-spacing: -0.022em;
+    }
 }
 
 @media (max-width: 960px) {
