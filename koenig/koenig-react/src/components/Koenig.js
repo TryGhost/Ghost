@@ -25,7 +25,7 @@ const Koenig = ({
 }) => {
     const [selectedRange, setSelectedRange] = React.useState(null);
     const [activeMarkupTags, setActiveMarkupTags] = React.useState({});
-    const [, setActiveSectionTags] = React.useState({});
+    const [activeSectionTags, setActiveSectionTags] = React.useState({});
 
     // Create an instance of KoenigEditor on first render and store a reference.
     // - We need an instance of KoenigEditor immediately because it generates
@@ -81,6 +81,7 @@ const Koenig = ({
             <Toolbar
                 editor={mobiledocInstance}
                 activeMarkupTags={activeMarkupTags}
+                activeSectionTags={activeSectionTags}
                 selectedRange={selectedRange}
             />
 

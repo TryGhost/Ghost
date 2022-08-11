@@ -1,11 +1,13 @@
 import React from 'react';
 import MarkupButton from './MarkupButton';
+import SectionButton from './SectionButton';
 
 export default function Toolbar({
     editor,
     TOOLBAR_MARGIN = 15,
     TICK_ADJUSTMENT = 8,
     activeMarkupTags,
+    activeSectionTags,
     selectedRange
 }) {
     const DEFAULTSTYLES = {
@@ -126,6 +128,8 @@ export default function Toolbar({
             className='absolute w-40'
             style={toolbarPositionStyles} >
             <ul className='toolbar-temporary m-0 flex items-center justify-evenly rounded bg-black py-1 px-0 font-sans text-md font-normal text-white' >
+                <SectionButton markupTags={activeSectionTags?.isH1} editor={editor} tag={'h1'} />
+                <SectionButton markupTags={activeSectionTags?.isH2} editor={editor} tag={'h2'} />
                 <MarkupButton markupTags={activeMarkupTags?.isStrong} editor={editor} tag={'strong'}/>
                 <MarkupButton markupTags={activeMarkupTags?.isEm} editor={editor} tag={'em'}/>
             </ul>
