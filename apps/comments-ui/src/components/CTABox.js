@@ -23,7 +23,7 @@ const CTABox = (props) => {
     };
 
     return (
-        <section className={`flex flex-col items-center pt-[40px] ${member ? 'pb-[32px]' : 'pb-[48px]'} px-8 border-t-2 border-gray-100 dark:border-gray-100/10 border-b-2`}>
+        <section className={`flex flex-col items-center pt-[40px] ${member ? 'pb-[32px]' : 'pb-[48px]'} ${!props.isFirst && 'mt-4'} px-8 border-t-2 border-gray-100 dark:border-gray-100/10 border-b-2`}>
             <h1 className={`mb-[8px] text-center text-black text-[24px] font-sans tracking-tight dark:text-[rgba(255,255,255,0.85)] ${props.isFirst ? 'font-semibold' : 'font-bold'}`}>
                 {titleText}
             </h1>
