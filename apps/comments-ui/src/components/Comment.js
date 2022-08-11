@@ -96,8 +96,11 @@ const Comment = ({updateIsEditing = null, isEditing, ...props}) => {
                     <div className="grow">
                         <div className="flex items-start -mt-[3px] mb-2">
                             {isNotPublished ?
-                                <div>
-                                    <p className="font-sans text-[16px] leading-normal text-neutral-400 italic mt-[4px]">{notPublishedMessage}</p>
+                                <div className="flex flex-row items-center gap-4 pb-[8px] pr-4 h-12">
+                                    <p className="font-sans text-[16px] leading-normal text-neutral-300 italic mt-[4px]">{notPublishedMessage}</p>
+                                    <div className="mt-[4px]">
+                                        <More comment={comment} toggleEdit={toggleEditMode} disableEditing={isEditing} />
+                                    </div>
                                 </div> :
                                 <div>
                                     <h4 className="text-[17px] font-sans font-bold tracking-tight text-[rgb(23,23,23] dark:text-[rgba(255,255,255,0.85)]">{!comment.member ? 'Deleted member' : (comment.member.name ? comment.member.name : 'Anonymous')}</h4>
@@ -112,15 +115,17 @@ const Comment = ({updateIsEditing = null, isEditing, ...props}) => {
                         </div>
 
                         {!isNotPublished &&
-                        <div className={`mb-2 pr-4`}>
-                            <p dangerouslySetInnerHTML={html} className="gh-comment-content font-sans leading-normal text-[16px] text-neutral-900 dark:text-[rgba(255,255,255,0.85)]"></p>
+                        <div className="flex flex-row items-center gap-4 mt mb-2 pr-4">
+                            <p dangerouslySetInnerHTML={html} className="gh-comment-content font-sans leading-normal text-[16px] text-neutral-900 dark:text-[rgba(255,255,255,0.85)]" />
                         </div>}
 
-                        <div className="flex gap-5 items-center">
-                            {!isNotPublished && <Like comment={comment} />}
-                            {!isNotPublished && (canReply && (isNotPublished || !props.parent) && <Reply disabled={!!isEditing} comment={comment} toggleReply={toggleReplyMode} isReplying={isInReplyMode} />)}
-                            <More comment={comment} toggleEdit={toggleEditMode} disableEditing={isEditing} />
-                        </div>
+                        {!isNotPublished && (
+                            <div className="flex gap-5 items-center">
+                                {!isNotPublished && <Like comment={comment} />}
+                                {!isNotPublished && (canReply && (isNotPublished || !props.parent) && <Reply disabled={!!isEditing} comment={comment} toggleReply={toggleReplyMode} isReplying={isInReplyMode} />)}
+                                {!isNotPublished && <More comment={comment} toggleEdit={toggleEditMode} disableEditing={isEditing} />}
+                            </div>
+                        )}
 
                         {hasReplies &&
                             <div className="mt-8 sm:mt-10 mb-4 sm:mb-0">

@@ -83,7 +83,7 @@ const Avatar = (props) => {
     // When an avatar has been deleted or hidden
     if (props.isBlank) {
         avatarEl = (
-            <div className={`flex justify-center items-center rounded-full bg-neutral-300 dark:opacity-70 ${dimensionClasses}`}>
+            <div className={`flex justify-center items-center rounded-full bg-neutral-200 dark:opacity-70 ${dimensionClasses}`}>
                 <AvatarIcon className="stroke-white dark:stroke-neutral-600" />
             </div>
         );
