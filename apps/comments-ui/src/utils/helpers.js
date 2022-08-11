@@ -15,14 +15,6 @@ export const createPopupNotification = ({type, status, autoHide, duration = 2600
     };
 };
 
-export function transformApiSiteData({site}) {
-    if (!site) {
-        return null;
-    }
-
-    return site;
-}
-
 export function isSentryEventAllowed({event: sentryEvent}) {
     const frames = sentryEvent?.exception?.values?.[0]?.stacktrace?.frames || [];
     const fileNames = frames.map(frame => frame.filename).filter(filename => !!filename);

@@ -81,7 +81,7 @@ const CommentsBoxContent = (props) => {
         <>
             <CommentsBoxTitle title={title} showCount={showCount} count={commentCount}/>
             <Pagination />
-            <div className={!pagination ? 'mt-4' : ''}>
+            <div className={!pagination ? 'mt-4' : ''} data-test="comment-elements">
                 {commentsElements}
             </div>
             <div>

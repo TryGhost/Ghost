@@ -49,7 +49,7 @@ const Frame = ({
         });
     };
 
-    const [cssLoaded, setCssLoaded] = useState(false);
+    const [cssLoaded, setCssLoaded] = useState(!stylesUrl);
 
     const onLoadCSS = () => {
         setCssLoaded(true);
@@ -57,7 +57,7 @@ const Frame = ({
 
     const head = (
         <>
-            <link rel="stylesheet" href={stylesUrl} onLoad={onLoadCSS} />
+            {stylesUrl ? <link rel="stylesheet" href={stylesUrl} onLoad={onLoadCSS} /> : null}
             <style dangerouslySetInnerHTML={{__html: styles}} />
             <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
         </>

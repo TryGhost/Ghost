@@ -259,20 +259,8 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
         let [member] = await Promise.all([
             api.member.sessionData()
         ]);
-        let site = {};
-        let settings = {};
 
-        try {
-            // for now we don't need to fetch all the settings (the ones we need are passed via the script tag data attributes)
-            //settings = await api.site.settings();
-            site = {
-                ...settings
-            };
-        } catch (e) {
-            // Ignore
-        }
-        site = transformApiSiteData({site});
-        return {site, member};
+        return {member};
     };
 
     return api;
