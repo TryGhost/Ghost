@@ -3,7 +3,7 @@ const Promise = require('bluebird');
 const sinon = require('sinon');
 const shared = require('../../');
 
-describe('Unit: api/shared/serializers/handle', function () {
+describe('serializers/handle', function () {
     afterEach(function () {
         sinon.restore();
     });

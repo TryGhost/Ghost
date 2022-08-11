@@ -1,7 +1,7 @@
 const should = require('should');
 const shared = require('../');
 
-describe('Unit: api/shared/frame', function () {
+describe('Frame', function () {
     it('constructor', function () {
         const frame = new shared.Frame();
         Object.keys(frame).should.eql([
