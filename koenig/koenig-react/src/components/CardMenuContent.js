@@ -1,20 +1,34 @@
 import React from 'react';
 
-const MenuGroup = ({group}) => {
+const CardMenuGroup = ({group, ...props}) => {
     return (
         <>
             <div className="mb-2 flex shrink-0 flex-col justify-center px-4 pt-3 text-xs font-medium uppercase tracking-[.06rem] text-grey-midlight" style={{minWidth: 'calc(100% - 3.2rem)'}}>
                 {group.title}
             </div>
             <div>
-                {group.items.map(item => <MenuItem item={item} key={item.label} />)}
+                {group.items.map(item => <CardMenuItem item={item} key={item.label} {...props} />)}
             </div>
         </>
     );
 };
 
-const MenuItem = ({item}) => {
+const CardMenuItem = ({item, itemWasClicked, replacementRange, koenigEditor}) => {
     const {IconComponent = () => <></>} = item;
+
+    const handleClick = (event) => {
+        event?.preventDefault();
+
+        const range = replacementRange || koenigEditor.mobiledocEditor.range;
+
+        if (item.type === 'card') {
+            const payload = item.payload ? JSON.parse(JSON.stringify(item.payload)) : {};
+
+            koenigEditor.replaceWithCardSection(item.replaceArg, range, payload);
+        }
+
+        itemWasClicked?.();
+    };
 
     return (
         <div
@@ -22,6 +36,7 @@ const MenuItem = ({item}) => {
             data-kg="cardmenu-card"
             role="menuitem"
             title={item.label}
+            onClick={handleClick}
         >
             <div className={`flex items-center ${item.iconClass}`} aria-hidden="true"><IconComponent className="w7 h7" /></div>
             <div className="flex flex-col">
@@ -32,14 +47,14 @@ const MenuItem = ({item}) => {
     );
 };
 
-const MenuContent = ({menuContent}) => {
+const CardMenuContent = ({koenigEditor, ...props}) => {
     // const [selectedItem, setSelectedItem] = React.useState(menuContent[0]?.items[0]);
 
     const menuGroups = [];
 
-    menuContent.forEach((group) => {
+    koenigEditor.cardMenu.forEach((group) => {
         if (group.items?.length) {
-            menuGroups.push(<MenuGroup group={group} key={group.title} />);
+            menuGroups.push(<CardMenuGroup group={group} koenigEditor={koenigEditor} key={group.title} {...props} />);
         }
     });
 
@@ -48,4 +63,4 @@ const MenuContent = ({menuContent}) => {
     );
 };
 
-export default MenuContent;
+export default CardMenuContent;

@@ -16,7 +16,7 @@ const PlusButton = ({onClick}) => {
     );
 };
 
-const PlusMenu = ({containerId, closeMenu, koenigEditor}) => {
+const PlusMenu = ({containerId, closeMenu, ...props}) => {
     // close menu on clicks outside or Escape
     useEffect(() => {
         const handleMousedown = (event) => {
@@ -48,7 +48,7 @@ const PlusMenu = ({containerId, closeMenu, koenigEditor}) => {
 
     return (
         <div className="absolute top-[-10px] left-[-16px] z-[9999999] m-0 mb-3 max-h-[376px] w-[312px] flex-col overflow-y-auto rounded-lg bg-white bg-clip-padding p-0 pt-0 text-sm shadow-xl" role="menu">
-            <CardMenuContent menuContent={koenigEditor.cardMenu} />
+            <CardMenuContent {...props} />
         </div>
     );
 };
@@ -168,10 +168,15 @@ const PlusMenuContainer = ({koenigEditor, selectedRange}) => {
         isShowingMenu ? closeMenu() : openMenu();
     };
 
+    const handleItemClick = () => {
+        closeMenu();
+        setCachedRange(null);
+    };
+
     return (
         <div id={containerId.current} data-kg="plus-menu" className="absolute" style={style} ref={containerEl}>
             {isShowingButton && <PlusButton onClick={handleButtonClick} />}
-            {isShowingMenu && <PlusMenu containerId={containerId.current} closeMenu={closeMenu} koenigEditor={koenigEditor} />}
+            {isShowingMenu && <PlusMenu containerId={containerId.current} closeMenu={closeMenu} koenigEditor={koenigEditor} replacementRange={cachedRange} itemWasClicked={handleItemClick} />}
         </div>
     );
 };
