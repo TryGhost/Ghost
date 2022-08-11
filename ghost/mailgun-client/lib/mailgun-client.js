@@ -34,7 +34,7 @@ module.exports = class MailgunClient {
         const mailgunInstance = this.getInstance();
         if (!mailgunInstance) {
             logging.warn(`Mailgun is not configured`);
-            return;
+            return null;
         }
 
         if (Object.keys(recipientData).length > module.exports.BATCH_SIZE) {

@@ -87,6 +87,15 @@ describe('MailgunClient', function () {
         assert.equal(eventsMock2.isDone(), true);
     });
 
+    describe('send()', function () {
+        it('does not send if not configured', async function () {
+            const mailgunClient = new MailgunClient({config, settings});
+            const response = await mailgunClient.send({}, {}, []);
+
+            assert.strictEqual(response, null);
+        });
+    });
+
     describe('fetchEvents()', function () {
         it('does not fetch if not configured', async function () {
             const batchHandler = sinon.spy();
