@@ -137,12 +137,12 @@ module.exports = {
             form: [
                 '0px 78px 57px -57px rgba(0, 0, 0, 0.1)',
                 '0px 15px 20px -8px rgba(0, 0, 0, 0.08)',
-                '0px 0px 1px 0px rgba(0, 0, 0, 0.25)'
+                '0px 0px 1px 0px rgba(0,0,0,0.32)'
             ],
             formxl: [
                 '0px 78px 57px -57px rgba(0, 0, 0, 0.125)',
                 '0px 15px 20px -8px rgba(0, 0, 0, 0.1)',
-                '0px 0px 1px 0px rgba(0, 0, 0, 0.25)'
+                '0px 0px 1px 0px rgba(0, 0, 0, 0.32)'
             ],
             modal: [
                 '0 3.8px 2.2px rgba(0, 0, 0, 0.028)',
