@@ -6,6 +6,8 @@ import ItalicIcon from './icons/kg-italic.svg';
 import Heading1Icon from './icons/kg-heading-1.svg';
 import Heading2Icon from './icons/kg-heading-2.svg';
 import QuoteIcon from './icons/kg-quote.svg';
+import LinkButton from './LinkButton';
+import UrlPromptInput from './UrlPromptInput';
 
 export default function Toolbar({
     editor,
@@ -20,8 +22,11 @@ export default function Toolbar({
         left: 0,
         right: 0
     };
-
+    
+    const [showUrlPrompt, setShowUrlPrompt] = React.useState(false);
+    const [urlAddress, setUrlAddress] = React.useState('');
     const toolbarRef = React.useRef();
+    const urlPromptRef = React.useRef();
     const [showToolbar, setShowToolbar] = React.useState(false);
     const [toolbarPosition, setToolbarPosition] = React.useState(DEFAULTSTYLES);
     const [hasSelectedRange, setHasSelectedRange] = React.useState(false);
@@ -29,11 +34,11 @@ export default function Toolbar({
     const [, setIsMouseDown] = React.useState(false);
     const [, setIsMouseUp] = React.useState(false);
 
-    function _toggleVisibility(bool) {
-        if (bool) {
+    function _toggleVisibility(toolbar, urlPrompt = false) {
+        if (toolbar) {
             _showToolbar();
         }
-        if (!bool) {
+        if (!toolbar) {
             _hideToolbar();
         }
     }
@@ -129,16 +134,26 @@ export default function Toolbar({
     }, [_handleMousemove, _handleMousedown, _handleMouseup]);
 
     return (
-        <div ref={toolbarRef}
-            className='absolute'
-            style={toolbarPositionStyles} >
-            <ul className='m-0 flex items-center justify-evenly rounded bg-black px-1 py-0 font-sans text-md font-normal text-white' >
-                <MarkupButton markupTags={activeMarkupTags?.isStrong} editor={editor} tag={'strong'} title={<BoldIcon />} />
-                <MarkupButton markupTags={activeMarkupTags?.isEm} editor={editor} tag={'em'} title={<ItalicIcon />} />
-                <SectionButton markupTags={activeSectionTags?.isH1} editor={editor} tag={'h1'} title={<Heading1Icon />} />
-                <SectionButton markupTags={activeSectionTags?.isH2} editor={editor} tag={'h2'} title={<Heading2Icon />} />
-                <SectionButton markupTags={activeSectionTags?.isBlockquote} editor={editor} tag={'blockquote'} title={<QuoteIcon />} />
-            </ul>
-        </div>
+        <React.Fragment>
+            <UrlPromptInput
+                ref={urlPromptRef} 
+                showUrlPrompt={{showUrlPrompt, setShowUrlPrompt}} 
+                toolbarPosition={toolbarPosition} 
+                urlAddress={{urlAddress, setUrlAddress}}
+                editor={editor}
+            />
+            <div ref={toolbarRef}
+                className='absolute'
+                style={toolbarPositionStyles} >
+                <ul className='m-0 flex items-center justify-evenly rounded bg-black px-1 py-0 font-sans text-md font-normal text-white' >
+                    <MarkupButton tagsInUse={activeMarkupTags?.isStrong} editor={editor} tag={'strong'} title={<BoldIcon />} />
+                    <MarkupButton tagsInUse={activeMarkupTags?.isEm} editor={editor} tag={'em'} title={<ItalicIcon />} />
+                    <SectionButton tagsInUse={activeSectionTags?.isH1} editor={editor} tag={'h1'} title={<Heading1Icon />} />
+                    <SectionButton tagsInUse={activeSectionTags?.isH2} editor={editor} tag={'h2'} title={<Heading2Icon />} />
+                    <SectionButton tagsInUse={activeSectionTags?.isBlockquote} editor={editor} tag={'blockquote'} title={<QuoteIcon />} />
+                    <LinkButton tagsInUse={activeMarkupTags?.isA} editor={editor} tag={'a'} title="A" showUrlPrompt={{showUrlPrompt, setShowUrlPrompt}} toolbar={{showToolbar, setShowToolbar}} />
+                </ul>
+            </div>
+        </React.Fragment>
     );
 }
