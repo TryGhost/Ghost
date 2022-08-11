@@ -439,7 +439,7 @@ export default class OffersController extends Controller {
     changeType(type) {
         if (type === 'trial') {
             this._saveOfferProperty('type', 'trial');
-            this._saveOfferProperty('amount', 0);
+            this._saveOfferProperty('amount', 7);
             this._saveOfferProperty('duration', 'trial');
         } else {
             this._saveOfferProperty('type', 'percent');
