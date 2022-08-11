@@ -5,8 +5,8 @@ const _ = require('lodash');
 const BaseImporter = require('./base');
 const models = require('../../../../models');
 const defaultSettings = require('../../../schema').defaultSettings;
-const keyGroupMapper = require('../../../../api/shared/serializers/input/utils/settings-key-group-mapper');
-const keyTypeMapper = require('../../../../api/shared/serializers/input/utils/settings-key-type-mapper');
+const keyGroupMapper = require('../../../../api/endpoints/utils/serializers/input/utils/settings-key-group-mapper');
+const keyTypeMapper = require('../../../../api/endpoints/utils/serializers/input/utils/settings-key-type-mapper');
 const {WRITABLE_KEYS_ALLOWLIST} = require('../../../../../shared/labs');
 
 const labsDefaults = JSON.parse(defaultSettings.labs.labs.defaultValue);
