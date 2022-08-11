@@ -1,8 +1,7 @@
 import Frame from './components/Frame';
-import * as Sentry from '@sentry/react';
 import React from 'react';
 import ActionHandler from './actions';
-import {createPopupNotification,isSentryEventAllowed} from './utils/helpers';
+import {createPopupNotification} from './utils/helpers';
 import AppContext from './AppContext';
 import {hasMode} from './utils/check-mode';
 import setupGhostApi from './utils/api';
@@ -21,20 +20,14 @@ function AuthFrame({adminUrl, onLoad}) {
 
 function CommentsBoxContainer({done, appVersion}) {
     return (
-        <Frame>
+        <Frame title="comments-box">
             <CommentsBox done={done} />
         </Frame>
     );
 }
 
 function SentryErrorBoundary({dsn, children}) {
-    if (dsn) {
-        return (
-            <Sentry.ErrorBoundary>
-                {children}
-            </Sentry.ErrorBoundary>
-        );
-    }
+    // todo: add Sentry.ErrorBoundary wrapper if Sentry is enabled
     return (
         <>
             {children}
@@ -68,11 +61,10 @@ export default class App extends React.Component {
     async initSetup() {
         try {
             // Fetch data from API, links, preview, dev sources
-            const {site, member} = await this.fetchApiData();
+            const {member} = await this.fetchApiData();
             const {comments, pagination, count} = await this.fetchComments();
 
             const state = {
-                site,
                 member,
                 action: 'init:success',
                 initStatus: 'success',
@@ -159,10 +151,10 @@ export default class App extends React.Component {
 
         try {
             this.GhostApi = this.props.api || setupGhostApi({siteUrl, apiUrl, apiKey});
-            const {site, member} = await this.GhostApi.init();
+            const {member} = await this.GhostApi.init();
 
-            this.setupSentry({site});
-            return {site, member};
+            this.setupSentry();
+            return {member};
         } catch (e) {
             if (hasMode(['dev', 'test'], {customSiteUrl})) {
                 return {};
@@ -254,30 +246,8 @@ export default class App extends React.Component {
     }
 
     /** Setup Sentry */
-    setupSentry({site}) {
-        if (hasMode(['test'])) {
-            return null;
-        }
-        const {portal_sentry: portalSentry, portal_version: portalVersion, version: ghostVersion} = site;
-        const appVersion = process.env.REACT_APP_VERSION || portalVersion;
-        const releaseTag = `comments@${appVersion}|ghost@${ghostVersion}`;
-        if (portalSentry && portalSentry.dsn) {
-            Sentry.init({
-                dsn: portalSentry.dsn,
-                environment: portalSentry.env || 'development',
-                release: releaseTag,
-                beforeSend: (event) => {
-                    if (isSentryEventAllowed({event})) {
-                        return event;
-                    }
-                    return null;
-                },
-                allowUrls: [
-                    /https?:\/\/((www)\.)?unpkg\.com\/@tryghost\/comments/,
-                    /https?:\/\/((cdn)\.)?jsdelivr\.net\/npm\/@tryghost\/comments/
-                ]
-            });
-        }
+    setupSentry() {
+        // Not implemented yet
     }
 
     /**Get final App level context from App state*/
