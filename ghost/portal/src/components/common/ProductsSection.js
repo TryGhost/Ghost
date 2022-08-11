@@ -250,7 +250,8 @@ export const ProductsSectionStyles = ({site}) => {
             display: block;
             font-size: 1.5rem;
             color: var(--grey5);
-            margin-top: 8px;
+            margin-top: 6px;
+            margin-bottom: 6px;
             line-height: 1;
         }
 
