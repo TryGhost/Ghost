@@ -249,8 +249,8 @@ export const ProductsSectionStyles = ({site}) => {
         .after-trial-amount {
             display: block;
             font-size: 1.5rem;
-            color: var(--grey6);
-            margin-top: 12px;
+            color: var(--grey5);
+            margin-top: 8px;
             line-height: 1;
         }
 
