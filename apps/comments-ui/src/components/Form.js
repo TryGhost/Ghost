@@ -409,11 +409,11 @@ const Form = (props) => {
                             </div>
                         </div>
                     </div>
-                    <div className='absolute top-1 left-0 flex justify-start items-center h-12'>
-                        <div className="mr-3">
+                    <div className='absolute top-1 left-0 flex justify-start items-center h-12 w-full'>
+                        <div className="grow-0 mr-3">
                             <Avatar comment={comment} saturation={avatarSaturation} className="pointer-events-none" />
                         </div>
-                        <div>
+                        <div className="grow-1 w-full">
                             <Transition
                                 show={isFormReallyOpen}
                                 enter="transition duration-500 delay-100 ease-in-out"
@@ -430,14 +430,14 @@ const Form = (props) => {
                                             bioAutofocus: false
                                         });
                                     }}>{memberName ? memberName : 'Anonymous'}</div>
-                                <div className="flex items-baseline">
+                                <div className="flex items-baseline justify-start">
                                     <button
-                                        className={`group transition duration-150 flex justify-start items-center font-sans text-[14px] tracking-tight text-neutral-400 hover:text-neutral-500 dark:text-[rgba(255,255,255,0.5)] ${!memberBio && 'text-neutral-300 hover:text-neutral-400'}`}
+                                        className={`group transition duration-150 whitespace-nowrap max-w-[80%] sm:max-w-[90%] flex items-center justify-start font-sans text-[14px] text-left tracking-tight text-neutral-400 hover:text-neutral-500 dark:text-[rgba(255,255,255,0.5)] ${!memberBio && 'text-neutral-300 hover:text-neutral-400'}`}
                                         onClick={(event) => {
                                             handleShowDialog(event, {
                                                 bioAutofocus: true
                                             });
-                                        }}>{memberBio ? memberBio : 'Add your expertise'}
+                                        }}><span className="text-ellipsis overflow-hidden ...">{memberBio ? memberBio : 'Add your expertise'}</span>
                                         {memberBio && <EditIcon className="transition-all duration-100 ease-out opacity-0 -translate-x-[6px] group-hover:opacity-100 group-hover:translate-x-0 w-[12px] h-[12px] stroke-neutral-500 ml-1" />}
                                     </button>
                                 </div>
