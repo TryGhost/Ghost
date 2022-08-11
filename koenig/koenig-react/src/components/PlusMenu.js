@@ -1,5 +1,6 @@
-import {v4 as uuidv4} from 'uuid';
 import React, {useEffect} from 'react';
+import {v4 as uuidv4} from 'uuid';
+import CardMenuContent from './CardMenuContent';
 import PlusIcon from '../icons/plus.svg';
 import rangeIsABlankParagraph from '../utils/range-is-blank-paragraph';
 import getTopPositionOfRange from '../utils/get-top-position-of-range';
@@ -15,7 +16,7 @@ const PlusButton = ({onClick}) => {
     );
 };
 
-const PlusMenu = ({containerId, closeMenu}) => {
+const PlusMenu = ({containerId, closeMenu, koenigEditor}) => {
     // close menu on clicks outside or Escape
     useEffect(() => {
         const handleMousedown = (event) => {
@@ -45,12 +46,9 @@ const PlusMenu = ({containerId, closeMenu}) => {
         };
     }, [containerId, closeMenu]);
 
-    // TODO: render a real card menu
     return (
         <div className="absolute top-[-10px] left-[-16px] z-[9999999] m-0 mb-3 max-h-[376px] w-[312px] flex-col overflow-y-auto rounded-lg bg-white bg-clip-padding p-0 pt-0 text-sm shadow-xl" role="menu">
-            <div className="h-[500px]">
-                <p>Testing menu</p>
-            </div>
+            <CardMenuContent menuContent={koenigEditor.cardMenu} />
         </div>
     );
 };
@@ -173,7 +171,7 @@ const PlusMenuContainer = ({koenigEditor, selectedRange}) => {
     return (
         <div id={containerId.current} data-kg="plus-menu" className="absolute" style={style} ref={containerEl}>
             {isShowingButton && <PlusButton onClick={handleButtonClick} />}
-            {isShowingMenu && <PlusMenu containerId={containerId.current} closeMenu={closeMenu} />}
+            {isShowingMenu && <PlusMenu containerId={containerId.current} closeMenu={closeMenu} koenigEditor={koenigEditor} />}
         </div>
     );
 };

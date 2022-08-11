@@ -9,7 +9,7 @@ const DEFAULT_KOENIG_OPTIONS = {
     selectAfterInsert: true
 };
 
-const createComponentCard = ({name, component: CardComponent, koenigOptions}) => {
+const createComponentCard = ({name, component: CardComponent, koenigOptions = {}}) => {
     return {
         name,
         type: RENDER_TYPE,
@@ -63,7 +63,9 @@ const createComponentCard = ({name, component: CardComponent, koenigOptions}) =>
             });
 
             return targetNode;
-        }
+        },
+
+        cardMenu: koenigOptions.cardMenu
     };
 };
 

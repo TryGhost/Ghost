@@ -1,6 +1,7 @@
 import createComponentCard from '../../utils/create-component-card';
 import Card from '../../components/Card';
 import Image from './Image';
+import ImageCardIcon from '../../icons/kg-card-type-image.svg';
 
 const ImageCardComponent = ({...props}) => {
     return (
@@ -25,7 +26,21 @@ const ImageCard = createComponentCard({
     component: ImageCardComponent,
     koenigOptions: {
         hasEditMode: true,
-        selectAfterInsert: true
+        selectAfterInsert: true,
+        cardMenu: {
+            group: 'Primary',
+            label: 'Image',
+            desc: 'Upload, or embed with /image [url]',
+            IconComponent: ImageCardIcon,
+            iconClass: '',
+            matches: ['image', 'img'],
+            type: 'card',
+            replaceArg: 'image',
+            params: ['src'],
+            payload: {
+                triggerBrowse: true
+            }
+        }
     }
 });
 

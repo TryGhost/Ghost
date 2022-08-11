@@ -1,5 +1,6 @@
 import createComponentCard from '../utils/create-component-card';
 import Card from '../components/Card';
+import HrCardIcon from '../icons/kg-card-type-divider.svg';
 
 const HrCardComponent = ({...props}) => {
     return (
@@ -14,7 +15,17 @@ const HrCard = createComponentCard({
     component: HrCardComponent,
     koenigOptions: {
         hasEditMode: false,
-        selectAfterInsert: false
+        selectAfterInsert: false,
+        cardMenu: {
+            group: 'Primary',
+            label: 'Divider',
+            desc: 'Insert a dividing line',
+            IconComponent: HrCardIcon,
+            iconClass: '',
+            matches: ['divider', 'horizontal-rule', 'hr'],
+            type: 'card',
+            replaceArg: 'hr'
+        }
     }
 });
 

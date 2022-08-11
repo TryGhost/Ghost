@@ -145,6 +145,31 @@ class KoenigEditor {
 
     // API ---------------------------------------------------------------------
 
+    get cardMenu() {
+        const cardMenu = [{
+            title: 'Primary',
+            items: []
+        }];
+
+        this.cards.forEach((card) => {
+            if (!card.cardMenu) {
+                return;
+            }
+
+            const {group = 'Primary', ...menuItem} = card.cardMenu;
+            let cardMenuGroup = cardMenu.find(g => g.title === group);
+
+            if (!cardMenuGroup) {
+                cardMenuGroup = {title: group, items: []};
+                cardMenu.push(cardMenuGroup);
+            }
+
+            cardMenuGroup.items.push(menuItem);
+        });
+
+        return cardMenu;
+    }
+
     /* eslint-disable no-console */
 
     exitCursorAtTop() {
