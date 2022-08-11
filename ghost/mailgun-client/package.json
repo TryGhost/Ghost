@@ -23,7 +23,7 @@
     "sinon": "14.0.0"
   },
   "dependencies": {
-    "@tryghost/logging": "2.2.3",
+    "@tryghost/logging": "2.2.4",
     "lodash": "4.17.21",
     "mailgun-js": "0.22.0"
   }
