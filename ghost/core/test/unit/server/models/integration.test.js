@@ -60,11 +60,11 @@ describe('Unit: models/integration', function () {
             return models.Integration.findOne({
                 id: '123'
             }, {
-                filter: 'type:[custom,builtin]'
+                filter: 'type:[custom,builtin,core]'
             }).then(() => {
                 queries.length.should.eql(1);
-                queries[0].sql.should.eql('select `integrations`.* from `integrations` where `integrations`.`type` in (?, ?) and `integrations`.`id` = ? limit ?');
-                queries[0].bindings.should.eql(['custom', 'builtin', '123', 1]);
+                queries[0].sql.should.eql('select `integrations`.* from `integrations` where `integrations`.`type` in (?, ?, ?) and `integrations`.`id` = ? limit ?');
+                queries[0].bindings.should.eql(['custom', 'builtin', 'core', '123', 1]);
             });
         });
     });

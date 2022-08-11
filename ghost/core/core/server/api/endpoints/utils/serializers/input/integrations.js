@@ -3,9 +3,9 @@ const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:input:
 
 function setDefaultFilter(frame) {
     if (frame.options.filter) {
-        frame.options.filter = `(${frame.options.filter})+type:[custom,builtin]`;
+        frame.options.filter = `(${frame.options.filter})+type:[custom,builtin,core]`;
     } else {
-        frame.options.filter = 'type:[custom,builtin]';
+        frame.options.filter = 'type:[custom,builtin,core]';
     }
 }
 
