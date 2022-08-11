@@ -1,12 +1,52 @@
 import {render, within} from '@testing-library/react';
 import App from './App';
 import {ROOT_DIV_ID} from './utils/constants';
+import {buildComment} from './utils/test-utils';
 
-/*test('renders the auth frame', () => {
-    const {container} = render(<App />);
-    const iframeElement = container.querySelector('iframe[data-frame="admin-auth"]');
-    expect(iframeElement).toBeInTheDocument();
-});*/
+const sinon = require('sinon');
+
+function renderApp({member = null} = {}) {
+    const postId = 'my-post';
+    const api = {
+        init: async () => {
+            return {
+                member
+            };
+        },
+        comments: {
+            count: async () => {
+                return {
+                    [postId]: 0
+                };
+            },
+            browse: async () => {
+                return {
+                    comments: [],
+                    meta: {
+                        pagination: {
+                            total: 0,
+                            next: null,
+                            prev: null,
+                            page: 1
+                        }
+                    }
+                };
+            }
+        }
+    };
+    // In tests, we currently don't wait for the styles to have loaded. In the app we check if the styles url is set or not.
+    const stylesUrl = '';
+    const {container} = render(<div><div id={ROOT_DIV_ID}></div><App api={api} stylesUrl={stylesUrl}/></div>);
+    return {container, api};
+}
+
+describe('Auth frame', () => {
+    it('renders the auth frame', () => {
+        const {container} = renderApp();
+        const iframeElement = container.querySelector('iframe[data-frame="admin-auth"]');
+        expect(iframeElement).toBeInTheDocument();
+    });
+});
 
 describe('Dark mode', () => {
     it.todo('uses dark mode when container has a dark background');
@@ -16,58 +56,22 @@ describe('Dark mode', () => {
 
 describe('Comments', () => {
     it('renders comments', async () => {
-        const postId = 'my-post';
-        const member = null;
-        const api = {
-            init: async () => {
-                return {
-                    member
-                };
-            },
-            comments: {
-                count: async () => {
-                    return {
-                        [postId]: 1
-                    };
-                },
-                browse: async () => {
-                    return {
-                        comments: [
-                            {
-                                id: 'test',
-                                html: '<p>This is a comment body</p>',
-                                replies: [],
-                                count: {
-                                    replies: 0,
-                                    likes: 0
-                                },
-                                liked: false,
-                                created_at: '2022-08-11T09:26:34.000Z',
-                                edited_at: null,
-                                member: {
-                                    avatar_image: '',
-                                    bio: 'Hello world codoof',
-                                    id: '62d6c6564a14e6a4b5e97c43',
-                                    name: 'dtt2',
-                                    uuid: '613e9667-4fa2-4ff4-aa62-507220103d41'
-                                },
-                                status: 'published'
-                            }
-                        ],
-                        meta: {
-                            pagination: {
-                                total: 1,
-                                next: null,
-                                prev: null,
-                                page: 1
-                            }
-                        }
-                    };
+        const {container, api} = renderApp();
+        sinon.stub(api.comments, 'browse').callsFake(() => {
+            return {
+                comments: [
+                    buildComment({html: '<p>This is a comment body</p>'})
+                ],
+                meta: {
+                    pagination: {
+                        total: 1,
+                        next: null,
+                        prev: null,
+                        page: 1
+                    }
                 }
-            }
-        };
-        const stylesUrl = '';
-        const {container} = render(<div><div id={ROOT_DIV_ID}></div><App api={api} stylesUrl={stylesUrl}/></div>);
+            };
+        });
 
         const iframeElement = container.querySelector('iframe[title="comments-box"]');
         expect(iframeElement).toBeInTheDocument();
