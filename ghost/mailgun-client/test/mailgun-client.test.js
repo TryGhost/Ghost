@@ -88,6 +88,15 @@ describe('MailgunClient', function () {
     });
 
     describe('fetchEvents()', function () {
+        it('does not fetch if not configured', async function () {
+            const batchHandler = sinon.spy();
+            const mailgunClient = new MailgunClient({config, settings});
+            const events = await mailgunClient.fetchEvents(MAILGUN_OPTIONS, batchHandler);
+
+            assert.equal(events.length, 0);
+            assert.equal(batchHandler.callCount, 0);
+        });
+
         it('fetches from now and works backwards', async function () {
             const configStub = sinon.stub(config, 'get');
             configStub.withArgs('bulkEmail').returns({
