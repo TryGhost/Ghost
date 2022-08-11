@@ -87,6 +87,42 @@ describe('MailgunClient', function () {
         assert.equal(eventsMock2.isDone(), true);
     });
 
+    it('prioritises config values over settings', async function () {
+        const configStub = sinon.stub(config, 'get');
+        configStub.withArgs('bulkEmail').returns({
+            mailgun: {
+                apiKey: 'apiKey',
+                domain: 'configdomain.com',
+                baseUrl: 'https://configapi.com/v3'
+            }
+        });
+
+        const settingsStub = sinon.stub(settings, 'get');
+        settingsStub.withArgs('mailgun_api_key').returns('settingsApiKey');
+        settingsStub.withArgs('mailgun_domain').returns('settingsdomain.com');
+        settingsStub.withArgs('mailgun_base_url').returns('https://settingsapi.com/v3');
+
+        const configApiMock = nock('https://configapi.com')
+            .get('/v3/configdomain.com/events')
+            .query(MAILGUN_OPTIONS)
+            .reply(200, {'Content-Type': 'application/json'}, {
+                items: []
+            });
+
+        const settingsApiMock = nock('https://settingsapi.com')
+            .get('/v3/settingsdomain.com/events')
+            .query(MAILGUN_OPTIONS)
+            .reply(200, {'Content-Type': 'application/json'}, {
+                items: []
+            });
+
+        const mailgunClient = new MailgunClient({config, settings});
+        await mailgunClient.fetchEvents(MAILGUN_OPTIONS, () => {});
+
+        assert.equal(configApiMock.isDone(), true);
+        assert.equal(settingsApiMock.isDone(), false);
+    });
+
     describe('send()', function () {
         it('does not send if not configured', async function () {
             const mailgunClient = new MailgunClient({config, settings});
