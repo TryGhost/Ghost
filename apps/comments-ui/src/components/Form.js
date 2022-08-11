@@ -446,13 +446,13 @@ const Form = (props) => {
                                 transition-[opacity] duration-150 
                             ">
                                 {(props.isEdit || props.isReply) &&
-                                    <button type="button" onClick={props.close} className="font-sans text-sm font-medium ml-2.5 text-neutral-500 dark:text-neutral-400">Cancel</button>}
+                                    <button type="button" onClick={props.close} className="outline-0 font-sans text-sm font-medium ml-2.5 text-neutral-500 dark:text-neutral-400">Cancel</button>}
                                 <button
                                     className={`
-                                        flex items-center justify-center w-auto sm:w-32 h-[39px]
+                                        flex items-center justify-center w-auto sm:w-[128px] ${props.isReply && 'sm:w-[100px]'} ${props.isEdit && 'sm:w-[64px]'} h-[39px]
                                         transition-[opacity] duration-150
                                         bg-neutral-900 dark:bg-[rgba(255,255,255,0.9)]
-                                        rounded-[6px] border
+                                        rounded-[6px] border outline-0
                                         py-2 px-3
                                         text-sm text-center font-sans font-semibold
                                         text-white dark:text-neutral-800
