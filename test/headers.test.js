@@ -1,6 +1,6 @@
 const shared = require('../');
 
-describe('Unit: api/shared/headers', function () {
+describe('Headers', function () {
     it('empty headers config', function () {
         return shared.headers.get().then((result) => {
             result.should.eql({});

@@ -3,7 +3,7 @@ const should = require('should');
 const sinon = require('sinon');
 const shared = require('../');
 
-describe('Unit: api/shared/pipeline', function () {
+describe('Pipeline', function () {
     afterEach(function () {
         sinon.restore();
     });

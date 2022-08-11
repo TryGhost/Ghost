@@ -1,6 +1,6 @@
 const optionsUtil = require('../../lib/utils/options');
 
-describe('Unit: api/shared/util/options', function () {
+describe('util/options', function () {
     it('returns an array with empty string when no parameters are passed', function () {
         optionsUtil.trimAndLowerCase().should.eql(['']);
     });
