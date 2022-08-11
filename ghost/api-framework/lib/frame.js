@@ -1,4 +1,4 @@
-const debug = require('@tryghost/debug')('api:shared:frame');
+const debug = require('@tryghost/debug')('frame');
 const _ = require('lodash');
 
 /**

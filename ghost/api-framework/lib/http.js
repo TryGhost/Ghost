@@ -1,5 +1,5 @@
 const url = require('url');
-const debug = require('@tryghost/debug')('api:shared:http');
+const debug = require('@tryghost/debug')('http');
 
 const Frame = require('./frame');
 const headers = require('./headers');

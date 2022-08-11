@@ -2,7 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const shared = require('../');
 
-describe('Unit: api/shared/http', function () {
+describe('HTTP', function () {
     let req;
     let res;
     let next;
