@@ -31,14 +31,14 @@ module.exports = class MailgunClient {
      * }
      */
     send(message, recipientData, replacements) {
-        if (recipientData.length > module.exports.BATCH_SIZE) {
-            // err - too many recipients
-        }
-
         const mailgunInstance = this.getInstance();
         if (!mailgunInstance) {
             logging.warn(`Mailgun is not configured`);
             return;
+        }
+
+        if (Object.keys(recipientData).length > module.exports.BATCH_SIZE) {
+            // TODO: what to do here?
         }
 
         let messageData = {};
