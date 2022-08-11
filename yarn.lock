@@ -2815,13 +2815,13 @@
   resolved "https://registry.yarnpkg.com/@panva/asn1.js/-/asn1.js-1.0.0.tgz#dd55ae7b8129e02049f009408b97c61ccf9032f6"
   integrity sha512-UdkG3mLEqXgnlKsWanWcgb6dOjUzJ+XC5f+aWw30qrtjxeNUSfKX1cd5FBzOaXQumoe9nIqeZUvrRJS03HCCtw==
 
-"@playwright/test@1.24.2":
-  version "1.24.2"
-  resolved "https://registry.yarnpkg.com/@playwright/test/-/test-1.24.2.tgz#283ea8cc497f9742037458659bf235f4776cf1f0"
-  integrity sha512-Q4X224pRHw4Dtkk5PoNJplZCokLNvVbXD9wDQEMrHcEuvWpJWEQDeJ9gEwkZ3iCWSFSWBshIX177B231XW4wOQ==
+"@playwright/test@1.25.0":
+  version "1.25.0"
+  resolved "https://registry.yarnpkg.com/@playwright/test/-/test-1.25.0.tgz#e0de134651e78e45e986c5f16578188dd5937331"
+  integrity sha512-j4EZhTTQI3dBeWblE21EV//swwmBtOpIrLdOIJIRv4uqsLdHgBg1z+JtTg+AeC5o2bAXIE26kDNW5A0TimG8Bg==
   dependencies:
     "@types/node" "*"
-    playwright-core "1.24.2"
+    playwright-core "1.25.0"
 
 "@popperjs/core@^2.4.0":
   version "2.11.5"
@@ -3221,7 +3221,7 @@
   resolved "https://registry.yarnpkg.com/@tryghost/database-info/-/database-info-0.3.9.tgz#76a995a5ec489e0adf55699223cd91e372584552"
   integrity sha512-aWeWk1bJVpBBZ5sX3+66z/pEyYG3nselSSua3VOxC3Ii8pbppDkcJJlm2Z6TSLNEEHtrhHtXJJH4+eBfLA24kQ==
 
-"@tryghost/debug@0.1.17", "@tryghost/debug@^0.1.13", "@tryghost/debug@^0.1.17":
+"@tryghost/debug@0.1.17":
   version "0.1.17"
   resolved "https://registry.yarnpkg.com/@tryghost/debug/-/debug-0.1.17.tgz#2655fa1c71b2608e71de7f166f5f7b1a1c086915"
   integrity sha512-Sz7O4+uCV2CLDb4daEP8/lLkSf0ttTGMpF3RzhwyQKXNCIeutAeaW8nqhr+BIq1e3LeMV/sVRzh4LeyKKDEkrw==
@@ -3229,7 +3229,7 @@
     "@tryghost/root-utils" "^0.3.15"
     debug "^4.3.1"
 
-"@tryghost/debug@0.1.18", "@tryghost/debug@^0.1.18":
+"@tryghost/debug@0.1.18", "@tryghost/debug@^0.1.13", "@tryghost/debug@^0.1.17", "@tryghost/debug@^0.1.18":
   version "0.1.18"
   resolved "https://registry.yarnpkg.com/@tryghost/debug/-/debug-0.1.18.tgz#b126fedb8f409f44c3082a2c469171940cd6986e"
   integrity sha512-vG9dHuvYn8LlRrWyFUbt4zmsWmPLlZZJn1Qv9ko8uML36nILrpFehTnfda5663cMlwQQWPJ+DL6SCylIbtLWDg==
@@ -3262,7 +3262,7 @@
     focus-trap "^6.7.2"
     postcss-preset-env "^7.3.1"
 
-"@tryghost/errors@1.2.14", "@tryghost/errors@^1.0.0", "@tryghost/errors@^1.2.1", "@tryghost/errors@^1.2.3":
+"@tryghost/errors@1.2.14":
   version "1.2.14"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.14.tgz#af5e0ea1450b6fac7bde94585177943f85f0e41f"
   integrity sha512-ycXhblMBlbwXo+PfmVJZtT26/B1wu6Ae/8SBjXlzHAp6qlkho/Z5hZPKMRo0frfBt6CDGyX/abKTeVQzSkTPYA==
@@ -3271,7 +3271,7 @@
     utils-copy-error "^1.0.1"
     uuid "^8.3.2"
 
-"@tryghost/errors@1.2.15", "@tryghost/errors@^1.2.15":
+"@tryghost/errors@1.2.15", "@tryghost/errors@^1.0.0", "@tryghost/errors@^1.2.1", "@tryghost/errors@^1.2.15", "@tryghost/errors@^1.2.3":
   version "1.2.15"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.15.tgz#0f9e63f3c8d1024fe53fd5e6eb600657f366a46f"
   integrity sha512-3T0KA5qpxM3JU2ZI3s5w2qUztA2CG3h+G86zKxbZc9ZnOP+nzsJ2fn9nkkqVwFUvxOr76mjWMgVETdH6yXiu1g==
@@ -3548,18 +3548,10 @@
     got "9.6.0"
     lodash "^4.17.21"
 
-"@tryghost/root-utils@0.3.16", "@tryghost/root-utils@^0.3.16":
+"@tryghost/root-utils@0.3.16", "@tryghost/root-utils@^0.3.15", "@tryghost/root-utils@^0.3.16":
   version "0.3.16"
   resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.3.16.tgz#a3dca3c9edccab494ca5968e460af2d49da4ce2b"
   integrity sha512-+X79NBxHwJW9tiO/B+uJbCmcgv/MotY+g3p/+bwIWjGfuC7VUXBDHNswERtJrx6b374b1N1zXXl1iWJNtSavdg==
-  dependencies:
-    caller "^1.0.1"
-    find-root "^1.1.0"
-
-"@tryghost/root-utils@^0.3.15":
-  version "0.3.15"
-  resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.3.15.tgz#0b7fd9e02360b81cf46d07b1b87d1e94e9bf6585"
-  integrity sha512-HgSdyvg1CVXZBIdrJh5RMp14VQhJWFBozs1SCjomWew400ERDsUIHamwlzKxqfGZgc1P4Sp1jinkOb+dVanruw==
   dependencies:
     caller "^1.0.1"
     find-root "^1.1.0"
@@ -18055,10 +18047,10 @@ pkg-up@^3.1.0:
   dependencies:
     find-up "^3.0.0"
 
-playwright-core@1.24.2:
-  version "1.24.2"
-  resolved "https://registry.yarnpkg.com/playwright-core/-/playwright-core-1.24.2.tgz#47bc5adf3dcfcc297a5a7a332449c9009987db26"
-  integrity sha512-zfAoDoPY/0sDLsgSgLZwWmSCevIg1ym7CppBwllguVBNiHeixZkc1AdMuYUPZC6AdEYc4CxWEyLMBTw2YcmRrA==
+playwright-core@1.25.0:
+  version "1.25.0"
+  resolved "https://registry.yarnpkg.com/playwright-core/-/playwright-core-1.25.0.tgz#54dc867c6c2cc5e4233905e249206a02914d14f1"
+  integrity sha512-kZ3Jwaf3wlu0GgU0nB8UMQ+mXFTqBIFz9h1svTlNduNKjnbPXFxw7mJanLVjqxHJRn62uBfmgBj93YHidk2N5Q==
 
 pluralize@8.0.0, pluralize@^8.0.0:
   version "8.0.0"
