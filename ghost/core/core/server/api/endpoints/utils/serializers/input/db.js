@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:input:db');
-const optionsUtil = require('../../../../shared/utils/options');
+const optionsUtil = require('@tryghost/api-framework').utils.options;
 
 const INTERNAL_OPTIONS = ['transacting', 'forUpdate'];
 

@@ -1,5 +1,5 @@
 const should = require('should');
-const shared = require('../../../../../../core/server/api/shared');
+const shared = require('../../../');
 
 describe('Unit: utils/serializers/input/all', function () {
     describe('all', function () {
