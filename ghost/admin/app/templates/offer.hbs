@@ -86,7 +86,7 @@
                                             @placeholder=""
                                             @disabled={{this.isDiscountSectionDisabled}}
                                             @value={{readonly this.offer.amount}}
-                                            @input={{this.setTrialDuration}}
+                                            {{on "input" this.setTrialDuration}}
                                             @id="trial-duration"
                                             @class="gh-input"
                                         />
