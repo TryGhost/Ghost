@@ -34,7 +34,7 @@ const EditState = ({payload, save}) => {
 const DisplayState = ({payload}) => {
     return (
         <>
-            <div className="koenig-card-html-rendered">
+            <div className="leading-[1.8em]">
                 <pre><code className="line-numbers">{payload.code}</code></pre>
             </div>
             <div className="koenig-card-click-overlay"></div>

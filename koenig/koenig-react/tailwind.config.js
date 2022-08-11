@@ -21,7 +21,7 @@ module.exports = {
             lime: '#B5FF18',
 
             grey: {
-                DEFAULT: '7C8B9A',
+                DEFAULT: '#7C8B9A',
                 white: '#EBEEF0',
                 light: '#CED4D9',
                 midlight: '#ABB4BE',
