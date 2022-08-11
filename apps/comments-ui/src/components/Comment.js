@@ -94,7 +94,7 @@ const Comment = ({updateIsEditing = null, isEditing, ...props}) => {
                         <div className="flex-0 mb-4">
                             <Avatar comment={comment} saturation={avatarSaturation} isBlank={isNotPublished} />
                         </div>
-                        {!props.isReply && hasReplies && <div className="w-[3px] h-full mb-2 bg-gradient-to-b from-neutral-100 via-neutral-100 to-transparent dark:from-[rgba(255,255,255,0.05)] dark:via-[rgba(255,255,255,0.05)] grow rounded" />}
+                        {(!props.isReply && hasReplies || isInReplyMode) && <div className="w-[3px] h-full mb-2 bg-gradient-to-b from-neutral-100 via-neutral-100 to-transparent dark:from-[rgba(255,255,255,0.05)] dark:via-[rgba(255,255,255,0.05)] grow rounded" />}
                     </div>
                     <div className="grow">
                         <div className="flex items-start -mt-[3px] mb-2">
@@ -124,9 +124,9 @@ const Comment = ({updateIsEditing = null, isEditing, ...props}) => {
 
                         {!isNotPublished && (
                             <div className="flex gap-5 items-center">
-                                {!isNotPublished && <Like comment={comment} />}
-                                {!isNotPublished && (canReply && (isNotPublished || !props.parent) && <Reply comment={comment} toggleReply={toggleReplyMode} isReplying={isInReplyMode} />)}
-                                {!isNotPublished && <More comment={comment} toggleEdit={toggleEditMode} />}
+                                {<Like comment={comment} />}
+                                {(canReply && (isNotPublished || !props.parent) && <Reply comment={comment} toggleReply={toggleReplyMode} isReplying={isInReplyMode} />)}
+                                {<More comment={comment} toggleEdit={toggleEditMode} />}
                             </div>
                         )}
 
