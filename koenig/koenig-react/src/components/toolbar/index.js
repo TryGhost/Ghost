@@ -1,6 +1,11 @@
 import React from 'react';
 import MarkupButton from './MarkupButton';
 import SectionButton from './SectionButton';
+import BoldIcon from './icons/kg-bold.svg';
+import ItalicIcon from './icons/kg-italic.svg';
+import Heading1Icon from './icons/kg-heading-1.svg';
+import Heading2Icon from './icons/kg-heading-2.svg';
+import QuoteIcon from './icons/kg-quote.svg';
 
 export default function Toolbar({
     editor,
@@ -125,15 +130,14 @@ export default function Toolbar({
 
     return (
         <div ref={toolbarRef}
-            className='absolute w-40'
+            className='absolute'
             style={toolbarPositionStyles} >
-            <ul className='toolbar-temporary m-0 flex items-center justify-evenly rounded bg-black py-1 px-0 font-sans text-md font-normal text-white' >
-                <MarkupButton markupTags={activeMarkupTags?.isStrong} editor={editor} tag={'strong'} title="B"/>
-                <MarkupButton markupTags={activeMarkupTags?.isEm} editor={editor} tag={'em'} title="I"/>
-                <SectionButton markupTags={activeSectionTags?.isH1} editor={editor} tag={'h1'} title="H1"/>
-                <SectionButton markupTags={activeSectionTags?.isH2} editor={editor} tag={'h2'} title="H2"/>
-                <SectionButton markupTags={activeSectionTags?.isUL} editor={editor} tag={'ul'} title="UL"/>
-                <SectionButton markupTags={activeSectionTags?.isBlockquote} editor={editor} tag={'blockquote'} title="Q"/>
+            <ul className='m-0 flex items-center justify-evenly rounded bg-black px-1 py-0 font-sans text-md font-normal text-white' >
+                <MarkupButton markupTags={activeMarkupTags?.isStrong} editor={editor} tag={'strong'} title={<BoldIcon />} />
+                <MarkupButton markupTags={activeMarkupTags?.isEm} editor={editor} tag={'em'} title={<ItalicIcon />} />
+                <SectionButton markupTags={activeSectionTags?.isH1} editor={editor} tag={'h1'} title={<Heading1Icon />} />
+                <SectionButton markupTags={activeSectionTags?.isH2} editor={editor} tag={'h2'} title={<Heading2Icon />} />
+                <SectionButton markupTags={activeSectionTags?.isBlockquote} editor={editor} tag={'blockquote'} title={<QuoteIcon />} />
             </ul>
         </div>
     );
