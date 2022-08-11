@@ -8,6 +8,7 @@ import DEFAULT_TEXT_EXPANSIONS from '../text-expansions';
 import {useConstructor} from '../utils/useConstructor';
 import Toolbar from './toolbar';
 import PlusMenu from './PlusMenu';
+import SlashMenu from './SlashMenu';
 
 // "hack" to work around function components not having any constructor-like behavior
 
@@ -87,6 +88,12 @@ const Koenig = ({
 
             {/* (+) icon and pop-up card menu */}
             <PlusMenu
+                selectedRange={selectedRange}
+                koenigEditor={koenigEditor}
+            />
+
+            {/* slash menu popup */}
+            <SlashMenu
                 selectedRange={selectedRange}
                 koenigEditor={koenigEditor}
             />
