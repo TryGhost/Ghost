@@ -1,5 +1,5 @@
 const url = require('url');
-const debug = require('@tryghost/debug')('api:shared:headers');
+const debug = require('@tryghost/debug')('headers');
 const Promise = require('bluebird');
 const INVALIDATE_ALL = '/*';
 
