@@ -4,7 +4,7 @@ const sinon = require('sinon');
 const Promise = require('bluebird');
 const shared = require('../../../');
 
-describe('Unit: api/shared/validators/input/all', function () {
+describe('validators/input/all', function () {
     afterEach(function () {
         sinon.restore();
     });
