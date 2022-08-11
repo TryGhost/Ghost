@@ -86,12 +86,12 @@ const Comment = ({updateIsEditing = null, isEditing, ...props}) => {
                 leaveFrom="opacity-100"
                 leaveTo="opacity-0"
             >
-                <div className={`flex flex-row w-full ${hasReplies ? 'mb-2 sm:mb-2' : 'mb-6 sm:mb-10'}`}>
+                <div className={`flex flex-row w-full ${hasReplies ? 'mb-0' : 'mb-10'}`}>
                     <div className="mr-3 flex flex-col justify-start items-center">
                         <div className="flex-0 mb-4">
                             <Avatar comment={comment} saturation={avatarSaturation} isBlank={isNotPublished} />
                         </div>
-                        {/* {!props.isReply && <div className="w-[3px] h-full bg-gradient-to-b from-neutral-100 via-neutral-100 to-transparent grow rounded" />} */}
+                        {!props.isReply && hasReplies && <div className="w-[3px] h-full mb-2 bg-gradient-to-b from-neutral-100 via-neutral-100 to-transparent grow rounded" />}
                     </div>
                     <div className="grow">
                         <div className="flex items-start -mt-[3px] mb-2">
@@ -128,7 +128,7 @@ const Comment = ({updateIsEditing = null, isEditing, ...props}) => {
                         )}
 
                         {hasReplies &&
-                            <div className="mt-8 sm:mt-10 mb-4 sm:mb-0">
+                            <div className="mt-10 mb-4 sm:mb-0">
                                 <Replies comment={comment} />
                             </div>
                         }
