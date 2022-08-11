@@ -201,6 +201,25 @@ const Comment = ghostBookshelf.Model.extend({
         return options;
     },
 
+    async findPage(options) {
+        const {withRelated} = this.defaultRelations('findPage', options);
+
+        const relationsToLoadIndividually = [
+            'replies',
+            'replies.member',
+            'replies.count.likes',
+            'replies.count.liked'
+        ].filter(relation => withRelated.includes(relation));
+
+        const result = await ghostBookshelf.Model.findPage.call(this, options);
+
+        for (const model of result.data) {
+            await model.load(relationsToLoadIndividually);
+        }
+
+        return result;
+    },
+
     countRelations() {
         return {
             replies(modelOrCollection) {
