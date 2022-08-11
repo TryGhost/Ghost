@@ -137,7 +137,7 @@ const CommentsBox = (props) => {
     };
 
     return (
-        <section className={'ghost-display ' + containerClass} style={style}>
+        <section className={'ghost-display ' + containerClass} style={style} data-testid="comments-box">
             {props.done ? <>
                 <CommentsBoxContent />
             </> : <Loading />}

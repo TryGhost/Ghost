@@ -5,7 +5,7 @@ import {buildComment} from './utils/test-utils';
 
 const sinon = require('sinon');
 
-function renderApp({member = null} = {}) {
+function renderApp({member = null, documentStyles = {}, props = {}} = {}) {
     const postId = 'my-post';
     const api = {
         init: async () => {
@@ -36,8 +36,12 @@ function renderApp({member = null} = {}) {
     };
     // In tests, we currently don't wait for the styles to have loaded. In the app we check if the styles url is set or not.
     const stylesUrl = '';
-    const {container} = render(<div><div id={ROOT_DIV_ID}></div><App api={api} stylesUrl={stylesUrl}/></div>);
-    return {container, api};
+    const {container} = render(<div style={documentStyles}><div id={ROOT_DIV_ID}><App api={api} stylesUrl={stylesUrl} {...props}/></div></div>);
+    const iframeElement = container.querySelector('iframe[title="comments-box"]');
+    expect(iframeElement).toBeInTheDocument();
+    const iframeDocument = iframeElement.contentDocument;
+
+    return {container, api, iframeDocument};
 }
 
 describe('Auth frame', () => {
@@ -49,14 +53,44 @@ describe('Auth frame', () => {
 });
 
 describe('Dark mode', () => {
-    it.todo('uses dark mode when container has a dark background');
-    it.todo('uses light mode when container has a light background');
-    it.todo('uses custom mode when custom mode has been passed as a property');
+    it('uses dark mode when container has a light text color', async () => {
+        const {iframeDocument} = renderApp({documentStyles: {
+            color: '#FFFFFF'
+        }});
+        const darkModeCommentsBox = await within(iframeDocument).findByTestId('comments-box');
+        expect(darkModeCommentsBox.classList).toContain('dark');
+    });
+    it('uses dark mode when container has a dark text color', async () => {
+        const {iframeDocument} = renderApp({documentStyles: {
+            color: '#000000'
+        }});
+        const darkModeCommentsBox = await within(iframeDocument).findByTestId('comments-box');
+        expect(darkModeCommentsBox.classList).not.toContain('dark');
+    });
+    it('uses dark mode when custom mode has been passed as a property', async () => {
+        const {iframeDocument} = renderApp({
+            props: {
+                colorScheme: 'dark'
+            }
+        });
+        const darkModeCommentsBox = await within(iframeDocument).findByTestId('comments-box');
+        expect(darkModeCommentsBox.classList).toContain('dark');
+    });
+    it('uses light mode when custom mode has been passed as a property', async () => {
+        const {iframeDocument} = renderApp({
+            props: {
+                colorScheme: 'light'
+            },
+            color: '#FFFFFF'
+        });
+        const darkModeCommentsBox = await within(iframeDocument).findByTestId('comments-box');
+        expect(darkModeCommentsBox.classList).not.toContain('dark');
+    });
 });
 
 describe('Comments', () => {
     it('renders comments', async () => {
-        const {container, api} = renderApp();
+        const {api, iframeDocument} = renderApp();
         sinon.stub(api.comments, 'browse').callsFake(() => {
             return {
                 comments: [
@@ -73,9 +107,6 @@ describe('Comments', () => {
             };
         });
 
-        const iframeElement = container.querySelector('iframe[title="comments-box"]');
-        expect(iframeElement).toBeInTheDocument();
-        const iframeDocument = iframeElement.contentDocument;
         const commentBody = await within(iframeDocument).findByText(/This is a comment body/i);
         expect(commentBody).toBeInTheDocument();
     });
