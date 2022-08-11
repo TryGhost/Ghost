@@ -1,5 +1,3 @@
-import {transformApiSiteData} from './helpers';
-
 function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
     const apiPath = 'members/api';
 
