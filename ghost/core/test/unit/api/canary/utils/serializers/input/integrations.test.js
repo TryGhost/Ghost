@@ -12,7 +12,7 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
             };
 
             serializers.input.integrations.browse(apiConfig, frame);
-            frame.options.filter.should.eql('type:[custom,builtin]');
+            frame.options.filter.should.eql('type:[custom,builtin,core]');
         });
 
         it('combines filters', function () {
@@ -25,7 +25,7 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
             };
 
             serializers.input.integrations.browse(apiConfig, frame);
-            frame.options.filter.should.eql('(type:internal)+type:[custom,builtin]');
+            frame.options.filter.should.eql('(type:internal)+type:[custom,builtin,core]');
         });
     });
 
@@ -39,7 +39,7 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
             };
 
             serializers.input.integrations.read(apiConfig, frame);
-            frame.options.filter.should.eql('type:[custom,builtin]');
+            frame.options.filter.should.eql('type:[custom,builtin,core]');
         });
 
         it('combines filters', function () {
@@ -52,7 +52,7 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
             };
 
             serializers.input.integrations.read(apiConfig, frame);
-            frame.options.filter.should.eql('(type:internal)+type:[custom,builtin]');
+            frame.options.filter.should.eql('(type:internal)+type:[custom,builtin,core]');
         });
     });
 });
