@@ -71,12 +71,12 @@ module.exports = class MailgunClient {
             }
 
             const tags = ['bulk-email'];
-            if (bulkEmailConfig && bulkEmailConfig.mailgun && bulkEmailConfig.mailgun.tag) {
+            if (bulkEmailConfig?.mailgun?.tag) {
                 tags.push(bulkEmailConfig.mailgun.tag);
             }
             messageData['o:tag'] = tags;
 
-            if (bulkEmailConfig && bulkEmailConfig.mailgun && bulkEmailConfig.mailgun.testmode) {
+            if (bulkEmailConfig?.mailgun?.testmode) {
                 messageData['o:testmode'] = true;
             }
 
@@ -112,7 +112,7 @@ module.exports = class MailgunClient {
 
         debug(`fetchEvents: starting fetching first events page`);
         let page = await mailgunInstance.events().get(mailgunOptions);
-        let events = page && page.items && page.items.map(this.normalizeEvent) || [];
+        let events = page?.items?.map(this.normalizeEvent) || [];
         debug(`fetchEvents: finished fetching first page with ${events.length} events`);
 
         let eventCount = 0;
@@ -131,7 +131,7 @@ module.exports = class MailgunClient {
             const nextPageUrl = page.paging.next.replace(/https:\/\/api\.(eu\.)?mailgun\.net\/v3/, '');
             debug(`fetchEvents: starting fetching next page ${nextPageUrl}`);
             page = await mailgunInstance.get(nextPageUrl);
-            events = page && page.items && page.items.map(this.normalizeEvent) || [];
+            events = page?.items?.map(this.normalizeEvent) || [];
             debug(`fetchEvents: finished fetching next page with ${events.length} events`);
         }
 
@@ -159,7 +159,7 @@ module.exports = class MailgunClient {
             baseUrl: this.#settings.get('mailgun_base_url')
         };
 
-        const hasMailgunConfig = !!(bulkEmailConfig && bulkEmailConfig.mailgun);
+        const hasMailgunConfig = !!(bulkEmailConfig?.mailgun);
         const hasMailgunSetting = !!(bulkEmailSetting && bulkEmailSetting.apiKey && bulkEmailSetting.baseUrl && bulkEmailSetting.domain);
 
         if (!hasMailgunConfig && !hasMailgunSetting) {
