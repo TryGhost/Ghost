@@ -136,7 +136,7 @@ const AddNameDialog = (props) => {
                         </div>
                         <input
                             id="comments-name"
-                            className={`transition-[border-color] duration-200 font-sans px-3 rounded border border-neutral-200 focus:border-neutral-300 w-full outline-0 h-[42px] flex items-center ${error.name && 'border-red-500 focus:border-red-500'}`}
+                            className={`transition-[border-color] duration-200 font-sans text-[16px] px-3 rounded border border-neutral-200 focus:border-neutral-300 w-full outline-0 h-[42px] flex items-center ${error.name && 'border-red-500 focus:border-red-500'}`}
                             type="text"
                             name="name"
                             ref={inputNameRef}
@@ -159,7 +159,7 @@ const AddNameDialog = (props) => {
                         </div>
                         <input
                             id="comments-bio"
-                            className={`transition-[border-color] duration-200 font-sans px-3 rounded border border-neutral-200 focus:border-neutral-300 w-full outline-0 h-[42px] flex items-center ${(bioCharsLeft === 0) && 'border-red-500 focus:border-red-500'}`}
+                            className={`transition-[border-color] duration-200 font-sans text-[16px] px-3 rounded border border-neutral-200 focus:border-neutral-300 w-full outline-0 h-[42px] flex items-center ${(bioCharsLeft === 0) && 'border-red-500 focus:border-red-500'}`}
                             type="text"
                             name="bio"
                             ref={inputBioRef}
