@@ -86,19 +86,22 @@ const Comment = ({updateIsEditing = null, isEditing, ...props}) => {
                 leaveFrom="opacity-100"
                 leaveTo="opacity-0"
             >
-                <div className={`flex flex-row ${hasReplies ? 'mb-2 sm:mb-4' : 'mb-6 sm:mb-10'}`}>
-                    <div>
-                        <div className="flex items-center mb-2 h-12">
-                            <div className="mr-3">
-                                <Avatar comment={comment} saturation={avatarSaturation} isBlank={isNotPublished} />
-                            </div>
+                <div className={`flex flex-row w-full ${hasReplies ? 'mb-2 sm:mb-2' : 'mb-6 sm:mb-10'}`}>
+                    <div className="mr-3 flex flex-col justify-start items-center">
+                        <div className="flex-0 mb-4">
+                            <Avatar comment={comment} saturation={avatarSaturation} isBlank={isNotPublished} />
+                        </div>
+                        {/* {!props.isReply && <div className="w-[3px] h-full bg-gradient-to-b from-neutral-100 via-neutral-100 to-transparent grow rounded" />} */}
+                    </div>
+                    <div className="grow">
+                        <div className="flex items-start -mt-[3px] mb-2">
                             {isNotPublished ?
                                 <div>
                                     <p className="font-sans text-[16px] leading-normal text-neutral-400 italic mt-[4px]">{notPublishedMessage}</p>
                                 </div> :
                                 <div>
                                     <h4 className="text-[17px] font-sans font-bold tracking-tight text-[rgb(23,23,23] dark:text-[rgba(255,255,255,0.85)]">{!comment.member ? 'Deleted member' : (comment.member.name ? comment.member.name : 'Anonymous')}</h4>
-                                    <div className="flex items-baseline font-sans text-[14px] tracking-tight text-neutral-400 dark:text-[rgba(255,255,255,0.5)]">
+                                    <div className="flex items-baseline font-sans text-[14px] tracking-tight pr-4 text-neutral-400 dark:text-[rgba(255,255,255,0.5)]">
                                         <span className="inline-block max-w-full text-ellipsis overflow-hidden ...">
                                             {memberBio && <span>{memberBio}<span className="mx-[0.3em]">·</span></span>}
                                             <span title={formatExplicitTime(comment.created_at)}>{formatRelativeTime(comment.created_at)}</span>
@@ -109,27 +112,29 @@ const Comment = ({updateIsEditing = null, isEditing, ...props}) => {
                         </div>
 
                         {!isNotPublished &&
-                        <div className={`ml-12 sm:ml-[52px] mb-2 pr-4`}>
+                        <div className={`mb-2 pr-4`}>
                             <p dangerouslySetInnerHTML={html} className="gh-comment-content font-sans leading-normal text-[16px] text-neutral-900 dark:text-[rgba(255,255,255,0.85)]"></p>
                         </div>}
 
-                        <div className="ml-12 sm:ml-[52px] flex gap-5 items-center">
+                        <div className="flex gap-5 items-center">
                             {!isNotPublished && <Like comment={comment} />}
                             {!isNotPublished && (canReply && (isNotPublished || !props.parent) && <Reply disabled={!!isEditing} comment={comment} toggleReply={toggleReplyMode} isReplying={isInReplyMode} />)}
                             <More comment={comment} toggleEdit={toggleEditMode} disableEditing={isEditing} />
                         </div>
+
+                        {hasReplies &&
+                            <div className="mt-8 sm:mt-10 mb-4 sm:mb-0">
+                                <Replies comment={comment} />
+                            </div>
+                        }
+
+                        {isInReplyMode && 
+                            <div className="my-10">
+                                <Form parent={comment} close={closeReplyMode} isReply={true} />
+                            </div>
+                        }
                     </div>
                 </div>
-                {hasReplies &&
-                    <div className="ml-11 sm:ml-14 mt-8 sm:mt-10 mb-4 sm:mb-0">
-                        <Replies comment={comment} />
-                    </div>
-                }
-                {isInReplyMode && 
-                    <div className="ml-14 my-10">
-                        <Form parent={comment} close={closeReplyMode} isReply={true} />
-                    </div>
-                }
             </Transition>
         );
     }
