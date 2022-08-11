@@ -8,6 +8,9 @@ import {isMobile} from '../utils/helpers';
 // import {formatRelativeTime} from '../utils/helpers';
 import {ReactComponent as SpinnerIcon} from '../images/icons/spinner.svg';
 import {ReactComponent as EditIcon} from '../images/icons/edit.svg';
+import {GlobalEventBus} from '../utils/event-bus';
+
+let formId = 0;
 
 const Form = (props) => {
     const {member, postId, dispatchAction, avatarSaturation} = useContext(AppContext);
@@ -55,7 +58,7 @@ const Form = (props) => {
     });
 
     const getScrollToPosition = () => {
-        let yOffset = -100; 
+        let yOffset = 0; 
         const element = formEl.current;
 
         // Because we are working in an iframe, we need to resolve the position inside this iframe to the position in the top window
@@ -83,7 +86,45 @@ const Form = (props) => {
         return y;
     };
 
+    // Generate an unique ID so we can exclude events that we send ourselve
+    const [uniqueId] = useState(() => {
+        formId += 1;
+        return 'form-' + formId;
+    });
+
+    const onOtherFormFocus = useCallback(() => {
+        // A different form got focus. Should we close this form now?
+        if ((props.isReply && editor?.isEmpty) || (props.isEdit && editor?.getHTML() === props.comment.html)) {
+            if (props.close) {
+                props.close();
+            }
+        }
+    }, [editor, props]);
+
+    useEffect(() => {
+        // Send event before attaching the listeer
+        GlobalEventBus.addListener(uniqueId, 'form-focus', onOtherFormFocus);
+
+        return () => {
+            GlobalEventBus.removeListener(uniqueId);
+        };
+    }, [onOtherFormFocus, uniqueId]);
+
+    useEffect(() => {
+        // When opening a reply or edit form, try to close other forms that are open and can get closed
+        if (props.isReply || props.isEdit) {
+            // Send a form-focus event, but exclude ourself (uniqueId)
+            GlobalEventBus.sendEvent('form-focus', {}, uniqueId);
+        }
+    }, [props.isReply, props.isEdit, uniqueId]);
+
     const onFormFocus = useCallback(() => {
+        // When focusing the main form, try to close other forms that are open and can get closed
+        if (!props.isReply && !props.isEdit) {
+            // Send a form-focus event, but exclude ourself (uniqueId)
+            GlobalEventBus.sendEvent('form-focus', {}, uniqueId);
+        }
+        // Send an event around and try to close other forms that are open and can get closed
         if (!memberName && !props.isEdit) {
             setPreventClosing(true);
             editor.commands.blur();
@@ -103,7 +144,7 @@ const Form = (props) => {
         } else {
             setFormOpen(true);
         }
-    }, [editor, dispatchAction, memberName, props]);
+    }, [editor, dispatchAction, memberName, props, uniqueId]);
 
     // Set the cursor position at the end of the form, instead of the beginning (= when using autofocus)
     useEffect(() => {
@@ -116,12 +157,26 @@ const Form = (props) => {
         // Scroll to view if it's a reply
         if (props.isReply) {
             timer = setTimeout(() => {
-                window.scrollTo({
-                    top: getScrollToPosition(),
-                    left: 0,
-                    behavior: 'smooth'
-                });
-            }, 100);
+                // Is the form already in view?
+                const formHeight = 100;
+                const yMin = getScrollToPosition();
+                const yMax = yMin + formHeight;
+                
+                const viewportHeight = window.innerHeight;
+                const viewPortYMin = window.scrollY;
+                const viewPortYMax = viewPortYMin + viewportHeight;
+
+                if (yMin < viewPortYMin || yMax > viewPortYMax) {
+                    // Center the form in the viewport
+                    const yCenter = (yMin + yMax) / 2;
+
+                    window.scrollTo({
+                        top: yCenter - viewportHeight / 2,
+                        left: 0,
+                        behavior: 'smooth'
+                    });
+                }
+            }, 50);
         }
 
         // Focus editor + jump to end
@@ -150,7 +205,7 @@ const Form = (props) => {
                 clearTimeout(timer);
             }
         };
-    }, [editor, props]);
+    }, [editor, props.isReply, props.isEdit]);
 
     const submitForm = useCallback(async () => {
         if (editor.isEmpty) {
@@ -226,11 +281,6 @@ const Form = (props) => {
         editor.on('blur', () => {
             if (editor?.isEmpty) {
                 setFormOpen(false);
-                if (props.isReply && props.close && !preventClosing) {
-                    // TODO: we cannot toggle the form when this happens, because when the member doesn't have a name we'll always loose focus to input the name...
-                    // Need to find a different way for this behaviour
-                    props.close();
-                }
             }
         });
 

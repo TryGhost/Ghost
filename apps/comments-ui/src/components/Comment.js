@@ -27,6 +27,9 @@ const Comment = ({updateIsEditing = null, isEditing, ...props}) => {
     let comment = props.comment;
 
     useEffect(() => {
+        // This doesn't work, and should receive an update.
+        // When one Comment shows reply, while a different Form hides the reply form at the same time, the global
+        // 'isEditing' is unreliable. We should use a counter of total open forms instead of a boolean.
         updateIsEditing?.(isInReplyMode || isInEditMode);
     }, [updateIsEditing, isInReplyMode, isInEditMode]);
     const toggleEditMode = () => {
@@ -99,7 +102,7 @@ const Comment = ({updateIsEditing = null, isEditing, ...props}) => {
                                 <div className="flex flex-row items-center gap-4 pb-[8px] pr-4 h-12">
                                     <p className="font-sans text-[16px] leading-normal text-neutral-300 italic mt-[4px]">{notPublishedMessage}</p>
                                     <div className="mt-[4px]">
-                                        <More comment={comment} toggleEdit={toggleEditMode} disableEditing={isEditing} />
+                                        <More comment={comment} toggleEdit={toggleEditMode} />
                                     </div>
                                 </div> :
                                 <div>
@@ -122,8 +125,8 @@ const Comment = ({updateIsEditing = null, isEditing, ...props}) => {
                         {!isNotPublished && (
                             <div className="flex gap-5 items-center">
                                 {!isNotPublished && <Like comment={comment} />}
-                                {!isNotPublished && (canReply && (isNotPublished || !props.parent) && <Reply disabled={!!isEditing} comment={comment} toggleReply={toggleReplyMode} isReplying={isInReplyMode} />)}
-                                {!isNotPublished && <More comment={comment} toggleEdit={toggleEditMode} disableEditing={isEditing} />}
+                                {!isNotPublished && (canReply && (isNotPublished || !props.parent) && <Reply comment={comment} toggleReply={toggleReplyMode} isReplying={isInReplyMode} />)}
+                                {!isNotPublished && <More comment={comment} toggleEdit={toggleEditMode} />}
                             </div>
                         )}
 

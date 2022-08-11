@@ -50,6 +50,7 @@ const CommentsBoxTitle = ({title, showCount, count}) => {
 };
 
 const CommentsBoxContent = (props) => {
+    // @todo: This doesn't work and should get replaced with a counter of total open forms. If total open forms > 0, don't show the main form.
     const [isEditing, setIsEditing] = useState(false);
 
     const {pagination, member, comments, commentCount, commentsEnabled, title, showCount} = useContext(AppContext);
