@@ -408,7 +408,7 @@ const Form = (props) => {
 
     return (
         <>
-            <form ref={formEl} onClick={focusEditor} onMouseDown={preventIfFocused} onTouchStart={preventIfFocused} className={`
+            <form ref={formEl} data-testid="form" onClick={focusEditor} onMouseDown={preventIfFocused} onTouchStart={preventIfFocused} className={`
                 transition duration-200
                 pt-3 pb-2 px-3
                 -mt-[14px] -mx-3 mb-10
@@ -458,6 +458,7 @@ const Form = (props) => {
                                         text-white dark:text-neutral-800
                                     `}
                                     type="button"
+                                    data-testid="submit-form-button"
                                     onClick={submitForm}
                                 >
                                     <span>{buttonIcon}</span>
