@@ -27,7 +27,7 @@ const Form = (props) => {
 
     let buttonIcon = null;
     if (progress === 'sending') {
-        buttonIcon = <SpinnerIcon className="w-[24px] h-[24px] fill-white" />;
+        buttonIcon = <SpinnerIcon className="w-[24px] h-[24px] fill-white dark:fill-black" />;
     } else if (progress === 'sent') {
         buttonIcon = null;
     }
