@@ -1,5 +1,16 @@
 const ObjectId = require('bson-objectid').default;
 
+export function buildMember(override) {
+    return {
+        avatar_image: '',
+        bio: 'Head of Testing',
+        id: ObjectId(),
+        name: 'Test Member',
+        uuid: '613e9667-4fa2-4ff4-aa62-507220103d41',
+        ...override
+    };
+}
+
 export function buildComment(override) {
     return {
         id: ObjectId(),
@@ -12,13 +23,7 @@ export function buildComment(override) {
         liked: false,
         created_at: '2022-08-11T09:26:34.000Z',
         edited_at: null,
-        member: {
-            avatar_image: '',
-            bio: 'Head of Testing',
-            id: ObjectId(),
-            name: 'Test Member',
-            uuid: '613e9667-4fa2-4ff4-aa62-507220103d41'
-        },
+        member: buildMember(),
         status: 'published',
         ...override
     };
@@ -34,13 +39,7 @@ export function buildReply(override) {
         liked: false,
         created_at: '2022-08-11T09:26:34.000Z',
         edited_at: null,
-        member: {
-            avatar_image: '',
-            bio: 'Head of Testing',
-            id: ObjectId(),
-            name: 'Test Member',
-            uuid: '613e9667-4fa2-4ff4-aa62-507220103d41'
-        },
+        member: buildMember(),
         status: 'published',
         ...override
     };

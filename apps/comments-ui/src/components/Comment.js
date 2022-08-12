@@ -89,7 +89,7 @@ const Comment = ({updateIsEditing = null, isEditing, ...props}) => {
                 leaveFrom="opacity-100"
                 leaveTo="opacity-0"
             >
-                <div className={`flex flex-row w-full ${hasReplies ? 'mb-0' : 'mb-10'}`}>
+                <div className={`flex flex-row w-full ${hasReplies ? 'mb-0' : 'mb-10'}`} data-testid="comment-component">
                     <div className="mr-3 flex flex-col justify-start items-center">
                         <div className="flex-0 mb-4">
                             <Avatar comment={comment} saturation={avatarSaturation} isBlank={isNotPublished} />
@@ -119,7 +119,7 @@ const Comment = ({updateIsEditing = null, isEditing, ...props}) => {
 
                         {!isNotPublished &&
                         <div className="flex flex-row items-center gap-4 mt mb-2 pr-4">
-                            <p dangerouslySetInnerHTML={html} className="gh-comment-content font-sans leading-normal text-[16px] text-neutral-900 dark:text-[rgba(255,255,255,0.85)]" />
+                            <p dangerouslySetInnerHTML={html} className="gh-comment-content font-sans leading-normal text-[16px] text-neutral-900 dark:text-[rgba(255,255,255,0.85)]" data-testid="comment-content"/>
                         </div>}
 
                         {!isNotPublished && (
