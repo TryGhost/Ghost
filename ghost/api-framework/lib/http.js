@@ -30,7 +30,7 @@ const http = (apiImpl) => {
             };
         }
 
-        if (req.user && req.user.id) {
+        if (req.user?.id) {
             user = req.user.id;
         }
 
