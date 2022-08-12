@@ -75,6 +75,7 @@ const Koenig = ({
             {...koenigEditor.editorProps}
         >
             <Editor
+                className="kg-prose"
                 data-testid="mobiledoc-editor">
             </Editor>
 

@@ -13,7 +13,7 @@ const CapEditor = ({payload, Alt, env}) => {
             <div className="wrapper">
                 <div className="caret-inherit cursor-text text-sm" >
                     {
-                        Alt ? 
+                        Alt ?
                             <input
                                 className="w-100"
                                 type='text'
@@ -24,7 +24,7 @@ const CapEditor = ({payload, Alt, env}) => {
                             <Container
                                 onChange={handleTextChange}
                             >
-                                <Editor/>
+                                <Editor className="not-kg-prose font-sans text-sm" />
                             </Container>
                     }
                 </div>
@@ -54,7 +54,7 @@ const Image = (props) => {
         formData.append('file', files[0]);
         setUploadForm(formData);
     };
-    
+
     const onUploadChange = async (e) => {
         handleFiles(e.target.files);
     };
@@ -84,7 +84,7 @@ const Image = (props) => {
             handleUpload();
         }
     }, [uploadForm]);
-    
+
     return (
         <figure>
             <div className="__mobiledoc-card">
