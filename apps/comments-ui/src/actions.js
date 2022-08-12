@@ -102,28 +102,26 @@ async function hideComment({state, adminApi, data: comment}) {
     };
 }
 
-async function showComment({state, adminApi, data: comment}) {
+async function showComment({state, api, adminApi, data: comment}) {
     await adminApi.showComment(comment.id);
+
+    // We need to refetch the comment, to make sure we have an up to date HTML content
+    // + all relations are loaded as the current member (not the admin)
+    const data = await api.comments.read(comment.id);
+    const updatedComment = data.comments[0];
 
     return {
         comments: state.comments.map((c) => {
             const replies = c.replies.map((r) => {
                 if (r.id === comment.id) {
-                    return {
-                        ...r,
-                        status: 'published'
-                    };
+                    return updatedComment;
                 }
 
                 return r;
             });
 
             if (c.id === comment.id) {
-                return {
-                    ...c,
-                    status: 'published',
-                    replies
-                };
+                return updatedComment;
             }
 
             return {

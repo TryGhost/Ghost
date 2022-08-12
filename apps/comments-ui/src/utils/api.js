@@ -199,6 +199,20 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 }
             });
         },
+        read(commentId) {
+            const url = endpointFor({type: 'members', resource: `comments/${commentId}`});
+            return makeRequest({
+                url,
+                method: 'GET',
+                credentials: 'same-origin'
+            }).then(function (res) {
+                if (res.ok) {
+                    return res.json();
+                } else {
+                    throw new Error('Failed to read comment');
+                }
+            });
+        },
         like({comment}) {
             const url = endpointFor({type: 'members', resource: `comments/${comment.id}/like`});
             return makeRequest({
