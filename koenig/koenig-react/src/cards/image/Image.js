@@ -14,13 +14,8 @@ const CapEditor = ({payload, Alt, env}) => {
     });
 
     function _didCreateEditor(mobiledocEditor) {
-        // TODO: keep mobiledoc instance separate or always use koenigEditor.mobiledocEditor
-        // to avoid passing around two editor instances everywhere?
         setInstance(mobiledocEditor);
-
         editorRef.current.initMobiledocEditor(mobiledocEditor);
-
-        // didCreateEditor?.(mobiledocEditor, koenigEditor);
     }
 
     const handleTextChange = (e) => {
