@@ -6,6 +6,7 @@ import ItalicIcon from './icons/kg-italic.svg';
 import Heading1Icon from './icons/kg-heading-1.svg';
 import Heading2Icon from './icons/kg-heading-2.svg';
 import QuoteIcon from './icons/kg-quote.svg';
+import LinkIcon from './icons/kg-link.svg';
 import LinkButton from './LinkButton';
 import UrlPromptInput from './UrlPromptInput';
 
@@ -154,7 +155,7 @@ export default function Toolbar({
                     <SectionButton tagsInUse={activeSectionTags?.isH1} editor={editor} tag={'h1'} title={<Heading1Icon />} />
                     <SectionButton tagsInUse={activeSectionTags?.isH2} editor={editor} tag={'h2'} title={<Heading2Icon />} />
                     <SectionButton tagsInUse={activeSectionTags?.isBlockquote} editor={editor} tag={'blockquote'} title={<QuoteIcon />} />
-                    <LinkButton cachedRange={{cachedRange, setCachedRange}} selectedRange={selectedRange} tagsInUse={activeMarkupTags?.isA} editor={editor} tag={'a'} title="A" showUrlPrompt={{showUrlPrompt, setShowUrlPrompt}} toolbar={{showToolbar, setShowToolbar}} />
+                    <LinkButton cachedRange={{cachedRange, setCachedRange}} selectedRange={selectedRange} tagsInUse={activeMarkupTags?.isA} editor={editor} tag={'a'} title={<LinkIcon />} showUrlPrompt={{showUrlPrompt, setShowUrlPrompt}} toolbar={{showToolbar, setShowToolbar}} />
                 </ul>
             </div>
         </React.Fragment>
