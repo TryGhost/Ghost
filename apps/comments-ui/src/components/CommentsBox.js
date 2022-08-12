@@ -13,7 +13,7 @@ const CommentsBoxTitle = ({title, showCount, count}) => {
         return null;
     }
 
-    const Title = ({title}) => {
+    const Title = () => {
         if (title === null) {
             return (
                 <><span className="hidden sm:inline">Member </span><span className="capitalize sm:normal-case">discussion</span></>
@@ -23,7 +23,7 @@ const CommentsBoxTitle = ({title, showCount, count}) => {
         return title;
     };
 
-    const Count = ({showCount, count}) => {
+    const Count = () => {
         if (!showCount) {
             return null;
         }
@@ -42,9 +42,9 @@ const CommentsBoxTitle = ({title, showCount, count}) => {
     return (
         <div className="w-full flex justify-between items-baseline font-sans mb-10">
             <h2 className="font-bold text-[2.8rem] tracking-tight dark:text-[rgba(255,255,255,0.85)]">
-                <Title title={title}/>
+                <Title />
             </h2>
-            <Count showCount={showCount} count={count}/>
+            <Count />
         </div>
     );
 };
