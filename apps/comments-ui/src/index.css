@@ -39,6 +39,10 @@ body {
     margin: 0 0 2rem;
 }
 
+.gh-comment-content p:last-child {
+    margin: 0 0 0;
+}
+
 /* The following lines are needed for the editor */
 
 /* Placeholder */
