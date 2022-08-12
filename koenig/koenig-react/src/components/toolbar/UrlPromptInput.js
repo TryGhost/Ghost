@@ -1,5 +1,6 @@
 import React from 'react';
 import {UI} from 'mobiledoc-kit';
+import {getLinkMarkupFromRange} from './utils/markup-utils';
 
 const UrlPromptInput = React.forwardRef((props, ref) => {
     const [url, setUrl] = React.useState('');
@@ -23,7 +24,7 @@ const UrlPromptInput = React.forwardRef((props, ref) => {
         UI.toggleLink(editor, prompt);
         setUrl('');
         props.showUrlPrompt.setShowUrlPrompt(false);
-        editor.selectRange(props.selectRange);
+        editor.selectRange(props.selectedRange);
     };
 
     const handleUrlInput = (e) => {
@@ -40,6 +41,13 @@ const UrlPromptInput = React.forwardRef((props, ref) => {
         }
     }, [props, ref]);
 
+    React.useEffect(() => {
+        if (props?.cachedRange) {
+            let linkMarkup = getLinkMarkupFromRange(props.cachedRange);
+            setUrl(linkMarkup?.attributes?.href);
+        }
+    }, [props.cachedRange]);
+
     return (
         <div 
             style={urlPromptPositionStyles}
@@ -48,7 +56,7 @@ const UrlPromptInput = React.forwardRef((props, ref) => {
             <form
                 onSubmit={handleUrlSubmit}
                 className="relative flex">
-                <input ref={formRef} onChange={handleUrlInput} name="url" type="url" placeholder="Enter url" value={url} />
+                <input ref={formRef} onChange={handleUrlInput} name="url" placeholder="Enter url" value={url} />
                 <button hidden={true} type="submit"></button>
                 <div onClick={closeUrlPrompt} className='absolute right-0 cursor-pointer'>X</div>
             </form>
