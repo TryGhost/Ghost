@@ -59,7 +59,7 @@ const AddNameDialog = (props) => {
                 clearTimeout(timer);
             };
         }
-    }, [inputNameRef, inputBioRef]);
+    }, [inputNameRef, inputBioRef, props.bioAutofocus]);
 
     const renderExampleProfiles = (index) => {
         const renderEl = (profile) => {
