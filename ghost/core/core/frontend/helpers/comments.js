@@ -1,5 +1,5 @@
 const {SafeString} = require('../services/handlebars');
-const {urlUtils, getFrontendKey, labs, settingsCache} = require('../services/proxy');
+const {urlUtils, getFrontendKey, settingsCache} = require('../services/proxy');
 const {getFrontendAppConfig, getDataAttributes} = require('../utils/frontend-apps');
 
 module.exports = async function comments(options) {
