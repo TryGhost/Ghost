@@ -52,7 +52,9 @@ const Comment = ghostBookshelf.Model.extend({
 
     replies() {
         return this.hasMany('Comment', 'parent_id', 'id')
-            .query('orderBy', 'created_at', 'ASC');
+            .query('orderBy', 'created_at', 'ASC')
+            // Note: this limit is not working
+            .query('limit', 3);
     },
 
     emitChange: function emitChange(event, options) {
