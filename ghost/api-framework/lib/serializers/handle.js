@@ -68,10 +68,10 @@ module.exports.input = (apiConfig, apiSerializers, frame) => {
 };
 
 const getBestMatchSerializer = function (apiSerializers, docName, method) {
-    if (apiSerializers[docName] && apiSerializers[docName][method]) {
+    if (apiSerializers[docName]?.[method]) {
         debug(`Calling ${docName}.${method}`);
         return apiSerializers[docName][method].bind(apiSerializers[docName]);
-    } else if (apiSerializers[docName] && apiSerializers[docName].all) {
+    } else if (apiSerializers[docName]?.all) {
         debug(`Calling ${docName}.all`);
         return apiSerializers[docName].all.bind(apiSerializers[docName]);
     }
@@ -108,7 +108,7 @@ module.exports.output = (response = {}, apiConfig, apiSerializers, frame) => {
 
     // ##### API VERSION RESOURCE SERIALIZATION
 
-    if (apiSerializers.all && apiSerializers.all.before) {
+    if (apiSerializers.all?.before) {
         tasks.push(function allSerializeBefore() {
             return apiSerializers.all.before(response, apiConfig, frame);
         });
@@ -129,7 +129,7 @@ module.exports.output = (response = {}, apiConfig, apiSerializers, frame) => {
         });
     }
 
-    if (apiSerializers.all && apiSerializers.all.after) {
+    if (apiSerializers.all?.after) {
         tasks.push(function allSerializeAfter() {
             return apiSerializers.all.after(apiConfig, frame);
         });

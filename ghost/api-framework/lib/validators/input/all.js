@@ -53,7 +53,7 @@ const validate = (config, attrs) => {
             errors = errors.concat(validator.validate(value, key, GLOBAL_VALIDATORS[key]));
         }
 
-        if (config && config[key]) {
+        if (config?.[key]) {
             const allowedValues = Array.isArray(config[key]) ? config[key] : config[key].values;
 
             if (allowedValues) {

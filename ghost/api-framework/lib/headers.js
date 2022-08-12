@@ -122,12 +122,8 @@ module.exports = {
             }
         }
 
-        const locationHeaderDisabled = apiConfigHeaders && apiConfigHeaders.location === false;
-        const hasFrameData = frame
-            && (frame.method === 'add')
-            && result[frame.docName]
-            && result[frame.docName][0]
-            && result[frame.docName][0].id;
+        const locationHeaderDisabled = apiConfigHeaders?.location === false;
+        const hasFrameData = frame?.method === 'add' && result[frame.docName]?.[0]?.id;
 
         if (!locationHeaderDisabled && hasFrameData) {
             const protocol = (frame.original.url.secure === false) ? 'http://' : 'https://';
