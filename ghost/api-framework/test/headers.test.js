@@ -29,6 +29,46 @@ describe('Headers', function () {
                 });
         });
 
+        it('csv with function', async function () {
+            const result = await shared.headers.get({}, {
+                disposition: {
+                    type: 'csv',
+                    value() {
+                        // pretend we're doing some dynamic filename logic in this function
+                        const filename = `awesome-data-2022-08-01.csv`;
+                        return filename;
+                    }
+                }
+            });
+            result.should.eql({
+                'Content-Disposition': 'Attachment; filename="awesome-data-2022-08-01.csv"',
+                'Content-Type': 'text/csv'
+            });
+        });
+
+        it('file', async function () {
+            const result = await shared.headers.get({}, {disposition: {type: 'file', value: 'my.txt'}});
+            result.should.eql({
+                'Content-Disposition': 'Attachment; filename="my.txt"'
+            });
+        });
+
+        it('file with function', async function () {
+            const result = await shared.headers.get({}, {
+                disposition: {
+                    type: 'file',
+                    value() {
+                        // pretend we're doing some dynamic filename logic in this function
+                        const filename = `awesome-data-2022-08-01.txt`;
+                        return filename;
+                    }
+                }
+            });
+            result.should.eql({
+                'Content-Disposition': 'Attachment; filename="awesome-data-2022-08-01.txt"'
+            });
+        });
+
         it('yaml', function () {
             return shared.headers.get('yaml file', {disposition: {type: 'yaml', value: 'my.yaml'}})
                 .then((result) => {
@@ -88,6 +128,33 @@ describe('Headers', function () {
                         Location: 'https://example.com/api/content/posts/id_value/'
                     });
                 });
+        });
+
+        it('respects HTTP redirects', async function () {
+            const apiResult = {
+                posts: [{
+                    id: 'id_value'
+                }]
+            };
+
+            const apiConfigHeaders = {};
+            const frame = {
+                docName: 'posts',
+                method: 'add',
+                original: {
+                    url: {
+                        host: 'example.com',
+                        pathname: `/api/content/posts/`,
+                        secure: false
+                    }
+                }
+            };
+
+            const result = await shared.headers.get(apiResult, apiConfigHeaders, frame);
+            result.should.eql({
+                // NOTE: the backslash in the end is important to avoid unecessary 301s using the header
+                Location: 'http://example.com/api/content/posts/id_value/'
+            });
         });
 
         it('adds and resolves header to correct url when pathname does not contain backslash in the end', function () {
