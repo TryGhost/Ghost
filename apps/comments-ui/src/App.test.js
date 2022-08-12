@@ -3,7 +3,6 @@ import userEvent from '@testing-library/user-event';
 import App from './App';
 import {ROOT_DIV_ID} from './utils/constants';
 import {buildComment, buildMember} from './utils/test-utils';
-const jsdom = require("jsdom");
 
 function renderApp({member = null, documentStyles = {}, props = {}} = {}) {
     const postId = 'my-post';
