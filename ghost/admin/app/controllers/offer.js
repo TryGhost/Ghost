@@ -57,6 +57,7 @@ export default class OffersController extends Controller {
 
     @tracked defaultProps = null;
     @tracked isDisplayTitleEdited = false;
+    @tracked isOfferCodeEdited = false;
 
     leaveScreenTransition = null;
     portalPreviewGuid = Date.now().valueOf();
@@ -335,6 +336,10 @@ export default class OffersController extends Controller {
         if (!this.isDisplayTitleEdited && this.offer.isNew) {
             this._saveOfferProperty('displayTitle', e.target.value);
         }
+
+        if (!this.isOfferCodeEdited && this.offer.isNew) {
+            this._saveOfferProperty('code', slugify(e.target.value));
+        }
     }
 
     @action
@@ -350,6 +355,7 @@ export default class OffersController extends Controller {
 
     @action
     setOfferCode(e) {
+        this.isOfferCodeEdited = true;
         this._saveOfferProperty('code', e.target.value);
     }
 
