@@ -33,6 +33,7 @@ export default function Toolbar({
     const [onMousemoveHandler, setOnMousemoveHandler] = React.useState(null);
     const [, setIsMouseDown] = React.useState(false);
     const [, setIsMouseUp] = React.useState(false);
+    const [cachedRange, setCachedRange] = React.useState(null);
 
     function _toggleVisibility(toolbar, urlPrompt = false) {
         if (toolbar) {
@@ -141,6 +142,7 @@ export default function Toolbar({
                 toolbarPosition={toolbarPosition} 
                 urlAddress={{urlAddress, setUrlAddress}}
                 editor={editor}
+                cachedRange={cachedRange}
             />
             <div ref={toolbarRef}
                 className='absolute'
@@ -151,7 +153,7 @@ export default function Toolbar({
                     <SectionButton tagsInUse={activeSectionTags?.isH1} editor={editor} tag={'h1'} title={<Heading1Icon />} />
                     <SectionButton tagsInUse={activeSectionTags?.isH2} editor={editor} tag={'h2'} title={<Heading2Icon />} />
                     <SectionButton tagsInUse={activeSectionTags?.isBlockquote} editor={editor} tag={'blockquote'} title={<QuoteIcon />} />
-                    <LinkButton tagsInUse={activeMarkupTags?.isA} editor={editor} tag={'a'} title="A" showUrlPrompt={{showUrlPrompt, setShowUrlPrompt}} toolbar={{showToolbar, setShowToolbar}} />
+                    <LinkButton cachedRange={{cachedRange, setCachedRange}} selectedRange={selectedRange} tagsInUse={activeMarkupTags?.isA} editor={editor} tag={'a'} title="A" showUrlPrompt={{showUrlPrompt, setShowUrlPrompt}} toolbar={{showToolbar, setShowToolbar}} />
                 </ul>
             </div>
         </React.Fragment>

@@ -1,7 +1,8 @@
 import React from 'react';
 
-export default function LinkButton({tagsInUse, title, showUrlPrompt, toolbar}) {
+export default function LinkButton({tagsInUse, title, showUrlPrompt, toolbar, selectedRange, cachedRange}) {
     const handleClick = () => {
+        cachedRange.setCachedRange(selectedRange);
         showUrlPrompt.setShowUrlPrompt(true);
         toolbar.setShowToolbar(false);
     };
