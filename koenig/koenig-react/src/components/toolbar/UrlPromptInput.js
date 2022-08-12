@@ -56,7 +56,7 @@ const UrlPromptInput = React.forwardRef((props, ref) => {
             <form
                 onSubmit={handleUrlSubmit}
                 className="relative flex">
-                <input ref={formRef} onChange={handleUrlInput} name="url" placeholder="Enter url" value={url} />
+                <input ref={formRef} onChange={handleUrlInput} name="url" placeholder="Enter url" value={url || ''} />
                 <button hidden={true} type="submit"></button>
                 <div onClick={closeUrlPrompt} className='absolute right-0 cursor-pointer'>X</div>
             </form>
