@@ -27,7 +27,6 @@ const BETA_FEATURES = [
 const ALPHA_FEATURES = [
     'urlCache',
     'beforeAfterCard',
-    'comments',
     'freeTrial'
 ];
 

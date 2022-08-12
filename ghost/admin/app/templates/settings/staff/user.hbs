@@ -297,33 +297,30 @@
                             </p>
                         </GhFormGroup>
 
-                        {{#if (feature 'comments')}}
-                            <div class="user-settings-subgroup">
-                                <h4 class="user-settings-heading">Email notifications</h4>
-                                <GhFormGroup @errors={{this.user.errors}} @hasValidated={{this.user.hasValidated}} @property="email">
-                                    <div class="user-setting-toggle">
-                                        <div>
-                                            <label for="user-email">Comments</label>
-                                            <p>Receive notifications when members comment on one of your posts</p>
-                                        </div>
-                                        <div class="for-switch">
-                                            <label class="switch" for="comment-notifications">
-                                                <input
-                                                    id="comment-notifications"
-                                                    type="checkbox"
-                                                    checked={{this.user.commentNotifications}}
-                                                    class="gh-input"
-                                                    {{on "change" this.toggleCommentNotifications}}
-                                                    data-test-checkbox="comment-notifications"
-                                                >
-                                                <span class="input-toggle-component"></span>
-                                            </label>
-                                        </div>
+                        <div class="user-settings-subgroup">
+                            <h4 class="user-settings-heading">Email notifications</h4>
+                            <GhFormGroup @errors={{this.user.errors}} @hasValidated={{this.user.hasValidated}} @property="email">
+                                <div class="user-setting-toggle">
+                                    <div>
+                                        <label for="user-email">Comments</label>
+                                        <p>Receive notifications when members comment on one of your posts</p>
                                     </div>
-                                </GhFormGroup>
-                            </div>
-                        {{/if}}
-
+                                    <div class="for-switch">
+                                        <label class="switch" for="comment-notifications">
+                                            <input
+                                                id="comment-notifications"
+                                                type="checkbox"
+                                                checked={{this.user.commentNotifications}}
+                                                class="gh-input"
+                                                {{on "change" this.toggleCommentNotifications}}
+                                                data-test-checkbox="comment-notifications"
+                                            >
+                                            <span class="input-toggle-component"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </GhFormGroup>
+                        </div>
                     </fieldset>
                 </div>
 

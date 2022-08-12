@@ -31,7 +31,6 @@ describe('{{comment_count}} helper', function () {
 
     beforeEach(function () {
         mockManager.mockMail();
-        mockManager.mockLabsEnabled('comments');
         sinon.stub(settingsCache, 'get');
     });
 

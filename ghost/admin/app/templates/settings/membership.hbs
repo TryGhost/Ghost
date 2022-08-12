@@ -24,9 +24,6 @@
             <div class="gh-setting-members-basicsform">
                 <p class="intro">Fund your work with subscription revenue. Connect your Stripe account and offer premium content to your audience. Our creators are already making over $12 million per year, while <strong>Ghost takes 0% payment fees</strong>.</p>
                 
-                {{#if (not (feature 'comments'))}}
-                    <hr>
-                {{/if}}
                 <div class="flex flex-column justify-between mt3">
                     <section class="gh-expandable gh-setting-members-portalcta">
                         <div class="gh-expandable-block">
@@ -47,9 +44,7 @@
                     <div class="gh-setting-rich-dropdown">
                         <Settings::MembersSubscriptionAccess @onChange={{this.membersSubscriptionAccessChanged}} />
                         <Settings::MembersDefaultPostAccess />
-                        {{#if (feature 'comments')}}
-                            <Settings::MembersCommentAccess />
-                        {{/if}}
+                        <Settings::MembersCommentAccess />
                     </div>
                 </div>
             </div>

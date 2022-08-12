@@ -20,7 +20,6 @@ describe('{{comments}} helper', function () {
 
     beforeEach(function () {
         mockManager.mockMail();
-        mockManager.mockLabsEnabled('comments');
         sinon.stub(settingsCache, 'get');
         configUtils.set('comments:version', 'test.version');
     });
