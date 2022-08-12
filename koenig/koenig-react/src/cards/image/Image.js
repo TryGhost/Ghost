@@ -28,24 +28,25 @@ const CapEditor = ({payload, Alt, env}) => {
     };
 
     return (
-        <figcaption>
+        <figcaption className='p-2'>
             <div className="wrapper">
-                <div className="caret-inherit cursor-text text-sm" >
+                <div className="caret-inherit cursor-text" >
                     {
                         Alt ?
                             <input
-                                className="w-100"
+                                className="not-kg-prose w-100 text-center font-sans text-sm"
                                 type='text'
                                 value={payload.payload.alt}
                                 onChange={handleTextChange}
                             />
                             :
                             <Container
+                                className="not-kg-prose w-100 text-center font-sans text-sm"
                                 html={payload.payload.caption}
                                 didCreateEditor={_didCreateEditor}
                                 onChange={handleTextChange}
                             >
-                                <Editor className="not-kg-prose font-sans text-sm" />
+                                <Editor className="not-kg-prose text-center font-sans text-sm" />
                             </Container>
                     }
                 </div>
@@ -138,7 +139,7 @@ const Image = (props) => {
                     />
                 </form>
                 <CapEditor Alt={editAlt} payload={{payload, setPayload}} env={props.env} />
-                <button onClick={() => setEditAlt(!editAlt)} className={` absolute bottom-0 right-0 cursor-pointer rounded-lg text-sm shadow-[0_0_0_1px] ${editAlt ? 'bg-green' : 'shadow-grey'} `}>Alt</button>
+                <button onClick={() => setEditAlt(!editAlt)} className={` absolute bottom-0 right-0 m-3 cursor-pointer rounded border px-1 text-sm font-normal leading-6 ${editAlt ? 'border-green bg-green text-white' : 'border-grey-midlight text-grey-midlight'} `}>Alt</button>            
             </div>
         </figure>
     );
