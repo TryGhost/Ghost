@@ -482,7 +482,7 @@ class KoenigEditor {
 
     // Internal methods --------------------------------------------------------
 
-    _buildCardMenu(cards) {
+    _buildCardMenu(cards = []) {
         const cardMenu = [{
             title: 'Primary',
             items: []
