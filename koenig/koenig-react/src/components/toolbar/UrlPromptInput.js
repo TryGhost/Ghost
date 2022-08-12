@@ -22,6 +22,7 @@ const UrlPromptInput = React.forwardRef((props, ref) => {
         editor.selectRange(props.cachedRange);
         UI.toggleLink(editor, prompt);
         setUrl('');
+        props.showUrlPrompt.setShowUrlPrompt(false);
     };
 
     const handleUrlInput = (e) => {
