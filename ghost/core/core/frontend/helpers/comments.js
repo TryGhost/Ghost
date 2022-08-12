@@ -1,8 +1,8 @@
 const {SafeString} = require('../services/handlebars');
-const {urlUtils, getFrontendKey, labs, settingsCache} = require('../services/proxy');
+const {urlUtils, getFrontendKey, settingsCache} = require('../services/proxy');
 const {getFrontendAppConfig, getDataAttributes} = require('../utils/frontend-apps');
 
-async function comments(options) {
+module.exports = async function comments(options) {
     // todo: For now check on the comment id to exclude normal pages (we probably have a better way to do this)
 
     const commentId = this.comment_id;
@@ -75,19 +75,6 @@ async function comments(options) {
     return new SafeString(`
         <script defer src="${scriptUrl}" ${dataAttributes} crossorigin="anonymous"></script>
     `);
-}
-
-module.exports = async function commentsLabsWrapper() {
-    const self = this;
-    const args = arguments;
-
-    return labs.enabledHelper({
-        flagKey: 'comments',
-        flagName: 'Comments',
-        helperName: 'comments'
-    }, () => {
-        return comments.apply(self, args);
-    });
 };
 
 module.exports.async = true;
