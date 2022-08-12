@@ -52,8 +52,7 @@ const Comment = ghostBookshelf.Model.extend({
 
     replies() {
         return this.hasMany('Comment', 'parent_id', 'id')
-            .query('orderBy', 'id', 'ASC')
-            .query('limit', 3);
+            .query('orderBy', 'created_at', 'ASC');
     },
 
     emitChange: function emitChange(event, options) {
@@ -214,7 +213,7 @@ const Comment = ghostBookshelf.Model.extend({
         const result = await ghostBookshelf.Model.findPage.call(this, options);
 
         for (const model of result.data) {
-            await model.load(relationsToLoadIndividually);
+            await model.load(relationsToLoadIndividually, _.omit(options, 'withRelated'));
         }
 
         return result;
