@@ -1,11 +1,35 @@
 import React from 'react';
 import ImagePlaceholder from './placeholder';
 import {Editor, Container} from 'react-mobiledoc-editor';
+import KoenigEditor from '../../KoenigEditor';
+import {useConstructor} from '../../utils/useConstructor';
 
 const CapEditor = ({payload, Alt, env}) => {
+    const [instance, setInstance] = React.useState(null);
+    const editorRef = React.useRef();
+
+    useConstructor(() => {
+        const kgInstance = new KoenigEditor({});
+        editorRef.current = kgInstance;
+    });
+
+    function _didCreateEditor(mobiledocEditor) {
+        // TODO: keep mobiledoc instance separate or always use koenigEditor.mobiledocEditor
+        // to avoid passing around two editor instances everywhere?
+        setInstance(mobiledocEditor);
+
+        editorRef.current.initMobiledocEditor(mobiledocEditor);
+
+        // didCreateEditor?.(mobiledocEditor, koenigEditor);
+    }
+
     const handleTextChange = (e) => {
-        // payload.setPayload({...payload.payload, alt: e.target.value});
-        // env.save({alt: e.target.value, src: payload.payload.src});
+        if (Alt) {
+            payload.setPayload({...payload.payload, alt: e.target.value});
+        } else {
+            let ser = instance.serializeTo('html');
+            payload.setPayload({...payload.payload, caption: ser});
+        }
     };
 
     return (
@@ -22,6 +46,8 @@ const CapEditor = ({payload, Alt, env}) => {
                             />
                             :
                             <Container
+                                html={payload.payload.caption}
+                                didCreateEditor={_didCreateEditor}
                                 onChange={handleTextChange}
                             >
                                 <Editor className="not-kg-prose font-sans text-sm" />
@@ -85,6 +111,13 @@ const Image = (props) => {
         }
     }, [uploadForm]);
 
+    React.useEffect(() => {
+        const updateEnv = () => {
+            props.env.save({alt: payload?.alt, src: payload?.src, caption: payload?.caption});
+        };
+        updateEnv();
+    }, [payload]);
+    
     return (
         <figure>
             <div className="__mobiledoc-card">
@@ -93,7 +126,11 @@ const Image = (props) => {
                         payload.src ?
                             <img src={payload?.src || ``} alt={payload?.alt || 'image alt description'} />
                             :
-                            <ImagePlaceholder uploadRef={uploadRef} progress={uploadProgress} handleFiles={handleFiles} />
+                            <ImagePlaceholder 
+                                uploadRef={uploadRef} 
+                                progress={uploadProgress} 
+                                handleFiles={handleFiles} 
+                            />
                     }
                 </div>
                 <form onChange={onUploadChange}>
