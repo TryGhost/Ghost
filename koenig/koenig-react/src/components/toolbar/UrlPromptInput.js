@@ -1,6 +1,7 @@
 import React from 'react';
 import {UI} from 'mobiledoc-kit';
 import {getLinkMarkupFromRange} from './utils/markup-utils';
+import DeleteIcon from './icons/delete.svg';
 
 const UrlPromptInput = React.forwardRef((props, ref) => {
     const [url, setUrl] = React.useState('');
@@ -56,9 +57,9 @@ const UrlPromptInput = React.forwardRef((props, ref) => {
             <form
                 onSubmit={handleUrlSubmit}
                 className="relative flex">
-                <input ref={formRef} onChange={handleUrlInput} name="url" placeholder="Enter url" value={url || ''} />
+                <input className='min-h-full rounded border border-green p-2 pr-7 font-sans text-sm font-medium text-grey-dark shadow-lg placeholder:font-medium' ref={formRef} onChange={handleUrlInput} name="url" placeholder="Enter url" value={url || ''} />
                 <button hidden={true} type="submit"></button>
-                <div onClick={closeUrlPrompt} className='absolute right-0 cursor-pointer'>X</div>
+                <DeleteIcon onClick={closeUrlPrompt} className='absolute right-2 top-3 cursor-pointer' />
             </form>
         </div>
     );
