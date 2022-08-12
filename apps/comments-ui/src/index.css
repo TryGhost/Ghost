@@ -34,6 +34,11 @@ body {
     padding-left: 1rem;
 }
 
+/* Paragraphs */
+.gh-comment-content p {
+    margin: 0 0 2rem;
+}
+
 /* The following lines are needed for the editor */
 
 /* Placeholder */
