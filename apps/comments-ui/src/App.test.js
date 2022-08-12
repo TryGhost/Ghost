@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import App from './App';
 import {ROOT_DIV_ID} from './utils/constants';
 import {buildComment, buildMember} from './utils/test-utils';
+const jsdom = require("jsdom");
 
 function renderApp({member = null, documentStyles = {}, props = {}} = {}) {
     const postId = 'my-post';
@@ -61,6 +62,12 @@ function renderApp({member = null, documentStyles = {}, props = {}} = {}) {
                         }
                     }
                 };
+            },
+            like: async () => {
+                // noop
+            },
+            unlike: async () => {
+                // noop
             }
         }
     };
@@ -76,6 +83,20 @@ function renderApp({member = null, documentStyles = {}, props = {}} = {}) {
 
 beforeEach(() => {
     window.scrollTo = jest.fn();
+    Range.prototype.getClientRects = function getClientRects() {
+        return [
+            {
+                bottom: 0,
+                height: 0,
+                left: 0,
+                right: 0,
+                top: 0,
+                width: 0,
+                x: 0,
+                y: 0
+            }
+        ];
+    };
 });
 
 afterEach(() => {
@@ -251,7 +272,70 @@ describe('Comments', () => {
 
         // todo: Does show the CTA
     });
+});
 
+describe('Likes', () => {
+    it('can like and unlike a comment', async () => {
+        const limit = 5;
+        const member = buildMember();
+
+        const {api, iframeDocument} = renderApp({
+            member
+        });
+
+        jest.spyOn(api.comments, 'browse').mockImplementation(({page}) => {
+            if (page === 2) {
+                throw new Error('Not requested');
+            }
+            return {
+                comments: new Array(1).fill({}).map(() => buildComment({html: '<p>This is a comment body</p>', count: {likes: 5, replies: 0}, liked: false})),
+                meta: {
+                    pagination: {
+                        limit,
+                        total: 1,
+                        next: null,
+                        prev: null,
+                        page
+                    }
+                }
+            };
+        });
+
+        const likeSpy = jest.spyOn(api.comments, 'like');
+
+        const comment = await within(iframeDocument).findByTestId('comment-component');
+
+        const likeButton = within(comment).queryByTestId('like-button');
+        expect(likeButton).toBeInTheDocument();
+
+        // Initial likes are 5
+        expect(likeButton.lastChild.textContent).toEqual('5');
+
+        // Check not filled
+        const icon = likeButton.querySelector('svg');
+
+        // SVG className has a different meaning than on normal element (TIL!)
+        // So we have to do this black magic to check the string value
+        expect(icon.className.baseVal).not.toContain('fill');
+
+        await userEvent.click(likeButton);
+
+        expect(likeSpy).toBeCalledTimes(1);
+
+        // Test like icon is filled
+        expect(icon.className.baseVal).toContain('fill');
+
+        // Test count went up with one
+        expect(likeButton.lastChild.textContent).toEqual('6');
+
+        // Can unlike
+        await userEvent.click(likeButton);
+        expect(likeButton.lastChild.textContent).toEqual('5');
+        expect(icon.className.baseVal).not.toContain('fill');
+    });
+});
+
+describe('Replies', () => {
     it('can reply to a comment', async () => {
         const limit = 5;
         const member = buildMember();
