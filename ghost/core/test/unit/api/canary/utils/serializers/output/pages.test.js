@@ -1,11 +1,11 @@
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../../../utils');
-const mappers = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/mappers');
+const mappers = require('../../../../../../../core/server/api/utils/serializers/output/mappers');
 const membersService = require('../../../../../../../core/server/services/members');
-const serializers = require('../../../../../../../core/server/api/endpoints/utils/serializers');
+const serializers = require('../../../../../../../core/server/api/utils/serializers');
 
-describe('Unit: endpoints/utils/serializers/output/pages', function () {
+describe('Unit: api/utils/serializers/output/pages', function () {
     let pageModel;
 
     beforeEach(function () {

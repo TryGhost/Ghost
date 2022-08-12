@@ -1,6 +1,6 @@
 const _ = require('lodash');
 
-const api = require('./api').endpoints;
+const api = require('./api');
 const config = require('../shared/config');
 const urlUtils = require('./../shared/url-utils');
 const jobsService = require('./services/jobs');

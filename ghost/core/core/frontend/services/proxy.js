@@ -45,7 +45,7 @@ module.exports = {
     settingsCache: settingsCache,
 
     // TODO: Expose less of the API to make this safe
-    api: require('../../server/api').endpoints,
+    api: require('../../server/api'),
 
     // Labs utils for enabling/disabling helpers
     labs: require('../../shared/labs'),

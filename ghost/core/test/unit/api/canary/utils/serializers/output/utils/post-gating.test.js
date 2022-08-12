@@ -1,7 +1,7 @@
 const should = require('should');
-const gating = require('../../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/post-gating');
+const gating = require('../../../../../../../../core/server/api/utils/serializers/output/utils/post-gating');
 
-describe('Unit: endpoints/utils/serializers/output/utils/post-gating', function () {
+describe('Unit: api/utils/serializers/output/utils/post-gating', function () {
     describe('for post', function () {
         it('should NOT hide content attributes when visibility is public', function () {
             const attrs = {

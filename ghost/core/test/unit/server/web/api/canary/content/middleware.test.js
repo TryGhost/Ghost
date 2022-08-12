@@ -1,5 +1,5 @@
 const should = require('should');
-const middleware = require('../../../../../../../core/server/web/api/endpoints/content/middleware');
+const middleware = require('../../../../../../../core/server/web/api/content/middleware');
 
 describe('Content API middleware', function () {
     it('exports an authenticatePublic middleware', function () {

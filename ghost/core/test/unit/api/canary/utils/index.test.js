@@ -1,8 +1,8 @@
 const should = require('should');
 const sinon = require('sinon');
-const utils = require('../../../../../core/server/api/endpoints/utils');
+const utils = require('../../../../../core/server/api/utils');
 
-describe('Unit: endpoints/utils/index', function () {
+describe('Unit: api/utils/index', function () {
     afterEach(function () {
         sinon.restore();
     });

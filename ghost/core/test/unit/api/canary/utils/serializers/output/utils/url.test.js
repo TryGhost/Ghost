@@ -3,9 +3,9 @@ const sinon = require('sinon');
 const testUtils = require('../../../../../../../utils');
 const urlService = require('../../../../../../../../core/server/services/url');
 const urlUtils = require('../../../../../../../../core/shared/url-utils');
-const urlUtil = require('../../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/url');
+const urlUtil = require('../../../../../../../../core/server/api/utils/serializers/output/utils/url');
 
-describe('Unit: endpoints/utils/serializers/output/utils/url', function () {
+describe('Unit: api/utils/serializers/output/utils/url', function () {
     beforeEach(function () {
         sinon.stub(urlService, 'getUrlByResourceId').returns('getUrlByResourceId');
         sinon.stub(urlUtils, 'urlFor').returns('urlFor');

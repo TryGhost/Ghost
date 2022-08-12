@@ -354,7 +354,7 @@ describe('Settings API', function () {
 
     // @TODO swap this internally for using settingsbread and then remove
     describe('edit via context internal', function () {
-        const api = require('../../../../core/server/api').endpoints;
+        const api = require('../../../../core/server/api');
 
         before(async function () {
             await localUtils.startGhost();

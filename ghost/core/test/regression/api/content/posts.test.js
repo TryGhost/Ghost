@@ -7,7 +7,7 @@ const configUtils = require('../../../utils/configUtils');
 const urlUtils = require('../../../utils/urlUtils');
 const config = require('../../../../core/shared/config');
 
-describe('api/endpoints/content/posts', function () {
+describe('api/content/posts', function () {
     let request;
 
     before(async function () {

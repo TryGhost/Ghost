@@ -1,7 +1,7 @@
 module.exports = (event, model) => {
     const _ = require('lodash');
     const {sequence} = require('@tryghost/promise');
-    const api = require('../../api').endpoints;
+    const api = require('../../api');
     const apiFramework = require('@tryghost/api-framework');
 
     const resourceName = event.match(/(\w+)\./)[1];

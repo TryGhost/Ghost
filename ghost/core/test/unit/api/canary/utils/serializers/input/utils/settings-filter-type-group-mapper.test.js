@@ -1,7 +1,7 @@
 const should = require('should');
-const mapper = require('../../../../../../../../core/server/api/endpoints/utils/serializers/input/utils/settings-filter-type-group-mapper');
+const mapper = require('../../../../../../../../core/server/api/utils/serializers/input/utils/settings-filter-type-group-mapper');
 
-describe('Unit: endpoints/utils/serializers/input/utils/settings-type-group-mapper', function () {
+describe('Unit: api/utils/serializers/input/utils/settings-type-group-mapper', function () {
     describe('browse', function () {
         it('maps type to group 1:1', function () {
             mapper('theme').should.eql('theme');

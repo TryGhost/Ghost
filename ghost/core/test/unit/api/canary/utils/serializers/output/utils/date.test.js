@@ -1,9 +1,9 @@
 const should = require('should');
 const sinon = require('sinon');
 const settingsCache = require('../../../../../../../../core/shared/settings-cache');
-const dateUtil = require('../../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/date');
+const dateUtil = require('../../../../../../../../core/server/api/utils/serializers/output/utils/date');
 
-describe('Unit: endpoints/utils/serializers/output/utils/date', function () {
+describe('Unit: api/utils/serializers/output/utils/date', function () {
     afterEach(function () {
         sinon.restore();
     });

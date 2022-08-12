@@ -3,7 +3,7 @@ const errors = require('@tryghost/errors');
 const moment = require('moment');
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils');
-const api = require('../../api').endpoints;
+const api = require('../../api');
 
 const messages = {
     jobNotFound: 'Job not found.',

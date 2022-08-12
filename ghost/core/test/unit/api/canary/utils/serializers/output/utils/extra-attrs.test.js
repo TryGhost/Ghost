@@ -1,8 +1,8 @@
 const should = require('should');
 const sinon = require('sinon');
-const extraAttrsUtil = require('../../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/extra-attrs');
+const extraAttrsUtil = require('../../../../../../../../core/server/api/utils/serializers/output/utils/extra-attrs');
 
-describe('Unit: endpoints/utils/serializers/output/utils/extra-attrs', function () {
+describe('Unit: api/utils/serializers/output/utils/extra-attrs', function () {
     const frame = {
         // Question: is it okay to use actual column values here that the forPost function in extra-attrs would expect?
         options: {

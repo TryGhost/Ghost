@@ -3,10 +3,10 @@ const _ = require('lodash');
 const should = require('should');
 const sinon = require('sinon');
 const Promise = require('bluebird');
-const validators = require('../../../../../../../core/server/api/endpoints/utils/validators');
+const validators = require('../../../../../../../core/server/api/utils/validators');
 const models = require('../../../../../../../core/server/models');
 
-describe('Unit: endpoints/utils/validators/input/pages', function () {
+describe('Unit: api/utils/validators/input/pages', function () {
     before(function () {
         return models.init();
     });

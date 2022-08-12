@@ -1,9 +1,9 @@
 const should = require('should');
 const sinon = require('sinon');
-const serializers = require('../../../../../../../core/server/api/endpoints/utils/serializers');
-const mappers = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/mappers');
+const serializers = require('../../../../../../../core/server/api/utils/serializers');
+const mappers = require('../../../../../../../core/server/api/utils/serializers/output/mappers');
 
-describe('Unit: endpoints/utils/serializers/output/default', function () {
+describe('Unit: api/utils/serializers/output/default', function () {
     let toJSONStub;
     beforeEach(function () {
         toJSONStub = sinon.stub().callsFake(function () {

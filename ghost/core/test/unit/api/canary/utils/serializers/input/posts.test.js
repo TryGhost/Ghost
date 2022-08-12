@@ -1,7 +1,7 @@
 const should = require('should');
-const serializers = require('../../../../../../../core/server/api/endpoints/utils/serializers');
+const serializers = require('../../../../../../../core/server/api/utils/serializers');
 
-describe('Unit: endpoints/utils/serializers/input/posts', function () {
+describe('Unit: api/utils/serializers/input/posts', function () {
     describe('browse', function () {
         it('default', function () {
             const apiConfig = {};
