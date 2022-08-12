@@ -302,6 +302,7 @@ describe('Likes', () => {
         });
 
         const likeSpy = jest.spyOn(api.comments, 'like');
+        const unlikeSpy = jest.spyOn(api.comments, 'unlike');
 
         const comment = await within(iframeDocument).findByTestId('comment-component');
 
@@ -332,6 +333,8 @@ describe('Likes', () => {
         await userEvent.click(likeButton);
         expect(likeButton.lastChild.textContent).toEqual('5');
         expect(icon.className.baseVal).not.toContain('fill');
+
+        expect(unlikeSpy).toBeCalledTimes(1);
     });
 });
 
