@@ -105,11 +105,13 @@ async function initCore({ghostServer, config, bootLogger, frontend}) {
     // The URLService is a core part of Ghost, which depends on models.
     debug('Begin: Url Service');
     const urlService = require('./server/services/url');
+    const urlServiceStart = Date.now();
     // Note: there is no await here, we do not wait for the url service to finish
     // We can return, but the site will remain in maintenance mode until this finishes
     // This is managed on request: https://github.com/TryGhost/Ghost/blob/main/core/app.js#L10
     urlService.init({
         onFinished: () => {
+            bootLogger.metric('url-service', urlServiceStart);
             bootLogger.log('URL Service Ready');
         },
         urlCache: !frontend // hacky parameter to make the cache initialization kick in as we can't initialize labs before the boot
