@@ -25,6 +25,7 @@ class KoenigEditor {
     } = {}) {
         this.atoms = atoms;
         this.cards = cards;
+        this.cardMenu = this._buildCardMenu(cards); // menu selection relies on comparing item references
         this.keyCommands = keyCommands;
         this.textExpansions = textExpansions;
 
@@ -144,31 +145,6 @@ class KoenigEditor {
     }
 
     // API ---------------------------------------------------------------------
-
-    get cardMenu() {
-        const cardMenu = [{
-            title: 'Primary',
-            items: []
-        }];
-
-        this.cards.forEach((card) => {
-            if (!card.cardMenu) {
-                return;
-            }
-
-            const {group = 'Primary', ...menuItem} = card.cardMenu;
-            let cardMenuGroup = cardMenu.find(g => g.title === group);
-
-            if (!cardMenuGroup) {
-                cardMenuGroup = {title: group, items: []};
-                cardMenu.push(cardMenuGroup);
-            }
-
-            cardMenuGroup.items.push(menuItem);
-        });
-
-        return cardMenu;
-    }
 
     /* eslint-disable no-console */
 
@@ -506,7 +482,30 @@ class KoenigEditor {
 
     // Internal methods --------------------------------------------------------
 
-    // ...
+    _buildCardMenu(cards) {
+        const cardMenu = [{
+            title: 'Primary',
+            items: []
+        }];
+
+        cards.forEach((card) => {
+            if (!card.cardMenu) {
+                return;
+            }
+
+            const {group = 'Primary', ...menuItem} = card.cardMenu;
+            let cardMenuGroup = cardMenu.find(g => g.title === group);
+
+            if (!cardMenuGroup) {
+                cardMenuGroup = {title: group, items: []};
+                cardMenu.push(cardMenuGroup);
+            }
+
+            cardMenuGroup.items.push(menuItem);
+        });
+
+        return cardMenu;
+    }
 
     _setSelectedRange(range) {
         this.selectedRange = range;
