@@ -40,7 +40,7 @@ body {
 }
 
 .gh-comment-content p:last-child {
-    margin: 0 0 0;
+    margin: 0;
 }
 
 /* The following lines are needed for the editor */
