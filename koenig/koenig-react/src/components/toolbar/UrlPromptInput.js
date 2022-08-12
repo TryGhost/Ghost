@@ -16,13 +16,14 @@ const UrlPromptInput = React.forwardRef((props, ref) => {
         pointerEvents: `${props.showUrlPrompt.showUrlPrompt ? 'auto !important' : 'none !important'}`,
         opacity: `${props.showUrlPrompt.showUrlPrompt ? '1' : '0'}`
     };
-    const handleUrlSubmit = (e) => {
+    const handleUrlSubmit = async (e) => {
         e.preventDefault();
         let editor = props.editor;
-        editor.selectRange(props.cachedRange);
+        await editor.selectRange(props.cachedRange);
         UI.toggleLink(editor, prompt);
         setUrl('');
         props.showUrlPrompt.setShowUrlPrompt(false);
+        editor.selectRange(props.selectRange);
     };
 
     const handleUrlInput = (e) => {

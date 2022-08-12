@@ -143,6 +143,7 @@ export default function Toolbar({
                 urlAddress={{urlAddress, setUrlAddress}}
                 editor={editor}
                 cachedRange={cachedRange}
+                selectedRange={selectedRange}
             />
             <div ref={toolbarRef}
                 className='absolute'
