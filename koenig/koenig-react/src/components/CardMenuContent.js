@@ -1,5 +1,31 @@
 import React from 'react';
 
+const createItemMatcher = (query) => {
+    // match everything before a space to a card. Keeps the relevant
+    // card selected when providing attributes to a card, eg:
+    // /twitter https://twitter.com/EffinBirds/status/1001765208958881792
+    let card = query.split(/\s/)[0].replace(/^\//, '');
+
+    return (item) => {
+        // match every item before anything is typed
+        if (!query) {
+            return true;
+        }
+
+        // standard exact matching for items with a matches array
+        if (Array.isArray(item.matches)) {
+            return card ? item.matches.some(match => match.indexOf(card.toLowerCase()) === 0) : true;
+        }
+
+        // custom per-item matching, eg. snippets match any part of their title
+        if (typeof item.matches === 'function') {
+            return item.matches(query);
+        }
+
+        return false;
+    };
+};
+
 const CardMenuGroup = ({group, ...props}) => {
     return (
         <>
@@ -47,12 +73,25 @@ const CardMenuItem = ({item, itemWasClicked, replacementRange, koenigEditor}) =>
     );
 };
 
-const CardMenuContent = ({koenigEditor, ...props}) => {
+const CardMenuContent = ({koenigEditor, query, ...props}) => {
     // const [selectedItem, setSelectedItem] = React.useState(menuContent[0]?.items[0]);
+
+    const fullMenu = [...koenigEditor.cardMenu];
+    const itemMatcher = createItemMatcher(query);
+    const filteredMenu = fullMenu.map((section) => {
+        // show icons where there's a match of the begining of one of the
+        // "item.matches" strings
+        let matches = section.items.filter(itemMatcher);
+        if (matches.length > 0) {
+            return Object.assign({}, section, {items: matches});
+        }
+
+        return undefined;
+    }).filter(i => i !== undefined);
 
     const menuGroups = [];
 
-    koenigEditor.cardMenu.forEach((group) => {
+    filteredMenu.forEach((group) => {
         if (group.items?.length) {
             menuGroups.push(<CardMenuGroup group={group} koenigEditor={koenigEditor} key={group.title} {...props} />);
         }
