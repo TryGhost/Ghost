@@ -62,7 +62,7 @@ export default class ModalTierPrice extends ModalBase {
         return CURRENCIES.findBy('value', this.currency);
     }
 
-    get isFreeTierEnabled() {
+    get isFreeTrialEnabled() {
         return this.feature.get('freeTrial') && this.freeTrialEnabled && this.tier.get('trialDays') > 0;
     }
 
