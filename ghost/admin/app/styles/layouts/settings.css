@@ -2406,9 +2406,17 @@ p.theme-validation-details {
     border-radius: 5px;
 }
 
+.gh-settings-members-pricetrialcont {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 32px;
+}
+
 .gh-settings-members-pricelabelcont {
     display: flex;
     align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 3px;
 }
 
 .gh-settings-members-pricelabelcont span {
@@ -2428,10 +2436,10 @@ p.theme-validation-details {
 
 .gh-settings-members-pricelabelcont .gh-select {
     padding: 0;
-    width: 60px;
     height: 16px;
     border: none;
-    margin-left: -4px;
+    margin-left: 0;
+    margin-right: 0;
 }
 
 .gh-settings-members-pricelabelcont .gh-select select {
@@ -2445,8 +2453,8 @@ p.theme-validation-details {
 
 .gh-setting-members-prices {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-gap: 20px;
+    grid-template-rows: 1fr 1fr;
+    grid-gap: 6px;
 }
 
 .gh-setting-members-currency {
@@ -2472,8 +2480,17 @@ p.theme-validation-details {
 .gh-setting-members-currencylabel span {
     margin-right: 0;
     pointer-events: none;
+    padding-right: 3px;
 }
 
+.gh-input-group-tier-trial-disabled .gh-input-append {
+    border-color: #eceef0;
+    background-color: #fcfcfc;
+}
+
+.gh-input-group-tier-trial-disabled .gh-input-append:before {
+    background-color: #fcfcfc;
+}
 
 /* Stripe Connect modal */
 .fullscreen-modal-stripe-connect {

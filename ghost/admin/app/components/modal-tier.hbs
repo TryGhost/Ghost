@@ -54,10 +54,10 @@
                     </GhFormGroup>
 
                     {{#unless this.isFreeTier}}
+                    <div class="gh-settings-members-pricetrialcont">
                         <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="prices" data-test-formgroup="prices">
                             <div class="gh-settings-members-pricelabelcont">
                                 <label for="monthlyPrice" class="fw6">Prices</label>
-                                <span>–</span>
                                 <div>
                                     <span class="gh-setting-members-currency gh-select">
                                         <div class="gh-setting-members-currencylabel">
@@ -107,7 +107,7 @@
                         </GhFormGroup>
                         {{#if (feature 'freeTrial')}}
                             <GhFormGroup @errors={{this.errors}} @property="trialDays" data-test-formgroup="trialDays">
-                                <div class="flex justify-between items-center mb2 mt3">
+                                <div class="flex justify-between items-center mb2">
                                     <div>
                                         <h4 class="gh-tier-setting-title">Add a free trial</h4>
                                     </div>
@@ -125,7 +125,7 @@
                                     </div>
                                 </div>
 
-                                <div class="gh-input-group gh-tier-settings-hide {{if this.freeTrialEnabled "fade-in gh-tier-settings-show"}}">
+                                <div class="gh-input-group {{unless this.freeTrialEnabled "gh-input-group-tier-trial-disabled"}}">
                                     <GhTextInput
                                             @value={{readonly this.tier.trialDays}}
                                             @type="number"
@@ -133,14 +133,17 @@
                                             @name="trial"
                                             @id="trial"
                                             @class="gh-input"
+                                            @disabled={{unless this.freeTrialEnabled "true"}}
                                             data-test-input="tier-trial" />
                                             <span class="gh-input-append">days</span>
                                 </div>
+                                <p>After trial, members will be automatically subscribed to the full price</p>
                                 {{#if this.hasTrialDaysError}}
                                     <p class="response w-100"><span class="red">Free trial must be at least 1 day</span></p>
                                 {{/if}}
                             </GhFormGroup>
                         {{/if}}
+                        </div>
                         <GhFormGroup>
                             <label for="welcomePage" class="fw6">Welcome page</label>
                             <GhUrlInput
