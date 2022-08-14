@@ -14,9 +14,6 @@ const join = require('path').join;
 const errors = require('@tryghost/errors');
 const parse = require('./parse');
 
-// Require bluebird with its own namespace and use it explicitly where we need additional features
-const Bluebird = require('bluebird');
-
 const notAPackageRegex = /^\.|_messages|README.md|node_modules|bower_components/i;
 const packageJSONPath = 'package.json';
 
@@ -127,28 +124,33 @@ async function readPackage(packagePath, packageName) {
  * @returns {Promise<PackageList>}
  */
 async function readPackages(packagePath) {
-    return Bluebird.resolve(fs.readdir(packagePath, {withFileTypes: true}))
-        .filter(async function (packageFile) {
-            // Filter out things which are not packages by regex
-            if (packageFile.name.match(notAPackageRegex)) {
-                return;
-            }
+    const packageFiles = await fs.readdir(packagePath, {withFileTypes: true});
+    const packages = [];
 
-            if (packageFile.isSymbolicLink()) {
-                const packageFileOrig = await fs.stat(join(packagePath, packageFile.name));
-                return packageFileOrig.isDirectory();
-            }
+    for (const file of packageFiles) {
+        // Filter out things which are not packages by regex
+        if (file.name.match(notAPackageRegex)) {
+            continue;
+        }
 
+        if (file.isSymbolicLink()) {
+            const packageFileOrig = await fs.stat(join(packagePath, file.name));
+            if (!packageFileOrig.isDirectory()) {
+                continue;
+            }
+        } else {
             // Check the remaining items to ensure they are a directory
-            return packageFile.isDirectory();
-        })
-        .map(function readPackageJson(packageFile) {
-            const absolutePath = join(packagePath, packageFile.name);
-            return processPackage(absolutePath, packageFile.name);
-        })
-        .then(function (packages) {
-            return _.keyBy(packages, 'name');
-        });
+            if (!file.isDirectory()) {
+                continue;
+            }
+        }
+
+        const absolutePath = join(packagePath, file.name);
+        const processedPackage = await processPackage(absolutePath, file.name);
+        packages.push(processedPackage);
+    }
+
+    return _.keyBy(packages, 'name');
 }
 
 module.exports = {

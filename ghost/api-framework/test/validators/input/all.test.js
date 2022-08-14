@@ -1,7 +1,6 @@
 const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
-const Promise = require('bluebird');
 const shared = require('../../../');
 
 describe('validators/input/all', function () {
@@ -131,7 +130,7 @@ describe('validators/input/all', function () {
                 });
         });
 
-        it('does not fail', function () {
+        it('does not fail', async function () {
             const frame = {
                 options: {
                     context: {},
@@ -147,14 +146,14 @@ describe('validators/input/all', function () {
                 }
             };
 
-            return shared.validators.input.all.all(apiConfig, frame)
-                .then(Promise.reject)
-                .catch((err) => {
-                    should.not.exist(err);
-                });
+            try {
+                await shared.validators.input.all.all(apiConfig, frame);
+            } catch (err) {
+                should.not.exist(err);
+            }
         });
 
-        it('does not fail include array notation', function () {
+        it('does not fail include array notation', async function () {
             const frame = {
                 options: {
                     context: {},
@@ -168,11 +167,11 @@ describe('validators/input/all', function () {
                 }
             };
 
-            return shared.validators.input.all.all(apiConfig, frame)
-                .then(Promise.reject)
-                .catch((err) => {
-                    should.not.exist(err);
-                });
+            try {
+                await shared.validators.input.all.all(apiConfig, frame);
+            } catch (err) {
+                should.not.exist(err);
+            }
         });
 
         it('fails', function () {

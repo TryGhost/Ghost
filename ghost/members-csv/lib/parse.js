@@ -1,4 +1,3 @@
-const Promise = require('bluebird');
 const pump = require('pump');
 const papaparse = require('papaparse');
 const fs = require('fs-extra');

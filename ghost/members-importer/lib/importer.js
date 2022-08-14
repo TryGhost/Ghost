@@ -120,7 +120,7 @@ module.exports = class MembersCSVImporter {
             throw new errors.BadRequestError({message: tpl(messages.jobAlreadyComplete)});
         }
 
-        const rows = membersCSV.parse(job.filename);
+        const rows = await membersCSV.parse(job.filename);
 
         const membersApi = await this._getMembersApi();
 
