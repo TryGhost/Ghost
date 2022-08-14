@@ -2415,6 +2415,9 @@ p.theme-validation-details {
 .gh-settings-members-pricelabelcont {
     display: flex;
     align-items: baseline;
+}
+
+.gh-settings-members-pricelabelcont.free-trial-enabled {
     justify-content: space-between;
     margin-bottom: 3px;
 }
@@ -2453,7 +2456,14 @@ p.theme-validation-details {
 
 .gh-setting-members-prices {
     display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 20px;
+}
+
+.gh-setting-members-prices.free-trial-enabled {
+    display: grid;
     grid-template-rows: 1fr 1fr;
+    grid-template-columns: none !important;
     grid-gap: 6px;
 }
 
