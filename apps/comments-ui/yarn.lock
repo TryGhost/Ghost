@@ -1165,10 +1165,10 @@
   dependencies:
     "@hapi/hoek" "^8.3.0"
 
-"@headlessui/react@1.6.5":
-  version "1.6.5"
-  resolved "https://registry.yarnpkg.com/@headlessui/react/-/react-1.6.5.tgz#5587c537de809cf3146eb2ff263e5e940b1bf69c"
-  integrity sha512-3VkKteDxlxf3fE0KbfO9t60KC1lM7YNpZggLpwzVNg1J/zwL+h+4N7MBlFDVpInZI3rKlZGpNx0PWsG/9c2vQg==
+"@headlessui/react@^1.6.6":
+  version "1.6.6"
+  resolved "https://registry.yarnpkg.com/@headlessui/react/-/react-1.6.6.tgz#3073c066b85535c9d28783da0a4d9288b5354d0c"
+  integrity sha512-MFJtmj9Xh/hhBMhLccGbBoSk+sk61BlP6sJe4uQcVMtXZhCgGqd2GyIQzzmsdPdTEWGSF434CBi8mnhR6um46Q==
 
 "@humanwhocodes/config-array@^0.5.0":
   version "0.5.0"
