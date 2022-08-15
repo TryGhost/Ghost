@@ -61,6 +61,7 @@ export default class FeatureService extends Service {
     @feature('beforeAfterCard') beforeAfterCard;
     @feature('newsletterPaywall') newsletterPaywall;
     @feature('freeTrial') freeTrial;
+    @feature('memberAttribution') memberAttribution;
 
     _user = null;
 
