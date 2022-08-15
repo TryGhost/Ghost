@@ -2,6 +2,7 @@ const {promises: fs} = require('fs');
 const path = require('path');
 const moment = require('moment');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
+const postEmailSerializer = require('../mega/post-email-serializer');
 
 class CommentsServiceEmails {
     constructor({config, logging, models, mailer, settingsCache, urlService, urlUtils}) {
@@ -93,7 +94,7 @@ class CommentsServiceEmails {
             accentColor: this.settingsCache.get('accent_color'),
             fromEmail: this.notificationFromAddress,
             toEmail: to,
-            profileUrl: `${this.urlUtils.getSiteUrl()}#/portal/account/profile`
+            profileUrl: postEmailSerializer.createUnsubscribeUrl(member.get('uuid'), {comments: true})
         };
 
         const {html, text} = await this.renderEmailTemplate('new-comment-reply', templateData);
