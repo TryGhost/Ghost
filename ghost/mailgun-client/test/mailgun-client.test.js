@@ -58,13 +58,13 @@ describe('MailgunClient', function () {
         const settingsStub = sinon.stub(settings, 'get');
         settingsStub.withArgs('mailgun_api_key').returns('settingsApiKey');
         settingsStub.withArgs('mailgun_domain').returns('settingsdomain.com');
-        settingsStub.withArgs('mailgun_base_url').returns('https://example.com/v3');
+        settingsStub.withArgs('mailgun_base_url').returns('https://api.mailgun.net');
 
-        const eventsMock1 = nock('https://example.com')
+        const eventsMock1 = nock('https://api.mailgun.net')
             .get('/v3/settingsdomain.com/events')
             .query(MAILGUN_OPTIONS)
-            .reply(200, {'Content-Type': 'application/json'}, {
-                items: []
+            .replyWithFile(200, `${__dirname}/fixtures/empty.json`, {
+                'Content-Type': 'application/json'
             });
 
         const mailgunClient = new MailgunClient({config, settings});
@@ -72,13 +72,13 @@ describe('MailgunClient', function () {
 
         settingsStub.withArgs('mailgun_api_key').returns('settingsApiKey2');
         settingsStub.withArgs('mailgun_domain').returns('settingsdomain2.com');
-        settingsStub.withArgs('mailgun_base_url').returns('https://example2.com/v3');
+        settingsStub.withArgs('mailgun_base_url').returns('https://api.mailgun.net');
 
-        const eventsMock2 = nock('https://example2.com')
+        const eventsMock2 = nock('https://api.mailgun.net')
             .get('/v3/settingsdomain2.com/events')
             .query(MAILGUN_OPTIONS)
-            .reply(200, {'Content-Type': 'application/json'}, {
-                items: []
+            .replyWithFile(200, `${__dirname}/fixtures/empty.json`, {
+                'Content-Type': 'application/json'
             });
 
         await mailgunClient.fetchEvents(MAILGUN_OPTIONS, () => {});
@@ -93,27 +93,27 @@ describe('MailgunClient', function () {
             mailgun: {
                 apiKey: 'apiKey',
                 domain: 'configdomain.com',
-                baseUrl: 'https://configapi.com/v3'
+                baseUrl: 'https://api.mailgun.net'
             }
         });
 
         const settingsStub = sinon.stub(settings, 'get');
         settingsStub.withArgs('mailgun_api_key').returns('settingsApiKey');
         settingsStub.withArgs('mailgun_domain').returns('settingsdomain.com');
-        settingsStub.withArgs('mailgun_base_url').returns('https://settingsapi.com/v3');
+        settingsStub.withArgs('mailgun_base_url').returns('https://api.mailgun.net');
 
-        const configApiMock = nock('https://configapi.com')
+        const configApiMock = nock('https://api.mailgun.net')
             .get('/v3/configdomain.com/events')
             .query(MAILGUN_OPTIONS)
-            .reply(200, {'Content-Type': 'application/json'}, {
-                items: []
+            .replyWithFile(200, `${__dirname}/fixtures/empty.json`, {
+                'Content-Type': 'application/json'
             });
 
-        const settingsApiMock = nock('https://settingsapi.com')
+        const settingsApiMock = nock('https://api.mailgun.net')
             .get('/v3/settingsdomain.com/events')
             .query(MAILGUN_OPTIONS)
-            .reply(200, {'Content-Type': 'application/json'}, {
-                items: []
+            .replyWithFile(200, `${__dirname}/fixtures/empty.json`, {
+                'Content-Type': 'application/json'
             });
 
         const mailgunClient = new MailgunClient({config, settings});
@@ -161,6 +161,7 @@ describe('MailgunClient', function () {
 
             const secondPageMock = nock('https://api.mailgun.net')
                 .get('/v3/domain.com/events/all-1-next')
+                .query(MAILGUN_OPTIONS)
                 .replyWithFile(200, `${__dirname}/fixtures/all-2.json`, {
                     'Content-Type': 'application/json'
                 });
@@ -168,8 +169,9 @@ describe('MailgunClient', function () {
             // requests continue until an empty items set is returned
             nock('https://api.mailgun.net')
                 .get('/v3/domain.com/events/all-2-next')
-                .reply(200, {'Content-Type': 'application/json'}, {
-                    items: []
+                .query(MAILGUN_OPTIONS)
+                .replyWithFile(200, `${__dirname}/fixtures/empty.json`, {
+                    'Content-Type': 'application/json'
                 });
 
             const batchHandler = sinon.spy();
@@ -208,8 +210,8 @@ describe('MailgunClient', function () {
             // requests continue until an empty items set is returned
             nock('https://api.mailgun.net')
                 .get('/v3/domain.com/events/all-2-next')
-                .reply(200, {'Content-Type': 'application/json'}, {
-                    items: []
+                .replyWithFile(200, `${__dirname}/fixtures/empty.json`, {
+                    'Content-Type': 'application/json'
                 });
 
             const batchHandler = sinon.stub().returnsArg(0);
@@ -244,6 +246,7 @@ describe('MailgunClient', function () {
 
             const secondPageMock = nock('https://api.eu.mailgun.net')
                 .get('/v3/domain.com/events/all-1-next')
+                .query(MAILGUN_OPTIONS)
                 .replyWithFile(200, `${__dirname}/fixtures/all-2-eu.json`, {
                     'Content-Type': 'application/json'
                 });
@@ -251,8 +254,9 @@ describe('MailgunClient', function () {
             // requests continue until an empty items set is returned
             nock('https://api.eu.mailgun.net')
                 .get('/v3/domain.com/events/all-2-next')
-                .reply(200, {'Content-Type': 'application/json'}, {
-                    items: []
+                .query(MAILGUN_OPTIONS)
+                .replyWithFile(200, `${__dirname}/fixtures/empty.json`, {
+                    'Content-Type': 'application/json'
                 });
 
             const batchHandler = sinon.spy();
