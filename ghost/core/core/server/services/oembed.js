@@ -1,7 +1,6 @@
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
-const sentry = require('../../shared/sentry');
 const {extract, hasProvider} = require('oembed-parser');
 const cheerio = require('cheerio');
 const _ = require('lodash');
@@ -134,7 +133,6 @@ class OEmbed {
             scraperResponse = await metascraper({html, url});
         } catch (err) {
             // Log to avoid being blind to errors happenning in metascraper
-            sentry.captureException(err);
             logging.error(err);
             return this.unknownProvider(url);
         }
