@@ -2,7 +2,7 @@ const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
 const CachedImageSizeFromUrl = require('../../../../../core/server/lib/image/cached-image-size-from-url');
-const InMemoryCache = require('../../../../../core/server/adapters/cache/Memory');
+const InMemoryCache = require('../../../../../core/server/adapters/cache/ImageSizesCacheSyncInMemory');
 
 describe('lib/image: image size cache', function () {
     let sizeOfStub;
@@ -64,7 +64,7 @@ describe('lib/image: image size cache', function () {
 
         sizeOfStub.rejects('error');
 
-        const cacheStore = new InMemoryCache()
+        const cacheStore = new InMemoryCache();
         const cachedImageSizeFromUrl = new CachedImageSizeFromUrl({
             getImageSizeFromUrl: sizeOfStub,
             cache: cacheStore

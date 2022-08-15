@@ -7,4 +7,17 @@ const config = require('../../../shared/config');
 const settingsCache = require('../../../shared/settings-cache');
 const ImageUtils = require('./image-utils');
 
-module.exports = new ImageUtils({config, urlUtils, settingsCache, storageUtils, storage, validator, request});
+const adapterManager = require('../../services/adapter-manager');
+
+const cacheStore = adapterManager.getAdapter('cache:imageSizes');
+
+module.exports = new ImageUtils({
+    config,
+    urlUtils,
+    settingsCache,
+    storageUtils,
+    storage,
+    validator,
+    request,
+    cacheStore
+});

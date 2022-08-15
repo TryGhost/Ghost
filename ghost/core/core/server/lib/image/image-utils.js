@@ -4,12 +4,12 @@ const Gravatar = require('./gravatar');
 const ImageSize = require('./image-size');
 
 class ImageUtils {
-    constructor({config, urlUtils, settingsCache, storageUtils, storage, validator, request}) {
+    constructor({config, urlUtils, settingsCache, storageUtils, storage, validator, request, cacheStore}) {
         this.blogIcon = new BlogIcon({config, urlUtils, settingsCache, storageUtils});
         this.imageSize = new ImageSize({config, storage, storageUtils, validator, urlUtils, request});
         this.cachedImageSizeFromUrl = new CachedImageSizeFromUrl({
             getImageSizeFromUrl: this.imageSize.getImageSizeFromUrl.bind(this.imageSize),
-            cache: new Map()
+            cache: cacheStore
         });
         this.gravatar = new Gravatar({config, request});
     }
