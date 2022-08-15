@@ -14,6 +14,19 @@ export default function PopupModal(props) {
         if (popup !== null) {
             setLastPopup(popup);
         }
+
+        if (popup === null) {
+            // Remove lastPopup from memory after 250ms (leave transition has ended + 50ms safety margin)
+            // If, during those 250ms, the popup is reassigned, the timer will get cleared first.
+            // This fixes an issue in HeadlessUI where the <Transition show={show}> component is not removed from DOM when show is set to true and false very fast.
+            const timer = setTimeout(() => {
+                setLastPopup(null);
+            }, 250);
+
+            return () => {
+                clearTimeout(timer);
+            };
+        }
     }, [popup, setLastPopup]);
 
     if (!lastPopup || !lastPopup.type) {
@@ -32,8 +45,10 @@ export default function PopupModal(props) {
     const show = popup === lastPopup;
 
     return (
-        <GenericDialog show={show} callback={popupProps.callback}>
-            <PageComponent {...popupProps}/>
-        </GenericDialog>
+        <>
+            <GenericDialog show={show} callback={popupProps.callback}>
+                <PageComponent {...popupProps}/>
+            </GenericDialog>
+        </>
     );
 }
