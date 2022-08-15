@@ -102,7 +102,6 @@ describe('Config Loader', function () {
                 'appRoot',
                 'corePath',
                 'adminAssets',
-                'adminAuthAssets',
                 'helperTemplates',
                 'defaultViews',
                 'defaultRouteSettings',
