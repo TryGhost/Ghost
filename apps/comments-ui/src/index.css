@@ -32,14 +32,16 @@ body {
 .gh-comment-content blockquote {
     border-left: 3px solid rgba(13,13,13,.1);
     padding-left: 1rem;
+    margin: 0 0 1.2rem;
 }
 
 /* Paragraphs */
 .gh-comment-content p {
-    margin: 0 0 2rem;
+    margin: 0 0 1.2rem;
 }
 
-.gh-comment-content p:last-child {
+.gh-comment-content p:last-child,
+.gh-comment-content blockquote:last-child {
     margin: 0;
 }
 
