@@ -22,11 +22,15 @@ const Koenig = ({
     didCreateEditor,
     onChange,
     onCursorExitAtTop,
-    uploadUrl
+    uploadUrl,
+    accentColor
 }) => {
     const [selectedRange, setSelectedRange] = React.useState(null);
     const [activeMarkupTags, setActiveMarkupTags] = React.useState({});
     const [activeSectionTags, setActiveSectionTags] = React.useState({});
+
+    // Initial default accent colour.
+    const [accentColorState, setAccentColorState] = React.useState('#ff0095');
 
     // Create an instance of KoenigEditor on first render and store a reference.
     // - We need an instance of KoenigEditor immediately because it generates
@@ -63,6 +67,12 @@ const Koenig = ({
         didCreateEditor?.(mobiledocEditor, koenigEditor);
     }
 
+    React.useEffect(() => {
+        if (accentColor) {
+            setAccentColorState(`#${accentColor}`);
+        }
+    }, [accentColor]);
+
     return (
         <Container
             className="relative"
@@ -74,6 +84,13 @@ const Koenig = ({
             placeholder="Begin writing your post..."
             {...koenigEditor.editorProps}
         >
+            <style>
+                {`
+                :root{
+                    --kg-accent-color: ${accentColorState};
+                }
+                `}
+            </style>
             <Editor
                 className="kg-prose"
                 data-testid="mobiledoc-editor">

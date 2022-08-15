@@ -493,12 +493,13 @@
 
         /* Links
         /* -------------------------------------------------------------------- */
+        
+        /* Uses accent colour defined by React, else fallback to default colour. */
 
         :where(a):not(:where([class~='not-kg-prose'] *)) {
-            color: #ff0095;
+            color: var(--kg-accent-color, #ff0095);
             text-decoration: underline;
         }
-
 
         /* Blockquote
         /* -------------------------------------------------------------------- */

@@ -14,6 +14,7 @@ const KoenigEditor = ({...props}) => {
                 editorRange={props.editorRange}
                 onCursorExitAtTop={props.onCursorExitAtTop}
                 uploadUrl={props.uploadUrl}
+                accentColor={props.accentColor}
             />
         </div>
     );
