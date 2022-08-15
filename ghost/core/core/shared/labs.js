@@ -25,6 +25,7 @@ const BETA_FEATURES = [
 ];
 
 const ALPHA_FEATURES = [
+    'auditLog',
     'urlCache',
     'beforeAfterCard',
     'freeTrial'
