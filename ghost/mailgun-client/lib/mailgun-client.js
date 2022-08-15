@@ -1,7 +1,6 @@
 const _ = require('lodash');
 const debug = require('@tryghost/debug');
 const logging = require('@tryghost/logging');
-const mailgun = require('mailgun-js');
 
 module.exports.BATCH_SIZE = 1000;
 
@@ -187,6 +186,7 @@ module.exports = class MailgunClient {
             return null;
         }
 
+        const mailgun = require('mailgun-js');
         const baseUrl = new URL(mailgunConfig.baseUrl);
 
         return mailgun({
