@@ -6,7 +6,7 @@ import DEFAULT_CARDS from '../cards';
 import DEFAULT_KEY_COMMANDS from '../key-commands';
 import DEFAULT_TEXT_EXPANSIONS from '../text-expansions';
 import {useConstructor} from '../utils/useConstructor';
-import Toolbar from './toolbar';
+import Toolbar from './toolbar/Toolbar';
 import PlusMenu from './PlusMenu';
 import SlashMenu from './SlashMenu';
 
@@ -84,13 +84,6 @@ const Koenig = ({
             placeholder="Begin writing your post..."
             {...koenigEditor.editorProps}
         >
-            <style>
-                {`
-                :root{
-                    --kg-accent-color: ${accentColorState};
-                }
-                `}
-            </style>
             <Editor
                 className="kg-prose"
                 data-testid="mobiledoc-editor">
@@ -115,6 +108,13 @@ const Koenig = ({
                 selectedRange={selectedRange}
                 koenigEditor={koenigEditor}
             />
+            <style>
+                {`
+                :root{
+                    --kg-accent-color: ${accentColorState};
+                }
+                `}
+            </style>
         </Container>
     );
 };

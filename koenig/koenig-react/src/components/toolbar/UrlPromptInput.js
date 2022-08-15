@@ -18,6 +18,7 @@ const UrlPromptInput = React.forwardRef((props, ref) => {
         pointerEvents: `${props.showUrlPrompt.showUrlPrompt ? 'auto !important' : 'none !important'}`,
         opacity: `${props.showUrlPrompt.showUrlPrompt ? '1' : '0'}`
     };
+    
     const handleUrlSubmit = async (e) => {
         e.preventDefault();
         let editor = props.editor;

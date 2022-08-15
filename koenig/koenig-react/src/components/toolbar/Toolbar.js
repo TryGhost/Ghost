@@ -10,20 +10,20 @@ import LinkIcon from './icons/kg-link.svg';
 import LinkButton from './LinkButton';
 import UrlPromptInput from './UrlPromptInput';
 
+const DEFAULTSTYLES = {
+    top: 0,
+    left: 0,
+    right: 0
+};
+
 export default function Toolbar({
     editor,
     TOOLBAR_MARGIN = 15,
-    TICK_ADJUSTMENT = 8,
+    // TICK_ADJUSTMENT = 8,
     activeMarkupTags,
     activeSectionTags,
     selectedRange
 }) {
-    const DEFAULTSTYLES = {
-        top: 0,
-        left: 0,
-        right: 0
-    };
-    
     const [showUrlPrompt, setShowUrlPrompt] = React.useState(false);
     const [urlAddress, setUrlAddress] = React.useState('');
     const toolbarRef = React.useRef();

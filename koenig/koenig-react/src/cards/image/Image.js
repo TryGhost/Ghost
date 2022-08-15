@@ -38,16 +38,20 @@ const CapEditor = ({payload, Alt, env}) => {
                                 type='text'
                                 value={payload.payload.alt}
                                 onChange={handleTextChange}
+                                placeholder="Type alt text for image (optional)"
                             />
                             :
-                            <Container
-                                className="w-100 text-center font-sans text-sm"
-                                html={payload.payload.caption}
-                                didCreateEditor={_didCreateEditor}
-                                onChange={handleTextChange}
-                            >
-                                <Editor className="not-kg-prose text-center font-sans text-sm" />
-                            </Container>
+                            <React.Fragment>
+                                <Container
+                                    className="w-100 text-center font-sans text-sm"
+                                    html={payload.payload.caption}
+                                    didCreateEditor={_didCreateEditor}
+                                    onChange={handleTextChange}
+                                    placeholder="Type caption for image (optional)"
+                                >
+                                    <Editor className="not-kg-prose text-center font-sans text-sm" />
+                                </Container>
+                            </React.Fragment>
                     }
                 </div>
             </div>
