@@ -551,7 +551,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     display: block;
     width: 100%;
     min-height: auto;
-    margin-bottom: 1.6rem;
+    margin-bottom: 1.2rem;
     border: none;
     color: var(--black);
     font-size: 4.8rem;
@@ -685,7 +685,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
 }
 
 .gh-editor-title {
-    padding: 0;
+    padding: 0 0 4px;
 }
 
 .gh-editor-title::placeholder {
