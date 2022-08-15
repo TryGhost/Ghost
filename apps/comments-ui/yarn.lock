@@ -1779,6 +1779,11 @@
     prosemirror-view "1.26.2"
     tippy.js "^6.3.7"
 
+"@tiptap/extension-hard-break@^2.0.0-beta.33":
+  version "2.0.0-beta.33"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-hard-break/-/extension-hard-break-2.0.0-beta.33.tgz#e2f355a22aaaec6e831cf2880c52aa5b0b860573"
+  integrity sha512-41xf0vSV9hcyTFd01ItLq/CjhjgmOFLCrO3UWN/P2E/cIxuDTyXcvjTE/KXeqRCOV3OYd9fVr0wO91hc8Ij1Yg==
+
 "@tiptap/extension-link@^2.0.0-beta.43":
   version "2.0.0-beta.43"
   resolved "https://registry.yarnpkg.com/@tiptap/extension-link/-/extension-link-2.0.0-beta.43.tgz#c123a2170dd50d075b9fe7fb91d86d23f778ffb0"
