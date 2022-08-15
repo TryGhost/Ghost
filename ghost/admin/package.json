@@ -19,6 +19,7 @@
     "start": "ember serve",
     "build": "ember build",
     "build:prod": "yarn build --environment=production --silent",
+    "test:unit": "true",
     "test": "ember exam --split 2 --parallel",
     "lint:js": "eslint .",
     "lint:hbs": "ember-template-lint .",

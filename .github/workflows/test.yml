@@ -74,8 +74,7 @@ jobs:
           node-version: "14.17.0"
 
       - run: yarn
-      - run: yarn test
-        working-directory: ghost/admin
+      - run: yarn workspace ghost-admin run test
         env:
           BROWSER: ${{ matrix.browser }}
 
@@ -181,7 +180,7 @@ jobs:
           cache: yarn
 
       - run: yarn
-      - run: yarn test
+      - run: yarn workspaces run test:unit
 
       - uses: codecov/codecov-action@v2
 
