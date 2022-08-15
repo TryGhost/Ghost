@@ -20,6 +20,7 @@
     "@tiptap/core": "^2.0.0-beta.182",
     "@tiptap/extension-blockquote": "^2.0.0-beta.29",
     "@tiptap/extension-document": "^2.0.0-beta.17",
+    "@tiptap/extension-hard-break": "^2.0.0-beta.33",
     "@tiptap/extension-link": "^2.0.0-beta.43",
     "@tiptap/extension-paragraph": "^2.0.0-beta.26",
     "@tiptap/extension-placeholder": "^2.0.0-beta.53",
