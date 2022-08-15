@@ -76,14 +76,12 @@
                 color: #000;
             }
 
-            :where(
-                h1 strong,
-                h2 strong,
-                h3 strong,
-                h4 strong,
-                h5 strong,
-                h6 strong
-            ):not(:where([class~='not-kg-prose'] *)) {
+            h1 strong,
+            h2 strong,
+            h3 strong,
+            h4 strong,
+            h5 strong,
+            h6 strong {
                 font-weight: 800;
             }
 
@@ -127,169 +125,151 @@
                 letter-spacing: -0.008em;
             }
 
-            :where(
-                p + h1,
-                p + h2,
-                p + h3,
-                p + h4,
-                p + h5,
-                p + h6,
+            p + h1,
+            p + h2,
+            p + h3,
+            p + h4,
+            p + h5,
+            p + h6,
 
-                blockquote + h1,
-                blockquote + h2,
-                blockquote + h3,
-                blockquote + h4,
-                blockquote + h5,
-                blockquote + h6,
+            blockquote + h1,
+            blockquote + h2,
+            blockquote + h3,
+            blockquote + h4,
+            blockquote + h5,
+            blockquote + h6,
 
-                aside + h1,
-                aside + h2,
-                aside + h3,
-                aside + h4,
-                aside + h5,
-                aside + h6,
+            aside + h1,
+            aside + h2,
+            aside + h3,
+            aside + h4,
+            aside + h5,
+            aside + h6,
 
-                ul + h1,
-                ul + h2,
-                ul + h3,
-                ul + h4,
-                ul + h5,
-                ul + h6,
+            ul + h1,
+            ul + h2,
+            ul + h3,
+            ul + h4,
+            ul + h5,
+            ul + h6,
 
-                ol + h1,
-                ol + h2,
-                ol + h3,
-                ol + h4,
-                ol + h5,
-                ol + h6
-            ):not(:where([class~='not-kg-prose'] *)) {
+            ol + h1,
+            ol + h2,
+            ol + h3,
+            ol + h4,
+            ol + h5,
+            ol + h6 {
                 margin: 4.8rem 0 0;
             }
 
             /* Heading 1 vertical rhythm */
 
-            h:where(1 + h1):not(:where([class~='not-kg-prose'] *)) {
+            h1 + h1 {
                 margin: 1.4rem 0 0;
             }
 
-            :where(
-                h2 + h1,
-                h3 + h1
-            ):not(:where([class~='not-kg-prose'] *)) {
+            h2 + h1,
+            h3 + h1 {
                 margin: 1.0rem 0 0;
             }
 
-            :where(
-                h4 + h1,
-                h5 + h1
-            ):not(:where([class~='not-kg-prose'] *)) {
+            h4 + h1,
+            h5 + h1 {
                 margin: 0.8rem 0 0;
             }
 
-            :where(h6 + h1):not(:where([class~='not-kg-prose'] *)) {
+            h6 + h1 {
                 margin: 0.6rem 0 0;
             }
 
-            :where(div + h1):not(:where([class~='not-kg-prose'] *)) {
+            div + h1 {
                 margin: 4.8rem 0 0;
             }
 
 
             /* Heading 2 */
 
-            :where(h1 + h2):not(:where([class~='not-kg-prose'] *)) {
+            h1 + h2 {
                 margin: 1.6rem 0 0;
             }
 
-            :where(
-                h2 + h2,
-                h3 + h2,
-                h4 + h2,
-                .koenig-react__editor h5 + h2
-            ):not(:where([class~='not-kg-prose'] *)) {
+            h2 + h2,
+            h3 + h2,
+            h4 + h2,
+            .koenig-react__editor h5 + h2 {
                 margin: 0.8rem 0 0;
             }
 
-            :where(h6 + h2):not(:where([class~='not-kg-prose'] *)) {
+            h6 + h2 {
                 margin: 0.4rem 0 0;
             }
 
-            :where(div + h2):not(:where([class~='not-kg-prose'] *)) {
+            div + h2 {
                 margin: 4.8rem 0 0;
             }
 
 
             /* Heading 3 - 6 (share common styles) */
 
-            :where(
-                h1 + h3,
-                h2 + h3,
+            h1 + h3,
+            h2 + h3,
 
-                h1 + h4,
-                h2 + h4,
+            h1 + h4,
+            h2 + h4,
 
-                h1 + h5,
-                h2 + h5,
+            h1 + h5,
+            h2 + h5,
 
-                h1 + h6,
-                h2 + h6
-            ):not(:where([class~='not-kg-prose'] *)) {
+            h1 + h6,
+            h2 + h6 {
                 margin: 1.2rem 0 0;
             }
 
-            :where(h3 + h4):not(:where([class~='not-kg-prose'] *)) {
+            h3 + h4 {
                 margin: 0.8rem 0 0;
             }
 
-            :where(
-                h3 + h3,
-                h4 + h3,
-                h5 + h3,
+            h3 + h3,
+            h4 + h3,
+            h5 + h3,
 
-                h4 + h4,
-                h5 + h4,
+            h4 + h4,
+            h5 + h4,
 
-                h3 + h5,
-                h4 + h5,
-                h5 + h5,
+            h3 + h5,
+            h4 + h5,
+            h5 + h5,
 
-                h3 + h6,
-                h4 + h6
-            ):not(:where([class~='not-kg-prose'] *)) {
+            h3 + h6,
+            h4 + h6 {
                 margin: 0.8rem 0 0;
             }
 
-            :where(h5 + h6):not(:where([class~='not-kg-prose'] *)) {
+            h5 + h6 {
                 margin: 0.4rem 0 0;
             }
 
-            :where(
-                h6 + h3,
-                h6 + h4,
-                h6 + h5,
-                h6 + h6
-            ):not(:where([class~='not-kg-prose'] *)) {
+            h6 + h3,
+            h6 + h4,
+            h6 + h5,
+            h6 + h6 {
                 margin: 0.4rem 0 0;
             }
 
-            :where(
-                div + h3,
-                div + h4,
-                div + h5,
-                div + h6
-            ):not(:where([class~='not-kg-prose'] *)) {
+            div + h3,
+            div + h4,
+            div + h5,
+            div + h6 {
                 margin: 4.8rem 0 0;
             }
 
             /* Headings right after post title */
-            :where(
-                h1:first-child,
-                h2:first-child,
-                h3:first-child,
-                h4:first-child,
-                .koenig-react__editor h5:first-child,
-                h6:first-child
-            ):not(:where([class~='not-kg-prose'] *)) {
+            h1:first-child,
+            h2:first-child,
+            h3:first-child,
+            h4:first-child,
+            .koenig-react__editor h5:first-child,
+            h6:first-child {
                 margin-top: 0rem;
             }
 
@@ -336,42 +316,46 @@
                 font-size: 2.0rem;
             }
 
-            :where(h1 + p):not(:where([class~='not-kg-prose'] *)) {
+            p strong,
+            blockquote strong,
+            aside strong,
+            ul strong,
+            ol strong {
+                font-weight: 700;
+            }
+
+            h1 + p {
                 margin: 1.0rem 0 0;
             }
 
-            :where(h2 + p):not(:where([class~='not-kg-prose'] *)) {
+            h2 + p {
                 margin: 0.8rem 0 0;
             }
 
-            :where(
-                h3 + p,
-                h4 + p,
-                h5 + p,
-                h6 + p
-            ):not(:where([class~='not-kg-prose'] *)) {
+            h3 + p,
+            h4 + p,
+            h5 + p,
+            h6 + p {
                 margin: 0.8rem 0 0;
             }
 
-            :where(
-                p + p,
-                blockquote + p,
-                aside + p,
-                ul + p,
-                ol + p
-            ):not(:where([class~='not-kg-prose'] *)) {
+            p + p,
+            blockquote + p,
+            aside + p,
+            ul + p,
+            ol + p {
                 margin: 3.2rem 0 0;
             }
 
-            :where(div + p):not(:where([class~='not-kg-prose'] *)) { /* Mobiledoc cards can be addressed by their wrapper div element */
+            div + p { /* Mobiledoc cards can be addressed by their wrapper div element */
                 margin: 2.8rem 0 0;
             }
-            :where(div + figure):not(:where([class~='not-kg-prose'] *)) { /* Mobiledoc cards can be addressed by their wrapper div element */
+            div + figure { /* Mobiledoc cards can be addressed by their wrapper div element */
                 margin: 2.8rem 0 0;
             }
 
             /* Paragraph right after title */
-            :where(p:first-child):not(:where([class~='not-kg-prose'] *)) {
+            p:first-child {
                 margin-top: 0rem;
             }
 
@@ -391,17 +375,15 @@
             /* Lists
             /* -------------------------------------------------------------------- */
 
-            :where(
-                ul,
-                ol
-            ):not(:where([class~='not-kg-prose'] *)) {
+            ul,
+            ol {
                 margin: 1.6rem 0 0;
                 padding: 0;
                 min-width: 100%;
                 max-width: 100%;
             }
 
-            :where(ul li):not(:where([class~='not-kg-prose'] *)) {
+            ul li {
                 display: list-item;
                 list-style-type: disc;
                 margin: 1.0rem 0 0 2.4rem;
@@ -409,11 +391,11 @@
                 line-height: 3.2rem;
             }
 
-            :where(ul li:first-child):not(:where([class~='not-kg-prose'] *)) {
+            ul li:first-child {
                 margin: 0 0 0 2.4rem;
             }
 
-            :where(ol li):not(:where([class~='not-kg-prose'] *)) {
+            ol li {
                 display: list-item;
                 list-style-type: decimal;
                 margin: 1.0rem 0 0 2.2rem;
@@ -421,73 +403,59 @@
                 line-height: 3.2rem;
             }
 
-            :where(ol li:first-child):not(:where([class~='not-kg-prose'] *)) {
+            ol li:first-child {
                 margin: 0 0 0 2.2rem;
             }
 
-            :where(
-                p + ul,
-                p + ol
-            ):not(:where([class~='not-kg-prose'] *)) {
+            p + ul,
+            p + ol {
                 margin: 3.0rem 0 0;
             }
 
-            :where(
-                ul + ul,
-                ul + ol,
-                ol + ul,
-                ol + ol,
-                blockquote + ul,
-                blockquote + ol,
-                aside + ul,
-                aside + ol
-            ):not(:where([class~='not-kg-prose'] *)) {
+            ul + ul,
+            ul + ol,
+            ol + ul,
+            ol + ol,
+            blockquote + ul,
+            blockquote + ol,
+            aside + ul,
+            aside + ol {
                 margin: 3.0rem 0 0;
             }
 
-            :where(
-                h1 + ul,
-                h1 + ol,
-                h2 + ul,
-                h2 + ol
-            ):not(:where([class~='not-kg-prose'] *)) {
+            h1 + ul,
+            h1 + ol,
+            h2 + ul,
+            h2 + ol {
                 margin: .8rem 0 0;
             }
 
-            :where(
-                h3 + ul,
-                h3 + ol,
-                h4 + ul,
-                h4 + ol,
-                h5 + ul,
-                h5 + ol,
-                h6 + ul,
-                h6 + ol
-            ):not(:where([class~='not-kg-prose'] *)) {
+            h3 + ul,
+            h3 + ol,
+            h4 + ul,
+            h4 + ol,
+            h5 + ul,
+            h5 + ol,
+            h6 + ul,
+                h6 + ol {
                 margin: 1.2rem 0 0;
             }
 
-            :where(
-                div + ul,
-                div + ol
-            ):not(:where([class~='not-kg-prose'] *)) {
+            div + ul,
+            div + ol {
                 margin: 2.8rem 0 0;
             }
 
-            :where(
-                ul ul,
-                ul ol,
-                ol ul,
-                ol ol
-            ):not(:where([class~='not-kg-prose'] *)) {
+            ul ul,
+            ul ol,
+            ol ul,
+            ol ol {
                 margin: 1.0rem 0 2rem;
             }
 
             /* Lists right after title */
-            :where(
-                ul:first-child,
-                ol:first-child
-            ):not(:where([class~='not-kg-prose'] *)) {
+            ul:first-child,
+            ol:first-child {
                 margin-top: 0rem;
             }
 
@@ -497,7 +465,7 @@
 
             /* Uses accent colour defined by React, else fallback to default colour. */
 
-            :where(a):not(:where([class~='not-kg-prose'] *)) {
+            a {
                 color: var(--kg-accent-color, #ff0095);
                 text-decoration: underline;
             }
@@ -505,42 +473,36 @@
             /* Blockquote
             /* -------------------------------------------------------------------- */
 
-            :where(blockquote p):not(:where([class~='not-kg-prose'] *)) {
+            blockquote p {
                 margin: 0;
             }
 
-            :where(blockquote):not(:where([class~='not-kg-prose'] *)) {
+            blockquote {
                 border-left: 0.25rem solid #ff0095;
                 padding-left: 2.0rem;
                 font-style: italic;
             }
 
-            :where(
-                h1 + blockquote,
-                h2 + blockquote
-            ):not(:where([class~='not-kg-prose'] *)) {
+            h1 + blockquote,
+            h2 + blockquote {
                 margin: .8rem 0 0;
             }
 
-            :where(
-                h3 + blockquote,
-                h4 + blockquote,
-                .koenig-react__editor h5 + blockquote,
-                h6 + blockquote
-            ):not(:where([class~='not-kg-prose'] *)) {
+            h3 + blockquote,
+            h4 + blockquote,
+            .koenig-react__editor h5 + blockquote,
+            h6 + blockquote {
                 margin: .4rem 0 0;
             }
 
-            :where(
-                p + blockquote,
-                blockquote + blockquote
-            ):not(:where([class~='not-kg-prose'] *)) {
+            p + blockquote,
+            blockquote + blockquote {
                 margin: 3.2rem 0 0;
             }
 
 
             /* Mobiledoc cards can be selected by their wrapper div element */
-            :where(div + blockquote):not(:where([class~='not-kg-prose'] *)) {
+            div + blockquote {
                 margin: 2.8rem 0 0;
             }
 
@@ -548,11 +510,11 @@
             /* Aside, Blockquote Alternative
             /* -------------------------------------------------------------------- */
 
-            :where(aside p):not(:where([class~='not-kg-prose'] *)) {
+            aside p {
                 margin: 0;
             }
 
-            :where(aside):not(:where([class~='not-kg-prose'] *)) {
+            aside {
                 margin: 3.2rem 0 0;
                 padding: 1rem 6rem 1.25rem;
                 font-style: italic;
@@ -561,44 +523,38 @@
                 color: var(--midgrey-l1);
             }
 
-            :where(
-                h1 + aside,
-                h2 + aside
-            ):not(:where([class~='not-kg-prose'] *)) {
+            h1 + aside,
+            h2 + aside {
                 margin: .8rem 0 0;
             }
 
-            :where(
-                h3 + aside,
-                h4 + aside,
-                h5 + aside,
-                h6 + aside
-            ):not(:where([class~='not-kg-prose'] *)) {
+            h3 + aside,
+            h4 + aside,
+            h5 + aside,
+            h6 + aside {
                 margin: .4rem 0 0;
             }
 
-            :where(
-                p + aside,
-                blockquote + aside
-            ):not(:where([class~='not-kg-prose'] *)) {
+            p + aside,
+            blockquote + aside {
                 margin: 3.2rem 0 0;
             }
 
             @media (max-width: 800px) {
-                :where(aside):not(:where([class~='not-kg-prose'] *)) {
+                aside {
                     padding-left: 6rem;
                     padding-right: 6rem;
                 }
             }
 
             @media (max-width: 500px) {
-                :where(aside):not(:where([class~='not-kg-prose'] *)) {
+                aside {
                     font-size: 2.2rem;
                 }
             }
 
             /* Mobiledoc cards can be selected by their wrapper div element */
-            :where(div + aside):not(:where([class~='not-kg-prose'] *)) {
+            div + aside {
                 margin: 2.8rem 0 0;
             }
         }

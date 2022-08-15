@@ -34,14 +34,14 @@ const CapEditor = ({payload, Alt, env}) => {
                     {
                         Alt ?
                             <input
-                                className="not-kg-prose w-100 text-center font-sans text-sm"
+                                className="w-100 text-center font-sans text-sm"
                                 type='text'
                                 value={payload.payload.alt}
                                 onChange={handleTextChange}
                             />
                             :
                             <Container
-                                className="not-kg-prose w-100 text-center font-sans text-sm"
+                                className="w-100 text-center font-sans text-sm"
                                 html={payload.payload.caption}
                                 didCreateEditor={_didCreateEditor}
                                 onChange={handleTextChange}
