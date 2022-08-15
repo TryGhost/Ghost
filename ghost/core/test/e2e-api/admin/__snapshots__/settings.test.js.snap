@@ -230,7 +230,7 @@ Object {
     },
     Object {
       "key": "labs",
-      "value": "{\\"activitypub\\":true,\\"auditLog\\":true,\\"urlCache\\":true,\\"beforeAfterCard\\":true,\\"freeTrial\\":true,\\"newsletterPaywall\\":true,\\"members\\":true}",
+      "value": StringMatching /\\\\\\{\\[\\^\\\\s\\]\\+\\\\\\}/,
     },
     Object {
       "key": "slack_url",
@@ -569,7 +569,7 @@ Object {
     },
     Object {
       "key": "labs",
-      "value": "{\\"newsletterPaywall\\":true,\\"members\\":true}",
+      "value": StringMatching /\\\\\\{\\[\\^\\\\s\\]\\+\\\\\\}/,
     },
     Object {
       "key": "slack_url",
@@ -858,7 +858,7 @@ Object {
     },
     Object {
       "key": "labs",
-      "value": "{\\"newsletterPaywall\\":true,\\"members\\":true}",
+      "value": StringMatching /\\\\\\{\\[\\^\\\\s\\]\\+\\\\\\}/,
     },
     Object {
       "key": "slack_url",
@@ -1146,7 +1146,7 @@ Object {
     },
     Object {
       "key": "labs",
-      "value": "{\\"newsletterPaywall\\":true,\\"members\\":true}",
+      "value": StringMatching /\\\\\\{\\[\\^\\\\s\\]\\+\\\\\\}/,
     },
     Object {
       "key": "slack_url",
@@ -1439,7 +1439,7 @@ Object {
     },
     Object {
       "key": "labs",
-      "value": "{\\"newsletterPaywall\\":true,\\"members\\":true}",
+      "value": StringMatching /\\\\\\{\\[\\^\\\\s\\]\\+\\\\\\}/,
     },
     Object {
       "key": "slack_url",
@@ -1727,7 +1727,7 @@ Object {
     },
     Object {
       "key": "labs",
-      "value": "{\\"newsletterPaywall\\":true,\\"members\\":true}",
+      "value": StringMatching /\\\\\\{\\[\\^\\\\s\\]\\+\\\\\\}/,
     },
     Object {
       "key": "slack_url",
@@ -2078,7 +2078,7 @@ Object {
     },
     Object {
       "key": "labs",
-      "value": "{\\"newsletterPaywall\\":true,\\"members\\":true}",
+      "value": StringMatching /\\\\\\{\\[\\^\\\\s\\]\\+\\\\\\}/,
     },
     Object {
       "key": "slack_url",
