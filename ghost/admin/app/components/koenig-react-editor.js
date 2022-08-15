@@ -88,6 +88,7 @@ export default class KoenigReactEditor extends Component {
                             didCreateEditor={this.args.didCreateEditor}
                             onChange={this.args.onChange}
                             uploadUrl={this.args.uploadUrl}
+                            accentColor={this.args.accentColor}
                         />
                     </Suspense>
                 </ErrorHandler>

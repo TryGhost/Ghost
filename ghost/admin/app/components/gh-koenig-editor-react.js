@@ -1,9 +1,12 @@
 import Component from '@glimmer/component';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {action} from '@ember/object';
+import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
 export default class GhKoenigEditorReactComponent extends Component {
+    @service settings;
+
     containerElement = null;
     titleElement = null;
     koenigEditor = null;
@@ -15,6 +18,14 @@ export default class GhKoenigEditorReactComponent extends Component {
 
     get title() {
         return this.args.title === '(Untitled)' ? '' : this.args.title;
+    }
+
+    get accentColor() {
+        const color = this.settings.get('accentColor');
+        if (color && color[0] === '#') {
+            return color.slice(1);
+        }
+        return color;
     }
 
     @action
