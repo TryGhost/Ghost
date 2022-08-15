@@ -31,9 +31,9 @@ function AccountHeader() {
     );
 }
 
-async function updateMemberNewsletters({api, memberUuid, newsletters}) {
+async function updateMemberNewsletters({api, memberUuid, newsletters, enableCommentNotifications}) {
     try {
-        return await api.member.updateNewsletters({uuid: memberUuid, newsletters});
+        return await api.member.updateNewsletters({uuid: memberUuid, newsletters, enableCommentNotifications});
     } catch (e) {
         // ignore auto unsubscribe error
     }
@@ -61,7 +61,8 @@ export default function UnsubscribePage() {
             setMember(memberData);
             const memberNewsletters = memberData?.newsletters || [];
             setSubscribedNewsletters(memberNewsletters);
-            if (siteNewsletters?.length === 1) {
+            if (siteNewsletters?.length === 1 && !commentsEnabled) {
+                // Unsubscribe from all the newsletters, because we only have one
                 const updatedData = await updateMemberNewsletters({
                     api: ghostApi,
                     memberUuid: pageData.uuid,
@@ -69,6 +70,7 @@ export default function UnsubscribePage() {
                 });
                 setSubscribedNewsletters(updatedData.newsletters);
             } else if (pageData.newsletterUuid) {
+                // Unsubscribe link for a specific newsletter
                 const updatedData = await updateMemberNewsletters({
                     api: ghostApi,
                     memberUuid: pageData.uuid,
@@ -77,9 +79,18 @@ export default function UnsubscribePage() {
                     })
                 });
                 setSubscribedNewsletters(updatedData.newsletters);
+            } else if (pageData.comments && commentsEnabled) {
+                // Unsubscribe link for comments
+                const updatedData = await updateMemberNewsletters({
+                    api: ghostApi,
+                    memberUuid: pageData.uuid,
+                    enableCommentNotifications: false
+                });
+
+                setMember(updatedData);
             }
         })();
-    }, [pageData.uuid, pageData.newsletterUuid, site.url, siteNewsletters?.length]);
+    }, [commentsEnabled, pageData.uuid, pageData.newsletterUuid, pageData.comments, site.url, siteNewsletters?.length]);
 
     // Case: Email not found
     if (member === null) {
@@ -96,7 +107,7 @@ export default function UnsubscribePage() {
     }
 
     // Case: Single active newsletter
-    if (siteNewsletters?.length === 1 && !showPrefs) {
+    if (siteNewsletters?.length === 1 && !commentsEnabled && !showPrefs) {
         return (
             <div className='gh-portal-content gh-portal-unsubscribe with-footer'>
                 <CloseButton />
@@ -120,6 +131,14 @@ export default function UnsubscribePage() {
     }
 
     const HeaderNotification = () => {
+        if (pageData.comments && commentsEnabled) {
+            const hideClassName = hasInteracted ? 'gh-portal-hide' : '';
+            return (
+                <>
+                    <p className={`gh-portal-text-center gh-portal-header-message ${hideClassName}`}><strong>{member?.email}</strong> will no longer receive emails when someone replies to your comments.</p>
+                </>
+            );
+        }
         const unsubscribedNewsletter = siteNewsletters?.find((d) => {
             return d.uuid === pageData.newsletterUuid;
         });
@@ -151,7 +170,8 @@ export default function UnsubscribePage() {
                     action: 'updated:success',
                     message: `Email preference updated.`
                 });
-                await api.member.updateNewsletters({uuid: pageData.uuid, newsletters: [], enableCommentNotifications: false});
+                const updatedMember = await api.member.updateNewsletters({uuid: pageData.uuid, newsletters: [], enableCommentNotifications: false});
+                setMember(updatedMember);
             }}
             isPaidMember={member?.status !== 'free'}
             isCommentsEnabled={commentsEnabled !== 'off'}

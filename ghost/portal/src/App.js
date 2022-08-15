@@ -400,7 +400,8 @@ export default class App extends React.Component {
                 page: 'unsubscribe',
                 pageData: {
                     uuid: qParams.get('uuid'),
-                    newsletterUuid: qParams.get('newsletter')
+                    newsletterUuid: qParams.get('newsletter'),
+                    comments: qParams.get('comments')
                 }
             };
         }
