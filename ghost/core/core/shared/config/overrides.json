@@ -3,7 +3,6 @@
         "appRoot": ".",
         "corePath": "core/",
         "adminAssets": "core/built/admin",
-        "adminAuthAssets": "content/public/admin-auth",
         "helperTemplates": "core/frontend/helpers/tpl/",
         "defaultViews": "core/server/views/",
         "defaultRouteSettings": "core/server/services/route-settings/",
