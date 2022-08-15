@@ -23,7 +23,7 @@ module.exports = function setupAdminApp() {
     ));
 
     adminApp.use('/auth-frame', serveStatic(
-        config.get('paths').adminAuthAssets
+        path.join(config.getContentPath('public'), 'admin-auth')
     ));
 
     // Ember CLI's live-reload script
