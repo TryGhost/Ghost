@@ -25,7 +25,9 @@
             "active": "Default"
         },
         "cache": {
-            "active": "Memory"
+            "active": "Memory",
+            "settings": "SettingsCacheSyncInMemory",
+            "SettingsCacheSyncInMemory": {}
         }
     },
     "storage": {

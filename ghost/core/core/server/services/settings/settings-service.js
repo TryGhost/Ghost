@@ -67,7 +67,7 @@ module.exports = {
      * Initialize the cache, used in boot and in testing
      */
     async init() {
-        const cacheStore = adapterManager.getAdapter('cache');
+        const cacheStore = adapterManager.getAdapter('cache:settings');
         const settingsCollection = await models.Settings.populateDefaults();
         SettingsCache.init(events, settingsCollection, this.getCalculatedFields(), cacheStore);
     },
