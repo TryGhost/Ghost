@@ -15,12 +15,21 @@ const publicHashSettingMatcher = {
     value: stringMatching(/[a-z0-9]{30}/)
 };
 
+const labsSettingMatcher = {
+    value: stringMatching(/\{[^\s]+\}/)
+};
+
 const matchSettingsArray = (length) => {
     const settingsArray = new Array(length).fill(settingsMatcher);
 
     if (length > 25) {
         // Item at index 25 is the public hash, which is always different
         settingsArray[25] = publicHashSettingMatcher;
+    }
+
+    if (length > 56) {
+        // Item at index 56 is the lab settings, which changes as we add and remove features
+        settingsArray[56] = labsSettingMatcher;
     }
 
     return settingsArray;
@@ -190,7 +199,7 @@ describe('Settings API', function () {
                 .matchHeaderSnapshot({
                     etag: anyEtag
                 });
-            
+
             // Check returned WITH prefix
             const val = body.settings.find(setting => setting.key === 'icon');
             assert.ok(val);
@@ -243,11 +252,11 @@ describe('Settings API', function () {
                     });
                 });
 
-            mockManager.assert.sentEmailCount(1);  
+            mockManager.assert.sentEmailCount(1);
             mockManager.assert.sentEmail({
                 subject: 'Verify email address',
                 to: 'support@example.com'
-            });  
+            });
         });
 
         it('does not trigger email verification flow if members_support_address remains the same', async function () {
@@ -402,7 +411,7 @@ describe('Settings API', function () {
                 to: 'test@test.com'
             });
         });
-        
+
         it('can do validateMembersEmailUpdate', async function () {
             const magicLink = await membersService.api.getMagicLink('test@test.com');
             const magicLinkUrl = new URL(magicLink);
