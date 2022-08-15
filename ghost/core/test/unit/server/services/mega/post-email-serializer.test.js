@@ -236,16 +236,22 @@ describe('Post Email Serializer', function () {
             unsubscribeUrl.should.eql('https://site.com/blah/unsubscribe/?preview=1');
         });
 
-        it('generates unsubscribe url with only post uuid', function () {
+        it('generates unsubscribe url with only member uuid', function () {
             sinon.stub(urlUtils, 'getSiteUrl').returns('https://site.com/blah');
-            const unsubscribeUrl = createUnsubscribeUrl('post-abcd');
-            unsubscribeUrl.should.eql('https://site.com/blah/unsubscribe/?uuid=post-abcd');
+            const unsubscribeUrl = createUnsubscribeUrl('member-abcd');
+            unsubscribeUrl.should.eql('https://site.com/blah/unsubscribe/?uuid=member-abcd');
         });
 
         it('generates unsubscribe url with both post and newsletter uuid', function () {
             sinon.stub(urlUtils, 'getSiteUrl').returns('https://site.com/blah');
-            const unsubscribeUrl = createUnsubscribeUrl('post-abcd', 'newsletter-abcd');
-            unsubscribeUrl.should.eql('https://site.com/blah/unsubscribe/?uuid=post-abcd&newsletter=newsletter-abcd');
+            const unsubscribeUrl = createUnsubscribeUrl('member-abcd', {newsletterUuid: 'newsletter-abcd'});
+            unsubscribeUrl.should.eql('https://site.com/blah/unsubscribe/?uuid=member-abcd&newsletter=newsletter-abcd');
+        });
+
+        it('generates unsubscribe url with comments', function () {
+            sinon.stub(urlUtils, 'getSiteUrl').returns('https://site.com/blah');
+            const unsubscribeUrl = createUnsubscribeUrl('member-abcd', {comments: true});
+            unsubscribeUrl.should.eql('https://site.com/blah/unsubscribe/?uuid=member-abcd&comments=1');
         });
     });
 

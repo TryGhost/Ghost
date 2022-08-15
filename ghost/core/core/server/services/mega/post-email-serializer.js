@@ -59,9 +59,11 @@ const getSite = () => {
  * In case of no member uuid, generates the preview unsubscribe url - `?preview=1`
  *
  * @param {string} uuid post uuid
- * @param {string} newsletterUuid newsletter uuid
+ * @param {Object} [options]
+ * @param {string} [options.newsletterUuid] newsletter uuid
+ * @param {boolean} [options.comments] Unsubscribe from comment emails
  */
-const createUnsubscribeUrl = (uuid, newsletterUuid) => {
+const createUnsubscribeUrl = (uuid, options = {}) => {
     const siteUrl = urlUtils.getSiteUrl();
     const unsubscribeUrl = new URL(siteUrl);
     unsubscribeUrl.pathname = `${unsubscribeUrl.pathname}/unsubscribe/`.replace('//', '/');
@@ -70,8 +72,11 @@ const createUnsubscribeUrl = (uuid, newsletterUuid) => {
     } else {
         unsubscribeUrl.searchParams.set('preview', '1');
     }
-    if (newsletterUuid) {
-        unsubscribeUrl.searchParams.set('newsletter', newsletterUuid);
+    if (options.newsletterUuid) {
+        unsubscribeUrl.searchParams.set('newsletter', options.newsletterUuid);
+    }
+    if (options.comments) {
+        unsubscribeUrl.searchParams.set('comments', '1');
     }
 
     return unsubscribeUrl.href;

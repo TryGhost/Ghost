@@ -234,7 +234,7 @@ module.exports = {
             // static data for every recipient
             const data = {
                 unique_id: recipient.member_uuid,
-                unsubscribe_url: postEmailSerializer.createUnsubscribeUrl(recipient.member_uuid, newsletterUuid)
+                unsubscribe_url: postEmailSerializer.createUnsubscribeUrl(recipient.member_uuid, {newsletterUuid})
             };
 
             // computed properties on recipients - TODO: better way of handling these

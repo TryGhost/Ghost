@@ -18,6 +18,9 @@ module.exports = async function unsubscribeController(req, res) {
     if (query.newsletter) {
         redirectUrl.searchParams.append('newsletter', query.newsletter);
     }
+    if (query.comments) {
+        redirectUrl.searchParams.append('comments', query.comments);
+    }
     redirectUrl.searchParams.append('action', 'unsubscribe');
 
     return res.redirect(302, redirectUrl.href);
