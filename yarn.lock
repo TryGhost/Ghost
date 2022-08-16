@@ -3446,10 +3446,10 @@
   optionalDependencies:
     promise.allsettled "^1.0.5"
 
-"@tryghost/mobiledoc-kit@0.12.5-ghost.1":
-  version "0.12.5-ghost.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/mobiledoc-kit/-/mobiledoc-kit-0.12.5-ghost.1.tgz#f79b0f9a9b93eb100fd3dc1c02b343d5d334f4e0"
-  integrity sha512-6WZ2VAXh6mQefeCYnlCle9bvWrFIq0X85A17af1nYiFB/F9vBYOZhGV6GQCzCBE1EbOYkLlHM0LvXZu1KS7K4A==
+"@tryghost/mobiledoc-kit@0.12.5-ghost.2":
+  version "0.12.5-ghost.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/mobiledoc-kit/-/mobiledoc-kit-0.12.5-ghost.2.tgz#ab28336ec02827045e57acfbee97978b30d1ad96"
+  integrity sha512-hsvxZxxlYeAgsYBUox0y+i278EcvlG8AePLaSidd1HTwCiFRpBbZQQJ71r0G43ieUw9VyTgSid9TJdVBbmtckw==
   dependencies:
     mobiledoc-dom-renderer "0.7.0"
     mobiledoc-text-renderer "0.4.0"
