@@ -59,7 +59,7 @@ const LIMIT = 15;
             // Valid item (so all following items are also valid by definition)
             return true;
         });
-
+        
         if (firstNotExpiredIndex > 0) {
             // Remove until the first valid item
             history.splice(0, firstNotExpiredIndex);
@@ -75,7 +75,7 @@ const LIMIT = 15;
                 path: currentPath,
                 time: currentTime
             });
-        } else if (history.length > 0){
+        } else if (history.length > 0) {
             history[history.length - 1].time = currentTime;
         }
         
