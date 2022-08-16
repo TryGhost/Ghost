@@ -270,73 +270,56 @@
                             {{/if}}
 
                             <div class="gh-portal-tier-card-pricecontainer" data-test-tierpreview-price>
-                                    {{#if this.isFreeTier}}
-                                    <div class="gh-portal-tier-price">
-                                        <span class="currency-sign">{{currency-symbol this.currency}}</span>
-                                        <span class="amount">0</span>
-                                    </div>
-                                    {{else}}
-                                        {{#if this.isFreeTrialEnabled}}
-                                            <div class="gh-portal-tier-price">
-                                                <span class="amount">{{ this.tier.trialDays }} days free</span>
-                                            </div>
-                                        {{/if}}
-                                        {{#if this.stripeYearlyAmount}}
-                                            {{#if (feature 'freeTrial')}}
-                                                {{#unless this.freeTrialEnabled}}
-                                                <div class="gh-portal-tier-price">
-                                                    <span class="currency-sign">{{currency-symbol this.currency}}</span>
-                                                    {{#if (eq this.previewCadence "monthly")}}
-                                                        <span class="amount">
-                                                            {{format-number this.stripeMonthlyAmount}}
-                                                        </span>
-                                                        <span class="billing-period">/month</span>
-                                                    {{else}}
-                                                        <span class="amount">
-                                                            {{format-number this.stripeYearlyAmount}}
-                                                        </span>
-                                                        <span class="billing-period">/year</span>
-                                                    {{/if}}
-                                                </div>
-                                                {{/unless}}
+                                {{#if this.isFreeTier}}
+                                <div class="gh-portal-tier-price">
+                                    <span class="currency-sign">{{currency-symbol this.currency}}</span>
+                                    <span class="amount">0</span>
+                                </div>
+                                {{else}}
+                                    {{#if this.stripeYearlyAmount}}
+                                        <div class="gh-portal-tier-price">
+                                            <span class="currency-sign">{{currency-symbol this.currency}}</span>
+                                            {{#if (eq this.previewCadence "monthly")}}
+                                                <span class="amount">
+                                                    {{format-number this.stripeMonthlyAmount}}
+                                                </span>
+                                                <span class="billing-period">/month</span>
                                             {{else}}
-                                            <div class="gh-portal-tier-price">
-                                                <span class="currency-sign">{{currency-symbol this.currency}}</span>
-                                                {{#if (eq this.previewCadence "monthly")}}
-                                                    <span class="amount">
-                                                        {{format-number this.stripeMonthlyAmount}}
-                                                    </span>
-                                                    <span class="billing-period">/month</span>
-                                                {{else}}
-                                                    <span class="amount">
-                                                        {{format-number this.stripeYearlyAmount}}
-                                                    </span>
-                                                    <span class="billing-period">/year</span>
-                                                {{/if}}
-                                            </div>
+                                                <span class="amount">
+                                                    {{format-number this.stripeYearlyAmount}}
+                                                </span>
+                                                <span class="billing-period">/year</span>
                                             {{/if}}
-                                        {{#if (and (eq this.previewCadence "yearly") (gt this.discountValue 0))}}
+                                        </div>
+                                        {{#if (feature 'freeTrial')}}
+                                            {{#if this.isFreeTrialEnabled}}
                                             <span class="gh-portal-discount-label">
                                                 <span style="background-color: {{this.settings.accentColor}}"></span>
-                                                {{this.discountValue}}% discount</span>
-                                        {{/if}}
+                                                {{ this.tier.trialDays }} days free</span>
+                                            {{/if}}
                                         {{else}}
+                                            {{#if (and (eq this.previewCadence "yearly") (gt this.discountValue 0))}}
+                                                <span class="gh-portal-discount-label">
+                                                <span style="background-color: {{this.settings.accentColor}}"></span>
+                                                {{this.discountValue}}% discount
+                                                </span>
+                                            {{/if}}
+                                        {{/if}}
+                                    {{else}}
                                         <div class="gh-portal-tier-price placeholder">
                                             <span class="currency-sign">{{currency-symbol this.currency}}</span>
                                             <span class="amount">0</span>
                                             <span class="billing-period">/year</span>
                                         </div>
-                                        {{/if}}
                                     {{/if}}
-                            </div>
-                            {{#if this.isFreeTrialEnabled}}
-                                <span class="after-trial-amount">Then
-                                {{#if (eq this.previewCadence "yearly")}}
-                                    {{currency-symbol this.currency}}{{ format-number this.stripeYearlyAmount }}/year
-                                {{else}}
-                                    {{currency-symbol this.currency}}{{ format-number this.stripeMonthlyAmount }}/month
                                 {{/if}}
+                            </div>
+                            {{#if (feature 'freeTrial')}}
+                                {{#if (and (eq this.previewCadence "yearly") (gt this.discountValue 0))}}
+                                <span class="gh-portal-discount-label-trial" style={{this.accentColorStyle}}>
+                                    {{this.discountValue}}% discount
                                 </span>
+                                {{/if}}
                             {{/if}}
                         </div>
 
