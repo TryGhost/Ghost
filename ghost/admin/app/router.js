@@ -49,6 +49,7 @@ Router.map(function () {
     this.route('settings.general', {path: '/settings/general'});
     this.route('settings.membership', {path: '/settings/members'});
     this.route('settings.code-injection', {path: '/settings/code-injection'});
+    this.route('settings.audit-log', {path: '/settings/audit-log'});
 
     // redirect from old /settings/members-email to /settings/newsletters
     this.route('settings.members-email', {path: '/settings/members-email'});

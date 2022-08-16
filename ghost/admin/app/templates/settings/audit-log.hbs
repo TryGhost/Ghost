@@ -1,0 +1,72 @@
+<section class="gh-canvas gh-members-activity">
+    <GhCanvasHeader class="gh-canvas-header">
+    <h2 class="gh-canvas-title" data-test-screen-title>
+        <LinkTo @route="settings">Settings</LinkTo>
+        <span>{{svg-jar "arrow-right"}}</span>
+        <LinkTo @route="settings.audit-log" data-test-link="audit-log-back">Audit log</LinkTo>
+    </h2>
+    </GhCanvasHeader>
+    <div class="view-container">
+        {{#let (audit-log-event-fetcher pageSize=50) as |eventsFetcher|}}
+        {{#if eventsFetcher.data}}
+         <div class="gh-list-scrolling">
+             <table class="gh-list">
+                 <thead>
+                     <tr>
+                         <th>User</th>
+                         <th>Action</th>
+                         <th>Time</th>
+                     </tr>
+                 </thead>
+                 <tbody>
+                     {{#each eventsFetcher.data as |event|}}
+                     {{#let (parse-audit-log-event event) as |ev|}}
+                     <tr>
+                         <div class="gh-list-data">
+                             <div class="flex items-center">
+                                 <div class="w-80">
+                                     <h3 class="ma0 pa0 gh-members-list-name">{{ev.actorName}}</h3>
+                                 </div>
+                             </div>
+                         </div>
+                         <div class="gh-list-data">
+                             <div class="gh-members-activity-container">
+                                 <div class="gh-members-activity-icon">{{svg-jar ev.actionIcon}}</div>
+                                 <div class="gh-members-activity-event">
+                                     <span class="gh-members-activity-description">
+                                         {{capitalize-first-letter event.action}}
+                                         {{ev.action}}
+                                     </span>
+                                 </div>
+                             </div>
+                         </div>
+                         <div class="gh-list-data">{{moment-format ev.timestamp "DD MMM YYYY HH:mm:ss"}}</div>
+                     </tr>
+                     {{/let}}
+                     {{/each}}
+                 </tbody>
+             </table>
+
+            {{#if (not (or eventsFetcher.isLoading eventsFetcher.hasReachedEnd))}}
+                <GhScrollTrigger @enter={{eventsFetcher.loadNextPage}} @triggerOffset={{250}} />
+            {{/if}}
+         </div>
+        {{else}}
+            {{#unless eventsFetcher.isLoading}}
+                <div class="no-posts-box">
+                    <div class="no-posts">
+                        {{svg-jar "activity-placeholder" class="gh-members-placeholder"}}
+                        <h4>No staff activity yet</h4>
+                    </div>
+                </div>
+            {{/unless}}
+            {{/if}}
+
+            {{#if eventsFetcher.isLoading}}
+            <div class="no-posts-box"><GhLoadingSpinner /></div>
+            {{/if}}
+        {{/let}}
+    </div>
+</section>
+
+{{outlet}}
