@@ -21,8 +21,6 @@ const LIMIT = 15;
 // ]
 
 (async function () {
-    console.log('[Member Attribution] Loaded');
-
     try {
         const storage = window.localStorage;
         const historyString = storage.getItem(STORAGE_KEY);
@@ -36,7 +34,7 @@ const LIMIT = 15;
                 history = JSON.parse(historyString);
             } catch (error) {
                 // Ignore invalid JSON, ans clear history
-                console.warn('[Member Attribution] Invalid history JSON', error);
+                console.warn('[Member Attribution] Error while parsing history', error);
             }
         }
 
