@@ -26,7 +26,14 @@ export default function cleanTextReplacementHtml(html = '', _options = {}) {
         let doc = options.createDocument(cleanHtml);
 
         doc.body.querySelectorAll('*').forEach((element) => {
-            if (!element.textContent.trim()) {
+            // keep any <br> atoms but clean up surrounding spans
+            if (element.classList.contains('-mobiledoc-kit__atom') && element.querySelector('br')) {
+                const br = document.createElement('br');
+                element.replaceWith(br);
+                element = br;
+            }
+
+            if (!element.textContent.trim() && !element.tagName === 'BR') {
                 if (element.textContent.length > 0) {
                     // keep a single space to avoid collapsing spaces
                     let space = doc.createTextNode(' ');

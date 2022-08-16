@@ -1,3 +1,4 @@
+import * as softReturnParser from '@tryghost/kg-parser-plugins/lib/cards/softReturn';
 import Component from '@ember/component';
 import Editor from 'mobiledoc-kit/editor/editor';
 import classic from 'ember-classic-decorator';
@@ -171,7 +172,7 @@ export default class KoenigTextReplacementHtmlInput extends Component {
         editorOptions.mobiledoc = mobiledoc;
         editorOptions.showLinkTooltips = false;
         editorOptions.undoDepth = UNDO_DEPTH;
-        editorOptions.parserPlugins = [];
+        editorOptions.parserPlugins = [softReturnParser.fromBr()];
 
         editor = new Editor(editorOptions);
 
