@@ -60,6 +60,10 @@
     right: 0;
 }
 
+.gh-tier-actions-menu.closed {
+    display: none;
+}
+
 .gh-tier-card-block {
     flex-basis: 30%;
 }
@@ -164,7 +168,7 @@
     justify-content: center;
     font-size: 1.3rem;
     color: var(--midgrey);
-    padding: 12px 8px 14px;
+    padding: 12px 8px;
     border-radius: 3px;
     min-width: 90px;
     min-height: 66px;
@@ -200,7 +204,7 @@
 }
 
 .gh-tier-card-price .amount {
-    letter-spacing: -.2px;
+    letter-spacing: -.7px;
     line-height: 1;
     margin-right: 2px;
     margin-left: 1px;
