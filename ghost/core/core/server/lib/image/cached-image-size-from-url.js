@@ -2,11 +2,25 @@ const debug = require('@tryghost/debug')('utils:image-size-cache');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 
+/**
+ * @example
+ * {
+ *   height: 50,
+ *   url: 'https://mysite.com/images/cat.jpg',
+ *   width: 50
+ * }
+ * @typedef ImageSizeCache
+ * @type {Object}
+ * @property {string} url image url
+ * @property {number} height image height
+ * @property {number} width image width
+ */
+
 class CachedImageSizeFromUrl {
     /**
      *
      * @param {Object} options
-     * @param {Function} options.getImageSizeFromUrl - method that resolves images based on URL
+     * @param {(url: string) => Promise<ImageSizeCache>} options.getImageSizeFromUrl - method that resolves images based on URL
      * @param {Object} options.cache - cache store instance
      */
     constructor({getImageSizeFromUrl, cache}) {
@@ -18,7 +32,7 @@ class CachedImageSizeFromUrl {
      * Get cached image size from URL
      * Always returns {object} imageSizeCache
      * @param {string} url
-     * @returns {Promise<Object>} imageSizeCache
+     * @returns {Promise<ImageSizeCache>}
      * @description Takes a url and returns image width and height from cache if available.
      * If not in cache, `getImageSizeFromUrl` is called and returns the dimensions in a Promise.
      */
@@ -50,7 +64,9 @@ class CachedImageSizeFromUrl {
                 }
 
                 // in case of error we just attach the url
-                this.cache.set(url, url);
+                this.cache.set(url, {
+                    url
+                });
 
                 return this.cache.get(url);
             }
