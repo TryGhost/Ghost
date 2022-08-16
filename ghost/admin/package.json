@@ -48,7 +48,7 @@
     "@tryghost/kg-parser-plugins": "2.11.9",
     "@tryghost/limit-service": "1.2.3",
     "@tryghost/members-csv": "1.2.16",
-    "@tryghost/mobiledoc-kit": "0.12.5-ghost.1",
+    "@tryghost/mobiledoc-kit": "0.12.5-ghost.2",
     "@tryghost/nql": "0.9.2",
     "@tryghost/nql-lang": "0.3.2",
     "@tryghost/string": "0.1.27",
