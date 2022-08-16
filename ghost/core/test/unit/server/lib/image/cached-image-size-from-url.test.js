@@ -74,6 +74,7 @@ describe('lib/image: image size cache', function () {
 
         cacheStore.get(url).should.not.be.undefined;
         const image = cacheStore.get(url);
+        should.equal(image.url, 'http://mysite.com/content/image/mypostcoverimage.jpg');
         should.not.exist(image.width);
         should.not.exist(image.height);
     });
@@ -93,6 +94,7 @@ describe('lib/image: image size cache', function () {
 
         cacheStore.get(url).should.not.be.undefined;
         const image = cacheStore.get(url);
+        should.equal(image.url, 'http://mysite.com/content/image/mypostcoverimage.jpg');
         should.not.exist(image.width);
         should.not.exist(image.height);
     });
