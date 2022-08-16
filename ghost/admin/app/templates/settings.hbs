@@ -82,6 +82,16 @@
                     <p>Testing ground for new features</p>
                 </div>
             </LinkTo>
+
+            {{#if (feature 'auditLog')}}
+            <LinkTo class="gh-setting-group" @route="settings.audit-log" data-test-nav="audit-log">
+                <span class="blue">{{svg-jar "TODO"}}</span>
+                <div>
+                    <h4>Audit log</h4>
+                    <p>View staff user actions</p>
+                </div>
+            </LinkTo>
+            {{/if}}
         </div>
     </section>
 </section>
