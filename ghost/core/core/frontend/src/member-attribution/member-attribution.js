@@ -43,14 +43,13 @@ const LIMIT = 15;
             // Return true to keep all items after and including this item
             // Return false to remove the item
 
-            if (!item.time) {
+            if (!item.time || typeof item.time !== 'number') {
                 return false;
             }
 
-            const savedAt = parseInt(item.time);
-            const difference = currentTime - savedAt;
+            const difference = currentTime - item.time;
 
-            if (isNaN(savedAt) || difference > TIMEOUT) {
+            if (isNaN(item.time) || difference > TIMEOUT) {
                 // Expired or invalid
                 return false;
             }
