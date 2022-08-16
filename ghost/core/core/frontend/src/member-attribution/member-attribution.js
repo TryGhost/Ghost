@@ -37,9 +37,9 @@ const LIMIT = 15;
             // Ignore invalid JSON, ans clear history
             console.warn('[Member Attribution] Invalid history JSON', error);
         }
-
+        
         // Remove all items that are expired
-        const firstNotExpiredIndex = history.findIndex(item => {
+        const firstNotExpiredIndex = history.findIndex((item) => {
             // Return true to keep all items after and including this item
             // Return false to remove the item
 
@@ -47,7 +47,7 @@ const LIMIT = 15;
                 return false;
             }
 
-            const savedAt = parseInt(item.time)
+            const savedAt = parseInt(item.time);
             const difference = currentTime - savedAt;
 
             if (isNaN(savedAt) || difference > TIMEOUT) {
@@ -67,10 +67,9 @@ const LIMIT = 15;
             history = [];
         }
 
-
         const currentPath = window.location.pathname;
 
-        if (history.length == 0 || history[history.length - 1].path !== currentPath) {
+        if (history.length === 0 || history[history.length - 1].path !== currentPath) {
             history.push({
                 path: currentPath,
                 time: currentTime
