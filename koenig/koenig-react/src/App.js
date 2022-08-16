@@ -3,7 +3,7 @@ import './index.css';
 
 const KoenigEditor = ({...props}) => {
     return (
-        <div className="koenig-react">
+        <div data-testid="koenig-editor" className="koenig-react">
             <Koenig
                 mobiledoc={props.mobiledoc}
                 atoms={props.atoms}

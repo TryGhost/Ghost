@@ -1,5 +1,5 @@
 import {render, screen} from '@testing-library/react';
-import Koenig from './components/Koenig';
+import Koenig from '../../src/components/Koenig';
 
 test('renders Mobiledoc Container', () => {
     render(<Koenig />);
@@ -14,4 +14,3 @@ test('renders Mobiledoc Editor', () => {
     const editor = screen.queryByTestId('mobiledoc-editor');
     expect(editor).toBeInTheDocument();
 });
-
