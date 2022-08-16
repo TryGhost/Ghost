@@ -790,14 +790,11 @@
     opacity: 0.35;
 }
 
-.gh-tier-form-tierpreview .after-trial-amount {
-    display: block;
-    font-size: 1.5rem;
-    font-weight: 500;
-    color: #686868;
-    margin-top: 6px;
-    margin-bottom: 6px;
+.gh-tier-form-tierpreview .gh-portal-discount-label-trial {
+    font-weight: 600;
+    font-size: 1.3rem;
     line-height: 1;
+    margin-top: 4px;
 }
 
 .gh-tier-setting-title {
