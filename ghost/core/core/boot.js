@@ -279,6 +279,7 @@ async function initServices({config}) {
     const apiVersionCompatibility = require('./server/services/api-version-compatibility');
     const scheduling = require('./server/adapters/scheduling');
     const comments = require('./server/services/comments');
+    const memberAttribution = require('./server/services/member-attribution');
 
     const urlUtils = require('./shared/url-utils');
 
@@ -302,7 +303,8 @@ async function initServices({config}) {
         scheduling.init({
             apiUrl: urlUtils.urlFor('api', {type: 'admin'}, true)
         }),
-        comments.init()
+        comments.init(),
+        memberAttribution.init()
     ]);
     debug('End: Services');
 
