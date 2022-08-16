@@ -1,0 +1,7 @@
+{
+    "extends": "@scope",
+    "env": {
+        "browser": true,
+        "node": false
+    }
+}
