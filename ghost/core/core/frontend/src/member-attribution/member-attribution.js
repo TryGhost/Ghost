@@ -25,19 +25,21 @@ const LIMIT = 15;
 
     try {
         const storage = window.localStorage;
-        let historyString = storage.getItem(STORAGE_KEY);
+        const historyString = storage.getItem(STORAGE_KEY);
         const currentTime = new Date().getTime();
 
         // Append current location
         let history = [];
 
-        try {
-            history = historyString ? JSON.parse(historyString) : [];
-        } catch (error) {
-            // Ignore invalid JSON, ans clear history
-            console.warn('[Member Attribution] Invalid history JSON', error);
+        if (historyString) {
+            try {
+                history = JSON.parse(historyString);
+            } catch (error) {
+                // Ignore invalid JSON, ans clear history
+                console.warn('[Member Attribution] Invalid history JSON', error);
+            }
         }
-        
+
         // Remove all items that are expired
         const firstNotExpiredIndex = history.findIndex((item) => {
             // Return true to keep all items after and including this item
