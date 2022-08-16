@@ -603,6 +603,15 @@ module.exports = {
         plan_amount: {type: 'integer', nullable: false},
         plan_currency: {type: 'string', maxLength: 3, nullable: false}
     },
+    members_subscription_created_events: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        created_at: {type: 'dateTime', nullable: false},
+        member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
+        subscription_id: {type: 'string', maxlength: 24, nullable: false, references: 'members_stripe_customers_subscriptions.id'},
+        attribution_id: {type: 'string', maxlength: 24, nullable: true},
+        attribution_type: {type: 'string', maxlength: 50, nullable: true},
+        attribution_url: {type: 'string', maxlength: 2000, nullable: true}
+    },
     offer_redemptions: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         offer_id: {type: 'string', maxlength: 24, nullable: false, references: 'offers.id', cascadeDelete: true},
