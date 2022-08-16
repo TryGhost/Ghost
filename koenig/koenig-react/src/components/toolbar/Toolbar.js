@@ -10,6 +10,11 @@ import LinkIcon from './icons/kg-link.svg';
 import LinkButton from './LinkButton';
 import UrlPromptInput from './UrlPromptInput';
 
+// Much of this file 
+// was extracted from https://github.com/TryGhost/Ghost/blob/main/ghost/admin/lib/koenig-editor/addon/components/koenig-toolbar.js 
+// and then modified to make it work with React.
+// Can certainly making a bit more "react-like" in future.
+
 const DEFAULTSTYLES = {
     top: 0,
     left: 0,
@@ -91,8 +96,6 @@ export default function Toolbar({
         let {width, height} = toolbarRef.current.getBoundingClientRect();
         let newPosition = {};
 
-        // rangeRect is relative to the viewport so we need to subtract the
-        // container measurements to get a position relative to the container
         newPosition = {
             top: rangeRect.top - containerRect.top - height - TOOLBAR_MARGIN,
             left: rangeRect.left - containerRect.left + rangeRect.width / 2 - width / 2,
