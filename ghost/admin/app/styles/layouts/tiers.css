@@ -139,9 +139,21 @@
     flex-grow: 1;
 }
 
+.gh-tier-card-block.price-block {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin: 0 70px 0 20px;
+}
+
 .gh-tier-price-container {
     display: flex;
-    margin: 0 60px 0 20px;
+    flex-direction: column;
+    border: 1px solid var(--whitegrey);
+}
+
+.gh-tier-price-cards {
+    display: inline-flex;
     justify-content: flex-end;
 }
 
@@ -150,14 +162,29 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    margin: 0 12px 2px 0;
     font-size: 1.3rem;
     color: var(--midgrey);
-    padding: 12px 8px;
-    border: 1px solid var(--whitegrey);
+    padding: 12px 8px 14px;
     border-radius: 3px;
     min-width: 90px;
     min-height: 66px;
+}
+
+.gh-tier-free-trial-label {
+    text-align: center;
+    font-size: 1.25rem;
+    color: var(--midgrey);
+    padding: 4px;
+    border-top: 1px solid var(--whitegrey);
+}
+
+.gh-tier-free-trial-days {
+    font-weight: 600;
+    color: var(--darkgrey);
+}
+
+.gh-tier-card-price:first-of-type {
+    border-right: 1px solid var(--whitegrey);
 }
 
 .gh-tier-card-price .currency-symbol,

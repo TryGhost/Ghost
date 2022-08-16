@@ -45,6 +45,14 @@ export default class extends Component {
         return this.tier.type === 'free';
     }
 
+    get isFreeTrialEnabled() {
+        return this.tier.trialDays > 0;
+    }
+
+    get tierTrialDays() {
+        return this.tier.trialDays;
+    }
+
     @action
     async openEditTier(tier) {
         this.args.openEditTier(tier);
