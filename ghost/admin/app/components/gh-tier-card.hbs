@@ -36,22 +36,29 @@
         </div>
     {{/if}}
     {{#if (eq @tier.type "paid" )}}
-        <div class="gh-tier-card-block">
+        <div class="gh-tier-card-block price-block">
             <div class="gh-tier-price-container">
-                <div class="gh-tier-card-price" data-test-monthly-price>
-                    <div class="flex items-start">
-                        <span class="currency">{{currency-symbol this.tierCurrency}}</span>
-                        <span class="amount">{{gh-price-amount @tier.monthlyPrice}}</span>
+                <div class="gh-tier-price-cards">
+                    <div class="gh-tier-card-price" data-test-monthly-price>
+                        <div class="flex items-start">
+                            <span class="currency">{{currency-symbol this.tierCurrency}}</span>
+                            <span class="amount">{{gh-price-amount @tier.monthlyPrice}}</span>
+                        </div>
+                        <div class="period">Monthly</div>
                     </div>
-                    <div class="period">Monthly</div>
-                </div>
-                <div class="gh-tier-card-price" data-test-yearly-price>
-                    <div class="flex items-start">
-                        <span class="currency">{{currency-symbol this.tierCurrency}}</span>
-                        <span class="amount">{{gh-price-amount @tier.yearlyPrice}}</span>
+                    <div class="gh-tier-card-price" data-test-yearly-price>
+                        <div class="flex items-start">
+                            <span class="currency">{{currency-symbol this.tierCurrency}}</span>
+                            <span class="amount">{{gh-price-amount @tier.yearlyPrice}}</span>
+                        </div>
+                        <div class="period">Yearly</div>
                     </div>
-                    <div class="period">Yearly</div>
                 </div>
+                {{#if (and (feature 'freeTrial') this.isFreeTrialEnabled)}}
+                <div class="gh-tier-free-trial-label">
+                    <span class="gh-tier-free-trial-days">{{this.tierTrialDays}} day</span> free trial
+                </div>
+                {{/if}}
             </div>
         </div>
     {{/if}}
