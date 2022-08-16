@@ -75,7 +75,7 @@ module.exports = function setupSiteApp(routerConfig) {
     // Comment counts
     siteApp.use(mw.servePublicFile('built', 'public/comment-counts.min.js', 'application/javascript', constants.ONE_YEAR_S));
 
-    // Comment counts
+    // Member attribution
     siteApp.use(mw.servePublicFile('built', 'public/member-attribution.min.js', 'application/javascript', constants.ONE_YEAR_S));
 
     // Serve blog images using the storage adapter
