@@ -51,7 +51,7 @@ describe('Exporter', function () {
                 'members_stripe_customers_subscriptions',
                 'members_subscribe_events',
                 'members_created_events',
-                'subscription_created_events',
+                'members_subscription_created_events',
                 'migrations',
                 'migrations_lock',
                 'mobiledoc_revisions',
