@@ -46,3 +46,105 @@ Object {
   "x-powered-by": "Express",
 }
 `;
+
+exports[`Create Stripe Checkout Session Does pass attribution source to session metadata 1: [body] 1`] = `
+Object {
+  "publicKey": "pk_test_for_stripe",
+  "sessionId": "cs_123",
+}
+`;
+
+exports[`Create Stripe Checkout Session Does pass attribution source to session metadata 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-type": "application/json",
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Create Stripe Checkout Session Does pass urlHistory 1: [body] 1`] = `
+Object {
+  "publicKey": "pk_test_for_stripe",
+  "sessionId": "cs_123",
+}
+`;
+
+exports[`Create Stripe Checkout Session Does pass urlHistory 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-type": "application/json",
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Create Stripe Checkout Session Ignores attribution_* values in metadata 1: [body] 1`] = `
+Object {
+  "publicKey": "pk_test_for_stripe",
+  "sessionId": "cs_123",
+}
+`;
+
+exports[`Create Stripe Checkout Session Ignores attribution_* values in metadata 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-type": "application/json",
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Create Stripe Checkout Session Member attribution Does pass post attribution source to session metadata 1: [body] 1`] = `
+Object {
+  "publicKey": "pk_test_for_stripe",
+  "sessionId": "cs_123",
+}
+`;
+
+exports[`Create Stripe Checkout Session Member attribution Does pass post attribution source to session metadata 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-type": "application/json",
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Create Stripe Checkout Session Member attribution Does pass url attribution source to session metadata 1: [body] 1`] = `
+Object {
+  "publicKey": "pk_test_for_stripe",
+  "sessionId": "cs_123",
+}
+`;
+
+exports[`Create Stripe Checkout Session Member attribution Does pass url attribution source to session metadata 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-type": "application/json",
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Create Stripe Checkout Session Member attribution Ignores attribution_* values in metadata 1: [body] 1`] = `
+Object {
+  "publicKey": "pk_test_for_stripe",
+  "sessionId": "cs_123",
+}
+`;
+
+exports[`Create Stripe Checkout Session Member attribution Ignores attribution_* values in metadata 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-type": "application/json",
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
