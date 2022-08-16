@@ -26,6 +26,75 @@ const createItemMatcher = (query = '') => {
     };
 };
 
+const filterMenu = (fullMenu = [], query = '') => {
+    let filteredMenu = fullMenu;
+
+    if (query) {
+        const itemMatcher = createItemMatcher(query);
+        filteredMenu = fullMenu.map((group) => {
+            // show items where there's a match of the beginning of one of the "item.matches" strings
+            let matches = group.items.filter(itemMatcher);
+            if (matches.length > 0) {
+                return Object.assign({}, group, {items: matches});
+            }
+
+            return undefined;
+        }).filter(i => i !== undefined);
+    }
+
+    return filteredMenu;
+};
+
+const menuContentReducer = (state, action) => {
+    const moveSelection = (direction) => {
+        if (state.filteredMenu.length === 0) {
+            return;
+        }
+
+        const flatItems = [];
+
+        state.filteredMenu.forEach((group) => {
+            flatItems.push(...group.items);
+        });
+
+        let selectedIndex = flatItems.indexOf(state.selectedItem);
+
+        if (direction === 'up') {
+            selectedIndex = selectedIndex - 1;
+            if (selectedIndex < 0) {
+                selectedIndex = flatItems.length - 1;
+            }
+        }
+
+        if (direction === 'down') {
+            selectedIndex = selectedIndex + 1;
+            if (selectedIndex >= flatItems.length) {
+                selectedIndex = 0;
+            }
+        }
+
+        return flatItems[selectedIndex];
+    };
+
+    switch (action.type) {
+    case 'filter_menu': {
+        const filteredMenu = filterMenu(action.fullMenu, action.query);
+        const selectedItem = state.allowsKeyboardNav ? filteredMenu[0]?.items[0] : null;
+        return {...state, filteredMenu, selectedItem};
+    }
+    case 'move_selection_down': {
+        const selectedItem = moveSelection('down');
+        return {...state, selectedItem};
+    }
+    case 'move_selection_up': {
+        const selectedItem = moveSelection('up');
+        return {...state, selectedItem};
+    }
+    default:
+        return state;
+    }
+};
+
 const CardMenuGroup = ({group, selectedItem, ...props}) => {
     return (
         <>
@@ -65,68 +134,28 @@ const CardMenuItem = ({item, isSelected, itemWasClicked}) => {
 };
 
 const CardMenuContent = ({koenigEditor, replacementRange, itemWasClicked, allowsKeyboardNav = false, query, ...props}) => {
-    const filteredMenuRef = React.useRef([]); // for use in event handlers
-    const lastQueryRef = React.useRef(query); // for tracking change in query
-
-    const [selectedItem, setSelectedItem] = React.useState(allowsKeyboardNav ? koenigEditor.cardMenu[0]?.items[0] : null);
-    // hack for getting access to selectedItem in event handlers
-    // NOTE: be sure to update this any time the selectedItem state is changed
-    const selectedItemRef = React.useRef(selectedItem);
-
-    const insertItem = React.useCallback((item) => {
-        const range = replacementRange || koenigEditor.mobiledocEditor.range;
-
-        if (item.type === 'card') {
-            const payload = item.payload ? JSON.parse(JSON.stringify(item.payload)) : {};
-
-            koenigEditor.replaceWithCardSection(item.replaceArg, range, payload);
+    const [state, dispatch] = React.useReducer(
+        menuContentReducer,
+        {
+            filteredMenu: [...koenigEditor.cardMenu],
+            selectedItem: allowsKeyboardNav ? [...koenigEditor.cardMenu][0]?.items[0] : null,
+            query,
+            allowsKeyboardNav
         }
+    );
 
-        itemWasClicked?.();
-    }, [replacementRange, itemWasClicked, koenigEditor]);
+    const {filteredMenu, selectedItem} = state;
 
     // set up keyboard event handlers on first render for selection via keyboard
     React.useEffect(() => {
         const editor = koenigEditor.mobiledocEditor;
 
         if (allowsKeyboardNav) {
-            const moveSelection = (direction) => {
-                if (filteredMenuRef.length === 0) {
-                    return;
-                }
-
-                const flatItems = [];
-
-                filteredMenuRef.current.forEach((group) => {
-                    flatItems.push(...group.items);
-                });
-
-                let selectedIndex = flatItems.indexOf(selectedItemRef.current);
-
-                if (direction === 'up') {
-                    selectedIndex = selectedIndex - 1;
-                    if (selectedIndex < 0) {
-                        selectedIndex = flatItems.length - 1;
-                    }
-                }
-
-                if (direction === 'down') {
-                    selectedIndex = selectedIndex + 1;
-                    if (selectedIndex >= flatItems.length) {
-                        selectedIndex = 0;
-                    }
-                }
-
-                const newSelectedItem = flatItems[selectedIndex];
-                setSelectedItem(newSelectedItem);
-                selectedItemRef.current = newSelectedItem;
-            };
-
             editor.registerKeyCommand({
                 str: 'UP',
                 name: 'card_menu_nav',
                 run: () => {
-                    moveSelection('up');
+                    dispatch({type: 'move_selection_up'});
                 }
             });
 
@@ -134,7 +163,7 @@ const CardMenuContent = ({koenigEditor, replacementRange, itemWasClicked, allows
                 str: 'DOWN',
                 name: 'card_menu_nav',
                 run: () => {
-                    moveSelection('down');
+                    dispatch({type: 'move_selection_down'});
                 }
             });
         }
@@ -144,7 +173,20 @@ const CardMenuContent = ({koenigEditor, replacementRange, itemWasClicked, allows
         });
     }, [allowsKeyboardNav, koenigEditor]);
 
-    // set up keyboard event handler for inserting card on Enter
+    // callback for inserting selected item via keyboard or clicked item
+    const insertItem = React.useCallback((item = state.selectedItem) => {
+        const range = replacementRange || koenigEditor.mobiledocEditor.range;
+
+        if (item.type === 'card') {
+            const payload = item.payload ? JSON.parse(JSON.stringify(item.payload)) : {};
+
+            koenigEditor.replaceWithCardSection(item.replaceArg, range, payload);
+        }
+
+        itemWasClicked?.();
+    }, [state.selectedItem, replacementRange, itemWasClicked, koenigEditor]);
+
+    // set up keyboard event handler for inserting selected card on Enter
     React.useEffect(() => {
         const editor = koenigEditor.mobiledocEditor;
 
@@ -153,7 +195,7 @@ const CardMenuContent = ({koenigEditor, replacementRange, itemWasClicked, allows
                 str: 'ENTER',
                 name: 'card_menu_selection',
                 run: () => {
-                    insertItem(selectedItemRef.current);
+                    insertItem();
                 }
             });
         }
@@ -163,36 +205,16 @@ const CardMenuContent = ({koenigEditor, replacementRange, itemWasClicked, allows
         });
     }, [insertItem, allowsKeyboardNav, koenigEditor]);
 
-    const fullMenu = [...koenigEditor.cardMenu];
-    let filteredMenu = fullMenu;
+    // update filtered menu every time query changes
+    React.useEffect(() => {
+        dispatch({type: 'filter_menu', fullMenu: [...koenigEditor.cardMenu], query});
+    }, [koenigEditor, query]);
 
-    // when we have a query, reduce the displayed card items to those which match
-    if (query) {
-        const itemMatcher = createItemMatcher(query);
-        filteredMenu = fullMenu.map((group) => {
-            // show items where there's a match of the beginning of one of the "item.matches" strings
-            let matches = group.items.filter(itemMatcher);
-            if (matches.length > 0) {
-                return Object.assign({}, group, {items: matches});
-            }
-
-            return undefined;
-        }).filter(i => i !== undefined);
-    }
-
-    filteredMenuRef.current = filteredMenu;
-
-    // reset selected item to first in list when query changes
-    if (query !== lastQueryRef.current && allowsKeyboardNav) {
-        setSelectedItem(filteredMenu[0]?.items[0]);
-        selectedItemRef.current = selectedItem;
-    }
-
-    const menuGroups = [];
+    const MenuGroups = [];
 
     filteredMenu.forEach((group) => {
         if (group.items?.length) {
-            menuGroups.push(
+            MenuGroups.push(
                 <CardMenuGroup
                     group={group}
                     selectedItem={selectedItem}
@@ -205,10 +227,8 @@ const CardMenuContent = ({koenigEditor, replacementRange, itemWasClicked, allows
         }
     });
 
-    lastQueryRef.current = query;
-
     return (
-        <>{menuGroups}</>
+        <>{MenuGroups}</>
     );
 };
 
