@@ -38,6 +38,9 @@ Post = ghostBookshelf.Model.extend({
 
     tableName: 'posts',
 
+    actionsCollectCRUD: true,
+    actionsResourceType: 'post',
+
     /**
      * @NOTE
      *
@@ -962,24 +965,6 @@ Post = ghostBookshelf.Model.extend({
 
         delete options.status;
         return filter;
-    },
-
-    getAction(event, options) {
-        const actor = this.getActor(options);
-
-        // @NOTE: we ignore internal updates (`options.context.internal`) for now
-        if (!actor) {
-            return;
-        }
-
-        // @TODO: implement context
-        return {
-            event: event,
-            resource_id: this.id || this.previous('id'),
-            resource_type: 'post',
-            actor_id: actor.id,
-            actor_type: actor.type
-        };
     }
 }, {
     allowedFormats: ['mobiledoc', 'html', 'plaintext'],

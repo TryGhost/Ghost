@@ -6,6 +6,9 @@ const {Role} = require('./role');
 const ApiKey = ghostBookshelf.Model.extend({
     tableName: 'api_keys',
 
+    actionsCollectCRUD: true,
+    actionsResourceType: 'api_key',
+
     defaults() {
         const secret = security.secret.create(this.get('type'));
 
@@ -53,24 +56,6 @@ const ApiKey = ghostBookshelf.Model.extend({
         if (this.previous('secret') !== this.get('secret')) {
             this.addAction(model, 'refreshed', options);
         }
-    },
-
-    getAction(event, options) {
-        const actor = this.getActor(options);
-
-        // @NOTE: we ignore internal updates (`options.context.internal`) for now
-        if (!actor) {
-            return;
-        }
-
-        // @TODO: implement context
-        return {
-            event: event,
-            resource_id: this.id || this.previous('id'),
-            resource_type: 'api_key',
-            actor_id: actor.id,
-            actor_type: actor.type
-        };
     }
 }, {
     refreshSecret(data, options) {
