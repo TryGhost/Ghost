@@ -10,7 +10,7 @@ const EditState = ({payload, save}) => {
         const end = textareaEl.current.value.length;
         textareaEl.current.setSelectionRange(end, end);
         textareaEl.current.focus();
-    });
+    }, []);
 
     const handleCodeChange = (event) => {
         setCode(event.target.value); // update inside component with re-render
