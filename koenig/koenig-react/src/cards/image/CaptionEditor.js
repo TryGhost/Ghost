@@ -1,7 +1,6 @@
 import React from 'react';
 import {Editor, Container} from 'react-mobiledoc-editor';
 import KoenigEditor from '../../KoenigEditor';
-import {useConstructor} from '../../utils/useConstructor';
 
 const CaptionLayout = ({children}) => {
     return (
@@ -17,16 +16,13 @@ const CaptionLayout = ({children}) => {
 
 const CaptionInputs = ({payload, Alt}) => {
     const [instance, setInstance] = React.useState(null);
-    const editorRef = React.useRef();
-
-    useConstructor(() => {
-        const kgInstance = new KoenigEditor({});
-        editorRef.current = kgInstance;
+    const [editor] = React.useState(() => {
+        return new KoenigEditor({});
     });
 
     function _didCreateEditor(mobiledocEditor) {
         setInstance(mobiledocEditor);
-        editorRef.current.initMobiledocEditor(mobiledocEditor);
+        editor.initMobiledocEditor(mobiledocEditor);
     }
 
     const handleTextChange = (e) => {

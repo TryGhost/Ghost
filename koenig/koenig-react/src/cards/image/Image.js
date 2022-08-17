@@ -1,19 +1,6 @@
 import React from 'react';
-import ImagePlaceholder from './placeholder';
 import CaptionEditor from './CaptionEditor';
-
-const ImageHolder = ({payload, uploadRef, uploadProgress, handleFiles}) => {
-    if (payload?.src) {
-        return (<img src={payload?.src || ``} alt={payload?.alt || 'image alt description'} />);
-    }
-    return (
-        <ImagePlaceholder 
-            uploadRef={uploadRef} 
-            progress={uploadProgress} 
-            handleFiles={handleFiles} 
-        />
-    );
-};
+import ImageHolder from './ImageHolder';
 
 const Image = (props) => {
     const [payload, setPayload] = React.useState({
