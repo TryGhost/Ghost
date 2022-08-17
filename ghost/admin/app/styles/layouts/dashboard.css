@@ -689,6 +689,14 @@ Dashboard List */
     background: linear-gradient(315deg,rgba(249, 249, 250, 0.5) 60%,rgba(255, 255, 255, 0.5));
 }
 
+.gh-dashboard-list-member {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    min-width: 0;
+}
+
 .gh-dashboard-list-text {
     font-weight: 600;
     font-size: 1.5rem;
@@ -706,7 +714,7 @@ Dashboard List */
     font-size: 1.4rem;
     color: var(--middarkgrey);
     text-decoration: none;
-    padding: 0 32px 0 0;
+    padding: 0 12px 0 0;
     text-decoration: none;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -732,6 +740,15 @@ Dashboard List */
     justify-content: flex-start;
     min-height: 32px;
     min-width: 0;
+}
+
+.gh-dashboard-list-item-sub > a {
+    color: var(--black);
+    font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    padding: 0 32px 0 0;
 }
 
 .gh-dashboard-list-footer {
@@ -1137,14 +1154,6 @@ Dashboard Recents */
     width: 80%;
     overflow: hidden;
     color: var(--darkgrey);
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-}
-
-.gh-dashboard-recents .gh-dashboard-list-item a > span {
-    display: inline-block;
-    height: 57px;
 }
 
 .gh-dashboard-recents .gh-dashboard-list-title:last-child,
@@ -1189,7 +1198,7 @@ Dashboard Recents */
 
 .gh-dashboard-recents-activity .gh-dashboard-list-header,
 .gh-dashboard-recents-activity .gh-dashboard-list-item {
-    grid-template-columns: 30% 40% 30%;
+    grid-template-columns: 30% 25% 30% minmax(0, 15%);
 }
 
 .gh-dashboard-recents-activity .gh-dashboard-list-title:nth-child(2),
