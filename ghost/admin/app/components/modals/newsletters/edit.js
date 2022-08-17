@@ -13,7 +13,7 @@ export default class EditNewsletterModal extends Component {
         ignoreBackdropClick: true
     };
 
-    @tracked openSection = null;
+    @tracked openSection = 'name';
 
     willDestroy() {
         super.willDestroy(...arguments);
