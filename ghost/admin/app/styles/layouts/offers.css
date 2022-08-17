@@ -175,6 +175,10 @@
     margin-left: 24px;
 }
 
+.gh-offer-trial-duration .form-group {
+    margin-bottom: 0;
+}
+
 .gh-offer-trial-duration .trial-duration::before {
     position: absolute;
     content: "days";
@@ -186,7 +190,7 @@
 }
 
 .gh-offer-trial-info {
-    margin: 4px 0 0;
+    margin: 8px 0 0;
     color: #738393;
     font-size: 1.25rem;
     font-weight: 400;
@@ -403,8 +407,12 @@
         grid-column-gap: 0px;
     }
 
-    .gh-offer-duration .form-group {
+    .gh-offer-duration .form-group, .gh-offer-tier-and-trial > .form-group {
         margin-bottom: 1.6em;
+    }
+
+    .gh-offer-trial-duration .form-group {
+        margin-bottom: 0;
     }
 }
 
@@ -462,7 +470,7 @@
         grid-column-gap: 24px;
     }
 
-    .gh-offer-duration .form-group {
+    .gh-offer-duration .form-group, .gh-offer-tier-and-trial > .form-group {
         margin-bottom: 0;
     }
 }
@@ -526,8 +534,12 @@
         grid-column-gap: 0px;
     }
 
-    .gh-offer-duration .form-group {
+    .gh-offer-duration .form-group, .gh-offer-tier-and-trial > .form-group {
         margin-bottom: 1.6em;
+    }
+
+    .gh-offer-trial-duration .form-group {
+        margin-bottom: 0;
     }
 }
 
