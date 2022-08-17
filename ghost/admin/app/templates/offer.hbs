@@ -251,7 +251,6 @@
                                         @buttonText="Copy link"
                                         @task={{this.copyOfferUrl}}
                                         @successText="Link copied"
-                                        @disabled={{unless this.offerUrl "disabled"}}
                                         @class="gh-btn gh-btn-icon" />
                                 </div>
                                 <GhErrorMessage @errors={{this.errors}} @property="url" />
