@@ -33,6 +33,8 @@ function getActionIcon(ev) {
     case 'deleted':
         return 'cross-circle';
     }
+
+    return 'info';
 }
 
 function getAction(ev) {
