@@ -70,6 +70,7 @@
                 <div class="gh-dashboard-list-header">
                     <div class="gh-dashboard-list-title">Member</div>
                     <div class="gh-dashboard-list-title">Event</div>
+                    <div class="gh-dashboard-list-title">Page / Post</div>
                     <div class="gh-dashboard-list-title">Time</div>
                 </div>
                 <div class="gh-dashboard-list-body">
@@ -93,23 +94,33 @@
                                     {{#let (parse-member-event event eventsFetcher.hasMultipleNewsletters) as |parsedEvent|}}
                                         <div class="gh-dashboard-list-item member-details">
                                             <div class="gh-dashboard-list-item-sub">
-                                                <GhMemberAvatar @member={{parsedEvent.member}} @containerClass="w8 h8 mr3 flex-shrink-0" />
-                                                <LinkTo class="gh-dashboard-list-text" @route="member" @model="{{parsedEvent.memberId}}" data-test-dashboard-member-activity-item>{{parsedEvent.subject}}</LinkTo>
+                                                <LinkTo class="gh-dashboard-list-member" @route="member" @model="{{parsedEvent.memberId}}" data-test-dashboard-member-activity-item>
+                                                    <GhMemberAvatar @member={{parsedEvent.member}} @containerClass="w8 h8 mr3 flex-shrink-0" />
+                                                    <span class="gh-dashboard-list-text">{{parsedEvent.subject}}</span>
+                                                </LinkTo>
                                             </div>
                                             <div class="gh-dashboard-list-item-sub">
                                                 {{svg-jar parsedEvent.icon}}
                                                 <span class="gh-dashboard-list-subtext">
                                                     {{capitalize-first-letter parsedEvent.action}}
-                                                    {{#if parsedEvent.url}}
-                                                        "<a class="ghost-members-activity-object-link" href="{{parsedEvent.url}}" target="_blank" rel="noopener noreferrer">{{parsedEvent.object}}</a>"
-                                                    {{else}}
-                                                         {{parsedEvent.object}}
-                                                    {{/if}}
-                                                    {{parsedEvent.info}}
                                                 </span>
+                                                {{#if parsedEvent.object}}
+                                                    {{parsedEvent.object}}
+                                                {{/if}}
+                                                {{#if parsedEvent.info}}
+                                                    {{parsedEvent.info}}
+                                                {{/if}}
                                             </div>
+                                            {{!-- TODO: Wire up the new event page/post links in this column --}}
                                             <div class="gh-dashboard-list-item-sub">
-                                                <span class="gh-dashboard-list-subtext">{{moment-format parsedEvent.timestamp "DD MMM YYYY HH:mm"}}</span>
+                                                {{#if parsedEvent.url}}
+                                                    <a class="ghost-members-activity-object-link" href="{{parsedEvent.url}}" target="_blank" rel="noopener noreferrer">{{parsedEvent.object}}</a>
+                                                {{else}}
+                                                    <span class="gh-list-nodata">&mdash;</span>
+                                                {{/if}}
+                                            </div>
+                                            <div class="gh-dashboard-list-item-sub gh-dashboard-list-date">
+                                                <span class="gh-dashboard-list-subtext">{{moment-from-now parsedEvent.timestamp}}</span>
                                             </div>
                                         </div>
                                     {{/let}}
