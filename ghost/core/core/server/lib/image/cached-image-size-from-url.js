@@ -41,7 +41,7 @@ class CachedImageSizeFromUrl {
             return;
         }
 
-        const cachedImageSize = this.cache.get(url);
+        const cachedImageSize = await this.cache.get(url);
 
         if (cachedImageSize) {
             debug('Read image from cache:', url);
@@ -50,7 +50,7 @@ class CachedImageSizeFromUrl {
         } else {
             try {
                 const res = await this.getImageSizeFromUrl(url);
-                this.cache.set(url, res);
+                await this.cache.set(url, res);
 
                 debug('Cached image:', url);
 
@@ -64,7 +64,7 @@ class CachedImageSizeFromUrl {
                 }
 
                 // in case of error we just attach the url
-                this.cache.set(url, {
+                await this.cache.set(url, {
                     url
                 });
 
