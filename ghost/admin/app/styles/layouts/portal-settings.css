@@ -193,6 +193,7 @@
     flex-grow: 1;
     padding: 0;
     border-left: 1px solid var(--whitegrey);
+    background: linear-gradient(45deg, rgba(255,255,255,1) 0%, rgba(249,249,250,1) 100%);
 }
 
 .gh-portal-settings .modal-footer {
