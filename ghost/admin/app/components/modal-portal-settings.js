@@ -131,6 +131,7 @@ export default ModalComponent.extend({
         this.iconExtensions = ICON_EXTENSIONS;
         this.changedTiers = [];
         this.set('supportAddress', this.parseEmailAddress(this.settings.get('membersSupportAddress')));
+        this.set('openSection', 'signup-options');
     },
 
     didInsertElement() {
