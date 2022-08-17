@@ -2,6 +2,8 @@ import {ADD_CARD_HOOK, REMOVE_CARD_HOOK, CURSOR_BEFORE, NO_CURSOR_MOVEMENT} from
 import {Range as MobiledocRange} from 'mobiledoc-kit';
 import arrayToMap from './utils/array-to-map';
 
+export const TESTING_EXPANDO_PROPERTY = '__mobiledoc_kit_editor';
+
 class KoenigEditor {
     componentCards = [];
     mobiledocEditor = null;

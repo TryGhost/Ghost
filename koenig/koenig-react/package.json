@@ -40,6 +40,7 @@
     "node-static": "^0.7.11",
     "postcss": "8.4.16",
     "postcss-import": "^14.1.0",
+    "react-test-renderer": "^18.2.0",
     "should": "13.2.3",
     "sinon": "14.0.0",
     "tailwindcss": "3.1.8",

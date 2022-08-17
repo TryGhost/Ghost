@@ -149,7 +149,9 @@ export default function Toolbar({
                 cachedRange={cachedRange}
                 selectedRange={selectedRange}
             />
-            <div ref={toolbarRef}
+            <div
+                data-testid="toolbar" 
+                ref={toolbarRef}
                 className='absolute'
                 style={toolbarPositionStyles} >
                 <ul className='m-0 flex items-center justify-evenly rounded bg-black px-1 py-0 font-sans text-md font-normal text-white' >

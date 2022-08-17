@@ -1,5 +1,5 @@
 import {render, screen} from '@testing-library/react';
-import Koenig from '../../src/components/Koenig';
+import Koenig from '../../components/Koenig';
 
 test('renders Mobiledoc Container', () => {
     render(<Koenig />);
