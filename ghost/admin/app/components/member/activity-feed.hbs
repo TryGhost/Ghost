@@ -9,52 +9,61 @@
     {{#let (members-event-fetcher filter=(members-event-filter member=@member.id) pageSize=5) as |eventsFetcher|}}
         <div class="gh-main-section-content grey {{if eventsFetcher.data "" "mt8"}}">
             <div class="gh-member-feed {{if eventsFetcher.data "" "gh-member-feed-no-data"}}" ...attributes>
-                <div class="flex-auto flex flex-column items-stretch {{if eventsFetcher.data "justify-between" "h-100 justify-center"}}">
-                    <div>
-                        {{#if eventsFetcher.isLoading}}
-                            <div class="relative h17"><GhLoadingSpinner class="h30" /></div>
-                        {{else if eventsFetcher.data}}
-                            {{#each eventsFetcher.data as |rawEvent|}}
-                                {{#let (parse-member-event rawEvent eventsFetcher.hasMultipleNewsletters) as |event|}}
-                                    <div class="gh-member-feed-row">
-                                        <div class="gh-member-feed-container">
-                                            <div class="gh-member-feed-icon">
-                                                {{svg-jar event.icon class=event.iconClass}}
-                                            </div>
-                                            <div class="gh-member-feed-detail">
-                                                <div class="gh-member-feed-event">
-                                                    <span class="gh-member-feed-event-inner">
-                                                        <span class="gh-members-activity-description">
-                                                            {{capitalize-first-letter event.action}}
-                                                            {{#if event.url}}
-                                                                "<a class="ghost-members-activity-object-link" href="{{event.url}}" target="_blank" rel="noopener noreferrer">{{event.object}}</a>"
-                                                            {{else}}
-                                                                {{event.object}}
-                                                            {{/if}}
-                                                        </span>
-                                                        {{#if event.email}}
-                                                            "<GhEmailPreviewLink @data={{event.email}} />"
+                <div class="gh-list-mini-header">
+                    <div class="gh-list-mini-title">Event</div>
+                    <div class="gh-list-mini-title">Page / Post</div>
+                    <div class="gh-list-mini-title">Time</div>
+                </div>
+                <div class="gh-list-mini-body">
+                    {{#if eventsFetcher.isLoading}}
+                        <div class="relative h17"><GhLoadingSpinner class="h30" /></div>
+                    {{else if eventsFetcher.data}}
+                        {{#each eventsFetcher.data as |rawEvent|}}
+                            {{#let (parse-member-event rawEvent eventsFetcher.hasMultipleNewsletters) as |event|}}
+                                <div class="gh-list-mini-item">
+                                    <div class="gh-list-mini-item-sub">
+                                        <div class="gh-member-feed-icon">
+                                            {{svg-jar event.icon class=event.iconClass}}
+                                        </div>
+                                        <div class="gh-member-feed-detail">
+                                            <div class="gh-member-feed-event">
+                                                <span class="gh-member-feed-event-inner">
+                                                    <span class="gh-members-activity-description">
+                                                        {{capitalize-first-letter event.action}}
+                                                        {{#if event.object}}
+                                                            {{event.object}}
                                                         {{/if}}
-                                                        {{event.info}}
-                                                        
+                                                        {{#if event.info}}
+                                                            <span class="highlight">{{event.info}}</span>
+                                                        {{/if}}
                                                     </span>
-                                                </div>
-                                                <div class="gh-member-feed-time">
-                                                    {{moment-from-now event.timestamp}}
-                                                </div>
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
-                                {{/let}}
-                            {{/each}}
+                                    {{!-- TODO: Wire up the new event page/post links in this column --}}
+                                    <div class="gh-list-mini-item-sub">
+                                        {{#if event.url}}
+                                            <a href="{{event.url}}" target="_blank" rel="noopener noreferrer">{{event.object}}</a>
+                                        {{else if event.email}}
+                                            <GhEmailPreviewLink @data={{event.email}} />
+                                        {{else}}
+                                            <span class="gh-list-nodata">&mdash;</span>
+                                        {{/if}}
+                                    </div>
+                                    <div class="gh-list-mini-item-sub">
+                                        {{moment-from-now event.timestamp}}
+                                    </div>
+                                </div>
+                            {{/let}}
+                        {{/each}}
 
-                            <div class="gh-member-feed-footer">
-                                <LinkTo @route="members-activity" @query={{hash excludedEvents=null member=@member.id}}>See all activity →</LinkTo>
-                            </div>
-                        {{else}}
-                            <Member::ActivityFeedEmpty />
-                        {{/if}}
-                    </div>
+                        <div class="gh-list-mini-footer">
+                            <LinkTo @route="members-activity" @query={{hash excludedEvents=null member=@member.id}}>See all activity →</LinkTo>
+                        </div>
+                    {{else}}
+                        <Member::ActivityFeedEmpty />
+                    {{/if}}
                 </div>
             </div>
         </div>
