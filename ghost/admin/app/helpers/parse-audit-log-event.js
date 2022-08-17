@@ -8,10 +8,14 @@ export default class ParseAuditLogEvent extends Helper {
         const action = getAction(ev);
         const actionIcon = getActionIcon(ev);
         const getActor = () => this.store.findRecord('user', ev.actor_id, {reload: false});
+        const getResource = () => this.store.findRecord(ev.resource_type, ev.resource_id, {reload: false});
 
         return {
             get actor() {
                 return getActor();
+            },
+            get resource() {
+                return getResource();
             },
             actionIcon,
             action,
