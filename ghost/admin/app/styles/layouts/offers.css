@@ -350,6 +350,18 @@
     fill: var(--midgrey);
 }
 
+.gh-offer-form .gh-main-section-header-with-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: -2px;
+}
+
+.gh-offer-form .gh-main-section-header-info svg {
+    height: 16px;
+    width: 16px;
+}
+
 @media (max-width: 1440px) {
     .gh-offer-tier-and-trial, .gh-offer-duration {
         flex-direction: column;
