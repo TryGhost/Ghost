@@ -40,11 +40,16 @@
                                 <p>Visible to members on Stripe Checkout page.</p>
                             </GhFormGroup>
                         </div>
-
+                        {{#if (feature 'freeTrial')}}
                         <h4 class="gh-main-section-header gh-main-section-header-with-info small bn">
                             <span>Discount information</span>
-                            <div class="midgrey gh-main-section-header-info"><span>Once saved, this cannot be changed.</span><span>{{svg-jar "info"}}</span></div>
+                            <span class="midgrey gh-main-section-header-info tooltip-top-left" data-tooltip="Once saved, this cannot be changed" >{{svg-jar "info"}}</span>
                         </h4>
+                        {{else}}
+                        <h4 class="gh-main-section-header small bn">
+                            Discount information <span class="midgrey"> – Once saved, this cannot be changed.</span>
+                        </h4>
+                        {{/if}}
                         <div class="gh-main-section-content grey">
                             {{#if (feature 'freeTrial')}}
                             <GhFormGroup>
