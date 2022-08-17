@@ -7,7 +7,7 @@ export default function parseAuditLogEvent(ev) {
         actorName,
         actionIcon,
         action,
-        timestamp: ev.created_at
+        original: ev
     };
 }
 
