@@ -18,6 +18,7 @@ export default class MemberSerializer extends ApplicationSerializer.extend(Embed
         delete json.geolocation;
         delete json.status;
         delete json.last_seen_at;
+        delete json.comped;
 
         // Normalize properties
         json.name = json.name || '';
