@@ -1,6 +1,17 @@
 import React from 'react';
 import PlaceholderIcon from './icons/kg-img-placeholder.svg';
 
+const PlaceHolderText = ({progress, dragActive}) => {
+    if (progress.uploading) {
+        return (<div className='text-center'>{Math.round(progress?.progress)}% uploaded</div>);
+    }
+    if (dragActive) {
+        return (<p className='text-center font-sans'>Drop it like it's hot!</p>);
+    } else {
+        return (<p className='mt-2 text-center font-sans text-sm text-grey'>Click to select an image</p>);
+    }
+};
+
 const ImagePlaceholder = ({uploadRef, progress, handleFiles}) => {
     const [dragActive, setDragActive] = React.useState(false);
 
@@ -38,15 +49,7 @@ const ImagePlaceholder = ({uploadRef, progress, handleFiles}) => {
             <div className='h-100 relative flex items-center justify-center border border-grey-white bg-[#fafafb]'>
                 <button className='flex flex-col items-center justify-center p-20'>
                     <PlaceholderIcon className=' h-32 w-32' />
-                    {
-                        progress.uploading ?
-                            <div className='text-center'>{Math.round(progress?.progress)}% uploaded</div>
-                            :
-                        
-                            dragActive ? <p className='text-center font-sans'>Drop it like it's hot!</p>
-                                :
-                                <p className='mt-2 text-center font-sans text-sm text-grey'>Click to select an image</p>
-                    }
+                    <PlaceHolderText progress={progress} dragActive={dragActive} />
                 </button>
             </div>
         </figure>

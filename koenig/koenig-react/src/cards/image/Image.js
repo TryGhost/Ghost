@@ -4,6 +4,19 @@ import {Editor, Container} from 'react-mobiledoc-editor';
 import KoenigEditor from '../../KoenigEditor';
 import {useConstructor} from '../../utils/useConstructor';
 
+const ImageHolder = ({payload, uploadRef, uploadProgress, handleFiles}) => {
+    if (payload?.src) {
+        return (<img src={payload?.src || ``} alt={payload?.alt || 'image alt description'} />);
+    }
+    return (
+        <ImagePlaceholder 
+            uploadRef={uploadRef} 
+            progress={uploadProgress} 
+            handleFiles={handleFiles} 
+        />
+    );
+};
+
 const CapEditor = ({payload, Alt, env}) => {
     const [instance, setInstance] = React.useState(null);
     const editorRef = React.useRef();
@@ -22,11 +35,10 @@ const CapEditor = ({payload, Alt, env}) => {
         if (Alt) {
             payload.setPayload({...payload.payload, alt: e.target.value});
         } else {
-            let ser = instance.serializeTo('html');
-            payload.setPayload({...payload.payload, caption: ser});
+            let serialized = instance.serializeTo('html');
+            payload.setPayload({...payload.payload, caption: serialized});
         }
     };
-
     return (
         <figcaption className='p-2'>
             <div className="wrapper">
@@ -122,16 +134,7 @@ const Image = (props) => {
         <figure>
             <div className="__mobiledoc-card">
                 <div className='relative'>
-                    {
-                        payload.src ?
-                            <img src={payload?.src || ``} alt={payload?.alt || 'image alt description'} />
-                            :
-                            <ImagePlaceholder 
-                                uploadRef={uploadRef} 
-                                progress={uploadProgress} 
-                                handleFiles={handleFiles} 
-                            />
-                    }
+                    <ImageHolder payload={payload} uploadRef={uploadRef} uploadProgress={uploadProgress} handleFiles={handleFiles} />
                 </div>
                 <form onChange={onUploadChange}>
                     <input

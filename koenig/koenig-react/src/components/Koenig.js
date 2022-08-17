@@ -73,6 +73,18 @@ const Koenig = ({
         }
     }, [accentColor]);
 
+    const AccentStyles = ({color}) => {
+        return (
+            <style>
+                {`
+                :root{
+                    --kg-accent-color: ${color};
+                }
+                `}
+            </style>
+        );
+    };
+
     return (
         <Container
             className="relative"
@@ -108,13 +120,8 @@ const Koenig = ({
                 selectedRange={selectedRange}
                 koenigEditor={koenigEditor}
             />
-            <style>
-                {`
-                :root{
-                    --kg-accent-color: ${accentColorState};
-                }
-                `}
-            </style>
+            <AccentStyles color={accentColorState}/>
+            
         </Container>
     );
 };
