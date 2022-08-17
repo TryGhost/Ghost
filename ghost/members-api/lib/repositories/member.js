@@ -169,19 +169,19 @@ module.exports = class MemberRepository {
 
     /**
      * Create a member
-     * @param {Object} data 
+     * @param {Object} data
      * @param {string} data.email
      * @param {string} [data.name]
      * @param {string} [data.note]
      * @param {(string|Object)[]} [data.labels]
      * @param {boolean} [data.subscribed] (deprecated)
-     * @param {string} [data.geolocation] 
+     * @param {string} [data.geolocation]
      * @param {Date} [data.created_at]
      * @param {Object[]} [data.products]
      * @param {Object[]} [data.newsletters]
      * @param {import('@tryghost/member-attribution/lib/history').Attribution} [data.attribution]
-     * @param {*} options 
-     * @returns 
+     * @param {*} options
+     * @returns
      */
     async create(data, options) {
         if (!options) {
@@ -941,39 +941,46 @@ module.exports = class MemberRepository {
             } else {
                 status = 'paid';
             }
-            // This is an active subscription! Add the product
-            if (ghostProduct) {
-                memberProducts.push(ghostProduct.toJSON());
-            }
-            if (model) {
-                if (model.get('stripe_price_id') !== subscriptionData.stripe_price_id) {
-                    // The subscription has changed plan - we may need to update the products
+            if (this._labsService.isSet('compExpiring')) {
+                // This is an active subscription! Update member to have only this product
+                if (ghostProduct) {
+                    memberProducts = [ghostProduct.toJSON()];
+                }
+            } else {
+                // This is an active subscription! Add the product
+                if (ghostProduct) {
+                    memberProducts.push(ghostProduct.toJSON());
+                }
+                if (model) {
+                    if (model.get('stripe_price_id') !== subscriptionData.stripe_price_id) {
+                        // The subscription has changed plan - we may need to update the products
 
-                    const subscriptions = await member.related('stripeSubscriptions').fetch(options);
-                    const changedProduct = await this._productRepository.get({
-                        stripe_price_id: model.get('stripe_price_id')
-                    }, options);
+                        const subscriptions = await member.related('stripeSubscriptions').fetch(options);
+                        const changedProduct = await this._productRepository.get({
+                            stripe_price_id: model.get('stripe_price_id')
+                        }, options);
 
-                    let activeSubscriptionForChangedProduct = false;
+                        let activeSubscriptionForChangedProduct = false;
 
-                    for (const subscription of subscriptions.models) {
-                        if (this.isActiveSubscriptionStatus(subscription.get('status'))) {
-                            try {
-                                const subscriptionProduct = await this._productRepository.get({stripe_price_id: subscription.get('stripe_price_id')}, options);
-                                if (subscriptionProduct && changedProduct && subscriptionProduct.id === changedProduct.id) {
-                                    activeSubscriptionForChangedProduct = true;
+                        for (const subscription of subscriptions.models) {
+                            if (this.isActiveSubscriptionStatus(subscription.get('status'))) {
+                                try {
+                                    const subscriptionProduct = await this._productRepository.get({stripe_price_id: subscription.get('stripe_price_id')}, options);
+                                    if (subscriptionProduct && changedProduct && subscriptionProduct.id === changedProduct.id) {
+                                        activeSubscriptionForChangedProduct = true;
+                                    }
+                                } catch (e) {
+                                    logging.error(`Failed to attach products to member - ${data.id}`);
+                                    logging.error(e);
                                 }
-                            } catch (e) {
-                                logging.error(`Failed to attach products to member - ${data.id}`);
-                                logging.error(e);
                             }
                         }
-                    }
 
-                    if (!activeSubscriptionForChangedProduct) {
-                        memberProducts = memberProducts.filter((product) => {
-                            return product.id !== changedProduct.id;
-                        });
+                        if (!activeSubscriptionForChangedProduct) {
+                            memberProducts = memberProducts.filter((product) => {
+                                return product.id !== changedProduct.id;
+                            });
+                        }
                     }
                 }
             }
