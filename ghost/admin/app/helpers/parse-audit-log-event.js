@@ -1,14 +1,23 @@
-export default function parseAuditLogEvent(ev) {
-    const actorName = getActorName(ev);
-    const action = getAction(ev);
-    const actionIcon = getActionIcon(ev);
+import Helper from '@ember/component/helper';
+import {inject as service} from '@ember/service';
 
-    return {
-        actorName,
-        actionIcon,
-        action,
-        original: ev
-    };
+export default class ParseAuditLogEvent extends Helper {
+    @service store;
+
+    compute([ev]) {
+        const action = getAction(ev);
+        const actionIcon = getActionIcon(ev);
+        const getActor = () => this.store.findRecord('user', ev.actor_id, {reload: false});
+
+        return {
+            get actor() {
+                return getActor();
+            },
+            actionIcon,
+            action,
+            original: ev
+        };
+    }
 }
 
 function getActionIcon(ev) {
@@ -20,10 +29,6 @@ function getActionIcon(ev) {
     case 'deleted':
         return 'cross-circle';
     }
-}
-
-function getActorName(ev) {
-    return ev.actor_id;
 }
 
 function getAction(ev) {
