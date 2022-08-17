@@ -51,21 +51,21 @@
                                 <div>
                                     <label class="fw6">Offer type</label>
                                     <div class="gh-offer-type-container">
-                                        <div class="gh-radio flex-grow-1 {{if this.isDiscountOffer "active"}}" type="button" {{on "click" (fn this.changeType "discount")}} disabled={{this.isDiscountSectionDisabled}}>
+                                        <button class="gh-radio flex-grow-1 {{if this.isDiscountOffer "active"}}" type="button" {{on "click" (fn this.changeType "discount")}} disabled={{this.isDiscountSectionDisabled}}>
                                             <div class="gh-radio-button"></div>
                                             <div class="gh-radio-content">
                                                 <div class="gh-radio-label">Discount</div>
                                                 <div class="gh-radio-desc">Offer a special reduced price.</div>
                                             </div>
-                                        </div>
-                                        <div class="gh-radio flex-grow-1 {{if this.isTrialOffer "active"}}"
+                                        </button>
+                                        <button class="gh-radio flex-grow-1 {{if this.isTrialOffer "active"}}"
                                         type="button" {{on "click" (fn this.changeType "trial")}} disabled={{this.isDiscountSectionDisabled}}>
                                             <div class="gh-radio-button"></div>
                                             <div class="gh-radio-content">
                                                 <div class="gh-radio-label">Free trial</div>
                                                 <div class="gh-radio-desc">Give free access for a limited time.</div>
                                             </div>
-                                        </div>
+                                        </button>
                                     </div>
                                 </div>
                             </GhFormGroup>
