@@ -8,6 +8,32 @@ const logging = require('@tryghost/logging');
 module.exports = function (Bookshelf) {
     Bookshelf.Model = Bookshelf.Model.extend({
         /**
+         * Constructs data to be stored in the database with info
+         * on particular actions
+         */
+        getAction(event, options) {
+            const actor = this.getActor(options);
+
+            // @NOTE: we ignore internal updates (`options.context.internal`) for now
+            if (!actor) {
+                return;
+            }
+
+            if (!this.actionsCollectCRUD) {
+                return;
+            }
+
+            // @TODO: implement context
+            return {
+                event: event,
+                resource_id: this.id || this.previous('id'),
+                resource_type: this.actionsResourceType,
+                actor_id: actor.id,
+                actor_type: actor.type
+            };
+        },
+
+        /**
          * @NOTE:
          *
          * We add actions step by step and define how they should look like.

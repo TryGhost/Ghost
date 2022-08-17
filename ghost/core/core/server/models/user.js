@@ -57,6 +57,9 @@ User = ghostBookshelf.Model.extend({
 
     tableName: 'users',
 
+    actionsCollectCRUD: true,
+    actionsResourceType: 'user',
+
     defaults: function defaults() {
         return {
             password: security.identifier.uid(50),
@@ -363,24 +366,6 @@ User = ghostBookshelf.Model.extend({
         delete options.status;
 
         return filter;
-    },
-
-    getAction(event, options) {
-        const actor = this.getActor(options);
-
-        // @NOTE: we ignore internal updates (`options.context.internal`) for now
-        if (!actor) {
-            return;
-        }
-
-        // @TODO: implement context
-        return {
-            event: event,
-            resource_id: this.id || this.previous('id'),
-            resource_type: 'user',
-            actor_id: actor.id,
-            actor_type: actor.type
-        };
     }
 }, {
     orderDefaultOptions: function orderDefaultOptions() {
