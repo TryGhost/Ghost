@@ -15,7 +15,7 @@ const CaptionLayout = ({children}) => {
     );
 };
 
-const CaptionEditor = ({payload, Alt, env}) => {
+const CaptionInputs = ({payload, Alt}) => {
     const [instance, setInstance] = React.useState(null);
     const editorRef = React.useRef();
 
@@ -37,29 +37,37 @@ const CaptionEditor = ({payload, Alt, env}) => {
             payload.setPayload({...payload.payload, caption: serialized});
         }
     };
+
+    if (Alt) {
+        return (
+            <input
+                className="w-100 text-center font-sans text-sm"
+                type='text'
+                value={payload.payload.alt}
+                onChange={handleTextChange}
+                placeholder="Type alt text for image (optional)"
+            />
+        );
+    } else {
+        return (
+            <React.Fragment>
+                <Container
+                    className="w-100 text-center font-sans text-sm"
+                    html={payload.payload.caption}
+                    didCreateEditor={_didCreateEditor}
+                    onChange={handleTextChange}
+                    placeholder="Type caption for image (optional)">
+                    <Editor className="not-kg-prose text-center font-sans text-sm" />
+                </Container>
+            </React.Fragment>
+        );
+    }
+};
+
+const CaptionEditor = ({payload, Alt}) => {
     return (
         <CaptionLayout>
-            {
-                Alt ?
-                    <input
-                        className="w-100 text-center font-sans text-sm"
-                        type='text'
-                        value={payload.payload.alt}
-                        onChange={handleTextChange}
-                        placeholder="Type alt text for image (optional)"
-                    />
-                    :
-                    <React.Fragment>
-                        <Container
-                            className="w-100 text-center font-sans text-sm"
-                            html={payload.payload.caption}
-                            didCreateEditor={_didCreateEditor}
-                            onChange={handleTextChange}
-                            placeholder="Type caption for image (optional)">
-                            <Editor className="not-kg-prose text-center font-sans text-sm" />
-                        </Container>
-                    </React.Fragment>
-            }
+            <CaptionInputs payload={payload} Alt={Alt} />
         </CaptionLayout>
     );
 };
