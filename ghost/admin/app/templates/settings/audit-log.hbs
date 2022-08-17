@@ -34,13 +34,12 @@
                                  <div class="gh-members-activity-icon">{{svg-jar ev.actionIcon}}</div>
                                  <div class="gh-members-activity-event">
                                      <span class="gh-members-activity-description">
-                                         {{capitalize-first-letter event.action}}
-                                         {{ev.action}}
+                                         {{capitalize-first-letter ev.action}} <strong>{{ev.original.resource_id}}</strong>
                                      </span>
                                  </div>
                              </div>
                          </div>
-                         <div class="gh-list-data">{{moment-format ev.timestamp "DD MMM YYYY HH:mm:ss"}}</div>
+                         <div class="gh-list-data">{{moment-format ev.original.created_at "DD MMM YYYY HH:mm:ss"}}</div>
                      </tr>
                      {{/let}}
                      {{/each}}
