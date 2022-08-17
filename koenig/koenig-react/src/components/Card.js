@@ -1,9 +1,10 @@
 import React from 'react';
 
-const CardComponent = ({children, isSelected, isEditing, koenigOptions, selectCard, editCard, ...props}) => {
-    const {hasEditMode} = koenigOptions;
-
+const CardComponent = ({children, isSelected, isEditing, koenigOptions, selectCard, deselectCard, editCard, mobiledocEditor, ...props}) => {
     const [skipMouseUp, setSkipMouseUp] = React.useState(false);
+    const elementRef = React.useRef(null);
+
+    const {hasEditMode} = koenigOptions;
 
     const classes = [
         'relative',
@@ -15,6 +16,43 @@ const CardComponent = ({children, isSelected, isEditing, koenigOptions, selectCa
     if (isSelected) {
         classes.push('shadow-green shadow-[0_0_0_2px] hover:shadow-[0_0_0_2px]');
     }
+
+    // when selected or in edit mode, any clicks outside of the card should deselect
+    // unless it's a click on the plus menu
+    React.useEffect(() => {
+        const handleWindowClick = (event) => {
+            const {target} = event;
+            const path = event.composedPath();
+
+            let searchPath = function (selector) {
+                return element => element.closest && element.closest(selector);
+            };
+
+            // check if the click was in the card, on the plus menu
+            const cardTargetElem = elementRef.current?.closest('[data-kg-card]');
+            if (elementRef.current?.contains(target)
+                || (cardTargetElem && path.find(searchPath(`#${cardTargetElem.id}`)))
+                || path.find(searchPath('[data-kg="plus-menu"]'))) {
+                return;
+            }
+
+            // if an element in the editor is clicked then cursor placement will
+            // deselect or keep this card selected as necessary
+            if (mobiledocEditor.element.contains(target)) {
+                return;
+            }
+
+            deselectCard();
+        };
+
+        if (isSelected) {
+            window.addEventListener('click', handleWindowClick);
+        }
+
+        return (() => {
+            window.removeEventListener('click', handleWindowClick);
+        });
+    }, [isSelected, deselectCard, mobiledocEditor]);
 
     const handleMouseDown = (event) => {
         // if we perform an action we want to prevent the mousedown from
@@ -92,6 +130,7 @@ const CardComponent = ({children, isSelected, isEditing, koenigOptions, selectCa
             onMouseUp={handleMouseUp}
             onDoubleClick={handleDoubleClick}
             style={props.style}
+            ref={elementRef}
         >
             {children}
         </div>

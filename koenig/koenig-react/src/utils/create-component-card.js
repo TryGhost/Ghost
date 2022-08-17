@@ -21,6 +21,7 @@ const createComponentCard = ({name, component: CardComponent, koenigOptions = {}
 
             const targetNode = document.createElement('div');
             targetNode.id = `kg-${uuidv4()}`;
+            targetNode.dataset.kgCard = true;
 
             const root = createRoot(targetNode);
 
