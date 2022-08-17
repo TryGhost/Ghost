@@ -88,7 +88,7 @@ export function getUpgradeProducts({site, member}) {
     const activePrice = getMemberActivePrice({member});
     const activePriceCurrency = activePrice?.currency;
     const availableProducts = getAvailableProducts({site});
-    if (!activePrice) {
+    if (!activePrice?.id) {
         return availableProducts;
     }
     return availableProducts.filter((product) => {

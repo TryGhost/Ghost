@@ -5,7 +5,7 @@ import CloseButton from '../common/CloseButton';
 import BackButton from '../common/BackButton';
 import {MultipleProductsPlansSection} from '../common/PlansSection';
 import {getDateString} from '../../utils/date-time';
-import {formatNumber, getAvailablePrices, getFilteredPrices, getMemberActivePrice, getMemberSubscription, getPriceFromSubscription, getProductFromPrice, getSubscriptionFromId, getUpgradeProducts, hasMultipleProductsFeature, isPaidMember} from '../../utils/helpers';
+import {formatNumber, getAvailablePrices, getFilteredPrices, getMemberActivePrice, getMemberSubscription, getPriceFromSubscription, getProductFromPrice, getSubscriptionFromId, getUpgradeProducts, hasMultipleProductsFeature, isComplimentaryMember, isPaidMember} from '../../utils/helpers';
 
 export const AccountPlanPageStyles = `
     .account-plan.full-size .gh-portal-main-title {
@@ -262,7 +262,7 @@ const PlansContainer = ({
 }) => {
     const {member} = useContext(AppContext);
     // Plan upgrade flow for free member
-    if (!isPaidMember({member})) {
+    if (!isPaidMember({member}) || isComplimentaryMember({member})) {
         return (
             <UpgradePlanSection
                 {...{plans, selectedPlan, onPlanSelect, onPlanCheckout}}
@@ -360,7 +360,7 @@ export default class AccountPlanPage extends React.Component {
         if (priceId) {
             selectedPlan = priceId;
         }
-        if (isPaidMember({member})) {
+        if (isPaidMember({member}) && !isComplimentaryMember({member})) {
             const subscription = getMemberSubscription({member});
             const subscriptionId = subscription ? subscription.id : '';
             if (subscriptionId) {
@@ -377,10 +377,10 @@ export default class AccountPlanPage extends React.Component {
         const {member} = this.context;
 
         // Work as checkboxes for free member plan selection and button for paid members
-        if (!isPaidMember({member})) {
+        if (!isPaidMember({member}) || isComplimentaryMember({member})) {
             // Hack: React checkbox gets out of sync with dom state with instant update
             this.timeoutId = setTimeout(() => {
-                this.setState((state) => {
+                this.setState(() => {
                     return {
                         selectedPlan: priceId
                     };
