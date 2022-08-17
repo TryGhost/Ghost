@@ -214,6 +214,7 @@
     padding: 16px;
     margin: 0;
     align-items: center;
+    text-align: left;
 }
 
 .gh-offer-type-container .gh-radio:not(:first-child) {
