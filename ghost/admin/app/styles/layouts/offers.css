@@ -142,6 +142,11 @@
     max-width: unset;
 }
 
+.gh-offer-discount {
+    width: 100%;
+    margin-left: 24px;
+}
+
 .gh-offer-duration {
     display: flex;
 }
@@ -165,6 +170,11 @@
     letter-spacing: 0;
 }
 
+.gh-offer-trial-duration {
+    width: 100%;
+    margin-left: 24px;
+}
+
 .gh-offer-trial-duration .trial-duration::before {
     position: absolute;
     content: "days";
@@ -175,12 +185,61 @@
     letter-spacing: 0;
 }
 
-
-
 .gh-offer-url .gh-input {
     background: var(--main-color-content-greybg);
     border-color: var(--lightgrey-l1);
     color: var(--midgrey);
+}
+
+.gh-offer-type-container {
+    display: flex;
+    width: 100%;
+    border: 1px solid #dddedf;
+    background: #fff;
+    color: #394047;
+    border-radius: 3px;
+}
+
+.gh-offer-tier-and-trial {
+    display: flex;
+}
+
+.gh-select-product-cadence select {
+    text-overflow: ellipsis;
+    padding-right: 32px;
+}
+
+.gh-offer-type-container .gh-radio {
+    width: 100%;
+    padding: 16px;
+    margin: 0;
+    align-items: center;
+}
+
+.gh-offer-type-container .gh-radio:not(:first-child) {
+    border-left: 1px solid #F6F6F6;
+}
+
+.gh-offer-type-container .gh-radio-button {
+    width: 18px;
+    height: 18px;
+}
+
+.gh-offer-type-container .gh-radio.active .gh-radio-button:before {
+    content: "";
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 9px;
+    height: 5px;
+    border: 2px solid #fff;
+    border-top: none;
+    border-right: none;
+    border-radius: 0px;
+    background: transparent;
+    opacity: 1;
+    transition: opacity .15s ease-in-out;
+    transform: rotate(-45deg);
 }
 
 /* Offers – Portal preview */
@@ -290,6 +349,35 @@
     fill: var(--midgrey);
 }
 
+@media (max-width: 1440px) {
+    .gh-offer-tier-and-trial, .gh-offer-duration {
+        flex-direction: column;
+    }
+
+    .gh-offer-discount, .gh-offer-trial-duration, .gh-offer-duration .form-group:not(:first-of-type) {
+        margin-left: 0;
+    }
+
+    .gh-offer-type-container {
+        flex-direction: column;
+    }
+
+    .gh-offer-type-container .gh-radio:not(:first-child) {
+        border-left: none;
+        border-top: 1px solid #f6f6f6;
+    }
+
+    .gh-offer-title-and-code {
+        grid-template-rows: 1fr 1fr;
+        grid-template-columns: none;
+        grid-column-gap: 0px;
+    }
+
+    .gh-offer-duration .form-group {
+        margin-bottom: 1.6em;
+    }
+}
+
 @media (max-width: 1280px) {
     .gh-offer-portal-preview {
         display: none;
@@ -319,6 +407,33 @@
 
     .gh-offers-help-card p {
         font-size: 1.3rem;
+    }
+
+    .gh-offer-tier-and-trial, .gh-offer-duration {
+        flex-direction: row;
+    }
+
+    .gh-offer-discount, .gh-offer-trial-duration, .gh-offer-duration .form-group:not(:first-of-type) {
+        margin-left: 24px;
+    }
+
+    .gh-offer-type-container {
+        flex-direction: row;
+    }
+
+    .gh-offer-type-container .gh-radio:not(:first-child) {
+        border-top: none;
+        border-left: 1px solid #f6f6f6;
+    }
+
+    .gh-offer-title-and-code {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: none;
+        grid-column-gap: 24px;
+    }
+
+    .gh-offer-duration .form-group {
+        margin-bottom: 0;
     }
 }
 
@@ -356,6 +471,33 @@
         padding: 0;
         min-width: 200px;
         height: 120px;
+    }
+
+    .gh-offer-tier-and-trial, .gh-offer-duration {
+        flex-direction: column;
+    }
+
+    .gh-offer-discount, .gh-offer-trial-duration, .gh-offer-duration .form-group:not(:first-of-type) {
+        margin-left: 0px;
+    }
+
+    .gh-offer-type-container {
+        flex-direction: column;
+    }
+
+    .gh-offer-type-container .gh-radio:not(:first-child) {
+        border-left: none;
+        border-top: 1px solid #f6f6f6;
+    }
+
+    .gh-offer-title-and-code {
+        grid-template-rows: 1fr 1fr;
+        grid-template-columns: none;
+        grid-column-gap: 0px;
+    }
+
+    .gh-offer-duration .form-group {
+        margin-bottom: 1.6em;
     }
 }
 
