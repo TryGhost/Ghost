@@ -109,6 +109,12 @@ const SlashMenuContainer = ({selectedRange}) => {
     const koenigEditor = React.useContext(koenigEditorContext);
     const containerEl = React.useRef(null);
 
+    // making closeMenu a callback avoids child components re-registering event
+    // handlers on every render-causing key press
+    const closeMenu = React.useCallback(() => {
+        return dispatch({type: 'close_menu'});
+    }, [dispatch]);
+
     // keep state updated with selected range, closing menu if needed
     React.useEffect(() => {
         dispatch({type: 'update_selected_range', selectedRange});
@@ -148,7 +154,7 @@ const SlashMenuContainer = ({selectedRange}) => {
     return (
         <div id="koenig-slash-menu" className="absolute" style={containerStyle} ref={containerEl}>
             {state.isShowingMenu && <SlashMenu
-                closeMenu={() => dispatch({type: 'close_menu'})}
+                closeMenu={closeMenu}
                 containerId={containerEl.current.id}
                 query={state.query}
                 replacementRange={state.cachedRange}
