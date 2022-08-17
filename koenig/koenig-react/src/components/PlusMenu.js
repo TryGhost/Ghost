@@ -1,5 +1,6 @@
 import React, {useEffect} from 'react';
 import {v4 as uuidv4} from 'uuid';
+import koenigEditorContext from '../contexts/koenig-editor-context';
 import CardMenuContent from './CardMenuContent';
 import PlusIcon from '../icons/plus.svg';
 import rangeIsABlankParagraph from '../utils/range-is-blank-paragraph';
@@ -53,7 +54,8 @@ const PlusMenu = ({containerId, closeMenu, ...props}) => {
     );
 };
 
-const PlusMenuContainer = ({koenigEditor, selectedRange}) => {
+const PlusMenuContainer = ({selectedRange}) => {
+    const koenigEditor = React.useContext(koenigEditorContext);
     const containerId = React.useRef(`kg-plus-${uuidv4()}`);
     const containerEl = React.useRef();
     const lastSelectedRange = React.useRef(null); // used to trigger selectedRange prop change behavior
@@ -176,7 +178,7 @@ const PlusMenuContainer = ({koenigEditor, selectedRange}) => {
     return (
         <div id={containerId.current} data-kg="plus-menu" className="absolute" style={style} ref={containerEl}>
             {isShowingButton && <PlusButton onClick={handleButtonClick} />}
-            {isShowingMenu && <PlusMenu containerId={containerId.current} closeMenu={closeMenu} koenigEditor={koenigEditor} replacementRange={cachedRange} itemWasClicked={handleItemClick} />}
+            {isShowingMenu && <PlusMenu containerId={containerId.current} closeMenu={closeMenu} replacementRange={cachedRange} itemWasClicked={handleItemClick} />}
         </div>
     );
 };

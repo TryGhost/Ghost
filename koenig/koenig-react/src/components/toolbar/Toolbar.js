@@ -9,9 +9,10 @@ import QuoteIcon from './icons/kg-quote.svg';
 import LinkIcon from './icons/kg-link.svg';
 import LinkButton from './LinkButton';
 import UrlPromptInput from './UrlPromptInput';
+import koenigEditorContext from '../../contexts/koenig-editor-context';
 
-// Much of this file 
-// was extracted from https://github.com/TryGhost/Ghost/blob/main/ghost/admin/lib/koenig-editor/addon/components/koenig-toolbar.js 
+// Much of this file
+// was extracted from https://github.com/TryGhost/Ghost/blob/main/ghost/admin/lib/koenig-editor/addon/components/koenig-toolbar.js
 // and then modified to make it work with React.
 // Can certainly making a bit more "react-like" in future.
 
@@ -22,13 +23,13 @@ const DEFAULTSTYLES = {
 };
 
 export default function Toolbar({
-    editor,
     TOOLBAR_MARGIN = 15,
     // TICK_ADJUSTMENT = 8,
     activeMarkupTags,
     activeSectionTags,
     selectedRange
 }) {
+    const {mobiledocEditor: editor} = React.useContext(koenigEditorContext);
     const [showUrlPrompt, setShowUrlPrompt] = React.useState(false);
     const [urlAddress, setUrlAddress] = React.useState('');
     const toolbarRef = React.useRef();
@@ -141,11 +142,10 @@ export default function Toolbar({
     return (
         <React.Fragment>
             <UrlPromptInput
-                ref={urlPromptRef} 
-                showUrlPrompt={{showUrlPrompt, setShowUrlPrompt}} 
-                toolbarPosition={toolbarPosition} 
+                ref={urlPromptRef}
+                showUrlPrompt={{showUrlPrompt, setShowUrlPrompt}}
+                toolbarPosition={toolbarPosition}
                 urlAddress={{urlAddress, setUrlAddress}}
-                editor={editor}
                 cachedRange={cachedRange}
                 selectedRange={selectedRange}
             />

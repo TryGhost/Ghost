@@ -1,6 +1,7 @@
 import React from 'react';
 import {createRoot} from 'react-dom/client';
 import {v4 as uuidv4} from 'uuid';
+import koenigEditorContext from '../contexts/koenig-editor-context';
 import {ADD_CARD_HOOK, REMOVE_CARD_HOOK} from './constants';
 
 const RENDER_TYPE = 'dom';
@@ -33,7 +34,7 @@ const createComponentCard = ({name, component: CardComponent, koenigOptions = {}
 
             didRender(() => {
                 const ComponentWithState = () => {
-                    const {isSelected: _isSelected, isEditing: _isEditing, ...props} = card.props;
+                    const {isSelected: _isSelected, isEditing: _isEditing, koenigEditor, ...props} = card.props;
                     const [isSelected, setIsSelected] = React.useState(_isSelected);
                     const [isEditing, setIsEditing] = React.useState(_isEditing);
                     // const [onChange, setOnChange] = React.useState(null);
@@ -46,7 +47,11 @@ const createComponentCard = ({name, component: CardComponent, koenigOptions = {}
                     card.setIsSelected = setIsSelected;
                     card.setIsEditing = setIsEditing;
 
-                    return <CardComponent isSelected={isSelected} isEditing={isEditing} {...props} />;
+                    return (
+                        <koenigEditorContext.Provider value={koenigEditor}>
+                            <CardComponent isSelected={isSelected} isEditing={isEditing} {...props} />
+                        </koenigEditorContext.Provider>
+                    );
                 };
 
                 // This is async, the component won't be rendered immediately

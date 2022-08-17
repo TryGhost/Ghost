@@ -54,7 +54,6 @@ class KoenigEditor {
                         isEditing: false, // shouldn't be used - our cards handle edit mode within their components
                         isSelected: false,
                         koenigOptions,
-                        mobiledocEditor: this.mobiledocEditor,
                         koenigEditor: this,
                         name,
                         options,

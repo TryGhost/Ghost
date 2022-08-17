@@ -1,4 +1,5 @@
 import React from 'react';
+import koenigEditorContext from '../contexts/koenig-editor-context';
 
 const createItemMatcher = (query = '') => {
     // match everything before a space to a card. Keeps the relevant
@@ -133,7 +134,8 @@ const CardMenuItem = ({item, isSelected, itemWasClicked}) => {
     );
 };
 
-const CardMenuContent = ({koenigEditor, replacementRange, itemWasClicked, allowsKeyboardNav = false, query, ...props}) => {
+const CardMenuContent = ({replacementRange, itemWasClicked, allowsKeyboardNav = false, query, ...props}) => {
+    const koenigEditor = React.useContext(koenigEditorContext);
     const [state, dispatch] = React.useReducer(
         menuContentReducer,
         {
@@ -219,7 +221,6 @@ const CardMenuContent = ({koenigEditor, replacementRange, itemWasClicked, allows
                     group={group}
                     selectedItem={selectedItem}
                     itemWasClicked={insertItem}
-                    koenigEditor={koenigEditor}
                     key={group.title}
                     {...props}
                 />

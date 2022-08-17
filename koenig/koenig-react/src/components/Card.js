@@ -1,6 +1,8 @@
 import React from 'react';
+import koenigEditorContext from '../contexts/koenig-editor-context';
 
-const CardComponent = ({children, isSelected, isEditing, koenigOptions, selectCard, deselectCard, editCard, mobiledocEditor, ...props}) => {
+const CardComponent = ({children, isSelected, isEditing, koenigOptions, selectCard, deselectCard, editCard, ...props}) => {
+    const koenigEditor = React.useContext(koenigEditorContext);
     const [skipMouseUp, setSkipMouseUp] = React.useState(false);
     const elementRef = React.useRef(null);
 
@@ -38,7 +40,7 @@ const CardComponent = ({children, isSelected, isEditing, koenigOptions, selectCa
 
             // if an element in the editor is clicked then cursor placement will
             // deselect or keep this card selected as necessary
-            if (mobiledocEditor.element.contains(target)) {
+            if (koenigEditor.mobiledocEditor.element.contains(target)) {
                 return;
             }
 
@@ -52,7 +54,7 @@ const CardComponent = ({children, isSelected, isEditing, koenigOptions, selectCa
         return (() => {
             window.removeEventListener('click', handleWindowClick);
         });
-    }, [isSelected, deselectCard, mobiledocEditor]);
+    }, [isSelected, deselectCard, koenigEditor]);
 
     const handleMouseDown = (event) => {
         // if we perform an action we want to prevent the mousedown from

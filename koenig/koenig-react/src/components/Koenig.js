@@ -1,11 +1,11 @@
-import * as React from 'react';
+import React from 'react';
 import {Container, Editor} from 'react-mobiledoc-editor';
 import KoenigEditor from '../KoenigEditor';
+import koenigEditorContext from '../contexts/koenig-editor-context';
 import DEFAULT_ATOMS from '../atoms';
 import DEFAULT_CARDS from '../cards';
 import DEFAULT_KEY_COMMANDS from '../key-commands';
 import DEFAULT_TEXT_EXPANSIONS from '../text-expansions';
-import {useConstructor} from '../utils/useConstructor';
 import Toolbar from './toolbar/Toolbar';
 import PlusMenu from './PlusMenu';
 import SlashMenu from './SlashMenu';
@@ -29,16 +29,12 @@ const Koenig = ({
     const [activeMarkupTags, setActiveMarkupTags] = React.useState({});
     const [activeSectionTags, setActiveSectionTags] = React.useState({});
 
-    // Initial default accent colour.
-    const [accentColorState, setAccentColorState] = React.useState('#ff0095');
-
-    // Create an instance of KoenigEditor on first render and store a reference.
-    // - We need an instance of KoenigEditor immediately because it generates
-    //   a `cardProps` object with additional hooks for rendering cards and we
-    //   need that to pass into the very first render of `<Container>`
-    const koenigEditorRef = React.useRef();
-    useConstructor(() => {
-        const kgInstance = new KoenigEditor({
+    // We need an instance of KoenigEditor immediately because it generates
+    // a `cardProps` object with additional hooks for rendering cards and we
+    // need that to pass into the very first render of `<Container>`.
+    // koenigEditorContext value is set to this KoenigEditor instance
+    const [koenigEditor] = React.useState(() => {
+        return new KoenigEditor({
             atoms,
             cardProps,
             cards,
@@ -50,20 +46,13 @@ const Koenig = ({
             onCursorExitAtTop,
             uploadUrl
         });
-
-        koenigEditorRef.current = kgInstance;
     });
-    // purely for convenience
-    const koenigEditor = koenigEditorRef.current;
-    const [mobiledocInstance, setMobiledocInstance] = React.useState(null);
+
+    // Initial default accent colour.
+    const [accentColorState, setAccentColorState] = React.useState('#ff0095');
 
     function _didCreateEditor(mobiledocEditor) {
-        // TODO: keep mobiledoc instance separate or always use koenigEditor.mobiledocEditor
-        // to avoid passing around two editor instances everywhere?
-        setMobiledocInstance(mobiledocEditor);
-
         koenigEditor.initMobiledocEditor(mobiledocEditor);
-
         didCreateEditor?.(mobiledocEditor, koenigEditor);
     }
 
@@ -86,43 +75,42 @@ const Koenig = ({
     };
 
     return (
-        <Container
-            className="relative"
-            id="mobiledoc-editor"
-            data-testid="mobiledoc-container"
-            mobiledoc={mobiledoc}
-            onChange={onChange}
-            didCreateEditor={_didCreateEditor}
-            placeholder="Begin writing your post..."
-            {...koenigEditor.editorProps}
-        >
-            <Editor
-                className="kg-prose"
-                data-testid="mobiledoc-editor">
-            </Editor>
+        <koenigEditorContext.Provider value={koenigEditor}>
+            <Container
+                className="relative"
+                id="mobiledoc-editor"
+                data-testid="mobiledoc-container"
+                mobiledoc={mobiledoc}
+                onChange={onChange}
+                didCreateEditor={_didCreateEditor}
+                placeholder="Begin writing your post..."
+                {...koenigEditor.editorProps}
+            >
+                <Editor
+                    className="kg-prose"
+                    data-testid="mobiledoc-editor">
+                </Editor>
 
-            {/* pop-up markup toolbar shown when there's a selection and mouse movement */}
-            <Toolbar
-                editor={mobiledocInstance}
-                activeMarkupTags={activeMarkupTags}
-                activeSectionTags={activeSectionTags}
-                selectedRange={selectedRange}
-            />
+                {/* pop-up markup toolbar shown when there's a selection and mouse movement */}
+                <Toolbar
+                    activeMarkupTags={activeMarkupTags}
+                    activeSectionTags={activeSectionTags}
+                    selectedRange={selectedRange}
+                />
 
-            {/* (+) icon and pop-up card menu */}
-            <PlusMenu
-                selectedRange={selectedRange}
-                koenigEditor={koenigEditor}
-            />
+                {/* (+) icon and pop-up card menu */}
+                <PlusMenu
+                    selectedRange={selectedRange}
+                />
 
-            {/* slash menu popup */}
-            <SlashMenu
-                selectedRange={selectedRange}
-                koenigEditor={koenigEditor}
-            />
-            <AccentStyles color={accentColorState}/>
-            
-        </Container>
+                {/* slash menu popup */}
+                <SlashMenu
+                    selectedRange={selectedRange}
+                />
+                <AccentStyles color={accentColorState}/>
+
+            </Container>
+        </koenigEditorContext.Provider>
     );
 };
 

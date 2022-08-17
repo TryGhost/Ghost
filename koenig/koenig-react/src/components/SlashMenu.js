@@ -1,9 +1,11 @@
 import React, {useEffect} from 'react';
+import koenigEditorContext from '../contexts/koenig-editor-context';
 import CardMenuContent from './CardMenuContent';
 
 const Y_OFFSET = 16;
 
-const SlashMenu = ({closeMenu, containerId, koenigEditor, ...props}) => {
+const SlashMenu = ({closeMenu, containerId, ...props}) => {
+    const koenigEditor = React.useContext(koenigEditorContext);
     // watch the window for mousedown events so that we can close the
     // menu when we detect a click outside. This is preferable to
     // watching the range because the range will change and remove the
@@ -41,7 +43,8 @@ const SlashMenu = ({closeMenu, containerId, koenigEditor, ...props}) => {
     );
 };
 
-const SlashMenuContainer = ({selectedRange, koenigEditor}) => {
+const SlashMenuContainer = ({selectedRange}) => {
+    const koenigEditor = React.useContext(koenigEditorContext);
     const containerEl = React.useRef(null);
     const cachedRange = React.useRef(null);
     const lastSelectedRange = React.useRef(null);
@@ -131,7 +134,7 @@ const SlashMenuContainer = ({selectedRange, koenigEditor}) => {
 
     return (
         <div id="koenig-slash-menu" className="absolute" style={containerStyle} ref={containerEl}>
-            {isShowingMenu && <SlashMenu closeMenu={closeMenu} containerId={containerEl.current.id} query={query} replacementRange={cachedRange.current} koenigEditor={koenigEditor} /> }
+            {isShowingMenu && <SlashMenu closeMenu={closeMenu} containerId={containerEl.current.id} query={query} replacementRange={cachedRange.current} /> }
         </div>
     );
 };
