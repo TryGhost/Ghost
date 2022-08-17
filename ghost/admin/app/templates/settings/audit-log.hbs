@@ -9,61 +9,62 @@
     <div class="view-container">
         {{#let (audit-log-event-fetcher pageSize=50) as |eventsFetcher|}}
         {{#if eventsFetcher.data}}
-         <div class="gh-list-scrolling">
-             <table class="gh-list">
-                 <thead>
-                     <tr>
-                         <th>User</th>
-                         <th>Action</th>
-                         <th>Time</th>
-                     </tr>
-                 </thead>
-                 <tbody>
-                     {{#each eventsFetcher.data as |event|}}
-                     {{#let (parse-audit-log-event event) as |ev|}}
-                     <tr>
-                         <div class="gh-list-data">
-                             <div class="flex items-center">
-                                 <div class="w-80">
-                                     <h3 class="ma0 pa0 gh-members-list-name">{{ev.actor.name}}</h3>
-                                 </div>
-                             </div>
-                         </div>
-                         <div class="gh-list-data">
-                             <div class="gh-members-activity-container">
-                                 <div class="gh-members-activity-icon">{{svg-jar ev.actionIcon}}</div>
-                                 <div class="gh-members-activity-event">
-                                     <span class="gh-members-activity-description">
-                                         {{capitalize-first-letter ev.action}} <strong>{{ev.original.resource_id}}</strong>
-                                     </span>
-                                 </div>
-                             </div>
-                         </div>
-                         <div class="gh-list-data">{{moment-format ev.original.created_at "DD MMM YYYY HH:mm:ss"}}</div>
-                     </tr>
-                     {{/let}}
-                     {{/each}}
-                 </tbody>
-             </table>
+        <div class="gh-list-scrolling">
+            <table class="gh-list">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Action</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each eventsFetcher.data as |event|}}
+                    {{#let (parse-audit-log-event event) as |ev|}}
+                    <tr>
+                        <div class="gh-list-data">
+                            <div class="flex">
+                                <span class="user-list-item-figure" style={{background-image-style ev.actor.profileImageUrl}}>
+                                    <span class="hidden">Photo of {{ev.actor.name}}</span>
+                                </span>
+                                <h3 class="ma0 pa0 gh-members-list-name">{{ev.actor.name}}</h3>
+                            </div>
+                        </div>
+                        <div class="gh-list-data">
+                            <div class="gh-members-activity-container">
+                                <div class="gh-members-activity-icon">{{svg-jar ev.actionIcon}}</div>
+                                <div class="gh-members-activity-event">
+                                    <span class="gh-members-activity-description">
+                                        {{capitalize-first-letter ev.action}} <strong>{{ev.resource.title}}</strong>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="gh-list-data">{{moment-format ev.original.created_at "DD MMM YYYY HH:mm:ss"}}</div>
+                    </tr>
+                    {{/let}}
+                    {{/each}}
+                </tbody>
+            </table>
 
             {{#if (not (or eventsFetcher.isLoading eventsFetcher.hasReachedEnd))}}
-                <GhScrollTrigger @enter={{eventsFetcher.loadNextPage}} @triggerOffset={{250}} />
+            <GhScrollTrigger @enter={{eventsFetcher.loadNextPage}} @triggerOffset={{250}} />
             {{/if}}
-         </div>
+        </div>
         {{else}}
-            {{#unless eventsFetcher.isLoading}}
-                <div class="no-posts-box">
-                    <div class="no-posts">
-                        {{svg-jar "activity-placeholder" class="gh-members-placeholder"}}
-                        <h4>No staff activity yet</h4>
-                    </div>
-                </div>
-            {{/unless}}
-            {{/if}}
+        {{#unless eventsFetcher.isLoading}}
+        <div class="no-posts-box">
+            <div class="no-posts">
+                {{svg-jar "activity-placeholder" class="gh-members-placeholder"}}
+                <h4>No staff activity yet</h4>
+            </div>
+        </div>
+        {{/unless}}
+        {{/if}}
 
-            {{#if eventsFetcher.isLoading}}
-            <div class="no-posts-box"><GhLoadingSpinner /></div>
-            {{/if}}
+        {{#if eventsFetcher.isLoading}}
+        <div class="no-posts-box"><GhLoadingSpinner /></div>
+        {{/if}}
         {{/let}}
     </div>
 </section>
