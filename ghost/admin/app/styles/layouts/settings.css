@@ -2412,6 +2412,11 @@ p.theme-validation-details {
     grid-gap: 32px;
 }
 
+.gh-settings-members-pricetrialcont .trial-docs-link {
+    color: #30cf43;
+    white-space: nowrap;
+}
+
 .gh-settings-members-pricelabelcont {
     display: flex;
     align-items: baseline;
@@ -2660,6 +2665,15 @@ p.theme-validation-details {
 .gh-stripe-error-hasactivesub {
     margin: 24px 24px -8px;
     color: var(--red);
+}
+
+@media (max-width: 1080px) {
+    .gh-settings-members-pricetrialcont {
+        display: grid;
+        grid-template-columns: none;
+        grid-gap: 0px;
+        margin-bottom: 24px;
+    }
 }
 
 @media (max-width: 500px) {
