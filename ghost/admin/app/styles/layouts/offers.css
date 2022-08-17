@@ -185,6 +185,13 @@
     letter-spacing: 0;
 }
 
+.gh-offer-trial-info {
+    margin: 4px 0 0;
+    color: #738393;
+    font-size: 1.25rem;
+    font-weight: 400;
+}
+
 .gh-offer-url .gh-input {
     background: var(--main-color-content-greybg);
     border-color: var(--lightgrey-l1);
@@ -204,6 +211,10 @@
     display: flex;
 }
 
+.gh-offer-tier-and-trial .form-group {
+    margin-bottom: 0;
+}
+
 .gh-select-product-cadence select {
     text-overflow: ellipsis;
     padding-right: 32px;
@@ -215,6 +226,12 @@
     margin: 0;
     align-items: center;
     text-align: left;
+}
+
+.gh-offer-type-container .gh-radio[disabled] {
+    opacity: .5;
+    cursor: not-allowed;
+    pointer-events: none;
 }
 
 .gh-offer-type-container .gh-radio:not(:first-child) {
