@@ -1,6 +1,7 @@
 name: 'Label Issues'
 
 on:
+  workflow_dispatch:
   issues:
     types: [opened, closed, labeled]
   schedule:
