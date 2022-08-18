@@ -1,4 +1,4 @@
-import {getCurrencySymbol, getFreeProduct, getMemberName, getMemberSubscription, getPriceFromSubscription, getPriceIdFromPageQuery, getSupportAddress, hasMultipleProducts, isActiveOffer, isInviteOnlySite, isPaidMember, isSameCurrency, transformApiTiersData} from './helpers';
+import {getCurrencySymbol, getFreeProduct, getMemberName, getMemberSubscription, getPriceFromSubscription, getPriceIdFromPageQuery, getSupportAddress, getUrlHistory, hasMultipleProducts, isActiveOffer, isInviteOnlySite, isPaidMember, isSameCurrency, transformApiTiersData} from './helpers';
 import * as Fixtures from './fixtures-generator';
 import {site as FixturesSite, member as FixtureMember, offer as FixtureOffer, transformTierFixture as TransformFixtureTiers} from '../utils/test-fixtures';
 import {isComplimentaryMember} from '../utils/helpers';
@@ -253,6 +253,45 @@ describe('Helpers - ', () => {
 
             expect(transformedTiers[0].benefits).toHaveLength(2);
             expect(transformedTiers[1].benefits).toHaveLength(3);
+        });
+    });
+
+    describe('getUrlHistory', () => {
+        beforeEach(() => {
+            jest.spyOn(console, 'warn').mockImplementation(() => {
+                // don't log for these tests
+            });
+        });
+        afterEach(() => {
+            jest.restoreAllMocks();
+        });
+
+        test('returns valid history ', () => {
+            jest.spyOn(Storage.prototype, 'getItem').mockReturnValue(JSON.stringify([
+                {
+                    path: '/',
+                    time: 0
+                }
+            ]));
+            const urlHistory = getUrlHistory();
+            expect(localStorage.getItem).toHaveBeenCalled();
+            expect(urlHistory).toHaveLength(1);
+        });
+
+        test('ignores invalid history ', () => {
+            jest.spyOn(Storage.prototype, 'getItem').mockReturnValue('invalid');
+            const urlHistory = getUrlHistory();
+            expect(localStorage.getItem).toHaveBeenCalled();
+            expect(urlHistory).toBeUndefined();
+        });
+
+        test('doesn\'t throw if localStorage is disabled', () => {
+            jest.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+                throw new Error('LocalStorage disabled');
+            });
+            const urlHistory = getUrlHistory();
+            expect(localStorage.getItem).toHaveBeenCalled();
+            expect(urlHistory).toBeUndefined();
         });
     });
 });

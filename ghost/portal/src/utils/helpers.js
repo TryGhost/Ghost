@@ -791,3 +791,28 @@ export const transformApiTiersData = ({tiers}) => {
         };
     });
 };
+
+/**
+ * Returns the member attribution URL history, which is stored in localStorage, if there is any.
+ * @returns {Object[]|undefined}
+ */
+export function getUrlHistory() {
+    const STORAGE_KEY = 'ghost-history';
+
+    try {
+        const historyString = localStorage.getItem(STORAGE_KEY);
+        if (historyString) {
+            const parsed = JSON.parse(historyString);
+
+            if (Array.isArray(parsed)) {
+                return parsed;
+            }
+        }
+    } catch (error) {
+        // Failed to access localStorage or something related to that.
+        // Log a warning, as this shouldn't happen on a modern browser.
+        
+        /* eslint-disable no-console */
+        console.warn(`[Portal] Failed to load member URL history:`, error);
+    }
+}

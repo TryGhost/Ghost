@@ -1,16 +1,4 @@
-import {transformApiSiteData, transformApiTiersData} from './helpers';
-
-function getAnalyticsMetadata() {
-    const analyticsTag = document.querySelector('meta[name=ghost-analytics-id]');
-    const analyticsId = analyticsTag?.content;
-    if (analyticsTag) {
-        return {
-            entry_id: analyticsId,
-            source_url: window.location.href
-        };
-    }
-    return null;
-}
+import {transformApiSiteData, transformApiTiersData, getUrlHistory} from './helpers';
 
 function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
     const apiPath = 'members/api';
@@ -188,10 +176,6 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 body.enable_comment_notifications = enableCommentNotifications;
             }
 
-            const analyticsData = getAnalyticsMetadata();
-            if (analyticsData) {
-                body.metadata = analyticsData;
-            }
             return makeRequest({
                 url,
                 method: 'PUT',
@@ -219,10 +203,11 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 labels,
                 requestSrc: 'portal'
             };
-            const analyticsData = getAnalyticsMetadata();
-            if (analyticsData) {
-                body.metadata = analyticsData;
+            const urlHistory = getUrlHistory();
+            if (urlHistory) {
+                body.urlHistory = urlHistory;
             }
+
             return makeRequest({
                 url,
                 method: 'POST',
@@ -334,6 +319,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 newsletters: JSON.stringify(newsletters),
                 requestSrc: 'portal',
                 fp_tid: (window.FPROM || window.$FPROM)?.data?.tid,
+                urlHistory: getUrlHistory(),
                 ...metadata
             };
 
@@ -439,10 +425,6 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 identity: identity,
                 priceId: planId
             };
-            const analyticsData = getAnalyticsMetadata();
-            if (body) {
-                body.metadata = analyticsData;
-            }
 
             if (tierId && cadence) {
                 delete body.priceId;
