@@ -25,6 +25,10 @@ describe('MailgunClient', function () {
         sinon.restore();
     });
 
+    it('exports a number for BATCH_SIZE', function () {
+        assert(typeof MailgunClient.BATCH_SIZE === 'number');
+    });
+
     it('can connect via config', function () {
         const configStub = sinon.stub(config, 'get');
         configStub.withArgs('bulkEmail').returns({
