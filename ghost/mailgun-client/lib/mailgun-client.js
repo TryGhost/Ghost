@@ -6,6 +6,8 @@ module.exports = class MailgunClient {
     #config;
     #settings;
 
+    static BATCH_SIZE = 1000;
+
     constructor({config, settings}) {
         this.#config = config;
         this.#settings = settings;
@@ -206,5 +208,3 @@ module.exports = class MailgunClient {
         return !!instance;
     }
 };
-
-module.exports.BATCH_SIZE = 1000;
