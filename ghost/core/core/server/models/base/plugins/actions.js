@@ -23,11 +23,17 @@ module.exports = function (Bookshelf) {
                 return;
             }
 
+            let resourceType = this.actionsResourceType;
+
+            if (typeof resourceType === 'function') {
+                resourceType = resourceType.bind(this)();
+            }
+
             // @TODO: implement context
             return {
                 event: event,
                 resource_id: this.id || this.previous('id'),
-                resource_type: this.actionsResourceType,
+                resource_type: resourceType,
                 actor_id: actor.id,
                 actor_type: actor.type
             };

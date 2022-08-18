@@ -39,7 +39,9 @@ Post = ghostBookshelf.Model.extend({
     tableName: 'posts',
 
     actionsCollectCRUD: true,
-    actionsResourceType: 'post',
+    actionsResourceType: function () {
+        return this.get('type');
+    },
 
     /**
      * @NOTE
