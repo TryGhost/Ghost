@@ -28,6 +28,7 @@ Object {
     },
     "ownerEmail": "jbloggs@example.com",
     "site": Object {
+      "accentColor": "#FF1A75",
       "description": "Thoughts, stories and ideas",
       "icon": null,
       "title": "Ghost",
@@ -47,7 +48,7 @@ exports[`Explore API Read Can request Explore data 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "463",
+  "content-length": "487",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
