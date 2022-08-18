@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React from 'react';
 import {v4 as uuidv4} from 'uuid';
 import koenigEditorContext from '../contexts/koenig-editor-context';
 import CardMenuContent from './CardMenuContent';
@@ -19,7 +19,7 @@ const PlusButton = ({onClick}) => {
 
 const PlusMenu = ({containerId, closeMenu, ...props}) => {
     // close menu on clicks outside or Escape
-    useEffect(() => {
+    React.useEffect(() => {
         const handleMousedown = (event) => {
             if (!event.target.closest(`#${containerId}`)) {
                 closeMenu();
@@ -54,44 +54,105 @@ const PlusMenu = ({containerId, closeMenu, ...props}) => {
     );
 };
 
-const PlusMenuContainer = ({selectedRange}) => {
-    const koenigEditor = React.useContext(koenigEditorContext);
-    const containerId = React.useRef(`kg-plus-${uuidv4()}`);
-    const containerEl = React.useRef();
-    const lastSelectedRange = React.useRef(null); // used to trigger selectedRange prop change behavior
-    const buttonPositionedByCursor = React.useRef(false); // used to indicate cachedRange was set by cursor (selected range) rather than mouse movement
-    const ignoreSelectedRangeChange = React.useRef(false); // used to avoid infinite loop due to selectedRange changing when closing menu
+const menuStateReducer = (state, action) => {
+    switch (action.type) {
+    case 'selected_range_changed': {
+        const {selectedRange} = action;
+        let {isShowingMenu, cachedRange, buttonPositionedByCursor} = state;
 
-    const [cachedRange, setCachedRange] = React.useState(null); // primary range used for positioning/display, can be set to selected range or pointer range
-    const [isShowingMenu, setIsShowingMenu] = React.useState(false);
+        // override cached range
+        if (!isShowingMenu && rangeIsABlankParagraph(selectedRange)) {
+            cachedRange = selectedRange;
+            buttonPositionedByCursor = true;
+        }
 
-    const openMenu = () => {
+        // close the menu if selectedRange changes
+        if (isShowingMenu && !state.ignoreSelectedRangeChange && selectedRange && !selectedRange.isBlank) {
+            isShowingMenu = false;
+            cachedRange = null;
+            buttonPositionedByCursor = false;
+        }
+
+        return {
+            ...state,
+            selectedRange,
+            isShowingMenu,
+            cachedRange,
+            buttonPositionedByCursor,
+            ignoreSelectedRangeChange: false,
+            resetCursorPositionOnNextRender: null
+        };
+    }
+    case 'pointer_range_changed': {
+        const {pointerRange} = action;
+
+        if (rangeIsABlankParagraph(pointerRange)) {
+            return {...state, cachedRange: pointerRange};
+        } else {
+            // hide button unless we have a valid range where the cursor is sitting
+            if (state.buttonPositionedByCursor !== true) {
+                return {...state, cachedRange: null};
+            }
+        }
+
+        return state;
+    }
+    case 'open_menu': {
         // move the cursor to the blank paragraph, ensures any selected card
         // gets inserted in the correct place because editorRange will be
         // wherever the cursor currently is if the menu was opened via a
         // mouseover button
-        moveCursorToCachedRange();
 
-        setIsShowingMenu(true);
-    };
+        return {
+            ...state,
+            isShowingMenu: true,
+            ignoreSelectedRangeChange: true,
+            resetCursorPositionOnNextRender: state.cachedRange
+        };
+    }
+    case 'close_menu': {
+        let {ignoreSelectedRangeChange} = state;
 
-    const closeMenu = ({resetCursorPosition = false} = {}) => {
-        if (resetCursorPosition) {
-            moveCursorToCachedRange();
+        let resetCursorPositionOnNextRender = state.cachedRange;
+
+        if (action.resetCursorPosition) {
+            ignoreSelectedRangeChange = true;
+            resetCursorPositionOnNextRender = state.cachedRange;
         }
 
-        setIsShowingMenu(false);
-    };
+        const isShowingMenu = false;
+        const cachedRange = null;
 
-    const moveCursorToCachedRange = () => {
-        ignoreSelectedRangeChange.current = true;
-        koenigEditor.mobiledocEditor.selectRange(cachedRange);
-    };
+        return {...state, isShowingMenu, cachedRange, ignoreSelectedRangeChange, resetCursorPositionOnNextRender};
+    }
+    default:
+        return state;
+    }
+};
+
+const PlusMenuContainer = ({selectedRange}) => {
+    const koenigEditor = React.useContext(koenigEditorContext);
+
+    const [state, dispatch] = React.useReducer(menuStateReducer, {
+        selectedRange,
+        isShowingMenu: false,
+        cachedRange: null, // primary range used for positioning/display, can be set to selected range or pointer range
+        buttonPositionedByCursor: false, // used to indicate cachedRange was set by cursor (selected range) rather than mouse movement
+        ignoreSelectedRangeChange: false, // used to avoid infinite loop due to selectedRange changing when closing menu
+        resetCursorPositionOnNextRender: null // used to push cursor positioning into a useEffect to avoid state-update-during-render errors
+    });
+
+    const containerId = React.useRef(`kg-plus-${uuidv4()}`);
+    const containerEl = React.useRef();
+
+    const closeMenu = React.useCallback(({resetCursorPosition = false} = {}) => {
+        dispatch({type: 'close_menu', resetCursorPosition});
+    }, []);
 
     // override cached range when mouse moves
-    useEffect(() => {
+    React.useEffect(() => {
         const handleMousemove = (event) => {
-            if (isShowingMenu) {
+            if (state.isShowingMenu) {
                 return;
             }
 
@@ -101,24 +162,17 @@ const PlusMenuContainer = ({selectedRange}) => {
             // add a horizontal buffer to the pointer position so that the
             // (+) button doesn't disappear when the mouse hovers over it due
             // to it being outside of the editor canvas
-            let containerRect = containerEl.current.parentNode.getBoundingClientRect();
+            const containerRect = containerEl.current.parentNode.getBoundingClientRect();
             if (pageX < containerRect.left) {
                 pageX = pageX + 40;
             }
 
             // grab a range from the editor position under the pointer
             try {
-                let position = editor.positionAtPoint(pageX, pageY);
+                const position = editor.positionAtPoint(pageX, pageY);
                 if (position) {
-                    let pointerRange = position.toRange();
-                    if (rangeIsABlankParagraph(pointerRange)) {
-                        setCachedRange(pointerRange);
-                    } else {
-                        // hide button unless we have a valid range where the cursor is sitting
-                        if (buttonPositionedByCursor.current !== true) {
-                            setCachedRange(null);
-                        }
-                    }
+                    const pointerRange = position.toRange();
+                    dispatch({type: 'pointer_range_changed', pointerRange});
                 }
             } catch (e) {
                 // mobiledoc-kit can generate the following harmless error
@@ -135,50 +189,40 @@ const PlusMenuContainer = ({selectedRange}) => {
         return () => {
             window.removeEventListener('mousemove', handleMousemove);
         };
-    }, [koenigEditor, isShowingMenu]);
+    }, [state.isShowingMenu, koenigEditor]);
 
-    // override cached range when selectedRange prop changes
-    if (!isShowingMenu && selectedRange !== lastSelectedRange.current) {
-        if (rangeIsABlankParagraph(selectedRange)) {
-            setCachedRange(selectedRange);
-            buttonPositionedByCursor.current = true;
-        } else {
-            setCachedRange(null);
-            setIsShowingMenu(false);
-            buttonPositionedByCursor.current = false;
+    // adjust the cursor position as required after any state updates
+    React.useEffect(() => {
+        if (state.resetCursorPositionOnNextRender) {
+            koenigEditor.mobiledocEditor.selectRange(state.resetCursorPositionOnNextRender);
         }
-    }
+    }, [koenigEditor, state.resetCursorPositionOnNextRender]);
 
-    // close the menu if selectedRange changes
-    if (isShowingMenu && !ignoreSelectedRangeChange.current && selectedRange && !selectedRange.isBlank && !selectedRange.isEqual(lastSelectedRange.current)) {
-        closeMenu();
-    }
+    // update state when selected range in mobiledoc is changed
+    React.useEffect(() => {
+        dispatch({type: 'selected_range_changed', selectedRange});
+    }, [selectedRange]);
 
     // calculate show/hide of button on each render
-    const isShowingButton = rangeIsABlankParagraph(cachedRange);
-    const top = isShowingButton ? getTopPositionOfRange(cachedRange, containerEl.current) : null;
+    const isShowingButton = rangeIsABlankParagraph(state.cachedRange);
+    const top = isShowingButton ? getTopPositionOfRange(state.cachedRange, containerEl.current) : null;
     const style = top !== null ? {top: `${top}px`} : {};
-
-    // ensure we can track when selectedRange changes
-    lastSelectedRange.current = selectedRange;
-    ignoreSelectedRangeChange.current = false;
 
     // Event handlers ----------------------------------------------------------
 
     const handleButtonClick = (event) => {
         event.preventDefault();
-        isShowingMenu ? closeMenu() : openMenu();
+        state.isShowingMenu ? closeMenu() : dispatch({type: 'open_menu'});
     };
 
     const handleItemClick = () => {
-        closeMenu();
-        setCachedRange(null);
+        dispatch({type: 'close_menu'});
     };
 
     return (
         <div id={containerId.current} data-kg="plus-menu" className="absolute" style={style} ref={containerEl}>
             {isShowingButton && <PlusButton onClick={handleButtonClick} />}
-            {isShowingMenu && <PlusMenu containerId={containerId.current} closeMenu={closeMenu} replacementRange={cachedRange} itemWasClicked={handleItemClick} />}
+            {state.isShowingMenu && <PlusMenu containerId={containerId.current} closeMenu={closeMenu} replacementRange={state.cachedRange} itemWasClicked={handleItemClick} />}
         </div>
     );
 };
