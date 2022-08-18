@@ -7,6 +7,9 @@ let Webhooks;
 Webhook = ghostBookshelf.Model.extend({
     tableName: 'webhooks',
 
+    actionsCollectCRUD: true,
+    actionsResourceType: 'webhook',
+
     defaults() {
         return {
             api_version: `v${ghostVersion.safe}`,
