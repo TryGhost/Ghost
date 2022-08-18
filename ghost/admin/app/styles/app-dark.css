@@ -71,7 +71,7 @@
 @import "layouts/dashboard.css";
 @import "layouts/tiers.css";
 @import "layouts/offers.css";
-
+@import "layouts/explore.css";
 
 :root {
     /* Primary colours */
@@ -889,7 +889,7 @@ input:focus,
 .gh-btn-editor:hover {
     background: var(--lightgrey) !important;
 }
-    
+
 .gh-editor-post-status {
     background: var(--white);
 }
@@ -1244,11 +1244,29 @@ kbd {
 /* Empty states */
 /* ---------------------------------------------------- */
 
-.gh-pages-placeholder, 
+.gh-pages-placeholder,
 .gh-posts-placeholder,
 .gh-tags-placeholder,
 .gh-members-empty .gh-members-placeholder,
 .gh-offers-list-cta .discount-bubble,
 .no-posts .gh-members-placeholder {
     fill: var(--midgrey-d2);
+}
+
+/* Explore */
+
+.fullscreen-explore-container {
+    background: var(--main-bg-color);
+}
+
+.explore-api {
+    color: var(--middarkgrey);
+}
+
+.explore-permissions p {
+    color: #fff;
+}
+
+.explore-permissions {
+    background: var(--mainmenu-color-hover-bg);
 }
