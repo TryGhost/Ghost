@@ -1166,7 +1166,7 @@ textarea.gh-member-details-textarea {
     flex-shrink: 0;
     width: 24px;
     height: 24px;
-    margin-right: 0.25rem;
+    margin-right: 1rem;
 }
 
 .gh-member-feed-icon svg {
@@ -1188,10 +1188,6 @@ textarea.gh-member-details-textarea {
 
 .gh-member-feed-footer {
     padding-top: 16px;
-}
-
-.gh-member-feed-footer a {
-    font-weight: 600;
 }
 
 
