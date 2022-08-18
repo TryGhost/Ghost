@@ -1249,6 +1249,27 @@ Post = ghostBookshelf.Model.extend({
         return Promise.reject(new errors.NoPermissionError({
             message: tpl(messages.notEnoughPermission)
         }));
+    },
+
+    countRelations() {
+        return {
+            signups(modelOrCollection) {
+                modelOrCollection.query('columns', 'posts.*', (qb) => {
+                    qb.count('member_created_events.id')
+                        .from('member_created_events')
+                        .whereRaw('posts.id = member_created_events.source_id')
+                        .as('count__signups');
+                });
+            },
+            conversions(modelOrCollection) {
+                modelOrCollection.query('columns', 'posts.*', (qb) => {
+                    qb.count('subscription_created_events.id')
+                        .from('subscription_created_events')
+                        .whereRaw('posts.id = subscription_created_events.source_id')
+                        .as('count__conversions');
+                });
+            }
+        };
     }
 });
 
