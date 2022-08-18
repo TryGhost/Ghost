@@ -19,7 +19,6 @@ describe('Members Importer API', function () {
 
     beforeEach(function () {
         mockManager.mockMail();
-        mockManager.mockLabsEnabled('members');
     });
 
     afterEach(function () {

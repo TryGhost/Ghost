@@ -1,4 +1,5 @@
 module.exports = {
+    MemberCreatedEvent: require('./lib/MemberCreatedEvent'),
     MemberEntryViewEvent: require('./lib/MemberEntryViewEvent'),
     MemberSubscribeEvent: require('./lib/MemberSubscribeEvent'),
     MemberUnsubscribeEvent: require('./lib/MemberUnsubscribeEvent'),

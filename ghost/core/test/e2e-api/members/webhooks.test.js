@@ -19,6 +19,15 @@ async function getPaidProduct() {
     return await Product.findOne({type: 'paid'});
 }
 
+async function getSubscription(subscriptionId) {
+    // eslint-disable-next-line dot-notation
+    return await models['StripeCustomerSubscription'].where('subscription_id', subscriptionId).fetch({require: true});
+}
+async function getMember(memberId) {
+    // eslint-disable-next-line dot-notation
+    return await models['Member'].where('id', memberId).fetch({require: true});
+}
+
 async function assertMemberEvents({eventType, memberId, asserts}) {
     const events = (await models[eventType].where('member_id', memberId).fetchAll()).toJSON();
     events.should.match(asserts);
@@ -26,8 +35,7 @@ async function assertMemberEvents({eventType, memberId, asserts}) {
 }
 
 async function assertSubscription(subscriptionId, asserts) {
-    // eslint-disable-next-line dot-notation
-    const subscription = await models['StripeCustomerSubscription'].where('subscription_id', subscriptionId).fetch({require: true});
+    const subscription = await getSubscription(subscriptionId);
 
     // We use the native toJSON to prevent calling the overriden serialize method
     models.Base.Model.prototype.serialize.call(subscription).should.match(asserts);
@@ -1672,6 +1680,167 @@ describe('Members API', function () {
                         }
                     ]
                 });
+            });
+        });
+        
+        // Test if the session metadata is processed correctly
+        describe('Member attribution', function () {
+            beforeEach(function () {
+                mockManager.mockLabsEnabled('memberAttribution');
+            });
+
+            // The subscription that we got from Stripe was created 2 seconds earlier (used for testing events)
+            const beforeNow = Math.floor((Date.now() - 2000) / 1000) * 1000;
+
+            async function testWithAttribution(attribution) {
+                const customer_id = createStripeID('cust');
+                const subscription_id = createStripeID('sub');
+                
+                const interval = 'month';
+                const unit_amount = 150;
+
+                set(subscription, {
+                    id: subscription_id,
+                    customer: customer_id,
+                    status: 'active',
+                    items: {
+                        type: 'list',
+                        data: [{
+                            id: 'item_123',
+                            price: {
+                                id: 'price_123',
+                                product: 'product_123',
+                                active: true,
+                                nickname: interval,
+                                currency: 'usd',
+                                recurring: {
+                                    interval
+                                },
+                                unit_amount,
+                                type: 'recurring'
+                            }
+                        }]
+                    },
+                    start_date: beforeNow / 1000,
+                    current_period_end: Math.floor(beforeNow / 1000) + (60 * 60 * 24 * 31),
+                    cancel_at_period_end: false,
+                    metadata: {}
+                });
+
+                set(customer, {
+                    id: customer_id,
+                    name: 'Test Member',
+                    email: `${customer_id}@email.com`,
+                    subscriptions: {
+                        type: 'list',
+                        data: [subscription]
+                    }
+                });
+
+                let webhookPayload = JSON.stringify({
+                    type: 'checkout.session.completed',
+                    data: {
+                        object: {
+                            mode: 'subscription',
+                            customer: customer.id,
+                            subscription: subscription.id,
+                            metadata: attribution ? {
+                                attribution_id: attribution.id,
+                                attribution_url: attribution.url,
+                                attribution_type: attribution.type
+                            } : {}
+                        }
+                    }
+                });
+
+                let webhookSignature = stripe.webhooks.generateTestHeaderString({
+                    payload: webhookPayload,
+                    secret: process.env.WEBHOOK_SECRET
+                });
+
+                await membersAgent.post('/webhooks/stripe/')
+                    .body(webhookPayload)
+                    .header('stripe-signature', webhookSignature)
+                    .expectStatus(200);
+
+                const {body} = await adminAgent.get(`/members/?search=${customer_id}@email.com`);
+                assert.equal(body.members.length, 1, 'The member was not created');
+                const member = body.members[0];
+
+                assert.equal(member.status, 'paid', 'The member should be "paid"');
+                assert.equal(member.subscriptions.length, 1, 'The member should have a single subscription');
+
+                // Convert Stripe ID to internal model ID
+                const subscriptionModel = await getSubscription(member.subscriptions[0].id);
+            
+                await assertMemberEvents({
+                    eventType: 'SubscriptionCreatedEvent',
+                    memberId: member.id,
+                    asserts: [
+                        {
+                            member_id: member.id,
+                            subscription_id: subscriptionModel.id,
+
+                            // Defaults if attribution is not set
+                            attribution_id: attribution?.id ?? null,
+                            attribution_url: attribution?.url ?? null,
+                            attribution_type: attribution?.type ?? null
+                        }
+                    ]
+                });
+
+                const memberModel = await getMember(member.id);
+
+                // It also should have created a new member, and a MemberCreatedEvent
+                // With the same attributions
+                await assertMemberEvents({
+                    eventType: 'MemberCreatedEvent',
+                    memberId: member.id,
+                    asserts: [
+                        {
+                            member_id: member.id,
+                            created_at: memberModel.get('created_at'),
+
+                            // Defaults if attribution is not set
+                            attribution_id: attribution?.id ?? null,
+                            attribution_url: attribution?.url ?? null,
+                            attribution_type: attribution?.type ?? null,
+                            source: 'member'
+                        }
+                    ]
+                });
+            }
+
+            it('Creates a SubscriptionCreatedEvent with url attribution', async function () {
+                // This mainly tests for nullable fields being set to null and handled correctly
+                const attribution = {
+                    id: null,
+                    url: '/',
+                    type: 'url'
+                };
+
+                await testWithAttribution(attribution);
+            });
+
+            it('Creates a SubscriptionCreatedEvent with post attribution', async function () {
+                const attribution = {
+                    id: 'my-post-id',
+                    url: '/my-post-slug',
+                    type: 'post'
+                };
+
+                await testWithAttribution(attribution);
+            });
+
+            it('Creates a SubscriptionCreatedEvent without attribution', async function () {
+                const attribution = undefined;
+                await testWithAttribution(attribution);
+            });
+
+            it('Creates a SubscriptionCreatedEvent with empty attribution object', async function () {
+                // Shouldn't happen, but to make sure we handle it
+                const attribution = {};
+                await testWithAttribution(attribution);
             });
         });
     });

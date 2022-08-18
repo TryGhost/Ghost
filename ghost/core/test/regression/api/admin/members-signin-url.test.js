@@ -9,10 +9,6 @@ const {mockManager} = require('../../../utils/e2e-framework');
 let request;
 
 describe('Members Sigin URL API', function () {
-    beforeEach(function () {
-        mockManager.mockLabsEnabled('members');
-    });
-
     afterEach(function () {
         mockManager.restore();
     });

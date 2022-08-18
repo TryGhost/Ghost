@@ -225,9 +225,16 @@ module.exports = class WebhookController {
             if (!member) {
                 const metadataName = _.get(session, 'metadata.name');
                 const metadataNewsletters = _.get(session, 'metadata.newsletters');
+                const attribution = {
+                    id: session.metadata.attribution_id ?? null,
+                    url: session.metadata.attribution_url ?? null,
+                    type: session.metadata.attribution_type ?? null
+                }; 
+
                 const payerName = _.get(customer, 'subscriptions.data[0].default_payment_method.billing_details.name');
                 const name = metadataName || payerName || null;
-                const memberData = {email: customer.email, name};
+                
+                const memberData = {email: customer.email, name, attribution};
                 if (metadataNewsletters) {
                     try {
                         memberData.newsletters = JSON.parse(metadataNewsletters);
@@ -272,10 +279,16 @@ module.exports = class WebhookController {
 
             const subscription = await this.deps.memberRepository.getSubscriptionByStripeID(session.subscription);
 
+            // TODO: should we check if we don't send this event multiple times if Stripe calls the webhook multiple times?
             const event = SubscriptionCreatedEvent.create({
                 memberId: member.id,
                 subscriptionId: subscription.id,
-                offerId: session.metadata.offer || null
+                offerId: session.metadata.offer || null,
+                attribution: {
+                    id: session.metadata.attribution_id ?? null,
+                    url: session.metadata.attribution_url ?? null,
+                    type: session.metadata.attribution_type ?? null
+                }
             });
 
             DomainEvents.dispatch(event);

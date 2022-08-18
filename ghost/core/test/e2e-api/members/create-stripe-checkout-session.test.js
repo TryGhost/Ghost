@@ -1,7 +1,15 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const nock = require('nock');
+const should = require('should');
+const models = require('../../../core/server/models');
+const urlService = require('../../../core/server/services/url');
 
 let membersAgent, adminAgent, membersService;
+
+async function getPost(id) {
+    // eslint-disable-next-line dot-notation
+    return await models['Post'].where('id', id).fetch({require: true});
+}
 
 describe('Create Stripe Checkout Session', function () {
     before(async function () {
@@ -11,7 +19,7 @@ describe('Create Stripe Checkout Session', function () {
 
         membersService = require('../../../core/server/services/members');
 
-        await fixtureManager.init('members');
+        await fixtureManager.init('posts', 'members');
         await adminAgent.loginAsOwner();
     });
 
@@ -72,5 +80,134 @@ describe('Create Stripe Checkout Session', function () {
             .expectStatus(200)
             .matchBodySnapshot()
             .matchHeaderSnapshot();
+    });
+
+    /**
+     * When a checkout session is created with an urlHistory, we should convert it to an
+     * attribution and check if that is set in the metadata of the stripe session
+     */
+    describe('Member attribution', function () {
+        it('Does pass url attribution source to session metadata', async function () {
+            const {body: {tiers}} = await adminAgent.get('/tiers/?include=monthly_price&yearly_price');
+
+            const paidTier = tiers.find(tier => tier.type === 'paid');
+
+            const scope = nock('https://api.stripe.com')
+                .persist()
+                .post(/v1\/.*/)
+                .reply((uri, body) => {
+                    if (uri === '/v1/checkout/sessions') {
+                        const parsed = new URLSearchParams(body);
+                        should(parsed.get('metadata[attribution_url]')).eql('/test');
+                        should(parsed.get('metadata[attribution_type]')).eql('url');
+                        should(parsed.get('metadata[attribution_id]')).be.null();
+                        return [200, {id: 'cs_123'}];
+                    }
+
+                    throw new Error('Should not get called');
+                });
+
+            await membersAgent.post('/api/create-stripe-checkout-session/')
+                .body({
+                    customerEmail: 'attribution@test.com',
+                    tierId: paidTier.id,
+                    cadence: 'month',
+                    metadata: {
+                        urlHistory: [
+                            {
+                                path: '/test',
+                                time: 123
+                            }
+                        ]
+                    }
+                })
+                .expectStatus(200)
+                .matchBodySnapshot()
+                .matchHeaderSnapshot();
+
+            should(scope.isDone()).eql(true);
+        });
+
+        it('Does pass post attribution source to session metadata', async function () {
+            const post = await getPost(fixtureManager.get('posts', 0).id);
+            const url = urlService.getUrlByResourceId(post.id, {absolute: false});
+
+            const {body: {tiers}} = await adminAgent.get('/tiers/?include=monthly_price&yearly_price');
+
+            const paidTier = tiers.find(tier => tier.type === 'paid');
+
+            const scope = nock('https://api.stripe.com')
+                .persist()
+                .post(/v1\/.*/)
+                .reply((uri, body) => {
+                    if (uri === '/v1/checkout/sessions') {
+                        const parsed = new URLSearchParams(body);
+                        should(parsed.get('metadata[attribution_url]')).eql(url);
+                        should(parsed.get('metadata[attribution_type]')).eql('post');
+                        should(parsed.get('metadata[attribution_id]')).eql(post.id);
+                        return [200, {id: 'cs_123'}];
+                    }
+
+                    throw new Error('Should not get called');
+                });
+
+            await membersAgent.post('/api/create-stripe-checkout-session/')
+                .body({
+                    customerEmail: 'attribution-post@test.com',
+                    tierId: paidTier.id,
+                    cadence: 'month',
+                    metadata: {
+                        urlHistory: [
+                            {
+                                path: url,
+                                time: 123
+                            }
+                        ]
+                    }
+                })
+                .expectStatus(200)
+                .matchBodySnapshot()
+                .matchHeaderSnapshot();
+
+            should(scope.isDone()).eql(true);
+        });
+
+        it('Ignores attribution_* values in metadata', async function () {
+            const {body: {tiers}} = await adminAgent.get('/tiers/?include=monthly_price&yearly_price');
+
+            const paidTier = tiers.find(tier => tier.type === 'paid');
+
+            const scope = nock('https://api.stripe.com')
+                .persist()
+                .post(/v1\/.*/)
+                .reply((uri, body) => {
+                    if (uri === '/v1/checkout/sessions') {
+                        const parsed = new URLSearchParams(body);
+                        should(parsed.get('metadata[attribution_url]')).be.null();
+                        should(parsed.get('metadata[attribution_type]')).be.null();
+                        should(parsed.get('metadata[attribution_id]')).be.null();
+                        return [200, {id: 'cs_123'}];
+                    }
+
+                    throw new Error('Should not get called');
+                });
+
+            await membersAgent.post('/api/create-stripe-checkout-session/')
+                .body({
+                    customerEmail: 'attribution-2@test.com',
+                    tierId: paidTier.id,
+                    cadence: 'month',
+                    metadata: {
+                        attribution_type: 'url',
+                        attribution_url: '/',
+                        attribution_id: null
+                    }
+                })
+                .expectStatus(200)
+                .matchBodySnapshot()
+                .matchHeaderSnapshot();
+
+            should(scope.isDone()).eql(true);
+        });
     });
 });

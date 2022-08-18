@@ -3,7 +3,7 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const DomainEvents = require('@tryghost/domain-events');
-const {SubscriptionCreatedEvent, MemberSubscribeEvent} = require('@tryghost/member-events');
+const {MemberCreatedEvent, SubscriptionCreatedEvent, MemberSubscribeEvent} = require('@tryghost/member-events');
 const ObjectId = require('bson-objectid');
 const {NotFoundError} = require('@tryghost/errors');
 
@@ -167,6 +167,22 @@ module.exports = class MemberRepository {
         }, options);
     }
 
+    /**
+     * Create a member
+     * @param {Object} data 
+     * @param {string} data.email
+     * @param {string} [data.name]
+     * @param {string} [data.note]
+     * @param {(string|Object)[]} [data.labels]
+     * @param {boolean} [data.subscribed] (deprecated)
+     * @param {string} [data.geolocation] 
+     * @param {Date} [data.created_at]
+     * @param {Object[]} [data.products]
+     * @param {Object[]} [data.newsletters]
+     * @param {import('@tryghost/member-attribution/lib/history').Attribution} [data.attribution]
+     * @param {*} options 
+     * @returns 
+     */
     async create(data, options) {
         if (!options) {
             options = {};
@@ -279,6 +295,12 @@ module.exports = class MemberRepository {
                 source: source
             }, eventData.created_at));
         }
+
+        DomainEvents.dispatch(MemberCreatedEvent.create({
+            memberId: member.id,
+            attribution: data.attribution,
+            source
+        }, eventData.created_at));
 
         return member;
     }

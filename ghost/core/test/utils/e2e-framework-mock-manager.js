@@ -93,6 +93,8 @@ const sentEmail = (matchers) => {
         
         assert.equal(spyCall.args[0][key], value, `Expected Email ${emailCount} to have ${key} of ${value}`);
     });
+
+    return spyCall.args[0];
 };
 
 /**
