@@ -75,6 +75,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     displayName: 'post',
     validationType: 'post',
 
+    count: attr(),
     createdAtUTC: attr('moment-utc'),
     excerpt: attr('string'),
     customExcerpt: attr('string'),

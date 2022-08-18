@@ -35,6 +35,10 @@
                             <div class="gh-list-header gh-posts-sends-header">Sends</div>
                             <div class="gh-list-header gh-posts-opens-header">Opens</div>
                         {{/if}}
+                        {{#if this.feature.memberAttribution}}
+                            <div class="gh-list-header gh-posts-opens-header">Signups</div>
+                            <div class="gh-list-header gh-posts-opens-header">Conversions</div>
+                        {{/if}}
                     <div class="gh-list-header gh-posts-status-header">Status</div>
                 </li>
             {{/if}}

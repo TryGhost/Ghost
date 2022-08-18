@@ -77,6 +77,18 @@
         {{/if}}
     {{/if}}
 
+    {{#if this.feature.memberAttribution}}
+        <a href={{@post.url}} class="permalink gh-list-data gh-post-list-status" target="_blank" rel="noopener noreferrer">
+          {{@post.count.signups}}
+        </a>
+    {{/if}}
+
+    {{#if this.feature.memberAttribution}}
+        <a href={{@post.url}} class="permalink gh-list-data gh-post-list-status" target="_blank" rel="noopener noreferrer">
+          {{@post.count.conversions}}
+        </a>
+    {{/if}}
+
     {{#unless @hideStatusColumn }}
         {{#if (and this.session.user.isContributor @post.isPublished)}}
             <a href={{@post.url}} class="permalink gh-list-data gh-post-list-status" target="_blank" rel="noopener noreferrer">
