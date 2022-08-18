@@ -2246,6 +2246,12 @@ p.gh-members-import-errordetail:first-of-type {
     align-items: flex-start;
 }
 
+.gh-membertier-price-container .gh-tier-card-price {
+    margin: 0 12px 2px 0;
+    padding: 12px 8px;
+    border: 1px solid var(--whitegrey);
+}
+
 .gh-cp-membertier:not(.multiple-subs) .gh-membertier-price-container {
     margin-top: -19px;
 }
