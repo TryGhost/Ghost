@@ -20,7 +20,7 @@ export default class MembersEventFilter extends Helper {
         if (this.settings.get('editorDefaultEmailRecipients') === 'disabled') {
             [...EMAIL_EVENTS, ...NEWSLETTER_EVENTS].forEach(type => excludedEventsSet.add(type));
         }
-        if (!this.feature.comments || this.settings.get('commentsEnabled') === 'off') {
+        if (this.settings.get('commentsEnabled') === 'off') {
             excludedEventsSet.add('comment_event');
         }
 
