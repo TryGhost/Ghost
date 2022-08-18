@@ -15,14 +15,14 @@
                     <tr>
                         <th>User</th>
                         <th>Action</th>
-                        <th>Time</th>
+                        <th>When</th>
                     </tr>
                 </thead>
                 <tbody>
                     {{#each eventsFetcher.data as |event|}}
                     {{#let (parse-audit-log-event event) as |ev|}}
                     <tr>
-                        <div class="gh-list-data">
+                        <div class="gh-list-data gh-list-cellwidth-30">
                             <div class="flex">
                                 <span class="user-list-item-figure" style={{background-image-style ev.actor.profileImageUrl}}>
                                     <span class="hidden">Photo of {{ev.actor.name}}</span>
@@ -30,7 +30,7 @@
                                 <h3 class="ma0 pa0 gh-members-list-name">{{ev.actor.name}}</h3>
                             </div>
                         </div>
-                        <div class="gh-list-data">
+                        <div class="gh-list-data gh-list-cellwidth-50">
                             <div class="gh-members-activity-container">
                                 <div class="gh-members-activity-icon">{{svg-jar ev.actionIcon}}</div>
                                 <div class="gh-members-activity-event">
