@@ -23,7 +23,7 @@
                     {{#let (parse-audit-log-event event) as |ev|}}
                     <tr>
                         <div class="gh-list-data gh-list-cellwidth-30">
-                            <div class="flex">
+                            <div class="flex items-center">
                                 <span class="user-list-item-figure" style={{background-image-style ev.actor.profileImageUrl}}>
                                     <span class="hidden">Photo of {{ev.actor.name}}</span>
                                 </span>
