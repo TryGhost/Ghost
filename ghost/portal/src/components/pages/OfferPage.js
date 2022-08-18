@@ -87,7 +87,7 @@ export const OfferPageStyles = ({site}) => {
     min-height: 0;
 }
 
-.offer .gh-portal-product-card .gh-portal-product-card-pricecontainer {
+.offer .gh-portal-product-card .gh-portal-product-card-pricecontainer:not(.offer-type-trial) {
     margin-top: 0px;
 }
 
@@ -304,7 +304,12 @@ export default class OfferPage extends React.Component {
 
     renderSubmitButton() {
         const {action, brandColor} = this.context;
+        const {pageData: offer} = this.context;
         let label = 'Continue';
+
+        if (offer.type === 'trial') {
+            label = 'Start ' + offer.amount + '-day free trial';
+        }
 
         let isRunning = false;
         if (action === 'signup:running') {
@@ -458,9 +463,7 @@ export default class OfferPage extends React.Component {
             renewsLabel = `Renews at ${originalPrice}.`;
         }
         if (discountDuration === 'trial') {
-            return (
-                <p className="after-trial-amount">Then {getCurrencySymbol(price.currency)}{formatNumber(price.amount / 100)}/{price.interval}</p>
-            );
+            return null;
         }
         return (
             <p className="footnote">{this.getOffAmount({offer})} off {durationLabel}. {renewsLabel}</p>
@@ -483,9 +486,10 @@ export default class OfferPage extends React.Component {
     renderUpdatedTierPrice({offer, currencyClass, updatedPrice, price}) {
         if (offer.type === 'trial') {
             return (
-                <div className="gh-portal-product-card-pricecontainer">
+                <div className="gh-portal-product-card-pricecontainer offer-type-trial">
                     <div className="gh-portal-product-price">
-                        <span className="amount trial-duration">{offer.amount} days free</span>
+                        <span className={'currency-sign ' + currencyClass}>{getCurrencySymbol(price.currency)}</span>
+                        <span className="amount">{formatNumber(this.renderRoundedPrice(updatedPrice))}</span>
                     </div>
                 </div>
             );

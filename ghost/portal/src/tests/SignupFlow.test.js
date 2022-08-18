@@ -672,7 +672,7 @@ describe('Signup', () => {
             expect(nameInput).toHaveValue('Jamie Larsen');
 
             fireEvent.click(tierContainer[0]);
-            const labelText = popupIframeDocument.querySelector('.gh-portal-discount-label');
+            const labelText = popupIframeDocument.querySelector('.gh-portal-discount-label-trial');
             await waitFor(() => {
                 expect(labelText).toBeInTheDocument();
             });
