@@ -5,8 +5,8 @@ const AttributionBuilder = require('./attribution');
 const UrlHistory = require('./history');
 
 class MemberAttributionService {
-    constructor({MemberCreatedEvent, SubscriptionCreatedEvent, urlService}) {
-        const eventHandler = new MemberAttributionEventHandler({MemberCreatedEvent, SubscriptionCreatedEvent, DomainEvents});
+    constructor({MemberCreatedEvent, SubscriptionCreatedEvent, urlService, labsService}) {
+        const eventHandler = new MemberAttributionEventHandler({MemberCreatedEvent, SubscriptionCreatedEvent, DomainEvents, labsService});
         eventHandler.subscribe();
 
         const urlTranslator = new UrlTranslator({urlService});

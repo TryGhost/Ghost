@@ -1,15 +1,22 @@
 const {MemberCreatedEvent, SubscriptionCreatedEvent} = require('@tryghost/member-events');
 
 class MemberAttributionEventHandler {
-    constructor({MemberCreatedEvent: MemberCreatedEventModel, SubscriptionCreatedEvent: SubscriptionCreatedEventModel, DomainEvents}) {
+    constructor({MemberCreatedEvent: MemberCreatedEventModel, SubscriptionCreatedEvent: SubscriptionCreatedEventModel, DomainEvents, labsService}) {
         this._MemberCreatedEventModel = MemberCreatedEventModel;
         this._SubscriptionCreatedEvent = SubscriptionCreatedEventModel;
         this.DomainEvents = DomainEvents;
+        this.labsService = labsService;
     }
 
     subscribe() {
         this.DomainEvents.subscribe(MemberCreatedEvent, async (event) => {
-            const attribution = event.data.attribution;
+            let attribution = event.data.attribution;
+
+            if (!this.labsService.isSet('memberAttribution')){
+                // Prevent storing attribution
+                // Can replace this later with a privacy toggle
+                attribution = {};
+            }
 
             await this._MemberCreatedEventModel.add({
                 member_id: event.data.memberId,
@@ -22,7 +29,13 @@ class MemberAttributionEventHandler {
         });
 
         this.DomainEvents.subscribe(SubscriptionCreatedEvent, async (event) => {
-            const attribution = event.data.attribution;
+            let attribution = event.data.attribution;
+
+            if (!this.labsService.isSet('memberAttribution')){
+                // Prevent storing attribution
+                // Can replace this later with a privacy toggle
+                attribution = {};
+            }
 
             await this._SubscriptionCreatedEvent.add({
                 member_id: event.data.memberId,

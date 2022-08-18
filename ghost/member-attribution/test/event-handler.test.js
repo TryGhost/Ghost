@@ -25,10 +25,12 @@ describe('MemberAttributionEventHandler', function () {
             };
 
             const MemberCreatedEventModel = {add: sinon.stub()};
+            const labsService = {isSet: sinon.stub().returns(true)};
             const subscribeSpy = sinon.spy(DomainEvents, 'subscribe');
             const eventHandler = new MemberAttributionEventHandler({
                 DomainEvents,
-                MemberCreatedEvent: MemberCreatedEventModel
+                MemberCreatedEvent: MemberCreatedEventModel,
+                labsService
             });
             eventHandler.subscribe();
             sinon.assert.calledOnceWithMatch(MemberCreatedEventModel.add, {
@@ -57,10 +59,12 @@ describe('MemberAttributionEventHandler', function () {
             };
 
             const MemberCreatedEventModel = {add: sinon.stub()};
+            const labsService = {isSet: sinon.stub().returns(true)};
             const subscribeSpy = sinon.spy(DomainEvents, 'subscribe');
             const eventHandler = new MemberAttributionEventHandler({
                 DomainEvents,
-                MemberCreatedEvent: MemberCreatedEventModel
+                MemberCreatedEvent: MemberCreatedEventModel,
+                labsService
             });
             eventHandler.subscribe();
             sinon.assert.calledOnceWithMatch(MemberCreatedEventModel.add, {
@@ -69,6 +73,43 @@ describe('MemberAttributionEventHandler', function () {
                 attribution_id: '123',
                 attribution_type: 'post',
                 attribution_url: 'url',
+                source: 'test'
+            });
+            sinon.assert.calledTwice(subscribeSpy);
+        });
+
+        it('filters if disabled', function () {
+            const DomainEvents = {
+                subscribe: (type, handler) => {
+                    if (type === MemberCreatedEvent) {
+                        handler(MemberCreatedEvent.create({
+                            memberId: '123',
+                            source: 'test',
+                            attribution: {
+                                id: '123',
+                                type: 'post',
+                                url: 'url'
+                            }
+                        }, new Date(0)));
+                    }
+                }
+            };
+
+            const MemberCreatedEventModel = {add: sinon.stub()};
+            const labsService = {isSet: sinon.stub().returns(false)};
+            const subscribeSpy = sinon.spy(DomainEvents, 'subscribe');
+            const eventHandler = new MemberAttributionEventHandler({
+                DomainEvents,
+                MemberCreatedEvent: MemberCreatedEventModel,
+                labsService
+            });
+            eventHandler.subscribe();
+            sinon.assert.calledOnceWithMatch(MemberCreatedEventModel.add, {
+                member_id: '123',
+                created_at: new Date(0),
+                attribution_id: null,
+                attribution_type: null,
+                attribution_url: null,
                 source: 'test'
             });
             sinon.assert.calledTwice(subscribeSpy);
@@ -89,10 +130,12 @@ describe('MemberAttributionEventHandler', function () {
             };
 
             const SubscriptionCreatedEventModel = {add: sinon.stub()};
+            const labsService = {isSet: sinon.stub().returns(true)};
             const subscribeSpy = sinon.spy(DomainEvents, 'subscribe');
             const eventHandler = new MemberAttributionEventHandler({
                 DomainEvents,
-                SubscriptionCreatedEvent: SubscriptionCreatedEventModel
+                SubscriptionCreatedEvent: SubscriptionCreatedEventModel,
+                labsService
             });
             eventHandler.subscribe();
             sinon.assert.calledOnceWithMatch(SubscriptionCreatedEventModel.add, {
@@ -121,10 +164,12 @@ describe('MemberAttributionEventHandler', function () {
             };
 
             const SubscriptionCreatedEventModel = {add: sinon.stub()};
+            const labsService = {isSet: sinon.stub().returns(true)};
             const subscribeSpy = sinon.spy(DomainEvents, 'subscribe');
             const eventHandler = new MemberAttributionEventHandler({
                 DomainEvents,
-                SubscriptionCreatedEvent: SubscriptionCreatedEventModel
+                SubscriptionCreatedEvent: SubscriptionCreatedEventModel,
+                labsService
             });
             eventHandler.subscribe();
             sinon.assert.calledOnceWithMatch(SubscriptionCreatedEventModel.add, {
@@ -134,6 +179,43 @@ describe('MemberAttributionEventHandler', function () {
                 attribution_id: '123',
                 attribution_type: 'post',
                 attribution_url: 'url'
+            });
+            sinon.assert.calledTwice(subscribeSpy);
+        });
+
+        it('filters if disabled', function () {
+            const DomainEvents = {
+                subscribe: (type, handler) => {
+                    if (type === SubscriptionCreatedEvent) {
+                        handler(SubscriptionCreatedEvent.create({
+                            memberId: '123',
+                            subscriptionId: '456',
+                            attribution: {
+                                id: '123',
+                                type: 'post',
+                                url: 'url'
+                            }
+                        }, new Date(0)));
+                    }
+                }
+            };
+
+            const SubscriptionCreatedEventModel = {add: sinon.stub()};
+            const labsService = {isSet: sinon.stub().returns(false)};
+            const subscribeSpy = sinon.spy(DomainEvents, 'subscribe');
+            const eventHandler = new MemberAttributionEventHandler({
+                DomainEvents,
+                SubscriptionCreatedEvent: SubscriptionCreatedEventModel,
+                labsService
+            });
+            eventHandler.subscribe();
+            sinon.assert.calledOnceWithMatch(SubscriptionCreatedEventModel.add, {
+                member_id: '123',
+                subscription_id: '456',
+                created_at: new Date(0),
+                attribution_id: null,
+                attribution_type: null,
+                attribution_url: null
             });
             sinon.assert.calledTwice(subscribeSpy);
         });

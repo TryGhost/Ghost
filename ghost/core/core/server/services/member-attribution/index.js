@@ -1,4 +1,5 @@
 const urlService = require('../url');
+const labsService = require('../../../shared/labs');
 
 class MemberAttributionServiceWrapper {
     init() {
@@ -14,7 +15,8 @@ class MemberAttributionServiceWrapper {
         this.service = new MemberAttributionService({
             MemberCreatedEvent: models.MemberCreatedEvent,
             SubscriptionCreatedEvent: models.SubscriptionCreatedEvent,
-            urlService
+            urlService,
+            labsService
         });
     }
 }
