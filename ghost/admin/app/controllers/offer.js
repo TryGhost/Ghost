@@ -5,7 +5,6 @@ import config from 'ghost-admin/config/environment';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import {action} from '@ember/object';
 import {getSymbol} from 'ghost-admin/utils/currency';
-import {ghPriceAmount} from '../helpers/gh-price-amount';
 import {inject as service} from '@ember/service';
 import {slugify} from '@tryghost/string';
 import {task} from 'ember-concurrency';
@@ -119,7 +118,6 @@ export default class OffersController extends Controller {
             let monthlyLabel;
             let yearlyLabel;
             const tierCurrency = tier.currency;
-            const tierCurrencySymbol = tierCurrency.toUpperCase();
             monthlyLabel = `${tier.name} - Monthly`;
             yearlyLabel = `${tier.name} - Yearly`;
 
