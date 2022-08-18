@@ -35,7 +35,14 @@
                                 <div class="gh-members-activity-icon">{{svg-jar ev.actionIcon}}</div>
                                 <div class="gh-members-activity-event">
                                     <span class="gh-members-activity-description">
-                                        {{capitalize-first-letter ev.action}} <strong>{{ev.resource.title}}</strong>
+                                        {{capitalize-first-letter ev.action}}
+                                        {{#if ev.resource.title}}
+                                        <LinkTo @route="editor.edit" @models={{array ev.resource.displayName ev.resource.id}} class="permalink">
+                                            <strong>{{ev.resource.title}}</strong>
+                                        </LinkTo>
+                                        {{else}}
+                                        <br/><small>({{ev.original.resource_id}})</small>
+                                        {{/if}}
                                     </span>
                                 </div>
                             </div>
