@@ -10,7 +10,7 @@ const CardComponent = ({children, isSelected, isEditing, koenigOptions, selectCa
 
     const classes = [
         'relative',
-        'caret-grey-middark',
+        'caret-grey-800',
         'hover:shadow-green',
         'hover:shadow-[0_0_0_1px]'
     ];

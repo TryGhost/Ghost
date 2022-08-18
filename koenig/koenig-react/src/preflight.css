@@ -318,7 +318,7 @@
     input::placeholder,
     textarea::placeholder {
         opacity: 1; /* 1 */
-        color: theme('colors.grey.midlight'); /* 2 */
+        color: theme('colors.grey.300'); /* 2 */
     }
 
     /*

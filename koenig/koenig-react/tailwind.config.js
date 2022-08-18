@@ -12,21 +12,63 @@ module.exports = {
             current: 'currentColor',
             white: '#ffffff',
             black: '#15171A',
-            green: '#30cf43',
-            blue: '#14b8ff',
-            purple: '#8e42ff',
-            pink: '#fb2d8d',
-            red: '#f50b23',
-            yellow: '#ffb41f',
-            lime: '#B5FF18',
-
             grey: {
-                DEFAULT: '#7C8B9A',
-                white: '#EBEEF0',
-                light: '#CED4D9',
-                midlight: '#ABB4BE',
-                middark: '#626D79',
-                dark: '#394047'
+                DEFAULT: '#ABB4BE',
+                50: '#F9F9FA',
+                100: '#EBEEF0',
+                200: '#DDE1E5',
+                300: '#CED4D9',
+                400: '#BDC5CC',
+                500: '#ABB4BE',
+                600: '#95A1AD',
+                700: '#7C8B9A',
+                800: '#626D79',
+                900: '#394047'
+            },
+            green: {
+                DEFAULT: '#30cf43',
+                100: '#E1F9E4',
+                400: '#58da67',
+                500: '#30cf43',
+                600: '#2ab23a'
+            },
+            blue: {
+                DEFAULT: '#14b8ff',
+                100: '#DBF4FF',
+                400: '#42c6ff',
+                500: '#14b8ff',
+                600: '#00a4eb'
+            },
+            purple: {
+                DEFAULT: '#8e42ff',
+                100: '#ede0ff',
+                400: '#a366ff',
+                500: '#8e42ff',
+                600: '7b1fff'
+            },
+            pink: {
+                DEFAULT: '#fb2d8d',
+                100: '#FFDFEE',
+                400: '#ff5ca8',
+                500: '#fb2d8d',
+                600: '#f70878'
+            },
+            red: {
+                DEFAULT: '#f50b23',
+                100: '#FFE0E0',
+                400: '#f9394c',
+                500: '#f50b23',
+                600: '#dc091e'
+            },
+            yellow: {
+                DEFAULT: '#ffb41f',
+                100: '#fff1d6',
+                400: '#ffc247',
+                500: '#ffb41f',
+                600: '#f0a000'
+            },
+            lime: {
+                DEFAULT: '#B5FF18'
             }
         },
         extend: {

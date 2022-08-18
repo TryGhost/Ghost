@@ -5,7 +5,7 @@ import HrCardIcon from '../icons/kg-card-type-divider.svg';
 const HrCardComponent = ({...props}) => {
     return (
         <Card {...props}>
-            <hr className='my-4 mx-0 border-grey-light' />
+            <hr className='my-4 mx-0 border-grey-300' />
         </Card>
     );
 };

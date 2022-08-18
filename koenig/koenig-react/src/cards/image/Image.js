@@ -77,7 +77,7 @@ const Image = (props) => {
                     />
                 </form>
                 <CaptionEditor Alt={editAlt} payload={{payload, setPayload}} env={props.env} />
-                <button onClick={() => setEditAlt(!editAlt)} className={` absolute bottom-0 right-0 m-3 cursor-pointer rounded border px-1 text-sm font-normal leading-6 ${editAlt ? 'border-green bg-green text-white' : 'border-grey-midlight text-grey-midlight'} `}>Alt</button>            
+                <button onClick={() => setEditAlt(!editAlt)} className={` absolute bottom-0 right-0 m-3 cursor-pointer rounded border px-1 text-sm font-normal leading-6 ${editAlt ? 'border-green bg-green text-white' : 'border-grey text-grey'} `}>Alt</button>            
             </div>
         </figure>
     );

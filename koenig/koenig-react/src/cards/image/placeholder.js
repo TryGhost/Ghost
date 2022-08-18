@@ -46,7 +46,7 @@ const ImagePlaceholder = ({uploadRef, progress, handleFiles}) => {
             onClick={handleClick}
             onDrop={e => handleDrop(e)}
             className={`h-96 cursor-pointer ${dragActive ? 'bg-green' : 'border border-transparent'}`}>
-            <div className='h-100 relative flex items-center justify-center border border-grey-white bg-[#fafafb]'>
+            <div className='h-100 relative flex items-center justify-center border border-grey-100 bg-grey-50'>
                 <button className='flex flex-col items-center justify-center p-20'>
                     <PlaceholderIcon className=' h-32 w-32' />
                     <PlaceHolderText progress={progress} dragActive={dragActive} />
