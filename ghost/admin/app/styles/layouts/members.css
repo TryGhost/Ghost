@@ -2147,9 +2147,23 @@ p.gh-members-import-errordetail:first-of-type {
     border-top: 1px solid var(--whitegrey);
 }
 
-.gh-membertier-created {
+.gh-membertier-created,
+.gh-membertier-started {
     color: var(--midgrey-d1);
     font-size: 1.25rem;
+    font-weight: 500;
+}
+
+.gh-membertier-started a {
+    color: var(--black);
+    font-weight: 500;
+}
+
+.gh-membertier-separator {
+    color: var(--midgrey-d1);
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0 0.25em;
 }
 
 .gh-membertier-archived .gh-membertier-name {
