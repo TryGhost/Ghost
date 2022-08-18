@@ -59,7 +59,8 @@ module.exports = function MembersAPI({
     stripeAPIService,
     offersAPI,
     labsService,
-    newslettersService
+    newslettersService,
+    memberAttributionService
 }) {
     const tokenService = new TokenService({
         privateKey,
@@ -162,6 +163,7 @@ module.exports = function MembersAPI({
         stripeAPIService,
         tokenService,
         sendEmailWithMagicLink,
+        memberAttributionService,
         labsService
     });
 
@@ -184,12 +186,16 @@ module.exports = function MembersAPI({
         return magicLinkService.sendMagicLink({email, type, tokenData: Object.assign({email}, tokenData), referrer});
     }
 
-    function getMagicLink(email) {
-        return magicLinkService.getMagicLink({tokenData: {email}, type: 'signin'});
+    function getMagicLink(email, tokenData = {}) {
+        return magicLinkService.getMagicLink({tokenData: {email, ...tokenData}, type: 'signin'});
+    }
+
+    async function getTokenDataFromMagicLinkToken(token) {
+        return await magicLinkService.getDataFromToken(token);
     }
 
     async function getMemberDataFromMagicLinkToken(token) {
-        const {email, labels = [], name = '', oldEmail, newsletters} = await magicLinkService.getDataFromToken(token);
+        const {email, labels = [], name = '', oldEmail, newsletters, attribution} = await getTokenDataFromMagicLinkToken(token);
         if (!email) {
             return null;
         }
@@ -205,7 +211,7 @@ module.exports = function MembersAPI({
             }
             return member;
         }
-        const newMember = await users.create({name, email, labels, newsletters});
+        const newMember = await users.create({name, email, labels, newsletters, attribution});
         await MemberLoginEvent.add({member_id: newMember.id});
         return getMemberIdentityData(email);
     }
@@ -311,6 +317,9 @@ module.exports = function MembersAPI({
         members: users,
         memberBREADService,
         events: eventRepository,
-        productRepository
+        productRepository,
+        
+        // Test helpers
+        getTokenDataFromMagicLinkToken
     };
 };
