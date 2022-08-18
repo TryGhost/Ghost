@@ -159,8 +159,8 @@
                                                 <span class="gh-cp-membertier-renewal">Has access until {{sub.validUntil}}</span>
                                                 <span class="gh-badge archived" data-test-text="member-subscription-status">Cancelled</span>
                                             {{else if sub.trialUntil}}
-                                                    <span class="gh-cp-membertier-renewal">Ends {{sub.trialUntil}}</span>
-                                                    <span class="gh-badge active" data-test-text="member-subscription-status">Active</span>
+                                                <span class="gh-cp-membertier-renewal">Ends {{sub.trialUntil}}</span>
+                                                <span class="gh-badge active" data-test-text="member-subscription-status">Active</span>
                                             {{else}}
                                                 <span class="gh-cp-membertier-renewal">Renews {{sub.validUntil}}</span>
                                                 <span class="gh-badge active" data-test-text="member-subscription-status">Active</span>
@@ -189,8 +189,11 @@
                                                 </div>
                                             {{/if}}
                                         {{/if}}
-                                        <div class="gh-membertier-created">
-                                            Created on {{sub.startDate}}
+                                        <div>
+                                            <span class="gh-membertier-created">Created on {{sub.startDate}}</span>
+                                            <span class="gh-membertier-separator">·</span>
+                                            {{!-- TODO: You can simply add a <a /> for this when a page is available --}}
+                                            <span class="gh-membertier-started">Started on —</span>
                                         </div>
                                     </div>
 
