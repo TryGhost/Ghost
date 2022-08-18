@@ -10,6 +10,7 @@ const config = require('../../../core/shared/config');
 const models = require('../../../core/server/models');
 const localUtils = require('./utils');
 const configUtils = require('../../utils/configUtils');
+const mockManager = require('../../utils/e2e-framework-mock-manager');
 
 describe('Posts API', function () {
     let request;
@@ -27,6 +28,7 @@ describe('Posts API', function () {
         const newsletterId = testUtils.DataGenerator.Content.newsletters[0].id;
         const postId = testUtils.DataGenerator.Content.posts[0].id;
         await models.Post.edit({newsletter_id: newsletterId}, {id: postId});
+        mockManager.mockLabsDisabled('memberAttribution');
     });
 
     afterEach(function () {

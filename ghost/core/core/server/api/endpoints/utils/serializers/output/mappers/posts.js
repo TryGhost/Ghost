@@ -10,6 +10,7 @@ const extraAttrs = require('../utils/extra-attrs');
 const gating = require('../utils/post-gating');
 const url = require('../utils/url');
 
+const labs = require('../../../../../../../shared/labs');
 const utils = require('../../../index');
 
 const postsMetaSchema = require('../../../../../../data/schema').tables.posts_meta;
@@ -107,6 +108,10 @@ module.exports = async (model, frame, options = {}) => {
                 jsonModel.newsletter = null;
             }
         });
+    }
+
+    if (!labs.isSet('memberAttribution')) {
+        delete jsonModel.count;
     }
 
     return jsonModel;

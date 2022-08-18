@@ -7,6 +7,7 @@ const testUtils = require('../../../utils');
 const config = require('../../../../core/shared/config');
 const models = require('../../../../core/server/models');
 const localUtils = require('./utils');
+const mockManager = require('../../../utils/e2e-framework-mock-manager');
 
 const defaultNewsletterSlug = testUtils.DataGenerator.Content.newsletters[0].slug;
 const secondNewsletterSlug = testUtils.DataGenerator.Content.newsletters[1].slug;
@@ -23,6 +24,14 @@ describe('Posts API', function () {
         await models.Newsletter.edit({status: 'archived'}, {id: defaultNewsletter.id});
 
         await localUtils.doAuth(request, 'users:extra', 'posts', 'emails', 'newsletters', 'members:newsletters');
+    });
+
+    beforeEach(function () {
+        mockManager.mockLabsDisabled('memberAttribution');
+    });
+
+    afterEach(function () {
+        mockManager.mockLabsDisabled('memberAttribution');
     });
 
     describe('Browse', function () {
