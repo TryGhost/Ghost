@@ -86,6 +86,7 @@
                                             @optionValuePath="name"
                                             @optionLabelPath="label"
                                             @optionTargetPath="name"
+                                            @title="{{this.offer.tier.name}} - {{if (eq this.offer.cadence "month") "Monthly" "Yearly" }}"
                                             @disabled={{this.isDiscountSectionDisabled}}
                                             @update={{this.updateCadence}}
                                         />
@@ -126,6 +127,7 @@
                                             @optionValuePath="name"
                                             @optionLabelPath="label"
                                             @optionTargetPath="name"
+                                            @title="{{this.offer.tier.name}} - {{if (eq this.offer.cadence "month") "Monthly" "Yearly" }}"
                                             @disabled={{this.isDiscountSectionDisabled}}
                                             @update={{this.updateCadence}}
                                         />
