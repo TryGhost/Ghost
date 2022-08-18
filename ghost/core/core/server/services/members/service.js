@@ -148,15 +148,17 @@ module.exports = {
             }
         })();
 
-        const membersMigrationJobName = 'members-migrations';
-        if (!(await jobsService.hasExecutedSuccessfully(membersMigrationJobName))) {
-            jobsService.addOneOffJob({
-                name: membersMigrationJobName,
-                offloaded: false,
-                job: stripeService.migrations.execute.bind(stripeService.migrations)
-            });
+        if (!env?.startsWith('testing')) {
+            const membersMigrationJobName = 'members-migrations';
+            if (!(await jobsService.hasExecutedSuccessfully(membersMigrationJobName))) {
+                jobsService.addOneOffJob({
+                    name: membersMigrationJobName,
+                    offloaded: false,
+                    job: stripeService.migrations.execute.bind(stripeService.migrations)
+                });
 
-            await jobsService.awaitCompletion(membersMigrationJobName);
+                await jobsService.awaitCompletion(membersMigrationJobName);
+            }
         }
     },
     contentGating: require('./content-gating'),
