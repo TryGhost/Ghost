@@ -6,6 +6,9 @@ const {NoPermissionError} = require('@tryghost/errors');
 const Integration = ghostBookshelf.Model.extend({
     tableName: 'integrations',
 
+    actionsCollectCRUD: true,
+    actionsResourceType: 'integration',
+
     relationships: ['api_keys', 'webhooks'],
 
     relationshipBelongsTo: {
