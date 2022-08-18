@@ -103,13 +103,14 @@
                                                 {{svg-jar parsedEvent.icon}}
                                                 <span class="gh-dashboard-list-subtext">
                                                     {{capitalize-first-letter parsedEvent.action}}
+                                                    {{!-- TODO: Check this as it looked like it was duplicating with new column --}}
+                                                    {{#if parsedEvent.object}}
+                                                        {{parsedEvent.object}}
+                                                    {{/if}}
+                                                    {{#if parsedEvent.info}}
+                                                        {{parsedEvent.info}}
+                                                    {{/if}}
                                                 </span>
-                                                {{#if parsedEvent.object}}
-                                                    {{parsedEvent.object}}
-                                                {{/if}}
-                                                {{#if parsedEvent.info}}
-                                                    {{parsedEvent.info}}
-                                                {{/if}}
                                             </div>
                                             {{!-- TODO: Wire up the new event page/post links in this column --}}
                                             <div class="gh-dashboard-list-item-sub">

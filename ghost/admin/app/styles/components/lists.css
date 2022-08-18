@@ -395,6 +395,8 @@ ul.nostyle li {
     background: var(--main-bg-color);
     background: linear-gradient(90deg, rgba(255,255,255,1) 90%, rgba(255,255,255,0) 100%);
     padding: 0 60px 0 0;
+    max-width: 33vw;
+    overflow: hidden;
 }
 
 .gh-list-scrolling thead th:first-child::before,

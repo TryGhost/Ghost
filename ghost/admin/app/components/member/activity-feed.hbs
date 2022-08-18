@@ -30,6 +30,7 @@
                                                 <span class="gh-member-feed-event-inner">
                                                     <span class="gh-members-activity-description">
                                                         {{capitalize-first-letter event.action}}
+                                                        {{!-- TODO: Check this as it looked like it was duplicating with new column --}}
                                                         {{#if event.object}}
                                                             {{event.object}}
                                                         {{/if}}

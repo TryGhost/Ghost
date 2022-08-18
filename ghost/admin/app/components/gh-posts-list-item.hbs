@@ -1,66 +1,72 @@
 {{!-- template-lint-disable no-invalid-interactive --}}
-<li class="gh-list-row gh-posts-list-item"
+<tr
     {{on "mouseover" this.mouseOver}}
     {{on "mouseleave" this.mouseLeave}}
     ...attributes
 >
 
     {{#if (and this.session.user.isContributor @post.isPublished)}}
-        <a href={{@post.url}} class="permalink gh-list-data gh-post-list-title" target="_blank" rel="noopener noreferrer">
-            <h3 class="gh-content-entry-title">
-                {{@post.title}} {{svg-jar "external" class="gh-post-list-external"}}
-            </h3>
-            {{#unless @hideAuthor }}
-                <p>
-                    <span class="gh-content-entry-meta">
-                        By <span class="midgrey-l2 fw5">{{post-author-names @post}}</span>
+        <a href={{@post.url}} class="permalink gh-list-data" target="_blank" rel="noopener noreferrer">
+            <div class="flex flex-column justify-start items-center" style="padding-top: 16px; padding-bottom: 16px; min-width: 0;">
+                <h3 class="gh-content-entry-title">
+                    {{@post.title}} {{svg-jar "external" class="gh-post-list-external"}}
+                </h3>
+                {{#unless @hideAuthor }}
+                    <div>
+                        <span class="gh-content-entry-meta">
+                            By <span class="midgrey-l2 fw5">{{post-author-names @post}}</span>
 
-                        {{#if @post.primaryTag}}
-                            in <span class="midgrey-l2 fw5">{{@post.primaryTag.name}}</span>
-                        {{/if}}
+                            {{#if @post.primaryTag}}
+                                in <span class="midgrey-l2 fw5">{{@post.primaryTag.name}}</span>
+                            {{/if}}
 
-                        • <span data-tooltip="{{gh-format-post-time @post.updatedAtUTC "D MMM YYYY"}}">{{gh-format-post-time @post.updatedAtUTC draft=true}}</span>
+                            • <span data-tooltip="{{gh-format-post-time @post.updatedAtUTC "D MMM YYYY"}}">{{gh-format-post-time @post.updatedAtUTC draft=true}}</span>
 
-                    </span>
-                </p>
-            {{/unless}}
+                        </span>
+                    </div>
+                {{/unless}}
+            </div>
         </a>
     {{else}}
-        <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-title">
-            <h3 class="gh-content-entry-title">
-                {{@post.title}}
-            </h3>
-            {{#unless @hideAuthor }}
-                <p>
-                    <span class="gh-content-entry-meta">
-                        By <span class="midgrey-l2 fw5">{{post-author-names @post}}</span>
+        <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data">
+            <div class="flex flex-column justify-center items-start" style="padding-top: 16px; padding-bottom: 16px; min-width: 0;">
+                <h3 class="gh-content-entry-title">
+                    {{@post.title}}
+                </h3>
+                {{#unless @hideAuthor }}
+                    <div>
+                        <span class="gh-content-entry-meta">
+                            By <span class="midgrey-l2 fw5">{{post-author-names @post}}</span>
 
-                        {{#if @post.primaryTag}}
-                            in <span class="midgrey-l2 fw5">{{@post.primaryTag.name}}</span>
-                        {{/if}}
+                            {{#if @post.primaryTag}}
+                                in <span class="midgrey-l2 fw5">{{@post.primaryTag.name}}</span>
+                            {{/if}}
 
-                        • <span data-tooltip="{{gh-format-post-time @post.updatedAtUTC "D MMM YYYY"}}">{{gh-format-post-time @post.updatedAtUTC draft=true}}</span>
+                            • <span data-tooltip="{{gh-format-post-time @post.updatedAtUTC "D MMM YYYY"}}">{{gh-format-post-time @post.updatedAtUTC draft=true}}</span>
 
-                    </span>
-                </p>
-            {{/unless}}
+                        </span>
+                    </div>
+                {{/unless}}
+            </div>
         </LinkTo>
     {{/if}}
 
     {{#if (and (not-eq this.settings.membersSignupAccess "none") (not-eq this.settings.editorDefaultEmailRecipients "disabled") (not this.session.user.isContributor))}}
         {{#if (and this.feature.emailAnalytics (eq @post.displayName "post"))}}
-            <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-recipients">
-                <div class="flex fw4">
+            <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data">
+                <div class="flex">
                     {{#if (eq @post.email.status "submitted")}}
                         <span class="flex" data-tooltip="{{capitalize @post.email.recipientFilter}} members">
                             <span class="darkgrey fw5 gh-content-email-stats">{{format-number @post.email.emailCount}}</span>
                             <span class="midgrey-l2 fw4 gh-content-email-stats-mobile">{{gh-pluralize @post.email.emailCount "send"}}</span>
                         </span>
+                    {{else}}
+                        <span class="gh-list-nodata">—</span>
                     {{/if}}
                 </div>
             </LinkTo>
 
-            <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-opens">
+            <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data">
                 {{#if (and @post.email.trackOpens (eq @post.email.status "submitted"))}}
                     <div class="flex">
                         <span class="darkgrey fw5 gh-content-email-stats">
@@ -72,14 +78,30 @@
                         </span>
                         <span class="midgrey-l2 fw4 gh-content-email-stats-mobile">{{@post.email.openRate}}% opens</span>
                     </div>
+                {{else}}
+                    <span class="gh-list-nodata">—</span>
                 {{/if}}
             </LinkTo>
         {{/if}}
     {{/if}}
 
+    {{!-- TODO: Wire up the sign ups statistic --}}
+    <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data">
+        <div class="flex">
+            <span class="gh-list-nodata">—</span>
+        </div>
+    </LinkTo>
+
+    {{!-- TODO: Wire up the paid subs statistic --}}
+    <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data">
+        <div class="flex">
+            <span class="gh-list-nodata">—</span>
+        </div>
+    </LinkTo>
+
     {{#unless @hideStatusColumn }}
         {{#if (and this.session.user.isContributor @post.isPublished)}}
-            <a href={{@post.url}} class="permalink gh-list-data gh-post-list-status" target="_blank" rel="noopener noreferrer">
+            <a href={{@post.url}} class="permalink gh-list-data" target="_blank" rel="noopener noreferrer">
                 <div class="flex items-center">
                     {{#if @post.isScheduled}}
                     <span class="gh-content-status-scheduled gh-badge nowrap" title="Scheduled" data-tooltip="{{capitalize this.scheduledText}} to {{@post.emailSegment}} members">
@@ -113,7 +135,7 @@
                 </div>
             </a>
         {{else}}
-            <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-status">
+            <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data">
                 <div class="flex items-center">
                     {{#if @post.isScheduled}}
                     <span class="gh-content-status-scheduled gh-badge nowrap" title="Scheduled" data-tooltip="{{capitalize this.scheduledText}} to {{@post.emailSegment}} members">
@@ -148,4 +170,4 @@
             </LinkTo>
         {{/if}}
     {{/unless}}
-</li>
+</tr>

@@ -211,11 +211,13 @@
 }
 
 .gh-content-entry-title {
-    display: flex;
-    align-items: center;
     margin: 0 0 3px 0;
     font-size: 1.6rem !important;
     font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
 }
 
 .gh-content-entry-title a {

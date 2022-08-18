@@ -42,7 +42,7 @@
         {{/if}}
         {{#if @newsletterEnabled}}
             {{#if (feature "emailAnalytics")}}
-                <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8 {{unless @member.name "gh-members-list-open-rate-noname"}}" data-test-table-data="open-rate">
+                <LinkTo @route="member" @model={{@member}} class="gh-list-data {{unless @member.name "gh-members-list-open-rate-noname"}}" data-test-table-data="open-rate">
                     {{#if (not (is-empty @member.emailOpenRate))}}
                         <span>{{@member.emailOpenRate}}%</span>
                     {{else}}
@@ -52,7 +52,7 @@
             {{/if}}
         {{/if}}
 
-        <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8 {{unless @member.name "gh-members-geolocation-noname"}}" data-test-table-data="location">
+        <LinkTo @route="member" @model={{@member}} class="gh-list-data {{unless @member.name "gh-members-geolocation-noname"}}" data-test-table-data="location">
             {{#if (and @member.geolocation @member.geolocation.country)}}
                 {{#if (and (eq @member.geolocation.country_code "US") @member.geolocation.region)}}
                     {{@member.geolocation.region}}, US
@@ -68,7 +68,7 @@
             {{/if}}
         </LinkTo>
 
-        <LinkTo @route="member" @model={{@member}} class="gh-list-data middarkgrey f8" data-test-table-data="created-at">
+        <LinkTo @route="member" @model={{@member}} class="gh-list-data" data-test-table-data="created-at">
             {{#if @member.createdAtUTC}}
                 <div>{{moment-format (moment-site-tz @member.createdAtUTC) "DD MMM YYYY"}}</div>
                 <div class="midlightgrey gh-members-list-subscribed-moment">{{moment-from-now @member.createdAtUTC}}</div>

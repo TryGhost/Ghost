@@ -114,7 +114,8 @@ export default class PostsRoute extends AuthenticatedRoute {
 
     buildRouteInfoMetadata() {
         return {
-            titleToken: 'Posts'
+            titleToken: 'Posts',
+            mainClasses: ['gh-main-fullwidth']
         };
     }
 

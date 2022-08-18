@@ -5,7 +5,8 @@ export default class PagesRoute extends PostsRoute {
 
     buildRouteInfoMetadata() {
         return {
-            titleToken: 'Pages'
+            titleToken: 'Pages',
+            mainClasses: ['gh-main-fullwidth']
         };
     }
 }
