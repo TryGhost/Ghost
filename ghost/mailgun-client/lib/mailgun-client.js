@@ -36,7 +36,7 @@ module.exports = class MailgunClient {
             return null;
         }
 
-        if (Object.keys(recipientData).length > module.exports.BATCH_SIZE) {
+        if (Object.keys(recipientData).length > MailgunClient.BATCH_SIZE) {
             // TODO: what to do here?
         }
 
