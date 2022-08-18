@@ -6,7 +6,7 @@ import NewsletterSelectionPage from './NewsletterSelectionPage';
 import ProductsSection from '../common/ProductsSection';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
-import {getSiteProducts, getSitePrices, hasOnlyFreePlan, isInviteOnlySite, freeHasBenefitsOrDescription, hasOnlyFreeProduct, getFreeProductBenefits, getFreeTierDescription, hasFreeProductPrice, hasMultipleNewsletters} from '../../utils/helpers';
+import {getSiteProducts, getSitePrices, hasOnlyFreePlan, isInviteOnlySite, freeHasBenefitsOrDescription, hasOnlyFreeProduct, getFreeProductBenefits, getFreeTierDescription, hasFreeProductPrice, hasMultipleNewsletters, hasFreeTrialTier} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
 
 const React = require('react');
@@ -191,6 +191,13 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
 
 .gh-portal-invite-only-notification + .gh-portal-signup-message {
     margin-bottom: 12px;
+}
+
+.gh-portal-free-trial-notification {
+    max-width: 480px;
+    text-align: center;
+    margin: 24px auto;
+    color: var(--grey4);
 }
 
 @media (min-width: 480px) {
@@ -448,18 +455,31 @@ class SignupPage extends React.Component {
         );
     }
 
+    renderFreeTrialMessage() {
+        const {site} = this.context;
+        if (hasFreeTrialTier({site})) {
+            return (
+                <p className='gh-portal-free-trial-notification'>After a free trial ends, you will be charged regular price for the tier you’ve chosen. You can always cancel before then.</p>
+            );
+        }
+        return null;
+    }
+
     renderLoginMessage() {
         const {brandColor, onAction} = this.context;
         return (
-            <div className='gh-portal-signup-message'>
-                <div>Already a member?</div>
-                <button
-                    className='gh-portal-btn gh-portal-btn-link'
-                    style={{color: brandColor}}
-                    onClick={() => onAction('switchPage', {page: 'signin'})}
-                >
-                    <span>Sign in</span>
-                </button>
+            <div>
+                {this.renderFreeTrialMessage()}
+                <div className='gh-portal-signup-message'>
+                    <div>Already a member?</div>
+                    <button
+                        className='gh-portal-btn gh-portal-btn-link'
+                        style={{color: brandColor}}
+                        onClick={() => onAction('switchPage', {page: 'signin'})}
+                    >
+                        <span>Sign in</span>
+                    </button>
+                </div>
             </div>
         );
     }
