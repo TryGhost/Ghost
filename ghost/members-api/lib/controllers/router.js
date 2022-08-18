@@ -25,6 +25,7 @@ module.exports = class RouterController {
      * @param {() => boolean} deps.allowSelfSignup
      * @param {any} deps.magicLinkService
      * @param {import('@tryghost/members-stripe-service')} deps.stripeAPIService
+     * @param {import('@tryghost/member-attribution')} deps.memberAttributionService
      * @param {any} deps.tokenService
      * @param {{isSet(name: string): boolean}} deps.labsService
      */
@@ -38,6 +39,7 @@ module.exports = class RouterController {
         magicLinkService,
         stripeAPIService,
         tokenService,
+        memberAttributionService,
         sendEmailWithMagicLink,
         labsService
     }) {
@@ -51,6 +53,7 @@ module.exports = class RouterController {
         this._stripeAPIService = stripeAPIService;
         this._tokenService = tokenService;
         this._sendEmailWithMagicLink = sendEmailWithMagicLink;
+        this._memberAttributionService = memberAttributionService;
         this.labsService = labsService;
     }
 
@@ -135,7 +138,7 @@ module.exports = class RouterController {
         const cadence = req.body.cadence;
         const identity = req.body.identity;
         const offerId = req.body.offerId;
-        const metadata = req.body.metadata;
+        const metadata = req.body.metadata ?? {};
 
         if (!ghostPriceId && !offerId && !tierId && !cadence) {
             throw new BadRequestError({
@@ -193,6 +196,33 @@ module.exports = class RouterController {
             }
 
             metadata.offer = offer.id;
+        }
+
+        // Don't allow to set the source manually
+        delete metadata.attribution_id;
+        delete metadata.attribution_url;
+        delete metadata.attribution_type;
+        
+        if (metadata.urlHistory) {
+            // The full attribution history doesn't fit in the Stripe metadata (can't store objects + limited to 50 keys and 500 chars values)
+            // So we need to add top-level attributes with string values
+            const urlHistory = metadata.urlHistory;
+            delete metadata.urlHistory;
+
+            const attribution = this._memberAttributionService.getAttribution(urlHistory);
+
+            // Don't set null properties
+            if (attribution.id) {
+                metadata.attribution_id = attribution.id;
+            }
+
+            if (attribution.url) {
+                metadata.attribution_url = attribution.url;
+            }
+
+            if (attribution.type) {
+                metadata.attribution_type = attribution.type;
+            }
         }
 
         if (!ghostPriceId) {
@@ -253,7 +283,12 @@ module.exports = class RouterController {
             if (!memberExistsForCustomer) {
                 successUrl = await this._magicLinkService.getMagicLink({
                     tokenData: {
-                        email: req.body.customerEmail
+                        email: req.body.customerEmail,
+                        attribution: {
+                            id: metadata.attribution_id ?? null,
+                            type: metadata.attribution_type ?? null,
+                            url: metadata.attribution_url ?? null
+                        }
                     },
                     type: 'signup'
                 });
@@ -360,6 +395,10 @@ module.exports = class RouterController {
                 }
             } else {
                 const tokenData = _.pick(req.body, ['labels', 'name', 'newsletters']);
+
+                // Save attribution data in the tokenData
+                tokenData.attribution = this._memberAttributionService.getAttribution(req.body.urlHistory);
+
                 await this._sendEmailWithMagicLink({email, tokenData, requestedType: emailType, referrer: req.get('referer')});
             }
             res.writeHead(201);
