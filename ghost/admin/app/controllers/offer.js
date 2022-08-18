@@ -120,8 +120,8 @@ export default class OffersController extends Controller {
             let yearlyLabel;
             const tierCurrency = tier.currency;
             const tierCurrencySymbol = tierCurrency.toUpperCase();
-            monthlyLabel = `${tier.name} - Monthly (${ghPriceAmount(tier.monthlyPrice)} ${tierCurrencySymbol})`;
-            yearlyLabel = `${tier.name} - Yearly (${ghPriceAmount(tier.yearlyPrice)} ${tierCurrencySymbol})`;
+            monthlyLabel = `${tier.name} - Monthly`;
+            yearlyLabel = `${tier.name} - Yearly`;
 
             cadences.push({
                 label: monthlyLabel,
