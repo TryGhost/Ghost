@@ -36,9 +36,9 @@
                                 <div class="gh-members-activity-event">
                                     <span class="gh-members-activity-description">
                                         {{capitalize-first-letter ev.action}}
-                                        {{#if ev.resource.title}}
+                                        {{#if (or ev.resource.title ev.resource.name)}}
                                         <LinkTo @route="editor.edit" @models={{array ev.resource.displayName ev.resource.id}} class="permalink">
-                                            <strong>{{ev.resource.title}}</strong>
+                                            <strong>{{if ev.resource.title ev.resource.title ev.resource.name}}</strong>
                                         </LinkTo>
                                         {{else}}
                                         <br/><small>({{ev.original.resource_id}})</small>
