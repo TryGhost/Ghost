@@ -1,7 +1,3 @@
-// Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-require('./utils');
-
 const assert = require('assert');
 const http = require('http');
 const request = require('supertest');
