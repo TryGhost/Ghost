@@ -10,7 +10,7 @@ import {getActivePage, isAccountPage, isOfferPage} from './pages';
 import ActionHandler from './actions';
 import './App.css';
 import NotificationParser from './utils/notifications';
-import {createPopupNotification, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isInviteOnlySite, isPaidMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
+import {allowCompMemberUpgrade, createPopupNotification, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isComplimentaryMember, isInviteOnlySite, isPaidMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
 
 const {handleDataAttributes} = require('./data-attributes');
 const React = require('react');
@@ -750,6 +750,10 @@ export default class App extends React.Component {
         if (!page) {
             const loggedOutPage = isInviteOnlySite({site}) ? 'signin' : 'signup';
             page = member ? 'accountHome' : loggedOutPage;
+        }
+
+        if (page === 'accountPlan' && isComplimentaryMember({member}) && !allowCompMemberUpgrade({member})) {
+            page = 'accountHome';
         }
 
         return getActivePage({page});
