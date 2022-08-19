@@ -477,6 +477,15 @@ const AccountWelcome = () => {
         if (subscription?.cancel_at_period_end) {
             return null;
         }
+
+        if (subscriptionHasFreeTrial({sub: subscription})) {
+            const trialEnd = getDateString(subscription.trial_end_at);
+            return (
+                <div className='gh-portal-section'>
+                    <p className='gh-portal-text-center gh-portal-free-ctatext'>Your subscription will start on {trialEnd}</p>
+                </div>
+            );
+        }
         return (
             <div className='gh-portal-section'>
                 <p className='gh-portal-text-center gh-portal-free-ctatext'>Your subscription will renew on {getDateString(currentPeriodEnd)}</p>
