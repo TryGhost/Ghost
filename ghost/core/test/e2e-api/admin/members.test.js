@@ -123,6 +123,9 @@ describe('Members API without Stripe', function () {
 
     beforeEach(function () {
         mockManager.mockMail();
+
+        // For some reason it is enabled by default?
+        mockManager.mockLabsDisabled('memberAttribution');
     });
 
     afterEach(function () {
@@ -164,6 +167,9 @@ describe('Members API', function () {
     beforeEach(function () {
         mockManager.mockStripe();
         mockManager.mockMail();
+        
+        // For some reason it is enabled by default?
+        mockManager.mockLabsDisabled('memberAttribution');
     });
 
     afterEach(function () {
