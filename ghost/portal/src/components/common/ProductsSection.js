@@ -1,7 +1,7 @@
 import React, {useContext, useEffect, useState} from 'react';
 import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
-import {getCurrencySymbol, getPriceString, getStripeAmount, getMemberActivePrice, getProductFromPrice, getFreeTierTitle, getFreeTierDescription, getFreeProduct, getFreeProductBenefits, formatNumber, isCookiesDisabled, hasOnlyFreeProduct, isMemberActivePrice} from '../../utils/helpers';
+import {getCurrencySymbol, getPriceString, getStripeAmount, getMemberActivePrice, getProductFromPrice, getFreeTierTitle, getFreeTierDescription, getFreeProduct, getFreeProductBenefits, formatNumber, isCookiesDisabled, hasOnlyFreeProduct, isMemberActivePrice, hasFreeTrialTier} from '../../utils/helpers';
 import AppContext from '../../AppContext';
 import calculateDiscount from '../../utils/discount';
 
@@ -565,13 +565,25 @@ function ProductCardAlternatePrice({price}) {
     );
 }
 
-function ProductCardTrialDays({trialDays}) {
-    if (trialDays) {
-        return (
-            <span className="gh-portal-discount-label">{trialDays} days free</span>
-        );
+function ProductCardTrialDays({trialDays, discount}) {
+    const {site} = useContext(AppContext);
+    const {selectedInterval} = useContext(ProductsContext);
+    if (hasFreeTrialTier({site})) {
+        if (trialDays) {
+            return (
+                <span className="gh-portal-discount-label">{trialDays} days free</span>
+            );
+        } else {
+            return null;
+        }
     }
 
+    if (selectedInterval === 'year') {
+        return (
+            <span className="gh-portal-discount-label">{discount}% discount</span>
+        );
+    }
+    
     return null;
 }
 
@@ -599,7 +611,7 @@ function ProductCardPrice({product}) {
                             <span className="amount">{formatNumber(getStripeAmount(activePrice.amount))}</span>
                             <span className="billing-period">/{activePrice.interval}</span>
                         </div>
-                        <ProductCardTrialDays trialDays={trialDays} />
+                        <ProductCardTrialDays trialDays={trialDays} discount={yearlyDiscount} />
                     </div>
                     {(selectedInterval === 'year' ? <YearlyDiscount discount={yearlyDiscount} trialDays={trialDays} /> : '')}
                     <ProductCardAlternatePrice price={alternatePrice} />
@@ -828,11 +840,15 @@ function YearlyDiscount({discount, trialDays}) {
     }
 
     if (freeTrialFlag) {
-        return (
-            <>
-                <span className="gh-portal-discount-label-trial">{discount}% discount</span>
-            </>
-        );
+        if (hasFreeTrialTier({site})) {
+            return (
+                <>
+                    <span className="gh-portal-discount-label-trial">{discount}% discount</span>
+                </>
+            );
+        } else {
+            return null;
+        }
     }
 
     return (
