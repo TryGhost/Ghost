@@ -43,7 +43,7 @@
             </div>
             {{#if (feature 'compExpiring')}}
                 <GhFormGroup @errors={{this.errors}} @property="product-cadence">
-                    <label for="product-cadence" class="fw6 mt3">Select a duration</label>
+                    <label for="product-cadence" class="fw6 mt5">Duration</label>
                     <span class="gh-select">
                         <OneWaySelect
                             @value={{this.expiryAt}}
