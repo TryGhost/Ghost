@@ -565,7 +565,7 @@ function ProductCardAlternatePrice({price}) {
     );
 }
 
-function ProductCardTrialDays({trialDays}) {    
+function ProductCardTrialDays({trialDays}) {
     if (trialDays) {
         return (
             <span className="gh-portal-discount-label">{trialDays} days free</span>
@@ -700,6 +700,20 @@ function FreeProductCard({products, handleChooseSignup}) {
     );
 }
 
+function ProductCardButton({selectedProduct, product, disabled, noOfProducts, trialDays}) {
+    if (selectedProduct === product.id && disabled) {
+        return (
+            <LoaderIcon className='gh-portal-loadingicon' />
+        );
+    }
+
+    if (trialDays > 0) {
+        return ('Start ' + trialDays + '-day free trial');
+    }
+
+    return (noOfProducts > 1 ? 'Choose' : 'Continue');
+}
+
 function ProductCard({product, products, selectedInterval, handleChooseSignup}) {
     const {selectedProduct, setSelectedProduct} = useContext(ProductsContext);
     const {action} = useContext(AppContext);
@@ -747,7 +761,9 @@ function ProductCard({product, products, selectedInterval, handleChooseSignup}) 
                                     const selectedPrice = getSelectedPrice({products, selectedInterval, selectedProduct: product.id});
                                     handleChooseSignup(e, selectedPrice.id);
                                 }}>
-                                {((selectedProduct === product.id && disabled) ? <LoaderIcon className='gh-portal-loadingicon' /> : (noOfProducts > 1 ? (trialDays > 0 ? 'Start ' + trialDays + '-day free trial' : 'Choose') : 'Continue'))}
+                                <ProductCardButton
+                                    {...{selectedProduct, product, disabled, noOfProducts, trialDays}}
+                                />
                             </button>
                         </div>
                     </div>
@@ -787,7 +803,7 @@ function ProductCard({product, products, selectedInterval, handleChooseSignup}) 
                 </div>
             </div>
         </>
-    ); 
+    );
 }
 
 function ProductCards({products, selectedInterval, handleChooseSignup}) {
