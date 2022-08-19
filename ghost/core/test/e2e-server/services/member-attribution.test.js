@@ -30,10 +30,19 @@ describe('Member Attribution Service', function () {
                     time: 123
                 }
             ]);
-            attribution.should.eql(({
+            attribution.should.match(({
                 id: post.id,
                 url,
                 type: 'post'
+            }));
+
+            const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true});
+
+            (await attribution.getResource()).should.match(({
+                id: post.id,
+                url: absoluteUrl,
+                type: 'post',
+                title: post.get('title')
             }));
         });
 
@@ -50,10 +59,19 @@ describe('Member Attribution Service', function () {
                     time: 123
                 }
             ]);
-            attribution.should.eql(({
+            attribution.should.match(({
                 id: post.id,
                 url,
                 type: 'page'
+            }));
+
+            const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true});
+
+            (await attribution.getResource()).should.match(({
+                id: post.id,
+                url: absoluteUrl,
+                type: 'page',
+                title: post.get('title')
             }));
         });
 
@@ -68,10 +86,19 @@ describe('Member Attribution Service', function () {
                     time: 123
                 }
             ]);
-            attribution.should.eql(({
+            attribution.should.match(({
                 id: tag.id,
                 url,
                 type: 'tag'
+            }));
+
+            const absoluteUrl = urlService.getUrlByResourceId(tag.id, {absolute: true});
+
+            (await attribution.getResource()).should.match(({
+                id: tag.id,
+                url: absoluteUrl,
+                type: 'tag',
+                title: tag.get('name')
             }));
         });
 
@@ -86,10 +113,19 @@ describe('Member Attribution Service', function () {
                     time: 123
                 }
             ]);
-            attribution.should.eql(({
+            attribution.should.match(({
                 id: author.id,
                 url,
                 type: 'author'
+            }));
+
+            const absoluteUrl = urlService.getUrlByResourceId(author.id, {absolute: true});
+
+            (await attribution.getResource()).should.match(({
+                id: author.id,
+                url: absoluteUrl,
+                type: 'author',
+                title: author.get('name')
             }));
         });
     });

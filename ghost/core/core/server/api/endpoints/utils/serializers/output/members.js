@@ -128,7 +128,8 @@ function serializeMember(member, options) {
         email_open_rate: json.email_open_rate,
         email_recipients: json.email_recipients,
         status: json.status,
-        last_seen_at: json.last_seen_at
+        last_seen_at: json.last_seen_at,
+        attribution: json.attribution
     };
 
     if (json.products) {
