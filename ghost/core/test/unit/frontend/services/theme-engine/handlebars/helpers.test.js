@@ -13,7 +13,7 @@ describe('Helpers', function () {
         'next_post', 'page_url', 'pagination', 'plural', 'post_class', 'prev_post', 'price', 'raw', 'reading_time', 't', 'tags', 'title','total_members', 'total_paid_members', 'twitter_url',
         'url', 'comment_count'
     ];
-    const experimentalHelpers = ['match', 'tiers', 'comments'];
+    const experimentalHelpers = ['match', 'tiers', 'comments', 'search'];
 
     const expectedHelpers = _.concat(hbsHelpers, ghostHelpers, experimentalHelpers);
 

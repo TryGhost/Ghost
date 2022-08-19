@@ -62,6 +62,7 @@ export default class FeatureService extends Service {
     @feature('newsletterPaywall') newsletterPaywall;
     @feature('freeTrial') freeTrial;
     @feature('memberAttribution') memberAttribution;
+    @feature('searchHelper') searchHelper;
 
     _user = null;
 
