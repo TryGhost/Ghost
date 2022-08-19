@@ -513,6 +513,18 @@ export default class OfferPage extends React.Component {
         );
     }
 
+    renderFreeTrialMessage({offer}) {
+        if (offer.type === 'trial') {
+            return (
+                <p className='gh-portal-free-trial-notification'>
+                    After a free trial ends, you will be charged regular price for the tier you’ve chosen. You can always cancel before then.
+                </p>
+            );
+        }
+
+        return null;
+    }
+
     renderProductCard({product, offer, currencyClass, updatedPrice, price, benefits}) {
         if (this.state.showNewsletterSelection) {
             return null;
@@ -539,7 +551,7 @@ export default class OfferPage extends React.Component {
                     <div className='gh-portal-btn-container sticky m32'>
                         {this.renderSubmitButton()}
                     </div>
-
+                    {this.renderFreeTrialMessage({offer})}
                     {this.renderLoginMessage()}
                 </div>
             </>
