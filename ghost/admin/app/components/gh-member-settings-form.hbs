@@ -162,8 +162,8 @@
                                                     <span class="gh-cp-membertier-renewal">Expires {{sub.compExpiry}}</span>
                                                     <span class="gh-badge active" data-test-text="member-subscription-status">Active</span>
                                             {{else if sub.trialUntil}}
-                                                    <span class="gh-cp-membertier-renewal">Ends {{sub.trialUntil}}</span>
-                                                    <span class="gh-badge active" data-test-text="member-subscription-status">Active</span>
+                                                <span class="gh-cp-membertier-renewal">Ends {{sub.trialUntil}}</span>
+                                                <span class="gh-badge active" data-test-text="member-subscription-status">Active</span>
                                             {{else}}
                                                 <span class="gh-cp-membertier-renewal">Renews {{sub.validUntil}}</span>
                                                 <span class="gh-badge active" data-test-text="member-subscription-status">Active</span>
@@ -192,8 +192,13 @@
                                                 </div>
                                             {{/if}}
                                         {{/if}}
-                                        <div class="gh-membertier-created">
-                                            Created on {{sub.startDate}}
+                                        <div>
+                                            <span class="gh-membertier-created">Created on {{sub.startDate}}</span>                                            
+                                            {{#if (and sub.attribution sub.attribution.url sub.attribution.title) }}
+                                                <span class="gh-membertier-separator">·</span>
+                                                <span class="gh-membertier-started">Attributed to <a href="{{sub.attribution.url}}" target="_blank" rel="noopener noreferrer">{{ sub.attribution.title }}</a></span>
+                                            {{/if}}
+
                                         </div>
                                     </div>
 

@@ -24,6 +24,17 @@ describe('AttributionBuilder', function () {
                         };
                     }
                     return;
+                },
+                getResourceById(id, type) {
+                    if (id === 'invalid') {
+                        return null;
+                    }
+                    return {
+                        id,
+                        type,
+                        url: '/path',
+                        title: 'Title'
+                    };
                 }
             }
         });
@@ -31,12 +42,12 @@ describe('AttributionBuilder', function () {
 
     it('Returns empty if empty history', function () {
         const history = new UrlHistory([]);
-        should(attributionBuilder.getAttribution(history)).eql({id: null, type: null, url: null});
+        should(attributionBuilder.getAttribution(history)).match({id: null, type: null, url: null});
     });
 
     it('Returns last url', function () {
         const history = new UrlHistory([{path: '/not-last', time: 123}, {path: '/test', time: 123}]);
-        should(attributionBuilder.getAttribution(history)).eql({type: 'url', id: null, url: '/test'});
+        should(attributionBuilder.getAttribution(history)).match({type: 'url', id: null, url: '/test'});
     });
 
     it('Returns last post', function () {
@@ -45,7 +56,7 @@ describe('AttributionBuilder', function () {
             {path: '/test', time: 124},
             {path: '/unknown-page', time: 125}
         ]);
-        should(attributionBuilder.getAttribution(history)).eql({type: 'post', id: 123, url: '/my-post'});
+        should(attributionBuilder.getAttribution(history)).match({type: 'post', id: 123, url: '/my-post'});
     });
 
     it('Returns last post even when it found pages', function () {
@@ -54,7 +65,7 @@ describe('AttributionBuilder', function () {
             {path: '/my-page', time: 124}, 
             {path: '/unknown-page', time: 125}
         ]);
-        should(attributionBuilder.getAttribution(history)).eql({type: 'post', id: 123, url: '/my-post'});
+        should(attributionBuilder.getAttribution(history)).match({type: 'post', id: 123, url: '/my-post'});
     });
 
     it('Returns last page if no posts', function () {
@@ -63,12 +74,12 @@ describe('AttributionBuilder', function () {
             {path: '/my-page', time: 124}, 
             {path: '/unknown-page', time: 125}
         ]);
-        should(attributionBuilder.getAttribution(history)).eql({type: 'page', id: 845, url: '/my-page'});
+        should(attributionBuilder.getAttribution(history)).match({type: 'page', id: 845, url: '/my-page'});
     });
 
     it('Returns all null for invalid histories', function () {
         const history = new UrlHistory('invalid');
-        should(attributionBuilder.getAttribution(history)).eql({
+        should(attributionBuilder.getAttribution(history)).match({
             type: null,
             id: null,
             url: null
@@ -77,10 +88,37 @@ describe('AttributionBuilder', function () {
 
     it('Returns all null for empty histories', function () {
         const history = new UrlHistory([]);
-        should(attributionBuilder.getAttribution(history)).eql({
+        should(attributionBuilder.getAttribution(history)).match({
             type: null,
             id: null,
             url: null
+        });
+    });
+
+    it('Returns post resource', async function () {
+        should(await attributionBuilder.build({type: 'post', id: '123', url: '/post'}).getResource()).match({
+            type: 'post',
+            id: '123',
+            url: '/path',
+            title: 'Title'
+        });
+    });
+
+    it('Returns url resource', async function () {
+        should(await attributionBuilder.build({type: 'url', id: null, url: '/url'}).getResource()).match({
+            type: 'url',
+            id: null,
+            url: '/url',
+            title: '/url'
+        });
+    });
+
+    it('Returns url resource if not found', async function () {
+        should(await attributionBuilder.build({type: 'post', id: 'invalid', url: '/post'}).getResource()).match({
+            type: 'url',
+            id: null,
+            url: '/post',
+            title: '/post'
         });
     });
 });

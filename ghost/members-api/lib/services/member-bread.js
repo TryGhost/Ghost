@@ -35,8 +35,9 @@ module.exports = class MemberBREADService {
      * @param {ILabsService} deps.labsService
      * @param {IEmailService} deps.emailService
      * @param {IStripeService} deps.stripeService
+     * @param {import('@tryghost/member-attribution/lib/service')} deps.memberAttributionService
      */
-    constructor({memberRepository, labsService, emailService, stripeService, offersAPI}) {
+    constructor({memberRepository, labsService, emailService, stripeService, offersAPI, memberAttributionService}) {
         this.offersAPI = offersAPI;
         /** @private */
         this.memberRepository = memberRepository;
@@ -46,6 +47,8 @@ module.exports = class MemberBREADService {
         this.emailService = emailService;
         /** @private */
         this.stripeService = stripeService;
+        /** @private */
+        this.memberAttributionService = memberAttributionService;
     }
 
     /**
@@ -164,6 +167,29 @@ module.exports = class MemberBREADService {
         });
     }
 
+    /**
+     * @private
+     * Adds missing complimentary subscriptions to a member and makes sure the tier of all subscriptions is set correctly.
+     */
+    async attachAttributionsToMember(member, subscriptionIdMap) {
+        // Created attribution
+        member.attribution = await this.memberAttributionService.getMemberCreatedAttribution(member.id);
+        
+        // Subscriptions attributions
+        for (const subscription of member.subscriptions) {
+            if (!subscription.id) {
+                continue;
+            }
+
+            // Convert stripe ID to database id
+            const id = subscriptionIdMap.get(subscription.id);
+            if (!id) {
+                continue;
+            }
+            subscription.attribution = await this.memberAttributionService.getSubscriptionCreatedAttribution(id);
+        }
+    }
+
     async read(data, options = {}) {
         const defaultWithRelated = [
             'labels',
@@ -195,11 +221,21 @@ module.exports = class MemberBREADService {
             return null;
         }
 
+        // We need to know the real IDs for each subscription to fetch the member attribution
+        const subscriptionIdMap = new Map();
+        for (const subscription of model.related('stripeSubscriptions')) {
+            subscriptionIdMap.set(subscription.get('subscription_id'), subscription.id);
+        }
+
         const member = model.toJSON(options);
 
         member.subscriptions = member.subscriptions.filter(sub => !!sub.price);
         this.attachSubscriptionsToMember(member);
         this.attachOffersToSubscriptions(member, await this.fetchSubscriptionOffers(model.related('stripeSubscriptions')));
+
+        if (this.labsService.isSet('memberAttribution')) {
+            await this.attachAttributionsToMember(member, subscriptionIdMap);
+        }
 
         return member;
     }

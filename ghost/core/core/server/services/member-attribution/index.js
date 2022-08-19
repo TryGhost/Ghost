@@ -13,6 +13,9 @@ class MemberAttributionServiceWrapper {
 
         // For now we don't need to expose anything (yet)
         this.service = new MemberAttributionService({
+            Post: models.Post,
+            User: models.User,
+            Tag: models.Tag,
             MemberCreatedEvent: models.MemberCreatedEvent,
             SubscriptionCreatedEvent: models.SubscriptionCreatedEvent,
             urlService,

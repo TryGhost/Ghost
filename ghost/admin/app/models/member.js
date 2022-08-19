@@ -13,6 +13,7 @@ export default Model.extend(ValidationEngine, {
     createdAtUTC: attr('moment-utc'),
     lastSeenAtUTC: attr('moment-utc'),
     subscriptions: attr('member-subscription'),
+    attribution: attr(),
     subscribed: attr('boolean', {defaultValue: true}),
     comped: attr('boolean', {defaultValue: false}),
     geolocation: attr('json-string'),
