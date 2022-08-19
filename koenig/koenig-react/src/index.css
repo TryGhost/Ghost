@@ -12,6 +12,13 @@
 /* Global Koenig content styles
 /* -------------------------------------------------------------------- */
 
+:root {
+    --grey-200: #EBEEF0;
+    --grey-500: #AEB7C1;
+    --grey-900: #394047;
+    --black: #15171A;
+}
+
 @font-face {
     font-family: "Inter", sans-serif;
     src: url("fonts/Inter.ttf") format("truetype-variations");
@@ -32,7 +39,7 @@
         font-size: 1.7rem;
         font-weight: 300;
         letter-spacing: 0.1px;
-        color: #394047;
+        color: var(--grey-900);
         text-rendering: optimizeLegibility;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
@@ -73,7 +80,7 @@
             ):not(:where([class~='not-kg-prose'] *)) {
                 font-family: "Inter", -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
                 font-weight: 700;
-                color: #000;
+                color: var(--black);
             }
 
             h1 strong,
@@ -478,7 +485,7 @@
             }
 
             blockquote {
-                border-left: 0.25rem solid #ff0095;
+                border-left: 0.25rem solid var(--kg-accent-color, #ff0095);
                 padding-left: 2.0rem;
                 font-style: italic;
             }
@@ -593,14 +600,14 @@
             position: absolute;
             top: 0;
             left: 0;
-            color: #abb4be;
+            color: var(--grey-500);
             font-family: georgia,serif;
             font-size: 2rem;
         }
 
         /* Selection highlight color */
         ::selection {
-            background: #e6e9eb;
+            background: var(--grey-200);
         }
     }
 }

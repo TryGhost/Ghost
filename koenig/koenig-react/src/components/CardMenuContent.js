@@ -119,7 +119,7 @@ const CardMenuItem = ({item, isSelected, itemWasClicked}) => {
 
     return (
         <div
-            className={`flex cursor-pointer flex-row items-center border border-transparent px-4 py-2 text-grey-800 hover:bg-grey-50 ${isSelected && 'bg-grey-50'}`}
+            className={`flex cursor-pointer flex-row items-center border border-transparent px-4 py-2 text-grey-800 hover:bg-grey-100 ${isSelected && 'bg-grey-100'}`}
             data-kg="cardmenu-card"
             role="menuitem"
             title={item.label}
