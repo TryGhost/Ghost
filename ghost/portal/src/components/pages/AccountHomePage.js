@@ -3,7 +3,7 @@ import MemberAvatar from '../common/MemberGravatar';
 import ActionButton from '../common/ActionButton';
 import CloseButton from '../common/CloseButton';
 import Switch from '../common/Switch';
-import {getMemberSubscription, getMemberTierName, getSiteNewsletters, getSupportAddress, getUpdatedOfferPrice, hasCommentsEnabled, hasMultipleNewsletters, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember, subscriptionHasFreeTrial} from '../../utils/helpers';
+import {allowCompMemberUpgrade, getMemberSubscription, getMemberTierName, getSiteNewsletters, getSupportAddress, getUpdatedOfferPrice, hasCommentsEnabled, hasMultipleNewsletters, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember, subscriptionHasFreeTrial} from '../../utils/helpers';
 import {getDateString} from '../../utils/date-time';
 import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
 import {ReactComponent as OfferTagIcon} from '../../images/icons/offer-tag.svg';
@@ -274,8 +274,9 @@ const PaidAccountActions = () => {
         );
     };
 
-    const PlanUpdateButton = () => {
-        if (hasOnlyFreePlan({site})) {
+    const PlanUpdateButton = ({isComplimentary}) => {
+        const hideUpgrade = allowCompMemberUpgrade({member}) ? false : isComplimentary;
+        if (hideUpgrade || hasOnlyFreePlan({site})) {
             return null;
         }
         return (
