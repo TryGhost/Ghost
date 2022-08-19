@@ -3,7 +3,7 @@ const SingleUseTokenProvider = require('../../../core/server/services/members/Si
 const settingsService = require('../../../core/server/services/settings/settings-service');
 const settingsCache = require('../../../core/shared/settings-cache');
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
-const {stringMatching, anyEtag, anyUuid} = matchers;
+const {stringMatching, anyEtag, anyUuid, anyStringNumber} = matchers;
 const models = require('../../../core/server/models');
 const {anyErrorId} = matchers;
 
@@ -63,7 +63,9 @@ describe('Settings API', function () {
                     settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
                 })
                 .matchHeaderSnapshot({
-                    etag: anyEtag
+                    etag: anyEtag,
+                    // Special rule for this test, as the labs setting changes a lot
+                    'content-length': anyStringNumber
                 });
         });
 
