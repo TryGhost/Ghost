@@ -30,7 +30,8 @@ const ALPHA_FEATURES = [
     'beforeAfterCard',
     'freeTrial',
     'memberAttribution',
-    'searchHelper'
+    'searchHelper',
+    'compExpiring'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
