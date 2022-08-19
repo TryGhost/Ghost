@@ -1,5 +1,5 @@
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyISODate, anyISODateTime, stringMatching} = matchers;
+const {anyEtag, anyISODate, anyISODateTime, anyStringNumber, stringMatching} = matchers;
 
 describe('Explore API', function () {
     let agent;
@@ -30,7 +30,9 @@ describe('Explore API', function () {
                     }
                 })
                 .matchHeaderSnapshot({
-                    etag: anyEtag
+                    etag: anyEtag,
+                    // Special rule for this test, as the labs setting changes a lot
+                    'content-length': anyStringNumber
                 });
         });
     });
