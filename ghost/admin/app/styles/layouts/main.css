@@ -1329,6 +1329,9 @@
 .gh-expandable {
     background: var(--main-color-content-greybg);
     border-radius: 3px;
+}
+
+.gh-expandable.overflow-hidden {
     overflow-x: hidden;
 }
 
