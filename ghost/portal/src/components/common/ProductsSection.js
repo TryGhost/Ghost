@@ -462,10 +462,6 @@ export const ProductsSectionStyles = ({site}) => {
             width: 100%;
         }
 
-        .gh-portal-upgrade-product .gh-portal-discount-label {
-            display: none;
-        }
-
         .gh-portal-upgrade-product .gh-portal-product-card .gh-portal-plan-current {
             display: inline-block;
             position: relative;
