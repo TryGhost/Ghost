@@ -565,9 +565,9 @@ function ProductCardAlternatePrice({price}) {
     );
 }
 
-function ProductCardTrialDays({trialDays, discount}) {
+function ProductCardTrialDays({trialDays, discount, selectedInterval}) {
     const {site} = useContext(AppContext);
-    const {selectedInterval} = useContext(ProductsContext);
+
     if (hasFreeTrialTier({site})) {
         if (trialDays) {
             return (
@@ -583,7 +583,7 @@ function ProductCardTrialDays({trialDays, discount}) {
             <span className="gh-portal-discount-label">{discount}% discount</span>
         );
     }
-    
+
     return null;
 }
 
@@ -611,7 +611,7 @@ function ProductCardPrice({product}) {
                             <span className="amount">{formatNumber(getStripeAmount(activePrice.amount))}</span>
                             <span className="billing-period">/{activePrice.interval}</span>
                         </div>
-                        <ProductCardTrialDays trialDays={trialDays} discount={yearlyDiscount} />
+                        <ProductCardTrialDays trialDays={trialDays} discount={yearlyDiscount} selectedInterval={selectedInterval} />
                     </div>
                     {(selectedInterval === 'year' ? <YearlyDiscount discount={yearlyDiscount} trialDays={trialDays} /> : '')}
                     <ProductCardAlternatePrice price={alternatePrice} />
