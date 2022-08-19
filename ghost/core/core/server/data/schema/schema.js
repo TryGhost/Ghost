@@ -466,7 +466,8 @@ module.exports = {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
         product_id: {type: 'string', maxlength: 24, nullable: false, references: 'products.id', cascadeDelete: true},
-        sort_order: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0}
+        sort_order: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
+        expiry_at: {type: 'dateTime', nullable: true}
     },
     posts_products: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
