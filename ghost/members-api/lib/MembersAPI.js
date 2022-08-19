@@ -124,7 +124,8 @@ module.exports = function MembersAPI({
             }
         },
         labsService,
-        stripeService: stripeAPIService
+        stripeService: stripeAPIService,
+        memberAttributionService
     });
 
     const geolocationService = new GeolocationSerice();

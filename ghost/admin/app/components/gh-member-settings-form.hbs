@@ -190,10 +190,12 @@
                                             {{/if}}
                                         {{/if}}
                                         <div>
-                                            <span class="gh-membertier-created">Created on {{sub.startDate}}</span>
-                                            <span class="gh-membertier-separator">·</span>
-                                            {{!-- TODO: You can simply add a <a /> for this when a page is available --}}
-                                            <span class="gh-membertier-started">Started on —</span>
+                                            <span class="gh-membertier-created">Created on {{sub.startDate}}</span>                                            
+                                            {{#if (and sub.attribution sub.attribution.url sub.attribution.title) }}
+                                                <span class="gh-membertier-separator">·</span>
+                                                <span class="gh-membertier-started">Attributed to <a href="{{sub.attribution.url}}" target="_blank" rel="noopener noreferrer">{{ sub.attribution.title }}</a></span>
+                                            {{/if}}
+
                                         </div>
                                     </div>
 

@@ -707,6 +707,8 @@ label[for="member-description"] + p {
 .gh-member-details-meta p {
     display: flex;
     align-items: center;
+    white-space: nowrap;
+    min-width: 0;
 }
 
 .gh-member-details-meta .gh-member-last-seen {
@@ -717,6 +719,16 @@ label[for="member-description"] + p {
     width: 1.6rem;
     height: 1.6rem;
     margin-right: .8rem;
+    flex-shrink: 0;
+}
+
+/* WIP style for attribution link*/
+.gh-member-details-meta p a {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    text-decoration: underline;
+    margin-left: 2px;
 }
 
 .gh-member-details-meta svg path {
