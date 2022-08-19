@@ -3,7 +3,7 @@ import MemberAvatar from '../common/MemberGravatar';
 import ActionButton from '../common/ActionButton';
 import CloseButton from '../common/CloseButton';
 import Switch from '../common/Switch';
-import {allowCompMemberUpgrade, getMemberSubscription, getMemberTierName, getSiteNewsletters, getSupportAddress, getUpdatedOfferPrice, hasCommentsEnabled, hasMultipleNewsletters, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember, subscriptionHasFreeTrial} from '../../utils/helpers';
+import {allowCompMemberUpgrade, getCompExpiry, getMemberSubscription, getMemberTierName, getSiteNewsletters, getSupportAddress, getUpdatedOfferPrice, hasCommentsEnabled, hasMultipleNewsletters, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember, subscriptionHasFreeTrial} from '../../utils/helpers';
 import {getDateString} from '../../utils/date-time';
 import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
 import {ReactComponent as OfferTagIcon} from '../../images/icons/offer-tag.svg';
@@ -230,8 +230,13 @@ const PaidAccountActions = () => {
             label = `${Intl.NumberFormat('en', {currency, style: 'currency'}).format(amount / 100)}/${interval}`;
         }
         let offerLabelStr = getOfferLabel({price, offer, subscriptionStartDate: startDate});
+        const compExpiry = getCompExpiry({member});
         if (isComplimentary) {
-            label = label ? `Complimentary (${label})` : `Complimentary`;
+            if (compExpiry) {
+                label = `Complimentary - Expires ${compExpiry}`;
+            } else {
+                label = label ? `Complimentary (${label})` : `Complimentary`;
+            }
         }
         let oldPriceClassName = '';
         if (offerLabelStr) {
@@ -475,6 +480,15 @@ const AccountWelcome = () => {
     }
     if (subscription) {
         const currentPeriodEnd = subscription?.current_period_end;
+        if (isComplimentary && getCompExpiry({member})) {
+            const expiryDate = getCompExpiry({member});
+            const expiryAt = getDateString(expiryDate);
+            return (
+                <div className='gh-portal-section'>
+                    <p className='gh-portal-text-center gh-portal-free-ctatext'>Your subscription will expire on {expiryAt}</p>
+                </div>
+            );
+        }
         if (subscription?.cancel_at_period_end) {
             return null;
         }

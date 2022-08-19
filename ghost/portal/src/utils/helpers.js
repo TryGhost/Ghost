@@ -1,3 +1,5 @@
+import {getDateString} from './date-time';
+
 export function removePortalLinkFromUrl() {
     const [path] = window.location.hash.substr(1).split('?');
     const linkRegex = /^\/portal\/?(?:\/(\w+(?:\/\w+)*))?\/?$/;
@@ -86,6 +88,13 @@ export function getNewsletterFromUuid({site, uuid}) {
 
 export function allowCompMemberUpgrade({member}) {
     return member?.subscriptions?.[0]?.tier?.expiry_at !== undefined;
+}
+
+export function getCompExpiry({member}) {
+    if (member?.subscriptions?.[0]?.tier?.expiry_at) {
+        return getDateString(member.subscriptions[0].tier.expiry_at);
+    }
+    return '';
 }
 
 export function getUpgradeProducts({site, member}) {
