@@ -1,6 +1,8 @@
 const sinon = require('sinon');
+const should = require('should');
 const models = require('../../../../core/server/models');
 const configUtils = require('../../../utils/configUtils');
+const labs = require('../../../../core/shared/labs');
 
 const config = configUtils.config;
 
@@ -47,6 +49,33 @@ describe('Unit: models/member', function () {
             const json = toJSON(member);
 
             should(json.avatar_image).eql(null);
+        });
+    });
+
+    describe('updateTierExpiry', function () {
+        let memberModel;
+        let updatePivot;
+
+        beforeEach(function () {
+            memberModel = new models.Member({email: 'text@example.com'});
+            updatePivot = sinon.stub();
+
+            sinon.stub(memberModel, 'products').callsFake(() => {
+                return {
+                    updatePivot: updatePivot
+                };
+            });
+            sinon.stub(labs, 'isSet').returns(true);
+        });
+
+        it('calls updatePivot on member products to set expiry', function () {
+            const expiry = (new Date()).toISOString();
+            memberModel.updateTierExpiry([{
+                expiry_at: expiry,
+                id: '1'
+            }]);
+
+            updatePivot.calledWith({expiry_at: new Date(expiry)}, {query: {where: {product_id: '1'}}}).should.be.true();
         });
     });
 });
