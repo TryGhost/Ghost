@@ -84,6 +84,10 @@ export function getNewsletterFromUuid({site, uuid}) {
     });
 }
 
+export function allowCompMemberUpgrade({member}) {
+    return member?.subscriptions?.[0]?.tier?.expiry_at !== undefined;
+}
+
 export function getUpgradeProducts({site, member}) {
     const activePrice = getMemberActivePrice({member});
     const activePriceCurrency = activePrice?.currency;
@@ -818,7 +822,7 @@ export function getUrlHistory() {
     } catch (error) {
         // Failed to access localStorage or something related to that.
         // Log a warning, as this shouldn't happen on a modern browser.
-        
+
         /* eslint-disable no-console */
         console.warn(`[Portal] Failed to load member URL history:`, error);
     }
