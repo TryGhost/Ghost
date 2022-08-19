@@ -6,6 +6,7 @@ const db = require('../../data/db');
 const MembersConfigProvider = require('./config');
 const MembersCSVImporter = require('@tryghost/members-importer');
 const MembersStats = require('./stats/members-stats');
+const memberJobs = require('./jobs');
 const createMembersSettingsInstance = require('./settings');
 const logging = require('@tryghost/logging');
 const urlUtils = require('../../../shared/url-utils');
@@ -160,6 +161,9 @@ module.exports = {
                 await jobsService.awaitCompletion(membersMigrationJobName);
             }
         }
+
+        // Schedule daily cron job to clean expired comp subs
+        memberJobs.scheduleExpiredCompCleanupJob();
     },
     contentGating: require('./content-gating'),
 
