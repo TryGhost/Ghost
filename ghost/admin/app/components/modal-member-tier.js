@@ -1,4 +1,5 @@
 import ModalComponent from 'ghost-admin/components/modal-base';
+import moment from 'moment';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
@@ -14,6 +15,30 @@ export default class ModalMemberTier extends ModalComponent {
     @tracked tiers = [];
     @tracked selectedTier = null;
     @tracked loadingTiers = false;
+    @tracked expiryAt = 'forever';
+
+    @tracked expiryOptions = [
+        {
+            label: 'Forever',
+            duration: 'forever'
+        },
+        {
+            label: '1 Week',
+            duration: 'week'
+        },
+        {
+            label: '1 Month',
+            duration: 'month'
+        },
+        {
+            label: '6 Months',
+            duration: 'half-year'
+        },
+        {
+            label: '1 Year',
+            duration: 'year'
+        }
+    ];
 
     @task({drop: true})
     *fetchTiers() {
@@ -67,6 +92,11 @@ export default class ModalMemberTier extends ModalComponent {
         this.closeModal();
     }
 
+    @action
+    updateExpiry(expiryDuration) {
+        this.expiryAt = expiryDuration;
+    }
+
     @task({drop: true})
     *addTier() {
         const url = `${this.ghostPaths.url.api(`members/${this.member.get('id')}`)}?include=tiers`;
@@ -82,14 +112,29 @@ export default class ModalMemberTier extends ModalComponent {
             });
         }
 
+        let expiryAt = null;
+
+        if (this.expiryAt === 'week') {
+            expiryAt = moment.utc().add(7, 'days').startOf('day').toISOString();
+        } else if (this.expiryAt === 'month') {
+            expiryAt = moment.utc().add(1, 'month').startOf('day').toISOString();
+        } else if (this.expiryAt === 'half-year') {
+            expiryAt = moment.utc().add(6, 'months').startOf('day').toISOString();
+        } else if (this.expiryAt === 'year') {
+            expiryAt = moment.utc().add(1, 'year').startOf('day').toISOString();
+        }
+        const tiersData = {
+            id: this.selectedTier
+        };
+        if (expiryAt) {
+            tiersData.expiry_at = expiryAt;
+        }
         const response = yield this.ajax.put(url, {
             data: {
                 members: [{
                     id: this.member.get('id'),
                     email: this.member.get('email'),
-                    tiers: [{
-                        id: this.selectedTier
-                    }]
+                    tiers: [tiersData]
                 }]
             }
         });
