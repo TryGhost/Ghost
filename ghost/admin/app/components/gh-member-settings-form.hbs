@@ -158,6 +158,9 @@
                                             {{else if sub.cancel_at_period_end}}
                                                 <span class="gh-cp-membertier-renewal">Has access until {{sub.validUntil}}</span>
                                                 <span class="gh-badge archived" data-test-text="member-subscription-status">Cancelled</span>
+                                            {{else if sub.compExpiry}}
+                                                    <span class="gh-cp-membertier-renewal">Expires {{sub.compExpiry}}</span>
+                                                    <span class="gh-badge active" data-test-text="member-subscription-status">Active</span>
                                             {{else if sub.trialUntil}}
                                                     <span class="gh-cp-membertier-renewal">Ends {{sub.trialUntil}}</span>
                                                     <span class="gh-badge active" data-test-text="member-subscription-status">Active</span>

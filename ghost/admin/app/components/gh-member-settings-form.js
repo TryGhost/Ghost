@@ -89,6 +89,11 @@ export default class extends Component {
                     data.trialUntil = moment(sub.trial_end_at).format('D MMM YYYY');
                 }
             }
+
+            if (!sub.id && this.feature.get('compExpiring') && sub.tier?.expiry_at) {
+                data.compExpiry = moment(sub.tier.expiry_at).format('D MMM YYYY');
+            }
+
             return data;
         });
         return tiers.map((tier) => {
