@@ -11,7 +11,10 @@ describe('Frame', function () {
             'user',
             'file',
             'files',
-            'apiType'
+            'apiType',
+            'docName',
+            'method',
+            'response'
         ]);
     });
 

@@ -45,7 +45,10 @@ describe('HTTP', function () {
             'user',
             'file',
             'files',
-            'apiType'
+            'apiType',
+            'docName',
+            'method',
+            'response'
         ]);
 
         apiImpl.args[0][0].data.should.eql({a: 'a'});
