@@ -19,6 +19,8 @@ class Frame {
          * file:        Uploaded file
          * files:       Uploaded files
          * apiType:     Content or admin api access
+         * docName:     The endpoint name, e.g. "posts"
+         * method:      The method name, e.g. "browse"
          */
         this.options = {};
         this.data = {};
@@ -26,6 +28,9 @@ class Frame {
         this.file = {};
         this.files = [];
         this.apiType = null;
+        this.docName = null;
+        this.method = null;
+        this.response = null;
     }
 
     /**
