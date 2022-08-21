@@ -174,23 +174,21 @@ const STAGES = {
  * 4. Controller - Execute the controller implementation & receive model response.
  * 5. Output Serialisation - Output formatting, Deprecations, Extra attributes etc...
  *
- * @param {Function} apiController
+ * @param {Object} apiController
  * @param {Object} apiUtils - Local utils (validation & serialisation) from target API version
  * @param {String} [apiType] - Content or Admin API access
- * @return {Function}
+ * @return {Object}
  */
 const pipeline = (apiController, apiUtils, apiType) => {
     const keys = Object.keys(apiController);
+    const docName = apiController.docName;
 
     // CASE: api controllers are objects with configuration.
     //       We have to ensure that we expose a functional interface e.g. `api.posts.add` has to be available.
-    return keys.reduce((obj, key) => {
-        const docName = apiController.docName;
-        const method = key;
+    return keys.reduce((obj, method) => {
+        const apiImpl = _.cloneDeep(apiController)[method];
 
-        const apiImpl = _.cloneDeep(apiController)[key];
-
-        obj[key] = function wrapper() {
+        obj[method] = function wrapper() {
             const apiConfig = {docName, method};
             let options;
             let data;
@@ -253,7 +251,7 @@ const pipeline = (apiController, apiUtils, apiType) => {
                 });
         };
 
-        Object.assign(obj[key], apiImpl);
+        Object.assign(obj[method], apiImpl);
         return obj;
     }, {});
 };
