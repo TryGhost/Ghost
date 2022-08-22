@@ -1,13 +1,9 @@
 import Helper from '@ember/component/helper';
 import classic from 'ember-classic-decorator';
 import {isBlank} from '@ember/utils';
-import {inject as service} from '@ember/service';
 
 @classic
 export default class AuditLogEventFilter extends Helper {
-    @service settings;
-    @service feature;
-
     compute(
         positionalParams,
         {excludedEvents = [], excludedResources = [], user = ''}
