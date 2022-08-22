@@ -27,15 +27,16 @@ class Attribution {
     }
 
     /**
-     * Convert the instance to a parsed instance with more information about the resource included.
+     * Converts the instance to a parsed instance with more information about the resource included.
      * It does:
      * - Fetch the resource and add some information about it to the attribution
-     * - If the resource exists and have a new url, it updates the url if possible
+     * - If the resource exists and has a new url, it updates the url if possible
      * - Returns an absolute URL instead of a relative one
-     * @returns {Promise<AttributionResource>}
+     * @param {Object|null} [model] The Post/User/Tag model of the resource associated with this attribution
+     * @returns {AttributionResource}
      */
-    async getResource() {
-        if (!this.id || this.type === 'url' || !this.type) {
+    getResource(model) {
+        if (!this.id || this.type === 'url' || !this.type || !model) {
             return {
                 id: null,
                 type: 'url',
@@ -44,18 +45,28 @@ class Attribution {
             };
         }
 
-        const resource = await this.#urlTranslator.getResourceById(this.id, this.type, {absolute: true});
-
-        if (resource) {
-            return resource;
-        }
+        const updatedUrl = this.#urlTranslator.getUrlByResourceId(this.id, {absolute: true});
 
         return {
-            id: null,
-            type: 'url',
-            url: this.#urlTranslator.relativeToAbsolute(this.url),
-            title: this.url
+            id: model.id,
+            type: this.type,
+            url: updatedUrl,
+            title: model.get('title') ?? model.get('name') ?? this.url
         };
+    }
+
+    /**
+     * Same as getResource, but fetches the model by ID instead of passing it as a parameter
+     */
+    async fetchResource() {
+        if (!this.id || this.type === 'url' || !this.type) {
+            // No fetch required
+            return this.getResource();
+        }
+
+        // Fetch model
+        const model = await this.#urlTranslator.getResourceById(this.id, this.type, {absolute: true});
+        return this.getResource(model);
     }
 }
 

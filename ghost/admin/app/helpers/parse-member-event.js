@@ -100,22 +100,22 @@ function getAction(event) {
 
     if (event.type === 'subscription_event') {
         if (event.data.type === 'created') {
-            return 'started';
+            return 'started their subscription';
         }
         if (event.data.type === 'updated') {
-            return 'changed';
+            return 'changed their subscription';
         }
         if (event.data.type === 'canceled') {
-            return 'canceled';
+            return 'canceled their subscription';
         }
         if (event.data.type === 'reactivated') {
-            return 'reactivated';
+            return 'reactivated their subscription';
         }
         if (event.data.type === 'expired') {
-            return 'ended';
+            return 'ended their subscription';
         }
 
-        return 'changed';
+        return 'changed their subscription';
     }
 
     if (event.type === 'email_opened_event') {
@@ -146,23 +146,21 @@ function getObject(event, hasMultipleNewsletters) {
         return 'newsletter';
     }
 
-    if (event.type === 'subscription_event') {
-        return 'their subscription';
+    // TODO: we need to find a better place for putting attribution, but first need to wait on a final design
+    if (event.type === 'signup_event' || event.type === 'subscription_event') {
+        if (event.data.attribution?.title) {
+            // Add 'Attributed to ' for now, until this is incorporated in the design
+            return 'Attributed to ' + event.data.attribution.title;
+        }
     }
 
     if (event.type.match?.(/^email_/)) {
         return 'an email';
     }
 
-    if (event.type === 'subscription_event') {
-        return 'their subscription';
-    }
-
     if (event.type === 'comment_event') {
-        if (event.type === 'comment_event') {
-            if (event.data.post) {
-                return event.data.post.title;
-            }
+        if (event.data.post) {
+            return event.data.post.title;
         }
     }
 
@@ -196,6 +194,12 @@ function getURL(event) {
     if (event.type === 'comment_event') {
         if (event.data.post) {
             return event.data.post.url;
+        }
+    }
+
+    if (event.type === 'signup_event' || event.type === 'subscription_event') {
+        if (event.data.attribution && event.data.attribution.url) {
+            return event.data.attribution.url;
         }
     }
     return;

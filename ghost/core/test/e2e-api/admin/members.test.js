@@ -10,6 +10,9 @@ const testUtils = require('../../utils');
 const Papa = require('papaparse');
 
 const models = require('../../../core/server/models');
+const membersService = require('../../../core/server/services/members');
+const memberAttributionService = require('../../../core/server/services/member-attribution');
+const urlService = require('../../../core/server/services/url');
 
 async function assertMemberEvents({eventType, memberId, asserts}) {
     const events = await models[eventType].where('member_id', memberId).fetchAll();
@@ -149,6 +152,62 @@ describe('Members API without Stripe', function () {
                 errors: [{
                     id: anyErrorId
                 }]
+            });
+    });
+});
+
+// Tests specific for member attribution
+describe('Members APi - member attribution', function () {
+    before(async function () {
+        agent = await agentProvider.getAdminAPIAgent();
+        await fixtureManager.init('posts', 'newsletters', 'members:newsletters', 'comments');
+        await agent.loginAsOwner();
+    });
+
+    beforeEach(function () {
+        mockManager.mockStripe();
+        mockManager.mockMail();
+        
+        // For some reason it is enabled by default?
+        mockManager.mockLabsEnabled('memberAttribution');
+    });
+
+    afterEach(function () {
+        mockManager.restore();
+    });
+
+    it('Can read member attributed to a post', async function () {
+        const id = fixtureManager.get('posts', 0).id;
+        const post = await models.Post.where('id', id).fetch({require: true});
+
+        // Set the attribution for this member manually
+        const member = await membersService.api.members.create({
+            email: 'member-attributed-to-post@test.com',
+            attribution: memberAttributionService.attributionBuilder.build({
+                id,
+                url: '/out-of-date/',
+                type: 'post'
+            })
+        });
+
+        const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true});
+
+        await agent
+            .get(`/members/${member.id}/`)
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: new Array(1).fill(memberMatcherShallowIncludes)
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .expect(({body}) => {
+                should(body.members[0].attribution).eql({
+                    id: post.id,
+                    url: absoluteUrl,
+                    type: 'post',
+                    title: post.get('title')
+                });
             });
     });
 });

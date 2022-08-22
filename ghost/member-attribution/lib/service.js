@@ -30,7 +30,7 @@ class MemberAttributionService {
      * @returns {Promise<import('./attribution').AttributionResource|null>}
      */
     async getMemberCreatedAttribution(memberId) {
-        const memberCreatedEvent = await this.models.MemberCreatedEvent.findOne({member_id: memberId}, {require: false});
+        const memberCreatedEvent = await this.models.MemberCreatedEvent.findOne({member_id: memberId}, {require: false, withRelated: ['attribution']});
         if (!memberCreatedEvent || !memberCreatedEvent.get('attribution_type')) {
             return null;
         }
@@ -39,7 +39,7 @@ class MemberAttributionService {
             url: memberCreatedEvent.get('attribution_url'),
             type: memberCreatedEvent.get('attribution_type')
         });
-        return await attribution.getResource();
+        return await attribution.getResource(memberCreatedEvent.related('attribution'));
     }
 
     /**
@@ -48,7 +48,7 @@ class MemberAttributionService {
      * @returns {Promise<import('./attribution').AttributionResource|null>}
      */
     async getSubscriptionCreatedAttribution(subscriptionId) {
-        const subscriptionCreatedEvent = await this.models.SubscriptionCreatedEvent.findOne({subscription_id: subscriptionId}, {require: false});
+        const subscriptionCreatedEvent = await this.models.SubscriptionCreatedEvent.findOne({subscription_id: subscriptionId}, {require: false, withRelated: ['attribution']});
         if (!subscriptionCreatedEvent || !subscriptionCreatedEvent.get('attribution_type')) {
             return null;
         }
@@ -57,7 +57,7 @@ class MemberAttributionService {
             url: subscriptionCreatedEvent.get('attribution_url'),
             type: subscriptionCreatedEvent.get('attribution_type')
         });
-        return await attribution.getResource();
+        return await attribution.getResource(subscriptionCreatedEvent.related('attribution'));
     }
 }
 
