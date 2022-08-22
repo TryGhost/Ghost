@@ -38,5 +38,11 @@ function getActionIcon(ev) {
 }
 
 function getAction(ev) {
-    return `${ev.event} ${ev.resource_type}`;
+    let resourceType = ev.resource_type;
+
+    if (resourceType === 'api_key') {
+        resourceType = 'API key';
+    }
+
+    return `${ev.event} ${resourceType}`;
 }
