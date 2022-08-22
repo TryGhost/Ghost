@@ -714,15 +714,15 @@ Dashboard List */
 }
 
 .gh-dashboard-list-subtext > a {
-    color: var(--black);
     font-weight: 600;
+    color: var(--darkgrey);
 }
 
 .gh-dashboard-list-item svg {
-    width: 20px;
-    min-width: 20px;
-    height: 20px;
-    margin: 0 0.5rem 0 -4px;
+    width: 24px;
+    min-width: 24px;
+    height: 24px;
+    margin: 0 0.5rem 0 -2px;
 }
 
 .gh-dashboard-list-item-sub {
@@ -1103,6 +1103,12 @@ Dashboard Recent Activity */
     white-space: nowrap;
 }
 
+.gh-dashboard-list-item-date > .gh-dashboard-list-subtext {
+    font-weight: 500;
+    font-size: 1.3rem;
+    color: var(--midlightgrey);
+}
+
 
 /* --------------------------------- 
 Dashboard Recents */
@@ -1189,7 +1195,7 @@ Dashboard Recents */
 
 .gh-dashboard-recents-activity .gh-dashboard-list-header,
 .gh-dashboard-recents-activity .gh-dashboard-list-item {
-    grid-template-columns: 30% 40% 30%;
+    grid-template-columns: 30% 55% 15%;
 }
 
 .gh-dashboard-recents-activity .gh-dashboard-list-title:nth-child(2),
