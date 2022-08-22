@@ -40,6 +40,9 @@ const Member = ghostBookshelf.Model.extend({
         }, {
             key: 'newsletters',
             replacement: 'newsletters.slug'
+        }, {
+            key: 'signup',
+            replacement: 'signups.attribution_id'
         }];
     },
 
@@ -74,6 +77,12 @@ const Member = ghostBookshelf.Model.extend({
                 joinFrom: 'member_id',
                 joinTo: 'customer_id',
                 joinToForeign: 'customer_id'
+            },
+            signups: {
+                tableName: 'members_created_events',
+                tableNameAs: 'signups',
+                type: 'oneToOne',
+                joinFrom: 'member_id'
             }
         };
     },
