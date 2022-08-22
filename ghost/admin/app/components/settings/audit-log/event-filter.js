@@ -1,6 +1,5 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
-import {inject as service} from '@ember/service';
 
 const ALL_EVENT_TYPES = [
     {event: 'added', icon: 'event-filter-signup', name: 'Added'},
@@ -21,9 +20,6 @@ const ALL_RESOURCE_TYPES = [
 ];
 
 export default class AuditLogEventFilter extends Component {
-    @service settings;
-    @service feature;
-
     excludedEvents = null;
     excludedResources = null;
 
