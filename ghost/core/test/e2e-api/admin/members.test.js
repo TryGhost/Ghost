@@ -234,6 +234,17 @@ describe('Members API', function () {
             });
     });
 
+    it('Can filter by signup attribution', async function () {
+        await agent
+            .get('/members/?filter=conversion:' + fixtureManager.get('posts', 0).id)
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: new Array(1).fill(memberMatcherShallowIncludes)
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
 
     it('Can browse with search', async function () {
         await agent
