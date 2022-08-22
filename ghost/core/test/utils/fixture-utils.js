@@ -579,6 +579,10 @@ const fixtures = {
             for (const event of DataGenerator.forKnex.members_paid_subscription_events) {
                 await models.MemberPaidSubscriptionEvent.add(event);
             }
+        }).then(async function () {
+            for (const event of DataGenerator.forKnex.members_created_events) {
+                await models.MemberCreatedEvent.add(event);
+            }
         });
     },
 
