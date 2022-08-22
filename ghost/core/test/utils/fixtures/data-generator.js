@@ -1531,6 +1531,17 @@ DataGenerator.forKnex = (function () {
         createMember(DataGenerator.Content.members[7])
     ];
 
+    const members_created_events = members.map((member, index) => {
+        return {
+            id: ObjectId().toHexString(),
+            member_id: member.id,
+            source: 'system',
+            attribution_type: 'post',
+            attribution_id: DataGenerator.Content.posts[index % 3].id,
+            attribution_url: '/' + DataGenerator.Content.posts[index % 3].slug
+        };
+    });
+
     const newsletters = [
         createNewsletter(DataGenerator.Content.newsletters[0]),
         createNewsletter(DataGenerator.Content.newsletters[1]),
@@ -1672,7 +1683,8 @@ DataGenerator.forKnex = (function () {
         custom_theme_settings,
         comments,
 
-        members_paid_subscription_events
+        members_paid_subscription_events,
+        members_created_events
     };
 }());
 
