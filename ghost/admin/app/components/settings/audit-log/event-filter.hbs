@@ -1,6 +1,6 @@
 <GhBasicDropdown @verticalPosition="below" as |dd|>
     <dd.Trigger class="gh-btn gh-btn-icon gh-btn-action-icon">
-        <span class={{if @excludedEvents "gh-btn-label-green"}}>
+        <span class={{if (or @excludedEvents @excludedResources) "gh-btn-label-green"}}>
             {{svg-jar "filter"}}
             Filter events
         </span>
@@ -11,14 +11,30 @@
         <ul class="ember-power-select-options" role="listbox">
             {{#each this.eventTypes as |type idx|}}
                 <li class="form-group ember-power-select-option mb0 for-checkbox">
-                    <label class="checkbox" for="type-{{idx}}">
+                    <label class="checkbox" for="event-type-{{idx}}">
                         <input
                             type="checkbox"
                             checked={{type.isSelected}}
-                            id="type-{{idx}}"
+                            id="event-type-{{idx}}"
                             name="eventTypes"
                             class="gh-input post-settings-featured"
                             {{on "input" (fn this.toggleEventType type.event)}}>
+                        <span class="input-toggle-component"></span>
+                        <p>{{type.name}}</p>
+                    </label>
+                </li>
+            {{/each}}
+            <hr />
+            {{#each this.resourceTypes as |type idx|}}
+                <li class="form-group ember-power-select-option mb0 for-checkbox">
+                    <label class="checkbox" for="resource-type-{{idx}}">
+                        <input
+                            type="checkbox"
+                            checked={{type.isSelected}}
+                            id="resource-type-{{idx}}"
+                            name="resourceTypes"
+                            class="gh-input post-settings-featured"
+                            {{on "input" (fn this.toggleResourceType type.event)}}>
                         <span class="input-toggle-component"></span>
                         <p>{{type.name}}</p>
                     </label>
