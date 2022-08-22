@@ -1060,7 +1060,7 @@ textarea.gh-member-details-textarea {
 
 .gh-member-feed {
     margin: 0;
-    padding: 16px 20px;
+    padding: 20px;
     background: var(--white);
     box-shadow: 0 1px 4px -1px rgba(0,0,0,0.1);
     border-radius: 3px;
@@ -1143,6 +1143,7 @@ textarea.gh-member-details-textarea {
     display: flex;
     flex-grow: 1;
     justify-content: space-between;
+    align-items: center;
     width: 0;
 }
 
@@ -1178,7 +1179,7 @@ textarea.gh-member-details-textarea {
     flex-shrink: 0;
     width: 24px;
     height: 24px;
-    margin-right: 1rem;
+    margin: 0 0.5rem 0 -1px;
 }
 
 .gh-member-feed-icon svg {
@@ -1187,19 +1188,29 @@ textarea.gh-member-details-textarea {
 }
 
 .gh-member-settings .gh-members-activity-description {
-    color: var(--darkgrey-l1);
-    font-weight: 400;
+    font-weight: 500;
+    font-size: 1.4rem;
+    color: var(--middarkgrey);
 }
 
 .gh-member-feed-time {
-    font-weight: 400;
-    font-size: 13px;
-    color: var(--midgrey);
+    font-weight: 500;
+    font-size: 1.3rem;
+    color: var(--midlightgrey);
     white-space: nowrap;
 }
 
 .gh-member-feed-footer {
     padding-top: 16px;
+}
+
+.gh-member-feed-footer a {
+    font-weight: 500;
+    transition: color 100ms ease;
+}
+
+.gh-member-feed-footer a:hover {
+    color: #269a34;
 }
 
 
