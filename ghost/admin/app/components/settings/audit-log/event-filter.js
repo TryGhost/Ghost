@@ -10,7 +10,7 @@ const ALL_EVENT_TYPES = [
 
 const ALL_RESOURCE_TYPES = [
     {event: 'post', icon: 'event-filter-payment', name: 'Posts'},
-    {event: 'pages', icon: 'event-filter-payment', name: 'Pages'},
+    {event: 'page', icon: 'event-filter-payment', name: 'Pages'},
     {event: 'tag', icon: 'event-filter-newsletter', name: 'Tags'},
     {event: 'user', icon: 'idk', name: 'Users'},
     {event: 'integration', icon: 'event-filter-newsletter', name: 'Integrations'},
