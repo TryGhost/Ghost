@@ -34,6 +34,10 @@ export default class AuditLogEventFetcher extends Resource {
         this.cursor = moment.utc().format('YYYY-MM-DD HH:mm:ss');
         let filter = `created_at:<'${this.cursor}'`;
 
+        if (this.args.named.filter) {
+            filter += `+${this.args.named.filter}`;
+        }
+
         // Can't get this working with Promise.all, somehow results in an infinite loop
         await this.loadEventsTask.perform({filter});
     }
@@ -57,6 +61,10 @@ export default class AuditLogEventFetcher extends Resource {
 
         this.cursor = cursor;
         let filter = `created_at:<'${this.cursor}'`;
+
+        if (this.args.named.filter) {
+            filter += `+${this.args.named.filter}`;
+        }
 
         this.loadEventsTask.perform({filter});
     }
