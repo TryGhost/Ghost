@@ -7,6 +7,7 @@ import {inject as service} from '@ember/service';
 export default class PostsRoute extends AuthenticatedRoute {
     @service infinity;
     @service router;
+    @service feature;
 
     queryParams = {
         type: {refreshModel: true},
@@ -114,7 +115,8 @@ export default class PostsRoute extends AuthenticatedRoute {
 
     buildRouteInfoMetadata() {
         return {
-            titleToken: 'Posts'
+            titleToken: 'Posts',
+            mainClasses: this.feature.get('memberAttribution') ? ['gh-main-fullwidth'] : null
         };
     }
 

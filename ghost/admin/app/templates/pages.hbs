@@ -31,6 +31,10 @@
             {{#if this.postsInfinityModel}}
                 <li class="gh-list-row header">
                     <div class="gh-list-header gh-posts-title-header">Title</div>
+                    {{#if this.feature.memberAttribution}}
+                        <div class="gh-list-header gh-posts-opens-header">Signups</div>
+                        <div class="gh-list-header gh-posts-opens-header">Conversions</div>
+                    {{/if}}
                     <div class="gh-list-header gh-posts-status-header">Status</div>
                 </li>
             {{/if}}

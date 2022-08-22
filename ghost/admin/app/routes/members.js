@@ -33,7 +33,6 @@ export default class MembersRoute extends AdminRoute {
         return {
             titleToken: 'Members',
             mainClasses: ['gh-main-fullwidth']
-
         };
     }
 }
