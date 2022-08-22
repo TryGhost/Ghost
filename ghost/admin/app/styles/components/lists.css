@@ -434,3 +434,13 @@ ul.nostyle li {
         height: calc(100vh - 96px);
     }
 }
+
+
+.gh-list-nodata {
+    font-size: 1.5rem;
+    letter-spacing: 0;
+    text-decoration: none;
+    min-width: 54px;
+    color: var(--lightgrey);
+    font-weight: 500;
+}
