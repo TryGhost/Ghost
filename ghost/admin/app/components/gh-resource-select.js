@@ -22,7 +22,6 @@ export default class GhResourceSelect extends Component {
         return this._options;
     }
 
-
     get flatOptions() {
         const options = [];
 
@@ -40,14 +39,12 @@ export default class GhResourceSelect extends Component {
     }
 
     get selectedOptions() {
-        console.log(this.args.resources);
         const resources = this.args.resources || [];
         return this.flatOptions.filter(option => resources.find(resource => resource.id === option.id));
     }
 
     @action
     onChange(options) {
-        console.log(options);
         this.args.onChange(options);
     }
 
@@ -78,8 +75,6 @@ export default class GhResourceSelect extends Component {
                 options: pages.map(mapResource)
             });
         }
-
-        console.log(options);
 
         this._options = options;
     }
