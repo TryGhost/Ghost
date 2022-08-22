@@ -1,22 +1,26 @@
-<section class="gh-canvas js-settings-content" {{scroll-top}}>
+<section class="gh-canvas js-settings-content {{if (feature 'auditLog') "gh-whats-new-canvas"}}" {{scroll-top}}>
     <GhCanvasHeader class="gh-canvas-header">
         <h2 class="gh-whats-new-heading">{{svg-jar "gift"}} What's new?</h2>
-        <div class="gh-about-header-actions">
-            <a class="gh-btn gh-btn-outline" href="https://ghost.org/docs/" target="_blank" rel="noopener noreferrer"><span>User documentation</span></a>
-            <a class="gh-btn gh-btn-outline" href="https://forum.ghost.org/" target="_blank" rel="noopener noreferrer"><span>Get help with Ghost</span></a>
-            <a class="gh-btn gh-btn-black" href="https://ghost.org/docs/contributing/" target="_blank" rel="noopener noreferrer"><span>Get involved</span></a>
-        </div>
+        {{#if (not (feature 'auditLog'))}}
+            <div class="gh-about-header-actions">
+                <a class="gh-btn gh-btn-outline" href="https://ghost.org/docs/" target="_blank" rel="noopener noreferrer"><span>User documentation</span></a>
+                <a class="gh-btn gh-btn-outline" href="https://forum.ghost.org/" target="_blank" rel="noopener noreferrer"><span>Get help with Ghost</span></a>
+                <a class="gh-btn gh-btn-black" href="https://ghost.org/docs/contributing/" target="_blank" rel="noopener noreferrer"><span>Get involved</span></a>
+            </div>
+        {{/if}}
     </GhCanvasHeader>
     <section class="view-container">
         <div class="gh-about-container">
             <section class="gh-whats-new gh-about-box" {{did-insert (perform this.whatsNew.updateLastSeen)}}>
                 {{#each this.whatsNew.entries as |entry|}}
-                    <a href="{{entry.url}}" class="gh-wn-entry" {{scroll-to shouldScroll=(eq entry.slug this.entry)}}>
-                        <h4>{{moment-format entry.published_at "DD MMMM YYYY"}}</h4>
-                        <h1>{{entry.title}}</h1>
-                        {{#if entry.feature_image}}
-                            <img class="mb5" src={{entry.feature_image}}>
-                        {{/if}}
+                    <div class="gh-wn-entry" {{scroll-to shouldScroll=(eq entry.slug this.entry)}}>
+                        <a href="{{entry.url}}">
+                            <h4>{{moment-format entry.published_at "DD MMMM YYYY"}}</h4>
+                            <h1>{{entry.title}}</h1>
+                            {{#if entry.feature_image}}
+                                <img class="mb5" src={{entry.feature_image}}>
+                            {{/if}}
+                        </a>
                         <div class="gh-wn-content">
                         {{#if entry.custom_excerpt}}
                             <p>{{entry.custom_excerpt}}</p>
@@ -25,7 +29,7 @@
                             {{{entry.html}}}
                         {{/if}}
                         </div>
-                    </a>
+                    </div>
                 {{/each}}
                 <a class="green" href="https://ghost.org/changelog" target="_blank" rel="noopener noreferrer">See all updates &rarr;</a>
             </section>
@@ -36,6 +40,7 @@
                 <a class="gh-btn gh-btn-black" href="https://ghost.org/docs/contributing/" target="_blank" rel="noopener noreferrer"><span>Get involved</span></a>
             </div>
 
+            {{#if (not (feature 'auditLog'))}}
             <section class="gh-env-details gh-about-box grey">
                 <div class="gh-about-logo">
                     {{svg-jar "ghost-logo-orb" alt="Ghost"}}
@@ -75,6 +80,7 @@
                     Copyright &copy; 2013 &ndash; {{this.copyrightYear}} Ghost Foundation, released under the <a href="https://github.com/TryGhost/Ghost/blob/master/LICENSE" target="_blank" rel="noopener noreferrer">MIT license</a>. <a href="https://ghost.org/" target="_blank" rel="noopener noreferrer">Ghost</a> is a registered trademark of <a href="https://ghost.org/trademark/" target="_blank" rel="noopener noreferrer">Ghost Foundation Ltd</a>.
                 </footer>
             </section>
+            {{/if}}
         </div>
     </section>
 </section>
