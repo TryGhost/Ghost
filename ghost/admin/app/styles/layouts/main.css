@@ -1366,11 +1366,12 @@
 }
 
 .gh-expandable-header .gh-expandable-description {
-    margin: 0;
+    margin: 4px 0 0;
     padding: 0;
     color: var(--midgrey);
     font-size: 1.3rem;
     font-weight: 400;
+    line-height: 1.45em;
 }
 
 .gh-expandable-content {

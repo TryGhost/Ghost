@@ -1,6 +1,5 @@
 /* About /ghost/settings/about/
 /* ---------------------------------------------------------- */
-
 .gh-about-logo svg {
     position: relative;
     width: 120px;
@@ -17,6 +16,15 @@
     display: grid;
     grid-template-columns: 2fr 1fr;
     grid-gap: 80px;
+}
+
+.gh-whats-new-canvas .gh-about-container {
+    display: flex;
+    grid-template-columns: unset;
+    grid-gap: unset;
+    margin: 0 auto;
+    max-width: 920px;
+    margin-top: 60px;
 }
 
 .gh-about-box {
@@ -124,11 +132,17 @@
     border-top: 1px solid var(--lightgrey-l2);
     padding-top: 16px;
     margin-top: 16px;
+    line-height: 1.45em;
 }
 
 
 /* What's new */
 /* ---------------------------------------------------------- */
+.gh-whats-new-canvas .gh-canvas-header-content {
+    border-bottom: 1px solid var(--whitegrey);
+    margin-bottom: -1px;
+}
+
 .gh-whats-new {
     flex-grow: 2;
     color: var(--darkgrey);
@@ -215,22 +229,33 @@
     max-width: 620px;
 }
 
+.gh-whats-new-canvas .gh-wn-content {
+    margin: 0 auto;
+}
+
 .gh-wn-entry h4 {
     font-size: 1.2rem;
     font-weight: 500;
-    letter-spacing: 0.3px;
+    letter-spacing: 0;
     text-transform: uppercase;
     margin: 24px 0 4px;
     color: var(--midlightgrey);
 }
 
 .gh-wn-entry h1 {
-    font-size: 3.1rem;
+    font-size: 3.7rem;
     line-height: 1.3em;
     font-weight: 700;
-    letter-spacing: 0px;
+    letter-spacing: -0.021em;
     color: var(--black);
     margin-bottom: 16px;
+}
+
+.gh-whats-new-canvas .gh-wn-entry h1,
+.gh-whats-new-canvas .gh-wn-entry h4 {
+    max-width: 620px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .gh-wn-entry h2 {
