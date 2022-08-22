@@ -48,6 +48,30 @@ export default class MembersFilterValue extends Component {
         return [];
     }
 
+    get signupAttributionFilterValue() {
+        if (this.args.filter?.type === 'signup') {
+            const resources = this.args.filter?.value || [];
+            return resources.map((resource) => {
+                return {
+                    id: resource
+                };
+            });
+        }
+        return [];
+    }
+
+    get conversionAttributionFilterValue() {
+        if (this.args.filter?.type === 'conversion') {
+            const resources = this.args.filter?.value || [];
+            return resources.map((resource) => {
+                return {
+                    id: resource
+                };
+            });
+        }
+        return [];
+    }
+
     @action
     setInputFilterValue(filter, event) {
         this.filterValue = event.target.value;
@@ -77,5 +101,15 @@ export default class MembersFilterValue extends Component {
     @action
     setTiersFilterValue(filter, tiers) {
         this.args.setFilterValue(filter, tiers.map(tier => tier.slug));
+    }
+
+    @action
+    setConversionAttributionFilterValue(filter, resources) {
+        this.args.setFilterValue(filter, resources.map(resource => resource.id));
+    }
+
+    @action
+    setSignupAttributionFilterValue(filter, resources) {
+        this.args.setFilterValue(filter, resources.map(resource => resource.id));
     }
 }
