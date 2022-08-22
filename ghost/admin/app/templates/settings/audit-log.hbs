@@ -11,9 +11,9 @@
     </h2>
     <div class="view-actions">
         <Settings::AuditLog::EventFilter
-             @excludedEvents={{this.excludedResources}}
-             @hiddenEvents={{this.hiddenResources}}
-             @onChange={{this.changeExcludedResources}} />
+             @excludedEvents={{this.excludedEvents}}
+             @excludedResources={{this.excludedResources}}
+             @onChange={{this.changeExcludedItems}} />
 
         <Settings::AuditLog::Search
              @selected={{this.userRecord}}
@@ -21,7 +21,7 @@
     </div>
     </GhCanvasHeader>
     <div class="view-container">
-        {{#let (audit-log-event-fetcher filter=(audit-log-event-filter excludedEvents=this.fullExcludedResources user=this.user) pageSize=50) as |eventsFetcher|}}
+        {{#let (audit-log-event-fetcher filter=(audit-log-event-filter excludedEvents=this.fullExcludedEvents excludedResources=this.fullExcludedResources user=this.user) pageSize=50) as |eventsFetcher|}}
             {{#if eventsFetcher.data}}
             <div class="gh-list-scrolling">
                 <Settings::AuditLog::Table @events={{eventsFetcher.data}} />

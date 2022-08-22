@@ -8,10 +8,15 @@ export default class AuditLogController extends Controller {
     @service settings;
     @service store;
 
-    queryParams = ['excludedResources', 'user'];
+    queryParams = ['excludedEvents', 'excludedResources', 'user'];
 
+    @tracked excludedEvents = null;
     @tracked excludedResources = null;
     @tracked user = null;
+
+    get fullExcludedEvents() {
+        return (this.excludedEvents || '').split(',');
+    }
 
     get fullExcludedResources() {
         return (this.excludedResources || '').split(',');
@@ -28,8 +33,8 @@ export default class AuditLogController extends Controller {
     }
 
     @action
-    changeExcludedResources(newList) {
-        this.router.transitionTo({queryParams: {excludedResources: newList}});
+    changeExcludedItems({excludedEvents, excludedResources} = {}) {
+        this.router.transitionTo({queryParams: {excludedEvents, excludedResources}});
     }
 
     @action
