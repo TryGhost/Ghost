@@ -112,6 +112,17 @@ ul.nostyle li {
     background: var(--whitegrey-l2);
 }
 
+.gh-list-data-attribution {
+    font-weight: 500;
+    font-size: 1.4rem;
+    color: var(--midgrey);
+}
+
+.gh-list-data-attribution > a {
+    font-weight: 600;
+    color: var(--darkgrey);
+}
+
 .gh-list-data-date {
     font-weight: 500;
     font-size: 1.3rem;
