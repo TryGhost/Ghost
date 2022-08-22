@@ -21,17 +21,17 @@
                 <div class="gh-members-activity-event">
                     <span class="gh-members-activity-description">
                         {{capitalize-first-letter event.action}}
-                        <span class="{{if (feature "memberAttribution") 'hidden'}}">
-                            {{#if event.url}}
-                                <a class="ghost-members-activity-object-link" href="{{event.url}}" target="_blank" rel="noopener noreferrer">{{event.object}}</a>
-                            {{else}}
-                                {{event.object}}
-                            {{/if}}
-                            {{#if event.email}}
-                                <GhEmailPreviewLink @data={{event.email}} />
-                            {{/if}}
+                        {{#if event.url}}
+                            <a class="ghost-members-activity-object-link {{if (feature "memberAttribution") 'hidden'}}" href="{{event.url}}" target="_blank" rel="noopener noreferrer">{{event.object}}</a>
+                        {{else}}
+                            {{event.object}}
+                        {{/if}}
+                        {{#if event.email}}
+                            <span class="{{if (feature "memberAttribution") 'hidden'}}"><GhEmailPreviewLink @data={{event.email}} /></span>
+                        {{/if}}
+                        {{#if event.info}}
                             <span class="highlight">{{event.info}}</span>
-                        </span>
+                        {{/if}}
                     </span>
                 </div>
             </div>
