@@ -15,6 +15,7 @@ const ALL_RESOURCE_TYPES = [
     {event: 'user', icon: 'idk', name: 'Users'},
     {event: 'integration', icon: 'event-filter-newsletter', name: 'Integrations'},
     {event: 'api_key', icon: 'event-filter-newsletter', name: 'API keys'},
+    {event: 'webhook', icon: 'event-filter-newsletter', name: 'Webhooks'},
     {event: 'label', icon: 'event-filter-newsletter', name: 'Labels'}
 ];
 
