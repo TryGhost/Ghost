@@ -20,13 +20,6 @@ class UrlHistory {
         return this.history.length;
     }
 
-    get last() {
-        if (this.length === 0) {
-            return undefined;
-        }
-        return this.history[this.history.length - 1];
-    }
-
     /**
      * Iterate from latest item to newest item (reversed!)
      */

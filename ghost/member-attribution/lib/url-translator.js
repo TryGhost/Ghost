@@ -14,14 +14,36 @@ class UrlTranslator {
      * 
      * @param {Object} deps 
      * @param {UrlService} deps.urlService
+     * @param {Object} deps.urlUtils
      * @param {Object} deps.models
      * @param {Object} deps.models.Post
      * @param {Object} deps.models.Tag
      * @param {Object} deps.models.User
      */
-    constructor({urlService, models}) {
+    constructor({urlService, urlUtils, models}) {
         this.urlService = urlService;
+        this.urlUtils = urlUtils;
         this.models = models;
+    }
+
+    /**
+     * Convert root relative URLs to subdirectory relative URLs
+     */
+    stripSubdirectoryFromPath(path) {
+        // Bit weird, but only way to do it with the urlUtils atm
+
+        // First convert path to an absolute path
+        const absolute = this.urlUtils.relativeToAbsolute(path);
+
+        // Then convert it to a relative path, but without subdirectory
+        return this.urlUtils.absoluteToRelative(absolute, {withoutSubdirectory: true});
+    }
+
+    /**
+     * Convert root relative URLs to subdirectory relative URLs
+     */
+    relativeToAbsolute(path) {
+        return this.urlUtils.relativeToAbsolute(path);
     }
 
     getTypeAndId(url) {

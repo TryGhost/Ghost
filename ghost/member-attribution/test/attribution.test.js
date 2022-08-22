@@ -32,9 +32,18 @@ describe('AttributionBuilder', function () {
                     return {
                         id,
                         type,
-                        url: '/path',
+                        url: 'https://absolute/dir/path',
                         title: 'Title'
                     };
+                },
+                relativeToAbsolute(path) {
+                    return 'https://absolute/dir' + path;
+                },
+                stripSubdirectoryFromPath(path) {
+                    if (path.startsWith('/dir/')) {
+                        return path.substring('/dir/'.length - 1);
+                    }
+                    return path;
                 }
             }
         });
@@ -46,33 +55,33 @@ describe('AttributionBuilder', function () {
     });
 
     it('Returns last url', function () {
-        const history = new UrlHistory([{path: '/not-last', time: 123}, {path: '/test', time: 123}]);
-        should(attributionBuilder.getAttribution(history)).match({type: 'url', id: null, url: '/test'});
+        const history = new UrlHistory([{path: '/dir/not-last', time: 123}, {path: '/dir/test/', time: 123}]);
+        should(attributionBuilder.getAttribution(history)).match({type: 'url', id: null, url: '/test/'});
     });
 
     it('Returns last post', function () {
         const history = new UrlHistory([
-            {path: '/my-post', time: 123}, 
-            {path: '/test', time: 124},
-            {path: '/unknown-page', time: 125}
+            {path: '/dir/my-post', time: 123}, 
+            {path: '/dir/test', time: 124},
+            {path: '/dir/unknown-page', time: 125}
         ]);
         should(attributionBuilder.getAttribution(history)).match({type: 'post', id: 123, url: '/my-post'});
     });
 
     it('Returns last post even when it found pages', function () {
         const history = new UrlHistory([
-            {path: '/my-post', time: 123}, 
-            {path: '/my-page', time: 124}, 
-            {path: '/unknown-page', time: 125}
+            {path: '/dir/my-post', time: 123}, 
+            {path: '/dir/my-page', time: 124}, 
+            {path: '/dir/unknown-page', time: 125}
         ]);
         should(attributionBuilder.getAttribution(history)).match({type: 'post', id: 123, url: '/my-post'});
     });
 
     it('Returns last page if no posts', function () {
         const history = new UrlHistory([
-            {path: '/other', time: 123}, 
-            {path: '/my-page', time: 124}, 
-            {path: '/unknown-page', time: 125}
+            {path: '/dir/other', time: 123}, 
+            {path: '/dir/my-page', time: 124}, 
+            {path: '/dir/unknown-page', time: 125}
         ]);
         should(attributionBuilder.getAttribution(history)).match({type: 'page', id: 845, url: '/my-page'});
     });
@@ -99,7 +108,7 @@ describe('AttributionBuilder', function () {
         should(await attributionBuilder.build({type: 'post', id: '123', url: '/post'}).getResource()).match({
             type: 'post',
             id: '123',
-            url: '/path',
+            url: 'https://absolute/dir/path',
             title: 'Title'
         });
     });
@@ -108,7 +117,7 @@ describe('AttributionBuilder', function () {
         should(await attributionBuilder.build({type: 'url', id: null, url: '/url'}).getResource()).match({
             type: 'url',
             id: null,
-            url: '/url',
+            url: 'https://absolute/dir/url',
             title: '/url'
         });
     });
@@ -117,7 +126,7 @@ describe('AttributionBuilder', function () {
         should(await attributionBuilder.build({type: 'post', id: 'invalid', url: '/post'}).getResource()).match({
             type: 'url',
             id: null,
-            url: '/post',
+            url: 'https://absolute/dir/post',
             title: '/post'
         });
     });

@@ -1,6 +1,7 @@
 const urlService = require('../url');
 const labsService = require('../../../shared/labs');
 const DomainEvents = require('@tryghost/domain-events');
+const urlUtils = require('../../../shared/url-utils');
 
 class MemberAttributionServiceWrapper {
     init() {
@@ -15,6 +16,7 @@ class MemberAttributionServiceWrapper {
 
         const urlTranslator = new UrlTranslator({
             urlService, 
+            urlUtils,
             models: {
                 Post: models.Post, 
                 User: models.User, 

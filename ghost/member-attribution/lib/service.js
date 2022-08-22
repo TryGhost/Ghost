@@ -5,7 +5,6 @@ class MemberAttributionService {
      * 
      * @param {Object} deps 
      * @param {Object} deps.attributionBuilder
-     * @param {Object} deps.labsService
      * @param {Object} deps.models
      * @param {Object} deps.models.MemberCreatedEvent
      * @param {Object} deps.models.SubscriptionCreatedEvent
