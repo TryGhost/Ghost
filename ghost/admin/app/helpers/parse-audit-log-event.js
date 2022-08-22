@@ -44,6 +44,8 @@ function getAction(ev) {
 
     if (resourceType === 'api_key') {
         resourceType = 'API key';
+    } else if (resourceType === 'setting') {
+        resourceType = 'settings';
     }
 
     return `${ev.event} ${resourceType}`;
