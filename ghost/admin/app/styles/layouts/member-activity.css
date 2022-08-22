@@ -31,6 +31,11 @@
     margin: 0 -4px;
 }
 
+.gh-member-details-activity .gh-list-data {
+    font-weight: 600;
+    color: var(--darkgrey);
+}
+
 .no-posts .gh-members-placeholder {
     fill: var(--lightgrey);
     width: 60px;
@@ -90,6 +95,22 @@
 
 .gh-members-activity .gh-list-scrolling thead th:last-child {
     width: 18%;
+}
+
+.gh-members-activity.feature-memberAttribution .gh-list-scrolling thead th:nth-child(1) {
+    width: 25%;
+}
+
+.gh-members-activity.feature-memberAttribution .gh-list-scrolling thead th:nth-child(2) {
+    width: 25%;
+}
+
+.gh-members-activity.feature-memberAttribution .gh-list-scrolling thead th:nth-child(3) {
+    width: 35%;
+}
+
+.gh-members-activity.feature-memberAttribution .gh-list-scrolling thead th:last-child {
+    width: 15%;
 }
 
 .gh-members-activity .gh-list-scrolling tbody .gh-list-data:last-child {

@@ -5,6 +5,9 @@
                 <th>Member</th>
             {{/unless}}
             <th>Event</th>
+            {{#if (feature "memberAttribution")}}
+                <th>Attribution</th>
+            {{/if}}
             <th>Time</th>
         </tr>
     </thead>
