@@ -3,9 +3,12 @@ import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 const ALL_EVENT_TYPES = [
-    {event: 'created', icon: 'event-filter-signup', name: 'Created'},
+    {event: 'added', icon: 'event-filter-signup', name: 'Added'},
     {event: 'edited', icon: 'event-filter-login', name: 'Edited'},
-    {event: 'deleted', icon: 'event-filter-subscription', name: 'Deleted'},
+    {event: 'deleted', icon: 'event-filter-subscription', name: 'Deleted'}
+];
+
+const ALL_RESOURCE_TYPES = [
     {event: 'post', icon: 'event-filter-payment', name: 'Posts'},
     {event: 'pages', icon: 'event-filter-payment', name: 'Pages'},
     {event: 'tag', icon: 'event-filter-newsletter', name: 'Tags'},
@@ -18,20 +21,24 @@ export default class AuditLogEventFilter extends Component {
     @service settings;
     @service feature;
 
-    get availableEventTypes() {
-        const extended = [...ALL_EVENT_TYPES];
-
-        if (this.args.hiddenEvents?.length) {
-            return extended.filter(t => !this.args.hiddenEvents.includes(t.event));
-        } else {
-            return extended;
-        }
-    }
+    excludedEvents = null;
+    excludedResources = null;
 
     get eventTypes() {
         const excludedEvents = (this.args.excludedEvents || '').split(',');
 
-        return this.availableEventTypes.map(type => ({
+        return ALL_EVENT_TYPES.map(type => ({
+            event: type.event,
+            icon: type.icon,
+            name: type.name,
+            isSelected: !excludedEvents.includes(type.event)
+        }));
+    }
+
+    get resourceTypes() {
+        const excludedEvents = (this.args.excludedResources || '').split(',');
+
+        return ALL_RESOURCE_TYPES.map(type => ({
             event: type.event,
             icon: type.icon,
             name: type.name,
@@ -49,8 +56,27 @@ export default class AuditLogEventFilter extends Component {
             excludedEvents.add(eventType);
         }
 
-        const excludeString = Array.from(excludedEvents).join(',');
+        this.excludedEvents = Array.from(excludedEvents).join(',');
+        this.args.onChange({
+            excludedEvents: this.excludedEvents,
+            excludedResources: this.excludedResources
+        });
+    }
 
-        this.args.onChange(excludeString || null);
+    @action
+    toggleResourceType(resourceType) {
+        const excludedResources = new Set(this.resourceTypes.reject(type => type.isSelected).map(type => type.event));
+
+        if (excludedResources.has(resourceType)) {
+            excludedResources.delete(resourceType);
+        } else {
+            excludedResources.add(resourceType);
+        }
+
+        this.excludedResources = Array.from(excludedResources).join(',');
+        this.args.onChange({
+            excludedEvents: this.excludedEvents,
+            excludedResources: this.excludedResources
+        });
     }
 }
