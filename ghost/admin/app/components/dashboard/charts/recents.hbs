@@ -101,14 +101,14 @@
                                                 {{svg-jar parsedEvent.icon}}
                                                 <span class="gh-dashboard-list-subtext">
                                                     {{capitalize-first-letter parsedEvent.action}}
-                                                    {{#unless (feature "memberAttribution")}}
+                                                    <span class="{{if (feature "memberAttribution") 'hidden'}}">
                                                         {{#if parsedEvent.url}}
                                                             <a class="ghost-members-activity-object-link" href="{{parsedEvent.url}}" target="_blank" rel="noopener noreferrer">{{parsedEvent.object}}</a>
                                                         {{else}}
                                                                 {{parsedEvent.object}}
                                                         {{/if}}
                                                         {{parsedEvent.info}}
-                                                    {{/unless}}
+                                                    </span>
                                                 </span>
                                             </div>
                                             {{#if (feature "memberAttribution")}}
