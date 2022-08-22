@@ -1,7 +1,7 @@
 /**
  * @typedef {object} AttributionResource
  * @prop {string|null} id
- * @prop {string|null} url
+ * @prop {string|null} url (absolute URL)
  * @prop {'page'|'post'|'author'|'tag'|'url'} type
  * @prop {string|null} title
  */
@@ -12,7 +12,7 @@ class Attribution {
     /**
      * @param {object} data
      * @param {string|null} [data.id]
-     * @param {string|null} [data.url]
+     * @param {string|null} [data.url] Relative to subdirectory
      * @param {'page'|'post'|'author'|'tag'|'url'} [data.type]
      */
     constructor({id, url, type}, {urlTranslator}) {
@@ -39,8 +39,7 @@ class Attribution {
             return {
                 id: null,
                 type: 'url',
-                // TODO: make url absolute
-                url: this.url,
+                url: this.#urlTranslator.relativeToAbsolute(this.url),
                 title: this.url
             };
         }
@@ -54,8 +53,7 @@ class Attribution {
         return {
             id: null,
             type: 'url',
-            // TODO: make url absolute
-            url: this.url,
+            url: this.#urlTranslator.relativeToAbsolute(this.url),
             title: this.url
         };
     }
@@ -96,12 +94,22 @@ class AttributionBuilder {
             });
         }
 
+        // Convert history to subdirectory relative (instead of root relative)
+        // Note: this is ordered from recent to oldest!
+        const subdirectoryRelativeHistory = [];
+        for (const item of history) {
+            subdirectoryRelativeHistory.push({
+                ...item,
+                path: this.urlTranslator.stripSubdirectoryFromPath(item.path)
+            });
+        }
+
         // TODO: if something is wrong with the attribution script, and it isn't loading
         // we might get out of date URLs
         // so we need to check the time of each item and ignore items that are older than 24u here!
 
         // Start at the end. Return the first post we find
-        for (const item of history) {
+        for (const item of subdirectoryRelativeHistory) {
             const typeId = this.urlTranslator.getTypeAndId(item.path);
 
             if (typeId && typeId.type === 'post') {
@@ -114,7 +122,7 @@ class AttributionBuilder {
 
         // No post found?
         // Try page or tag or author
-        for (const item of history) {
+        for (const item of subdirectoryRelativeHistory) {
             const typeId = this.urlTranslator.getTypeAndId(item.path);
 
             if (typeId) {
@@ -129,7 +137,7 @@ class AttributionBuilder {
         // In the future we might decide to exclude certain URLs, that can happen here
         return this.build({
             id: null,
-            url: history.last.path,
+            url: subdirectoryRelativeHistory[0].path,
             type: 'url'
         });
     }
