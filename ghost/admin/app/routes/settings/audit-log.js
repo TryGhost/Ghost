@@ -13,7 +13,7 @@ export default class AuditLogRoute extends AdminRoute {
 
     buildRouteInfoMetadata() {
         return {
-            titleToken: 'Settings - Audit log'
+            titleToken: 'Audit log'
         };
     }
 }

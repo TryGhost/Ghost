@@ -2852,3 +2852,50 @@ p.theme-validation-details {
     margin: 8px 0 0;
     color: var(--midgrey);
 }
+
+/* Audit log
+/* ---------------------------------------------------------- */
+.gh-audit-log-container {
+    display: flex;
+    align-items: center;
+    padding: 7px 0;
+}
+
+.gh-audit-log-action {
+    padding-right: 6px;
+}
+
+.gh-audit-log-object {
+    padding-left: 6px;
+}
+
+.gh-audit-log-dash {
+    padding-left: 0;
+    padding-right: 0;
+    color: var(--lightgrey);
+}
+
+.gh-audit-log-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+}
+
+.gh-audit-log-icon svg path {
+    fill: var(--middarkgrey);
+}
+
+.gh-audit-log-description {
+    font-size: 1.3rem;
+    color: var(--middarkgrey);
+    white-space: nowrap;
+}
+
+.gh-audit-log-table .user-list-item-figure {
+    height: 30px;
+    width: 30px;
+}
+
+.gh-audit-log-name {
+    margin-bottom: 0 !important;
+}

@@ -29,11 +29,11 @@ export default class ParseAuditLogEvent extends Helper {
 function getActionIcon(ev) {
     switch (ev.event) {
     case 'added':
-        return 'add-stroke';
+        return 'add';
     case 'edited':
-        return 'content';
+        return 'pen';
     case 'deleted':
-        return 'cross-circle';
+        return 'trash';
     }
 
     return 'info';

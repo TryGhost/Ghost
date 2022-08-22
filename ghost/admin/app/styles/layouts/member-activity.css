@@ -195,8 +195,20 @@
 .gh-member-activity-actions-menu {
     top: auto;
     left: auto;
-    padding: 2rem;
+    padding: 0;
     margin-top: 8px;
+}
+
+.gh-member-activity-actions-menu ul li {
+    margin: 0 2rem;
+}
+
+.gh-member-activity-actions-menu ul li:first-of-type {
+    margin-top: 2rem;
+}
+
+.gh-member-activity-actions-menu ul li:last-of-type {
+    margin-bottom: 2rem;
 }
 
 .gh-member-activity-actions-menu h3 {
@@ -266,6 +278,10 @@
     margin-right: -8px;
     height: 16px;
     width: 16px;
+}
+
+.gh-member-activity-actions-menu hr {
+    margin: 12px -20px;
 }
 
 .gh-member-filter-search-trigger {
