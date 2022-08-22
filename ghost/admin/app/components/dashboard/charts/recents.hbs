@@ -66,10 +66,11 @@
                 </div>
             </div>
         {{else}}
-            <div class="gh-dashboard-recents-activity gh-dashboard-list" data-test-dashboard-member-activity>
+            <div class="gh-dashboard-recents-activity gh-dashboard-list {{if (feature "memberAttribution") 'feature-memberAttribution'}}" data-test-dashboard-member-activity>
                 <div class="gh-dashboard-list-header">
                     <div class="gh-dashboard-list-title">Member</div>
                     <div class="gh-dashboard-list-title">Event</div>
+                    {{#if (feature "memberAttribution")}}<div class="gh-dashboard-list-title">Attribution</div>{{/if}}
                     <div class="gh-dashboard-list-title">Time</div>
                 </div>
                 <div class="gh-dashboard-list-body">
@@ -100,14 +101,25 @@
                                                 {{svg-jar parsedEvent.icon}}
                                                 <span class="gh-dashboard-list-subtext">
                                                     {{capitalize-first-letter parsedEvent.action}}
+                                                    {{#unless (feature "memberAttribution")}}
+                                                        {{#if parsedEvent.url}}
+                                                            <a class="ghost-members-activity-object-link" href="{{parsedEvent.url}}" target="_blank" rel="noopener noreferrer">{{parsedEvent.object}}</a>
+                                                        {{else}}
+                                                                {{parsedEvent.object}}
+                                                        {{/if}}
+                                                        {{parsedEvent.info}}
+                                                    {{/unless}}
+                                                </span>
+                                            </div>
+                                            {{#if (feature "memberAttribution")}}
+                                                <div class="gh-dashboard-list-item-sub">
                                                     {{#if parsedEvent.url}}
                                                         <a class="ghost-members-activity-object-link" href="{{parsedEvent.url}}" target="_blank" rel="noopener noreferrer">{{parsedEvent.object}}</a>
                                                     {{else}}
-                                                         {{parsedEvent.object}}
+                                                        <span class="gh-list-nodata">&mdash;</span>
                                                     {{/if}}
-                                                    {{parsedEvent.info}}
-                                                </span>
-                                            </div>
+                                                </div>
+                                            {{/if}}
                                             <div class="gh-dashboard-list-item-sub gh-dashboard-list-item-date">
                                                 <span class="gh-dashboard-list-subtext">{{moment-from-now parsedEvent.timestamp}}</span>
                                             </div>
