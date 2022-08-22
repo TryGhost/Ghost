@@ -1198,6 +1198,11 @@ Dashboard Recents */
     grid-template-columns: 30% 55% 15%;
 }
 
+.gh-dashboard-recents-activity.feature-memberAttribution .gh-dashboard-list-header,
+.gh-dashboard-recents-activity.feature-memberAttribution .gh-dashboard-list-item {
+    grid-template-columns: 25% 25% 35% 15%;
+}
+
 .gh-dashboard-recents-activity .gh-dashboard-list-title:nth-child(2),
 .gh-dashboard-recents-activity .gh-dashboard-list-item .gh-dashboard-list-item-sub:nth-child(2) {
     margin-left: -4px; /* grid layout adjustments */
@@ -1206,6 +1211,15 @@ Dashboard Recents */
 .gh-dashboard-recents-posts.is-single .gh-dashboard-list-header,
 .gh-dashboard-recents-posts.is-single .gh-dashboard-list-item {
     grid-template-columns: 70% 30%;
+}
+
+.gh-dashboard-list-item-sub > a {
+    color: var(--black);
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    padding: 0 32px 0 0;
 }
 
 
