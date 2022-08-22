@@ -29,7 +29,7 @@ describe('MemberAttributionEventHandler', function () {
             const subscribeSpy = sinon.spy(DomainEvents, 'subscribe');
             const eventHandler = new MemberAttributionEventHandler({
                 DomainEvents,
-                MemberCreatedEvent: MemberCreatedEventModel,
+                models: {MemberCreatedEvent: MemberCreatedEventModel},
                 labsService
             });
             eventHandler.subscribe();
@@ -63,7 +63,7 @@ describe('MemberAttributionEventHandler', function () {
             const subscribeSpy = sinon.spy(DomainEvents, 'subscribe');
             const eventHandler = new MemberAttributionEventHandler({
                 DomainEvents,
-                MemberCreatedEvent: MemberCreatedEventModel,
+                models: {MemberCreatedEvent: MemberCreatedEventModel},
                 labsService
             });
             eventHandler.subscribe();
@@ -100,7 +100,7 @@ describe('MemberAttributionEventHandler', function () {
             const subscribeSpy = sinon.spy(DomainEvents, 'subscribe');
             const eventHandler = new MemberAttributionEventHandler({
                 DomainEvents,
-                MemberCreatedEvent: MemberCreatedEventModel,
+                models: {MemberCreatedEvent: MemberCreatedEventModel},
                 labsService
             });
             eventHandler.subscribe();
@@ -134,7 +134,7 @@ describe('MemberAttributionEventHandler', function () {
             const subscribeSpy = sinon.spy(DomainEvents, 'subscribe');
             const eventHandler = new MemberAttributionEventHandler({
                 DomainEvents,
-                SubscriptionCreatedEvent: SubscriptionCreatedEventModel,
+                models: {SubscriptionCreatedEvent: SubscriptionCreatedEventModel},
                 labsService
             });
             eventHandler.subscribe();
@@ -168,7 +168,7 @@ describe('MemberAttributionEventHandler', function () {
             const subscribeSpy = sinon.spy(DomainEvents, 'subscribe');
             const eventHandler = new MemberAttributionEventHandler({
                 DomainEvents,
-                SubscriptionCreatedEvent: SubscriptionCreatedEventModel,
+                models: {SubscriptionCreatedEvent: SubscriptionCreatedEventModel},
                 labsService
             });
             eventHandler.subscribe();
@@ -205,7 +205,7 @@ describe('MemberAttributionEventHandler', function () {
             const subscribeSpy = sinon.spy(DomainEvents, 'subscribe');
             const eventHandler = new MemberAttributionEventHandler({
                 DomainEvents,
-                SubscriptionCreatedEvent: SubscriptionCreatedEventModel,
+                models: {SubscriptionCreatedEvent: SubscriptionCreatedEventModel},
                 labsService
             });
             eventHandler.subscribe();
