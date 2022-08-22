@@ -510,6 +510,15 @@
 
 /* General
 /* ---------------------------------------------------------- */
+.gh-general-settings {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    grid-gap: 80px;
+}
+
+.gh-general-settings .gh-expandable-header .gh-expandable-description {
+    max-width: 620px;
+}
 
 .gh-seo-settings {
     display: flex;
@@ -557,6 +566,19 @@
     margin-right: 32px;
 }
 
+.gh-general-settings .gh-seo-settings {
+    flex-direction: column;
+}
+
+.gh-general-settings .gh-seo-settings .form-group {
+    max-width: 100%;
+}
+
+.gh-general-settings .gh-seo-settings-left,
+.gh-general-settings .gh-seo-container {
+    max-width: 591px;
+}
+
 .gh-twitter-settings {
     display: flex;
 }
@@ -596,6 +618,19 @@
     }
 }
 
+.gh-general-settings .gh-twitter-settings {
+    flex-direction: column;
+}
+
+.gh-general-settings .gh-twitter-settings .form-group {
+    max-width: 100%;
+}
+
+.gh-general-settings .gh-twitter-settings-left,
+.gh-general-settings .gh-twitter-container {
+    max-width: 591px;
+}
+
 .gh-og-settings {
     display: flex;
 }
@@ -633,6 +668,85 @@
         width: 100%;
         max-width: 476px;
     }
+}
+
+.gh-general-settings .gh-og-settings {
+    flex-direction: column;
+}
+
+.gh-general-settings .gh-og-settings .form-group {
+    max-width: 100%;
+}
+
+.gh-general-settings .gh-og-settings-left,
+.gh-general-settings .gh-og-container {
+    max-width: 591px;
+}
+
+.gh-general-settings .gh-about-box {
+    margin-top: 19px;
+    position: relative;
+    top: unset;
+    right: unset;
+}
+
+.gh-general-settings .gh-copyright-info {
+    border-top: none;
+    max-width: 350px;
+    margin-top: 12px;
+    padding-top: 0;
+}
+
+.gh-about-links {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--lightgrey-l2);
+}
+
+.gh-about-links li {
+    margin: 0 0 4px;
+    font-size: 1.4rem;
+    line-height: 1.8em;
+}
+
+.gh-about-links li a span {
+    display: flex;
+    align-items: center;
+}
+
+.gh-about-links li a span svg {
+    width: 16px;
+    height: 16px;
+    margin-right: 6px;
+}
+
+.gh-about-links li a {
+    color: var(--middarkgrey);
+}
+
+.gh-about-links li a:hover {
+    color: var(--black);
+}
+
+.gh-about-links:last-of-type {
+    margin-bottom: -12px;
+}
+
+.gh-about-links .calendar-icon {
+    width: 14px;
+    height: 14px;
+    margin-right: 8px;
+}
+
+.gh-about-links li a:hover .hover-stroke path {
+    stroke: var(--black);
+}
+
+.gh-about-links li a:hover .hover-fill path {
+    fill: var(--black);
 }
 
 /* Navigation
