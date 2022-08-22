@@ -13,6 +13,7 @@ const ALL_RESOURCE_TYPES = [
     {event: 'page', icon: 'event-filter-payment', name: 'Pages'},
     {event: 'tag', icon: 'event-filter-newsletter', name: 'Tags'},
     {event: 'user', icon: 'idk', name: 'Users'},
+    {event: 'setting', icon: 'event-filter-newsletter', name: 'Settings'},
     {event: 'integration', icon: 'event-filter-newsletter', name: 'Integrations'},
     {event: 'api_key', icon: 'event-filter-newsletter', name: 'API keys'},
     {event: 'webhook', icon: 'event-filter-newsletter', name: 'Webhooks'},
