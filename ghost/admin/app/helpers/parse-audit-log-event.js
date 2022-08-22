@@ -9,6 +9,7 @@ export default class ParseAuditLogEvent extends Helper {
         const actionIcon = getActionIcon(ev);
         const getActor = () => this.store.findRecord(ev.actor_type, ev.actor_id, {reload: false});
         const getResource = () => this.store.findRecord(ev.resource_type, ev.resource_id, {reload: false});
+        const linkable = ['page', 'post'].includes(ev.resource_type);
 
         return {
             get actor() {
@@ -17,6 +18,7 @@ export default class ParseAuditLogEvent extends Helper {
             get resource() {
                 return getResource();
             },
+            linkable,
             actionIcon,
             action,
             original: ev
