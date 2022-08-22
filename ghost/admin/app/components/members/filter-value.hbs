@@ -42,6 +42,22 @@
         />
     </div>
 
+{{else if (eq @filter.type 'conversion')}}
+    <div class="relative">
+         <GhResourceSelect
+            @onChange={{fn this.setConversionAttributionFilterValue @filter}}
+            @resources={{this.conversionAttributionFilterValue}}
+        />
+    </div>
+
+{{else if (eq @filter.type 'signup')}}
+    <div class="relative">
+         <GhResourceSelect
+            @onChange={{fn this.setSignupAttributionFilterValue @filter}}
+            @resources={{this.signupAttributionFilterValue}}
+        />
+    </div>
+
 {{else if (eq @filter.type 'subscribed')}}
     <span class="gh-select">
         <OneWaySelect
