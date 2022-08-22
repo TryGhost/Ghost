@@ -17,7 +17,7 @@ describe('Importer', function () {
     });
 
     afterEach(function () {
-        const writtenFile = fsWriteSpy.args[0][0];
+        const writtenFile = fsWriteSpy.args?.[0]?.[0];
 
         if (writtenFile) {
             fs.removeSync(writtenFile);
@@ -100,6 +100,75 @@ describe('Importer', function () {
             // Called at least once
             memberCreateStub.notCalled.should.be.false();
             memberCreateStub.firstCall.lastArg.context.import.should.be.true();
+        });
+    });
+
+    describe('sendErrorEmail', function () {
+        it('should send email with errors for invalid CSV file', async function () {
+            const defaultProduct = {
+                id: 'default_product_id'
+            };
+
+            const memberCreateStub = sinon.stub().resolves(null);
+            const membersApi = {
+                productRepository: {
+                    list: async () => {
+                        return {
+                            data: [defaultProduct]
+                        };
+                    }
+                },
+                members: {
+                    get: async () => {
+                        return null;
+                    },
+                    create: memberCreateStub
+                }
+            };
+
+            const knexStub = {
+                transaction: sinon.stub().resolves({
+                    rollback: () => {},
+                    commit: () => {}
+                })
+            };
+
+            const sendEmailStub = sinon.stub();
+
+            const importer = new MembersCSVImporter({
+                storagePath: csvPath,
+                getTimezone: sinon.stub().returns('UTC'),
+                getMembersApi: () => membersApi,
+                sendEmail: sendEmailStub,
+                isSet: sinon.stub(),
+                addJob: sinon.stub(),
+                knex: knexStub,
+                urlFor: sinon.stub(),
+                context: {importer: true}
+            });
+
+            await importer.sendErrorEmail({
+                emailRecipient: 'test@example.com',
+                emailSubject: 'Your member import was unsuccessful',
+                emailContent: 'Import was unsuccessful',
+                errorCSV: 'id,email,invalid email',
+                importLabel: {name: 'Test import'}
+            });
+
+            sendEmailStub.calledWith({
+                to: 'test@example.com',
+                subject: 'Your member import was unsuccessful',
+                html: 'Import was unsuccessful',
+                forceTextContent: true,
+                attachments: [
+                    {
+                        filename: 'Test import - Errors.csv',
+                        content: 'id,email,invalid email',
+                        contentType: 'text/csv',
+                        contentDisposition: 'attachment'
+                    }
+                ]
+            }).should.be.true();
         });
     });
 
