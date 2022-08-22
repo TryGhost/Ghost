@@ -1,6 +1,6 @@
 /**
  * @typedef {Object} UrlService
- * @prop {(resourceId: string) => Object} getResource
+ * @prop {(resourceId: string, options) => Object} getResource
  *  @prop {(resourceId: string, options) => string} getUrlByResourceId
  * 
  */
