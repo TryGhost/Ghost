@@ -16,13 +16,8 @@ class Attribution {
      * @param {'page'|'post'|'author'|'tag'|'url'} [data.type]
      */
     constructor({id, url, type}, {urlTranslator}) {
-        /** @type {string|null} */
         this.id = id;
-        
-        /** @type {string|null} */
         this.url = url;
-
-        /** @type {'page'|'post'|'author'|'tag'|'url'} */
         this.type = type;
 
         /**
