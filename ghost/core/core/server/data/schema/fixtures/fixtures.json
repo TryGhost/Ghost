@@ -626,6 +626,9 @@
                     "name": "Ghost",
                     "email": "ghost@example.com",
                     "status": "inactive",
+                    "free_member_signup_notification": false,
+                    "paid_subscription_started_notification": false,
+                    "paid_subscription_canceled_notification": false,
                     "roles": []
                 }
             ]
