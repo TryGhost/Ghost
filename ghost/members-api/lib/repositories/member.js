@@ -105,10 +105,10 @@ module.exports = class MemberRepository {
             source = 'import';
         } else if (context.internal) {
             source = 'system';
-        } else if (context.user) {
-            source = 'admin';
         } else if (context.api_key) {
             source = 'api';
+        } else if (context.user) {
+            source = 'admin';
         } else {
             source = 'member';
         }

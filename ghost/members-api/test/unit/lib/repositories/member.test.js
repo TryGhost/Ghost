@@ -32,7 +32,7 @@ describe('MemberRepository', function () {
                 user: true,
                 api_key: true
             });
-            assert.equal(source, 'admin');
+            assert.equal(source, 'api');
             
             source = repo._resolveContextSource({
                 api_key: true

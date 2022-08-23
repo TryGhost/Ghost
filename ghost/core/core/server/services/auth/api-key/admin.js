@@ -181,9 +181,6 @@ const authenticateWithToken = async (req, res, next, {token, JWT_OPTIONS}) => {
             );
 
             req.user = user;
-
-            next();
-            return;
         }
 
         // store the api key on the request for later checks and logging
