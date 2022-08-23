@@ -23,7 +23,7 @@ function defaultRelations(frame) {
         return false;
     }
 
-    frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'tiers'];
+    frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'tiers', 'count.signups', 'count.conversions'];
 }
 
 function setDefaultOrder(frame) {
