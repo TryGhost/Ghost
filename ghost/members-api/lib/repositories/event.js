@@ -68,6 +68,35 @@ module.exports = class EventRepository {
     }
 
     async getSubscriptionEvents(options = {}, filters = {}) {
+        if (!this._labsService.isSet('memberAttribution')){
+            options = {
+                ...options,
+                withRelated: ['member'],
+                filter: []
+            };
+            if (filters['data.created_at']) {
+                options.filter.push(filters['data.created_at'].replace(/data.created_at:/g, 'created_at:'));
+            }
+            if (filters['data.member_id']) {
+                options.filter.push(filters['data.member_id'].replace(/data.member_id:/g, 'member_id:'));
+            }
+            options.filter = options.filter.join('+');
+    
+            const {data: models, meta} = await this._MemberPaidSubscriptionEvent.findPage(options);
+    
+            const data = models.map((model) => {
+                return {
+                    type: 'subscription_event',
+                    data: model.toJSON(options),
+                };
+            });
+    
+            return {
+                data,
+                meta
+            };
+        }
+
         options = {
             ...options,
             withRelated: ['member', 'subscriptionCreatedEvent.postAttribution', 'subscriptionCreatedEvent.userAttribution', 'subscriptionCreatedEvent.tagAttribution'],
@@ -158,6 +187,35 @@ module.exports = class EventRepository {
     }
 
     async getSignupEvents(options = {}, filters = {}) {
+        if (!this._labsService.isSet('memberAttribution')){
+            options = {
+                ...options,
+                withRelated: ['member'],
+                filter: ['from_status:null']
+            };
+            if (filters['data.created_at']) {
+                options.filter.push(filters['data.created_at'].replace(/data.created_at:/g, 'created_at:'));
+            }
+            if (filters['data.member_id']) {
+                options.filter.push(filters['data.member_id'].replace(/data.member_id:/g, 'member_id:'));
+            }
+            options.filter = options.filter.join('+');
+    
+            const {data: models, meta} = await this._MemberStatusEvent.findPage(options);
+    
+            const data = models.map((model) => {
+                return {
+                    type: 'signup_event',
+                    data: model.toJSON(options)
+                };
+            });
+    
+            return {
+                data,
+                meta
+            };
+        }
+
         options = {
             ...options,
             withRelated: ['member', 'postAttribution', 'userAttribution', 'tagAttribution'],

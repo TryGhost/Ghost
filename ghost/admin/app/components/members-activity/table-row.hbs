@@ -6,7 +6,7 @@
                     <div class="flex items-center">
                         <GhMemberAvatar @member={{event.member}} @containerClass="w9 h9 mr3 flex-shrink-0" />
                         <div class="w-80">
-                            <h3 class="ma0 pa0 gh-members-list-name {{unless event.member.name "gh-members-name-noname"}}">{{or event.member.name event.member.email}}</h3>
+                            <h3 class="ma0 pa0 gh-members-list-name {{unless event.member.name "gh-members-name-noname"}}">{{event.subject}}</h3>
                             {{#if event.member.name}}
                                 <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{event.member.email}}</p>
                             {{/if}}
@@ -21,10 +21,8 @@
                 <div class="gh-members-activity-event">
                     <span class="gh-members-activity-description">
                         {{capitalize-first-letter event.action}}
-                        {{#if event.url}}
-                            <a class="ghost-members-activity-object-link {{if (feature "memberAttribution") 'hidden'}}" href="{{event.url}}" target="_blank" rel="noopener noreferrer">{{event.object}}</a>
-                        {{else}}
-                            {{event.object}}
+                        {{#if (and event.url (not (feature "memberAttribution")))}}
+                            <a class="ghost-members-activity-object-link" href="{{event.url}}" target="_blank" rel="noopener noreferrer">{{event.object}}</a>
                         {{/if}}
                         {{#if event.email}}
                             <span class="{{if (feature "memberAttribution") 'hidden'}}"><GhEmailPreviewLink @data={{event.email}} /></span>

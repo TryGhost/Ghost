@@ -4,9 +4,10 @@ import {getNonDecimal, getSymbol} from 'ghost-admin/utils/currency';
 export default function parseMemberEvent(event, hasMultipleNewsletters) {
     let subject = event.data.member.name || event.data.member.email;
     let icon = getIcon(event);
-    let action = getAction(event);
-    let object = getObject(event, hasMultipleNewsletters);
+    let action = getAction(event, hasMultipleNewsletters);
     let info = getInfo(event);
+
+    let object = getObject(event);
     const url = getURL(event);
     let timestamp = moment(event.data.created_at);
 
@@ -77,7 +78,7 @@ function getIcon(event) {
     return 'event-' + icon;
 }
 
-function getAction(event) {
+function getAction(event, hasMultipleNewsletters) {
     if (event.type === 'signup_event') {
         return 'signed up';
     }
@@ -91,10 +92,15 @@ function getAction(event) {
     }
 
     if (event.type === 'newsletter_event') {
+        let newsletter = 'newsletter';
+        if (hasMultipleNewsletters && event.data.newsletter && event.data.newsletter.name) {
+            newsletter = 'newsletter – ' + event.data.newsletter.name;
+        }
+
         if (event.data.subscribed) {
-            return 'subscribed to';
+            return 'subscribed to ' + newsletter;
         } else {
-            return 'unsubscribed from';
+            return 'unsubscribed from ' + newsletter;
         }
     }
 
@@ -119,15 +125,15 @@ function getAction(event) {
     }
 
     if (event.type === 'email_opened_event') {
-        return 'opened';
+        return 'opened an email';
     }
 
     if (event.type === 'email_delivered_event') {
-        return 'received';
+        return 'received an email';
     }
 
     if (event.type === 'email_failed_event') {
-        return 'failed to receive';
+        return 'failed to receive an email';
     }
 
     if (event.type === 'comment_event') {
@@ -138,24 +144,15 @@ function getAction(event) {
     }
 }
 
-function getObject(event, hasMultipleNewsletters) {
-    if (event.type === 'newsletter_event') {
-        if (hasMultipleNewsletters && event.data.newsletter && event.data.newsletter.name) {
-            return 'newsletter – ' + event.data.newsletter.name;
-        }
-        return 'newsletter';
-    }
-
-    // TODO: we need to find a better place for putting attribution, but first need to wait on a final design
+/**
+ * Clickable object, shown between action and info, or in a separate column in some views
+ */
+function getObject(event) {
     if (event.type === 'signup_event' || event.type === 'subscription_event') {
         if (event.data.attribution?.title) {
             // Add 'Attributed to ' for now, until this is incorporated in the design
-            return 'Attributed to ' + event.data.attribution.title;
+            return event.data.attribution.title;
         }
-    }
-
-    if (event.type.match?.(/^email_/)) {
-        return 'an email';
     }
 
     if (event.type === 'comment_event') {
@@ -177,13 +174,6 @@ function getInfo(event) {
         let symbol = getSymbol(event.data.currency);
         return `(MRR ${sign}${symbol}${Math.abs(mrrDelta)})`;
     }
-
-    // TODO: we can include the post title
-    /*if (event.type === 'comment_event') {
-        if (event.data.post) {
-            return event.data.post.title;
-        }
-    }*/
     return;
 }
 
