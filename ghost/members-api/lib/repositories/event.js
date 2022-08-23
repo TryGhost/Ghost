@@ -87,7 +87,7 @@ module.exports = class EventRepository {
             const data = models.map((model) => {
                 return {
                     type: 'subscription_event',
-                    data: model.toJSON(options),
+                    data: model.toJSON(options)
                 };
             });
     
