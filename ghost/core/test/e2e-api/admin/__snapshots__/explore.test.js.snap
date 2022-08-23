@@ -3,8 +3,8 @@
 exports[`Explore API Read Can request Explore data 1: [body] 1`] = `
 Object {
   "explore": Object {
-    "mostRecentlyPublishedAt": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-    "mrrStats": Object {
+    "most_recently_published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    "mrr_stats": Object {
       "data": Array [
         Object {
           "currency": "usd",
@@ -26,12 +26,12 @@ Object {
         ],
       },
     },
-    "ownerEmail": "jbloggs@example.com",
+    "owner_email": "jbloggs@example.com",
     "site": Object {
-      "accentColor": "#FF1A75",
+      "accent_color": "#FF1A75",
       "description": "Thoughts, stories and ideas",
       "icon": null,
-      "lang": "en",
+      "locale": "en",
       "title": "Ghost",
       "url": "http://127.0.0.1:2369/",
     },
@@ -39,7 +39,7 @@ Object {
       "configured": true,
       "livemode": false,
     },
-    "totalMembers": 8,
+    "total_members": 8,
     "version": StringMatching /\\\\d\\+\\\\\\.\\\\d\\+\\\\\\.\\\\d\\+/,
   },
 }
