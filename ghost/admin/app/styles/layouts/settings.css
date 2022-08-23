@@ -2881,6 +2881,12 @@ p.theme-validation-details {
     padding-left: 6px;
 }
 
+.gh-audit-log-object code {
+    background: none;
+    border: none;
+    color: var(--middarkgrey);
+}
+
 .gh-audit-log-dash {
     padding-left: 0;
     padding-right: 0;

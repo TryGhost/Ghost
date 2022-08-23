@@ -32,7 +32,10 @@
             <div class="gh-list-data gh-audit-log-object">
                 <div class="gh-audit-log-container">
                     {{#if ev.contextResource}}
-                        <span>{{capitalize-first-letter ev.contextResource.first}} - <code>{{ev.contextResource.second}}</code></span>
+                        <span class="midgrey">
+                            <strong>{{capitalize-first-letter ev.contextResource.first}}</strong>
+                            <code>({{ev.contextResource.second}})</code>
+                        </span>
                     {{else if (or ev.resource.title ev.resource.name ev.original.context.primary_name)}}
                         {{#if (and (or ev.resource.title ev.resource.name) ev.linkable)}}
                             <LinkTo @route="editor.edit" @models={{array ev.resource.displayName ev.resource.id}} class="permalink">
