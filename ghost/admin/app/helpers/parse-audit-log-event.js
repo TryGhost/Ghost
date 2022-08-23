@@ -45,6 +45,15 @@ function getLinkTarget(ev) {
                 route: 'editor.edit',
                 models: [resourceType, ev.resource.id]
             };
+        case 'integration':
+            if (!ev.resource.id) {
+                return null;
+            }
+
+            return {
+                route: 'settings.integration',
+                models: [ev.resource.id]
+            };
         case 'tag':
             if (!ev.resource.slug) {
                 return null;
