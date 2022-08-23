@@ -1,7 +1,7 @@
 const debug = require('@tryghost/debug')('services:webhooks:trigger');
 const logging = require('@tryghost/logging');
 const ghostVersion = require('@tryghost/version');
-const crypto = require('crypto')
+const crypto = require('crypto');
 
 class WebhookTrigger {
     /**
@@ -88,22 +88,19 @@ class WebhookTrigger {
             const url = webhook.get('target_url');
             const secret = webhook.get('secret') || '';
 
-            let tmpHeaders = {
+            const headers = {
                 'Content-Length': Buffer.byteLength(reqPayload),
                 'Content-Type': 'application/json',
-                'Content-Version': `v${ghostVersion.safe}`,
-            }
+                'Content-Version': `v${ghostVersion.safe}`
+            };
 
-            if (secret != '') {
-                tmpHeaders = {
-                    ...tmpHeaders,
-                    'X-Ghost-Signature': `sha256=${crypto.createHmac('sha256', secret).update(reqPayload).digest('hex')}, t=${Date.now()}`
-                }
+            if (secret !== '') {
+                headers['X-Ghost-Signature'] = `sha256=${crypto.createHmac('sha256', secret).update(reqPayload).digest('hex')}, t=${Date.now()}`;
             }
 
             const opts = {
                 body: reqPayload,
-                headers: tmpHeaders,
+                headers,
                 timeout: 2 * 1000,
                 retry: 5
             };
