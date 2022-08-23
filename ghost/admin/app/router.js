@@ -41,6 +41,11 @@ Router.map(function () {
         this.route('edit', {path: ':type/:post_id'});
     });
 
+    this.route('lexical-editor', function () {
+        this.route('new', {path: ':type'});
+        this.route('edit', {path: ':type/:post_id'});
+    });
+
     this.route('tags');
     this.route('tag.new', {path: '/tags/new'});
     this.route('tag', {path: '/tags/:tag_slug'});
