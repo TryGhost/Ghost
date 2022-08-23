@@ -31,13 +31,17 @@ class MemberAttributionService {
      * @returns {import('./attribution').AttributionResource|null}
      */
     getEventAttribution(eventModel) {
+        if (eventModel.get('attribution_type') === null) {
+            return null;
+        }
+
         const _attribution = this.attributionBuilder.build({
             id: eventModel.get('attribution_id'),
             url: eventModel.get('attribution_url'),
             type: eventModel.get('attribution_type')
         });
 
-        if (_attribution.type) {
+        if (_attribution.type !== 'url') {
             // Find the right relation to use to fetch the resource
             const tryRelations = [
                 eventModel.related('postAttribution'),

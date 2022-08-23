@@ -88,7 +88,7 @@ module.exports = class EventRepository {
                 type: 'subscription_event',
                 data: {
                     ...model.toJSON(options),
-                    attribution: model.get('type') === 'created' ? this._memberAttributionService.getEventAttribution(model.related('subscriptionCreatedEvent')) : null
+                    attribution: model.get('type') === 'created' && model.related('subscriptionCreatedEvent') && model.related('subscriptionCreatedEvent').id ? this._memberAttributionService.getEventAttribution(model.related('subscriptionCreatedEvent')) : null
                 }
             };
         });

@@ -478,6 +478,27 @@ const fixtures = {
         return models.Product.add(archivedProduct, context.internal);
     },
 
+    insertProducts: async function insertProducts() {
+        let coreProductFixtures = fixtureManager.findModelFixtures('Product').entries;
+        await Promise.map(coreProductFixtures, async (product) => {
+            const found = await models.Product.findOne(product, context.internal);
+            if (!found) {
+                await models.Product.add(product, context.internal);
+            }
+        });
+
+        const product = await models.Product.findOne({type: 'paid'}, context.internal);
+
+        await Promise.each(_.cloneDeep(DataGenerator.forKnex.stripe_products), function (stripeProduct) {
+            stripeProduct.product_id = product.id;
+            return models.StripeProduct.add(stripeProduct, context.internal);
+        });
+
+        await Promise.each(_.cloneDeep(DataGenerator.forKnex.stripe_prices), function (stripePrice) {
+            return models.StripePrice.add(stripePrice, context.internal);
+        });
+    },
+
     insertMembersAndLabelsAndProducts: function insertMembersAndLabelsAndProducts(newsletters = false) {
         return Promise.map(DataGenerator.forKnex.labels, function (label) {
             return models.Label.add(label, context.internal);
@@ -675,6 +696,9 @@ const toDoList = {
     },
     members: function insertMembersAndLabelsAndProducts() {
         return fixtures.insertMembersAndLabelsAndProducts(false);
+    },
+    products: function insertProducts() {
+        return fixtures.insertProducts();
     },
     newsletters: function insertNewsletters() {
         return fixtures.insertNewsletters();
