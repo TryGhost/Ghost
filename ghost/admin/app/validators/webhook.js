@@ -42,7 +42,7 @@ export default BaseValidator.create({
     },
 
     secret(model) {
-        if (!validator.isLength(model.secret, 0, 191)) {
+        if (!isBlank(model.secret) && !validator.isLength(model.secret, 0, 191)) {
             model.errors.add('secret', 'Secret is too long, max 191 chars');
             model.hasValidated.pushObject('secret');
             this.invalidate();
