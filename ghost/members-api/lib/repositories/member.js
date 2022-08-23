@@ -479,16 +479,7 @@ module.exports = class MemberRepository {
 
         // Add subscribe events for all (un)subscribed newsletters
         const context = options && options.context || {};
-        let source;
-        if (context.internal) {
-            source = 'system';
-        } else if (context.user) {
-            source = 'admin';
-        } else if (context.api_key) {
-            source = 'api';
-        } else {
-            source = 'member';
-        }
+        const source = this._resolveContextSource(context);
 
         for (const newsletterToAdd of newslettersToAdd) {
             await this._MemberSubscribeEvent.add({
