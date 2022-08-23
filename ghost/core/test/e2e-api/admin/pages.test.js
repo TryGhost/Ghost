@@ -6,6 +6,7 @@ const testUtils = require('../../utils');
 const config = require('../../../core/shared/config');
 const models = require('../../../core/server/models');
 const localUtils = require('./utils');
+const mockManager = require('../../utils/e2e-framework-mock-manager');
 
 describe('Pages API', function () {
     let request;
@@ -14,6 +15,7 @@ describe('Pages API', function () {
         await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
         await localUtils.doAuth(request, 'users:extra', 'posts');
+        mockManager.mockLabsDisabled('memberAttribution');
     });
 
     it('Can retrieve all pages', async function () {
