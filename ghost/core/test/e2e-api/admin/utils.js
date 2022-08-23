@@ -26,7 +26,7 @@ const expectedProperties = {
     members: ['members', 'meta'],
     snippets: ['snippets', 'meta'],
 
-    action: ['id', 'resource_type', 'actor_type', 'event', 'created_at', 'actor'],
+    action: ['id', 'resource_type', 'actor_type', 'event', 'created_at', 'actor', 'context'],
 
     config: [
         'version',
