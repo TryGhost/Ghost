@@ -168,12 +168,22 @@
     padding-left: 10px;
 }
 
-.gh-posts-sends-header,
+.gh-posts-signups-header,
+.gh-posts-conversions-header,
+.gh-posts-sends-header {
+    width: 110px;
+}
+
 .gh-posts-opens-header {
-    width: 120px;
+    width: 200px;
 }
 
 .gh-posts-status-header {
+    width: 140px;
+}
+
+.pages-list .gh-posts-conversions-header,
+.pages-list .gh-posts-sends-header {
     width: 140px;
 }
 
@@ -352,6 +362,19 @@
     padding: 0 15px 2px;
     width: 1px;
 }
+
+@media (max-width: 1600px) {
+    .gh-posts-signups-header,
+    .gh-posts-conversions-header,
+    .gh-posts-sends-header {
+        width: 80px;
+    }
+    
+    .gh-posts-opens-header {
+        width: 180px;
+    }
+}
+
 
 /* Mobile style of post list */
 @media (max-width: 1200px) {
