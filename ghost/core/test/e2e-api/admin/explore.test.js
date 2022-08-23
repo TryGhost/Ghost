@@ -17,8 +17,8 @@ describe('Explore API', function () {
                 .expectStatus(200)
                 .matchBodySnapshot({
                     explore: {
-                        mostRecentlyPublishedAt: anyISODateTime,
-                        mrrStats: {
+                        most_recently_published_at: anyISODateTime,
+                        mrr_stats: {
                             data: [{
                                 date: anyISODate
                             },
