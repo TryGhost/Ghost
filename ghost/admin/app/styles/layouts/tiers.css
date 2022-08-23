@@ -156,6 +156,18 @@
     border: 1px solid var(--whitegrey);
 }
 
+.gh-expendable-free-membership .gh-tier-price-container {
+    margin: 0 60px 0 20px;
+}
+
+.gh-expendable-free-membership .gh-tier-card-price {
+    border-right: none !important;
+}
+
+.gh-expendable-free-membership .gh-tier-card-block{
+    flex-basis: auto;
+}
+
 .gh-tier-price-cards {
     display: inline-flex;
     justify-content: flex-end;
