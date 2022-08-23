@@ -98,6 +98,24 @@ module.exports = class MemberRepository {
         return subscription.plan && subscription.plan.nickname && subscription.plan.nickname.toLowerCase() === 'complimentary';
     }
 
+    _resolveContextSource(context) {
+        let source;
+
+        if (context.import || context.importer) {
+            source = 'import';
+        } else if (context.internal) {
+            source = 'system';
+        } else if (context.user) {
+            source = 'admin';
+        } else if (context.api_key) {
+            source = 'api';
+        } else {
+            source = 'member';
+        }
+
+        return source;
+    }
+
     getMRR({interval, amount, status = null, canceled = false, discount = null}) {
         if (status === 'trialing') {
             return 0;
@@ -250,19 +268,7 @@ module.exports = class MemberRepository {
         }
 
         const context = options && options.context || {};
-        let source;
-
-        if (context.import || context.importer) {
-            source = 'import';
-        } else if (context.internal) {
-            source = 'system';
-        } else if (context.user) {
-            source = 'admin';
-        } else if (context.api_key) {
-            source = 'api';
-        } else {
-            source = 'member';
-        }
+        const source = this._resolveContextSource(context);
 
         const eventData = _.pick(data, ['created_at']);
 
