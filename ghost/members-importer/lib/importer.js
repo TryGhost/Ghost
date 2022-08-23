@@ -259,6 +259,34 @@ module.exports = class MembersCSVImporter {
     }
 
     /**
+     * Send email with attached CSV containing error rows info
+     *
+     * @param {Object} config
+     * @param {String} config.emailRecipient - email recipient for error file
+     * @param {String} config.emailSubject - email subject
+     * @param {String} config.emailContent - html content of email
+     * @param {String} config.errorCSV - error CSV content
+     * @param {Object} config.emailSubject - email subject
+     * @param {Object} config.importLabel -
+     * @param {String} config.importLabel.name - label name
+     */
+    async sendErrorEmail({emailRecipient, emailSubject, emailContent, errorCSV, importLabel}) {
+        await this._sendEmail({
+            to: emailRecipient,
+            subject: emailSubject,
+            html: emailContent,
+            forceTextContent: true,
+            attachments: [{
+                filename: `${importLabel.name} - Errors.csv`,
+                content: errorCSV,
+                contentType: 'text/csv',
+                contentDisposition: 'attachment'
+            }]
+        });
+        return;
+    }
+
+    /**
      * Processes CSV file and imports member&label records depending on the size of the imported set
      *
      * @param {Object} config
@@ -303,17 +331,12 @@ module.exports = class MembersCSVImporter {
                     const errorCSV = this.generateErrorCSV(result);
                     const emailSubject = result.imported > 0 ? 'Your member import is complete' : 'Your member import was unsuccessful';
 
-                    await this._sendEmail({
-                        to: emailRecipient,
-                        subject: emailSubject,
-                        html: emailContent,
-                        forceTextContent: true,
-                        attachments: [{
-                            filename: `${importLabel.name} - Errors.csv`,
-                            contents: errorCSV,
-                            contentType: 'text/csv',
-                            contentDisposition: 'attachment'
-                        }]
+                    await this.sendErrorEmail({
+                        emailRecipient,
+                        emailSubject,
+                        emailContent,
+                        errorCSV,
+                        importLabel
                     });
                 },
                 offloaded: false
