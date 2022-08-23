@@ -516,6 +516,18 @@
     grid-gap: 80px;
 }
 
+@media (max-width: 1200px) {
+    .gh-general-settings {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .gh-general-settings .gh-copyright-info {
+        max-width: 620px !important;
+    }
+}
+
 .gh-general-settings .gh-expandable-header .gh-expandable-description {
     max-width: 620px;
 }
@@ -2898,6 +2910,18 @@ p.theme-validation-details {
 
 .gh-audit-log-name {
     margin-bottom: 0 !important;
+    min-width: 160px;
+}
+
+@media (max-width: 620px) {
+    .gh-audit-log-table .user-list-item-figure {
+        display: none;
+    }
+
+    .gh-audit-log-name {
+        font-size: 1.4rem !important;
+        min-width: 130px;
+    }
 }
 
 .gh-activity-log-actions ul {
