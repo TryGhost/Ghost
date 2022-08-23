@@ -8,6 +8,11 @@ module.exports = createTransactionalMigration(
         const members = await knex('members')
             .select('id', 'created_at');
 
+        if (members.length === 0) {
+            logging.warn(`Skipping migration because no members found`);
+            return;
+        }
+
         const toInsert = members.map((member) => {
             return {
                 id: ObjectID().toHexString(),
