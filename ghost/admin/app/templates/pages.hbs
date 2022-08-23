@@ -27,7 +27,7 @@
     </GhCanvasHeader>
 
     <section class="view-container content-list">
-        <ol class="pages-list gh-list {{unless this.postsInfinityModel "no-posts"}}">
+        <ol class="pages-list gh-list {{unless this.postsInfinityModel "no-posts"}} {{if this.feature.memberAttribution 'feature-memberAttribution'}}">
             {{#if this.postsInfinityModel}}
                 <li class="gh-list-row header">
                     <div class="gh-list-header gh-posts-title-header">Title</div>
