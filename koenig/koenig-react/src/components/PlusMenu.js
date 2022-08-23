@@ -48,7 +48,7 @@ const PlusMenu = ({containerId, closeMenu, ...props}) => {
     }, [containerId, closeMenu]);
 
     return (
-        <div className="absolute top-[-10px] left-[-16px] z-[9999999] m-0 mb-3 max-h-[376px] w-[312px] flex-col overflow-y-auto rounded-lg bg-white bg-clip-padding p-0 pt-0 text-sm shadow-xl" role="menu">
+        <div className="absolute top-[-10px] left-[-16px] z-[9999999] m-0 mb-3 max-h-[376px] w-[312px] flex-col overflow-y-auto rounded-lg bg-white bg-clip-padding p-0 pt-0 text-sm shadow" role="menu">
             <CardMenuContent {...props} />
         </div>
     );
