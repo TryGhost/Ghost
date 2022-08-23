@@ -175,7 +175,7 @@
 }
 
 .gh-posts-opens-header {
-    width: 200px;
+    width: 170px;
 }
 
 .gh-posts-status-header {
@@ -364,6 +364,15 @@
 }
 
 @media (max-width: 1600px) {
+    .gh-post-list-status,
+    .gh-post-list-recipients,
+    .gh-post-list-opens,
+    .gh-post-list-signups,
+    .gh-post-list-conversions {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
     .gh-posts-signups-header,
     .gh-posts-conversions-header,
     .gh-posts-sends-header {
@@ -371,7 +380,7 @@
     }
     
     .gh-posts-opens-header {
-        width: 180px;
+        width: 160px;
     }
 }
 

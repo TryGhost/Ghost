@@ -84,7 +84,7 @@
                 {{#if (and @post.email.trackOpens (eq @post.email.status "submitted"))}}
                     <div class="flex">
                         <span class="gh-list-rate-bar">
-                            <span data-tooltip="{{format-number @post.email.openedCount}}">{{@post.email.openRate}}%&nbsp;</span>
+                            <span class="gh-list-rate-number" data-tooltip="Opens: {{format-number @post.email.openedCount}}">{{@post.email.openRate}}%&nbsp;</span>
                             <span class="gh-list-rate-amount"><span style={{html-safe (concat "width: " @post.email.openRate "%;")}}/></span>
                         </span>
                         <span class="midgrey-l2 fw4 gh-content-email-stats-mobile">{{@post.email.openRate}}% opens</span>
@@ -95,7 +95,6 @@
             </LinkTo>
         {{/if}}
     {{/if}}
-
 
     {{#unless @hideStatusColumn }}
         {{#if (and this.session.user.isContributor @post.isPublished)}}
