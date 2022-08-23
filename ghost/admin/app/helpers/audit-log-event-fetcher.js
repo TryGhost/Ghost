@@ -75,7 +75,10 @@ export default class AuditLogEventFetcher extends Resource {
             this.isLoading = true;
 
             const url = this.ghostPaths.url.api('actions');
-            const data = Object.assign({}, queryParams, {limit: this.args.named.pageSize});
+            const data = Object.assign({}, queryParams, {
+                include: 'actor',
+                limit: this.args.named.pageSize
+            });
             const {actions} = yield this.ajax.request(url, {data});
 
             if (actions.length < data.limit) {
