@@ -1,0 +1,54 @@
+<table class="gh-list gh-audit-log-table">
+    <thead>
+        <tr>
+            <th>User</th>
+            <th>Event</th>
+            <th></th>
+            <th>Time</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{#each @events as |event|}}
+        {{#let (parse-audit-log-event event) as |ev|}}
+        <tr>
+            <div class="gh-list-data gh-list-cellwidth-30">
+                <div class="flex items-center">
+                    <span class="user-list-item-figure" style={{background-image-style (or ev.actor.profileImageUrl ev.actor.iconImage)}}>
+                        <span class="hidden">Photo of {{ev.actor.name}}</span>
+                    </span>
+                    <h3 class="ma0 pa0 gh-audit-log-name">{{ev.actor.name}}</h3>
+                </div>
+            </div>
+            <div class="gh-list-data gh-list-cellwidth-10 gh-audit-log-action">
+                <div class="gh-audit-log-container">
+                    <div class="gh-audit-log-icon">{{svg-jar ev.actionIcon}}</div>
+                    <div class="gh-audit-log-event">
+                        <span class="gh-audit-log-description">
+                            {{capitalize-first-letter ev.action}}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="gh-list-data gh-audit-log-object">
+                <div class="gh-audit-log-container">
+                    {{#if (or ev.resource.title ev.resource.name)}}
+                        {{#if ev.linkable}}
+                            <LinkTo @route="editor.edit" @models={{array ev.resource.displayName ev.resource.id}} class="permalink">
+                                <strong>{{or ev.resource.title ev.resource.name}}</strong>
+                            </LinkTo>
+                        {{else}}
+                            <span class="midgrey">
+                                <strong>{{or ev.resource.title ev.resource.name}}</strong>
+                            </span>
+                        {{/if}}
+                    {{else}}
+                        <span class="midlightgrey">(unknown)</span>
+                    {{/if}}
+                </div>
+            </div>
+            <div class="gh-list-data midgrey">{{moment-format ev.original.created_at "DD MMM YYYY HH:mm:ss"}}</div>
+        </tr>
+        {{/let}}
+        {{/each}}
+    </tbody>
+</table>

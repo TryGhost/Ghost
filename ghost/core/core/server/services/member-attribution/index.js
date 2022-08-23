@@ -1,26 +1,51 @@
 const urlService = require('../url');
 const labsService = require('../../../shared/labs');
+const DomainEvents = require('@tryghost/domain-events');
+const urlUtils = require('../../../shared/url-utils');
 
 class MemberAttributionServiceWrapper {
     init() {
-        if (this.service) {
+        if (this.eventHandler) {
             // Prevent creating duplicate DomainEvents subscribers
             return;
         }
 
-        const MemberAttributionService = require('@tryghost/member-attribution');
+        // Wire up all the dependencies
+        const {MemberAttributionService, UrlTranslator, AttributionBuilder, EventHandler} = require('@tryghost/member-attribution');
         const models = require('../../models');
 
-        // For now we don't need to expose anything (yet)
+        const urlTranslator = new UrlTranslator({
+            urlService, 
+            urlUtils,
+            models: {
+                Post: models.Post, 
+                User: models.User, 
+                Tag: models.Tag
+            }
+        });
+
+        const attributionBuilder = new AttributionBuilder({urlTranslator});
+
+        // Expose the service
         this.service = new MemberAttributionService({
-            Post: models.Post,
-            User: models.User,
-            Tag: models.Tag,
-            MemberCreatedEvent: models.MemberCreatedEvent,
-            SubscriptionCreatedEvent: models.SubscriptionCreatedEvent,
-            urlService,
+            models: {
+                MemberCreatedEvent: models.MemberCreatedEvent,
+                SubscriptionCreatedEvent: models.SubscriptionCreatedEvent
+            },
+            attributionBuilder,
             labsService
         });
+
+        // Listen for events and store them in the database
+        this.eventHandler = new EventHandler({
+            models: {
+                MemberCreatedEvent: models.MemberCreatedEvent,
+                SubscriptionCreatedEvent: models.SubscriptionCreatedEvent
+            }, 
+            DomainEvents, 
+            labsService
+        });
+        this.eventHandler.subscribe();
     }
 }
 

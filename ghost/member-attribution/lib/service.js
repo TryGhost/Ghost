@@ -1,24 +1,17 @@
-const MemberAttributionEventHandler = require('./event-handler');
-const DomainEvents = require('@tryghost/domain-events');
-const UrlTranslator = require('./url-translator');
-const AttributionBuilder = require('./attribution');
 const UrlHistory = require('./history');
 
 class MemberAttributionService {
-    constructor({Post, User, Tag, MemberCreatedEvent, SubscriptionCreatedEvent, urlService, labsService}) {
-        const eventHandler = new MemberAttributionEventHandler({MemberCreatedEvent, SubscriptionCreatedEvent, DomainEvents, labsService});
-        eventHandler.subscribe();
-
-        this.urlService = urlService;
-        this.models = {MemberCreatedEvent, SubscriptionCreatedEvent};
-
-        const urlTranslator = new UrlTranslator({
-            urlService, 
-            models: {
-                Post, User, Tag
-            }
-        });
-        this.attributionBuilder = new AttributionBuilder({urlTranslator});
+    /**
+     * 
+     * @param {Object} deps 
+     * @param {Object} deps.attributionBuilder
+     * @param {Object} deps.models
+     * @param {Object} deps.models.MemberCreatedEvent
+     * @param {Object} deps.models.SubscriptionCreatedEvent
+     */
+    constructor({attributionBuilder, models}) {
+        this.models = models;
+        this.attributionBuilder = attributionBuilder;
     }
 
     /**

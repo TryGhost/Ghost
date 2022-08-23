@@ -9,6 +9,7 @@ export default class ParseAuditLogEvent extends Helper {
         const actionIcon = getActionIcon(ev);
         const getActor = () => this.store.findRecord(ev.actor_type, ev.actor_id, {reload: false});
         const getResource = () => this.store.findRecord(ev.resource_type, ev.resource_id, {reload: false});
+        const linkable = ['page', 'post'].includes(ev.resource_type);
 
         return {
             get actor() {
@@ -17,6 +18,7 @@ export default class ParseAuditLogEvent extends Helper {
             get resource() {
                 return getResource();
             },
+            linkable,
             actionIcon,
             action,
             original: ev
@@ -27,16 +29,24 @@ export default class ParseAuditLogEvent extends Helper {
 function getActionIcon(ev) {
     switch (ev.event) {
     case 'added':
-        return 'add-stroke';
+        return 'add';
     case 'edited':
-        return 'content';
+        return 'pen';
     case 'deleted':
-        return 'cross-circle';
+        return 'trash';
     }
 
     return 'info';
 }
 
 function getAction(ev) {
-    return `${ev.event} ${ev.resource_type}`;
+    let resourceType = ev.resource_type;
+
+    if (resourceType === 'api_key') {
+        resourceType = 'API key';
+    } else if (resourceType === 'setting') {
+        resourceType = 'settings';
+    }
+
+    return `${ev.event} ${resourceType}`;
 }

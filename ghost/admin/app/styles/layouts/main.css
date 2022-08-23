@@ -292,25 +292,19 @@
     font-size: 1.5rem;
     letter-spacing: 0;
     font-weight: 600;
-    line-height: 1.2em;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
+    line-height: 1;
 }
 
 .gh-user-email {
     display: inline-block;
     width: 188px;
-    margin: 4px 0 0;
+    margin: 0;
     padding: 0;
     word-break: break-all;
     font-size: 1.3rem;
     font-weight: 400;
-    line-height: 1.2em;
+    line-height: 1;
     color: var(--middarkgrey);
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
 }
 
 /* Global search
@@ -1366,11 +1360,12 @@
 }
 
 .gh-expandable-header .gh-expandable-description {
-    margin: 0;
+    margin: 4px 0 0;
     padding: 0;
     color: var(--midgrey);
     font-size: 1.3rem;
     font-weight: 400;
+    line-height: 1.45em;
 }
 
 .gh-expandable-content {

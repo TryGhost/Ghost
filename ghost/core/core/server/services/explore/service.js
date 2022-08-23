@@ -26,18 +26,19 @@ module.exports = class ExploreService {
         const totalMembers = await this.MembersService.stats.getTotalMembers();
         const mrrStats = await this.StatsService.getMRRHistory();
 
-        const {description, icon, title, url, accent_color: accentColor} = this.PublicConfigService.site;
+        const {description, icon, title, url, accent_color: accentColor, locale} = this.PublicConfigService.site;
 
         const exploreProperties = {
             version: ghostVersion.full,
-            totalMembers,
-            mrrStats,
+            total_members: totalMembers,
+            mrr_stats: mrrStats,
             site: {
                 description,
                 icon,
                 title,
                 url,
-                accentColor
+                accent_color: accentColor,
+                locale
             },
             stripe: {
                 configured: this.StripeService.api.configured,
@@ -46,10 +47,10 @@ module.exports = class ExploreService {
         };
 
         const mostRecentlyPublishedPost = await this.PostsService.getMostRecentlyPublishedPost();
-        exploreProperties.mostRecentlyPublishedAt = mostRecentlyPublishedPost?.get('published_at') || null;
+        exploreProperties.most_recently_published_at = mostRecentlyPublishedPost?.get('published_at') || null;
 
         const owner = await this.UserModel.findOne({role: 'Owner', status: 'all'});
-        exploreProperties.ownerEmail = owner?.get('email') || null;
+        exploreProperties.owner_email = owner?.get('email') || null;
 
         return exploreProperties;
     }

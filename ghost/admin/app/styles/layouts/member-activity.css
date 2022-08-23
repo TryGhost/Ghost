@@ -31,6 +31,11 @@
     margin: 0 -4px;
 }
 
+.gh-member-details-activity .gh-list-data {
+    font-weight: 600;
+    color: var(--darkgrey);
+}
+
 .no-posts .gh-members-placeholder {
     fill: var(--lightgrey);
     width: 60px;
@@ -92,6 +97,22 @@
     width: 18%;
 }
 
+.gh-members-activity.feature-memberAttribution .gh-list-scrolling thead th:nth-child(1) {
+    width: 25%;
+}
+
+.gh-members-activity.feature-memberAttribution .gh-list-scrolling thead th:nth-child(2) {
+    width: 25%;
+}
+
+.gh-members-activity.feature-memberAttribution .gh-list-scrolling thead th:nth-child(3) {
+    width: 35%;
+}
+
+.gh-members-activity.feature-memberAttribution .gh-list-scrolling thead th:last-child {
+    width: 15%;
+}
+
 .gh-members-activity .gh-list-scrolling tbody .gh-list-data:last-child {
     white-space: nowrap;
 }
@@ -125,16 +146,23 @@
 
 .gh-members-activity-description {
     display: block;
-    color: var(--middarkgrey);
     font-weight: 500;
+    font-size: 1.4rem;
+    color: var(--middarkgrey);
     text-overflow: ellipsis;
     overflow: hidden;
 }
 
+.gh-members-activity-description a {
+    font-weight: 600;
+    color: var(--darkgrey);
+}
+
 .gh-members-activity-icon {
     width: 24px;
+    min-width: 24px;
     height: 24px;
-    margin: 0 0.75rem 0 0;
+    margin: 0 0.5rem 0 -2px;
 }
 
 .gh-members-activity-single .gh-members-activity-icon {
@@ -167,8 +195,24 @@
 .gh-member-activity-actions-menu {
     top: auto;
     left: auto;
-    padding: 2rem;
+    padding: 0;
     margin-top: 8px;
+}
+
+.gh-member-activity-actions-menu ul {
+    max-height: 60vh !important;
+}
+
+.gh-member-activity-actions-menu ul li {
+    padding: 3px 2rem !important;
+}
+
+.gh-member-activity-actions-menu ul li:first-of-type {
+    padding-top: 2rem !important;
+}
+
+.gh-member-activity-actions-menu ul li:last-of-type {
+    padding-bottom: 2rem !important;
 }
 
 .gh-member-activity-actions-menu h3 {
@@ -201,13 +245,10 @@
 }
 
 .gh-member-activity-actions-menu .ember-power-select-option label p {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
     color: var(--darkgrey);
-    font-weight: 500;
+    font-weight: 400;
     font-size: 1.4rem;
-    padding: 0.125rem 6rem 0 0.25rem;
+    padding: 0.125rem 0 0 0.25rem;
     margin: 0;
 }
 
@@ -238,6 +279,10 @@
     margin-right: -8px;
     height: 16px;
     width: 16px;
+}
+
+.gh-member-activity-actions-menu hr {
+    margin: 12px -20px;
 }
 
 .gh-member-filter-search-trigger {

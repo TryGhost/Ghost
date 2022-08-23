@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   lint:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     name: Lint
     steps:
@@ -36,7 +36,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   admin-prod-build:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     name: Admin - Production Build
     steps:
@@ -56,7 +56,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   admin-tests:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     strategy:
       matrix:
@@ -91,7 +91,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   migrations:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     defaults:
       run:
         working-directory: ghost/core
@@ -164,7 +164,7 @@ jobs:
       - run: yarn knex-migrator migrate --force
 
   unit-tests:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     strategy:
       matrix:
@@ -192,7 +192,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   database-tests:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     defaults:
       run:
         working-directory: ghost/core
@@ -303,11 +303,8 @@ jobs:
 
   ghost-cli:
     name: Ghost-CLI
-    if: false
-    runs-on: ubuntu-18.04
-    defaults:
-      run:
-        working-directory: ghost/core
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
         with:
@@ -317,29 +314,39 @@ jobs:
         env:
           FORCE_COLOR: 0
         with:
-          node-version: '14.17.0'
+          node-version: '16.13.0'
           cache: yarn
-      - run: npm install -g ghost-cli@latest
-      - run: npm --no-git-tag-version version minor # We need to artificially bump the minor version to get migrations to run
 
-      - run: zip -r ghost.zip .
+      - name: Install Ghost-CLI
+        run: npm install -g ghost-cli@latest
+
+      - run: yarn
+
+      - run: npm --no-git-tag-version version minor # We need to artificially bump the minor version to get migrations to run
+        working-directory: ghost/core
+
+      - run: npm pack
+        working-directory: ghost/core
+
+      - run: mv ghost-*.tgz ghost.tgz
+        working-directory: ghost/core
 
       - name: Clean Install
         run: |
           DIR=$(mktemp -d)
-          ghost install local -d $DIR --zip $(pwd)/ghost.zip
+          ghost install local -d $DIR --archive $(pwd)/ghost/core/ghost.tgz
 
       - name: Latest Release
         run: |
           DIR=$(mktemp -d)
           ghost install local -d $DIR
-          ghost update -d $DIR --zip $(pwd)/ghost.zip
+          ghost update -d $DIR --archive $(pwd)/ghost/core/ghost.tgz
 
-      - name: Update from latest v3
+      - name: Update from latest v4
         run: |
           DIR=$(mktemp -d)
-          ghost install v3 --local -d $DIR
-          ghost update -f -d $DIR --zip $(pwd)/ghost.zip
+          ghost install v4 --local -d $DIR
+          ghost update -f -d $DIR --archive $(pwd)/ghost/core/ghost.tgz
 
       - name: Print debug logs
         if: failure()
@@ -354,7 +361,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   canary:
-    needs: [lint, admin-tests, admin-prod-build, migrations, unit-tests, database-tests]
+    needs: [lint, ghost-cli, admin-tests, admin-prod-build, migrations, unit-tests, database-tests]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     name: Canary
     uses: tryghost/actions/.github/workflows/canary.yml@main

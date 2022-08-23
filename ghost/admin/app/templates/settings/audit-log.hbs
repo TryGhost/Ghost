@@ -1,77 +1,42 @@
 <section class="gh-canvas gh-members-activity">
     <GhCanvasHeader class="gh-canvas-header">
     <h2 class="gh-canvas-title" data-test-screen-title>
-        <LinkTo @route="settings">Settings</LinkTo>
-        <span>{{svg-jar "arrow-right"}}</span>
-        <LinkTo @route="settings.audit-log" data-test-link="audit-log-back">Audit log</LinkTo>
+        <LinkTo @route="settings.audit-log" @query={{reset-query-params "settings.audit-log"}} data-test-link="audit-log-back">Audit log</LinkTo>
+        {{#if this.userRecord}}
+            <span>{{svg-jar "arrow-right"}}</span>
+            <span class="truncate">{{or this.userRecord.name this.userRecord.email}}</span>
+        {{/if}}
     </h2>
+    <div class="view-actions">
+        <Settings::AuditLog::EventFilter
+             @excludedEvents={{this.excludedEvents}}
+             @excludedResources={{this.excludedResources}}
+             @onChange={{this.changeExcludedItems}} />
+
+        <Settings::AuditLog::Search
+             @selected={{this.userRecord}}
+             @onChange={{this.changeUser}} />
+    </div>
     </GhCanvasHeader>
     <div class="view-container">
-        {{#let (audit-log-event-fetcher pageSize=50) as |eventsFetcher|}}
-        {{#if eventsFetcher.data}}
-        <div class="gh-list-scrolling">
-            <table class="gh-list">
-                <thead>
-                    <tr>
-                        <th>User</th>
-                        <th>Action</th>
-                        <th>When</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{#each eventsFetcher.data as |event|}}
-                    {{#let (parse-audit-log-event event) as |ev|}}
-                    <tr>
-                        <div class="gh-list-data gh-list-cellwidth-30">
-                            <div class="flex items-center">
-                                <span class="user-list-item-figure" style={{background-image-style (or ev.actor.profileImageUrl ev.actor.iconImage)}}>
-                                    <span class="hidden">Photo of {{ev.actor.name}}</span>
-                                </span>
-                                <h3 class="ma0 pa0 gh-members-list-name">{{ev.actor.name}}</h3>
-                            </div>
-                        </div>
-                        <div class="gh-list-data gh-list-cellwidth-50">
-                            <div class="gh-members-activity-container">
-                                <div class="gh-members-activity-icon">{{svg-jar ev.actionIcon}}</div>
-                                <div class="gh-members-activity-event">
-                                    <span class="gh-members-activity-description">
-                                        {{capitalize-first-letter ev.action}}
-                                        {{#if (or ev.resource.title ev.resource.name)}}
-                                        <LinkTo @route="editor.edit" @models={{array ev.resource.displayName ev.resource.id}} class="permalink">
-                                            <strong>{{if ev.resource.title ev.resource.title ev.resource.name}}</strong>
-                                        </LinkTo>
-                                        {{else}}
-                                        <br/><small>{{ev.original.resource_id}}</small>
-                                        {{/if}}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="gh-list-data">{{moment-format ev.original.created_at "DD MMM YYYY HH:mm:ss"}}</div>
-                    </tr>
-                    {{/let}}
-                    {{/each}}
-                </tbody>
-            </table>
+        {{#let (audit-log-event-fetcher filter=(audit-log-event-filter excludedEvents=this.fullExcludedEvents excludedResources=this.fullExcludedResources user=this.user) pageSize=50) as |eventsFetcher|}}
+            {{#if eventsFetcher.data}}
+            <div class="gh-list-scrolling">
+                <Settings::AuditLog::Table @events={{eventsFetcher.data}} />
 
-            {{#if (not (or eventsFetcher.isLoading eventsFetcher.hasReachedEnd))}}
-            <GhScrollTrigger @enter={{eventsFetcher.loadNextPage}} @triggerOffset={{250}} />
-            {{/if}}
-        </div>
-        {{else}}
-        {{#unless eventsFetcher.isLoading}}
-        <div class="no-posts-box">
-            <div class="no-posts">
-                {{svg-jar "activity-placeholder" class="gh-members-placeholder"}}
-                <h4>No staff activity yet</h4>
+                {{#if (not (or eventsFetcher.isLoading eventsFetcher.hasReachedEnd))}}
+                    <GhScrollTrigger @enter={{eventsFetcher.loadNextPage}} @triggerOffset={{250}} />
+                {{/if}}
             </div>
-        </div>
-        {{/unless}}
-        {{/if}}
+            {{else}}
+                {{#unless eventsFetcher.isLoading}}
+                    <Settings::AuditLog::NoEvents @filter={{or this.user this.excludedResources}} />
+                {{/unless}}
+            {{/if}}
 
-        {{#if eventsFetcher.isLoading}}
-        <div class="no-posts-box"><GhLoadingSpinner /></div>
-        {{/if}}
+            {{#if eventsFetcher.isLoading}}
+                <div class="no-posts-box"><GhLoadingSpinner /></div>
+            {{/if}}
         {{/let}}
     </div>
 </section>

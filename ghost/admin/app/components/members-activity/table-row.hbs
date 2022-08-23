@@ -22,18 +22,31 @@
                     <span class="gh-members-activity-description">
                         {{capitalize-first-letter event.action}}
                         {{#if event.url}}
-                            "<a class="ghost-members-activity-object-link" href="{{event.url}}" target="_blank" rel="noopener noreferrer">{{event.object}}</a>"
+                            <a class="ghost-members-activity-object-link {{if (feature "memberAttribution") 'hidden'}}" href="{{event.url}}" target="_blank" rel="noopener noreferrer">{{event.object}}</a>
                         {{else}}
                             {{event.object}}
                         {{/if}}
+                        {{#if event.email}}
+                            <span class="{{if (feature "memberAttribution") 'hidden'}}"><GhEmailPreviewLink @data={{event.email}} /></span>
+                        {{/if}}
+                        {{#if event.info}}
+                            <span class="highlight">{{event.info}}</span>
+                        {{/if}}
                     </span>
-                    {{#if event.email}}
-                        "<GhEmailPreviewLink @data={{event.email}} />"
-                    {{/if}}
-                    <span class="highlight">{{event.info}}</span>
                 </div>
             </div>
         </div>
-        <div class="gh-list-data">{{moment-format event.timestamp "DD MMM YYYY HH:mm"}}</div>
+        {{#if (feature "memberAttribution")}}
+            <div class="gh-list-data gh-list-data-attribution">
+                {{#if event.url}}
+                    <a class="ghost-members-activity-object-link" href="{{event.url}}" target="_blank" rel="noopener noreferrer">{{event.object}}</a>
+                {{else if event.email}}
+                    <GhEmailPreviewLink @data={{event.email}} />
+                {{else}}
+                    <span class="gh-list-nodata">&mdash;</span>
+                {{/if}}
+            </div>
+        {{/if}}
+        <div class="gh-list-data gh-list-data-date">{{moment-format event.timestamp "DD MMM YYYY HH:mm"}}</div>
     </tr>
 {{/let}}

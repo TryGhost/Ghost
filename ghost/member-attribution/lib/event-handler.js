@@ -1,9 +1,17 @@
 const {MemberCreatedEvent, SubscriptionCreatedEvent} = require('@tryghost/member-events');
 
 class MemberAttributionEventHandler {
-    constructor({MemberCreatedEvent: MemberCreatedEventModel, SubscriptionCreatedEvent: SubscriptionCreatedEventModel, DomainEvents, labsService}) {
-        this._MemberCreatedEventModel = MemberCreatedEventModel;
-        this._SubscriptionCreatedEvent = SubscriptionCreatedEventModel;
+    /**
+     * 
+     * @param {Object} deps 
+     * @param {Object} deps.DomainEvents
+     * @param {Object} deps.labsService
+     * @param {Object} deps.models
+     * @param {Object} deps.models.MemberCreatedEvent
+     * @param {Object} deps.models.SubscriptionCreatedEvent
+     */
+    constructor({DomainEvents, labsService, models}) {
+        this.models = models;
         this.DomainEvents = DomainEvents;
         this.labsService = labsService;
     }
@@ -18,7 +26,7 @@ class MemberAttributionEventHandler {
                 attribution = {};
             }
 
-            await this._MemberCreatedEventModel.add({
+            await this.models.MemberCreatedEvent.add({
                 member_id: event.data.memberId,
                 created_at: event.timestamp,
                 attribution_id: attribution?.id ?? null,
@@ -37,7 +45,7 @@ class MemberAttributionEventHandler {
                 attribution = {};
             }
 
-            await this._SubscriptionCreatedEvent.add({
+            await this.models.SubscriptionCreatedEvent.add({
                 member_id: event.data.memberId,
                 subscription_id: event.data.subscriptionId,
                 created_at: event.timestamp,
