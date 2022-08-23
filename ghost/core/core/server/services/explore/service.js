@@ -26,7 +26,7 @@ module.exports = class ExploreService {
         const totalMembers = await this.MembersService.stats.getTotalMembers();
         const mrrStats = await this.StatsService.getMRRHistory();
 
-        const {description, icon, title, url, accent_color: accentColor} = this.PublicConfigService.site;
+        const {description, icon, title, url, accent_color: accentColor, locale: lang} = this.PublicConfigService.site;
 
         const exploreProperties = {
             version: ghostVersion.full,
@@ -37,7 +37,8 @@ module.exports = class ExploreService {
                 icon,
                 title,
                 url,
-                accentColor
+                accentColor,
+                lang
             },
             stripe: {
                 configured: this.StripeService.api.configured,
