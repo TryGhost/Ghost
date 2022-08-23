@@ -18,11 +18,13 @@
             mouseDown=this.handleOptionMouseDown
             touchStart=this.handleOptionTouchStart
         }}
-            {{#if @selectedItemComponent}}
-                {{component @selectedItemComponent option=(readonly opt) select=(readonly @select)}}
-            {{else}}
-                {{yield opt @select}}
-            {{/if}}
+            <span class="ember-power-select-multiple-inner-text">
+                {{#if @selectedItemComponent}}
+                    {{component @selectedItemComponent option=(readonly opt) select=(readonly @select)}}
+                {{else}}
+                    {{yield opt @select}}
+                {{/if}}
+            </span>
             {{#unless @select.disabled}}
                 <span role="button"
                     aria-label="remove element"
