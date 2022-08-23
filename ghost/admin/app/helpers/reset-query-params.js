@@ -25,6 +25,11 @@ export const DEFAULT_QUERY_PARAMS = {
     'members-activity': {
         excludedEvents: null,
         member: null
+    },
+    'settings.audit-log': {
+        excludedEvents: null,
+        excludedResources: null,
+        user: null
     }
 };
 
