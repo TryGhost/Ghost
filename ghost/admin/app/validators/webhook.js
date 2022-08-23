@@ -3,7 +3,7 @@ import validator from 'validator';
 import {isBlank} from '@ember/utils';
 
 export default BaseValidator.create({
-    properties: ['name', 'event', 'targetUrl'],
+    properties: ['name', 'event', 'targetUrl', 'secret'],
 
     name(model) {
         if (isBlank(model.name)) {
@@ -37,6 +37,14 @@ export default BaseValidator.create({
         model.hasValidated.pushObject('targetUrl');
 
         if (model.errors.has('targetUrl')) {
+            this.invalidate();
+        }
+    },
+
+    secret(model) {
+        if (!isBlank(model.secret) && !validator.isLength(model.secret, 0, 191)) {
+            model.errors.add('secret', 'Secret is too long, max 191 chars');
+            model.hasValidated.pushObject('secret');
             this.invalidate();
         }
     }
