@@ -32,6 +32,9 @@ const author = (attrs, frame) => {
         delete attrs.status;
         delete attrs.email;
         delete attrs.comment_notifications;
+        delete attrs.free_member_signup_notification;
+        delete attrs.paid_subscription_started_notification;
+        delete attrs.paid_subscription_canceled_notification;
 
         // @NOTE: used for night shift
         delete attrs.accessibility;
