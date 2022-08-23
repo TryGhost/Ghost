@@ -1270,3 +1270,45 @@ kbd {
 .explore-permissions {
     background: var(--mainmenu-color-hover-bg);
 }
+
+.gh-offer-type-container {
+    background: var(--lightgrey);
+    border-color: transparent;
+}
+
+.gh-offer-type-container .gh-radio-label {
+    color: var(--black);
+}
+
+.gh-offer-type-container .gh-radio.active .gh-radio-button:before {
+    box-shadow: none;
+    border-color: var(--white);
+}
+
+.gh-offer-type-container .gh-radio:not(:first-child) {
+    border-color: transparent;
+}
+
+.gh-offer-type-container .gh-radio[disabled] {
+    opacity: 1;
+    background: #0e0f11;
+}
+
+.gh-offer-type-container .gh-radio[disabled] .gh-radio-button {
+    opacity: 0.5
+}
+
+.gh-offer-type-container .gh-radio[disabled] .gh-radio-label, .gh-offer-type-container .gh-radio[disabled] .gh-radio-desc {
+    color: #4d4f52;
+}
+
+.gh-input-group-tier-trial-disabled .gh-input-append {
+    background: #0e0f11;
+    color: #4c4f52;
+    border-color: #17191c;
+    opacity: 1;
+}
+
+.gh-input-group-tier-trial-disabled .gh-input-append:before {
+    background: #0e0f11;
+}
