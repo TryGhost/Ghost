@@ -19,16 +19,6 @@ const Action = ghostBookshelf.Model.extend({
 
     resource() {
         return this.morphTo('resource', ['resource_type', 'resource_id'], ...candidates);
-    },
-
-    toJSON(unfilteredOptions) {
-        const options = Action.filterOptions(unfilteredOptions, 'toJSON');
-        const attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
-
-        // @TODO: context is not implemented yet
-        delete attrs.context;
-
-        return attrs;
     }
 }, {
     orderDefaultOptions: function orderDefaultOptions() {

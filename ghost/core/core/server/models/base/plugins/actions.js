@@ -29,14 +29,33 @@ module.exports = function (Bookshelf) {
                 resourceType = resourceType.bind(this)();
             }
 
-            // @TODO: implement context
-            return {
-                event: event,
+            let context = {};
+
+            if (this.actionsExtraContext && Array.isArray(this.actionsExtraContext)) {
+                for (const c of this.actionsExtraContext) {
+                    context[c] = this.get(c) || this.previous(c);
+                }
+            }
+
+            if (event === 'deleted') {
+                context.primary_name = (this.previous('title') || this.previous('name'));
+            } else if (event === 'edited') {
+                context.primary_name = (this.get('title') || this.get('name') || this.previous('title') || this.previous('name'));
+            }
+
+            const data = {
+                event,
                 resource_id: this.id || this.previous('id'),
                 resource_type: resourceType,
                 actor_id: actor.id,
                 actor_type: actor.type
             };
+
+            if (context && Object.keys(context).length) {
+                data.context = context;
+            }
+
+            return data;
         },
 
         /**
