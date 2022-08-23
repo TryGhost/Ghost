@@ -145,6 +145,7 @@
 
 .gh-filter-builder .ember-power-select-trigger-multiple-input {
     height: 23px;
+    display: flex;
 }
 
 @media (max-width: 690px) {

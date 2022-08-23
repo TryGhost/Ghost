@@ -2335,6 +2335,10 @@ p.gh-members-import-errordetail:first-of-type {
     margin-top: 8px;
 }
 
+.gh-members-filter-builder.feature-memberAttribution {
+    width: 780px;
+}
+
 @media (max-width: 980px) {
     .gh-members-filter-builder {
         width: 640px;
