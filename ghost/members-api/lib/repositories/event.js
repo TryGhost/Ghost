@@ -70,7 +70,7 @@ module.exports = class EventRepository {
     async getSubscriptionEvents(options = {}, filters = {}) {
         options = {
             ...options,
-            withRelated: ['member'],
+            withRelated: ['member', 'subscriptionCreatedEvent.postAttribution', 'subscriptionCreatedEvent.userAttribution', 'subscriptionCreatedEvent.tagAttribution'],
             filter: []
         };
         if (filters['data.created_at']) {
@@ -86,17 +86,12 @@ module.exports = class EventRepository {
         const data = models.map((model) => {
             return {
                 type: 'subscription_event',
-                data: model.toJSON(options)
+                data: {
+                    ...model.toJSON(options),
+                    attribution: model.get('type') === 'created' ? this._memberAttributionService.getEventAttribution(model.related('subscriptionCreatedEvent')) : null
+                }
             };
         });
-
-        // Manually add attribution to all subscription events with type 'created'
-        for (const item of data) {
-            const event = item.data;
-            if (event.type === 'created') {
-                event.attribution = await this._memberAttributionService.getSubscriptionCreatedAttribution(event.subscription_id);
-            }
-        }
 
         return {
             data,
@@ -165,7 +160,7 @@ module.exports = class EventRepository {
     async getSignupEvents(options = {}, filters = {}) {
         options = {
             ...options,
-            withRelated: ['member'],
+            withRelated: ['member', 'postAttribution', 'userAttribution', 'tagAttribution'],
             filter: []
         };
         if (filters['data.created_at']) {
@@ -181,23 +176,12 @@ module.exports = class EventRepository {
         const data = models.map((model) => {
             return {
                 type: 'signup_event',
-                data: model.toJSON(options)
+                data: {
+                    ...model.toJSON(options),
+                    attribution: this._memberAttributionService.getEventAttribution(model)
+                }
             };
         });
-
-        // Load attribution
-        // TODO: maybe we should build a helper to optimize loading resources on multiple attributions that minimizes model fetches?
-        for (const item of data) {
-            item.data.attribution = null;
-            if (item.data.attribution_type) {
-                const attribution = this._memberAttributionService.attributionBuilder.build({
-                    id: item.data.attribution_id,
-                    url: item.data.attribution_url,
-                    type: item.data.attribution_type
-                });
-                item.data.attribution = await attribution.getResource();
-            }
-        }
 
         return {
             data,

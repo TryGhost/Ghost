@@ -6,8 +6,7 @@
  */
 
 /**
- * Translate a url into a type and id
- * And also in reverse
+ * Translate a url into, (id+type), or a resource, and vice versa
  */
 class UrlTranslator {
     /**

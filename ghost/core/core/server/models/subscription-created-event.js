@@ -12,7 +12,7 @@ const SubscriptionCreatedEvent = ghostBookshelf.Model.extend({
         return this.belongsTo('StripeCustomerSubscription', 'subscription_id', 'id');
     },
 
-    attribution() {
+    /*attribution() {
         // This syntax is not documented in Bookshelf, so some information:
         // First parameter: name of relation
         // Then an array with the type (which contains the so called morphValue) and id used do determine the relation
@@ -21,6 +21,18 @@ const SubscriptionCreatedEvent = ghostBookshelf.Model.extend({
         // However, Bookshelf also supports using custom morphValues. Then you need to pass an array (first value of array = model name, 2nd = morphValue)
         // This also allows us morph on the same model for different types.
         return this.morphTo('attribution', ['attribution_type', 'attribution_id'], ['Post', 'post'], ['Post', 'page'], ['Tag', 'tag'], ['User', 'author']);
+    }*/
+
+    postAttribution() {
+        return this.belongsTo('Post', 'attribution_id', 'id');   
+    },
+
+    userAttribution() {
+        return this.belongsTo('User', 'attribution_id', 'id');   
+    },
+
+    tagAttribution() {
+        return this.belongsTo('Tag', 'attribution_id', 'id');   
     }
 }, {
     async edit() {
