@@ -170,11 +170,12 @@
 
 .gh-posts-signups-header,
 .gh-posts-conversions-header,
-.gh-posts-sends-header {
+.gh-posts-sends-header,
+.gh-posts-opens-header {
     width: 110px;
 }
 
-.gh-posts-opens-header {
+.feature-memberAttribution .gh-posts-opens-header {
     width: 170px;
 }
 
@@ -364,22 +365,22 @@
 }
 
 @media (max-width: 1600px) {
-    .gh-post-list-status,
-    .gh-post-list-recipients,
-    .gh-post-list-opens,
-    .gh-post-list-signups,
-    .gh-post-list-conversions {
+    .feature-memberAttribution .gh-post-list-status,
+    .feature-memberAttribution .gh-post-list-recipients,
+    .feature-memberAttribution .gh-post-list-opens,
+    .feature-memberAttribution .gh-post-list-signups,
+    .feature-memberAttribution .gh-post-list-conversions {
         padding-left: 12px;
         padding-right: 12px;
     }
 
-    .gh-posts-signups-header,
-    .gh-posts-conversions-header,
-    .gh-posts-sends-header {
+    .feature-memberAttribution .gh-posts-signups-header,
+    .feature-memberAttribution .gh-posts-conversions-header,
+    .feature-memberAttribution .gh-posts-sends-header {
         width: 80px;
     }
     
-    .gh-posts-opens-header {
+    .feature-memberAttribution .gh-posts-opens-header {
         width: 160px;
     }
 }
