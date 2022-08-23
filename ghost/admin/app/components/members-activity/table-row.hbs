@@ -22,6 +22,7 @@
                     <span class="gh-members-activity-description">
                         {{capitalize-first-letter event.action}}
                         {{#if (and event.url (not (feature "memberAttribution")))}}
+                            {{event.join}}
                             <a class="ghost-members-activity-object-link" href="{{event.url}}" target="_blank" rel="noopener noreferrer">{{event.object}}</a>
                         {{/if}}
                         {{#if event.email}}

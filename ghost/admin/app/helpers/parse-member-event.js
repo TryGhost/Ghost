@@ -2,14 +2,15 @@ import moment from 'moment';
 import {getNonDecimal, getSymbol} from 'ghost-admin/utils/currency';
 
 export default function parseMemberEvent(event, hasMultipleNewsletters) {
-    let subject = event.data.member.name || event.data.member.email;
-    let icon = getIcon(event);
-    let action = getAction(event, hasMultipleNewsletters);
-    let info = getInfo(event);
+    const subject = event.data.member.name || event.data.member.email;
+    const icon = getIcon(event);
+    const action = getAction(event, hasMultipleNewsletters);
+    const info = getInfo(event);
 
-    let object = getObject(event);
+    const join = getJoin(event);
+    const object = getObject(event);
     const url = getURL(event);
-    let timestamp = moment(event.data.created_at);
+    const timestamp = moment(event.data.created_at);
 
     return {
         memberId: event.data.member_id ?? event.data.member?.id,
@@ -19,6 +20,7 @@ export default function parseMemberEvent(event, hasMultipleNewsletters) {
         icon,
         subject,
         action,
+        join,
         object,
         info,
         url,
@@ -138,10 +140,36 @@ function getAction(event, hasMultipleNewsletters) {
 
     if (event.type === 'comment_event') {
         if (event.data.parent) {
-            return 'replied to a comment on';
+            return 'replied to a comment';
         }
-        return 'commented on';
+        return 'commented';
     }
+}
+
+/**
+ * When we need to append the action and object in one sentence, you can add extra words here.
+ * E.g.,
+ *   action: 'Signed up'.
+ *   object: 'My blog post'
+ * When both words need to get appended, we'll add 'on'
+ *  -> do this by returning 'on' in getJoin()
+ * This string is not added when action and object are in a separete table column, or when the getObject/getURL is empty
+ */
+function getJoin(event) {
+    if (event.type === 'signup_event' || event.type === 'subscription_event') {
+        if (event.data.attribution?.title) {
+            // Add 'Attributed to ' for now, until this is incorporated in the design
+            return 'on';
+        }
+    }
+
+    if (event.type === 'comment_event') {
+        if (event.data.post) {
+            return 'on';
+        }
+    }
+
+    return '';
 }
 
 /**
