@@ -205,10 +205,14 @@
 .gh-offer-type-container {
     display: flex;
     width: 100%;
-    border: 1px solid #dddedf;
+    border: 1px solid var(--whitegrey-d2);
     background: #fff;
     color: #394047;
-    border-radius: 3px;
+    border-radius: 4px;
+}
+
+.gh-offer-type-container.disabled {
+    border: 1px solid var(--whitegrey);
 }
 
 .gh-offer-tier-and-trial {
@@ -239,7 +243,7 @@
 }
 
 .gh-offer-type-container .gh-radio:not(:first-child) {
-    border-left: 1px solid #F6F6F6;
+    border-left: 1px solid var(--whitegrey);
 }
 
 .gh-offer-type-container .gh-radio-button {
@@ -251,8 +255,8 @@
     content: "";
     position: absolute;
     top: 4px;
-    left: 4px;
-    width: 9px;
+    left: 3px;
+    width: 10px;
     height: 5px;
     border: 2px solid #fff;
     border-top: none;

@@ -43,11 +43,11 @@
                         {{#if (feature 'freeTrial')}}
                         <h4 class="gh-main-section-header gh-main-section-header-with-info small bn">
                             <span>Discount information</span>
-                            <span class="midgrey gh-main-section-header-info tooltip-top-left" data-tooltip="Once saved, this cannot be changed" >{{svg-jar "info"}}</span>
+                            <span class="midgrey gh-main-section-header-info tooltip-left" data-tooltip="Once saved, this cannot be changed" >{{svg-jar "info"}}</span>
                         </h4>
                         {{else}}
                         <h4 class="gh-main-section-header small bn">
-                            Discount information <span class="midgrey"> – Once saved, this cannot be changed.</span>
+                            Discount information <span class="midgrey"> &ndash; Once saved, this cannot be changed.</span>
                         </h4>
                         {{/if}}
                         <div class="gh-main-section-content grey">
@@ -55,7 +55,7 @@
                             <GhFormGroup>
                                 <div>
                                     <label class="fw6">Offer type</label>
-                                    <div class="gh-offer-type-container">
+                                    <div class="gh-offer-type-container {{if this.isDiscountSectionDisabled "disabled"}}">
                                         <button class="gh-radio {{if this.isDiscountOffer "active"}}" type="button" {{on "click" (fn this.changeType "discount")}} disabled={{this.isDiscountSectionDisabled}}>
                                             <div class="gh-radio-button"></div>
                                             <div class="gh-radio-content">
