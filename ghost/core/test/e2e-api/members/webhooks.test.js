@@ -1952,7 +1952,7 @@ describe('Members API', function () {
                 })
                 .expect(({body}) => {
                     should(body.events.find(e => e.type !== 'subscription_event')).be.undefined();
-                    should(body.events.map(e => e.data.attribution)).eql(subscriptionAttributions);
+                    should(body.events.map(e => e.data.attribution)).containDeep(subscriptionAttributions);
                 });
         });
     });

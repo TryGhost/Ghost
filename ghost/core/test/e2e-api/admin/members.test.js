@@ -366,14 +366,14 @@ describe('Members API - member attribution', function () {
                 etag: anyEtag
             })
             .matchBodySnapshot({
-                events: new Array(5).fill({
+                events: new Array(signupAttributions.length).fill({
                     type: anyString,
                     data: anyObject
                 })
             })
             .expect(({body}) => {
                 should(body.events.find(e => e.type !== 'signup_event')).be.undefined();
-                should(body.events.map(e => e.data.attribution)).eql(signupAttributions);
+                should(body.events.map(e => e.data.attribution)).containDeep(signupAttributions);
             });
     });
 });
