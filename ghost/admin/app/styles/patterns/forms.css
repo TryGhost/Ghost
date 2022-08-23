@@ -820,6 +820,10 @@ textarea {
     border-radius: 0 0 3px 3px;
 }
 
+.form-rich-radio .gh-radio:only-child .gh-radio-content {
+    border-radius: 3px;
+}
+
 .form-rich-radio .active .gh-radio-content {
     border: 1px solid transparent;
     box-shadow: 0px 0px 0px 2px var(--green);
