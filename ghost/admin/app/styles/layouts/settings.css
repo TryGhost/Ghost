@@ -2899,3 +2899,7 @@ p.theme-validation-details {
 .gh-audit-log-name {
     margin-bottom: 0 !important;
 }
+
+.gh-activity-log-actions ul {
+    width: 240px;
+}
