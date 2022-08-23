@@ -625,9 +625,9 @@
                     "id": 1,
                     "name": "Ghost",
                     "email": "ghost@example.com",
-                    "free_member_signup_notification": false,
-                    "paid_subscription_started_notificaton": false,
-                    "paid_subscription_canceled_notification": false,
+                    "free_member_signup_notification": true,
+                    "paid_subscription_started_notificaton": true,
+                    "paid_subscription_canceled_notification": true,
                     "status": "inactive",
                     "roles": []
                 },

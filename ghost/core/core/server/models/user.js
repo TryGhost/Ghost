@@ -66,9 +66,9 @@ User = ghostBookshelf.Model.extend({
             visibility: 'public',
             status: 'active',
             comment_notifications: true,
-            free_member_signup_notification: false,
-            paid_subscription_started_notification: false,
-            paid_subscription_canceled_notification: false
+            free_member_signup_notification: true,
+            paid_subscription_started_notification: true,
+            paid_subscription_canceled_notification: true
         };
     },
 
