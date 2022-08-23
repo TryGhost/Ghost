@@ -29,7 +29,7 @@ class Attribution {
     /**
      * Converts the instance to a parsed instance with more information about the resource included.
      * It does:
-     * - Fetch the resource and add some information about it to the attribution
+     * - Uses the passed model and adds a title to the attribution
      * - If the resource exists and has a new url, it updates the url if possible
      * - Returns an absolute URL instead of a relative one
      * @param {Object|null} [model] The Post/User/Tag model of the resource associated with this attribution
