@@ -184,11 +184,20 @@ ul.nostyle li {
     color: var(--black);
 }
 
+.gh-list-nodata {
+    font-size: 1.5rem;
+    letter-spacing: 0;
+    text-decoration: none;
+    min-width: 54px;
+    color: var(--lightgrey);
+    font-weight: 500;
+}
+
 
 /* Helpers for smaller sizes
 /* --------------------------------------------------- */
 
-@media (max-width: 1000px) {
+@media (max-width: 1200px) {
     .gh-list {
         border-bottom: none;
     }
@@ -199,6 +208,10 @@ ul.nostyle li {
 
     /* Generic helper class to hide cell */
     .gh-list-hidecell-m {
+        display: none;
+    }
+
+    .gh-list .gh-list-nodata {
         display: none;
     }
 }
@@ -446,14 +459,4 @@ ul.nostyle li {
     .gh-list-scrolling {
         height: calc(100vh - 96px);
     }
-}
-
-
-.gh-list-nodata {
-    font-size: 1.5rem;
-    letter-spacing: 0;
-    text-decoration: none;
-    min-width: 54px;
-    color: var(--lightgrey);
-    font-weight: 500;
 }

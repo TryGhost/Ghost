@@ -56,6 +56,8 @@
                             <span class="darkgrey fw5 gh-content-email-stats">{{format-number @post.email.emailCount}}</span>
                             <span class="midgrey-l2 fw4 gh-content-email-stats-mobile">{{gh-pluralize @post.email.emailCount "send"}}</span>
                         </span>
+                    {{else}}
+                        {{#if this.feature.memberAttribution}}<span class="gh-list-nodata">&mdash;</span>{{/if}}
                     {{/if}}
                 </div>
             </LinkTo>
@@ -72,20 +74,28 @@
                         </span>
                         <span class="midgrey-l2 fw4 gh-content-email-stats-mobile">{{@post.email.openRate}}% opens</span>
                     </div>
+                {{else}}
+                    {{#if this.feature.memberAttribution}}<span class="gh-list-nodata">&mdash;</span>{{/if}}
                 {{/if}}
             </LinkTo>
         {{/if}}
     {{/if}}
 
     {{#if this.feature.memberAttribution}}
-        <a href={{@post.url}} class="permalink gh-list-data gh-post-list-status" target="_blank" rel="noopener noreferrer">
-          {{@post.count.signups}}
+        <a href={{@post.url}} class="permalink gh-list-data gh-post-list-signups" target="_blank" rel="noopener noreferrer">
+            <span class="darkgrey fw5 gh-content-attribution-stats">{{@post.count.signups}}</span>
+            <span class="midgrey-l2 fw4 gh-content-attribution-stats-mobile">{{gh-pluralize @post.count.signups "signup"}}</span>
+            {{!-- TODO: How to show this when there is no data?
+            <span class="gh-list-nodata">&mdash;</span> --}}
         </a>
     {{/if}}
 
     {{#if this.feature.memberAttribution}}
-        <a href={{@post.url}} class="permalink gh-list-data gh-post-list-status" target="_blank" rel="noopener noreferrer">
-          {{@post.count.conversions}}
+        <a href={{@post.url}} class="permalink gh-list-data gh-post-list-conversions" target="_blank" rel="noopener noreferrer">
+            <span class="darkgrey fw5 gh-content-attribution-stats">{{@post.count.conversions}}</span>
+            <span class="midgrey-l2 fw4 gh-content-attribution-stats-mobile">{{gh-pluralize @post.count.conversions "conversion"}}</span>
+            {{!-- TODO: How to show this when there is no data?
+            <span class="gh-list-nodata">&mdash;</span> --}}
         </a>
     {{/if}}
 
