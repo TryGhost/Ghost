@@ -69,7 +69,7 @@
                 <label for="webhook-secret" class="fw6">Secret</label>
                 <GhTextInput
                     @value={{readonly this.webhook.secret}}
-                    @oninput={{action (mut this.webhook.secret) value="target.value"}}
+                    @input={{action (mut this.webhook.secret) value="target.value"}}
                     @focus-out={{action "validate" "secret" target=this.webhook}}
                     @id="webhook-secret"
                     @name="secret"

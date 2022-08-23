@@ -954,3 +954,4 @@ add|ember-template-lint|no-passed-in-event-handlers|176|44|176|44|dcb4785647a508
 add|ember-template-lint|no-passed-in-event-handlers|186|44|186|44|70487c008d7dda453fef82f0140699ee93c0055c|1660521600000|1670893200000|1676077200000|app/components/modal-tier.hbs
 add|ember-template-lint|style-concatenation|303|54|303|54|23293f0c3838b23432d2b2daaf04b34504896d91|1660608000000|1670979600000|1676163600000|app/components/modal-tier.hbs
 remove|ember-template-lint|no-nested-interactive|23|28|23|28|5cf783a5684dda036706ff7438472e99c60a88e7|1658102400000|1668474000000|1673658000000|app/templates/whatsnew.hbs
+add|ember-template-lint|no-passed-in-event-handlers|72|20|72|20|e639a281bd34eefbe403ddf46501154b89a1f477|1661212800000|1671584400000|1676768400000|app/components/modal-webhook-form.hbs
