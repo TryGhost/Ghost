@@ -31,6 +31,7 @@ Object {
       "accentColor": "#FF1A75",
       "description": "Thoughts, stories and ideas",
       "icon": null,
+      "lang": "en",
       "title": "Ghost",
       "url": "http://127.0.0.1:2369/",
     },

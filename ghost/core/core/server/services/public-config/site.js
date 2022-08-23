@@ -10,6 +10,7 @@ module.exports = function getSiteProperties() {
         logo: settingsCache.get('logo'),
         icon: settingsCache.get('icon'),
         accent_color: settingsCache.get('accent_color'),
+        locale: settingsCache.get('locale'),
         url: urlUtils.urlFor('home', true),
         version: ghostVersion.safe
     };

@@ -12,6 +12,7 @@ module.exports = {
                 'logo',
                 'icon',
                 'accent_color',
+                'locale',
                 'url',
                 'version',
                 'sentry_dsn',
