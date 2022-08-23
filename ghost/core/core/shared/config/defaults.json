@@ -154,7 +154,8 @@
         "version": "0.9"
     },
     "editor": {
-        "url": "https://unpkg.com/@tryghost/koenig-react/dist/umd/koenig-react.min.js"
+        "url": "https://unpkg.com/@tryghost/koenig-react/dist/umd/koenig-react.min.js",
+        "lexicalUrl": "https://unpkg.com/@tryghost/koenig-lexical-experiment/dist/koenig-lexical.umd.js"
     },
     "tenor": {
         "googleApiKey": null,
