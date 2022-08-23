@@ -27,15 +27,15 @@
     </GhCanvasHeader>
 
     <section class="view-container content-list">
-        <ol class="gh-list {{unless this.postsInfinityModel "no-posts"}}">
+        <ol class="pages-list gh-list {{unless this.postsInfinityModel "no-posts"}}">
             {{#if this.postsInfinityModel}}
                 <li class="gh-list-row header">
                     <div class="gh-list-header gh-posts-title-header">Title</div>
                     {{#if this.feature.memberAttribution}}
-                        <div class="gh-list-header gh-posts-opens-header">Signups</div>
-                        <div class="gh-list-header gh-posts-opens-header">Conversions</div>
+                        <div class="gh-list-header gh-posts-signups-header">Signups</div>
+                        <div class="gh-list-header gh-posts-conversions-header">Conversions</div>
                     {{/if}}
-                    <div class="gh-list-header gh-posts-status-header">Status</div>
+                    <div class="gh-list-header gh-posts-status-header"></div>
                 </li>
             {{/if}}
 

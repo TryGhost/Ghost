@@ -214,6 +214,10 @@ ul.nostyle li {
     .gh-list .gh-list-nodata {
         display: none;
     }
+
+    .gh-list-rate-bar {
+        display: none !important;
+    }
 }
 
 @media (max-width: 800px) {
@@ -459,4 +463,38 @@ ul.nostyle li {
     .gh-list-scrolling {
         height: calc(100vh - 96px);
     }
+}
+
+
+
+.gh-list-rate-bar {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.gh-list-rate-amount {
+    height: 6px;
+    border-radius: 2.5px;
+    background: var(--whitegrey);
+    overflow: hidden;
+    position: relative;
+    display: block;
+    flex-grow: 1;
+    margin-left: 10px;
+    margin-right: 8px;
+}
+
+.gh-list-rate-amount > span {
+    background: rgb(213,184,255);
+    background: linear-gradient(90deg, rgba(213,184,255,1) 0%, rgba(142,66,255,1) 100%);
+    border-top-right-radius: 2.5px;
+    border-bottom-right-radius: 2.5px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    min-width: 2px;
 }

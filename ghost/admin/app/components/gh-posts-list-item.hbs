@@ -47,40 +47,6 @@
         </LinkTo>
     {{/if}}
 
-    {{#if (and (not-eq this.settings.membersSignupAccess "none") (not-eq this.settings.editorDefaultEmailRecipients "disabled") (not this.session.user.isContributor))}}
-        {{#if (and this.feature.emailAnalytics (eq @post.displayName "post"))}}
-            <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-recipients">
-                <div class="flex fw4">
-                    {{#if (eq @post.email.status "submitted")}}
-                        <span class="flex" data-tooltip="{{capitalize @post.email.recipientFilter}} members">
-                            <span class="darkgrey fw5 gh-content-email-stats">{{format-number @post.email.emailCount}}</span>
-                            <span class="midgrey-l2 fw4 gh-content-email-stats-mobile">{{gh-pluralize @post.email.emailCount "send"}}</span>
-                        </span>
-                    {{else}}
-                        {{#if this.feature.memberAttribution}}<span class="gh-list-nodata">&mdash;</span>{{/if}}
-                    {{/if}}
-                </div>
-            </LinkTo>
-
-            <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-opens">
-                {{#if (and @post.email.trackOpens (eq @post.email.status "submitted"))}}
-                    <div class="flex">
-                        <span class="darkgrey fw5 gh-content-email-stats">
-                            {{#if this.isHovered}}
-                                {{format-number @post.email.openedCount}}
-                            {{else}}
-                                {{@post.email.openRate}}%&nbsp;
-                            {{/if}}
-                        </span>
-                        <span class="midgrey-l2 fw4 gh-content-email-stats-mobile">{{@post.email.openRate}}% opens</span>
-                    </div>
-                {{else}}
-                    {{#if this.feature.memberAttribution}}<span class="gh-list-nodata">&mdash;</span>{{/if}}
-                {{/if}}
-            </LinkTo>
-        {{/if}}
-    {{/if}}
-
     {{#if this.feature.memberAttribution}}
         <a href={{@post.url}} class="permalink gh-list-data gh-post-list-signups" target="_blank" rel="noopener noreferrer">
             <span class="darkgrey fw5 gh-content-attribution-stats">{{@post.count.signups}}</span>
@@ -98,6 +64,38 @@
             <span class="gh-list-nodata">&mdash;</span> --}}
         </a>
     {{/if}}
+
+    {{#if (and (not-eq this.settings.membersSignupAccess "none") (not-eq this.settings.editorDefaultEmailRecipients "disabled") (not this.session.user.isContributor))}}
+        {{#if (and this.feature.emailAnalytics (eq @post.displayName "post"))}}
+            <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-recipients">
+                <div class="flex fw4">
+                    {{#if (eq @post.email.status "submitted")}}
+                        <span class="flex" data-tooltip="{{capitalize @post.email.recipientFilter}} members">
+                            <span class="darkgrey fw5 gh-content-email-stats">{{format-number @post.email.emailCount}}</span>
+                            <span class="midgrey-l2 fw4 gh-content-email-stats-mobile">{{gh-pluralize @post.email.emailCount "send"}}</span>
+                        </span>
+                    {{else}}
+                        <span class="gh-list-nodata">&mdash;</span>
+                    {{/if}}
+                </div>
+            </LinkTo>
+
+            <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-opens">
+                {{#if (and @post.email.trackOpens (eq @post.email.status "submitted"))}}
+                    <div class="flex">
+                        <span class="gh-list-rate-bar">
+                            <span data-tooltip="{{format-number @post.email.openedCount}}">{{@post.email.openRate}}%&nbsp;</span>
+                            <span class="gh-list-rate-amount"><span style={{html-safe (concat "width: " @post.email.openRate "%;")}}/></span>
+                        </span>
+                        <span class="midgrey-l2 fw4 gh-content-email-stats-mobile">{{@post.email.openRate}}% opens</span>
+                    </div>
+                {{else}}
+                    <span class="gh-list-nodata">&mdash;</span>
+                {{/if}}
+            </LinkTo>
+        {{/if}}
+    {{/if}}
+
 
     {{#unless @hideStatusColumn }}
         {{#if (and this.session.user.isContributor @post.isPublished)}}
