@@ -8,13 +8,15 @@ export default class ParseAuditLogEvent extends Helper {
         const action = getAction(ev);
         const actionIcon = getActionIcon(ev);
         const getResource = () => this.store.findRecord(ev.resource_type, ev.resource_id, {reload: false});
+        const contextResource = getContextResource(ev);
 
-        const linkable = ['page', 'post'].includes(ev.resource_type);
+        const linkable = ['page', 'post'].includes(ev.resource_type) && ev.event !== 'deleted';
 
         return {
             get resource() {
                 return getResource();
             },
+            contextResource,
             linkable,
             actionIcon,
             action,
@@ -46,4 +48,17 @@ function getAction(ev) {
     }
 
     return `${ev.event} ${resourceType}`;
+}
+
+function getContextResource(ev) {
+    if (ev.resource_type === 'setting') {
+        if (ev.context?.group && ev.context?.key) {
+            return {
+                first: ev.context.group,
+                second: ev.context.key
+            };
+        }
+    }
+
+    return null;
 }

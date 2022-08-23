@@ -99,6 +99,7 @@ Settings = ghostBookshelf.Model.extend({
 
     actionsCollectCRUD: true,
     actionsResourceType: 'setting',
+    actionsExtraContext: ['key', 'group'],
 
     emitChange: function emitChange(event, options) {
         const eventToTrigger = 'settings' + '.' + event;

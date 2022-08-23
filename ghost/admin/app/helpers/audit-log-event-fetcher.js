@@ -85,6 +85,10 @@ export default class AuditLogEventFetcher extends Resource {
                 this.hasReachedEnd = true;
             }
 
+            actions.forEach((a) => {
+                a.context = JSON.parse(a.context);
+            });
+
             this.data.push(...actions);
         } catch (e) {
             this.isError = true;
