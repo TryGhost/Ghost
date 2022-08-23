@@ -1797,10 +1797,10 @@ describe('Members API', function () {
                 .matchHeaderSnapshot({
                     etag: anyEtag
                 })
-                .expect(({body}) => {
-                    should(body.members[0].attribution).eql(attributionResource);
-                    should(body.members[0].subscriptions[0].attribution).eql(attributionResource);
-                    subscriptionAttributions.push(body.members[0].subscriptions[0].attribution);
+                .expect(({body: body3}) => {
+                    should(body3.members[0].attribution).eql(attributionResource);
+                    should(body3.members[0].subscriptions[0].attribution).eql(attributionResource);
+                    subscriptionAttributions.push(body3.members[0].subscriptions[0].attribution);
                 });
 
             return memberModel;

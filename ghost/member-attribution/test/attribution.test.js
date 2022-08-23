@@ -25,7 +25,7 @@ describe('AttributionBuilder', function () {
                     }
                     return;
                 },
-                getResourceById(id, type) {
+                getResourceById(id) {
                     if (id === 'invalid') {
                         return null;
                     }
