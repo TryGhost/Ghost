@@ -164,6 +164,9 @@ module.exports = {
                 '7xl': ['7.2rem', '1'],
                 '8xl': ['9.6rem', '1'],
                 '9xl': ['12.8rem', '1']
+            },
+            screens: {
+                xs: '480px'
             }
         }
     }
