@@ -199,16 +199,20 @@
     margin-top: 8px;
 }
 
+.gh-member-activity-actions-menu ul {
+    max-height: 60vh !important;
+}
+
 .gh-member-activity-actions-menu ul li {
-    margin: 0 2rem;
+    padding: 3px 2rem !important;
 }
 
 .gh-member-activity-actions-menu ul li:first-of-type {
-    margin-top: 2rem;
+    padding-top: 2rem !important;
 }
 
 .gh-member-activity-actions-menu ul li:last-of-type {
-    margin-bottom: 2rem;
+    padding-bottom: 2rem !important;
 }
 
 .gh-member-activity-actions-menu h3 {
@@ -241,13 +245,10 @@
 }
 
 .gh-member-activity-actions-menu .ember-power-select-option label p {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
     color: var(--darkgrey);
-    font-weight: 500;
+    font-weight: 400;
     font-size: 1.4rem;
-    padding: 0.125rem 6rem 0 0.25rem;
+    padding: 0.125rem 0 0 0.25rem;
     margin: 0;
 }
 
