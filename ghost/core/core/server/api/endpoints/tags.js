@@ -147,13 +147,7 @@ module.exports = {
         },
         permissions: true,
         query(frame) {
-            return models.Tag.destroy(frame.options)
-                .then(() => null)
-                .catch(models.Tag.NotFoundError, () => {
-                    return Promise.reject(new errors.NotFoundError({
-                        message: tpl(messages.tagNotFound)
-                    }));
-                });
+            return models.Tag.destroy({...frame.options, require: true});
         }
     }
 };

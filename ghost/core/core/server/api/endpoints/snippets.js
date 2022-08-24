@@ -101,15 +101,7 @@ module.exports = {
         },
         permissions: true,
         query(frame) {
-            frame.options.require = true;
-
-            return models.Snippet.destroy(frame.options)
-                .then(() => null)
-                .catch(models.Snippet.NotFoundError, () => {
-                    return Promise.reject(new errors.NotFoundError({
-                        message: tpl(messages.snippetNotFound)
-                    }));
-                });
+            return models.Snippet.destroy({...frame.options, require: true});
         }
     }
 };

@@ -102,4 +102,16 @@ describe('Invites API', function () {
 
         mailService.GhostMailer.prototype.send.called.should.be.false();
     });
+
+    it('Cannot destroy an non-existent invite', async function () {
+        await request.del(localUtils.API.getApiQuery(`invites/abcd1234abcd1234abcd1234/`))
+            .set('Origin', config.get('url'))
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(404)
+            .expect((res) => {
+                res.body.errors[0].message.should.eql('Resource not found error, cannot delete invite.');
+            });
+
+        mailService.GhostMailer.prototype.send.called.should.be.false();
+    });
 });

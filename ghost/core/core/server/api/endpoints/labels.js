@@ -150,13 +150,7 @@ module.exports = {
         },
         permissions: true,
         query(frame) {
-            return models.Label.destroy(frame.options)
-                .then(() => null)
-                .catch(models.Label.NotFoundError, () => {
-                    return Promise.reject(new errors.NotFoundError({
-                        message: tpl(messages.labelNotFound)
-                    }));
-                });
+            return models.Label.destroy({...frame.options, require: true});
         }
     }
 };

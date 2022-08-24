@@ -564,7 +564,7 @@ Object {
 }
 `;
 
-exports[`Comments API when authenticated Can remove a like 1: [headers] 1`] = `
+exports[`Comments API when authenticated Can remove a like (unlike) 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
@@ -573,7 +573,7 @@ Object {
 }
 `;
 
-exports[`Comments API when authenticated Can remove a like 2: [body] 1`] = `
+exports[`Comments API when authenticated Can remove a like (unlike) 2: [body] 1`] = `
 Object {
   "comments": Array [
     Object {
@@ -619,7 +619,7 @@ Object {
 }
 `;
 
-exports[`Comments API when authenticated Can remove a like 3: [headers] 1`] = `
+exports[`Comments API when authenticated Can remove a like (unlike) 3: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
@@ -948,6 +948,36 @@ Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Comments API when authenticated Cannot unlike a comment if it has not been liked 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": null,
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Unable to find like",
+      "property": null,
+      "type": "NotFoundError",
+    },
+  ],
+}
+`;
+
+exports[`Comments API when authenticated Cannot unlike a comment if it has not been liked 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "205",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;

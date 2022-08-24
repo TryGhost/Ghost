@@ -118,4 +118,18 @@ describe('Labels API', function () {
                 etag: anyEtag
             });
     });
+
+    it('Cannot destroy non-existent label', async function () {
+        await agent
+            .delete('labels/abcd1234abcd1234abcd1234')
+            .expectStatus(404)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
 });
