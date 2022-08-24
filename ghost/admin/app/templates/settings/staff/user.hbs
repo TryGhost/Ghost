@@ -5,8 +5,10 @@
             <h2 class="gh-canvas-title" data-test-screen-title>Your profile</h2>
         {{else}}
             <h2 class="gh-canvas-title" data-test-screen-title>
-                <LinkTo @route="settings">Settings</LinkTo>
-                <span>{{svg-jar "arrow-right"}}</span>
+                {{#unless this.session.user.isEditor}}
+                    <LinkTo @route="settings">Settings</LinkTo>
+                    <span>{{svg-jar "arrow-right"}}</span>
+                {{/unless}}
                 <LinkTo @route="settings.staff" data-test-staff-link={{true}}>Staff</LinkTo>
                 <span>{{svg-jar "arrow-right"}}</span>
                 {{this.user.name}}
