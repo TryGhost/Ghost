@@ -10,7 +10,7 @@ module.exports = combineNonTransactionalMigrations(
     createAddColumnMigration('users', 'paid_subscription_canceled_notification', {
         type: 'boolean',
         nullable: false,
-        defaultTo: true
+        defaultTo: false
     }),
 
     createAddColumnMigration('users', 'paid_subscription_started_notification', {
