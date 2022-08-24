@@ -32,9 +32,11 @@
             <div class="gh-list-data gh-audit-log-object">
                 <div class="gh-audit-log-container">
                     {{#if ev.contextResource}}
-                        <span class="midgrey">
-                            <strong>{{capitalize-first-letter ev.contextResource.first}}</strong>
-                            <code>({{ev.contextResource.second}})</code>
+                        <span class="midlightgrey-d1">
+                            <span class="fw5">{{capitalize-first-letter ev.contextResource.first}}</span>
+                            {{#if (not (eq ev.contextResource.first ev.contextResource.second))}}
+                                <code>({{ev.contextResource.second}})</code>
+                            {{/if}}
                         </span>
                     {{else if (or ev.original.resource.title ev.original.resource.name ev.original.context.primary_name)}}
                         {{#if ev.linkTarget}}
@@ -42,8 +44,8 @@
                                 <strong>{{or ev.original.resource.title ev.original.resource.name}}</strong>
                             </LinkTo>
                         {{else}}
-                            <span class="midgrey">
-                                <strong>{{or ev.original.resource.title ev.original.resource.name ev.original.context.primary_name}}</strong>
+                            <span class="midlightgrey-d1">
+                                <span class="fw5">{{or ev.original.resource.title ev.original.resource.name ev.original.context.primary_name}}</span>
                             </span>
                         {{/if}}
                     {{else}}
