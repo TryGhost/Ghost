@@ -26,7 +26,8 @@ export default class AuditLogEventFilter extends Helper {
             filterParts.push(`event:-[${excludedEventsArray.join(',')}]`);
         }
 
-        const excludedResourcesArray = Array.from(excludedResourcesSet).reject(isBlank);
+        const IGNORED_RESOURCES = ['product'];
+        const excludedResourcesArray = Array.from(excludedResourcesSet).concat(IGNORED_RESOURCES).reject(isBlank);
         if (excludedResourcesArray.length > 0) {
             filterParts.push(`resource_type:-[${excludedResourcesArray.join(',')}]`);
         }

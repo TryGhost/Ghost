@@ -4,6 +4,9 @@ const _ = require('lodash');
 const Product = ghostBookshelf.Model.extend({
     tableName: 'products',
 
+    actionsCollectCRUD: true,
+    actionsResourceType: 'product',
+
     defaults: {
         active: true,
         visibility: 'none',
