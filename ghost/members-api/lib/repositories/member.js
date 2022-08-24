@@ -936,12 +936,16 @@ module.exports = class MemberRepository {
 
             // Notify paid member subscription start
             if (this._labsService.isSet('emailAlerts')) {
-                await this.staffService.notifyPaidSubscriptionStart({
-                    member: member.toJSON(),
-                    offer: offer ? this._offerRepository.toJSON(offer) : null,
-                    tier: ghostProduct?.toJSON(),
-                    subscription: subscriptionData
-                });
+                try {
+                    await this.staffService.notifyPaidSubscriptionStart({
+                        member: member.toJSON(),
+                        offer: offer ? this._offerRepository.toJSON(offer) : null,
+                        tier: ghostProduct?.toJSON(),
+                        subscription: subscriptionData
+                    });
+                } catch (e) {
+                    console.log(e);
+                }
             }
         }
 
