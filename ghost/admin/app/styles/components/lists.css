@@ -58,17 +58,23 @@ ul.nostyle li {
     white-space: nowrap;
 }
 
+.posts-list .gh-list-row.header,
+.pages-list .gh-list-row.header {
+    position: sticky;
+    background: var(--white);
+    z-index: 2;
+    top: 0;
+}
+
 .gh-list-row.header.empty .gh-list-header {
     padding: 0;
 }
 
 .gh-list:not(.tabbed) .gh-list-header:first-child {
-    border-top-left-radius: 5px;
     padding-left: 0;
 }
 
 .gh-list:not(.tabbed) .gh-list-header:last-child {
-    border-top-right-radius: 5px;
     padding-right: 16px;
 }
 
@@ -387,6 +393,7 @@ ul.nostyle li {
 }
 
 /* Horizontally scrolling list */
+.gh-list-sticky,
 .gh-list-scrolling {
     position: relative;
     overflow: auto;
@@ -486,6 +493,7 @@ ul.nostyle li {
 }
 
 @media (max-width: 800px) {
+    .gh-list-sticky,
     .gh-list-scrolling {
         max-width: calc(100% + 8vw);
         height: calc(100vh - 193px);
@@ -497,6 +505,7 @@ ul.nostyle li {
 }
 
 @media (min-width: 1450px) {
+    .gh-list-sticky,
     .gh-list-scrolling {
         height: calc(100vh - 96px);
     }

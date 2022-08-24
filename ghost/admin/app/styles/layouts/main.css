@@ -1078,6 +1078,10 @@
     max-width: var(--main-layout-content-maxwidth);
 }
 
+.gh-canvas.gh-canvas-sticky {
+    padding-bottom: 0; /* No padding needed when tables are sticky */
+}
+
 .gh-canvas.circle-bg::before {
     position: absolute;
     display: block;
@@ -1556,6 +1560,10 @@
     flex-grow: 1;
     padding-top: 0;
     padding-bottom: var(--main-layout-area-padding);
+}
+
+.gh-canvas-sticky .view-container {
+    padding-bottom: 0;
 }
 
 .view-content {
