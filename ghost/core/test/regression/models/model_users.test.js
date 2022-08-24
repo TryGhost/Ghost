@@ -212,7 +212,10 @@ describe('User Model', function run() {
 
         it('can findOne by role name', function () {
             return testUtils.fixtures.createExtraUsers().then(function () {
-                return Promise.join(UserModel.findOne({role: 'Owner'}), UserModel.findOne({role: 'Editor'}));
+                return Promise.all([
+                    UserModel.findOne({role: 'Owner'}), 
+                    UserModel.findOne({role: 'Editor'})
+                ]);
             }).then(function (results) {
                 let owner = results[0];
                 let editor = results[1];
