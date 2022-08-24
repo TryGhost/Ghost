@@ -90,13 +90,13 @@ function getAction(event, hasMultipleNewsletters) {
     }
 
     if (event.type === 'payment_event') {
-        return 'made a payment';
+        return 'made payment';
     }
 
     if (event.type === 'newsletter_event') {
         let newsletter = 'newsletter';
         if (hasMultipleNewsletters && event.data.newsletter && event.data.newsletter.name) {
-            newsletter = 'newsletter – ' + event.data.newsletter.name;
+            newsletter = event.data.newsletter.name;
         }
 
         if (event.data.subscribed) {
@@ -108,39 +108,39 @@ function getAction(event, hasMultipleNewsletters) {
 
     if (event.type === 'subscription_event') {
         if (event.data.type === 'created') {
-            return 'started their subscription';
+            return 'started paid membership';
         }
         if (event.data.type === 'updated') {
-            return 'changed their subscription';
+            return 'changed paid membership';
         }
         if (event.data.type === 'canceled') {
-            return 'canceled their subscription';
+            return 'canceled paid membership';
         }
         if (event.data.type === 'reactivated') {
-            return 'reactivated their subscription';
+            return 'reactivated paid membership';
         }
         if (event.data.type === 'expired') {
-            return 'ended their subscription';
+            return 'ended paid membership';
         }
 
-        return 'changed their subscription';
+        return 'changed paid membership';
     }
 
     if (event.type === 'email_opened_event') {
-        return 'opened an email';
+        return 'opened email';
     }
 
     if (event.type === 'email_delivered_event') {
-        return 'received an email';
+        return 'received email';
     }
 
     if (event.type === 'email_failed_event') {
-        return 'failed to receive an email';
+        return 'failed to receive email';
     }
 
     if (event.type === 'comment_event') {
         if (event.data.parent) {
-            return 'replied to a comment';
+            return 'replied to comment';
         }
         return 'commented';
     }
@@ -158,7 +158,6 @@ function getAction(event, hasMultipleNewsletters) {
 function getJoin(event) {
     if (event.type === 'signup_event' || event.type === 'subscription_event') {
         if (event.data.attribution?.title) {
-            // Add 'Attributed to ' for now, until this is incorporated in the design
             return 'on';
         }
     }
@@ -178,7 +177,6 @@ function getJoin(event) {
 function getObject(event) {
     if (event.type === 'signup_event' || event.type === 'subscription_event') {
         if (event.data.attribution?.title) {
-            // Add 'Attributed to ' for now, until this is incorporated in the design
             return event.data.attribution.title;
         }
     }

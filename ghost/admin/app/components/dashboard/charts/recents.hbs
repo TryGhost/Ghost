@@ -102,7 +102,6 @@
                                                 <span class="gh-dashboard-list-subtext">
                                                     {{capitalize-first-letter parsedEvent.action}}
                                                     {{#if parsedEvent.url}}
-                                                        {{parsedEvent.join}}
                                                         <a class="ghost-members-activity-object-link {{if (feature "memberAttribution") 'hidden'}}" href="{{parsedEvent.url}}" target="_blank" rel="noopener noreferrer">{{parsedEvent.object}}</a>
                                                     {{/if}}
                                                     {{#if parsedEvent.info}}
