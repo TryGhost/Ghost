@@ -3437,17 +3437,6 @@
     json-stringify-safe "^5.0.1"
     lodash "^4.17.21"
 
-"@tryghost/members-csv@1.2.16":
-  version "1.2.16"
-  resolved "https://registry.yarnpkg.com/@tryghost/members-csv/-/members-csv-1.2.16.tgz#7c5faad34e9f42f1db3b8667335331d5a3b1f371"
-  integrity sha512-fwOnC7edOdJS4eA3o+5DIh9umIv3YmK5LxLo/bm84qMM720Gt6Czxek6Z+zvTiRiaLXp54nTHhegi4k1EHpquw==
-  dependencies:
-    bluebird "^3.7.2"
-    fs-extra "^10.0.0"
-    lodash "^4.17.21"
-    papaparse "^5.3.2"
-    pump "^3.0.0"
-
 "@tryghost/metrics@1.0.15":
   version "1.0.15"
   resolved "https://registry.yarnpkg.com/@tryghost/metrics/-/metrics-1.0.15.tgz#d65fc570a9deb9cc0f3821b66975be258b58a37f"
@@ -17549,7 +17538,7 @@ pako@~1.0.5:
   resolved "https://registry.yarnpkg.com/pako/-/pako-1.0.11.tgz#6c9599d340d54dfd3946380252a35705a6b992bf"
   integrity sha512-4hLB8Py4zZce5s4yd9XzopqwVv/yGNhV1Bl8NTmCq1763HeK2+EwVTv+leGeL13Dnh2wfbqowVPXCIO0z4taYw==
 
-papaparse@5.3.2, papaparse@^5.3.2:
+papaparse@5.3.2:
   version "5.3.2"
   resolved "https://registry.yarnpkg.com/papaparse/-/papaparse-5.3.2.tgz#d1abed498a0ee299f103130a6109720404fbd467"
   integrity sha512-6dNZu0Ki+gyV0eBsFKJhYr+MdQYAzFUGlBMNj3GNrmHxmz1lfRa24CjFObPXtjcetlOv5Ad299MhIK0znp3afw==
