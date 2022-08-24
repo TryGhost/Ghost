@@ -2,13 +2,15 @@ import moment from 'moment';
 import {getNonDecimal, getSymbol} from 'ghost-admin/utils/currency';
 
 export default function parseMemberEvent(event, hasMultipleNewsletters) {
-    let subject = event.data.member.name || event.data.member.email;
-    let icon = getIcon(event);
-    let action = getAction(event);
-    let object = getObject(event, hasMultipleNewsletters);
-    let info = getInfo(event);
+    const subject = event.data.member.name || event.data.member.email;
+    const icon = getIcon(event);
+    const action = getAction(event, hasMultipleNewsletters);
+    const info = getInfo(event);
+
+    const join = getJoin(event);
+    const object = getObject(event);
     const url = getURL(event);
-    let timestamp = moment(event.data.created_at);
+    const timestamp = moment(event.data.created_at);
 
     return {
         memberId: event.data.member_id ?? event.data.member?.id,
@@ -18,6 +20,7 @@ export default function parseMemberEvent(event, hasMultipleNewsletters) {
         icon,
         subject,
         action,
+        join,
         object,
         info,
         url,
@@ -77,7 +80,7 @@ function getIcon(event) {
     return 'event-' + icon;
 }
 
-function getAction(event) {
+function getAction(event, hasMultipleNewsletters) {
     if (event.type === 'signup_event') {
         return 'signed up';
     }
@@ -91,78 +94,98 @@ function getAction(event) {
     }
 
     if (event.type === 'newsletter_event') {
+        let newsletter = 'newsletter';
+        if (hasMultipleNewsletters && event.data.newsletter && event.data.newsletter.name) {
+            newsletter = 'newsletter – ' + event.data.newsletter.name;
+        }
+
         if (event.data.subscribed) {
-            return 'subscribed to';
+            return 'subscribed to ' + newsletter;
         } else {
-            return 'unsubscribed from';
+            return 'unsubscribed from ' + newsletter;
         }
     }
 
     if (event.type === 'subscription_event') {
         if (event.data.type === 'created') {
-            return 'started';
+            return 'started their subscription';
         }
         if (event.data.type === 'updated') {
-            return 'changed';
+            return 'changed their subscription';
         }
         if (event.data.type === 'canceled') {
-            return 'canceled';
+            return 'canceled their subscription';
         }
         if (event.data.type === 'reactivated') {
-            return 'reactivated';
+            return 'reactivated their subscription';
         }
         if (event.data.type === 'expired') {
-            return 'ended';
+            return 'ended their subscription';
         }
 
-        return 'changed';
+        return 'changed their subscription';
     }
 
     if (event.type === 'email_opened_event') {
-        return 'opened';
+        return 'opened an email';
     }
 
     if (event.type === 'email_delivered_event') {
-        return 'received';
+        return 'received an email';
     }
 
     if (event.type === 'email_failed_event') {
-        return 'failed to receive';
+        return 'failed to receive an email';
     }
 
     if (event.type === 'comment_event') {
         if (event.data.parent) {
-            return 'replied to a comment on';
+            return 'replied to a comment';
         }
-        return 'commented on';
+        return 'commented';
     }
 }
 
-function getObject(event, hasMultipleNewsletters) {
-    if (event.type === 'newsletter_event') {
-        if (hasMultipleNewsletters && event.data.newsletter && event.data.newsletter.name) {
-            return 'newsletter – ' + event.data.newsletter.name;
+/**
+ * When we need to append the action and object in one sentence, you can add extra words here.
+ * E.g.,
+ *   action: 'Signed up'.
+ *   object: 'My blog post'
+ * When both words need to get appended, we'll add 'on'
+ *  -> do this by returning 'on' in getJoin()
+ * This string is not added when action and object are in a separete table column, or when the getObject/getURL is empty
+ */
+function getJoin(event) {
+    if (event.type === 'signup_event' || event.type === 'subscription_event') {
+        if (event.data.attribution?.title) {
+            // Add 'Attributed to ' for now, until this is incorporated in the design
+            return 'on';
         }
-        return 'newsletter';
-    }
-
-    if (event.type === 'subscription_event') {
-        return 'their subscription';
-    }
-
-    if (event.type.match?.(/^email_/)) {
-        return 'an email';
-    }
-
-    if (event.type === 'subscription_event') {
-        return 'their subscription';
     }
 
     if (event.type === 'comment_event') {
-        if (event.type === 'comment_event') {
-            if (event.data.post) {
-                return event.data.post.title;
-            }
+        if (event.data.post) {
+            return 'on';
+        }
+    }
+
+    return '';
+}
+
+/**
+ * Clickable object, shown between action and info, or in a separate column in some views
+ */
+function getObject(event) {
+    if (event.type === 'signup_event' || event.type === 'subscription_event') {
+        if (event.data.attribution?.title) {
+            // Add 'Attributed to ' for now, until this is incorporated in the design
+            return event.data.attribution.title;
+        }
+    }
+
+    if (event.type === 'comment_event') {
+        if (event.data.post) {
+            return event.data.post.title;
         }
     }
 
@@ -179,13 +202,6 @@ function getInfo(event) {
         let symbol = getSymbol(event.data.currency);
         return `(MRR ${sign}${symbol}${Math.abs(mrrDelta)})`;
     }
-
-    // TODO: we can include the post title
-    /*if (event.type === 'comment_event') {
-        if (event.data.post) {
-            return event.data.post.title;
-        }
-    }*/
     return;
 }
 
@@ -196,6 +212,12 @@ function getURL(event) {
     if (event.type === 'comment_event') {
         if (event.data.post) {
             return event.data.post.url;
+        }
+    }
+
+    if (event.type === 'signup_event' || event.type === 'subscription_event') {
+        if (event.data.attribution && event.data.attribution.url) {
+            return event.data.attribution.url;
         }
     }
     return;
