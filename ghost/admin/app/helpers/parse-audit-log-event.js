@@ -54,6 +54,15 @@ function getLinkTarget(ev) {
                 route: 'settings.integration',
                 models: [ev.resource.id]
             };
+        case 'offer':
+            if (!ev.resource.id) {
+                return null;
+            }
+
+            return {
+                route: 'offer',
+                models: [ev.resource.id]
+            };
         case 'tag':
             if (!ev.resource.slug) {
                 return null;
