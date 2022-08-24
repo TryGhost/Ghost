@@ -8,12 +8,9 @@ module.exports = class EventRepository {
         MemberPaymentEvent,
         MemberStatusEvent,
         MemberLoginEvent,
-        MemberCreatedEvent,
-        SubscriptionCreatedEvent,
         MemberPaidSubscriptionEvent,
         Comment,
-        labsService,
-        memberAttributionService
+        labsService
     }) {
         this._MemberSubscribeEvent = MemberSubscribeEvent;
         this._MemberPaidSubscriptionEvent = MemberPaidSubscriptionEvent;
@@ -23,9 +20,6 @@ module.exports = class EventRepository {
         this._EmailRecipient = EmailRecipient;
         this._Comment = Comment;
         this._labsService = labsService;
-        this._MemberCreatedEvent = MemberCreatedEvent;
-        this._SubscriptionCreatedEvent = SubscriptionCreatedEvent;
-        this._memberAttributionService = memberAttributionService;
     }
 
     async registerPayment(data) {
@@ -68,38 +62,9 @@ module.exports = class EventRepository {
     }
 
     async getSubscriptionEvents(options = {}, filters = {}) {
-        if (!this._labsService.isSet('memberAttribution')){
-            options = {
-                ...options,
-                withRelated: ['member'],
-                filter: []
-            };
-            if (filters['data.created_at']) {
-                options.filter.push(filters['data.created_at'].replace(/data.created_at:/g, 'created_at:'));
-            }
-            if (filters['data.member_id']) {
-                options.filter.push(filters['data.member_id'].replace(/data.member_id:/g, 'member_id:'));
-            }
-            options.filter = options.filter.join('+');
-    
-            const {data: models, meta} = await this._MemberPaidSubscriptionEvent.findPage(options);
-    
-            const data = models.map((model) => {
-                return {
-                    type: 'subscription_event',
-                    data: model.toJSON(options)
-                };
-            });
-    
-            return {
-                data,
-                meta
-            };
-        }
-
         options = {
             ...options,
-            withRelated: ['member', 'subscriptionCreatedEvent.postAttribution', 'subscriptionCreatedEvent.userAttribution', 'subscriptionCreatedEvent.tagAttribution'],
+            withRelated: ['member'],
             filter: []
         };
         if (filters['data.created_at']) {
@@ -115,10 +80,7 @@ module.exports = class EventRepository {
         const data = models.map((model) => {
             return {
                 type: 'subscription_event',
-                data: {
-                    ...model.toJSON(options),
-                    attribution: model.get('type') === 'created' && model.related('subscriptionCreatedEvent') && model.related('subscriptionCreatedEvent').id ? this._memberAttributionService.getEventAttribution(model.related('subscriptionCreatedEvent')) : null
-                }
+                data: model.toJSON(options)
             };
         });
 
@@ -187,39 +149,10 @@ module.exports = class EventRepository {
     }
 
     async getSignupEvents(options = {}, filters = {}) {
-        if (!this._labsService.isSet('memberAttribution')){
-            options = {
-                ...options,
-                withRelated: ['member'],
-                filter: ['from_status:null']
-            };
-            if (filters['data.created_at']) {
-                options.filter.push(filters['data.created_at'].replace(/data.created_at:/g, 'created_at:'));
-            }
-            if (filters['data.member_id']) {
-                options.filter.push(filters['data.member_id'].replace(/data.member_id:/g, 'member_id:'));
-            }
-            options.filter = options.filter.join('+');
-    
-            const {data: models, meta} = await this._MemberStatusEvent.findPage(options);
-    
-            const data = models.map((model) => {
-                return {
-                    type: 'signup_event',
-                    data: model.toJSON(options)
-                };
-            });
-    
-            return {
-                data,
-                meta
-            };
-        }
-
         options = {
             ...options,
-            withRelated: ['member', 'postAttribution', 'userAttribution', 'tagAttribution'],
-            filter: []
+            withRelated: ['member'],
+            filter: ['from_status:null']
         };
         if (filters['data.created_at']) {
             options.filter.push(filters['data.created_at'].replace(/data.created_at:/g, 'created_at:'));
@@ -229,15 +162,12 @@ module.exports = class EventRepository {
         }
         options.filter = options.filter.join('+');
 
-        const {data: models, meta} = await this._MemberCreatedEvent.findPage(options);
+        const {data: models, meta} = await this._MemberStatusEvent.findPage(options);
 
         const data = models.map((model) => {
             return {
                 type: 'signup_event',
-                data: {
-                    ...model.toJSON(options),
-                    attribution: this._memberAttributionService.getEventAttribution(model)
-                }
+                data: model.toJSON(options)
             };
         });
 

@@ -24,7 +24,7 @@ class MemberAttributionServiceWrapper {
             }
         });
 
-        this.attributionBuilder = new AttributionBuilder({urlTranslator});
+        const attributionBuilder = new AttributionBuilder({urlTranslator});
 
         // Expose the service
         this.service = new MemberAttributionService({
@@ -32,7 +32,7 @@ class MemberAttributionServiceWrapper {
                 MemberCreatedEvent: models.MemberCreatedEvent,
                 SubscriptionCreatedEvent: models.SubscriptionCreatedEvent
             },
-            attributionBuilder: this.attributionBuilder,
+            attributionBuilder,
             labsService
         });
 
