@@ -49,7 +49,7 @@
                 {{#if (and @member.attribution @member.attribution.url @member.attribution.title) }}
                     <p>
                         {{svg-jar "satellite"}}
-                        <a href="{{@member.attribution.url}}" target="_blank" rel="noopener noreferrer">{{ @member.attribution.title }}</a>
+                        Attributed to&nbsp;<a href="{{@member.attribution.url}}" target="_blank" rel="noopener noreferrer">{{ @member.attribution.title }}</a>
                     </p>
                 {{/if}}
                 <p class="gh-member-last-seen">
