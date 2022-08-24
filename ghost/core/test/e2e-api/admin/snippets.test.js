@@ -136,4 +136,18 @@ describe('Snippets API', function () {
                 etag: anyEtag
             });
     });
+
+    it('Cannot destroy non-existent snippet', async function () {
+        await agent
+            .delete('snippets/abcd1234abcd1234abcd1234')
+            .expectStatus(404)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
 });

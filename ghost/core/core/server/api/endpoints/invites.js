@@ -76,15 +76,7 @@ module.exports = {
         },
         permissions: true,
         query(frame) {
-            frame.options.require = true;
-
-            return models.Invite.destroy(frame.options)
-                .then(() => null)
-                .catch(models.Invite.NotFoundError, () => {
-                    return Promise.reject(new errors.NotFoundError({
-                        message: tpl(messages.inviteNotFound)
-                    }));
-                });
+            return models.Invite.destroy({...frame.options, require: true});
         }
     },
 

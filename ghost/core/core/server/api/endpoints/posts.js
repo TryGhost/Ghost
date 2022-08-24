@@ -192,15 +192,7 @@ module.exports = {
             unsafeAttrs: unsafeAttrs
         },
         query(frame) {
-            frame.options.require = true;
-
-            return models.Post.destroy(frame.options)
-                .then(() => null)
-                .catch(models.Post.NotFoundError, () => {
-                    return Promise.reject(new errors.NotFoundError({
-                        message: tpl(messages.postNotFound)
-                    }));
-                });
+            return models.Post.destroy({...frame.options, require: true});
         }
     }
 };

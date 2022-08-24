@@ -102,11 +102,46 @@ describe('Webhooks API', function () {
             });
     });
 
+    it('Cannot edit a non-existent webhook', async function () {
+        await agent.put('/webhooks/abcd1234abcd1234abcd1234/')
+            .body({
+                webhooks: [{
+                    name: 'Edit Test',
+                    event: 'member.added',
+                    target_url: 'https://example.com/new-member',
+                    integration_id: 'ignore_me'
+                }]
+            })
+            .expectStatus(404)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
+
     it('Can delete a webhook', async function () {
         await agent
             .delete(`/webhooks/${createdWebhookId}/`)
             .expectStatus(204)
             .expectEmptyBody()
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
+
+    it('Cannot delete a non-existent webhook', async function () {
+        await agent
+            .delete('/webhooks/abcd1234abcd1234abcd1234/')
+            .expectStatus(404)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            })
             .matchHeaderSnapshot({
                 etag: anyEtag
             });

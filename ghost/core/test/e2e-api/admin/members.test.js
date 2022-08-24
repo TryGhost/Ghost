@@ -167,7 +167,7 @@ describe('Members API', function () {
     beforeEach(function () {
         mockManager.mockStripe();
         mockManager.mockMail();
-        
+
         // For some reason it is enabled by default?
         mockManager.mockLabsDisabled('memberAttribution');
     });
@@ -1571,6 +1571,20 @@ describe('Members API', function () {
 
         await agent
             .get(`/members/${newMember.id}/`)
+            .expectStatus(404)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyUuid
+                }]
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+    });
+
+    it('Cannot delete a non-existent member', async function () {
+        await agent
+            .delete('/members/abcd1234abcd1234abcd1234')
             .expectStatus(404)
             .matchBodySnapshot({
                 errors: [{

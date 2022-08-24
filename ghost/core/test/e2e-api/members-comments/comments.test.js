@@ -1,6 +1,6 @@
 const assert = require('assert');
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyObjectId, anyLocationFor, anyISODateTime, anyUuid, anyNumber, anyBoolean} = matchers;
+const {anyEtag, anyObjectId, anyLocationFor, anyISODateTime, anyErrorId, anyUuid, anyNumber, anyBoolean} = matchers;
 const should = require('should');
 const models = require('../../../core/server/models');
 const moment = require('moment-timezone');
@@ -23,9 +23,9 @@ const commentMatcher = {
 };
 
 /**
- * @param {Object} [options] 
- * @param {number} [options.replies] 
- * @returns 
+ * @param {Object} [options]
+ * @param {number} [options.replies]
+ * @returns
  */
 function commentMatcherWithReplies(options = {replies: 0}) {
     return {
@@ -338,7 +338,7 @@ describe('Comments API', function () {
                     testReplyId = reply.comments[0].id;
                 }
             }
-            
+
             // Check if we have count.replies = 4, and replies.length == 3
             await membersAgent
                 .get(`/api/comments/${parentId}/`)
@@ -481,8 +481,8 @@ describe('Comments API', function () {
                 });
         });
 
-        it('Can remove a like', async function () {
-            // Create a temporary comment
+        it('Can remove a like (unlike)', async function () {
+            // Unlike
             await membersAgent
                 .delete(`/api/comments/${commentId}/like/`)
                 .expectStatus(204)
@@ -491,7 +491,7 @@ describe('Comments API', function () {
                 })
                 .expectEmptyBody();
 
-            // Check liked
+            // Check not liked
             await membersAgent
                 .get(`/api/comments/${commentId}/`)
                 .expectStatus(200)
@@ -504,6 +504,21 @@ describe('Comments API', function () {
                 .expect(({body}) => {
                     body.comments[0].liked.should.eql(false);
                     body.comments[0].count.likes.should.eql(0);
+                });
+        });
+
+        it('Cannot unlike a comment if it has not been liked', async function () {
+            // Remove like
+            await membersAgent
+                .delete(`/api/comments/${commentId}/like/`)
+                //.expectStatus(404)
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
                 });
         });
 

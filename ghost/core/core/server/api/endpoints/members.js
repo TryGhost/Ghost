@@ -1,6 +1,5 @@
 // NOTE: We must not cache references to membersService.api
 // as it is a getter and may change during runtime.
-const Promise = require('bluebird');
 const moment = require('moment-timezone');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
@@ -253,20 +252,11 @@ module.exports = {
         },
         permissions: true,
         async query(frame) {
-            frame.options.require = true;
-            frame.options.cancelStripeSubscriptions = frame.options.cancel;
-
-            await Promise.resolve(membersService.api.members.destroy({
+            return membersService.api.members.destroy({
                 id: frame.options.id
-            }, frame.options)).catch(models.Member.NotFoundError, () => {
-                throw new errors.NotFoundError({
-                    message: tpl(messages.resourceNotFound, {
-                        resource: 'Member'
-                    })
-                });
+            }, {
+                ...frame.options, require: true, cancelStripeSubscriptions: frame.options.cancel
             });
-
-            return null;
         }
     },
 
