@@ -6,7 +6,8 @@
  */
 
 /**
- * Translate a url into, (id+type), or a resource, and vice versa
+ * Translate a url into a type and id
+ * And also in reverse
  */
 class UrlTranslator {
     /**
@@ -80,11 +81,9 @@ class UrlTranslator {
         }
     }
 
-    getUrlByResourceId(id, options = {absolute: true}) {
-        return this.urlService.getUrlByResourceId(id, options);
-    }
+    async getResourceById(id, type, options = {absolute: true}) {
+        const url = this.urlService.getUrlByResourceId(id, options);
 
-    async getResourceById(id, type) {
         switch (type) {
         case 'post':
         case 'page': {
@@ -93,7 +92,12 @@ class UrlTranslator {
                 return null;
             }
     
-            return post;
+            return {
+                id: post.id,
+                type,
+                url,
+                title: post.get('title')
+            };
         }
         case 'author': {
             const user = await this.models.User.findOne({id}, {require: false});
@@ -101,7 +105,12 @@ class UrlTranslator {
                 return null;
             }
     
-            return user;
+            return {
+                id: user.id,
+                type,
+                url,
+                title: user.get('name')
+            };
         }
         case 'tag': {
             const tag = await this.models.Tag.findOne({id}, {require: false});
@@ -109,7 +118,12 @@ class UrlTranslator {
                 return null;
             }
     
-            return tag;
+            return {
+                id: tag.id,
+                type,
+                url,
+                title: tag.get('name')
+            };
         }
         }
         return null;
