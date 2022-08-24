@@ -194,7 +194,8 @@ module.exports = class MailgunClient {
         return mailgun.client({
             username: 'api',
             key: mailgunConfig.apiKey,
-            url: baseUrl.origin
+            url: baseUrl.origin,
+            timeout: 60000
         });
     }
 
