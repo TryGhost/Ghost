@@ -17,7 +17,8 @@ const messages = {
 const GA_FEATURES = [
     'newsletterPaywall',
     'freeTrial',
-    'compExpiring'
+    'compExpiring',
+    'searchHelper'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
@@ -30,8 +31,7 @@ const ALPHA_FEATURES = [
     'auditLog',
     'urlCache',
     'beforeAfterCard',
-    'memberAttribution',
-    'searchHelper'
+    'memberAttribution'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
