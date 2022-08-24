@@ -43,19 +43,22 @@ class VerificationTrigger {
     }
 
     async _handleMemberSubscribeEvent(event) {
-        if (event.data.source === 'api' && isFinite(this._configThreshold)) {
+        const source = event.data?.source;
+        const sourceThreshold = this._configThreshold;
+
+        if (source === 'api' && isFinite(sourceThreshold)) {
             const createdAt = new Date();
             createdAt.setDate(createdAt.getDate() - 30);
             const events = await this._eventRepository.getNewsletterSubscriptionEvents({}, {
-                'data.source': `data.source:'api'`,
+                'data.source': `data.source:'${source}'`,
                 'data.created_at': `data.created_at:>'${createdAt.toISOString().replace('T', ' ').substring(0, 19)}'`
             });
 
-            if (events.meta.pagination.total > this._configThreshold) {
+            if (events.meta.pagination.total > sourceThreshold) {
                 await this.startVerificationProcess({
                     amountImported: events.meta.pagination.total,
                     throwOnTrigger: false,
-                    source: 'api'
+                    source: source
                 });
             }
         }
