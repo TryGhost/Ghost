@@ -29,6 +29,10 @@ module.exports = function (Bookshelf) {
                 resourceType = resourceType.bind(this)();
             }
 
+            if (!resourceType) {
+                return;
+            }
+
             let context = {};
 
             if (this.actionsExtraContext && Array.isArray(this.actionsExtraContext)) {
