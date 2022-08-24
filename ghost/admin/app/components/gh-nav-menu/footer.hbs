@@ -93,6 +93,9 @@
             {{#if (gh-user-can-admin this.session.user)}}
                 <LinkTo class="gh-nav-bottom-tabicon" @route="settings" @current-when={{this.isSettingsRoute}} data-test-nav="settings">{{svg-jar "settings"}}</LinkTo>
             {{/if}}
+            {{#if this.session.user.isEditor}}
+                <LinkTo class="gh-nav-bottom-tabicon" @route="settings.staff" @current-when={{this.isSettingsRoute}} data-test-nav="settings">{{svg-jar "settings"}}</LinkTo>
+            {{/if}}
             <div class="nightshift-toggle-container">
                 <div class="nightshift-toggle {{if this.feature.nightShift "on"}}" {{action (toggle "nightShift" this.feature)}}>
                     <div class="sun">{{svg-jar "sun"}}</div>
