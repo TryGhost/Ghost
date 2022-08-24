@@ -1,4 +1,3 @@
-const Promise = require('bluebird');
 const settingsCache = require('../../shared/settings-cache');
 const urlUtils = require('../../shared/url-utils');
 const logging = require('@tryghost/logging');
@@ -81,7 +80,7 @@ function getMetaData(data, root) {
     }
 
     // @TODO: wrap this in a utility function
-    return Promise.props(getImageDimensions(metaData)).then(function () {
+    return getImageDimensions(metaData).then(function () {
         metaData.structuredData = getStructuredData(metaData);
         metaData.schema = getSchema(metaData, data);
 
