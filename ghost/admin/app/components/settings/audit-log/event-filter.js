@@ -8,15 +8,12 @@ const ALL_EVENT_TYPES = [
 ];
 
 const ALL_RESOURCE_TYPES = [
-    {event: 'post', name: 'Posts'},
-    {event: 'page', name: 'Pages'},
-    {event: 'tag', name: 'Tags'},
-    {event: 'label', name: 'Member labels'},
-    {event: 'user', name: 'Users'},
-    {event: 'setting', name: 'Settings'},
-    {event: 'integration', name: 'Integrations'},
-    {event: 'api_key', name: 'API keys'},
-    {event: 'webhook', name: 'Webhooks'}
+    {targets: 'post', name: 'Posts'},
+    {targets: 'page', name: 'Pages'},
+    {targets: 'tag', name: 'Tags'},
+    {targets: 'label,member', name: 'Members'},
+    {targets: 'offer,product', name: 'Tiers & offers'},
+    {targets: 'api_key,integration,setting,user,webhook', name: 'Settings & users'}
 ];
 
 export default class AuditLogEventFilter extends Component {
@@ -34,12 +31,12 @@ export default class AuditLogEventFilter extends Component {
     }
 
     get resourceTypes() {
-        const excludedEvents = (this.args.excludedResources || '').split(',');
+        const excludedResources = (this.args.excludedResources || '').split(',');
 
         return ALL_RESOURCE_TYPES.map(type => ({
-            event: type.event,
+            targets: type.targets,
             name: type.name,
-            isSelected: !excludedEvents.includes(type.event)
+            isSelected: !type.targets.split(',').every(t => excludedResources.includes(t))
         }));
     }
 
@@ -62,12 +59,15 @@ export default class AuditLogEventFilter extends Component {
 
     @action
     toggleResourceType(resourceType) {
-        const excludedResources = new Set(this.resourceTypes.reject(type => type.isSelected).map(type => type.event));
+        const resourceTypeElements = resourceType.split(',');
+        const excludedResources = new Set(this.resourceTypes.reject(type => type.isSelected).flatMap(type => type.targets.split(',')));
 
-        if (excludedResources.has(resourceType)) {
-            excludedResources.delete(resourceType);
-        } else {
-            excludedResources.add(resourceType);
+        for (const resource of resourceTypeElements) {
+            if (excludedResources.has(resource)) {
+                excludedResources.delete(resource);
+            } else {
+                excludedResources.add(resource);
+            }
         }
 
         this.excludedResources = Array.from(excludedResources).join(',');
