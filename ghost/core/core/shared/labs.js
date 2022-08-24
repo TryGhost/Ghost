@@ -15,7 +15,8 @@ const messages = {
 
 // flags in this list always return `true`, allows quick global enable prior to full flag removal
 const GA_FEATURES = [
-    'newsletterPaywall'
+    'newsletterPaywall',
+    'freeTrial'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
@@ -28,7 +29,6 @@ const ALPHA_FEATURES = [
     'auditLog',
     'urlCache',
     'beforeAfterCard',
-    'freeTrial',
     'memberAttribution',
     'searchHelper',
     'compExpiring'
