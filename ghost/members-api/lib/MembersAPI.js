@@ -48,6 +48,8 @@ module.exports = function MembersAPI({
         MemberProductEvent,
         MemberEmailChangeEvent,
         MemberAnalyticEvent,
+        MemberCreatedEvent,
+        SubscriptionCreatedEvent,
         Offer,
         OfferRedemption,
         StripeProduct,
@@ -105,8 +107,11 @@ module.exports = function MembersAPI({
         MemberPaymentEvent,
         MemberStatusEvent,
         MemberLoginEvent,
+        MemberCreatedEvent,
+        SubscriptionCreatedEvent,
         Comment,
-        labsService
+        labsService,
+        memberAttributionService
     });
 
     const memberBREADService = new MemberBREADService({

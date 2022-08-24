@@ -111,38 +111,26 @@ describe('UrlTranslator', function () {
         });
 
         it('returns for post', async function () {
-            should(await translator.getResourceById('id', 'post')).eql({
-                type: 'post',
-                id: 'post_id',
-                title: 'Title',
-                url: '/path'
+            should(await translator.getResourceById('id', 'post')).match({
+                id: 'post_id'
             });
         });
 
         it('returns for page', async function () {
-            should(await translator.getResourceById('id', 'page')).eql({
-                type: 'page',
-                id: 'post_id',
-                title: 'Title',
-                url: '/path'
+            should(await translator.getResourceById('id', 'page')).match({
+                id: 'post_id'
             });
         });
 
         it('returns for tag', async function () {
-            should(await translator.getResourceById('id', 'tag')).eql({
-                type: 'tag',
-                id: 'tag_id',
-                title: 'Title',
-                url: '/path'
+            should(await translator.getResourceById('id', 'tag')).match({
+                id: 'tag_id'
             });
         });
 
         it('returns for user', async function () {
-            should(await translator.getResourceById('id', 'author')).eql({
-                type: 'author',
-                id: 'user_id',
-                title: 'Title',
-                url: '/path'
+            should(await translator.getResourceById('id', 'author')).match({
+                id: 'user_id'
             });
         });
 
