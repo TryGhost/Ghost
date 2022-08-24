@@ -1481,8 +1481,8 @@ Dashboard Misc */
 }
 
 .gh-dashboard-rate-amount > span {
-    background: rgb(213,184,255);
-    background: linear-gradient(90deg, rgba(213,184,255,1) 0%, rgba(142,66,255,1) 100%);
+    background: #d5b8ff;
+    background: linear-gradient(90deg,#fb2d8d,#8e42ff);
     border-top-right-radius: 2.5px;
     border-bottom-right-radius: 2.5px;
     position: absolute;
