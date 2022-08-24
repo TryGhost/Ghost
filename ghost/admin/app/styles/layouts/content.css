@@ -598,7 +598,8 @@
         padding: 0 0.33em;
     }
 
-    .posts-list .gh-list-nodata {
+    .posts-list .gh-list-nodata,
+    .pages-list .gh-list-nodata {
         display: none;
     }
 }

@@ -771,6 +771,10 @@ input:focus,
     background: var(--whitegrey);
 }
 
+.gh-list-nodata {
+    color: #5b6167;
+}
+
 .gh-content-status-published {
     background: var(--whitegrey-l1);
 }
@@ -962,6 +966,12 @@ input:focus,
 
 .gh-list-data {
     border-top: 1px solid var(--hairline-color-1);
+}
+
+@media (max-width: 1200px) {
+    .gh-list-data {
+        border-top: 0 none;
+    }
 }
 
 /* Members */
