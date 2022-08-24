@@ -49,7 +49,7 @@ module.exports = {
             const offer = await offersService.api.updateOffer({
                 ...frame.data.offers[0],
                 id: frame.options.id
-            });
+            }, frame.options);
 
             if (!offer) {
                 throw new errors.NotFoundError({
@@ -69,7 +69,7 @@ module.exports = {
             cacheInvalidate: true
         },
         async query(frame) {
-            const offer = await offersService.api.createOffer(frame.data.offers[0]);
+            const offer = await offersService.api.createOffer(frame.data.offers[0], frame.options);
             return {
                 data: [offer]
             };
