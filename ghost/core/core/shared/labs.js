@@ -31,7 +31,8 @@ const ALPHA_FEATURES = [
     'urlCache',
     'beforeAfterCard',
     'memberAttribution',
-    'searchHelper'
+    'searchHelper',
+    'emailAlerts'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
