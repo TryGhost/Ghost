@@ -1005,10 +1005,10 @@ User = ghostBookshelf.Model.extend({
         let ownerRole;
         let contextUser;
 
-        return Promise.join(
+        return Promise.all([
             ghostBookshelf.model('Role').findOne({name: 'Owner'}),
             User.findOne({id: options.context.user}, {withRelated: ['roles']})
-        )
+        ])
             .then((results) => {
                 ownerRole = results[0];
                 contextUser = results[1];
@@ -1021,8 +1021,10 @@ User = ghostBookshelf.Model.extend({
                     }));
                 }
 
-                return Promise.join(ghostBookshelf.model('Role').findOne({name: 'Administrator'}),
-                    User.findOne({id: object.id}, {withRelated: ['roles']}));
+                return Promise.all([
+                    ghostBookshelf.model('Role').findOne({name: 'Administrator'}),
+                    User.findOne({id: object.id}, {withRelated: ['roles']})
+                ]);
             })
             .then((results) => {
                 const adminRole = results[0];
@@ -1049,9 +1051,11 @@ User = ghostBookshelf.Model.extend({
                 }
 
                 // convert owner to admin
-                return Promise.join(contextUser.roles().updatePivot({role_id: adminRole.id}),
+                return Promise.all([
+                    contextUser.roles().updatePivot({role_id: adminRole.id}),
                     user.roles().updatePivot({role_id: ownerRole.id}),
-                    user.id);
+                    user.id
+                ]);
             })
             .then((results) => {
                 return Users.forge()
