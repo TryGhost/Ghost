@@ -189,8 +189,6 @@ module.exports = {
         validation: {},
         permissions: true,
         query(frame) {
-            frame.options.require = true;
-
             // TODO: move to likes service
             if (frame.options?.context?.member?.id) {
                 return models.CommentLike.destroy({
@@ -198,12 +196,17 @@ module.exports = {
                     destroyBy: {
                         member_id: frame.options.context.member.id,
                         comment_id: frame.options.id
-                    }
+                    },
+                    require: true
                 }).then(() => null)
-                    .catch(models.CommentLike.NotFoundError, () => {
-                        return Promise.reject(new errors.NotFoundError({
-                            message: tpl(messages.likeNotFound)
-                        }));
+                    .catch((err) => {
+                        if (err instanceof models.CommentLike.NotFoundError) {
+                            return Promise.reject(new errors.NotFoundError({
+                                message: tpl(messages.likeNotFound)
+                            }));
+                        }
+
+                        throw err;
                     });
             } else {
                 return Promise.reject(new errors.NotFoundError({

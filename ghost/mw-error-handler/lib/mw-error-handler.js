@@ -62,8 +62,8 @@ module.exports.prepareError = (err, req, res, next) => {
     }
 
     if (!errors.utils.isGhostError(err)) {
-        // We need a special case for 404 errors
-        if (err.statusCode && err.statusCode === 404) {
+        // We need a special case for 404 errors & bookshelf empty errors
+        if ((err.statusCode && err.statusCode === 404) || err.message === 'EmptyResponse') {
             err = new errors.NotFoundError({
                 err: err
             });

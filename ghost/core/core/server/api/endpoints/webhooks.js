@@ -78,14 +78,7 @@ module.exports = {
             }
         },
         query({data, options}) {
-            return models.Webhook.edit(data.webhooks[0], Object.assign(options, {require: true}))
-                .catch(models.Webhook.NotFoundError, () => {
-                    throw new errors.NotFoundError({
-                        message: tpl(messages.resourceNotFound, {
-                            resource: 'Webhook'
-                        })
-                    });
-                });
+            return models.Webhook.edit(data.webhooks[0], {...options, require: true});
         }
     },
 
@@ -130,17 +123,7 @@ module.exports = {
             }
         },
         query(frame) {
-            frame.options.require = true;
-
-            return models.Webhook.destroy(frame.options)
-                .then(() => null)
-                .catch(models.Webhook.NotFoundError, () => {
-                    return Promise.reject(new errors.NotFoundError({
-                        message: tpl(messages.resourceNotFound, {
-                            resource: 'Webhook'
-                        })
-                    }));
-                });
+            return models.Webhook.destroy({...frame.options, require: true});
         }
     }
 };
