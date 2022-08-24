@@ -2873,6 +2873,10 @@ p.theme-validation-details {
     padding: 7px 0;
 }
 
+.gh-audit-log-container strong {
+    font-weight: 600;
+}
+
 .gh-audit-log-action {
     padding-right: 6px;
 }
