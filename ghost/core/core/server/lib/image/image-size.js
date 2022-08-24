@@ -163,39 +163,41 @@ class ImageSize {
                 width: dimensions.width,
                 height: dimensions.height
             };
-        }).catch({code: 'URL_MISSING_INVALID'}, (err) => {
-            return Promise.reject(new errors.InternalServerError({
-                message: err.message,
-                code: 'IMAGE_SIZE_URL',
-                statusCode: err.statusCode,
-                context: err.url || imagePath
-            }));
-        }).catch({code: 'ETIMEDOUT'}, {code: 'ESOCKETTIMEDOUT'}, {code: 'ECONNRESET'}, {statusCode: 408}, (err) => {
-            return Promise.reject(new errors.InternalServerError({
-                message: 'Request timed out.',
-                code: 'IMAGE_SIZE_URL',
-                statusCode: err.statusCode,
-                context: err.url || imagePath
-            }));
-        }).catch({code: 'ENOENT'}, {code: 'ENOTFOUND'}, {statusCode: 404}, (err) => {
-            return Promise.reject(new errors.NotFoundError({
-                message: 'Image not found.',
-                code: 'IMAGE_SIZE_URL',
-                statusCode: err.statusCode,
-                context: err.url || imagePath
-            }));
-        }).catch(function (err) {
-            if (errors.utils.isGhostError(err)) {
-                return Promise.reject(err);
-            }
+        }).catch((err) => {
+            if (err.code === 'URL_MISSING_INVALID') {
+                return Promise.reject(new errors.InternalServerError({
+                    message: err.message,
+                    code: 'IMAGE_SIZE_URL',
+                    statusCode: err.statusCode,
+                    context: err.url || imagePath
+                }));
+            } else if (err.code === 'ETIMEDOUT' || err.code === 'ESOCKETTIMEDOUT' || err.code === 'ECONNRESET' || err.statusCode === 408) {
+                return Promise.reject(new errors.InternalServerError({
+                    message: 'Request timed out.',
+                    code: 'IMAGE_SIZE_URL',
+                    statusCode: err.statusCode,
+                    context: err.url || imagePath
+                }));
+            } else if (err.code === 'ENOENT' || err.code === 'ENOTFOUND' || err.statusCode === 404) {
+                return Promise.reject(new errors.NotFoundError({
+                    message: 'Image not found.',
+                    code: 'IMAGE_SIZE_URL',
+                    statusCode: err.statusCode,
+                    context: err.url || imagePath
+                }));
+            } else {
+                if (errors.utils.isGhostError(err)) {
+                    return Promise.reject(err);
+                }
 
-            return Promise.reject(new errors.InternalServerError({
-                message: 'Unknown Request error.',
-                code: 'IMAGE_SIZE_URL',
-                statusCode: err.statusCode,
-                context: err.url || imagePath,
-                err: err
-            }));
+                return Promise.reject(new errors.InternalServerError({
+                    message: 'Unknown Request error.',
+                    code: 'IMAGE_SIZE_URL',
+                    statusCode: err.statusCode,
+                    context: err.url || imagePath,
+                    err: err
+                }));
+            }
         });
     }
 
@@ -237,32 +239,34 @@ class ImageSize {
                     height: dimensions.height
                 };
             })
-            .catch({code: 'ENOENT'}, (err) => {
-                return Promise.reject(new errors.NotFoundError({
-                    message: err.message,
-                    code: 'IMAGE_SIZE_STORAGE',
-                    err: err,
-                    context: filePath,
-                    errorDetails: {
-                        originalPath: imagePath,
-                        reqFilePath: filePath
+            .catch((err) => {
+                if (err.code === 'ENOENT') {
+                    return Promise.reject(new errors.NotFoundError({
+                        message: err.message,
+                        code: 'IMAGE_SIZE_STORAGE',
+                        err: err,
+                        context: filePath,
+                        errorDetails: {
+                            originalPath: imagePath,
+                            reqFilePath: filePath
+                        }
+                    }));
+                } else {
+                    if (errors.utils.isGhostError(err)) {
+                        return Promise.reject(err);
                     }
-                }));
-            }).catch((err) => {
-                if (errors.utils.isGhostError(err)) {
-                    return Promise.reject(err);
-                }
 
-                return Promise.reject(new errors.InternalServerError({
-                    message: err.message,
-                    code: 'IMAGE_SIZE_STORAGE',
-                    err: err,
-                    context: filePath,
-                    errorDetails: {
-                        originalPath: imagePath,
-                        reqFilePath: filePath
-                    }
-                }));
+                    return Promise.reject(new errors.InternalServerError({
+                        message: err.message,
+                        code: 'IMAGE_SIZE_STORAGE',
+                        err: err,
+                        context: filePath,
+                        errorDetails: {
+                            originalPath: imagePath,
+                            reqFilePath: filePath
+                        }
+                    }));
+                }
             });
     }
 
