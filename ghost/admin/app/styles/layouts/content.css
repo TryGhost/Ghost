@@ -177,12 +177,12 @@
 }
 
 .feature-memberAttribution .gh-posts-opens-header {
-    width: 140px;
+    width: 150px;
 }
 
-/* .gh-posts-status-header {
+.gh-list:not(.feature-memberAttribution) .gh-posts-status-header {
     width: 140px;
-} */
+}
 
 .pages-list .gh-posts-conversions-header,
 .pages-list .gh-posts-sends-header {
@@ -315,10 +315,14 @@
 }
 
 .gh-content-status-emailed {
-    margin: 0px 6px;
+    margin: 0;
     color: var(--midgrey-d1);
     background: var(--whitegrey);
     border-radius: 999px;
+}
+
+.feature-memberAttribution .gh-content-status-emailed {
+    margin: 0px 6px;
 }
 
 .gh-content-status-emailed svg,
@@ -453,6 +457,23 @@
 
 /* Mobile style of post list */
 @media (max-width: 1200px) {
+    .feature-memberAttribution .gh-post-list-status,
+    .feature-memberAttribution .gh-post-list-recipients,
+    .feature-memberAttribution .gh-post-list-opens,
+    .feature-memberAttribution .gh-post-list-signups,
+    .feature-memberAttribution .gh-post-list-conversions {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .gh-content-status-draft,
+    .gh-content-status-published,
+    .gh-content-status-scheduled,
+    .gh-content-status-emailed {
+        padding-left: 0;
+        padding-right: 12px;
+    }
+
     .gh-posts-list-item {
         display: flex;
         flex-wrap: wrap;
@@ -565,7 +586,7 @@
 
     .gh-content-email-stats-mobile {
         display: inherit;
-        padding: 0 0.25em;
+        padding: 0 0.33em;
     }
 
     .gh-content-attribution-stats {
@@ -574,7 +595,7 @@
 
     .gh-content-attribution-stats-mobile {
         display: inherit;
-        padding: 0 0.25em;
+        padding: 0 0.33em;
     }
 
     .posts-list .gh-list-nodata {
