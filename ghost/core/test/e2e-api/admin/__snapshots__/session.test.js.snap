@@ -43,7 +43,7 @@ Object {
   "meta_description": null,
   "meta_title": null,
   "name": "Joe Bloggs",
-  "paid_subscription_canceled_notification": true,
+  "paid_subscription_canceled_notification": false,
   "paid_subscription_started_notification": true,
   "profile_image": "https://example.com/super_photo.jpg",
   "slug": "joe-bloggs",
