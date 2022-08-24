@@ -1198,6 +1198,22 @@ module.exports = class MemberRepository {
                     member_id: member.id,
                     from_plan: subscriptionModel.get('plan_id')
                 }, sharedOptions);
+
+                if (this._labsService.isSet('emailAlerts')) {
+                    const subscriptionPriceData = _.get(updatedSubscription, 'items.data[0].price');
+                    let ghostProduct;
+                    try {
+                        ghostProduct = await this._productRepository.get({stripe_product_id: subscriptionPriceData.product}, {...sharedOptions, forUpdate: true});
+                    } catch (e) {
+                        ghostProduct = null;
+                    }
+                    await this.staffService.notifyPaidSubscriptionCancel({
+                        member: member.toJSON(),
+                        subscription: updatedSubscription,
+                        cancellationReason: data.subscription.cancellationReason,
+                        tier: ghostProduct?.toJSON()
+                    });
+                }
             } else {
                 updatedSubscription = await this._stripeAPIService.continueSubscriptionAtPeriodEnd(
                     data.subscription.subscription_id
