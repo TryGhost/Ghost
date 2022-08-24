@@ -143,7 +143,7 @@
 
                             {{#each tier.subscriptions as |sub index|}}
                                 <div class="gh-membertier-subscription" data-test-subscription={{index}}>
-                                    <div>
+                                    <div class="gh-membertier-details-container">
                                         <div>
                                             {{#if sub.trialUntil}}
                                                 <span class="gh-cp-membertier-pricelabel">Free trial</span>
@@ -192,13 +192,12 @@
                                                 </div>
                                             {{/if}}
                                         {{/if}}
-                                        <div>
+                                        <div class="gh-membertier-details">
                                             <span class="gh-membertier-created">Created on {{sub.startDate}}</span>                                            
                                             {{#if (and sub.attribution sub.attribution.url sub.attribution.title) }}
                                                 <span class="gh-membertier-separator">·</span>
                                                 <span class="gh-membertier-started">Attributed to <a href="{{sub.attribution.url}}" target="_blank" rel="noopener noreferrer">{{ sub.attribution.title }}</a></span>
                                             {{/if}}
-
                                         </div>
                                     </div>
 

@@ -722,13 +722,12 @@ label[for="member-description"] + p {
     flex-shrink: 0;
 }
 
-/* WIP style for attribution link*/
 .gh-member-details-meta p a {
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
-    text-decoration: underline;
-    margin-left: 2px;
+    font-weight: 600;
+    color: var(--darkgrey);
 }
 
 .gh-member-details-meta svg path {
@@ -2166,16 +2165,17 @@ p.gh-members-import-errordetail:first-of-type {
     border-top: 1px solid var(--whitegrey);
 }
 
-.gh-membertier-created,
-.gh-membertier-started {
+.gh-membertier-details span,
+.gh-membertier-details a {
+    display: inline-block;
     color: var(--midgrey-d1);
     font-size: 1.25rem;
     font-weight: 500;
 }
 
-.gh-membertier-started a {
-    color: var(--black);
-    font-weight: 500;
+.gh-membertier-details a {
+    font-weight: 600;
+    color: var(--darkgrey);
 }
 
 .gh-membertier-separator {
@@ -2267,14 +2267,19 @@ p.gh-members-import-errordetail:first-of-type {
     position: relative;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: stretch;
 }
 
 .gh-cp-membertier-renewal {
     color: var(--darkgrey-l1);
 }
 
+.gh-membertier-details-container {
+    flex: 1;
+}
+
 .gh-membertier-price-container {
+    flex: 0;
     display: flex;
     align-items: flex-start;
 }
