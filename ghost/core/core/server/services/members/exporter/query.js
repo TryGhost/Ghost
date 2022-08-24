@@ -42,7 +42,7 @@ module.exports = async function (options) {
             END) as subscribed
         `))
         .select(knex.raw(`
-            (SELECT GROUP_CONCAT(product_id) FROM members_products f WHERE f.member_id = members.id) as tiers
+            (SELECT GROUP_CONCAT(product_id,'~~',COALESCE(expiry_at,'')) FROM members_products f WHERE f.member_id = members.id) as tiers
         `))
         .select(knex.raw(`
             (SELECT GROUP_CONCAT(label_id) FROM members_labels f WHERE f.member_id = members.id) as labels
@@ -57,12 +57,23 @@ module.exports = async function (options) {
 
     const rows = await query;
     for (const row of rows) {
-        const tierIds = row.tiers ? row.tiers.split(',') : [];
-        const tiers = tierIds.map((id) => {
-            const tier = allProducts.find(p => p.id === id);
+        const tierIdsWithExpiry = row.tiers ? row.tiers.split(',') : [];
+        const tierData = tierIdsWithExpiry.map((t) => {
+            const [tierId, expiry] = t.split('~~');
             return {
+                id: tierId,
+                expiryAt: expiry
+            };
+        });
+        const tiers = tierData.map((t) => {
+            const tier = allProducts.find(p => p.id === t.id);
+            const tierInfo = {
                 name: tier.get('name')
             };
+            if (t.expiryAt) {
+                tierInfo.expiry_at = t.expiryAt;
+            }
+            return tierInfo;
         });
         row.tiers = tiers;
 

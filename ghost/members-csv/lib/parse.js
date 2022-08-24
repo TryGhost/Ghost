@@ -25,7 +25,7 @@ module.exports = (path, mapping, defaultLabels = []) => {
                     }
                 }
 
-                if (header === 'products') {
+                if (header === 'products' || header === 'tiers') {
                     if (value && typeof value === 'string') {
                         return value.split(',').map(name => ({name}));
                     }

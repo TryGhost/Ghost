@@ -125,7 +125,7 @@ module.exports = class MembersCSVImporter {
         const membersApi = await this._getMembersApi();
 
         const defaultProductPage = await membersApi.productRepository.list({
-            filter: 'type:paid',
+            filter: 'type:paid+active:true',
             limit: 1
         });
 
@@ -169,9 +169,16 @@ module.exports = class MembersCSVImporter {
                         member_id: member.id
                     }, options);
                 } else if (row.complimentary_plan) {
+                    const productData = {
+                        id: defaultProduct.id
+                    };
+
+                    if (row.expiry_at) {
+                        productData.expiry_at = row.expiry_at;
+                    }
                     if (!row.products) {
                         await membersApi.members.update({
-                            products: [{id: defaultProduct.id}]
+                            products: [productData]
                         }, {
                             ...options,
                             id: member.id
@@ -180,8 +187,17 @@ module.exports = class MembersCSVImporter {
                 }
 
                 if (row.products) {
+                    let productsData = row.products;
+                    if (row.expiry_at) {
+                        productsData.map((d) => {
+                            return {
+                                ...d,
+                                expiry_at: row.expiry_at
+                            };
+                        });
+                    }
                     await membersApi.members.update({
-                        products: row.products
+                        products: productsData
                     }, {
                         ...options,
                         id: member.id

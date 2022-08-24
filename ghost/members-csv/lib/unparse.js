@@ -7,6 +7,7 @@ const DEFAULT_COLUMNS = [
     'note',
     'subscribed_to_emails',
     'complimentary_plan',
+    'expiry_at',
     'stripe_customer_id',
     'created_at',
     'deleted_at',
@@ -36,11 +37,20 @@ const unparse = (members, columns = DEFAULT_COLUMNS.slice()) => {
         }
 
         let tiers = '';
+        let expiryAt;
+
+        if (member.expiry_at) {
+            expiryAt = member.expiry_at;
+        }
 
         if (Array.isArray(member.tiers)) {
             tiers = member.tiers.map((tier) => {
                 return tier.name;
             }).join(',');
+            const tierWithExpiry = member.tiers.find((d) => {
+                return !!d.expiry_at;
+            });
+            expiryAt = tierWithExpiry ? (new Date(tierWithExpiry.expiry_at)).toISOString() : expiryAt;
         }
 
         return {
@@ -50,6 +60,7 @@ const unparse = (members, columns = DEFAULT_COLUMNS.slice()) => {
             note: member.note,
             subscribed_to_emails: member.subscribed,
             complimentary_plan: member.comped || member.complimentary_plan,
+            expiry_at: expiryAt,
             stripe_customer_id: _.get(member, 'subscriptions[0].customer.id') || member.stripe_customer_id,
             created_at: member.created_at,
             deleted_at: member.deleted_at,
