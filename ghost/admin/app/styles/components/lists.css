@@ -220,7 +220,7 @@ ul.nostyle li {
 
 .gh-list-rate-amount > span {
     background: rgb(213,184,255);
-    background: linear-gradient(90deg, rgba(213,184,255,1) 0%, rgba(142,66,255,1) 100%);
+    background: linear-gradient(90deg, #FB2D8D 0%, #8E42FF 100%);
     border-top-right-radius: 2.5px;
     border-bottom-right-radius: 2.5px;
     position: absolute;

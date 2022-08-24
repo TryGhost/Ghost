@@ -172,16 +172,17 @@
 .gh-posts-conversions-header,
 .gh-posts-sends-header,
 .gh-posts-opens-header {
-    width: 110px;
+    width: 90px;
+    padding-right: 8px;
 }
 
 .feature-memberAttribution .gh-posts-opens-header {
-    width: 170px;
-}
-
-.gh-posts-status-header {
     width: 140px;
 }
+
+/* .gh-posts-status-header {
+    width: 140px;
+} */
 
 .pages-list .gh-posts-conversions-header,
 .pages-list .gh-posts-sends-header {
@@ -221,6 +222,12 @@
 .gh-post-list-conversions {
     color: var(--middarkgrey);
     font-size: 1.3rem;
+}
+
+.gh-post-list-signups,
+.gh-post-list-conversions,
+.gh-post-list-recipients {
+    padding-right: 8px;
 }
 
 .gh-content-entry-title {
@@ -345,6 +352,64 @@
     background: color-mod(var(--green) a(20%));
 }
 
+.gh-post-list-plain-status .gh-content-status-draft,
+.gh-post-list-plain-status .gh-content-status-published,
+.gh-post-list-plain-status .gh-content-status-scheduled,
+.gh-post-list-plain-status .gh-content-status-emailed {
+    background: none;
+    color: var(--darkgrey);
+    text-transform: unset;
+    font-size: 1.3rem;
+    font-weight: 500;
+}
+
+.gh-post-list-plain-status .gh-post-status-email {
+    margin-bottom: -1px;
+    margin-left: 4px;
+}
+
+.gh-post-list-plain-status .gh-post-status-email path {
+    stroke: var(--darkgrey) !important;
+}
+
+.gh-post-list-plain-status .gh-post-status-icon {
+    width: 16px;
+    height: 16px;
+    margin: 0 7px 0 0;
+}
+
+.gh-post-list-plain-status .gh-content-status-published .gh-post-status-icon {
+    width: 12px;
+    height: 12px;
+}
+
+.gh-post-list-plain-status .gh-content-status-scheduled .gh-post-status-icon path {
+    stroke: var(--purple) !important;
+}
+
+.gh-post-list-plain-status .gh-content-status-draft .gh-post-status-icon path {
+    stroke: var(--pink) !important;
+}
+
+.gh-post-list-plain-status .gh-content-status-published .gh-post-status-icon path {
+    stroke: var(--midgrey-l1) !important;
+}
+
+.gh-post-list-plain-status .gh-content-status-published,
+.gh-post-list-plain-status .gh-content-status-emailed {
+    color: var(--midgrey-l1);
+    margin: 0;
+}
+
+.gh-post-list-plain-status .gh-content-status-published .gh-post-status-email path {
+    stroke: var(--midgrey-l1) !important;
+}
+
+.gh-post-list-plain-status .gh-content-status-emailed path {
+    stroke: var(--midgrey-l1) !important;
+    stroke-width: 1.5;
+}
+
 .gh-content-entry-author {
     color: var(--middarkgrey);
 }
@@ -381,7 +446,7 @@
     }
     
     .feature-memberAttribution .gh-posts-opens-header {
-        width: 160px;
+        width: 100px;
     }
 }
 
