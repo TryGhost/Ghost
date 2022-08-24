@@ -12,8 +12,16 @@ const SubscriptionCreatedEvent = ghostBookshelf.Model.extend({
         return this.belongsTo('StripeCustomerSubscription', 'subscription_id', 'id');
     },
 
-    attribution() {
-        return this.belongsTo('Post', 'attribution_id', 'id');
+    postAttribution() {
+        return this.belongsTo('Post', 'attribution_id', 'id');   
+    },
+
+    userAttribution() {
+        return this.belongsTo('User', 'attribution_id', 'id');   
+    },
+
+    tagAttribution() {
+        return this.belongsTo('Tag', 'attribution_id', 'id');   
     }
 }, {
     async edit() {
