@@ -38,24 +38,27 @@ class VerificationTrigger {
         this._Settings = Settings;
         this._eventRepository = eventRepository;
 
-        DomainEvents.subscribe(MemberSubscribeEvent, async (event) => {
-            if (event.data.source === 'api' && isFinite(this._configThreshold)) {
-                const createdAt = new Date();
-                createdAt.setDate(createdAt.getDate() - 30);
-                const events = await this._eventRepository.getNewsletterSubscriptionEvents({}, {
-                    'data.source': `data.source:'api'`,
-                    'data.created_at': `data.created_at:>'${createdAt.toISOString().replace('T', ' ').substring(0, 19)}'`
-                });
+        this._handleMemberSubscribeEvent = this._handleMemberSubscribeEvent.bind(this);
+        DomainEvents.subscribe(MemberSubscribeEvent, this._handleMemberSubscribeEvent);
+    }
 
-                if (events.meta.pagination.total > this._configThreshold) {
-                    await this.startVerificationProcess({
-                        amountImported: events.meta.pagination.total,
-                        throwOnTrigger: false,
-                        source: 'api'
-                    });
-                }
+    async _handleMemberSubscribeEvent(event) {
+        if (event.data.source === 'api' && isFinite(this._configThreshold)) {
+            const createdAt = new Date();
+            createdAt.setDate(createdAt.getDate() - 30);
+            const events = await this._eventRepository.getNewsletterSubscriptionEvents({}, {
+                'data.source': `data.source:'api'`,
+                'data.created_at': `data.created_at:>'${createdAt.toISOString().replace('T', ' ').substring(0, 19)}'`
+            });
+
+            if (events.meta.pagination.total > this._configThreshold) {
+                await this.startVerificationProcess({
+                    amountImported: events.meta.pagination.total,
+                    throwOnTrigger: false,
+                    source: 'api'
+                });
             }
-        });
+        }
     }
 
     async getImportThreshold() {
