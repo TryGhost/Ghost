@@ -1,24 +1,21 @@
-const _ = require('lodash');
 const ghostBookshelf = require('./base');
-
-const candidates = [];
 
 const Action = ghostBookshelf.Model.extend({
     tableName: 'actions',
 
-    initialize: function initialize() {
-        _.each(ghostBookshelf.registry.models, (model) => {
-            candidates.push([model, model.prototype.tableName.replace(/s$/, '')]);
+    candidates() {
+        return Object.keys(ghostBookshelf.registry.models).map((key) => {
+            const model = ghostBookshelf.registry.models[key];
+            return [model, model.prototype.tableName.replace(/s$/, '')];
         });
-        this.constructor.__super__.initialize.apply(this, arguments);
     },
 
     actor() {
-        return this.morphTo('actor', ['actor_type', 'actor_id'], ...candidates);
+        return this.morphTo('actor', ['actor_type', 'actor_id'], ...this.candidates());
     },
 
     resource() {
-        return this.morphTo('resource', ['resource_type', 'resource_id'], ...candidates);
+        return this.morphTo('resource', ['resource_type', 'resource_id'], ...this.candidates());
     }
 }, {
     orderDefaultOptions: function orderDefaultOptions() {
