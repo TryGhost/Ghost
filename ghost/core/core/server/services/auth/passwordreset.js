@@ -144,9 +144,6 @@ function doReset(options, tokenParts, settingsAPI) {
             updatedUser.set('status', 'active');
             return updatedUser.save(options);
         })
-        .catch(errors.ValidationError, (err) => {
-            return Promise.reject(err);
-        })
         .catch((err) => {
             if (errors.utils.isGhostError(err)) {
                 return Promise.reject(err);
