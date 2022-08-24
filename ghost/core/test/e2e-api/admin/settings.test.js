@@ -199,7 +199,9 @@ describe('Settings API', function () {
                     settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
                 })
                 .matchHeaderSnapshot({
-                    etag: anyEtag
+                    etag: anyEtag,
+                    // Special rule for this test, as the labs setting changes a lot
+                    'content-length': anyStringNumber
                 });
 
             // Check returned WITH prefix
@@ -224,7 +226,9 @@ describe('Settings API', function () {
                     settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
                 })
                 .matchHeaderSnapshot({
-                    etag: anyEtag
+                    etag: anyEtag,
+                    // Special rule for this test, as the labs setting changes a lot
+                    'content-length': anyStringNumber
                 })
                 .expect(({body}) => {
                     const emailVerificationRequired = body.settings.find(setting => setting.key === 'email_verification_required');
@@ -243,7 +247,9 @@ describe('Settings API', function () {
                     settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
                 })
                 .matchHeaderSnapshot({
-                    etag: anyEtag
+                    etag: anyEtag,
+                    // Special rule for this test, as the labs setting changes a lot
+                    'content-length': anyStringNumber
                 })
                 .expect(({body}) => {
                     const membersSupportAddress = body.settings.find(setting => setting.key === 'members_support_address');
@@ -276,7 +282,9 @@ describe('Settings API', function () {
                     settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
                 })
                 .matchHeaderSnapshot({
-                    etag: anyEtag
+                    etag: anyEtag,
+                    // Special rule for this test, as the labs setting changes a lot
+                    'content-length': anyStringNumber
                 })
                 .expect(({body}) => {
                     const membersSupportAddress = body.settings.find(setting => setting.key === 'members_support_address');
@@ -301,12 +309,15 @@ describe('Settings API', function () {
                     settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
                 })
                 .matchHeaderSnapshot({
-                    etag: anyEtag
+                    etag: anyEtag,
+                    // Special rule for this test, as the labs setting changes a lot
+                    'content-length': anyStringNumber
                 })
                 .expect(({body}) => {
                     const membersSupportAddress = body.settings.find(setting => setting.key === 'members_support_address');
                     assert.strictEqual(membersSupportAddress.value, 'support@example.com');
                 });
+
             mockManager.assert.sentEmailCount(0);
         });
 
