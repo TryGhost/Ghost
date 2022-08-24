@@ -38,23 +38,25 @@ class DefaultSettingsManager {
         const defaultFilePath = path.join(this.sourceFolderPath, defaultFileName);
 
         return Promise.resolve(fs.readFile(destinationFilePath, 'utf8'))
-            .catch({code: 'ENOENT'}, () => {
-                // CASE: file doesn't exist, copy it from our defaults
-                return fs.copy(
-                    defaultFilePath,
-                    destinationFilePath
-                ).then(() => {
-                    debug(`'${defaultFileName}' copied to ${this.destinationFolderPath}.`);
-                });
-            }).catch((error) => {
-                // CASE: we might have a permission error, as we can't access the directory
-                throw new errors.InternalServerError({
-                    message: tpl(messages.ensureSettings, {
-                        path: this.destinationFolderPath
-                    }),
-                    err: error,
-                    context: error.path
-                });
+            .catch((err) => {
+                if (err.code === 'ENOENT') {
+                    // CASE: file doesn't exist, copy it from our defaults
+                    return fs.copy(
+                        defaultFilePath,
+                        destinationFilePath
+                    ).then(() => {
+                        debug(`'${defaultFileName}' copied to ${this.destinationFolderPath}.`);
+                    });
+                } else {
+                    // CASE: we might have a permission error, as we can't access the directory
+                    throw new errors.InternalServerError({
+                        message: tpl(messages.ensureSettings, {
+                            path: this.destinationFolderPath
+                        }),
+                        err: err,
+                        context: err.path
+                    });
+                }
             });
     }
 }

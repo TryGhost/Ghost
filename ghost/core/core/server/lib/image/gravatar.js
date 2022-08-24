@@ -40,12 +40,13 @@ class Gravatar {
                     image: imageUrl
                 };
             })
-            .catch({statusCode: 404}, function () {
-                return {
-                    image: undefined
-                };
-            })
-            .catch(function () {
+            .catch(function (err) {
+                if (err.statusCode === 404) {
+                    return {
+                        image: undefined
+                    };
+                }
+
                 // ignore error, just resolve with no image url
             });
     }
