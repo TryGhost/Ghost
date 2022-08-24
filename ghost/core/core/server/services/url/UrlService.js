@@ -322,12 +322,12 @@ class UrlService {
             this.urls.urls = persistedUrls;
             this.resources.data = persistedResources;
             this.resources.initResourceConfig();
-            await this.resources.initEventListeners();
+            this.resources.initEventListeners();
 
             this._onQueueEnded('init');
         } else {
             this.resources.initResourceConfig();
-            await this.resources.initEventListeners();
+            this.resources.initEventListeners();
             await this.resources.fetchResources();
             // CASE: all resources are fetched, start the queue
             this.queue.start({

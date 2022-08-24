@@ -94,7 +94,7 @@ class Resources {
      * 3 event listeners connected to "_onResourceUpdated" handler and it's 'tag.edited', 'tag.attached', 'tag.detached' events
      * 1 event listener connected to  "_onResourceRemoved" handler and it's 'tag.deleted' event
      */
-    async initEventListeners() {
+    initEventListeners() {
         _.each(this.resourcesConfig, (resourceConfig) => {
             this.data[resourceConfig.type] = [];
 
