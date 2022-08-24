@@ -37,17 +37,18 @@ class OffersAPI {
 
     /**
      * @param {any} data
+     * @param {Object} [options]
      *
      * @returns {Promise<OfferMapper.OfferDTO>}
      */
-    async createOffer(data) {
+    async createOffer(data, options = {}) {
         return this.repository.createTransaction(async (transaction) => {
-            const options = {transacting: transaction};
+            const saveOptions = {...options, transacting: transaction};
             const uniqueChecker = new UniqueChecker(this.repository, transaction);
 
             const offer = await Offer.create(data, uniqueChecker);
 
-            await this.repository.save(offer, options);
+            await this.repository.save(offer, saveOptions);
 
             return OfferMapper.toDTO(offer);
         });
@@ -61,15 +62,16 @@ class OffersAPI {
      * @param {string} [data.display_description]
      * @param {string} [data.code]
      * @param {string} [data.status]
+     * @param {Object} [options]
      *
      * @returns {Promise<OfferMapper.OfferDTO>}
      */
-    async updateOffer(data) {
+    async updateOffer(data, options = {}) {
         return await this.repository.createTransaction(async (transaction) => {
-            const options = {transacting: transaction};
+            const updateOptions = {...options, transacting: transaction};
             const uniqueChecker = new UniqueChecker(this.repository, transaction);
 
-            const offer = await this.repository.getById(data.id, options);
+            const offer = await this.repository.getById(data.id, updateOptions);
 
             if (!offer) {
                 return null;
@@ -100,7 +102,7 @@ class OffersAPI {
                 offer.status = status;
             }
 
-            await this.repository.save(offer, options);
+            await this.repository.save(offer, updateOptions);
 
             return OfferMapper.toDTO(offer);
         });
