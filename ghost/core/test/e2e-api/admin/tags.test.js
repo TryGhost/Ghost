@@ -160,4 +160,14 @@ describe('Tag API', function () {
         should.exist(res.headers['x-cache-invalidate']);
         res.body.should.eql({});
     });
+
+    it('Can destroy a non-existent tag', async function () {
+        const res = await request
+            .del(localUtils.API.getApiQuery(`tags/abcd1234abcd1234abcd1234`))
+            .set('Origin', config.get('url'))
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(404);
+
+        res.body.errors[0].message.should.eql('Resource not found error, cannot delete tag.');
+    });
 });
