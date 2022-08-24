@@ -39,7 +39,7 @@ module.exports = function (Bookshelf) {
 
             if (event === 'deleted') {
                 context.primary_name = (this.previous('title') || this.previous('name'));
-            } else if (event === 'edited') {
+            } else if (['added', 'edited'].includes(event)) {
                 context.primary_name = (this.get('title') || this.get('name') || this.previous('title') || this.previous('name'));
             }
 
