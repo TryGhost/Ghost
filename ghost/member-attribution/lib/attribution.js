@@ -27,16 +27,15 @@ class Attribution {
     }
 
     /**
-     * Converts the instance to a parsed instance with more information about the resource included.
+     * Convert the instance to a parsed instance with more information about the resource included.
      * It does:
-     * - Uses the passed model and adds a title to the attribution
-     * - If the resource exists and has a new url, it updates the url if possible
+     * - Fetch the resource and add some information about it to the attribution
+     * - If the resource exists and have a new url, it updates the url if possible
      * - Returns an absolute URL instead of a relative one
-     * @param {Object|null} [model] The Post/User/Tag model of the resource associated with this attribution
-     * @returns {AttributionResource}
+     * @returns {Promise<AttributionResource>}
      */
-    getResource(model) {
-        if (!this.id || this.type === 'url' || !this.type || !model) {
+    async getResource() {
+        if (!this.id || this.type === 'url' || !this.type) {
             return {
                 id: null,
                 type: 'url',
@@ -45,28 +44,18 @@ class Attribution {
             };
         }
 
-        const updatedUrl = this.#urlTranslator.getUrlByResourceId(this.id, {absolute: true});
+        const resource = await this.#urlTranslator.getResourceById(this.id, this.type, {absolute: true});
 
-        return {
-            id: model.id,
-            type: this.type,
-            url: updatedUrl,
-            title: model.get('title') ?? model.get('name') ?? this.url
-        };
-    }
-
-    /**
-     * Same as getResource, but fetches the model by ID instead of passing it as a parameter
-     */
-    async fetchResource() {
-        if (!this.id || this.type === 'url' || !this.type) {
-            // No fetch required
-            return this.getResource();
+        if (resource) {
+            return resource;
         }
 
-        // Fetch model
-        const model = await this.#urlTranslator.getResourceById(this.id, this.type, {absolute: true});
-        return this.getResource(model);
+        return {
+            id: null,
+            type: 'url',
+            url: this.#urlTranslator.relativeToAbsolute(this.url),
+            title: this.url
+        };
     }
 }
 

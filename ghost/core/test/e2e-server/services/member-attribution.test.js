@@ -33,7 +33,7 @@ describe('Member Attribution Service', function () {
                     type: 'url'
                 }));
         
-                (await attribution.fetchResource()).should.match(({
+                (await attribution.getResource()).should.match(({
                     id: null,
                     url: absoluteUrl,
                     type: 'url',
@@ -60,7 +60,7 @@ describe('Member Attribution Service', function () {
     
                 const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true, withSubdirectory: true});
     
-                (await attribution.fetchResource()).should.match(({
+                (await attribution.getResource()).should.match(({
                     id: post.id,
                     url: absoluteUrl,
                     type: 'post',
@@ -92,7 +92,7 @@ describe('Member Attribution Service', function () {
                 // Unpublish this post
                 await models.Post.edit({status: 'draft'}, {id});
 
-                (await attribution.fetchResource()).should.match(({
+                (await attribution.getResource()).should.match(({
                     id: null,
                     url: absoluteUrl,
                     type: 'url',
@@ -123,7 +123,7 @@ describe('Member Attribution Service', function () {
     
                 const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true, withSubdirectory: true});
     
-                (await attribution.fetchResource()).should.match(({
+                (await attribution.getResource()).should.match(({
                     id: post.id,
                     url: absoluteUrl,
                     type: 'page',
@@ -150,7 +150,7 @@ describe('Member Attribution Service', function () {
     
                 const absoluteUrl = urlService.getUrlByResourceId(tag.id, {absolute: true, withSubdirectory: true});
     
-                (await attribution.fetchResource()).should.match(({
+                (await attribution.getResource()).should.match(({
                     id: tag.id,
                     url: absoluteUrl,
                     type: 'tag',
@@ -177,7 +177,7 @@ describe('Member Attribution Service', function () {
     
                 const absoluteUrl = urlService.getUrlByResourceId(author.id, {absolute: true, withSubdirectory: true});
     
-                (await attribution.fetchResource()).should.match(({
+                (await attribution.getResource()).should.match(({
                     id: author.id,
                     url: absoluteUrl,
                     type: 'author',
@@ -212,7 +212,7 @@ describe('Member Attribution Service', function () {
                     type: 'url'
                 }));
         
-                (await attribution.fetchResource()).should.match(({
+                (await attribution.getResource()).should.match(({
                     id: null,
                     url: absoluteUrl,
                     type: 'url',
@@ -245,7 +245,7 @@ describe('Member Attribution Service', function () {
 
                 const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true, withSubdirectory: true});
 
-                (await attribution.fetchResource()).should.match(({
+                (await attribution.getResource()).should.match(({
                     id: post.id,
                     url: absoluteUrl,
                     type: 'post',
@@ -280,7 +280,7 @@ describe('Member Attribution Service', function () {
                 // Unpublish this post
                 await models.Post.edit({status: 'draft'}, {id});
 
-                (await attribution.fetchResource()).should.match(({
+                (await attribution.getResource()).should.match(({
                     id: null,
                     url: absoluteUrl,
                     type: 'url',
@@ -310,7 +310,7 @@ describe('Member Attribution Service', function () {
 
                 const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true, withSubdirectory: true});
 
-                (await attribution.fetchResource()).should.match(({
+                (await attribution.getResource()).should.match(({
                     id: post.id,
                     url: absoluteUrl,
                     type: 'page',
@@ -338,7 +338,7 @@ describe('Member Attribution Service', function () {
 
                 const absoluteUrl = urlService.getUrlByResourceId(tag.id, {absolute: true, withSubdirectory: true});
 
-                (await attribution.fetchResource()).should.match(({
+                (await attribution.getResource()).should.match(({
                     id: tag.id,
                     url: absoluteUrl,
                     type: 'tag',
@@ -366,7 +366,7 @@ describe('Member Attribution Service', function () {
 
                 const absoluteUrl = urlService.getUrlByResourceId(author.id, {absolute: true, withSubdirectory: true});
 
-                (await attribution.fetchResource()).should.match(({
+                (await attribution.getResource()).should.match(({
                     id: author.id,
                     url: absoluteUrl,
                     type: 'author',

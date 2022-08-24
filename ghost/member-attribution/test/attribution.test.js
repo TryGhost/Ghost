@@ -25,19 +25,16 @@ describe('AttributionBuilder', function () {
                     }
                     return;
                 },
-                getResourceById(id) {
+                getResourceById(id, type) {
                     if (id === 'invalid') {
                         return null;
                     }
                     return {
                         id,
-                        get() {
-                            return 'Title';
-                        }
+                        type,
+                        url: 'https://absolute/dir/path',
+                        title: 'Title'
                     };
-                },
-                getUrlByResourceId() {
-                    return 'https://absolute/dir/path';
                 },
                 relativeToAbsolute(path) {
                     return 'https://absolute/dir' + path;
@@ -108,7 +105,7 @@ describe('AttributionBuilder', function () {
     });
 
     it('Returns post resource', async function () {
-        should(await attributionBuilder.build({type: 'post', id: '123', url: '/post'}).fetchResource()).match({
+        should(await attributionBuilder.build({type: 'post', id: '123', url: '/post'}).getResource()).match({
             type: 'post',
             id: '123',
             url: 'https://absolute/dir/path',
@@ -117,7 +114,7 @@ describe('AttributionBuilder', function () {
     });
 
     it('Returns url resource', async function () {
-        should(await attributionBuilder.build({type: 'url', id: null, url: '/url'}).fetchResource()).match({
+        should(await attributionBuilder.build({type: 'url', id: null, url: '/url'}).getResource()).match({
             type: 'url',
             id: null,
             url: 'https://absolute/dir/url',
@@ -126,7 +123,7 @@ describe('AttributionBuilder', function () {
     });
 
     it('Returns url resource if not found', async function () {
-        should(await attributionBuilder.build({type: 'post', id: 'invalid', url: '/post'}).fetchResource()).match({
+        should(await attributionBuilder.build({type: 'post', id: 'invalid', url: '/post'}).getResource()).match({
             type: 'url',
             id: null,
             url: 'https://absolute/dir/post',
