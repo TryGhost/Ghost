@@ -1659,10 +1659,10 @@
     debug "^4.1.0"
     globals "^11.1.0"
 
-"@babel/types@^7.1.6", "@babel/types@^7.12.1", "@babel/types@^7.18.10", "@babel/types@^7.18.6", "@babel/types@^7.18.9", "@babel/types@^7.3.0", "@babel/types@^7.3.3", "@babel/types@^7.4.4", "@babel/types@^7.7.0", "@babel/types@^7.7.2":
-  version "7.18.10"
-  resolved "https://registry.yarnpkg.com/@babel/types/-/types-7.18.10.tgz#4908e81b6b339ca7c6b7a555a5fc29446f26dde6"
-  integrity sha512-MJvnbEiiNkpjo+LknnmRrqbY1GPUUggjv+wQVjetM/AONoupqRALB7I6jGqNUAZsKcRIEu2J6FRFvsczljjsaQ==
+"@babel/types@^7.1.6", "@babel/types@^7.12.1", "@babel/types@^7.12.13", "@babel/types@^7.18.10", "@babel/types@^7.18.6", "@babel/types@^7.18.9", "@babel/types@^7.3.0", "@babel/types@^7.3.3", "@babel/types@^7.4.4", "@babel/types@^7.7.0", "@babel/types@^7.7.2":
+  version "7.18.13"
+  resolved "https://registry.yarnpkg.com/@babel/types/-/types-7.18.13.tgz#30aeb9e514f4100f7c1cb6e5ba472b30e48f519a"
+  integrity sha512-ePqfTihzW0W6XAU+aMw2ykilisStJfDnsejDCXRchCcMJ4O0+8DhPXf2YUbZ6wjBlsEmZwLK/sPweWtu8hcJYQ==
   dependencies:
     "@babel/helper-string-parser" "^7.18.10"
     "@babel/helper-validator-identifier" "^7.18.6"
@@ -9928,13 +9928,16 @@ ember-concurrency-decorators@^2.0.0:
     ember-cli-htmlbars "^4.3.1"
     ember-cli-typescript "^3.1.4"
 
-ember-concurrency@2.2.1, "ember-concurrency@>=1.0.0 <3", "ember-concurrency@^0.8.27 || ^0.9.0 || ^0.10.0 || ^1.0.0 || ^2.0.0-rc.1":
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/ember-concurrency/-/ember-concurrency-2.2.1.tgz#4ed2e167036d00f7142312bc93c16f13ed9a259c"
-  integrity sha512-a4283Yq+jimxqoD5YaxQu7cXePHKqkNQfsT4fs0nYTz5PYbUd6wzUtelp6k8R1JTNPwDdxyVvUgu7yYoC8Sk5A==
+ember-concurrency@2.3.2, "ember-concurrency@>=1.0.0 <3", "ember-concurrency@^0.8.27 || ^0.9.0 || ^0.10.0 || ^1.0.0 || ^2.0.0-rc.1":
+  version "2.3.2"
+  resolved "https://registry.yarnpkg.com/ember-concurrency/-/ember-concurrency-2.3.2.tgz#7a5623c0ca04b1ef189bcca899b0d3a813e0b728"
+  integrity sha512-ne+yvIVDjzI4EG4qlO1T/Wx07QUYyTaOAmpUGD1wy3sMnQYYbCpvwdkM3F15jY3c4zDtfB5L1IhM0kHCtabWxQ==
   dependencies:
+    "@babel/helper-plugin-utils" "^7.12.13"
+    "@babel/types" "^7.12.13"
     "@glimmer/tracking" "^1.0.4"
-    ember-cli-babel "^7.26.6"
+    ember-cli-babel "^7.26.11"
+    ember-cli-babel-plugin-helpers "^1.1.1"
     ember-cli-htmlbars "^5.7.1"
     ember-compatibility-helpers "^1.2.0"
     ember-destroyable-polyfill "^2.0.2"
