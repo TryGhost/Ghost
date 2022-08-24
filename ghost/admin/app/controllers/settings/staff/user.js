@@ -47,6 +47,8 @@ export default Controller.extend({
 
     canChangeEmail: not('isAdminUserOnOwnerProfile'),
     canChangePassword: not('isAdminUserOnOwnerProfile'),
+    canToggleMemberAlerts: or('currentUser.isOwnerOnly', 'isAdminUserOnOwnProfile'),
+    isAdminUserOnOwnProfile: and('currentUser.isAdminOnly', 'isOwnProfile'),
     canMakeOwner: and('currentUser.isOwnerOnly', 'isNotOwnProfile', 'user.isAdminOnly', 'isNotSuspended'),
     isAdminUserOnOwnerProfile: and('currentUser.isAdminOnly', 'user.isOwnerOnly'),
     isNotOwnersProfile: not('user.isOwnerOnly'),
@@ -383,6 +385,16 @@ export default Controller.extend({
 
     toggleCommentNotifications: action(function (event) {
         this.user.commentNotifications = event.target.checked;
+    }),
+
+    toggleMemberEmailAlerts: action(function (type, event) {
+        if (type === 'free-signup') {
+            this.user.freeMemberSignupNotification = event.target.checked;
+        } else if (type === 'paid-started') {
+            this.user.paidSubscriptionStartedNotification = event.target.checked;
+        } else if (type === 'paid-canceled') {
+            this.user.paidSubscriptionCanceledNotification = event.target.checked;
+        }
     }),
 
     deleteUser: task(function *() {
