@@ -32,8 +32,9 @@
                 {{#if this.postsInfinityModel}}
                     <li class="gh-list-row header">
                         <div class="gh-list-header gh-posts-title-header">Title</div>
-                        {{#if this.feature.memberAttribution}}
-                            <div class="gh-list-header gh-posts-status-header"></div>
+                        
+                        {{#if (and this.feature.memberAttribution (not this.session.user.isContributor)) }}
+                        <div class="gh-list-header gh-posts-status-header"></div>
                             <div class="gh-list-header gh-posts-signups-header">Signups</div>
                             <div class="gh-list-header gh-posts-conversions-header">Paid</div>
                         {{/if}}
@@ -41,9 +42,9 @@
                             <div class="gh-list-header gh-posts-sends-header">Sends</div>
                             <div class="gh-list-header gh-posts-opens-header">Opens</div>
                         {{/if}}
-                        {{#unless this.feature.memberAttribution}}
+                        {{#if (or (not this.feature.memberAttribution) this.session.user.isContributor) }}
                             <div class="gh-list-header gh-posts-status-header">Status</div>
-                        {{/unless}}
+                        {{/if}}
                     </li>
                 {{/if}}
 
