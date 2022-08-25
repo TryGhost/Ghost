@@ -44,7 +44,7 @@ describe('sendMagicLink', function () {
 
         // Get data
         const data = await membersService.api.getTokenDataFromMagicLinkToken(token);
-        
+
         should(data).match({
             email,
             attribution: {
@@ -52,6 +52,42 @@ describe('sendMagicLink', function () {
                 url: null,
                 type: null
             }
+        });
+    });
+
+    it('triggers email alert for free member signup', async function () {
+        const email = 'newly-created-user-magic-link-test@test.com';
+        await membersAgent.post('/api/send-magic-link')
+            .body({
+                email,
+                emailType: 'signup'
+            })
+            .expectEmptyBody()
+            .expectStatus(201);
+
+        // Check email is sent
+        const mail = mockManager.assert.sentEmail({
+            to: email,
+            subject: /Complete your sign up to Ghost!/
+        });
+
+        // Get link from email
+        const [url] = mail.text.match(/https?:\/\/[^\s]+/);
+        const parsed = new URL(url);
+        const token = parsed.searchParams.get('token');
+
+        // Get member data from token
+        const data = await membersService.api.getMemberDataFromMagicLinkToken(token);
+
+        // Check member alert is sent to site owners
+        mockManager.assert.sentEmail({
+            to: 'jbloggs@example.com',
+            subject: /🥳 Free member signup: newly-created-user-magic-link-test@test.com/
+        });
+
+        // Check member data is returned
+        should(data).match({
+            email
         });
     });
 
@@ -84,7 +120,7 @@ describe('sendMagicLink', function () {
 
         // Get data
         const data = await membersService.api.getTokenDataFromMagicLinkToken(token);
-        
+
         should(data).match({
             email,
             attribution: {
