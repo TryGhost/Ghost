@@ -168,6 +168,10 @@
     padding-left: 10px;
 }
 
+.gh-posts-status-header {
+    width: 140px;
+}
+
 .gh-posts-signups-header,
 .gh-posts-conversions-header,
 .gh-posts-sends-header,
