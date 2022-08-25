@@ -19,10 +19,10 @@
             <div class="gh-members-activity-container">
                 <div class="gh-members-activity-icon">{{svg-jar event.icon}}</div>
                 <div class="gh-members-activity-event">
-                    <span class="gh-members-activity-description">
-                        {{capitalize-first-letter event.action}}
-                        {{#if (and event.url (not (feature "memberAttribution")))}}
-                            {{event.join}}
+                    <span class="gh-members-activity-description {{if (feature "memberAttribution") 'feature-memberAttribution'}}">
+                        <span class="gh-members-activity-event-text">{{capitalize-first-letter event.action}}</span>
+                        {{#if event.url}}
+                            <span class="gh-members-activity-event-join">{{event.join}}</span>
                             <a class="ghost-members-activity-object-link" href="{{event.url}}" target="_blank" rel="noopener noreferrer">{{event.object}}</a>
                         {{/if}}
                         {{#if event.email}}
@@ -35,17 +35,6 @@
                 </div>
             </div>
         </div>
-        {{#if (feature "memberAttribution")}}
-            <div class="gh-list-data gh-list-data-attribution">
-                {{#if event.url}}
-                    <a class="ghost-members-activity-object-link" href="{{event.url}}" target="_blank" rel="noopener noreferrer">{{event.object}}</a>
-                {{else if event.email}}
-                    <GhEmailPreviewLink @data={{event.email}} />
-                {{else}}
-                    <span class="gh-list-nodata">&mdash;</span>
-                {{/if}}
-            </div>
-        {{/if}}
         <div class="gh-list-data gh-list-data-date">{{moment-format event.timestamp "DD MMM YYYY HH:mm"}}</div>
     </tr>
 {{/let}}

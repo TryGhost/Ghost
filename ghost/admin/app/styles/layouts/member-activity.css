@@ -153,9 +153,35 @@
     overflow: hidden;
 }
 
+.gh-members-activity-description.feature-memberAttribution  {
+    color: var(--darkgrey);
+}
+
+.gh-members-activity-description.feature-memberAttribution a {
+    font-weight: 400;
+    color: var(--midgrey) !important;
+    text-decoration: underline;
+    text-decoration-color: var(--midlightgrey);
+    transition: all 150ms ease;
+}
+
+.gh-members-activity-description.feature-memberAttribution a:hover {
+    color: var(--middarkgrey) !important;
+}
+
 .gh-members-activity-description a {
     font-weight: 600;
     color: var(--darkgrey);
+}
+
+.gh-members-activity-event-join {
+    font-weight: 500;
+    color: var(--middarkgrey);
+}
+
+.feature-memberAttribution .gh-members-activity-event-join {
+    font-weight: 400;
+    color: var(--midgrey);
 }
 
 .gh-members-activity-icon {
