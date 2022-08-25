@@ -106,6 +106,7 @@ module.exports = {
 
         verificationTrigger = new VerificationTrigger({
             apiTriggerThreshold: _.get(config.get('hostSettings'), 'emailVerification.importThreshold'),
+            adminTriggerThreshold: _.get(config.get('hostSettings'), 'emailVerification.adminThreshold'),
             isVerified: () => config.get('hostSettings:emailVerification:verified') === true,
             isVerificationRequired: () => settingsCache.get('email_verification_required') === true,
             sendVerificationEmail: ({subject, message, amountTriggered}) => {
@@ -189,4 +190,5 @@ module.exports = {
     stats: membersStats,
     export: require('./exporter/query')
 };
+
 module.exports.middleware = require('./middleware');

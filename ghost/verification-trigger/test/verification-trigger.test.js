@@ -233,6 +233,100 @@ describe('Email verification flow', function () {
             amountTriggered: 10
         });
     });
+
+    it('Triggers when a number of members are added from Admin', async function () {
+        const emailStub = sinon.stub().resolves(null);
+        const settingsStub = sinon.stub().resolves(null);
+        const eventStub = sinon.stub().resolves({
+            meta: {
+                pagination: {
+                    total: 10
+                }
+            }
+        });
+
+        const trigger = new VerificationTrigger({
+            adminTriggerThreshold: 2,
+            Settings: {
+                edit: settingsStub
+            },
+            membersStats: {
+                getTotalMembers: () => 15
+            },
+            isVerified: () => false,
+            isVerificationRequired: () => false,
+            sendVerificationEmail: emailStub,
+            eventRepository: {
+                getNewsletterSubscriptionEvents: eventStub
+            }
+        });
+
+        await trigger._handleMemberSubscribeEvent({
+            data: {
+                source: 'admin'
+            }
+        });
+
+        eventStub.callCount.should.eql(1);
+        eventStub.lastCall.lastArg.should.have.property('data.source');
+        eventStub.lastCall.lastArg.should.have.property('data.created_at');
+        eventStub.lastCall.lastArg['data.source'].should.eql(`data.source:'admin'`);
+        eventStub.lastCall.lastArg['data.created_at'].should.startWith(`data.created_at:>'`);
+
+        emailStub.callCount.should.eql(1);
+        emailStub.lastCall.firstArg.should.eql({
+            subject: 'Email needs verification',
+            message: 'Email verification needed for site: {siteUrl} has added: {importedNumber} members through the Admin client in the last 30 days.',
+            amountTriggered: 10
+        });
+    });
+    
+    it('Triggers when a number of members are added from API', async function () {
+        const emailStub = sinon.stub().resolves(null);
+        const settingsStub = sinon.stub().resolves(null);
+        const eventStub = sinon.stub().resolves({
+            meta: {
+                pagination: {
+                    total: 10
+                }
+            }
+        });
+
+        const trigger = new VerificationTrigger({
+            adminTriggerThreshold: 2,
+            apiTriggerThreshold: 2,
+            Settings: {
+                edit: settingsStub
+            },
+            membersStats: {
+                getTotalMembers: () => 15
+            },
+            isVerified: () => false,
+            isVerificationRequired: () => false,
+            sendVerificationEmail: emailStub,
+            eventRepository: {
+                getNewsletterSubscriptionEvents: eventStub
+            }
+        });
+
+        await trigger._handleMemberSubscribeEvent({
+            data: {
+                source: 'api'
+            }
+        });
+
+        eventStub.callCount.should.eql(1);
+        eventStub.lastCall.lastArg.should.have.property('data.source');
+        eventStub.lastCall.lastArg.should.have.property('data.created_at');
+        eventStub.lastCall.lastArg['data.source'].should.eql(`data.source:'admin'`);
+        eventStub.lastCall.lastArg['data.created_at'].should.startWith(`data.created_at:>'`);
+
+        emailStub.callCount.should.eql(1);
+        emailStub.lastCall.firstArg.should.eql({
+            subject: 'Email needs verification',
+            message: 'Email verification needed for site: {siteUrl} has added: {importedNumber} members through the API in the last 30 days.',
+            amountTriggered: 10
+        });
     });
 
     it('Does not fetch events and trigger when threshold is Infinity', async function () {
