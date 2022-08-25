@@ -483,9 +483,17 @@ module.exports = {
         created_at: {type: 'dateTime', nullable: false},
         member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
         attribution_id: {type: 'string', maxlength: 24, nullable: true},
-        attribution_type: {type: 'string', maxlength: 50, nullable: true},
+        attribution_type: {
+            type: 'string', maxlength: 50, nullable: true, validations: {
+                isIn: [['url', 'post', 'page', 'author', 'tag']]
+            }
+        },
         attribution_url: {type: 'string', maxlength: 2000, nullable: true},
-        source: {type: 'string', maxlength: 50, nullable: false}
+        source: {
+            type: 'string', maxlength: 50, nullable: false, validations: {
+                isIn: [['member', 'import', 'system', 'api', 'admin']]
+            }
+        }
     },
     members_cancel_events: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
@@ -613,7 +621,11 @@ module.exports = {
         member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
         subscription_id: {type: 'string', maxlength: 24, nullable: false, references: 'members_stripe_customers_subscriptions.id', cascadeDelete: true},
         attribution_id: {type: 'string', maxlength: 24, nullable: true},
-        attribution_type: {type: 'string', maxlength: 50, nullable: true},
+        attribution_type: {
+            type: 'string', maxlength: 50, nullable: true, validations: {
+                isIn: [['url', 'post', 'page', 'author', 'tag']]
+            }
+        },
         attribution_url: {type: 'string', maxlength: 2000, nullable: true}
     },
     offer_redemptions: {
@@ -628,7 +640,11 @@ module.exports = {
         member_id: {type: 'string', maxlength: 24, nullable: false, unique: false, references: 'members.id', cascadeDelete: true},
         subscribed: {type: 'bool', nullable: false, defaultTo: true},
         created_at: {type: 'dateTime', nullable: false},
-        source: {type: 'string', maxlength: 50, nullable: true},
+        source: {
+            type: 'string', maxlength: 50, nullable: true, validations: {
+                isIn: [['member', 'import', 'system', 'api', 'admin']]
+            }
+        },
         newsletter_id: {type: 'string', maxlength: 24, nullable: true, references: 'newsletters.id', cascadeDelete: false}
     },
     stripe_products: {
