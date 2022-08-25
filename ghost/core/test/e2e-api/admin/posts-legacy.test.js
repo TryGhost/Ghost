@@ -28,7 +28,6 @@ describe('Posts API', function () {
         const newsletterId = testUtils.DataGenerator.Content.newsletters[0].id;
         const postId = testUtils.DataGenerator.Content.posts[0].id;
         await models.Post.edit({newsletter_id: newsletterId}, {id: postId});
-        mockManager.mockLabsDisabled('memberAttribution');
     });
 
     afterEach(function () {
@@ -113,7 +112,7 @@ describe('Posts API', function () {
             jsonResponse.posts[0],
             'post',
             null,
-            ['authors', 'primary_author', 'email', 'tiers', 'newsletter']
+            ['authors', 'primary_author', 'email', 'tiers', 'newsletter', 'count']
         );
 
         localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
@@ -234,7 +233,7 @@ describe('Posts API', function () {
         should.exist(jsonResponse);
         should.exist(jsonResponse.posts);
 
-        localUtils.API.checkResponse(jsonResponse.posts[0], 'post');
+        localUtils.API.checkResponse(jsonResponse.posts[0], 'post', null, ['count']);
 
         jsonResponse.posts[0].authors[0].should.be.an.Object();
         localUtils.API.checkResponse(jsonResponse.posts[0].authors[0], 'user');

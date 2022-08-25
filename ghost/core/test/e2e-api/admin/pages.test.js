@@ -15,7 +15,6 @@ describe('Pages API', function () {
         await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
         await localUtils.doAuth(request, 'users:extra', 'posts');
-        mockManager.mockLabsDisabled('memberAttribution');
     });
 
     it('Can retrieve all pages', async function () {
