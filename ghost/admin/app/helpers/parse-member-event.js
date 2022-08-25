@@ -81,7 +81,7 @@ export default class ParseMemberEventHelper extends Helper {
             icon = 'comment';
         }
 
-        return 'event-' + icon;
+        return 'event-' + icon + (this.feature.get('memberAttribution') ? '--feature-attribution' : '');
     }
 
     getAction(event, hasMultipleNewsletters) {
