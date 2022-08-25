@@ -41,7 +41,7 @@ class Attribution {
                 id: null,
                 type: 'url',
                 url: this.#urlTranslator.relativeToAbsolute(this.url),
-                title: this.url
+                title: this.#urlTranslator.getUrlTitle(this.url)
             };
         }
 
@@ -51,7 +51,7 @@ class Attribution {
             id: model.id,
             type: this.type,
             url: updatedUrl,
-            title: model.get('title') ?? model.get('name') ?? this.url
+            title: model.get('title') ?? model.get('name') ?? this.#urlTranslator.getUrlTitle(this.url)
         };
     }
 

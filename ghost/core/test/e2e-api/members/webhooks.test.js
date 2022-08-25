@@ -1822,7 +1822,7 @@ describe('Members API', function () {
                 id: null,
                 url: absoluteUrl,
                 type: 'url',
-                title: '/'
+                title: 'homepage'
             });
         });
 
