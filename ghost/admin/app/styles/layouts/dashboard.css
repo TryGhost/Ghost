@@ -713,11 +713,6 @@ Dashboard List */
     overflow: hidden;
 }
 
-.gh-dashboard-list-subtext a {
-    font-weight: 600;
-    color: var(--darkgrey);
-}
-
 .gh-dashboard-list-item svg {
     width: 24px;
     min-width: 24px;
