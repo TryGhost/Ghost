@@ -36,6 +36,9 @@ export default BaseModel.extend(ValidationEngine, {
     twitter: attr('twitter-url-user'),
     tour: attr('json-string'),
     commentNotifications: attr(),
+    freeMemberSignupNotification: attr(),
+    paidSubscriptionStartedNotification: attr(),
+    paidSubscriptionCanceledNotification: attr(),
 
     ghostPaths: service(),
     ajax: service(),

@@ -2,6 +2,10 @@ export function enableMembers(server) {
     server.db.settings.find({key: 'members_signup_access'})
         ? server.db.settings.update({key: 'members_signup_access'}, {value: 'all'})
         : server.create('setting', {key: 'members_signup_access', value: 'all', group: 'members'});
+
+    server.db.settings.find({key: 'members_enabled'})
+        ? server.db.settings.update({key: 'members_enabled'}, {value: true})
+        : server.create('setting', {key: 'members_enabled', value: true, group: 'members'});
 }
 
 export function disableMembers(server) {
