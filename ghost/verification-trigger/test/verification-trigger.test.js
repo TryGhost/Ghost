@@ -266,7 +266,7 @@ describe('Email verification flow', function () {
         // We shouldn't be fetching the events if the threshold is Infinity
         eventStub.callCount.should.eql(0);
 
-        // We shouldn't be sending emails if the threshold is infinity
+        // We shouldn't be sending emails if the threshold is Infinity
         emailStub.callCount.should.eql(0);
     });
 });
