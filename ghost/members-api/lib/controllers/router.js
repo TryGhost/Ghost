@@ -27,6 +27,7 @@ module.exports = class RouterController {
      * @param {import('@tryghost/members-stripe-service')} deps.stripeAPIService
      * @param {import('@tryghost/member-attribution')} deps.memberAttributionService
      * @param {any} deps.tokenService
+     * @param {any} deps.sendEmailWithMagicLink
      * @param {{isSet(name: string): boolean}} deps.labsService
      */
     constructor({
@@ -401,7 +402,9 @@ module.exports = class RouterController {
                 }
             } else {
                 const tokenData = _.pick(req.body, ['labels', 'name', 'newsletters']);
-
+                if (req.ip) {
+                    tokenData.reqIp = req.ip;
+                }
                 // Save attribution data in the tokenData
                 tokenData.attribution = this._memberAttributionService.getAttribution(req.body.urlHistory);
 
