@@ -56,4 +56,16 @@ describe('UrlHistory', function () {
             should(history.history).eql(input);
         }
     });
+
+    it('removes entries older than 24 hours', function () {
+        const input = [{
+            time: Date.now() - 1000 * 60 * 60 * 25,
+            path: '/old'
+        }, {
+            time: Date.now() - 1000 * 60 * 60 * 23,
+            path: '/not-old'
+        }];
+        const history = UrlHistory.create(input);
+        should(history.history).eql([input[1]]);
+    });
 });

@@ -24,7 +24,7 @@ describe('Member Attribution Service', function () {
                 const attribution = memberAttributionService.service.getAttribution([
                     {
                         path: url,
-                        time: 123
+                        time: Date.now()
                     }
                 ]);
                 attribution.should.match(({
@@ -32,7 +32,7 @@ describe('Member Attribution Service', function () {
                     url: subdomainRelative,
                     type: 'url'
                 }));
-        
+
                 (await attribution.fetchResource()).should.match(({
                     id: null,
                     url: absoluteUrl,
@@ -45,11 +45,11 @@ describe('Member Attribution Service', function () {
                 const id = fixtureManager.get('posts', 0).id;
                 const post = await models.Post.where('id', id).fetch({require: true});
                 const url = urlService.getUrlByResourceId(post.id, {absolute: false, withSubdirectory: true});
-    
+
                 const attribution = memberAttributionService.service.getAttribution([
                     {
                         path: url,
-                        time: 123
+                        time: Date.now()
                     }
                 ]);
                 attribution.should.match(({
@@ -57,9 +57,9 @@ describe('Member Attribution Service', function () {
                     url,
                     type: 'post'
                 }));
-    
+
                 const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true, withSubdirectory: true});
-    
+
                 (await attribution.fetchResource()).should.match(({
                     id: post.id,
                     url: absoluteUrl,
@@ -78,7 +78,7 @@ describe('Member Attribution Service', function () {
                 const attribution = memberAttributionService.service.getAttribution([
                     {
                         path: url,
-                        time: 123
+                        time: Date.now()
                     }
                 ]);
 
@@ -101,18 +101,18 @@ describe('Member Attribution Service', function () {
 
                 await models.Post.edit({status: 'published'}, {id});
             });
-    
+
             it('resolves pages', async function () {
                 const id = fixtureManager.get('posts', 5).id;
                 const post = await models.Post.where('id', id).fetch({require: true});
                 should(post.get('type')).eql('page');
-    
+
                 const url = urlService.getUrlByResourceId(post.id, {absolute: false, withSubdirectory: true});
-    
+
                 const attribution = memberAttributionService.service.getAttribution([
                     {
                         path: url,
-                        time: 123
+                        time: Date.now()
                     }
                 ]);
                 attribution.should.match(({
@@ -120,9 +120,9 @@ describe('Member Attribution Service', function () {
                     url,
                     type: 'page'
                 }));
-    
+
                 const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true, withSubdirectory: true});
-    
+
                 (await attribution.fetchResource()).should.match(({
                     id: post.id,
                     url: absoluteUrl,
@@ -130,16 +130,16 @@ describe('Member Attribution Service', function () {
                     title: post.get('title')
                 }));
             });
-    
+
             it('resolves tags', async function () {
                 const id = fixtureManager.get('tags', 0).id;
                 const tag = await models.Tag.where('id', id).fetch({require: true});
                 const url = urlService.getUrlByResourceId(tag.id, {absolute: false, withSubdirectory: true});
-    
+
                 const attribution = memberAttributionService.service.getAttribution([
                     {
                         path: url,
-                        time: 123
+                        time: Date.now()
                     }
                 ]);
                 attribution.should.match(({
@@ -147,9 +147,9 @@ describe('Member Attribution Service', function () {
                     url,
                     type: 'tag'
                 }));
-    
+
                 const absoluteUrl = urlService.getUrlByResourceId(tag.id, {absolute: true, withSubdirectory: true});
-    
+
                 (await attribution.fetchResource()).should.match(({
                     id: tag.id,
                     url: absoluteUrl,
@@ -157,16 +157,16 @@ describe('Member Attribution Service', function () {
                     title: tag.get('name')
                 }));
             });
-    
+
             it('resolves authors', async function () {
                 const id = fixtureManager.get('users', 0).id;
                 const author = await models.User.where('id', id).fetch({require: true});
                 const url = urlService.getUrlByResourceId(author.id, {absolute: false, withSubdirectory: true});
-    
+
                 const attribution = memberAttributionService.service.getAttribution([
                     {
                         path: url,
-                        time: 123
+                        time: Date.now()
                     }
                 ]);
                 attribution.should.match(({
@@ -174,9 +174,9 @@ describe('Member Attribution Service', function () {
                     url,
                     type: 'author'
                 }));
-    
+
                 const absoluteUrl = urlService.getUrlByResourceId(author.id, {absolute: true, withSubdirectory: true});
-    
+
                 (await attribution.fetchResource()).should.match(({
                     id: author.id,
                     url: absoluteUrl,
@@ -190,7 +190,7 @@ describe('Member Attribution Service', function () {
             beforeEach(function () {
                 configUtils.set('url', 'https://siteurl.com/subdirectory/');
             });
-        
+
             afterEach(function () {
                 configUtils.restore();
             });
@@ -203,7 +203,7 @@ describe('Member Attribution Service', function () {
                 const attribution = memberAttributionService.service.getAttribution([
                     {
                         path: url,
-                        time: 123
+                        time: Date.now()
                     }
                 ]);
                 attribution.should.match(({
@@ -211,7 +211,7 @@ describe('Member Attribution Service', function () {
                     url: subdomainRelative,
                     type: 'url'
                 }));
-        
+
                 (await attribution.fetchResource()).should.match(({
                     id: null,
                     url: absoluteUrl,
@@ -232,7 +232,7 @@ describe('Member Attribution Service', function () {
                 const attribution = memberAttributionService.service.getAttribution([
                     {
                         path: url,
-                        time: 123
+                        time: Date.now()
                     }
                 ]);
 
@@ -266,7 +266,7 @@ describe('Member Attribution Service', function () {
                 const attribution = memberAttributionService.service.getAttribution([
                     {
                         path: url,
-                        time: 123
+                        time: Date.now()
                     }
                 ]);
 
@@ -299,7 +299,7 @@ describe('Member Attribution Service', function () {
                 const attribution = memberAttributionService.service.getAttribution([
                     {
                         path: url,
-                        time: 123
+                        time: Date.now()
                     }
                 ]);
                 attribution.should.match(({
@@ -327,7 +327,7 @@ describe('Member Attribution Service', function () {
                 const attribution = memberAttributionService.service.getAttribution([
                     {
                         path: url,
-                        time: 123
+                        time: Date.now()
                     }
                 ]);
                 attribution.should.match(({
@@ -355,7 +355,7 @@ describe('Member Attribution Service', function () {
                 const attribution = memberAttributionService.service.getAttribution([
                     {
                         path: url,
-                        time: 123
+                        time: Date.now()
                     }
                 ]);
                 attribution.should.match(({

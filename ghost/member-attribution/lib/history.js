@@ -59,8 +59,18 @@ class UrlHistory {
             return new UrlHistory([]);
         }
 
-        return new UrlHistory(urlHistory);
+        const now = Date.now();
+        const filteredHistory = urlHistory.filter((item) => {
+            return now - item.time < this.MAX_AGE;
+        });
+
+        return new UrlHistory(filteredHistory);
     }
+
+    /**
+     * @private
+     */
+    static MAX_AGE = 1000 * 60 * 60 * 24;
 }
 
 module.exports = UrlHistory;

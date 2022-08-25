@@ -6,8 +6,10 @@ const AttributionBuilder = require('../lib/attribution');
 
 describe('AttributionBuilder', function () {
     let attributionBuilder;
+    let now;
 
     before(function () {
+        now = Date.now();
         attributionBuilder = new AttributionBuilder({
             urlTranslator: {
                 getTypeAndId(path) {
@@ -61,33 +63,33 @@ describe('AttributionBuilder', function () {
     });
 
     it('Returns last url', function () {
-        const history = UrlHistory.create([{path: '/dir/not-last', time: 123}, {path: '/dir/test/', time: 123}]);
+        const history = UrlHistory.create([{path: '/dir/not-last', time: now + 123}, {path: '/dir/test/', time: now + 123}]);
         should(attributionBuilder.getAttribution(history)).match({type: 'url', id: null, url: '/test/'});
     });
 
     it('Returns last post', function () {
         const history = UrlHistory.create([
-            {path: '/dir/my-post', time: 123},
-            {path: '/dir/test', time: 124},
-            {path: '/dir/unknown-page', time: 125}
+            {path: '/dir/my-post', time: now + 123},
+            {path: '/dir/test', time: now + 124},
+            {path: '/dir/unknown-page', time: now + 125}
         ]);
         should(attributionBuilder.getAttribution(history)).match({type: 'post', id: 123, url: '/my-post'});
     });
 
     it('Returns last post even when it found pages', function () {
         const history = UrlHistory.create([
-            {path: '/dir/my-post', time: 123},
-            {path: '/dir/my-page', time: 124},
-            {path: '/dir/unknown-page', time: 125}
+            {path: '/dir/my-post', time: now + 123},
+            {path: '/dir/my-page', time: now + 124},
+            {path: '/dir/unknown-page', time: now + 125}
         ]);
         should(attributionBuilder.getAttribution(history)).match({type: 'post', id: 123, url: '/my-post'});
     });
 
     it('Returns last page if no posts', function () {
         const history = UrlHistory.create([
-            {path: '/dir/other', time: 123},
-            {path: '/dir/my-page', time: 124},
-            {path: '/dir/unknown-page', time: 125}
+            {path: '/dir/other', time: now + 123},
+            {path: '/dir/my-page', time: now + 124},
+            {path: '/dir/unknown-page', time: now + 125}
         ]);
         should(attributionBuilder.getAttribution(history)).match({type: 'page', id: 845, url: '/my-page'});
     });
