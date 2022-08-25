@@ -489,6 +489,32 @@ User = ghostBookshelf.Model.extend({
     },
 
     /**
+     * Returns users who should receive a specific type of alert
+     * @param {'free-signup'|'paid-started'|'paid-canceled'} type The type of alert to fetch users for
+     * @param {any} options
+     * @return {Promise<[Object]>} Array of users
+     */
+    getEmailAlertUsers(type, options) {
+        options = options || {};
+
+        let filter = 'status:active';
+        if (type === 'free-signup') {
+            filter += '+free_member_signup_notification:true';
+        } else if (type === 'paid-started') {
+            filter += '+paid_subscription_started_notification:true';
+        } else if (type === 'paid-canceled') {
+            filter += '+paid_subscription_canceled_notification:true';
+        }
+        return this.findAll(_.merge({filter, withRelated: ['roles']}, options)).then((users) => {
+            return users.toJSON().filter((user) => {
+                return user?.roles?.some((role) => {
+                    return ['Owner', 'Administrator'].includes(role.name);
+                });
+            });
+        });
+    },
+
+    /**
      * ### Edit
      *
      * Note: In case of login the last_seen attribute gets updated.
