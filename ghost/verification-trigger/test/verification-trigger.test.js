@@ -59,8 +59,8 @@ describe('Email verification flow', function () {
             sendVerificationEmail: emailStub
         });
 
-        const result = await trigger.startVerificationProcess({
-            amountImported: 10,
+        const result = await trigger._startVerificationProcess({
+            amount: 10,
             throwOnTrigger: false
         });
 
@@ -81,8 +81,8 @@ describe('Email verification flow', function () {
             sendVerificationEmail: emailStub
         });
 
-        const result = await trigger.startVerificationProcess({
-            amountImported: 10,
+        const result = await trigger._startVerificationProcess({
+            amount: 10,
             throwOnTrigger: false
         });
 
@@ -103,8 +103,8 @@ describe('Email verification flow', function () {
             sendVerificationEmail: emailStub
         });
 
-        const result = await trigger.startVerificationProcess({
-            amountImported: 10,
+        const result = await trigger._startVerificationProcess({
+            amount: 10,
             throwOnTrigger: false
         });
 
@@ -125,8 +125,8 @@ describe('Email verification flow', function () {
             sendVerificationEmail: emailStub
         });
 
-        await trigger.startVerificationProcess({
-            amountImported: 10,
+        await trigger._startVerificationProcess({
+            amount: 10,
             throwOnTrigger: true
         }).should.be.rejected();
     });
@@ -143,8 +143,8 @@ describe('Email verification flow', function () {
             sendVerificationEmail: emailStub
         });
 
-        await trigger.startVerificationProcess({
-            amountImported: 10,
+        await trigger._startVerificationProcess({
+            amount: 10,
             throwOnTrigger: false
         });
 

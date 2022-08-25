@@ -55,8 +55,8 @@ class VerificationTrigger {
             });
 
             if (events.meta.pagination.total > sourceThreshold) {
-                await this.startVerificationProcess({
-                    amountImported: events.meta.pagination.total,
+                await this._startVerificationProcess({
+                    amount: events.meta.pagination.total,
                     throwOnTrigger: false,
                     source: source
                 });
@@ -93,8 +93,8 @@ class VerificationTrigger {
         // the last 30 days) or the threshold defined in config, whichever is greater.
         const importThreshold = Math.max(membersTotal - events.meta.pagination.total, this._apiTriggerThreshold);
         if (isFinite(importThreshold) && events.meta.pagination.total > importThreshold) {
-            await this.startVerificationProcess({
-                amountImported: events.meta.pagination.total,
+            await this._startVerificationProcess({
+                amount: events.meta.pagination.total,
                 throwOnTrigger: false,
                 source: 'import'
             });
@@ -109,13 +109,13 @@ class VerificationTrigger {
     /**
      *
      * @param {object} config
-     * @param {number} config.amountImported Amount of members which were imported
+     * @param {number} config.amount The amount of members that triggered the verification process
      * @param {boolean} config.throwOnTrigger Whether to throw if verification is needed
      * @param {string} config.source Source of the verification trigger - currently either 'api' or 'import'
      * @returns {Promise<IVerificationResult>} Object containing property "needsVerification" - true when triggered
      */
-    async startVerificationProcess({
-        amountImported,
+    async _startVerificationProcess({
+        amount,
         throwOnTrigger,
         source
     }) {
