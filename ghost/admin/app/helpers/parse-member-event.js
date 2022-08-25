@@ -108,22 +108,22 @@ function getAction(event, hasMultipleNewsletters) {
 
     if (event.type === 'subscription_event') {
         if (event.data.type === 'created') {
-            return 'started paid membership';
+            return 'started paid subscription';
         }
         if (event.data.type === 'updated') {
-            return 'changed paid membership';
+            return 'changed paid subscription';
         }
         if (event.data.type === 'canceled') {
-            return 'canceled paid membership';
+            return 'canceled paid subscription';
         }
         if (event.data.type === 'reactivated') {
-            return 'reactivated paid membership';
+            return 'reactivated paid subscription';
         }
         if (event.data.type === 'expired') {
-            return 'ended paid membership';
+            return 'ended paid subscription';
         }
 
-        return 'changed paid membership';
+        return 'changed paid subscription';
     }
 
     if (event.type === 'email_opened_event') {
