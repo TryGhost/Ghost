@@ -105,8 +105,9 @@ module.exports = {
         });
 
         verificationTrigger = new VerificationTrigger({
-            apiTriggerThreshold: _.get(config.get('hostSettings'), 'emailVerification.importThreshold'),
+            apiTriggerThreshold: _.get(config.get('hostSettings'), 'emailVerification.apiThreshold'),
             adminTriggerThreshold: _.get(config.get('hostSettings'), 'emailVerification.adminThreshold'),
+            importTriggerThreshold: _.get(config.get('hostSettings'), 'emailVerification.importThreshold'),
             isVerified: () => config.get('hostSettings:emailVerification:verified') === true,
             isVerificationRequired: () => settingsCache.get('email_verification_required') === true,
             sendVerificationEmail: ({subject, message, amountTriggered}) => {
