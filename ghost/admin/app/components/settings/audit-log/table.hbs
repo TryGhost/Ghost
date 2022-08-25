@@ -10,7 +10,11 @@
         <tr>
             <div class="gh-list-data">
                 <div class="gh-audit-log-object flex items-center ma3">
-                    <div class="gh-audit-log-icon">{{svg-jar ev.actionIcon}}</div>
+                    <span class="user-list-item-figure" style={{background-image-style (or ev.actor.profileImageUrl ev.actor.iconImage)}}>
+                        <span class="hidden">Photo of {{ev.actor.name}}</span>
+                        <div class="gh-audit-log-icon">{{svg-jar ev.actionIcon}}</div>
+                    </span>
+                    {{!--  --}}
                     <div>
                         <div class="gh-audit-log-description">
                             <span>
