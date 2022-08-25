@@ -224,5 +224,4 @@ export default class ParseMemberEventHelper extends Helper {
         }
         return;
     }
-
 }
