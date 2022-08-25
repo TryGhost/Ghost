@@ -190,11 +190,27 @@ export default class MembersFilter extends Component {
     constructor(...args) {
         super(...args);
 
+        this.parseDefaultFilters();
+        this.fetchTiers.perform();
+    }
+
+    /**
+     * This method is not super clean as it uses did-update, but for now this is required to make URL changes work
+     * properly. 
+     * Problem: filter parameter is changed in the members controller by modifying the URL directly
+     * -> the filters property is not updated in the members controller because the new parameter is not parsed again
+     * -> we need to listen for changes in the property and parse it again
+     * -> better future proof solution: move the filter parsing logic elsewhere so it can be parsed in the members controller
+     */
+    @action
+    parseDefaultFilters() {
         if (this.args.defaultFilterParam) {
             this.parseNqlFilter(this.args.defaultFilterParam);
-        }
 
-        this.fetchTiers.perform();
+            // Pass the parsed filter to the parent component
+            // this doesn't start a new network request, and doesn't update filterParam again
+            this.applyParsedFilter();
+        }
     }
 
     @action
@@ -329,6 +345,12 @@ export default class MembersFilter extends Component {
             value = nqlValue;
         }
 
+        if (typeof value === 'boolean' || typeof value === 'number') {
+            // Transform it to a string, to keep it compatible with the internally used value in admin
+            // + make sure false and 0 are truthy
+            value = value.toString();
+        }
+
         if (relation && value) {
             return new Filter({
                 type: key,
@@ -342,14 +364,25 @@ export default class MembersFilter extends Component {
 
     parseNqlFilter(filterParam) {
         const validKeys = Object.keys(FILTER_RELATIONS_OPTIONS);
-        const filters = nql.parse(filterParam);
+        let filters;
+
+        try {
+            filters = nql.parse(filterParam);
+        } catch (e) {
+            // Invalid nql filter
+            this.filters = new TrackedArray([]);
+            return;
+        }
+
         const filterKeys = Object.keys(filters);
 
         let filterData = [];
 
         if (filterKeys?.length === 1 && validKeys.includes(filterKeys[0])) {
             const filterObj = this.parseNqlFilterKey(filters);
-            filterData = [filterObj];
+            if (filterObj) {
+                filterData = [filterObj];
+            }
         } else if (filters?.$and) {
             const andFilters = filters?.$and || [];
             filterData = andFilters.filter((nqlFilter) => {
@@ -483,6 +516,18 @@ export default class MembersFilter extends Component {
 
         const query = this.generateNqlFilter(validFilters);
         this.args.onApplyFilter(query, validFilters);
+    }
+
+    @action
+    applyParsedFilter() {
+        const validFilters = this.filters.filter((filter) => {
+            if (['label', 'tier'].includes(filter.type)) {
+                return filter.value?.length;
+            }
+            return filter.value;
+        });
+
+        this.args.onApplyParsedFilter(validFilters);
     }
 
     @action

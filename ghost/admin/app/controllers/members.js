@@ -61,6 +61,8 @@ export default class MembersController extends Controller {
 
     @tracked _availableLabels = A([]);
 
+    @tracked parseFilterParamCounter = 0;
+
     paidParams = PAID_PARAMS;
 
     constructor() {
@@ -240,6 +242,15 @@ export default class MembersController extends Controller {
     applyFilter(filterStr, filters) {
         this.softFilters = A([]);
         this.filterParam = filterStr || null;
+        this.filters = filters;
+    }
+
+    /**
+     * Called to set the filters after the url filterParam has been parsed again
+     */
+    @action
+    applyParsedFilter(filters) {
+        this.softFilters = A([]);
         this.filters = filters;
     }
 
@@ -432,6 +443,13 @@ export default class MembersController extends Controller {
             this.filters = A([]);
             this.softFilterParam = null;
             this.softFilters = A([]);
+        } else {
+            this.filterParam = params.filterParam;
+
+            // Trigger a did-update call in the filter component, so we get freshly parsed filters
+            // This is temporary, and a ugly pattern, but essential to make it work for now, until we moved the filter parsing logic
+            // out of the component
+            this.parseFilterParamCounter += 1;
         }
     }
 
