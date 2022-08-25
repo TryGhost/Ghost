@@ -24,6 +24,11 @@ function testCommonMailData({mailStub, getEmailAlertUsersStub}) {
         sinon.match.has('html', sinon.match('#ffffff'))
     ).should.be.true();
 
+    // Has email
+    mailStub.calledWith(
+        sinon.match.has('html', sinon.match('member@example.com'))
+    ).should.be.true();
+
     // Has member url
     mailStub.calledWith(
         sinon.match.has('html', sinon.match('https://admin.ghost.example/#/members/abc'))
@@ -146,7 +151,7 @@ describe('StaffService', function () {
             it('sends free member signup alert', async function () {
                 const member = {
                     name: 'Ghost',
-                    email: 'ghost@example.com',
+                    email: 'member@example.com',
                     id: 'abc',
                     geolocation: {country: 'France'},
                     created_at: '2022-08-01T07:30:39.882Z'
@@ -178,7 +183,7 @@ describe('StaffService', function () {
             before(function () {
                 member = {
                     name: 'Ghost',
-                    email: 'ghost@example.com',
+                    email: 'member@example.com',
                     id: 'abc',
                     geolocation: {country: 'France'},
                     created_at: '2022-08-01T07:30:39.882Z'
@@ -309,7 +314,7 @@ describe('StaffService', function () {
             before(function () {
                 member = {
                     name: 'Ghost',
-                    email: 'ghost@example.com',
+                    email: 'member@example.com',
                     id: 'abc',
                     geolocation: {country: 'France'},
                     created_at: '2022-08-01T07:30:39.882Z'
