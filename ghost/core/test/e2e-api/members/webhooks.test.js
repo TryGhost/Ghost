@@ -138,16 +138,16 @@ describe('Members API', function () {
             const agents = await agentProvider.getAgentsForMembers();
             membersAgent = agents.membersAgent;
             adminAgent = agents.adminAgent;
-    
+
             await fixtureManager.init('members');
             await adminAgent.loginAsOwner();
         });
-    
+
         beforeEach(function () {
             mockManager.mockMail();
             mockManager.mockStripe();
         });
-    
+
         afterEach(function () {
             mockManager.restore();
         });
@@ -185,16 +185,16 @@ describe('Members API', function () {
             const agents = await agentProvider.getAgentsForMembers();
             membersAgent = agents.membersAgent;
             adminAgent = agents.adminAgent;
-    
+
             await fixtureManager.init('members');
             await adminAgent.loginAsOwner();
         });
-    
+
         beforeEach(function () {
             mockManager.mockMail();
             mockManager.mockStripe();
         });
-    
+
         afterEach(function () {
             mockManager.restore();
         });
@@ -572,7 +572,7 @@ describe('Members API', function () {
             const agents = await agentProvider.getAgentsForMembers();
             membersAgent = agents.membersAgent;
             adminAgent = agents.adminAgent;
-    
+
             await fixtureManager.init('members');
             await adminAgent.loginAsOwner();
 
@@ -603,12 +603,12 @@ describe('Members API', function () {
                 cancel_at_period_end: false
             });
         });
-    
+
         beforeEach(function () {
             mockManager.mockMail();
             mockManager.mockStripe();
         });
-    
+
         afterEach(function () {
             mockManager.restore();
         });
@@ -656,6 +656,11 @@ describe('Members API', function () {
 
             assert.equal(member.status, 'paid', 'The member should be "paid"');
             assert.equal(member.subscriptions.length, 1, 'The member should have a single subscription');
+
+            mockManager.assert.sentEmail({
+                subject: '💸 Paid subscription started: checkout-webhook-test@email.com',
+                to: 'jbloggs@example.com'
+            });
 
             mockManager.assert.sentEmail({
                 subject: '🙌 Thank you for signing up to Ghost!',
@@ -870,7 +875,7 @@ describe('Members API', function () {
             const agents = await agentProvider.getAgentsForMembers();
             membersAgent = agents.membersAgent;
             adminAgent = agents.adminAgent;
-    
+
             await fixtureManager.init('members');
             await adminAgent.loginAsOwner();
 
@@ -907,12 +912,12 @@ describe('Members API', function () {
                 .expectStatus(200);
             offer = body.offers[0];
         });
-    
+
         beforeEach(function () {
             mockManager.mockMail();
             mockManager.mockStripe();
         });
-    
+
         afterEach(function () {
             mockManager.restore();
         });
@@ -1092,7 +1097,7 @@ describe('Members API', function () {
         }
 
         it('Correctly includes monthly forever percentage discounts in MRR', async function () {
-            // Do you get a offer_id is null failed test here 
+            // Do you get a offer_id is null failed test here
             // -> check if members-api and members-offers package versions are in sync in yarn.lock or if both are linked in dev
             const discount = {
                 id: 'di_1Knkn7HUEDadPGIBPOQgmzIX',
@@ -1615,24 +1620,24 @@ describe('Members API', function () {
             });
         });
     });
-    
+
     // Test if the session metadata is processed correctly
     describe('Member attribution', function () {
         before(async function () {
             const agents = await agentProvider.getAgentsForMembers();
             membersAgent = agents.membersAgent;
             adminAgent = agents.adminAgent;
-    
+
             await fixtureManager.init('posts', 'products');
             await adminAgent.loginAsOwner();
         });
-    
+
         beforeEach(function () {
             mockManager.mockLabsEnabled('memberAttribution');
             mockManager.mockMail();
             mockManager.mockStripe();
         });
-    
+
         afterEach(function () {
             mockManager.restore();
         });
@@ -1673,7 +1678,7 @@ describe('Members API', function () {
         async function testWithAttribution(attribution, attributionResource) {
             const customer_id = createStripeID('cust');
             const subscription_id = createStripeID('sub');
-            
+
             const interval = 'month';
             const unit_amount = 150;
 
@@ -1750,7 +1755,7 @@ describe('Members API', function () {
 
             // Convert Stripe ID to internal model ID
             const subscriptionModel = await getSubscription(member.subscriptions[0].id);
-        
+
             await assertMemberEvents({
                 eventType: 'SubscriptionCreatedEvent',
                 memberId: member.id,
