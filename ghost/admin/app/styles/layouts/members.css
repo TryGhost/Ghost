@@ -1186,12 +1186,6 @@ textarea.gh-member-details-textarea {
     height: 100%;
 }
 
-.gh-member-settings .gh-members-activity-description {
-    font-weight: 500;
-    font-size: 1.4rem;
-    color: var(--middarkgrey);
-}
-
 .gh-member-feed-time {
     font-weight: 500;
     font-size: 1.3rem;
