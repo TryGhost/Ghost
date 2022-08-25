@@ -9,7 +9,7 @@ const {MemberSubscribeEvent} = require('@tryghost/member-events');
 describe('Import threshold', function () {
     it('Creates a threshold based on config', async function () {
         const trigger = new VerificationTrigger({
-            apiTriggerThreshold: 2,
+            importTriggerThreshold: 2,
             membersStats: {
                 getTotalMembers: async () => 1
             }
@@ -21,7 +21,7 @@ describe('Import threshold', function () {
 
     it('Increases the import threshold to the number of members', async function () {
         const trigger = new VerificationTrigger({
-            apiTriggerThreshold: 2,
+            importTriggerThreshold: 2,
             membersStats: {
                 getTotalMembers: async () => 3
             }
@@ -34,7 +34,7 @@ describe('Import threshold', function () {
     it('Does not check members count when config threshold is infinite', async function () {
         const membersStub = sinon.stub().resolves(null);
         const trigger = new VerificationTrigger({
-            apiTriggerThreshold: Infinity,
+            importTriggerThreshold: Infinity,
             memberStats: {
                 getTotalMembers: membersStub
             }
@@ -203,7 +203,7 @@ describe('Email verification flow', function () {
         });
 
         const trigger = new VerificationTrigger({
-            apiTriggerThreshold: 2,
+            importTriggerThreshold: 2,
             Settings: {
                 edit: settingsStub
             },
