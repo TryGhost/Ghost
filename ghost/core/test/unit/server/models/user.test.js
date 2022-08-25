@@ -534,6 +534,34 @@ describe('Unit: models/user', function () {
         });
     });
 
+    describe('getEmailAlertUsers', function () {
+        beforeEach(function () {
+            sinon.stub(models.User, 'findAll');
+        });
+
+        it('can filter out only Admin and Owner users', function () {
+            const users = sinon.stub();
+
+            users.toJSON = sinon.stub().returns([
+                testUtils.permissions.owner.user,
+                testUtils.permissions.admin.user,
+                testUtils.permissions.editor.user,
+                testUtils.permissions.author.user,
+                testUtils.permissions.contributor.user
+            ]);
+
+            models.User
+                .findAll
+                .resolves(users);
+
+            return models.User.getEmailAlertUsers('free-signup', {}).then((alertUsers) => {
+                alertUsers.length.should.eql(2);
+                alertUsers[0].roles[0].name.should.eql('Owner');
+                alertUsers[1].roles[0].name.should.eql('Administrator');
+            });
+        });
+    });
+
     describe('isSetup', function () {
         it('active', function () {
             sinon.stub(models.User, 'getOwnerUser').resolves({get: sinon.stub().returns('active')});
