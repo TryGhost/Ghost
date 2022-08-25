@@ -99,7 +99,7 @@ class StaffServiceEmails {
         for (const user of users) {
             const to = user.email;
             const memberData = this.getMemberData(member);
-            const subject = `⚠️ Cancelation: ${memberData.name}`;
+            const subject = `⚠️ Cancellation: ${memberData.name}`;
 
             const amount = this.getAmount(subscriptionPriceData?.unit_amount);
             const formattedAmount = this.getFormattedAmount({currency: subscriptionPriceData?.currency, amount});
