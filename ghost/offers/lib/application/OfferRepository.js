@@ -4,6 +4,7 @@ const DomainEvents = require('@tryghost/domain-events');
 const OfferCodeChangeEvent = require('../domain/events/OfferCodeChange');
 const OfferCreatedEvent = require('../domain/events/OfferCreated');
 const Offer = require('../domain/models/Offer');
+const OfferMapper = require('./OfferMapper');
 const OfferStatus = require('../domain/models/OfferStatus');
 
 const statusTransformer = mapKeyValues({
@@ -121,6 +122,13 @@ class OfferRepository {
                 name: json.product.name
             }
         }, null);
+    }
+    /**
+     * @param {Offer} offer
+     * @returns {OfferMapper.OfferDTO}
+     */
+    toJSON(offer) {
+        return OfferMapper.toDTO(offer);
     }
 
     /**

@@ -38,6 +38,7 @@ module.exports = class MemberRepository {
      * @param {any} deps.OfferRedemption
      * @param {import('../../services/stripe-api')} deps.stripeAPIService
      * @param {any} deps.labsService
+     * @param {any} deps.staffService
      * @param {any} deps.productRepository
      * @param {any} deps.offerRepository
      * @param {ITokenService} deps.tokenService
@@ -59,6 +60,7 @@ module.exports = class MemberRepository {
         productRepository,
         offerRepository,
         tokenService,
+        staffService,
         newslettersService
     }) {
         this._Member = Member;
@@ -74,6 +76,7 @@ module.exports = class MemberRepository {
         this._productRepository = productRepository;
         this._offerRepository = offerRepository;
         this.tokenService = tokenService;
+        this.staffService = staffService;
         this._newslettersService = newslettersService;
         this._labsService = labsService;
 
@@ -813,15 +816,18 @@ module.exports = class MemberRepository {
 
         // For trial offers, offer id is passed from metadata as there is no stripe coupon
         let offerId = data.offerId || null;
+        let offer = null;
 
         if (stripeCouponId) {
             // Get the offer from our database
-            const offer = await this._offerRepository.getByStripeCouponId(stripeCouponId, {transacting: options.transacting});
+            offer = await this._offerRepository.getByStripeCouponId(stripeCouponId, {transacting: options.transacting});
             if (offer) {
                 offerId = offer.id;
             } else {
                 logging.error(`Received an unknown stripe coupon id (${stripeCouponId}) for subscription - ${subscription.id}.`);
             }
+        } else if (offerId) {
+            offer = await this._offerRepository.getById(offerId, {transacting: options.transacting});
         }
 
         const subscriptionData = {
@@ -932,6 +938,16 @@ module.exports = class MemberRepository {
                 mrr_delta: model.get('mrr'),
                 ...eventData
             }, options);
+
+            // Notify paid member subscription start
+            if (this._labsService.isSet('emailAlerts')) {
+                await this.staffService.notifyPaidSubscriptionStart({
+                    member: member.toJSON(),
+                    offer: offer ? this._offerRepository.toJSON(offer) : null,
+                    tier: ghostProduct?.toJSON(),
+                    subscription: subscriptionData
+                }, {transacting: options.transacting, forUpdate: true});
+            }
         }
 
         let memberProducts = (await member.related('products').fetch(options)).toJSON();
