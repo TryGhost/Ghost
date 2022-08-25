@@ -1,4 +1,7 @@
 # Reporting Security Vulnerabilities
+# security policy
+# google policy
+# microsoft security
 
 Potential security vulnerabilities can be reported directly us at `security@ghost.org`. The Ghost Security Team communicates privately and works in a secured, isolated repository for tracking, testing, and resolving security-related issues.
 
