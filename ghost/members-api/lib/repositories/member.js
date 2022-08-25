@@ -98,6 +98,11 @@ module.exports = class MemberRepository {
         return subscription.plan && subscription.plan.nickname && subscription.plan.nickname.toLowerCase() === 'complimentary';
     }
 
+    /**
+     * Maps the framework context to members_*.source table record value
+     * @param {Object} context instance of ghost framework context object
+     * @returns {'import' | 'system' | 'api' | 'admin' | 'member'}
+     */
     _resolveContextSource(context) {
         let source;
 

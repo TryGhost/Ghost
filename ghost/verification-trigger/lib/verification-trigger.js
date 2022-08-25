@@ -13,7 +13,7 @@ class VerificationTrigger {
     /**
      *
      * @param {object} deps
-     * @param {number} deps.configThreshold Threshold for triggering verification as defined in config
+     * @param {number} deps.apiTriggerThreshold Threshold for triggering verification as defined in config
      * @param {() => boolean} deps.isVerified Check Ghost config to see if we are already verified
      * @param {() => boolean} deps.isVerificationRequired Check Ghost settings to see whether verification has been requested
      * @param {(content: {subject: string, message: string, amountImported: number}) => {}} deps.sendVerificationEmail Sends an email to the escalation address to confirm that customer needs to be verified
@@ -22,7 +22,7 @@ class VerificationTrigger {
      * @param {any} deps.eventRepository For querying events
      */
     constructor({
-        configThreshold,
+        apiTriggerThreshold,
         isVerified,
         isVerificationRequired,
         sendVerificationEmail,
@@ -30,7 +30,7 @@ class VerificationTrigger {
         Settings,
         eventRepository
     }) {
-        this._configThreshold = configThreshold;
+        this._apiTriggerThreshold = apiTriggerThreshold;
         this._isVerified = isVerified;
         this._isVerificationRequired = isVerificationRequired;
         this._sendVerificationEmail = sendVerificationEmail;
@@ -44,7 +44,7 @@ class VerificationTrigger {
 
     async _handleMemberSubscribeEvent(event) {
         const source = event.data?.source;
-        const sourceThreshold = this._configThreshold;
+        const sourceThreshold = this._apiTriggerThreshold;
 
         if (source === 'api' && isFinite(sourceThreshold)) {
             const createdAt = new Date();
@@ -65,7 +65,7 @@ class VerificationTrigger {
     }
 
     async getImportThreshold() {
-        const volumeThreshold = this._configThreshold;
+        const volumeThreshold = this._apiTriggerThreshold;
         if (isFinite(volumeThreshold)) {
             const membersTotal = await this._membersStats.getTotalMembers();
             return Math.max(membersTotal, volumeThreshold);
@@ -75,7 +75,7 @@ class VerificationTrigger {
     }
 
     async testImportThreshold() {
-        if (!isFinite(this._configThreshold)) {
+        if (!isFinite(this._apiTriggerThreshold)) {
             // Infinite threshold, quick path
             return;
         }
@@ -91,7 +91,7 @@ class VerificationTrigger {
 
         // Import threshold is either the total number of members (discounting any created by imports in
         // the last 30 days) or the threshold defined in config, whichever is greater.
-        const importThreshold = Math.max(membersTotal - events.meta.pagination.total, this._configThreshold);
+        const importThreshold = Math.max(membersTotal - events.meta.pagination.total, this._apiTriggerThreshold);
         if (isFinite(importThreshold) && events.meta.pagination.total > importThreshold) {
             await this.startVerificationProcess({
                 amountImported: events.meta.pagination.total,
