@@ -306,16 +306,16 @@
                                 You've used {{gh-count-down-characters this.user.bio 200}}
                             </p>
                         </GhFormGroup>
-
+                        {{#if this.membersUtils.isMembersEnabled}}
                         <div class="user-settings-subgroup">
                             <h4 class="user-settings-heading">Email notifications</h4>
                             <GhFormGroup @errors={{this.user.errors}} @hasValidated={{this.user.hasValidated}} @property="email">
                                 <div class="user-setting-toggle">
                                     <div>
                                         <label for="user-email">Comments</label>
-                                        <p>Receive notifications when members comment on one of your posts</p>
+                                        <p>Every time a member comments on one of your posts</p>
                                     </div>
-                                    <div class="for-switch">
+                                    <div class="for-switch small">
                                         <label class="switch" for="comment-notifications">
                                             <input
                                                 id="comment-notifications"
@@ -329,8 +329,70 @@
                                         </label>
                                     </div>
                                 </div>
+                                {{#if (and this.canToggleMemberAlerts (feature 'emailAlerts'))}}
+                                    <div class="user-setting-toggle">
+                                        <div>
+                                            <label for="user-email">New signups</label>
+                                            <p>Every time a new free member signs up</p>
+                                        </div>
+                                        <div class="for-switch small">
+                                            <label class="switch" for="free-signup-notifications" data-test-label="free-signup-notifications">
+                                                <input
+                                                    id="free-signup-notifications"
+                                                    type="checkbox"
+                                                    checked={{this.user.freeMemberSignupNotification}}
+                                                    class="gh-input"
+                                                    {{on "change" (fn this.toggleMemberEmailAlerts 'free-signup')}}
+                                                    data-test-checkbox="free-signup-notifications"
+                                                >
+                                                <span class="input-toggle-component"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    {{#if this.membersUtils.paidMembersEnabled}}
+                                    <div class="user-setting-toggle">
+                                        <div>
+                                            <label for="user-email">New paid members</label>
+                                            <p>Every time a member starts a new paid subscription</p>
+                                        </div>
+                                        <div class="for-switch small">
+                                            <label class="switch" for="paid-started-notifications" data-test-label="paid-started-notifications">
+                                                <input
+                                                    id="paid-started-notifications"
+                                                    type="checkbox"
+                                                    checked={{this.user.paidSubscriptionStartedNotification}}
+                                                    class="gh-input"
+                                                    {{on "change" (fn this.toggleMemberEmailAlerts 'paid-started')}}
+                                                    data-test-checkbox="paid-started-notifications"
+                                                >
+                                                <span class="input-toggle-component"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="user-setting-toggle">
+                                        <div>
+                                            <label for="user-email">Paid member cancellations</label>
+                                            <p>Every time a member cancels their paid subscription</p>
+                                        </div>
+                                        <div class="for-switch small">
+                                            <label class="switch" for="paid-canceled-notifications" data-test-label="paid-canceled-notifications">
+                                                <input
+                                                    id="paid-canceled-notifications"
+                                                    type="checkbox"
+                                                    checked={{this.user.paidSubscriptionCanceledNotification}}
+                                                    class="gh-input"
+                                                    {{on "change" (fn this.toggleMemberEmailAlerts 'paid-canceled')}}
+                                                    data-test-checkbox="paid-canceled-notifications"
+                                                >
+                                                <span class="input-toggle-component"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    {{/if}}
+                                {{/if}}
                             </GhFormGroup>
                         </div>
+                        {{/if}}
                     </fieldset>
                 </div>
 

@@ -4,6 +4,10 @@ import windowProxy from 'ghost-admin/utils/window-proxy';
 import {Response} from 'miragejs';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
+import {enableLabsFlag} from '../helpers/labs-flag';
+import {enableMembers} from '../helpers/members';
+import {enableStripe} from '../helpers/stripe';
+
 import {
     blur,
     click,
@@ -73,7 +77,11 @@ describe('Acceptance: Staff', function () {
 
         beforeEach(async function () {
             this.server.loadFixtures('roles');
+            this.server.loadFixtures('settings');
             adminRole = this.server.schema.roles.find(1);
+            enableMembers(this.server);
+            enableStripe(this.server);
+            enableLabsFlag(this.server, 'emailAlerts');
 
             admin = this.server.create('user', {email: 'admin@example.com', roles: [adminRole]});
 
@@ -816,6 +824,13 @@ describe('Acceptance: Staff', function () {
                 expect(find('[data-test-slug-input]').value).to.be.equal('test-1');
                 expect(find('[data-test-facebook-input]').value).to.be.equal('https://www.facebook.com/test');
             });
+
+            it('cannot see email alerts for other user', async function () {
+                await visit('/settings/staff/test-1');
+                expect(find('[data-test-checkbox="free-signup-notifications"]'), 'free signup alert').to.not.exist;
+                expect(find('[data-test-checkbox="paid-started-notifications"]'), 'paid start alert').to.not.exist;
+                expect(find('[data-test-checkbox="paid-canceled-notifications"]'), 'paid cancel alert').to.not.exist;
+            });
         });
 
         describe('own user', function () {
@@ -855,6 +870,24 @@ describe('Acceptance: Staff', function () {
                     find('[data-test-old-pass-input]').closest('.form-group'),
                     'old password validation is in error state after typing'
                 ).to.not.have.class('error');
+            });
+
+            it('can toggle email alerts for own user', async function () {
+                await visit(`/settings/staff/${admin.slug}`);
+                expect(find('[data-test-checkbox="free-signup-notifications"]')).to.not.be.checked;
+                expect(find('[data-test-checkbox="paid-started-notifications"]')).to.not.be.checked;
+                expect(find('[data-test-checkbox="paid-canceled-notifications"]')).to.not.be.checked;
+
+                await click('[data-test-label="free-signup-notifications"]');
+                await click('[data-test-label="paid-started-notifications"]');
+                await click('[data-test-label="paid-canceled-notifications"]');
+
+                await click('[data-test-save-button]');
+                await visit(`/settings/staff/${admin.slug}`);
+
+                expect(find('[data-test-checkbox="free-signup-notifications"]')).to.be.checked;
+                expect(find('[data-test-checkbox="paid-started-notifications"]')).to.be.checked;
+                expect(find('[data-test-checkbox="paid-canceled-notifications"]')).to.be.checked;
             });
         });
 
