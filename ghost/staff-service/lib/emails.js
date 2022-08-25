@@ -147,6 +147,7 @@ class StaffServiceEmails {
         let name = member?.name || 'Anonymous';
         return {
             name: member?.name || member?.email,
+            email: member?.email,
             adminUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/members/${member.id}`),
             initials: this.extractInitials(name),
             location: member.geolocation?.country || null,
