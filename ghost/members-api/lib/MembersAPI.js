@@ -2,6 +2,7 @@ const {Router} = require('express');
 const body = require('body-parser');
 const MagicLink = require('@tryghost/magic-link');
 const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 
 const MemberAnalyticsService = require('@tryghost/member-analytics-service');
 const MembersAnalyticsIngress = require('@tryghost/members-analytics-ingress');
@@ -204,7 +205,7 @@ module.exports = function MembersAPI({
     }
 
     async function getMemberDataFromMagicLinkToken(token) {
-        const {email, labels = [], name = '', oldEmail, newsletters, attribution} = await getTokenDataFromMagicLinkToken(token);
+        const {email, labels = [], name = '', oldEmail, newsletters, attribution, reqIp} = await getTokenDataFromMagicLinkToken(token);
         if (!email) {
             return null;
         }
@@ -220,7 +221,19 @@ module.exports = function MembersAPI({
             }
             return member;
         }
-        const newMember = await users.create({name, email, labels, newsletters, attribution});
+
+        let geolocation;
+        if (reqIp) {
+            try {
+                geolocation = JSON.stringify(await geolocationService.getGeolocationFromIP(reqIp));
+            } catch (err) {
+                logging.warn(err);
+                // no-op, we don't want to stop anything working due to
+                // geolocation lookup failing
+            }
+        }
+
+        const newMember = await users.create({name, email, labels, newsletters, attribution, geolocation});
 
         // Notify staff users of new free member signup
         if (labsService.isSet('emailAlerts')) {
