@@ -505,7 +505,8 @@ User = ghostBookshelf.Model.extend({
         } else if (type === 'paid-canceled') {
             filter += '+paid_subscription_canceled_notification:true';
         }
-        return this.findAll(_.merge({filter, withRelated: ['roles']}, options)).then((users) => {
+        const updatedOptions = _.merge({}, options, {filter, withRelated: ['roles']});
+        return this.findAll(updatedOptions).then((users) => {
             return users.toJSON().filter((user) => {
                 return user?.roles?.some((role) => {
                     return ['Owner', 'Administrator'].includes(role.name);
