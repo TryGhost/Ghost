@@ -116,7 +116,7 @@ describe('Create Stripe Checkout Session', function () {
                         urlHistory: [
                             {
                                 path: '/test',
-                                time: 123
+                                time: Date.now()
                             }
                         ]
                     }
@@ -160,7 +160,7 @@ describe('Create Stripe Checkout Session', function () {
                         urlHistory: [
                             {
                                 path: url,
-                                time: 123
+                                time: Date.now()
                             }
                         ]
                     }
