@@ -181,7 +181,10 @@ export default class MembersController extends Controller {
             'subscriptions.current_period_end': 'Next billing date',
             tier: 'Membership tier'
         };
-        return this.filterColumns.map((d) => {
+        return this.filterColumns.filter((d) => {
+            // Exclude Signup and conversions (data not yet available in backend when browsing members)
+            return !['signup', 'conversion'].includes(d);
+        }).map((d) => {
             return {
                 name: d,
                 label: filterColumnLabelMap[d] ? filterColumnLabelMap[d] : capitalize(d.replace(/_/g, ' '))
