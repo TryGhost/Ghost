@@ -117,7 +117,7 @@ function getAction(ev) {
         }
     }
 
-    return `${ev.event} ${resourceType}`;
+    return `${resourceType} ${ev.event}`;
 }
 
 function getContextResource(ev) {
