@@ -1,7 +1,7 @@
 /**
  * @typedef {object} MemberSubscribeEventData
  * @prop {string} memberId
- * @prop {string} source
+ * @prop {'import' | 'system' | 'api' | 'admin' | 'member'} source
  */
 
 module.exports = class MemberSubscribeEvent {
