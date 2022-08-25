@@ -10301,7 +10301,6 @@ ember-power-calendar@^0.16.3:
 
 ember-power-datepicker@cibernox/ember-power-datepicker:
   version "0.8.1"
-  uid da580474a2c449b715444934ddb626b7c07f46a7
   resolved "https://codeload.github.com/cibernox/ember-power-datepicker/tar.gz/da580474a2c449b715444934ddb626b7c07f46a7"
   dependencies:
     ember-basic-dropdown "^3.0.11"
@@ -12585,7 +12584,6 @@ globrex@^0.1.2:
 
 "google-caja-bower@https://github.com/acburdine/google-caja-bower#ghost":
   version "6011.0.0"
-  uid "275cb75249f038492094a499756a73719ae071fd"
   resolved "https://github.com/acburdine/google-caja-bower#275cb75249f038492094a499756a73719ae071fd"
 
 got@9.6.0:
@@ -12757,7 +12755,7 @@ gscan@4.34.0:
     uuid "8.3.2"
     validator "13.0.0"
 
-handlebars@^4.0.13, handlebars@^4.0.4, handlebars@^4.3.1, handlebars@^4.4.2, handlebars@^4.7.3, handlebars@^4.7.6, handlebars@^4.7.7:
+handlebars@4.7.7, handlebars@^4.0.13, handlebars@^4.0.4, handlebars@^4.3.1, handlebars@^4.4.2, handlebars@^4.7.3, handlebars@^4.7.6, handlebars@^4.7.7:
   version "4.7.7"
   resolved "https://registry.yarnpkg.com/handlebars/-/handlebars-4.7.7.tgz#9ce33416aad02dbd6c8fafa8240d5d98004945a1"
   integrity sha512-aAcXm5OAfE/8IXkcZvCepKU3VzW1/39Fb5ZuqMtgI/hT8X2YgoMvBY5dLhq/cpOvw7Lk1nK/UF71aLG/ZnVYRA==
@@ -14725,7 +14723,6 @@ keygrip@~1.1.0:
 
 "keymaster@https://github.com/madrobby/keymaster.git":
   version "1.6.3"
-  uid f8f43ddafad663b505dc0908e72853bcf8daea49
   resolved "https://github.com/madrobby/keymaster.git#f8f43ddafad663b505dc0908e72853bcf8daea49"
 
 keypair@1.0.4:
@@ -16478,7 +16475,6 @@ mocha@^2.5.3:
 
 mock-knex@TryGhost/mock-knex#8ecb8c227bf463c991c3d820d33f59efc3ab9682:
   version "0.4.9"
-  uid "8ecb8c227bf463c991c3d820d33f59efc3ab9682"
   resolved "https://codeload.github.com/TryGhost/mock-knex/tar.gz/8ecb8c227bf463c991c3d820d33f59efc3ab9682"
   dependencies:
     bluebird "^3.4.1"
@@ -20376,7 +20372,6 @@ simple-update-notifier@^1.0.7:
 
 "simplemde@https://github.com/kevinansfield/simplemde-markdown-editor.git#ghost":
   version "1.11.2"
-  uid "4c39702de7d97f9b32d5c101f39237b6dab7c3ee"
   resolved "https://github.com/kevinansfield/simplemde-markdown-editor.git#4c39702de7d97f9b32d5c101f39237b6dab7c3ee"
 
 sinon@14.0.0:

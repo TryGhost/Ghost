@@ -45,6 +45,13 @@ class UrlTranslator {
         return this.urlUtils.relativeToAbsolute(path);
     }
 
+    /**
+     * Gives an ordinary URL a name, e.g. / is 'homepage'
+     */
+    getUrlTitle(url) {
+        return url === '/' ? 'homepage' : url;
+    }
+
     getTypeAndId(url) {
         const resource = this.urlService.getResource(url);
         if (!resource) {
