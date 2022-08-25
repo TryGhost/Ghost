@@ -2,8 +2,8 @@ const UrlHistory = require('./history');
 
 class MemberAttributionService {
     /**
-     * 
-     * @param {Object} deps 
+     *
+     * @param {Object} deps
      * @param {Object} deps.attributionBuilder
      * @param {Object} deps.models
      * @param {Object} deps.models.MemberCreatedEvent
@@ -15,12 +15,12 @@ class MemberAttributionService {
     }
 
     /**
-     * 
-     * @param {import('./history').UrlHistoryArray} historyArray 
+     *
+     * @param {import('./history').UrlHistoryArray} historyArray
      * @returns {import('./attribution').Attribution}
      */
     getAttribution(historyArray) {
-        const history = new UrlHistory(historyArray);
+        const history = UrlHistory.create(historyArray);
         return this.attributionBuilder.getAttribution(history);
     }
 
@@ -60,7 +60,7 @@ class MemberAttributionService {
 
     /**
      * Returns the parsed attribution for a member creation event
-     * @param {string} memberId 
+     * @param {string} memberId
      * @returns {Promise<import('./attribution').AttributionResource|null>}
      */
     async getMemberCreatedAttribution(memberId) {
@@ -78,7 +78,7 @@ class MemberAttributionService {
 
     /**
      * Returns the last attribution for a given subscription ID
-     * @param {string} subscriptionId 
+     * @param {string} subscriptionId
      * @returns {Promise<import('./attribution').AttributionResource|null>}
      */
     async getSubscriptionCreatedAttribution(subscriptionId) {
