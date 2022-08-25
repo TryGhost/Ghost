@@ -1,13 +1,13 @@
 class StaffService {
     constructor({logging, models, mailer, settingsCache, urlUtils}) {
-        /** @private */
-        this.models = models;
         this.logging = logging;
 
         /** @private */
         this.settingsCache = settingsCache;
+        this.models = models;
 
         const Emails = require('./emails');
+
         /** @private */
         this.emails = new Emails({
             logging,
