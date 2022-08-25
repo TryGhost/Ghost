@@ -16,6 +16,7 @@ const FILTER_PROPERTIES = [
     {label: 'Newsletter subscription', name: 'subscribed', group: 'Basic'},
     {label: 'Last seen', name: 'last_seen_at', group: 'Basic', valueType: 'date'},
     {label: 'Created', name: 'created_at', group: 'Basic', valueType: 'date'},
+    {label: 'Signed up on post/page', name: 'signup', group: 'Basic', valueType: 'array', feature: 'memberAttribution'},
 
     // Member subscription
     {label: 'Membership tier', name: 'tier', group: 'Subscription', valueType: 'array'},
@@ -24,19 +25,18 @@ const FILTER_PROPERTIES = [
     {label: 'Stripe subscription status', name: 'subscriptions.status', group: 'Subscription'},
     {label: 'Paid start date', name: 'subscriptions.start_date', valueType: 'date', group: 'Subscription'},
     {label: 'Next billing date', name: 'subscriptions.current_period_end', valueType: 'date', group: 'Subscription'},
+    {label: 'Subscription started on post/page', name: 'conversion', group: 'Subscription', valueType: 'array', feature: 'memberAttribution'},
 
     // Emails
     {label: 'Emails sent (all time)', name: 'email_count', group: 'Email'},
     {label: 'Emails opened (all time)', name: 'email_opened_count', group: 'Email'},
-    {label: 'Open rate (all time)', name: 'email_open_rate', group: 'Email'},
+    {label: 'Open rate (all time)', name: 'email_open_rate', group: 'Email'}
     // {label: 'Emails sent (30 days)', name: 'x', group: 'Email'},
     // {label: 'Emails opened (30 days)', name: 'x', group: 'Email'},
     // {label: 'Open rate (30 days)', name: 'x', group: 'Email'},
     // {label: 'Emails sent (60 days)', name: 'x', group: 'Email'},
     // {label: 'Emails opened (60 days)', name: 'x', group: 'Email'},
     // {label: 'Open rate (60 days)', name: 'x', group: 'Email'},
-    {label: 'Subscribed from', name: 'signup', group: 'Attribution', valueType: 'array', feature: 'memberAttribution'},
-    {label: 'Converted from', name: 'conversion', group: 'Attribution', valueType: 'array', feature: 'memberAttribution'}
 ];
 
 const MATCH_RELATION_OPTIONS = [
