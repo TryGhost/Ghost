@@ -252,6 +252,19 @@
                         </div>
                     </div>
                 </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Email alerts</h4>
+                            <p class="gh-expandable-description">
+                               Receive email notifications when somebody signs up, becomes paid, or cancels subscription
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                           <GhFeatureFlag @flag="emailAlerts" />
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         {{/if}}
