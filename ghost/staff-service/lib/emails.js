@@ -150,9 +150,23 @@ class StaffServiceEmails {
             email: member?.email,
             adminUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/members/${member.id}`),
             initials: this.extractInitials(name),
-            location: member.geolocation?.country || null,
+            location: this.getGeolocationData(member.geolocation),
             createdAt: moment(member.created_at).format('D MMM YYYY')
         };
+    }
+
+    /** @private */
+    getGeolocationData(geolocation) {
+        if (!geolocation) {
+            return null;
+        }
+
+        try {
+            const geolocationData = JSON.parse(geolocation);
+            return geolocationData?.country || null;
+        } catch (e) {
+            return null;
+        }
     }
 
     /** @private */
