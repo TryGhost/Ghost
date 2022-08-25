@@ -60,6 +60,7 @@ module.exports = function MembersAPI({
     },
     stripeAPIService,
     offersAPI,
+    staffService,
     labsService,
     newslettersService,
     memberAttributionService
@@ -85,6 +86,7 @@ module.exports = function MembersAPI({
         stripeAPIService,
         tokenService,
         newslettersService,
+        staffService,
         labsService,
         productRepository,
         Member,
@@ -149,6 +151,7 @@ module.exports = function MembersAPI({
         productRepository,
         StripePrice,
         tokenService,
+        staffService,
         sendEmailWithMagicLink
     });
 
@@ -218,6 +221,12 @@ module.exports = function MembersAPI({
             return member;
         }
         const newMember = await users.create({name, email, labels, newsletters, attribution});
+
+        // Notify staff users of new free member signup
+        if (labsService.isSet('emailAlerts')) {
+            await staffService.notifyFreeMemberSignup(newMember.toJSON());
+        }
+
         await MemberLoginEvent.add({member_id: newMember.id});
         return getMemberIdentityData(email);
     }
@@ -324,7 +333,7 @@ module.exports = function MembersAPI({
         memberBREADService,
         events: eventRepository,
         productRepository,
-        
+
         // Test helpers
         getTokenDataFromMagicLinkToken
     };
