@@ -239,7 +239,7 @@
 }
 
 /** TODO: improve this hover style */
-a.gh-post-list-signups:hover > span, a.gh-post-list-conversions:hover > span {
+a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:hover > span {
     opacity: 0.5;
 }
 
