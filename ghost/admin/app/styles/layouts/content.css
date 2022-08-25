@@ -230,6 +230,11 @@
     padding-right: 8px;
 }
 
+/** TODO: improve this hover style */
+a.gh-post-list-signups:hover > span, a.gh-post-list-conversions:hover > span {
+    opacity: 0.5;
+}
+
 .gh-content-entry-title {
     display: flex;
     align-items: center;

@@ -102,17 +102,17 @@
     {{/if}}
 
     {{#if this.feature.memberAttribution}}
-        <a href={{@post.url}} class="permalink gh-list-data gh-post-list-signups" target="_blank" rel="noopener noreferrer">
+        <LinkTo @route="members" @query={{hash filterParam=(concat "signup:[" @post.id "]") }} class="permalink gh-list-data gh-post-list-signups">
             <span class="midlightgrey {{if (not (eq @post.count.signups 0)) 'darkgrey'}} fw5 gh-content-attribution-stats">{{@post.count.signups}}</span>
             <span class="midgrey-l2 fw4 gh-content-attribution-stats-mobile">{{gh-pluralize @post.count.signups "signup"}}</span>
-        </a>
+        </LinkTo>
     {{/if}}
 
     {{#if this.feature.memberAttribution}}
-        <a href={{@post.url}} class="permalink gh-list-data gh-post-list-conversions" target="_blank" rel="noopener noreferrer">
+        <LinkTo @route="members" @query={{hash filterParam=(concat "conversion:[" @post.id "]") }} class="permalink gh-list-data gh-post-list-conversions">
             <span class="midlightgrey {{if (not (eq @post.count.conversions 0)) 'darkgrey'}} fw5 gh-content-attribution-stats">{{@post.count.conversions}}</span>
             <span class="midgrey-l2 fw4 gh-content-attribution-stats-mobile">{{gh-pluralize @post.count.conversions "conversion"}}</span>
-        </a>
+        </LinkTo>
     {{/if}}
 
     {{#if (and (not-eq this.settings.membersSignupAccess "none") (not-eq this.settings.editorDefaultEmailRecipients "disabled") (not this.session.user.isContributor))}}
