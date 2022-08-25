@@ -279,6 +279,7 @@ async function initServices({config}) {
     const apiVersionCompatibility = require('./server/services/api-version-compatibility');
     const scheduling = require('./server/adapters/scheduling');
     const comments = require('./server/services/comments');
+    const staffService = require('./server/services/staff');
     const memberAttribution = require('./server/services/member-attribution');
 
     const urlUtils = require('./shared/url-utils');
@@ -293,6 +294,7 @@ async function initServices({config}) {
 
     await Promise.all([
         memberAttribution.init(),
+        staffService.init(),
         members.init(),
         permissions.init(),
         xmlrpc.listen(),
