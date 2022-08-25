@@ -31,7 +31,8 @@ const ALPHA_FEATURES = [
     'auditLog',
     'urlCache',
     'beforeAfterCard',
-    'memberAttribution'
+    'memberAttribution',
+    'emailAlerts'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
