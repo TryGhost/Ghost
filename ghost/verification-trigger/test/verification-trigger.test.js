@@ -151,7 +151,7 @@ describe('Email verification flow', function () {
         emailStub.lastCall.firstArg.should.eql({
             subject: 'Email needs verification',
             message: 'Email verification needed for site: {siteUrl}, has imported: {importedNumber} members in the last 30 days.',
-            amountImported: 10
+            amountTriggered: 10
         });
     });
 
@@ -167,7 +167,7 @@ describe('Email verification flow', function () {
         });
 
         new VerificationTrigger({
-            configThreshold: 2,
+            apiTriggerThreshold: 2,
             Settings: {
                 edit: settingsStub
             },
@@ -230,8 +230,9 @@ describe('Email verification flow', function () {
         emailStub.lastCall.firstArg.should.eql({
             subject: 'Email needs verification',
             message: 'Email verification needed for site: {siteUrl}, has imported: {importedNumber} members in the last 30 days.',
-            amountImported: 10
+            amountTriggered: 10
         });
+    });
     });
 
     it('Does not fetch events and trigger when threshold is Infinity', async function () {

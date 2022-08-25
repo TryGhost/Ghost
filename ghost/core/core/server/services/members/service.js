@@ -108,7 +108,7 @@ module.exports = {
             apiTriggerThreshold: _.get(config.get('hostSettings'), 'emailVerification.importThreshold'),
             isVerified: () => config.get('hostSettings:emailVerification:verified') === true,
             isVerificationRequired: () => settingsCache.get('email_verification_required') === true,
-            sendVerificationEmail: ({subject, message, amountImported}) => {
+            sendVerificationEmail: ({subject, message, amountTriggered}) => {
                 const escalationAddress = config.get('hostSettings:emailVerification:escalationAddress');
                 const fromAddress = config.get('user_email');
 
@@ -116,7 +116,7 @@ module.exports = {
                     ghostMailer.send({
                         subject,
                         html: tpl(message, {
-                            importedNumber: amountImported,
+                            amountTriggered: amountTriggered,
                             siteUrl: urlUtils.getSiteUrl()
                         }),
                         forceTextContent: true,

@@ -5,8 +5,8 @@ const {MemberSubscribeEvent} = require('@tryghost/member-events');
 const messages = {
     emailVerificationNeeded: `We're hard at work processing your import. To make sure you get great deliverability on a list of that size, we'll need to enable some extra features for your account. A member of our team will be in touch with you by email to review your account make sure everything is configured correctly so you're ready to go.`,
     emailVerificationEmailSubject: `Email needs verification`,
-    emailVerificationEmailMessageImport: `Email verification needed for site: {siteUrl}, has imported: {importedNumber} members in the last 30 days.`,
-    emailVerificationEmailMessageAPI: `Email verification needed for site: {siteUrl} has added: {importedNumber} members through the API in the last 30 days.`
+    emailVerificationEmailMessageImport: `Email verification needed for site: {siteUrl}, has imported: {amountTriggered} members in the last 30 days.`,
+    emailVerificationEmailMessageAPI: `Email verification needed for site: {siteUrl} has added: {amountTriggered} members through the API in the last 30 days.`
 };
 
 class VerificationTrigger {
@@ -16,7 +16,7 @@ class VerificationTrigger {
      * @param {number} deps.apiTriggerThreshold Threshold for triggering verification as defined in config
      * @param {() => boolean} deps.isVerified Check Ghost config to see if we are already verified
      * @param {() => boolean} deps.isVerificationRequired Check Ghost settings to see whether verification has been requested
-     * @param {(content: {subject: string, message: string, amountImported: number}) => {}} deps.sendVerificationEmail Sends an email to the escalation address to confirm that customer needs to be verified
+     * @param {(content: {subject: string, message: string, amountTriggered: number}) => void} deps.sendVerificationEmail Sends an email to the escalation address to confirm that customer needs to be verified
      * @param {any} deps.membersStats MemberStats service
      * @param {any} deps.Settings Ghost Settings model
      * @param {any} deps.eventRepository For querying events
@@ -132,7 +132,7 @@ class VerificationTrigger {
                         ? messages.emailVerificationEmailMessageAPI
                         : messages.emailVerificationEmailMessageImport,
                     subject: messages.emailVerificationEmailSubject,
-                    amountImported
+                    amountTriggered: amount
                 });
 
                 if (throwOnTrigger) {
