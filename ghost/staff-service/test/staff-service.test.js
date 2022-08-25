@@ -66,11 +66,11 @@ function testCommonPaidSubCancelMailData({mailStub, getEmailAlertUsersStub}) {
     testCommonMailData({mailStub, getEmailAlertUsersStub});
     getEmailAlertUsersStub.calledWith('paid-canceled').should.be.true();
     mailStub.calledWith(
-        sinon.match({subject: '⚠️ Cancellation: Ghost'})
+        sinon.match({subject: '⚠️ Cancelation: Ghost'})
     ).should.be.true();
 
     mailStub.calledWith(
-        sinon.match.has('html', sinon.match('⚠️ Cancellation: Ghost'))
+        sinon.match.has('html', sinon.match('⚠️ Cancelation: Ghost'))
     ).should.be.true();
     mailStub.calledWith(
         sinon.match.has('html', sinon.match('Test Tier'))
