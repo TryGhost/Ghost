@@ -71,11 +71,11 @@ function testCommonPaidSubCancelMailData({mailStub, getEmailAlertUsersStub}) {
     testCommonMailData({mailStub, getEmailAlertUsersStub});
     getEmailAlertUsersStub.calledWith('paid-canceled').should.be.true();
     mailStub.calledWith(
-        sinon.match({subject: '⚠️ Cancelation: Ghost'})
+        sinon.match({subject: '⚠️ Cancellation: Ghost'})
     ).should.be.true();
 
     mailStub.calledWith(
-        sinon.match.has('html', sinon.match('⚠️ Cancelation: Ghost'))
+        sinon.match.has('html', sinon.match('⚠️ Cancellation: Ghost'))
     ).should.be.true();
     mailStub.calledWith(
         sinon.match.has('html', sinon.match('Test Tier'))
@@ -109,7 +109,8 @@ describe('StaffService', function () {
             }]);
             service = new StaffService({
                 logging: {
-                    warn: () => {}
+                    warn: () => {},
+                    error: () => {}
                 },
                 models: {
                     User: {
@@ -340,7 +341,8 @@ describe('StaffService', function () {
             });
 
             it('sends paid subscription cancel alert', async function () {
-                await service.notifyPaidSubscriptionCancel({member, tier, subscription}, options);
+                let cancellationReason = 'Changed my mind!';
+                await service.notifyPaidSubscriptionCancel({member, tier, subscription, cancellationReason}, options);
 
                 mailStub.calledOnce.should.be.true();
                 testCommonPaidSubCancelMailData(stubs);
@@ -359,6 +361,33 @@ describe('StaffService', function () {
 
                 mailStub.calledWith(
                     sinon.match.has('html', 'Offer')
+                ).should.be.false();
+
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Reason: Changed my mind! - '))
+                ).should.be.true();
+            });
+
+            it('sends paid subscription cancel alert without reason', async function () {
+                await service.notifyPaidSubscriptionCancel({member, tier, subscription}, options);
+
+                mailStub.calledOnce.should.be.true();
+                testCommonPaidSubCancelMailData(stubs);
+
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Subscription will expire on'))
+                ).should.be.true();
+
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Canceled on 5 Aug 2022'))
+                ).should.be.true();
+
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('1 Aug 2023'))
+                ).should.be.true();
+
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Reason: '))
                 ).should.be.false();
             });
         });
