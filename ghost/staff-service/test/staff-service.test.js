@@ -366,6 +366,9 @@ describe('StaffService', function () {
                 mailStub.calledWith(
                     sinon.match.has('html', sinon.match('Reason: Changed my mind! - '))
                 ).should.be.true();
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Cancellation reason'))
+                ).should.be.true();
             });
 
             it('sends paid subscription cancel alert without reason', async function () {
@@ -388,6 +391,9 @@ describe('StaffService', function () {
 
                 mailStub.calledWith(
                     sinon.match.has('html', sinon.match('Reason: '))
+                ).should.be.false();
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Cancellation reason'))
                 ).should.be.false();
             });
         });
