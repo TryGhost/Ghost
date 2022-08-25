@@ -85,7 +85,8 @@ const expectedProperties = {
         'frontmatter',
         'email_only',
         'tiers',
-        'newsletter'
+        'newsletter',
+        'count'
     ],
 
     page: [
@@ -124,7 +125,8 @@ const expectedProperties = {
         'meta_title',
         'meta_description',
         'frontmatter',
-        'tiers'
+        'tiers',
+        'count'
     ],
 
     user: _(schema.users)

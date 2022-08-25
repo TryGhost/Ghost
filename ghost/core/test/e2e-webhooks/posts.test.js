@@ -63,7 +63,6 @@ describe('post.* events', function () {
 
     beforeEach(function () {
         webhookMockReceiver = mockManager.mockWebhookRequests();
-        mockManager.mockLabsDisabled('memberAttribution');
     });
 
     afterEach(function () {
