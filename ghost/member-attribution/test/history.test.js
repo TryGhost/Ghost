@@ -4,72 +4,56 @@ require('./utils');
 const UrlHistory = require('../lib/history');
 
 describe('UrlHistory', function () {
-    describe('Constructor', function () {
-        it('sets history to empty array if invalid', function () {
-            const history = new UrlHistory('invalid');
-            should(history.history).eql([]);
-        });
-        it('sets history to empty array if missing', function () {
-            const history = new UrlHistory();
-            should(history.history).eql([]);
-        });
-    });
-
-    describe('Validation', function () {
-        it('isValidHistory returns false for non arrays', function () {
-            should(UrlHistory.isValidHistory('string')).eql(false);
-            should(UrlHistory.isValidHistory()).eql(false);
-            should(UrlHistory.isValidHistory(12)).eql(false);
-            should(UrlHistory.isValidHistory(null)).eql(false);
-            should(UrlHistory.isValidHistory({})).eql(false);
-            should(UrlHistory.isValidHistory(NaN)).eql(false);
-
-            should(UrlHistory.isValidHistory([
+    it('sets history to empty array if invalid', function () {
+        const inputs = [
+            'string',
+            undefined,
+            12,
+            null,
+            {},
+            NaN,
+            [
                 {
                     time: 1,
                     path: '/test'
                 },
                 't'
-            ])).eql(false);
-        });
-
-        it('isValidHistory returns true for valid arrays', function () {
-            should(UrlHistory.isValidHistory([])).eql(true);
-            should(UrlHistory.isValidHistory([
-                {
-                    time: 1,
-                    path: '/test'
-                }
-            ])).eql(true);
-        });
-
-        it('isValidHistoryItem returns false for invalid objects', function () {
-            should(UrlHistory.isValidHistoryItem({})).eql(false);
-            should(UrlHistory.isValidHistoryItem('test')).eql(false);
-            should(UrlHistory.isValidHistoryItem(0)).eql(false);
-            should(UrlHistory.isValidHistoryItem()).eql(false);
-            should(UrlHistory.isValidHistoryItem(NaN)).eql(false);
-            should(UrlHistory.isValidHistoryItem([])).eql(false);
-
-            should(UrlHistory.isValidHistoryItem({
+            ],
+            [{}],
+            ['test'],
+            [0],
+            [undefined],
+            [NaN],
+            [[]],
+            [{
                 time: 'test',
                 path: 'test'
-            })).eql(false);
-
-            should(UrlHistory.isValidHistoryItem({
+            }],
+            [{
                 path: 'test'
-            })).eql(false);
-
-            should(UrlHistory.isValidHistoryItem({
+            }],
+            [{
                 time: 123
-            })).eql(false);
-        });
+            }]
+        ];
 
-        it('isValidHistoryItem returns true for valid objects', function () {
-            should(UrlHistory.isValidHistoryItem({
-                time: 123,
-                path: '/time'
-            })).eql(true);
-        });
+        for (const input of inputs) {
+            const history = UrlHistory.create(input);
+            should(history.history).eql([]);
+        }
+    });
+
+    it('sets history for valid arrays', function () {
+        const inputs = [
+            [],
+            [{
+                time: Date.now(),
+                path: '/test'
+            }]
+        ];
+        for (const input of inputs) {
+            const history = UrlHistory.create(input);
+            should(history.history).eql(input);
+        }
     });
 });
