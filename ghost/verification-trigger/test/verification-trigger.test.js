@@ -150,7 +150,7 @@ describe('Email verification flow', function () {
 
         emailStub.lastCall.firstArg.should.eql({
             subject: 'Email needs verification',
-            message: 'Email verification needed for site: {siteUrl}, has imported: {importedNumber} members in the last 30 days.',
+            message: 'Email verification needed for site: {siteUrl}, has imported: {amountTriggered} members in the last 30 days.',
             amountTriggered: 10
         });
     });
@@ -229,7 +229,7 @@ describe('Email verification flow', function () {
         emailStub.callCount.should.eql(1);
         emailStub.lastCall.firstArg.should.eql({
             subject: 'Email needs verification',
-            message: 'Email verification needed for site: {siteUrl}, has imported: {importedNumber} members in the last 30 days.',
+            message: 'Email verification needed for site: {siteUrl}, has imported: {amountTriggered} members in the last 30 days.',
             amountTriggered: 10
         });
     });
@@ -276,7 +276,7 @@ describe('Email verification flow', function () {
         emailStub.callCount.should.eql(1);
         emailStub.lastCall.firstArg.should.eql({
             subject: 'Email needs verification',
-            message: 'Email verification needed for site: {siteUrl} has added: {importedNumber} members through the Admin client in the last 30 days.',
+            message: 'Email verification needed for site: {siteUrl} has added: {amountTriggered} members through the Admin client in the last 30 days.',
             amountTriggered: 10
         });
     });
@@ -318,13 +318,13 @@ describe('Email verification flow', function () {
         eventStub.callCount.should.eql(1);
         eventStub.lastCall.lastArg.should.have.property('data.source');
         eventStub.lastCall.lastArg.should.have.property('data.created_at');
-        eventStub.lastCall.lastArg['data.source'].should.eql(`data.source:'admin'`);
+        eventStub.lastCall.lastArg['data.source'].should.eql(`data.source:'api'`);
         eventStub.lastCall.lastArg['data.created_at'].should.startWith(`data.created_at:>'`);
 
         emailStub.callCount.should.eql(1);
         emailStub.lastCall.firstArg.should.eql({
             subject: 'Email needs verification',
-            message: 'Email verification needed for site: {siteUrl} has added: {importedNumber} members through the API in the last 30 days.',
+            message: 'Email verification needed for site: {siteUrl} has added: {amountTriggered} members through the API in the last 30 days.',
             amountTriggered: 10
         });
     });
