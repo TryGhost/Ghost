@@ -184,6 +184,10 @@
     width: 150px;
 }
 
+.gh-list.feature-memberAttribution .gh-posts-status-header {
+    width: 180px;
+}
+
 .gh-list:not(.feature-memberAttribution) .gh-posts-status-header {
     width: 140px;
 }
