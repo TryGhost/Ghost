@@ -6,6 +6,7 @@ const messages = {
     emailVerificationNeeded: `We're hard at work processing your import. To make sure you get great deliverability on a list of that size, we'll need to enable some extra features for your account. A member of our team will be in touch with you by email to review your account make sure everything is configured correctly so you're ready to go.`,
     emailVerificationEmailSubject: `Email needs verification`,
     emailVerificationEmailMessageImport: `Email verification needed for site: {siteUrl}, has imported: {amountTriggered} members in the last 30 days.`,
+    emailVerificationEmailMessageAdmin: `Email verification needed for site: {siteUrl} has added: {amountTriggered} members through the Admin client in the last 30 days.`,
     emailVerificationEmailMessageAPI: `Email verification needed for site: {siteUrl} has added: {amountTriggered} members through the API in the last 30 days.`
 };
 
@@ -13,7 +14,8 @@ class VerificationTrigger {
     /**
      *
      * @param {object} deps
-     * @param {number} deps.apiTriggerThreshold Threshold for triggering verification as defined in config
+     * @param {number} deps.apiTriggerThreshold Threshold for triggering API&Import sourced verifications
+     * @param {number} deps.adminTriggerThreshold Threshold for triggering Admin sourced verifications
      * @param {() => boolean} deps.isVerified Check Ghost config to see if we are already verified
      * @param {() => boolean} deps.isVerificationRequired Check Ghost settings to see whether verification has been requested
      * @param {(content: {subject: string, message: string, amountTriggered: number}) => void} deps.sendVerificationEmail Sends an email to the escalation address to confirm that customer needs to be verified
@@ -23,6 +25,7 @@ class VerificationTrigger {
      */
     constructor({
         apiTriggerThreshold,
+        adminTriggerThreshold,
         isVerified,
         isVerificationRequired,
         sendVerificationEmail,
@@ -31,6 +34,7 @@ class VerificationTrigger {
         eventRepository
     }) {
         this._apiTriggerThreshold = apiTriggerThreshold;
+        this._adminTriggerThreshold = adminTriggerThreshold;
         this._isVerified = isVerified;
         this._isVerificationRequired = isVerificationRequired;
         this._sendVerificationEmail = sendVerificationEmail;
@@ -42,11 +46,21 @@ class VerificationTrigger {
         DomainEvents.subscribe(MemberSubscribeEvent, this._handleMemberSubscribeEvent);
     }
 
+    /**
+     * 
+     * @param {MemberSubscribeEvent} event 
+     */
     async _handleMemberSubscribeEvent(event) {
         const source = event.data?.source;
-        const sourceThreshold = this._apiTriggerThreshold;
+        let sourceThreshold;
 
-        if (source === 'api' && isFinite(sourceThreshold)) {
+        if (source === 'api') {
+            sourceThreshold = this._apiTriggerThreshold;
+        } else if (source === 'admin') {
+            sourceThreshold = this._adminTriggerThreshold;
+        }
+
+        if (['api', 'admin'].includes(source) && isFinite(sourceThreshold)) {
             const createdAt = new Date();
             createdAt.setDate(createdAt.getDate() - 30);
             const events = await this._eventRepository.getNewsletterSubscriptionEvents({}, {
@@ -127,10 +141,17 @@ class VerificationTrigger {
                     value: true
                 }], {context: {internal: true}});
 
+                // Setting import as a default message
+                let verificationMessage = messages.emailVerificationEmailMessageImport;
+
+                if (source === 'api') {
+                    verificationMessage = messages.emailVerificationEmailMessageAPI;
+                } else if (source === 'admin') {
+                    verificationMessage = messages.emailVerificationEmailMessageAdmin;
+                }
+                
                 this._sendVerificationEmail({
-                    message: source === 'api'
-                        ? messages.emailVerificationEmailMessageAPI
-                        : messages.emailVerificationEmailMessageImport,
+                    message: verificationMessage,
                     subject: messages.emailVerificationEmailSubject,
                     amountTriggered: amount
                 });
