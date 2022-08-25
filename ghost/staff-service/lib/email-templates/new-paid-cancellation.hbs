@@ -158,12 +158,14 @@
                                     <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; padding-right: 8px; padding: 0; margin: 0; color: #15171A; font-weight: 600;">{{subscriptionData.expiryAt}}</p>
                                 </td>
                             </tr>
+                            {{#if subscriptionData.cancellationReason}}
                             <tr>
                                 <td style="vertical-align: top; padding-top: 0; padding-right: 16px; padding-bottom: 16px; padding-left: 16px;">
                                     <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 13px; padding-right: 8px; padding: 0; margin: 0; color: #95A1AD;">Cancellation reason</p>
                                     <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; padding-right: 8px; padding: 0; margin: 0; color: #15171A; font-weight: 400;">{{subscriptionData.cancellationReason}}</p>
                                 </td>
                             </tr>
+                            {{/if}}
                         </tbody>
                         </table>
 
