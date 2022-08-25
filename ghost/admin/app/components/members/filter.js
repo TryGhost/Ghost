@@ -493,11 +493,8 @@ export default class MembersFilter extends Component {
     @action
     applySoftFilter() {
         const validFilters = this.filters.filter((filter) => {
-            if (filter.type === 'label') {
-                return filter.value?.length;
-            }
-            if (filter.type === 'tier') {
-                return filter.value?.length;
+            if (Array.isArray(filter.value)) {
+                return filter.value.length;
             }
             return filter.value;
         });
@@ -508,8 +505,8 @@ export default class MembersFilter extends Component {
     @action
     applyFilter() {
         const validFilters = this.filters.filter((filter) => {
-            if (['label', 'tier'].includes(filter.type)) {
-                return filter.value?.length;
+            if (Array.isArray(filter.value)) {
+                return filter.value.length;
             }
             return filter.value;
         });
@@ -521,8 +518,8 @@ export default class MembersFilter extends Component {
     @action
     applyParsedFilter() {
         const validFilters = this.filters.filter((filter) => {
-            if (['label', 'tier'].includes(filter.type)) {
-                return filter.value?.length;
+            if (Array.isArray(filter.value)) {
+                return filter.value.length;
             }
             return filter.value;
         });
