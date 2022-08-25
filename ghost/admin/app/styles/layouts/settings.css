@@ -2896,12 +2896,6 @@ p.theme-validation-details {
     color: var(--lightgrey);
 }
 
-.gh-audit-log-icon {
-    width: 18px;
-    height: 18px;
-    margin: 0 20px 0 4px;
-}
-
 .gh-audit-log-icon svg path {
     fill: var(--midgrey-l1);
 }
@@ -2940,8 +2934,34 @@ p.theme-validation-details {
 }
 
 .gh-audit-log-table .user-list-item-figure {
-    height: 30px;
-    width: 30px;
+    position: relative;
+    height: 34px;
+    width: 34px;
+    margin-left: 0;
+    margin-right: 16px;
+}
+
+.gh-audit-log-icon {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    right: -7px;
+    bottom: -7px;
+    background: var(--white);
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.12);
+}
+
+.gh-audit-log-icon svg {
+    width: 13px;
+    height: 13px;
+}
+
+.gh-audit-log-icon svg path {
+    fill: var(--midgrey-l1);
 }
 
 @media (max-width: 620px) {
