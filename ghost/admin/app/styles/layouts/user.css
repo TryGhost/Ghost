@@ -196,7 +196,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 12px;
+    margin-top: 20px;
 }
 
 .user-setting-toggle label {
@@ -205,4 +205,8 @@
 
 .user-setting-toggle p {
     margin-top: 0;
+}
+
+.user-settings-subgroup .for-switch {
+    width: 38px !important;
 }
