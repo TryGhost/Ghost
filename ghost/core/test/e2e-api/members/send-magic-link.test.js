@@ -100,7 +100,7 @@ describe('sendMagicLink', function () {
                 urlHistory: [
                     {
                         path: '/test-path',
-                        time: 123
+                        time: Date.now()
                     }
                 ]
             })
