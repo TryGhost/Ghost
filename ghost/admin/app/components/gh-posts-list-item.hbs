@@ -53,35 +53,13 @@
             {{#if (and this.session.user.isContributor @post.isPublished)}}
                 <a href={{@post.url}} class="permalink gh-list-data gh-post-list-status" target="_blank" rel="noopener noreferrer">
                     <div class="flex items-center">
-                        {{#if @post.isScheduled}}
-                        <span class="gh-content-status-scheduled gh-badge nowrap" title="Scheduled" data-tooltip="{{capitalize this.scheduledText}} to {{@post.emailSegment}} members">
-                            Scheduled
-                            {{#if @post.newsletter}}
-                                {{svg-jar "email-stroke" class="gh-post-status-email"}}
-                            {{/if}}
-                        </span>
-                        {{/if}}
-
-                        {{#if @post.isDraft}}
-                        <span class="gh-content-status-draft gh-badge gh-badge-pink nowrap">
-                            Draft
-                        </span>
-                        {{/if}}
-
-                        {{#if @post.isPublished}}
                         <span class="gh-content-status-published nowrap">
+                            {{svg-jar "check" class="gh-post-status-icon"}}
                             Published
                             {{#if @post.hasEmail}}
-                            {{svg-jar "email-stroke" class="gh-post-status-email"}}
+                                &amp; Sent
                             {{/if}}
                         </span>
-                        {{/if}}
-
-                        {{#if @post.isSent}}
-                        <span class="gh-content-status-emailed nowrap">
-                            {{svg-jar "email-stroke" class="gh-post-status-email"}}
-                        </span>
-                        {{/if}}
                     </div>
                 </a>
             {{else}}
@@ -184,35 +162,12 @@
             {{#if (and this.session.user.isContributor @post.isPublished)}}
                 <a href={{@post.url}} class="permalink gh-list-data gh-post-list-status" target="_blank" rel="noopener noreferrer">
                     <div class="flex items-center">
-                        {{#if @post.isScheduled}}
-                        <span class="gh-content-status-scheduled gh-badge nowrap" title="Scheduled" data-tooltip="{{capitalize this.scheduledText}} to {{@post.emailSegment}} members">
-                            Scheduled
-                            {{#if @post.newsletter}}
-                            {{svg-jar "email-stroke" class="gh-post-status-email"}}
-                            {{/if}}
-                        </span>
-                        {{/if}}
-
-                        {{#if @post.isDraft}}
-                        <span class="gh-content-status-draft gh-badge gh-badge-pink nowrap">
-                            Draft
-                        </span>
-                        {{/if}}
-
-                        {{#if @post.isPublished}}
                         <span class="gh-content-status-published nowrap">
                             Published
                             {{#if @post.hasEmail}}
                             {{svg-jar "email-stroke" class="gh-post-status-email"}}
                             {{/if}}
                         </span>
-                        {{/if}}
-
-                        {{#if @post.isSent}}
-                        <span class="gh-content-status-emailed nowrap">
-                            {{svg-jar "email-stroke" class="gh-post-status-email"}}
-                        </span>
-                        {{/if}}
                     </div>
                 </a>
             {{else}}
@@ -233,7 +188,9 @@
                         {{#if @post.isPublished}}
                         <span class="gh-content-status-published nowrap">
                             Published
-                            {{svg-jar "email-stroke" class="gh-post-status-icon"}}
+                            {{#if @post.hasEmail}}
+                            {{svg-jar "email-stroke" class="gh-post-status-email"}}
+                            {{/if}}
                         </span>
                         {{/if}}
 
