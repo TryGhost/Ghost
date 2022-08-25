@@ -153,7 +153,7 @@ describe('StaffService', function () {
                     name: 'Ghost',
                     email: 'member@example.com',
                     id: 'abc',
-                    geolocation: {country: 'France'},
+                    geolocation: '{"country": "France"}',
                     created_at: '2022-08-01T07:30:39.882Z'
                 };
 
@@ -185,7 +185,7 @@ describe('StaffService', function () {
                     name: 'Ghost',
                     email: 'member@example.com',
                     id: 'abc',
-                    geolocation: {country: 'France'},
+                    geolocation: '{"country": "France"}',
                     created_at: '2022-08-01T07:30:39.882Z'
                 };
                 offer = {
@@ -316,7 +316,7 @@ describe('StaffService', function () {
                     name: 'Ghost',
                     email: 'member@example.com',
                     id: 'abc',
-                    geolocation: {country: 'France'},
+                    geolocation: '{"country": "France"}',
                     created_at: '2022-08-01T07:30:39.882Z'
                 };
 
