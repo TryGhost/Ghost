@@ -920,9 +920,6 @@ describe('Acceptance: Staff', function () {
             // add an expired invite
             this.server.create('invite', {expires: moment.utc().subtract(1, 'day').valueOf(), role: adminRole});
 
-            // add a suspended user
-            suspendedUser = this.server.create('user', {email: 'suspended@example.com', roles: [adminRole], status: 'inactive'});
-
             return await authenticateSession();
         });
 
