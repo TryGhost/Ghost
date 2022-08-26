@@ -18,7 +18,8 @@ const GA_FEATURES = [
     'newsletterPaywall',
     'freeTrial',
     'compExpiring',
-    'searchHelper'
+    'searchHelper',
+    'emailAlerts'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
@@ -31,8 +32,7 @@ const BETA_FEATURES = [
 const ALPHA_FEATURES = [
     'auditLog',
     'urlCache',
-    'beforeAfterCard',
-    'emailAlerts'
+    'beforeAfterCard'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
