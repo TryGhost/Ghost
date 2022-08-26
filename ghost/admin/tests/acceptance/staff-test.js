@@ -903,6 +903,68 @@ describe('Acceptance: Staff', function () {
         });
     });
 
+    describe('when logged in as owner', function () {
+        let admin, adminRole, ownerRole, suspendedUser;
+
+        beforeEach(async function () {
+            this.server.loadFixtures('roles');
+            this.server.loadFixtures('settings');
+            adminRole = this.server.schema.roles.find(1);
+            enableMembers(this.server);
+            enableStripe(this.server);
+            enableLabsFlag(this.server, 'emailAlerts');
+            ownerRole = this.server.create('role', {name: 'Owner'});
+
+            admin = this.server.create('user', {email: 'admin@example.com', roles: [ownerRole]});
+
+            // add an expired invite
+            this.server.create('invite', {expires: moment.utc().subtract(1, 'day').valueOf(), role: adminRole});
+
+            // add a suspended user
+            suspendedUser = this.server.create('user', {email: 'suspended@example.com', roles: [adminRole], status: 'inactive'});
+
+            return await authenticateSession();
+        });
+
+        describe('existing user', function () {
+            beforeEach(function () {
+                this.server.create('user', {
+                    slug: 'test-1',
+                    name: 'Test User',
+                    facebook: 'test',
+                    twitter: '@test'
+                });
+            });
+
+            it('cannot see email alerts for other user', async function () {
+                await visit('/settings/staff/test-1');
+                expect(find('[data-test-checkbox="free-signup-notifications"]'), 'free signup alert').to.not.exist;
+                expect(find('[data-test-checkbox="paid-started-notifications"]'), 'paid start alert').to.not.exist;
+                expect(find('[data-test-checkbox="paid-canceled-notifications"]'), 'paid cancel alert').to.not.exist;
+            });
+        });
+
+        describe('own user', function () {
+            it('can toggle email alerts for own user', async function () {
+                await visit(`/settings/staff/${admin.slug}`);
+                expect(find('[data-test-checkbox="free-signup-notifications"]')).to.not.be.checked;
+                expect(find('[data-test-checkbox="paid-started-notifications"]')).to.not.be.checked;
+                expect(find('[data-test-checkbox="paid-canceled-notifications"]')).to.not.be.checked;
+
+                await click('[data-test-label="free-signup-notifications"]');
+                await click('[data-test-label="paid-started-notifications"]');
+                await click('[data-test-label="paid-canceled-notifications"]');
+
+                await click('[data-test-save-button]');
+                await visit(`/settings/staff/${admin.slug}`);
+
+                expect(find('[data-test-checkbox="free-signup-notifications"]')).to.be.checked;
+                expect(find('[data-test-checkbox="paid-started-notifications"]')).to.be.checked;
+                expect(find('[data-test-checkbox="paid-canceled-notifications"]')).to.be.checked;
+            });
+        });
+    });
+
     describe('when logged in as author', function () {
         let adminRole, authorRole;
 

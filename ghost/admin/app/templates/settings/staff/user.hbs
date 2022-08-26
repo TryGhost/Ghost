@@ -329,6 +329,7 @@
                                         </label>
                                     </div>
                                 </div>
+                                {{#if this.user.isAdmin}}
                                 {{#if (and this.canToggleMemberAlerts (feature 'emailAlerts'))}}
                                     <div class="user-setting-toggle">
                                         <div>
@@ -389,6 +390,7 @@
                                         </div>
                                     </div>
                                     {{/if}}
+                                {{/if}}
                                 {{/if}}
                             </GhFormGroup>
                         </div>
