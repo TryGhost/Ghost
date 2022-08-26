@@ -904,7 +904,7 @@ describe('Acceptance: Staff', function () {
     });
 
     describe('when logged in as owner', function () {
-        let admin, adminRole, ownerRole, suspendedUser;
+        let admin, adminRole, ownerRole;
 
         beforeEach(async function () {
             this.server.loadFixtures('roles');
