@@ -2,6 +2,7 @@ const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const _ = require('lodash');
 const {BadRequestError, NoPermissionError, NotFoundError, UnauthorizedError} = require('@tryghost/errors');
+const escape = require('escape-html');
 
 const messages = {
     badRequest: 'Bad Request.',
@@ -111,7 +112,7 @@ module.exports = class RouterController {
 
             if (!subscription) {
                 res.writeHead(404);
-                res.end(`Could not find subscription ${req.body.subscription_id}`);
+                res.end(`Could not find subscription ${escape(req.body.subscription_id)}`);
             }
             customer = await this._stripeAPIService.getCustomer(subscription.get('customer_id'));
         }
