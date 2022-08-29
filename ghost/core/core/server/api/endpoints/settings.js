@@ -1,4 +1,3 @@
-const Promise = require('bluebird');
 const _ = require('lodash');
 const models = require('../../models');
 const routeSettings = require('../../services/route-settings');
@@ -6,12 +5,7 @@ const {BadRequestError} = require('@tryghost/errors');
 const settingsService = require('../../services/settings/settings-service');
 const membersService = require('../../services/members');
 const stripeService = require('../../services/stripe');
-const tpl = require('@tryghost/tpl');
 const settingsBREADService = settingsService.getSettingsBREADServiceInstance();
-
-const messages = {
-    failedSendingEmail: 'Failed Sending Email'
-};
 
 async function getStripeConnectData(frame) {
     const stripeConnectIntegrationToken = frame.data.settings.find(setting => setting.key === 'stripe_connect_integration_token');
@@ -74,94 +68,6 @@ module.exports = {
             const browse = await settingsBREADService.browse(frame.options.context);
 
             return browse;
-        }
-    },
-
-    /**
-     * @deprecated
-     */
-    updateMembersEmail: {
-        statusCode: 204,
-        permissions: {
-            method: 'edit'
-        },
-        data: [
-            'email',
-            'type'
-        ],
-        async query(frame) {
-            const {email, type} = frame.data;
-
-            try {
-                // Mapped internally to the newer method of changing emails
-                const actionToKeyMapping = {
-                    supportAddressUpdate: 'members_support_address'
-                };
-                const edit = {
-                    key: actionToKeyMapping[type],
-                    value: email
-                };
-
-                await settingsBREADService.edit([edit], frame.options, null);
-            } catch (err) {
-                throw new BadRequestError({
-                    err,
-                    message: tpl(messages.failedSendingEmail)
-                });
-            }
-        }
-    },
-
-    /**
-     * @todo can get removed, since this is moved to verifyKeyUpdate
-     * @deprecated: keep to not break existing email verification links, but remove after 1 - 2 releases
-     */
-    validateMembersEmailUpdate: {
-        options: [
-            'token',
-            'action'
-        ],
-        permissions: false,
-        validation: {
-            options: {
-                token: {
-                    required: true
-                },
-                action: {
-                    values: ['supportaddressupdate']
-                }
-            }
-        },
-        async query(frame) {
-            // This is something you have to do if you want to use the "framework" with access to the raw req/res
-            frame.response = async function (req, res) {
-                try {
-                    const {token, action} = frame.options;
-                    const updatedEmailAddress = await membersService.settings.getEmailFromToken({token});
-                    const actionToKeyMapping = {
-                        supportAddressUpdate: 'members_support_address'
-                    };
-                    if (updatedEmailAddress) {
-                        return models.Settings.edit({
-                            key: actionToKeyMapping[action],
-                            value: updatedEmailAddress
-                        }).then(() => {
-                            // Redirect to Ghost-Admin settings page
-                            const adminLink = membersService.settings.getAdminRedirectLink({type: action});
-                            res.redirect(adminLink);
-                        });
-                    } else {
-                        return Promise.reject(new BadRequestError({
-                            message: 'Invalid token!'
-                        }));
-                    }
-                } catch (err) {
-                    return Promise.reject(new BadRequestError({
-                        err,
-                        message: 'Invalid token!'
-                    }));
-                }
-            };
         }
     },
 

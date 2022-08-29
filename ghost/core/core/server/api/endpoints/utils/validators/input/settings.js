@@ -1,6 +1,6 @@
 const Promise = require('bluebird');
 const _ = require('lodash');
-const {ValidationError, BadRequestError} = require('@tryghost/errors');
+const {ValidationError} = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
 const tpl = require('@tryghost/tpl');
 
@@ -70,25 +70,6 @@ module.exports = {
 
         if (errors.length) {
             return Promise.reject(errors[0]);
-        }
-    },
-
-    /**
-     * @deprecated
-     */
-    updateMembersEmail(apiConfig, frame) {
-        const {email, type} = frame.data;
-
-        if (typeof email !== 'string' || !validator.isEmail(email)) {
-            throw new BadRequestError({
-                message: messages.invalidEmailReceived
-            });
-        }
-
-        if (!type || !['supportAddressUpdate'].includes(type)) {
-            throw new BadRequestError({
-                message: messages.invalidEmailTypeReceived
-            });
         }
     }
 };
