@@ -403,48 +403,4 @@ describe('Settings API', function () {
                 });
         });
     });
-
-    // @TODO We can drop these tests once we removed the deprecated endpoints
-    describe('deprecated', function () {
-        it('can do updateMembersEmail', async function () {
-            await agent
-                .post('settings/members/email/')
-                .body({
-                    email: 'test@test.com',
-                    type: 'supportAddressUpdate'
-                })
-                .expectStatus(204)
-                .expectEmptyBody()
-                .matchHeaderSnapshot({
-                    etag: anyEtag
-                });
-
-            mockManager.assert.sentEmail({
-                subject: 'Verify email address',
-                to: 'test@test.com'
-            });
-        });
-
-        it('can do validateMembersEmailUpdate', async function () {
-            const magicLink = await membersService.api.getMagicLink('test@test.com');
-            const magicLinkUrl = new URL(magicLink);
-            const token = magicLinkUrl.searchParams.get('token');
-
-            await agent
-                .get(`settings/members/email/?token=${token}&action=supportAddressUpdate`)
-                .expectStatus(302)
-                .expectEmptyBody()
-                .matchHeaderSnapshot();
-
-            // Assert that the setting is changed as a side effect
-            // NOTE: cannot use read here :/
-            await agent.get('settings/')
-                .expect(({body}) => {
-                    const fromAddress = body.settings.find((setting) => {
-                        return setting.key === 'members_support_address';
-                    });
-                    assert.equal(fromAddress.value, 'test@test.com');
-                });
-        });
-    });
 });
