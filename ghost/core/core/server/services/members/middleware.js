@@ -133,7 +133,7 @@ const updateMemberData = async function (req, res) {
         }
     } catch (err) {
         res.writeHead(err.statusCode, {
-            'Content-Type': 'text/plain'
+            'Content-Type': 'text/plain;charset=UTF-8'
         });
         res.end(err.message);
     }
