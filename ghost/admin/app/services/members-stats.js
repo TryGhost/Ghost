@@ -189,8 +189,8 @@ export default class MembersStatsService extends Service {
     @task
     *_fetchCountsTask() {
         this._lastFetchedCounts = new Date();
-
-        let statsUrl = this.ghostPaths.url.api('members/stats/count');
+        
+        let statsUrl = this.ghostPaths.url.api('stats/member_count/');
         let stats = yield this.ajax.request(statsUrl);
         this.countStats = stats;
         return stats;
