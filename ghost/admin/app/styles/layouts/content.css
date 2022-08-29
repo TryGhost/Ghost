@@ -479,10 +479,10 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
         padding-right: 0;
     }
 
-    .gh-content-status-draft,
-    .gh-content-status-published,
-    .gh-content-status-scheduled,
-    .gh-content-status-emailed {
+    .feature-memberAttribution .gh-content-status-draft,
+    .feature-memberAttribution .gh-content-status-published,
+    .feature-memberAttribution .gh-content-status-scheduled,
+    .feature-memberAttribution .gh-content-status-emailed {
         padding-left: 0;
         padding-right: 12px;
     }
