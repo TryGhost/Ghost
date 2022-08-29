@@ -128,6 +128,23 @@ describe('Front-end members behavior', function () {
                 .expect(400);
         });
 
+        it('should error for invalid subscription id on members create update session endpoint', async function () {
+            const membersService = require('../../core/server/services/members');
+            const email = 'test-member-create-update-session@email.com';
+            await membersService.api.members.create({email});
+            const token = await membersService.api.getMemberIdentityToken(email);
+            await request.post('/members/api/create-stripe-update-session')
+                .send({
+                    identity: token,
+                    subscription_id: 'invalid'
+                })
+                .expect(404)
+                .expect('Content-Type', 'text/plain;charset=UTF-8')
+                .expect((res) => {
+                    res.text.should.eql('Could not find subscription invalid');
+                });
+        });
+
         it('should error for invalid data on members subscription endpoint', async function () {
             await request.put('/members/api/subscriptions/123')
                 .expect(400);

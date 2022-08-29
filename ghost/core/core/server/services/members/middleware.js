@@ -36,7 +36,9 @@ const deleteSession = async function (req, res) {
         res.writeHead(204);
         res.end();
     } catch (err) {
-        res.writeHead(err.statusCode);
+        res.writeHead(err.statusCode, {
+            'Content-Type': 'text/plain;charset=UTF-8'
+        });
         res.end(err.message);
     }
 };
@@ -130,7 +132,9 @@ const updateMemberData = async function (req, res) {
             res.json(null);
         }
     } catch (err) {
-        res.writeHead(err.statusCode);
+        res.writeHead(err.statusCode, {
+            'Content-Type': 'text/plain;charset=UTF-8'
+        });
         res.end(err.message);
     }
 };
