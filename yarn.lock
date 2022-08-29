@@ -21354,10 +21354,10 @@ test-exclude@^6.0.0:
     glob "^7.1.4"
     minimatch "^3.0.4"
 
-testem@3.8.0, testem@^3.2.0:
-  version "3.8.0"
-  resolved "https://registry.yarnpkg.com/testem/-/testem-3.8.0.tgz#651aeddbd433ef55ecf7262f0e58b89e1dccb9ac"
-  integrity sha512-WEaFOq2ZGqM3IQji+Q2uXHGdln5upKhSZ1pLYe9W4CttDELAo588frNovk8UQmB+Xg2mDI8G2zmm7qKuWsldtw==
+testem@3.9.0, testem@^3.2.0:
+  version "3.9.0"
+  resolved "https://registry.yarnpkg.com/testem/-/testem-3.9.0.tgz#a82ccf01e5a248e3924244186e348c665ab90f7d"
+  integrity sha512-YTxCYKj0cc8uUSKEziJtSC5T/pw4fQnY0ZXNOyvAFgrijfsN9NxmncJZOHLhPgFOuhbRd5i+DBQxw0Cpe0SEFg==
   dependencies:
     "@xmldom/xmldom" "^0.8.0"
     backbone "^1.1.2"
