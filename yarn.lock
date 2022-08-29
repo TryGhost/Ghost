@@ -15618,10 +15618,10 @@ lru_map@^0.3.3:
   resolved "https://registry.yarnpkg.com/lru_map/-/lru_map-0.3.3.tgz#b5c8351b9464cbd750335a79650a0ec0e56118dd"
   integrity sha512-Pn9cox5CsMYngeDbmChANltQl+5pi6XmTrraMSzhPmMBbmgcxmqWry0U3PGapCU1yB4/LqCcom7qhHZiF/jGfQ==
 
-luxon@3.0.2:
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/luxon/-/luxon-3.0.2.tgz#88f7b31dadb524af9dee87a9dd9d6124a8fdcc73"
-  integrity sha512-pfgTG/TMWzVKZ2XC4RBq3jNcidG3wxUt7ztC98Vpo5qy16uUhZrRPx8/AfVfX3LCj6I2YFSpY+vaVVVgWaDkXA==
+luxon@3.0.3:
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/luxon/-/luxon-3.0.3.tgz#573e65531efd3d92265feb640f02ba7a192e2388"
+  integrity sha512-+EfHWnF+UT7GgTnq5zXg3ldnTKL2zdv7QJgsU5bjjpbH17E3qi/puMhQyJVYuCq+FRkogvB5WB6iVvUr+E4a7w==
 
 luxon@^1.26.0:
   version "1.28.0"
