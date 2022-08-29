@@ -119,6 +119,42 @@ describe('Mega template', function () {
         should(footerPowered.find('a img').attr('alt')).eql('Powered by Ghost');
     });
 
+    it('Correctly escapes the contents', function () {
+        const post = {
+            title: 'I <3 Posts',
+            html: '<div class="post-content-html">I am <100 years old</div>'
+        };
+        const site = {
+            iconUrl: 'site icon url',
+            url: 'site url',
+            title: 'Egg <3 eggs'
+        };
+        const templateSettings = {
+            headerImage: 'header image',
+            headerImageWidth: '600',
+            showHeaderIcon: true,
+            showHeaderTitle: true,
+            showHeaderName: true,
+            titleAlignment: 'left',
+            titleFontCategory: 'serif',
+            showFeatureImage: true,
+            bodyFontCategory: 'sans_serif',
+            footerContent: 'footer content',
+            showBadge: true
+        };
+        const newsletter = {
+            name: 'newsletter name'
+        };
+
+        const html = render({post, site, templateSettings, newsletter});
+
+        const $ = cheerio.load(html);
+
+        should($('.site-title').text()).eql(site.title);
+        should($('.post-content-html').length).eql(1);
+        should($('.post-content-html').text()).eql('I am <100 years old');
+    });
+
     it('Uses the post title as a fallback for the excerpt', function () {
         const post = {
             title: 'My post title'
