@@ -11,10 +11,42 @@ const models = require('../../../../core/server/models');
 const imageLib = require('../../../../core/server/lib/image');
 const routing = require('../../../../core/frontend/services/routing');
 const urlService = require('../../../../core/server/services/url');
+const assert = require('assert');
 
 const ghost_head = require('../../../../core/frontend/helpers/ghost_head');
 const proxy = require('../../../../core/frontend/services/proxy');
 const {settingsCache, labs} = proxy;
+const {snapshotManager} = require('@tryghost/jest-snapshot');
+
+/**
+ * Reuses the snapshotManager for E2E tests to use the same snapshot system for unit tests.
+ */
+function assertHeadSnapshot(response) {
+    let error = new assert.AssertionError({
+        message: 'Unexpected assertion error'
+    });
+    
+    // We need to wrap the response in an object to fit the existing format
+    // Response should also be an object (should contain a property named 'string'), because jest requires an object if properties is set
+    // and we currently cannot set 'properties' to undefined with the existing framework (properties has a default argument value).
+    snapshotManager.assertSnapshot({response: response}, {
+        properties: {},
+        field: 'response',
+        error
+    });
+}
+
+/**
+ * This test helper asserts that the helper response matches the stored snapshot. This helps us detect issues where we
+ * inject new scripts or meta tags on sites where this shouldn't be the case. Unless the changes in the snapshots are validated and approved.
+ * So these changes become visible in PR's.
+ */
+async function testGhostHead(options) {
+    const rendered = await ghost_head(options);
+    should.exist(rendered);
+    assertHeadSnapshot(rendered);
+    return rendered;
+}
 
 describe('{{ghost_head}} helper', function () {
     let posts = [];
@@ -32,7 +64,8 @@ describe('{{ghost_head}} helper', function () {
             meta_description: 'tag meta description',
             name: 'tagtitle',
             meta_title: 'tag meta title',
-            feature_image: '/content/images/tag-image.png'
+            feature_image: '/content/images/tag-image.png',
+            updated_at: new Date(0)
         }));
 
         tags.push(createTag({
@@ -40,21 +73,24 @@ describe('{{ghost_head}} helper', function () {
             description: 'tag description',
             name: 'tagtitle',
             meta_title: '',
-            feature_image: '/content/images/tag-image.png'
+            feature_image: '/content/images/tag-image.png',
+            updated_at: new Date(0)
         }));
         tags.push(createTag({
             description: '',
             meta_description: '',
             name: 'tagtitle',
             meta_title: '',
-            feature_image: '/content/images/tag-image.png'
+            feature_image: '/content/images/tag-image.png',
+            updated_at: new Date(0)
         }));
 
         tags.push(createTag({
             meta_description: 'tag meta description',
             title: 'tagtitle',
             meta_title: 'tag meta title',
-            feature_image: '/content/images/tag-image.png'
+            feature_image: '/content/images/tag-image.png',
+            updated_at: new Date(0)
         }));
 
         /** USERS - used for author PAGES */
@@ -66,7 +102,8 @@ describe('{{ghost_head}} helper', function () {
             cover_image: '/content/images/author-cover-image.png',
             website: 'http://authorwebsite.com',
             facebook: 'testuser',
-            twitter: '@testuser'
+            twitter: '@testuser',
+            updated_at: new Date(0)
         }));
 
         users.push(createUser({
@@ -75,7 +112,8 @@ describe('{{ghost_head}} helper', function () {
             bio: 'Author bio',
             profile_image: '/content/images/test-author-image.png',
             cover_image: '/content/images/author-cover-image.png',
-            website: 'http://authorwebsite.com'
+            website: 'http://authorwebsite.com',
+            updated_at: new Date(0)
         }));
 
         /** AUTHORS - related to posts */
@@ -83,7 +121,8 @@ describe('{{ghost_head}} helper', function () {
             profile_image: '/content/images/test-author-image.png',
             website: 'http://authorwebsite.com',
             facebook: 'testuser',
-            twitter: '@testuser'
+            twitter: '@testuser',
+            updated_at: new Date(0)
         }));
 
         authors.push(createUser({// Author 1
@@ -93,7 +132,8 @@ describe('{{ghost_head}} helper', function () {
             website: 'http://authorwebsite.com',
             bio: 'Author bio',
             facebook: 'testuser',
-            twitter: '@testuser'
+            twitter: '@testuser',
+            updated_at: new Date(0)
         }));
 
         authors.push(createUser({// Author 2
@@ -103,7 +143,8 @@ describe('{{ghost_head}} helper', function () {
             website: 'http://authorwebsite.com',
             facebook: 'testuser',
             twitter: '@testuser',
-            bio: 'Author bio'
+            bio: 'Author bio',
+            updated_at: new Date(0)
         }));
 
         authors.push(createUser({// Author 3
@@ -113,11 +154,13 @@ describe('{{ghost_head}} helper', function () {
             profile_image: '/content/images/test-author-image.png',
             website: 'http://authorwebsite.com',
             facebook: 'testuser',
-            twitter: '@testuser'
+            twitter: '@testuser',
+            updated_at: new Date(0)
         }));
 
         authors.push(createUser({// Author 4
-            name: 'Author name'
+            name: 'Author name',
+            updated_at: new Date(0)
         }));
 
         authors.push(createUser({// Author 5
@@ -127,7 +170,8 @@ describe('{{ghost_head}} helper', function () {
             profile_image: null,
             website: 'http://authorwebsite.com',
             facebook: 'testuser',
-            twitter: '@testuser'
+            twitter: '@testuser',
+            updated_at: new Date(0)
         }));
 
         /** POSTS */
@@ -138,7 +182,9 @@ describe('{{ghost_head}} helper', function () {
             feature_image: '/content/images/test-image-about.png',
             page: true,
             authors: [authors[0]],
-            primary_author: authors[0]
+            primary_author: authors[0],
+            published_at: new Date(0),
+            updated_at: new Date(0)
         }));
 
         posts.push(createPost({// Post 1
@@ -153,7 +199,9 @@ describe('{{ghost_head}} helper', function () {
             twitter_description: 'Custom Twitter description',
             page: true,
             authors: [authors[0]],
-            primary_author: authors[0]
+            primary_author: authors[0],
+            published_at: new Date(0),
+            updated_at: new Date(0)
         }));
 
         posts.push(createPost({// Post 2
@@ -190,7 +238,9 @@ describe('{{ghost_head}} helper', function () {
             authors: [
                 authors[2]
             ],
-            primary_author: authors[2]
+            primary_author: authors[2],
+            published_at: new Date(0),
+            updated_at: new Date(0)
         }));
 
         posts.push(createPost({// Post 4
@@ -200,7 +250,9 @@ describe('{{ghost_head}} helper', function () {
             authors: [
                 authors[3]
             ],
-            primary_author: authors[3]
+            primary_author: authors[3],
+            published_at: new Date(0),
+            updated_at: new Date(0)
         }));
 
         posts.push(createPost({// Post 5
@@ -219,7 +271,9 @@ describe('{{ghost_head}} helper', function () {
             authors: [
                 authors[3]
             ],
-            primary_author: authors[3]
+            primary_author: authors[3],
+            published_at: new Date(0),
+            updated_at: new Date(0)
         }));
 
         posts.push(createPost({// Post 6
@@ -235,7 +289,9 @@ describe('{{ghost_head}} helper', function () {
             authors: [
                 authors[3]
             ],
-            primary_author: authors[3]
+            primary_author: authors[3],
+            published_at: new Date(0),
+            updated_at: new Date(0)
         }));
 
         posts.push(createPost({// Post 7
@@ -246,7 +302,9 @@ describe('{{ghost_head}} helper', function () {
             authors: [
                 authors[3]
             ],
-            primary_author: authors[3]
+            primary_author: authors[3],
+            published_at: new Date(0),
+            updated_at: new Date(0)
         }));
 
         posts.push(createPost({// Post 8
@@ -261,7 +319,9 @@ describe('{{ghost_head}} helper', function () {
             authors: [
                 authors[5]
             ],
-            primary_author: authors[5]
+            primary_author: authors[5],
+            published_at: new Date(0),
+            updated_at: new Date(0)
         }));
 
         posts.push(createPost({// Post 9
@@ -276,7 +336,9 @@ describe('{{ghost_head}} helper', function () {
             authors: [
                 authors[4]
             ],
-            primary_author: authors[4]
+            primary_author: authors[4],
+            published_at: new Date(0),
+            updated_at: new Date(0)
         }));
     };
 
@@ -303,6 +365,10 @@ describe('{{ghost_head}} helper', function () {
         settingsCache.get.withArgs('description').returns('site description');
         settingsCache.get.withArgs('cover_image').returns('/content/images/site-cover.png');
         settingsCache.get.withArgs('amp').returns(true);
+        settingsCache.get.withArgs('comments_enabled').returns('off');
+
+        // Force the usage of a fixed asset hash so we have reliable snapshots
+        configUtils.set('assetHash', 'asset-hash');
 
         makeFixtures();
     });
@@ -319,14 +385,13 @@ describe('{{ghost_head}} helper', function () {
 
         it('returns meta tag string on paginated index page without structured data and schema', function (done) {
             // @TODO: later we can extend this fn with an `meta` object e.g. locals.meta
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/page/2/',
                     context: ['paged', 'index'],
                     safeVersion: '0.3'
                 }
             })).then(function (rendered) {
-                should.exist(rendered);
                 rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/page\/2\/" \/>/);
                 rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
                 rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/rss\/" \/>/);
@@ -339,7 +404,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns structured data on first index page', function (done) {
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
@@ -375,6 +440,57 @@ describe('{{ghost_head}} helper', function () {
             }).catch(done);
         });
 
+        it('does not inject count script if comments off', function (done) {
+            settingsCache.get.withArgs('comments_enabled').returns('off');
+
+            testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
+                should.exist(rendered);
+                should(rendered.string).not.containEql('<script defer src="/public/comment-counts.min.js?v=asset-hash" data-ghost-comments-counts-api="http://localhost:65530/members/api/comments/counts/"></script>');
+
+                done();
+            }).catch(done);
+        });
+
+        it('injects comment count script if comments paid', function (done) {
+            settingsCache.get.withArgs('comments_enabled').returns('paid');
+
+            testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
+                should.exist(rendered);
+                should(rendered.string).containEql('<script defer src="/public/comment-counts.min.js?v=asset-hash" data-ghost-comments-counts-api="http://localhost:65530/members/api/comments/counts/"></script>');
+
+                done();
+            }).catch(done);
+        });
+
+        it('injects comment count script if comments all', function (done) {
+            settingsCache.get.withArgs('comments_enabled').returns('all');
+
+            testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '0.3'
+                }
+            })).then(function (rendered) {
+                should.exist(rendered);
+                should(rendered.string).containEql('<script defer src="/public/comment-counts.min.js?v=asset-hash" data-ghost-comments-counts-api="http://localhost:65530/members/api/comments/counts/"></script>');
+
+                done();
+            }).catch(done);
+        });
+
         it('returns meta structured data on homepage with site metadata defined', function (done) {
             settingsCache.get.withArgs('meta_description').returns('site SEO description');
 
@@ -386,7 +502,7 @@ describe('{{ghost_head}} helper', function () {
             settingsCache.get.withArgs('twitter_description').returns('twitter site description');
             settingsCache.get.withArgs('twitter_image').returns('/content/images/twitter-image.png');
 
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
@@ -427,7 +543,7 @@ describe('{{ghost_head}} helper', function () {
                 post: posts[0]
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/about/',
@@ -475,7 +591,7 @@ describe('{{ghost_head}} helper', function () {
                 post: posts[1]
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/about/',
@@ -525,7 +641,7 @@ describe('{{ghost_head}} helper', function () {
 
             const postBk = _.cloneDeep(renderObject.post);
 
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/post/',
@@ -595,7 +711,7 @@ describe('{{ghost_head}} helper', function () {
 
             const postBk = _.cloneDeep(renderObject.post);
 
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/post/',
@@ -656,7 +772,7 @@ describe('{{ghost_head}} helper', function () {
 
             const postBk = _.cloneDeep(renderObject.post);
 
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/post/',
@@ -706,7 +822,7 @@ describe('{{ghost_head}} helper', function () {
 
             const postBk = _.cloneDeep(renderObject.post);
 
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/post/amp/',
@@ -765,7 +881,7 @@ describe('{{ghost_head}} helper', function () {
                 post: posts[6]
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/post/',
@@ -824,7 +940,7 @@ describe('{{ghost_head}} helper', function () {
                 post: posts[7]
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/post/',
@@ -880,7 +996,7 @@ describe('{{ghost_head}} helper', function () {
                 post: posts[8]
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/post/',
@@ -936,7 +1052,7 @@ describe('{{ghost_head}} helper', function () {
                 post: posts[9]
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/post/',
@@ -959,7 +1075,7 @@ describe('{{ghost_head}} helper', function () {
                 post: posts[9]
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/about/',
@@ -977,7 +1093,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns next & prev URL correctly for middle page', function (done) {
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 renderObject: {
                     pagination: {total: 4, page: 3, next: 4, prev: 2}
                 },
@@ -1001,7 +1117,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns next & prev URL correctly for second page', function (done) {
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 renderObject: {
                     pagination: {total: 3, page: 2, next: 3, prev: 1}
                 },
@@ -1030,7 +1146,7 @@ describe('{{ghost_head}} helper', function () {
                 tag: tags[0]
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/tag/tagtitle/',
@@ -1072,7 +1188,7 @@ describe('{{ghost_head}} helper', function () {
                 tag: tags[1]
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/tag/tagtitle/',
@@ -1113,7 +1229,7 @@ describe('{{ghost_head}} helper', function () {
                 tag: tags[2]
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/tag/tagtitle/',
@@ -1136,7 +1252,7 @@ describe('{{ghost_head}} helper', function () {
                 tag: tags[3]
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/tag/tagtitle/page/2/',
@@ -1157,7 +1273,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns structured data and schema on first author page with cover image', function (done) {
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 renderObject: {author: users[0]},
                 locals: {
                     // @TODO: WHY?
@@ -1196,7 +1312,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('does not return structured data on paginated author pages', function (done) {
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 renderObject: {author: users[1]},
                 locals: {
                     // @TODO: WHY?
@@ -1218,7 +1334,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns meta tag string even if safeVersion is invalid', function (done) {
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     context: [],
                     safeVersion: '0.9'
@@ -1233,7 +1349,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('disallows indexing for preview pages', function (done) {
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     context: ['preview', 'post']
                 }
@@ -1246,7 +1362,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('implicit indexing settings for non-preview pages', function (done) {
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     context: ['featured', 'paged', 'index', 'post', 'amp', 'home', 'unicorn']
                 }
@@ -1259,7 +1375,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('outputs structured data but not schema for custom collection', function (done) {
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/featured/',
                     context: ['featured'],
@@ -1297,7 +1413,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns correct rss url with subdirectory', function (done) {
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     context: ['paged', 'index'],
                     safeVersion: '0.3'
@@ -1326,7 +1442,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('contains the changed origin', function (done) {
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     context: ['paged', 'index'],
                     safeVersion: '0.3'
@@ -1359,7 +1475,7 @@ describe('{{ghost_head}} helper', function () {
                 post: posts[2]
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/post/',
@@ -1391,7 +1507,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('returns meta tag plus injected code', function (done) {
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 renderObject: {
                     post: false
                 },
@@ -1415,7 +1531,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('outputs post codeinjection as well', function (done) {
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 renderObject: {
                     post: {
                         codeinjection_head: 'post-codeinjection'
@@ -1435,7 +1551,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('handles post codeinjection being empty', function (done) {
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 renderObject: {
                     post: {
                         codeinjection_head: ''
@@ -1455,7 +1571,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('handles post codeinjection being null', function (done) {
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 renderObject: {
                     post: {
                         codeinjection_head: null
@@ -1479,7 +1595,7 @@ describe('{{ghost_head}} helper', function () {
                 post: posts[1]
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     context: ['amp', 'post'],
@@ -1508,7 +1624,7 @@ describe('{{ghost_head}} helper', function () {
                 post: posts[1]
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/post/',
@@ -1535,7 +1651,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 templateOptions,
                 renderObject: renderObject,
                 locals: {
@@ -1561,7 +1677,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 templateOptions,
                 renderObject: renderObject,
                 locals: {
@@ -1589,7 +1705,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 templateOptions,
                 renderObject: renderObject,
                 locals: {
@@ -1615,7 +1731,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 templateOptions,
                 renderObject: renderObject,
                 locals: {
@@ -1641,7 +1757,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 templateOptions,
                 renderObject: renderObject,
                 locals: {
@@ -1661,7 +1777,7 @@ describe('{{ghost_head}} helper', function () {
         it('includes portal when members enabled', function (done) {
             settingsCache.get.withArgs('members_enabled').returns(true);
 
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
@@ -1680,7 +1796,7 @@ describe('{{ghost_head}} helper', function () {
             settingsCache.get.withArgs('members_enabled').returns(true);
             settingsCache.get.withArgs('paid_members_enabled').returns(true);
 
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
@@ -1700,7 +1816,7 @@ describe('{{ghost_head}} helper', function () {
             settingsCache.get.withArgs('members_enabled').returns(false);
             settingsCache.get.withArgs('paid_members_enabled').returns(true);
 
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
@@ -1720,7 +1836,7 @@ describe('{{ghost_head}} helper', function () {
             settingsCache.get.withArgs('members_enabled').returns(true);
             settingsCache.get.withArgs('paid_members_enabled').returns(false);
 
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
@@ -1741,7 +1857,7 @@ describe('{{ghost_head}} helper', function () {
         it('includes search when labs flag enabled', function (done) {
             sinon.stub(labs, 'isSet').returns(true);
 
-            ghost_head(testUtils.createHbsResponse({
+            testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
