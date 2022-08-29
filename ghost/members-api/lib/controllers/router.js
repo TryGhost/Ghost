@@ -110,8 +110,10 @@ module.exports = class RouterController {
             });
 
             if (!subscription) {
-                res.writeHead(404);
-                res.end(`Could not find subscription ${req.body.subscription_id}`);
+                res.writeHead(404, {
+                    'Content-Type': 'text/plain;charset=UTF-8'
+                });
+                return res.end(`Could not find subscription ${req.body.subscription_id}`);
             }
             customer = await this._stripeAPIService.getCustomer(subscription.get('customer_id'));
         }
