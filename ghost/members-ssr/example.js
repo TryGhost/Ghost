@@ -32,7 +32,9 @@ const server = require('http').createServer(async (req, res) => {
             res.writeHead(200);
             res.end();
         } catch (err) {
-            res.writeHead(err.statusCode);
+            res.writeHead(err.statusCode, {
+                'Content-Type': 'text/plain;charset=UTF-8'
+            });
             res.end(err.message);
         }
     } else {
@@ -43,7 +45,9 @@ const server = require('http').createServer(async (req, res) => {
             });
             res.end(JSON.stringify(member));
         } catch (err) {
-            res.writeHead(err.statusCode);
+            res.writeHead(err.statusCode, {
+                'Content-Type': 'text/plain;charset=UTF-8'
+            });
             res.end(err.message);
         }
     }
