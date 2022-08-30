@@ -1465,7 +1465,7 @@ describe('Members API', function () {
         const compedPayload = {
             id: memberWithPaidSubscription.id,
             // Remove all complimentary subscriptions
-            tiers: [...memberWithPaidSubscription.tiers]
+            tiers: memberWithPaidSubscription.tiers
         };
 
         const {body} = await agent
@@ -1478,16 +1478,6 @@ describe('Members API', function () {
         assert.equal(updatedMember.tiers.length, 1, 'The member should have one product now');
         assert.equal(updatedMember.tiers[0].id, memberWithPaidSubscription.tiers[0].id, 'The member should have the paid product');
 
-        /*const compedPayload = {
-            id: memberWithPaidSubscription.id,
-            // Remove all paid subscriptions (= not allowed atm)
-            tiers: []
-        };
-
-        await agent
-            .put(`/members/${memberWithPaidSubscription.id}/`)
-            .body({members: [compedPayload]})
-            .expectStatus(400);*/
     });
 
     it('Can keep tiers unchanged when modifying a paid member', async function () {
