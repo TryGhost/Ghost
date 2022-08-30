@@ -4,7 +4,7 @@
 // - state builder
 // - output state checker (in case we don't get jest snapshots working)
 //
-// The request agetnt is responsible for making HTTP-like requests to an application (express app in case of Ghost).
+// The request agent is responsible for making HTTP-like requests to an application (express app in case of Ghost).
 // Note there's no actual need to make an HTTP request to an actual server, bypassing HTTP and hooking into the application
 // directly is enough and reduces dependence on blocking a port (allows to run tests in parallel).
 //
