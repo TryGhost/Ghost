@@ -433,7 +433,7 @@ module.exports = class MemberRepository {
                         }
                     }
 
-                    if (productsToRemove.length === existingProducts.length && productsToAdd.length === 0) {
+                    if (incomingProductIds.length === 0) {
                         // CASE: We are removing all (comped) products from a member & there were no active subscriptions - the member is "free"
                         memberStatusData.status = 'free';
                     }
