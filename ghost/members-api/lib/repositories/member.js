@@ -10,7 +10,8 @@ const {NotFoundError} = require('@tryghost/errors');
 const messages = {
     noStripeConnection: 'Cannot {action} without a Stripe Connection',
     moreThanOneProduct: 'A member cannot have more than one Product',
-    existingSubscriptions: 'Cannot modify Products for a Member with active Subscriptions',
+    addProductWithActiveSubscription: 'Cannot add comped Products to a Member with active Subscriptions',
+    deleteProductWithActiveSubscription: 'Cannot delete a non-comped Product from a Member, because it has an active Subscription for the same product',
     memberNotFound: 'Could not find Member {id}',
     subscriptionNotFound: 'Could not find Subscription {id}',
     productNotFound: 'Could not find Product {id}',
@@ -406,27 +407,55 @@ module.exports = class MemberRepository {
             productsToAdd = _.differenceWith(incomingProductIds, existingProductIds);
             productsToRemove = _.differenceWith(existingProductIds, incomingProductIds);
             const productsToModify = productsToAdd.concat(productsToRemove);
-
+           
             if (productsToModify.length !== 0) {
-                const exisitingSubscriptions = await initialMember.related('stripeSubscriptions').fetch(sharedOptions);
-                const existingActiveSubscriptions = exisitingSubscriptions.filter((subscription) => {
-                    return this.isActiveSubscriptionStatus(subscription.get('status'));
-                });
+                // Load active subscriptions information
+                await initialMember.load(
+                    [
+                        'stripeSubscriptions',
+                        'stripeSubscriptions.stripePrice',
+                        'stripeSubscriptions.stripePrice.stripeProduct',
+                        'stripeSubscriptions.stripePrice.stripeProduct.product'
+                    ], sharedOptions);
+                
+                const exisitingSubscriptions = initialMember.related('stripeSubscriptions')?.models ?? [];
+                
+                if (productsToRemove.length > 0) {
+                    // Only allow to delete comped products without a subscription attached to them
+                    // Other products should be removed by canceling them via the related stripe subscription
+                    const dontAllowToRemoveProductsIds = exisitingSubscriptions
+                        .filter(sub => this.isActiveSubscriptionStatus(sub.get('status')))
+                        .map(sub => sub.related('stripePrice')?.related('stripeProduct')?.get('product_id'));
 
-                if (existingActiveSubscriptions.length) {
-                    throw new errors.BadRequestError({message: tpl(messages.existingSubscriptions)});
+                    for (const deleteId of productsToRemove) {
+                        if (dontAllowToRemoveProductsIds.includes(deleteId)) {
+                            throw new errors.BadRequestError({message: tpl(messages.deleteProductWithActiveSubscription)});
+                        }
+                    }
+
+                    if (productsToRemove.length === existingProducts.length) {
+                        // CASE: We are removing all (comped) products from a member & there were no active subscriptions - the member is "free"
+                        memberStatusData.status = 'free';
+                    }
                 }
-            }
 
-            // CASE: We are removing all products from a member & there were no active subscriptions - the member is "free"
-            if (incomingProductIds.length === 0) {
-                memberStatusData.status = 'free';
-            } else {
-                // CASE: We are changing products & there were not active stripe subscriptions - the member is "comped"
-                if (productsToModify.length !== 0) {
-                    memberStatusData.status = 'comped';
-                } else {
-                    // CASE: We are not changing any products - leave the status alone
+                if (productsToAdd.length > 0) {
+                    // Don't allow to add complimentary subscriptions (= creating a new product) when the member already has an active
+                    // subscription
+                    const existingActiveSubscriptions = exisitingSubscriptions.filter((subscription) => {
+                        return this.isActiveSubscriptionStatus(subscription.get('status'));
+                    });
+    
+                    if (existingActiveSubscriptions.length) {
+                        throw new errors.BadRequestError({message: tpl(messages.addProductWithActiveSubscription)});
+                    }
+
+                    // CASE: We are changing products & there were not active stripe subscriptions - the member is "comped"
+                    if (productsToModify.length !== 0) {
+                        memberStatusData.status = 'comped';
+                    } else {
+                        // CASE: We are not changing any products - leave the status alone
+                    }
                 }
             }
         }
