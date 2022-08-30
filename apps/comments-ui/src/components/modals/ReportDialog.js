@@ -22,9 +22,9 @@ const ReportDialog = (props) => {
 
     let buttonIcon = null;
     if (progress === 'sending') {
-        buttonIcon = <SpinnerIcon className="w-[24px] h-[24px] mr-2 fill-white" />;
+        buttonIcon = <SpinnerIcon className="mr-2 h-[24px] w-[24px] fill-white" />;
     } else if (progress === 'sent') {
-        buttonIcon = <SuccessIcon className="w-[16px] h-[16px] mr-2" />;
+        buttonIcon = <SuccessIcon className="mr-2 h-[16px] w-[16px]" />;
     }
 
     const stopPropagation = (event) => {
@@ -52,12 +52,12 @@ const ReportDialog = (props) => {
     };
 
     return (
-        <div className="relative bg-white w-screen sm:w-[500px] h-screen sm:h-auto p-[28px] sm:p-8 rounded-none sm:rounded-xl text-center sm:text-left shadow-modal" onMouseDown={stopPropagation}>
-            <h1 className="font-sans font-bold tracking-tight text-[24px] mb-1 text-black">You want to report<span className="hidden sm:inline"> this comment</span>?</h1>
-            <p className="font-sans text-base text-neutral-500 px-4 sm:pr-4 sm:pl-0 leading-9">Your request will be sent to the owner of this site.</p>
-            <div className="flex flex-col sm:flex-row justify-start items-center gap-4 mt-10">
+        <div className="rounded-none relative h-screen w-screen bg-white p-[28px] text-center shadow-modal sm:h-auto sm:w-[500px] sm:rounded-xl sm:p-8 sm:text-left" onMouseDown={stopPropagation}>
+            <h1 className="mb-1 font-sans text-[24px] font-bold tracking-tight text-black">You want to report<span className="hidden sm:inline"> this comment</span>?</h1>
+            <p className="text-base px-4 font-sans leading-9 text-neutral-500 sm:pr-4 sm:pl-0">Your request will be sent to the owner of this site.</p>
+            <div className="mt-10 flex flex-col items-center justify-start gap-4 sm:flex-row">
                 <button
-                    className={`transition duration-200 ease-linear w-full sm:w-[200px] h-[44px] px-4 flex items-center justify-center rounded-md text-white font-sans font-semibold text-[15px] ${buttonColor} opacity-100 hover:opacity-90`}
+                    className={`flex h-[44px] w-full items-center justify-center rounded-md px-4 font-sans text-[15px] font-semibold text-white transition duration-200 ease-linear sm:w-[200px] ${buttonColor} opacity-100 hover:opacity-90`}
                     onClick={submit}
                     style={{backgroundColor: buttonColor ?? '#000000'}}
                 >

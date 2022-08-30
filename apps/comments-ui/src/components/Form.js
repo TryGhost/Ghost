@@ -5,7 +5,6 @@ import Avatar from './Avatar';
 import {useEditor, EditorContent} from '@tiptap/react';
 import {getEditorConfig} from '../utils/editor';
 import {isMobile} from '../utils/helpers';
-// import {formatRelativeTime} from '../utils/helpers';
 import {ReactComponent as SpinnerIcon} from '../images/icons/spinner.svg';
 import {ReactComponent as EditIcon} from '../images/icons/edit.svg';
 import {GlobalEventBus} from '../utils/event-bus';
@@ -27,7 +26,7 @@ const Form = (props) => {
 
     let buttonIcon = null;
     if (progress === 'sending') {
-        buttonIcon = <SpinnerIcon className="w-[24px] h-[24px] fill-white dark:fill-black" />;
+        buttonIcon = <SpinnerIcon className="h-[24px] w-[24px] fill-white dark:fill-black" />;
     } else if (progress === 'sent') {
         buttonIcon = null;
     }
@@ -408,55 +407,24 @@ const Form = (props) => {
 
     return (
         <>
-            <form ref={formEl} data-testid="form" onClick={focusEditor} onMouseDown={preventIfFocused} onTouchStart={preventIfFocused} className={`
-                transition duration-200
-                pt-3 pb-2 px-3
-                -mt-[14px] -mx-3 mb-10
-                rounded-md
-                ${isFormReallyOpen ? 'cursor-default' : 'cursor-pointer'}
-                ${(!props.isReply && !props.isEdit) && '-mt-[4px]'}
-                ${(props.isReply || props.isEdit) && '-mt-[20px]'}
-                ${shouldFormBeReduced && 'pl-1'}
+            <form ref={formEl} data-testid="form" onClick={focusEditor} onMouseDown={preventIfFocused} onTouchStart={preventIfFocused} className={`-mx-3 -mt-[14px] mb-10 rounded-md px-3 pt-3 pb-2 transition duration-200 ${isFormReallyOpen ? 'cursor-default' : 'cursor-pointer'} ${(!props.isReply && !props.isEdit) && '-mt-[4px]'} ${(props.isReply || props.isEdit) && '-mt-[20px]'} ${shouldFormBeReduced && 'pl-1'}
             `}>
-                <div className="w-full relative">
+                <div className="relative w-full">
                     <div className="pr-[1px] font-sans leading-normal dark:text-neutral-300">
-                        <div className={`transition-[padding] duration-150 delay-100 relative w-full pl-[52px] ${shouldFormBeReduced && 'pl-0'} ${isFormReallyOpen && 'pt-[64px] pl-[1px] sm:pl-[52px]'}`}>
+                        <div className={`relative w-full pl-[52px] transition-[padding] delay-100 duration-150 ${shouldFormBeReduced && 'pl-0'} ${isFormReallyOpen && 'pt-[64px] pl-[1px] sm:pl-[52px]'}`}>
                             <div
-                                className={`
-                                transition-all duration-150 delay-100
-                                w-full px-3 py-4
-                                bg-white dark:bg-[rgba(255,255,255,0.08)]
-                                rounded-md border-none border border-slate-50 dark:border-none
-                                font-sans text-[16.5px] leading-normal dark:text-neutral-300 
-                                focus:outline-0
-                                shadow-form hover:shadow-formxl dark:shadow-transparent
-                                ${commentsCount === 0 && 'placeholder:text-neutral-700'}
-                                ${isFormReallyOpen ? 'cursor-text min-h-[144px] pb-[68px] pt-2' : 'cursor-pointer overflow-hidden min-h-[48px] hover:border-slate-300'}
-                                ${props.isEdit && 'cursor-text'}
-                                ${!memberName && 'pointer-events-none'}
+                                className={`w-full rounded-md border border-none border-slate-50 bg-white px-3 py-4 font-sans text-[16.5px] leading-normal shadow-form transition-all delay-100 duration-150 hover:shadow-formxl focus:outline-0 dark:border-none dark:bg-[rgba(255,255,255,0.08)] dark:text-neutral-300 dark:shadow-transparent ${commentsCount === 0 && 'placeholder:text-neutral-700'} ${isFormReallyOpen ? 'min-h-[144px] cursor-text pb-[68px] pt-2' : 'min-h-[48px] cursor-pointer overflow-hidden hover:border-slate-300'} ${props.isEdit && 'cursor-text'} ${!memberName && 'pointer-events-none'}
                             `}>
                                 <EditorContent
                                     onMouseDown={stopIfFocused} onTouchStart={stopIfFocused}
                                     editor={editor} 
                                 />
                             </div>
-                            <div className="
-                                absolute right-[9px] bottom-[9px]
-                                flex space-x-4
-                                transition-[opacity] duration-150 
-                            ">
+                            <div className="absolute right-[9px] bottom-[9px] flex space-x-4 transition-[opacity] duration-150">
                                 {(props.isEdit || props.isReply) &&
-                                    <button type="button" onClick={props.close} className="outline-0 font-sans text-sm font-medium ml-2.5 text-neutral-500 dark:text-neutral-400">Cancel</button>}
+                                    <button type="button" onClick={props.close} className="ml-2.5 font-sans text-sm font-medium text-neutral-500 outline-0 dark:text-neutral-400">Cancel</button>}
                                 <button
-                                    className={`
-                                        flex items-center justify-center w-auto sm:w-[128px] ${props.isReply && 'sm:w-[100px]'} ${props.isEdit && 'sm:w-[64px]'} h-[39px]
-                                        transition-[opacity] duration-150
-                                        bg-neutral-900 dark:bg-[rgba(255,255,255,0.9)]
-                                        rounded-[6px] border outline-0
-                                        py-2 px-3
-                                        text-sm text-center font-sans font-semibold
-                                        text-white dark:text-neutral-800
-                                    `}
+                                    className={`flex w-auto items-center justify-center sm:w-[128px] ${props.isReply && 'sm:w-[100px]'} ${props.isEdit && 'sm:w-[64px]'} h-[39px] rounded-[6px] border bg-neutral-900 py-2 px-3 text-center font-sans text-sm font-semibold text-white outline-0 transition-[opacity] duration-150 dark:bg-[rgba(255,255,255,0.9)] dark:text-neutral-800`}
                                     type="button"
                                     data-testid="submit-form-button"
                                     onClick={submitForm}
@@ -467,8 +435,8 @@ const Form = (props) => {
                             </div>
                         </div>
                     </div>
-                    <div className='absolute top-1 left-0 flex justify-start items-center h-12 w-full'>
-                        <div className="grow-0 mr-3">
+                    <div className='absolute top-1 left-0 flex h-12 w-full items-center justify-start'>
+                        <div className="mr-3 grow-0">
                             <Avatar comment={comment} saturation={avatarSaturation} className="pointer-events-none" />
                         </div>
                         <div className="grow-1 w-full">
@@ -482,7 +450,7 @@ const Form = (props) => {
                                 leaveTo="opacity-0"
                             >
                                 <div
-                                    className="text-[17px] font-sans font-bold tracking-tight text-[rgb(23,23,23)] dark:text-[rgba(255,255,255,0.85)]"
+                                    className="font-sans text-[17px] font-bold tracking-tight text-[rgb(23,23,23)] dark:text-[rgba(255,255,255,0.85)]"
                                     onClick={(event) => {
                                         handleShowDialog(event, {
                                             bioAutofocus: false
@@ -490,13 +458,13 @@ const Form = (props) => {
                                     }}>{memberName ? memberName : 'Anonymous'}</div>
                                 <div className="flex items-baseline justify-start">
                                     <button
-                                        className={`group transition duration-150 whitespace-nowrap max-w-[80%] sm:max-w-[90%] flex items-center justify-start font-sans text-[14px] text-left tracking-tight text-neutral-400 hover:text-neutral-500 dark:text-[rgba(255,255,255,0.5)] ${!memberBio && 'text-neutral-300 hover:text-neutral-400'}`}
+                                        className={`group flex max-w-[80%] items-center justify-start whitespace-nowrap text-left font-sans text-[14px] tracking-tight text-neutral-400 transition duration-150 hover:text-neutral-500 dark:text-[rgba(255,255,255,0.5)] sm:max-w-[90%] ${!memberBio && 'text-neutral-300 hover:text-neutral-400'}`}
                                         onClick={(event) => {
                                             handleShowDialog(event, {
                                                 bioAutofocus: true
                                             });
-                                        }}><span className="text-ellipsis overflow-hidden ...">{memberBio ? memberBio : 'Add your expertise'}</span>
-                                        {memberBio && <EditIcon className="transition-all duration-100 ease-out opacity-0 -translate-x-[6px] group-hover:opacity-100 group-hover:translate-x-0 w-[12px] h-[12px] stroke-neutral-500 ml-1" />}
+                                        }}><span className="... overflow-hidden text-ellipsis">{memberBio ? memberBio : 'Add your expertise'}</span>
+                                        {memberBio && <EditIcon className="ml-1 h-[12px] w-[12px] -translate-x-[6px] stroke-neutral-500 opacity-0 transition-all duration-100 ease-out group-hover:translate-x-0 group-hover:opacity-100" />}
                                     </button>
                                 </div>
                             </Transition>

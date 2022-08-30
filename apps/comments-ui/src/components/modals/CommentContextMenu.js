@@ -73,7 +73,7 @@ const CommentContextMenu = (props) => {
 
     return (
         <div ref={element} onClick={stopPropagation}>
-            <div className="min-w-min sm:min-w-[150px] bg-white absolute font-sans rounded py-3 pl-4 pr-8 shadow-lg text-sm whitespace-nowrap z-10 dark:bg-zinc-900 dark:text-white outline-0">
+            <div className="absolute z-10 min-w-min whitespace-nowrap rounded bg-white py-3 pl-4 pr-8 font-sans text-sm shadow-lg outline-0 dark:bg-zinc-900 dark:text-white sm:min-w-[150px]">
                 {contextMenu}
             </div>
         </div>

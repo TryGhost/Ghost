@@ -30,18 +30,18 @@ const CommentsBoxTitle = ({title, showCount, count}) => {
 
         if (count === 1) {
             return (
-                <div className="text-neutral-400 text-[1.6rem]">1 comment</div>
+                <div className="text-[1.6rem] text-neutral-400">1 comment</div>
             );
         }
 
         return (
-            <div className="text-neutral-400 text-[1.6rem]">{count} comments</div>
+            <div className="text-[1.6rem] text-neutral-400">{count} comments</div>
         );
     };
 
     return (
-        <div className="w-full flex justify-between items-baseline font-sans mb-10">
-            <h2 className="font-bold text-[2.8rem] tracking-tight dark:text-[rgba(255,255,255,0.85)]">
+        <div className="mb-10 flex w-full items-baseline justify-between font-sans">
+            <h2 className="text-[2.8rem] font-bold tracking-tight dark:text-[rgba(255,255,255,0.85)]">
                 <Title />
             </h2>
             <Count />
