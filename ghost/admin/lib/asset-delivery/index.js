@@ -23,8 +23,10 @@ module.exports = {
         // copy the index.html file
         fs.copySync(`${results.directory}/index.html`, `${assetsOut}/index.html`, {overwrite: true, dereference: true});
 
-        // copy all the `/assets` files
-        const assets = walkSync(results.directory + '/assets');
+        // copy all the `/assets` files, except the `icons` folder
+        const assets = walkSync(results.directory + '/assets', {
+            ignore: ['icons']
+        });
 
         assets.forEach(function (relativePath) {
             if (relativePath.slice(-1) === '/') { return; }
