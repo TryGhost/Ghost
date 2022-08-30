@@ -74,9 +74,9 @@ const AddNameDialog = (props) => {
                     leaveTo="opacity-0 translate-y-2"
                     key={profile.name}
                 >
-                    <div className="flex flex-row justify-start items-center gap-3 pr-4">
-                        <div className="w-10 h-10 rounded-full border-2 border-white bg-no-repeat bg-cover" style={{backgroundImage: `url(${profile.avatar})`}} />
-                        <div className="flex flex-col justify-center items-start">
+                    <div className="flex flex-row items-center justify-start gap-3 pr-4">
+                        <div className="h-10 w-10 rounded-full border-2 border-white bg-cover bg-no-repeat" style={{backgroundImage: `url(${profile.avatar})`}} />
+                        <div className="flex flex-col items-start justify-center">
                             <div className="text-base font-sans font-semibold tracking-tight text-white">
                                 {profile.name}
                             </div>
@@ -107,21 +107,21 @@ const AddNameDialog = (props) => {
     };
 
     return (
-        <div className="overflow-hidden relative bg-white w-screen sm:w-[720px] h-screen sm:h-auto p-[28px] sm:p-0 rounded-none sm:rounded-xl text-center shadow-modal" onMouseDown={stopPropagation}>
+        <div className="rounded-none relative h-screen w-screen overflow-hidden bg-white p-[28px] text-center shadow-modal sm:h-auto sm:w-[720px] sm:rounded-xl sm:p-0" onMouseDown={stopPropagation}>
             <div className="flex">
                 {!isMobile() &&
-                    <div className={`flex flex-col justify-center items-center w-[40%] bg-[#1C1C1C]`}>
-                        <div className="flex flex-col gap-9 -mt-[1px]">
+                    <div className={`flex w-[40%] flex-col items-center justify-center bg-[#1C1C1C]`}>
+                        <div className="-mt-[1px] flex flex-col gap-9">
                             {renderExampleProfiles()}
                         </div>
                     </div>
                 }
                 <div className={`${isMobile() ? 'w-full' : 'w-[60%]'} p-0 sm:p-8`}>
-                    <h1 className="font-sans font-bold tracking-tight text-[24px] mb-1 text-black text-center sm:text-left">Complete your profile<span className="hidden sm:inline">.</span></h1>
-                    <p className="font-sans text-base text-neutral-500 pr-0 sm:pr-10 leading-9 text-center sm:text-left">Add context to your comment, share your name and expertise to foster a healthy discussion.</p>
+                    <h1 className="mb-1 text-center font-sans text-[24px] font-bold tracking-tight text-black sm:text-left">Complete your profile<span className="hidden sm:inline">.</span></h1>
+                    <p className="text-base pr-0 text-center font-sans leading-9 text-neutral-500 sm:pr-10 sm:text-left">Add context to your comment, share your name and expertise to foster a healthy discussion.</p>
                     <section className="mt-8 text-left">
-                        <div className="flex flex-row mb-2 justify-between">
-                            <label htmlFor="comments-name" className="font-sans font-semibold text-[1.3rem]">Name</label>
+                        <div className="mb-2 flex flex-row justify-between">
+                            <label htmlFor="comments-name" className="font-sans text-[1.3rem] font-semibold">Name</label>
                             <Transition
                                 show={!!error.name}
                                 enter="transition duration-300 ease-out"
@@ -136,7 +136,7 @@ const AddNameDialog = (props) => {
                         </div>
                         <input
                             id="comments-name"
-                            className={`transition-[border-color] duration-200 font-sans text-[16px] px-3 rounded border border-neutral-200 focus:border-neutral-300 w-full outline-0 h-[42px] flex items-center ${error.name && 'border-red-500 focus:border-red-500'}`}
+                            className={`flex h-[42px] w-full items-center rounded border border-neutral-200 px-3 font-sans text-[16px] outline-0 transition-[border-color] duration-200 focus:border-neutral-300 ${error.name && 'border-red-500 focus:border-red-500'}`}
                             type="text"
                             name="name"
                             ref={inputNameRef}
@@ -153,13 +153,13 @@ const AddNameDialog = (props) => {
                             }}
                             maxLength="64"
                         />
-                        <div className="flex flex-row mt-6 mb-2 justify-between">
-                            <label htmlFor="comments-name" className="font-sans font-semibold text-[1.3rem]">Expertise</label>
+                        <div className="mt-6 mb-2 flex flex-row justify-between">
+                            <label htmlFor="comments-name" className="font-sans text-[1.3rem] font-semibold">Expertise</label>
                             <div className={`font-sans text-[1.3rem] text-neutral-400 ${(bioCharsLeft === 0) && 'text-red-500'}`}><b>{bioCharsLeft}</b> characters left</div>
                         </div>
                         <input
                             id="comments-bio"
-                            className={`transition-[border-color] duration-200 font-sans text-[16px] px-3 rounded border border-neutral-200 focus:border-neutral-300 w-full outline-0 h-[42px] flex items-center ${(bioCharsLeft === 0) && 'border-red-500 focus:border-red-500'}`}
+                            className={`flex h-[42px] w-full items-center rounded border border-neutral-200 px-3 font-sans text-[16px] outline-0 transition-[border-color] duration-200 focus:border-neutral-300 ${(bioCharsLeft === 0) && 'border-red-500 focus:border-red-500'}`}
                             type="text"
                             name="bio"
                             ref={inputBioRef}
@@ -179,7 +179,7 @@ const AddNameDialog = (props) => {
                             maxLength={maxBioChars}
                         />
                         <button
-                            className={`transition-opacity duration-200 ease-linear w-full h-[42px] mt-10 px-8 flex items-center justify-center rounded-md text-white font-sans font-semibold text-[15px] opacity-100 hover:opacity-90`}
+                            className={`mt-10 flex h-[42px] w-full items-center justify-center rounded-md px-8 font-sans text-[15px] font-semibold text-white opacity-100 transition-opacity duration-200 ease-linear hover:opacity-90`}
                             style={{backgroundColor: accentColor ?? '#000000'}}
                             onClick={submit}
                         >

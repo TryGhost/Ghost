@@ -5,8 +5,8 @@ const RepliesPagination = (props) => {
     const count = props.count;
 
     return (
-        <button className="group w-full text-neutral-700 font-semibold mt-10 sm:mt-0 mb-10 font-sans text-md text-left dark:text-white flex items-center " onClick={loadMore} data-testid="reply-pagination-button">
-            <span className="whitespace-nowrap mr-4">↓ Show {count} more {count === 1 ? 'reply' : 'replies'}</span>
+        <button className="group my-10 flex w-full items-center text-left font-sans text-md font-semibold text-neutral-700 dark:text-white sm:mt-0" onClick={loadMore} data-testid="reply-pagination-button">
+            <span className="mr-4 whitespace-nowrap">↓ Show {count} more {count === 1 ? 'reply' : 'replies'}</span>
         </button>
     );
 };

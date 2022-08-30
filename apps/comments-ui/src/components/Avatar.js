@@ -70,10 +70,10 @@ const Avatar = (props) => {
     let avatarEl = (
         <>
             {memberName ?
-                (<div className={`flex justify-center items-center rounded-full ${dimensionClasses}`} style={avatarStyle}>
-                    <p className={`text-white font-sans font-semibold ${initialsClasses}`}>{ commentGetInitials() }</p>
+                (<div className={`flex items-center justify-center rounded-full ${dimensionClasses}`} style={avatarStyle}>
+                    <p className={`font-sans font-semibold text-white ${initialsClasses}`}>{ commentGetInitials() }</p>
                 </div>) :
-                (<div className={`flex justify-center items-center rounded-full bg-neutral-900 dark:bg-[rgba(255,255,255,0.7)] ${dimensionClasses}`}>
+                (<div className={`flex items-center justify-center rounded-full bg-neutral-900 dark:bg-[rgba(255,255,255,0.7)] ${dimensionClasses}`}>
                     <AvatarIcon className="stroke-white dark:stroke-[rgba(0,0,0,0.6)]" />
                 </div>)}
             {commentMember && <img className={`absolute top-0 left-0 rounded-full ${dimensionClasses}`} src={commentMember.avatar_image} alt="Avatar"/>}
@@ -83,7 +83,7 @@ const Avatar = (props) => {
     // When an avatar has been deleted or hidden
     if (props.isBlank) {
         avatarEl = (
-            <div className={`flex justify-center items-center rounded-full bg-neutral-200 bg-[rgba(200,200,200,0.3)] ${dimensionClasses}`}>
+            <div className={`flex items-center justify-center rounded-full bg-[rgba(200,200,200,0.3)] ${dimensionClasses}`}>
                 <AvatarIcon className="stroke-white dark:opacity-70" />
             </div>
         );
