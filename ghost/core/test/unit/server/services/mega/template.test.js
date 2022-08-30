@@ -151,8 +151,10 @@ describe('Mega template', function () {
         const $ = cheerio.load(html);
 
         should($('.site-title').text()).eql(site.title);
+        should($('.site-title').html()).eql('Egg &lt;3 eggs');
         should($('.post-content-html').length).eql(1);
         should($('.post-content-html').text()).eql('I am <100 years old');
+        should($('.post-content-html').html()).eql('I am &lt;100 years old');
     });
 
     it('Uses the post title as a fallback for the excerpt', function () {
