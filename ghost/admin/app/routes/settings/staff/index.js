@@ -22,12 +22,7 @@ export default class IndexRoute extends AuthenticatedRoute {
 
     setupController(controller) {
         super.setupController(...arguments);
-        controller.backgroundUpdate.perform();
-    }
-
-    @action
-    reload() {
-        this.controller.backgroundUpdate.perform();
+        controller.backgroundUpdateTask.perform();
     }
 
     buildRouteInfoMetadata() {

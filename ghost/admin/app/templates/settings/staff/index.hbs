@@ -62,7 +62,7 @@
             <div class="apps-grid">
 
                 {{#each this.invites as |invite|}}
-                    <GhUserInvited @invite={{invite}} @reload={{route-action "reload"}} as |component|>
+                    <GhUserInvited @invite={{invite}} @reload={{perform this.backgroundUpdateTask}} as |component|>
                         <div class="apps-grid-cell" data-test-invite-id="{{invite.id}}">
                             <article class="apps-card-app">
                                 <div class="apps-card-left">
