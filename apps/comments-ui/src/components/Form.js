@@ -425,7 +425,7 @@ const Form = (props) => {
                                 className={`
                                 transition-all duration-150 delay-100
                                 w-full px-3 py-4
-                                bg-transparent dark:bg-[rgba(255,255,255,0.08)]
+                                bg-white dark:bg-[rgba(255,255,255,0.08)]
                                 rounded-md border-none border border-slate-50 dark:border-none
                                 font-sans text-[16.5px] leading-normal dark:text-neutral-300 
                                 focus:outline-0
