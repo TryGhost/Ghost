@@ -306,10 +306,11 @@ async function sendEmailJob({emailModel, options}) {
         const existingBatchCount = await emailModel.related('emailBatches').count('id');
 
         if (existingBatchCount === 0) {
-            let newBatchCount;
+            let newBatchCount = 0;
 
             await models.Base.transaction(async (transacting) => {
-                newBatchCount = await createSegmentedEmailBatches({emailModel, options: {transacting}});
+                const emailBatches = await createSegmentedEmailBatches({emailModel, options: {transacting}});
+                newBatchCount = emailBatches.length;
             });
 
             if (newBatchCount === 0) {
@@ -423,6 +424,8 @@ function partitionMembersBySegment(memberRows, segments) {
  * @param {Object} options
  * @param {Object} options.emailModel - instance of Email model
  * @param {Object} options.options - knex options
+ *
+ * @returns {Promise<string[]>}
  */
 async function createSegmentedEmailBatches({emailModel, options}) {
     let memberRows = await getEmailMemberRows({emailModel, options});
@@ -444,11 +447,11 @@ async function createSegmentedEmailBatches({emailModel, options}) {
                 memberSegment: partition === 'unsegmented' ? null : partition,
                 options
             });
-            batchIds.push(emailBatchIds);
+            batchIds.push(...emailBatchIds);
         }
     } else {
         const emailBatchIds = await createEmailBatches({emailModel, memberRows, options});
-        batchIds.push(emailBatchIds);
+        batchIds.push(...emailBatchIds);
     }
 
     return batchIds;
