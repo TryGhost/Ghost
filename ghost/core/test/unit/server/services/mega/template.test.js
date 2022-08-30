@@ -119,6 +119,86 @@ describe('Mega template', function () {
         should(footerPowered.find('a img').attr('alt')).eql('Powered by Ghost');
     });
 
+    it('Correctly escapes the contents', function () {
+        const post = {
+            title: 'I <3 Posts',
+            html: '<div class="post-content-html">I am <100 years old</div>',
+            feature_image: 'https://example.com/image.jpg',
+            feature_image_alt: 'I <3 alt text',
+            feature_image_caption: 'I <3 images'
+        };
+        const site = {
+            iconUrl: 'site icon url',
+            url: 'site url',
+            title: 'Egg <3 eggs'
+        };
+        const templateSettings = {
+            headerImage: 'header image',
+            headerImageWidth: '600',
+            showHeaderIcon: true,
+            showHeaderTitle: true,
+            showHeaderName: true,
+            titleAlignment: 'left',
+            titleFontCategory: 'serif',
+            showFeatureImage: true,
+            bodyFontCategory: 'sans_serif',
+            footerContent: 'footer content',
+            showBadge: true
+        };
+        const newsletter = {
+            name: '<100 eggs to go'
+        };
+
+        const html = render({post, site, templateSettings, newsletter});
+
+        const $ = cheerio.load(html);
+
+        should($('.site-title').text()).eql(site.title);
+        should($('.site-title').html()).eql('Egg &lt;3 eggs');
+        should($('.post-content-html').length).eql(1);
+        should($('.post-content-html').text()).eql('I am <100 years old');
+        should($('.post-content-html').html()).eql('I am &lt;100 years old');
+        should($('.feature-image').html()).containEql('"I &lt;3 alt text"');
+        should($('.feature-image-caption').html()).eql('I &lt;3 images');
+        should($('.site-subtitle').html()).eql('&lt;100 eggs to go');
+    });
+
+    it('Doesn\'t strip class or style attributes when escaping content', function () {
+        const post = {
+            title: 'I <3 Posts',
+            html: '<div class="post-content-html"><span class="custom" style="font-weight: 900; display: flex;">BOLD</span></div>'
+        };
+        const site = {
+            iconUrl: 'site icon url',
+            url: 'site url',
+            title: 'Egg <3 eggs'
+        };
+        const templateSettings = {
+            headerImage: 'header image',
+            headerImageWidth: '600',
+            showHeaderIcon: true,
+            showHeaderTitle: true,
+            showHeaderName: true,
+            titleAlignment: 'left',
+            titleFontCategory: 'serif',
+            showFeatureImage: true,
+            bodyFontCategory: 'sans_serif',
+            footerContent: 'footer content',
+            showBadge: true
+        };
+        const newsletter = {
+            name: '<100 eggs to go'
+        };
+
+        const html = render({post, site, templateSettings, newsletter});
+
+        const $ = cheerio.load(html);
+
+        should(html).containEql('class="custom"');
+        // note that some part of rendering/sanitisation removes spaces from the style description
+        should(html).containEql('style="font-weight:900;display:flex"');
+    });
+
     it('Uses the post title as a fallback for the excerpt', function () {
         const post = {
             title: 'My post title'
