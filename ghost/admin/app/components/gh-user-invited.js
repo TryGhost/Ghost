@@ -28,7 +28,9 @@ export default class GhUserInvited extends Component {
     }
 
     @action
-    resend() {
+    resend(event) {
+        event?.preventDefault();
+
         const invite = this.args.invite;
         const notifications = this.notifications;
 
@@ -56,7 +58,9 @@ export default class GhUserInvited extends Component {
     }
 
     @action
-    revoke() {
+    revoke(event) {
+        event?.preventDefault();
+
         const invite = this.args.invite;
         const email = invite.email;
         const notifications = this.notifications;
