@@ -163,6 +163,42 @@ describe.only('Mega template', function () {
         should($('.site-subtitle').html()).eql('&lt;100 eggs to go');
     });
 
+    it('Doesn\'t strip class or style attributes when escaping content', function () {
+        const post = {
+            title: 'I <3 Posts',
+            html: '<div class="post-content-html"><span class="custom" style="font-weight: 900; display: flex;">BOLD</span></div>'
+        };
+        const site = {
+            iconUrl: 'site icon url',
+            url: 'site url',
+            title: 'Egg <3 eggs'
+        };
+        const templateSettings = {
+            headerImage: 'header image',
+            headerImageWidth: '600',
+            showHeaderIcon: true,
+            showHeaderTitle: true,
+            showHeaderName: true,
+            titleAlignment: 'left',
+            titleFontCategory: 'serif',
+            showFeatureImage: true,
+            bodyFontCategory: 'sans_serif',
+            footerContent: 'footer content',
+            showBadge: true
+        };
+        const newsletter = {
+            name: '<100 eggs to go'
+        };
+
+        const html = render({post, site, templateSettings, newsletter});
+
+        const $ = cheerio.load(html);
+
+        should(html).containEql('class="custom"');
+        // note that some part of rendering/sanitisation removes spaces from the style description
+        should(html).containEql('style="font-weight:900;display:flex"');
+    });
+
     it('Uses the post title as a fallback for the excerpt', function () {
         const post = {
             title: 'My post title'
