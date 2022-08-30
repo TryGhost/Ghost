@@ -51,9 +51,9 @@ export default class IndexController extends Controller {
     }
 
     @task
-    *backgroundUpdate() {
-        let users = this.fetchUsers.perform();
-        let invites = this.fetchInvites.perform();
+    *backgroundUpdateTask() {
+        let users = this.fetchUsersTask.perform();
+        let invites = this.fetchInvitesTask.perform();
 
         try {
             yield RSVP.all([users, invites]);
@@ -63,12 +63,12 @@ export default class IndexController extends Controller {
     }
 
     @task
-    *fetchUsers() {
+    *fetchUsersTask() {
         yield this.store.query('user', {limit: 'all'});
     }
 
     @task
-    *fetchInvites() {
+    *fetchInvitesTask() {
         if (this.currentUser.isAuthorOrContributor) {
             return;
         }
