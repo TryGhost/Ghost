@@ -1477,7 +1477,6 @@ describe('Members API', function () {
         assert.equal(updatedMember.status, 'paid', 'Member should still have the paid status');
         assert.equal(updatedMember.tiers.length, 1, 'The member should have one product now');
         assert.equal(updatedMember.tiers[0].id, memberWithPaidSubscription.tiers[0].id, 'The member should have the paid product');
-
     });
 
     it('Can keep tiers unchanged when modifying a paid member', async function () {
