@@ -7,7 +7,7 @@ const moment = require('moment-timezone');
 const settingsCache = require('../../../core/shared/settings-cache');
 const sinon = require('sinon');
 
-let membersAgent, membersAgent2, member, postId, postTitle, commentId;
+let membersAgent, membersAgent2, postId, postTitle, commentId;
 
 async function getPaidProduct() {
     return await models.Product.findOne({type: 'paid'});
@@ -178,6 +178,8 @@ async function testCannotReply() {
 }
 
 describe('Comments API', function () {
+    let member;
+    
     before(async function () {
         membersAgent = await agentProvider.getMembersAPIAgent();
         membersAgent2 = await agentProvider.getMembersAPIAgent();
