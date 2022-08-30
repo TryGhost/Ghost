@@ -332,6 +332,26 @@ function closePopup() {
     };
 }
 
+function increaseSecundaryFormCount({state}) {
+    return {
+        secundaryFormCount: state.secundaryFormCount + 1
+    };
+}
+
+function decreaseSecundaryFormCount({state}) {
+    return {
+        secundaryFormCount: state.secundaryFormCount - 1
+    };
+}
+
+// Sync actions make use of setState((currentState) => newState), to avoid 'race' conditions
+const SyncActions = {
+    openPopup,
+    closePopup,
+    increaseSecundaryFormCount,
+    decreaseSecundaryFormCount
+};
+
 const Actions = {
     // Put your actions here
     addComment,
@@ -345,16 +365,28 @@ const Actions = {
     addReply,
     loadMoreComments,
     loadMoreReplies,
-    updateMember,
-    openPopup,
-    closePopup
+    updateMember
 };
 
+export function isSyncAction(action) {
+    return !!SyncActions[action];
+}
+
 /** Handle actions in the App, returns updated state */
-export default async function ActionHandler({action, data, state, api, adminApi}) {
+export async function ActionHandler({action, data, state, api, adminApi}) {
     const handler = Actions[action];
     if (handler) {
         return await handler({data, state, api, adminApi}) || {};
+    }
+    return {};
+}
+
+/** Handle actions in the App, returns updated state */
+export function SyncActionHandler({action, data, state, api, adminApi}) {
+    const handler = SyncActions[action];
+    if (handler) {
+        // Do not await here
+        return handler({data, state, api, adminApi}) || {};
     }
     return {};
 }

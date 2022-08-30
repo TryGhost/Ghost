@@ -12,7 +12,7 @@ import {GlobalEventBus} from '../utils/event-bus';
 let formId = 0;
 
 const Form = (props) => {
-    const {member, postId, dispatchAction, avatarSaturation} = useContext(AppContext);
+    const {member, postId, dispatchAction} = useContext(AppContext);
     const [isFormOpen, setFormOpen] = useState(props.isReply || props.isEdit ? true : false);
     const formEl = useRef(null);
     const [progress, setProgress] = useState('default');
@@ -23,6 +23,20 @@ const Form = (props) => {
     const {comment, commentsCount} = props;
     const memberName = member?.name ?? comment?.member?.name;
     const memberBio = member?.bio ?? comment?.member?.bio;
+
+    // Keep track of the amount of open forms
+    useEffect(() => {
+        if (!props.isEdit && !props.isReply) {
+            // General form
+            return;
+        }
+
+        dispatchAction('increaseSecundaryFormCount');
+
+        return () => {
+            dispatchAction('decreaseSecundaryFormCount');
+        };
+    }, [dispatchAction, props.isEdit, props.isReply]);
 
     let buttonIcon = null;
     if (progress === 'sending') {
@@ -437,7 +451,7 @@ const Form = (props) => {
                     </div>
                     <div className='absolute top-1 left-0 flex h-12 w-full items-center justify-start'>
                         <div className="mr-3 grow-0">
-                            <Avatar comment={comment} saturation={avatarSaturation} className="pointer-events-none" />
+                            <Avatar comment={comment} className="pointer-events-none" />
                         </div>
                         <div className="grow-1 w-full">
                             <Transition
