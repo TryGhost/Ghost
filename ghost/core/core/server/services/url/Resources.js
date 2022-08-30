@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const Promise = require('bluebird');
 const debug = require('@tryghost/debug')('services:url:resources');
 const Resource = require('./Resource');
 const config = require('../../../shared/config');
@@ -65,7 +64,7 @@ class Resources {
     /**
      * @description Helper function to initialize data fetching.
      */
-    fetchResources() {
+    async fetchResources() {
         const ops = [];
         debug('fetchResources');
 
@@ -77,7 +76,7 @@ class Resources {
             ops.push(this._fetch(resourceConfig));
         });
 
-        return Promise.all(ops);
+        await Promise.all(ops);
     }
 
     /**
@@ -95,28 +94,28 @@ class Resources {
      * 3 event listeners connected to "_onResourceUpdated" handler and it's 'tag.edited', 'tag.attached', 'tag.detached' events
      * 1 event listener connected to  "_onResourceRemoved" handler and it's 'tag.deleted' event
      */
-    initEvenListeners() {
+    initEventListeners() {
         _.each(this.resourcesConfig, (resourceConfig) => {
             this.data[resourceConfig.type] = [];
 
-            this._listenOn(resourceConfig.events.add, (model) => {
-                return this._onResourceAdded.bind(this)(resourceConfig.type, model);
+            this._listenOn(resourceConfig.events.add, async (model) => {
+                await this._onResourceAdded(resourceConfig.type, model);
             });
 
             if (_.isArray(resourceConfig.events.update)) {
                 resourceConfig.events.update.forEach((event) => {
-                    this._listenOn(event, (model) => {
-                        return this._onResourceUpdated.bind(this)(resourceConfig.type, model);
+                    this._listenOn(event, async (model) => {
+                        await this._onResourceUpdated(resourceConfig.type, model);
                     });
                 });
             } else {
-                this._listenOn(resourceConfig.events.update, (model) => {
-                    return this._onResourceUpdated.bind(this)(resourceConfig.type, model);
+                this._listenOn(resourceConfig.events.update, async (model) => {
+                    await this._onResourceUpdated(resourceConfig.type, model);
                 });
             }
 
             this._listenOn(resourceConfig.events.remove, (model) => {
-                return this._onResourceRemoved.bind(this)(resourceConfig.type, model);
+                this._onResourceRemoved(resourceConfig.type, model);
             });
         });
     }
@@ -240,10 +239,9 @@ class Resources {
      *
      * @param {String} type (post,user...)
      * @param {Bookshelf-Model} model
-     * @returns {Promise}
      * @private
      */
-    _onResourceAdded(type, model) {
+    async _onResourceAdded(type, model) {
         debug('_onResourceAdded', type);
 
         const resourceConfig = _.find(this.resourcesConfig, {type: type});
@@ -267,27 +265,23 @@ class Resources {
                 }
             });
         } else {
-            return Promise.resolve()
-                .then(() => {
-                    return this._fetchSingle(resourceConfig, model.id);
-                })
-                .then(([dbResource]) => {
-                    if (dbResource) {
-                        const resource = new Resource(type, dbResource);
+            const [dbResource] = await this._fetchSingle(resourceConfig, model.id);
 
-                        debug('_onResourceAdded', type);
-                        this.data[type].push(resource);
+            if (dbResource) {
+                const resource = new Resource(type, dbResource);
 
-                        this.queue.start({
-                            event: 'added',
-                            action: 'added:' + model.id,
-                            eventData: {
-                                id: model.id,
-                                type: type
-                            }
-                        });
+                debug('_onResourceAdded', type);
+                this.data[type].push(resource);
+
+                this.queue.start({
+                    event: 'added',
+                    action: 'added:' + model.id,
+                    eventData: {
+                        id: model.id,
+                        type: type
                     }
                 });
+            }
         }
     }
 
@@ -309,10 +303,9 @@ class Resources {
      *
      * @param {String} type (post,user...)
      * @param {Bookshelf-Model} model
-     * @returns {Promise}
      * @private
      */
-    _onResourceUpdated(type, model) {
+    async _onResourceUpdated(type, model) {
         debug('_onResourceUpdated', type);
 
         const resourceConfig = _.find(this.resourcesConfig, {type: type});
@@ -346,34 +339,30 @@ class Resources {
                 return true;
             });
         } else {
-            return Promise.resolve()
-                .then(() => {
-                    return this._fetchSingle(resourceConfig, model.id);
-                })
-                .then(([dbResource]) => {
-                    const resource = this.data[type].find(r => (r.data.id === model.id));
+            const [dbResource] = await this._fetchSingle(resourceConfig, model.id);
 
-                    // CASE: cached resource exists, API conditions matched with the data in the db
-                    if (resource && dbResource) {
-                        resource.update(dbResource);
+            const resource = this.data[type].find(r => (r.data.id === model.id));
 
-                        // CASE: pretend it was added
-                        if (!resource.isReserved()) {
-                            this.queue.start({
-                                event: 'added',
-                                action: 'added:' + dbResource.id,
-                                eventData: {
-                                    id: dbResource.id,
-                                    type: type
-                                }
-                            });
+            // CASE: cached resource exists, API conditions matched with the data in the db
+            if (resource && dbResource) {
+                resource.update(dbResource);
+
+                // CASE: pretend it was added
+                if (!resource.isReserved()) {
+                    this.queue.start({
+                        event: 'added',
+                        action: 'added:' + dbResource.id,
+                        eventData: {
+                            id: dbResource.id,
+                            type: type
                         }
-                    } else if (!resource && dbResource) {
-                        this._onResourceAdded(type, model);
-                    } else if (resource && !dbResource) {
-                        this._onResourceRemoved(type, model);
-                    }
-                });
+                    });
+                }
+            } else if (!resource && dbResource) {
+                await this._onResourceAdded(type, model);
+            } else if (resource && !dbResource) {
+                await this._onResourceRemoved(type, model);
+            }
         }
     }
 
