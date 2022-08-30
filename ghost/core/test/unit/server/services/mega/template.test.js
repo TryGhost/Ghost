@@ -4,7 +4,7 @@ const cheerio = require('cheerio');
 
 const render = require('../../../../../core/server/services/mega/template');
 
-describe('Mega template', function () {
+describe.only('Mega template', function () {
     afterEach(function () {
         sinon.restore();
     });
@@ -122,7 +122,10 @@ describe('Mega template', function () {
     it('Correctly escapes the contents', function () {
         const post = {
             title: 'I <3 Posts',
-            html: '<div class="post-content-html">I am <100 years old</div>'
+            html: '<div class="post-content-html">I am <100 years old</div>',
+            feature_image: 'https://example.com/image.jpg',
+            feature_image_alt: 'I <3 alt text',
+            feature_image_caption: 'I <3 images'
         };
         const site = {
             iconUrl: 'site icon url',
@@ -143,7 +146,7 @@ describe('Mega template', function () {
             showBadge: true
         };
         const newsletter = {
-            name: 'newsletter name'
+            name: '<100 eggs to go'
         };
 
         const html = render({post, site, templateSettings, newsletter});
@@ -155,6 +158,9 @@ describe('Mega template', function () {
         should($('.post-content-html').length).eql(1);
         should($('.post-content-html').text()).eql('I am <100 years old');
         should($('.post-content-html').html()).eql('I am &lt;100 years old');
+        should($('.feature-image').html()).containEql('"I &lt;3 alt text"');
+        should($('.feature-image-caption').html()).eql('I &lt;3 images');
+        should($('.site-subtitle').html()).eql('&lt;100 eggs to go');
     });
 
     it('Uses the post title as a fallback for the excerpt', function () {
