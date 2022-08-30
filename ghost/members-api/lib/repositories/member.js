@@ -433,7 +433,7 @@ module.exports = class MemberRepository {
                         }
                     }
 
-                    if (productsToRemove.length === existingProducts.length) {
+                    if (productsToRemove.length === existingProducts.length && productsToAdd.length === 0) {
                         // CASE: We are removing all (comped) products from a member & there were no active subscriptions - the member is "free"
                         memberStatusData.status = 'free';
                     }
@@ -451,11 +451,7 @@ module.exports = class MemberRepository {
                     }
 
                     // CASE: We are changing products & there were not active stripe subscriptions - the member is "comped"
-                    if (productsToModify.length !== 0) {
-                        memberStatusData.status = 'comped';
-                    } else {
-                        // CASE: We are not changing any products - leave the status alone
-                    }
+                    memberStatusData.status = 'comped';
                 }
             }
         }
