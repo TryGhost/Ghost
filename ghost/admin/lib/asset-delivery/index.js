@@ -4,18 +4,8 @@
 module.exports = {
     name: 'asset-delivery',
 
-    env: null,
-
     isDevelopingAddon() {
         return true;
-    },
-
-    config(env) {
-        // only set this.env on the first call otherwise when `postBuild()` is
-        // called this.env will always be 'test' due to multiple `config()` calls
-        if (!this.env) {
-            this.env = env;
-        }
     },
 
     postBuild: function (results) {
