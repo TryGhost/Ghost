@@ -4,7 +4,7 @@ const cheerio = require('cheerio');
 
 const render = require('../../../../../core/server/services/mega/template');
 
-describe.only('Mega template', function () {
+describe('Mega template', function () {
     afterEach(function () {
         sinon.restore();
     });
