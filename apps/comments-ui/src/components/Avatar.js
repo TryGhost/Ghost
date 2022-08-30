@@ -3,9 +3,23 @@ import AppContext from '../AppContext';
 import {getInitials} from '../utils/helpers';
 import {ReactComponent as AvatarIcon} from '../images/icons/avatar.svg';
 
-const Avatar = (props) => {
-    const {member} = useContext(AppContext);
-    const memberName = member?.name ?? props.comment?.member?.name;
+const Avatar = ({comment, size, isBlank}) => {
+    const {member, avatarSaturation} = useContext(AppContext);
+    const dimensionClasses = (size === 'small' ? 'w-6 h-6 sm:w-8 sm:h-8' : 'w-9 h-9 sm:w-[40px] sm:h-[40px]');
+
+    // When an avatar has been deleted or hidden
+    // todo: move to seperate component
+    if (isBlank) {
+        return (
+            <figure className={`relative ${dimensionClasses}`}>
+                <div className={`flex items-center justify-center rounded-full bg-[rgba(200,200,200,0.3)] ${dimensionClasses}`}>
+                    <AvatarIcon className="stroke-white dark:opacity-70" />
+                </div>
+            </figure>
+        );
+    }
+
+    const memberName = member?.name ?? comment?.member?.name;
 
     const getHashOfString = (str) => {
         let hash = 0;
@@ -21,13 +35,13 @@ const Avatar = (props) => {
     };
 
     const generateHSL = () => {
-        let commentMember = (props.comment ? props.comment.member : member);
+        let commentMember = (comment ? comment.member : member);
 
         if (!commentMember || !commentMember.name) {
             return [0,0,10];
         }
 
-        const saturation = isNaN(props.saturation) ? 50 : props.saturation;
+        const saturation = isNaN(avatarSaturation) ? 50 : avatarSaturation;
 
         const hRange = [0, 360];
         const lRangeTop = Math.round(saturation / (100 / 30)) + 30;
@@ -46,11 +60,11 @@ const Avatar = (props) => {
     };
 
     const commentGetInitials = () => {
-        if (props.comment && !props.comment.member) {
+        if (comment && !comment.member) {
             return getInitials('Deleted member');
         }
         
-        let commentMember = (props.comment ? props.comment.member : member);
+        let commentMember = (comment ? comment.member : member);
 
         if (!commentMember || !commentMember.name) {
             return getInitials('Anonymous');
@@ -58,9 +72,8 @@ const Avatar = (props) => {
         return getInitials(commentMember.name);
     };
 
-    let dimensionClasses = (props.size === 'small' ? 'w-6 h-6 sm:w-8 sm:h-8' : 'w-9 h-9 sm:w-[40px] sm:h-[40px]');
-    let initialsClasses = (props.size === 'small' ? 'text-sm' : 'text-lg');
-    let commentMember = (props.comment ? props.comment.member : member);
+    let initialsClasses = (size === 'small' ? 'text-sm' : 'text-lg');
+    let commentMember = (comment ? comment.member : member);
 
     const bgColor = HSLtoString(generateHSL());
     const avatarStyle = {
@@ -79,15 +92,6 @@ const Avatar = (props) => {
             {commentMember && <img className={`absolute top-0 left-0 rounded-full ${dimensionClasses}`} src={commentMember.avatar_image} alt="Avatar"/>}
         </>
     );
-
-    // When an avatar has been deleted or hidden
-    if (props.isBlank) {
-        avatarEl = (
-            <div className={`flex items-center justify-center rounded-full bg-[rgba(200,200,200,0.3)] ${dimensionClasses}`}>
-                <AvatarIcon className="stroke-white dark:opacity-70" />
-            </div>
-        );
-    }
 
     return (
         <figure className={`relative ${dimensionClasses}`}>

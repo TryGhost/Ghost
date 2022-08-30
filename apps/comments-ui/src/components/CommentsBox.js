@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useContext, useEffect} from 'react';
 import AppContext from '../AppContext';
 import CTABox from './CTABox';
 import Form from './Form';
@@ -50,11 +50,8 @@ const CommentsBoxTitle = ({title, showCount, count}) => {
 };
 
 const CommentsBoxContent = (props) => {
-    // @todo: This doesn't work and should get replaced with a counter of total open forms. If total open forms > 0, don't show the main form.
-    const [isEditing, setIsEditing] = useState(false);
-
-    const {pagination, member, comments, commentCount, commentsEnabled, title, showCount} = useContext(AppContext);
-    const commentsElements = comments.slice().reverse().map(comment => <Comment isEditing={isEditing} comment={comment} key={comment.id} updateIsEditing={setIsEditing} />);
+    const {pagination, member, comments, commentCount, commentsEnabled, title, showCount, secundaryFormCount} = useContext(AppContext);
+    const commentsElements = comments.slice().reverse().map(comment => <Comment comment={comment} key={comment.id} />);
 
     const paidOnly = commentsEnabled === 'paid';
     const isPaidMember = member && !!member.paid;
@@ -77,6 +74,8 @@ const CommentsBoxContent = (props) => {
         }
     }, []);
 
+    const hasOpenSecundaryForms = secundaryFormCount > 0;
+
     return (
         <>
             <CommentsBoxTitle title={title} showCount={showCount} count={commentCount}/>
@@ -85,7 +84,8 @@ const CommentsBoxContent = (props) => {
                 {commentsElements}
             </div>
             <div>
-                { !isEditing
+                {secundaryFormCount}
+                {!hasOpenSecundaryForms
                     ? (member ? (isPaidMember || !paidOnly ? <Form commentsCount={commentCount} /> : <CTABox isFirst={pagination?.total === 0} isPaid={paidOnly} />) : <CTABox isFirst={pagination?.total === 0} isPaid={paidOnly} />)
                     : null
                 }

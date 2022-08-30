@@ -1,6 +1,6 @@
 import Frame from './components/Frame';
 import React from 'react';
-import ActionHandler from './actions';
+import {isSyncAction, ActionHandler, SyncActionHandler} from './actions';
 import {createPopupNotification} from './utils/helpers';
 import AppContext from './AppContext';
 import {hasMode} from './utils/check-mode';
@@ -51,10 +51,14 @@ export default class App extends React.Component {
             customSiteUrl: props.customSiteUrl,
             postId: props.postId,
             popup: null,
-            accentColor: props.accentColor
+            accentColor: props.accentColor,
+            secundaryFormCount: 0
         };
         this.adminApi = null;
         this.GhostApi = null;
+
+        // Bind to make sure we have a variable reference (and don't need to create a new binded function in our context value every time the state changes)
+        this.dispatchAction = this.dispatchAction.bind(this);
     }
 
     /** Initialize comments setup on load, fetch data and setup state*/
@@ -111,6 +115,15 @@ export default class App extends React.Component {
 
     /** Handle actions from across App and update App state */
     async dispatchAction(action, data) {
+        if (isSyncAction(action)) {
+            // Makes sure we correctly handle the old state
+            // because updates to state may be asynchronous
+            // so calling dispatchAction('counterUp') multiple times, may yield unexpected results if we don't use a callback function
+            this.setState((state) => {
+                return SyncActionHandler({action, data, state, api: this.GhostApi, adminApi: this.adminApi});
+            });
+            return;
+        }
         clearTimeout(this.timeoutId);
         this.setState({
             action: `${action}:running`
@@ -252,7 +265,7 @@ export default class App extends React.Component {
 
     /**Get final App level context from App state*/
     getContextFromState() {
-        const {action, popupNotification, customSiteUrl, member, comments, pagination, commentCount, postId, admin, popup} = this.state;
+        const {action, popupNotification, customSiteUrl, member, comments, pagination, commentCount, postId, admin, popup, secundaryFormCount} = this.state;
         return {
             action,
             popupNotification,
@@ -272,14 +285,12 @@ export default class App extends React.Component {
             appVersion: this.props.appVersion,
             stylesUrl: this.props.stylesUrl,
             publication: this.props.publication,
+            secundaryFormCount: secundaryFormCount,
             popup,
-            dispatchAction: (_action, data) => this.dispatchAction(_action, data),
 
-            /**
-             * @deprecated
-             * Use dispatchAction instead
-             */
-            onAction: (_action, data) => this.dispatchAction(_action, data)
+            // Warning: make sure we pass a variable here (binded in constructor), because if we create a new function here, it will also change when anything in the state changes
+            // causing loops in useEffect hooks that depend on dispatchAction
+            dispatchAction: this.dispatchAction
         };
     }
 

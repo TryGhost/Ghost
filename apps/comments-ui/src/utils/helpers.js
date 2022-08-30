@@ -114,3 +114,7 @@ export function getInitials(name) {
 export function isMobile() {
     return (Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) < 480);
 }
+
+export function isCommentPublished(comment) {
+    return comment.status === 'published';
+}
