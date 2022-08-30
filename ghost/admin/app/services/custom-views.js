@@ -63,7 +63,7 @@ const DEFAULT_VIEWS = [{
     route: 'posts',
     name: 'Scheduled',
     color: 'midgrey',
-    icon: 'clockface',
+    icon: 'clock',
     filter: {
         type: 'scheduled'
     }
