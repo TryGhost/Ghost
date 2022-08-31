@@ -35,26 +35,6 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-  admin-prod-build:
-    runs-on: ubuntu-22.04
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
-    name: Admin - Production Build
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: "14.17.0"
-
-      - run: yarn
-      - run: yarn workspace ghost-admin run build:prod
-
-      - uses: daniellockyer/action-slack-build@master
-        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
-        with:
-          status: ${{ job.status }}
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
   admin-tests:
     runs-on: ubuntu-20.04
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
@@ -361,7 +341,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   canary:
-    needs: [lint, ghost-cli, admin-tests, admin-prod-build, migrations, unit-tests, database-tests]
+    needs: [lint, ghost-cli, admin-tests, migrations, unit-tests, database-tests]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     name: Canary
     uses: tryghost/actions/.github/workflows/canary.yml@main
