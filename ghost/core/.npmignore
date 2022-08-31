@@ -30,8 +30,7 @@ content/settings/**
 !content/settings/README.md
 content/themes/**
 !content/themes/casper/**
-content/themes/casper/assets/css/.csscomb.json
-content/themes/casper/.yarnrc
+content/themes/casper/yarn.lock
 node_modules/**
 core/server/lib/members/static/auth/node_modules/**
 **/*.db*
