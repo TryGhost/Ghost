@@ -18,19 +18,19 @@
     "gateway"
   ],
   "devDependencies": {
+    "@tryghost/member-attribution": "0.0.0",
     "@types/node-jose": "1.1.10",
     "c8": "7.12.0",
     "jwk-to-pem": "2.0.5",
     "mocha": "10.0.0",
     "nock": "13.2.9",
     "should": "13.2.3",
-    "sinon": "14.0.0",
-    "@tryghost/member-attribution": "0.0.0"
+    "sinon": "14.0.0"
   },
   "dependencies": {
     "@tryghost/domain-events": "0.0.0",
     "@tryghost/errors": "1.2.15",
-    "@tryghost/logging": "2.2.4",
+    "@tryghost/logging": "2.3.0",
     "@tryghost/magic-link": "0.0.0",
     "@tryghost/member-analytics-service": "0.0.0",
     "@tryghost/member-events": "0.0.0",

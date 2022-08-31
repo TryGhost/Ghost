@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@tryghost/errors": "1.2.15",
-    "@tryghost/logging": "2.2.4",
+    "@tryghost/logging": "2.3.0",
     "@tryghost/tpl": "0.1.18",
     "cheerio": "0.22.0",
     "lodash": "4.17.21",

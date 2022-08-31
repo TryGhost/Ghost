@@ -52,6 +52,7 @@
     },
     "logging": {
         "level": "info",
+        "useLocalTime": false,
         "rotation": {
             "enabled": false,
             "period": "1d",
