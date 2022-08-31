@@ -1,7 +1,7 @@
 import React, {useContext} from 'react';
-import AppContext from '../AppContext';
-import {getInitials} from '../utils/helpers';
-import {ReactComponent as AvatarIcon} from '../images/icons/avatar.svg';
+import AppContext from '../../AppContext';
+import {getInitials} from '../../utils/helpers';
+import {ReactComponent as AvatarIcon} from '../../images/icons/avatar.svg';
 
 function getDimensionClasses() {
     return 'w-9 h-9 sm:w-[40px] sm:h-[40px]';

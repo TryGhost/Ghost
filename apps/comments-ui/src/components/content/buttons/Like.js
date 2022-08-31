@@ -1,6 +1,6 @@
 import {useContext, useState} from 'react';
-import {ReactComponent as LikeIcon} from '../images/icons/like.svg';
-import AppContext from '../AppContext';
+import {ReactComponent as LikeIcon} from '../../../images/icons/like.svg';
+import AppContext from '../../../AppContext';
 
 function Like(props) {
     const {dispatchAction, member, commentsEnabled} = useContext(AppContext);

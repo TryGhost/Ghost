@@ -1,5 +1,5 @@
 import React, {useContext} from 'react';
-import AppContext from '../../AppContext';
+import AppContext from '../../../AppContext';
 
 const AdminContextMenu = (props) => {
     const {dispatchAction} = useContext(AppContext);

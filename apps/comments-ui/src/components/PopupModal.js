@@ -1,7 +1,7 @@
 import {useContext, useEffect, useState} from 'react';
 import AppContext from '../AppContext';
 import Pages from '../pages';
-import GenericDialog from './modals/GenericDialog';
+import GenericDialog from './dialogs/GenericDialog';
 
 export default function PopupModal(props) {
     const {popup} = useContext(AppContext);

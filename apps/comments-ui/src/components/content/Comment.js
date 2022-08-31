@@ -1,13 +1,13 @@
 import React, {useContext, useState} from 'react';
 import {Transition} from '@headlessui/react';
 import {BlankAvatar, Avatar} from './Avatar';
-import Like from './Like';
-import Reply from './Reply';
-import More from './More';
+import Like from './buttons/Like';
+import Reply from './buttons/Reply';
+import More from './buttons/More';
 import Form from './Form';
 import Replies from './Replies';
-import AppContext from '../AppContext';
-import {formatRelativeTime, formatExplicitTime, isCommentPublished} from '../utils/helpers';
+import AppContext from '../../AppContext';
+import {formatRelativeTime, formatExplicitTime, isCommentPublished} from '../../utils/helpers';
 
 function AnimatedComment({comment, parent}) {
     return (

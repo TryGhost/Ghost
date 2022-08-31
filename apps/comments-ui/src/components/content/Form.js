@@ -1,13 +1,13 @@
 import React, {useCallback, useContext, useEffect, useRef, useState} from 'react';
 import {Transition} from '@headlessui/react';
-import AppContext from '../AppContext';
+import AppContext from '../../AppContext';
 import {Avatar} from './Avatar';
 import {useEditor, EditorContent} from '@tiptap/react';
-import {getEditorConfig} from '../utils/editor';
-import {isMobile} from '../utils/helpers';
-import {ReactComponent as SpinnerIcon} from '../images/icons/spinner.svg';
-import {ReactComponent as EditIcon} from '../images/icons/edit.svg';
-import {GlobalEventBus} from '../utils/event-bus';
+import {getEditorConfig} from '../../utils/editor';
+import {isMobile} from '../../utils/helpers';
+import {ReactComponent as SpinnerIcon} from '../../images/icons/spinner.svg';
+import {ReactComponent as EditIcon} from '../../images/icons/edit.svg';
+import {GlobalEventBus} from '../../utils/event-bus';
 
 let formId = 0;
 
