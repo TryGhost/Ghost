@@ -964,3 +964,4 @@ remove|ember-template-lint|no-action|50|19|50|19|de05e88a1b6b658430d78f36b93dfa3
 remove|ember-template-lint|no-action|89|103|89|103|8a5526f86c3c3289a47e2e033e39292ceaa3999e|1658102400000|1668474000000|1673658000000|app/templates/settings/staff/index.hbs
 remove|ember-template-lint|no-action|92|105|92|105|8ef55f22a4332a43d47b2508c5903048f972cefa|1658102400000|1668474000000|1673658000000|app/templates/settings/staff/index.hbs
 remove|ember-template-lint|no-route-action|63|62|63|62|e9f8663f45f4f41bc590f8db8df3d5dabd9cc732|1658102400000|1668474000000|1673658000000|app/templates/settings/staff/index.hbs
+remove|ember-template-lint|require-valid-alt-text|26|20|26|20|c8f3616a9f2eef8909029c4ffdedc5886064d6ca|1658102400000|1668474000000|1673658000000|app/templates/settings/integrations/unsplash.hbs
