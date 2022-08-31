@@ -1,4 +1,4 @@
-import Frame from './components/Frame';
+import {CommentsFrame} from './components/Frame';
 import React from 'react';
 import {isSyncAction, ActionHandler, SyncActionHandler} from './actions';
 import {createPopupNotification} from './utils/helpers';
@@ -15,14 +15,6 @@ function AuthFrame({adminUrl, onLoad}) {
 
     return (
         <iframe data-frame="admin-auth" src={adminUrl + 'auth-frame/'} style={iframeStyle} title="auth-frame" onLoad={onLoad}></iframe>
-    );
-}
-
-function CommentsBoxContainer({done, appVersion}) {
-    return (
-        <Frame title="comments-box">
-            <CommentsBox done={done} />
-        </Frame>
     );
 }
 
@@ -309,7 +301,9 @@ export default class App extends React.Component {
         return (
             <SentryErrorBoundary dsn={this.props.sentryDsn}>
                 <AppContext.Provider value={this.getContextFromState()}>
-                    <CommentsBoxContainer done={done} />
+                    <CommentsFrame>
+                        <CommentsBox done={done} />
+                    </CommentsFrame>
                     <AuthFrame adminUrl={this.props.adminUrl} onLoad={this.initAdminAuth.bind(this)}/>
                     <PopupModal />
                 </AppContext.Provider>
