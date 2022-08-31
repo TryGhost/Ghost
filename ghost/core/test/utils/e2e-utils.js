@@ -97,6 +97,16 @@ const prepareContentFolder = (options) => {
     }
 };
 
+/**
+ * At the moment we have a centralized "catch-all" event emitter that persists it's state
+ * between Ghost instance restarts. This method is aiming to be a place where the event
+ * listeners are being reset - now in one place, possibly will reset multiple even emitters
+ * in the future as we break up the centralized event emitter to separate domain specific ones.
+ */
+ const resetEventListeners = async () => {
+    delete require.cache[require.resolve('../../core/server/lib/common/events.js')];
+}
+
 // CASE: Ghost Server is Running
 // In this case we need to reset things so it's as though Ghost just booted:
 // - truncate database
@@ -212,6 +222,8 @@ const startGhost = async (options) => {
 
     // @TODO: tidy up the tmp folders after tests
     prepareContentFolder(options);
+
+    await resetEventListeners();
 
     if (ghostServer && ghostServer.httpServer && !options.forceStart) {
         await restartModeGhostStart(options);

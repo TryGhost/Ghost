@@ -60,6 +60,8 @@ const startGhost = async (options = {}) => {
     // Ensure the state of all data, including DB and caches
     await resetData();
 
+    await resetEventListeners();
+
     const bootOptions = Object.assign({}, defaults, options);
 
     const ghostServer = await boot(bootOptions);
@@ -140,6 +142,16 @@ const resetData = async () => {
     // Clear out the database
     await db.reset({truncate: true});
 };
+
+/**
+ * At the moment we have a centralized "catch-all" event emitter that persists it's state
+ * between Ghost instance restarts. This method is aiming to be a place where the event
+ * listeners are being reset - now in one place, possibly will reset multiple even emitters
+ * in the future as we break up the centralized event emitter to separate domain specific ones.
+ */
+const resetEventListeners = async () => {
+    delete require.cache[require.resolve('../../core/server/lib/common/events.js')];
+}
 
 /**
  * Creates a ContentAPITestAgent which is a drop-in substitution for supertest.
