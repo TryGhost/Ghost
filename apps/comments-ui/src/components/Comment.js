@@ -1,6 +1,6 @@
 import React, {useContext, useState} from 'react';
 import {Transition} from '@headlessui/react';
-import Avatar from './Avatar';
+import {BlankAvatar, Avatar} from './Avatar';
 import Like from './Like';
 import Reply from './Reply';
 import More from './More';
@@ -96,12 +96,11 @@ function UnpublishedComment({comment, openEditMode}) {
         notPublishedMessage = 'This comment has been removed.';
     }
 
-    // TODO: consider swapping this with a seperate avatar component
-    const blankAvatar = (<Avatar isBlank={true} />);
+    const avatar = (<BlankAvatar />);
     const hasReplies = comment.replies && comment.replies.length > 0;
 
     return (
-        <CommentLayout hasReplies={hasReplies} avatar={blankAvatar}>
+        <CommentLayout hasReplies={hasReplies} avatar={avatar}>
             <div className="-mt-[3px] mb-2 flex items-start">
                 <div className="flex h-12 flex-row items-center gap-4 pb-[8px] pr-4">
                     <p className="mt-[4px] font-sans text-[16px] italic leading-normal text-neutral-300 dark:text-[rgba(255,255,255,0.5)]">{notPublishedMessage}</p>
