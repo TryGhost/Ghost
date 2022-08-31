@@ -5,7 +5,6 @@ import IFrame from './IFrame';
 const Frame = ({
     children,
     type,
-    style,
     ...props
 }) => {
     const {stylesUrl} = useContext(AppContext);
@@ -63,11 +62,9 @@ const Frame = ({
         </>
     );
 
-    const mergedStyle = {...iframeStyle, ...style};
-
     // For now we're using <NewFrame> because using a functional component with portal caused some weird issues with modals
     return (
-        <IFrame {...props} head={head} style={mergedStyle} onResize={type === 'dynamic' ? onResize : null}>
+        <IFrame {...props} head={head} style={iframeStyle} onResize={type === 'dynamic' ? onResize : null}>
             {cssLoaded && children}
         </IFrame>
     );
