@@ -61,37 +61,6 @@ table td,
     background: transparent;
 }
 
-/* Ember Light Table
-/* ---------------------------------------------------------- */
-
-.ember-light-table th {
-    white-space: nowrap;
-}
-
-.ember-light-table .lt-column .lt-sort-icon {
-    display: inline-block;
-    float: none;
-    margin-left: 0.3rem;
-}
-
-.lt-sort-icon.gh-icon-ascending {
-    background: url(icons/arrow-down-small.svg);
-}
-
-.lt-sort-icon.gh-icon-descending {
-    background: url(icons/arrow-up-small.svg);
-}
-
-.lt-sort-icon.gh-icon-ascending,
-.lt-sort-icon.gh-icon-descending {
-    fill: var(--darkgrey);
-    background-size: 10px, auto, contain;
-    background-repeat: no-repeat;
-    height: 9px;
-    width: 15px;
-    top: 1px;
-    position: relative;
-}
 
 /* Plain list tables */
 .table.list, 
