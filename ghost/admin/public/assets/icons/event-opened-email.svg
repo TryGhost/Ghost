@@ -1,6 +1,6 @@
 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M20.2704 12.6611C20.4826 12.426 20.6 12.1206 20.6 11.8039C20.6 11.4873 20.4826 11.1819 20.2704 10.9468C18.9271 9.50111 15.8694 6.68652 12.3 6.68652C8.7306 6.68652 5.67294 9.50111 4.32961 10.9468C4.11744 11.1819 4 11.4873 4 11.8039C4 12.1206 4.11744 12.426 4.32961 12.6611C5.67294 14.1068 8.7306 16.9214 12.3 16.9214C12.5357 16.9214 12.3691 16.9091 12.6 16.8858" stroke="#95A1AD" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M12.3009 14.3635C13.714 14.3635 14.8596 13.2179 14.8596 11.8048C14.8596 10.3917 13.714 9.24609 12.3009 9.24609C10.8878 9.24609 9.74219 10.3917 9.74219 11.8048C9.74219 13.2179 10.8878 14.3635 12.3009 14.3635Z" stroke="#95A1AD" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M18.4609 13.6865V20.6096" stroke="#30CF43" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M15 17.1484H21.9231" stroke="#30CF43" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <title>event-opened-email</title>
+  <path d="M20.27 12.661a1.28 1.28 0 0 0 0-1.714c-1.343-1.446-4.4-4.26-7.97-4.26-3.57 0-6.627 2.814-7.97 4.26a1.28 1.28 0 0 0 0 1.714c1.343 1.446 4.4 4.26 7.97 4.26.236 0 .07-.012.3-.035" stroke="#95A1AD" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M12.3 14.364a2.559 2.559 0 1 0 0-5.118 2.559 2.559 0 0 0 0 5.117Z" stroke="#95A1AD" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M18.46 13.687v6.923M15 17.148h6.923" stroke="#30CF43" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

@@ -1,4 +1,5 @@
 <svg width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>audio-upload</title>
   <path fill-rule="evenodd" clip-rule="evenodd" d="M17.25 12a5.25 5.25 0 1 0 0 10.5 5.25 5.25 0 0 0 0-10.5Zm-6.75 5.25a6.75 6.75 0 1 1 13.5 0 6.75 6.75 0 0 1-13.5 0Z"/>
   <path fill-rule="evenodd" clip-rule="evenodd" d="M17.25 13.5a.75.75 0 0 1 .75.75v6a.75.75 0 0 1-1.5 0v-6a.75.75 0 0 1 .75-.75Z"/>
   <path fill-rule="evenodd" clip-rule="evenodd" d="M17.78 13.72a.75.75 0 0 1 0 1.06l-2.25 2.25a.75.75 0 1 1-1.06-1.06l2.25-2.25a.75.75 0 0 1 1.06 0Z"/>

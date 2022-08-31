@@ -1,15 +1,13 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="30px" height="30px" viewBox="0 0 30 30" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <defs><style>.a{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px;}</style></defs>
-    <g id="Artboard-Copy-4" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round">
-        <path class="a" d="M19.9032328,14.0161523 C19.5709685,12.3510216 18.4116977,10.984234 16.8717751,10.3621441" id="Path" stroke="#000000" stroke-width="1.5"></path>
-        <path class="a" d="M13.0374251,10.3998744 C11.251556,11.1627712 10,12.9352273 10,15 C10,15.4316347 10.0546938,15.8504949 10.1575292,16.2500284" id="Path" stroke="#000000" stroke-width="1.5"></path>
-        <path class="a" d="M12.4395925,19.2955775 C13.1885115,19.7429375 14.0642357,20 15,20 C16.7097897,20 18.2191348,19.1417948 19.1207699,17.8326497" id="Path" stroke="#000000" stroke-width="1.5"></path>
-        <path class="a" d="M17.1711054,23.2202072 C20.8137966,22.2606782 23.5,18.9440373 23.5,15 C23.5,13.9156473 23.2969524,12.878719 22.9268041,11.925162" id="Path" stroke="#000000" stroke-width="1.5"></path>
-        <path class="a" d="M20.6114835,8.61540174 C19.1144354,7.29859608 17.1504788,6.5 15,6.5 C12.8510506,6.5 10.888358,7.29746063 9.39171115,8.61259317" id="Path" stroke="#000000" stroke-width="1.5"></path>
-        <path class="a" d="M7.11234641,11.8261597 C6.71738951,12.8067844 6.5,13.8780052 6.5,15 C6.5,19.0147194 9.2833463,22.3793534 13.0256509,23.269514" id="Path" stroke="#000000" stroke-width="1.5"></path>
-        <path class="a" d="M10.9242609,26.2901192 C12.1967188,26.749559 13.5691126,27 15,27 C20.5202819,27 25.1699607,23.2725052 26.5693993,18.1971528" id="Path" stroke="#000000" stroke-width="1.5"></path>
-        <path class="a" d="M8.71237528,4.77717438 C5.28477891,6.88983658 3,10.6780989 3,15 C3,18.5451149 4.53728777,21.731177 6.98160594,23.927929" id="Path" stroke="#000000" stroke-width="1.5"></path>
-        <path class="a" d="M26.8486456,13.0888486 C25.9333505,7.3697691 20.9769824,3 15,3 C14.3097165,3 13.633046,3.05828402 12.9746412,3.17019931" id="Path" stroke="#000000" stroke-width="1.5"></path>
-    </g>
+<svg width="30" height="30" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
+  <title>portal-logo-stroke</title>
+  <defs>
+    <style>
+      .a{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px}
+    </style>
+  </defs>
+  <g id="Artboard-Copy-4" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round">
+    <path class="a" d="M19.903 14.016a5.009 5.009 0 0 0-3.031-3.654" id="Path" stroke="#000" stroke-width="1.5"/>
+    <path class="a" d="M13.037 10.4a5.001 5.001 0 0 0-2.88 5.85m2.283 3.046A4.977 4.977 0 0 0 15 20a4.99 4.99 0 0 0 4.12-2.167m-1.949 5.387a8.504 8.504 0 0 0 5.756-11.295m-2.316-3.31A8.468 8.468 0 0 0 15 6.5a8.468 8.468 0 0 0-5.608 2.113m-2.28 3.213a8.503 8.503 0 0 0 5.913 11.443" stroke="#000" stroke-width="1.5"/>
+    <path class="a" d="M10.924 26.29c1.273.46 2.645.71 4.076.71 5.52 0 10.17-3.727 11.57-8.803M8.712 4.777A11.993 11.993 0 0 0 3 15a11.97 11.97 0 0 0 3.982 8.928m19.867-10.839C25.933 7.369 20.977 3 15 3c-.69 0-1.367.058-2.025.17" stroke="#000" stroke-width="1.5"/>
+  </g>
 </svg>

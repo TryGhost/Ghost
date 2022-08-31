@@ -206,7 +206,7 @@ module.exports = function (defaults) {
                     {prefixIds: true},
                     {cleanupIds: false},
                     {removeDimensions: true},
-                    {removeTitle: true},
+                    {removeTitle: isProduction},
                     {removeXMLNS: true},
                     // Transforms on groups are necessary to work around Firefox
                     // not supporting transform-origin on line/path elements.
