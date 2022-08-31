@@ -84,7 +84,6 @@ const CommentsBoxContent = (props) => {
                 {commentsElements}
             </div>
             <div>
-                {secundaryFormCount}
                 {!hasOpenSecundaryForms
                     ? (member ? (isPaidMember || !paidOnly ? <Form commentsCount={commentCount} /> : <CTABox isFirst={pagination?.total === 0} isPaid={paidOnly} />) : <CTABox isFirst={pagination?.total === 0} isPaid={paidOnly} />)
                     : null
