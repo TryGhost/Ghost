@@ -5,9 +5,6 @@ const Resource = require('./Resource');
 const config = require('../../../shared/config');
 const models = require('../../models');
 
-// This listens to all manner of model events to find new content that needs a URL...
-const events = require('../../lib/common/events');
-
 /**
  * @description At the moment the resources class is directly responsible for data population
  * for URLs...but because it's actually a storage cache of all published
@@ -45,6 +42,8 @@ class Resources {
             listener: listener
         });
 
+        // This listens to all manner of model events to find new content that needs a URL...
+        const events = require('../../lib/common/events');
         events.on(eventName, listener);
     }
 
@@ -445,6 +444,8 @@ class Resources {
      * Is triggered if you switch API versions.
      */
     reset() {
+        // This listens to all manner of model events to find new content that needs a URL...
+        const events = require('../../lib/common/events');
         _.each(this.listeners, (obj) => {
             events.removeListener(obj.eventName, obj.listener);
         });

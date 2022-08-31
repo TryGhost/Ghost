@@ -16,9 +16,6 @@ const models = require('../../models');
 const postEmailSerializer = require('./post-email-serializer');
 const {getSegmentsFromHtml} = require('./segment-parser');
 
-// Used to listen to email.added and email.edited model events originally, I think to offload this - ideally would just use jobs now if possible
-const events = require('../../lib/common/events');
-
 const messages = {
     invalidSegment: 'Invalid segment value. Use one of the valid:"status:free" or "status:-free" values.',
     unexpectedFilterError: 'Unexpected {property} value "{value}", expected an NQL equivalent',
@@ -524,6 +521,9 @@ const statusChangedHandler = (emailModel, options) => {
 };
 
 function listen() {
+    // Used to listen to email.added and email.edited model events originally, I think to offload this - ideally would just use jobs now if possible
+    const events = require('../../lib/common/events');
+
     events.on('email.added', pendingEmailHandler);
     events.on('email.edited', statusChangedHandler);
 }

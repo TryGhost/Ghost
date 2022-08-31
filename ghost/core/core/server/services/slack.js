@@ -8,9 +8,6 @@ const urlService = require('./url');
 const settingsCache = require('../../shared/settings-cache');
 const moment = require('moment');
 
-// Used to receive post.published model event, but also the slack.test event from the API which iirc this was done to avoid circular deps a long time ago
-const events = require('../lib/common/events');
-
 const messages = {
     requestFailedError: 'The {service} service was unable to send a ping request, your site will continue to function.',
     requestFailedHelp: 'If you get this error repeatedly, please seek help on {url}.'
@@ -170,6 +167,9 @@ function testPing() {
 }
 
 function listen() {
+    // Used to receive post.published model event, but also the slack.test event from the API which iirc this was done to avoid circular deps a long time ago
+    const events = require('../lib/common/events');
+
     events.on('post.published', listener);
     events.on('slack.test', testPing);
 }

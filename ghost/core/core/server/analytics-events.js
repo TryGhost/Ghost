@@ -4,10 +4,10 @@ const config = require('../shared/config');
 const logging = require('@tryghost/logging');
 const sentry = require('../shared/sentry');
 
-// Listens to model events to layer on analytics - also uses the "fake" theme.uploaded event from the theme API
-const events = require('./lib/common/events');
-
 module.exports.init = function () {
+    // Listens to model events to layer on analytics - also uses the "fake" theme.uploaded event from the theme API
+    const events = require('./lib/common/events');
+
     const analytics = new Analytics(config.get('segment:key'));
     const trackDefaults = config.get('segment:trackDefaults') || {};
     const prefix = config.get('segment:prefix') || '';

@@ -5,7 +5,6 @@
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 
-const events = require('../../lib/common/events');
 const models = require('../../models');
 const labs = require('../../../shared/labs');
 const config = require('../../../shared/config');
@@ -69,6 +68,8 @@ module.exports = {
     async init() {
         const cacheStore = adapterManager.getAdapter('cache:settings');
         const settingsCollection = await models.Settings.populateDefaults();
+
+        const events = require('../../lib/common/events');
         SettingsCache.init(events, settingsCollection, this.getCalculatedFields(), cacheStore);
     },
 
@@ -76,6 +77,7 @@ module.exports = {
      * Restore the cache, used during e2e testing only
      */
     reset() {
+        const events = require('../../lib/common/events');
         SettingsCache.reset(events);
     },
 

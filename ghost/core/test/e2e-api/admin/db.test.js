@@ -3,7 +3,7 @@ const should = require('should');
 const supertest = require('supertest');
 const sinon = require('sinon');
 const config = require('../../../core/shared/config');
-const events = require('../../../core/server/lib/common/events');
+
 const testUtils = require('../../utils');
 const {exportedBodyLatest} = require('../../utils/fixtures/export/body-generator');
 const localUtils = require('./utils');
@@ -20,7 +20,7 @@ describe('DB API', function () {
 
     beforeEach(function () {
         eventsTriggered = {};
-
+        const events = require('../../../core/server/lib/common/events');
         sinon.stub(events, 'emit').callsFake((eventName, eventObj) => {
             if (!eventsTriggered[eventName]) {
                 eventsTriggered[eventName] = [];

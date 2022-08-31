@@ -4,9 +4,6 @@ const urlUtils = require('../../../shared/url-utils');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 
-// This emits its own url added/removed events
-const events = require('../../lib/common/events');
-
 /**
  * This class keeps track of all urls in the system.
  * Each resource has exactly one url. Each url is owned by exactly one url generator id.
@@ -55,6 +52,8 @@ class Urls {
             resource: resource
         };
 
+        // This emits its own url added/removed events
+        const events = require('../../lib/common/events');
         // @NOTE: Notify the whole system. Currently used for sitemaps service.
         events.emit('url.added', {
             url: {
@@ -122,6 +121,8 @@ class Urls {
 
         debug('removed', this.urls[id].url, this.urls[id].generatorId);
 
+        // This emits its own url added/removed events
+        const events = require('../../lib/common/events');
         events.emit('url.removed', {
             url: this.urls[id].url,
             resource: this.urls[id].resource

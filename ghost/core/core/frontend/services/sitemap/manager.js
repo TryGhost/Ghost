@@ -4,15 +4,14 @@ const PostsMapGenerator = require('./post-generator');
 const UsersMapGenerator = require('./user-generator');
 const TagsMapGenerator = require('./tag-generator');
 
-// This uses events from the routing service and the URL service
-const events = require('../../../server/lib/common/events');
-
 class SiteMapManager {
     constructor(options) {
         options = options || {};
 
         options.maxPerPage = options.maxPerPage || 50000;
 
+        // This uses events from the routing service and the URL service
+        const events = require('../../../server/lib/common/events');
         this.pages = options.pages || this.createPagesGenerator(options);
         this.posts = options.posts || this.createPostsGenerator(options);
         this.users = this.authors = options.authors || this.createUsersGenerator(options);

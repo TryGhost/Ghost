@@ -5,9 +5,6 @@ const WebhookTrigger = require('./trigger');
 const models = require('../../models');
 const payload = require('./payload');
 
-// The webhook system is fundamentally built on top of our model event system
-const events = require('../../lib/common/events');
-
 const WEBHOOKS = [
     'site.changed',
 
@@ -57,6 +54,8 @@ const listen = async () => {
         }
     }
 
+    // The webhook system is fundamentally built on top of our model event system
+    const events = require('../../lib/common/events');
     const webhookTrigger = new WebhookTrigger({models, payload});
     _.each(WEBHOOKS, (event) => {
         events.on(event, (model, options) => {

@@ -20,13 +20,9 @@ const cardAssetService = require('./frontend/services/card-assets');
 const commentCountsAssetService = require('./frontend/services/comment-counts-assets');
 const adminAuthAssetService = require('./frontend/services/admin-auth-assets');
 const memberAttributionAssetService = require('./frontend/services/member-attribution-assets');
-const routerManager = require('./frontend/services/routing').routerManager;
 const settingsCache = require('./shared/settings-cache');
 const urlService = require('./server/services/url');
 const routeSettings = require('./server/services/route-settings');
-
-// Listen to settings.locale.edited, similar to the member service and models/base/listeners
-const events = require('./server/lib/common/events');
 
 const messages = {
     activateFailed: 'Unable to activate the theme "{theme}".'
@@ -34,6 +30,11 @@ const messages = {
 
 class Bridge {
     init() {
+        const routerManager = require('./frontend/services/routing').routerManager;
+        
+        // Listen to settings.locale.edited, similar to the member service and models/base/listeners
+        const events = require('./server/lib/common/events');
+
         /**
          * When locale changes, we reload theme translations
          */

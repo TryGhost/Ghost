@@ -5,7 +5,6 @@ const membersService = require('../members');
 const config = require('../../../shared/config');
 const settings = require('../../../shared/settings-cache');
 const urlUtils = require('../../../shared/url-utils');
-const events = require('../../lib/common/events');
 const models = require('../../models');
 const {getConfig} = require('./config');
 
@@ -59,6 +58,7 @@ module.exports.init = async function init() {
     } catch (err) {
         logging.error(err);
     }
+    const events = require('../../lib/common/events');
     events.on('settings.edited', function (model) {
         if (['stripe_publishable_key', 'stripe_secret_key', 'stripe_connect_publishable_key', 'stripe_connect_secret_key'].includes(model.get('key'))) {
             debouncedConfigureApi();

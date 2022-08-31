@@ -41,7 +41,8 @@ async function errorIfHostnameResolvesToPrivateIp(options) {
 const externalRequest = got.extend({
     headers: {
         'user-agent': 'Ghost(https://github.com/TryGhost/Ghost)'
-    },
+    }, 
+    retry: 0,
     hooks: {
         init: [(options) => {
             if (!options.hostname || !validator.isURL(options.hostname)) {

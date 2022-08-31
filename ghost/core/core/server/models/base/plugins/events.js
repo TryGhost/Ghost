@@ -4,9 +4,6 @@ const ObjectId = require('bson-objectid');
 
 const schema = require('../../../data/schema');
 
-// This wires up our model event system
-const events = require('../../../lib/common/events');
-
 module.exports = function (Bookshelf) {
     Bookshelf.Model = Bookshelf.Model.extend({
         initializeEvents: function () {
@@ -49,6 +46,9 @@ module.exports = function (Bookshelf) {
          * If the query runs in a txn, `_previousAttributes` will be empty.
          */
         emitChange: function (model, event, options) {
+            // This wires up our model event system
+            const events = require('../../../lib/common/events');
+
             const _emit = (ghostEvent, _model, opts) => {
                 if (!_model.wasChanged()) {
                     return;

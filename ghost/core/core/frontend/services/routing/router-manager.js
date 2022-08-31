@@ -9,9 +9,6 @@ const ParentRouter = require('./ParentRouter');
 const EmailRouter = require('./EmailRouter');
 const UnsubscribeRouter = require('./UnsubscribeRouter');
 
-// This emits its own routing events
-const events = require('../../../server/lib/common/events');
-
 class RouterManager {
     constructor({registry}) {
         this.registry = registry;
@@ -35,6 +32,8 @@ class RouterManager {
     }
 
     routerCreated(router) {
+        // This emits its own routing events
+        const events = require('../../../server/lib/common/events');
         // NOTE: this event should be become an "internal frontend even"
         //       and should not be consumed by the modules outside the frontend
         events.emit('router.created', router);
@@ -72,6 +71,8 @@ class RouterManager {
         this.registry.resetAllRouters();
         this.registry.resetAllRoutes();
 
+        // This emits its own routing events
+        const events = require('../../../server/lib/common/events');
         // NOTE: this event could become an "internal frontend" in the future, it's used has been kept to prevent
         //       from tying up this module with sitemaps
         events.emit('routers.reset');

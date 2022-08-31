@@ -14,7 +14,6 @@ let emailCount = 0;
 // Mockable services
 const mailService = require('../../core/server/services/mail/index');
 const labs = require('../../core/shared/labs');
-const events = require('../../core/server/lib/common/events');
 
 let fakedLabsFlags = {};
 const originalLabsIsSet = labs.isSet;
@@ -102,6 +101,7 @@ const sentEmail = (matchers) => {
  */
 
 const mockEvents = () => {
+    const events = require('../../core/server/lib/common/events');
     mocks.events = sinon.stub(events, 'emit');
 };
 
