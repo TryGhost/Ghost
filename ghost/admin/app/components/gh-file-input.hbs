@@ -1,0 +1,20 @@
+<span class="x-file-input" {{on "change" this.onChange}} ...attributes>
+    <input
+        type="file"
+        id={{this.inputId}}
+        class="x-file--input"
+        name={{@name}}
+        disabled={{@disabled}}
+        multiple={{@multiple}}
+        accept={{@accept}}
+        {{on "change" this.onChange}}
+        {{did-insert this.registerFileInput}}
+    >
+    <label for="{{this.inputId}}">
+        {{#if (has-block)}}
+            {{yield}}
+        {{else}}
+            {{this.alt}}
+        {{/if}}
+    </label>
+</span>

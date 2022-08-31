@@ -120,7 +120,6 @@
     "ember-test-selectors": "6.0.0",
     "ember-tooltips": "3.6.0",
     "ember-truth-helpers": "3.1.1",
-    "emberx-file-input": "1.2.1",
     "eslint": "8.23.0",
     "eslint-plugin-babel": "5.3.1",
     "eslint-plugin-react": "7.31.1",
