@@ -1,7 +1,7 @@
 import {useContext, useEffect, useState} from 'react';
 import AppContext from '../AppContext';
 import Pages from '../pages';
-import GenericDialog from './dialogs/GenericDialog';
+import GenericPopup from './popups/GenericPopup';
 
 export default function PopupModal(props) {
     const {popup} = useContext(AppContext);
@@ -46,9 +46,9 @@ export default function PopupModal(props) {
 
     return (
         <>
-            <GenericDialog show={show} callback={popupProps.callback}>
+            <GenericPopup show={show} callback={popupProps.callback}>
                 <PageComponent {...popupProps}/>
-            </GenericDialog>
+            </GenericPopup>
         </>
     );
 }

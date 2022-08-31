@@ -6,7 +6,7 @@ const NotAuthorContextMenu = (props) => {
 
     const openModal = () => {
         dispatchAction('openPopup', {
-            type: 'reportDialog',
+            type: 'reportPopup',
             comment: props.comment
         });
         props.close();

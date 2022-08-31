@@ -4,7 +4,7 @@ import CloseButton from './CloseButton';
 import AppContext from '../../AppContext';
 import {isMobile} from '../../utils/helpers';
 
-const AddNameDialog = (props) => {
+const AddDetailsPopup = (props) => {
     const inputNameRef = useRef(null);
     const inputBioRef = useRef(null);
     const {dispatchAction, member, accentColor} = useContext(AppContext);
@@ -193,4 +193,4 @@ const AddNameDialog = (props) => {
     );
 };
 
-export default AddNameDialog;
+export default AddDetailsPopup;

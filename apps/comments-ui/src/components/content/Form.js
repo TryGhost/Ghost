@@ -142,7 +142,7 @@ const Form = (props) => {
             setPreventClosing(true);
             editor.commands.blur();
             dispatchAction('openPopup', {
-                type: 'addDetailsDialog',
+                type: 'addDetailsPopup',
                 callback: (succeeded) => {
                     if (succeeded) {
                         editor.commands.focus();
@@ -385,14 +385,14 @@ const Form = (props) => {
         editor.commands.focus();
     };
 
-    const handleShowDialog = (event, options) => {
+    const handleShowPopup = (event, options) => {
         event.preventDefault();
         
         setPreventClosing(true);
         editor?.commands.blur();
 
         dispatchAction('openPopup', {
-            type: 'addDetailsDialog',
+            type: 'addDetailsPopup',
             bioAutofocus: options.bioAutofocus ?? false,
             callback: () => {
                 editor?.commands.focus();
@@ -466,7 +466,7 @@ const Form = (props) => {
                                 <div
                                     className="font-sans text-[17px] font-bold tracking-tight text-[rgb(23,23,23)] dark:text-[rgba(255,255,255,0.85)]"
                                     onClick={(event) => {
-                                        handleShowDialog(event, {
+                                        handleShowPopup(event, {
                                             bioAutofocus: false
                                         });
                                     }}>{memberName ? memberName : 'Anonymous'}</div>
@@ -474,7 +474,7 @@ const Form = (props) => {
                                     <button
                                         className={`group flex max-w-[80%] items-center justify-start whitespace-nowrap text-left font-sans text-[14px] tracking-tight text-neutral-400 transition duration-150 hover:text-neutral-500 dark:text-[rgba(255,255,255,0.5)] sm:max-w-[90%] ${!memberBio && 'text-neutral-300 hover:text-neutral-400'}`}
                                         onClick={(event) => {
-                                            handleShowDialog(event, {
+                                            handleShowPopup(event, {
                                                 bioAutofocus: true
                                             });
                                         }}><span className="... overflow-hidden text-ellipsis">{memberBio ? memberBio : 'Add your expertise'}</span>

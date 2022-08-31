@@ -3,7 +3,7 @@ import {Transition} from '@headlessui/react';
 import {PopupFrame} from '../Frame';
 import AppContext from '../../AppContext';
 
-const GenericDialog = (props) => {
+const GenericPopup = (props) => {
     // The modal will cover the whole screen, so while it is hidden, we need to disable pointer events
     const {dispatchAction} = useContext(AppContext);
 
@@ -58,4 +58,4 @@ const GenericDialog = (props) => {
     );
 };
 
-export default GenericDialog;
+export default GenericPopup;
