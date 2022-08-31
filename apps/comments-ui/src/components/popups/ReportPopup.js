@@ -4,7 +4,7 @@ import {ReactComponent as SuccessIcon} from '../../images/icons/success.svg';
 import CloseButton from './CloseButton';
 import AppContext from '../../AppContext';
 
-const ReportDialog = (props) => {
+const ReportPopup = (props) => {
     const {dispatchAction} = useContext(AppContext);
     const [progress, setProgress] = useState('default');
 
@@ -70,4 +70,4 @@ const ReportDialog = (props) => {
     );
 };
 
-export default ReportDialog;
+export default ReportPopup;
