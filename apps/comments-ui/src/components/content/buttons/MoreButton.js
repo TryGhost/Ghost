@@ -3,7 +3,7 @@ import CommentContextMenu from '../context-menus/CommentContextMenu';
 import AppContext from '../../../AppContext';
 import {ReactComponent as MoreIcon} from '../../../images/icons/more.svg';
 
-const More = (props) => {
+const MoreButton = (props) => {
     const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
     const {member, admin} = useContext(AppContext);
 
@@ -35,4 +35,4 @@ const More = (props) => {
     );
 };
 
-export default More;
+export default MoreButton;

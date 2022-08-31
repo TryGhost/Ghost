@@ -2,7 +2,7 @@ import {useContext, useState} from 'react';
 import {ReactComponent as LikeIcon} from '../../../images/icons/like.svg';
 import AppContext from '../../../AppContext';
 
-function Like(props) {
+function LikeButton(props) {
     const {dispatchAction, member, commentsEnabled} = useContext(AppContext);
     const [animationClass, setAnimation] = useState('');
 
@@ -42,4 +42,4 @@ function Like(props) {
     );
 }
 
-export default Like;
+export default LikeButton;

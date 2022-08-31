@@ -1,9 +1,9 @@
 import React, {useContext, useState} from 'react';
 import {Transition} from '@headlessui/react';
 import {BlankAvatar, Avatar} from './Avatar';
-import Like from './buttons/Like';
-import Reply from './buttons/Reply';
-import More from './buttons/More';
+import LikeButton from './buttons/LikeButton';
+import ReplyButton from './buttons/ReplyButton';
+import MoreButton from './buttons/MoreButton';
 import Form from './Form';
 import Replies from './Replies';
 import AppContext from '../../AppContext';
@@ -105,7 +105,7 @@ function UnpublishedComment({comment, openEditMode}) {
                 <div className="flex h-12 flex-row items-center gap-4 pb-[8px] pr-4">
                     <p className="mt-[4px] font-sans text-[16px] italic leading-normal text-neutral-300 dark:text-[rgba(255,255,255,0.5)]">{notPublishedMessage}</p>
                     <div className="mt-[4px]">
-                        <More comment={comment} toggleEdit={openEditMode} />
+                        <MoreButton comment={comment} toggleEdit={openEditMode} />
                     </div>
                 </div> 
             </div>
@@ -223,9 +223,9 @@ function CommentMenu({comment, toggleReplyMode, isInReplyMode, openEditMode, par
 
     return (
         <div className="flex items-center gap-5">
-            {<Like comment={comment} />}
-            {(canReply && <Reply comment={comment} toggleReply={toggleReplyMode} isReplying={isInReplyMode} />)}
-            {<More comment={comment} toggleEdit={openEditMode} />}
+            {<LikeButton comment={comment} />}
+            {(canReply && <ReplyButton comment={comment} toggleReply={toggleReplyMode} isReplying={isInReplyMode} />)}
+            {<MoreButton comment={comment} toggleEdit={openEditMode} />}
         </div>
     );
 }
