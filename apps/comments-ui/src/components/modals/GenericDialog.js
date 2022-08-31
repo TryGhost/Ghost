@@ -1,6 +1,6 @@
 import React, {useContext, useEffect} from 'react';
 import {Transition} from '@headlessui/react';
-import Frame from '../Frame';
+import {PopupFrame} from '../Frame';
 import AppContext from '../../AppContext';
 
 const GenericDialog = (props) => {
@@ -29,7 +29,7 @@ const GenericDialog = (props) => {
 
     return (
         <Transition show={props.show} appear={true}>
-            <Frame type="fixed">
+            <PopupFrame>
                 <div>
                     <Transition.Child
                         enter="transition duration-200 linear"
@@ -53,7 +53,7 @@ const GenericDialog = (props) => {
                         </div>
                     </Transition.Child>
                 </div>
-            </Frame>
+            </PopupFrame>
         </Transition>
     );
 };
