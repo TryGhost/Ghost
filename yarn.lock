@@ -7213,11 +7213,6 @@ chai-dom@1.11.0:
   resolved "https://registry.yarnpkg.com/chai-dom/-/chai-dom-1.11.0.tgz#aa3af405b3d9b0470d185b17081ed23ca5fdaeb4"
   integrity sha512-ZzGlEfk1UhHH5+N0t9bDqstOxPEXmn3EyXvtsok5rfXVDOFDJbHVy12rED6ZwkJAUDs2w7/Da4Hlq2LB63kltg==
 
-chai-jquery@^2.0.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/chai-jquery/-/chai-jquery-2.1.0.tgz#ce40fb5d853e7886688787f16d14cd9595388563"
-  integrity sha512-DiKSXcmInlt4d+WC5PkisDL5MsgJPd1lCSfZ3NgeSZJ34CJntEIpPOCdpalH2IhOWHeLpESJaiuHFxX1dpZ6bw==
-
 chai@4.3.6:
   version "4.3.6"
   resolved "https://registry.yarnpkg.com/chai/-/chai-4.3.6.tgz#ffe4ba2d9fa9d6680cc0b370adae709ec9011e9c"
@@ -9510,7 +9505,7 @@ ember-cli-htmlbars@6.1.0, ember-cli-htmlbars@^6.0.0, ember-cli-htmlbars@^6.0.1:
     silent-error "^1.1.1"
     walk-sync "^2.2.0"
 
-ember-cli-htmlbars@^2.0.1, ember-cli-htmlbars@^2.0.3:
+ember-cli-htmlbars@^2.0.3:
   version "2.0.5"
   resolved "https://registry.yarnpkg.com/ember-cli-htmlbars/-/ember-cli-htmlbars-2.0.5.tgz#b5a105429a6bce4f7c9c97b667e3b8926e31397f"
   integrity sha512-3f3PAxdnQ/fhQa8XP/3z4RLRgLHxV8j4Ln75aHbRdemOCjBa048KxL9l+acRLhCulbGQCMnLiIUIC89PAzLrcA==
@@ -10594,15 +10589,6 @@ ember-truth-helpers@3.1.1, "ember-truth-helpers@^2.1.0 || ^3.0.0":
   integrity sha512-FHwJAx77aA5q27EhdaaiBFuy9No+8yaWNT5A7zs0sIFCmf14GbcLn69vJEp6mW7vkITezizGAWhw7gL0Wbk7DA==
   dependencies:
     ember-cli-babel "^7.22.1"
-
-emberx-file-input@1.2.1:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/emberx-file-input/-/emberx-file-input-1.2.1.tgz#a9214a9b3278c270a4d60e58836d2c1b98bce0ab"
-  integrity sha512-sDgoVTk/jnu5oghzGx4a2P0dbHpZXdomk8YWAbHone44sgdxXV/LpCC8EgOEvSmagv19E+CSfGJNzCNYcM59kg==
-  dependencies:
-    chai-jquery "^2.0.0"
-    ember-cli-babel "^6.6.0"
-    ember-cli-htmlbars "^2.0.1"
 
 emits@^3.0.0:
   version "3.0.0"

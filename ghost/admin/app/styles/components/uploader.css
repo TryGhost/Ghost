@@ -1,3 +1,30 @@
+/* gh-file-input
+/* ---------------------------------------------------------- */
+
+/* Hide the original input */
+.x-file--input {
+    width: 1px;
+    height: 0;
+    max-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    z-index: -1;
+}
+
+.x-file--input + label {
+    display: inline-block;
+    cursor: pointer;
+}
+
+.x-file--input:focus + label {
+    outline: 1px dotted #000;
+    outline: -webkit-focus-ring-color auto 5px;
+}
+
+.x-file--input + label * {
+    pointer-events: none;
+}
+
 /* Image Uploader
 /* ---------------------------------------------------------- */
 
