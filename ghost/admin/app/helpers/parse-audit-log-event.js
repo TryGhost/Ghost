@@ -2,26 +2,77 @@ import Helper from '@ember/component/helper';
 import {inject as service} from '@ember/service';
 
 export default class ParseAuditLogEvent extends Helper {
-    @service store;
+    @service ghostPaths;
 
     compute([ev]) {
         const action = getAction(ev);
         const actionIcon = getActionIcon(ev);
-        const getActor = () => this.store.findRecord(ev.actor_type, ev.actor_id, {reload: false});
         const contextResource = getContextResource(ev);
         const linkTarget = getLinkTarget(ev);
 
+        const actor = getActor(ev);
+        const actorLinkTarget = getActorLinkTarget(ev);
+
+        const assetRoot = this.ghostPaths.assetRoot.replace(/\/$/, '');
+        const actorIcon = getActorIcon(ev, assetRoot);
+
         return {
-            get actor() {
-                return getActor();
-            },
             contextResource,
             linkTarget,
             actionIcon,
             action,
+            actor,
+            actorIcon,
+            actorLinkTarget,
             original: ev
         };
     }
+}
+
+function getActor(ev) {
+    if (!ev.actor.id) {
+        return null;
+    }
+
+    return ev.actor;
+}
+
+function getActorIcon(ev, assetRoot) {
+    if (!ev.actor.id) {
+        return `${assetRoot}/img/user-image.png`;
+    }
+
+    return ev.actor.image;
+}
+
+function getActorLinkTarget(ev) {
+    const actor = getActor(ev);
+    if (!actor) {
+        return null;
+    }
+
+    switch (ev.actor_type) {
+    case 'integration':
+        if (!actor.id) {
+            return null;
+        }
+
+        return {
+            route: 'settings.integration',
+            models: [actor.id]
+        };
+    case 'user':
+        if (!actor.slug) {
+            return null;
+        }
+
+        return {
+            route: 'settings.staff.user',
+            models: [actor.slug]
+        };
+    }
+
+    return null;
 }
 
 function getLinkTarget(ev) {

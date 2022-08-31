@@ -10,15 +10,17 @@
         <tr>
             <div class="gh-list-data">
                 <div class="gh-audit-log-object flex items-center ma3">
-                    <span class="user-list-item-figure" style={{background-image-style (or ev.actor.profileImageUrl ev.actor.iconImage)}}>
-                        <span class="hidden">Photo of {{ev.actor.name}}</span>
+                    <span class="user-list-item-figure" style={{background-image-style ev.actorIcon}}>
+                        {{#if ev.actor.name}}
+                            <span class="hidden">Photo of {{ev.actor.name}}</span>
+                        {{/if}}
                         <div class="gh-audit-log-icon">{{svg-jar ev.actionIcon}}</div>
                     </span>
                     {{!--  --}}
                     <div>
                         <div class="gh-audit-log-description">
                             <span>
-                                {{capitalize-first-letter ev.action}}: 
+                                {{capitalize-first-letter ev.action}}:
                             </span>
                             {{#if ev.contextResource}}
                                 <span>
@@ -38,12 +40,16 @@
                             {{else}}
                                 <span class="midlightgrey">(unknown)</span>
                             {{/if}}
-                            
+
                             <span class="gh-audit-log-name">
                                 <span class="midgrey">&ndash; by </span>
-                                <LinkTo @route="settings.staff.user" @model={{ev.actor.slug}}>
-                                    {{ev.actor.name}}
-                                </LinkTo>
+                                {{#if ev.actorLinkTarget}}
+                                    <LinkTo @route={{ev.actorLinkTarget.route}} @models={{ev.actorLinkTarget.models}}>
+                                        {{ev.actor.name}}
+                                    </LinkTo>
+                                {{else}}
+                                    (deleted user)
+                                {{/if}}
                             </span>
                         </div>
                         <div class="gh-audit-log-datetime">{{moment-format ev.original.created_at "DD MMM YYYY HH:mm:ss"}}</div>
