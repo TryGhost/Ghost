@@ -1,6 +1,5 @@
 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M11.4385 6.54891V3.12891" stroke="#6C747D" stroke-width="1.71429" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M13.522 6.97317C12.9456 6.69787 12.2234 6.54883 11.4386 6.54883C9.54615 6.54883 8.01855 6.54883 8.01855 8.82883C8.01855 9.85642 8.63606 10.5753 9.5 11.1709M13.522 13.4296C14.3093 14.0051 14.8586 14.6997 14.8586 15.6688C14.8586 17.9488 13.331 17.9488 11.4386 17.9488C10.7181 17.9488 10.0505 17.8662 9.5 17.6695" stroke="#6C747D" stroke-width="1.71429" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M11.4385 17.9492V21.3692" stroke="#6C747D" stroke-width="1.71429" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M15.9385 7.55566L7.50156 16.7596" stroke="#F50B23" stroke-width="1.7" stroke-linecap="round"/>
+  <title>event-canceled-subscription--feature-attribution</title>
+  <path d="M11.438 6.549v-3.42m2.084 3.844c-.576-.275-1.299-.424-2.083-.424-1.893 0-3.42 0-3.42 2.28 0 1.027.617 1.746 1.481 2.342m4.022 2.259c.787.575 1.337 1.27 1.337 2.239 0 2.28-1.528 2.28-3.42 2.28-.72 0-1.389-.083-1.939-.28m1.938.281v3.42" stroke="#6C747D" stroke-width="1.714" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M15.938 7.556 7.502 16.76" stroke="#F50B23" stroke-width="1.7" stroke-linecap="round"/>
 </svg>
