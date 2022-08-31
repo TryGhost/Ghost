@@ -223,55 +223,6 @@
     margin-top: 0;
 }
 
-.gh-flow-content .pw-strength-activedot {
-    background-color: var(--red);
-}
-
-.gh-flow-content .gh-flow-invite {
-    position: relative;
-    margin: 0 auto;
-    max-width: 400px;
-    width: 100%;
-    text-align: left;
-}
-
-.gh-flow-invite label {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.gh-flow-invite label svg {
-    width: 14px;
-    height: 14px;
-    line-height: 1.4em;
-}
-
-.gh-flow-invite textarea {
-    background: var(--input-bg-color) url(img/invite-placeholder.png) 10px 8px no-repeat;
-    background-size: 203px 35px;
-    border: var(--input-border);
-    box-shadow: none; /* Remove some default styling for Firefox (required attribute) */
-    font-size: 1.5rem;
-    letter-spacing: 0;
-    line-height: 1.8rem;
-}
-
-.gh-flow-invite textarea:valid {
-    background: none;
-}
-
-@media (max-width: 460px) {
-    .gh-flow-content .gh-flow-invite label svg {
-        display: none;
-    }
-}
-
-.gh-flow-content .gh-flow-faces {
-    margin-bottom: 2vw;
-    width: 100%;
-}
-
 .gh-flow-content textarea {
     width: 100%;
     height: 160px;
