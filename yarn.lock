@@ -3230,11 +3230,6 @@
     "@tryghost/root-utils" "^0.3.15"
     nconf "^0.12.0"
 
-"@tryghost/database-info@0.3.8":
-  version "0.3.8"
-  resolved "https://registry.yarnpkg.com/@tryghost/database-info/-/database-info-0.3.8.tgz#77af1a8a930986d3b3cef14e4dd5928be4c4bdcc"
-  integrity sha512-fs034LgcOlyvVwQtaaRPuZW1AF1ac6/UMb5UxdO0/sreMiO30Y5mVuOBqET6CbWKLKOK6WVvVgmGIgyddH0Qrg==
-
 "@tryghost/database-info@0.3.9":
   version "0.3.9"
   resolved "https://registry.yarnpkg.com/@tryghost/database-info/-/database-info-0.3.9.tgz#76a995a5ec489e0adf55699223cd91e372584552"
@@ -10098,7 +10093,7 @@ ember-get-config@:
     ember-cli-babel "^7.26.6"
     ember-cli-htmlbars "^5.7.1"
 
-"ember-getowner-polyfill@^1.1.0 || ^2.0.0", ember-getowner-polyfill@^2.0.0, ember-getowner-polyfill@^2.0.1:
+"ember-getowner-polyfill@^1.1.0 || ^2.0.0", ember-getowner-polyfill@^2.0.1:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/ember-getowner-polyfill/-/ember-getowner-polyfill-2.2.0.tgz#38e7dccbcac69d5ec694000329ec0b2be651d2b2"
   integrity sha512-rwGMJgbGzxIAiWYjdpAh04Abvt0s3HuS/VjHzUFhVyVg2pzAuz45B9AzOxYXzkp88vFC7FPaiA4kE8NxNk4A4Q==
@@ -10345,14 +10340,6 @@ ember-rfc176-data@^0.3.1, ember-rfc176-data@^0.3.13, ember-rfc176-data@^0.3.15, 
   version "0.3.17"
   resolved "https://registry.yarnpkg.com/ember-rfc176-data/-/ember-rfc176-data-0.3.17.tgz#d4fc6c33abd6ef7b3440c107a28e04417b49860a"
   integrity sha512-EVzTTKqxv9FZbEh6Ktw56YyWRAA0MijKvl7H8C06wVF+8f/cRRz3dXxa4nkwjzyVwx4rzKGuIGq77hxJAQhWWw==
-
-ember-route-action-helper@2.0.8:
-  version "2.0.8"
-  resolved "https://registry.yarnpkg.com/ember-route-action-helper/-/ember-route-action-helper-2.0.8.tgz#f227fcccb73e839b65e9b814e241b322fe8c02fc"
-  integrity sha512-V+4uKwqaYveriVt2rl4e+9mzHJiQOr1B8dCPQQ2TS3iAcmi5RD2giRDFGtCK9d2XY9Arb/f9hJh0obP20iyt3A==
-  dependencies:
-    ember-cli-babel "^6.8.1"
-    ember-getowner-polyfill "^2.0.0"
 
 ember-router-generator@^2.0.0:
   version "2.0.0"
@@ -14765,14 +14752,14 @@ kind-of@^6.0.0, kind-of@^6.0.2:
   resolved "https://registry.yarnpkg.com/kind-of/-/kind-of-6.0.3.tgz#07c05034a6c349fa06e24fa35aa76db4580ce4dd"
   integrity sha512-dcS1ul+9tmeD95T+x28/ehLgd9mENa3LsvDTtzm3vyBEO7RPptvAD+t44WVXaUjTBRcrpFeFlC8WCruUR456hw==
 
-knex-migrator@5.0.3:
-  version "5.0.3"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-5.0.3.tgz#c3f8f3a4f1fe59adbc68e5bbd9f1931297d75bb9"
-  integrity sha512-p0ffo+5MBftGa+FKVYL6nVK/fznMXchf6gTaM+lwT4kJtdZ0N2iUwPQEIXo/LPlfQHA6waomivGmnGh2Ef+h1g==
+knex-migrator@5.0.4:
+  version "5.0.4"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-5.0.4.tgz#1e2a0530bffdb432c4d9c29a1fde9171d82a3565"
+  integrity sha512-/d3cmt5KxGFVSAHZF34vIYhy0wV2RlL+zT/ROTciZTBADcLFIahDCQ9IzwAZjJbKbgOpAGL0mOqjSu64M3R6wQ==
   dependencies:
-    "@tryghost/database-info" "0.3.8"
-    "@tryghost/errors" "1.2.14"
-    "@tryghost/logging" "2.2.3"
+    "@tryghost/database-info" "0.3.9"
+    "@tryghost/errors" "1.2.15"
+    "@tryghost/logging" "2.2.4"
     bluebird "3.7.2"
     commander "5.1.0"
     compare-ver "2.0.2"

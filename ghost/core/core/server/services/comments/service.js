@@ -160,7 +160,8 @@ class CommentsService {
             id: member
         }, {
             require: true,
-            ...options
+            ...options,
+            withRelated: ['products']
         });
 
         this.checkCommentAccess(memberModel);
@@ -169,7 +170,8 @@ class CommentsService {
             id: post
         }, {
             require: true,
-            ...options
+            ...options,
+            withRelated: ['tiers']
         });
 
         this.checkPostAccess(postModel, memberModel);
@@ -208,7 +210,8 @@ class CommentsService {
             id: member
         }, {
             require: true,
-            ...options
+            ...options,
+            withRelated: ['products']
         });
 
         this.checkCommentAccess(memberModel);
@@ -229,7 +232,8 @@ class CommentsService {
             id: parentComment.get('post_id')
         }, {
             require: true,
-            ...options
+            ...options,
+            withRelated: ['tiers']
         });
 
         this.checkPostAccess(postModel, memberModel);

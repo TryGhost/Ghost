@@ -29,27 +29,27 @@
                             @classNames="gh-member-actions-menu dropdown-menu dropdown-triangle-top-right"
                         >
                             <li>
-                                <button type="button" {{on "click" (action "toggleResetAllPasswordsModal")}}>
+                                <button type="button" {{on "click" this.toggleResetAllPasswordsModal}}>
                                     <span>Reset all passwords</span>
                                 </button>
                             </li>
                         </GhDropdown>
                     </span>
                 {{/if}}
-                <button class="gh-btn gh-btn-primary" data-test-button="invite-staff-user" type="button" {{on "click" (action "toggleInviteUserModal")}}><span>Invite people</span></button>
+                <button class="gh-btn gh-btn-primary" data-test-button="invite-staff-user" type="button" {{on "click" this.toggleInviteUserModal}}><span>Invite people</span></button>
             </section>
         {{/unless}}
     </GhCanvasHeader>
 
     {{#if this.showInviteUserModal}}
         <GhFullscreenModal @modal="invite-new-user"
-            @close={{action "toggleInviteUserModal"}}
+            @close={{this.toggleInviteUserModal}}
             @modifier="action wide invite-user" />
     {{/if}}
 
     {{#if this.showResetAllPasswordsModal}}
         <GhFullscreenModal @modal="reset-all-passwords"
-            @close={{action "toggleResetAllPasswordsModal"}}
+            @close={{this.toggleResetAllPasswordsModal}}
             @modifier="action wide" />
     {{/if}}
 
@@ -61,8 +61,8 @@
             <h4 class="gh-main-section-header small">Invited users</h4>
             <div class="apps-grid">
 
-                {{#each this.sortedInvites as |invite|}}
-                    <GhUserInvited @invite={{invite}} @reload={{route-action "reload"}} as |component|>
+                {{#each this.invites as |invite|}}
+                    <GhUserInvited @invite={{invite}} @reload={{perform this.backgroundUpdateTask}} as |component|>
                         <div class="apps-grid-cell" data-test-invite-id="{{invite.id}}">
                             <article class="apps-card-app">
                                 <div class="apps-card-left">
@@ -88,10 +88,10 @@
                                         {{#if component.isSending}}
                                             <span>Sending Invite...</span>
                                         {{else}}
-                                            <a class="apps-configured-action red-hover" href="#revoke" {{action "revoke" target=component}} data-test-revoke-button>
+                                            <a class="apps-configured-action red-hover" href="#revoke" {{on "click" component.revoke}} data-test-revoke-button>
                                                 Revoke
                                             </a>
-                                            <a class="apps-configured-action green-hover" href="#resend" {{action "resend" target=component}} data-test-resend-button>
+                                            <a class="apps-configured-action green-hover" href="#resend" {{on "click" component.resend}} data-test-resend-button>
                                                 Resend
                                             </a>
 
@@ -118,7 +118,7 @@
                     <GhUserListItem @user={{this.currentUser}} @component={{component}} />
                 </GhUserActive>
             {{else}}
-                {{#vertical-collection this.sortedActiveUsers
+                {{#vertical-collection this.activeUsers
                     key="id"
                     containerSelector=".gh-main"
                     estimateHeight=75
@@ -138,7 +138,7 @@
     <section class="apps-grid-container gh-active-users" data-test-suspended-users>
         <span class="apps-grid-title">Suspended users</span>
         <div class="apps-grid">
-            {{#each this.sortedSuspendedUsers key="id" as |user|}}
+            {{#each this.suspendedUsers key="id" as |user|}}
                 <GhUserActive @user={{user}} as |component|>
                     <GhUserListItem @user={{user}} @component={{component}} />
                 </GhUserActive>

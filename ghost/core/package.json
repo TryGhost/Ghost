@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "5.12.1",
+  "version": "5.12.2",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -158,7 +158,7 @@
     "juice": "8.1.0",
     "keypair": "1.0.4",
     "knex": "2.2.0",
-    "knex-migrator": "5.0.3",
+    "knex-migrator": "5.0.4",
     "lodash": "4.17.21",
     "luxon": "3.0.3",
     "moment": "2.24.0",

@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "5.12.1",
+  "version": "5.12.2",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -112,7 +112,6 @@
     "ember-power-datepicker": "cibernox/ember-power-datepicker",
     "ember-power-select": "4.1.5",
     "ember-resolver": "8.0.3",
-    "ember-route-action-helper": "2.0.8",
     "ember-simple-auth": "4.2.2",
     "ember-sinon": "5.0.0",
     "ember-source": "3.24.0",

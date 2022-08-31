@@ -1,50 +1,42 @@
-import Component from '@ember/component';
-import classic from 'ember-classic-decorator';
+import Component from '@glimmer/component';
 import moment from 'moment';
-import {action, computed} from '@ember/object';
+import {action} from '@ember/object';
 import {isNotFoundError} from 'ember-ajax/errors';
 import {inject as service} from '@ember/service';
-import {tagName} from '@ember-decorators/component';
+import {tracked} from '@glimmer/tracking';
 
-@classic
-@tagName('')
 export default class GhUserInvited extends Component {
     @service notifications;
     @service store;
 
-    invite = null;
-    isSending = false;
+    @tracked isSending = false;
 
-    @computed('invite.createdAtUTC')
     get createdAt() {
-        let createdAtUTC = this.get('invite.createdAtUTC');
-
+        const createdAtUTC = this.args.invite.createdAtUTC;
         return createdAtUTC ? moment(createdAtUTC).fromNow() : '';
     }
 
-    @computed('invite.expires')
     get expiresAt() {
-        let expires = this.get('invite.expires');
-
+        const expires = this.args.invite.expires;
         return expires ? moment(expires).fromNow() : '';
     }
 
-    @computed('invite.expires')
     get isExpired() {
-        let expires = this.get('invite.expires');
-        let now = (new Date()).valueOf();
-
+        const expires = this.args.invite.expires;
+        const now = (new Date()).valueOf();
         return expires < now;
     }
 
     @action
-    resend() {
-        let invite = this.invite;
-        let notifications = this.notifications;
+    resend(event) {
+        event?.preventDefault();
 
-        this.set('isSending', true);
+        const invite = this.args.invite;
+        const notifications = this.notifications;
+
+        this.isSending = true;
         invite.resend().then((result) => {
-            let notificationText = `Invitation resent! (${invite.get('email')})`;
+            const notificationText = `Invitation resent! (${invite.email})`;
 
             // the server deletes the old record and creates a new one when
             // resending so we need to update the store accordingly
@@ -61,15 +53,17 @@ export default class GhUserInvited extends Component {
         }).catch((error) => {
             notifications.showAPIError(error, {key: 'invite.resend'});
         }).finally(() => {
-            this.set('isSending', false);
+            this.isSending = false;
         });
     }
 
     @action
-    revoke() {
-        let invite = this.invite;
-        let email = invite.get('email');
-        let notifications = this.notifications;
+    revoke(event) {
+        event?.preventDefault();
+
+        const invite = this.args.invite;
+        const email = invite.email;
+        const notifications = this.notifications;
 
         // reload the invite to get the most up-to-date information
         invite.reload().then(() => {
@@ -80,12 +74,7 @@ export default class GhUserInvited extends Component {
             });
         }).catch((error) => {
             if (isNotFoundError(error)) {
-                // if the invite no longer exists, then show a warning and reload the route
-                let reloadAction = this.reload;
-                if (reloadAction) {
-                    reloadAction();
-                }
-
+                this.args.reload?.();
                 notifications.showAlert('This invite has been revoked or a user has already accepted the invitation.', {type: 'error', delayed: true, key: 'invite.revoke.already-accepted'});
             } else {
                 throw error;
