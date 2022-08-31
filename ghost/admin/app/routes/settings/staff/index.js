@@ -1,5 +1,4 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
-import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 export default class IndexRoute extends AuthenticatedRoute {
@@ -22,12 +21,7 @@ export default class IndexRoute extends AuthenticatedRoute {
 
     setupController(controller) {
         super.setupController(...arguments);
-        controller.backgroundUpdate.perform();
-    }
-
-    @action
-    reload() {
-        this.controller.backgroundUpdate.perform();
+        controller.backgroundUpdateTask.perform();
     }
 
     buildRouteInfoMetadata() {

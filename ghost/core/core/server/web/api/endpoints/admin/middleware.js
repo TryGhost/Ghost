@@ -14,15 +14,13 @@ const notImplemented = function (req, res, next) {
         return next();
     }
 
-    // @NOTE: integrations have limited access for now
+    // @NOTE: integrations & staff tokens have limited access to the API
     const allowlisted = {
-        // @NOTE: stable
         site: ['GET'],
         posts: ['GET', 'PUT', 'DELETE', 'POST'],
         pages: ['GET', 'PUT', 'DELETE', 'POST'],
         images: ['POST'],
         webhooks: ['POST', 'PUT', 'DELETE'],
-        // @NOTE: experimental
         actions: ['GET'],
         tags: ['GET', 'PUT', 'DELETE', 'POST'],
         labels: ['GET', 'PUT', 'DELETE', 'POST'],

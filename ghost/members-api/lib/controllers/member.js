@@ -183,7 +183,9 @@ module.exports = class MemberController {
             res.writeHead(204);
             res.end();
         } catch (err) {
-            res.writeHead(err.statusCode || 500);
+            res.writeHead(err.statusCode || 500, {
+                'Content-Type': 'text/plain;charset=UTF-8'
+            });
             res.end(err.message);
         }
     }

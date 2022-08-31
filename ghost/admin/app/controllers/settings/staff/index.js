@@ -1,95 +1,74 @@
-import classic from 'ember-classic-decorator';
-import {action, computed} from '@ember/object';
-import {alias, filterBy, sort} from '@ember/object/computed';
-import {inject as service} from '@ember/service';
-/* eslint-disable ghost/ember/alias-model-in-controller */
 import Controller from '@ember/controller';
 import RSVP from 'rsvp';
+import {action} from '@ember/object';
+import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
+import {tracked} from '@glimmer/tracking';
 
-@classic
 export default class IndexController extends Controller {
     @service session;
     @service store;
 
-    showInviteUserModal = false;
-    showResetAllPasswordsModal = false;
-    inviteOrder = null;
-    userOrder = null;
+    @tracked showInviteUserModal = false;
+    @tracked showResetAllPasswordsModal = false;
 
-    init() {
-        super.init(...arguments);
-        this.inviteOrder = ['email'];
-        this.userOrder = ['name', 'email'];
+    inviteOrder = ['email'];
+    userOrder = ['name', 'email'];
+
+    allInvites = this.store.peekAll('invite');
+    allUsers = this.store.peekAll('user');
+
+    get currentUser() {
+        return this.model;
     }
 
-    @alias('model')
-        currentUser;
-
-    @sort('filteredInvites', 'inviteOrder')
-        sortedInvites;
-
-    @sort('activeUsers', 'userOrder')
-        sortedActiveUsers;
-
-    @sort('suspendedUsers', 'userOrder')
-        sortedSuspendedUsers;
-
-    @filterBy('invites', 'isNew', false)
-        filteredInvites;
-
-    @computed
     get invites() {
-        return this.store.peekAll('invite');
+        return this.allInvites
+            .filter(i => !i.isNew)
+            .sortBy(...this.inviteOrder);
     }
 
-    @computed
-    get allUsers() {
-        return this.store.peekAll('user');
-    }
-
-    @computed('allUsers.@each.status')
     get activeUsers() {
-        return this.allUsers.filter((user) => {
-            return user.status !== 'inactive';
-        });
+        return this.allUsers
+            .filter(u => u.status !== 'inactive')
+            .sortBy(...this.userOrder);
     }
 
-    @computed('allUsers.@each.status')
     get suspendedUsers() {
-        return this.allUsers.filter((user) => {
-            return user.status === 'inactive';
-        });
+        return this.allUsers
+            .filter(u => u.status === 'inactive')
+            .sortBy(...this.userOrder);
     }
 
     @action
     toggleInviteUserModal() {
-        this.toggleProperty('showInviteUserModal');
+        this.showInviteUserModal = !this.showInviteUserModal;
     }
 
     @action
     toggleResetAllPasswordsModal() {
-        this.toggleProperty('showResetAllPasswordsModal');
+        this.showResetAllPasswordsModal = !this.showResetAllPasswordsModal;
     }
 
-    @task(function* () {
-        let users = this.fetchUsers.perform();
-        let invites = this.fetchInvites.perform();
+    @task
+    *backgroundUpdateTask() {
+        let users = this.fetchUsersTask.perform();
+        let invites = this.fetchInvitesTask.perform();
 
         try {
             yield RSVP.all([users, invites]);
         } catch (error) {
             this.send('error', error);
         }
-    })
-        backgroundUpdate;
+    }
 
-    @task(function* () {
+    @task
+    *fetchUsersTask() {
         yield this.store.query('user', {limit: 'all'});
-    })
-        fetchUsers;
+    }
 
-    @task(function* () {
+    @task
+    *fetchInvitesTask() {
         if (this.currentUser.isAuthorOrContributor) {
             return;
         }
@@ -100,6 +79,5 @@ export default class IndexController extends Controller {
         yield this.store.query('role', {limit: 'all'});
 
         return yield this.store.query('invite', {limit: 'all'});
-    })
-        fetchInvites;
+    }
 }
