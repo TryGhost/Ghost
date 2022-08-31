@@ -122,7 +122,6 @@ describe('Members Signin', function () {
 
     describe('Rate limiting', function () {
         it('Will clear rate limits for members auth', async function () {
-
             await dbUtils.truncate('brute');
             // +1 because this is a retry count, so we have one request + the retries, then blocked
             const userLoginRateLimit = configUtils.config.get('spam').user_login.freeRetries + 1;
