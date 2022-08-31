@@ -13283,10 +13283,10 @@ human-interval@^2.0.0:
   dependencies:
     numbered "^1.1.0"
 
-human-number@2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/human-number/-/human-number-2.0.0.tgz#ffdfa7954c40d32c02aa0ebb3b0f54f8fc4ed410"
-  integrity sha512-hMb3DuF2aMTaFy795TU65AfQnZDd+UF6q8f29m3t6n648I3VCJyYXd1pJnnJsOJRYi7yBvYG29RdkrS59GwSEw==
+human-number@2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/human-number/-/human-number-2.0.1.tgz#bd220c8b13e1eb5617ba42f20ee77c8fd723fe01"
+  integrity sha512-0ibkHNHQXLiI4Exiu9Cm2EhnrBOSEt4kHRxbKhmM41rbjCIlfd35PdNptEbHohnKkqmJt6q+Z9X8A1WcDCeuNg==
   dependencies:
     round-to "~5.0.0"
 
