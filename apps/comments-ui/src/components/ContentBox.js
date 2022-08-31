@@ -6,50 +6,9 @@ import Comment from './content/Comment';
 import Pagination from './content/Pagination';
 import Loading from './content/Loading';
 import {ROOT_DIV_ID} from '../utils/constants';
+import ContentTitle from './content/ContentTitle';
 
-const CommentsBoxTitle = ({title, showCount, count}) => {
-    // We have to check for null for title because null means default, wheras empty string means empty
-    if (!title && !showCount && title !== null) {
-        return null;
-    }
-
-    const Title = () => {
-        if (title === null) {
-            return (
-                <><span className="hidden sm:inline">Member </span><span className="capitalize sm:normal-case">discussion</span></>
-            );
-        }
-
-        return title;
-    };
-
-    const Count = () => {
-        if (!showCount) {
-            return null;
-        }
-
-        if (count === 1) {
-            return (
-                <div className="text-[1.6rem] text-neutral-400">1 comment</div>
-            );
-        }
-
-        return (
-            <div className="text-[1.6rem] text-neutral-400">{count} comments</div>
-        );
-    };
-
-    return (
-        <div className="mb-10 flex w-full items-baseline justify-between font-sans">
-            <h2 className="text-[2.8rem] font-bold tracking-tight dark:text-[rgba(255,255,255,0.85)]">
-                <Title />
-            </h2>
-            <Count />
-        </div>
-    );
-};
-
-const CommentsBoxContent = (props) => {
+const Content = (props) => {
     const {pagination, member, comments, commentCount, commentsEnabled, title, showCount, secundaryFormCount} = useContext(AppContext);
     const commentsElements = comments.slice().reverse().map(comment => <Comment comment={comment} key={comment.id} />);
 
@@ -78,7 +37,7 @@ const CommentsBoxContent = (props) => {
 
     return (
         <>
-            <CommentsBoxTitle title={title} showCount={showCount} count={commentCount}/>
+            <ContentTitle title={title} showCount={showCount} count={commentCount}/>
             <Pagination />
             <div className={!pagination ? 'mt-4' : ''} data-test="comment-elements">
                 {commentsElements}
@@ -93,7 +52,7 @@ const CommentsBoxContent = (props) => {
     );
 };
 
-const CommentsBox = (props) => {
+const ContentBox = (props) => {
     const luminance = (r, g, b) => {
         var a = [r, g, b].map(function (v) {
             v /= 255;
@@ -136,12 +95,12 @@ const CommentsBox = (props) => {
     };
 
     return (
-        <section className={'ghost-display ' + containerClass} style={style} data-testid="comments-box">
+        <section className={'ghost-display ' + containerClass} style={style} data-testid="content-box">
             {props.done ? <>
-                <CommentsBoxContent />
+                <Content />
             </> : <Loading />}
         </section>
     );
 };
 
-export default CommentsBox;
+export default ContentBox;
