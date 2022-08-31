@@ -3,21 +3,24 @@ import AppContext from '../AppContext';
 import {getInitials} from '../utils/helpers';
 import {ReactComponent as AvatarIcon} from '../images/icons/avatar.svg';
 
-const Avatar = ({comment, size, isBlank}) => {
-    const {member, avatarSaturation} = useContext(AppContext);
-    const dimensionClasses = (size === 'small' ? 'w-6 h-6 sm:w-8 sm:h-8' : 'w-9 h-9 sm:w-[40px] sm:h-[40px]');
+function getDimensionClasses() {
+    return 'w-9 h-9 sm:w-[40px] sm:h-[40px]';
+}
 
-    // When an avatar has been deleted or hidden
-    // todo: move to seperate component
-    if (isBlank) {
-        return (
-            <figure className={`relative ${dimensionClasses}`}>
-                <div className={`flex items-center justify-center rounded-full bg-[rgba(200,200,200,0.3)] ${dimensionClasses}`}>
-                    <AvatarIcon className="stroke-white dark:opacity-70" />
-                </div>
-            </figure>
-        );
-    }
+export const BlankAvatar = () => {
+    const dimensionClasses = getDimensionClasses();
+    return (
+        <figure className={`relative ${dimensionClasses}`}>
+            <div className={`flex items-center justify-center rounded-full bg-[rgba(200,200,200,0.3)] ${dimensionClasses}`}>
+                <AvatarIcon className="stroke-white dark:opacity-70" />
+            </div>
+        </figure>
+    );
+}
+
+export const Avatar = ({comment}) => {
+    const {member, avatarSaturation} = useContext(AppContext);
+    const dimensionClasses = getDimensionClasses();
 
     const memberName = member?.name ?? comment?.member?.name;
 
@@ -72,7 +75,6 @@ const Avatar = ({comment, size, isBlank}) => {
         return getInitials(commentMember.name);
     };
 
-    let initialsClasses = (size === 'small' ? 'text-sm' : 'text-lg');
     let commentMember = (comment ? comment.member : member);
 
     const bgColor = HSLtoString(generateHSL());
@@ -84,7 +86,7 @@ const Avatar = ({comment, size, isBlank}) => {
         <>
             {memberName ?
                 (<div className={`flex items-center justify-center rounded-full ${dimensionClasses}`} style={avatarStyle}>
-                    <p className={`font-sans font-semibold text-white ${initialsClasses}`}>{ commentGetInitials() }</p>
+                    <p className="font-sans font-semibold text-white text-lg">{ commentGetInitials() }</p>
                 </div>) :
                 (<div className={`flex items-center justify-center rounded-full bg-neutral-900 dark:bg-[rgba(255,255,255,0.7)] ${dimensionClasses}`}>
                     <AvatarIcon className="stroke-white dark:stroke-[rgba(0,0,0,0.6)]" />
@@ -99,5 +101,3 @@ const Avatar = ({comment, size, isBlank}) => {
         </figure>
     );
 };
-
-export default Avatar;

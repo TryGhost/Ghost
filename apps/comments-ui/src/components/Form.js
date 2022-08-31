@@ -1,7 +1,7 @@
 import React, {useCallback, useContext, useEffect, useRef, useState} from 'react';
 import {Transition} from '@headlessui/react';
 import AppContext from '../AppContext';
-import Avatar from './Avatar';
+import {Avatar} from './Avatar';
 import {useEditor, EditorContent} from '@tiptap/react';
 import {getEditorConfig} from '../utils/editor';
 import {isMobile} from '../utils/helpers';
