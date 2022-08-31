@@ -16,7 +16,7 @@ export const BlankAvatar = () => {
             </div>
         </figure>
     );
-}
+};
 
 export const Avatar = ({comment}) => {
     const {member, avatarSaturation} = useContext(AppContext);
@@ -86,7 +86,7 @@ export const Avatar = ({comment}) => {
         <>
             {memberName ?
                 (<div className={`flex items-center justify-center rounded-full ${dimensionClasses}`} style={avatarStyle}>
-                    <p className="font-sans font-semibold text-white text-lg">{ commentGetInitials() }</p>
+                    <p className="font-sans text-lg font-semibold text-white">{ commentGetInitials() }</p>
                 </div>) :
                 (<div className={`flex items-center justify-center rounded-full bg-neutral-900 dark:bg-[rgba(255,255,255,0.7)] ${dimensionClasses}`}>
                     <AvatarIcon className="stroke-white dark:stroke-[rgba(0,0,0,0.6)]" />
