@@ -4,7 +4,7 @@
             <LinkTo @route="members" data-test-link="members-back">Members</LinkTo>
             <span>{{svg-jar "arrow-right"}}</span>
             {{#if this.member.isNew}}
-                New member
+                New<span class="gh-canvas-title-hide-for-mobile">&nbsp;member</span>
             {{else}}
                 {{or this.member.name this.member.email}}
             {{/if}}

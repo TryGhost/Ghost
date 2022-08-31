@@ -22,80 +22,82 @@
                 </div>
 
                 <div class="view-actions-top-row">
-                    <Members::Filter
-                        @isFiltered={{this.isFiltered}}
-                        @onApplyFilter={{this.applyFilter}}
-                        @defaultFilterParam={{this.filterParam}}
-                        @onApplySoftFilter={{this.applySoftFilter}}
-                        @onApplyParsedFilter={{this.applyParsedFilter}}
-                        @onResetSoftFilter={{this.resetSoftFilter}}
-                        @onResetFilter={{this.resetFilter}}
-                        @onLabelEdit={{this.editLabel}}
-                        @parseFilterParamCounter={{this.parseFilterParamCounter}}
-                    />
-                    <span class="dropdown">
-                        <GhDropdownButton
-                            @dropdownName="members-actions-menu"
-                            @classNames="gh-btn gh-btn-icon icon-only gh-btn-action-icon"
-                            @title="Members Actions"
-                            data-test-button="members-actions"
-                        >
-                            <span>
-                                {{svg-jar "settings"}}
-                                <span class="hidden">Actions</span>
-                            </span>
-                        </GhDropdownButton>
-                        <GhDropdown
-                            @name="members-actions-menu"
-                            @tagName="ul"
-                            @classNames="gh-member-actions-menu dropdown-menu dropdown-triangle-top-right"
-                        >
-                            <li>
-                                <LinkTo @route="members.import" class="mr2" data-test-link="import-csv">
-                                    <span>Import members</span>
-                                </LinkTo>
-                            </li>
-                            <li class="{{if this.members.length "" "disabled"}}">
-                                {{#if this.members.length}}
-                                    <button class="mr2" type="button" {{on "click" this.exportData}} data-test-button="export-members">
-                                        {{#if this.showingAll}}
-                                            <span>Export all members</span>
-                                        {{else}}
-                                            <span>Export selected members ({{this.members.length}})</span>
-                                        {{/if}}
-                                    </button>
-                                {{else}}
-                                    <button class="mr2" disabled="true" type="button" data-test-button="export-members">
-                                        <span>Export selected members (0)</span>
-                                    </button>
+                    <div class="view-actions-secondary">
+                        <Members::Filter
+                            @isFiltered={{this.isFiltered}}
+                            @onApplyFilter={{this.applyFilter}}
+                            @defaultFilterParam={{this.filterParam}}
+                            @onApplySoftFilter={{this.applySoftFilter}}
+                            @onApplyParsedFilter={{this.applyParsedFilter}}
+                            @onResetSoftFilter={{this.resetSoftFilter}}
+                            @onResetFilter={{this.resetFilter}}
+                            @onLabelEdit={{this.editLabel}}
+                            @parseFilterParamCounter={{this.parseFilterParamCounter}}
+                        />
+                        <span class="dropdown">
+                            <GhDropdownButton
+                                @dropdownName="members-actions-menu"
+                                @classNames="gh-btn gh-btn-icon icon-only gh-btn-action-icon"
+                                @title="Members Actions"
+                                data-test-button="members-actions"
+                            >
+                                <span>
+                                    {{svg-jar "settings"}}
+                                    <span class="hidden">Actions</span>
+                                </span>
+                            </GhDropdownButton>
+                            <GhDropdown
+                                @name="members-actions-menu"
+                                @tagName="ul"
+                                @classNames="gh-member-actions-menu dropdown-menu dropdown-triangle-top-right"
+                            >
+                                <li>
+                                    <LinkTo @route="members.import" class="mr2" data-test-link="import-csv">
+                                        <span>Import members</span>
+                                    </LinkTo>
+                                </li>
+                                <li class="{{if this.members.length "" "disabled"}}">
+                                    {{#if this.members.length}}
+                                        <button class="mr2" type="button" {{on "click" this.exportData}} data-test-button="export-members">
+                                            {{#if this.showingAll}}
+                                                <span>Export all members</span>
+                                            {{else}}
+                                                <span>Export selected members ({{this.members.length}})</span>
+                                            {{/if}}
+                                        </button>
+                                    {{else}}
+                                        <button class="mr2" disabled="true" type="button" data-test-button="export-members">
+                                            <span>Export selected members (0)</span>
+                                        </button>
+                                    {{/if}}
+                                </li>
+                                {{#if (and this.members.length this.isFiltered)}}
+                                    <li class="divider"></li>
+                                    <li>
+                                        <button class="mr2" data-test-button="add-label-selected" type="button" {{on "click" this.bulkAddLabel}}>
+                                            <span>Add label for selected members ({{this.members.length}})</span>
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button class="mr2" data-test-button="remove-label-selected" type="button" {{on "click" this.bulkRemoveLabel}}>
+                                            <span>Remove label from selected members ({{this.members.length}})</span>
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button class="mr2" data-test-button="unsubscribe-selected" type="button" {{on "click" this.bulkUnsubscribe}}>
+                                            <span>Unsubscribe selected members ({{this.members.length}})</span>
+                                        </button>
+                                    </li>
+                                    <li class="divider"></li>
+                                    <li>
+                                        <button class="mr2" data-test-button="delete-selected" type="button" {{on "click" this.bulkDelete}}>
+                                            <span class="red">Delete selected members ({{this.members.length}})</span>
+                                        </button>
+                                    </li>
                                 {{/if}}
-                            </li>
-                            {{#if (and this.members.length this.isFiltered)}}
-                                <li class="divider"></li>
-                                <li>
-                                    <button class="mr2" data-test-button="add-label-selected" type="button" {{on "click" this.bulkAddLabel}}>
-                                        <span>Add label for selected members ({{this.members.length}})</span>
-                                    </button>
-                                </li>
-                                <li>
-                                    <button class="mr2" data-test-button="remove-label-selected" type="button" {{on "click" this.bulkRemoveLabel}}>
-                                        <span>Remove label from selected members ({{this.members.length}})</span>
-                                    </button>
-                                </li>
-                                <li>
-                                    <button class="mr2" data-test-button="unsubscribe-selected" type="button" {{on "click" this.bulkUnsubscribe}}>
-                                        <span>Unsubscribe selected members ({{this.members.length}})</span>
-                                    </button>
-                                </li>
-                                <li class="divider"></li>
-                                <li>
-                                    <button class="mr2" data-test-button="delete-selected" type="button" {{on "click" this.bulkDelete}}>
-                                        <span class="red">Delete selected members ({{this.members.length}})</span>
-                                    </button>
-                                </li>
-                            {{/if}}
-                        </GhDropdown>
-                    </span>
+                            </GhDropdown>
+                        </span>
+                    </div>
                     <LinkTo @route="member.new" class="gh-btn gh-btn-primary" data-test-new-member-button="true"><span>New member</span></LinkTo>
                 </div>
             </section>
