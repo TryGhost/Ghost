@@ -115,15 +115,15 @@ describe('Dark mode', () => {
         const {iframeDocument} = renderApp({documentStyles: {
             color: '#FFFFFF'
         }});
-        const darkModeCommentsBox = await within(iframeDocument).findByTestId('comments-box');
-        expect(darkModeCommentsBox.classList).toContain('dark');
+        const darkModeContentBox = await within(iframeDocument).findByTestId('content-box');
+        expect(darkModeContentBox.classList).toContain('dark');
     });
     it('uses dark mode when container has a dark text color', async () => {
         const {iframeDocument} = renderApp({documentStyles: {
             color: '#000000'
         }});
-        const darkModeCommentsBox = await within(iframeDocument).findByTestId('comments-box');
-        expect(darkModeCommentsBox.classList).not.toContain('dark');
+        const darkModeContentBox = await within(iframeDocument).findByTestId('content-box');
+        expect(darkModeContentBox.classList).not.toContain('dark');
     });
     it('uses dark mode when custom mode has been passed as a property', async () => {
         const {iframeDocument} = renderApp({
@@ -131,8 +131,8 @@ describe('Dark mode', () => {
                 colorScheme: 'dark'
             }
         });
-        const darkModeCommentsBox = await within(iframeDocument).findByTestId('comments-box');
-        expect(darkModeCommentsBox.classList).toContain('dark');
+        const darkModeContentBox = await within(iframeDocument).findByTestId('content-box');
+        expect(darkModeContentBox.classList).toContain('dark');
     });
     it('uses light mode when custom mode has been passed as a property', async () => {
         const {iframeDocument} = renderApp({
@@ -141,8 +141,8 @@ describe('Dark mode', () => {
             },
             color: '#FFFFFF'
         });
-        const darkModeCommentsBox = await within(iframeDocument).findByTestId('comments-box');
-        expect(darkModeCommentsBox.classList).not.toContain('dark');
+        const darkModeContentBox = await within(iframeDocument).findByTestId('content-box');
+        expect(darkModeContentBox.classList).not.toContain('dark');
     });
 });
 

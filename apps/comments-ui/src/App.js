@@ -5,7 +5,7 @@ import {createPopupNotification} from './utils/helpers';
 import AppContext from './AppContext';
 import {hasMode} from './utils/check-mode';
 import setupGhostApi from './utils/api';
-import CommentsBox from './components/CommentsBox';
+import ContentBox from './components/ContentBox';
 import PopupModal from './components/PopupModal';
 
 function AuthFrame({adminUrl, onLoad}) {
@@ -302,7 +302,7 @@ export default class App extends React.Component {
             <SentryErrorBoundary dsn={this.props.sentryDsn}>
                 <AppContext.Provider value={this.getContextFromState()}>
                     <CommentsFrame>
-                        <CommentsBox done={done} />
+                        <ContentBox done={done} />
                     </CommentsFrame>
                     <AuthFrame adminUrl={this.props.adminUrl} onLoad={this.initAdminAuth.bind(this)}/>
                     <PopupModal />
