@@ -6,7 +6,7 @@ import AppContext from './AppContext';
 import {hasMode} from './utils/check-mode';
 import setupGhostApi from './utils/api';
 import ContentBox from './components/ContentBox';
-import PopupModal from './components/PopupModal';
+import PopupBox from './components/PopupBox';
 
 function AuthFrame({adminUrl, onLoad}) {
     const iframeStyle = {
@@ -305,7 +305,7 @@ export default class App extends React.Component {
                         <ContentBox done={done} />
                     </CommentsFrame>
                     <AuthFrame adminUrl={this.props.adminUrl} onLoad={this.initAdminAuth.bind(this)}/>
-                    <PopupModal />
+                    <PopupBox />
                 </AppContext.Provider>
             </SentryErrorBoundary>
         );

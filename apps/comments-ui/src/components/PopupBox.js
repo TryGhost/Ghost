@@ -3,7 +3,7 @@ import AppContext from '../AppContext';
 import Pages from '../pages';
 import GenericPopup from './popups/GenericPopup';
 
-export default function PopupModal(props) {
+export default function PopupBox(props) {
     const {popup} = useContext(AppContext);
 
     // To make sure we can properly animate a popup that goes away, we keep a state of the last visible popup
