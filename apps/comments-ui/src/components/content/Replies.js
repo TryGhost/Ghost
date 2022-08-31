@@ -1,5 +1,5 @@
 import {useContext} from 'react';
-import AppContext from '../AppContext';
+import AppContext from '../../AppContext';
 import Comment from './Comment';
 import RepliesPagination from './RepliesPagination';
 

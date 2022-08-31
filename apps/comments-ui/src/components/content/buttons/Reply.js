@@ -1,6 +1,6 @@
 import React, {useContext} from 'react';
-import AppContext from '../AppContext';
-import {ReactComponent as ReplyIcon} from '../images/icons/reply.svg';
+import AppContext from '../../../AppContext';
+import {ReactComponent as ReplyIcon} from '../../../images/icons/reply.svg';
 
 function Reply(props) {
     const {member} = useContext(AppContext);

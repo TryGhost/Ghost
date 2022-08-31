@@ -1,5 +1,5 @@
-import AddDetailsDialog from './components/modals/AddDetailsDialog';
-import ReportDialog from './components/modals/ReportDialog';
+import AddDetailsDialog from './components/dialogs/AddDetailsDialog';
+import ReportDialog from './components/dialogs/ReportDialog';
 
 /** List of all available pages in Comments-UI, mapped to their UI component
  * Any new page added to comments-ui needs to be mapped here

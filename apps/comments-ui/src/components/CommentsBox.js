@@ -1,10 +1,10 @@
 import React, {useContext, useEffect} from 'react';
 import AppContext from '../AppContext';
-import CTABox from './CTABox';
-import Form from './Form';
-import Comment from './Comment';
-import Pagination from './Pagination';
-import Loading from './Loading';
+import CTABox from './content/CTABox';
+import Form from './content/Form';
+import Comment from './content/Comment';
+import Pagination from './content/Pagination';
+import Loading from './content/Loading';
 import {ROOT_DIV_ID} from '../utils/constants';
 
 const CommentsBoxTitle = ({title, showCount, count}) => {
