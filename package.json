@@ -34,7 +34,7 @@
     "main:submodules": "git submodule sync && git submodule update && git submodule foreach \"git checkout main && git pull ${GHOST_UPSTREAM:-origin} main && yarn\""
   },
   "resolutions": {
-    "@tryghost/logging": "2.2.4",
+    "@tryghost/logging": "2.3.0",
     "moment": "2.24.0",
     "moment-timezone": "0.5.23"
   },

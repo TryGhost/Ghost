@@ -26,7 +26,7 @@
     "@tryghost/debug": "0.1.18",
     "@tryghost/domain-events": "0.0.0",
     "@tryghost/errors": "1.2.15",
-    "@tryghost/logging": "2.2.4",
+    "@tryghost/logging": "2.3.0",
     "@tryghost/member-events": "0.0.0",
     "leaky-bucket": "2.2.0",
     "lodash": "4.17.21",
