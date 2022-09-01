@@ -475,7 +475,7 @@ p.gh-members-list-email {
         width: 100%;
     }
 
-    .members-header .view-actions-secondary {
+    .members-header .members-actions-dropdown {
         display: none;
     }
 
@@ -2357,8 +2357,15 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 @media (max-width: 690px) {
-    .gh-members-filter-builder {
-        width: calc(100% - 100px);
+    .gh-members-filter-builder,
+    .gh-members-filter-builder.feature-memberAttribution {
+        width: calc(100vw - 20px);
+        min-width: calc(100vw - 20px);
+        max-width: calc(100vw - 20px);
+        left: 0 !important;
+        right: 0 !important;
+        margin-left: 10px;
+        margin-right: 10px;
     }
 }
 
