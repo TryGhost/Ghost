@@ -2867,6 +2867,50 @@ p.theme-validation-details {
 
 /* Audit log
 /* ---------------------------------------------------------- */
+.gh-audit-log-filter-li {
+    height: 32px;
+}
+
+.gh-audit-log-filter-li svg {
+    margin-right: 6px;
+}
+
+.gh-activity-log-actions {
+    padding-top: 12px;
+    padding-bottom: 12px;
+}
+
+.gh-activity-log-actions ul {
+    width: 240px;
+}
+
+.gh-activity-log-actions hr {
+    margin: 12px -20px;
+}
+
+.gh-activity-log-action-switch.for-switch.small label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: unset !important;
+    height: unset !important;
+}
+
+.gh-activity-log-action-switch.for-switch.small .input-toggle-component {
+    position: relative;
+    width: 30px!important;
+    height: 18px!important;
+}
+
+.gh-activity-log-action-switch.for-switch.small .input-toggle-component:before {
+    width: 14px !important;
+    height: 14px !important;
+}
+
+.gh-activity-log-action-switch.for-switch.small input:checked+.input-toggle-component:before {
+    transform: translateX(12px);
+}
+
 .gh-audit-log-container {
     display: flex;
     align-items: center;
@@ -2973,8 +3017,4 @@ p.theme-validation-details {
         font-size: 1.4rem !important;
         min-width: 130px;
     }
-}
-
-.gh-activity-log-actions ul {
-    width: 240px;
 }
