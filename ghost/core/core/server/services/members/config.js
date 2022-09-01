@@ -4,6 +4,7 @@ const tpl = require('@tryghost/tpl');
 const {URL} = require('url');
 const crypto = require('crypto');
 const createKeypair = require('keypair');
+const settingsService = require('../settings/settings-service');
 
 const messages = {
     incorrectKeyType: 'type must be one of "direct" or "connect".'
@@ -22,35 +23,21 @@ class MembersConfigProvider {
         this._urlUtils = options.urlUtils;
     }
 
-    /**
-     * @private
-     */
-    _getDomain() {
-        const url = this._urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
-        const domain = (url && url[1]) || '';
-        if (domain.startsWith('www.')) {
-            return domain.replace(/^(www)\.(?=[^/]*\..{2,5})/, '');
-        }
-        return domain;
+    get defaultEmailDomain() {
+        return settingsService.getDefaultEmailDomain();
     }
 
     getEmailFromAddress() {
         // Individual from addresses are set per newsletter - this is the fallback address
-        return `noreply@${this._getDomain()}`;
+        return `noreply@${this.defaultEmailDomain}`;
     }
 
     getEmailSupportAddress() {
-        const supportAddress = this._settingsCache.get('members_support_address') || 'noreply';
-
-        // Any fromAddress without domain uses site domain, like default setting `noreply`
-        if (supportAddress.indexOf('@') < 0) {
-            return `${supportAddress}@${this._getDomain()}`;
-        }
-        return supportAddress;
+        return settingsService.getMembersSupportAddress();
     }
 
     getAuthEmailFromAddress() {
-        return this.getEmailSupportAddress() || this.getEmailFromAddress();
+        return this.getEmailSupportAddress();
     }
 
     /**

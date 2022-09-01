@@ -3,6 +3,7 @@ const path = require('path');
 const moment = require('moment');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const postEmailSerializer = require('../mega/post-email-serializer');
+const settingsService = require('../settings/settings-service');
 
 class CommentsServiceEmails {
     constructor({config, logging, models, mailer, settingsCache, urlService, urlUtils}) {
@@ -166,25 +167,12 @@ class CommentsServiceEmails {
         return siteDomain;
     }
 
-    get membersAddress() {
-        // TODO: get from address of default newsletter?
-        return `noreply@${this.siteDomain}`;
-    }
-
-    // TODO: duplicated from services/members/config - exrtact to settings?
-    get supportAddress() {
-        const supportAddress = this.settingsCache.get('members_support_address') || 'noreply';
-
-        // Any fromAddress without domain uses site domain, like default setting `noreply`
-        if (supportAddress.indexOf('@') < 0) {
-            return `${supportAddress}@${this.siteDomain}`;
-        }
-
-        return supportAddress;
+    get defaultEmailDomain() {
+        return settingsService.getDefaultEmailDomain();
     }
 
     get notificationFromAddress() {
-        return this.supportAddress || this.membersAddress;
+        return settingsService.getMembersSupportAddress();
     }
 
     extractInitials(name = '') {

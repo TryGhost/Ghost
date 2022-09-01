@@ -139,6 +139,25 @@ module.exports = {
         return SettingsCache.get('firstpromoter_id');
     },
 
+    getDefaultEmailDomain() {
+        const url = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
+        const domain = (url && url[1]) || '';
+        if (domain.startsWith('www.')) {
+            return domain.replace(/^(www)\.(?=[^/]*\..{2,5})/, '');
+        }
+        return domain;
+    },
+
+    getMembersSupportAddress() {
+        const supportAddress = SettingsCache.get('members_support_address') || 'noreply';
+
+        // Any fromAddress without domain uses site domain, like default setting `noreply`
+        if (supportAddress.indexOf('@') < 0) {
+            return `${supportAddress}@${this.getDefaultEmailDomain()}`;
+        }
+        return supportAddress;
+    },
+
     /**
      *
      */
