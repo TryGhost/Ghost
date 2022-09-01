@@ -48,7 +48,7 @@ const Form = (props) => {
     let config;
     if (props.isReply) {
         config = {
-            placeholder: 'ReplyButton to comment',
+            placeholder: 'Reply to comment',
             autofocus: true
         };
     } else if (props.isEdit) {
