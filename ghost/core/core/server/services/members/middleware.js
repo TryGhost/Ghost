@@ -3,6 +3,7 @@ const logging = require('@tryghost/logging');
 const membersService = require('./service');
 const models = require('../../models');
 const urlUtils = require('../../../shared/url-utils');
+const spamPrevention = require('../../web/shared/middleware/api/spam-prevention');
 const {formattedMemberResponse} = require('./utils');
 
 // @TODO: This piece of middleware actually belongs to the frontend, not to the member app
@@ -155,6 +156,7 @@ const createSessionFromMagicLink = async function (req, res, next) {
 
     try {
         const member = await membersService.ssr.exchangeTokenForSession(req, res);
+        spamPrevention.membersAuth().reset(req.ip, `${member.email}login`);
         const subscriptions = member && member.subscriptions || [];
 
         const action = req.query.action;
