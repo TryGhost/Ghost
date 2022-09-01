@@ -111,6 +111,18 @@ describe('parser-plugins: image card', function () {
                 height: 480
             });
         });
+
+        it('extracts href when img wrapped in anchor tag', function () {
+            const dom = buildDOM('<figure><a href="https://example.com/link"><img src="http://example.com/test.png"></a></figure>');
+            const [section] = parser.parse(dom).sections.toArray();
+
+            section.type.should.equal('card-section');
+            section.name.should.equal('image');
+            section.payload.should.deepEqual({
+                src: 'http://example.com/test.png',
+                href: 'https://example.com/link'
+            });
+        });
     });
 
     describe('imgToCard', function () {
@@ -163,6 +175,18 @@ describe('parser-plugins: image card', function () {
                 src: 'http://example.com/test.png',
                 width: 640,
                 height: 480
+            });
+        });
+
+        it('extracts href when img wrapped in anchor tag', function () {
+            const dom = buildDOM('<a href="https://example.com/link"><img src="http://example.com/test.png"></a>');
+            const [section] = parser.parse(dom).sections.toArray();
+
+            section.type.should.equal('card-section');
+            section.name.should.equal('image');
+            section.payload.should.deepEqual({
+                src: 'http://example.com/test.png',
+                href: 'https://example.com/link'
             });
         });
     });

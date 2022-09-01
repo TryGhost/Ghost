@@ -43,5 +43,13 @@ export function readImageAttributesFromNode(node) {
         attrs.title = node.title;
     }
 
+    if (node.parentNode.tagName === 'A') {
+        const href = node.parentNode.href;
+
+        if (href !== attrs.src) {
+            attrs.href = href;
+        }
+    }
+
     return attrs;
 }

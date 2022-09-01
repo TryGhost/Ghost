@@ -93,6 +93,33 @@ describe('parser-plugins: gallery card', function () {
 
             section.payload.caption.should.eql('My <em>exciting</em> caption');
         });
+
+        it('parses kg gallery card with links', function () {
+            const dom = buildDOM('<!--kg-card-begin: gallery--><figure class="kg-card kg-gallery-card kg-width-wide"><div class="kg-gallery-container"><div class="kg-gallery-row"><div class="kg-gallery-image" style="flex: 1.5 1 0%;"><a href="https://example.com/1"><img src="http://localhost:2368/content/images/2019/06/jklm4567.jpeg" width="1200" height="800"></a></div> <div class="kg-gallery-image" style="flex: 1.5 1 0%;"><img src="http://localhost:2368/content/images/2019/06/qurt6789.jpeg" width="1200" height="800"></div></div> <div class="kg-gallery-row"><div class="kg-gallery-image" style="flex: 1.50094 1 0%;"><a href="https://example.com/3"><img src="http://localhost:2368/content/images/2019/06/zyxw3456.jpeg" width="1600" height="1066"></a></div><div class="kg-gallery-image" style="flex: 0.666667 1 0%;"><img src="http://localhost:2368/content/images/2019/06/1234abcd.jpeg" width="800" height="1200"></div></div></div><figcaption>My <em>exciting</em> caption</figcaption></figure> <!--kg-card-end: gallery-->');
+            const [section] = parser.parse(dom).sections.toArray();
+
+            section.type.should.equal('card-section');
+            section.name.should.equal('gallery');
+            section.payload.should.have.property('images');
+
+            section.payload.images.should.be.an.Array().with.lengthOf(4);
+            section.payload.images.should.deepEqual([
+                {
+                    fileName: 'jklm4567.jpeg', row: 0, src: 'http://localhost:2368/content/images/2019/06/jklm4567.jpeg', width: 1200, height: 800, href: 'https://example.com/1'
+                },
+                {
+                    fileName: 'qurt6789.jpeg', row: 0, src: 'http://localhost:2368/content/images/2019/06/qurt6789.jpeg', width: 1200, height: 800
+                },
+                {
+                    fileName: 'zyxw3456.jpeg', row: 0, src: 'http://localhost:2368/content/images/2019/06/zyxw3456.jpeg', width: 1600, height: 1066, href: 'https://example.com/3'
+                },
+                {
+                    fileName: '1234abcd.jpeg', row: 1, src: 'http://localhost:2368/content/images/2019/06/1234abcd.jpeg', width: 800, height: 1200
+                }
+            ]);
+
+            section.payload.caption.should.eql('My <em>exciting</em> caption');
+        });
     });
 
     describe('grafGalleryToCard', function () {
