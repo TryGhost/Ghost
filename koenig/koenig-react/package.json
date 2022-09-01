@@ -27,7 +27,7 @@
     "@babel/core": "7.18.13",
     "@babel/preset-env": "7.18.10",
     "@svgr/webpack": "^6.3.1",
-    "@tailwindcss/typography": "^0.5.4",
+    "@tailwindcss/typography": "0.5.6",
     "autoprefixer": "10.4.8",
     "babel-loader": "^8.2.5",
     "c8": "7.12.0",
