@@ -1,0 +1,16 @@
+<header class="modal-header">
+    <h1>Change user role</h1>
+</header>
+<a class="close" href="" role="button" title="Close" {{on "click" this.close}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
+
+<div class="modal-body" {{did-insert this.setRoleFromModel}}>
+    <GhRoleSelection
+        @selected={{this.role}}
+        @setRole={{fn (mut this.role)}}
+    />
+</div>
+
+<div class="modal-footer">
+    <button class="gh-btn" type="button" {{on "click" this.close}}><span>Cancel</span></button>
+    <button class="gh-btn gh-btn-black" type="button" {{on "click" this.confirmAction}}><span>Change role</span></button>
+</div>

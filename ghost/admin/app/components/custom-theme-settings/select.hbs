@@ -1,0 +1,19 @@
+<div class="gh-stack-item {{if (eq @index 0) "gh-setting-first" "gh-setting"}}">
+    <div class="flex-grow-1">
+        <label class="gh-setting-title gh-theme-setting-title" for={{this.selectId}}>
+            {{humanize-setting-key @setting.key}}
+        </label>
+
+        <span class="gh-select">
+            <select class="ember-select" name={{this.selectName}} id={{this.selectId}} {{on "change" this.setSelection}}>
+                {{#each @setting.options as |settingOption|}}
+                    <option value={{settingOption}} selected={{eq settingOption @setting.value}}>
+                        {{settingOption}}
+                        {{#if (eq settingOption @setting.default)}}(default){{/if}}
+                    </option>
+                {{/each}}
+            </select>
+            {{svg-jar "arrow-down-small"}}
+        </span>
+    </div>
+</div>

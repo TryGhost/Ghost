@@ -1,0 +1,281 @@
+/* Full screen workflow
+/* ---------------------------------------------------------- */
+
+.gh-flow {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    min-height: 100%;
+    background: linear-gradient(315deg,#efefef,#fff);
+}
+
+.gh-setup {
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: unset;
+    overflow-y: unset;
+    padding: 0 2.4rem;
+}
+
+.gh-flow-content-wrap {
+    flex-grow: 1;
+    flex-shrink: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 5%;
+    padding-bottom: 8vh;
+}
+
+.gh-flow-content {
+    display: flex;
+    flex-direction: column;
+    max-width: 520px;
+    width: 100%;
+    margin: 4.8rem 0 8rem;
+    color: var(--darkgrey);
+    font-size: 1.9rem;
+    line-height: 1.5em;
+    font-weight: 300;
+}
+
+@media (max-width: 400px) {
+    .gh-flow-content {
+        margin: 4rem 0 6rem;
+        font-size: 4vw;
+    }
+}
+
+.gh-setup .gh-flow-content header {
+    margin: 0 0 1rem;
+    text-align: center;
+}
+
+.gh-setup .gh-flow-content header svg {
+    width: 7.2rem;
+    margin: 0 0 1rem;
+}
+
+.gh-setup .gh-flow-content h1 {
+    margin-bottom: .3em;
+}
+
+.gh-setup .gh-flow-content p {
+    color: var(--midgrey);
+    font-size: 1.9rem;
+    font-weight: 400;
+    line-height: 1.4em;
+}
+
+@media (max-width: 520px) {
+    .gh-setup .gh-flow-content p {
+        font-size: 1.7rem;
+    }
+}
+
+.gh-flow-content h1 {
+    margin-bottom: 40px;
+    font-size: 4.1rem;
+    font-weight: 700;
+    line-height: 1.15em;
+}
+
+@media (max-width: 600px) {
+    .gh-flow-content h1 {
+        font-size: 7vw;
+    }
+}
+
+.gh-flow-content strong {
+    font-weight: 400;
+}
+
+.gh-flow-content em {
+    color: var(--black);
+    font-weight: 500;
+    font-style: normal;
+}
+
+.gh-flow-content .gh-btn {
+    display: block;
+    margin: 40px auto 0;
+    max-width: 400px;
+}
+
+.gh-setup .gh-flow-content .gh-btn {
+    height: 52px;
+    max-width: unset;
+    margin: 40px 0 0
+}
+
+.gh-setup .gh-flow-content .gh-btn span {
+    font-size: 1.7rem;
+}
+
+.gh-flow-content .login span {
+    height: 37px !important;
+    line-height: 37px !important;
+}
+
+.gh-flow-content .gh-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gh-separator {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin-top: 25px;
+    margin-bottom: 25px;
+    font-size: 1.4rem;
+    font-weight: 400;
+    text-transform: uppercase;
+}
+
+.gh-separator::before,
+.gh-separator::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--lightgrey);
+}
+
+.gh-separator:not(:empty)::before {
+  margin-right: 6px;
+}
+
+.gh-separator:not(:empty)::after {
+  margin-left: 6px;
+}
+
+.gh-flow-content .gh-flow-skip {
+    display: inline-block;
+    margin-top: 5px;
+    color: #7d878a;
+    font-size: 1.2rem;
+}
+
+.gh-flow-content .gh-flow-create {
+    position: relative;
+    margin: 70px auto 30px;
+    padding: 50px 40px 40px;
+    max-width: 400px;
+    width: 100%;
+    border: #dae1e3 1px solid;
+    background: #fff;
+    border-radius: 5px;
+    text-align: left;
+    box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.1);
+}
+
+.gh-flow-content .form-group {
+    margin-bottom: 20px !important;
+}
+
+.gh-flow-content .form-group label {
+    margin: 0 0 .3em;
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+.gh-flow-content .form-group a {
+    text-decoration: underline;
+}
+
+.gh-flow-content input {
+    height: 48px;
+    padding: 12px 16px;
+    font-size: 1.7rem;
+    font-weight: 400;
+    border-radius: 8px;
+    letter-spacing: -0.013em;
+}
+
+.gh-flow-content .gh-input:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(26,170,96,.15);
+    outline: none;
+}
+
+.gh-flow-content .pw-strength {
+    position: absolute;
+    top: 50%;
+    right: 1px;
+    margin-top: -11px;
+    padding: 0 10px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.gh-flow-content .pw-strength-dot {
+    display: block;
+    margin-top: 2px;
+    width: 3px;
+    height: 3px;
+    background-color: #d9e0e3;
+    border-radius: 100%;
+}
+
+.gh-flow-content .pw-strength-dot:first-child {
+    margin-top: 0;
+}
+
+.gh-flow-content textarea {
+    width: 100%;
+    height: 160px;
+    font-size: 1.4rem;
+    font-weight: 400;
+    line-height: 1.8rem;
+}
+
+.gh-flow-content .response,
+.gh-setup .gh-flow-content .response {
+    position: absolute;
+    right: 0;
+    bottom: -24px;
+    margin: 0;
+    color: #a6b0b3;
+    font-size: 1.35rem;
+}
+
+.gh-flow-content form:not(.gh-signin) .success .gh-input-icon svg {
+    fill: var(--green);
+}
+
+.error,
+.error-content,
+.main-error {
+    user-select: text;
+    font-weight: 400;
+}
+
+.gh-flow-content .error input,
+.gh-flow-content .error input:focus {
+    border-color: var(--red);
+    box-shadow: 0 0 0 3px rgba(239,24,24,.15);
+}
+
+.gh-flow-content .error .gh-input-icon svg {
+    fill: var(--red);
+}
+
+.gh-flow-content .error .response,
+.gh-setup .gh-flow-content .error .response {
+    color: var(--red);
+}
+
+.gh-flow-content .main-error,
+.gh-setup .gh-flow-content .main-error {
+    margin-top: 8px;
+    color: var(--midgrey);
+    font-size: 1.35rem;
+    text-align: center;
+}
+
+.gh-setup .gh-flow-form .gh-btn-red,
+.gh-setup .gh-flow-form .gh-btn-red:active {
+    background: var(--black) !important;
+}

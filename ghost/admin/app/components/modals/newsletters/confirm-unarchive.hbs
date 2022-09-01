@@ -1,0 +1,33 @@
+<div class="modal-content">
+    <header class="modal-header" data-test-modal="confirm-newsletter-reactivate">
+        <h1>Reactivate newsletter</h1>
+    </header>
+    <button type="button" class="close" role="button" title="Close" {{on "click" (fn @close false)}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+    <div class="modal-body">
+        <p>
+            Reactivating <strong>{{@data.newsletter.name}}</strong> will immediately make it visible to members and re-enable it as an option when publishing new posts.
+        </p>
+    </div>
+
+    <div class="modal-footer" {{on-key "Enter" (perform @data.unarchiveNewsletterTask @data.newsletter)}}>
+        <button
+            type="button"
+            class="gh-btn"
+            data-test-button="cancel-newsletter-reactivate"
+            {{on "click" (fn @close false)}}
+        >
+            <span>Cancel</span>
+        </button>
+
+        <GhTaskButton
+            @buttonText="Reactivate"
+            @runningText="Reactivating"
+            @showSuccess={{false}}
+            @task={{@data.unarchiveNewsletterTask}}
+            @taskArgs={{@data.newsletter}}
+            @class="gh-btn gh-btn-black gh-btn-icon"
+            data-test-button="confirm-newsletter-reactivate"
+        />
+    </div>
+</div>

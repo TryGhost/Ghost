@@ -1,3 +1,0 @@
-core/frontend/src/**/*.js
-core/frontend/public/**/*.js
-core/server/lib/members/static/auth/**/*.js

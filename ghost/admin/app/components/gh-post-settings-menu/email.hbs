@@ -1,0 +1,150 @@
+<div class="settings-menu-header subview">
+    <button class="back settings-menu-header-action" data-test-button="close-psm-subview" type="button" {{on "click" this.close}}>{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
+    <h4>Email newsletter</h4>
+    <div style="width:23px;"></div>
+</div>
+
+<div class="settings-menu-content settings-menu-email">
+    {{#if this.post.email.isSuccess}}
+        {{!-- Mail has already been sent --}}
+        <div class="ba b--whitegrey bg-white br3">
+            <div class="flex pa5 pt4 pb4 items-center bb b--whitegrey">
+                <div class="w16 flex flex-column items-center">
+                    <span class="db mr4 mt2">{{svg-jar "send-email" class="w6 h6 stroke-midlightgrey"}}</span>
+                </div>
+                <div class="flex flex-column justify-center">
+                    <p class="ma0 pa0 midgrey">Post was sent by email to</p>
+                    <p class="ma0 pa0 f5 lh-solid">{{gh-pluralize this.post.email.emailCount "member"}}</p>
+                </div>
+            </div>
+            <div class="pa5 pt3 pb3 f7 bb b--whitegrey">
+                <table class="ma0" style="table-layout: fixed">
+                    <tbody>
+                        <tr>
+                            <td class="pa1 pl0 fw7 f8 w16 v-top lh-copy">Subject:</td>
+                            <td class="pa1 pa0 midgrey v-top lh-copy">{{this.post.email.subject}}</td>
+                        </tr>
+                        <tr>
+                            <td class="pa1 pl0 fw7 f8 w16 nowrap v-top lh-copy">Sent:</td>
+                            <td class="pa1 pa0 midgrey v-top lh-copy">{{gh-format-post-time this.post.email.createdAtUTC}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="pa5 pt3 pb3">
+                <p class="ma0 pa0">
+                    <GhEmailPreviewLink class="green" @data={{this.post}}>View sent email</GhEmailPreviewLink>
+                </p>
+            </div>
+        </div>
+    {{else if (or this.retryEmail.isRunning this.post.email.isFailure)}}
+        {{!-- Mail failed to send --}}
+
+        <div class="gh-box-error">
+            <div class="flex pa5 pt4 pb4 items-center bb b--whitegrey">
+                <div class="w16 flex flex-column items-center">
+                    <span class="db mr4 mt3">{{svg-jar "warning" class="w7 h7 fill-red"}}</span>
+                </div>
+                <div class="flex flex-column justify-center">
+                    <p class="ma0 pa0 midgrey">Post failed to send to</p>
+                    <p class="ma0 pa0 f5 lh-solid">{{gh-pluralize this.post.email.emailCount "member"}}</p>
+                </div>
+            </div>
+            <div class="pa5 pt3 pb3 f7 bb b--whitegrey">
+                <p class="mb2 lh-copy">
+                    Email failed to send when publishing this post. Please verify your email settings if the error persists.
+                </p>
+                <p class="ma0 pa0">
+                    <table class="ma0" style="table-layout: fixed">
+                        <tbody>
+                            <tr>
+                                <td class="pa1 pl0 fw7 f8 w16 v-top lh-copy">Error:</td>
+                                <td class="pa1 pl0 midgrey v-top lh-copy">{{this.post.email.error}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </p>
+            </div>
+            <div class="pa5 pt3 pb3 f7 bb b--whitegrey">
+                <table class="ma0" style="table-layout: fixed">
+                    <tbody>
+                        <tr>
+                            <td class="pa1 pl0 fw7 f8 w16 v-top lh-copy">Subject:</td>
+                            <td class="pa1 pl0 truncate midgrey v-top lh-copy">{{this.post.email.subject}}</td>
+                        </tr>
+                        <tr>
+                            <td class="pa1 pl0 fw7 f8 w16 nowrap v-top lh-copy">Tried:</td>
+                            <td class="pa1 pl0 truncate midgrey v-top lh-copy">{{gh-format-post-time this.post.email.createdAtUTC}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="pa5 pt3 pb3 flex justify-between items center">
+                <GhEmailPreviewLink class="blue" @data={{this.post}}>View email</GhEmailPreviewLink>
+                <GhTaskButton @buttonText="Retry send" @runningText="Sending..." @task={{this.retryEmail}} @class="gh-btn gh-btn-icon" data-test-button="retry-email" />
+            </div>
+        </div>
+    {{else}}
+        {{!-- Mail not sent yet --}}
+        {{#if this.mailgunError}}
+            <p class="gh-box gh-box-alert settings-menu-mailgun-alert">
+                {{svg-jar "info" class="w5 h5 fill-yellow nl1"}}
+                You need to configure Mailgun in <LinkTo @route="settings.newsletters" data-test-nav="labs">Settings &rarr; Email newsletter</LinkTo> to enable email newsletters.
+            </p>
+        {{/if}}
+
+        <form {{action "discardEnter" on="submit"}}>
+            <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="emailSubject">
+                <label for="og-title">Subject</label>
+                <GhTextInput
+                    @class="post-setting-email-subject"
+                    @id="email-subject"
+                    @name="post-setting-email-subject"
+                    @placeholder={{truncate this.emailSubject 40}}
+                    @value={{readonly this.emailSubjectScratch}}
+                    @input={{action (mut this.emailSubjectScratch) value="target.value"}}
+                    @focus-out={{action "setEmailSubject" this.emailSubjectScratch}}
+                    @stopEnterKeyDownPropagation={{true}}
+                    @disabled={{this.mailgunError}}
+                    data-test-field="email-subject" />
+                <GhErrorMessage @errors={{this.post.errors}} @property="emailSubject" data-test-error="email-subject" />
+            </GhFormGroup>
+
+            <div class="form-group">
+                <div class="flex">
+                    <label class="nowrap flex-auto">Test email</label>
+                    <GhEmailPreviewLink class="gh-btn gh-btn-link settings-menu-email-button" @data={{this.post}} data-test-button="toggle-email-preview">
+                        <span class="green">
+                            Preview in browser
+                        </span>
+                    </GhEmailPreviewLink>
+                </div>
+
+                <div class="{{if this.mailgunError "disabled"}}">
+                    <GhTextInput
+                        @class="post-setting-email-test"
+                        @id="email-test"
+                        @name="post-setting-email-test"
+                        @placeholder="noreply@example.com"
+                        @value={{this.testEmailAddress}}
+                        @stopEnterKeyDownPropagation={{true}}
+                        @disabled={{this.mailgunError}}
+                        data-test-field="email-test" />
+
+                    {{#if this.sendTestEmailError}}
+                        <div class="error"><p class="response">{{this.sendTestEmailError}}</p></div>
+                    {{/if}}
+
+                    <GhTaskButton @buttonText="Send test email"
+                        @task={{this.sendTestEmail}}
+                        @successText="Email sent"
+                        @runningText="Sending..."
+                        @class="gh-btn w-100 mt2 gh-btn-icon"
+                        @disabled={{this.mailgunError}}
+                        data-test-send-test-mail="true"
+                    />
+                </div>
+            </div>
+        </form>
+    {{/if}}
+</div>

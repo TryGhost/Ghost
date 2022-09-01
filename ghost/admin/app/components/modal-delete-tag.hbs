@@ -1,0 +1,16 @@
+<header class="modal-header">
+    <h1>Are you sure you want to delete this tag?</h1>
+</header>
+<a class="close" href="" role="button" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
+
+<div class="modal-body">
+    {{#if this.tag.post_count}}
+        <span class="red">This tag is attached to {{this.tag.count.posts}} {{this.postInflection}}.</span>
+    {{/if}}
+    You're about to delete "<strong>{{this.tag.name}}</strong>". This is permanent! We warned you, k?
+</div>
+
+<div class="modal-footer">
+    <button class="gh-btn" type="button" {{action "closeModal"}}><span>Cancel</span></button>
+    <GhTaskButton @buttonText="Delete" @successText="Deleted" @task={{this.deleteTag}} @class="gh-btn gh-btn-red gh-btn-icon" />
+</div>

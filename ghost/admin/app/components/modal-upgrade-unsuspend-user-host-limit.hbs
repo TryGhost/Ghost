@@ -1,0 +1,20 @@
+<header class="modal-header" data-test-modal="delete-user">
+    <h1>Upgrade to un-suspend this user</h1>
+</header>
+<button class="close" title="Close" type="button" {{on "click" this.closeModal}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+<div class="modal-body">
+    <p>
+        {{html-safe this.model.message}} To give this user access to Ghost, upgrade to a different plan.
+    </p>
+</div>
+
+<div class="modal-footer">
+    <button class="gh-btn" data-test-button="cancel-upgrade" type="button" {{on "click" this.closeModal}}>
+        <span>Cancel</span>
+    </button>
+
+    <button class="gh-btn gh-btn-green" data-test-button="upgrade-plan" type="button" {{on "click" (action "upgrade")}}>
+        <span>Upgrade my plan</span>
+    </button>
+</div>

@@ -1,0 +1,20 @@
+<svg id="Regular" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <title>members-outline</title>
+  <defs>
+    <style>
+      .cls-1{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1px}
+    </style>
+  </defs>
+  <g class="g3">
+    <circle class="cls-1" cx="4.5" cy="6" r="2.25"/>
+    <path class="cls-1" d="M4.5 9.75A3.75 3.75 0 0 0 .75 13.5v2.25h1.5l.75 6h3"/>
+  </g>
+  <g class="g2">
+    <circle class="cls-1" cx="19.5" cy="6" r="2.25"/>
+    <path class="cls-1" d="M19.5 9.75a3.75 3.75 0 0 1 3.75 3.75v2.25h-1.5l-.75 6h-3"/>
+  </g>
+  <g class="g1">
+    <circle class="cls-1" cx="12" cy="3.75" r="3"/>
+    <path class="cls-1" d="M17.25 13.5a5.25 5.25 0 0 0-10.5 0v2.25H9l.75 7.5h4.5l.75-7.5h2.25Z"/>
+  </g>
+</svg>

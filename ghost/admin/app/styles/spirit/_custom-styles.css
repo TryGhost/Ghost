@@ -1,0 +1,372 @@
+/*
+
+    Namespaces:
+        gh- = client related classes
+
+*/
+
+
+/*
+*  Generic
+---------------------------------------------------------- */
+.pointer {
+    cursor: pointer;
+}
+
+.default-cursor {
+    cursor: default;
+}
+
+/* Buttons */
+button, .btn-base {
+    transition: none;
+    text-decoration: none!important;
+    user-select: none;
+    outline: none;
+    padding: 0px;
+}
+
+.btn-base span {
+    padding: 0 14px;
+    height: 33px;
+    line-height: 33px;
+    border-radius: 4px;
+}
+
+/* Blue button */
+.btn-blue {
+    padding: 1px;
+    background: linear-gradient(
+    color-mod(var(--blue) blackness(+10%)),
+    color-mod(var(--blue) lightness(-15%) saturation(-15%))
+    );
+    text-shadow: 0 -1px 0 rgba(0,0,0,.1);
+    box-shadow: 0 1px 0 rgba(0,0,0,.12);
+}
+
+.btn-blue span {
+    background: linear-gradient(
+    color-mod(var(--blue) whiteness(+7%)),
+    color-mod(var(--blue) lightness(-7%) saturation(-10%)) 60%,
+    color-mod(var(--blue) lightness(-7%) saturation(-10%)) 90%,
+    color-mod(var(--blue) lightness(-4%) saturation(-10%))
+    );
+    box-shadow: inset 0 1px 0 hsla(0,0%,100%,.1);
+}
+.btn-blue:active,
+.btn-blue:focus {
+    background: color-mod(var(--blue) lightness(-20%) saturation(-15%));
+}
+.btn-blue:active span,
+.btn-blue:focus span {
+    background: color-mod(var(--blue) lightness(-7%) saturation(-10%));
+    box-shadow: none;
+}
+
+/* Green button */
+.btn-green {
+    padding: 1px;
+    background: linear-gradient(
+    color-mod(var(--green) blackness(+7%)),
+    color-mod(var(--green) lightness(-10%) saturation(-10%))
+    );
+    text-shadow: 0 -1px 0 rgba(0,0,0,.1);
+    box-shadow: 0 1px 0 rgba(0,0,0,.12);
+}
+
+.btn-green span {
+    background: linear-gradient(
+    color-mod(var(--green) whiteness(+5%)),
+    color-mod(var(--green) lightness(-4%) saturation(-8%)) 60%,
+    color-mod(var(--green) lightness(-4%) saturation(-8%)) 90%,
+    color-mod(var(--green) lightness(-4%) saturation(-10%))
+    );
+    box-shadow: inset 0 1px 0 hsla(0,0%,100%,.1);
+}
+
+.btn-green:active,
+.btn-green:focus {
+    background: color-mod(var(--green) lightness(-10%) saturation(-10%));
+}
+.btn-green:active span,
+.btn-green:focus span {
+    background: color-mod(var(--green) lightness(-4%) saturation(-8%));
+    box-shadow: none;
+}
+
+
+/* Red button */
+.btn-red {
+    padding: 1px;
+    background: linear-gradient(
+    color-mod(var(--red) blackness(+10%)),
+    color-mod(var(--red) lightness(-15%) saturation(-15%))
+    );
+    text-shadow: 0 -1px 0 rgba(0,0,0,.1);
+    box-shadow: 0 1px 0 rgba(0,0,0,.12);
+}
+
+.btn-red span {
+    background: linear-gradient(
+    color-mod(var(--red) whiteness(+7%)),
+    color-mod(var(--red) lightness(-7%) saturation(-10%)) 60%,
+    color-mod(var(--red) lightness(-7%) saturation(-10%)) 90%,
+    color-mod(var(--red) lightness(-4%) saturation(-10%))
+    );
+    box-shadow: inset 0 1px 0 hsla(0,0%,100%,.1);
+}
+
+.btn-red:active,
+.btn-red:focus {
+    background: color-mod(var(--red) lightness(-20%) saturation(-15%));
+}
+.btn-red:active span,
+.btn-red:focus span {
+    background: color-mod(var(--red) lightness(-7%) saturation(-10%));
+    box-shadow: none;
+}
+
+.btn-small span {
+    padding: 0 10px;
+    height: 26px;
+    line-height: 26px;
+}
+
+
+/*
+* Client styles
+---------------------------------------------------------- */
+.gh-nav-link:hover {
+    background: rgba(62,176,239,.15);
+}
+
+.gh-logo svg g {
+    fill: white;
+    opacity: 1.0;
+}
+
+.overlay-dark {
+    background: rgba(50,71,80,.85);
+}
+
+.list-miw {
+    min-height: 92px;
+}
+
+.list-item-hover:hover {
+    background: rgba(62,176,239,.08);
+    /* background: rgba(62, 176, 239, 0.08); */
+}
+
+.dropdown-arrow {
+    width: 10px;
+    height: 10px;
+}
+
+
+/* Tooltip Styles
+---------------------------------------------------------- */
+[data-tooltip] {
+    position: relative;
+}
+
+[data-tooltip]:before {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 200ms ease;
+    transform: translateY(5px);
+    z-index: 9999;
+}
+
+[data-tooltip]:before {
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 50%;
+    white-space: nowrap;
+    padding: 3px 7px;
+    border-radius: 3px;
+    background-color: var(--darkgrey);
+    color: var(--white);
+    content: attr(data-tooltip);
+    text-align: center;
+    font-size: 1.3rem;
+    font-weight: 400;
+    line-height: 1.4em;
+    letter-spacing: 0.2px;
+    text-transform: initial;
+    transform: translate(-50%, 5px);
+}
+
+[data-tooltip]:hover:before {
+    visibility: visible;
+    opacity: 1;
+    transform: translate(-50%, 0px);
+}
+
+.tooltip-delayed:before {
+    transition: all 200ms ease 0.4s;
+}
+
+.tooltip-left:before {
+    right: calc(1rem + 100%);
+    bottom: 50%;
+    left: auto;
+    transform: translateY(50%);
+}
+
+.tooltip-left:hover:before {
+    transform: translateY(50%);
+}
+
+.tooltip-bottom:before {
+    bottom: calc(-100% - 4px);
+    left: 50%;
+    transform: translate(-50%, -5px);
+}
+
+.tooltip-bottom:hover:before {
+    transform: translate(-50%, 0);
+}
+
+.tooltip-centered:before {
+    position: absolute;
+    left: initial;
+    bottom: initial;
+    top: 50%;
+    right: 208px;
+    transform: translateY(-50%);
+}
+
+.tooltip-centered:hover:before {
+    transform: translate(0, -50%);
+}
+
+.tooltip-top-left:before {
+    right: calc(-16px + 100%);
+    left: auto;
+    transform: translateY(50%);
+}
+
+.tooltip-top-left:hover:before {
+    transform: translate(0, 0);
+}
+
+
+/* Errors
+---------------------------------------------------------- */
+.error-background {
+    width: 406px;
+    height: 288px;
+}
+
+.error-code-size {
+    font-size: 7.8rem;
+    line-height: 0.4em;
+}
+
+/* 404 Error animation */
+
+@keyframes travel-1 {
+    5% {
+        opacity: 1.0;
+    }
+    25% {
+        opacity: 1.0;
+    }
+    30% {
+        left: 406px;
+        opacity: 0.0;
+    }
+}
+
+@keyframes bounce-1 {
+    from, to  {
+        bottom: 0px;
+        animation-timing-function: ease-out;
+    }
+    50% {
+        bottom: 20px;
+        animation-timing-function: ease-in;
+    }
+    100% {
+        transform:  rotate(1400deg);
+    }
+}
+
+@keyframes travel-2 {
+    2% {
+        opacity: 1.0;
+    }
+    16% {
+        opacity: 1.0;
+    }
+    20% {
+        left: 0px;
+        opacity: 0.0;
+    }
+}
+
+@keyframes bounce-2 {
+    from, to  {
+        bottom: -20px;
+        animation-timing-function: ease-out;
+    }
+    50% {
+        bottom: 30px;
+        animation-timing-function: ease-in;
+    }
+    100% {
+        transform:  rotate(-1200deg);
+    }
+}
+
+.traveler-1 {
+    position: absolute;
+    width: 24px;
+    height: 270px;
+    opacity: 0.0;
+    top: 10px;
+    left: 0;
+
+    animation-name: travel-1;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-duration: 4.5s;
+    animation-delay: 3.7s;
+}
+
+.bouncer-1 {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+
+    animation-name: bounce-1;
+    animation-iteration-count: infinite;
+    animation-duration: 0.55s;
+}
+
+.traveler-2 {
+    position: absolute;
+    width: 44px;
+    height: 250px;
+    opacity: 0.0;
+    top: 10px;
+    left: 406px;
+
+    animation-name: travel-2;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-duration: 6.5s;
+    animation-delay: 1.5s;
+}
+
+.bouncer-2 {
+    position: absolute;
+    width: 44px;
+    height: 44px;
+
+    animation-name: bounce-2;
+    animation-iteration-count: infinite;
+    animation-duration: 0.7s;
+}

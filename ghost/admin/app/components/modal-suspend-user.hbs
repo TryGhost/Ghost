@@ -1,0 +1,13 @@
+<header class="modal-header">
+    <h1>Are you sure you want to suspend this user?</h1>
+</header>
+<a class="close" href="" role="button" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
+
+<div class="modal-body">
+    <strong>WARNING:</strong> This user will no longer be able to log in but their posts will be kept.
+</div>
+
+<div class="modal-footer">
+    <button class="gh-btn" type="button" {{action "closeModal"}}><span>Cancel</span></button>
+    <GhTaskButton @buttonText="Suspend" @successText="Suspended" @task={{this.suspendUser}} @class="gh-btn gh-btn-red gh-btn-icon" data-test-modal-confirm="true" />
+</div>

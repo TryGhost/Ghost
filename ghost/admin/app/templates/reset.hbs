@@ -1,0 +1,41 @@
+<div class="gh-flow">
+    <div class="gh-flow-content-wrap">
+        <section class="gh-flow-content fade-in">
+            <form id="reset" class="gh-signin" method="post" novalidate="novalidate" {{action "submit" on="submit"}}>
+                <header>
+                    <div class="gh-site-icon" style={{site-icon-style}}></div>
+                    <h1>Reset your password.</h1>
+                </header>
+                <GhFormGroup @errors={{this.errors}} @hasValidated={{this.hasValidated}} @property="newPassword">
+                    <span class="gh-input-icon gh-icon-lock">
+                        <GhTextInput
+                            @type="password"
+                            @name="newpassword"
+                            @placeholder="New password"
+                            @class="password reset-password"
+                            @autocorrect="off"
+                            @shouldFocus={{true}}
+                            @value={{readonly this.newPassword}}
+                            @input={{action (mut this.newPassword) value="target.value"}} />
+                    </span>
+                </GhFormGroup>
+                <GhFormGroup @errors={{this.errors}} @hasValidated={{this.hasValidated}} @property="ne2Password">
+                    <span class="gh-input-icon gh-icon-lock">
+                        <GhTextInput
+                            @type="password"
+                            @name="ne2password"
+                            @placeholder="Confirm new password"
+                            @class="password reset-password"
+                            @autocorrect="off"
+                            @value={{readonly this.ne2Password}}
+                            @input={{action (mut this.ne2Password) value="target.value"}} />
+                    </span>
+                </GhFormGroup>
+
+                <GhTaskButton @buttonText="Save new password" @task={{this.resetPassword}} @class="gh-btn gh-btn-reset gh-btn-block gh-btn-icon" @type="submit" @autoWidth="false" />
+            </form>
+
+            <p class="main-error">{{this.flowErrors}}&nbsp;</p>
+        </section>
+    </div>
+</div>

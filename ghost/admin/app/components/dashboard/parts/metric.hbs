@@ -1,0 +1,48 @@
+<div class="gh-dashboard-metric {{if @center "is-center"}} {{if @reverse "is-reverse"}} {{if @large "is-large"}}">
+    <div class="gh-dashboard-metric-data">
+        {{#if @secondary}}
+            {{#if @value}}
+                <div class="gh-dashboard-metric-value {{if @secondary 'is-secondary'}}">
+                    <span class="value">{{@value}}</span>
+                    {{#if @trends}}
+                    <Dashboard::Parts::Percentage @percentage={{@percentage}}/>
+                {{/if}}
+                </div>
+            {{/if}}
+            <h5 class="gh-dashboard-metric-label {{if @secondary 'is-secondary'}}">
+                {{@label}}
+            </h5>
+        {{else}}
+            {{#if @reverse}}
+                {{#if @value}}
+                    <div class="gh-dashboard-metric-value">
+                        <span class="value">{{@value}}</span>
+                        {{#if @trends}}
+                        <Dashboard::Parts::Percentage @percentage={{@percentage}}/>
+                    {{/if}}
+                    </div>
+                {{/if}}
+                <h5 class="gh-dashboard-metric-label">
+                    {{@label}}
+                </h5>
+            {{else}}
+                <h5 class="gh-dashboard-metric-label">
+                    {{@label}}
+                </h5>
+                {{#if @value}}
+                    <div class="gh-dashboard-metric-value">
+                        <span class="value">{{@value}}</span>
+                        {{#if @trends}}
+                            <Dashboard::Parts::Percentage @percentage={{@percentage}}/>
+                        {{/if}}
+                    </div>
+                {{/if}}
+            {{/if}}
+        {{/if}}
+    </div>
+    {{#if @extra}}
+        <div class="gh-dashboard-metric-extra">
+            {{@extra}}
+        </div>
+    {{/if}}
+</div>

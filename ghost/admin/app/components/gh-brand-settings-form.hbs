@@ -1,0 +1,160 @@
+<div class="gh-stack" ...attributes>
+    <div class="gh-stack-item gh-setting-first gh-accent-color">
+        <div class="gh-setting-content">
+            <div class="gh-setting-title">Accent color</div>
+            <div class="gh-setting-desc">Primary color used in your publication theme</div>
+            {{#each this.uploader.errors as |error|}}
+                <div class="gh-setting-error" data-test-error="icon">{{or error.context error.message}}</div>
+            {{/each}}
+            <div class="w-100 flex flex-column flex-row-ns">
+                <GhErrorMessage @errors={{this.settings.errors}} @property="accentColor" class="w-100 red" />
+            </div>
+        </div>
+
+        <div class="gh-setting-action" data-test-setting="accentColor">
+            <GhFormGroup
+                @errors={{this.settings.errors}}
+                @hasValidated={{this.settings.hasValidated}}
+                @property="accentColor"
+                @class="input-color-form-group"
+            >
+                <div class="input-color">
+                    <input
+                        type="text"
+                        placeholder="15171A"
+                        name="accent-color"
+                        autocorrect="off"
+                        maxlength="6"
+                        value={{this.accentColor}}
+                        class="gh-input"
+                        {{on "input" (perform this.debounceUpdateAccentColor)}}
+                        {{on "blur" this.updateAccentColor}}
+                        {{on-key "Enter" this.blurElement}}
+                        data-test-input="accentColor"
+                    />
+                    <div class="color-picker-horizontal-divider"></div>
+                    <div
+                        class="color-box-container"
+                        style={{this.accentColorBgStlye}}
+                    >
+                        <input
+                            type="color"
+                            name="accent-color"
+                            class="color-picker"
+                            value="{{this.accentColorPickerValue}}"
+                            {{on "input" (perform this.debounceUpdateAccentColor)}}
+                        >
+                    </div>
+                </div>
+            </GhFormGroup>
+        </div>
+    </div>
+
+    <div class="gh-stack-item gh-setting" data-test-setting="icon">
+        <GhUploader
+            @extensions={{this.iconExtensions}}
+            @paramsHash={{hash purpose="icon"}}
+            @onComplete={{fn this.imageUploaded "icon"}}
+            as |uploader|
+        >
+        <div class="gh-setting-content">
+            <div class="gh-setting-title">Publication icon</div>
+            <div class="gh-setting-desc">A square, social icon used in the UI of your publication, at least 60x60px</div>
+            {{#each uploader.errors as |error|}}
+                <div class="gh-setting-error" data-test-error="icon">{{or error.context error.message}}</div>
+            {{/each}}
+        </div>
+        <div class="gh-setting-action gh-uploadbutton-container gh-setting-action-smallimg flex flex-column">
+            {{#if uploader.isUploading}}
+                {{uploader.progressBar}}
+            {{else if this.settings.icon}}
+                <div class="gh-branding-image-container transparent-bg">
+                    <img class="blog-icon" src="{{this.settings.icon}}" {{on "click" this.triggerFileDialog}} alt="icon" data-test-icon-img>
+                    <button type="button" class="gh-setting-action-smallimg-delete" {{on "click" (fn this.removeImage "icon")}} data-test-delete-image="icon">
+                        {{svg-jar "trash" class="w4 h4 fill-white"}}
+                    </button>
+                </div>
+            {{else}}
+                <button type="button" class="gh-btn self-center" {{on "click" this.triggerFileDialog}} data-test-image-upload-btn="icon">
+                    <span>Upload icon</span>
+                </button>
+            {{/if}}
+            <div style="display:none">
+                <GhFileInput @multiple={{false}} @action={{uploader.setFiles}} @accept={{this.iconMimeTypes}} data-test-file-input="icon" />
+            </div>
+        </div>
+        </GhUploader>
+    </div>
+
+    <div class="gh-stack-item gh-setting" data-test-setting="logo">
+        <GhUploader
+            @extensions={{this.imageExtensions}}
+            @onComplete={{fn this.imageUploaded "logo"}}
+            as |uploader|
+        >
+        <div>
+            <div class="gh-setting-title">Publication logo</div>
+            <div class="gh-setting-desc mb3">The primary logo for your brand displayed across your theme, should be transparent and at least 600px x 72px</div>
+
+            <div class="gh-setting-action gh-uploadbutton-container gh-setting-action-smallimg flex flex-column">
+                {{#each uploader.errors as |error|}}
+                    <div class="gh-setting-error" data-test-error="logo">{{or error.context error.message}}</div>
+                {{/each}}
+                {{#if uploader.isUploading}}
+                    {{uploader.progressBar}}
+                {{else if this.settings.logo}}
+                    <div class="gh-branding-image-container largeimg justify-center transparent-bg">
+                        <img class="blog-logo" src="{{this.settings.logo}}" {{on "click" this.triggerFileDialog}} alt="logo" data-test-logo-img>
+                        <button type="button" class="gh-setting-action-smallimg-delete" {{on "click" (fn this.removeImage "logo")}} data-test-delete-image="logo">
+                            {{svg-jar "trash" class="w4 h4 fill-white"}}
+                        </button>
+                    </div>
+                {{else}}
+                    <button type="button" class="gh-btn self-start" {{on "click" this.triggerFileDialog}} data-test-image-upload-btn="logo">
+                        <span>Upload logo</span>
+                    </button>
+                {{/if}}
+                <div style="display:none">
+                    <GhFileInput @multiple={{false}} @action={{uploader.setFiles}} @accept={{this.imageMimeTypes}} data-test-file-input="logo" />
+                </div>
+            </div>
+        </div>
+        </GhUploader>
+    </div>
+
+    <div class="gh-stack-item gh-setting" data-test-setting="coverImage">
+        <GhUploader
+            @extensions={{this.imageExtensions}}
+            @onComplete={{fn this.imageUploaded "coverImage"}}
+            as |uploader|
+        >
+        <div>
+            <div class="gh-setting-title">Publication cover</div>
+            <div class="gh-setting-desc mb3">An optional large background image for your site</div>
+            {{#each uploader.errors as |error|}}
+                <div class="gh-setting-error" data-test-error="coverImage">{{or error.context error.message}}</div>
+            {{/each}}
+
+            <div class="gh-setting-action gh-uploadbutton-container flex flex-column items-stretch">
+                {{#if uploader.isUploading}}
+                    {{uploader.progressBar}}
+                {{else if this.settings.coverImage}}
+                    <div class="gh-branding-image-container largeimg justify-start">
+                        <img class="blog-cover" src="{{this.settings.coverImage}}" {{on "click" this.triggerFileDialog}} alt="cover photo" data-test-cover-img>
+                        <button type="button" class="gh-setting-action-largeimg-delete" {{on "click" (fn this.removeImage "coverImage")}} data-test-delete-image="coverImage">
+                            {{svg-jar "trash" class="w4 h4 fill-white"}}
+                        </button>
+                    </div>
+                {{else}}
+                    <button type="button" class="gh-btn self-start" {{on "click" this.triggerFileDialog}} data-test-image-upload-btn="coverImage">
+                        <span>Upload cover</span>
+                    </button>
+                {{/if}}
+                <div style="display:none">
+                    <GhFileInput @multiple={{false}} @action={{uploader.setFiles}} @accept={{this.imageMimeTypes}} data-test-file-input="coverImage" />
+                </div>
+            </div>
+        </div>
+        </GhUploader>
+    </div>
+</div>

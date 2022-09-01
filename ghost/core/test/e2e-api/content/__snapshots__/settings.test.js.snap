@@ -1,0 +1,94 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Settings Content API Can request settings 1: [body] 1`] = `
+Object {
+  "meta": Object {},
+  "settings": Object {
+    "accent_color": "#FF1A75",
+    "codeinjection_foot": null,
+    "codeinjection_head": null,
+    "comments_enabled": null,
+    "cover_image": "https://static.ghost.org/v4.0.0/images/publication-cover.jpg",
+    "description": "Thoughts, stories and ideas",
+    "facebook": "ghost",
+    "firstpromoter_account": null,
+    "icon": null,
+    "lang": "en",
+    "locale": "en",
+    "logo": null,
+    "members_enabled": true,
+    "members_invite_only": false,
+    "members_support_address": "noreply",
+    "meta_description": null,
+    "meta_title": null,
+    "navigation": Array [
+      Object {
+        "label": "Home",
+        "url": "/",
+      },
+      Object {
+        "label": "About",
+        "url": "/about/",
+      },
+      Object {
+        "label": "Collection",
+        "url": "/tag/getting-started/",
+      },
+      Object {
+        "label": "Author",
+        "url": "/author/ghost/",
+      },
+      Object {
+        "label": "Portal",
+        "url": "/portal/",
+      },
+    ],
+    "og_description": null,
+    "og_image": null,
+    "og_title": null,
+    "paid_members_enabled": true,
+    "portal_button": true,
+    "portal_button_icon": null,
+    "portal_button_signup_text": "Subscribe",
+    "portal_button_style": "icon-and-text",
+    "portal_name": true,
+    "portal_plans": Array [
+      "free",
+    ],
+    "secondary_navigation": Array [
+      Object {
+        "label": "Data & privacy",
+        "url": "/privacy/",
+      },
+      Object {
+        "label": "Contact",
+        "url": "/contact/",
+      },
+      Object {
+        "label": "Contribute →",
+        "url": "/contribute/",
+      },
+    ],
+    "timezone": "Etc/UTC",
+    "title": "Ghost",
+    "twitter": "@ghost",
+    "twitter_description": null,
+    "twitter_image": null,
+    "twitter_title": null,
+    "url": "http://127.0.0.1:2369/",
+    "version": Any<String>,
+  },
+}
+`;
+
+exports[`Settings Content API Can request settings 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;

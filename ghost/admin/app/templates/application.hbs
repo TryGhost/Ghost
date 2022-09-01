@@ -1,0 +1,59 @@
+<GhApp>
+    <GhSkipLink @anchor=".gh-main">Skip to main content</GhSkipLink>
+
+    <GhAlerts />
+
+    <div class="gh-viewport {{if this.ui.showMobileMenu 'mobile-menu-expanded'}}">
+        {{#if this.showNavMenu}}
+            <GhNavMenu />
+        {{/if}}
+
+        <main class="gh-main {{this.ui.mainClass}}">
+            {{outlet}}
+
+            {{#if this.showBilling}}
+                <GhBillingModal @billingWindowOpen={{this.billing.billingWindowOpen}} />
+            {{/if}}
+
+        </main>
+
+        <GhNotifications />
+
+        <GhContentCover />
+
+        {{#unless this.session.user.isContributor}}
+            <GhMobileNavBar />
+        {{/unless}}
+    </div>
+
+    {{#if this.settings.accentColor}}
+        <style>
+            :root {
+                --accent-color: {{this.settings.accentColor}};
+                --adjusted-accent-color: {{this.ui.adjustedAccentColor}};
+            }
+            .koenig-editor__editor a:not([class]) {
+                color: var(--adjusted-accent-color);
+            }
+            .koenig-editor__editor blockquote {
+                border-left: 0.25rem solid var(--adjusted-accent-color);
+            }
+
+            .gh-btn-accent {
+                background-color: var(--adjusted-accent-color);
+                color: #fff;
+            }
+
+            .gh-btn-accent:hover {
+                background-color: {{hex-adjust this.ui.adjustedAccentColor l=-15}};
+                color: #fff;
+            }
+
+        </style>
+    {{/if}}
+</GhApp>
+
+<div id="unsplash-selector-wormhole"></div>
+
+<EpmModalContainer />
+<EmberLoadRemover />

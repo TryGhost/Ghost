@@ -1,0 +1,32 @@
+<li class="gh-list-row gh-tags-list-item" ...attributes>
+    <LinkTo @route="tag" @model={{@tag}} class="gh-list-data gh-tag-list-title gh-list-cellwidth-70" title="Edit tag">
+        <h3 class="gh-tag-list-name">
+            {{@tag.name}}
+        </h3>
+        {{#if @tag.description}}
+            <p class="ma0 pa0 f8 midgrey gh-tag-list-description">
+                {{@tag.description}}
+            </p>
+        {{/if}}
+    </LinkTo>
+
+    <LinkTo @route="tag" @model={{@tag}} class="gh-list-data middarkgrey f8 gh-tag-list-slug gh-list-cellwidth-10" title="Edit tag">
+        <span title="{{@slug}}">{{@slug}}</span>
+    </LinkTo>
+
+    {{#if @tag.count.posts}}
+        <LinkTo @route="posts" @query={{hash type=null author=null tag=@tag.slug order=null}} class="gh-list-data gh-tag-list-posts-count gh-list-cellwidth-10 f8" title={{concat "List posts tagged with '" @tag.name "'"}}>
+            <span class="nowrap">{{gh-pluralize @tag.count.posts "post"}}</span>
+        </LinkTo>
+    {{else}}
+        <LinkTo @route="tag" @model={{@tag}} class="gh-list-data gh-tag-list-posts-count gh-list-cellwidth-10" title="Edit tag">
+            <span class="nowrap f8 midlightgrey">{{gh-pluralize @tag.count.posts "post"}}</span>
+        </LinkTo>
+    {{/if}}
+
+    <LinkTo @route="tag" @model={{@tag}} class="gh-list-data gh-list-cellwidth-10 gh-list-chevron" title="Edit tag">
+        <div class="flex items-center justify-end w-100 h-100">
+            <span class="nr2">{{svg-jar "arrow-right" class="w6 h6 fill-midgrey pa1"}}</span>
+        </div>
+    </LinkTo>
+</li>

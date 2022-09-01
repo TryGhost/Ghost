@@ -1,0 +1,251 @@
+<div class="modal-body modal-fullsettings">
+    <div class="flex items-center justify-between w-100 modal-fullsettings-topbar">
+        <h2 class="modal-fullsettings-heading">Email newsletter design</h2>
+        <div class="flex items-center">
+            <button
+                class="gh-btn mr3" type="button" {{on "click" (action "closeModal")}}
+                {{!-- disable mouseDown so it does not trigger focus-out validations --}}
+                {{on "mousedown" (optional this.noop)}}
+            >
+                <span>Cancel</span>
+            </button>
+
+            <GhTaskButton
+                @buttonText="Save and close"
+                @successText="Saved"
+                @task={{this.saveSettings}}
+                @idleClass="gh-btn-primary"
+                @class="gh-btn gh-btn-icon"
+                data-test-button="save-members-modal-setting"
+            />
+        </div>
+    </div>
+    <div class="modal-fullsettings-body">
+        <div class="modal-fullsettings-sidebar with-footer">
+            <div>
+                <fieldset class="modal-fullsettings-form">
+                    <div class="modal-fullsettings-section first">
+                        <GhFormGroup @classNames="vertical">
+                            <GhUploader
+                                @extensions={{this.imageExtensions}}
+                                @paramsHash={{hash purpose="image"}}
+                                @onComplete={{fn this.imageUploaded "headerImage"}}
+                                as |uploader|
+                            >
+                                <div class="modal-fullsettings-uploader">
+                                    <div class="gh-header-img-desc">
+                                        <h4 class="modal-fullsettings-title">Header image</h4>
+                                        <p>Optional, recommended size 1200x600</p>
+                                    </div>
+                                    {{#if uploader.isUploading}}
+                                        <div class="gh-header-img-container">
+                                            <div class="gh-loading-spinner"></div>
+                                        </div>
+                                    {{else if this.headerImage}}
+                                        <div class="gh-header-img">
+                                            <img
+                                                class="gh-header-img-thumbnail"
+                                                src={{this.headerImage}}
+                                                alt="header image"
+                                                data-test-img="header"
+                                            >
+                                            <button type="button" class="gh-btn gh-header-img-deleteicon" {{on "click" (fn this.changeSetting "headerImage" null)}}>
+                                                <span> {{svg-jar "trash" class="w5 h5"}} </span>
+                                            </button>
+                                        </div>
+                                    {{else}}
+                                        <button type="button" class="gh-btn gh-header-img-uploadicon" {{on "click" uploader.triggerFileDialog}} data-test-image-upload-btn="header-image">
+                                            <span>{{svg-jar "upload-fill" class="w5 h5"}}</span>
+                                        </button>
+                                        <div style="display:none">
+                                            <GhFileInput
+                                                @multiple={{false}}
+                                                @action={{uploader.setFiles}}
+                                                @accept={{uploader.imageMimeTypes}}
+                                                @onInsert={{uploader.registerFileInput}}
+                                                data-test-file-input="icon" />
+                                        </div>
+                                    {{/if}}
+                                </div>
+                            </GhUploader>
+                        </GhFormGroup>
+
+                        <GhFormGroup data-tooltip={{unless this.settings.icon "A publication icon must be set in Branding settings."}}>
+                            <h4 class="modal-fullsettings-title {{unless this.settings.icon "disabled"}}">Publication icon</h4>
+                            <div class="for-switch small {{unless this.settings.icon "disabled"}}">
+                                <label class="switch" for="show-header">
+                                    <input
+                                        type="checkbox"
+                                        checked={{and this.showHeaderIcon this.settings.icon}}
+                                        id="show-header"
+                                        name="show-header"
+                                        disabled={{not this.settings.icon}}
+                                        {{on "click" (fn this.toggleSetting "showHeaderIcon")}}
+                                    >
+                                    <span class="input-toggle-component"></span>
+                                </label>
+                            </div>
+                        </GhFormGroup>
+                        <GhFormGroup>
+                            <h4 class="modal-fullsettings-title">Publication title</h4>
+                            <div class="for-switch small">
+                                <label class="switch" for="show-title">
+                                    <input
+                                        type="checkbox"
+                                        checked={{this.showHeaderTitle}}
+                                        id="show-title"
+                                        name="show-title"
+                                        {{on "click" (fn this.toggleSetting "showHeaderTitle")}}
+                                    >
+                                    <span class="input-toggle-component"></span>
+                                </label>
+                            </div>
+                        </GhFormGroup>
+                    </div>
+                    <div class="modal-fullsettings-section divider-top">
+                        <GhFormGroup>
+                            <h4 class="modal-fullsettings-title gh-email-design-alignment">Header style</h4>
+                            <div class="gh-email-design-typography-wrapper header">
+                                <div class="modal-fullsettings-radiogroup gh-email-design-typography">
+                                    <GhFontSelector
+                                        @selected={{this.titleFontCategory}}
+                                        @onChange={{fn this.changeSetting "titleFontCategory"}}
+                                    />
+                                </div>
+                                <div class="gh-btn-group icons">
+                                    <button type="button" class="gh-btn gh-btn-icon {{if (eq this.titleAlignment "left") "gh-btn-group-selected"}}" {{on "click" (fn this.changeSetting "titleAlignment" "left")}}><span>{{svg-jar "align-left"}}</span></button>
+                                    <button type="button" class="gh-btn gh-btn-icon {{if (eq this.titleAlignment "center") "gh-btn-group-selected"}}" {{on "click" (fn this.changeSetting "titleAlignment" "center")}}><span>{{svg-jar "align-center"}}</span></button>
+                                </div>
+                            </div>
+                        </GhFormGroup>
+                        <GhFormGroup>
+                            <h4 class="modal-fullsettings-title">Feature image</h4>
+                            <div class="for-switch small">
+                                <label class="switch" for="show-feature-image">
+                                    <input
+                                        type="checkbox"
+                                        checked={{this.showFeatureImage}}
+                                        id="show-feature-image"
+                                        name="show-feature-image"
+                                        {{on "click" (fn this.toggleSetting "showFeatureImage")}}
+                                    >
+                                    <span class="input-toggle-component"></span>
+                                </label>
+                            </div>
+                        </GhFormGroup>
+                    </div>
+                    <div class="modal-fullsettings-section">
+                        <GhFormGroup>
+                            <h4 class="modal-fullsettings-title">Body style</h4>
+                            <div class="gh-email-design-typography-wrapper">
+                                <div class="modal-fullsettings-radiogroup gh-email-design-typography">
+                                    <GhFontSelector
+                                        @selected={{this.bodyFontCategory}}
+                                        @onChange={{fn this.changeSetting "bodyFontCategory"}}
+                                    />
+                                </div>
+                            </div>
+                        </GhFormGroup>
+                    </div>
+                    <div class="modal-fullsettings-section divider-top">
+                        <GhFormGroup @classNames="vertical">
+                            <h4 class="modal-fullsettings-title">Email footer</h4>
+                            <KoenigBasicHtmlInput
+                                @name="footer"
+                                @html={{this.footerContent}}
+                                @class="miw-100 form-text gh-members-emailsettings-footer-input"
+                                @onChange={{fn this.changeSetting "footerContent"}}
+                                @onFocus={{this.handleInputFocus}}
+                                @onBlur={{this.handleInputBlur}}
+                            />
+                        <p>Any extra information or legal text</p>
+                        </GhFormGroup>
+                    </div>
+                </fieldset>
+            </div>
+            <div class="modal-fullsettings-section gh-members-emailsettings-footer">
+                <GhFormGroup>
+                    <div class="gh-members-emailsettings-promotelabel">
+                        <span>{{svg-jar "heart"}}</span>
+                        <div>
+                            <h4 class="modal-fullsettings-title">Promote independent publishing</h4>
+                            <p>Show you’re a part of the indie publishing movement with a small badge in the footer</p>
+                        </div>
+                    </div>
+                    <div class="for-switch small">
+                        <label
+                            class="switch"
+                            for="promote-ghost"
+                        >
+                            <input
+                                type="checkbox"
+                                checked={{this.showBadge}}
+                                id="promote-ghost"
+                                name="promote-ghost"
+                                {{on "click" (fn this.toggleSetting "showBadge")}}
+                            >
+                            <span class="input-toggle-component"></span>
+                        </label>
+                    </div>
+                </GhFormGroup>
+            </div>
+        </div>
+        <div class="modal-fullsettings-main">
+            <div class="modal-fullsettings-preview-container gh-members-emailpreview">
+                <div class="gh-members-emailpreview-container">
+                    <div class="gh-members-emailpreview-faux">
+                        <p>
+                            <span class="strong">{{this.config.blogTitle}}</span> &lt;{{full-email-address this.settings.membersFromAddress}}&gt;
+                        </p>
+                        <p><span class="dark">To:</span> Jamie Larson &lt;jamie@example.com&gt;</p>
+                    </div>
+                    <div class="gh-members-emailpreview-contents">
+                        {{#if this.headerImage}}
+                            <div class="gh-members-emailpreview-header-image">
+                                <img src={{this.headerImage}}>
+                            </div>
+                        {{/if}}
+                        {{#if this.showHeader}}
+                            <div class={{if this.showHeaderTitle "gh-members-emailpreview-header bordered" "gh-members-emailpreview-header"}}>
+                                {{#if (and this.settings.icon this.showHeaderIcon)}}
+                                    <img src={{this.settings.icon}} />
+                                {{/if}}
+                                {{#if this.showHeaderTitle}}
+                                    <h4>{{this.config.blogTitle}}</h4>
+                                {{/if}}
+                            </div>
+                        {{/if}}
+                        <div class="gh-members-emailpreview-title {{if (eq this.titleAlignment "left") "gh-members-emailpreview-title-left"}}">
+                            <h2 class="{{if (eq this.titleFontCategory "serif") "serif"}}">Your email newsletter</h2>
+                            <p>
+                                <span>By {{if this.session.user.name this.session.user.name this.session.user.email}} – {{this.currentDate}} – </span> <a href="javascript:">View online →</a>
+                            </p>
+                        </div>
+                        {{#if this.showFeatureImage}}
+                            <div class="gh-members-emailpreview-featureimage" style={{this.featureImageStyle}}></div>
+                            <div class="gh-members-emailpreview-featureimage-caption">Feature image caption</div>
+                        {{/if}}
+                        <div class="gh-members-emailpreview-content {{if (eq this.bodyFontCategory "sans_serif") "sans-serif"}}">
+                            <p>This is what your content will look like when you send one of your posts as an email newsletter to your subscribers.</p>
+                            <p>Over there on the left you’ll see some settings that allow you to customize the look and feel of this template to make it perfectly suited to your brand. Email templates are exceptionally finnicky to make, but we’ve spent a long time optimising this one to make it work beautifully across devices, email clients and content types.</p>
+                            <p>So, you can trust that every email you send with Ghost will look great and work well. Just like the rest of your site.</p>
+                        </div>
+                        <div class="gh-members-emailpreview-footer">
+                            <div class="gh-members-emailpreview-footercontent">
+                                {{{this.footerContent}}}
+                            </div>
+                            <div class="gh-members-emailpreview-footersite">
+                                <span>{{this.config.blogTitle}} &copy; {{this.copyrightYear}} – </span> <a href="javascript:">Unsubscribe</a>
+                            </div>
+                        </div>
+                        <div class="gh-members-emailpreview-badge {{unless this.showBadge "hide"}}">
+                            <a href="javascript:"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M24 12C24 18.6274 18.6274 24 12 24C5.37258 24 0 18.6274 0 12C0 5.37258 5.37258 0 12 0C18.6274 0 24 5.37258 24 12ZM11.8326 2.33879C6.37785 2.95189 3.95901 5.20797 3.41126 9.74699C3.34896 10.2632 3.22642 10.7805 3.10443 11.2954C2.93277 12.02 2.76221 12.74 2.76221 13.4458C2.76221 17.9885 6.5856 21.556 11.1283 21.556C12.8959 21.556 14.4433 20.8144 15.8756 20.048C19.0536 18.3478 22.0328 16.2597 22.0328 12.5411C22.0328 9.91512 20.1051 7.56932 18.466 5.5747C18.3834 5.47416 18.3015 5.37451 18.2206 5.27577C17.3866 4.25742 14.4333 2.04643 11.8326 2.33879Z" fill="black"/>
+                            </svg> <span>Powered by Ghost</span></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,29 @@
+{
+  "name": "@tryghost/verification-trigger",
+  "version": "0.0.0",
+  "private": true,
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "test:unit": "NODE_ENV=testing c8 --all --check-coverage --reporter text --reporter cobertura mocha './test/**/*.test.js'",
+    "test": "yarn test:unit",
+    "lint": "eslint . --ext .js --cache"
+  },
+  "files": [
+    "index.js",
+    "lib"
+  ],
+  "devDependencies": {
+    "c8": "7.12.0",
+    "mocha": "10.0.0",
+    "should": "13.2.3",
+    "sinon": "14.0.0"
+  },
+  "dependencies": {
+    "@tryghost/domain-events": "0.0.0",
+    "@tryghost/errors": "1.2.15",
+    "@tryghost/member-events": "0.0.0"
+  }
+}

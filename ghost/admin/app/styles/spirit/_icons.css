@@ -1,0 +1,529 @@
+/*
+
+    COLORING ICONS
+    ----------------------------------------
+    Base:
+        fill = filled icon
+        stroke = outlined icon
+
+    Value:
+        -(color) = color
+
+    See _colors.css for available colors.
+
+
+    ICON SIZES
+    ----------------------------------------
+    Base:
+        iw = icon width
+        ih = icon height
+
+    Value:
+        1-6 = size scale
+
+    Media Query Extensions:
+        -ns = not-small
+        -m  = medium
+        -l  = large
+
+*/
+
+/* Icon fill colors */
+.filter-invert      {  filter: invert(100%);  }
+
+.fill-blue path,
+.fill-blue g { fill: var(--blue); }
+.fill-green path,
+.fill-green g { fill: var(--green); }
+.fill-purple path,
+.fill-purple g { fill: var(--purple); }
+.fill-yellow path,
+.fill-yellow g { fill: var(--yellow); }
+.fill-red path,
+.fill-red g { fill: var(--red); }
+.fill-pink path,
+.fill-pink g { fill: var(--pink); }
+.fill-white path,
+.fill-white g { fill: var(--white); }
+
+.fill-white-10 path,
+.fill-white-10 g { fill: var(--white-10); }
+.fill-white-20 path,
+.fill-white-20 g { fill: var(--white-20); }
+.fill-white-30 path,
+.fill-white-30 g { fill: var(--white-30); }
+.fill-white-40 path,
+.fill-white-40 g { fill: var(--white-40); }
+.fill-white-50 path,
+.fill-white-50 g { fill: var(--white-50); }
+.fill-white-60 path,
+.fill-white-60 g { fill: var(--white-60); }
+.fill-white-70 path,
+.fill-white-70 g { fill: var(--white-70); }
+.fill-white-80 path,
+.fill-white-80 g { fill: var(--white-80); }
+.fill-white-90 path,
+.fill-white-90 g { fill: var(--white-90); }
+
+.fill-black-10 path,
+.fill-black-10 g { fill: var(--black-10); }
+.fill-black-20 path,
+.fill-black-20 g { fill: var(--black-20); }
+.fill-black-30 path,
+.fill-black-30 g { fill: var(--black-30); }
+.fill-black-40 path,
+.fill-black-40 g { fill: var(--black-40); }
+.fill-black-50 path,
+.fill-black-50 g { fill: var(--black-50); }
+.fill-black-60 path,
+.fill-black-60 g { fill: var(--black-60); }
+.fill-black-70 path,
+.fill-black-70 g { fill: var(--black-70); }
+.fill-black-80 path,
+.fill-black-80 g { fill: var(--black-80); }
+.fill-black-90 path,
+.fill-black-90 g { fill: var(--black-90); }
+
+.fill-darkgrey path,
+.fill-darkgrey g, 
+.fill-darkgrey circle { fill: var(--darkgrey); }
+.fill-middarkgrey path,
+.fill-middarkgrey g,
+.fill-middarkgrey circle { fill: var(--middarkgrey); }
+.fill-midgrey path,
+.fill-midgrey g,
+.fill-midgrey circle { fill: var(--midgrey); }
+.fill-midlightgrey path,
+.fill-midlightgrey g,
+.fill-midlightgrey circle { fill: var(--midlightgrey); }
+.fill-lightgrey path,
+.fill-lightgrey g,
+.fill-lightgrey circle  { fill: var(--lightgrey); }
+.fill-whitegrey path,
+.fill-whitegrey g,
+.fill-whitegrey circle { fill: var(--whitegrey); }
+
+/* Shades */
+.fill-blue-l3 path,
+.fill-blue-l3 g { fill: var(--blue-l3); }
+.fill-blue-l2 path,
+.fill-blue-l2 g { fill: var(--blue-l2); }
+.fill-blue-l1 path,
+.fill-blue-l1 g { fill: var(--blue-l1); }
+.fill-blue-d1 path,
+.fill-blue-d1 g { fill: var(--blue-d1); }
+.fill-blue-d2 path,
+.fill-blue-d2 g { fill: var(--blue-d2); }
+.fill-blue-d3 path,
+.fill-blue-d3 g { fill: var(--blue-d3); }
+
+.fill-green-l3 path,
+.fill-green-l3 g { fill: var(--green-l3); }
+.fill-green-l2 path,
+.fill-green-l2 g { fill: var(--green-l2); }
+.fill-green-l1 path,
+.fill-green-l1 g { fill: var(--green-l1); }
+.fill-green-d1 path,
+.fill-green-d1 g { fill: var(--green-d1); }
+.fill-green-d2 path,
+.fill-green-d2 g { fill: var(--green-d2); }
+.fill-green-d3 path,
+.fill-green-d3 g { fill: var(--green-d3); }
+
+.fill-purple-l3 path,
+.fill-purple-l3 g { fill: var(--purple-l3); }
+.fill-purple-l2 path,
+.fill-purple-l2 g { fill: var(--purple-l2); }
+.fill-purple-l1 path,
+.fill-purple-l1 g { fill: var(--purple-l1); }
+.fill-purple-d1 path,
+.fill-purple-d1 g { fill: var(--purple-d1); }
+.fill-purple-d2 path,
+.fill-purple-d2 g { fill: var(--purple-d2); }
+.fill-purple-d3 path,
+.fill-purple-d3 g { fill: var(--purple-d3); }
+
+.fill-yellow-l3 path,
+.fill-yellow-l3 g { fill: var(--yellow-l3); }
+.fill-yellow-l2 path,
+.fill-yellow-l2 g { fill: var(--yellow-l2); }
+.fill-yellow-l1 path,
+.fill-yellow-l1 g { fill: var(--yellow-l1); }
+.fill-yellow-d1 path,
+.fill-yellow-d1 g { fill: var(--yellow-d1); }
+.fill-yellow-d2 path,
+.fill-yellow-d2 g { fill: var(--yellow-d2); }
+.fill-yellow-d3 path,
+.fill-yellow-d3 g { fill: var(--yellow-d3); }
+
+.fill-red-l3 path,
+.fill-red-l3 g { fill: var(--red-l3); }
+.fill-red-l2 path,
+.fill-red-l2 g { fill: var(--red-l2); }
+.fill-red-l1 path,
+.fill-red-l1 g { fill: var(--red-l1); }
+.fill-red-d1 path,
+.fill-red-d1 g { fill: var(--red-d1); }
+.fill-red-d2 path,
+.fill-red-d2 g { fill: var(--red-d2); }
+.fill-red-d3 path,
+.fill-red-d3 g { fill: var(--red-d3); }
+
+.fill-pink-l3 path,
+.fill-pink-l3 g { fill: var(--pink-l3); }
+.fill-pink-l2 path,
+.fill-pink-l2 g { fill: var(--pink-l2); }
+.fill-pink-l1 path,
+.fill-pink-l1 g { fill: var(--pink-l1); }
+.fill-pink-d1 path,
+.fill-pink-d1 g { fill: var(--pink-d1); }
+.fill-pink-d2 path,
+.fill-pink-d2 g { fill: var(--pink-d2); }
+.fill-pink-d3 path,
+.fill-pink-d3 g { fill: var(--pink-d3); }
+
+.fill-darkgrey-l2 path,
+.fill-darkgrey-l2 g { fill: var(--darkgrey-l2); }
+.fill-darkgrey-l1 path,
+.fill-darkgrey-l1 g { fill: var(--darkgrey-l1); }
+.fill-darkgrey-d1 path,
+.fill-darkgrey-d1 g { fill: var(--darkgrey-d1); }
+.fill-darkgrey-d2 path,
+.fill-darkgrey-d2 g { fill: var(--darkgrey-d2); }
+
+.fill-middarkgrey-l2 path,
+.fill-middarkgrey-l2 g { fill: var(--middarkgrey-l2); }
+.fill-middarkgrey-l1 path,
+.fill-middarkgrey-l1 g { fill: var(--middarkgrey-l1); }
+.fill-middarkgrey-d1 path,
+.fill-middarkgrey-d1 g { fill: var(--middarkgrey-d1); }
+.fill-middarkgrey-d2 path,
+.fill-middarkgrey-d2 g { fill: var(--middarkgrey-d2); }
+
+.fill-midgrey-l2 path,
+.fill-midgrey-l2 g { fill: var(--midgrey-l2); }
+.fill-midgrey-l1 path,
+.fill-midgrey-l1 g { fill: var(--midgrey-l1); }
+.fill-midgrey-d1 path,
+.fill-midgrey-d1 g { fill: var(--midgrey-d1); }
+.fill-midgrey-d2 path,
+.fill-midgrey-d2 g { fill: var(--midgrey-d2); }
+
+.fill-midlightgrey-l2 path,
+.fill-midlightgrey-l2 g { fill: var(--midlightgrey-l2); }
+.fill-midlightgrey-l1 path,
+.fill-midlightgrey-l1 g { fill: var(--midlightgrey-l1); }
+.fill-midlightgrey-d1 path,
+.fill-midlightgrey-d1 g { fill: var(--midlightgrey-d1); }
+.fill-midlightgrey-d2 path,
+.fill-midlightgrey-d2 g { fill: var(--midlightgrey-d2); }
+
+.fill-lightgrey-l2 path,
+.fill-lightgrey-l2 g { fill: var(--lightgrey-l2); }
+.fill-lightgrey-l1 path,
+.fill-lightgrey-l1 g { fill: var(--lightgrey-l1); }
+.fill-lightgrey-d1 path,
+.fill-lightgrey-d1 g { fill: var(--lightgrey-d1); }
+.fill-lightgrey-d2 path,
+.fill-lightgrey-d2 g { fill: var(--lightgrey-d2); }
+
+.fill-whitegrey-l2 path,
+.fill-whitegrey-l2 g { fill: var(--whitegrey-l2); }
+.fill-whitegrey-l1 path,
+.fill-whitegrey-l1 g { fill: var(--whitegrey-l1); }
+.fill-whitegrey-d1 path,
+.fill-whitegrey-d1 g { fill: var(--whitegrey-d1); }
+.fill-whitegrey-d2 path,
+.fill-whitegrey-d2 g { fill: var(--whitegrey-d2); }
+
+.fill-color-inherit path,
+.fill-color-inherit g { fill: inherit; }
+
+.fill-white path,
+.fill-white g       {  fill: var(--white)  }
+
+
+.stroke-blue path,
+.stroke-blue path path,
+.stroke-blue g { stroke: var(--blue); }
+.stroke-green path,
+.stroke-green g { stroke: var(--green); }
+.stroke-purple path,
+.stroke-purple g { stroke: var(--purple); }
+.stroke-yellow path,
+.stroke-yellow g { stroke: var(--yellow); }
+.stroke-red path,
+.stroke-red g { stroke: var(--red); }
+.stroke-pink path,
+.stroke-pink g { stroke: var(--pink); }
+.stroke-white path,
+.stroke-white g { stroke: var(--white); }
+
+.stroke-white-10 path,
+.stroke-white-10 g { stroke: var(--white-10); }
+.stroke-white-20 path,
+.stroke-white-20 g { stroke: var(--white-20); }
+.stroke-white-30 path,
+.stroke-white-30 g { stroke: var(--white-30); }
+.stroke-white-40 path,
+.stroke-white-40 g { stroke: var(--white-40); }
+.stroke-white-50 path,
+.stroke-white-50 g { stroke: var(--white-50); }
+.stroke-white-60 path,
+.stroke-white-60 g { stroke: var(--white-60); }
+.stroke-white-70 path,
+.stroke-white-70 g { stroke: var(--white-70); }
+.stroke-white-80 path,
+.stroke-white-80 g { stroke: var(--white-80); }
+.stroke-white-90 path,
+.stroke-white-90 g { stroke: var(--white-90); }
+
+.stroke-black-10 path,
+.stroke-black-10 g { stroke: var(--black-10); }
+.stroke-black-20 path,
+.stroke-black-20 g { stroke: var(--black-20); }
+.stroke-black-30 path,
+.stroke-black-30 g { stroke: var(--black-30); }
+.stroke-black-40 path,
+.stroke-black-40 g { stroke: var(--black-40); }
+.stroke-black-50 path,
+.stroke-black-50 g { stroke: var(--black-50); }
+.stroke-black-60 path,
+.stroke-black-60 g { stroke: var(--black-60); }
+.stroke-black-70 path,
+.stroke-black-70 g { stroke: var(--black-70); }
+.stroke-black-80 path,
+.stroke-black-80 g { stroke: var(--black-80); }
+.stroke-black-90 path,
+.stroke-black-90 g { stroke: var(--black-90); }
+
+.stroke-darkgrey path,
+.stroke-darkgrey g { stroke: var(--darkgrey); }
+.stroke-middarkgrey path,
+.stroke-middarkgrey g { stroke: var(--middarkgrey); }
+.stroke-midgrey path,
+.stroke-midgrey g { stroke: var(--midgrey); }
+.stroke-midlightgrey path,
+.stroke-midlightgrey g { stroke: var(--midlightgrey); }
+.stroke-lightgrey path,
+.stroke-lightgrey g { stroke: var(--lightgrey); }
+.stroke-whitegrey path,
+.stroke-whitegrey g { stroke: var(--whitegrey); }
+
+/* Shades */
+.stroke-blue-l3 path,
+.stroke-blue-l3 g { stroke: var(--blue-l3); }
+.stroke-blue-l2 path,
+.stroke-blue-l2 g { stroke: var(--blue-l2); }
+.stroke-blue-l1 path,
+.stroke-blue-l1 g { stroke: var(--blue-l1); }
+.stroke-blue-d1 path,
+.stroke-blue-d1 g { stroke: var(--blue-d1); }
+.stroke-blue-d2 path,
+.stroke-blue-d2 g { stroke: var(--blue-d2); }
+.stroke-blue-d3 path,
+.stroke-blue-d3 g { stroke: var(--blue-d3); }
+
+.stroke-green-l3 path,
+.stroke-green-l3 g { stroke: var(--green-l3); }
+.stroke-green-l2 path,
+.stroke-green-l2 g { stroke: var(--green-l2); }
+.stroke-green-l1 path,
+.stroke-green-l1 g { stroke: var(--green-l1); }
+.stroke-green-d1 path,
+.stroke-green-d1 g { stroke: var(--green-d1); }
+.stroke-green-d2 path,
+.stroke-green-d2 g { stroke: var(--green-d2); }
+.stroke-green-d3 path,
+.stroke-green-d3 g { stroke: var(--green-d3); }
+
+.stroke-purple-l3 path,
+.stroke-purple-l3 g { stroke: var(--purple-l3); }
+.stroke-purple-l2 path,
+.stroke-purple-l2 g { stroke: var(--purple-l2); }
+.stroke-purple-l1 path,
+.stroke-purple-l1 g { stroke: var(--purple-l1); }
+.stroke-purple-d1 path,
+.stroke-purple-d1 g { stroke: var(--purple-d1); }
+.stroke-purple-d2 path,
+.stroke-purple-d2 g { stroke: var(--purple-d2); }
+.stroke-purple-d3 path,
+.stroke-purple-d3 g { stroke: var(--purple-d3); }
+
+.stroke-yellow-l3 path,
+.stroke-yellow-l3 g { stroke: var(--yellow-l3); }
+.stroke-yellow-l2 path,
+.stroke-yellow-l2 g { stroke: var(--yellow-l2); }
+.stroke-yellow-l1 path,
+.stroke-yellow-l1 g { stroke: var(--yellow-l1); }
+.stroke-yellow-d1 path,
+.stroke-yellow-d1 g { stroke: var(--yellow-d1); }
+.stroke-yellow-d2 path,
+.stroke-yellow-d2 g { stroke: var(--yellow-d2); }
+.stroke-yellow-d3 path,
+.stroke-yellow-d3 g { stroke: var(--yellow-d3); }
+
+.stroke-red-l3 path,
+.stroke-red-l3 g { stroke: var(--red-l3); }
+.stroke-red-l2 path,
+.stroke-red-l2 g { stroke: var(--red-l2); }
+.stroke-red-l1 path,
+.stroke-red-l1 g { stroke: var(--red-l1); }
+.stroke-red-d1 path,
+.stroke-red-d1 g { stroke: var(--red-d1); }
+.stroke-red-d2 path,
+.stroke-red-d2 g { stroke: var(--red-d2); }
+.stroke-red-d3 path,
+.stroke-red-d3 g { stroke: var(--red-d3); }
+
+.stroke-pink-l3 path,
+.stroke-pink-l3 g { stroke: var(--pink-l3); }
+.stroke-pink-l2 path,
+.stroke-pink-l2 g { stroke: var(--pink-l2); }
+.stroke-pink-l1 path,
+.stroke-pink-l1 g { stroke: var(--pink-l1); }
+.stroke-pink-d1 path,
+.stroke-pink-d1 g { stroke: var(--pink-d1); }
+.stroke-pink-d2 path,
+.stroke-pink-d2 g { stroke: var(--pink-d2); }
+.stroke-pink-d3 path,
+.stroke-pink-d3 g { stroke: var(--pink-d3); }
+
+.stroke-darkgrey-l2 path,
+.stroke-darkgrey-l2 g { stroke: var(--darkgrey-l2); }
+.stroke-darkgrey-l1 path,
+.stroke-darkgrey-l1 g { stroke: var(--darkgrey-l1); }
+.stroke-darkgrey-d1 path,
+.stroke-darkgrey-d1 g { stroke: var(--darkgrey-d1); }
+.stroke-darkgrey-d2 path,
+.stroke-darkgrey-d2 g { stroke: var(--darkgrey-d2); }
+
+.stroke-middarkgrey-l2 path,
+.stroke-middarkgrey-l2 g { stroke: var(--middarkgrey-l2); }
+.stroke-middarkgrey-l1 path,
+.stroke-middarkgrey-l1 g { stroke: var(--middarkgrey-l1); }
+.stroke-middarkgrey-d1 path,
+.stroke-middarkgrey-d1 g { stroke: var(--middarkgrey-d1); }
+.stroke-middarkgrey-d2 path,
+.stroke-middarkgrey-d2 g { stroke: var(--middarkgrey-d2); }
+
+.stroke-midgrey-l2 path,
+.stroke-midgrey-l2 g { stroke: var(--midgrey-l2); }
+.stroke-midgrey-l1 path,
+.stroke-midgrey-l1 g { stroke: var(--midgrey-l1); }
+.stroke-midgrey-d1 path,
+.stroke-midgrey-d1 g { stroke: var(--midgrey-d1); }
+.stroke-midgrey-d2 path,
+.stroke-midgrey-d2 g { stroke: var(--midgrey-d2); }
+
+.stroke-midlightgrey-l2 path,
+.stroke-midlightgrey-l2 g { stroke: var(--midlightgrey-l2); }
+.stroke-midlightgrey-l1 path,
+.stroke-midlightgrey-l1 g { stroke: var(--midlightgrey-l1); }
+.stroke-midlightgrey-d1 path,
+.stroke-midlightgrey-d1 g { stroke: var(--midlightgrey-d1); }
+.stroke-midlightgrey-d2 path,
+.stroke-midlightgrey-d2 g { stroke: var(--midlightgrey-d2); }
+
+.stroke-lightgrey-l2 path,
+.stroke-lightgrey-l2 g { stroke: var(--lightgrey-l2); }
+.stroke-lightgrey-l1 path,
+.stroke-lightgrey-l1 g { stroke: var(--lightgrey-l1); }
+.stroke-lightgrey-d1 path,
+.stroke-lightgrey-d1 g { stroke: var(--lightgrey-d1); }
+.stroke-lightgrey-d2 path,
+.stroke-lightgrey-d2 g { stroke: var(--lightgrey-d2); }
+
+.stroke-whitegrey-l2 path,
+.stroke-whitegrey-l2 g { stroke: var(--whitegrey-l2); }
+.stroke-whitegrey-l1 path,
+.stroke-whitegrey-l1 g { stroke: var(--whitegrey-l1); }
+.stroke-whitegrey-d1 path,
+.stroke-whitegrey-d1 g { stroke: var(--whitegrey-d1); }
+.stroke-whitegrey-d2 path,
+.stroke-whitegrey-d2 g { stroke: var(--whitegrey-d2); }
+
+.stroke-color-inherit path,
+.stroke-color-inherit g { stroke: inherit; }
+
+.stroke-white path,
+.stroke-white g       {  stroke: var(--white)  }
+
+
+/* Custom icon sizes */
+.ih1 { height: .8rem;  }
+.iw1 { width: .8rem;  }
+
+.ih2 { height: 1.2rem;  }
+.iw2 { width: 1.2rem;  }
+
+.ih3 { height: 1.6rem;  }
+.iw3 { width: 1.6rem;  }
+
+.ih4 { height: 2.0rem;  }
+.iw4 { width: 2.0rem;  }
+
+.ih5 { height: 2.4rem;  }
+.iw5 { width: 2.4rem;  }
+
+.ih6 { height: 3.2rem;  }
+.iw6 { width: 3.2rem;  }
+
+/* Custom icon stroke sizes */
+.i-strokew--1 path {
+    stroke-width: 1px;
+}
+
+.i-strokew--1-5 path {
+    stroke-width: 1.5px;
+}
+
+.i-strokew--2 path {
+    stroke-width: 2px;
+}
+
+
+@media (--breakpoint-not-small) {
+    .ih1-ns { height: .8rem;  }
+    .iw1-ns { width: .8rem;  }
+    .ih2-ns { height: 1.2rem;  }
+    .iw2-ns { width: 1.2rem;  }
+    .ih3-ns { height: 1.6rem;  }
+    .iw3-ns { width: 1.6rem;  }
+    .ih4-ns { height: 2.0rem;  }
+    .iw4-ns { width: 2.0rem;  }
+    .ih5-ns { height: 2.4rem;  }
+    .iw5-ns { width: 2.4rem;  }
+    .ih6-ns { height: 3.2rem;  }
+    .iw6-ns { width: 3.2rem;  }
+}
+
+@media (--breakpoint-medium) {
+    .ih1-m { height: .8rem;  }
+    .iw1-m { width: .8rem;  }
+    .ih2-m { height: 1.2rem;  }
+    .iw2-m { width: 1.2rem;  }
+    .ih3-m { height: 1.6rem;  }
+    .iw3-m { width: 1.6rem;  }
+    .ih4-m { height: 2.0rem;  }
+    .iw4-m { width: 2.0rem;  }
+    .ih5-m { height: 2.4rem;  }
+    .iw5-m { width: 2.4rem;  }
+    .ih6-m { height: 3.2rem;  }
+    .iw6-m { width: 3.2rem;  }
+}
+
+@media (--breakpoint-large) {
+    .ih1-l { height: .8rem;  }
+    .iw1-l { width: .8rem;  }
+    .ih2-l { height: 1.2rem;  }
+    .iw2-l { width: 1.2rem;  }
+    .ih3-l { height: 1.6rem;  }
+    .iw3-l { width: 1.6rem;  }
+    .ih4-l { height: 2.0rem;  }
+    .iw4-l { width: 2.0rem;  }
+    .ih5-l { height: 2.4rem;  }
+    .iw5-l { width: 2.4rem;  }
+    .ih6-l { height: 3.2rem;  }
+    .iw6-l { width: 3.2rem;  }
+}

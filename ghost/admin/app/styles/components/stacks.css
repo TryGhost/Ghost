@@ -1,0 +1,17 @@
+/* Lists that are open on the sides 
+/* ------------------------------------------------- */
+.gh-stack {
+    display: flex;
+    flex-direction: column;
+}
+
+.gh-stack-item {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+.gh-stack-item .gh-setting-content {
+    margin-right: 24px;
+}

@@ -1,0 +1,59 @@
+/*
+
+   Media Query Extensions:
+     -ns = not-small
+     -m  = medium
+     -l  = large
+
+*/
+
+:root {
+    --lh-1-0: 1.0em;
+    --lh-1-1: 1.1em;
+    --lh-1-3: 1.333em;
+    --lh-1-4: 1.4em;
+    --lh-1-6: 1.6em;
+    --lh-2-0: 2.0em;
+}
+
+.lh-1           { line-height: var(--lh-1-0); }
+.lh-solid       { line-height: var(--lh-1-1); }
+.lh-heading     { line-height: var(--lh-1-3); }
+.lh-title       { line-height: var(--lh-1-4); }
+.lh-copy        { line-height: var(--lh-1-6); }
+.lh-list        { line-height: 3.2rem; }
+.lh-code        { line-height: var(--lh-1-3); }
+.lh-zero        { line-height: 0; }
+
+@media (--breakpoint-not-small) {
+    .lh-1-ns           { line-height: var(--lh-1-0); }
+    .lh-solid-ns       { line-height: var(--lh-1-1); }
+    .lh-heading-ns     { line-height: var(--lh-1-3); }
+    .lh-title-ns       { line-height: var(--lh-1-4); }
+    .lh-copy-ns        { line-height: var(--lh-1-6); }
+    .lh-list-ns        { line-height: var(--lh-2-0); }
+    .lh-code-ns        { line-height: var(--lh-1-3); }
+    .lh-zero-ns        { line-height: 0; }
+}
+
+@media (--breakpoint-medium) {
+    .lh-1-m           { line-height: var(--lh-1-0); }
+    .lh-solid-m       { line-height: var(--lh-1-1); }
+    .lh-heading-m     { line-height: var(--lh-1-3); }
+    .lh-title-m       { line-height: var(--lh-1-4); }
+    .lh-copy-m        { line-height: var(--lh-1-6); }
+    .lh-list-m        { line-height: var(--lh-2-0); }
+    .lh-code-m        { line-height: var(--lh-1-3); }
+    .lh-zero-m        { line-height: 0; }
+}
+
+@media (--breakpoint-large) {
+    .lh-1-l           { line-height: var(--lh-1-0); }
+    .lh-solid-l       { line-height: var(--lh-1-1); }
+    .lh-heading-l     { line-height: var(--lh-1-3); }
+    .lh-title-l       { line-height: var(--lh-1-4); }
+    .lh-copy-l        { line-height: var(--lh-1-6); }
+    .lh-list-l        { line-height: var(--lh-2-0); }
+    .lh-code-l        { line-height: var(--lh-1-3); }
+    .lh-zero-l        { line-height: 0; }
+}

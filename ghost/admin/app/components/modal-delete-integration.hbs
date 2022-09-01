@@ -1,0 +1,17 @@
+<header class="modal-header">
+    <h1>Are you sure?</h1>
+</header>
+<a class="close" href="" role="button" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
+<div class="modal-body">
+    <p>
+        Deleting this integration will remove all webhooks and api keys associated with it.
+    </p>
+</div>
+<div class="modal-footer">
+    <button class="gh-btn" type="button" {{action "closeModal"}}><span>Cancel</span></button>
+    <GhTaskButton
+        @buttonText="Delete Integration"
+        @successText="Deleted"
+        @task={{this.deleteIntegration}}
+        @class="gh-btn gh-btn-red gh-btn-icon" />
+</div>

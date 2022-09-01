@@ -1,0 +1,86 @@
+<section class="gh-canvas js-settings-content {{if (feature 'auditLog') "gh-whats-new-canvas"}}" {{scroll-top}}>
+    <GhCanvasHeader class="gh-canvas-header">
+        <h2 class="gh-whats-new-heading">{{svg-jar "gift"}} What's new?</h2>
+        {{#if (not (feature 'auditLog'))}}
+            <div class="gh-about-header-actions">
+                <a class="gh-btn gh-btn-outline" href="https://ghost.org/docs/" target="_blank" rel="noopener noreferrer"><span>User documentation</span></a>
+                <a class="gh-btn gh-btn-outline" href="https://forum.ghost.org/" target="_blank" rel="noopener noreferrer"><span>Get help with Ghost</span></a>
+                <a class="gh-btn gh-btn-black" href="https://ghost.org/docs/contributing/" target="_blank" rel="noopener noreferrer"><span>Get involved</span></a>
+            </div>
+        {{/if}}
+    </GhCanvasHeader>
+    <section class="view-container">
+        <div class="gh-about-container">
+            <section class="gh-whats-new gh-about-box" {{did-insert (perform this.whatsNew.updateLastSeen)}}>
+                {{#each this.whatsNew.entries as |entry|}}
+                    <div class="gh-wn-entry" {{scroll-to shouldScroll=(eq entry.slug this.entry)}}>
+                        <a href="{{entry.url}}">
+                            <h4>{{moment-format entry.published_at "DD MMMM YYYY"}}</h4>
+                            <h1>{{entry.title}}</h1>
+                            {{#if entry.feature_image}}
+                                <img class="mb5" src={{entry.feature_image}}>
+                            {{/if}}
+                        </a>
+                        <div class="gh-wn-content">
+                        {{#if entry.custom_excerpt}}
+                            <p>{{entry.custom_excerpt}}</p>
+                            <a href={{entry.url}} class="dib fw6 mb6" target="_blank" rel="noopener noreferrer">Read the full post →</a>
+                        {{else}}
+                            {{{entry.html}}}
+                        {{/if}}
+                        </div>
+                    </div>
+                {{/each}}
+                <a class="green" href="https://ghost.org/changelog" target="_blank" rel="noopener noreferrer">See all updates &rarr;</a>
+            </section>
+
+            {{#if (not (feature 'auditLog'))}}
+            <div class="gh-about-content-actions">
+                <a class="gh-btn gh-btn-outline" href="https://ghost.org/docs/" target="_blank" rel="noopener noreferrer"><span>User documentation</span></a>
+                <a class="gh-btn gh-btn-outline" href="https://forum.ghost.org/" target="_blank" rel="noopener noreferrer"><span>Get help with Ghost</span></a>
+                <a class="gh-btn gh-btn-black" href="https://ghost.org/docs/contributing/" target="_blank" rel="noopener noreferrer"><span>Get involved</span></a>
+            </div>
+
+            <section class="gh-env-details gh-about-box grey">
+                <div class="gh-about-logo">
+                    {{svg-jar "ghost-logo-orb" alt="Ghost"}}
+                </div>
+
+                {{#if this.upgradeStatus.message}}
+                    <section class="gh-upgrade-notification">
+                        <p>
+                            <strong>Update available!</strong> {{this.upgradeStatus.message}}
+                        </p>
+                    </section>
+                {{/if}}
+
+                <ul class="gh-env-list">
+                    {{#if this.linkToGitHubReleases}}
+                    <li><strong>Version:</strong> <a href="https://github.com/TryGhost/Ghost/releases/tag/v{{this.config.version}}" target="_blank" rel="noopener noreferrer">{{this.config.version}}</a></li>
+                    {{else}}
+                    <li><strong>Version:</strong> {{this.config.version}}</li>
+                    {{/if}}
+                    {{#if this.showSystemInfo}}
+                    <li><strong>Environment:</strong> <span class="ttc">{{this.config.environment}}</span></li>
+                    <li class="gh-env-list-database-type"><strong>Database:</strong> {{this.config.database}}</li>
+                    <li><strong>Mail:</strong> {{#if this.config.mail}}{{this.config.mail}}{{else}}Native{{/if}}</li>
+                    {{/if}}
+                    {{#if (enable-developer-experiments)}}
+                    <li><strong>Developer experiments:</strong> <span class="gh-badge">Enabled</span></li>
+                    {{/if}}
+                </ul>
+
+                {{#if (and this.showSystemInfo this.showDatabaseWarning)}}
+                    <div class="gh-env-error">
+                        You are running an unsupported database in production. Please <a href="https://ghost.org/docs/faq/supported-databases/" target="_blank" rel="noopener noreferrer">upgrade to MySQL 8</a>.
+                    </div>
+                {{/if}}
+
+                <footer class="gh-copyright-info">
+                    Copyright &copy; 2013 &ndash; {{this.copyrightYear}} Ghost Foundation, released under the <a href="https://github.com/TryGhost/Ghost/blob/master/LICENSE" target="_blank" rel="noopener noreferrer">MIT license</a>. <a href="https://ghost.org/" target="_blank" rel="noopener noreferrer">Ghost</a> is a registered trademark of <a href="https://ghost.org/trademark/" target="_blank" rel="noopener noreferrer">Ghost Foundation Ltd</a>.
+                </footer>
+            </section>
+            {{/if}}
+        </div>
+    </section>
+</section>

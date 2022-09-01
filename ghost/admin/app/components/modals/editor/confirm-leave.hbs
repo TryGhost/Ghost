@@ -1,0 +1,21 @@
+<div class="modal-content">
+    <header class="modal-header">
+        <h1>Are you sure you want to leave this page?</h1>
+    </header>
+    <button class="close" title="Close" type="button" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+    <div class="modal-body">
+        <p>
+            Hey there! It looks like you're in the middle of writing something and
+            you haven't saved all of your content.
+        </p>
+
+        <p>Save before you go!</p>
+    </div>
+
+    <div class="modal-footer">
+        <button class="gh-btn" type="button" {{on "click" @close}}><span>Stay</span></button>
+        <button class="gh-btn gh-btn-red" type="button" {{on "click" (fn @close true)}}><span>Leave</span></button>
+    </div>
+
+</div>

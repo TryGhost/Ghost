@@ -1,0 +1,13 @@
+<header class="modal-header">
+    <h1>Are you sure you want to un-suspend this user?</h1>
+</header>
+<a class="close" href="" role="button" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
+
+<div class="modal-body">
+    <strong>WARNING:</strong> This user will be able to log in again and will have the same permissions they had previously.
+</div>
+
+<div class="modal-footer">
+    <button class="gh-btn" type="button" {{action "closeModal"}}><span>Cancel</span></button>
+    <GhTaskButton @buttonText="Un-suspend" @successText="Suspended" @task={{this.unsuspendUser}} @class="gh-btn gh-btn-red gh-btn-icon" data-test-modal-confirm="true" />
+</div>

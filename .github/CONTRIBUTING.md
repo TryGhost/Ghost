@@ -17,7 +17,7 @@ If you've got an idea for a new feature, please start by suggesting it in the [f
 
 If you're going to work on Ghost core you'll need to go through a slightly more involved install and setup process than the usual Ghost CLI version.
 
-First you'll need to fork both [Ghost](https://github.com/tryghost/ghost) and [Ghost-Admin](https://github.com/tryghost/ghost-admin) to your personal Github account, and then follow the detailed [install from source](https://ghost.org/docs/install/source/) setup guide.
+First you'll need to fork [Ghost](https://github.com/tryghost/ghost) to your personal Github account, and then follow the detailed [install from source](https://ghost.org/docs/install/source/) setup guide.
 
 
 ### Branching Guide
@@ -48,7 +48,7 @@ We are following [gitmoji](https://gitmoji.carloscuesta.me/).
 
 Good commit message examples: [one](https://github.com/TryGhost/Ghost/commit/61db6defde3b10a4022c86efac29cf15ae60983f), [two](https://github.com/TryGhost/Ghost/commit/b392d1925a9f961d7b4bf781ee86393a7773ed4b) and [three](https://github.com/TryGhost/Ghost/commit/e4807a779c28a754e3f8ae871a26a8aad12ca9a9).
 
-**Bumping @tryghost dependecies**
+**Bumping @tryghost dependencies**
 
 When bumping `@tryghost/*` dependencies, the first line should follow the above format and say what has changed, not say what has been bumped.
 

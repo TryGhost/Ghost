@@ -1,0 +1,26 @@
+{
+  "name": "@tryghost/express-dynamic-redirects",
+  "version": "0.0.0",
+  "private": true,
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "test:unit": "NODE_ENV=testing c8 --all --reporter text --reporter cobertura --check-coverage mocha './test/**/*.test.js'",
+    "test": "yarn test:unit",
+    "lint": "eslint . --ext .js --cache"
+  },
+  "files": [
+    "index.js",
+    "lib"
+  ],
+  "devDependencies": {
+    "c8": "7.12.0",
+    "mocha": "10.0.0",
+    "should": "13.2.3"
+  },
+  "peerDependencies": {
+    "express": "^4.17.1"
+  }
+}

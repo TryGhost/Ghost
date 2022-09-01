@@ -1,0 +1,9 @@
+{
+    "name": "members-test-theme",
+    "description": "A minimal theme for testing members behavior",
+    "version": "1.0.0",
+    "license": "MIT",
+    "config": {
+        "posts_per_page": 25
+    }
+}
