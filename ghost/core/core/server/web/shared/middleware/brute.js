@@ -86,7 +86,7 @@ module.exports = {
     /**
      */
     membersAuth(req, res, next) {
-        return spamPrevention.userLogin().getMiddleware({
+        return spamPrevention.membersAuth().getMiddleware({
             ignoreIP: false,
             key(_req, _res, _next) {
                 if (_req.body.email) {

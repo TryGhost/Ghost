@@ -107,7 +107,7 @@ describe('Members Service Middleware', function () {
             req.query = {token: 'test', action: 'signup'};
 
             // Fake token handling failure
-            membersService.ssr.exchangeTokenForSession.resolves();
+            membersService.ssr.exchangeTokenForSession.resolves({});
 
             // Fake welcome page for free tier
             models.Product.findOne.resolves({
@@ -153,7 +153,7 @@ describe('Members Service Middleware', function () {
             req.query = {token: 'test', action: 'signin', r: 'https://site.com/blah/my-post/'};
 
             // Fake token handling failure
-            membersService.ssr.exchangeTokenForSession.resolves();
+            membersService.ssr.exchangeTokenForSession.resolves({});
 
             // Call the middleware
             await membersMiddleware.createSessionFromMagicLink(req, res, next);
@@ -169,7 +169,7 @@ describe('Members Service Middleware', function () {
             req.query = {token: 'test', action: 'signin', r: 'https://external.com/whatever/'};
 
             // Fake token handling failure
-            membersService.ssr.exchangeTokenForSession.resolves();
+            membersService.ssr.exchangeTokenForSession.resolves({});
 
             // Call the middleware
             await membersMiddleware.createSessionFromMagicLink(req, res, next);

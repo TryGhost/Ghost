@@ -36,6 +36,7 @@ let privateBlogInstance;
 let globalResetInstance;
 let globalBlockInstance;
 let userLoginInstance;
+let membersAuthInstance;
 let userResetInstance;
 let contentApiKeyInstance;
 
@@ -119,6 +120,36 @@ const globalReset = () => {
     );
 
     return globalResetInstance;
+};
+
+const membersAuth = () => {
+    const ExpressBrute = require('express-brute');
+    const BruteKnex = require('brute-knex');
+    const db = require('../../../../data/db');
+
+    store = store || new BruteKnex({
+        tablename: 'brute',
+        createTable: false,
+        knex: db.knex
+    });
+
+    if (!membersAuthInstance) {
+        membersAuthInstance = new ExpressBrute(store,
+            extend({
+                attachResetToRequest: true,
+                failCallback(req, res, next, nextValidRequestDate) {
+                    return next(new errors.TooManyRequestsError({
+                        message: `Too many sign-in attempts try again in ${moment(nextValidRequestDate).fromNow(true)}`,
+                        context: tpl(messages.tooManySigninAttempts.context),
+                        help: tpl(messages.tooManySigninAttempts.context)
+                    }));
+                },
+                handleStoreError: handleStoreError
+            }, pick(spamUserLogin, spamConfigKeys))
+        );
+    }
+
+    return membersAuthInstance;
 };
 
 // Stops login attempts for a user+IP pair with an increasing time period starting from 10 minutes
@@ -249,6 +280,7 @@ module.exports = {
     globalBlock: globalBlock,
     globalReset: globalReset,
     userLogin: userLogin,
+    membersAuth: membersAuth,
     userReset: userReset,
     privateBlog: privateBlog,
     contentApiKey: contentApiKey
