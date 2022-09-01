@@ -6,35 +6,14 @@ const _ = require('lodash');
 const moment = require('moment');
 const testUtils = require('../../../utils');
 const configUtils = require('../../../utils/configUtils');
-const themeEngine = require('../../../../core/frontend/services/theme-engine');
 const models = require('../../../../core/server/models');
 const imageLib = require('../../../../core/server/lib/image');
 const routing = require('../../../../core/frontend/services/routing');
 const urlService = require('../../../../core/server/services/url');
-const assert = require('assert');
 
 const ghost_head = require('../../../../core/frontend/helpers/ghost_head');
 const proxy = require('../../../../core/frontend/services/proxy');
 const {settingsCache, labs} = proxy;
-const {snapshotManager} = require('@tryghost/jest-snapshot');
-
-/**
- * Reuses the snapshotManager for E2E tests to use the same snapshot system for unit tests.
- */
-function assertHeadSnapshot(response) {
-    let error = new assert.AssertionError({
-        message: 'Unexpected assertion error'
-    });
-    
-    // We need to wrap the response in an object to fit the existing format
-    // Response should also be an object (should contain a property named 'string'), because jest requires an object if properties is set
-    // and we currently cannot set 'properties' to undefined with the existing framework (properties has a default argument value).
-    snapshotManager.assertSnapshot({response: response}, {
-        properties: {},
-        field: 'response',
-        error
-    });
-}
 
 /**
  * This test helper asserts that the helper response matches the stored snapshot. This helps us detect issues where we
@@ -44,7 +23,7 @@ function assertHeadSnapshot(response) {
 async function testGhostHead(options) {
     const rendered = await ghost_head(options);
     should.exist(rendered);
-    assertHeadSnapshot(rendered);
+    rendered.should.matchSnapshot();
     return rendered;
 }
 
