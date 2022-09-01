@@ -22,6 +22,18 @@ EventRegistry = function () {
 
 util.inherits(EventRegistry, events.EventEmitter);
 
+/**
+ * This is method is semi-hack to make sure listeners are only registered once
+ * during the lifetime of the process. And example problem it solves is
+ * registering duplicate listeners between Ghost instance reboots when running tests.
+ * @param {String} eventName
+ * @param {String} listenerName named function name registered as a listener for the event
+ * @returns {Boolean}
+ */
+EventRegistry.prototype.hasRegisteredListener = function (eventName, listenerName) {
+    return !!(this.listeners(eventName).find(listener => (listener.name === listenerName)));
+};
+
 EventRegistryInstance = new EventRegistry();
 EventRegistryInstance.setMaxListeners(100);
 
