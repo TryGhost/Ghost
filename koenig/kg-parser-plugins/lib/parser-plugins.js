@@ -235,7 +235,7 @@ export function createParserPlugins(_options = {}) {
                     img.setAttribute('src', img.getAttribute('data-src'));
                     prevNode.remove();
                 } else {
-                    return;
+                    return undefined;
                 }
             }
 

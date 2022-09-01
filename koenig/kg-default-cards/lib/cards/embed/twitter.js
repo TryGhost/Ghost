@@ -73,20 +73,20 @@ module.exports = {
                     data: content.slice(last, content.length).join('').replace(/\n/g, '<br>')
                 });
 
-                tweetContent = parts.reduce((content, part) => {
+                tweetContent = parts.reduce((partContent, part) => {
                     if (part.type === 'text') {
-                        return content + part.data;
+                        return partContent + part.data;
                     }
                     if (part.type === 'mention') {
-                        return content + `<span style="color: #1DA1F2;">${part.data}</span>`;
+                        return partContent + `<span style="color: #1DA1F2;">${part.data}</span>`;
                     }
                     if (part.type === 'hashtag') {
-                        return content + `<span style="color: #1DA1F2;">${part.data}</span>`;
+                        return partContent + `<span style="color: #1DA1F2;">${part.data}</span>`;
                     }
                     if (part.type === 'url') {
-                        return content + `<span style="color: #1DA1F2; word-break: break-all;">${part.data}</span>`;
+                        return partContent + `<span style="color: #1DA1F2; word-break: break-all;">${part.data}</span>`;
                     }
-                    return content;
+                    return partContent;
                 }, '');
             }
 
