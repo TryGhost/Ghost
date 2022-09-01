@@ -156,7 +156,7 @@ const createSessionFromMagicLink = async function (req, res, next) {
 
     try {
         const member = await membersService.ssr.exchangeTokenForSession(req, res);
-        spamPrevention.membersAuth().reset(req.ip, `${member.email}login`);
+        spamPrevention.membersAuth().reset(req.ip, `${member?.email}login`);
         const subscriptions = member && member.subscriptions || [];
 
         const action = req.query.action;
