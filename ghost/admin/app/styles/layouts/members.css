@@ -315,6 +315,13 @@ p.gh-members-list-email {
     }
 }
 
+@media (max-width: 800px) {
+    .gh-list-with-helpsection {
+        margin-left: 0;
+        margin-right: 0;
+    }
+}
+
 @media (min-width: 440px) and (max-width: 1000px) {
     .gh-members-chart-summary {
         flex-direction: row;
