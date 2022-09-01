@@ -2,18 +2,18 @@ import Component from '@glimmer/component';
 import {action} from '@ember/object';
 
 const ALL_EVENT_TYPES = [
-    {event: 'added', name: 'Added'},
-    {event: 'edited', name: 'Edited'},
-    {event: 'deleted', name: 'Deleted'}
+    {event: 'added', name: 'Added', icon: 'add'},
+    {event: 'edited', name: 'Edited', icon: 'pen'},
+    {event: 'deleted', name: 'Deleted', icon: 'trash'}
 ];
 
 const ALL_RESOURCE_TYPES = [
-    {targets: 'post', name: 'Posts'},
-    {targets: 'page', name: 'Pages'},
-    {targets: 'tag', name: 'Tags'},
-    {targets: 'label,member', name: 'Members'},
-    {targets: 'offer,product', name: 'Tiers & offers'},
-    {targets: 'api_key,integration,setting,user,webhook', name: 'Settings & users'}
+    {targets: 'post', name: 'Posts', icon: 'posts'},
+    {targets: 'page', name: 'Pages', icon: 'page'},
+    {targets: 'tag', name: 'Tags', icon: 'tag'},
+    {targets: 'label,member', name: 'Members', icon: 'members'},
+    {targets: 'offer,product', name: 'Tiers & offers', icon: 'percentage'},
+    {targets: 'api_key,integration,setting,user,webhook', name: 'Settings & users', icon: 'settings'}
 ];
 
 export default class AuditLogEventFilter extends Component {
@@ -26,6 +26,7 @@ export default class AuditLogEventFilter extends Component {
         return ALL_EVENT_TYPES.map(type => ({
             event: type.event,
             name: type.name,
+            icon: type.icon,
             isSelected: !excludedEvents.includes(type.event)
         }));
     }
@@ -36,6 +37,7 @@ export default class AuditLogEventFilter extends Component {
         return ALL_RESOURCE_TYPES.map(type => ({
             targets: type.targets,
             name: type.name,
+            icon: type.icon,
             isSelected: !type.targets.split(',').every(t => excludedResources.includes(t))
         }));
     }
