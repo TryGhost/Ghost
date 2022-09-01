@@ -25,22 +25,22 @@ jobs:
           fetch-depth: 0
           submodules: true
 
-      - run: npm install -g semver
-      - run: |
-          echo "current_sha=$(git rev-parse HEAD)" >> $GITHUB_ENV
-          echo "current_version=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
+      - uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            semver 3.3.0
 
-      - uses: actions/github-script@v6
-        env:
-          CURRENT_SHA: '${{ env.current_sha }}'
-          CURRENT_VERSION: '${{ env.current_version }}'
-          BUMP_TYPE: '${{ inputs.bump-type }}'
+      - run: |
+          echo "CURRENT_SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
+          echo "NEW_VERSION=$(semver bump ${{ inputs.bump-type }} $(git describe --tags --abbrev=0))" >> $GITHUB_ENV
+
+      - name: Create branch
+        uses: actions/github-script@v6
         with:
           script: |
-            const semver = require('semver');
-            const branchName = `v${semver.inc(process.env.CURRENT_VERSION, process.env.BUMP_TYPE)}`;
+            const branchName = `v${process.env.NEW_VERSION}`;
             console.log(`Creating branch: ${branchName}`);
-            await octokit.request('POST /repos/{owner}/{repo}/git/refs', {
+            await github.request('POST /repos/{owner}/{repo}/git/refs', {
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: `refs/heads/${branchName}`,
