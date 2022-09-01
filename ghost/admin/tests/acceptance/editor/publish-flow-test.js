@@ -380,11 +380,11 @@ describe('Acceptance: Publish flow', function () {
 
             expect(
                 find('[data-test-setting="publish-type"] [data-test-setting-title]'), 'publish type title'
-            ).to.have.trimmed.text('Publish');
+            ).to.have.trimmed.rendered.text('Publish');
 
             expect(
                 find('[data-test-setting="email-recipients"] [data-test-setting-title]'), 'recipients title'
-            ).to.have.trimmed.text('Not sent as newsletter');
+            ).to.have.trimmed.rendered.text('Not sent as newsletter');
 
             await click('[data-test-setting="publish-type"] [data-test-setting-title]');
 
@@ -408,7 +408,7 @@ describe('Acceptance: Publish flow', function () {
 
             expect(
                 find('[data-test-setting="publish-type"] [data-test-setting-title]'), 'publish type title'
-            ).to.have.trimmed.text('Publish');
+            ).to.have.trimmed.rendered.text('Publish');
 
             await click('[data-test-setting="publish-type"] [data-test-setting-title]');
 
@@ -431,7 +431,7 @@ describe('Acceptance: Publish flow', function () {
 
             expect(
                 find('[data-test-setting="publish-type"] [data-test-setting-title]'), 'publish type title'
-            ).to.have.trimmed.text('Publish');
+            ).to.have.trimmed.rendered.text('Publish');
 
             await click('[data-test-setting="publish-type"] [data-test-setting-title]');
 
