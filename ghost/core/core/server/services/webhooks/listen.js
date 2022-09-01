@@ -59,7 +59,16 @@ const listen = async () => {
 
     const webhookTrigger = new WebhookTrigger({models, payload});
     _.each(WEBHOOKS, (event) => {
-        events.on(event, (model, options) => {
+        // @NOTE: The early exit makes sure the listeners are only registered once.
+        //        During testing the "events" instance is kept around with all the
+        //        listeners even after a reboot. This method could be removed once
+        //        the common/events is refactored into something that starts from a
+        //        clean instance on each reboot.
+        if (events.hasRegisteredListener(event, 'processWebhookTrigger')) {
+            return;
+        }
+
+        events.on(event, function processWebhookTrigger(model, options) {
             // CASE: avoid triggering webhooks when importing
             if (options && options.importing) {
                 return;
