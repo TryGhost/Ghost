@@ -34,7 +34,7 @@
     "copy-webpack-plugin": "^11.0.0",
     "eslint-config-react-app": "7.0.1",
     "eslint-plugin-ghost": "2.15.1",
-    "eslint-plugin-tailwindcss": "3.6.0",
+    "eslint-plugin-tailwindcss": "3.6.1",
     "glob": "^8.0.3",
     "mocha": "10.0.0",
     "node-static": "^0.7.11",
@@ -49,7 +49,7 @@
     "webpack-cli": "^4.10.0"
   },
   "dependencies": {
-    "@testing-library/jest-dom": "5.16.4",
+    "@testing-library/jest-dom": "5.16.5",
     "@testing-library/react": "13.3.0",
     "@testing-library/user-event": "14.4.3",
     "@tryghost/mobiledoc-kit-experimental": "^0.14.2",
