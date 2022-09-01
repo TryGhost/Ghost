@@ -35,8 +35,13 @@ export function readImageAttributesFromNode(node) {
         attrs.height = parseInt(height, 10);
     }
 
-    attrs.alt = node.alt || '';
-    attrs.title = node.title || '';
+    if (node.alt) {
+        attrs.alt = node.alt;
+    }
+
+    if (node.title) {
+        attrs.title = node.title;
+    }
 
     return attrs;
 }

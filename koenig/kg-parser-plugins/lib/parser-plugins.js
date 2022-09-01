@@ -22,6 +22,7 @@ import * as imageCard from './cards/image';
 import * as productCard from './cards/product';
 import * as softReturn from './cards/softReturn';
 import * as videoCard from './cards/video';
+import * as galleryCard from './cards/gallery';
 
 export function createParserPlugins(_options = {}) {
     const defaults = {};
@@ -56,43 +57,6 @@ export function createParserPlugins(_options = {}) {
                 caption.remove(); // cleanup this processed element
             });
         }
-    }
-
-    function _readGalleryImageFromNode(node, imgNum) {
-        let fileName = node.src.match(/[^/]*$/)[0];
-        let image = {
-            fileName,
-            row: Math.floor(imgNum / 3),
-            src: node.src
-        };
-
-        if (node.width) {
-            image.width = node.width;
-        } else if (node.dataset && node.dataset.width) {
-            image.width = parseInt(node.dataset.width, 10);
-        }
-
-        if (node.height) {
-            image.height = node.height;
-        } else if (node.dataset && node.dataset.height) {
-            image.height = parseInt(node.dataset.height, 10);
-        }
-
-        if ((!node.width && !node.height) && node.getAttribute('data-image-dimensions')) {
-            const [, width, height] = (/^(\d*)x(\d*)$/gi).exec(node.getAttribute('data-image-dimensions'));
-            image.width = parseInt(width, 10);
-            image.height = parseInt(height, 10);
-        }
-
-        if (node.alt) {
-            image.alt = node.alt;
-        }
-
-        if (node.title) {
-            image.title = node.title;
-        }
-
-        return image;
     }
 
     // PLUGINS -----------------------------------------------------------------
@@ -158,98 +122,6 @@ export function createParserPlugins(_options = {}) {
         }
 
         node.nodeValue = node.nodeValue.replace(/^\n/, '');
-    }
-
-    const kgGalleryCardToCard = (node, builder, {addSection, nodeFinished}) => {
-        if (node.nodeType !== 1 || node.tagName !== 'FIGURE') {
-            return;
-        }
-
-        if (!node.className.match(/kg-gallery-card/)) {
-            return;
-        }
-
-        let payload = {};
-        let imgs = Array.from(node.querySelectorAll('img'));
-
-        // Process nodes into the payload
-        payload.images = imgs.map(_readGalleryImageFromNode);
-
-        _readFigCaptionFromNode(node, payload);
-
-        let cardSection = builder.createCardSection('gallery', payload);
-        addSection(cardSection);
-        nodeFinished();
-    };
-
-    function grafGalleryToCard(node, builder, {addSection, nodeFinished}) {
-        function isGrafGallery(n) {
-            return n.nodeType === 1 && n.tagName === 'DIV' && n.dataset && n.dataset.paragraphCount && n.querySelectorAll('img').length > 0;
-        }
-
-        if (!isGrafGallery(node)) {
-            return;
-        }
-
-        let payload = {};
-
-        // These galleries exist in multiple divs. Read the images and caption from the first one...
-        let imgs = Array.from(node.querySelectorAll('img'));
-        _readFigCaptionFromNode(node, payload);
-
-        // ...and then iterate over any remaining divs until we run out of matches
-        let nextNode = node.nextSibling;
-        while (nextNode && isGrafGallery(nextNode)) {
-            let currentNode = nextNode;
-            imgs = imgs.concat(Array.from(currentNode.querySelectorAll('img')));
-            _readFigCaptionFromNode(currentNode, payload);
-            nextNode = currentNode.nextSibling;
-            // remove nodes as we go so that they don't go through the parser
-            currentNode.remove();
-        }
-
-        // Process nodes into the payload
-        payload.images = imgs.map(_readGalleryImageFromNode);
-
-        let cardSection = builder.createCardSection('gallery', payload);
-        addSection(cardSection);
-        nodeFinished();
-    }
-
-    function sqsGalleriesToCard(node, builder, {addSection, nodeFinished}) {
-        if (node.nodeType !== 1 || node.tagName !== 'DIV' || !node.className.match(/sqs-gallery-container/) || node.className.match(/summary-/)) {
-            return;
-        }
-
-        let payload = {};
-
-        // Each image exists twice...
-        // The first image is wrapped in `<noscript>`
-        // The second image contains image dimensions but the src property needs to be taken from `data-src`.
-        let imgs = Array.from(node.querySelectorAll('img.thumb-image'));
-
-        imgs = imgs.map((img) => {
-            if (!img.getAttribute('src')) {
-                if (img.previousSibling.tagName === 'NOSCRIPT' && img.previousSibling.getElementsByTagName('img').length) {
-                    const prevNode = img.previousSibling;
-                    img.setAttribute('src', img.getAttribute('data-src'));
-                    prevNode.remove();
-                } else {
-                    return undefined;
-                }
-            }
-
-            return img;
-        });
-
-        _readFigCaptionFromNode(node, payload, '.meta-title');
-
-        // Process nodes into the payload
-        payload.images = imgs.map(_readGalleryImageFromNode);
-
-        let cardSection = builder.createCardSection('gallery', payload);
-        addSection(cardSection);
-        nodeFinished();
     }
 
     function hrToCard(node, builder, {addSection, nodeFinished}) {
@@ -436,10 +308,10 @@ export function createParserPlugins(_options = {}) {
         blockquoteWithChildren,
         softReturn.fromBr(options),
         removeLeadingNewline,
-        kgGalleryCardToCard,
+        galleryCard.fromKoenigCard(options),
         embedCard.fromFigureBlockquote(options), // I think these can contain images
-        grafGalleryToCard,
-        sqsGalleriesToCard,
+        galleryCard.fromGrafGallery(options),
+        galleryCard.fromSqsGallery(options),
         imageCard.fromFigure(options),
         imageCard.fromImg(options),
         hrToCard,

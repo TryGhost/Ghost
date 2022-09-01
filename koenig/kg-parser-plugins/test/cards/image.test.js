@@ -55,8 +55,6 @@ describe('parser-plugins: image card', function () {
 
             section.payload.should.deepEqual({
                 src: 'http://example.com/test.png',
-                alt: '',
-                title: '',
                 caption: '<strong>Caption test</strong>'
             });
         });
@@ -83,8 +81,6 @@ describe('parser-plugins: image card', function () {
             section.name.should.equal('image');
             section.payload.should.deepEqual({
                 src: 'http://example.com/test.png',
-                alt: '',
-                title: '',
                 width: 640,
                 height: 480
             });
@@ -98,8 +94,6 @@ describe('parser-plugins: image card', function () {
             section.name.should.equal('image');
             section.payload.should.deepEqual({
                 src: 'http://example.com/test.png',
-                alt: '',
-                title: '',
                 width: 640,
                 height: 480
             });
@@ -113,8 +107,6 @@ describe('parser-plugins: image card', function () {
             section.name.should.equal('image');
             section.payload.should.deepEqual({
                 src: 'http://example.com/test.png',
-                alt: '',
-                title: '',
                 width: 640,
                 height: 480
             });
@@ -143,8 +135,6 @@ describe('parser-plugins: image card', function () {
             section.name.should.equal('image');
             section.payload.should.deepEqual({
                 src: 'http://example.com/test.png',
-                alt: '',
-                title: '',
                 width: 640,
                 height: 480
             });
@@ -158,8 +148,6 @@ describe('parser-plugins: image card', function () {
             section.name.should.equal('image');
             section.payload.should.deepEqual({
                 src: 'http://example.com/test.png',
-                alt: '',
-                title: '',
                 width: 640,
                 height: 480
             });
@@ -173,8 +161,6 @@ describe('parser-plugins: image card', function () {
             section.name.should.equal('image');
             section.payload.should.deepEqual({
                 src: 'http://example.com/test.png',
-                alt: '',
-                title: '',
                 width: 640,
                 height: 480
             });
