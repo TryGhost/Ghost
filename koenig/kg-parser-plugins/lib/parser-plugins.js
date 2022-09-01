@@ -11,16 +11,17 @@
 
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 
+import * as audioCard from './cards/audio';
+import * as beforeAfterCard from './cards/before-after';
 import * as buttonCard from './cards/button';
 import * as embedCard from './cards/embed';
-import * as htmlCard from './cards/html';
-import * as softReturn from './cards/softReturn';
-import * as productCard from './cards/product';
-import * as audioCard from './cards/audio';
-import * as videoCard from './cards/video';
-import * as beforeAfterCard from './cards/before-after';
 import * as fileCard from './cards/file';
 import * as headerCard from './cards/header';
+import * as htmlCard from './cards/html';
+import * as imageCard from './cards/image';
+import * as productCard from './cards/product';
+import * as softReturn from './cards/softReturn';
+import * as videoCard from './cards/video';
 
 export function createParserPlugins(_options = {}) {
     const defaults = {};
@@ -251,54 +252,6 @@ export function createParserPlugins(_options = {}) {
         nodeFinished();
     }
 
-    function figureToImageCard(node, builder, {addSection, nodeFinished}) {
-        if (node.nodeType !== 1 || node.tagName !== 'FIGURE') {
-            return;
-        }
-
-        let img = node.querySelector('img');
-        let kgClass = node.className.match(/kg-width-(wide|full)/);
-        let grafClass = node.className.match(/graf--layout(FillWidth|OutsetCenter)/);
-
-        if (!img) {
-            return;
-        }
-
-        let payload = {
-            src: img.src,
-            alt: img.alt,
-            title: img.title
-        };
-
-        if (kgClass) {
-            payload.cardWidth = kgClass[1];
-        } else if (grafClass) {
-            payload.cardWidth = grafClass[1] === 'FillWidth' ? 'full' : 'wide';
-        }
-
-        _readFigCaptionFromNode(node, payload);
-
-        let cardSection = builder.createCardSection('image', payload);
-        addSection(cardSection);
-        nodeFinished();
-    }
-
-    function imgToCard(node, builder, {addSection, nodeFinished}) {
-        if (node.nodeType !== 1 || node.tagName !== 'IMG') {
-            return;
-        }
-
-        let payload = {
-            src: node.src,
-            alt: node.alt,
-            title: node.title
-        };
-
-        let cardSection = builder.createCardSection('image', payload);
-        addSection(cardSection);
-        nodeFinished();
-    }
-
     function hrToCard(node, builder, {addSection, nodeFinished}) {
         if (node.nodeType !== 1 || node.tagName !== 'HR') {
             return;
@@ -487,8 +440,8 @@ export function createParserPlugins(_options = {}) {
         embedCard.fromFigureBlockquote(options), // I think these can contain images
         grafGalleryToCard,
         sqsGalleriesToCard,
-        figureToImageCard,
-        imgToCard,
+        imageCard.fromFigure(options),
+        imageCard.fromImg(options),
         hrToCard,
         figureToCodeCard,
         preCodeToCard,

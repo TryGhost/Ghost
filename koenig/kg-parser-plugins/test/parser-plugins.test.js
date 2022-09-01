@@ -112,62 +112,6 @@ describe('parser-plugins', function () {
         });
     });
 
-    describe('figureToImageCard', function () {
-        it('parses IMG inside FIGURE to image card without caption', function () {
-            const dom = buildDOM('<figure><img src="http://example.com/test.png" alt="Alt test" title="Title test"></figure>');
-            const [section] = parser.parse(dom).sections.toArray();
-
-            section.type.should.equal('card-section');
-            section.name.should.equal('image');
-            section.payload.should.deepEqual({
-                src: 'http://example.com/test.png',
-                alt: 'Alt test',
-                title: 'Title test'
-            });
-        });
-
-        it('parses IMG inside FIGURE to image card with caption', function () {
-            const dom = buildDOM('<figure><img src="http://example.com/test.png"><figcaption>&nbsp; <strong>Caption test</strong></figcaption></figure>');
-            const [section] = parser.parse(dom).sections.toArray();
-
-            section.payload.should.deepEqual({
-                src: 'http://example.com/test.png',
-                alt: '',
-                title: '',
-                caption: '<strong>Caption test</strong>'
-            });
-        });
-
-        it('extracts Koenig card widths', function () {
-            const dom = buildDOM('<figure class="kg-card kg-width-wide"><img src="http://example.com/test.png"></figure>');
-            const [section] = parser.parse(dom).sections.toArray();
-
-            section.payload.cardWidth.should.equal('wide');
-        });
-
-        it('extracts Medium card widths', function () {
-            const dom = buildDOM('<figure class="graf--layoutFillWidth"><img src="http://example.com/test.png"></figure>');
-            const [section] = parser.parse(dom).sections.toArray();
-
-            section.payload.cardWidth.should.equal('full');
-        });
-    });
-
-    describe('imgToCard', function () {
-        it('parses IMG into image card', function () {
-            const dom = buildDOM('<img src="http://example.com/test.png" alt="Alt test" title="Title test">');
-            const [section] = parser.parse(dom).sections.toArray();
-
-            section.type.should.equal('card-section');
-            section.name.should.equal('image');
-            section.payload.should.deepEqual({
-                src: 'http://example.com/test.png',
-                alt: 'Alt test',
-                title: 'Title test'
-            });
-        });
-    });
-
     describe('hrToCard', function () {
         it('parses HR into hr card', function () {
             const dom = buildDOM('<p>Test 1</p><hr><p>Test 2</p>');
