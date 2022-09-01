@@ -1,4 +1,4 @@
-import {addFigCaptionToPayload} from '../helpers';
+import {addFigCaptionToPayload, readImageAttributesFromNode} from '../helpers';
 
 export function fromImg() {
     return function imgToCard(node, builder, {addSection, nodeFinished}) {
@@ -6,13 +6,9 @@ export function fromImg() {
             return;
         }
 
-        let payload = {
-            src: node.src,
-            alt: node.alt,
-            title: node.title
-        };
+        const payload = readImageAttributesFromNode(node);
 
-        let cardSection = builder.createCardSection('image', payload);
+        const cardSection = builder.createCardSection('image', payload);
         addSection(cardSection);
         nodeFinished();
     };
@@ -24,19 +20,15 @@ export function fromFigure(options) {
             return;
         }
 
-        let img = node.querySelector('img');
-        let kgClass = node.className.match(/kg-width-(wide|full)/);
-        let grafClass = node.className.match(/graf--layout(FillWidth|OutsetCenter)/);
+        const img = node.querySelector('img');
+        const kgClass = node.className.match(/kg-width-(wide|full)/);
+        const grafClass = node.className.match(/graf--layout(FillWidth|OutsetCenter)/);
 
         if (!img) {
             return;
         }
 
-        let payload = {
-            src: img.src,
-            alt: img.alt,
-            title: img.title
-        };
+        const payload = readImageAttributesFromNode(img);
 
         if (kgClass) {
             payload.cardWidth = kgClass[1];

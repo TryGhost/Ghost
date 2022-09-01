@@ -9,3 +9,34 @@ export function addFigCaptionToPayload(node, payload, {selector = 'figcaption', 
         });
     }
 }
+
+export function readImageAttributesFromNode(node) {
+    const attrs = {};
+
+    if (node.src) {
+        attrs.src = node.src;
+    }
+
+    if (node.width) {
+        attrs.width = node.width;
+    } else if (node.dataset && node.dataset.width) {
+        attrs.width = parseInt(node.dataset.width, 10);
+    }
+
+    if (node.height) {
+        attrs.height = node.height;
+    } else if (node.dataset && node.dataset.height) {
+        attrs.height = parseInt(node.dataset.height, 10);
+    }
+
+    if ((!node.width && !node.height) && node.getAttribute('data-image-dimensions')) {
+        const [, width, height] = (/^(\d*)x(\d*)$/gi).exec(node.getAttribute('data-image-dimensions'));
+        attrs.width = parseInt(width, 10);
+        attrs.height = parseInt(height, 10);
+    }
+
+    attrs.alt = node.alt || '';
+    attrs.title = node.title || '';
+
+    return attrs;
+}

@@ -74,6 +74,51 @@ describe('parser-plugins: image card', function () {
 
             section.payload.cardWidth.should.equal('full');
         });
+
+        it('extracts IMG dimensions from width/height attrs', function () {
+            const dom = buildDOM('<figure><img src="http://example.com/test.png" width="640" height="480"></figure>');
+            const [section] = parser.parse(dom).sections.toArray();
+
+            section.type.should.equal('card-section');
+            section.name.should.equal('image');
+            section.payload.should.deepEqual({
+                src: 'http://example.com/test.png',
+                alt: '',
+                title: '',
+                width: 640,
+                height: 480
+            });
+        });
+
+        it('extracts IMG dimensions from dataset', function () {
+            const dom = buildDOM('<figure><img src="http://example.com/test.png" data-width="640" data-height="480"></figure>');
+            const [section] = parser.parse(dom).sections.toArray();
+
+            section.type.should.equal('card-section');
+            section.name.should.equal('image');
+            section.payload.should.deepEqual({
+                src: 'http://example.com/test.png',
+                alt: '',
+                title: '',
+                width: 640,
+                height: 480
+            });
+        });
+
+        it('extracts IMG dimensions from data-image-dimensions', function () {
+            const dom = buildDOM('<figure><img src="http://example.com/test.png" data-image-dimensions="640x480"></figure>');
+            const [section] = parser.parse(dom).sections.toArray();
+
+            section.type.should.equal('card-section');
+            section.name.should.equal('image');
+            section.payload.should.deepEqual({
+                src: 'http://example.com/test.png',
+                alt: '',
+                title: '',
+                width: 640,
+                height: 480
+            });
+        });
     });
 
     describe('imgToCard', function () {
@@ -87,6 +132,51 @@ describe('parser-plugins: image card', function () {
                 src: 'http://example.com/test.png',
                 alt: 'Alt test',
                 title: 'Title test'
+            });
+        });
+
+        it('extracts IMG dimensions from width/height attrs', function () {
+            const dom = buildDOM('<img src="http://example.com/test.png" width="640" height="480">');
+            const [section] = parser.parse(dom).sections.toArray();
+
+            section.type.should.equal('card-section');
+            section.name.should.equal('image');
+            section.payload.should.deepEqual({
+                src: 'http://example.com/test.png',
+                alt: '',
+                title: '',
+                width: 640,
+                height: 480
+            });
+        });
+
+        it('extracts IMG dimensions from dataset', function () {
+            const dom = buildDOM('<img src="http://example.com/test.png" data-width="640" data-height="480">');
+            const [section] = parser.parse(dom).sections.toArray();
+
+            section.type.should.equal('card-section');
+            section.name.should.equal('image');
+            section.payload.should.deepEqual({
+                src: 'http://example.com/test.png',
+                alt: '',
+                title: '',
+                width: 640,
+                height: 480
+            });
+        });
+
+        it('extracts IMG dimensions from data-image-dimensions', function () {
+            const dom = buildDOM('<img src="http://example.com/test.png" data-image-dimensions="640x480">');
+            const [section] = parser.parse(dom).sections.toArray();
+
+            section.type.should.equal('card-section');
+            section.name.should.equal('image');
+            section.payload.should.deepEqual({
+                src: 'http://example.com/test.png',
+                alt: '',
+                title: '',
+                width: 640,
+                height: 480
             });
         });
     });
