@@ -6,38 +6,57 @@
         </span>
     </dd.Trigger>
 
-    <dd.Content class="gh-member-activity-actions-menu gh-activity-log-actions dropdown-menu dropdown-triangle-top-right">
+    <dd.Content class="gh-activity-log-actions dropdown-menu dropdown-triangle-top-right">
         {{!-- NOTE: re-using ember-power-select-options styles --}}
         <ul class="ember-power-select-options" role="listbox">
             {{#each this.eventTypes as |type idx|}}
-                <li class="form-group ember-power-select-option mb0 for-checkbox">
-                    <label class="checkbox" for="event-type-{{idx}}">
-                        <input
-                            type="checkbox"
-                            checked={{type.isSelected}}
-                            id="event-type-{{idx}}"
-                            name="eventTypes"
-                            class="gh-input post-settings-featured"
-                            {{on "input" (fn this.toggleEventType type.event)}}>
-                        <span class="input-toggle-component"></span>
-                        <p>{{type.name}}</p>
-                    </label>
+                <li class="form-group ember-power-select-option gh-audit-log-filter-li">
+                    <div class="gh-activity-log-action-switch for-switch small">
+                        <label
+                            class="switch"
+                            for="event-type-{{idx}}"
+                        >
+                            <div class="flex items-center">
+                                {{svg-jar type.icon}}
+                                <span>{{type.name}}</span>
+                            </div>
+                            <input
+                                type="checkbox"
+                                checked={{type.isSelected}}
+                                id="event-type-{{idx}}"
+                                name="eventTypes"
+                                {{on "input" (fn this.toggleEventType type.event)}}
+                            >
+                            <span class="input-toggle-component"></span>
+                        </label>
+                    </div>
                 </li>
             {{/each}}
             <hr />
             {{#each this.resourceTypes as |type idx|}}
-                <li class="form-group ember-power-select-option mb0 for-checkbox">
-                    <label class="checkbox" for="resource-type-{{idx}}">
-                        <input
-                            type="checkbox"
-                            checked={{type.isSelected}}
-                            id="resource-type-{{idx}}"
-                            name="resourceTypes"
-                            class="gh-input post-settings-featured"
-                            {{on "input" (fn this.toggleResourceType type.targets)}}>
-                        <span class="input-toggle-component"></span>
-                        <p>{{type.name}}</p>
-                    </label>
+                <li class="form-group ember-power-select-option gh-audit-log-filter-li">
+                    {{!-- <div class="flex items-center">
+                        {{svg-jar "pen"}}
+                    </div> --}}
+                    <div class="gh-activity-log-action-switch for-switch small">
+                        <label
+                            class="switch"
+                            for="resource-type-{{idx}}"
+                        >
+                            <div class="flex items-center">
+                                {{svg-jar type.icon}}
+                                <span>{{type.name}}</span>
+                            </div>
+                            <input
+                                type="checkbox"
+                                checked={{type.isSelected}}
+                                id="resource-type-{{idx}}"
+                                name="eventTypes"
+                                {{on "input" (fn this.toggleResourceType type.targets)}}
+                            >
+                            <span class="input-toggle-component"></span>
+                        </label>
+                    </div>
                 </li>
             {{/each}}
         </ul>
