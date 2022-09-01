@@ -515,6 +515,6 @@ ul.nostyle li {
 @media (max-width: 450px) {
     .gh-list-sticky,
     .gh-list-scrolling {
-        height: calc(100vh - 205px);
+        height: calc(100vh - 205px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
     }
 }

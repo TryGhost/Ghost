@@ -33,7 +33,7 @@
                         @onLabelEdit={{this.editLabel}}
                         @parseFilterParamCounter={{this.parseFilterParamCounter}}
                     />
-                    <span class="dropdown">
+                    <span class="dropdown members-actions-dropdown">
                         <GhDropdownButton
                             @dropdownName="members-actions-menu"
                             @classNames="gh-btn gh-btn-icon icon-only gh-btn-action-icon"
@@ -96,7 +96,7 @@
                             {{/if}}
                         </GhDropdown>
                     </span>
-                    <LinkTo @route="member.new" class="gh-btn gh-btn-primary" data-test-new-member-button="true"><span>New member</span></LinkTo>
+                    <LinkTo @route="member.new" class="gh-btn gh-btn-primary" data-test-new-member-button="true"><span>New member</span><span class="gh-btn-text-hide-for-mobile">New</span></LinkTo>
                 </div>
             </section>
         {{/if}}

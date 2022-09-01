@@ -1490,6 +1490,14 @@
     }
 
     .gh-canvas-title span.gh-canvas-title-hide-for-mobile {
+        display: none !important;
+    }
+
+    .members-header .gh-btn .gh-btn-text-hide-for-mobile {
+        display: block !important;
+    }
+
+    .members-header .gh-btn.gh-btn.gh-btn-primary > span:first-of-type {
         display: none;
     }
 }

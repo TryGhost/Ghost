@@ -809,3 +809,8 @@ Usage: CTA buttons grouped together horizontally.
     pointer-events: none;
     opacity: 0.5;
 }
+
+/* Conditional wording for mobile to save space */
+.gh-btn .gh-btn-text-hide-for-mobile {
+    display: none;
+}
