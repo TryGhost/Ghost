@@ -104,12 +104,14 @@ module.exports = {
                     img.setAttribute('src', `${imagesPath}/size/w${srcWidth}/${filename}`);
                 }
             }
+        }
 
-            if (isUnsplashImage(payload.src)) {
-                const unsplashUrl = new URL(payload.src);
-                unsplashUrl.searchParams.set('w', 1200);
-                img.setAttribute('src', unsplashUrl.href);
-            }
+        // always resize Unsplash images in emails to avoid HUGE images in
+        // Outlook when we don't have width/height data available
+        if (options.target === 'email' && isUnsplashImage(payload.src)) {
+            const unsplashUrl = new URL(payload.src);
+            unsplashUrl.searchParams.set('w', 1200);
+            img.setAttribute('src', unsplashUrl.href);
         }
 
         if (payload.href) {

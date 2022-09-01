@@ -1079,6 +1079,33 @@ describe('Image card', function () {
             output.should.not.match(/height="/);
             output.should.match(/\/content\/images\/2020\/06\/image\.png/);
         });
+
+        it('resizes Unsplash images even if width/height data is missing', function () {
+            let opts = {
+                env: {
+                    dom: new SimpleDom.Document()
+                },
+                payload: {
+                    src: 'https://images.unsplash.com/test.jpg'
+                },
+                options: {
+                    target: 'email',
+                    canTransformImage: () => true,
+                    imageOptimization: {
+                        contentImageSizes: {
+                            w600: {width: 600},
+                            w1000: {width: 1000},
+                            w1600: {width: 1600},
+                            w2400: {width: 2400}
+                        }
+                    }
+                }
+            };
+
+            const output = serializer.serialize(card.render(opts));
+
+            output.should.match(/test\.jpg\?w=1200/);
+        });
     });
 
     it('transforms urls absolute to relative', function () {
