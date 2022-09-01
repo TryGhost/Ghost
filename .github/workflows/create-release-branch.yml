@@ -1,0 +1,48 @@
+name: Create release branch
+on:
+  workflow_dispatch:
+    inputs:
+      base-ref:
+        description: 'Git ref to base from'
+        type: string
+        required: false
+      bump-type:
+        description: ''
+        type: string
+        required: false
+        default: 'patch'
+env:
+  FORCE_COLOR: 1
+permissions:
+  contents: write
+jobs:
+  create-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.base-ref }}
+          fetch-depth: 0
+          submodules: true
+
+      - run: npm install semver
+      - run: |
+          echo "current_sha=$(git rev-parse HEAD)" >> $GITHUB_ENV
+          echo "current_version=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
+
+      - uses: actions/github-script@v6
+        env:
+          CURRENT_SHA: '${{ env.current_sha }}'
+          CURRENT_VERSION: '${{ env.current_version }}'
+          BUMP_TYPE: '${{ inputs.bump-type }}'
+        with:
+          script: |
+            const semver = require('semver');
+            const branchName = `v${semver.inc(process.env.CURRENT_VERSION, process.env.BUMP_TYPE)}`;
+            console.log(`Creating branch: ${branchName}`);
+            await octokit.request('POST /repos/{owner}/{repo}/git/refs', {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `refs/heads/${branchName}`,
+              sha: process.env.CURRENT_SHA
+            });
