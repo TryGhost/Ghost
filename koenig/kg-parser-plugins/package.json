@@ -33,7 +33,7 @@
     "@babel/core": "7.18.13",
     "@babel/preset-env": "7.18.10",
     "@tryghost/mobiledoc-kit": "0.11.2-ghost.4",
-    "c8": "7.11.2",
+    "c8": "7.12.0",
     "jsdom": "18.1.1",
     "mocha": "10.0.0",
     "rollup": "2.79.0",
