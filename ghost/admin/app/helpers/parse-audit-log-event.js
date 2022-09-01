@@ -38,8 +38,14 @@ function getActor(ev) {
 }
 
 function getActorIcon(ev, assetRoot) {
+    const defaultImage = `${assetRoot}/img/user-image.png`;
+
     if (!ev.actor.id) {
-        return `${assetRoot}/img/user-image.png`;
+        return defaultImage;
+    }
+
+    if (!ev.actor.image) {
+        return defaultImage;
     }
 
     return ev.actor.image;
