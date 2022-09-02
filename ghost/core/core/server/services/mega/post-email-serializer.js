@@ -248,7 +248,14 @@ const serialize = async (postModel, newsletter, options = {isBrowserPreview: fal
     const momentDate = post.published_at ? moment(post.published_at) : moment();
     post.published_at = momentDate.tz(timezone).format('DD MMM YYYY');
 
-    post.authors = post.authors && post.authors.map(author => author.name).join(', ');
+    if (post.authors) {
+        if (post.authors.length <= 2) {
+            post.authors = post.authors.map(author => author.name).join(' & ');
+        } else if (post.authors.length > 2) {
+            post.authors = `${post.authors[0].name} & ${post.authors.length - 1} others`;
+        }
+    }
+
     if (post.posts_meta) {
         post.email_subject = post.posts_meta.email_subject;
     }
