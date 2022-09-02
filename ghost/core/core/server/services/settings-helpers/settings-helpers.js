@@ -80,7 +80,7 @@ class SettingsHelpers {
         const url = this.urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
         const domain = (url && url[1]) || '';
         if (domain.startsWith('www.')) {
-            return domain.replace(/^(www)\.(?=[^/]*\..{2,5})/, '');
+            return domain.substring('www.'.length);
         }
         return domain;
     }
