@@ -45,16 +45,28 @@ function testCommonMailData({mailStub, getEmailAlertUsersStub}) {
     ).should.be.true();
 }
 
-function testCommonPaidSubMailData({mailStub, getEmailAlertUsersStub}) {
+function testCommonPaidSubMailData({member, mailStub, getEmailAlertUsersStub}) {
     testCommonMailData({mailStub, getEmailAlertUsersStub});
     getEmailAlertUsersStub.calledWith('paid-started').should.be.true();
-    mailStub.calledWith(
-        sinon.match({subject: '💸 Paid subscription started: Ghost'})
-    ).should.be.true();
 
-    mailStub.calledWith(
-        sinon.match.has('html', sinon.match('💸 Paid subscription started: Ghost'))
-    ).should.be.true();
+    if (member?.name) {
+        mailStub.calledWith(
+            sinon.match({subject: '💸 Paid subscription started: Ghost'})
+        ).should.be.true();
+
+        mailStub.calledWith(
+            sinon.match.has('html', sinon.match('💸 Paid subscription started: Ghost'))
+        ).should.be.true();
+    } else {
+        mailStub.calledWith(
+            sinon.match({subject: '💸 Paid subscription started: member@example.com'})
+        ).should.be.true();
+
+        mailStub.calledWith(
+            sinon.match.has('html', sinon.match('💸 Paid subscription started: member@example.com'))
+        ).should.be.true();
+    }
+
     mailStub.calledWith(
         sinon.match.has('html', sinon.match('Test Tier'))
     ).should.be.true();
@@ -174,6 +186,31 @@ describe('StaffService', function () {
                     sinon.match.has('html', sinon.match('Created on 1 Aug 2022 &#8226; France'))
                 ).should.be.true();
             });
+
+            it('sends free member signup alert without member name', async function () {
+                const member = {
+                    email: 'member@example.com',
+                    id: 'abc',
+                    geolocation: '{"country": "France"}',
+                    created_at: '2022-08-01T07:30:39.882Z'
+                };
+
+                await service.notifyFreeMemberSignup(member, options);
+
+                mailStub.calledOnce.should.be.true();
+                testCommonMailData(stubs);
+                getEmailAlertUsersStub.calledWith('free-signup').should.be.true();
+
+                mailStub.calledWith(
+                    sinon.match({subject: '🥳 Free member signup: member@example.com'})
+                ).should.be.true();
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('🥳 Free member signup: member@example.com'))
+                ).should.be.true();
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Created on 1 Aug 2022 &#8226; France'))
+                ).should.be.true();
+            });
         });
 
         describe('notifyPaidSubscriptionStart', function () {
@@ -211,7 +248,24 @@ describe('StaffService', function () {
                 await service.notifyPaidSubscriptionStart({member, offer: null, tier, subscription}, options);
 
                 mailStub.calledOnce.should.be.true();
-                testCommonPaidSubMailData(stubs);
+                testCommonPaidSubMailData({...stubs, member});
+
+                mailStub.calledWith(
+                    sinon.match.has('html', 'Offer')
+                ).should.be.false();
+            });
+
+            it('sends paid subscription start alert without member name', async function () {
+                let memberData = {
+                    email: 'member@example.com',
+                    id: 'abc',
+                    geolocation: '{"country": "France"}',
+                    created_at: '2022-08-01T07:30:39.882Z'
+                };
+                await service.notifyPaidSubscriptionStart({member: memberData, offer: null, tier, subscription}, options);
+
+                mailStub.calledOnce.should.be.true();
+                testCommonPaidSubMailData({...stubs, member: memberData});
 
                 mailStub.calledWith(
                     sinon.match.has('html', 'Offer')
@@ -222,7 +276,7 @@ describe('StaffService', function () {
                 await service.notifyPaidSubscriptionStart({member, offer, tier, subscription}, options);
 
                 mailStub.calledOnce.should.be.true();
-                testCommonPaidSubMailData(stubs);
+                testCommonPaidSubMailData({...stubs, member});
 
                 mailStub.calledWith(
                     sinon.match.has('html', sinon.match('Half price'))
@@ -248,7 +302,7 @@ describe('StaffService', function () {
                 await service.notifyPaidSubscriptionStart({member, offer, tier, subscription}, options);
 
                 mailStub.calledOnce.should.be.true();
-                testCommonPaidSubMailData(stubs);
+                testCommonPaidSubMailData({...stubs, member});
 
                 mailStub.calledWith(
                     sinon.match.has('html', sinon.match('Save ten'))
@@ -273,7 +327,7 @@ describe('StaffService', function () {
                 await service.notifyPaidSubscriptionStart({member, offer, tier, subscription}, options);
 
                 mailStub.calledOnce.should.be.true();
-                testCommonPaidSubMailData(stubs);
+                testCommonPaidSubMailData({...stubs, member});
 
                 mailStub.calledWith(
                     sinon.match.has('html', sinon.match('Save twenty'))
@@ -297,7 +351,7 @@ describe('StaffService', function () {
                 await service.notifyPaidSubscriptionStart({member, offer, tier, subscription}, options);
 
                 mailStub.calledOnce.should.be.true();
-                testCommonPaidSubMailData(stubs);
+                testCommonPaidSubMailData({...stubs, member});
 
                 mailStub.calledWith(
                     sinon.match.has('html', sinon.match('Free week'))
