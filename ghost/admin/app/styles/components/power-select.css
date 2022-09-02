@@ -459,7 +459,6 @@
 }
 
 .gh-btn-create-snippet svg {
-    width: 1.4rem;
-    height: 1.4rem;
-    fill: var(--green-d1)
+    width: 1.2rem;
+    height: 1.2rem;
 }

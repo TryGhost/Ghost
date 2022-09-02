@@ -123,7 +123,7 @@
                                         {{on "click" (toggle-action "showMemberTierModal" this)}}
                                         data-test-button="add-complimentary"
                                     >
-                                        <span>{{svg-jar "add"}} Add complimentary subscription</span>
+                                        <span>{{svg-jar "plus"}} Add complimentary subscription</span>
                                     </button>
                                 {{/if}}
                             {{/if}}
@@ -214,7 +214,7 @@
                                             <span class="action-menu">
                                                 <GhDropdownButton
                                                     @dropdownName="subscription-menu-complimentary"
-                                                    @classNames="gh-btn gh-btn-outline gh-btn-icon gh-btn-subscription-action icon-only"
+                                                    @classNames="gh-btn gh-btn-outline gh-btn-icon fill gh-btn-subscription-action icon-only"
                                                     @title="Actions"
                                                     data-test-button="subscription-actions"
                                                 >
@@ -241,7 +241,7 @@
                                             </span>
                                         {{else}}
                                             <span class="action-menu">
-                                                <GhDropdownButton @dropdownName="subscription-menu-{{sub.id}}" @classNames="gh-btn gh-btn-outline gh-btn-icon gh-btn-subscription-action icon-only" @title="Actions">
+                                                <GhDropdownButton @dropdownName="subscription-menu-{{sub.id}}" @classNames="gh-btn gh-btn-outline gh-btn-icon fill gh-btn-subscription-action icon-only" @title="Actions">
                                                     <span>
                                                         {{svg-jar "dotdotdot"}}
                                                         <span class="hidden">Subscription menu</span>
@@ -297,7 +297,7 @@
                                             <div class="period">yearly</div>
                                         </div>
                                         <span class="action-menu">
-                                            <GhDropdownButton @dropdownName="subscription-menu-complimentary" @classNames="gh-btn gh-btn-outline gh-btn-icon gh-btn-subscription-action icon-only" @title="Actions">
+                                            <GhDropdownButton @dropdownName="subscription-menu-complimentary" @classNames="gh-btn gh-btn-outline gh-btn-icon fill gh-btn-subscription-action icon-only" @title="Actions">
                                                 <span>
                                                     {{svg-jar "dotdotdot"}}
                                                     <span class="hidden">Subscription menu</span>
@@ -329,7 +329,7 @@
                                 {{on "click" (toggle-action "showMemberTierModal" this)}}
                                 data-test-button="add-complimentary"
                             >
-                                <span>{{svg-jar "add"}} Add complimentary subscription</span>
+                                <span>{{svg-jar "plus"}} Add complimentary subscription</span>
                             </button>
                         {{/if}}
                     </div>

@@ -12,10 +12,6 @@
     margin-right: 0 !important;
 }
 
-.settings-menu-toggle svg {
-    fill: none !important;
-}
-
 .settings-menu-toggle .settings-menu-open svg path {
     stroke: var(--black);
 }
@@ -291,6 +287,7 @@
 .settings-menu-delete-button:hover {
     box-shadow: none;
     background: none;
+    color: color-mod(var(--red) lightness(-10%));
 }
 
 .settings-menu-delete-button span {
@@ -299,20 +296,9 @@
 }
 
 .settings-menu-delete-button svg {
-    margin-bottom: 1px;
-}
-
-.settings-menu-delete-button svg path {
-    stroke: var(--red);
-    fill: var(--red);
-    stroke-width: 1px;
-}
-
-.settings-menu-delete-button:hover,
-.settings-menu-delete-button:hover svg path {
-    stroke: color-mod(var(--red) lightness(-10%));
-    fill: color-mod(var(--red) lightness(-10%));
-    color: color-mod(var(--red) lightness(-10%));
+    width: 1.6rem;
+    height: 1.6rem;
+    margin-right: .8rem;
 }
 
 .post-setting-custom-excerpt {

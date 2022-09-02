@@ -209,8 +209,8 @@
 .gh-roles-container .gh-radio svg {
     width: 16px;
     height: 16px;
-    fill: var(--midgrey);
     margin-left: 2px;
+    color: var(--midgrey);
 }
 
 .gh-roles-container .gh-radio-content {

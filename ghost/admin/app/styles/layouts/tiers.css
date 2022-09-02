@@ -268,11 +268,6 @@
     margin: 1px 4px 0 0;
 }
 
-.gh-btn-icon.gh-btn-add-tier svg path {
-    stroke: var(--green-d1);
-    stroke-width: 3;
-}
-
 .gh-tier-list-icon {
     display: flex;
     align-items: flex-end;
@@ -570,6 +565,11 @@
     top: 4px;
     right: 8px;
     opacity: 0;
+    color: var(--midgrey);
+}
+
+.gh-tier-benefits .gh-blognav-delete:hover {
+    color: var(--red);
 }
 
 .gh-tier-benefits .gh-blognav-add {

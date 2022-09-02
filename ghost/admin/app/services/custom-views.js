@@ -55,7 +55,7 @@ const DEFAULT_VIEWS = [{
     route: 'posts',
     name: 'Drafts',
     color: 'midgrey',
-    icon: 'pencil',
+    icon: 'pen',
     filter: {
         type: 'draft'
     }

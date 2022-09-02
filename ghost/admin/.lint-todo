@@ -488,10 +488,6 @@ add|ember-template-lint|require-valid-alt-text|19|24|19|24|c1a223c4a0c265ed64685
 add|ember-template-lint|no-autofocus-attribute|14|4|14|4|bc0a12a01d16038dd3224726d5c4fe81b2d458b6|1658102400000|1668474000000|1673658000000|app/components/gh-input-with-select/trigger.hbs
 add|ember-template-lint|no-down-event-binding|8|9|8|9|e82f6aa36fd44bb3dccff09770613eee19380f9b|1658102400000|1668474000000|1673658000000|app/components/gh-input-with-select/trigger.hbs
 add|ember-template-lint|require-input-label|4|0|4|0|ce9c488b3c6a110afe45e2242fb068fd4ed61f22|1658102400000|1668474000000|1673658000000|app/components/gh-input-with-select/trigger.hbs
-add|ember-template-lint|no-action|63|39|63|39|dcc09bb23a476d5b83b273b693cd8cb2aba68365|1658102400000|1668474000000|1673658000000|app/components/gh-launch-wizard/set-pricing.hbs
-add|ember-template-lint|no-action|78|39|78|39|a80dd18e18dda6fb6f1f97d87bef2b8c2ce3d847|1658102400000|1668474000000|1673658000000|app/components/gh-launch-wizard/set-pricing.hbs
-add|ember-template-lint|no-passed-in-event-handlers|63|32|63|32|dcb4785647a50814bcfce82f8d68ac8dd8f54ec2|1658102400000|1668474000000|1673658000000|app/components/gh-launch-wizard/set-pricing.hbs
-add|ember-template-lint|no-passed-in-event-handlers|78|32|78|32|70487c008d7dda453fef82f0140699ee93c0055c|1658102400000|1668474000000|1673658000000|app/components/gh-launch-wizard/set-pricing.hbs
 add|ember-template-lint|no-invalid-interactive|6|32|6|32|508e64575a985432d0588f3291a126c4b62e68d8|1658102400000|1668474000000|1673658000000|app/components/gh-nav-menu/design.hbs
 add|ember-template-lint|no-action|97|83|97|83|40a33b8afd29e93eebeaccdb49d729c06f755e1f|1658102400000|1668474000000|1673658000000|app/components/gh-nav-menu/footer.hbs
 add|ember-template-lint|no-invalid-interactive|97|83|97|83|91111b837d1217ec9988076f5263b0e32df72604|1658102400000|1668474000000|1673658000000|app/components/gh-nav-menu/footer.hbs

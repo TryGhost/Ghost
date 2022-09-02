@@ -251,7 +251,8 @@
 .stroke-purple path,
 .stroke-purple g { stroke: var(--purple); }
 .stroke-yellow path,
-.stroke-yellow g { stroke: var(--yellow); }
+.stroke-yellow g,
+.stroke-yellow circle { stroke: var(--yellow); }
 .stroke-red path,
 .stroke-red g { stroke: var(--red); }
 .stroke-pink path,

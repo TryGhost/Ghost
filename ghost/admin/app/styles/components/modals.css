@@ -473,10 +473,12 @@
     height: 44px;
     background: var(--black) !important;
     opacity: 0;
+    color: var(--whitegrey-d1);
 }
 
 .gh-header-img-deleteicon:hover {
     opacity: 1;
+    color: var(--whitegrey-d1);
 }
 
 .gh-header-img-deleteicon span {

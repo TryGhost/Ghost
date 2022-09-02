@@ -49,6 +49,11 @@
     min-width: 140px;
 }
 
+.gh-offers-list-cta .gh-btn-icon svg {
+    width: 1rem;
+    height: 1rem;
+}
+
 .gh-offers-list {
     padding: 0;
 }

@@ -2220,10 +2220,7 @@ p.gh-members-import-errordetail:first-of-type {
 .gh-btn-addtier svg {
     width: .8em;
     height: .8em;
-}
-
-.gh-btn-addtier svg path {
-    fill: var(--green);
+    color: var(--green-d1);
 }
 
 .gh-member-tier-memberdetails {

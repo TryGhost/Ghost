@@ -597,13 +597,13 @@
 }
 
 .gh-nav-list .gh-nav-new-post span svg {
-    width: 18px;
-    height: 18px;
+    width: 1.8rem;
+    height: 1.8rem;
 }
 
 .gh-nav-list .gh-nav-new-post span svg path {
     stroke: var(--darkgrey);
-    stroke-width: 1.5px;
+    stroke-width: 1;
 }
 
 .gh-nav-list .gh-nav-member-count {

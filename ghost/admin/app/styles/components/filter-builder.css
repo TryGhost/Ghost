@@ -51,6 +51,11 @@
     width: 20px;
     height: 33px;
     margin-left: 4px;
+    color: var(--middarkgrey);
+}
+
+.gh-filter-builder .gh-delete-filter:hover {
+    color: var(--red);
 }
 
 .gh-filter-builder .gh-delete-filter svg {
@@ -58,21 +63,10 @@
     height: 10px;
 }
 
-.gh-filter-builder .gh-delete-filter svg path {
-    stroke: var(--middarkgrey);
-}
-
-.gh-filter-builder .gh-delete-filter:hover svg path {
-    stroke: var(--red);
-}
-
 .gh-add-filter svg {
-    margin-right: 7px;
-}
-
-.gh-add-filter svg path {
-    stroke: none !important;
-    fill: var(--green-d1);
+    width: 10px;
+    height: 10px;
+    margin: 0 6px 0 2px;
 }
 
 .gh-filter-builder .gh-filter-block-divider {

@@ -13,7 +13,7 @@
                     <button type="button" {{on "click" (fn this.activateTheme theme.model this.dd)}} class="apps-configured-action darkgrey apps-configured-action-activate green-hover green-bg-hover" data-test-button="activate">Activate</button>
                 {{/unless}}
                 <GhBasicDropdown @verticalPosition="below" @horizontalPosition="right" @buttonPosition="right" as |dd|>
-                    <dd.Trigger class="gh-btn gh-btn-icon" data-test-button="actions"><span>{{svg-jar "dotdotdot"}}</span></dd.Trigger>
+                    <dd.Trigger class="gh-btn gh-btn-icon fill" data-test-button="actions"><span>{{svg-jar "dotdotdot"}}</span></dd.Trigger>
 
                     <dd.Content class="relative-dropdown-menu">
                         <ul class="dropdown-menu" data-test-actions-for={{theme.name}}>
