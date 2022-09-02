@@ -14,11 +14,27 @@ const sanitizeKeys = (obj, keys) => {
 
     for (const key of keysToSanitize) {
         if (typeof sanitized[key] === 'string') {
-            // @ts-ignore
-            sanitized[key] = sanitizeHtml(sanitized[key], {
-                allowedTags: false,
-                allowedAttributes: false
-            });
+            if (key === 'html') {
+                // SanitizeHtml strips out HTML comments
+                // But we need to keep this very important one
+                const splitBy = '<!--members-only-->';
+                
+                // @ts-ignore
+                sanitized[key] = sanitized[key]
+                    .split(splitBy)
+                    .map((piece) => {
+                        return sanitizeHtml(piece, {
+                            allowedTags: false,
+                            allowedAttributes: false
+                        });
+                    }).join(splitBy);
+            } else {
+                // @ts-ignore
+                sanitized[key] = sanitizeHtml(sanitized[key], {
+                    allowedTags: false,
+                    allowedAttributes: false
+                });
+            }
         }
     }
 
