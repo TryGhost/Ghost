@@ -63,7 +63,7 @@ class MembersConfigProvider {
     }
 
     isStripeConnected() {
-        return settingsService.getActiveStripeKeys() !== null;
+        return settingsService.helpers.getActiveStripeKeys() !== null;
     }
 
     getAuthSecret() {
