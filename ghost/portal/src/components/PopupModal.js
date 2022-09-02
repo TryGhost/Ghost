@@ -58,15 +58,23 @@ class PopupContent extends React.Component {
         if (this.node && !hasMode(['preview'])) {
             this.node.focus();
             this.keyUphandler = (event) => {
-                const eventTargetTag = (event.target && event.target.tagName);
-                if (event.key === 'Escape' && eventTargetTag !== 'INPUT') {
-                    this.context.onAction('closePopup');
+                if (event.key === 'Escape') {
+                    this.dismissPopup(event);
                 }
             };
             this.node.ownerDocument.removeEventListener('keyup', this.keyUphandler);
             this.node.ownerDocument.addEventListener('keyup', this.keyUphandler);
         }
         this.sendContainerHeightChangeEvent();
+    }
+
+    dismissPopup(event) {
+        const eventTargetTag = (event.target && event.target.tagName);
+        // If focused on input field, only allow close if no value entered
+        const allowClose = eventTargetTag !== 'INPUT' || (eventTargetTag === 'INPUT' && !event?.target?.value);
+        if (allowClose) {
+            this.context.onAction('closePopup');
+        }
     }
 
     sendContainerHeightChangeEvent() {
