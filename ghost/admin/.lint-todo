@@ -965,3 +965,11 @@ remove|ember-template-lint|no-unused-block-params|2|48|2|48|93a49e8b39e3073babdf
 remove|ember-template-lint|no-invalid-interactive|23|66|23|66|12fb0d3e1b679f781b065226f36d8afdcd5cedf0|1658102400000|1668474000000|1673658000000|lib/koenig-editor/addon/components/koenig-menu-content.hbs
 add|ember-template-lint|no-unused-block-params|2|48|2|48|640ae072a8a8b4a1eebde20f7f6510bf94ec120f|1662076800000|1672448400000|1677632400000|app/components/gh-theme-table.hbs
 add|ember-template-lint|no-invalid-interactive|23|70|23|70|fa748a830a15d1fffa0986e9aa4a19aae491f09f|1662076800000|1672448400000|1677632400000|lib/koenig-editor/addon/components/koenig-menu-content.hbs
+remove|ember-template-lint|no-unused-block-params|1|0|1|0|fa339a96dc0cc3f7b984951073db51aef92c09b3|1658102400000|1668474000000|1673658000000|lib/koenig-editor/addon/components/koenig-card-button.hbs
+remove|ember-template-lint|no-unused-block-params|1|0|1|0|08ed50a248b697129b713403bcaf9549b027bd11|1658102400000|1668474000000|1673658000000|lib/koenig-editor/addon/components/koenig-card-email-cta.hbs
+add|ember-template-lint|no-unused-block-params|1|0|1|0|fa339a96dc0cc3f7b984951073db51aef92c09b3|1662076800000|1672448400000|1677632400000|lib/koenig-editor/addon/components/koenig-card-button.hbs
+add|ember-template-lint|no-unused-block-params|1|0|1|0|08ed50a248b697129b713403bcaf9549b027bd11|1662076800000|1672448400000|1677632400000|lib/koenig-editor/addon/components/koenig-card-email-cta.hbs
+remove|ember-template-lint|no-unused-block-params|1|0|1|0|fa339a96dc0cc3f7b984951073db51aef92c09b3|1662076800000|1672448400000|1677632400000|lib/koenig-editor/addon/components/koenig-card-button.hbs
+remove|ember-template-lint|no-unused-block-params|1|0|1|0|08ed50a248b697129b713403bcaf9549b027bd11|1662076800000|1672448400000|1677632400000|lib/koenig-editor/addon/components/koenig-card-email-cta.hbs
+add|ember-template-lint|no-unused-block-params|1|0|1|0|39510f0b01fa581ee49eb4b946639301abb536f9|1662076800000|1672448400000|1677632400000|lib/koenig-editor/addon/components/koenig-card-button.hbs
+add|ember-template-lint|no-unused-block-params|1|0|1|0|6640f2d788e2ebf173ee6ae789259ca65c097404|1662076800000|1672448400000|1677632400000|lib/koenig-editor/addon/components/koenig-card-email-cta.hbs
