@@ -2,13 +2,13 @@ const {promises: fs} = require('fs');
 const path = require('path');
 const _ = require('lodash');
 const moment = require('moment');
-const settingsService = require('../../core/core/server/services/settings/settings-service');
 
 class StaffServiceEmails {
-    constructor({logging, models, mailer, settingsCache, urlUtils}) {
+    constructor({logging, models, mailer, settingsHelpers, settingsCache, urlUtils}) {
         this.logging = logging;
         this.models = models;
         this.mailer = mailer;
+        this.settingsHelpers = settingsHelpers;
         this.settingsCache = settingsCache;
         this.urlUtils = urlUtils;
 
@@ -250,7 +250,7 @@ class StaffServiceEmails {
     }
 
     get defaultEmailDomain() {
-        return settingsService.getDefaultEmailDomain();
+        return this.settingsHelpers.getDefaultEmailDomain();
     }
 
     get membersAddress() {
