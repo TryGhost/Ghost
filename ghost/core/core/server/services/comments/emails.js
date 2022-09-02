@@ -167,12 +167,8 @@ class CommentsServiceEmails {
         return siteDomain;
     }
 
-    get defaultEmailDomain() {
-        return settingsService.getDefaultEmailDomain();
-    }
-
     get notificationFromAddress() {
-        return settingsService.getMembersSupportAddress();
+        return settingsService.helpers.getMembersSupportAddress();
     }
 
     extractInitials(name = '') {

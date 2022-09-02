@@ -2,9 +2,6 @@
  * Settings Lib
  * A collection of utilities for handling settings including a cache
  */
-const errors = require('@tryghost/errors');
-const tpl = require('@tryghost/tpl');
-
 const events = require('../../lib/common/events');
 const models = require('../../models');
 const labs = require('../../../shared/labs');
@@ -18,10 +15,7 @@ const SingleUseTokenProvider = require('../members/SingleUseTokenProvider');
 const urlUtils = require('../../../shared/url-utils');
 
 const ObjectId = require('bson-objectid');
-
-const messages = {
-    incorrectKeyType: 'type must be one of "direct" or "connect".'
-};
+const SettingsHelpers = require('../settings-helpers/settings-helpers');
 
 const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
 
@@ -72,90 +66,13 @@ module.exports = {
         SettingsCache.init(events, settingsCollection, this.getCalculatedFields(), cacheStore);
     },
 
+    helpers: new SettingsHelpers({settingsCache: SettingsCache, urlUtils, config}),
+
     /**
      * Restore the cache, used during e2e testing only
      */
     reset() {
         SettingsCache.reset(events);
-    },
-
-    isMembersEnabled() {
-        return SettingsCache.get('members_signup_access') !== 'none';
-    },
-
-    isMembersInviteOnly() {
-        return SettingsCache.get('members_signup_access') === 'invite';
-    },
-
-    /**
-     * @param {'direct' | 'connect'} type - The "type" of keys to fetch from settings
-     * @returns {{publicKey: string, secretKey: string} | null}
-     */
-    getStripeKeys(type) {
-        if (type !== 'direct' && type !== 'connect') {
-            throw new errors.IncorrectUsageError({message: tpl(messages.incorrectKeyType)});
-        }
-
-        const secretKey = SettingsCache.get(`stripe_${type === 'connect' ? 'connect_' : ''}secret_key`);
-        const publicKey = SettingsCache.get(`stripe_${type === 'connect' ? 'connect_' : ''}publishable_key`);
-
-        if (!secretKey || !publicKey) {
-            return null;
-        }
-
-        return {
-            secretKey,
-            publicKey
-        };
-    },
-
-    /**
-     * @returns {{publicKey: string, secretKey: string} | null}
-     */
-    getActiveStripeKeys() {
-        const stripeDirect = config.get('stripeDirect');
-
-        if (stripeDirect) {
-            return this.getStripeKeys('direct');
-        }
-
-        const connectKeys = this.getStripeKeys('connect');
-
-        if (!connectKeys) {
-            return this.getStripeKeys('direct');
-        }
-
-        return connectKeys;
-    },
-
-    arePaidMembersEnabled() {
-        return this.isMembersEnabled() && this.getActiveStripeKeys() !== null;
-    },
-
-    getFirstpromoterId() {
-        if (!SettingsCache.get('firstpromoter')) {
-            return null;
-        }
-        return SettingsCache.get('firstpromoter_id');
-    },
-
-    getDefaultEmailDomain() {
-        const url = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
-        const domain = (url && url[1]) || '';
-        if (domain.startsWith('www.')) {
-            return domain.replace(/^(www)\.(?=[^/]*\..{2,5})/, '');
-        }
-        return domain;
-    },
-
-    getMembersSupportAddress() {
-        const supportAddress = SettingsCache.get('members_support_address') || 'noreply';
-
-        // Any fromAddress without domain uses site domain, like default setting `noreply`
-        if (supportAddress.indexOf('@') < 0) {
-            return `${supportAddress}@${this.getDefaultEmailDomain()}`;
-        }
-        return supportAddress;
     },
 
     /**
@@ -164,10 +81,10 @@ module.exports = {
     getCalculatedFields() {
         const fields = [];
 
-        fields.push(new CalculatedField({key: 'members_enabled', type: 'boolean', group: 'members', fn: this.isMembersEnabled.bind(this), dependents: ['members_signup_access']}));
-        fields.push(new CalculatedField({key: 'members_invite_only', type: 'boolean', group: 'members', fn: this.isMembersInviteOnly.bind(this), dependents: ['members_signup_access']}));
-        fields.push(new CalculatedField({key: 'paid_members_enabled', type: 'boolean', group: 'members', fn: this.arePaidMembersEnabled.bind(this), dependents: ['members_signup_access', 'stripe_secret_key', 'stripe_publishable_key', 'stripe_connect_secret_key', 'stripe_connect_publishable_key']}));
-        fields.push(new CalculatedField({key: 'firstpromoter_account', type: 'string', group: 'firstpromoter', fn: this.getFirstpromoterId.bind(this), dependents: ['firstpromoter', 'firstpromoter_id']}));
+        fields.push(new CalculatedField({key: 'members_enabled', type: 'boolean', group: 'members', fn: this.helpers.isMembersEnabled.bind(this.helpers), dependents: ['members_signup_access']}));
+        fields.push(new CalculatedField({key: 'members_invite_only', type: 'boolean', group: 'members', fn: this.helpers.isMembersInviteOnly.bind(this.helpers), dependents: ['members_signup_access']}));
+        fields.push(new CalculatedField({key: 'paid_members_enabled', type: 'boolean', group: 'members', fn: this.helpers.arePaidMembersEnabled.bind(this.helpers), dependents: ['members_signup_access', 'stripe_secret_key', 'stripe_publishable_key', 'stripe_connect_secret_key', 'stripe_connect_publishable_key']}));
+        fields.push(new CalculatedField({key: 'firstpromoter_account', type: 'string', group: 'firstpromoter', fn: this.helpers.getFirstpromoterId.bind(this.helpers), dependents: ['firstpromoter', 'firstpromoter_id']}));
 
         return fields;
     },

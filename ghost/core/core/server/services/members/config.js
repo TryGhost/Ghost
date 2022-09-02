@@ -24,7 +24,7 @@ class MembersConfigProvider {
     }
 
     get defaultEmailDomain() {
-        return settingsService.getDefaultEmailDomain();
+        return settingsService.helpers.getDefaultEmailDomain();
     }
 
     getEmailFromAddress() {
@@ -33,7 +33,7 @@ class MembersConfigProvider {
     }
 
     getEmailSupportAddress() {
-        return settingsService.getMembersSupportAddress();
+        return settingsService.helpers.getMembersSupportAddress();
     }
 
     getAuthEmailFromAddress() {
@@ -62,27 +62,8 @@ class MembersConfigProvider {
         };
     }
 
-    /**
-     * @returns {{publicKey: string, secretKey: string} | null}
-     */
-    getActiveStripeKeys() {
-        const stripeDirect = this._config.get('stripeDirect');
-
-        if (stripeDirect) {
-            return this.getStripeKeys('direct');
-        }
-
-        const connectKeys = this.getStripeKeys('connect');
-
-        if (!connectKeys) {
-            return this.getStripeKeys('direct');
-        }
-
-        return connectKeys;
-    }
-
     isStripeConnected() {
-        return this.getActiveStripeKeys() !== null;
+        return settingsService.getActiveStripeKeys() !== null;
     }
 
     getAuthSecret() {
