@@ -1,11 +1,12 @@
 const assert = require('assert');
-const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
+const {agentProvider, mockManager, fixtureManager, matchers, configUtils} = require('../../utils/e2e-framework');
 const {anyEtag, anyObjectId, anyLocationFor, anyISODateTime, anyErrorId, anyUuid, anyNumber, anyBoolean} = matchers;
 const should = require('should');
 const models = require('../../../core/server/models');
 const moment = require('moment-timezone');
 const settingsCache = require('../../../core/shared/settings-cache');
 const sinon = require('sinon');
+const settingsService = require('../../../core/server/services/settings/settings-service');
 
 let membersAgent, membersAgent2, postId, postTitle, commentId;
 
@@ -98,7 +99,7 @@ async function testCanCommentOnPost(member) {
     should.notEqual(member.get('last_commented_at'), null, 'The member should have a `last_commented_at` property after posting a comment.');
 }
 
-async function testCanReply(member) {
+async function testCanReply(member, emailMatchers = {}) {
     const date = new Date(0);
     await models.Member.edit({last_seen_at: date, last_commented_at: date}, {id: member.get('id')});
 
@@ -125,6 +126,7 @@ async function testCanReply(member) {
     });
 
     mockManager.assert.sentEmail({
+        ...emailMatchers,
         subject: '↪️ New reply to your comment on Ghost',
         to: fixtureManager.get('members', 0).email
     });
@@ -195,6 +197,7 @@ describe('Comments API', function () {
     });
 
     afterEach(function () {
+        configUtils.restore();
         mockManager.restore();
     });
 
@@ -210,7 +213,7 @@ describe('Comments API', function () {
                 });
             });
     
-            after(async function () {
+            afterEach(async function () {
                 sinon.restore();
             });
     
@@ -245,13 +248,15 @@ describe('Comments API', function () {
         });
 
         describe('when authenticated', function () {
+            let getStub;
+
             before(async function () {
                 await membersAgent.loginAs('member@example.com');
                 member = await models.Member.findOne({email: 'member@example.com'}, {require: true});
                 await membersAgent2.loginAs('member2@example.com');
             });
             beforeEach(function () {
-                const getStub = sinon.stub(settingsCache, 'get');
+                getStub = sinon.stub(settingsCache, 'get');
                 getStub.callsFake((key, options) => {
                     if (key === 'comments_enabled') {
                         return 'all';
@@ -323,7 +328,7 @@ describe('Comments API', function () {
             it('Can reply to a comment', async function () {
                 await testCanReply(member);
             });
-    
+
             let testReplyId;
             it('Limits returned replies to 3', async function () {
                 const parentId = fixtureManager.get('comments', 0).id;
@@ -377,6 +382,26 @@ describe('Comments API', function () {
                     .expect(({body}) => {
                         body.comments[0].count.replies.should.eql(5);
                     });
+            });
+
+            it('Can reply to a comment with www domain', async function () {
+                // Test that the www. is stripped from the default
+                configUtils.set('url', 'http://www.domain.example/');
+                await testCanReply(member, {from: 'noreply@domain.example'});
+            });
+
+            it('Can reply to a comment with custom support email', async function () {
+                // Test that the www. is stripped from the default
+                getStub.callsFake((key, options) => {
+                    if (key === 'members_support_address') {
+                        return 'support@example.com';
+                    }
+                    if (key === 'comments_enabled') {
+                        return 'all';
+                    }
+                    return getStub.wrappedMethod.call(settingsCache, key, options);
+                });
+                await testCanReply(member, {from: 'support@example.com'});
             });
     
             it('Can like a comment', async function () {
@@ -472,11 +497,11 @@ describe('Comments API', function () {
                         etag: anyEtag
                     })
                     .matchBodySnapshot({
-                        comments: new Array(5).fill(commentMatcher)
+                        comments: new Array(7).fill(commentMatcher)
                     })
                     .expect(({body}) => {
                         should(body.comments[0].count.replies).be.undefined();
-                        should(body.meta.pagination.total).eql(5);
+                        should(body.meta.pagination.total).eql(7);
                         should(body.meta.pagination.next).eql(null);
     
                         // Check liked + likes working for replies too
@@ -486,22 +511,22 @@ describe('Comments API', function () {
                     });
             });
     
-            it('Can request second page of replies', async function () {
+            it('Can request last page of replies', async function () {
                 const parentId = fixtureManager.get('comments', 0).id;
     
                 // Check initial status: two replies before test
                 await membersAgent
-                    .get(`/api/comments/${parentId}/replies/?page=2&limit=3`)
+                    .get(`/api/comments/${parentId}/replies/?page=3&limit=3`)
                     .expectStatus(200)
                     .matchHeaderSnapshot({
                         etag: anyEtag
                     })
                     .matchBodySnapshot({
-                        comments: new Array(2).fill(commentMatcher)
+                        comments: new Array(1).fill(commentMatcher)
                     })
                     .expect(({body}) => {
                         should(body.comments[0].count.replies).be.undefined();
-                        should(body.meta.pagination.total).eql(5);
+                        should(body.meta.pagination.total).eql(7);
                         should(body.meta.pagination.next).eql(null);
                     });
             });

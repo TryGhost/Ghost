@@ -1,5 +1,5 @@
 class StaffService {
-    constructor({logging, models, mailer, settingsCache, urlUtils}) {
+    constructor({logging, models, mailer, settingsCache, settingsHelpers, urlUtils}) {
         this.logging = logging;
 
         /** @private */
@@ -13,6 +13,7 @@ class StaffService {
             logging,
             models,
             mailer,
+            settingsHelpers,
             settingsCache,
             urlUtils
         });

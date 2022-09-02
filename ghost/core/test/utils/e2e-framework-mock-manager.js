@@ -75,6 +75,8 @@ const sentEmail = (matchers) => {
 
     let spyCall = mocks.mail.getCall(emailCount);
 
+    assert.notEqual(spyCall, null, 'Expected at least ' + (emailCount + 1) + ' emails sent.');
+
     // We increment here so that the messaging has an index of 1, whilst getting the call has an index of 0
     emailCount += 1;
 

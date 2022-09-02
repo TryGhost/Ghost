@@ -15,7 +15,7 @@ const messages = {
 };
 
 class CommentsService {
-    constructor({config, logging, models, mailer, settingsCache, urlService, urlUtils, contentGating}) {
+    constructor({config, logging, models, mailer, settingsCache, settingsHelpers, urlService, urlUtils, contentGating}) {
         /** @private */
         this.models = models;
 
@@ -33,6 +33,7 @@ class CommentsService {
             models,
             mailer,
             settingsCache,
+            settingsHelpers,
             urlService,
             urlUtils
         });

@@ -4,10 +4,11 @@ const _ = require('lodash');
 const moment = require('moment');
 
 class StaffServiceEmails {
-    constructor({logging, models, mailer, settingsCache, urlUtils}) {
+    constructor({logging, models, mailer, settingsHelpers, settingsCache, urlUtils}) {
         this.logging = logging;
         this.models = models;
         this.mailer = mailer;
+        this.settingsHelpers = settingsHelpers;
         this.settingsCache = settingsCache;
         this.urlUtils = urlUtils;
 
@@ -248,29 +249,17 @@ class StaffServiceEmails {
         return siteDomain;
     }
 
+    get defaultEmailDomain() {
+        return this.settingsHelpers.getDefaultEmailDomain();
+    }
+
     get membersAddress() {
         // TODO: get from address of default newsletter?
-        return `noreply@${this.siteDomain}`;
+        return `noreply@${this.defaultEmailDomain}`;
     }
 
     get fromEmailAddress() {
-        return `ghost@${this.siteDomain}`;
-    }
-
-    // TODO: duplicated from services/members/config - exrtact to settings?
-    get supportAddress() {
-        const supportAddress = this.settingsCache.get('members_support_address') || 'noreply';
-
-        // Any fromAddress without domain uses site domain, like default setting `noreply`
-        if (supportAddress.indexOf('@') < 0) {
-            return `${supportAddress}@${this.siteDomain}`;
-        }
-
-        return supportAddress;
-    }
-
-    get notificationFromAddress() {
-        return this.supportAddress || this.membersAddress;
+        return `ghost@${this.defaultEmailDomain}`;
     }
 
     extractInitials(name = '') {
