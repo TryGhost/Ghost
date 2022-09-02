@@ -229,8 +229,8 @@ export default class KoenigCardProductComponent extends Component {
             let imageElem = new Image();
             imageElem.onload = () => {
                 // store width/height for use later to avoid saving an image card with no `src`
-                this._imageWidth = imageElem.naturalWidth;
-                this._imageHeight = imageElem.naturalHeight;
+                this._productImageWidth = imageElem.naturalWidth;
+                this._productImageHeight = imageElem.naturalHeight;
             };
             imageElem.src = url;
         }
@@ -240,14 +240,14 @@ export default class KoenigCardProductComponent extends Component {
     resetSrcs() {
         // this.set('previewSrc', null);
         this.previewSrc = null;
-        // this._imageWidth = null;
-        // this._imageHeight = null;
+        this._productImageWidth = null;
+        this._productImageHeight = null;
 
         // create undo snapshot when clearing
         this.args.editor.run(() => {
             this._updatePayloadAttr('productImageSrc', null);
-            // this._updatePayloadAttr('width', null);
-            // this._updatePayloadAttr('height', null);
+            this._updatePayloadAttr('productImageWidth', null);
+            this._updatePayloadAttr('productImageHeight', null);
         });
     }
 
@@ -258,12 +258,12 @@ export default class KoenigCardProductComponent extends Component {
         // create undo snapshot when image finishes uploading
         this.args.editor.run(() => {
             this._updatePayloadAttr('productImageSrc', image.url);
-            if (this._imageWidth && this._imageHeight) {
-                // this._updatePayloadAttr('width', this._imageWidth);
-                // this._updatePayloadAttr('height', this._imageHeight);
+            if (this._productImageWidth && this._productImageHeight) {
+                this._updatePayloadAttr('productImageWidth', this._productImageWidth);
+                this._updatePayloadAttr('productImageHeight', this._productImageHeight);
             }
-            this._imageWidth = null;
-            this._imageHeight = null;
+            this._productImageWidth = null;
+            this._productImageHeight = null;
         });
     }
 
