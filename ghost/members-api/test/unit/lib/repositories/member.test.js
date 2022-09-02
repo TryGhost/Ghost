@@ -264,4 +264,216 @@ describe('MemberRepository', function () {
             sinon.restore();
         });
     });
+
+    describe('create', function (){
+        let Member;
+        let staffService;
+        let notifySpy;
+        let MemberPaidSubscriptionEvent;
+        let StripeCustomerSubscription;
+        let MemberStatusEvent;
+        let MemberProductEvent;
+        let stripeAPIService;
+        let newslettersService;
+        let productRepository;
+        let labsService;
+
+        beforeEach(async function () {
+            notifySpy = sinon.spy();
+
+            Member = {
+                add: sinon.stub().resolves({
+                    related: () => {
+                        return {
+                            query: sinon.stub().returns({
+                                fetchOne: sinon.stub().resolves({})
+                            }),
+                            toJSON: sinon.stub().returns([]),
+                            fetch: sinon.stub().resolves({
+                                toJSON: sinon.stub().returns({})
+                            }),
+                            models: []
+                        };
+                    },
+                    toJSON: sinon.stub().returns({
+                        email: 'member@example.com'
+                    }),
+                    get: sinon.stub().returns('')
+                })
+            };
+            staffService = {
+                notifyFreeMemberSignup: notifySpy
+            };
+            MemberPaidSubscriptionEvent = {
+                add: sinon.stub().resolves()
+            };
+            MemberStatusEvent = {
+                add: sinon.stub().resolves()
+            };
+            StripeCustomerSubscription = {
+                add: sinon.stub().resolves({
+                    get: sinon.stub().returns()
+                })
+            };
+            MemberProductEvent = {
+                add: sinon.stub().resolves({})
+            };
+
+            newslettersService = {
+                browse: sinon.stub().resolves([])
+            };
+
+            stripeAPIService = {
+                configured: true,
+                getSubscription: sinon.stub().resolves({})
+            };
+
+            productRepository = {
+                get: sinon.stub().resolves({
+                    get: sinon.stub().returns(),
+                    toJSON: sinon.stub().returns({})
+                }),
+                update: sinon.stub().resolves({})
+            };
+
+            labsService = {
+                isSet: sinon.stub().returns(true)
+            };
+        });
+
+        it('triggers email alert for member context', async function (){
+            const repo = new MemberRepository({
+                stripeAPIService,
+                StripeCustomerSubscription,
+                MemberPaidSubscriptionEvent,
+                MemberProductEvent,
+                MemberStatusEvent,
+                staffService,
+                productRepository,
+                labsService,
+                newslettersService,
+                Member
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+            await repo.create({
+                email: 'member@example.com',
+                name: 'Member'
+            }, {
+                transacting: true,
+                context: {}
+            });
+            notifySpy.calledOnce.should.be.true();
+        });
+
+        it('triggers email alert for api context', async function (){
+            const repo = new MemberRepository({
+                stripeAPIService,
+                StripeCustomerSubscription,
+                MemberPaidSubscriptionEvent,
+                MemberProductEvent,
+                MemberStatusEvent,
+                staffService,
+                productRepository,
+                labsService,
+                newslettersService,
+                Member
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+            await repo.create({
+                email: 'member@example.com',
+                name: 'Member'
+            }, {
+                transacting: true,
+                context: {api_key: 'abc'}
+            });
+            notifySpy.calledOnce.should.be.true();
+        });
+
+        it('does not trigger email alert for admin context', async function (){
+            const repo = new MemberRepository({
+                stripeAPIService,
+                StripeCustomerSubscription,
+                MemberPaidSubscriptionEvent,
+                MemberProductEvent,
+                MemberStatusEvent,
+                staffService,
+                productRepository,
+                labsService,
+                newslettersService,
+                Member
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+            await repo.create({
+                email: 'member@example.com',
+                name: 'Member'
+            }, {
+                transacting: true,
+                context: {user: {}}
+            });
+            notifySpy.calledOnce.should.be.false();
+        });
+
+        it('does not trigger email alert for importer context', async function (){
+            const repo = new MemberRepository({
+                stripeAPIService,
+                StripeCustomerSubscription,
+                MemberPaidSubscriptionEvent,
+                MemberProductEvent,
+                MemberStatusEvent,
+                staffService,
+                productRepository,
+                labsService,
+                newslettersService,
+                Member
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+            await repo.create({
+                email: 'member@example.com',
+                name: 'Member'
+            }, {
+                transacting: true,
+                context: {importer: true}
+            });
+            notifySpy.calledOnce.should.be.false();
+        });
+
+        it('does not trigger free member email alert for creation via stripe webhook', async function (){
+            const repo = new MemberRepository({
+                stripeAPIService,
+                StripeCustomerSubscription,
+                MemberPaidSubscriptionEvent,
+                MemberProductEvent,
+                MemberStatusEvent,
+                staffService,
+                productRepository,
+                labsService,
+                newslettersService,
+                Member
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+            await repo.create({
+                email: 'member@example.com',
+                name: 'Member'
+            }, {
+                transacting: true,
+                flag: 'stripe',
+                context: {}
+            });
+            notifySpy.calledOnce.should.be.false();
+        });
+
+        afterEach(function () {
+            sinon.restore();
+        });
+    });
 });
