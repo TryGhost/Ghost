@@ -1,19 +1,13 @@
-const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
-const tpl = require('@tryghost/tpl');
 const {URL} = require('url');
 const crypto = require('crypto');
 const createKeypair = require('keypair');
-
-const messages = {
-    incorrectKeyType: 'type must be one of "direct" or "connect".'
-};
 
 class MembersConfigProvider {
     /**
      * @param {object} options
      * @param {{get: (key: string) => any}} options.settingsCache
-     * @param {{getDefaultEmailDomain(): string, getMembersSupportAddress(): string, getActiveStripeKeys(): {publicKey: string, secretKey: string}|null}} options.settingsHelpers
+     * @param {{getDefaultEmailDomain(): string, getMembersSupportAddress(): string, isStripeConnected(): boolean}} options.settingsHelpers
      * @param {any} options.urlUtils
      */
     constructor({settingsCache, settingsHelpers, urlUtils}) {
@@ -39,30 +33,8 @@ class MembersConfigProvider {
         return this.getEmailSupportAddress();
     }
 
-    /**
-     * @param {'direct' | 'connect'} type - The "type" of keys to fetch from settings
-     * @returns {{publicKey: string, secretKey: string} | null}
-     */
-    getStripeKeys(type) {
-        if (type !== 'direct' && type !== 'connect') {
-            throw new errors.IncorrectUsageError({message: tpl(messages.incorrectKeyType)});
-        }
-
-        const secretKey = this._settingsCache.get(`stripe_${type === 'connect' ? 'connect_' : ''}secret_key`);
-        const publicKey = this._settingsCache.get(`stripe_${type === 'connect' ? 'connect_' : ''}publishable_key`);
-
-        if (!secretKey || !publicKey) {
-            return null;
-        }
-
-        return {
-            secretKey,
-            publicKey
-        };
-    }
-
     isStripeConnected() {
-        return this._settingsHelpers.getActiveStripeKeys() !== null;
+        return this._settingsHelpers.isStripeConnected();
     }
 
     getAuthSecret() {

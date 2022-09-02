@@ -1,5 +1,3 @@
-const settingsService = require('../settings/settings-service');
-
 class StaffServiceWrapper {
     init() {
         const StaffService = require('@tryghost/staff-service');
@@ -10,7 +8,7 @@ class StaffServiceWrapper {
         const mailer = new GhostMailer();
         const settingsCache = require('../../../shared/settings-cache');
         const urlUtils = require('../../../shared/url-utils');
-        const settingsHelpers = settingsService.helpers;
+        const settingsHelpers = require('../settings-helpers');
 
         this.api = new StaffService({
             logging,

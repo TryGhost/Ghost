@@ -61,8 +61,12 @@ class SettingsHelpers {
         return connectKeys;
     }
 
+    isStripeConnected() {
+        return this.getActiveStripeKeys() !== null;
+    }
+
     arePaidMembersEnabled() {
-        return this.isMembersEnabled() && this.getActiveStripeKeys() !== null;
+        return this.isMembersEnabled() && this.isStripeConnected();
     }
 
     getFirstpromoterId() {
