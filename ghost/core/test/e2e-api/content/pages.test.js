@@ -18,7 +18,7 @@ describe('Pages Content API', function () {
 
     before(async function () {
         agent = await agentProvider.getContentAPIAgent();
-        await fixtureManager.init('users:no-owner', 'user:inactive', 'posts', 'tags:extra', 'api_keys');
+        await fixtureManager.init('users', 'user:inactive', 'posts', 'tags:extra', 'api_keys');
         await agent.authenticate();
     });
 

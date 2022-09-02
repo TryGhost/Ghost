@@ -25,7 +25,7 @@ describe('Update User Last Seen', function () {
         await agent.loginAsOwner();
 
         // Fixtures aren't working for roles. So need to use the owner for now.
-        /*await fixtureManager.init('roles', 'users:no-owner');
+        /*await fixtureManager.init('roles', 'users');
         await agent.loginAs(
             DataGenerator.Content.users[1].email,
             DataGenerator.Content.users[1].password
