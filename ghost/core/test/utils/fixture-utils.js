@@ -277,17 +277,21 @@ const fixtures = {
         });
     },
 
-    createUsersWithoutOwner: function createUsersWithoutOwner() {
+    createUsersWithoutOwner: async function createUsersWithoutOwner() {
         const usersWithoutOwner = _.cloneDeep(DataGenerator.forKnex.users.slice(1));
+
+        let roles = await models.Role.fetchAll();
+        roles = roles.toJSON();
 
         return Promise.map(usersWithoutOwner, function (user) {
             let userRolesRelations = _.filter(DataGenerator.forKnex.roles_users, {user_id: user.id});
 
             userRolesRelations = _.map(userRolesRelations, function (userRolesRelation) {
-                return _.find(DataGenerator.forKnex.roles, {id: userRolesRelation.role_id});
+                return _.find(roles, {name: userRolesRelation.role_name});
             });
 
             user.roles = userRolesRelations;
+
             return models.User.add(user, context.internal);
         });
     },
