@@ -144,10 +144,11 @@ class StaffServiceEmails {
 
     /** @private */
     getMemberData(member) {
-        let name = member?.name || 'Anonymous';
+        let name = member?.name || member?.email;
         return {
-            name: member?.name || member?.email,
+            name,
             email: member?.email,
+            showEmail: !!member?.name,
             adminUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/members/${member.id}`),
             initials: this.extractInitials(name),
             location: this.getGeolocationData(member.geolocation),
