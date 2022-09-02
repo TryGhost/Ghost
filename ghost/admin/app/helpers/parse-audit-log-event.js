@@ -147,7 +147,7 @@ function getLinkTarget(ev) {
 function getActionIcon(ev) {
     switch (ev.event) {
     case 'added':
-        return 'add';
+        return 'plus-large';
     case 'edited':
         return 'pen';
     case 'deleted':

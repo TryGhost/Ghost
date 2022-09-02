@@ -927,15 +927,7 @@
 
 .kg-cardmenu-card-hover .kg-cardmenu-action-icon svg {
     margin: 0;
-    height: 1em;
-}
-
-.kg-cardmenu-card-hover .kg-cardmenu-action-icon svg path {
-    fill: var(--red);
-}
-
-.kg-cardmenu-card-hover .kg-cardmenu-action-icon:hover svg path {
-    fill: var(--red);
+    height: 1.6rem;
 }
 
 /* Padded container housing title + editor canvas, scrollable content */
@@ -980,11 +972,13 @@
     border-color: var(--darkgrey);
 }
 
-.koenig-plus-menu-button:hover svg path,
-.koenig-plus-menu-button:hover svg g {
-    stroke: var(--darkgrey);
+.koenig-plus-menu-button svg path {
+    stroke-width: 1.2;
 }
 
+.koenig-plus-menu-button:hover svg path {
+    stroke: var(--darkgrey);
+}
 
 @media (max-width: 500px) {
   .koenig-plus-menu-button {
@@ -3040,7 +3034,7 @@ button.emoji-picker__category-button.active {
 }
 
 .kg-settings-headerstyle-btn-group .kg-headerstyle-btn-image svg path {
-    stroke: var(--midgrey);
+    stroke-width: 1.5;
 }
 
 .kg-settings-headerstyle-btn-group .gh-btn-group-selected {
