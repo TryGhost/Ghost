@@ -1,5 +1,4 @@
 import BaseAdapter from 'ghost-admin/adapters/base';
-import classic from 'ember-classic-decorator';
 import {get} from '@ember/object';
 import {isNone} from '@ember/utils';
 import {underscore} from '@ember/string';
@@ -14,7 +13,6 @@ import {underscore} from '@ember/string';
 // If a model has an embedded hasMany relation, the related type will be included:
 // roles: DS.hasMany('role', { embedded: 'always' }) => ?include=roles
 
-@classic
 export default class EmbeddedRelationAdapter extends BaseAdapter {
     find(store, type, id, snapshot) {
         return this.ajax(this.buildIncludeURL(store, type.modelName, id, snapshot, 'find'), 'GET');

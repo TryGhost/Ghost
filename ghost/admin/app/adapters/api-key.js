@@ -1,7 +1,5 @@
 import ApplicationAdapter from './application';
-import classic from 'ember-classic-decorator';
 
-@classic
 export default class ApiKey extends ApplicationAdapter {
     queryRecord(store, type, query) {
         if (!query || query.id !== 'me') {

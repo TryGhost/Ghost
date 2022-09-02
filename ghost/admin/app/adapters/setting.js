@@ -1,7 +1,5 @@
 import ApplicationAdapter from 'ghost-admin/adapters/application';
-import classic from 'ember-classic-decorator';
 
-@classic
 export default class Setting extends ApplicationAdapter {
     updateRecord(store, type, record) {
         let data = {};
