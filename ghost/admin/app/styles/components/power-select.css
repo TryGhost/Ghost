@@ -329,8 +329,7 @@
 }
 
 .tag-token--internal svg path {
-    stroke: var(--black);
-    fill: var(--black);
+    stroke: var(--white);
 }
 
 /* Author input */
