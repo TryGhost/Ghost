@@ -1284,27 +1284,37 @@ DataGenerator.forKnex = (function () {
 
     const roles_users = [
         {
+            // owner
             id: ObjectId().toHexString(),
+            role_name: 'Owner',
             user_id: DataGenerator.Content.users[0].id,
             role_id: DataGenerator.Content.roles[3].id
         },
         {
+            // admin
             id: ObjectId().toHexString(),
+            role_name: 'Administrator',
             user_id: DataGenerator.Content.users[1].id,
             role_id: DataGenerator.Content.roles[0].id
         },
         {
+            // editor
             id: ObjectId().toHexString(),
+            role_name: 'Editor',
             user_id: DataGenerator.Content.users[2].id,
             role_id: DataGenerator.Content.roles[1].id
         },
         {
+            // author
             id: ObjectId().toHexString(),
+            role_name: 'Author',
             user_id: DataGenerator.Content.users[3].id,
             role_id: DataGenerator.Content.roles[2].id
         },
         {
+            // contributor
             id: ObjectId().toHexString(),
+            role_name: 'Contributor',
             user_id: DataGenerator.Content.users[7].id,
             role_id: DataGenerator.Content.roles[4].id
         }
