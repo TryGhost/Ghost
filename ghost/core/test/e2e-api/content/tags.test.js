@@ -15,7 +15,7 @@ describe('Tags Content API', function () {
     before(async function () {
         await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
-        await testUtils.initFixtures('users:no-owner', 'user:inactive', 'posts', 'tags:extra', 'api_keys');
+        await testUtils.initFixtures('users', 'user:inactive', 'posts', 'tags:extra', 'api_keys');
     });
 
     afterEach(function () {
