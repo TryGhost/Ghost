@@ -23,7 +23,7 @@ export default class GhFileInput extends Component {
     @action
     registerFileInput(inputElement) {
         this.inputElement = inputElement;
-        this.args.didInsert?.(this.inputElement);
+        this.args.onInsert?.(this.inputElement);
     }
 
     /**
