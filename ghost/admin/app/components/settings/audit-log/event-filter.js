@@ -2,7 +2,7 @@ import Component from '@glimmer/component';
 import {action} from '@ember/object';
 
 const ALL_EVENT_TYPES = [
-    {event: 'added', name: 'Added', icon: 'add'},
+    {event: 'added', name: 'Added', icon: 'plus-large'},
     {event: 'edited', name: 'Edited', icon: 'pen'},
     {event: 'deleted', name: 'Deleted', icon: 'trash'}
 ];

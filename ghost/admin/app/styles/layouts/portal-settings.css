@@ -330,6 +330,7 @@
     height: 44px;
     width: 44px;
     border: none;
+    color: var(--white);
     box-shadow: none;
 }
 
@@ -342,10 +343,6 @@
 .gh-portal-button-deleteicon span svg {
     width: 18px;
     height: 18px;
-}
-
-.gh-portal-button-deleteicon:hover span svg {
-    fill: var(--white);
 }
 
 .gh-portal-setting-copy {
