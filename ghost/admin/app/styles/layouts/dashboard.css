@@ -1,11 +1,11 @@
-/* --------------------------------- 
+/* ---------------------------------
 Dashboard Control Panel */
 
 .prototype-control-panel {
     margin-top: 50vh; /* Keep it out of view */
 }
 
-/* --------------------------------- 
+/* ---------------------------------
 Dashboard Layout */
 
 .gh-dashboard-layout {
@@ -33,8 +33,13 @@ Dashboard Layout */
     grid-template-columns: 2fr 1fr;
 }
 
+.gh-dashboard-split.is-reverse {
+    grid-template-columns: 1fr 2fr;
+}
+
 @media screen and (max-width: 1320px) {
-    .gh-dashboard-split {
+    .gh-dashboard-split,
+    .gh-dashboard-split.is-reverse {
         grid-template-columns: 1fr 1fr;
     }
 }
@@ -81,22 +86,26 @@ Dashboard Layout */
     align-items: stretch;
 }
 
+.gh-dashboard-box.no-boarder {
+    border: none;
+}
+
 .gh-dashboard-box.gh-dashboard-split {
     display: grid;
     padding: 24px 0;
     margin-bottom: 24px;
 }
 
-.gh-dashboard-box.gh-dashboard-split section:nth-child(odd) {
+.gh-dashboard-box.gh-dashboard-split:not(.gh-dashboard-box.no-boarder) section:nth-child(odd) {
     margin-left: 24px;
 }
 
-.gh-dashboard-box.gh-dashboard-split section:nth-child(even) {
+.gh-dashboard-box.gh-dashboard-split:not(.gh-dashboard-box.no-boarder) section:nth-child(even) {
     margin-left: 0;
     margin-right: 24px;
 }
 
-.gh-dashboard-box.is-secondary {
+.gh-dashboard-resource-box {
     background: var(--main-color-content-greybg);
     border-color: var(--main-color-content-greybg);
 }
@@ -190,7 +199,7 @@ Dashboard Layout */
         width: 49%;
         margin-left: 50%;
     }
-    
+
     .gh-dashboard-minichart.gh-dashboard-mix.is-cadence .gh-dashboard-chart-box {
         width: 64%;
         margin-left: 35%;
@@ -250,7 +259,7 @@ Dashboard Layout */
     letter-spacing: 0;
     color: var(--midgrey);
     padding: 0 0 0 16px;
-    position: relative;   
+    position: relative;
 }
 
 .gh-dashboard-legend-item::after {
@@ -390,7 +399,7 @@ Dashboard Layout */
 }
 
 
-/* --------------------------------- 
+/* ---------------------------------
 Dashboard Chart */
 
 .gh-dashboard-chart {
@@ -486,7 +495,7 @@ Dashboard Chart */
 }
 
 
-/* --------------------------------- 
+/* ---------------------------------
 Dashboard Percentage */
 
 .gh-dashboard-percentage {
@@ -511,7 +520,7 @@ Dashboard Percentage */
 }
 
 
-/* --------------------------------- 
+/* ---------------------------------
 Dashboard Metric */
 
 .gh-dashboard-metric {
@@ -596,7 +605,7 @@ Dashboard Metric */
 }
 
 .gh-dashboard-metric.is-tooltip .gh-dashboard-metric-label {
-    font-size: 1.3rem;   
+    font-size: 1.3rem;
     margin-bottom: 8px;
 }
 
@@ -629,7 +638,7 @@ Dashboard Metric */
 }
 
 
-/* --------------------------------- 
+/* ---------------------------------
 Dashboard List */
 
 .gh-dashboard-list {
@@ -755,7 +764,7 @@ Dashboard List */
 }
 
 
-/* --------------------------------- 
+/* ---------------------------------
 Dashboard Overview */
 
 .gh-dashboard-overview {
@@ -789,7 +798,7 @@ Dashboard Overview */
 }
 
 
-/* --------------------------------- 
+/* ---------------------------------
 Dashboard Anchor */
 
 @keyframes chartFadeIn {
@@ -843,7 +852,7 @@ Dashboard Anchor */
     margin-right: 2px;
 }
 
-.gh-dashboard-anchor .gh-dashboard-stats-button.is-selected { 
+.gh-dashboard-anchor .gh-dashboard-stats-button.is-selected {
     color: var(--black);
     background: var(--white);
     box-shadow: 0 2px 4px rgb(0 0 0 / 2%);
@@ -897,7 +906,7 @@ Dashboard Anchor */
 }
 
 
-/* --------------------------------- 
+/* ---------------------------------
 Dashboard Zero */
 
 .gh-dashboard-zero {
@@ -974,7 +983,7 @@ Dashboard Zero */
 }
 
 
-/* --------------------------------- 
+/* ---------------------------------
 Dashboard Engagement */
 
 .gh-dashboard-engagement {
@@ -991,7 +1000,7 @@ Dashboard Engagement */
 }
 
 
-/* --------------------------------- 
+/* ---------------------------------
 Dashboard Recent Posts */
 
 .gh-dashboard-recent-posts {
@@ -1051,7 +1060,7 @@ Dashboard Recent Posts */
 }
 
 
-/* --------------------------------- 
+/* ---------------------------------
 Dashboard Recent Activity */
 
 .gh-dashboard-recent-activity {
@@ -1110,7 +1119,7 @@ Dashboard Recent Activity */
 }
 
 
-/* --------------------------------- 
+/* ---------------------------------
 Dashboard Recents */
 
 .gh-dashboard-recents {
@@ -1223,7 +1232,7 @@ Dashboard Recents */
 }
 
 
-/* --------------------------------- 
+/* ---------------------------------
 Dashboard Resources */
 
 .gh-dashboard-resources {
@@ -1311,7 +1320,7 @@ Dashboard Resources */
 }
 
 
-/* --------------------------------- 
+/* ---------------------------------
 Dashboard Multi */
 
 .gh-dashboard-multi {
@@ -1363,7 +1372,7 @@ Dashboard Multi */
 }
 
 
-/* --------------------------------- 
+/* ---------------------------------
 Dashboard Latest Newsletters */
 
 .gh-dashboard-newsletter {
@@ -1403,13 +1412,38 @@ Dashboard Latest Newsletters */
     }
 }
 
+/* ---------------------------------
+Dashboard What's New */
 
-/* --------------------------------- 
+.gh-dashboard-whats-new .gh-dashboard-resource-box {
+    background: var(--main-color-content-greybg);
+    border-color: var(--main-color-content-greybg);
+}
+
+.gh-dashboard-whats-new .gh-dashboard-resource-title:not(.is-large) h4 {
+    display: flex;
+    color: var(--black);
+    align-items: center;
+}
+
+.gh-dashboard-whats-new .gh-dashboard-resource-title svg {
+    fill: var(--pink);
+    width: 1.8rem;
+    height: auto;
+    margin-right: 10px;
+}
+
+.gh-dashboard-whats-new .gh-dashboard-list-link span {
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+/* ---------------------------------
 Dashboard Community */
 
 .gh-dashboard-community {
     position: relative;
-    grid-column: 1 / 3;
+    grid-column: 2 / 3;
 }
 
 .gh-dashboard-community .gh-dashboard-resource-box {
@@ -1422,7 +1456,7 @@ Dashboard Community */
     padding-top: 32px;
     transition: all 1.2s ease-in-out;
     border: 0 none;
-}   
+}
 
 .gh-dashboard-community .gh-dashboard-resource-box:hover {
     box-shadow: 0 54px 80px rgb(0 0 0 / 7%), 0 19.7109px 29.2013px rgb(0 0 0 / 5%), 0 9.56927px 14.1767px rgb(0 0 0 / 4%), 0 4.69103px 6.94968px rgb(0 0 0 / 3%), 0 1.85484px 2.74791px rgb(0 0 0 / 2%);
@@ -1453,7 +1487,7 @@ Dashboard Community */
 }
 
 
-/* --------------------------------- 
+/* ---------------------------------
 Dashboard Misc */
 
 .gh-dashboard .gh-list-header {
@@ -1493,7 +1527,7 @@ Dashboard Misc */
 }
 
 
-/* --------------------------------- 
+/* ---------------------------------
 Dashboard Resource */
 
 .gh-dashboard-resource {
@@ -1585,7 +1619,7 @@ Dashboard Resource */
     width: 100%;
     height: auto;
     background: transparent;
-    background-repeat: no-repeat;   
+    background-repeat: no-repeat;
     background-position: center;
     background-size: cover;
     background-image: url(img/resource-1.jpg);
@@ -1622,7 +1656,7 @@ Dashboard Resource */
     display: -webkit-box;
     line-clamp: 3;
     -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;  
+    -webkit-box-orient: vertical;
     overflow: hidden;
     margin: 0;
     padding: 0;
@@ -1728,25 +1762,129 @@ Dashboard Resource */
     transition: all .3s ease-in-out;
 }
 
-.gh-dashboard-staff-picks .gh-dashboard-resource-footer a {
+.gh-dashboard-explore-feed .gh-dashboard-resource-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.gh-dashboard-explore-feed .gh-dashboard-resource-title a:not(.gh-dashboard-explore-add) {
+    color: var(--middarkgrey);
+    font-weight: 700;
+}
+
+.gh-dashboard-explore-add {
+    color: var(--pink);
+    margin-left: 10px;
+    font-weight: 700;
+}
+
+.gh-dashboard-explore-add span {
+    width: 15px;
+    height: 15px;
+}
+
+.gh-dashboard-explore-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 6rem;
+    height: 100%;
+    border-radius: 5px;
+}
+
+.gh-dashboard-explore-header {
+    flex-shrink: 1;
+}
+
+.gh-dashboard-explore-icon {
     display: flex;
     align-items: center;
-    color: #1DA1F2;
-    font-weight: 500;
+    justify-content: center;
+    margin-bottom: 3rem;
+    overflow: hidden;
+    font-size: 1.2rem;
+    color: var(--middarkgrey);
+    width: 50px;
+    height: 50px;
+    border-radius: 999px;
+    background-color: #fff;
 }
 
-.gh-dashboard-staff-picks .gh-dashboard-resource-footer a:hover {
-    color: #1788ce;
+.gh-dashboard-explore-icon img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
 }
 
-.gh-dashboard-staff-picks .gh-dashboard-resource-footer svg {
-    width: 20px;
-    height: 20px;
-    margin-right: 5px;
+.gh-dashboard-explore-header p {
+    margin: 8px 0 16px;
+    padding: 0;
+    color: var(--middarkgrey);
+    font-size: 1.55rem;
+    line-clamp: 2;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.gh-dashboard-explore-title {
+    display: flex;
+    align-items: center;
+}
+
+.gh-dashboard-explore-title h5 {
+    font-weight: 800;
+}
+
+.gh-dashboard-explore-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.gh-dashboard-explore-footer p {
+    margin: 0;
+    font-weight: 600;
+    color: var(--black);
+}
+
+.gh-dashboard-explore-mrr,
+.gh-dashboard-explore-members {
+    flex-shrink: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--white);
+    padding: .4rem .8rem;
+    border-radius: 5px;
+}
+
+.gh-dashboard-explore-members {
+    background: var(--black);
+}
+
+.gh-dashboard-explore-mrr {
+    background: var(--pink);
+}
+
+.gh-dashboard-explore-arrow {
+    height: 2.4rem;
+    width: 2.4rem;
+    display: flex;
+    border: 1px solid var(--black);
+    border-radius: 999px;
+    color: var(--black);
+    padding: .4rem;
+    line-height: 1em;
+    transition: all .15s cubic-bezier(.4,0,.2,1);
+}
+
+.gh-dashboard-explore-arrow:hover {
+    color: var(--white);
+    background: var(--black);
 }
 
 
-/* --------------------------------- 
+/* ---------------------------------
 Dashboard Tooltips */
 
 .gh-dashboard-tooltip {
@@ -1968,6 +2106,17 @@ Dashboard Tooltips */
     }
 }
 
+@media screen and (min-width: 800px) and (max-width: 1000px) {
+    .gh-dashboard-split.is-reverse {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto;
+    }
+
+    .gh-dashboard-community {
+        grid-column: 1;
+    }
+}
+
 @media screen and (max-width: 600px) {
     .gh-dashboard-box.gh-dashboard-split {
         grid-template-columns: 1fr;
@@ -1984,13 +2133,18 @@ Dashboard Tooltips */
         grid-template-rows: auto auto auto;
     }
 
+    .gh-dashboard-split.is-reverse {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto;
+    }
+
     .gh-dashboard-community {
         grid-column: 1;
     }
 }
 
 
-/* --------------------------------- 
+/* ---------------------------------
 Dashboard No Data */
 
 .gh-no-data-list {
