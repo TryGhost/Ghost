@@ -277,7 +277,7 @@ const fixtures = {
         });
     },
 
-    createUsersWithoutOwner: async function createUsersWithoutOwner() {
+    ensureUserForEachRole: async function ensureUserForEachRole() {
         const usersWithoutOwner = _.cloneDeep(DataGenerator.forKnex.users.slice(1));
 
         let roles = await models.Role.fetchAll();
@@ -739,8 +739,8 @@ const toDoList = {
     'users:roles': function createUsersWithRoles() {
         return fixtures.createUsersWithRoles();
     },
-    'users:no-owner': function createUsersWithoutOwner() {
-        return fixtures.createUsersWithoutOwner();
+    users: function ensureUserForEachRole() {
+        return fixtures.ensureUserForEachRole();
     },
     'user:inactive': function createInactiveUser() {
         return fixtures.createInactiveUser();
