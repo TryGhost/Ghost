@@ -1,6 +1,5 @@
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
-const SettingsHelpers = require('../settings-helpers');
 
 const messages = {
     remoteWebhooksInDevelopment: 'Cannot use remote webhooks in development. See https://ghost.org/docs/webhooks/#stripe-webhooks for developing with Stripe.'
@@ -17,7 +16,7 @@ const messages = {
  */
 
 module.exports = {
-    getConfig(settings, config, urlUtils) {
+    getConfig({config, urlUtils, settingsHelpers}) {
         /**
          * @returns {StripeURLConfig}
          */
@@ -42,8 +41,7 @@ module.exports = {
             };
         }
 
-        const helpers = new SettingsHelpers({settingsCache: settings, config, urlUtils});
-        const keys = helpers.getActiveStripeKeys();
+        const keys = settingsHelpers.getActiveStripeKeys();
         if (!keys) {
             return null;
         }

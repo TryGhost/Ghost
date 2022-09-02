@@ -5,7 +5,6 @@
 const events = require('../../lib/common/events');
 const models = require('../../models');
 const labs = require('../../../shared/labs');
-const config = require('../../../shared/config');
 const adapterManager = require('../adapter-manager');
 const SettingsCache = require('../../../shared/settings-cache');
 const SettingsBREADService = require('./settings-bread-service');
@@ -15,7 +14,7 @@ const SingleUseTokenProvider = require('../members/SingleUseTokenProvider');
 const urlUtils = require('../../../shared/url-utils');
 
 const ObjectId = require('bson-objectid');
-const SettingsHelpers = require('../settings-helpers/settings-helpers');
+const settingsHelpers = require('../settings-helpers');
 
 const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
 
@@ -66,8 +65,6 @@ module.exports = {
         SettingsCache.init(events, settingsCollection, this.getCalculatedFields(), cacheStore);
     },
 
-    helpers: new SettingsHelpers({settingsCache: SettingsCache, urlUtils, config}),
-
     /**
      * Restore the cache, used during e2e testing only
      */
@@ -81,10 +78,10 @@ module.exports = {
     getCalculatedFields() {
         const fields = [];
 
-        fields.push(new CalculatedField({key: 'members_enabled', type: 'boolean', group: 'members', fn: this.helpers.isMembersEnabled.bind(this.helpers), dependents: ['members_signup_access']}));
-        fields.push(new CalculatedField({key: 'members_invite_only', type: 'boolean', group: 'members', fn: this.helpers.isMembersInviteOnly.bind(this.helpers), dependents: ['members_signup_access']}));
-        fields.push(new CalculatedField({key: 'paid_members_enabled', type: 'boolean', group: 'members', fn: this.helpers.arePaidMembersEnabled.bind(this.helpers), dependents: ['members_signup_access', 'stripe_secret_key', 'stripe_publishable_key', 'stripe_connect_secret_key', 'stripe_connect_publishable_key']}));
-        fields.push(new CalculatedField({key: 'firstpromoter_account', type: 'string', group: 'firstpromoter', fn: this.helpers.getFirstpromoterId.bind(this.helpers), dependents: ['firstpromoter', 'firstpromoter_id']}));
+        fields.push(new CalculatedField({key: 'members_enabled', type: 'boolean', group: 'members', fn: settingsHelpers.isMembersEnabled.bind(settingsHelpers), dependents: ['members_signup_access']}));
+        fields.push(new CalculatedField({key: 'members_invite_only', type: 'boolean', group: 'members', fn: settingsHelpers.isMembersInviteOnly.bind(settingsHelpers), dependents: ['members_signup_access']}));
+        fields.push(new CalculatedField({key: 'paid_members_enabled', type: 'boolean', group: 'members', fn: settingsHelpers.arePaidMembersEnabled.bind(settingsHelpers), dependents: ['members_signup_access', 'stripe_secret_key', 'stripe_publishable_key', 'stripe_connect_secret_key', 'stripe_connect_publishable_key']}));
+        fields.push(new CalculatedField({key: 'firstpromoter_account', type: 'string', group: 'firstpromoter', fn: settingsHelpers.getFirstpromoterId.bind(settingsHelpers), dependents: ['firstpromoter', 'firstpromoter_id']}));
 
         return fields;
     },

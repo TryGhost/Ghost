@@ -3,15 +3,15 @@ const path = require('path');
 const moment = require('moment');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const postEmailSerializer = require('../mega/post-email-serializer');
-const settingsService = require('../settings/settings-service');
 
 class CommentsServiceEmails {
-    constructor({config, logging, models, mailer, settingsCache, urlService, urlUtils}) {
+    constructor({config, logging, models, mailer, settingsCache, settingsHelpers, urlService, urlUtils}) {
         this.config = config;
         this.logging = logging;
         this.models = models;
         this.mailer = mailer;
         this.settingsCache = settingsCache;
+        this.settingsHelpers = settingsHelpers;
         this.urlService = urlService;
         this.urlUtils = urlUtils;
 
@@ -168,7 +168,7 @@ class CommentsServiceEmails {
     }
 
     get notificationFromAddress() {
-        return settingsService.helpers.getMembersSupportAddress();
+        return this.settingsHelpers.getMembersSupportAddress();
     }
 
     extractInitials(name = '') {

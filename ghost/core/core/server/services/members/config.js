@@ -4,7 +4,6 @@ const tpl = require('@tryghost/tpl');
 const {URL} = require('url');
 const crypto = require('crypto');
 const createKeypair = require('keypair');
-const settingsService = require('../settings/settings-service');
 
 const messages = {
     incorrectKeyType: 'type must be one of "direct" or "connect".'
@@ -14,17 +13,17 @@ class MembersConfigProvider {
     /**
      * @param {object} options
      * @param {{get: (key: string) => any}} options.settingsCache
-     * @param {{get: (key: string) => any}} options.config
+     * @param {{getDefaultEmailDomain(): string, getMembersSupportAddress(): string, getActiveStripeKeys(): {publicKey: string, secretKey: string}|null}} options.settingsHelpers
      * @param {any} options.urlUtils
      */
-    constructor(options) {
-        this._settingsCache = options.settingsCache;
-        this._config = options.config;
-        this._urlUtils = options.urlUtils;
+    constructor({settingsCache, settingsHelpers, urlUtils}) {
+        this._settingsCache = settingsCache;
+        this._settingsHelpers = settingsHelpers;
+        this._urlUtils = urlUtils;
     }
 
     get defaultEmailDomain() {
-        return settingsService.helpers.getDefaultEmailDomain();
+        return this._settingsHelpers.getDefaultEmailDomain();
     }
 
     getEmailFromAddress() {
@@ -33,7 +32,7 @@ class MembersConfigProvider {
     }
 
     getEmailSupportAddress() {
-        return settingsService.helpers.getMembersSupportAddress();
+        return this._settingsHelpers.getMembersSupportAddress();
     }
 
     getAuthEmailFromAddress() {
@@ -63,7 +62,7 @@ class MembersConfigProvider {
     }
 
     isStripeConnected() {
-        return settingsService.helpers.getActiveStripeKeys() !== null;
+        return this._settingsHelpers.getActiveStripeKeys() !== null;
     }
 
     getAuthSecret() {
