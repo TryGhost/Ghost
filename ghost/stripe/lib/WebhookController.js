@@ -229,11 +229,11 @@ module.exports = class WebhookController {
                     id: session.metadata.attribution_id ?? null,
                     url: session.metadata.attribution_url ?? null,
                     type: session.metadata.attribution_type ?? null
-                }; 
+                };
 
                 const payerName = _.get(customer, 'subscriptions.data[0].default_payment_method.billing_details.name');
                 const name = metadataName || payerName || null;
-                
+
                 const memberData = {email: customer.email, name, attribution};
                 if (metadataNewsletters) {
                     try {
@@ -242,7 +242,7 @@ module.exports = class WebhookController {
                         logging.error(`Ignoring invalid newsletters data - ${metadataNewsletters}.`);
                     }
                 }
-                member = await this.deps.memberRepository.create(memberData);
+                member = await this.deps.memberRepository.create(memberData, {flag: 'stripe'});
             } else {
                 const payerName = _.get(customer, 'subscriptions.data[0].default_payment_method.billing_details.name');
 

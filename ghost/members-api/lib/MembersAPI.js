@@ -235,11 +235,6 @@ module.exports = function MembersAPI({
 
         const newMember = await users.create({name, email, labels, newsletters, attribution, geolocation});
 
-        // Notify staff users of new free member signup
-        if (labsService.isSet('emailAlerts')) {
-            await staffService.notifyFreeMemberSignup(newMember.toJSON());
-        }
-
         await MemberLoginEvent.add({member_id: newMember.id});
         return getMemberIdentityData(email);
     }

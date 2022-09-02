@@ -215,6 +215,11 @@ module.exports = class MemberRepository {
             options = {};
         }
 
+        // Member creation is triggered via stripe webhook
+        // Used to ignore free member email alert
+        const viaStripe = options.flag === 'stripe';
+        delete options.flag;
+
         const {labels} = data;
 
         if (labels) {
@@ -291,6 +296,11 @@ module.exports = class MemberRepository {
             to_status: member.get('status'),
             ...eventData
         }, options);
+
+        // Notify free member added
+        if (['member', 'api'].includes(source) && !viaStripe && memberStatusData.status === 'free') {
+            await this.staffService.notifyFreeMemberSignup(member.toJSON());
+        }
 
         const newsletters = member.related('newsletters').models;
 
