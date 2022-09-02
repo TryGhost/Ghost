@@ -8,12 +8,16 @@ const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
 const Papa = require('papaparse');
+const supertest = require('supertest');
 
 const models = require('../../../core/server/models');
 const membersService = require('../../../core/server/services/members');
 const memberAttributionService = require('../../../core/server/services/member-attribution');
 const urlService = require('../../../core/server/services/url');
 const urlUtils = require('../../../core/shared/url-utils');
+
+const localUtils = require('./utils');
+const config = require('../../../core/shared/config');
 
 async function assertMemberEvents({eventType, memberId, asserts}) {
     const events = await models[eventType].where('member_id', memberId).fetchAll();
@@ -660,6 +664,9 @@ describe('Members API', function () {
                 location: anyLocationFor('members')
             });
         const newMember = body.members[0];
+
+        // Free member alert is not sent for adding member via Admin
+        mockManager.assert.sentEmailCount(0);
 
         await agent
             .post(`/members/`)
@@ -2416,6 +2423,50 @@ describe('Members API', function () {
                     newsletter_id: n.id
                 };
             })
+        });
+    });
+});
+
+describe('Members API: email alerts', function () {
+    let request;
+
+    before(async function () {
+        await localUtils.startGhost();
+        request = supertest.agent(config.get('url'));
+        await testUtils.initFixtures('api_keys', 'users');
+    });
+
+    beforeEach(function () {
+        mockManager.mockMail();
+    });
+
+    afterEach(function () {
+        mockManager.restore();
+    });
+
+    // Create a member via API
+    it('triggered for new free member added via API', async function () {
+        const member = {
+            name: 'test',
+            email: 'memberTestAdd@test.com'
+        };
+
+        const res = await request
+            .post(localUtils.API.getApiQuery('members'))
+            .set('Origin', config.get('url'))
+            .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/admin/')}`)
+            .send({
+                members: [member]
+            })
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201);
+        res.body.members[0];
+
+        // Check member alert is sent to site owners
+        mockManager.assert.sentEmail({
+            to: testUtils.DataGenerator.Content.users[1].email,
+            subject: /🥳 Free member signup: test/
         });
     });
 });
