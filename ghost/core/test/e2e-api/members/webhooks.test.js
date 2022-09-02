@@ -44,8 +44,8 @@ async function assertSubscription(subscriptionId, asserts) {
 }
 
 describe('Members API', function () {
-    // @todo: Test what happens when a complementary subscription ends (should create comped -> free event)
-    // @todo: Test what happens when a complementary subscription starts a paid subscription
+    // @todo: Test what happens when a complimentary subscription ends (should create comped -> free event)
+    // @todo: Test what happens when a complimentary subscription starts a paid subscription
 
     // We create some shared stripe resources, so we don't have to have nocks in every test case
     const subscription = {};
@@ -477,7 +477,7 @@ describe('Members API', function () {
             set(customer, {
                 id: customer_id,
                 name: 'Test Member',
-                email: 'cancel-complementary-test@email.com',
+                email: 'cancel-complimentary-test@email.com',
                 subscriptions: {
                     type: 'list',
                     data: [subscription]

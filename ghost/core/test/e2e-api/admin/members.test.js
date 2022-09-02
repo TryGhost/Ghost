@@ -1018,7 +1018,7 @@ describe('Members API', function () {
         });
     });
 
-    it('Can create a new member with a product (complementary)', async function () {
+    it('Can create a new member with a product (complimentary)', async function () {
         const product = await getPaidProduct();
         const initialMember = {
             name: 'Name',
