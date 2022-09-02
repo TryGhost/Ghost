@@ -961,3 +961,7 @@ remove|ember-template-lint|no-action|89|103|89|103|8a5526f86c3c3289a47e2e033e392
 remove|ember-template-lint|no-action|92|105|92|105|8ef55f22a4332a43d47b2508c5903048f972cefa|1658102400000|1668474000000|1673658000000|app/templates/settings/staff/index.hbs
 remove|ember-template-lint|no-route-action|63|62|63|62|e9f8663f45f4f41bc590f8db8df3d5dabd9cc732|1658102400000|1668474000000|1673658000000|app/templates/settings/staff/index.hbs
 remove|ember-template-lint|require-valid-alt-text|26|20|26|20|c8f3616a9f2eef8909029c4ffdedc5886064d6ca|1658102400000|1668474000000|1673658000000|app/templates/settings/integrations/unsplash.hbs
+remove|ember-template-lint|no-unused-block-params|2|48|2|48|93a49e8b39e3073babdfb7d6b9f8d061d712564d|1658102400000|1668474000000|1673658000000|app/components/gh-theme-table.hbs
+remove|ember-template-lint|no-invalid-interactive|23|66|23|66|12fb0d3e1b679f781b065226f36d8afdcd5cedf0|1658102400000|1668474000000|1673658000000|lib/koenig-editor/addon/components/koenig-menu-content.hbs
+add|ember-template-lint|no-unused-block-params|2|48|2|48|640ae072a8a8b4a1eebde20f7f6510bf94ec120f|1662076800000|1672448400000|1677632400000|app/components/gh-theme-table.hbs
+add|ember-template-lint|no-invalid-interactive|23|70|23|70|fa748a830a15d1fffa0986e9aa4a19aae491f09f|1662076800000|1672448400000|1677632400000|lib/koenig-editor/addon/components/koenig-menu-content.hbs
