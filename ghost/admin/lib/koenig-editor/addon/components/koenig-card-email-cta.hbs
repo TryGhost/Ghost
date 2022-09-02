@@ -148,7 +148,7 @@
                             as |suggestion|
                         >
                             <span class="kg-settings-link-title" title="{{suggestion.name}}">{{suggestion.name}}</span>
-                            <span class="kg-settings-link-url" title="{{suggestion.url}}">{{suggestion.url}}</span>
+                            <span class="kg-settings-link-url" {{on "mouseenter" this.enterLinkURL}} {{on "mouseleave" this.leaveLinkURL}}><span>{{suggestion.url}}</span></span>
                         </GhInputWithSelect>
                     </div>
                 </div>
