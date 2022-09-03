@@ -188,7 +188,10 @@ export default class ModalTierPrice extends ModalBase {
         } catch (error) {
             if (error === undefined) {
                 // Validation error
+                return;
             }
+
+            throw error;
         }
     }
 
