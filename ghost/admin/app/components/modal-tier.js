@@ -1,4 +1,4 @@
-import EmberObject, {action} from '@ember/object';
+import {action} from '@ember/object';
 import ModalBase from 'ghost-admin/components/modal-base';
 import TierBenefitItem from '../models/tier-benefit-item';
 import classic from 'ember-classic-decorator';

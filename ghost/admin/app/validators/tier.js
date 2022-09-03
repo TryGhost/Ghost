@@ -15,6 +15,5 @@ export default BaseValidator.create({
             model.hasValidated.addObject('name');
             this.invalidate();
         }
-
     }
 });
