@@ -259,7 +259,8 @@ module.exports = class MemberBREADService {
             if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
                 throw new errors.ValidationError({
                     message: tpl(messages.memberAlreadyExists),
-                    context: 'Attempting to add member with existing email address'
+                    context: 'Attempting to add member with existing email address',
+                    property: 'email'
                 });
             }
             throw error;
@@ -316,7 +317,8 @@ module.exports = class MemberBREADService {
             if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
                 throw new errors.ValidationError({
                     message: tpl(messages.memberAlreadyExists),
-                    context: 'Attempting to edit member with existing email address'
+                    context: 'Attempting to edit member with existing email address',
+                    property: 'email'
                 });
             }
 
