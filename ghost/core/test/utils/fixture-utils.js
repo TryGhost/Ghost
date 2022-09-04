@@ -678,12 +678,6 @@ const fixtures = {
 };
 
 const toDoList = {
-    permission: function insertPermission() {
-        return fixtures.insertOne('Permission', 'permissions', 'createPermission');
-    },
-    role: function insertRole() {
-        return fixtures.insertOne('Role', 'roles', 'createRole');
-    },
     roles: function insertRoles() {
         return fixtures.insertRoles();
     },
