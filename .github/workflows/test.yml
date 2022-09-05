@@ -62,7 +62,7 @@ jobs:
       - run: yarn ember coverage-merge
         working-directory: ghost/admin
       - uses: codecov/codecov-action@v3
-        if: matrix.browser == "Chrome"
+        if: matrix.browser == 'Chrome'
 
       - uses: daniellockyer/action-slack-build@master
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
