@@ -41,28 +41,36 @@ describe('Post Email Serializer', function () {
         it('should output valid HTML and escape HTML characters in mobiledoc', async function () {
             sinon.stub(_PostEmailSerializer, 'serializePostModel').callsFake(async () => {
                 return {
+                    url: 'https://testpost.com/test-post</body>/',
+                    title: 'This is a blog post test <3</body>',
+                    excerpt: 'This is a blog post test <3</body>',
+                    authors: 'This is a blog post test <3</body>',
+                    feature_image_alt: 'This is a blog post test <3</body>',
+                    feature_image_caption: 'This is a blog post test <3</body>',
+
+                    // This is a markdown post with all cards that contain <3 in all fields + </body> tags
+                    // Note that some fields are already escaped in the frontend
                     // eslint-disable-next-line
-                    mobiledoc: JSON.stringify({"version":"0.3.1","atoms":[],"cards":[["markdown",{"markdown":"This is a test markdown <3"}],["email",{"html":"<p>Hey {first_name, \"there\"}, &lt;3</p>"}],["button",{"alignment":"center","buttonText":"Button <3","buttonUrl":"I <3 test"}],["callout",{"calloutEmoji":"💡","calloutText":"Callout test &lt;3","backgroundColor":"grey"}],["toggle",{"heading":"Toggle &lt;3 header","content":"<p>Toggle &lt;3 content</p>"}],["video",{"loop":false,"src":"__GHOST_URL__/content/media/2022/09/20220829-ghost.mp4","fileName":"20220829 ghost.mp4","width":3072,"height":1920,"duration":221.5,"mimeType":"video/mp4","thumbnailSrc":"__GHOST_URL__/content/images/2022/09/media-thumbnail-ember888.jpg","thumbnailWidth":3072,"thumbnailHeight":1920,"caption":"Test &lt;3"}],["file",{"loop":false,"src":"__GHOST_URL__/content/files/2022/09/image--1-.png","fileName":"image (1).png","fileTitle":"Image 1<3","fileCaption":"","fileSize":152594}],["audio",{"loop":false,"src":"__GHOST_URL__/content/media/2022/09/file_example_MP3_700KB.mp3","title":"I <3 audio files","duration":27.252,"mimeType":"audio/mpeg"}],["file",{"loop":false,"src":"__GHOST_URL__/content/files/2022/09/image--1--1.png","fileName":"image (1).png","fileTitle":"I <3 file names","fileCaption":"I <3 file descriptions","fileSize":152594}],["embed",{}],["image",{"src":"__GHOST_URL__/content/images/2022/09/image--1-.png","width":780,"height":744,"caption":"i &lt;3 images","alt":"I <3 image alts"}],["gallery",{"images":[{"fileName":"image (1).png","row":0,"width":780,"height":744,"src":"__GHOST_URL__/content/images/2022/09/image--1--1.png"}],"caption":"I &lt;3 image galleries"}],["hr",{}]],"markups":[["a",["href","https://google.com/<3"]],["strong"],["em"]],"sections":[[1,"p",[[0,[],0,"This is a <3 post test"]]],[10,0],[10,1],[10,2],[10,3],[10,4],[10,5],[10,6],[10,7],[10,8],[10,9],[10,10],[10,11],[10,12],[1,"p",[[0,[0],1,"https://google.com/<3"]]],[1,"p",[[0,[],0,"Paragraph test <3"]]],[1,"p",[[0,[1],1,"Bold paragraph test <3"]]],[1,"h3",[[0,[],0,"Heading test <3"]]],[1,"blockquote",[[0,[],0,"Quote test <3"]]],[1,"p",[[0,[2],1,"Italic test"]]],[1,"p",[]]],"ghostVersion":"4.0"})
+                    mobiledoc: JSON.stringify({"version":"0.3.1","atoms":[],"cards":[["markdown",{"markdown":"This is a </body> test markdown <3"}],["email",{"html":"<p>Hey {first_name, \"there\"}, &lt;3</p>"}],["button",{"alignment":"center","buttonText":"Button <3 </body>","buttonUrl":"I <3 test </body>"}],["callout",{"calloutEmoji":"💡","calloutText":"Callout test &lt;3","backgroundColor":"grey"}],["toggle",{"heading":"Toggle &lt;3 header","content":"<p>Toggle &lt;3 content</p>"}],["video",{"loop":false,"src":"__GHOST_URL__/content/media/2022/09/20220829-<3ghost</body>.mp4","fileName":"20220829 ghost.mp4","width":3072,"height":1920,"duration":221.5,"mimeType":"video/mp4","thumbnailSrc":"__GHOST_URL__/content/images/2022/09/media-thumbnail-<3</body>.jpg","thumbnailWidth":3072,"thumbnailHeight":1920,"caption":"Test &lt;3"}],["file",{"loop":false,"src":"__GHOST_URL__/content/files/2022/09/image<3</body>.png","fileName":"image<3</body>.png","fileTitle":"Image 1<3</body>","fileCaption":"<3</body>","fileSize":152594}],["audio",{"loop":false,"src":"__GHOST_URL__/content/media/2022/09/sound<3</body>.mp3","title":"I <3</body> audio files","duration":27.252,"mimeType":"audio/mpeg"}],["file",{"loop":false,"src":"__GHOST_URL__/content/files/2022/09/image<3</body>.png","fileName":"image<3</body>.png","fileTitle":"I <3</body> file names","fileCaption":"I <3</body> file descriptions","fileSize":152594}],["embed",{}],["image",{"src":"__GHOST_URL__/content/images/2022/09/<3</body>.png","width":780,"height":744,"caption":"i &lt;3 images","alt":"I <3</body> image alts"}],["gallery",{"images":[{"fileName":"image<3</body>.png","row":0,"width":780,"height":744,"src":"__GHOST_URL__/content/images/2022/09/<3</body>.png"}],"caption":"I &lt;3 image galleries"}],["hr",{}]],"markups":[["a",["href","https://google.com/<3</body>"]],["strong"],["em"]],"sections":[[1,"p",[[0,[],0,"This is a <3</body> post test"]]],[10,0],[10,1],[10,2],[10,3],[10,4],[10,5],[10,6],[10,7],[10,8],[10,9],[10,10],[10,11],[10,12],[1,"p",[[0,[0],1,"https://google.com/<3</body>"]]],[1,"p",[[0,[],0,"Paragraph test <3</body>"]]],[1,"p",[[0,[1],1,"Bold paragraph test <3</body>"]]],[1,"h3",[[0,[],0,"Heading test <3</body>"]]],[1,"blockquote",[[0,[],0,"Quote test <3</body>"]]],[1,"p",[[0,[2],1,"Italic test<3</body>"]]],[1,"p",[]]],"ghostVersion":"4.0"})
                 };
             });
+            const customSettings = {
+                icon: 'icon2<3</body>',
+                accent_color: '#000099',
+                timezone: 'UTC'
+            };
+
             const settingsMock = sinon.stub(settingsCache, 'get');
-            settingsMock.withArgs('icon').callsFake(function (key) {
-                return {
-                    icon: 'icon2',
-                    accent_color: '#000099'
-                }[key];
-            });
-            settingsMock.withArgs('accent_color').callsFake(function (key) {
-                return {
-                    icon: 'icon2',
-                    accent_color: '#000099'
-                }[key];
-            });
-            settingsMock.withArgs('timezone').callsFake(function (key) {
-                return 'UTC';
+            settingsMock.callsFake(function (key, options) {
+                if (customSettings[key]) {
+                    return customSettings[key];
+                }
+
+                return settingsMock.wrappedMethod.call(settingsCache, key, options);
             });
             const template = {
-                header_image: 'image',
+                name: 'My newsletter <3</body>',
+                header_image: 'https://testpost.com/test-post</body>/',
                 show_header_icon: true,
                 show_header_title: true,
                 show_feature_image: true,
@@ -70,8 +78,9 @@ describe('Post Email Serializer', function () {
                 title_alignment: 'center',
                 body_font_category: 'serif',
                 show_badge: true,
-                footer_content: 'footer',
-                show_header_name: true
+                show_header_name: true,
+                // Note: we don't need to check the footer content because this should contain valid HTML (not text)
+                footer_content: '<span>Footer content with valid HTML</span>'
             };
             const newsletterMock = {
                 get: function (key) {
@@ -84,22 +93,38 @@ describe('Post Email Serializer', function () {
 
             const output = await serialize({}, newsletterMock, {isBrowserPreview: false});
 
-            // test output html
+            // Test if the email HTML is valid standard HTML5
             const {HtmlValidate} = require('html-validate');
 
             const htmlvalidate = new HtmlValidate({
                 extends: [
-                    'html-validate:document'
+                    'html-validate:document',
+                    'html-validate:standard'
                 ],
                 rules: {
+                    // We need deprecated attrs for legacy tables in older email clients
                     'no-deprecated-attr': 'off',
+
+                    // Don't care that the first <hx> isn't <h1>
                     'heading-level': 'off'
-                }
+                },
+                elements: [
+                    'html5',
+                    // By default, html-validate requires the 'lang' attribute on the <html> tag. We don't really want that for now.
+                    {
+                        html: {
+                            attributes: {
+                                lang: {
+                                    required: false
+                                }
+                            }
+                        }
+                    }
+                ]
             });
             const report = htmlvalidate.validateString(output.html);
 
-            // Improve debugging and show a snippet of the invalid html
-            let reportText = '';
+            // Improve debugging and show a snippet of the invalid HTML instead of just the line number or a huge HTML-dump
             const parsedErrors = [];
             
             if (!report.valid) {
@@ -118,7 +143,15 @@ describe('Post Email Serializer', function () {
                     parsedErrors.push(`${item.ruleId}: ${item.message}\n   At line ${item.line}, col ${item.column}\n   HTML-snippet:\n${html}`);
                 }
             }
+
+            // Fail if invalid HTML
             should(report.valid).eql(true, 'Expected valid HTML without warnings, got errors:\n' + parsedErrors.join('\n\n'));
+
+            // Check footer content is not escaped
+            should(output.html.includes(template.footer_content)).eql(true);
+
+            // Check doesn't contain the non escaped string '<3'
+            should(output.html.includes('<3')).eql(false);
         });
     });
 

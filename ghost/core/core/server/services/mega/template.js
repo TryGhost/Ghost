@@ -1,6 +1,16 @@
 /* eslint indent: warn, no-irregular-whitespace: warn */
 const iff = (cond, yes, no) => (cond ? yes : no);
-const sanitizeHtml = require('sanitize-html');
+
+function escape(s) {
+    const htmlChars = {
+        '&': '&amp;',
+        '"': '&quot;',
+        '\'': '&apos;',
+        '<': '&lt;',
+        '>': '&gt;'
+    };
+    return s.replace(/[&"'<>]/g, c => htmlChars[c]);
+}
 
 /**
  * @template {Object.<string, any>} Input
@@ -15,10 +25,7 @@ const sanitizeKeys = (obj, keys) => {
     for (const key of keysToSanitize) {
         if (typeof sanitized[key] === 'string') {
             // @ts-ignore
-            sanitized[key] = sanitizeHtml(sanitized[key], {
-                allowedTags: false,
-                allowedAttributes: false
-            });
+            sanitized[key] = escape(sanitized[key]);
         }
     }
 
@@ -1181,7 +1188,6 @@ ${ templateSettings.showBadge ? `
             <td>&nbsp;</td>
             <td class="container">
                 <div class="content">
-
                     <!-- START CENTERED WHITE CONTAINER -->
                     <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="main" width="100%">
 
@@ -1189,7 +1195,6 @@ ${ templateSettings.showBadge ? `
                         <tr>
                             <td class="wrapper">
                                 <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
-
                                     ${ templateSettings.headerImage ? `
                                     <tr>
                                         <td class="header-image" width="100%" align="center"><img src="${templateSettings.headerImage}"${templateSettings.headerImageWidth ? ` width="${templateSettings.headerImageWidth}"` : ''}></td>
