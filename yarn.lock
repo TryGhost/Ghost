@@ -9978,10 +9978,10 @@ ember-concurrency-decorators@^2.0.0:
     ember-cli-htmlbars "^4.3.1"
     ember-cli-typescript "^3.1.4"
 
-ember-concurrency@2.3.2, "ember-concurrency@>=1.0.0 <3", "ember-concurrency@^0.8.27 || ^0.9.0 || ^0.10.0 || ^1.0.0 || ^2.0.0-rc.1":
-  version "2.3.2"
-  resolved "https://registry.yarnpkg.com/ember-concurrency/-/ember-concurrency-2.3.2.tgz#7a5623c0ca04b1ef189bcca899b0d3a813e0b728"
-  integrity sha512-ne+yvIVDjzI4EG4qlO1T/Wx07QUYyTaOAmpUGD1wy3sMnQYYbCpvwdkM3F15jY3c4zDtfB5L1IhM0kHCtabWxQ==
+ember-concurrency@2.3.4, "ember-concurrency@>=1.0.0 <3", "ember-concurrency@^0.8.27 || ^0.9.0 || ^0.10.0 || ^1.0.0 || ^2.0.0-rc.1":
+  version "2.3.4"
+  resolved "https://registry.yarnpkg.com/ember-concurrency/-/ember-concurrency-2.3.4.tgz#e353939a62ed025faf7f8446a8fcb018d56c37b5"
+  integrity sha512-o0lT5uQ8FH8P9uf7tY7SON0RxiCaBheqydW9TkuShNkjYh4WL4y1fYXfIZDnExC26spIcN3/9vGHCjC2XjiCgQ==
   dependencies:
     "@babel/helper-plugin-utils" "^7.12.13"
     "@babel/types" "^7.12.13"
