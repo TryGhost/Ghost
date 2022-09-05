@@ -72,11 +72,13 @@ describe('e2e {{#get}} helper', function () {
             published_at: new Date() // here to ensure sorting is not modified
         });
 
+        const defaultTier = await models.Product.findOne({slug: 'default-product'});
+
         basicTierPost = await createPost({
             slug: 'tiers-post',
             visibility: 'tiers',
             tiers: [{
-                slug: 'default-product'
+                id: defaultTier.get('id')
             }],
             published_at: new Date() // here to ensure sorting is not modified
         });

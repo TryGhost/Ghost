@@ -794,6 +794,12 @@ Post = ghostBookshelf.Model.extend({
             });
         }
 
+        if (this.get('tiers')) {
+            this.set('tiers', this.get('tiers').map(t => ({
+                id: t.id
+            })));
+        }
+
         return sequence(ops);
     },
 
