@@ -31,9 +31,15 @@
                                 </span>
                             {{else if (or ev.original.resource.title ev.original.resource.name ev.original.context.primary_name)}}
                                 {{#if ev.linkTarget}}
-                                    <LinkTo @route={{ev.linkTarget.route}} @models={{ev.linkTarget.models}} class="permalink fw6">
-                                        {{or ev.original.resource.title ev.original.resource.name}}
-                                    </LinkTo>
+                                    {{#if ev.linkTarget.models}}
+                                        <LinkTo @route={{ev.linkTarget.route}} @models={{ev.linkTarget.models}} class="permalink fw6">
+                                            {{or ev.original.resource.title ev.original.resource.name}}
+                                        </LinkTo>
+                                    {{else}}
+                                        <LinkTo @route={{ev.linkTarget.route}} class="permalink fw6">
+                                            {{or ev.original.resource.title ev.original.resource.name}}
+                                        </LinkTo>
+                                    {{/if}}
                                 {{else}}
                                     <span>{{or ev.original.resource.title ev.original.resource.name ev.original.context.primary_name}}</span>
                                 {{/if}}

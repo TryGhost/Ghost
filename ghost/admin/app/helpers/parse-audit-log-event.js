@@ -129,6 +129,11 @@ function getLinkTarget(ev) {
                 route: 'tag',
                 models: [ev.resource.slug]
             };
+        case 'product':
+            return {
+                route: 'settings.membership',
+                models: null
+            };
         case 'user':
             if (!ev.resource.slug) {
                 return null;
