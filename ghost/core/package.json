@@ -174,7 +174,7 @@
     "sanitize-html": "2.7.1",
     "semver": "7.3.7",
     "stoppable": "1.1.0",
-    "uuid": "8.3.2",
+    "uuid": "9.0.0",
     "xml": "1.0.1"
   },
   "optionalDependencies": {
