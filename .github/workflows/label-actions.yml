@@ -4,6 +4,8 @@ on:
   workflow_dispatch:
   issues:
     types: [opened, closed, labeled]
+  pull_request:
+    types: [closed, labeled]
   schedule:
     - cron:  '0 * * * *'
 
