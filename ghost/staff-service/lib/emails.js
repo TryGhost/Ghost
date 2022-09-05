@@ -230,7 +230,8 @@ class StaffServiceEmails {
             if (offer.type === 'percent') {
                 offAmount = `${offer.amount}% off`;
             } else if (offer.type === 'fixed') {
-                offAmount = `${this.getFormattedAmount({currency: offer.currency, amount: offer.amount})} off`;
+                const amount = this.getAmount(offer.amount);
+                offAmount = `${this.getFormattedAmount({currency: offer.currency, amount})} off`;
             } else if (offer.type === 'trial') {
                 offAmount = `${offer.amount} days free`;
             }

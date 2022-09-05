@@ -308,7 +308,7 @@ describe('StaffService', function () {
                     duration_in_months: 3,
                     type: 'fixed',
                     currency: 'USD',
-                    amount: 10
+                    amount: 1000
                 };
 
                 await service.notifyPaidSubscriptionStart({member, offer, tier, subscription}, options);
@@ -333,7 +333,7 @@ describe('StaffService', function () {
                     duration: 'forever',
                     type: 'fixed',
                     currency: 'USD',
-                    amount: 20
+                    amount: 2000
                 };
 
                 await service.notifyPaidSubscriptionStart({member, offer, tier, subscription}, options);
