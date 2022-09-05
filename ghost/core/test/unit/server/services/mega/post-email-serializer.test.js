@@ -89,31 +89,36 @@ describe('Post Email Serializer', function () {
 
             const htmlvalidate = new HtmlValidate({
                 extends: [
-                    'html-validate:standard'
+                    'html-validate:document'
                 ],
                 rules: {
-                    'no-deprecated-attr': 'off'
+                    'no-deprecated-attr': 'off',
+                    'heading-level': 'off'
                 }
             });
             const report = htmlvalidate.validateString(output.html);
 
             // Improve debugging and show a snippet of the invalid html
             let reportText = '';
-            const lines = output.html.split('\n');
-            const messages = report.results[0].messages;
             const parsedErrors = [];
-            for (const item of messages) {
-                if (item.severity !== 2) {
-                    // Ignore warnings
-                    continue;
-                }
-                const start = Math.max(item.line - 4, 0);
-                const end = Math.min(item.line + 4, lines.length - 1);
+            
+            if (!report.valid) {
+                const lines = output.html.split('\n');
+                const messages = report.results[0].messages;
 
-                const html = lines.slice(start, end).map(l => l.trim()).join('\n\t');
-                parsedErrors.push(`${item.ruleId}: ${item.message}\n At line ${item.line}, col ${item.column}\n HTML-snippet:\n\t${html}`);
+                for (const item of messages) {
+                    if (item.severity !== 2) {
+                        // Ignore warnings
+                        continue;
+                    }
+                    const start = Math.max(item.line - 4, 0);
+                    const end = Math.min(item.line + 4, lines.length - 1);
+
+                    const html = lines.slice(start, end).map(l => l.trim()).join('\n');
+                    parsedErrors.push(`${item.ruleId}: ${item.message}\n   At line ${item.line}, col ${item.column}\n   HTML-snippet:\n${html}`);
+                }
             }
-            should(report.valid).eql(0, 'Expected valid HTML without warnings, got errors:\n' + parsedErrors.join('\n\n'));
+            should(report.valid).eql(true, 'Expected valid HTML without warnings, got errors:\n' + parsedErrors.join('\n\n'));
         });
     });
 
