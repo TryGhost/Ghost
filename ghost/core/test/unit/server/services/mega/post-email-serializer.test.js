@@ -5,8 +5,7 @@ const models = require('../../../../../core/server/models');
 const urlUtils = require('../../../../../core/shared/url-utils');
 const urlService = require('../../../../../core/server/services/url');
 const labs = require('../../../../../core/shared/labs');
-
-const {parseReplacements, renderEmailForSegment, _getTemplateSettings, createUnsubscribeUrl, createPostSignupUrl} = require('../../../../../core/server/services/mega/post-email-serializer');
+const {parseReplacements, renderEmailForSegment, serialize, _getTemplateSettings, createUnsubscribeUrl, createPostSignupUrl, _PostEmailSerializer} = require('../../../../../core/server/services/mega/post-email-serializer');
 
 describe('Post Email Serializer', function () {
     it('creates replacement pattern for valid format and value', function () {
@@ -36,6 +35,86 @@ describe('Post Email Serializer', function () {
         });
 
         replaced.length.should.equal(0);
+    });
+
+    describe('serialize', function () {
+        it('should output valid HTML and escape HTML characters in mobiledoc', async function () {
+            sinon.stub(_PostEmailSerializer, 'serializePostModel').callsFake(async () => {
+                return {
+                    // eslint-disable-next-line
+                    mobiledoc: JSON.stringify({"version":"0.3.1","atoms":[],"cards":[["markdown",{"markdown":"This is a test markdown <3"}],["email",{"html":"<p>Hey {first_name, \"there\"}, &lt;3</p>"}],["button",{"alignment":"center","buttonText":"Button <3","buttonUrl":"I <3 test"}],["callout",{"calloutEmoji":"💡","calloutText":"Callout test &lt;3","backgroundColor":"grey"}],["toggle",{"heading":"Toggle &lt;3 header","content":"<p>Toggle &lt;3 content</p>"}],["video",{"loop":false,"src":"__GHOST_URL__/content/media/2022/09/20220829-ghost.mp4","fileName":"20220829 ghost.mp4","width":3072,"height":1920,"duration":221.5,"mimeType":"video/mp4","thumbnailSrc":"__GHOST_URL__/content/images/2022/09/media-thumbnail-ember888.jpg","thumbnailWidth":3072,"thumbnailHeight":1920,"caption":"Test &lt;3"}],["file",{"loop":false,"src":"__GHOST_URL__/content/files/2022/09/image--1-.png","fileName":"image (1).png","fileTitle":"Image 1<3","fileCaption":"","fileSize":152594}],["audio",{"loop":false,"src":"__GHOST_URL__/content/media/2022/09/file_example_MP3_700KB.mp3","title":"I <3 audio files","duration":27.252,"mimeType":"audio/mpeg"}],["file",{"loop":false,"src":"__GHOST_URL__/content/files/2022/09/image--1--1.png","fileName":"image (1).png","fileTitle":"I <3 file names","fileCaption":"I <3 file descriptions","fileSize":152594}],["embed",{}],["image",{"src":"__GHOST_URL__/content/images/2022/09/image--1-.png","width":780,"height":744,"caption":"i &lt;3 images","alt":"I <3 image alts"}],["gallery",{"images":[{"fileName":"image (1).png","row":0,"width":780,"height":744,"src":"__GHOST_URL__/content/images/2022/09/image--1--1.png"}],"caption":"I &lt;3 image galleries"}],["hr",{}]],"markups":[["a",["href","https://google.com/<3"]],["strong"],["em"]],"sections":[[1,"p",[[0,[],0,"This is a <3 post test"]]],[10,0],[10,1],[10,2],[10,3],[10,4],[10,5],[10,6],[10,7],[10,8],[10,9],[10,10],[10,11],[10,12],[1,"p",[[0,[0],1,"https://google.com/<3"]]],[1,"p",[[0,[],0,"Paragraph test <3"]]],[1,"p",[[0,[1],1,"Bold paragraph test <3"]]],[1,"h3",[[0,[],0,"Heading test <3"]]],[1,"blockquote",[[0,[],0,"Quote test <3"]]],[1,"p",[[0,[2],1,"Italic test"]]],[1,"p",[]]],"ghostVersion":"4.0"})
+                };
+            });
+            const settingsMock = sinon.stub(settingsCache, 'get');
+            settingsMock.withArgs('icon').callsFake(function (key) {
+                return {
+                    icon: 'icon2',
+                    accent_color: '#000099'
+                }[key];
+            });
+            settingsMock.withArgs('accent_color').callsFake(function (key) {
+                return {
+                    icon: 'icon2',
+                    accent_color: '#000099'
+                }[key];
+            });
+            settingsMock.withArgs('timezone').callsFake(function (key) {
+                return 'UTC';
+            });
+            const template = {
+                header_image: 'image',
+                show_header_icon: true,
+                show_header_title: true,
+                show_feature_image: true,
+                title_font_category: 'sans-serif',
+                title_alignment: 'center',
+                body_font_category: 'serif',
+                show_badge: true,
+                footer_content: 'footer',
+                show_header_name: true
+            };
+            const newsletterMock = {
+                get: function (key) {
+                    return template[key];
+                },
+                toJSON: function () {
+                    return template;
+                }
+            };
+
+            const output = await serialize({}, newsletterMock, {isBrowserPreview: false});
+
+            // test output html
+            const {HtmlValidate} = require('html-validate');
+
+            const htmlvalidate = new HtmlValidate({
+                extends: [
+                    'html-validate:standard'
+                ],
+                rules: {
+                    'no-deprecated-attr': 'off'
+                }
+            });
+            const report = htmlvalidate.validateString(output.html);
+
+            // Improve debugging and show a snippet of the invalid html
+            let reportText = '';
+            const lines = output.html.split('\n');
+            const messages = report.results[0].messages;
+            const parsedErrors = [];
+            for (const item of messages) {
+                if (item.severity !== 2) {
+                    // Ignore warnings
+                    continue;
+                }
+                const start = Math.max(item.line - 4, 0);
+                const end = Math.min(item.line + 4, lines.length - 1);
+
+                const html = lines.slice(start, end).map(l => l.trim()).join('\n\t');
+                parsedErrors.push(`${item.ruleId}: ${item.message}\n At line ${item.line}, col ${item.column}\n HTML-snippet:\n\t${html}`);
+            }
+            should(report.valid).eql(0, 'Expected valid HTML without warnings, got errors:\n' + parsedErrors.join('\n\n'));
+        });
     });
 
     describe('renderEmailForSegment', function () {

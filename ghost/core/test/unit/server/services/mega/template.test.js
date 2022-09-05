@@ -119,6 +119,16 @@ describe('Mega template', function () {
         should(footerPowered.find('a img').attr('alt')).eql('Powered by Ghost');
     });
 
+    it('Outputs valid HTML', function () {
+        const post = {
+            title: 'I <3 Posts',
+            html: '<div class="post-content-html">I am &lt;100 years old</div>',
+            feature_image: 'https://example.com/image.jpg',
+            feature_image_alt: 'I <3 alt text',
+            feature_image_caption: 'I <3 images'
+        };
+    });
+
     it('Correctly escapes the contents', function () {
         // TODO: check html escaping based on mobiledoc instead of invalid html: https://github.com/TryGhost/Team/issues/1871
 
