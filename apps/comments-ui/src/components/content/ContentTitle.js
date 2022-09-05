@@ -31,7 +31,7 @@ const ContentTitle = ({title, showCount, count}) => {
     }
 
     return (
-        <div className="mb-10 flex w-full items-baseline justify-between font-sans">
+        <div className="mb-8 flex w-full items-baseline justify-between font-sans">
             <h2 className="text-[2.8rem] font-bold tracking-tight dark:text-[rgba(255,255,255,0.85)]">
                 <Title title={title}/>
             </h2>
