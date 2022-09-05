@@ -164,7 +164,9 @@ function getAction(ev) {
         resourceType = 'API key';
     } else if (resourceType === 'setting') {
         resourceType = 'settings';
-    }
+    } else if (resourceType === 'product') {
+        resourceType = 'tier';
+    } 
 
     // Because a `page` and `post` both use the same model, we store the
     // actual type in the context, so let's check if that exists
