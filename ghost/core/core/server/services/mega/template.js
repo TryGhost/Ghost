@@ -1,16 +1,7 @@
+const {escapeHtml: escape} = require('@tryghost/string');
+
 /* eslint indent: warn, no-irregular-whitespace: warn */
 const iff = (cond, yes, no) => (cond ? yes : no);
-
-function escape(s) {
-    const htmlChars = {
-        '&': '&amp;',
-        '"': '&quot;',
-        '\'': '&apos;',
-        '<': '&lt;',
-        '>': '&gt;'
-    };
-    return s.replace(/[&"'<>]/g, c => htmlChars[c]);
-}
 
 /**
  * @template {Object.<string, any>} Input
@@ -35,7 +26,7 @@ const sanitizeKeys = (obj, keys) => {
 module.exports = ({post, site, newsletter, templateSettings}) => {
     const date = new Date();
     const hasFeatureImageCaption = templateSettings.showFeatureImage && post.feature_image && post.feature_image_caption;
-    const cleanPost = sanitizeKeys(post, ['title', 'excerpt', 'authors', 'feature_image_alt', 'feature_image_caption']);
+    const cleanPost = sanitizeKeys(post, ['url', 'published_at', 'title', 'excerpt', 'authors', 'feature_image', 'feature_image_alt', 'feature_image_caption']);
     const cleanSite = sanitizeKeys(site, ['title']);
     const cleanNewsletter = sanitizeKeys(newsletter, ['name']);
 
