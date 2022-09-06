@@ -129,4 +129,48 @@ describe('AdapterManager', function () {
             should.fail(err, null, 'Should not have errored');
         }
     });
+
+    it('Creates separate class instances for adapters requested for different features', function () {
+        const pathsToAdapters = [
+            '/path'
+        ];
+
+        const loadAdapterFromPath = sinon.stub();
+
+        loadAdapterFromPath.withArgs('/path/mail/custom')
+            .returns(CustomMailAdapter);
+        loadAdapterFromPath.withArgs('/path/mail/default')
+            .returns(DefaultMailAdapter);
+
+        const adapterManager = new AdapterManager({
+            loadAdapterFromPath,
+            pathsToAdapters
+        });
+        adapterManager.registerAdapter('mail', BaseMailAdapter);
+
+        let mailNewslettersAdapter;
+        try {
+            mailNewslettersAdapter = adapterManager.getAdapter('mail:newsletters', 'custom');
+
+            should.ok(mailNewslettersAdapter instanceof BaseMailAdapter);
+            should.ok(mailNewslettersAdapter instanceof CustomMailAdapter);
+        } catch (err) {
+            should.fail(err, null, 'Should not have errored');
+        }
+
+        let mailNotificationsAdapter;
+        try {
+            mailNotificationsAdapter = adapterManager.getAdapter('mail:notifications', 'custom');
+
+            should.ok(mailNotificationsAdapter instanceof BaseMailAdapter);
+            should.ok(mailNotificationsAdapter instanceof CustomMailAdapter);
+        } catch (err) {
+            should.fail(err, null, 'Should not have errored');
+        }
+
+        should.notEqual(mailNewslettersAdapter, mailNotificationsAdapter);
+
+        const secondMailNewslettersAdapter = adapterManager.getAdapter('mail:newsletters', 'custom');
+        should.equal(mailNewslettersAdapter, secondMailNewslettersAdapter);
+    });
 });
