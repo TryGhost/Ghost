@@ -19,6 +19,29 @@ class DefaultMailAdapter extends BaseMailAdapter {
 }
 
 describe('AdapterManager', function () {
+    it('getAdapter throws if called without correct parameters', function () {
+        const pathsToAdapters = [
+            'first/path'
+        ];
+
+        const loadAdapterFromPath = sinon.stub();
+        const adapterManager = new AdapterManager({
+            loadAdapterFromPath,
+            pathsToAdapters
+        });
+
+        adapterManager.registerAdapter('mail', BaseMailAdapter);
+
+        try {
+            adapterManager.getAdapter('mail');
+            should.fail(null, null, 'Should not have created');
+        } catch (err) {
+            should.exist(err);
+            should.equal(err.errorType, 'IncorrectUsageError');
+            should.equal(err.message, 'getAdapter must be called with a adapterName and a adapterClassName.');
+        }
+    });
+
     it('Loads registered adapters in the order defined by the paths', function () {
         const pathsToAdapters = [
             'first/path',
@@ -58,6 +81,7 @@ describe('AdapterManager', function () {
         } catch (err) {
             should.exist(err);
             should.equal(err.errorType, 'IncorrectUsageError');
+            should.equal(err.message, 'mail adapter incomplete is missing the someMethod method.');
         }
 
         try {
@@ -75,6 +99,34 @@ describe('AdapterManager', function () {
         } catch (err) {
             should.exist(err);
             should.equal(err.errorType, 'IncorrectUsageError');
+        }
+    });
+
+    it('Reads adapter type from the adapter name divided with a colon (adapter:feature syntax)', function () {
+        const pathsToAdapters = [
+            '/path'
+        ];
+
+        const loadAdapterFromPath = sinon.stub();
+
+        loadAdapterFromPath.withArgs('/path/mail/custom')
+            .returns(CustomMailAdapter);
+        loadAdapterFromPath.withArgs('/path/mail/default')
+            .returns(DefaultMailAdapter);
+
+        const adapterManager = new AdapterManager({
+            loadAdapterFromPath,
+            pathsToAdapters
+        });
+        adapterManager.registerAdapter('mail', BaseMailAdapter);
+
+        try {
+            const customAdapter = adapterManager.getAdapter('mail:newsletters', 'custom');
+
+            should.ok(customAdapter instanceof BaseMailAdapter);
+            should.ok(customAdapter instanceof CustomMailAdapter);
+        } catch (err) {
+            should.fail(err, null, 'Should not have errored');
         }
     });
 });
