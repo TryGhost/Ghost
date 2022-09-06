@@ -127,8 +127,10 @@ describe('Embed card', function () {
         let payload = {
             type: 'nft',
             url: 'https://opensea.io/0x90bae7c0d86b2583d02c072d45bd64ace0b8db86/417',
-            title: 'This has double "quotes" & \'single\'.',
             metadata: {
+                image_url: '"test',
+                title: 'This has double "quotes" & \'single\'.',
+                author_name: '</span>test',
                 nested: 'prop with "quotes"'
             },
             caption: 'Hello'
@@ -149,7 +151,7 @@ describe('Embed card', function () {
 
         parsedPayload.type.should.equal(payload.type);
         parsedPayload.url.should.equal(payload.url);
-        parsedPayload.title.should.equal(payload.title);
+        parsedPayload.metadata.title.should.equal(payload.metadata.title);
         parsedPayload.metadata.nested.should.equal(payload.metadata.nested);
     });
 
@@ -157,8 +159,10 @@ describe('Embed card', function () {
         let payload = {
             type: 'nft',
             url: 'https://opensea.io/0x90bae7c0d86b2583d02c072d45bd64ace0b8db86/417',
-            title: 'This has double "quotes" & \'single\'.',
             metadata: {
+                image_url: '"test',
+                title: 'This has double "quotes" & \'single\'.',
+                author_name: '</span>test',
                 nested: 'prop with "quotes"'
             },
             caption: 'Hello'

@@ -3,6 +3,7 @@ const {
     relativeToAbsolute,
     toTransformReady
 } = require('@tryghost/url-utils/lib/utils');
+const {escapeHtml} = require('@tryghost/string');
 
 function bytesToSize(bytes) {
     if (!bytes) {
@@ -40,12 +41,12 @@ module.exports = {
 
         let html = `
         <div class="kg-card kg-file-card ${classNames}">
-            <a class="kg-file-card-container" href="${payload.src}" title="Download" download>
+            <a class="kg-file-card-container" href="${escapeHtml(payload.src)}" title="Download" download>
                 <div class="kg-file-card-contents">
-                    ${payload.fileTitle ? `<div class="kg-file-card-title">${payload.fileTitle}</div>` : ``}
-                    ${payload.fileCaption ? `<div class="kg-file-card-caption">${payload.fileCaption}</div>` : ``}
+                    ${payload.fileTitle ? `<div class="kg-file-card-title">${escapeHtml(payload.fileTitle)}</div>` : ``}
+                    ${payload.fileCaption ? `<div class="kg-file-card-caption">${escapeHtml(payload.fileCaption)}</div>` : ``}
                     <div class="kg-file-card-metadata">
-                        <div class="kg-file-card-filename">${payload.fileName}</div>
+                        <div class="kg-file-card-filename">${escapeHtml(payload.fileName)}</div>
                         <div class="kg-file-card-filesize">${bytesToSize(payload.fileSize)}</div>
                     </div>
                 </div>
@@ -68,21 +69,21 @@ module.exports = {
                                 <td valign="middle" style="vertical-align: middle;">
                                     ${payload.fileTitle ? `
                                     <table cellspacing="0" cellpadding="0" border="0" width="100%"><tr><td>
-                                        <a href="${postUrl}" style="display: block; font-size: 17px; font-weight: bold; line-height: 1.3em; width: 100%; padding-left: 12px; padding-top: 8px; color: #121212; text-decoration: none;">${payload.fileTitle}</a>
+                                        <a href="${escapeHtml(postUrl)}" style="display: block; font-size: 17px; font-weight: bold; line-height: 1.3em; width: 100%; padding-left: 12px; padding-top: 8px; color: #121212; text-decoration: none;">${escapeHtml(payload.fileTitle)}</a>
                                     </td></tr></table>
                                     ` : ``}
                                     ${payload.fileCaption ? `
                                     <table cellspacing="0" cellpadding="0" border="0" width="100%"><tr><td>
-                                        <a href="${postUrl}" style="display: block; font-size: 15px; line-height: 1.4em; width: 100%; padding-left: 12px; padding-top: 2px; color: #999999; text-decoration: none;">${payload.fileCaption}</a>
+                                        <a href="${escapeHtml(postUrl)}" style="display: block; font-size: 15px; line-height: 1.4em; width: 100%; padding-left: 12px; padding-top: 2px; color: #999999; text-decoration: none;">${escapeHtml(payload.fileCaption)}</a>
                                     </td></tr></table>
                                     ` : ``}
                                     <table cellspacing="0" cellpadding="0" border="0" width="100%"><tr><td>
-                                        <a href="${postUrl}" style="display: block; font-size: 13px; line-height: 1.4em; width: 100%; padding-left: 12px; padding-top: 4px; padding-bottom: 8px; color: #999999; text-decoration: none;"><span style="font-weight: 500; color: #222;">${payload.fileName}</span> &bull; ${bytesToSize(payload.fileSize)}</a>
+                                        <a href="${escapeHtml(postUrl)}" style="display: block; font-size: 13px; line-height: 1.4em; width: 100%; padding-left: 12px; padding-top: 4px; padding-bottom: 8px; color: #999999; text-decoration: none;"><span style="font-weight: 500; color: #222;">${escapeHtml(payload.fileName)}</span> &bull; ${bytesToSize(payload.fileSize)}</a>
                                     </td></tr></table>
                                 </td>
                                 <td width="80" valign="middle" style="position: relative; vertical-align: middle; text-align: center; background: #F7F7F7; border-radius: 2px;">
-                                    <a href="${postUrl}" style="position: absolute; display: block; top: 0; right: 0; bottom: 0; left: 0;"></a>
-                                    <img src="https://static.ghost.org/v4.0.0/images/download-icon.png" style="${emailStyles.icon}">
+                                    <a href="${escapeHtml(postUrl)}" style="position: absolute; display: block; top: 0; right: 0; bottom: 0; left: 0;"></a>
+                                    <img src="https://static.ghost.org/v4.0.0/images/download-icon.png" style="${escapeHtml(emailStyles.icon)}">
                                 </td>
                             </tr>
                         </table>

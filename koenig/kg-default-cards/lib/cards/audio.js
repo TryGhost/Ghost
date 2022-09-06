@@ -92,7 +92,7 @@ module.exports = {
                         <table cellspacing="0" cellpadding="0" border="0" width="100%">
                             <tr>
                                 <td width="60">
-                                    <a href="${postUrl}" style="display: block; width: 60px; height: 60px; padding-top: 4px; padding-right: 16px; padding-bottom: 4px; padding-left: 4px; border-radius: 2px;">
+                                    <a href="{{postUrl}}" style="display: block; width: 60px; height: 60px; padding-top: 4px; padding-right: 16px; padding-bottom: 4px; padding-left: 4px; border-radius: 2px;">
                                         ${hasThumbnail ? `
                                         <img src="{{thumbnailSrc}}" class="${thumbnailCls}" style="width: 60px; height: 60px; object-fit: cover; border: 0; border-radius: 2px;">
                                         ` : `
@@ -101,11 +101,11 @@ module.exports = {
                                     </a>
                                 </td>
                                 <td style="position: relative; vertical-align: center;" valign="middle">
-                                    <a href="${postUrl}" style="position: absolute; display: block; top: 0; right: 0; bottom: 0; left: 0;"></a>
+                                    <a href="{{postUrl}}" style="position: absolute; display: block; top: 0; right: 0; bottom: 0; left: 0;"></a>
                                     <table cellspacing="0" cellpadding="0" border="0" width="100%">
                                         <tr>
                                             <td>
-                                                <a href="${postUrl}" style="display: block; font-size: 16px; font-weight: 600; line-height: 18px; padding-right: 20px; padding-bottom: 4px; padding-top: 4px; text-decoration: none; color: #121212;">{{title}}</a>
+                                                <a href="{{postUrl}}" style="display: block; font-size: 16px; font-weight: 600; line-height: 18px; padding-right: 20px; padding-bottom: 4px; padding-top: 4px; text-decoration: none; color: #121212;">{{title}}</a>
                                             </td>
                                         </tr>
                                         <tr>
@@ -113,10 +113,10 @@ module.exports = {
                                                 <table cellspacing="0" cellpadding="0" border="0" width="100%">
                                                     <tr>
                                                         <td width="24" style="vertical-align: middle;" valign="middle">
-                                                            <a href="${postUrl}" style="color: #121212; display: block; box-sizing: border-box; width: 16px; height: 16px; border-style: solid; border-width: 8px 0px 8px 16px; border-color: transparent transparent transparent currentColor;"></a>
+                                                            <a href="{{postUrl}}" style="color: #121212; display: block; box-sizing: border-box; width: 16px; height: 16px; border-style: solid; border-width: 8px 0px 8px 16px; border-color: transparent transparent transparent currentColor;"></a>
                                                         </td>
                                                         <td style="vertical-align: middle;" valign="middle">
-                                                            <a href="${postUrl}" style="display: block; text-decoration: none; font-size: 13px; color: #121212;">{{duration}}<span style="color: #999999"> • Click to play audio</span></a>
+                                                            <a href="{{postUrl}}" style="display: block; text-decoration: none; font-size: 13px; color: #121212;">{{duration}}<span style="color: #999999"> • Click to play audio</span></a>
                                                         </td>
                                                     </tr>
                                                 </table>
@@ -134,6 +134,7 @@ module.exports = {
         const renderTemplate = options.target === 'email' ? emailTemplate : frontendTemplate;
 
         const html = dedent(renderTemplate({
+            postUrl,
             src: payload.src,
             thumbnailSrc: payload.thumbnailSrc,
             duration: getFormattedDuration(payload.duration),
