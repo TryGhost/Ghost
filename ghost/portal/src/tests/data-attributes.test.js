@@ -131,7 +131,7 @@ describe('Member Data attributes:', () => {
 
             expect(window.fetch).toHaveBeenCalledTimes(1);
 
-            expect(window.fetch).toHaveBeenCalledWith('https://portal.localhost/members/api/send-magic-link/', {body: '{"email":"jamie@example.com","emailType":"signup","labels":["Gold"],"name":"Jamie Larsen"}', headers: {'Content-Type': 'application/json'}, method: 'POST'});
+            expect(window.fetch).toHaveBeenCalledWith('https://portal.localhost/members/api/send-magic-link/', {body: `{"email":"jamie@example.com","emailType":"signup","labels":["Gold"],"name":"Jamie Larsen","autoRedirect":${true}}`, headers: {'Content-Type': 'application/json'}, method: 'POST'});
         });
     });
 
