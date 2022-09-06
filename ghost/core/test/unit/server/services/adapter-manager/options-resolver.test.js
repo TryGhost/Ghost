@@ -3,6 +3,22 @@ const should = require('should');
 const resolveAdapterOptions = require('../../../../../core/server/services/adapter-manager/options-resolver');
 
 describe('Adapter Manager: options resolver', function () {
+    it('creates empty configs for unknown adapter with a default (active) instance', function () {
+        const name = 'cache:images';
+
+        const adapterServiceConfig = {
+            cache: {
+                active: 'Memory'
+            }
+        };
+
+        const {adapterType, adapterName, adapterConfig} = resolveAdapterOptions(name, adapterServiceConfig);
+
+        adapterType.should.equal('cache');
+        adapterName.should.equal('Memory');
+        should.equal(adapterConfig, undefined);
+    });
+
     it('returns default adapter configuration', function () {
         const name = 'storage';
         const adapterServiceConfig = {
@@ -69,6 +85,104 @@ describe('Adapter Manager: options resolver', function () {
         adapterName.should.equal('cloud-storage');
         adapterConfig.should.deepEqual({
             custom: 'configValue'
+        });
+    });
+
+    it('combines configurations from shared adapter and feature adapter instances', function () {
+        const primaryAdapterName = 'cache:images';
+        const secondaryAdapterName = 'cache:settings';
+        const adapterServiceConfig = {
+            cache: {
+                Redis: {
+                    commonConfigValue: 'common_config_value'
+                },
+                images: {
+                    adapter: 'Redis',
+                    adapterConfigValue: 'images_redis_value'
+                },
+                settings: {
+                    adapter: 'Redis',
+                    adapterConfigValue: 'settings_redis_value'
+                }
+            }
+        };
+
+        const {adapterType, adapterName, adapterConfig} = resolveAdapterOptions(primaryAdapterName, adapterServiceConfig);
+
+        adapterType.should.equal('cache');
+        adapterName.should.equal('Redis');
+        adapterConfig.should.deepEqual({
+            commonConfigValue: 'common_config_value',
+            adapterConfigValue: 'images_redis_value'
+        });
+
+        const {adapterType: secondAdapterType, adapterName: secondAdapterName, adapterConfig: secondAdapterConfig} = resolveAdapterOptions(secondaryAdapterName, adapterServiceConfig);
+
+        secondAdapterType.should.equal('cache');
+        secondAdapterName.should.equal('Redis');
+        secondAdapterConfig.should.deepEqual({
+            commonConfigValue: 'common_config_value',
+            adapterConfigValue: 'settings_redis_value'
+        });
+    });
+
+    it('combines empty configuration from shared adapter and feature adapter instances', function () {
+        const primaryAdapterName = 'cache:images';
+        const secondaryAdapterName = 'cache:settings';
+        const adapterServiceConfig = {
+            cache: {
+                images: {
+                    adapter: 'Redis',
+                    adapterConfigValue: 'images_redis_value'
+                },
+                settings: {
+                    adapter: 'Redis',
+                    adapterConfigValue: 'settings_redis_value'
+                }
+            }
+        };
+
+        const {adapterType, adapterName, adapterConfig} = resolveAdapterOptions(primaryAdapterName, adapterServiceConfig);
+
+        adapterType.should.equal('cache');
+        adapterName.should.equal('Redis');
+        adapterConfig.should.deepEqual({
+            adapterConfigValue: 'images_redis_value'
+        });
+
+        const {adapterType: secondAdapterType, adapterName: secondAdapterName, adapterConfig: secondAdapterConfig} = resolveAdapterOptions(secondaryAdapterName, adapterServiceConfig);
+
+        secondAdapterType.should.equal('cache');
+        secondAdapterName.should.equal('Redis');
+        secondAdapterConfig.should.deepEqual({
+            adapterConfigValue: 'settings_redis_value'
+        });
+    });
+
+    it('gives priority to a feature config over a common adapter config', function () {
+        const primaryAdapterName = 'cache:images';
+        const adapterServiceConfig = {
+            cache: {
+                Redis: {
+                    commonConfigValue: 'common_config_value',
+                    overrideMe: 'common_value'
+                },
+                images: {
+                    adapter: 'Redis',
+                    adapterConfigValue: 'images_redis_value',
+                    overrideMe: 'images_override'
+                }
+            }
+        };
+
+        const {adapterType, adapterName, adapterConfig} = resolveAdapterOptions(primaryAdapterName, adapterServiceConfig);
+
+        adapterType.should.equal('cache');
+        adapterName.should.equal('Redis');
+        adapterConfig.should.deepEqual({
+            commonConfigValue: 'common_config_value',
+            adapterConfigValue: 'images_redis_value',
+            overrideMe: 'images_override'
         });
     });
 });
