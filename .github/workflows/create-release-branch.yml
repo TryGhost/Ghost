@@ -20,7 +20,7 @@ jobs:
   create-branch:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "BASE_REF=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
+      - run: echo "BASE_REF=main" >> $GITHUB_ENV
         if: inputs.base-ref == 'latest'
 
       - run: echo "BASE_REF=${{ inputs.base-ref }}" >> $GITHUB_ENV
@@ -31,6 +31,10 @@ jobs:
           ref: ${{ env.BASE_REF }}
           fetch-depth: 0
           submodules: true
+
+      - name: Checkout most recent tag
+        run: git checkout $(git describe --tags --abbrev=0)
+        if: inputs.base-ref == 'latest'
 
       - uses: asdf-vm/actions/install@v1
         with:
