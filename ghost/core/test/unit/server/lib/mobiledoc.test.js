@@ -271,7 +271,7 @@ describe('lib/mobiledoc', function () {
         });
 
         it('does not render srcsets with incompatible storage engine', function () {
-            sinon.stub(storage.getStorage(), 'saveRaw').value(null);
+            sinon.stub(storage.getStorage('images'), 'saveRaw').value(null);
 
             let mobiledoc = {
                 version: '0.3.1',
@@ -299,11 +299,11 @@ describe('lib/mobiledoc', function () {
 
         beforeEach(function () {
             originalStoragePath = storage.getStorage().storagePath;
-            storage.getStorage().storagePath = path.join(__dirname, '../../../utils/fixtures/images/');
+            storage.getStorage('images').storagePath = path.join(__dirname, '../../../utils/fixtures/images/');
         });
 
         afterEach(function () {
-            storage.getStorage().storagePath = originalStoragePath;
+            storage.getStorage('images').storagePath = originalStoragePath;
         });
 
         it('works', async function () {
