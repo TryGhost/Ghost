@@ -3,7 +3,7 @@
  * @typedef {import('./oembed').IExternalRequest} IExternalRequest
  */
 
-const OPENSEA_PATH_REGEX = /^\/assets\/(0x[a-f0-9]+)\/(\d+)/;
+const OPENSEA_ETH_PATH_REGEX = /^\/assets\/ethereum\/(0x[a-f0-9]+)\/(\d+)/;
 
 /**
  * @implements ICustomProvider
@@ -11,6 +11,8 @@ const OPENSEA_PATH_REGEX = /^\/assets\/(0x[a-f0-9]+)\/(\d+)/;
 class NFTOEmbedProvider {
     /**
      * @param {object} dependencies
+     * @param {object} dependencies.config
+     * @param {string} [dependencies.config.apiKey] - An OpenSea API key
      */
     constructor(dependencies) {
         this.dependencies = dependencies;
@@ -21,7 +23,7 @@ class NFTOEmbedProvider {
      * @returns {Promise<boolean>}
      */
     async canSupportRequest(url) {
-        return url.host === 'opensea.io' && OPENSEA_PATH_REGEX.test(url.pathname);
+        return url.host === 'opensea.io' && OPENSEA_ETH_PATH_REGEX.test(url.pathname);
     }
 
     /**
@@ -31,7 +33,7 @@ class NFTOEmbedProvider {
      * @returns {Promise<object>}
      */
     async getOEmbedData(url, externalRequest) {
-        const [match, transaction, asset] = url.pathname.match(OPENSEA_PATH_REGEX);
+        const [match, transaction, asset] = url.pathname.match(OPENSEA_ETH_PATH_REGEX);
         if (!match) {
             return null;
         }
