@@ -389,7 +389,11 @@ module.exports = class RouterController {
     }
 
     async sendMagicLink(req, res) {
-        const {email, emailType} = req.body;
+        const {email, emailType, autoRedirect} = req.body;
+        let referer = req.get('referer');
+        if (autoRedirect === false){
+            referer = null;
+        }
         if (!email) {
             res.writeHead(400);
             return res.end('Bad Request.');
@@ -400,7 +404,7 @@ module.exports = class RouterController {
                 const member = await this._memberRepository.get({email});
                 if (member) {
                     const tokenData = {};
-                    await this._sendEmailWithMagicLink({email, tokenData, requestedType: emailType, referrer: req.get('referer')});
+                    await this._sendEmailWithMagicLink({email, tokenData, requestedType: emailType, referrer: referer});
                 }
             } else {
                 const tokenData = _.pick(req.body, ['labels', 'name', 'newsletters']);
@@ -410,7 +414,7 @@ module.exports = class RouterController {
                 // Save attribution data in the tokenData
                 tokenData.attribution = this._memberAttributionService.getAttribution(req.body.urlHistory);
 
-                await this._sendEmailWithMagicLink({email, tokenData, requestedType: emailType, referrer: req.get('referer')});
+                await this._sendEmailWithMagicLink({email, tokenData, requestedType: emailType, referrer: referer});
             }
             res.writeHead(201);
             return res.end('Created.');
