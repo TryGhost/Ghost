@@ -6,12 +6,12 @@
         {{#if (feature 'auditLog')}}
         <section class="view-actions">
             {{#if this.upgradeStatus.message}}
-                <button type="button" class="gh-btn gh-btn-with-notification" {{on "click" (fn this.openAbout)}} data-tooltip="Update available!">
+                <button type="button" class="gh-btn gh-btn-with-notification" {{on "click" (fn this.openAbout null)}} data-tooltip="Update available!">
                     <span>About Ghost</span>
                     <span class="gh-btn-notification-dot green"></span>
                 </button>
             {{else}}
-                <button type="button" class="gh-btn gh-btn-with-notification" {{on "click" (fn this.openAbout)}}>
+                <button type="button" class="gh-btn gh-btn-with-notification" {{on "click" (fn this.openAbout null)}}>
                     <span>About Ghost</span>
                 </button>
             {{/if}}
