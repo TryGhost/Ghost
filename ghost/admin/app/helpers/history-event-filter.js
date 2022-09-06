@@ -3,7 +3,7 @@ import classic from 'ember-classic-decorator';
 import {isBlank} from '@ember/utils';
 
 @classic
-export default class AuditLogEventFilter extends Helper {
+export default class HistoryEventFilter extends Helper {
     compute(
         positionalParams,
         {excludedEvents = [], excludedResources = [], user = ''}

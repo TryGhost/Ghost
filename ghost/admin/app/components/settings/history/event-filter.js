@@ -15,7 +15,7 @@ const ALL_RESOURCE_TYPES = [
     {targets: 'api_key,integration,setting,user,webhook', name: 'Settings & staff', icon: 'settings'}
 ];
 
-export default class AuditLogEventFilter extends Component {
+export default class HistoryEventFilter extends Component {
     excludedEvents = null;
     excludedResources = null;
 

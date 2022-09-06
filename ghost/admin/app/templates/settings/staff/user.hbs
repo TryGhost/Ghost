@@ -73,7 +73,7 @@
 
                         {{#if (feature 'auditLog')}}
                         <li>
-                            <LinkTo @route="settings.audit-log" @query={{hash user=this.user.id}}>
+                            <LinkTo @route="settings.history" @query={{hash user=this.user.id}}>
                                 <span>View user activity</span>
                             </LinkTo>
                         </li>

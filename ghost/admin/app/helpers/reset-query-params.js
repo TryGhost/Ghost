@@ -26,7 +26,7 @@ export const DEFAULT_QUERY_PARAMS = {
         excludedEvents: null,
         member: null
     },
-    'settings.audit-log': {
+    'settings.history': {
         excludedEvents: null,
         excludedResources: null,
         user: null

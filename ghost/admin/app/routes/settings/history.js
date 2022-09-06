@@ -1,7 +1,7 @@
 import AdminRoute from 'ghost-admin/routes/admin';
 import {inject as service} from '@ember/service';
 
-export default class AuditLogRoute extends AdminRoute {
+export default class HistoryRoute extends AdminRoute {
     @service feature;
 
     beforeModel() {
@@ -13,7 +13,7 @@ export default class AuditLogRoute extends AdminRoute {
 
     buildRouteInfoMetadata() {
         return {
-            titleToken: 'Audit log'
+            titleToken: 'History log'
         };
     }
 }
