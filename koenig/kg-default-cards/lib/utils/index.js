@@ -5,5 +5,6 @@ module.exports = {
     isLocalContentImage: require('./is-local-content-image'),
     isUnsplashImage: require('./is-unsplash-image'),
     resizeImage: require('./resize-image'),
-    setSrcsetAttribute: require('./set-srcset-attribute')
+    generateImgAttrs: require('./generate-img-attrs'),
+    ...require('./srcset-attribute') // get/setSrcsetAttribute
 };

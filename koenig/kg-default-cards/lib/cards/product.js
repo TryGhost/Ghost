@@ -8,7 +8,8 @@ const {
 } = require('@tryghost/url-utils/lib/utils');
 const {
     hbs,
-    dedent
+    dedent,
+    generateImgAttrs
 } = require('../utils');
 
 module.exports = {
@@ -24,7 +25,7 @@ module.exports = {
         <div class="kg-card kg-product-card">
             <div class="kg-product-card-container">
                 {{#if productImageEnabled}}
-                    <img src="{{productImageSrc}}" class="kg-product-card-image" />
+                    <img {{{productImageAttrs}}} class="kg-product-card-image" loading="lazy" />
                 {{/if}}
                 <div class="kg-product-card-title-container">
                     <h4 class="kg-product-card-title">{{{productTitle}}}</h4>
@@ -55,7 +56,7 @@ module.exports = {
             {{#if productImageEnabled}}
             <tr>
                 <td align="center" style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;">
-                    <img src="{{productImageSrc}}" style="border: none; padding-bottom: 16px;" border="0">
+                    <img {{{productImageAttrs}}} style="border: none; padding-bottom: 16px;" border="0">
                 </td>
             </tr>
             {{/if}}
@@ -93,7 +94,12 @@ module.exports = {
             productRatingEnabled: payload.productRatingEnabled,
             productImageEnabled: Boolean(payload.productImageSrc),
 
-            productImageSrc: payload.productImageSrc,
+            productImageAttrs: generateImgAttrs({
+                src: payload.productImageSrc,
+                width: payload.productImageWidth,
+                height: payload.productImageHeight,
+                options
+            }),
             productTitle: payload.productTitle,
             productStarRating: payload.productStarRating,
             productDescription: payload.productDescription,
