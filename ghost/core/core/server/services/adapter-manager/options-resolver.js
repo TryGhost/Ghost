@@ -5,10 +5,20 @@ module.exports = function resolveAdapterOptions(name, adapterServiceConfig) {
     let adapterName;
     let adapterConfig;
 
-    // CASE: load resource-specific adapter when there is an adapter feature name specified as well as custom feature config
-    if (feature && adapterSettings[feature] && adapterSettings[adapterSettings[feature]]) {
+    const hasFeatureConfig = feature && adapterSettings[feature];
+    if (hasFeatureConfig && adapterSettings[adapterSettings[feature]]) {
+        // CASE: load resource-specific adapter when there is an adapter feature 
+        //       name (String) specified as well as custom feature config
         adapterName = adapterSettings[feature];
         adapterConfig = adapterSettings[adapterName];
+    } else if (hasFeatureConfig && adapterSettings[feature].adapter) {
+        // CASE: load resource-specific adapter when there is an adapter feature 
+        //       name (Object) specified as well as custom feature config
+        adapterName = adapterSettings[feature].adapter;
+        const commonAdapterConfig = {...adapterSettings[adapterName]};
+        const featureAdapterConfig = {...adapterSettings[feature]};
+        delete featureAdapterConfig.adapter;
+        adapterConfig = {...commonAdapterConfig, ...featureAdapterConfig};
     } else {
         adapterName = adapterSettings.active;
         adapterConfig = adapterSettings[adapterName];
