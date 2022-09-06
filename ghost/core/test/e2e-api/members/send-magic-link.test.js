@@ -84,7 +84,7 @@ describe('sendMagicLink', function () {
         const email = 'newly-created-user-magic-link-test@test.com';
         await membersAgent
             .post('/api/send-magic-link')
-            .header('Referer', 'http://localhost:2368/custom-signup-form-page')
+            .header('Referer', customSignupUrl)
             .body({
                 email,
                 emailType: 'signup',
