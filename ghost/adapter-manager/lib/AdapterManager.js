@@ -58,7 +58,7 @@ module.exports = class AdapterManager {
      *
      * @param {string} adapterType The type of adapter, e.g. "storage" or "scheduling"
      * @param {string} adapterName The active adapter, e.g. "LocalFileStorage"
-     * @param {object} config The config the adapter should be instantiated with
+     * @param {object} [config] The config the adapter could be instantiated with
      *
      * @returns {Adapter} The resolved and instantiated adapter
      */
