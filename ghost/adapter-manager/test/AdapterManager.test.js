@@ -42,6 +42,29 @@ describe('AdapterManager', function () {
         }
     });
 
+    it('getAdapter throws if config does not contain adapter type key', function () {
+        const pathsToAdapters = [
+            'first/path'
+        ];
+
+        const loadAdapterFromPath = sinon.stub();
+        const adapterManager = new AdapterManager({
+            loadAdapterFromPath,
+            pathsToAdapters
+        });
+
+        adapterManager.registerAdapter('some_other_adapter_type', BaseMailAdapter);
+
+        try {
+            adapterManager.getAdapter('mail', 'custom');
+            should.fail(null, null, 'Should not have created');
+        } catch (err) {
+            should.exist(err);
+            should.equal(err.errorType, 'NotFoundError');
+            should.equal(err.message, 'Unknown adapter type mail. Please register adapter.');
+        }
+    });
+
     it('Loads registered adapters in the order defined by the paths', function () {
         const pathsToAdapters = [
             'first/path',
