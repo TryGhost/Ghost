@@ -26,8 +26,8 @@ module.exports = {
     getAdapter(name) {
         const adapterServiceConfig = getAdapterServiceConfig(config);
 
-        const {adapterType, adapterName, adapterConfig} = resolveAdapterOptions(name, adapterServiceConfig);
+        const {adapterName, adapterConfig} = resolveAdapterOptions(name, adapterServiceConfig);
 
-        return adapterManager.getAdapter(adapterType, adapterName, adapterConfig);
+        return adapterManager.getAdapter(name, adapterName, adapterConfig);
     }
 };

@@ -26,10 +26,8 @@
         },
         "cache": {
             "active": "Memory",
-            "settings": "SettingsCacheSyncInMemory",
-            "SettingsCacheSyncInMemory": {},
-            "imageSizes": "ImageSizesCacheSyncInMemory",
-            "ImageSizesCacheSyncInMemory": {}
+            "settings": {},
+            "imageSizes": {}
         }
     },
     "storage": {

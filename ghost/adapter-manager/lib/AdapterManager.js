@@ -84,8 +84,10 @@ module.exports = class AdapterManager {
             });
         }
 
-        if (adapterCache[adapterName]) {
-            return adapterCache[adapterName];
+        // @NOTE: example cache key value 'email:newsletters:custom-newsletter-adapter'
+        const adapterCacheKey = `${adapterName}:${adapterClassName}`;
+        if (adapterCache[adapterCacheKey]) {
+            return adapterCache[adapterCacheKey];
         }
 
         /** @type AdapterConstructor */
@@ -143,7 +145,7 @@ module.exports = class AdapterManager {
             }
         }
 
-        adapterCache[adapterName] = adapter;
+        adapterCache[adapterCacheKey] = adapter;
 
         return adapter;
     }
