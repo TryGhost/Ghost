@@ -5,6 +5,7 @@ const url = require('./utils/url');
 const slugFilterOrder = require('./utils/slug-filter-order');
 const localUtils = require('../../index');
 const postsMetaSchema = require('../../../../../data/schema').tables.posts_meta;
+const clean = require('./utils/clean');
 
 function removeMobiledocFormat(frame) {
     if (frame.options.formats && frame.options.formats.includes('mobiledoc')) {
@@ -159,6 +160,8 @@ module.exports = {
                     frame.data.pages[0].tags[index] = {
                         name: tag
                     };
+                } else {
+                    frame.data.pages[0].tags[index] = clean.pagesTag(tag);
                 }
             });
         }
