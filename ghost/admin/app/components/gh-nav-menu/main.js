@@ -110,12 +110,12 @@ export default class Main extends Component.extend(ShortcutsMixin) {
     @task(function* () {
         try {
             this.set('memberCountLoading', true);
-            const stats = yield this.membersStats.fetchCounts();
+            const stats = yield this.membersStats.fetchMemberCount();
             this.set('memberCountLoading', false);
             if (stats) {
-                const statsDateObj = this.membersStats.fillCountDates(stats.data) || {};
-                const dateValues = Object.values(statsDateObj);
-                this.set('memberCount', dateValues.length ? dateValues[dateValues.length - 1].total : 0);
+                const {free, paid, comped} = stats.meta.totals;
+                const total = free + paid + comped || 0;
+                this.set('memberCount', total);
             }
         } catch (e) {
             return false;
