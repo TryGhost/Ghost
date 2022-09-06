@@ -1,7 +1,7 @@
 import Helper from '@ember/component/helper';
 import {inject as service} from '@ember/service';
 
-export default class ParseAuditLogEvent extends Helper {
+export default class ParseHistoryEvent extends Helper {
     @service ghostPaths;
 
     compute([ev]) {
@@ -171,7 +171,7 @@ function getAction(ev) {
         resourceType = 'settings';
     } else if (resourceType === 'product') {
         resourceType = 'tier';
-    } 
+    }
 
     // Because a `page` and `post` both use the same model, we store the
     // actual type in the context, so let's check if that exists

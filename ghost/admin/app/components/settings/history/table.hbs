@@ -1,4 +1,4 @@
-<table class="gh-list gh-audit-log-table">
+<table class="gh-list gh-history-table">
     <thead>
         <tr>
             <th>&nbsp;</th>
@@ -6,19 +6,19 @@
     </thead>
     <tbody>
         {{#each @events as |event|}}
-        {{#let (parse-audit-log-event event) as |ev|}}
+        {{#let (parse-history-event event) as |ev|}}
         <tr>
             <div class="gh-list-data">
-                <div class="gh-audit-log-object flex items-center ma3">
+                <div class="gh-history-object flex items-center ma3">
                     <span class="user-list-item-figure" style={{background-image-style ev.actorIcon}}>
                         {{#if ev.actor.name}}
                             <span class="hidden">Photo of {{ev.actor.name}}</span>
                         {{/if}}
-                        <div class="gh-audit-log-icon">{{svg-jar ev.actionIcon}}</div>
+                        <div class="gh-history-icon">{{svg-jar ev.actionIcon}}</div>
                     </span>
                     {{!--  --}}
                     <div>
-                        <div class="gh-audit-log-description">
+                        <div class="gh-history-description">
                             <span>
                                 {{capitalize-first-letter ev.action}}:
                             </span>
@@ -47,7 +47,7 @@
                                 <span class="midlightgrey">(unknown)</span>
                             {{/if}}
 
-                            <span class="gh-audit-log-name">
+                            <span class="gh-history-name">
                                 <span class="midgrey">&ndash; by </span>
                                 {{#if ev.actorLinkTarget}}
                                     <LinkTo @route={{ev.actorLinkTarget.route}} @models={{ev.actorLinkTarget.models}}>
@@ -58,7 +58,7 @@
                                 {{/if}}
                             </span>
                         </div>
-                        <div class="gh-audit-log-datetime">{{moment-format ev.original.created_at "DD MMM YYYY HH:mm:ss"}}</div>
+                        <div class="gh-history-datetime">{{moment-format ev.original.created_at "DD MMM YYYY HH:mm:ss"}}</div>
                     </div>
                 </div>
             </div>

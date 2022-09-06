@@ -2856,13 +2856,13 @@ p.theme-validation-details {
     color: var(--midgrey);
 }
 
-/* Audit log
+/* History log
 /* ---------------------------------------------------------- */
-.gh-audit-log-filter-li {
+.gh-history-filter-li {
     height: 32px;
 }
 
-.gh-audit-log-filter-li svg {
+.gh-history-filter-li svg {
     margin-right: 6px;
 }
 
@@ -2902,36 +2902,36 @@ p.theme-validation-details {
     transform: translateX(12px);
 }
 
-.gh-audit-log-container {
+.gh-history-container {
     display: flex;
     align-items: center;
 }
 
-.gh-audit-log-container strong {
+.gh-history-container strong {
     font-weight: 600;
 }
 
-.gh-audit-log-action {
+.gh-history-action {
     padding-right: 6px;
 }
 
-.gh-audit-log-object {
+.gh-history-object {
     padding-left: 6px;
 }
 
-.gh-audit-log-object code {
+.gh-history-object code {
     background: none;
     border: none;
     color: var(--midgrey);
 }
 
-.gh-audit-log-dash {
+.gh-history-dash {
     padding-left: 0;
     padding-right: 0;
     color: var(--lightgrey);
 }
 
-.gh-audit-log-description {
+.gh-history-description {
     font-size: 1.4rem;
     color: var(--darkgrey);
     white-space: nowrap;
@@ -2939,32 +2939,32 @@ p.theme-validation-details {
     font-weight: 500;
 }
 
-.gh-audit-log-description a {
+.gh-history-description a {
     font-weight: 700;
 }
 
-.gh-audit-log-name {
+.gh-history-name {
     font-size: 1.35rem;
     font-weight: 400;
     margin-bottom: 0 !important;
     color: var(--midgrey);
 }
 
-.gh-audit-log-name a {
+.gh-history-name a {
     color: var(--midgrey) !important;
     font-weight: 400;
 }
 
-.gh-audit-log-name a:hover {
+.gh-history-name a:hover {
     color: var(--darkgrey) !important;
 }
 
-.gh-audit-log-datetime {
+.gh-history-datetime {
     font-size: 1.2rem;
     color: var(--midlightgrey);
 }
 
-.gh-audit-log-table .user-list-item-figure {
+.gh-history-table .user-list-item-figure {
     position: relative;
     height: 34px;
     width: 34px;
@@ -2972,7 +2972,7 @@ p.theme-validation-details {
     margin-right: 16px;
 }
 
-.gh-audit-log-icon {
+.gh-history-icon {
     position: absolute;
     display: flex;
     align-items: center;
@@ -2987,17 +2987,17 @@ p.theme-validation-details {
     box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.12);
 }
 
-.gh-audit-log-icon svg {
+.gh-history-icon svg {
     width: 12px;
     height: 12px;
 }
 
 @media (max-width: 620px) {
-    .gh-audit-log-table .user-list-item-figure {
+    .gh-history-table .user-list-item-figure {
         display: none;
     }
 
-    .gh-audit-log-name {
+    .gh-history-name {
         font-size: 1.4rem !important;
         min-width: 130px;
     }
