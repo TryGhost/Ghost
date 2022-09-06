@@ -56,19 +56,26 @@ module.exports = class AdapterManager {
     /**
      * getAdapter
      *
-     * @param {string} adapterType The type of adapter, e.g. "storage" or "scheduling"
-     * @param {string} adapterName The active adapter, e.g. "LocalFileStorage"
-     * @param {object} config The config the adapter should be instantiated with
+     * @param {string} adapterName The name of the type of adapter, e.g. "storage" or "scheduling", optionally including the feature, e.g. "storage:files"
+     * @param {string} adapterClassName The active adapter instance class name e.g. "LocalFileStorage"
+     * @param {object} [config] The config the adapter could be instantiated with
      *
      * @returns {Adapter} The resolved and instantiated adapter
      */
-    getAdapter(adapterType, adapterName, config) {
-        if (!adapterType || !adapterName) {
+    getAdapter(adapterName, adapterClassName, config) {
+        if (!adapterName || !adapterClassName) {
             throw new errors.IncorrectUsageError({
-                message: 'getAdapter must be called with a adapterType and a name.'
+                message: 'getAdapter must be called with a adapterName and a adapterClassName.'
             });
         }
 
+        let adapterType;
+        if (adapterName.includes(':')) {
+            [adapterType] = adapterName.split(':');
+        } else {
+            adapterType = adapterName;
+        }
+        
         const adapterCache = this.instanceCache[adapterType];
 
         if (!adapterCache) {
@@ -77,14 +84,16 @@ module.exports = class AdapterManager {
             });
         }
 
-        if (adapterCache[adapterName]) {
-            return adapterCache[adapterName];
+        // @NOTE: example cache key value 'email:newsletters:custom-newsletter-adapter'
+        const adapterCacheKey = `${adapterName}:${adapterClassName}`;
+        if (adapterCache[adapterCacheKey]) {
+            return adapterCache[adapterCacheKey];
         }
 
         /** @type AdapterConstructor */
         let Adapter;
         for (const pathToAdapters of this.pathsToAdapters) {
-            const pathToAdapter = path.join(pathToAdapters, adapterType, adapterName);
+            const pathToAdapter = path.join(pathToAdapters, adapterType, adapterClassName);
             try {
                 Adapter = this.loadAdapterFromPath(pathToAdapter);
                 if (Adapter) {
@@ -108,7 +117,7 @@ module.exports = class AdapterManager {
 
         if (!Adapter) {
             throw new errors.IncorrectUsageError({
-                message: `Unable to find ${adapterType} adapter ${adapterName} in ${this.pathsToAdapters}.`
+                message: `Unable to find ${adapterType} adapter ${adapterClassName} in ${this.pathsToAdapters}.`
             });
         }
 
@@ -117,26 +126,26 @@ module.exports = class AdapterManager {
         if (!(adapter instanceof this.baseClasses[adapterType])) {
             if (Object.getPrototypeOf(Adapter).name !== this.baseClasses[adapterType].name) {
                 throw new errors.IncorrectUsageError({
-                    message: `${adapterType} adapter ${adapterName} does not inherit from the base class.`
+                    message: `${adapterType} adapter ${adapterClassName} does not inherit from the base class.`
                 });
             }
         }
 
         if (!adapter.requiredFns) {
             throw new errors.IncorrectUsageError({
-                message: `${adapterType} adapter ${adapterName} does not have the requiredFns.`
+                message: `${adapterType} adapter ${adapterClassName} does not have the requiredFns.`
             });
         }
 
         for (const requiredFn of adapter.requiredFns) {
             if (typeof adapter[requiredFn] !== 'function') {
                 throw new errors.IncorrectUsageError({
-                    message: `${adapterType} adapter ${adapterName} is missing the ${requiredFn} method.`
+                    message: `${adapterType} adapter ${adapterClassName} is missing the ${requiredFn} method.`
                 });
             }
         }
 
-        adapterCache[adapterName] = adapter;
+        adapterCache[adapterCacheKey] = adapter;
 
         return adapter;
     }

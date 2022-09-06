@@ -1,34 +1,29 @@
-import XFileInput from 'emberx-file-input/components/x-file-input';
-import classic from 'ember-classic-decorator';
+import Component from '@glimmer/component';
+import {action} from '@ember/object';
+import {guidFor} from '@ember/object/internals';
 
-// TODO: remove this override and use {{x-file-input}} directly once we've
-// upgraded to emberx-file-input@1.2.0
+export default class GhFileInput extends Component {
+    inputId = `fileInput-${guidFor(this)}`;
+    inputElement = null;
 
-@classic
-export default class GhFileInput extends XFileInput {
-    didInsertElement() {
-        super.didInsertElement(...arguments);
-        this.onInsert?.(this.element.querySelector('input[type="file"]'));
+    get alt() {
+        return this.args.alt === undefined ? 'Upload' : this.args.alt;
     }
 
-    change(e) {
-        let action = this.action;
-        let files = this.files(e);
+    @action
+    onChange(e) {
+        e.stopPropagation();
+        const files = this.files(e);
 
-        if (files.length && action) {
-            action(files, this.resetInput.bind(this));
+        if (files.length) {
+            this.args.action?.(files, this.resetInput);
         }
     }
 
-    /**
-    * Gets files from event object.
-    *
-    * @method
-    * @private
-    * @param {$.Event || Event}
-    */
-    files(e) {
-        return (e.originalEvent || e).testingFiles || e.originalEvent?.files || e.target.files;
+    @action
+    registerFileInput(inputElement) {
+        this.inputElement = inputElement;
+        this.args.onInsert?.(this.inputElement);
     }
 
     /**
@@ -40,14 +35,28 @@ export default class GhFileInput extends XFileInput {
     *
     * @method
     */
+    @action
     resetInput() {
-        let input = this.element.querySelector('.x-file--input');
+        const input = this.inputElement;
         input.removeAttribute('value');
         input.value = null;
 
         const clone = input.cloneNode(true);
+
+        this.inputElement = clone;
         input.parentNode.replaceChild(clone, input);
 
         return clone;
+    }
+
+    /**
+    * Gets files from event object.
+    *
+    * @method
+    * @private
+    * @param {$.Event || Event}
+    */
+    files(e) {
+        return (e.originalEvent || e).testingFiles || e.originalEvent?.files || e.target.files || e.files;
     }
 }

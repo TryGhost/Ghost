@@ -26,10 +26,8 @@
         },
         "cache": {
             "active": "Memory",
-            "settings": "SettingsCacheSyncInMemory",
-            "SettingsCacheSyncInMemory": {},
-            "imageSizes": "ImageSizesCacheSyncInMemory",
-            "ImageSizesCacheSyncInMemory": {}
+            "settings": {},
+            "imageSizes": {}
         }
     },
     "storage": {
@@ -52,6 +50,7 @@
     },
     "logging": {
         "level": "info",
+        "useLocalTime": false,
         "rotation": {
             "enabled": false,
             "period": "1d",

@@ -15,9 +15,9 @@ class ContentAPITestAgent extends TestAgent {
         super(app, options);
     }
 
-    async authenticateWithSecret(secret) {
+    async authenticateWithKey(key) {
         this.defaults.queryParams = {
-            key: secret
+            key
         };
     }
 
@@ -26,7 +26,7 @@ class ContentAPITestAgent extends TestAgent {
      * @description Authenticate with default content api keys
      */
     authenticate() {
-        return this.authenticateWithSecret(defaultContentAPISecretKey);
+        return this.authenticateWithKey(defaultContentAPISecretKey);
     }
 }
 

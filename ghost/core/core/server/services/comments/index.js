@@ -14,6 +14,7 @@ class CommentsServiceWrapper {
         const urlUtils = require('../../../shared/url-utils');
         const membersService = require('../members');
         const db = require('../../data/db');
+        const settingsHelpers = require('../settings-helpers');
 
         this.api = new CommentsService({
             config,
@@ -21,6 +22,7 @@ class CommentsServiceWrapper {
             models,
             mailer,
             settingsCache,
+            settingsHelpers,
             urlService,
             urlUtils,
             contentGating: membersService.contentGating

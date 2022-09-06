@@ -1,0 +1,46 @@
+<section class="gh-canvas gh-members-activity">
+    <GhCanvasHeader class="gh-canvas-header">
+    <h2 class="gh-canvas-title" data-test-screen-title>
+        <LinkTo @route="settings">Settings</LinkTo>
+        <span>{{svg-jar "arrow-right"}}</span>
+        <LinkTo @route="settings.history" @query={{reset-query-params "settings.history"}} data-test-link="history-back">History</LinkTo>
+        {{#if this.userRecord}}
+            <span>{{svg-jar "arrow-right"}}</span>
+            <span class="truncate">{{or this.userRecord.name this.userRecord.email}}</span>
+        {{/if}}
+    </h2>
+    <div class="view-actions">
+        <Settings::History::EventFilter
+             @excludedEvents={{this.excludedEvents}}
+             @excludedResources={{this.excludedResources}}
+             @onChange={{this.changeExcludedItems}} />
+
+        <Settings::History::Search
+             @selected={{this.userRecord}}
+             @onChange={{this.changeUser}} />
+    </div>
+    </GhCanvasHeader>
+    <div class="view-container">
+        {{#let (history-event-fetcher filter=(history-event-filter excludedEvents=this.fullExcludedEvents excludedResources=this.fullExcludedResources user=this.user) pageSize=50) as |eventsFetcher|}}
+            {{#if eventsFetcher.data}}
+            <div class="gh-list-scrolling">
+                <Settings::History::Table @events={{eventsFetcher.data}} />
+
+                {{#if (not (or eventsFetcher.isLoading eventsFetcher.hasReachedEnd))}}
+                    <GhScrollTrigger @enter={{eventsFetcher.loadNextPage}} @triggerOffset={{250}} />
+                {{/if}}
+            </div>
+            {{else}}
+                {{#unless eventsFetcher.isLoading}}
+                    <Settings::History::NoEvents @filter={{or this.user this.excludedResources}} />
+                {{/unless}}
+            {{/if}}
+
+            {{#if eventsFetcher.isLoading}}
+                <div class="no-posts-box"><GhLoadingSpinner /></div>
+            {{/if}}
+        {{/let}}
+    </div>
+</section>
+
+{{outlet}}

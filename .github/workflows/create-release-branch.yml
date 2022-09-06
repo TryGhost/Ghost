@@ -1,0 +1,48 @@
+name: Create release branch
+on:
+  workflow_dispatch:
+    inputs:
+      base-ref:
+        description: 'Git ref to base from'
+        type: string
+        required: false
+      bump-type:
+        description: ''
+        type: string
+        required: false
+        default: 'patch'
+env:
+  FORCE_COLOR: 1
+permissions:
+  contents: write
+jobs:
+  create-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.base-ref }}
+          fetch-depth: 0
+          submodules: true
+
+      - uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            semver 3.3.0
+
+      - run: |
+          echo "CURRENT_SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
+          echo "NEW_VERSION=$(semver bump ${{ inputs.bump-type }} $(git describe --tags --abbrev=0))" >> $GITHUB_ENV
+
+      - name: Create branch
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const branchName = `v${process.env.NEW_VERSION}`;
+            console.log(`Creating branch: ${branchName}`);
+            await github.request('POST /repos/{owner}/{repo}/git/refs', {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `refs/heads/${branchName}`,
+              sha: process.env.CURRENT_SHA
+            });

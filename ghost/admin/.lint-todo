@@ -488,10 +488,6 @@ add|ember-template-lint|require-valid-alt-text|19|24|19|24|c1a223c4a0c265ed64685
 add|ember-template-lint|no-autofocus-attribute|14|4|14|4|bc0a12a01d16038dd3224726d5c4fe81b2d458b6|1658102400000|1668474000000|1673658000000|app/components/gh-input-with-select/trigger.hbs
 add|ember-template-lint|no-down-event-binding|8|9|8|9|e82f6aa36fd44bb3dccff09770613eee19380f9b|1658102400000|1668474000000|1673658000000|app/components/gh-input-with-select/trigger.hbs
 add|ember-template-lint|require-input-label|4|0|4|0|ce9c488b3c6a110afe45e2242fb068fd4ed61f22|1658102400000|1668474000000|1673658000000|app/components/gh-input-with-select/trigger.hbs
-add|ember-template-lint|no-action|63|39|63|39|dcc09bb23a476d5b83b273b693cd8cb2aba68365|1658102400000|1668474000000|1673658000000|app/components/gh-launch-wizard/set-pricing.hbs
-add|ember-template-lint|no-action|78|39|78|39|a80dd18e18dda6fb6f1f97d87bef2b8c2ce3d847|1658102400000|1668474000000|1673658000000|app/components/gh-launch-wizard/set-pricing.hbs
-add|ember-template-lint|no-passed-in-event-handlers|63|32|63|32|dcb4785647a50814bcfce82f8d68ac8dd8f54ec2|1658102400000|1668474000000|1673658000000|app/components/gh-launch-wizard/set-pricing.hbs
-add|ember-template-lint|no-passed-in-event-handlers|78|32|78|32|70487c008d7dda453fef82f0140699ee93c0055c|1658102400000|1668474000000|1673658000000|app/components/gh-launch-wizard/set-pricing.hbs
 add|ember-template-lint|no-invalid-interactive|6|32|6|32|508e64575a985432d0588f3291a126c4b62e68d8|1658102400000|1668474000000|1673658000000|app/components/gh-nav-menu/design.hbs
 add|ember-template-lint|no-action|97|83|97|83|40a33b8afd29e93eebeaccdb49d729c06f755e1f|1658102400000|1668474000000|1673658000000|app/components/gh-nav-menu/footer.hbs
 add|ember-template-lint|no-invalid-interactive|97|83|97|83|91111b837d1217ec9988076f5263b0e32df72604|1658102400000|1668474000000|1673658000000|app/components/gh-nav-menu/footer.hbs
@@ -964,3 +960,16 @@ remove|ember-template-lint|no-action|50|19|50|19|de05e88a1b6b658430d78f36b93dfa3
 remove|ember-template-lint|no-action|89|103|89|103|8a5526f86c3c3289a47e2e033e39292ceaa3999e|1658102400000|1668474000000|1673658000000|app/templates/settings/staff/index.hbs
 remove|ember-template-lint|no-action|92|105|92|105|8ef55f22a4332a43d47b2508c5903048f972cefa|1658102400000|1668474000000|1673658000000|app/templates/settings/staff/index.hbs
 remove|ember-template-lint|no-route-action|63|62|63|62|e9f8663f45f4f41bc590f8db8df3d5dabd9cc732|1658102400000|1668474000000|1673658000000|app/templates/settings/staff/index.hbs
+remove|ember-template-lint|require-valid-alt-text|26|20|26|20|c8f3616a9f2eef8909029c4ffdedc5886064d6ca|1658102400000|1668474000000|1673658000000|app/templates/settings/integrations/unsplash.hbs
+remove|ember-template-lint|no-unused-block-params|2|48|2|48|93a49e8b39e3073babdfb7d6b9f8d061d712564d|1658102400000|1668474000000|1673658000000|app/components/gh-theme-table.hbs
+remove|ember-template-lint|no-invalid-interactive|23|66|23|66|12fb0d3e1b679f781b065226f36d8afdcd5cedf0|1658102400000|1668474000000|1673658000000|lib/koenig-editor/addon/components/koenig-menu-content.hbs
+add|ember-template-lint|no-unused-block-params|2|48|2|48|640ae072a8a8b4a1eebde20f7f6510bf94ec120f|1662076800000|1672448400000|1677632400000|app/components/gh-theme-table.hbs
+add|ember-template-lint|no-invalid-interactive|23|70|23|70|fa748a830a15d1fffa0986e9aa4a19aae491f09f|1662076800000|1672448400000|1677632400000|lib/koenig-editor/addon/components/koenig-menu-content.hbs
+remove|ember-template-lint|no-unused-block-params|1|0|1|0|fa339a96dc0cc3f7b984951073db51aef92c09b3|1658102400000|1668474000000|1673658000000|lib/koenig-editor/addon/components/koenig-card-button.hbs
+remove|ember-template-lint|no-unused-block-params|1|0|1|0|08ed50a248b697129b713403bcaf9549b027bd11|1658102400000|1668474000000|1673658000000|lib/koenig-editor/addon/components/koenig-card-email-cta.hbs
+add|ember-template-lint|no-unused-block-params|1|0|1|0|fa339a96dc0cc3f7b984951073db51aef92c09b3|1662076800000|1672448400000|1677632400000|lib/koenig-editor/addon/components/koenig-card-button.hbs
+add|ember-template-lint|no-unused-block-params|1|0|1|0|08ed50a248b697129b713403bcaf9549b027bd11|1662076800000|1672448400000|1677632400000|lib/koenig-editor/addon/components/koenig-card-email-cta.hbs
+remove|ember-template-lint|no-unused-block-params|1|0|1|0|fa339a96dc0cc3f7b984951073db51aef92c09b3|1662076800000|1672448400000|1677632400000|lib/koenig-editor/addon/components/koenig-card-button.hbs
+remove|ember-template-lint|no-unused-block-params|1|0|1|0|08ed50a248b697129b713403bcaf9549b027bd11|1662076800000|1672448400000|1677632400000|lib/koenig-editor/addon/components/koenig-card-email-cta.hbs
+add|ember-template-lint|no-unused-block-params|1|0|1|0|39510f0b01fa581ee49eb4b946639301abb536f9|1662076800000|1672448400000|1677632400000|lib/koenig-editor/addon/components/koenig-card-button.hbs
+add|ember-template-lint|no-unused-block-params|1|0|1|0|6640f2d788e2ebf173ee6ae789259ca65c097404|1662076800000|1672448400000|1677632400000|lib/koenig-editor/addon/components/koenig-card-email-cta.hbs

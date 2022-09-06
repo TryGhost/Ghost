@@ -492,6 +492,14 @@ ul.nostyle li {
     background: var(--whitegrey-l2);
 }
 
+@media (min-width: 1450px) {
+    .gh-list-sticky,
+    .gh-list-scrolling {
+        height: calc(100vh - 96px);
+    }
+}
+
+
 @media (max-width: 800px) {
     .gh-list-sticky,
     .gh-list-scrolling {
@@ -504,9 +512,9 @@ ul.nostyle li {
     }
 }
 
-@media (min-width: 1450px) {
+@media (max-width: 450px) {
     .gh-list-sticky,
     .gh-list-scrolling {
-        height: calc(100vh - 96px);
+        height: calc(100vh - 205px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
     }
 }

@@ -315,6 +315,13 @@ p.gh-members-list-email {
     }
 }
 
+@media (max-width: 800px) {
+    .gh-list-with-helpsection {
+        margin-left: 0;
+        margin-right: 0;
+    }
+}
+
 @media (min-width: 440px) and (max-width: 1000px) {
     .gh-members-chart-summary {
         flex-direction: row;
@@ -402,7 +409,6 @@ p.gh-members-list-email {
 
     .gh-list h3.gh-members-name-noname {
         overflow: hidden;
-        margin-top: -14px;
         text-overflow: ellipsis;
         white-space: nowrap;
     }
@@ -458,19 +464,26 @@ p.gh-members-list-email {
         min-height: 120px;
     }
 
-    .gh-canvas-header.break.tablet .gh-canvas-header-content {
-        height: 160px;
+    .members-header.gh-canvas-header.break.tablet .gh-canvas-header-content {
+        height: 140px;
     }
 
-    .members-header .gh-canvas-title {
-        position: absolute;
-        top: 29px;
-        left: 21px;
+    .members-header.gh-canvas-header.break.tablet .view-actions {
+        top: 0;
+    }
+
+    .members-header.gh-canvas-header.break.tablet .view-actions-bottom-row {
+        width: 100% !important;
+        max-width: 100% !important;
     }
 
     .members-header .view-actions {
         margin-top: 30px;
         width: 100%;
+    }
+
+    .members-header .members-actions-dropdown {
+        display: none;
     }
 
     .members-header .view-actions .gh-members-header-search {
@@ -2207,10 +2220,7 @@ p.gh-members-import-errordetail:first-of-type {
 .gh-btn-addtier svg {
     width: .8em;
     height: .8em;
-}
-
-.gh-btn-addtier svg path {
-    fill: var(--green);
+    color: var(--green-d1);
 }
 
 .gh-member-tier-memberdetails {
@@ -2351,7 +2361,34 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 @media (max-width: 690px) {
-    .gh-members-filter-builder {
-        width: calc(100% - 100px);
+    .gh-members-filter-builder,
+    .gh-members-filter-builder.feature-memberAttribution {
+        width: calc(100vw - 20px);
+        min-width: calc(100vw - 20px);
+        max-width: calc(100vw - 20px);
+        left: 0 !important;
+        right: 0 !important;
+        margin-left: 10px;
+        margin-right: 10px;
+    }
+}
+
+@media (max-width: 800px) {
+    .members-header {
+        left: 0;
+    }
+
+    .members-header .gh-canvas-title {
+        left: 25px;
+    }
+}
+
+@media (max-width: 430px) {
+    .members-header .view-actions .gh-contentfilter {
+        border-right: 1px solid var(--whitegrey-d1);
+    }
+
+    .gh-contentfilter-menu:last-of-type {
+        padding-right: 8px;
     }
 }

@@ -29,26 +29,13 @@ module.exports = {
         })(req, res, next);
     },
     /**
-     * block per user
-     * username === email!
+     * block per ip
      */
     userLogin(req, res, next) {
         return spamPrevention.userLogin().getMiddleware({
             ignoreIP: false,
             key(_req, _res, _next) {
-                if (_req.body.username) {
-                    return _next(`${_req.body.username}login`);
-                }
-
-                if (_req.body.authorizationCode) {
-                    return _next(`${_req.body.authorizationCode}login`);
-                }
-
-                if (_req.body.refresh_token) {
-                    return _next(`${_req.body.refresh_token}login`);
-                }
-
-                return _next();
+                return _next('user_login');
             }
         })(req, res, next);
     },
@@ -99,7 +86,7 @@ module.exports = {
     /**
      */
     membersAuth(req, res, next) {
-        return spamPrevention.userLogin().getMiddleware({
+        return spamPrevention.membersAuth().getMiddleware({
             ignoreIP: false,
             key(_req, _res, _next) {
                 if (_req.body.email) {
