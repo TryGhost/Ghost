@@ -2,26 +2,83 @@ import Helper from '@ember/component/helper';
 import {inject as service} from '@ember/service';
 
 export default class ParseAuditLogEvent extends Helper {
-    @service store;
+    @service ghostPaths;
 
     compute([ev]) {
         const action = getAction(ev);
         const actionIcon = getActionIcon(ev);
-        const getActor = () => this.store.findRecord(ev.actor_type, ev.actor_id, {reload: false});
         const contextResource = getContextResource(ev);
         const linkTarget = getLinkTarget(ev);
 
+        const actor = getActor(ev);
+        const actorLinkTarget = getActorLinkTarget(ev);
+
+        const assetRoot = this.ghostPaths.assetRoot.replace(/\/$/, '');
+        const actorIcon = getActorIcon(ev, assetRoot);
+
         return {
-            get actor() {
-                return getActor();
-            },
             contextResource,
             linkTarget,
             actionIcon,
             action,
+            actor,
+            actorIcon,
+            actorLinkTarget,
             original: ev
         };
     }
+}
+
+function getActor(ev) {
+    if (!ev.actor.id) {
+        return null;
+    }
+
+    return ev.actor;
+}
+
+function getActorIcon(ev, assetRoot) {
+    const defaultImage = `${assetRoot}/img/user-image.png`;
+
+    if (!ev.actor.id) {
+        return defaultImage;
+    }
+
+    if (!ev.actor.image) {
+        return defaultImage;
+    }
+
+    return ev.actor.image;
+}
+
+function getActorLinkTarget(ev) {
+    const actor = getActor(ev);
+    if (!actor) {
+        return null;
+    }
+
+    switch (ev.actor_type) {
+    case 'integration':
+        if (!actor.id) {
+            return null;
+        }
+
+        return {
+            route: 'settings.integration',
+            models: [actor.id]
+        };
+    case 'user':
+        if (!actor.slug) {
+            return null;
+        }
+
+        return {
+            route: 'settings.staff.user',
+            models: [actor.slug]
+        };
+    }
+
+    return null;
 }
 
 function getLinkTarget(ev) {
@@ -72,6 +129,11 @@ function getLinkTarget(ev) {
                 route: 'tag',
                 models: [ev.resource.slug]
             };
+        case 'product':
+            return {
+                route: 'settings.membership',
+                models: null
+            };
         case 'user':
             if (!ev.resource.slug) {
                 return null;
@@ -90,7 +152,7 @@ function getLinkTarget(ev) {
 function getActionIcon(ev) {
     switch (ev.event) {
     case 'added':
-        return 'add';
+        return 'plus-large';
     case 'edited':
         return 'pen';
     case 'deleted':
@@ -107,7 +169,9 @@ function getAction(ev) {
         resourceType = 'API key';
     } else if (resourceType === 'setting') {
         resourceType = 'settings';
-    }
+    } else if (resourceType === 'product') {
+        resourceType = 'tier';
+    } 
 
     // Because a `page` and `post` both use the same model, we store the
     // actual type in the context, so let's check if that exists

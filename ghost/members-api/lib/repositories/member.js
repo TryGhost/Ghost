@@ -407,7 +407,7 @@ module.exports = class MemberRepository {
             productsToAdd = _.differenceWith(incomingProductIds, existingProductIds);
             productsToRemove = _.differenceWith(existingProductIds, incomingProductIds);
             const productsToModify = productsToAdd.concat(productsToRemove);
-           
+
             if (productsToModify.length !== 0) {
                 // Load active subscriptions information
                 await initialMember.load(
@@ -417,9 +417,9 @@ module.exports = class MemberRepository {
                         'stripeSubscriptions.stripePrice.stripeProduct',
                         'stripeSubscriptions.stripePrice.stripeProduct.product'
                     ], sharedOptions);
-                
+
                 const exisitingSubscriptions = initialMember.related('stripeSubscriptions')?.models ?? [];
-                
+
                 if (productsToRemove.length > 0) {
                     // Only allow to delete comped products without a subscription attached to them
                     // Other products should be removed by canceling them via the related stripe subscription
@@ -445,7 +445,7 @@ module.exports = class MemberRepository {
                     const existingActiveSubscriptions = exisitingSubscriptions.filter((subscription) => {
                         return this.isActiveSubscriptionStatus(subscription.get('status'));
                     });
-    
+
                     if (existingActiveSubscriptions.length) {
                         throw new errors.BadRequestError({message: tpl(messages.addProductWithActiveSubscription)});
                     }
@@ -964,8 +964,11 @@ module.exports = class MemberRepository {
                 ...eventData
             }, options);
 
+            const context = options?.context || {};
+            const source = this._resolveContextSource(context);
+
             // Notify paid member subscription start
-            if (this._labsService.isSet('emailAlerts')) {
+            if (this._labsService.isSet('emailAlerts') && ['member', 'api'].includes(source)) {
                 await this.staffService.notifyPaidSubscriptionStart({
                     member: member.toJSON(),
                     offer: offer ? this._offerRepository.toJSON(offer) : null,

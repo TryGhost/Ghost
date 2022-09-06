@@ -1,1 +1,7 @@
-<svg height="546px" version="1.1" viewBox="0 0 569 546" width="569px" xmlns="http://www.w3.org/2000/svg"><title>Patreon logo</title><g fill="rgb(255, 66, 77)"><circle cx="362.589996" cy="204.589996" data-fill="1" r="204.589996"></circle><rect data-fill="1" height="545.799988" width="100" x="0" y="0"></rect></g></svg>
+<svg height="546" viewBox="0 0 569 546" width="569" xmlns="http://www.w3.org/2000/svg">
+    <title>patreon</title>
+    <g fill="#FF424D">
+        <circle cx="362.59" cy="204.59" data-fill="1" r="204.59"/>
+        <path data-fill="1" d="M0 0h100v545.8H0z"/>
+    </g>
+</svg>

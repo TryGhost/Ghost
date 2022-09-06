@@ -20,6 +20,7 @@ const VerificationTrigger = require('@tryghost/verification-trigger');
 const DomainEvents = require('@tryghost/domain-events');
 const {LastSeenAtUpdater} = require('@tryghost/members-events-service');
 const DatabaseInfo = require('@tryghost/database-info');
+const settingsHelpers = require('../settings-helpers');
 
 const messages = {
     noLiveKeysInDevelopment: 'Cannot use live stripe keys in development. Please restart in production mode.',
@@ -30,7 +31,7 @@ const messages = {
 const ghostMailer = new GhostMailer();
 
 const membersConfig = new MembersConfigProvider({
-    config,
+    settingsHelpers,
     settingsCache,
     urlUtils
 });

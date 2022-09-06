@@ -48,7 +48,6 @@ module.exports.reset = async ({truncate} = {truncate: false}) => {
         const filenameOrig = `${filename}-orig`;
 
         if (dbInitialized) {
-            await db.knex.destroy();
             await fs.copyFile(filenameOrig, filename);
         } else {
             await fs.remove(filename);

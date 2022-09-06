@@ -5,12 +5,13 @@ const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const postEmailSerializer = require('../mega/post-email-serializer');
 
 class CommentsServiceEmails {
-    constructor({config, logging, models, mailer, settingsCache, urlService, urlUtils}) {
+    constructor({config, logging, models, mailer, settingsCache, settingsHelpers, urlService, urlUtils}) {
         this.config = config;
         this.logging = logging;
         this.models = models;
         this.mailer = mailer;
         this.settingsCache = settingsCache;
+        this.settingsHelpers = settingsHelpers;
         this.urlService = urlService;
         this.urlUtils = urlUtils;
 
@@ -166,25 +167,8 @@ class CommentsServiceEmails {
         return siteDomain;
     }
 
-    get membersAddress() {
-        // TODO: get from address of default newsletter?
-        return `noreply@${this.siteDomain}`;
-    }
-
-    // TODO: duplicated from services/members/config - exrtact to settings?
-    get supportAddress() {
-        const supportAddress = this.settingsCache.get('members_support_address') || 'noreply';
-
-        // Any fromAddress without domain uses site domain, like default setting `noreply`
-        if (supportAddress.indexOf('@') < 0) {
-            return `${supportAddress}@${this.siteDomain}`;
-        }
-
-        return supportAddress;
-    }
-
     get notificationFromAddress() {
-        return this.supportAddress || this.membersAddress;
+        return this.settingsHelpers.getMembersSupportAddress();
     }
 
     extractInitials(name = '') {

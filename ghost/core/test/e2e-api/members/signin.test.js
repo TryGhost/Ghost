@@ -1,4 +1,4 @@
-const {agentProvider, mockManager, fixtureManager} = require('../../utils/e2e-framework');
+const {agentProvider, mockManager, fixtureManager, dbUtils, configUtils} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const assert = require('assert');
 require('should');
@@ -33,6 +33,7 @@ describe('Members Signin', function () {
     });
 
     beforeEach(function () {
+        mockManager.mockMail();
         mockManager.mockStripe();
     });
 
@@ -116,6 +117,75 @@ describe('Members Signin', function () {
                     source: 'member'
                 }
             ]
+        });
+    });
+
+    describe('Rate limiting', function () {
+        it('Will clear rate limits for members auth', async function () {
+            await dbUtils.truncate('brute');
+            // +1 because this is a retry count, so we have one request + the retries, then blocked
+            const userLoginRateLimit = configUtils.config.get('spam').user_login.freeRetries + 1;
+
+            for (let i = 0; i < userLoginRateLimit; i++) {
+                await membersAgent.post('/api/send-magic-link')
+                    .body({
+                        email: 'rate-limiting-test-1@test.com',
+                        emailType: 'signup'
+                    });
+
+                await membersAgent.post('/api/send-magic-link')
+                    .body({
+                        email: 'rate-limiting-test-2@test.com',
+                        emailType: 'signup'
+                    });
+            }
+
+            // Now we've been rate limited
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: 'rate-limiting-test-1@test.com',
+                    emailType: 'signup'
+                })
+                .expectStatus(429);
+
+            // Now we've been rate limited
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: 'rate-limiting-test-2@test.com',
+                    emailType: 'signup'
+                })
+                .expectStatus(429);
+
+            // Get one of the magic link emails
+            const mail = mockManager.assert.sentEmail({
+                to: 'rate-limiting-test-1@test.com',
+                subject: /Complete your sign up to Ghost!/
+            });
+
+            // Get link from email
+            const [url] = mail.text.match(/https?:\/\/[^\s]+/);
+
+            const magicLink = new URL(url);
+
+            // Login
+            await membersAgent.get(magicLink.pathname + magicLink.search);
+
+            // The first member has been un ratelimited
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: 'rate-limiting-test-1@test.com',
+                    emailType: 'signup'
+                })
+                .expectEmptyBody()
+                .expectStatus(201);
+
+            // The second is still rate limited
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: 'rate-limiting-test-2@test.com',
+                    emailType: 'signup'
+                })
+                .expectStatus(429);
         });
     });
 

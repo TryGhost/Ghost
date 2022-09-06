@@ -34,13 +34,13 @@
                 <a class="green" href="https://ghost.org/changelog" target="_blank" rel="noopener noreferrer">See all updates &rarr;</a>
             </section>
 
+            {{#if (not (feature 'auditLog'))}}
             <div class="gh-about-content-actions">
                 <a class="gh-btn gh-btn-outline" href="https://ghost.org/docs/" target="_blank" rel="noopener noreferrer"><span>User documentation</span></a>
                 <a class="gh-btn gh-btn-outline" href="https://forum.ghost.org/" target="_blank" rel="noopener noreferrer"><span>Get help with Ghost</span></a>
                 <a class="gh-btn gh-btn-black" href="https://ghost.org/docs/contributing/" target="_blank" rel="noopener noreferrer"><span>Get involved</span></a>
             </div>
 
-            {{#if (not (feature 'auditLog'))}}
             <section class="gh-env-details gh-about-box grey">
                 <div class="gh-about-logo">
                     {{svg-jar "ghost-logo-orb" alt="Ghost"}}

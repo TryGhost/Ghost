@@ -8,6 +8,7 @@ const Terser = require('broccoli-terser-sourcemap');
 const Funnel = require('broccoli-funnel');
 const webpack = require('webpack');
 const environment = EmberApp.env();
+const isDevelopment = environment === 'development';
 const isProduction = environment === 'production';
 const isTesting = environment === 'test';
 
@@ -206,7 +207,7 @@ module.exports = function (defaults) {
                     {prefixIds: true},
                     {cleanupIds: false},
                     {removeDimensions: true},
-                    {removeTitle: true},
+                    {removeTitle: !isDevelopment},
                     {removeXMLNS: true},
                     // Transforms on groups are necessary to work around Firefox
                     // not supporting transform-origin on line/path elements.

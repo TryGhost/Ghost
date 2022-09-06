@@ -31,5 +31,6 @@ module.exports = {
         Firefox: {
             ci: ['-headless']
         }
-    }
+    },
+    tap_failed_tests_only: true
 };

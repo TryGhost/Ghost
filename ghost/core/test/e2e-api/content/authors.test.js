@@ -14,7 +14,7 @@ describe('Authors Content API', function () {
     before(async function () {
         await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
-        await testUtils.initFixtures('owner:post', 'users:no-owner', 'user:inactive', 'posts', 'api_keys');
+        await testUtils.initFixtures('owner:post', 'users', 'user:inactive', 'posts', 'api_keys');
     });
 
     afterEach(function () {

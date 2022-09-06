@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "5.12.2",
+  "version": "5.13.1",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -45,14 +45,14 @@
     "lint:code": "yarn lint:server && yarn lint:shared && yarn lint:frontend",
     "lint": "yarn lint:server && yarn lint:shared && yarn lint:frontend && yarn lint:test",
     "build:css": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
-    "prepack": "npx --yes daniellockyer/monobundle && yarn workspace ghost-admin run build:prod && yarn build:css"
+    "prepack": "yarn workspace ghost-admin run build:prod && yarn build:css && npx --yes daniellockyer/monobundle"
   },
   "engines": {
     "node": "^14.17.0 || ^16.13.0",
     "cli": "^1.17.0"
   },
   "dependencies": {
-    "@sentry/node": "7.11.1",
+    "@sentry/node": "7.12.1",
     "@tryghost/adapter-manager": "0.0.0",
     "@tryghost/admin-api-schema": "4.1.1",
     "@tryghost/api-framework": "0.0.0",
@@ -80,7 +80,7 @@
     "@tryghost/kg-default-cards": "5.16.3",
     "@tryghost/kg-mobiledoc-html-renderer": "5.3.6",
     "@tryghost/limit-service": "1.2.3",
-    "@tryghost/logging": "2.2.4",
+    "@tryghost/logging": "2.3.0",
     "@tryghost/magic-link": "0.0.0",
     "@tryghost/mailgun-client": "0.0.0",
     "@tryghost/member-attribution": "0.0.0",
@@ -148,7 +148,7 @@
     "glob": "8.0.3",
     "got": "9.6.0",
     "gscan": "4.34.0",
-    "human-number": "2.0.0",
+    "human-number": "2.0.1",
     "image-size": "1.0.2",
     "intl": "1.2.5",
     "intl-messageformat": "5.4.3",
@@ -157,7 +157,7 @@
     "jsonwebtoken": "8.5.1",
     "juice": "8.1.0",
     "keypair": "1.0.4",
-    "knex": "2.2.0",
+    "knex": "2.3.0",
     "knex-migrator": "5.0.4",
     "lodash": "4.17.21",
     "luxon": "3.0.3",
@@ -178,12 +178,12 @@
     "xml": "1.0.1"
   },
   "optionalDependencies": {
-    "@tryghost/html-to-mobiledoc": "1.8.10",
+    "@tryghost/html-to-mobiledoc": "1.8.11",
     "sqlite3": "5.0.11"
   },
   "devDependencies": {
     "@playwright/test": "1.25.1",
-    "@tryghost/express-test": "0.11.2",
+    "@tryghost/express-test": "0.11.3",
     "@tryghost/webhook-mock-receiver": "0.1.2",
     "@types/common-tags": "1.8.1",
     "c8": "7.12.0",
@@ -209,7 +209,7 @@
     "tmp": "0.2.1"
   },
   "resolutions": {
-    "@tryghost/logging": "2.2.4",
+    "@tryghost/logging": "2.3.0",
     "moment": "2.24.0",
     "moment-timezone": "0.5.23"
   }

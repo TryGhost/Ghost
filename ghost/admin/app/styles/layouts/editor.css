@@ -484,8 +484,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
 }
 
 .gh-editor-feature-image-add-button svg path {
-    stroke: var(--midgrey-l2);
-    stroke-width: 2;
+    stroke-width: 1.8;
 }
 
 .gh-editor-feature-image-add-button:hover svg path {
@@ -1014,10 +1013,59 @@ figure {
 }
 
 .kg-settings-link-url {
+    position: relative;
     display: block;
+    width: 100%;
+    overflow: hidden;
+    padding: 0;
+    margin: 0;
+    text-align: left;
+}
+
+.kg-settings-link-url::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -20px;
+    width: 20px;
+    height: 100%;
+    background: rgb(255,255,255);
+    background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%);
+    z-index: 999;
+    opacity: 0;
+    transition: all 250ms ease-out;
+}
+
+.kg-settings-link-url::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 20px;
+    height: 100%;
+    background: rgb(255,255,255);
+    background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);
+    z-index: 999;
+}
+
+.ember-power-select-option[aria-current="true"] .kg-settings-link-url.scroller::before {
+    opacity: 1;
+    left: 0;
+    background: linear-gradient(90deg, rgba(244,245,245,1) 0%, rgba(244,245,245,0) 100%);
+}
+
+.ember-power-select-option[aria-current="true"] .kg-settings-link-url::after {
+    background: linear-gradient(90deg, rgba(244,245,245,0) 0%, rgba(244,245,245,1) 100%);
+}
+
+.kg-settings-link-url > span {
+    display: inline-block;
     font-weight: 400;
     font-size: 1.2rem;
     color: var(--midgrey);
     letter-spacing: 0;
     line-height: 1.3em;
+    transition: transform 250ms ease-in-out;
+    transform: translateX(0); /* used for dynamic positioning with js */
+    padding-right: 8px; /* extra padding used for dynamic positioning with js */
 }
