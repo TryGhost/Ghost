@@ -1,7 +1,9 @@
 <section class="gh-canvas gh-members-activity">
     <GhCanvasHeader class="gh-canvas-header">
     <h2 class="gh-canvas-title" data-test-screen-title>
-        <LinkTo @route="settings.audit-log" @query={{reset-query-params "settings.audit-log"}} data-test-link="audit-log-back">Audit log</LinkTo>
+        <LinkTo @route="settings">Settings</LinkTo>
+        <span>{{svg-jar "arrow-right"}}</span>
+        <LinkTo @route="settings.audit-log" @query={{reset-query-params "settings.audit-log"}} data-test-link="audit-log-back">History</LinkTo>
         {{#if this.userRecord}}
             <span>{{svg-jar "arrow-right"}}</span>
             <span class="truncate">{{or this.userRecord.name this.userRecord.email}}</span>

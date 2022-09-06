@@ -803,3 +803,22 @@ Usage: CTA buttons grouped together horizontally.
 .gh-btn .gh-btn-text-hide-for-mobile {
     display: none;
 }
+
+.gh-btn-with-notification {
+    position: relative;
+}
+
+.gh-btn-notification-dot {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    display: block;
+    content: "";
+    width: 14px !important;
+    height: 14px !important;
+    background: var(--green);
+    padding: 0 !important;
+    margin: 0 !important;
+    border-radius: 999px !important;
+    border: 1px solid var(--main-bg-color);
+}
