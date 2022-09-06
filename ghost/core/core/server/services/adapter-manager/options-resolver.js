@@ -24,5 +24,5 @@ module.exports = function resolveAdapterOptions(name, adapterServiceConfig) {
         adapterConfig = adapterSettings[adapterName];
     }
 
-    return {adapterType, adapterName, adapterConfig};
+    return {adapterName, adapterConfig};
 };
