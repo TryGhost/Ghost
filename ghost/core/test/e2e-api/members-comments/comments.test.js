@@ -142,14 +142,14 @@ async function testCanReply(member, emailMatchers = {}) {
     should.notEqual(member.get('last_commented_at').getTime(), date.getTime(), 'Should update `last_commented_at` property after posting a comment.');
 }
 
-async function testCannotCommentOnPost() {
+async function testCannotCommentOnPost(status = 403) {
     await membersAgent
         .post(`/api/comments/`)
         .body({comments: [{
             post_id: postId,
             html: '<div></div><p></p><p>This is a <strong>message</strong></p><p></p><p></p><p>New line</p><p></p>'
         }]})
-        .expectStatus(403)
+        .expectStatus(status)
         .matchHeaderSnapshot({
             etag: anyEtag
         })
@@ -160,7 +160,7 @@ async function testCannotCommentOnPost() {
         });
 }
 
-async function testCannotReply() {
+async function testCannotReply(status = 403) {
     await membersAgent
         .post(`/api/comments/`)
         .body({comments: [{
@@ -168,7 +168,7 @@ async function testCannotReply() {
             parent_id: fixtureManager.get('comments', 0).id,
             html: 'This is a reply'
         }]})
-        .expectStatus(403)
+        .expectStatus(status)
         .matchHeaderSnapshot({
             etag: anyEtag
         })
@@ -228,6 +228,14 @@ describe('Comments API', function () {
                         comments: [commentMatcherWithReplies({replies: 1})]
                     });
             });
+
+            it('cannot comment on a post', async function () {
+                await testCannotCommentOnPost(401);
+            });
+
+            it('cannot reply on a post', async function () {
+                await testCannotReply(401);
+            });
     
             it('cannot report a comment', async function () {
                 commentId = fixtureManager.get('comments', 0).id;
@@ -235,6 +243,36 @@ describe('Comments API', function () {
                 // Create a temporary comment
                 await membersAgent
                     .post(`/api/comments/${commentId}/report/`)
+                    .expectStatus(401)
+                    .matchHeaderSnapshot({
+                        etag: anyEtag
+                    })
+                    .matchBodySnapshot({
+                        errors: [{
+                            id: anyUuid
+                        }]
+                    });
+            });
+
+            it('cannot like a comment', async function () {
+                // Create a temporary comment
+                await membersAgent
+                    .post(`/api/comments/${commentId}/like/`)
+                    .expectStatus(401)
+                    .matchHeaderSnapshot({
+                        etag: anyEtag
+                    })
+                    .matchBodySnapshot({
+                        errors: [{
+                            id: anyUuid
+                        }]
+                    });
+            });
+
+            it('cannot unlike a comment', async function () {
+                // Create a temporary comment
+                await membersAgent
+                    .delete(`/api/comments/${commentId}/like/`)
                     .expectStatus(401)
                     .matchHeaderSnapshot({
                         etag: anyEtag

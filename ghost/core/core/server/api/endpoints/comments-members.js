@@ -1,17 +1,6 @@
-const Promise = require('bluebird');
-const tpl = require('@tryghost/tpl');
-const errors = require('@tryghost/errors');
-const models = require('../../models');
 const commentsService = require('../../services/comments');
 const ALLOWED_INCLUDES = ['member', 'replies', 'replies.member', 'replies.count.likes', 'replies.liked', 'count.replies', 'count.likes', 'liked', 'post', 'parent'];
 const UNSAFE_ATTRS = ['status'];
-
-const messages = {
-    commentNotFound: 'Comment could not be found',
-    memberNotFound: 'Unable to find member',
-    likeNotFound: 'Unable to find like',
-    alreadyLiked: 'This comment was liked already'
-};
 
 module.exports = {
     docName: 'comments',
@@ -157,27 +146,7 @@ module.exports = {
         },
         permissions: true,
         async query(frame) {
-            // TODO: move to likes service
-            if (frame.options?.context?.member?.id) {
-                const data = {
-                    member_id: frame.options.context.member.id,
-                    comment_id: frame.options.id
-                };
-
-                const existing = await models.CommentLike.findOne(data, frame.options);
-
-                if (existing) {
-                    throw new errors.BadRequestError({
-                        message: tpl(messages.alreadyLiked)
-                    });
-                }
-
-                return await models.CommentLike.add(data, frame.options);
-            } else {
-                throw new errors.NotFoundError({
-                    message: tpl(messages.memberNotFound)
-                });
-            }
+            return await commentsService.controller.like(frame);
         }
     },
 
@@ -188,31 +157,8 @@ module.exports = {
         ],
         validation: {},
         permissions: true,
-        query(frame) {
-            // TODO: move to likes service
-            if (frame.options?.context?.member?.id) {
-                return models.CommentLike.destroy({
-                    ...frame.options,
-                    destroyBy: {
-                        member_id: frame.options.context.member.id,
-                        comment_id: frame.options.id
-                    },
-                    require: true
-                }).then(() => null)
-                    .catch((err) => {
-                        if (err instanceof models.CommentLike.NotFoundError) {
-                            return Promise.reject(new errors.NotFoundError({
-                                message: tpl(messages.likeNotFound)
-                            }));
-                        }
-
-                        throw err;
-                    });
-            } else {
-                return Promise.reject(new errors.NotFoundError({
-                    message: tpl(messages.memberNotFound)
-                }));
-            }
+        async query(frame) {
+            return await commentsService.controller.unlike(frame);
         }
     },
 
@@ -224,13 +170,7 @@ module.exports = {
         validation: {},
         permissions: true,
         async query(frame) {
-            if (!frame.options?.context?.member?.id) {
-                return Promise.reject(new errors.UnauthorizedError({
-                    message: tpl(messages.memberNotFound)
-                }));
-            }
-
-            await commentsService.api.reportComment(frame.options.id, frame.options?.context?.member);
+            await commentsService.controller.report(frame);
         }
     }
 };
