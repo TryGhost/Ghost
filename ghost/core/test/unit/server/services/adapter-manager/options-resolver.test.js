@@ -12,9 +12,8 @@ describe('Adapter Manager: options resolver', function () {
             }
         };
 
-        const {adapterType, adapterName, adapterConfig} = resolveAdapterOptions(name, adapterServiceConfig);
+        const {adapterName, adapterConfig} = resolveAdapterOptions(name, adapterServiceConfig);
 
-        adapterType.should.equal('cache');
         adapterName.should.equal('Memory');
         should.equal(adapterConfig, undefined);
     });
@@ -30,9 +29,8 @@ describe('Adapter Manager: options resolver', function () {
             }
         };
 
-        const {adapterType, adapterName, adapterConfig} = resolveAdapterOptions(name, adapterServiceConfig);
+        const {adapterName, adapterConfig} = resolveAdapterOptions(name, adapterServiceConfig);
 
-        adapterType.should.equal('storage');
         adapterName.should.equal('cloud-storage');
         adapterConfig.should.deepEqual({
             custom: 'configValue'
@@ -54,9 +52,8 @@ describe('Adapter Manager: options resolver', function () {
             }
         };
 
-        const {adapterType, adapterName, adapterConfig} = resolveAdapterOptions(name, adapterServiceConfig);
+        const {adapterName, adapterConfig} = resolveAdapterOptions(name, adapterServiceConfig);
 
-        adapterType.should.equal('storage');
         adapterName.should.equal('local-storage');
         adapterConfig.should.deepEqual({
             custom: 'localStorageConfig'
@@ -79,9 +76,8 @@ describe('Adapter Manager: options resolver', function () {
             }
         };
 
-        const {adapterType, adapterName, adapterConfig} = resolveAdapterOptions(name, adapterServiceConfig);
+        const {adapterName, adapterConfig} = resolveAdapterOptions(name, adapterServiceConfig);
 
-        adapterType.should.equal('storage');
         adapterName.should.equal('cloud-storage');
         adapterConfig.should.deepEqual({
             custom: 'configValue'
@@ -107,18 +103,16 @@ describe('Adapter Manager: options resolver', function () {
             }
         };
 
-        const {adapterType, adapterName, adapterConfig} = resolveAdapterOptions(primaryAdapterName, adapterServiceConfig);
+        const {adapterName, adapterConfig} = resolveAdapterOptions(primaryAdapterName, adapterServiceConfig);
 
-        adapterType.should.equal('cache');
         adapterName.should.equal('Redis');
         adapterConfig.should.deepEqual({
             commonConfigValue: 'common_config_value',
             adapterConfigValue: 'images_redis_value'
         });
 
-        const {adapterType: secondAdapterType, adapterName: secondAdapterName, adapterConfig: secondAdapterConfig} = resolveAdapterOptions(secondaryAdapterName, adapterServiceConfig);
+        const {adapterName: secondAdapterName, adapterConfig: secondAdapterConfig} = resolveAdapterOptions(secondaryAdapterName, adapterServiceConfig);
 
-        secondAdapterType.should.equal('cache');
         secondAdapterName.should.equal('Redis');
         secondAdapterConfig.should.deepEqual({
             commonConfigValue: 'common_config_value',
@@ -142,17 +136,15 @@ describe('Adapter Manager: options resolver', function () {
             }
         };
 
-        const {adapterType, adapterName, adapterConfig} = resolveAdapterOptions(primaryAdapterName, adapterServiceConfig);
+        const {adapterName, adapterConfig} = resolveAdapterOptions(primaryAdapterName, adapterServiceConfig);
 
-        adapterType.should.equal('cache');
         adapterName.should.equal('Redis');
         adapterConfig.should.deepEqual({
             adapterConfigValue: 'images_redis_value'
         });
 
-        const {adapterType: secondAdapterType, adapterName: secondAdapterName, adapterConfig: secondAdapterConfig} = resolveAdapterOptions(secondaryAdapterName, adapterServiceConfig);
+        const {adapterName: secondAdapterName, adapterConfig: secondAdapterConfig} = resolveAdapterOptions(secondaryAdapterName, adapterServiceConfig);
 
-        secondAdapterType.should.equal('cache');
         secondAdapterName.should.equal('Redis');
         secondAdapterConfig.should.deepEqual({
             adapterConfigValue: 'settings_redis_value'
@@ -175,9 +167,8 @@ describe('Adapter Manager: options resolver', function () {
             }
         };
 
-        const {adapterType, adapterName, adapterConfig} = resolveAdapterOptions(primaryAdapterName, adapterServiceConfig);
+        const {adapterName, adapterConfig} = resolveAdapterOptions(primaryAdapterName, adapterServiceConfig);
 
-        adapterType.should.equal('cache');
         adapterName.should.equal('Redis');
         adapterConfig.should.deepEqual({
             commonConfigValue: 'common_config_value',
