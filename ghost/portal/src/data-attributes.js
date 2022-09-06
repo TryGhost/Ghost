@@ -11,6 +11,7 @@ function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler}) {
     form.classList.remove('success', 'invalid', 'error');
     let emailInput = event.target.querySelector('input[data-members-email]');
     let nameInput = event.target.querySelector('input[data-members-name]');
+    let autoRedirect = form?.dataset?.membersAutoredirect || 'true';
     let email = emailInput?.value;
     let name = (nameInput && nameInput.value) || undefined;
     let emailType = undefined;
@@ -36,7 +37,8 @@ function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler}) {
             email: email,
             emailType: emailType,
             labels: labels,
-            name: name
+            name: name,
+            autoRedirect: (autoRedirect === 'true')
         })
     }).then(function (res) {
         form.addEventListener('submit', submitHandler);
