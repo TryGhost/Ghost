@@ -182,7 +182,7 @@
     "sqlite3": "5.0.11"
   },
   "devDependencies": {
-    "@playwright/test": "1.25.1",
+    "@playwright/test": "1.25.2",
     "@tryghost/express-test": "0.11.3",
     "@tryghost/webhook-mock-receiver": "0.1.2",
     "@types/common-tags": "1.8.1",
