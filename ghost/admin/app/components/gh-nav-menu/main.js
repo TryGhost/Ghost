@@ -31,7 +31,6 @@ export default class Main extends Component.extend(ShortcutsMixin) {
     iconStyle = '';
     iconClass = '';
     memberCountLoading = true;
-    memberCount = 0;
     shortcuts = null;
 
     @match('router.currentRouteName', /^settings\.integration/)
@@ -110,13 +109,8 @@ export default class Main extends Component.extend(ShortcutsMixin) {
     @task(function* () {
         try {
             this.set('memberCountLoading', true);
-            const stats = yield this.membersStats.fetchMemberCount();
+            yield this.membersStats.updateMemberCounts();
             this.set('memberCountLoading', false);
-            if (stats) {
-                const {free, paid, comped} = stats.meta.totals;
-                const total = free + paid + comped || 0;
-                this.set('memberCount', total);
-            }
         } catch (e) {
             return false;
         }

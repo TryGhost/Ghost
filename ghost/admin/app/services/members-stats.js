@@ -17,6 +17,7 @@ export default class MembersStatsService extends Service {
     @tracked mrrStats = null;
     @tracked newsletterStats = null;
     @tracked totalMemberCount = null;
+    @tracked memberCount = 0;
 
     fetch() {
         let daysChanged = this._lastFetchedDays !== this.days;
@@ -165,6 +166,19 @@ export default class MembersStatsService extends Service {
 
     invalidate() {
         this._forceRefresh = true;
+    }
+
+    async updateMemberCounts() {
+        try {
+            const stats = await this.fetchMemberCount();
+            if (stats) {
+                const {free, paid, comped} = stats.meta.totals;
+                const total = free + paid + comped || 0;
+                this.memberCount = total;
+            }
+        } catch (errors) {
+            return false;
+        }
     }
 
     @task
