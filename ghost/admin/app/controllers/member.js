@@ -129,6 +129,7 @@ export default class MemberController extends Controller {
         return this.member.destroyRecord(options).then(() => {
             this.members.refreshData();
             this.transitionToRoute('members');
+            this.membersStats.updateMemberCounts();
             return;
         }, (error) => {
             return this.notifications.showAPIError(error, {key: 'member.delete'});
@@ -181,6 +182,7 @@ export default class MemberController extends Controller {
             yield member.save();
             member.updateLabels();
             this.members.refreshData();
+            this.membersStats.updateMemberCounts();
 
             // replace 'member.new' route with 'member' route
             this.replaceRoute('member', member);
