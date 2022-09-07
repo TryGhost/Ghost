@@ -4,7 +4,7 @@
             <h4>Featured publications</h4>
             <div>
                 <a href="https://ghost.org/explore/" target="_blank" rel="noopener noreferrer">Browse all</a>
-                <LinkTo @route="explore" class="gh-dashboard-explore-add">Add your site to Explore <span>{{svg-jar "ghost-favicon-pink" alt="Ghost" class="w4 v-mid"}}</span></LinkTo>
+                <LinkTo @route="explore" class="gh-dashboard-explore-add">Add your site to Explore</LinkTo>
             </div>
         </div>
         <div class="gh-dashboard-resource-body">
@@ -28,7 +28,7 @@
                                 {{else if entry.members}}
                                     <div class="gh-dashboard-explore-members">{{entry.members}}</div>
                                 {{else}}
-                                    <div class="gh-dashboard-explore-arrow">→</div>
+                                    <div class="gh-dashboard-explore-visit">Visit →</div>
                                 {{/if}}
                             </div>
                         </a>
