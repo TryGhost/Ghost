@@ -3422,17 +3422,7 @@
   resolved "https://registry.yarnpkg.com/@tryghost/kg-card-factory/-/kg-card-factory-3.1.5.tgz#c2358e7ed90ff71900a4da72e43aaa744aefdf35"
   integrity sha512-V68OpboKudFkx4ezKEqRVjZp7Q21EHC3FnpYT7RR+3deUqAm/Gu04s3mcsei0yTHPfuUEcHkjP7sEUZJyJSZeg==
 
-"@tryghost/kg-clean-basic-html@2.2.14":
-  version "2.2.14"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-2.2.14.tgz#d8c2750e8832e3c1d316cfe7eb09243d34b70f1f"
-  integrity sha512-qTbREH4aHTWpn9c7cTMCWN/exWybhkVnci62L+99oVO6CIHpLQfww+zL66YWhiqRU+TGGFQj7qHG93FquGtysg==
-
-"@tryghost/kg-clean-basic-html@^2.2.15":
-  version "2.2.15"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-2.2.15.tgz#25d5ded0da6c6c9f3d5fbb3bf60579f08be65783"
-  integrity sha512-p8pwBt6H8PWtfCQrG26atBybcCxzeMGOA/8suQDJ8ce5ieU57YwQHxLSTqa3/oGSfTLLuBBtSgD4G5NBnOOXxw==
-
-"@tryghost/kg-clean-basic-html@^2.2.16":
+"@tryghost/kg-clean-basic-html@2.2.16", "@tryghost/kg-clean-basic-html@^2.2.16":
   version "2.2.16"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-2.2.16.tgz#6610b9af1e97732f8da12de0e72ed5796f5d29f5"
   integrity sha512-2gC4J6gkiLGOd7SNl1BdSf/qE0uKyNNDvOyPFCZPKruW6DJ56PmBXceBlPm5q+V1PwAmLmzAYBGO5CfosKdbHg==
@@ -3477,14 +3467,7 @@
     mobiledoc-dom-renderer "^0.7.0"
     simple-dom "^1.4.0"
 
-"@tryghost/kg-parser-plugins@2.12.0":
-  version "2.12.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-2.12.0.tgz#74ad083d4fc3e1d1840848f257d01e2e25c8853c"
-  integrity sha512-trRn612AWLlt9qly8nxDnrM5PHuDHmhogxof/G2oQzDkXQ7IUPyLBz/7V2yUCSlQ1VQVvhxoqqTbUnPYzSUVAw==
-  dependencies:
-    "@tryghost/kg-clean-basic-html" "^2.2.15"
-
-"@tryghost/kg-parser-plugins@^2.12.1":
+"@tryghost/kg-parser-plugins@2.12.1", "@tryghost/kg-parser-plugins@^2.12.1":
   version "2.12.1"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-2.12.1.tgz#91fc233a72990493b9377b82561b37416314028b"
   integrity sha512-mZmZraOU/uICmeeAAlWffbGtlkgtBW7fvB90rPJ+V5kv1ojRxa38cy0a/EUrjiir2dUCVk2zJFdTzHuf4UevEg==
