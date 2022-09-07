@@ -1,13 +1,10 @@
-import windowProxy from 'ghost-admin/utils/window-proxy';
 import {Response} from 'miragejs';
-import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
-import {blur, click, currentRouteName, currentURL, fillIn, find, findAll, settled} from '@ember/test-helpers';
+import {beforeEach, describe, it} from 'mocha';
+import {click, currentRouteName, currentURL, fillIn, find, findAll} from '@ember/test-helpers';
 import {expect} from 'chai';
-import {run} from '@ember/runloop';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
-import {timeout} from 'ember-concurrency';
 import {visit} from '../../helpers/visit';
 
 describe('Acceptance: Tags', function () {
@@ -42,23 +39,11 @@ describe('Acceptance: Tags', function () {
     });
 
     describe('when logged in', function () {
-        let newLocation, originalReplaceState;
-
         beforeEach(async function () {
             let role = this.server.create('role', {name: 'Administrator'});
             this.server.create('user', {roles: [role]});
 
-            originalReplaceState = windowProxy.replaceState;
-            windowProxy.replaceState = function (params, title, url) {
-                newLocation = url;
-            };
-            newLocation = undefined;
-
             return await authenticateSession();
-        });
-
-        afterEach(function () {
-            windowProxy.replaceState = originalReplaceState;
         });
 
         it('lists public and internal tags separately', async function () {
@@ -152,7 +137,7 @@ describe('Acceptance: Tags', function () {
         });
 
         it('can load tag via slug in url', async function () {
-            const tag = this.server.create('tag', {name: 'To be edited', slug: 'to-be-edited'});
+            this.server.create('tag', {name: 'To be edited', slug: 'to-be-edited'});
 
             await visit('tags/to-be-edited');
             expect(currentURL()).to.equal('tags/to-be-edited');
