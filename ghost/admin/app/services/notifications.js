@@ -94,7 +94,7 @@ export default class NotificationsService extends Service {
     showAlert(message, options = {}) {
         options = options || {};
 
-        if (!options.isApiError) {
+        if (!options.isApiError && (!options.type || options.type === 'error')) {
             if (this.config.get('sentry_dsn')) {
                 // message could be a htmlSafe object rather than a string
                 const displayedMessage = message.string || message;
