@@ -1426,7 +1426,15 @@ Dashboard What's New */
     border-color: var(--main-color-content-greybg);
 }
 
-.gh-dashboard-whats-new .gh-dashboard-resource-title:not(.is-large) h4 {
+.gh-dashboard-whats-new .gh-dashboard-list-body {
+    justify-content: flex-start;
+}
+
+.gh-dashboard-whats-new .gh-dashboard-resource-title {
+    margin-top: -4px;
+}
+
+.gh-dashboard-whats-new .gh-dashboard-resource-title h4 {
     display: flex;
     color: var(--black);
     align-items: center;
@@ -1449,7 +1457,6 @@ Dashboard Community */
 
 .gh-dashboard-community {
     position: relative;
-    grid-column: 2 / 3;
 }
 
 .gh-dashboard-community .gh-dashboard-resource-box {
@@ -1459,7 +1466,6 @@ Dashboard Community */
     background-size: auto 105%;
     background-image: url(img/community-background.jpg);
     color: var(--white);
-    padding-top: 32px;
     transition: all 1.2s ease-in-out;
     border: 0 none;
 }
@@ -1473,7 +1479,7 @@ Dashboard Community */
     font-size: 4.0rem;
     font-weight: 700;
     line-height: 1.3em;
-    padding: 64px 0;
+    padding: 112px 0 12px;
     margin-bottom: 0;
     transition: color .3s;
     color: #fff;
@@ -1758,16 +1764,11 @@ Dashboard Resource */
     flex-direction: column;
     align-items: flex-start;
     min-width: 0;
+    padding: 10px 0;
     color: var(--black);
     font-size: 1.45rem;
     font-weight: 600;
     line-height: 1.4em;
-}
-
-@media (max-width: 1000px) {
-    .gh-dashboard-resource .gh-dashboard-list-post {
-        padding: 12px 32px 12px 0;
-    }
 }
 
 .gh-dashboard-resource .gh-dashboard-list-body {
@@ -1784,6 +1785,7 @@ Dashboard Resource */
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-top: -5px;
 }
 
 .gh-dashboard-explore-feed .gh-dashboard-resource-title h4 {
@@ -1905,7 +1907,8 @@ Dashboard Resource */
 }
 
 .gh-dashboard-explore-mrr,
-.gh-dashboard-explore-members {
+.gh-dashboard-explore-members,
+.gh-dashboard-explore-visit {
     flex-shrink: 0;
     font-size: 1.2rem;
     font-weight: 600;
@@ -1922,21 +1925,9 @@ Dashboard Resource */
     background: var(--pink);
 }
 
-.gh-dashboard-explore-arrow {
-    height: 2.4rem;
-    width: 2.4rem;
-    display: flex;
-    border: 1px solid var(--black);
-    border-radius: 999px;
+.gh-dashboard-explore-visit {
+    background: var(--whitegrey);
     color: var(--black);
-    padding: .4rem;
-    line-height: 1em;
-    transition: all .15s cubic-bezier(.4,0,.2,1);
-}
-
-.gh-dashboard-explore-arrow:hover {
-    color: var(--white);
-    background: var(--black);
 }
 
 
@@ -2162,26 +2153,10 @@ Dashboard Tooltips */
     }
 }
 
-@media screen and (min-width: 800px) and (max-width: 1000px) {
-    .gh-dashboard-split.is-reverse {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto auto;
-    }
-
-    .gh-dashboard-community {
-        grid-column: 1;
-    }
-}
-
-@media screen and (max-width: 600px) {
+@media screen and (max-width: 1120px) {
     .gh-dashboard-box.gh-dashboard-split {
         grid-template-columns: 1fr;
         grid-template-rows: auto auto;
-    }
-
-    .gh-dashboard-box.gh-dashboard-split section {
-        margin-left: 24px !important;
-        margin-right: 24px !important;
     }
 
     .gh-dashboard-split {
