@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('assert');
 const sinon = require('sinon');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const models = require('../../../../../core/server/models');
@@ -6,6 +6,10 @@ const urlUtils = require('../../../../../core/shared/url-utils');
 const urlService = require('../../../../../core/server/services/url');
 const labs = require('../../../../../core/shared/labs');
 const {parseReplacements, renderEmailForSegment, serialize, _getTemplateSettings, createUnsubscribeUrl, createPostSignupUrl, _PostEmailSerializer} = require('../../../../../core/server/services/mega/post-email-serializer');
+
+function assertKeys(object, keys) {
+    assert.deepStrictEqual(Object.keys(object).sort(), keys.sort());
+}
 
 describe('Post Email Serializer', function () {
     it('creates replacement pattern for valid format and value', function () {
@@ -17,12 +21,12 @@ describe('Post Email Serializer', function () {
             plaintext
         });
 
-        replaced.length.should.equal(2);
-        replaced[0].format.should.equal('html');
-        replaced[0].recipientProperty.should.equal('member_first_name');
+        assert.equal(replaced.length, 2);
+        assert.equal(replaced[0].format, 'html');
+        assert.equal(replaced[0].recipientProperty, 'member_first_name');
 
-        replaced[1].format.should.equal('plaintext');
-        replaced[1].recipientProperty.should.equal('member_first_name');
+        assert.equal(replaced[1].format, 'plaintext');
+        assert.equal(replaced[1].recipientProperty, 'member_first_name');
     });
 
     it('does not create replacements for unsupported variable names', function () {
@@ -34,7 +38,7 @@ describe('Post Email Serializer', function () {
             plaintext
         });
 
-        replaced.length.should.equal(0);
+        assert.equal(replaced.length, 0);
     });
 
     describe('serialize', function () {
@@ -146,16 +150,16 @@ describe('Post Email Serializer', function () {
             }
 
             // Fail if invalid HTML
-            should(report.valid).eql(true, 'Expected valid HTML without warnings, got errors:\n' + parsedErrors.join('\n\n'));
+            assert.equal(report.valid, true, 'Expected valid HTML without warnings, got errors:\n' + parsedErrors.join('\n\n'));
 
             // Check footer content is not escaped
-            should(output.html.includes(template.footer_content)).eql(true);
+            assert.equal(output.html.includes(template.footer_content), true);
 
             // Check doesn't contain the non escaped string '<3'
-            should(output.html.includes('<3')).eql(false);
+            assert.equal(output.html.includes('<3'), false);
 
             // Check if the template is rendered fully to the end (to make sure we acutally test all these mobiledocs)
-            should(output.html.includes('Heading test &lt;3')).eql(true);
+            assert.equal(output.html.includes('Heading test &lt;3'), true);
         });
     });
 
@@ -173,10 +177,10 @@ describe('Post Email Serializer', function () {
 
             let output = renderEmailForSegment(email, 'status:free');
 
-            output.should.have.keys('html', 'plaintext', 'otherProperty');
-            output.html.should.eql('<div>test</div>');
-            output.plaintext.should.eql('test');
-            output.otherProperty.should.eql(true); // Make sure to keep other properties
+            assertKeys(output, ['html', 'plaintext', 'otherProperty']);
+            assert.equal(output.html, '<div>test</div>');
+            assert.equal(output.plaintext, 'test');
+            assert.equal(output.otherProperty, true); // Make sure to keep other properties
         });
 
         it('should hide non matching member segments', function () {
@@ -189,15 +193,15 @@ describe('Post Email Serializer', function () {
 
             let output = renderEmailForSegment(email, 'status:free');
 
-            output.should.have.keys('html', 'plaintext', 'otherProperty');
-            output.html.should.eql('hello<div> free users!</div>');
-            output.plaintext.should.eql('hello free users!');
+            assertKeys(output, ['html', 'plaintext', 'otherProperty']);
+            assert.equal(output.html, 'hello<div> free users!</div>');
+            assert.equal(output.plaintext, 'hello free users!');
 
             output = renderEmailForSegment(email, 'status:-free');
 
-            output.should.have.keys('html', 'plaintext', 'otherProperty');
-            output.html.should.eql('hello<div> paid users!</div>');
-            output.plaintext.should.eql('hello paid users!');
+            assertKeys(output, ['html', 'plaintext', 'otherProperty']);
+            assert.equal(output.html, 'hello<div> paid users!</div>');
+            assert.equal(output.plaintext, 'hello paid users!');
         });
 
         it('should hide all segments when the segment filter is empty', function () {
@@ -208,8 +212,8 @@ describe('Post Email Serializer', function () {
             };
 
             let output = renderEmailForSegment(email, null);
-            output.html.should.equal('hello');
-            output.plaintext.should.equal('hello');
+            assert.equal(output.html, 'hello');
+            assert.equal(output.plaintext, 'hello');
         });
 
         it('should show paywall content for free members on paid posts', function () {
@@ -225,15 +229,16 @@ describe('Post Email Serializer', function () {
             };
 
             let output = renderEmailForSegment(email, 'status:free');
-            output.html.should.containEql(`<p>Free content</p>`);
-            output.html.should.containEql(`Subscribe to`);
-            output.html.should.containEql(`https://site.com/blah/#/portal/signup`);
-            output.html.should.not.containEql(`<p>Members content</p>`);
+            assert(output.html.includes())
+            assert(output.html.includes(`<p>Free content</p>`));
+            assert(output.html.includes(`Subscribe to`));
+            assert(output.html.includes(`https://site.com/blah/#/portal/signup`));
+            assert(!output.html.includes(`<p>Members content</p>`));
 
-            output.plaintext.should.containEql(`Free content`);
-            output.plaintext.should.containEql(`Subscribe to`);
-            output.plaintext.should.containEql(`https://site.com/blah/#/portal/signup`);
-            output.plaintext.should.not.containEql(`Members content`);
+            assert(output.plaintext.includes(`Free content`));
+            assert(output.plaintext.includes(`Subscribe to`));
+            assert(output.plaintext.includes(`https://site.com/blah/#/portal/signup`));
+            assert(!output.plaintext.includes(`Members content`));
         });
 
         it('should show full cta for paid members on paid posts', function () {
@@ -249,8 +254,8 @@ describe('Post Email Serializer', function () {
             };
 
             let output = renderEmailForSegment(email, 'status:-free');
-            output.html.should.equal(`<p>Free content</p><!--members-only--><p>Members content</p>`);
-            output.plaintext.should.equal(`Free content\n\nMembers content`);
+            assert.equal(output.html, `<p>Free content</p><!--members-only--><p>Members content</p>`);
+            assert.equal(output.plaintext, `Free content\n\nMembers content`);
         });
 
         it('should show paywall content for free members on specific tier posts', function () {
@@ -266,15 +271,15 @@ describe('Post Email Serializer', function () {
             };
 
             let output = renderEmailForSegment(email, 'status:free');
-            output.html.should.containEql(`<p>Free content</p>`);
-            output.html.should.containEql(`Subscribe to`);
-            output.html.should.containEql(`https://site.com/blah/#/portal/signup`);
-            output.html.should.not.containEql(`<p>Members content</p>`);
+            assert(output.html.includes(`<p>Free content</p>`));
+            assert(output.html.includes(`Subscribe to`));
+            assert(output.html.includes(`https://site.com/blah/#/portal/signup`));
+            assert(!output.html.includes(`<p>Members content</p>`));
 
-            output.plaintext.should.containEql(`Free content`);
-            output.plaintext.should.containEql(`Subscribe to`);
-            output.plaintext.should.containEql(`https://site.com/blah/#/portal/signup`);
-            output.plaintext.should.not.containEql(`Members content`);
+            assert(output.plaintext.includes(`Free content`));
+            assert(output.plaintext.includes(`Subscribe to`));
+            assert(output.plaintext.includes(`https://site.com/blah/#/portal/signup`));
+            assert(!output.plaintext.includes(`Members content`));
         });
 
         it('should show full cta for paid members on specific tier posts', function () {
@@ -290,8 +295,8 @@ describe('Post Email Serializer', function () {
             };
 
             let output = renderEmailForSegment(email, 'status:-free');
-            output.html.should.equal(`<p>Free content</p><!--members-only--><p>Members content</p>`);
-            output.plaintext.should.equal(`Free content\n\nMembers content`);
+            assert.equal(output.html, `<p>Free content</p><!--members-only--><p>Members content</p>`);
+            assert.equal(output.plaintext, `Free content\n\nMembers content`);
         });
 
         it('should show full content for free members on free posts', function () {
@@ -307,8 +312,8 @@ describe('Post Email Serializer', function () {
             };
 
             let output = renderEmailForSegment(email, 'status:free');
-            output.html.should.equal(`<p>Free content</p><!--members-only--><p>Members content</p>`);
-            output.plaintext.should.equal(`Free content\n\nMembers content`);
+            assert.equal(output.html, `<p>Free content</p><!--members-only--><p>Members content</p>`);
+            assert.equal(output.plaintext, `Free content\n\nMembers content`);
         });
 
         it('should show full content for paid members on free posts', function () {
@@ -324,8 +329,8 @@ describe('Post Email Serializer', function () {
             };
 
             let output = renderEmailForSegment(email, 'status:-free');
-            output.html.should.equal(`<p>Free content</p><!--members-only--><p>Members content</p>`);
-            output.plaintext.should.equal(`Free content\n\nMembers content`);
+            assert.equal(output.html, `<p>Free content</p><!--members-only--><p>Members content</p>`);
+            assert.equal(output.plaintext, `Free content\n\nMembers content`);
         });
 
         it('should not crash on missing post for email with paywall', function () {
@@ -337,8 +342,8 @@ describe('Post Email Serializer', function () {
             };
 
             let output = renderEmailForSegment(email, 'status:-free');
-            output.html.should.equal(`<p>Free content</p><!--members-only--><p>Members content</p>`);
-            output.plaintext.should.equal(`Free content\n\nMembers content`);
+            assert.equal(output.html, `<p>Free content</p><!--members-only--><p>Members content</p>`);
+            assert.equal(output.plaintext, `Free content\n\nMembers content`);
         });
     });
 
@@ -354,25 +359,25 @@ describe('Post Email Serializer', function () {
         it('generates unsubscribe url for preview', function () {
             sinon.stub(urlUtils, 'getSiteUrl').returns('https://site.com/blah');
             const unsubscribeUrl = createUnsubscribeUrl(null);
-            unsubscribeUrl.should.eql('https://site.com/blah/unsubscribe/?preview=1');
+            assert.equal(unsubscribeUrl, 'https://site.com/blah/unsubscribe/?preview=1');
         });
 
         it('generates unsubscribe url with only member uuid', function () {
             sinon.stub(urlUtils, 'getSiteUrl').returns('https://site.com/blah');
             const unsubscribeUrl = createUnsubscribeUrl('member-abcd');
-            unsubscribeUrl.should.eql('https://site.com/blah/unsubscribe/?uuid=member-abcd');
+            assert.equal(unsubscribeUrl, 'https://site.com/blah/unsubscribe/?uuid=member-abcd');
         });
 
         it('generates unsubscribe url with both post and newsletter uuid', function () {
             sinon.stub(urlUtils, 'getSiteUrl').returns('https://site.com/blah');
             const unsubscribeUrl = createUnsubscribeUrl('member-abcd', {newsletterUuid: 'newsletter-abcd'});
-            unsubscribeUrl.should.eql('https://site.com/blah/unsubscribe/?uuid=member-abcd&newsletter=newsletter-abcd');
+            assert.equal(unsubscribeUrl, 'https://site.com/blah/unsubscribe/?uuid=member-abcd&newsletter=newsletter-abcd');
         });
 
         it('generates unsubscribe url with comments', function () {
             sinon.stub(urlUtils, 'getSiteUrl').returns('https://site.com/blah');
             const unsubscribeUrl = createUnsubscribeUrl('member-abcd', {comments: true});
-            unsubscribeUrl.should.eql('https://site.com/blah/unsubscribe/?uuid=member-abcd&comments=1');
+            assert.equal(unsubscribeUrl, 'https://site.com/blah/unsubscribe/?uuid=member-abcd&comments=1');
         });
     });
 
@@ -391,7 +396,7 @@ describe('Post Email Serializer', function () {
                 status: 'published',
                 id: 'abc123'
             });
-            unsubscribeUrl.should.eql('https://site.com/blah/#/portal/signup');
+            assert.equal(unsubscribeUrl, 'https://site.com/blah/#/portal/signup');
         });
 
         it('generates signup url on homepage for email only post', function () {
@@ -401,7 +406,7 @@ describe('Post Email Serializer', function () {
                 status: 'sent',
                 id: 'abc123'
             });
-            unsubscribeUrl.should.eql('https://site.com/test/#/portal/signup');
+            assert.equal(unsubscribeUrl, 'https://site.com/test/#/portal/signup');
         });
     });
 
@@ -438,7 +443,7 @@ describe('Post Email Serializer', function () {
                 }
             };
             const res = await _getTemplateSettings(newsletterMock);
-            should(res).eql({
+            assert.deepStrictEqual(res, {
                 headerImage: 'image',
                 showHeaderIcon: 'icon2',
                 showHeaderTitle: true,
