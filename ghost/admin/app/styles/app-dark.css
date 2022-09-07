@@ -646,7 +646,7 @@ input:focus,
 }
 
 .settings-code-editor .CodeMirror {
-    color: var(--black);
+    color: var(--darkgrey);
 }
 
 .settings-code-editor .CodeMirror-cursor {
@@ -679,6 +679,22 @@ input:focus,
 
 .CodeMirror .CodeMirror-code .cm-string {
     color: color-mod(#183691 l(+25%));
+}
+
+.settings-code-editor .CodeMirror .cm-variable, .settings-code-editor .CodeMirror .cm-variable-2, .settings-code-editor .CodeMirror .cm-meta {
+    color: var(--black);
+}
+
+.settings-code-editor .CodeMirror .cm-property {
+    color: var(--middarkgrey);
+}
+
+.settings-code-editor .CodeMirror .cm-number {
+    color: color-mod(#164 l(+25%));
+}
+
+.settings-code-editor .CodeMirror .cm-keyword {
+    color: color-mod(#5A5CAD l(+20%));
 }
 
 .id-github img,
