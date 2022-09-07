@@ -2,12 +2,12 @@
 // const testUtils = require('./utils');
 require('./utils');
 const {MemberCreatedEvent, SubscriptionCreatedEvent} = require('@tryghost/member-events');
-const MemberAttributionEventHandler = require('../lib/event-handler');
+const EventStorage = require('../lib/event-storage');
 
-describe('MemberAttributionEventHandler', function () {
+describe('EventStorage', function () {
     describe('Constructor', function () {
         it('doesn\'t throw', function () {
-            new MemberAttributionEventHandler({});
+            new EventStorage({});
         });
     });
 
@@ -27,12 +27,11 @@ describe('MemberAttributionEventHandler', function () {
             const MemberCreatedEventModel = {add: sinon.stub()};
             const labsService = {isSet: sinon.stub().returns(true)};
             const subscribeSpy = sinon.spy(DomainEvents, 'subscribe');
-            const eventHandler = new MemberAttributionEventHandler({
-                DomainEvents,
+            const eventHandler = new EventStorage({
                 models: {MemberCreatedEvent: MemberCreatedEventModel},
                 labsService
             });
-            eventHandler.subscribe();
+            eventHandler.subscribe(DomainEvents);
             sinon.assert.calledOnceWithMatch(MemberCreatedEventModel.add, {
                 member_id: '123',
                 created_at: new Date(0),
@@ -61,12 +60,11 @@ describe('MemberAttributionEventHandler', function () {
             const MemberCreatedEventModel = {add: sinon.stub()};
             const labsService = {isSet: sinon.stub().returns(true)};
             const subscribeSpy = sinon.spy(DomainEvents, 'subscribe');
-            const eventHandler = new MemberAttributionEventHandler({
-                DomainEvents,
+            const eventHandler = new EventStorage({
                 models: {MemberCreatedEvent: MemberCreatedEventModel},
                 labsService
             });
-            eventHandler.subscribe();
+            eventHandler.subscribe(DomainEvents);
             sinon.assert.calledOnceWithMatch(MemberCreatedEventModel.add, {
                 member_id: '123',
                 created_at: new Date(0),
@@ -98,12 +96,11 @@ describe('MemberAttributionEventHandler', function () {
             const MemberCreatedEventModel = {add: sinon.stub()};
             const labsService = {isSet: sinon.stub().returns(false)};
             const subscribeSpy = sinon.spy(DomainEvents, 'subscribe');
-            const eventHandler = new MemberAttributionEventHandler({
-                DomainEvents,
+            const eventHandler = new EventStorage({
                 models: {MemberCreatedEvent: MemberCreatedEventModel},
                 labsService
             });
-            eventHandler.subscribe();
+            eventHandler.subscribe(DomainEvents);
             sinon.assert.calledOnceWithMatch(MemberCreatedEventModel.add, {
                 member_id: '123',
                 created_at: new Date(0),
@@ -132,12 +129,11 @@ describe('MemberAttributionEventHandler', function () {
             const SubscriptionCreatedEventModel = {add: sinon.stub()};
             const labsService = {isSet: sinon.stub().returns(true)};
             const subscribeSpy = sinon.spy(DomainEvents, 'subscribe');
-            const eventHandler = new MemberAttributionEventHandler({
-                DomainEvents,
+            const eventHandler = new EventStorage({
                 models: {SubscriptionCreatedEvent: SubscriptionCreatedEventModel},
                 labsService
             });
-            eventHandler.subscribe();
+            eventHandler.subscribe(DomainEvents);
             sinon.assert.calledOnceWithMatch(SubscriptionCreatedEventModel.add, {
                 member_id: '123',
                 subscription_id: '456',
@@ -166,12 +162,11 @@ describe('MemberAttributionEventHandler', function () {
             const SubscriptionCreatedEventModel = {add: sinon.stub()};
             const labsService = {isSet: sinon.stub().returns(true)};
             const subscribeSpy = sinon.spy(DomainEvents, 'subscribe');
-            const eventHandler = new MemberAttributionEventHandler({
-                DomainEvents,
+            const eventHandler = new EventStorage({
                 models: {SubscriptionCreatedEvent: SubscriptionCreatedEventModel},
                 labsService
             });
-            eventHandler.subscribe();
+            eventHandler.subscribe(DomainEvents);
             sinon.assert.calledOnceWithMatch(SubscriptionCreatedEventModel.add, {
                 member_id: '123',
                 subscription_id: '456',
@@ -203,12 +198,11 @@ describe('MemberAttributionEventHandler', function () {
             const SubscriptionCreatedEventModel = {add: sinon.stub()};
             const labsService = {isSet: sinon.stub().returns(false)};
             const subscribeSpy = sinon.spy(DomainEvents, 'subscribe');
-            const eventHandler = new MemberAttributionEventHandler({
-                DomainEvents,
+            const eventHandler = new EventStorage({
                 models: {SubscriptionCreatedEvent: SubscriptionCreatedEventModel},
                 labsService
             });
-            eventHandler.subscribe();
+            eventHandler.subscribe(DomainEvents);
             sinon.assert.calledOnceWithMatch(SubscriptionCreatedEventModel.add, {
                 member_id: '123',
                 subscription_id: '456',
