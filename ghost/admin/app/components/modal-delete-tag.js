@@ -4,6 +4,9 @@ import {computed} from '@ember/object';
 import {task} from 'ember-concurrency';
 
 export default ModalComponent.extend({
+    attributeBindings: ['dataTestModal:data-test-modal'],
+    dataTestModal: 'confirm-delete-tag',
+
     // Allowed actions
     confirm: () => {},
 
