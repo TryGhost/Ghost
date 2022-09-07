@@ -109,7 +109,7 @@
     ]
   },
   "devDependencies": {
-    "concurrently": "7.3.0",
+    "concurrently": "7.4.0",
     "eslint-plugin-ghost": "2.15.1",
     "nodemon": "2.0.19"
   }
