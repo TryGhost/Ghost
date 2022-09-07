@@ -10,7 +10,7 @@
         {{!-- NOTE: re-using ember-power-select-options styles --}}
         <ul class="ember-power-select-options" role="listbox">
             {{#each this.eventTypes as |type idx|}}
-                <li class="form-group ember-power-select-option gh-audit-log-filter-li">
+                <li class="form-group ember-power-select-option gh-history-filter-li">
                     <div class="gh-activity-log-action-switch for-switch small">
                         <label
                             class="switch"
@@ -34,7 +34,7 @@
             {{/each}}
             <hr />
             {{#each this.resourceTypes as |type idx|}}
-                <li class="form-group ember-power-select-option gh-audit-log-filter-li">
+                <li class="form-group ember-power-select-option gh-history-filter-li">
                     {{!-- <div class="flex items-center">
                         {{svg-jar "pen"}}
                     </div> --}}

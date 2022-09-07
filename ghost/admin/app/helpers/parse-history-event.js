@@ -1,7 +1,7 @@
 import Helper from '@ember/component/helper';
 import {inject as service} from '@ember/service';
 
-export default class ParseAuditLogEvent extends Helper {
+export default class ParseHistoryEvent extends Helper {
     @service ghostPaths;
 
     compute([ev]) {
@@ -129,6 +129,11 @@ function getLinkTarget(ev) {
                 route: 'tag',
                 models: [ev.resource.slug]
             };
+        case 'product':
+            return {
+                route: 'settings.membership',
+                models: null
+            };
         case 'user':
             if (!ev.resource.slug) {
                 return null;
@@ -164,6 +169,8 @@ function getAction(ev) {
         resourceType = 'API key';
     } else if (resourceType === 'setting') {
         resourceType = 'settings';
+    } else if (resourceType === 'product') {
+        resourceType = 'tier';
     }
 
     // Because a `page` and `post` both use the same model, we store the

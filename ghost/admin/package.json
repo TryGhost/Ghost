@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "5.13.0",
+  "version": "5.13.2",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -89,7 +89,7 @@
     "ember-cli-terser": "4.0.2",
     "ember-cli-test-loader": "3.0.0",
     "ember-composable-helpers": "5.0.0",
-    "ember-concurrency": "2.3.2",
+    "ember-concurrency": "2.3.5",
     "ember-could-get-used-to-this": "1.0.1",
     "ember-css-transitions": "4.1.0",
     "ember-data": "3.24.0",

@@ -1176,6 +1176,18 @@ kbd {
     background: #111213;
 }
 
+.gh-dashboard-explore-mrr {
+    color: var(--black);
+}
+
+.gh-dashboard-explore-feed .gh-dashboard-resource-title:hover a:not(.gh-dashboard-explore-add) {
+    color: var(--middarkgrey-l1);
+}
+
+.gh-dashboard-explore-add:hover {
+    color: var(--pink-l2);
+}
+
 .gh-dashboard-community .gh-dashboard-list-footer {
     border-color: transparent;
 }
@@ -1185,9 +1197,7 @@ kbd {
     background: linear-gradient(270deg, rgba(21,23,25,0) 0%, rgba(21,23,25,1) 100%);
 }
 
-.gh-dashboard-resource-box.is-secondary .gh-dashboard-resource-footer,
-.gh-dashboard-staff-picks .gh-dashboard-resource-box,
-.gh-dashboard-whats-new .gh-dashboard-resource-box {
+.gh-dashboard-resource-box.is-secondary .gh-dashboard-resource-footer {
     border-color: #26282b;
 }
 

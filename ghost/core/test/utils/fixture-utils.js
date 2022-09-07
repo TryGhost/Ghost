@@ -264,19 +264,6 @@ const fixtures = {
         });
     },
 
-    resetRoles: function resetRoles() {
-        return Promise.map(_.cloneDeep(DataGenerator.forKnex.users), function (user) {
-            let userRolesRelations = _.filter(DataGenerator.forKnex.roles_users, {user_id: user.id});
-
-            userRolesRelations = _.map(userRolesRelations, function (userRolesRelation) {
-                return _.find(DataGenerator.forKnex.roles, {id: userRolesRelation.role_id});
-            });
-
-            user.roles = userRolesRelations;
-            return models.User.edit(user, _.merge({id: user.id}, context.internal));
-        });
-    },
-
     ensureUserForEachRole: async function ensureUserForEachRole() {
         const usersWithoutOwner = _.cloneDeep(DataGenerator.forKnex.users.slice(1));
 
@@ -691,12 +678,6 @@ const fixtures = {
 };
 
 const toDoList = {
-    permission: function insertPermission() {
-        return fixtures.insertOne('Permission', 'permissions', 'createPermission');
-    },
-    role: function insertRole() {
-        return fixtures.insertOne('Role', 'roles', 'createRole');
-    },
     roles: function insertRoles() {
         return fixtures.insertRoles();
     },

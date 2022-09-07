@@ -11,12 +11,11 @@ const ALL_RESOURCE_TYPES = [
     {targets: 'post', name: 'Posts', icon: 'posts'},
     {targets: 'page', name: 'Pages', icon: 'page'},
     {targets: 'tag', name: 'Tags', icon: 'tag'},
-    {targets: 'label,member', name: 'Members', icon: 'members'},
     {targets: 'offer,product', name: 'Tiers & offers', icon: 'percentage'},
-    {targets: 'api_key,integration,setting,user,webhook', name: 'Settings & users', icon: 'settings'}
+    {targets: 'api_key,integration,setting,user,webhook', name: 'Settings & staff', icon: 'settings'}
 ];
 
-export default class AuditLogEventFilter extends Component {
+export default class HistoryEventFilter extends Component {
     excludedEvents = null;
     excludedResources = null;
 

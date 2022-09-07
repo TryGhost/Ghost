@@ -3,6 +3,21 @@ const should = require('should');
 const resolveAdapterOptions = require('../../../../../core/server/services/adapter-manager/options-resolver');
 
 describe('Adapter Manager: options resolver', function () {
+    it('creates empty configs for unknown adapter with a default (active) instance', function () {
+        const name = 'cache:images';
+
+        const adapterServiceConfig = {
+            cache: {
+                active: 'Memory'
+            }
+        };
+
+        const {adapterClassName, adapterConfig} = resolveAdapterOptions(name, adapterServiceConfig);
+
+        adapterClassName.should.equal('Memory');
+        should.equal(adapterConfig, undefined);
+    });
+
     it('returns default adapter configuration', function () {
         const name = 'storage';
         const adapterServiceConfig = {
@@ -14,10 +29,9 @@ describe('Adapter Manager: options resolver', function () {
             }
         };
 
-        const {adapterType, adapterName, adapterConfig} = resolveAdapterOptions(name, adapterServiceConfig);
+        const {adapterClassName, adapterConfig} = resolveAdapterOptions(name, adapterServiceConfig);
 
-        adapterType.should.equal('storage');
-        adapterName.should.equal('cloud-storage');
+        adapterClassName.should.equal('cloud-storage');
         adapterConfig.should.deepEqual({
             custom: 'configValue'
         });
@@ -38,10 +52,9 @@ describe('Adapter Manager: options resolver', function () {
             }
         };
 
-        const {adapterType, adapterName, adapterConfig} = resolveAdapterOptions(name, adapterServiceConfig);
+        const {adapterClassName, adapterConfig} = resolveAdapterOptions(name, adapterServiceConfig);
 
-        adapterType.should.equal('storage');
-        adapterName.should.equal('local-storage');
+        adapterClassName.should.equal('local-storage');
         adapterConfig.should.deepEqual({
             custom: 'localStorageConfig'
         });
@@ -63,12 +76,104 @@ describe('Adapter Manager: options resolver', function () {
             }
         };
 
-        const {adapterType, adapterName, adapterConfig} = resolveAdapterOptions(name, adapterServiceConfig);
+        const {adapterClassName, adapterConfig} = resolveAdapterOptions(name, adapterServiceConfig);
 
-        adapterType.should.equal('storage');
-        adapterName.should.equal('cloud-storage');
+        adapterClassName.should.equal('cloud-storage');
         adapterConfig.should.deepEqual({
             custom: 'configValue'
+        });
+    });
+
+    it('combines configurations from shared adapter and feature adapter instances', function () {
+        const primaryadapterClassName = 'cache:images';
+        const secondaryadapterClassName = 'cache:settings';
+        const adapterServiceConfig = {
+            cache: {
+                Redis: {
+                    commonConfigValue: 'common_config_value'
+                },
+                images: {
+                    adapter: 'Redis',
+                    adapterConfigValue: 'images_redis_value'
+                },
+                settings: {
+                    adapter: 'Redis',
+                    adapterConfigValue: 'settings_redis_value'
+                }
+            }
+        };
+
+        const {adapterClassName, adapterConfig} = resolveAdapterOptions(primaryadapterClassName, adapterServiceConfig);
+
+        adapterClassName.should.equal('Redis');
+        adapterConfig.should.deepEqual({
+            commonConfigValue: 'common_config_value',
+            adapterConfigValue: 'images_redis_value'
+        });
+
+        const {adapterClassName: secondadapterClassName, adapterConfig: secondAdapterConfig} = resolveAdapterOptions(secondaryadapterClassName, adapterServiceConfig);
+
+        secondadapterClassName.should.equal('Redis');
+        secondAdapterConfig.should.deepEqual({
+            commonConfigValue: 'common_config_value',
+            adapterConfigValue: 'settings_redis_value'
+        });
+    });
+
+    it('combines empty configuration from shared adapter and feature adapter instances', function () {
+        const primaryadapterClassName = 'cache:images';
+        const secondaryadapterClassName = 'cache:settings';
+        const adapterServiceConfig = {
+            cache: {
+                images: {
+                    adapter: 'Redis',
+                    adapterConfigValue: 'images_redis_value'
+                },
+                settings: {
+                    adapter: 'Redis',
+                    adapterConfigValue: 'settings_redis_value'
+                }
+            }
+        };
+
+        const {adapterClassName, adapterConfig} = resolveAdapterOptions(primaryadapterClassName, adapterServiceConfig);
+
+        adapterClassName.should.equal('Redis');
+        adapterConfig.should.deepEqual({
+            adapterConfigValue: 'images_redis_value'
+        });
+
+        const {adapterClassName: secondadapterClassName, adapterConfig: secondAdapterConfig} = resolveAdapterOptions(secondaryadapterClassName, adapterServiceConfig);
+
+        secondadapterClassName.should.equal('Redis');
+        secondAdapterConfig.should.deepEqual({
+            adapterConfigValue: 'settings_redis_value'
+        });
+    });
+
+    it('gives priority to a feature config over a common adapter config', function () {
+        const primaryadapterClassName = 'cache:images';
+        const adapterServiceConfig = {
+            cache: {
+                Redis: {
+                    commonConfigValue: 'common_config_value',
+                    overrideMe: 'common_value'
+                },
+                images: {
+                    adapter: 'Redis',
+                    adapterConfigValue: 'images_redis_value',
+                    overrideMe: 'images_override'
+                }
+            }
+        };
+
+        const {adapterClassName, adapterConfig} = resolveAdapterOptions(primaryadapterClassName, adapterServiceConfig);
+
+        adapterClassName.should.equal('Redis');
+        adapterConfig.should.deepEqual({
+            commonConfigValue: 'common_config_value',
+            adapterConfigValue: 'images_redis_value',
+            overrideMe: 'images_override'
         });
     });
 });
