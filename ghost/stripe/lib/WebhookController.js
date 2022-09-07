@@ -289,7 +289,7 @@ module.exports = class WebhookController {
                     url: session.metadata.attribution_url ?? null,
                     type: session.metadata.attribution_type ?? null
                 }
-            });
+            }, session.start_date);
 
             DomainEvents.dispatch(event);
 
