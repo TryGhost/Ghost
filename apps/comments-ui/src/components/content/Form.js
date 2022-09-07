@@ -427,7 +427,7 @@ const Form = (props) => {
                     <div className="pr-[1px] font-sans leading-normal dark:text-neutral-300">
                         <div className={`relative w-full pl-[52px] transition-[padding] delay-100 duration-150 ${shouldFormBeReduced && 'pl-0'} ${isFormReallyOpen && 'pt-[64px] pl-[1px] sm:pl-[52px]'}`}>
                             <div
-                                className={`w-full rounded-md border border-none border-slate-50 bg-white px-3 py-4 font-sans text-[16.5px] leading-normal shadow-form transition-all delay-100 duration-150 hover:shadow-formxl focus:outline-0 dark:border-none dark:bg-[rgba(255,255,255,0.08)] dark:text-neutral-300 dark:shadow-transparent ${commentsCount === 0 && 'placeholder:text-neutral-700'} ${isFormReallyOpen ? 'min-h-[144px] cursor-text pb-[68px] pt-2' : 'min-h-[48px] cursor-pointer overflow-hidden hover:border-slate-300'} ${props.isEdit && 'cursor-text'} ${!memberName && 'pointer-events-none'}
+                                className={`w-full rounded-md border border-none border-slate-50 bg-[rgba(255,255,255,0.9)] px-3 py-4 font-sans text-[16.5px] leading-normal shadow-form transition-all delay-100 duration-150 hover:shadow-formxl focus:outline-0 dark:border-none dark:bg-[rgba(255,255,255,0.08)] dark:text-neutral-300 dark:shadow-transparent ${commentsCount === 0 && 'placeholder:text-neutral-700'} ${isFormReallyOpen ? 'min-h-[144px] cursor-text pb-[68px] pt-2' : 'min-h-[48px] cursor-pointer overflow-hidden hover:border-slate-300'} ${props.isEdit && 'cursor-text'} ${!memberName && 'pointer-events-none'}
                             `}>
                                 <EditorContent
                                     onMouseDown={stopIfFocused} onTouchStart={stopIfFocused}
@@ -472,13 +472,13 @@ const Form = (props) => {
                                     }}>{memberName ? memberName : 'Anonymous'}</div>
                                 <div className="flex items-baseline justify-start">
                                     <button
-                                        className={`group flex max-w-[80%] items-center justify-start whitespace-nowrap text-left font-sans text-[14px] tracking-tight text-neutral-400 transition duration-150 hover:text-neutral-500 dark:text-[rgba(255,255,255,0.5)] sm:max-w-[90%] ${!memberBio && 'text-neutral-300 hover:text-neutral-400'}`}
+                                        className={`group flex max-w-[80%] items-center justify-start whitespace-nowrap text-left font-sans text-[14px] tracking-tight text-[rgba(0,0,0,0.5)] transition duration-150 hover:text-[rgba(0,0,0,0.75)] dark:text-[rgba(255,255,255,0.5)] dark:hover:text-[rgba(255,255,255,0.4)] sm:max-w-[90%] ${!memberBio && 'text-[rgba(0,0,0,0.3)] hover:text-[rgba(0,0,0,0.5)] dark:text-[rgba(255,255,255,0.3)]'}`}
                                         onClick={(event) => {
                                             handleShowPopup(event, {
                                                 bioAutofocus: true
                                             });
                                         }}><span className="... overflow-hidden text-ellipsis">{memberBio ? memberBio : 'Add your expertise'}</span>
-                                        {memberBio && <EditIcon className="ml-1 h-[12px] w-[12px] -translate-x-[6px] stroke-neutral-500 opacity-0 transition-all duration-100 ease-out group-hover:translate-x-0 group-hover:opacity-100" />}
+                                        {memberBio && <EditIcon className="ml-1 h-[12px] w-[12px] -translate-x-[6px] stroke-[rgba(0,0,0,0.5)] opacity-0 transition-all duration-100 ease-out group-hover:translate-x-0 group-hover:stroke-[rgba(0,0,0,0.75)] group-hover:opacity-100 dark:stroke-[rgba(255,255,255,0.5)] dark:group-hover:stroke-[rgba(255,255,255,0.3)]" />}
                                     </button>
                                 </div>
                             </Transition>

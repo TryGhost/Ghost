@@ -191,7 +191,7 @@ function CommentHeader({comment}) {
         <div className="-mt-[3px] mb-2 flex items-start">
             <div>
                 <AuthorName comment={comment} />
-                <div className="flex items-baseline pr-4 font-sans text-[14px] tracking-tight text-neutral-400 dark:text-[rgba(255,255,255,0.5)]">
+                <div className="flex items-baseline pr-4 font-sans text-[14px] tracking-tight text-[rgba(0,0,0,0.5)] dark:text-[rgba(255,255,255,0.5)]">
                     <span>
                         <MemberBio comment={comment}/>
                         <span title={formatExplicitTime(comment.created_at)}>{formatRelativeTime(comment.created_at)}</span>
@@ -239,7 +239,7 @@ function RepliesLine({hasReplies}) {
         return null;
     }
 
-    return (<div className="mb-2 h-full w-[3px] grow rounded bg-gradient-to-b from-neutral-100 via-neutral-100 to-transparent dark:from-[rgba(255,255,255,0.05)] dark:via-[rgba(255,255,255,0.05)]" />);
+    return (<div className="mb-2 h-full w-[3px] grow rounded bg-gradient-to-b from-[rgba(229,229,229,0.5)] via-[rgba(229,229,229,0.5)] to-transparent dark:from-[rgba(255,255,255,0.05)] dark:via-[rgba(255,255,255,0.05)]" />);
 }
 
 function CommentLayout({children, avatar, hasReplies}) {
