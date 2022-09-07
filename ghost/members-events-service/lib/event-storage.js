@@ -1,23 +1,28 @@
 const {MemberCreatedEvent, SubscriptionCreatedEvent} = require('@tryghost/member-events');
 
-class MemberAttributionEventHandler {
+/**
+ * Store events in the database
+ */
+class EventStorage {
     /**
      * 
      * @param {Object} deps 
-     * @param {Object} deps.DomainEvents
      * @param {Object} deps.labsService
      * @param {Object} deps.models
      * @param {Object} deps.models.MemberCreatedEvent
      * @param {Object} deps.models.SubscriptionCreatedEvent
      */
-    constructor({DomainEvents, labsService, models}) {
+    constructor({labsService, models}) {
         this.models = models;
-        this.DomainEvents = DomainEvents;
         this.labsService = labsService;
     }
 
-    subscribe() {
-        this.DomainEvents.subscribe(MemberCreatedEvent, async (event) => {
+    /**
+     * Subscribe to events of this domainEvents service
+     * @param {Object} domainEvents The DomainEvents service
+     */
+    subscribe(domainEvents) {
+        domainEvents.subscribe(MemberCreatedEvent, async (event) => {
             let attribution = event.data.attribution;
 
             if (!this.labsService.isSet('memberAttribution')){
@@ -36,7 +41,7 @@ class MemberAttributionEventHandler {
             });
         });
 
-        this.DomainEvents.subscribe(SubscriptionCreatedEvent, async (event) => {
+        domainEvents.subscribe(SubscriptionCreatedEvent, async (event) => {
             let attribution = event.data.attribution;
 
             if (!this.labsService.isSet('memberAttribution')){
@@ -57,4 +62,4 @@ class MemberAttributionEventHandler {
     }
 }
 
-module.exports = MemberAttributionEventHandler;
+module.exports = EventStorage;
