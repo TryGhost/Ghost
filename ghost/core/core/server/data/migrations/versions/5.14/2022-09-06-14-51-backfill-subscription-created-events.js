@@ -8,7 +8,7 @@ module.exports = createTransactionalMigration(
         // Join all subscriptions without a subscription created event
         // We need to filter this because new subscriptions will already have the events
         const subscriptions = await knex('members_stripe_customers_subscriptions as s')
-            .select('s.id', 's.created_at', 'c.member_id')
+            .select('s.id', 's.start_date as created_at', 'c.member_id')
             .join('members_stripe_customers as c', 'c.customer_id', 's.customer_id')
             .whereNotExists(function () {
                 this.select('*')
