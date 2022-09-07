@@ -45,7 +45,8 @@ export default class TagController extends Controller {
     deleteTag() {
         return this.tag.destroyRecord().then(() => {
             this.set('showDeleteTagModal', false);
-            return this.transitionToRoute('tags');
+            this.router.transitionTo('tags');
+            return true;
         }, (error) => {
             return this.notifications.showAPIError(error, {key: 'tag.delete'});
         });

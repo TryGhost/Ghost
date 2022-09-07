@@ -19,7 +19,7 @@
 
     {{#unless this.tag.isNew}}
         <div>
-            <button type="button" class="gh-btn gh-btn-red gh-btn-icon" {{on "click" (action "openDeleteTagModal")}}>
+            <button type="button" class="gh-btn gh-btn-red gh-btn-icon" {{on "click" (action "openDeleteTagModal")}} data-test-button="delete-tag">
                 <span>Delete tag</span>
             </button>
         </div>
