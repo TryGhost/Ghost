@@ -229,7 +229,7 @@ describe('Post Email Serializer', function () {
             };
 
             let output = renderEmailForSegment(email, 'status:free');
-            assert(output.html.includes())
+            assert(output.html.includes());
             assert(output.html.includes(`<p>Free content</p>`));
             assert(output.html.includes(`Subscribe to`));
             assert(output.html.includes(`https://site.com/blah/#/portal/signup`));
