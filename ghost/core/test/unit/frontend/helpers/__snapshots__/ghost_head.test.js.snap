@@ -1056,8 +1056,8 @@ Object {
 exports[`{{ghost_head}} helper without Code Injection disallows indexing for preview pages 1 1`] = `
 Object {
   "string": "<link rel=\\"canonical\\" href=\\"http://localhost:65530/\\" />
-    <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\" />
     <meta name=\\"robots\\" content=\\"noindex,nofollow\\" />
+    <meta name=\\"referrer\\" content=\\"same-origin\\" />
     <link rel=\\"amphtml\\" href=\\"http://localhost:65530/amp/\\" />
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\" />
