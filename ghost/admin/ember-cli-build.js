@@ -233,9 +233,6 @@ module.exports = function (defaults) {
                         process: 'process/browser'
                     })
                 ]
-            },
-            alias: {
-                'react-mobiledoc-editor': 'react-mobiledoc-editor/dist/main.js'
             }
         }
     });

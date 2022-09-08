@@ -36,11 +36,6 @@ Router.map(function () {
         this.route('edit', {path: ':type/:post_id'});
     });
 
-    this.route('react-editor', function () {
-        this.route('new', {path: ':type'});
-        this.route('edit', {path: ':type/:post_id'});
-    });
-
     this.route('lexical-editor', function () {
         this.route('new', {path: ':type'});
         this.route('edit', {path: ':type/:post_id'});
