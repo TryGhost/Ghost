@@ -1,7 +1,7 @@
 const logging = require('@tryghost/logging');
 const {createNonTransactionalMigration} = require('../../utils');
 
-module.exports = createNonTransactionalMigration(
+module.exports = createNonTransactionalMigration (
     async function up(knex) {
         // check if the column exists before trying to rename it
         const hasColumn = await knex.schema.hasColumn('members', 'bio');
@@ -11,6 +11,8 @@ module.exports = createNonTransactionalMigration(
                 table.renameColumn('bio', 'expertise');
             }
             );
+        } else {
+            logging.info('members.bio does not exist, skipping rename');
         }
     },
     async function down(knex) {
@@ -21,6 +23,8 @@ module.exports = createNonTransactionalMigration(
                 table.renameColumn('expertise', 'bio');
             }
             );
+        } else {
+            logging.warn('members.expertise does not exist, skipping');
         }
     }
 );
