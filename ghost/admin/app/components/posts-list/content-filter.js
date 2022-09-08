@@ -2,7 +2,7 @@ import Component from '@glimmer/component';
 import {get} from '@ember/object';
 import {inject as service} from '@ember/service';
 
-export default class GhContentfilterComponent extends Component {
+export default class PostsListContentFilter extends Component {
     @service customViews;
     @service feature;
     @service router;
