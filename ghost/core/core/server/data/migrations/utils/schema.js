@@ -36,31 +36,31 @@ function createAddColumnMigration(table, column, columnDefinition) {
 
 /**
  * @param {string} table
- * @param {string} fromColumn
- * @param {Object} toColumn
+ * @param {string} oldColumn
+ * @param {string} newColumn
  *
  * @returns {Migration}
  */
 
-function createRenameColumnMigration(table, fromColumn, toColumn) {
+function createRenameColumnMigration(table, oldColumn, newColumn) {
     return createNonTransactionalMigration(
         // up
         commands.createColumnMigration({
             table,
-            column: fromColumn,
-            dbIsInCorrectState: hasColumn => hasColumn === true,
+            column: oldColumn,
+            dbIsInCorrectState: hasColumn => hasColumn === false,
             operation: commands.renameColumn,
             operationVerb: 'Renaming',
-            toColumn
+            columnDefinition: newColumn
         }),
         // down
         commands.createColumnMigration({
             table,
-            column: toColumn,
-            dbIsInCorrectState: hasColumn => hasColumn === true,
+            column: newColumn,
+            dbIsInCorrectState: hasColumn => hasColumn === false,
             operation: commands.renameColumn,
             operationVerb: 'Renaming',
-            toColumn: fromColumn
+            columnDefinition: oldColumn
         })
     );
 }

@@ -122,7 +122,7 @@ async function dropColumn(tableName, column, transaction = db.knex, columnSpec =
     await transaction.raw(sql);
 }
 
-async function renameColumn(tableName, oldColumn, newColumn, transaction = db.knex) {
+async function renameColumn(tableName, oldColumn, transaction = db.knex, newColumn) {
     const renameColumnBuilder = transaction.schema.table(tableName, function (table) {
         table.renameColumn(oldColumn, newColumn);
     });
@@ -135,7 +135,7 @@ async function renameColumn(tableName, oldColumn, newColumn, transaction = db.kn
 
     if (DatabaseInfo.isMySQL(transaction)) {
         // Guard against an ending semicolon
-        sql = sql.replace(/;\s*$/, '') + ', algorithm=copy';
+        sql = sql.replace(/;\s*$/, '') + ', algorithm=instant';
     }
 
     await transaction.raw(sql);
