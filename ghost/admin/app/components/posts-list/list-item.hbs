@@ -5,6 +5,7 @@
     ...attributes
 >
 
+    {{!-- Title column --}}
     {{#if (and this.session.user.isContributor @post.isPublished)}}
         <a href={{@post.url}} class="permalink gh-list-data gh-post-list-title" target="_blank" rel="noopener noreferrer">
             <h3 class="gh-content-entry-title">
@@ -129,12 +130,14 @@
         {{/if}}
     {{/if}}
 
+    {{!-- Sends/Opens columns --}}
     {{#if (and (not-eq this.settings.membersSignupAccess "none") (not-eq this.settings.editorDefaultEmailRecipients "disabled") (not this.session.user.isContributor))}}
         {{#if (and this.feature.emailAnalytics (eq @post.displayName "post"))}}
+            {{!-- Sends column --}}
             <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-recipients">
                 <div class="flex fw4">
                     {{#if (eq @post.email.status "submitted")}}
-                        <span class="flex" data-tooltip="{{capitalize @post.email.recipientFilter}} members">
+                        <span class="flex" data-tooltip={{humanize-recipient-filter @post.email.recipientFilter}}>
                             <span class="darkgrey fw5 gh-content-email-stats">{{format-number @post.email.emailCount}}</span>
                             <span class="midgrey-l2 fw4 gh-content-email-stats-mobile">{{gh-pluralize @post.email.emailCount "send"}}</span>
                         </span>
@@ -144,6 +147,7 @@
                 </div>
             </LinkTo>
 
+            {{!-- Opens column --}}
             <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-opens">
                 {{#if (and @post.email.trackOpens (eq @post.email.status "submitted"))}}
                     <div class="flex">
