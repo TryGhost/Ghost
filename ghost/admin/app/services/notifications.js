@@ -103,15 +103,15 @@ export default class NotificationsService extends Service {
                     ghost: {
                         displayed_message: displayedMessage,
                         ghost_error_code: options.ghostErrorCode,
-                        full_error: message,
-                        source: 'showAlert'
+                        full_error: message
                     }
                 };
 
-                Sentry.captureException(displayedMessage, {
+                Sentry.captureMessage(displayedMessage, {
                     contexts,
                     tags: {
-                        shown_to_user: true
+                        shown_to_user: true,
+                        source: 'showAlert'
                     }
                 });
             }
@@ -196,12 +196,12 @@ export default class NotificationsService extends Service {
                     ghost: {
                         ghost_error_code: resp.ghostErrorCode,
                         displayed_message: msg,
-                        full_error: resp,
-                        source: 'showAPIError'
+                        full_error: resp
                     }
                 },
                 tags: {
-                    shown_to_user: true
+                    shown_to_user: true,
+                    source: 'showAPIError'
                 }
             });
         }
