@@ -290,11 +290,4 @@
         @modifier="action wide" />
 {{/if}}
 
-{{#if this.webhookToDelete}}
-    <GhFullscreenModal @modal="delete-webhook"
-        @confirm={{this.deleteWebhook}}
-        @close={{this.cancelWebhookDeletion}}
-        @modifier="action wide" />
-{{/if}}
-
 {{outlet}}
