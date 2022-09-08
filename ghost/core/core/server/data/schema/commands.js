@@ -122,9 +122,9 @@ async function dropColumn(tableName, column, transaction = db.knex, columnSpec =
     await transaction.raw(sql);
 }
 
-async function renameColumn(tableName, fromColumn, transaction = db.knex, toColumn) {
+async function renameColumn(tableName, oldColumn, newColumn, transaction = db.knex) {
     const renameColumnBuilder = transaction.schema.table(tableName, function (table) {
-        table.renameColumn(fromColumn, toColumn);
+        table.renameColumn(oldColumn, newColumn);
     });
     if (DatabaseInfo.isSQLite(transaction)) {
         await renameColumnBuilder;

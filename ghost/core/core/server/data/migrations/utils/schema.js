@@ -48,19 +48,19 @@ function createRenameColumnMigration(table, fromColumn, toColumn) {
         commands.createColumnMigration({
             table,
             column: fromColumn,
-            dbIsInCorrectState: hasColumn => hasColumn === false,
+            dbIsInCorrectState: hasColumn => hasColumn === true,
             operation: commands.renameColumn,
             operationVerb: 'Renaming',
-            columnDefinition: toColumn
+            toColumn
         }),
         // down
         commands.createColumnMigration({
             table,
             column: toColumn,
-            dbIsInCorrectState: hasColumn => hasColumn === false,
+            dbIsInCorrectState: hasColumn => hasColumn === true,
             operation: commands.renameColumn,
             operationVerb: 'Renaming',
-            columnDefinition: fromColumn
+            toColumn: fromColumn
         })
     );
 }
