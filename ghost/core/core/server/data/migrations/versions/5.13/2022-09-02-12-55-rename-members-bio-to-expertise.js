@@ -3,15 +3,24 @@ const {createNonTransactionalMigration} = require('../../utils');
 
 module.exports = createNonTransactionalMigration(
     async function up(knex) {
-        logging.info(`Changing column bio to expertise in members table`);
-        await knex.schema.table('members', (table) => {
-            table.renameColumn('bio', 'expertise');
-        });
+        // check if the column exists before trying to rename it
+        const hasColumn = await knex.schema.hasColumn('members', 'bio');
+        if (hasColumn) {
+            logging.info('Renaming members.bio to members.expertise');
+            await knex.schema.table('members', (table) => {
+                table.renameColumn('bio', 'expertise');
+            }
+            );
+        }
     },
     async function down(knex) {
-        await knex.schema.table('members', (table) => {
-            logging.info(`Changing column expertise to bio in members table`);
-            table.renameColumn('expertise', 'bio');
-        });
+        const hasColumn = await knex.schema.hasColumn('members', 'expertise');
+        if (hasColumn) {
+            logging.info(`Renaming members.expertise to members.bio`);
+            await knex.schema.table('members', (table) => {
+                table.renameColumn('expertise', 'bio');
+            }
+            );
+        }
     }
 );
