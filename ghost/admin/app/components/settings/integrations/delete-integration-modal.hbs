@@ -1,0 +1,20 @@
+<div class="modal-content" data-test-modal="delete-integration">
+    <header class="modal-header">
+        <h1>Are you sure?</h1>
+    </header>
+    <button type="button" class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+    <div class="modal-body">
+        <p>
+            Deleting this integration will remove all webhooks and api keys associated with it.
+        </p>
+    </div>
+    <div class="modal-footer">
+        <button class="gh-btn" type="button" {{on "click" @close}}><span>Cancel</span></button>
+        <GhTaskButton
+            @buttonText="Delete Integration"
+            @successText="Deleted"
+            @task={{this.deleteIntegrationTask}}
+            @class="gh-btn gh-btn-red gh-btn-icon"
+            data-test-button="confirm" />
+    </div>
+</div>

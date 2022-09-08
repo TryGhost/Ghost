@@ -483,7 +483,7 @@ describe('Acceptance: Settings - Integrations - Custom', function () {
 
             await visit('/settings/integrations/1');
             await click('[data-test-input="description"]');
-            await await blur('[data-test-input="description"]');
+            await blur('[data-test-input="description"]');
             await click('[data-test-link="integrations-back"]');
 
             expect(
@@ -492,6 +492,21 @@ describe('Acceptance: Settings - Integrations - Custom', function () {
             ).to.not.exist;
 
             expect(currentURL()).to.equal('/settings/integrations');
+        });
+
+        it('can delete integration', async function () {
+            this.server.create('integration');
+
+            await visit('/settings/integrations/1');
+            await click('[data-test-button="delete-integration"]');
+
+            expect(find('[data-test-modal="delete-integration"]')).to.exist;
+
+            await click('[data-test-modal="delete-integration"] [data-test-button="confirm"]');
+
+            expect(find('[data-test-modal="delete-integration"]')).to.not.exist;
+            expect(currentURL()).to.equal('/settings/integrations');
+            expect(find('[data-test-custom-integration]')).to.not.exist;
         });
     });
 });
