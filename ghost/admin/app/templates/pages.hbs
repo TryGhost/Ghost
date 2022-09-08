@@ -3,7 +3,7 @@
         <GhCustomViewTitle @title="Pages" @query={{reset-query-params "posts"}} />
 
         <section class="view-actions">
-            <GhContentfilter
+            <PostsList::ContentFilter
                 @currentUser={{this.session.user}}
                 @selectedType={{this.selectedType}}
                 @availableTypes={{this.availableTypes}}
@@ -41,9 +41,10 @@
                 {{/if}}
 
                 {{#each this.postsInfinityModel as |page|}}
-                    <GhPostsListItem
+                    <PostsList::ListItem
                         @post={{page}}
-                        data-test-page-id={{page.id}} />
+                        data-test-page-id={{page.id}}
+                    />
                 {{else}}
                     <li class="no-posts-box">
                         <div class="no-posts">
