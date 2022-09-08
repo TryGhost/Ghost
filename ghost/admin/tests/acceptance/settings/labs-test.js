@@ -58,7 +58,7 @@ describe('Acceptance: Settings - Labs', function () {
             return await authenticateSession();
         });
 
-        it.skip('it renders, loads modals correctly', async function () {
+        it('it renders', async function () {
             await visit('/settings/labs');
 
             // has correct url
@@ -68,14 +68,25 @@ describe('Acceptance: Settings - Labs', function () {
             expect(document.title, 'page title').to.equal('Settings - Labs - Test Blog');
 
             // highlights nav menu
-            expect(find('[data-test-nav="labs"]'), 'highlights nav menu item')
+            expect(find('[data-test-nav="settings"]'), 'highlights nav menu item')
                 .to.have.class('active');
+        });
 
-            await click('#settings-resetdb .js-delete');
-            expect(findAll('.fullscreen-modal .modal-content').length, 'modal element').to.equal(1);
+        it('can delete all content', async function () {
+            await visit('/settings/labs');
+            await click('[data-test-button="delete-all"]');
 
-            await click('.fullscreen-modal .modal-footer .gh-btn');
-            expect(findAll('.fullscreen-modal').length, 'modal element').to.equal(0);
+            const modal = '[data-test-modal="confirm-delete-all"]';
+            expect(find(modal)).to.exist;
+
+            await click(`${modal} [data-test-button="confirm"]`);
+
+            // API request is correct
+            const [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+            expect(lastRequest.url).to.equal('/ghost/api/admin/db/');
+            expect(lastRequest.method).to.equal('DELETE');
+
+            expect(find(modal)).to.not.exist;
         });
 
         it('can upload/download redirects', async function () {
