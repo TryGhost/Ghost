@@ -122,25 +122,6 @@ async function dropColumn(tableName, column, transaction = db.knex, columnSpec =
     await transaction.raw(sql);
 }
 
-async function renameColumn(tableName, oldColumn, newColumn, transaction = db.knex) {
-    const renameColumnBuilder = transaction.schema.table(tableName, function (table) {
-        table.renameColumn(oldColumn, newColumn);
-    });
-    if (DatabaseInfo.isSQLite(transaction)) {
-        await renameColumnBuilder;
-        return;
-    }
-
-    let sql = renameColumnBuilder.toSQL()[0].sql;
-
-    if (DatabaseInfo.isMySQL(transaction)) {
-        // Guard against an ending semicolon
-        sql = sql.replace(/;\s*$/, '') + ', algorithm=copy';
-    }
-
-    await transaction.raw(sql);
-}
-
 /**
  * Adds an unique index to a table over the given columns.
  *
@@ -474,7 +455,6 @@ module.exports = {
     setNullable: setNullable,
     dropNullable: dropNullable,
     getColumns: getColumns,
-    renameColumn: renameColumn,
     createColumnMigration,
     // NOTE: below are exposed for testing purposes only
     _hasForeignSQLite: hasForeignSQLite,

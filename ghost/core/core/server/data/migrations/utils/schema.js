@@ -36,37 +36,6 @@ function createAddColumnMigration(table, column, columnDefinition) {
 
 /**
  * @param {string} table
- * @param {string} fromColumn
- * @param {Object} toColumn
- *
- * @returns {Migration}
- */
-
-function createRenameColumnMigration(table, fromColumn, toColumn) {
-    return createNonTransactionalMigration(
-        // up
-        commands.createColumnMigration({
-            table,
-            column: fromColumn,
-            dbIsInCorrectState: hasColumn => hasColumn === true,
-            operation: commands.renameColumn,
-            operationVerb: 'Renaming',
-            toColumn
-        }),
-        // down
-        commands.createColumnMigration({
-            table,
-            column: toColumn,
-            dbIsInCorrectState: hasColumn => hasColumn === true,
-            operation: commands.renameColumn,
-            operationVerb: 'Renaming',
-            toColumn: fromColumn
-        })
-    );
-}
-
-/**
- * @param {string} table
  * @param {string} column
  * @param {Object} columnDefinition
  *
@@ -165,8 +134,7 @@ module.exports = {
     createAddColumnMigration,
     createDropColumnMigration,
     createSetNullableMigration,
-    createDropNullableMigration,
-    createRenameColumnMigration
+    createDropNullableMigration
 };
 
 /**
