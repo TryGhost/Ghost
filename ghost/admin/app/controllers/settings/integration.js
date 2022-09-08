@@ -1,5 +1,6 @@
 import Controller from '@ember/controller';
 import DeleteIntegrationModal from '../../components/settings/integrations/delete-integration-modal';
+import DeleteWebhookModal from '../../components/settings/integrations/delete-webhook-modal';
 import config from 'ghost-admin/config/environment';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import {
@@ -24,7 +25,6 @@ export default class IntegrationController extends Controller {
     @tracked showUnsavedChangesModal = false;
     @tracked selectedApiKey = null;
     @tracked isApiKeyRegenerated = false;
-    @tracked webhookToDelete;
 
     constructor() {
         super(...arguments);
@@ -180,13 +180,7 @@ export default class IntegrationController extends Controller {
     @action
     confirmWebhookDeletion(webhook, event) {
         event?.preventDefault();
-        this.webhookToDelete = webhook;
-    }
-
-    @action
-    cancelWebhookDeletion(event) {
-        event?.preventDefault();
-        this.webhookToDelete = null;
+        return this.modals.open(DeleteWebhookModal, {webhook});
     }
 
     @action
