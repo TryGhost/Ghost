@@ -112,7 +112,7 @@
     "@tryghost/social-urls": "0.1.33",
     "@tryghost/staff-service": "0.0.0",
     "@tryghost/stats-service": "0.3.0",
-    "@tryghost/string": "0.1.27",
+    "@tryghost/string": "0.2.0",
     "@tryghost/tpl": "0.1.18",
     "@tryghost/update-check-service": "0.0.0",
     "@tryghost/url-utils": "4.0.3",
@@ -178,7 +178,7 @@
     "xml": "1.0.1"
   },
   "optionalDependencies": {
-    "@tryghost/html-to-mobiledoc": "1.8.11",
+    "@tryghost/html-to-mobiledoc": "1.8.12",
     "sqlite3": "5.0.11"
   },
   "devDependencies": {
@@ -193,6 +193,7 @@
     "grunt": "1.5.3",
     "grunt-contrib-symlink": "1.0.0",
     "grunt-shell": "4.0.0",
+    "html-validate": "^7.3.3",
     "inquirer": "8.2.4",
     "jwks-rsa": "2.1.4",
     "mocha": "10.0.0",
