@@ -1,101 +1,40 @@
-const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
-const tpl = require('@tryghost/tpl');
 const {URL} = require('url');
 const crypto = require('crypto');
 const createKeypair = require('keypair');
-
-const messages = {
-    incorrectKeyType: 'type must be one of "direct" or "connect".'
-};
 
 class MembersConfigProvider {
     /**
      * @param {object} options
      * @param {{get: (key: string) => any}} options.settingsCache
-     * @param {{get: (key: string) => any}} options.config
+     * @param {{getDefaultEmailDomain(): string, getMembersSupportAddress(): string, isStripeConnected(): boolean}} options.settingsHelpers
      * @param {any} options.urlUtils
      */
-    constructor(options) {
-        this._settingsCache = options.settingsCache;
-        this._config = options.config;
-        this._urlUtils = options.urlUtils;
+    constructor({settingsCache, settingsHelpers, urlUtils}) {
+        this._settingsCache = settingsCache;
+        this._settingsHelpers = settingsHelpers;
+        this._urlUtils = urlUtils;
     }
 
-    /**
-     * @private
-     */
-    _getDomain() {
-        const url = this._urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
-        const domain = (url && url[1]) || '';
-        if (domain.startsWith('www.')) {
-            return domain.replace(/^(www)\.(?=[^/]*\..{2,5})/, '');
-        }
-        return domain;
+    get defaultEmailDomain() {
+        return this._settingsHelpers.getDefaultEmailDomain();
     }
 
     getEmailFromAddress() {
         // Individual from addresses are set per newsletter - this is the fallback address
-        return `noreply@${this._getDomain()}`;
+        return `noreply@${this.defaultEmailDomain}`;
     }
 
     getEmailSupportAddress() {
-        const supportAddress = this._settingsCache.get('members_support_address') || 'noreply';
-
-        // Any fromAddress without domain uses site domain, like default setting `noreply`
-        if (supportAddress.indexOf('@') < 0) {
-            return `${supportAddress}@${this._getDomain()}`;
-        }
-        return supportAddress;
+        return this._settingsHelpers.getMembersSupportAddress();
     }
 
     getAuthEmailFromAddress() {
-        return this.getEmailSupportAddress() || this.getEmailFromAddress();
-    }
-
-    /**
-     * @param {'direct' | 'connect'} type - The "type" of keys to fetch from settings
-     * @returns {{publicKey: string, secretKey: string} | null}
-     */
-    getStripeKeys(type) {
-        if (type !== 'direct' && type !== 'connect') {
-            throw new errors.IncorrectUsageError({message: tpl(messages.incorrectKeyType)});
-        }
-
-        const secretKey = this._settingsCache.get(`stripe_${type === 'connect' ? 'connect_' : ''}secret_key`);
-        const publicKey = this._settingsCache.get(`stripe_${type === 'connect' ? 'connect_' : ''}publishable_key`);
-
-        if (!secretKey || !publicKey) {
-            return null;
-        }
-
-        return {
-            secretKey,
-            publicKey
-        };
-    }
-
-    /**
-     * @returns {{publicKey: string, secretKey: string} | null}
-     */
-    getActiveStripeKeys() {
-        const stripeDirect = this._config.get('stripeDirect');
-
-        if (stripeDirect) {
-            return this.getStripeKeys('direct');
-        }
-
-        const connectKeys = this.getStripeKeys('connect');
-
-        if (!connectKeys) {
-            return this.getStripeKeys('direct');
-        }
-
-        return connectKeys;
+        return this.getEmailSupportAddress();
     }
 
     isStripeConnected() {
-        return this.getActiveStripeKeys() !== null;
+        return this._settingsHelpers.isStripeConnected();
     }
 
     getAuthSecret() {

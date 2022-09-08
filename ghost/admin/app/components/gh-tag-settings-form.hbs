@@ -12,6 +12,7 @@
                             @value={{this.scratchTag.name}}
                             @tabindex="1"
                             @focus-out={{action "setProperty" "name" this.scratchTag.name}}
+                            data-test-input="tag-name"
                         />
                         <span class="error">
                             <GhErrorMessage @errors={{this.tag.errors}} @property="name" />
@@ -63,6 +64,7 @@
                         @name="slug"
                         @tabindex="2"
                         @focus-out={{action "setProperty" "slug" this.scratchTag.slug}}
+                        data-test-input="tag-slug"
                     />
                     <GhUrlPreview @prefix="tag" @slug={{this.scratchTag.slug}} @tagName="p" @classNames="description" />
                     <GhErrorMessage @errors={{this.activeTag.errors}} @property="slug" />

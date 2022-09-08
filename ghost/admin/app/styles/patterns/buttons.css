@@ -85,11 +85,6 @@ fieldset[disabled] .gh-btn {
     background: color-mod(var(--black) l(-20%)) !important;
 }
 
-.gh-btn-primary,
-.gh-btn-black svg {
-    fill: var(--white);
-}
-
 /* Blue button
 /* ---------------------------------------------------------- */
 
@@ -164,7 +159,6 @@ fieldset[disabled] .gh-btn {
 /* The background of the button creates 1px gradient border */
 .gh-btn-outline {
     color: var(--darkgrey);
-    fill: var(--darkgrey);
     border: 1px solid var(--lightgrey-l1);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     background: none;
@@ -174,10 +168,6 @@ fieldset[disabled] .gh-btn {
     color: var(--black);
     background: none;
     border-color: var(--lightgrey);
-}
-
-.gh-btn-outline svg {
-    fill: var(--black);
 }
 
 /* When clicked or focused with keyboard */
@@ -258,10 +248,9 @@ fieldset[disabled] .gh-btn {
 
 .gh-btn-icon svg,
 .gh-btn-block svg {
-    width: 1em;
-    height: 1em;
+    width: 1.2rem;
+    height: 1.2rem;
     margin-right: 0.6em;
-    fill: currentColor;
 }
 
 .gh-btn-white svg {
@@ -289,15 +278,15 @@ svg.gh-btn-icon-right {
 }
 
 .gh-btn-icon svg path {
-    stroke: #fff;
+    stroke: currentColor;
 }
 
-.gh-btn-icon.green svg path {
-    stroke: var(--green);
+.gh-btn-icon.fill svg {
+    fill: currentColor;
 }
 
-.gh-btn-icon.red svg path {
-    stroke: var(--red);
+.gh-btn-icon.fill svg path {
+    stroke: none;
 }
 
 .gh-btn-icon-no-margin {
@@ -813,4 +802,23 @@ Usage: CTA buttons grouped together horizontally.
 /* Conditional wording for mobile to save space */
 .gh-btn .gh-btn-text-hide-for-mobile {
     display: none;
+}
+
+.gh-btn-with-notification {
+    position: relative;
+}
+
+.gh-btn-notification-dot {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    display: block;
+    content: "";
+    width: 14px !important;
+    height: 14px !important;
+    background: var(--green);
+    padding: 0 !important;
+    margin: 0 !important;
+    border-radius: 999px !important;
+    border: 1px solid var(--main-bg-color);
 }

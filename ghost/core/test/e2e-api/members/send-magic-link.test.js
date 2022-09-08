@@ -55,6 +55,54 @@ describe('sendMagicLink', function () {
         });
     });
 
+    it('Creates a valid magic link from custom signup with redirection', async function () {
+        const customSignupUrl = 'http://localhost:2368/custom-signup-form-page';
+        const email = 'newly-created-user-magic-link-test@test.com';
+        await membersAgent
+            .post('/api/send-magic-link')
+            .header('Referer', customSignupUrl)
+            .body({
+                email,
+                emailType: 'signup',
+                autoRedirect: true
+            })
+            .expectEmptyBody()
+            .expectStatus(201);
+
+        const mail = await mockManager.assert.sentEmail({
+            to: email,
+            subject: /Complete your sign up to Ghost!/
+        });
+        const [url] = mail.text.match(/https?:\/\/[^\s]+/);
+        const parsed = new URL(url);
+        const redirect = parsed.searchParams.get('r');
+        should(redirect).equal(customSignupUrl);
+    });
+
+    it('Creates a valid magic link from custom signup with redirection disabled', async function () {
+        const customSignupUrl = 'http://localhost:2368/custom-signup-form-page';
+        const email = 'newly-created-user-magic-link-test@test.com';
+        await membersAgent
+            .post('/api/send-magic-link')
+            .header('Referer', customSignupUrl)
+            .body({
+                email,
+                emailType: 'signup',
+                autoRedirect: false
+            })
+            .expectEmptyBody()
+            .expectStatus(201);
+
+        const mail = await mockManager.assert.sentEmail({
+            to: email,
+            subject: /Complete your sign up to Ghost!/
+        });
+        const [url] = mail.text.match(/https?:\/\/[^\s]+/);
+        const parsed = new URL(url);
+        const redirect = parsed.searchParams.get('r');
+        should(redirect).equal(null);
+    });
+
     it('triggers email alert for free member signup', async function () {
         const email = 'newly-created-user-magic-link-test@test.com';
         await membersAgent.post('/api/send-magic-link')

@@ -113,6 +113,36 @@ describe('StaffService', function () {
             forUpdate: true
         };
         let stubs;
+
+        const settingsCache = {
+            get: (setting) => {
+                if (setting === 'title') {
+                    return 'Ghost Site';
+                } else if (setting === 'accent_color') {
+                    return '#ffffff';
+                }
+                return '';
+            }
+        };
+
+        const urlUtils = {
+            getSiteUrl: () => {
+                return 'https://ghost.example';
+            },
+            urlJoin: (adminUrl,hash,path) => {
+                return `${adminUrl}/${hash}${path}`;
+            },
+            urlFor: () => {
+                return 'https://admin.ghost.example';
+            }
+        };
+
+        const settingsHelpers = {
+            getDefaultEmailDomain: () => {
+                return 'ghost.example';
+            }
+        };
+
         beforeEach(function () {
             mailStub = sinon.stub().resolves();
             getEmailAlertUsersStub = sinon.stub().resolves([{
@@ -132,27 +162,9 @@ describe('StaffService', function () {
                 mailer: {
                     send: mailStub
                 },
-                settingsCache: {
-                    get: (setting) => {
-                        if (setting === 'title') {
-                            return 'Ghost Site';
-                        } else if (setting === 'accent_color') {
-                            return '#ffffff';
-                        }
-                        return '';
-                    }
-                },
-                urlUtils: {
-                    getSiteUrl: () => {
-                        return 'https://ghost.example';
-                    },
-                    urlJoin: (adminUrl,hash,path) => {
-                        return `${adminUrl}/${hash}${path}`;
-                    },
-                    urlFor: () => {
-                        return 'https://admin.ghost.example';
-                    }
-                }
+                settingsCache,
+                urlUtils,
+                settingsHelpers
             });
             stubs = {mailStub, getEmailAlertUsersStub};
         });
@@ -296,7 +308,7 @@ describe('StaffService', function () {
                     duration_in_months: 3,
                     type: 'fixed',
                     currency: 'USD',
-                    amount: 10
+                    amount: 1000
                 };
 
                 await service.notifyPaidSubscriptionStart({member, offer, tier, subscription}, options);
@@ -321,7 +333,7 @@ describe('StaffService', function () {
                     duration: 'forever',
                     type: 'fixed',
                     currency: 'USD',
-                    amount: 20
+                    amount: 2000
                 };
 
                 await service.notifyPaidSubscriptionStart({member, offer, tier, subscription}, options);
