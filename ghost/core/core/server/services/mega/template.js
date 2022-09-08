@@ -1,6 +1,7 @@
+const {escapeHtml: escape} = require('@tryghost/string');
+
 /* eslint indent: warn, no-irregular-whitespace: warn */
 const iff = (cond, yes, no) => (cond ? yes : no);
-const sanitizeHtml = require('sanitize-html');
 
 /**
  * @template {Object.<string, any>} Input
@@ -15,10 +16,7 @@ const sanitizeKeys = (obj, keys) => {
     for (const key of keysToSanitize) {
         if (typeof sanitized[key] === 'string') {
             // @ts-ignore
-            sanitized[key] = sanitizeHtml(sanitized[key], {
-                allowedTags: false,
-                allowedAttributes: false
-            });
+            sanitized[key] = escape(sanitized[key]);
         }
     }
 
@@ -28,7 +26,7 @@ const sanitizeKeys = (obj, keys) => {
 module.exports = ({post, site, newsletter, templateSettings}) => {
     const date = new Date();
     const hasFeatureImageCaption = templateSettings.showFeatureImage && post.feature_image && post.feature_image_caption;
-    const cleanPost = sanitizeKeys(post, ['title', 'excerpt', 'authors', 'feature_image_alt', 'feature_image_caption']);
+    const cleanPost = sanitizeKeys(post, ['url', 'published_at', 'title', 'excerpt', 'authors', 'feature_image', 'feature_image_alt', 'feature_image_caption']);
     const cleanSite = sanitizeKeys(site, ['title']);
     const cleanNewsletter = sanitizeKeys(newsletter, ['name']);
 
@@ -1181,7 +1179,6 @@ ${ templateSettings.showBadge ? `
             <td>&nbsp;</td>
             <td class="container">
                 <div class="content">
-
                     <!-- START CENTERED WHITE CONTAINER -->
                     <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="main" width="100%">
 
@@ -1189,7 +1186,6 @@ ${ templateSettings.showBadge ? `
                         <tr>
                             <td class="wrapper">
                                 <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
-
                                     ${ templateSettings.headerImage ? `
                                     <tr>
                                         <td class="header-image" width="100%" align="center"><img src="${templateSettings.headerImage}"${templateSettings.headerImageWidth ? ` width="${templateSettings.headerImageWidth}"` : ''}></td>
