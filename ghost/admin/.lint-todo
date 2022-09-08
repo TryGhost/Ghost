@@ -1001,3 +1001,6 @@ add|ember-template-lint|no-passed-in-event-handlers|383|24|383|24|d8b5d7c4140d1d
 add|ember-template-lint|no-passed-in-event-handlers|396|24|396|24|3e1dad0fb19c62adea14c5534d52cd95cfad280a|1662508800000|1672880400000|1678064400000|app/components/tags/tag-form.hbs
 add|ember-template-lint|require-input-label|30|28|30|28|af62541280c3dc86d2ca7a4be8c980ee164fba5a|1662508800000|1672880400000|1678064400000|app/components/tags/tag-form.hbs
 add|ember-template-lint|require-input-label|47|32|47|32|8e299cf5bf0e93e054410239451997a196933d25|1662508800000|1672880400000|1678064400000|app/components/tags/tag-form.hbs
+remove|ember-template-lint|no-action|22|85|22|85|8024e7e42cf37a5954ea4db401cbf123931da388|1658102400000|1668474000000|1673658000000|app/templates/tag.hbs
+remove|ember-template-lint|no-action|41|17|41|17|712a767fa44489687284ef2aa32c1acc5221afce|1658102400000|1668474000000|1673658000000|app/templates/tag.hbs
+remove|ember-template-lint|no-action|42|15|42|15|d3fea3e454ca345739d46caf51afd85a3eea1041|1658102400000|1668474000000|1673658000000|app/templates/tag.hbs
