@@ -1,4 +1,5 @@
 import Controller from '@ember/controller';
+import DeleteTagModal from '../components/tags/delete-tag-modal';
 import EmberObject, {action, computed, defineProperty} from '@ember/object';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import classic from 'ember-classic-decorator';
@@ -11,10 +12,9 @@ const SCRATCH_PROPS = ['name', 'slug', 'description', 'metaTitle', 'metaDescript
 
 @classic
 export default class TagController extends Controller {
+    @service modals;
     @service notifications;
     @service router;
-
-    showDeleteTagModal = false;
 
     @alias('model')
         tag;
@@ -32,23 +32,9 @@ export default class TagController extends Controller {
     }
 
     @action
-    openDeleteTagModal() {
-        this.set('showDeleteTagModal', true);
-    }
-
-    @action
-    closeDeleteTagModal() {
-        this.set('showDeleteTagModal', false);
-    }
-
-    @action
-    deleteTag() {
-        return this.tag.destroyRecord().then(() => {
-            this.set('showDeleteTagModal', false);
-            this.router.transitionTo('tags');
-            return true;
-        }, (error) => {
-            return this.notifications.showAPIError(error, {key: 'tag.delete'});
+    confirmDeleteTag() {
+        return this.modals.open(DeleteTagModal, {
+            tag: this.model
         });
     }
 
