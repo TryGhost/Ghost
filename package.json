@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/adapter-base-cache",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "repository": "https://github.com/TryGhost/SDK/tree/main/packages/adapter-base-cache",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -21,6 +21,5 @@
     "c8": "7.12.0",
     "mocha": "10.0.0",
     "sinon": "14.0.0"
-  },
-  "dependencies": {}
+  }
 }
