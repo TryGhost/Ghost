@@ -1,5 +1,6 @@
 const should = require('should');
 const errorProps = ['message', 'errorType'];
+const {matchSnapshotAssertion} = require('@tryghost/jest-snapshot');
 
 should.Assertion.add('JSONErrorObject', function () {
     this.params = {operator: 'to be a valid JSON Error Object'};
@@ -17,3 +18,5 @@ should.Assertion.add('JSONErrorResponse', function () {
         err.should.be.a.JSONErrorObject();
     });
 });
+
+should.Assertion.add('matchSnapshot', matchSnapshotAssertion);
