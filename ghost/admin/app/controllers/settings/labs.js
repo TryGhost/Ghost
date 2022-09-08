@@ -2,6 +2,7 @@ import classic from 'ember-classic-decorator';
 import {inject as service} from '@ember/service';
 /* eslint-disable ghost/ember/alias-model-in-controller */
 import Controller from '@ember/controller';
+import DeleteAllModal from '../../components/settings/labs/delete-all-content-modal';
 import RSVP from 'rsvp';
 import config from 'ghost-admin/config/environment';
 import {
@@ -40,6 +41,7 @@ export default class LabsController extends Controller {
     @service config;
     @service feature;
     @service ghostPaths;
+    @service modals;
     @service notifications;
     @service session;
     @service settings;
@@ -47,7 +49,6 @@ export default class LabsController extends Controller {
 
     importErrors = null;
     importSuccessful = false;
-    showDeleteAllModal = false;
     showEarlyAccessModal = false;
     submitting = false;
     uploadButtonText = 'Import';
@@ -142,8 +143,8 @@ export default class LabsController extends Controller {
     }
 
     @action
-    toggleDeleteAllModal() {
-        this.toggleProperty('showDeleteAllModal');
+    confirmDeleteAll() {
+        return this.modals.open(DeleteAllModal);
     }
 
     @action

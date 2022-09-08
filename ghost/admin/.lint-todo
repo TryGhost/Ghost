@@ -1004,3 +1004,5 @@ add|ember-template-lint|require-input-label|47|32|47|32|8e299cf5bf0e93e054410239
 remove|ember-template-lint|no-action|22|85|22|85|8024e7e42cf37a5954ea4db401cbf123931da388|1658102400000|1668474000000|1673658000000|app/templates/tag.hbs
 remove|ember-template-lint|no-action|41|17|41|17|712a767fa44489687284ef2aa32c1acc5221afce|1658102400000|1668474000000|1673658000000|app/templates/tag.hbs
 remove|ember-template-lint|no-action|42|15|42|15|d3fea3e454ca345739d46caf51afd85a3eea1041|1658102400000|1668474000000|1673658000000|app/templates/tag.hbs
+remove|ember-template-lint|no-action|76|82|76|82|81c7e8a314b8c2d62ceb49a48b20664192cdef22|1658102400000|1668474000000|1673658000000|app/templates/settings/labs.hbs
+remove|ember-template-lint|no-action|237|15|237|15|81c7e8a314b8c2d62ceb49a48b20664192cdef22|1658102400000|1668474000000|1673658000000|app/templates/settings/labs.hbs
