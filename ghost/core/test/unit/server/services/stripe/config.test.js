@@ -20,14 +20,6 @@ function createUrlUtilsMock() {
         getSubdir: configUtils.config.getSubdir,
         getSiteUrl: configUtils.config.getSiteUrl,
         getAdminUrl: configUtils.config.getAdminUrl,
-        apiVersions: {
-            all: ['canary'],
-            canary: {
-                admin: 'admin',
-                content: 'content'
-            }
-        },
-        defaultApiVersion: 'canary',
         slugs: ['ghost', 'rss', 'amp'],
         redirectCacheMaxAge: 31536000,
         baseApiPath: '/ghost/api'
@@ -55,7 +47,7 @@ describe('Stripe - config', function () {
             getActiveStripeKeys: sinon.stub().returns(null)
         };
         const config = getConfig({settingsHelpers, config: configUtils.config, urlUtils: {}});
-        
+
         should.equal(config, null);
     });
 
@@ -67,11 +59,11 @@ describe('Stripe - config', function () {
         const fakeUrlUtils = createUrlUtilsMock();
 
         const config = getConfig({settingsHelpers, config: configUtils.config, urlUtils: fakeUrlUtils});
-        
+
         should.equal(config.secretKey, 'direct_secret');
         should.equal(config.publicKey, 'direct_publishable');
         should.equal(config.webhookHandlerUrl, 'http://site.com/subdir/members/webhooks/stripe/');
-        
+
         should.exist(config.checkoutSessionSuccessUrl);
         should.exist(config.checkoutSessionCancelUrl);
         should.exist(config.checkoutSetupSessionSuccessUrl);
