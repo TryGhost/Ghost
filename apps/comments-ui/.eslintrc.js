@@ -3,7 +3,8 @@ module.exports = {
     root: true,
     extends: [
         'react-app',
-        'plugin:ghost/browser'
+        'plugin:ghost/browser',
+        'plugin:cypress/recommended'
     ],
     plugins: [
         'ghost',

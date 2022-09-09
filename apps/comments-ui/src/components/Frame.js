@@ -68,7 +68,7 @@ export const CommentsFrame = ({children}) => {
     );
 };
 
-export const PopupFrame = ({children}) => {
+export const PopupFrame = ({children, title}) => {
     const style = {
         zIndex: '3999999',
         position: 'fixed',
@@ -80,7 +80,7 @@ export const PopupFrame = ({children}) => {
     };
 
     return (
-        <TailwindFrame style={style} title="popup-frame">
+        <TailwindFrame style={style} title={title}>
             {children}
         </TailwindFrame>
     );

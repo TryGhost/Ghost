@@ -1,12 +1,16 @@
 const ObjectId = require('bson-objectid').default;
+let memberCounter = 0;
 
 export function buildMember(override) {
+    memberCounter += 1;
+
     return {
-        avatar_image: '',
+        avatar_image: 'https://www.gravatar.com/avatar/7a68f69cc9c9e9b45d97ecad6f24184a?s=250&r=g&d=blank',
         expertise: 'Head of Testing',
         id: ObjectId(),
-        name: 'Test Member',
-        uuid: '613e9667-4fa2-4ff4-aa62-507220103d41',
+        name: 'Test Member ' + memberCounter,
+        uuid: ObjectId(),
+        paid: false,
         ...override
     };
 }

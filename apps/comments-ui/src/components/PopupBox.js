@@ -46,7 +46,7 @@ export default function PopupBox() {
 
     return (
         <>
-            <GenericPopup show={show} callback={popupProps.callback}>
+            <GenericPopup show={show} callback={popupProps.callback} title={type}>
                 <PageComponent {...popupProps}/>
             </GenericPopup>
         </>

@@ -9,6 +9,10 @@ import ContentBox from './components/ContentBox';
 import PopupBox from './components/PopupBox';
 
 function AuthFrame({adminUrl, onLoad}) {
+    if (!adminUrl) {
+        return null;
+    }
+
     const iframeStyle = {
         display: 'none'
     };
@@ -31,7 +35,6 @@ export default class App extends React.Component {
     constructor(props) {
         super(props);
 
-        // Todo: this state is work in progress
         this.state = {
             action: 'init:running',
             initStatus: 'running',
@@ -83,6 +86,10 @@ export default class App extends React.Component {
     }
 
     async initAdminAuth() {
+        if (this.adminApi) {
+            return;
+        }
+
         try {
             this.adminApi = this.setupAdminAPI();
 
