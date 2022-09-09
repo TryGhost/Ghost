@@ -26,26 +26,32 @@ function getSiteData() {
      * @type {HTMLElement}
      */
     const scriptTag = document.querySelector('script[data-ghost-comments]');
-    if (scriptTag) {
-        const siteUrl = scriptTag.dataset.ghostComments;
-        const apiKey = scriptTag.dataset.key;
-        const apiUrl = scriptTag.dataset.api;
-        const adminUrl = scriptTag.dataset.admin;
-        const sentryDsn = scriptTag.dataset.sentryDsn;
-        const postId = scriptTag.dataset.postId;
-        const colorScheme = scriptTag.dataset.colorScheme;
-        const avatarSaturation = scriptTag.dataset.avatarSaturation;
-        const accentColor = scriptTag.dataset.accentColor;
-        const appVersion = scriptTag.dataset.appVersion;
-        const commentsEnabled = scriptTag.dataset.commentsEnabled;
-        const stylesUrl = scriptTag.dataset.styles;
-        const title = scriptTag.dataset.title === 'null' ? null : scriptTag.dataset.title;
-        const showCount = scriptTag.dataset.count === 'true';
-        const publication = scriptTag.dataset.publication ?? ''; // TODO: replace with dynamic data from script
+    let dataset = scriptTag?.dataset;
 
-        return {siteUrl, stylesUrl, apiKey, apiUrl, sentryDsn, postId, adminUrl, colorScheme, avatarSaturation, accentColor, appVersion, commentsEnabled, title, showCount, publication};
+    if (!scriptTag && process.env.NODE_ENV === 'development') {
+        // Use queryparams in test mode
+        dataset = Object.fromEntries(new URLSearchParams(window.location.search).entries());
+    } else if (!scriptTag) {
+        return {};
     }
-    return {};
+
+    const siteUrl = dataset.ghostComments;
+    const apiKey = dataset.key;
+    const apiUrl = dataset.api;
+    const adminUrl = dataset.admin;
+    const sentryDsn = dataset.sentryDsn;
+    const postId = dataset.postId;
+    const colorScheme = dataset.colorScheme;
+    const avatarSaturation = dataset.avatarSaturation;
+    const accentColor = dataset.accentColor;
+    const appVersion = dataset.appVersion;
+    const commentsEnabled = dataset.commentsEnabled;
+    const stylesUrl = dataset.styles;
+    const title = dataset.title === 'null' ? null : dataset.title;
+    const showCount = dataset.count === 'true';
+    const publication = dataset.publication ?? ''; // TODO: replace with dynamic data from script
+
+    return {siteUrl, stylesUrl, apiKey, apiUrl, sentryDsn, postId, adminUrl, colorScheme, avatarSaturation, accentColor, appVersion, commentsEnabled, title, showCount, publication};
 }
 
 function handleTokenUrl() {
@@ -65,14 +71,20 @@ function init() {
     // const customSiteUrl = getSiteUrl();
     const {siteUrl: customSiteUrl, ...siteData} = getSiteData();
     const siteUrl = customSiteUrl || window.location.origin;
-    setup({siteUrl});
 
-    ReactDOM.render(
-        <React.StrictMode>
-            {<App siteUrl={siteUrl} customSiteUrl={customSiteUrl} {...siteData} />}
-        </React.StrictMode>,
-        document.getElementById(ROOT_DIV_ID)
-    );
+    try {
+        setup({siteUrl});
+
+        ReactDOM.render(
+            <React.StrictMode>
+                {<App siteUrl={siteUrl} customSiteUrl={customSiteUrl} {...siteData} />}
+            </React.StrictMode>,
+            document.getElementById(ROOT_DIV_ID)
+        );
+    } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error(e);
+    }
 }
 
 init();

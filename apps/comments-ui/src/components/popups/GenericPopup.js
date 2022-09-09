@@ -3,14 +3,14 @@ import {Transition} from '@headlessui/react';
 import {PopupFrame} from '../Frame';
 import AppContext from '../../AppContext';
 
-const GenericPopup = (props) => {
+const GenericPopup = ({show, children, title, callback}) => {
     // The modal will cover the whole screen, so while it is hidden, we need to disable pointer events
     const {dispatchAction} = useContext(AppContext);
 
     const close = (event) => {
         dispatchAction('closePopup');
-        if (props.callback) {
-            props.callback(false);
+        if (callback) {
+            callback(false);
         }
     };
 
@@ -28,8 +28,8 @@ const GenericPopup = (props) => {
     });
 
     return (
-        <Transition show={props.show} appear={true}>
-            <PopupFrame>
+        <Transition show={show} appear={true}>
+            <PopupFrame title={title}>
                 <div>
                     <Transition.Child
                         enter="transition duration-200 linear"
@@ -48,7 +48,7 @@ const GenericPopup = (props) => {
                                 leaveFrom="translate-y-0 opacity-100"
                                 leaveTo="translate-y-4 opacity-0"
                             >
-                                {props.children}
+                                {children}
                             </Transition.Child>
                         </div>
                     </Transition.Child>

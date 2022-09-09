@@ -129,6 +129,7 @@ const FormHeader = ({show, name, expertise, editName, editExpertise}) => {
             <div
                 className="font-sans text-[17px] font-bold tracking-tight text-[rgb(23,23,23)] dark:text-[rgba(255,255,255,0.85)]"
                 onClick={editName}
+                data-testid="member-name"
             >
                 {name ? name : 'Anonymous'}
             </div>

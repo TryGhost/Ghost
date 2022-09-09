@@ -84,3 +84,5 @@ build/
 # Ref: https://create-react-app.dev/docs/adding-custom-environment-variables/#adding-development-environment-variables-in-env
 
 public/main.css
+
+cypress/videos

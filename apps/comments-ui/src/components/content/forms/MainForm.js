@@ -85,7 +85,7 @@ const MainForm = ({commentsCount}) => {
     const isOpen = editor?.isFocused ?? false;
 
     return (
-        <div className='-mt-[4px]' ref={formEl}>
+        <div className='-mt-[4px]' ref={formEl} data-testid="main-form">
             <Form editor={editor} reduced={false} isOpen={isOpen} {...submitProps} />
         </div>
     );
