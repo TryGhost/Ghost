@@ -3173,10 +3173,10 @@
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-2.0.0.tgz#f544a148d3ab35801c1f633a7441fd87c2e484bf"
   integrity sha512-XCuKFP5PS55gnMVu3dty8KPatLqUoy/ZYzDzAGCQ8JNFCkLXzmI7vNHCR+XpbZaMWQK/vQubr7PkYq8g470J/A==
 
-"@tryghost/adapter-base-cache@0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/adapter-base-cache/-/adapter-base-cache-0.1.1.tgz#e787093c5eabca6727378ff56f07a2843b7bef3d"
-  integrity sha512-DAcAwOeZxLXvaR/7VXEXwRQe+jpcxHVvDHe1ZBYhERcnhOXDIYU6qXcFg1M5MRGmyPddsLx9UEDQGZu7oJ3cUw==
+"@tryghost/adapter-base-cache@0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/adapter-base-cache/-/adapter-base-cache-0.1.2.tgz#5b923ffa8f06b2f7130965d1dd2f10563d57b618"
+  integrity sha512-NrwPt431c3s8zdjZYaQd8MERcGy/8UYwkRRUGLhY+iGl439FTkl2V5dRhVyjQrcj12gxCs9WXjU9yzswn3y3Ng==
 
 "@tryghost/admin-api-schema@4.1.1":
   version "4.1.1"
