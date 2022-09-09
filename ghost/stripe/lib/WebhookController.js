@@ -1,8 +1,6 @@
 const _ = require('lodash');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const DomainEvents = require('@tryghost/domain-events');
-const {SubscriptionCreatedEvent} = require('@tryghost/member-events');
 
 module.exports = class WebhookController {
     /**
@@ -229,11 +227,11 @@ module.exports = class WebhookController {
                     id: session.metadata.attribution_id ?? null,
                     url: session.metadata.attribution_url ?? null,
                     type: session.metadata.attribution_type ?? null
-                }; 
+                };
 
                 const payerName = _.get(customer, 'subscriptions.data[0].default_payment_method.billing_details.name');
                 const name = metadataName || payerName || null;
-                
+
                 const memberData = {email: customer.email, name, attribution};
                 if (metadataNewsletters) {
                     try {
@@ -242,56 +240,54 @@ module.exports = class WebhookController {
                         logging.error(`Ignoring invalid newsletters data - ${metadataNewsletters}.`);
                     }
                 }
-                member = await this.deps.memberRepository.create(memberData);
+
+                const offerId = session.metadata?.offer;
+
+                const memberDataWithStripeCustomer = {
+                    ...memberData,
+                    stripeCustomer: customer,
+                    offerId
+                };
+                member = await this.deps.memberRepository.create(memberDataWithStripeCustomer);
             } else {
                 const payerName = _.get(customer, 'subscriptions.data[0].default_payment_method.billing_details.name');
+                const attribution = {
+                    id: session.metadata?.attribution_id ?? null,
+                    url: session.metadata?.attribution_url ?? null,
+                    type: session.metadata?.attribution_type ?? null
+                };
 
                 if (payerName && !member.get('name')) {
                     await this.deps.memberRepository.update({name: payerName}, {id: member.get('id')});
                 }
-            }
 
-            await this.deps.memberRepository.upsertCustomer({
-                customer_id: customer.id,
-                member_id: member.id,
-                name: customer.name,
-                email: customer.email
-            });
+                await this.deps.memberRepository.upsertCustomer({
+                    customer_id: customer.id,
+                    member_id: member.id,
+                    name: customer.name,
+                    email: customer.email
+                });
 
-            for (const subscription of customer.subscriptions.data) {
-                try {
-                    const offerId = session.metadata?.offer;
+                for (const subscription of customer.subscriptions.data) {
+                    try {
+                        const offerId = session.metadata?.offer;
 
-                    await this.deps.memberRepository.linkSubscription({
-                        id: member.id,
-                        subscription,
-                        offerId
-                    });
-                } catch (err) {
-                    if (err.code !== 'ER_DUP_ENTRY' && err.code !== 'SQLITE_CONSTRAINT') {
-                        throw err;
+                        await this.deps.memberRepository.linkSubscription({
+                            id: member.id,
+                            subscription,
+                            offerId,
+                            attribution
+                        });
+                    } catch (err) {
+                        if (err.code !== 'ER_DUP_ENTRY' && err.code !== 'SQLITE_CONSTRAINT') {
+                            throw err;
+                        }
+                        throw new errors.ConflictError({
+                            err
+                        });
                     }
-                    throw new errors.ConflictError({
-                        err
-                    });
                 }
             }
-
-            const subscription = await this.deps.memberRepository.getSubscriptionByStripeID(session.subscription);
-
-            // TODO: should we check if we don't send this event multiple times if Stripe calls the webhook multiple times?
-            const event = SubscriptionCreatedEvent.create({
-                memberId: member.id,
-                subscriptionId: subscription.id,
-                offerId: session.metadata.offer || null,
-                attribution: {
-                    id: session.metadata.attribution_id ?? null,
-                    url: session.metadata.attribution_url ?? null,
-                    type: session.metadata.attribution_type ?? null
-                }
-            });
-
-            DomainEvents.dispatch(event);
 
             if (checkoutType !== 'upgrade') {
                 this.sendSignupEmail(customer.email);
