@@ -1,5 +1,6 @@
-import {useCallback, useEffect, useRef, useContext} from 'react';
+import {useCallback, useEffect, useRef, useContext, useMemo} from 'react';
 import AppContext from '../AppContext';
+import {formatRelativeTime} from './helpers';
 
 /**
  * Execute a callback when a ref is set and unset.
@@ -46,4 +47,13 @@ export function useSecondUpdate(fn, inputs) {
 export function usePopupOpen(type) {
     const {popup} = useContext(AppContext);
     return popup?.type === type;
+}
+
+/**
+ * Avoids a rerender of the relative time unless the date changed, and not the current timestamp changed
+ */
+export function useRelativeTime(dateString) {
+    return useMemo(() => {
+        return formatRelativeTime(dateString);
+    }, [dateString]);
 }

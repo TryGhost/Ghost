@@ -6,7 +6,8 @@ import ReplyButton from './buttons/ReplyButton';
 import MoreButton from './buttons/MoreButton';
 import Replies from './Replies';
 import AppContext from '../../AppContext';
-import {formatRelativeTime, formatExplicitTime, isCommentPublished} from '../../utils/helpers';
+import {formatExplicitTime, isCommentPublished} from '../../utils/helpers';
+import {useRelativeTime} from '../../utils/hooks';
 import ReplyForm from './forms/ReplyForm';
 import EditForm from './forms/EditForm';
 
@@ -182,6 +183,8 @@ function AuthorName({comment}) {
 }
 
 function CommentHeader({comment}) {
+    const createdAtRelative = useRelativeTime(comment.created_at);
+
     return (
         <div className="-mt-[3px] mb-2 flex items-start">
             <div>
@@ -189,7 +192,7 @@ function CommentHeader({comment}) {
                 <div className="flex items-baseline pr-4 font-sans text-[14px] tracking-tight text-[rgba(0,0,0,0.5)] dark:text-[rgba(255,255,255,0.5)]">
                     <span>
                         <MemberExpertise comment={comment}/>
-                        <span title={formatExplicitTime(comment.created_at)}>{formatRelativeTime(comment.created_at)}</span>
+                        <span title={formatExplicitTime(comment.created_at)}>{createdAtRelative}</span>
                         <EditedInfo comment={comment} />
                     </span>
                 </div>
