@@ -89,48 +89,6 @@ export default class NavigationController extends Controller {
     }
 
     @action
-    toggleLeaveSettingsModal(transition) {
-        let leaveTransition = this.leaveSettingsTransition;
-
-        if (!transition && this.showLeaveSettingsModal) {
-            this.set('leaveSettingsTransition', null);
-            this.set('showLeaveSettingsModal', false);
-            return;
-        }
-
-        if (!leaveTransition || transition.targetName === leaveTransition.targetName) {
-            this.set('leaveSettingsTransition', transition);
-
-            // if a save is running, wait for it to finish then transition
-            if (this.save.isRunning) {
-                return this.save.last.then(() => {
-                    transition.retry();
-                });
-            }
-
-            // we genuinely have unsaved data, show the modal
-            this.set('showLeaveSettingsModal', true);
-        }
-    }
-
-    @action
-    leaveSettings() {
-        let transition = this.leaveSettingsTransition;
-        let settings = this.settings;
-
-        if (!transition) {
-            this.notifications.showAlert('Sorry, there was an error in the application. Please let the Ghost team know what happened.', {type: 'error'});
-            return;
-        }
-
-        // roll back changes on settings props
-        settings.rollbackAttributes();
-        this.set('dirtyAttributes', false);
-
-        return transition.retry();
-    }
-
-    @action
     reset() {
         this.set('newNavItem', NavigationItem.create({isNew: true}));
         this.set('newSecondaryNavItem', NavigationItem.create({isNew: true, isSecondary: true}));
@@ -152,7 +110,8 @@ export default class NavigationController extends Controller {
         }
     }
 
-    @task *saveTask() {
+    @task
+    *saveTask() {
         let navItems = this.get('settings.navigation');
         let secondaryNavItems = this.get('settings.secondaryNavigation');
 
