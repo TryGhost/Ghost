@@ -116,16 +116,16 @@ function UnpublishedComment({comment, openEditMode}) {
 
 // Helper components
 
-function MemberBio({comment}) {
+function MemberExpertise({comment}) {
     const {member} = useContext(AppContext);
-    const memberBio = member && comment.member && comment.member.uuid === member.uuid ? member.bio : comment?.member?.bio;
+    const memberExpertise = member && comment.member && comment.member.uuid === member.uuid ? member.expertise : comment?.member?.expertise;
     
-    if (!memberBio) {
+    if (!memberExpertise) {
         return null;
     }
 
     return (
-        <span>{memberBio}<span className="mx-[0.3em]">·</span></span>
+        <span>{memberExpertise}<span className="mx-[0.3em]">·</span></span>
     );
 }
 
@@ -193,7 +193,7 @@ function CommentHeader({comment}) {
                 <AuthorName comment={comment} />
                 <div className="flex items-baseline pr-4 font-sans text-[14px] tracking-tight text-[rgba(0,0,0,0.5)] dark:text-[rgba(255,255,255,0.5)]">
                     <span>
-                        <MemberBio comment={comment}/>
+                        <MemberExpertise comment={comment}/>
                         <span title={formatExplicitTime(comment.created_at)}>{formatRelativeTime(comment.created_at)}</span>
                         <EditedInfo comment={comment} />
                     </span>
@@ -214,7 +214,7 @@ function CommentBody({html}) {
 
 function CommentMenu({comment, toggleReplyMode, isInReplyMode, openEditMode, parent}) {
     // If this comment is from the current member, always override member
-    // with the member from the context, so we update the bio in existing comments when we change it
+    // with the member from the context, so we update the expertise in existing comments when we change it
     const {member, commentsEnabled} = useContext(AppContext);
 
     const paidOnly = commentsEnabled === 'paid';

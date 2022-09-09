@@ -285,7 +285,7 @@ async function editComment({state, api, data: {comment, parent}}) {
 }
 
 async function updateMember({data, state, api}) {
-    const {name, bio} = data;
+    const {name, expertise} = data;
     const patchData = {};
     
     const originalName = state?.member?.name;
@@ -294,10 +294,10 @@ async function updateMember({data, state, api}) {
         patchData.name = name;
     }
 
-    const originalBio = state?.member?.bio;
-    if (bio !== undefined && originalBio !== bio) {
+    const originalExpertise = state?.member?.expertise;
+    if (expertise !== undefined && originalExpertise !== expertise) {
         // Allow to set it to an empty string or to null
-        patchData.bio = bio;
+        patchData.expertise = expertise;
     }
 
     if (Object.keys(patchData).length > 0) {
