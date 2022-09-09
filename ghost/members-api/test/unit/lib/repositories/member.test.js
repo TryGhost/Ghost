@@ -1,6 +1,8 @@
 const assert = require('assert');
 const sinon = require('sinon');
+const DomainEvents = require('@tryghost/domain-events');
 const MemberRepository = require('../../../../lib/repositories/member');
+const {SubscriptionCreatedEvent} = require('@tryghost/member-events');
 
 describe('MemberRepository', function () {
     describe('#isComplimentarySubscription', function () {
@@ -53,7 +55,6 @@ describe('MemberRepository', function () {
 
     describe('linkSubscription', function (){
         let Member;
-        let staffService;
         let notifySpy;
         let MemberPaidSubscriptionEvent;
         let StripeCustomerSubscription;
@@ -112,9 +113,6 @@ describe('MemberRepository', function () {
                     _previousAttributes: {}
                 })
             };
-            staffService = {
-                notifyPaidSubscriptionStart: notifySpy
-            };
             MemberPaidSubscriptionEvent = {
                 add: sinon.stub().resolves()
             };
@@ -145,13 +143,12 @@ describe('MemberRepository', function () {
             };
         });
 
-        it('triggers email alert for member context', async function (){
+        it('dispatches paid subscription event', async function (){
             const repo = new MemberRepository({
                 stripeAPIService,
                 StripeCustomerSubscription,
                 MemberPaidSubscriptionEvent,
                 MemberProductEvent,
-                staffService,
                 productRepository,
                 labsService,
                 Member
@@ -159,105 +156,18 @@ describe('MemberRepository', function () {
 
             sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
 
+            DomainEvents.subscribe(SubscriptionCreatedEvent, notifySpy);
+
             await repo.linkSubscription({
                 subscription: subscriptionData
             }, {
-                transacting: true,
+                transacting: {
+                    executionPromise: Promise.resolve()
+                },
                 context: {}
             });
+
             notifySpy.calledOnce.should.be.true();
-        });
-
-        it('triggers email alert for api context', async function (){
-            const repo = new MemberRepository({
-                stripeAPIService,
-                StripeCustomerSubscription,
-                MemberPaidSubscriptionEvent,
-                MemberProductEvent,
-                staffService,
-                productRepository,
-                labsService,
-                Member
-            });
-
-            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
-
-            await repo.linkSubscription({
-                subscription: subscriptionData
-            }, {
-                transacting: true,
-                context: {api_key: 'abc'}
-            });
-            notifySpy.calledOnce.should.be.true();
-        });
-
-        it('does not trigger email alert for importer context', async function (){
-            const repo = new MemberRepository({
-                stripeAPIService,
-                StripeCustomerSubscription,
-                MemberPaidSubscriptionEvent,
-                MemberProductEvent,
-                staffService,
-                productRepository,
-                labsService,
-                Member
-            });
-
-            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
-
-            await repo.linkSubscription({
-                subscription: subscriptionData
-            }, {
-                transacting: true,
-                context: {importer: true}
-            });
-            notifySpy.calledOnce.should.be.false();
-        });
-
-        it('does not trigger email alert for admin context', async function (){
-            const repo = new MemberRepository({
-                stripeAPIService,
-                StripeCustomerSubscription,
-                MemberPaidSubscriptionEvent,
-                MemberProductEvent,
-                staffService,
-                productRepository,
-                labsService,
-                Member
-            });
-
-            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
-
-            await repo.linkSubscription({
-                subscription: subscriptionData
-            }, {
-                transacting: true,
-                context: {user: {}}
-            });
-            notifySpy.calledOnce.should.be.false();
-        });
-
-        it('does not trigger email alert for internal context', async function (){
-            const repo = new MemberRepository({
-                stripeAPIService,
-                StripeCustomerSubscription,
-                MemberPaidSubscriptionEvent,
-                MemberProductEvent,
-                staffService,
-                productRepository,
-                labsService,
-                Member
-            });
-
-            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
-
-            await repo.linkSubscription({
-                subscription: subscriptionData
-            }, {
-                transacting: true,
-                context: {internal: true}
-            });
-            notifySpy.calledOnce.should.be.false();
         });
 
         afterEach(function () {
