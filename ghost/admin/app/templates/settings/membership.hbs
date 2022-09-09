@@ -161,7 +161,8 @@
     </section>
 
     {{#if this.showPortalSettings}}
-        <GhFullscreenModal @modal="portal-settings"
+        <GhFullscreenModal
+            @modal="portal-settings"
             @model={{hash
                 preloadTask=this.saveSettingsTask
                 openStripeConnect=this.openStripeConnect
@@ -169,15 +170,6 @@
             }}
             @close={{this.closePortalSettings}}
             @modifier="full-overlay portal-settings" />
-    {{/if}}
-
-    {{#if this.showLeavePortalModal}}
-        <GhFullscreenModal
-            @modal="leave-settings"
-            @confirm={{this.confirmClosePortalSettings}}
-            @close={{this.cancelClosePortalSettings}}
-            @modifier="action wide"
-        />
     {{/if}}
 
     {{#if this.showStripeConnect}}
