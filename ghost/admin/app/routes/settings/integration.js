@@ -1,19 +1,21 @@
 import AdminRoute from 'ghost-admin/routes/admin';
+import ConfirmUnsavedChangesModal from '../../components/modals/confirm-unsaved-changes';
+import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
-export default AdminRoute.extend({
-    router: service(),
+export default class IntegrationRoute extends AdminRoute {
+    @service modals;
+    @service router;
 
-    init() {
-        this._super(...arguments);
-        this.router.on('routeWillChange', (transition) => {
-            this.showUnsavedChangesModal(transition);
+    constructor() {
+        super(...arguments);
+        this.router.on('routeWillChange', () => {
             if (this.controller) {
                 this.controller.set('selectedApiKey', null);
                 this.controller.set('isApiKeyRegenerated', false);
             }
         });
-    },
+    }
 
     model(params, transition) {
         // use the integrations controller to fetch all integrations and pick
@@ -22,45 +24,61 @@ export default AdminRoute.extend({
         return this
             .controllerFor('settings.integrations')
             .integrationModelHook('id', params.integration_id, this, transition);
-    },
+    }
 
     deactivate() {
-        this._super(...arguments);
-        this.controller.set('leaveScreenTransition', null);
-        this.controller.set('showUnsavedChangesModal', false);
-    },
+        this.confirmModal = null;
+        this.hasConfirmed = false;
+    }
 
-    actions: {
-        save() {
-            this.controller.send('save');
+    @action
+    async willTransition(transition) {
+        if (this.hasConfirmed) {
+            return true;
         }
-    },
 
-    showUnsavedChangesModal(transition) {
-        if (transition.from && transition.from.name.match(/^settings\.integration\./) && transition.targetName) {
-            let {controller} = this;
+        transition.abort();
 
-            // check to see if we're navigating away from the custom integration
-            // route - we want to allow editing webhooks without showing the
-            // "unsaved changes" confirmation modal
-            let isExternalRoute =
-                // allow sub-routes of integration
-                !(transition.targetName || '').match(/^integration\./)
-                // do not allow changes in integration
-                // .to will be the index, so use .to.parent to get the route with the params
-                || transition.to.parent.params.integration_id !== controller.integration.id;
-
-            if (isExternalRoute && !controller.integration.isDeleted && controller.integration.hasDirtyAttributes) {
-                transition.abort();
-                controller.send('toggleUnsavedChangesModal', transition);
-                return;
-            }
+        // wait for any existing confirm modal to be closed before allowing transition
+        if (this.confirmModal) {
+            return;
         }
-    },
+
+        if (this.controller.saveTask?.isRunning) {
+            await this.controller.saveTask.last;
+        }
+
+        const shouldLeave = await this.confirmUnsavedChanges();
+
+        if (shouldLeave) {
+            this.controller.model.rollbackAttributes();
+            this.hasConfirmed = true;
+            return transition.retry();
+        }
+    }
+
+    async confirmUnsavedChanges() {
+        if (this.controller.model?.hasDirtyAttributes) {
+            this.confirmModal = this.modals
+                .open(ConfirmUnsavedChangesModal)
+                .finally(() => {
+                    this.confirmModal = null;
+                });
+
+            return this.confirmModal;
+        }
+
+        return true;
+    }
+
+    @action
+    save() {
+        this.controller.send('save');
+    }
 
     buildRouteInfoMetadata() {
         return {
             titleToken: 'Settings - Integrations'
         };
     }
-});
+}

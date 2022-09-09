@@ -22,7 +22,6 @@ export default class IntegrationController extends Controller {
     imageMimeTypes = IMAGE_MIME_TYPES;
 
     @tracked showRegenerateKeyModal = false;
-    @tracked showUnsavedChangesModal = false;
     @tracked selectedApiKey = null;
     @tracked isApiKeyRegenerated = false;
 
@@ -106,47 +105,6 @@ export default class IntegrationController extends Controller {
     @action
     save() {
         return this.saveTask.perform();
-    }
-
-    @action
-    toggleUnsavedChangesModal(transition) {
-        let leaveTransition = this.leaveScreenTransition;
-
-        if (!transition && this.showUnsavedChangesModal) {
-            this.leaveScreenTransition = null;
-            this.showUnsavedChangesModal = false;
-            return;
-        }
-
-        if (!leaveTransition || transition.targetName === leaveTransition.targetName) {
-            this.leaveScreenTransition = transition;
-
-            // if a save is running, wait for it to finish then transition
-            if (this.saveTask.isRunning) {
-                return this.saveTask.last.then(() => {
-                    transition.retry();
-                });
-            }
-
-            // we genuinely have unsaved data, show the modal
-            this.showUnsavedChangesModal = true;
-        }
-    }
-
-    @action
-    leaveScreen(event) {
-        event?.preventDefault();
-        let transition = this.leaveScreenTransition;
-
-        if (!transition) {
-            this.notifications.showAlert('Sorry, there was an error in the application. Please let the Ghost team know what happened.', {type: 'error'});
-            return;
-        }
-
-        // roll back changes on model props
-        this.integration.rollbackAttributes();
-
-        return transition.retry();
     }
 
     @action
