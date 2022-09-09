@@ -39,7 +39,6 @@ module.exports = class MemberRepository {
      * @param {any} deps.OfferRedemption
      * @param {import('../../services/stripe-api')} deps.stripeAPIService
      * @param {any} deps.labsService
-     * @param {any} deps.staffService
      * @param {any} deps.productRepository
      * @param {any} deps.offerRepository
      * @param {ITokenService} deps.tokenService
@@ -61,7 +60,6 @@ module.exports = class MemberRepository {
         productRepository,
         offerRepository,
         tokenService,
-        staffService,
         newslettersService
     }) {
         this._Member = Member;
@@ -77,7 +75,6 @@ module.exports = class MemberRepository {
         this._productRepository = productRepository;
         this._offerRepository = offerRepository;
         this.tokenService = tokenService;
-        this.staffService = staffService;
         this._newslettersService = newslettersService;
         this._labsService = labsService;
 

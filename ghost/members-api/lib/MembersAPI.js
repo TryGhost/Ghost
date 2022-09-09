@@ -61,7 +61,6 @@ module.exports = function MembersAPI({
     },
     stripeAPIService,
     offersAPI,
-    staffService,
     labsService,
     newslettersService,
     memberAttributionService
@@ -87,7 +86,6 @@ module.exports = function MembersAPI({
         stripeAPIService,
         tokenService,
         newslettersService,
-        staffService,
         labsService,
         productRepository,
         Member,
@@ -152,7 +150,6 @@ module.exports = function MembersAPI({
         productRepository,
         StripePrice,
         tokenService,
-        staffService,
         sendEmailWithMagicLink
     });
 
