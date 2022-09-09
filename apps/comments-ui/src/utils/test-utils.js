@@ -3,7 +3,7 @@ const ObjectId = require('bson-objectid').default;
 export function buildMember(override) {
     return {
         avatar_image: '',
-        bio: 'Head of Testing',
+        expertise: 'Head of Testing',
         id: ObjectId(),
         name: 'Test Member',
         uuid: '613e9667-4fa2-4ff4-aa62-507220103d41',

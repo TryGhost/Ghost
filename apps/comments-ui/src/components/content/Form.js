@@ -22,7 +22,7 @@ const Form = (props) => {
 
     const {comment, commentsCount} = props;
     const memberName = member?.name ?? comment?.member?.name;
-    const memberBio = member?.bio ?? comment?.member?.bio;
+    const memberExpertise = member?.expertise ?? comment?.member?.expertise;
 
     // Keep track of the amount of open forms
     useEffect(() => {
@@ -393,7 +393,7 @@ const Form = (props) => {
 
         dispatchAction('openPopup', {
             type: 'addDetailsPopup',
-            bioAutofocus: options.bioAutofocus ?? false,
+            expertiseAutofocus: options.expertiseAutofocus ?? false,
             callback: () => {
                 editor?.commands.focus();
                 setPreventClosing(false);
@@ -467,17 +467,17 @@ const Form = (props) => {
                                     className="font-sans text-[17px] font-bold tracking-tight text-[rgb(23,23,23)] dark:text-[rgba(255,255,255,0.85)]"
                                     onClick={(event) => {
                                         handleShowPopup(event, {
-                                            bioAutofocus: false
+                                            expertiseAutofocus: false
                                         });
                                     }}>{memberName ? memberName : 'Anonymous'}</div>
                                 <div className="flex items-baseline justify-start">
                                     <button
-                                        className={`group flex max-w-[80%] items-center justify-start whitespace-nowrap text-left font-sans text-[14px] tracking-tight text-[rgba(0,0,0,0.5)] transition duration-150 hover:text-[rgba(0,0,0,0.75)] dark:text-[rgba(255,255,255,0.5)] dark:hover:text-[rgba(255,255,255,0.4)] sm:max-w-[90%] ${!memberBio && 'text-[rgba(0,0,0,0.3)] hover:text-[rgba(0,0,0,0.5)] dark:text-[rgba(255,255,255,0.3)]'}`}
+                                        className={`group flex max-w-[80%] items-center justify-start whitespace-nowrap text-left font-sans text-[14px] tracking-tight text-[rgba(0,0,0,0.5)] transition duration-150 hover:text-[rgba(0,0,0,0.75)] dark:text-[rgba(255,255,255,0.5)] dark:hover:text-[rgba(255,255,255,0.4)] sm:max-w-[90%] ${!memberExpertise && 'text-[rgba(0,0,0,0.3)] hover:text-[rgba(0,0,0,0.5)] dark:text-[rgba(255,255,255,0.3)]'}`}
                                         onClick={(event) => {
                                             handleShowPopup(event, {
-                                                bioAutofocus: true
+                                                expertiseAutofocus: true
                                             });
-                                        }}><span className="... overflow-hidden text-ellipsis">{memberBio ? memberBio : 'Add your expertise'}</span>
+                                        }}><span className="... overflow-hidden text-ellipsis">{memberExpertise ? memberExpertise : 'Add your expertise'}</span>
                                         {memberBio && <EditIcon className="ml-1 h-[12px] w-[12px] -translate-x-[6px] stroke-[rgba(0,0,0,0.5)] opacity-0 transition-all duration-100 ease-out group-hover:translate-x-0 group-hover:stroke-[rgba(0,0,0,0.75)] group-hover:opacity-100 dark:stroke-[rgba(255,255,255,0.5)] dark:group-hover:stroke-[rgba(255,255,255,0.3)]" />}
                                     </button>
                                 </div>

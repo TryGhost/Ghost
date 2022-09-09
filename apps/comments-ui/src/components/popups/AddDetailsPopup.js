@@ -6,20 +6,20 @@ import {isMobile} from '../../utils/helpers';
 
 const AddDetailsPopup = (props) => {
     const inputNameRef = useRef(null);
-    const inputBioRef = useRef(null);
+    const inputExpertiseRef = useRef(null);
     const {dispatchAction, member, accentColor} = useContext(AppContext);
 
     const [name, setName] = useState(member.name ?? '');
-    const [bio, setBio] = useState(member.bio ?? '');
+    const [expertise, setExpertise] = useState(member.expertise ?? '');
 
-    const maxBioChars = 50;
-    let initialBioChars = maxBioChars;
-    if (member.bio) {
-        initialBioChars -= member.bio.length;
+    const maxExpertiseChars = 50;
+    let initialExpertiseChars = maxExpertiseChars;
+    if (member.expertise) {
+        initialExpertiseChars -= member.expertise.length;
     }
-    const [bioCharsLeft, setBioCharsLeft] = useState(initialBioChars);
+    const [expertiseCharsLeft, setExpertiseCharsLeft] = useState(initialExpertiseChars);
 
-    const [error, setError] = useState({name: '', bio: ''});
+    const [error, setError] = useState({name: '', expertise: ''});
 
     const stopPropagation = (event) => {
         event.stopPropagation();
@@ -34,7 +34,7 @@ const AddDetailsPopup = (props) => {
         if (name.trim() !== '') {
             await dispatchAction('updateMember', {
                 name,
-                bio
+                expertise
             });
             close(true);
         } else {
@@ -48,8 +48,8 @@ const AddDetailsPopup = (props) => {
     useEffect(() => {
         if (!isMobile()) {
             const timer = setTimeout(() => {
-                if (props.bioAutofocus) {
-                    inputBioRef.current?.focus();
+                if (props.expertiseAutofocus) {
+                    inputExpertiseRef.current?.focus();
                 } else {
                     inputNameRef.current?.focus();
                 }  
@@ -59,7 +59,7 @@ const AddDetailsPopup = (props) => {
                 clearTimeout(timer);
             };
         }
-    }, [inputNameRef, inputBioRef, props.bioAutofocus]);
+    }, [inputNameRef, inputExpertiseRef, props.expertiseAutofocus]);
 
     const renderExampleProfiles = (index) => {
         const renderEl = (profile) => {
@@ -155,28 +155,28 @@ const AddDetailsPopup = (props) => {
                         />
                         <div className="mt-6 mb-2 flex flex-row justify-between">
                             <label htmlFor="comments-name" className="font-sans text-[1.3rem] font-semibold">Expertise</label>
-                            <div className={`font-sans text-[1.3rem] text-neutral-400 ${(bioCharsLeft === 0) && 'text-red-500'}`}><b>{bioCharsLeft}</b> characters left</div>
+                            <div className={`font-sans text-[1.3rem] text-neutral-400 ${(expertiseCharsLeft === 0) && 'text-red-500'}`}><b>{expertiseCharsLeft}</b> characters left</div>
                         </div>
                         <input
                             id="comments-bio"
-                            className={`flex h-[42px] w-full items-center rounded border border-neutral-200 px-3 font-sans text-[16px] outline-0 transition-[border-color] duration-200 focus:border-neutral-300 ${(bioCharsLeft === 0) && 'border-red-500 focus:border-red-500'}`}
+                            className={`flex h-[42px] w-full items-center rounded border border-neutral-200 px-3 font-sans text-[16px] outline-0 transition-[border-color] duration-200 focus:border-neutral-300 ${(expertiseCharsLeft === 0) && 'border-red-500 focus:border-red-500'}`}
                             type="text"
-                            name="bio"
-                            ref={inputBioRef}
-                            value={bio}
+                            name="expertise"
+                            ref={inputExpertiseRef}
+                            value={expertise}
                             placeholder="Head of Marketing at Acme, Inc"
                             onChange={(e) => {
-                                let bioText = e.target.value;
-                                setBioCharsLeft(maxBioChars - bioText.length);
-                                setBio(bioText);
+                                let expertiseText = e.target.value;
+                                setExpertiseCharsLeft(maxExpertiseChars - expertiseText.length);
+                                setExpertise(expertiseText);
                             }}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
-                                    setBio(e.target.value);
+                                    setExpertise(e.target.value);
                                     submit();
                                 }
                             }}
-                            maxLength={maxBioChars}
+                            maxLength={maxExpertiseChars}
                         />
                         <button
                             className={`mt-10 flex h-[42px] w-full items-center justify-center rounded-md px-8 font-sans text-[15px] font-semibold text-white opacity-100 transition-opacity duration-200 ease-linear hover:opacity-90`}
