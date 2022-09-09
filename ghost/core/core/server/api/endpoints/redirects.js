@@ -12,9 +12,7 @@ module.exports = {
                 value() {
                     return redirects.api.getRedirectsFilePath()
                         .then((filePath) => {
-                            // TODO: Default file type is .json for backward compatibility.
-                            // When .yaml becomes default or .json is removed at v4,
-                            // This part should be changed.
+                            // @deprecated: .json was deprecated in v4.0 but is still the default for backwards compat
                             return filePath === null || path.extname(filePath) === '.json'
                                 ? 'redirects.json'
                                 : 'redirects.yaml';
