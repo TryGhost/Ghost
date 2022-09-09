@@ -396,7 +396,7 @@ module.exports = {
             }
         },
         name: {type: 'string', maxlength: 191, nullable: true},
-        bio: {type: 'string', maxlength: 191, nullable: true, validations: {isLength: {max: 50}}},
+        expertise: {type: 'string', maxlength: 191, nullable: true, validations: {isLength: {max: 50}}},
         note: {type: 'string', maxlength: 2000, nullable: true},
         geolocation: {type: 'string', maxlength: 2000, nullable: true},
         enable_comment_notifications: {type: 'boolean', nullable: false, defaultTo: true},

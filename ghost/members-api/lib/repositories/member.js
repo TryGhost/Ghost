@@ -357,12 +357,12 @@ module.exports = class MemberRepository {
             'enable_comment_notifications',
             'last_seen_at',
             'last_commented_at',
-            'bio'
+            'expertise'
         ]);
 
-        // Trim whitespaces from bio
-        if (memberData.bio) {
-            memberData.bio = memberData.bio.trim();
+        // Trim whitespaces from expertise
+        if (memberData.expertise) {
+            memberData.expertise = memberData.expertise.trim();
         }
 
         // Determine if we need to fetch the initial member with relations
