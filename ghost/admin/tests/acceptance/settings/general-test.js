@@ -269,10 +269,10 @@ describe('Acceptance: Settings - General', function () {
 
             await visit('/settings/staff');
 
-            expect(findAll('.fullscreen-modal').length, 'modal exists').to.equal(1);
+            expect(findAll('[data-test-modal="unsaved-settings"]').length, 'modal exists').to.equal(1);
 
             // Leave without saving
-            await click('.fullscreen-modal [data-test-leave-button]');
+            await click('[data-test-leave-button]');
 
             expect(currentURL(), 'currentURL').to.equal('/settings/staff');
 
