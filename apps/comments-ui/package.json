@@ -28,8 +28,7 @@
     "@tiptap/react": "^2.0.0-beta.114",
     "react": "17.0.2",
     "react-dom": "17.0.2",
-    "react-scripts": "4.0.3",
-    "react-shadow": "^19.0.3"
+    "react-scripts": "4.0.3"
   },
   "scripts": {
     "start": "BROWSER=none react-scripts start",
@@ -50,16 +49,6 @@
     "analyze": "source-map-explorer 'umd/*.js'",
     "prepublishOnly": "yarn build",
     "tailwind": "npx tailwindcss -i ./src/index.css -o ./public/main.css --watch --minify"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest",
-      "plugin:ghost/browser"
-    ],
-    "plugins": [
-      "ghost"
-    ]
   },
   "browserslist": {
     "production": [

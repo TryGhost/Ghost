@@ -158,7 +158,7 @@ const AddDetailsPopup = (props) => {
                             <div className={`font-sans text-[1.3rem] text-neutral-400 ${(expertiseCharsLeft === 0) && 'text-red-500'}`}><b>{expertiseCharsLeft}</b> characters left</div>
                         </div>
                         <input
-                            id="comments-bio"
+                            id="comments-expertise"
                             className={`flex h-[42px] w-full items-center rounded border border-neutral-200 px-3 font-sans text-[16px] outline-0 transition-[border-color] duration-200 focus:border-neutral-300 ${(expertiseCharsLeft === 0) && 'border-red-500 focus:border-red-500'}`}
                             type="text"
                             name="expertise"
@@ -179,6 +179,7 @@ const AddDetailsPopup = (props) => {
                             maxLength={maxExpertiseChars}
                         />
                         <button
+                            type="button"
                             className={`mt-10 flex h-[42px] w-full items-center justify-center rounded-md px-8 font-sans text-[15px] font-semibold text-white opacity-100 transition-opacity duration-200 ease-linear hover:opacity-90`}
                             style={{backgroundColor: accentColor ?? '#000000'}}
                             onClick={submit}

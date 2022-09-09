@@ -29,7 +29,7 @@ const MoreButton = (props) => {
 
     return (
         <div className="relative">
-            {show ? <button onClick={toggleContextMenu} className="outline-0"><MoreIcon className='duration-50 gh-comments-icon gh-comments-icon-more fill-[rgba(0,0,0,0.5)] outline-0 transition ease-linear hover:fill-[rgba(0,0,0,0.75)] dark:fill-[rgba(255,255,255,0.5)] dark:hover:fill-[rgba(255,255,255,0.25)]' /></button> : null}
+            {show ? <button type="button" onClick={toggleContextMenu} className="outline-0"><MoreIcon className='duration-50 gh-comments-icon gh-comments-icon-more fill-[rgba(0,0,0,0.5)] outline-0 transition ease-linear hover:fill-[rgba(0,0,0,0.75)] dark:fill-[rgba(255,255,255,0.5)] dark:hover:fill-[rgba(255,255,255,0.25)]' /></button> : null}
             {isContextMenuOpen ? <CommentContextMenu comment={comment} close={closeContextMenu} toggleEdit={props.toggleEdit} /> : null}
         </div>
     );

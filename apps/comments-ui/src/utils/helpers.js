@@ -118,3 +118,66 @@ export function isMobile() {
 export function isCommentPublished(comment) {
     return comment.status === 'published';
 }
+
+/**
+ * Returns the y scroll position (top) of the main window of a given element that is in one or multiple stacked iframes
+ */
+export const getScrollToPosition = (element) => {
+    let yOffset = 0; 
+
+    // Because we are working in an iframe, we need to resolve the position inside this iframe to the position in the top window
+    // Get the window of the element, not the window (which is the top window)
+    let currentWindow = element.ownerDocument.defaultView;
+
+    // Loop all iframe parents (if we have multiple)
+    while (currentWindow !== window) {
+        const currentParentWindow = currentWindow.parent;
+        for (let idx = 0; idx < currentParentWindow.frames.length; idx++) {
+            if (currentParentWindow.frames[idx] === currentWindow) {
+                for (let frameElement of currentParentWindow.document.getElementsByTagName('iframe')) {
+                    if (frameElement.contentWindow === currentWindow) {
+                        const rect = frameElement.getBoundingClientRect();
+                        yOffset += rect.top + currentWindow.pageYOffset;
+                    }
+                }
+                currentWindow = currentParentWindow;
+                break;
+            }
+        }
+    }
+
+    const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+    return y;
+};
+
+/**
+ * Scroll to an element that is in an iframe, only if it is outside the current viewport
+ */
+export const scrollToElement = (element) => {
+    // Is the form already in view?
+    const elementHeight = element.offsetHeight;
+
+    // Start y position of the form
+    const yMin = getScrollToPosition(element);
+
+    // Y position of the end of the form
+    const yMax = yMin + elementHeight;
+
+    // Trigger scrolling when yMin and yMax is closer than this to the border of the viewport
+    const offset = 64;
+    
+    const viewportHeight = window.innerHeight;
+    const viewPortYMin = window.scrollY;
+    const viewPortYMax = viewPortYMin + viewportHeight;
+
+    if (yMin - offset < viewPortYMin || yMax + offset > viewPortYMax) {
+        // Center the form in the viewport
+        const yCenter = (yMin + yMax) / 2;
+
+        window.scrollTo({
+            top: yCenter - viewportHeight / 2,
+            left: 0,
+            behavior: 'smooth'
+        });
+    }
+};

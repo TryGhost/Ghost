@@ -16,7 +16,8 @@ export function getEditorConfig({placeholder, autofocus = false, content = ''}) 
                 openOnClick: false
             }),
             Placeholder.configure({
-                placeholder
+                placeholder,
+                showOnlyWhenEditable: false
             }),
             Blockquote.configure({}),
 

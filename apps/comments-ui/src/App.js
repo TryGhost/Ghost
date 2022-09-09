@@ -51,6 +51,7 @@ export default class App extends React.Component {
 
         // Bind to make sure we have a variable reference (and don't need to create a new binded function in our context value every time the state changes)
         this.dispatchAction = this.dispatchAction.bind(this);
+        this.initAdminAuth = this.initAdminAuth.bind(this);
     }
 
     /** Initialize comments setup on load, fetch data and setup state*/
@@ -304,7 +305,7 @@ export default class App extends React.Component {
                     <CommentsFrame>
                         <ContentBox done={done} />
                     </CommentsFrame>
-                    <AuthFrame adminUrl={this.props.adminUrl} onLoad={this.initAdminAuth.bind(this)}/>
+                    <AuthFrame adminUrl={this.props.adminUrl} onLoad={this.initAdminAuth}/>
                     <PopupBox />
                 </AppContext.Provider>
             </SentryErrorBoundary>
