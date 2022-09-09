@@ -1,6 +1,8 @@
 /**
  * @typedef {object} SubscriptionCreatedEventData
+ * @prop {string} source
  * @prop {string} memberId
+ * @prop {string} tierId
  * @prop {string} subscriptionId
  * @prop {string} offerId
  * @prop {import('@tryghost/member-attribution/lib/attribution').Attribution} [attribution]
