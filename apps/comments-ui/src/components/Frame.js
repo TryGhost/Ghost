@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react';
+import React, {useCallback, useContext, useState} from 'react';
 import AppContext from '../AppContext';
 import IFrame from './IFrame';
 
@@ -40,14 +40,15 @@ const TailwindFrame = ({children, onResize, style, title}) => {
  */
 const ResizableFrame = ({children, style, title}) => {
     const [iframeStyle, setIframeStyle] = useState(style);
-    const onResize = (iframeRoot) => {
+    const onResize = useCallback((iframeRoot) => {
         setIframeStyle((current) => {
             return {
                 ...current,
                 height: `${iframeRoot.scrollHeight}px`
             };
         });
-    };
+    }, []);
+
     return (
         <TailwindFrame style={iframeStyle} onResize={onResize} title={title}>
             {children}

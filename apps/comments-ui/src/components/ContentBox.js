@@ -1,7 +1,7 @@
 import React, {useContext, useEffect} from 'react';
 import AppContext from '../AppContext';
 import CTABox from './content/CTABox';
-import Form from './content/Form';
+import MainForm from './content/forms/MainForm';
 import Comment from './content/Comment';
 import Pagination from './content/Pagination';
 import Loading from './content/Loading';
@@ -44,7 +44,7 @@ const Content = (props) => {
             </div>
             <div>
                 {!hasOpenSecundaryForms
-                    ? (member ? (isPaidMember || !paidOnly ? <Form commentsCount={commentCount} /> : <CTABox isFirst={pagination?.total === 0} isPaid={paidOnly} />) : <CTABox isFirst={pagination?.total === 0} isPaid={paidOnly} />)
+                    ? (member ? (isPaidMember || !paidOnly ? <MainForm commentsCount={commentCount} /> : <CTABox isFirst={pagination?.total === 0} isPaid={paidOnly} />) : <CTABox isFirst={pagination?.total === 0} isPaid={paidOnly} />)
                     : null
                 }
             </div>
@@ -96,9 +96,7 @@ const ContentBox = (props) => {
 
     return (
         <section className={'ghost-display ' + containerClass} style={style} data-testid="content-box">
-            {props.done ? <>
-                <Content />
-            </> : <Loading />}
+            {props.done ? <Content /> : <Loading />}
         </section>
     );
 };

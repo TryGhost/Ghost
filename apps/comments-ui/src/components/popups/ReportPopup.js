@@ -57,6 +57,7 @@ const ReportPopup = (props) => {
             <p className="text-base px-4 font-sans leading-9 text-neutral-500 sm:pr-4 sm:pl-0">Your request will be sent to the owner of this site.</p>
             <div className="mt-10 flex flex-col items-center justify-start gap-4 sm:flex-row">
                 <button
+                    type="button"
                     className={`flex h-[44px] w-full items-center justify-center rounded-md px-4 font-sans text-[15px] font-semibold text-white transition duration-200 ease-linear sm:w-[200px] ${buttonColor} opacity-100 hover:opacity-90`}
                     onClick={submit}
                     style={{backgroundColor: buttonColor ?? '#000000'}}

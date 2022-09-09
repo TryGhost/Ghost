@@ -4,10 +4,11 @@ import {BlankAvatar, Avatar} from './Avatar';
 import LikeButton from './buttons/LikeButton';
 import ReplyButton from './buttons/ReplyButton';
 import MoreButton from './buttons/MoreButton';
-import Form from './Form';
 import Replies from './Replies';
 import AppContext from '../../AppContext';
 import {formatRelativeTime, formatExplicitTime, isCommentPublished} from '../../utils/helpers';
+import ReplyForm from './forms/ReplyForm';
+import EditForm from './forms/EditForm';
 
 function AnimatedComment({comment, parent}) {
     return (
@@ -81,7 +82,7 @@ function PublishedComment({comment, parent, openEditMode}) {
             <CommentMenu comment={comment} parent={parent} isInReplyMode={isInReplyMode} toggleReplyMode={toggleReplyMode} openEditMode={openEditMode} />
 
             <RepliesContainer comment={comment} />
-            <ReplyForm comment={comment} isInReplyMode={isInReplyMode} closeReplyMode={closeReplyMode} />
+            <ReplyFormBox comment={comment} isInReplyMode={isInReplyMode} closeReplyMode={closeReplyMode} />
         </CommentLayout>
     );
 }
@@ -154,21 +155,15 @@ function RepliesContainer({comment}) {
     );
 }
 
-function ReplyForm({comment, isInReplyMode, closeReplyMode}) {
+function ReplyFormBox({comment, isInReplyMode, closeReplyMode}) {
     if (!isInReplyMode) {
         return null;
     }
 
     return (
         <div className="my-10">
-            <Form parent={comment} close={closeReplyMode} isReply={true} />
+            <ReplyForm parent={comment} close={closeReplyMode} />
         </div>
-    );
-}
-
-function EditForm({comment, parent, close}) {
-    return (
-        <Form comment={comment} close={close} parent={parent} isEdit={true} />
     );
 }
 
