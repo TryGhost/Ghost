@@ -109,7 +109,7 @@ export default class Main extends Component.extend(ShortcutsMixin) {
     @task(function* () {
         try {
             this.set('memberCountLoading', true);
-            yield this.membersStats.updateMemberCounts();
+            yield this.membersStats.fetchMemberCount();
             this.set('memberCountLoading', false);
         } catch (e) {
             return false;
