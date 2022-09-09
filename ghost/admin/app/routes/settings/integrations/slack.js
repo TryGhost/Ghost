@@ -1,36 +1,69 @@
 import AdminRoute from 'ghost-admin/routes/admin';
+import ConfirmUnsavedChangesModal from '../../../components/modals/confirm-unsaved-changes';
+import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
-export default AdminRoute.extend({
-    settings: service(),
+export default class SlackIntegrationRoute extends AdminRoute {
+    @service modals;
+    @service settings;
 
-    beforeModel() {
-        this._super(...arguments);
+    model() {
+        this.settings.reload();
+    }
 
-        return this.settings.reload();
-    },
+    deactivate() {
+        this.confirmModal = null;
+        this.hasConfirmed = false;
+    }
 
-    actions: {
-        save() {
-            this.controller.send('save');
-        },
-
-        willTransition(transition) {
-            let controller = this.controller;
-            let settings = this.settings;
-            let modelIsDirty = settings.get('hasDirtyAttributes');
-
-            if (modelIsDirty) {
-                transition.abort();
-                controller.send('toggleLeaveSettingsModal', transition);
-                return;
-            }
+    @action
+    async willTransition(transition) {
+        if (this.hasConfirmed) {
+            return true;
         }
-    },
+
+        transition.abort();
+
+        // wait for any existing confirm modal to be closed before allowing transition
+        if (this.confirmModal) {
+            return;
+        }
+
+        if (this.controller.saveTask?.isRunning) {
+            await this.controller.saveTask.last;
+        }
+
+        const shouldLeave = await this.confirmUnsavedChanges();
+
+        if (shouldLeave) {
+            this.settings.rollbackAttributes();
+            this.hasConfirmed = true;
+            return transition.retry();
+        }
+    }
+
+    async confirmUnsavedChanges() {
+        if (this.settings.get('hasDirtyAttributes')) {
+            this.confirmModal = this.modals
+                .open(ConfirmUnsavedChangesModal)
+                .finally(() => {
+                    this.confirmModal = null;
+                });
+
+            return this.confirmModal;
+        }
+
+        return true;
+    }
+
+    @action
+    save() {
+        this.controller.send('save');
+    }
 
     buildRouteInfoMetadata() {
         return {
             titleToken: 'Slack'
         };
     }
-});
+}
