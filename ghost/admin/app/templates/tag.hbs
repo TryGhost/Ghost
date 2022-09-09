@@ -11,7 +11,7 @@
             </section>
         </GhCanvasHeader>
 
-        <GhTagSettingsForm
+        <Tags::TagForm
             @tag={{this.tag}}
             @scratchTag={{this.scratchTag}}
             @setProperty={{action "setProperty"}} />
@@ -19,7 +19,7 @@
 
     {{#unless this.tag.isNew}}
         <div>
-            <button type="button" class="gh-btn gh-btn-red gh-btn-icon" {{on "click" (action "openDeleteTagModal")}} data-test-button="delete-tag">
+            <button type="button" class="gh-btn gh-btn-red gh-btn-icon" {{on "click" this.confirmDeleteTag}} data-test-button="delete-tag">
                 <span>Delete tag</span>
             </button>
         </div>
@@ -31,14 +31,5 @@
         @modal="leave-settings"
         @confirm={{action "leaveScreen"}}
         @close={{action "toggleUnsavedChangesModal"}}
-        @modifier="action wide" />
-{{/if}}
-
-{{#if this.showDeleteTagModal}}
-    <GhFullscreenModal
-        @modal="delete-tag"
-        @model={{this.tag}}
-        @confirm={{action "deleteTag"}}
-        @close={{action "closeDeleteTagModal"}}
         @modifier="action wide" />
 {{/if}}

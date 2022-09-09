@@ -6,7 +6,6 @@ const _ = require('lodash');
 const moment = require('moment');
 const testUtils = require('../../../utils');
 const configUtils = require('../../../utils/configUtils');
-const themeEngine = require('../../../../core/frontend/services/theme-engine');
 const models = require('../../../../core/server/models');
 const imageLib = require('../../../../core/server/lib/image');
 const routing = require('../../../../core/frontend/services/routing');
@@ -15,6 +14,18 @@ const urlService = require('../../../../core/server/services/url');
 const ghost_head = require('../../../../core/frontend/helpers/ghost_head');
 const proxy = require('../../../../core/frontend/services/proxy');
 const {settingsCache, labs} = proxy;
+
+/**
+ * This test helper asserts that the helper response matches the stored snapshot. This helps us detect issues where we
+ * inject new scripts or meta tags on sites where this shouldn't be the case. Unless the changes in the snapshots are validated and approved.
+ * So these changes become visible in PR's.
+ */
+async function testGhostHead(options) {
+    const rendered = await ghost_head(options);
+    should.exist(rendered);
+    rendered.should.matchSnapshot();
+    return rendered;
+}
 
 describe('{{ghost_head}} helper', function () {
     let posts = [];
@@ -32,7 +43,8 @@ describe('{{ghost_head}} helper', function () {
             meta_description: 'tag meta description',
             name: 'tagtitle',
             meta_title: 'tag meta title',
-            feature_image: '/content/images/tag-image.png'
+            feature_image: '/content/images/tag-image.png',
+            updated_at: new Date(0)
         }));
 
         tags.push(createTag({
@@ -40,21 +52,24 @@ describe('{{ghost_head}} helper', function () {
             description: 'tag description',
             name: 'tagtitle',
             meta_title: '',
-            feature_image: '/content/images/tag-image.png'
+            feature_image: '/content/images/tag-image.png',
+            updated_at: new Date(0)
         }));
         tags.push(createTag({
             description: '',
             meta_description: '',
             name: 'tagtitle',
             meta_title: '',
-            feature_image: '/content/images/tag-image.png'
+            feature_image: '/content/images/tag-image.png',
+            updated_at: new Date(0)
         }));
 
         tags.push(createTag({
             meta_description: 'tag meta description',
             title: 'tagtitle',
             meta_title: 'tag meta title',
-            feature_image: '/content/images/tag-image.png'
+            feature_image: '/content/images/tag-image.png',
+            updated_at: new Date(0)
         }));
 
         /** USERS - used for author PAGES */
@@ -66,7 +81,8 @@ describe('{{ghost_head}} helper', function () {
             cover_image: '/content/images/author-cover-image.png',
             website: 'http://authorwebsite.com',
             facebook: 'testuser',
-            twitter: '@testuser'
+            twitter: '@testuser',
+            updated_at: new Date(0)
         }));
 
         users.push(createUser({
@@ -75,7 +91,8 @@ describe('{{ghost_head}} helper', function () {
             bio: 'Author bio',
             profile_image: '/content/images/test-author-image.png',
             cover_image: '/content/images/author-cover-image.png',
-            website: 'http://authorwebsite.com'
+            website: 'http://authorwebsite.com',
+            updated_at: new Date(0)
         }));
 
         /** AUTHORS - related to posts */
@@ -83,7 +100,8 @@ describe('{{ghost_head}} helper', function () {
             profile_image: '/content/images/test-author-image.png',
             website: 'http://authorwebsite.com',
             facebook: 'testuser',
-            twitter: '@testuser'
+            twitter: '@testuser',
+            updated_at: new Date(0)
         }));
 
         authors.push(createUser({// Author 1
@@ -93,7 +111,8 @@ describe('{{ghost_head}} helper', function () {
             website: 'http://authorwebsite.com',
             bio: 'Author bio',
             facebook: 'testuser',
-            twitter: '@testuser'
+            twitter: '@testuser',
+            updated_at: new Date(0)
         }));
 
         authors.push(createUser({// Author 2
@@ -103,7 +122,8 @@ describe('{{ghost_head}} helper', function () {
             website: 'http://authorwebsite.com',
             facebook: 'testuser',
             twitter: '@testuser',
-            bio: 'Author bio'
+            bio: 'Author bio',
+            updated_at: new Date(0)
         }));
 
         authors.push(createUser({// Author 3
@@ -113,11 +133,13 @@ describe('{{ghost_head}} helper', function () {
             profile_image: '/content/images/test-author-image.png',
             website: 'http://authorwebsite.com',
             facebook: 'testuser',
-            twitter: '@testuser'
+            twitter: '@testuser',
+            updated_at: new Date(0)
         }));
 
         authors.push(createUser({// Author 4
-            name: 'Author name'
+            name: 'Author name',
+            updated_at: new Date(0)
         }));
 
         authors.push(createUser({// Author 5
@@ -127,7 +149,8 @@ describe('{{ghost_head}} helper', function () {
             profile_image: null,
             website: 'http://authorwebsite.com',
             facebook: 'testuser',
-            twitter: '@testuser'
+            twitter: '@testuser',
+            updated_at: new Date(0)
         }));
 
         /** POSTS */
@@ -138,7 +161,9 @@ describe('{{ghost_head}} helper', function () {
             feature_image: '/content/images/test-image-about.png',
             page: true,
             authors: [authors[0]],
-            primary_author: authors[0]
+            primary_author: authors[0],
+            published_at: new Date(0),
+            updated_at: new Date(0)
         }));
 
         posts.push(createPost({// Post 1
@@ -153,7 +178,9 @@ describe('{{ghost_head}} helper', function () {
             twitter_description: 'Custom Twitter description',
             page: true,
             authors: [authors[0]],
-            primary_author: authors[0]
+            primary_author: authors[0],
+            published_at: new Date(0),
+            updated_at: new Date(0)
         }));
 
         posts.push(createPost({// Post 2
@@ -190,7 +217,9 @@ describe('{{ghost_head}} helper', function () {
             authors: [
                 authors[2]
             ],
-            primary_author: authors[2]
+            primary_author: authors[2],
+            published_at: new Date(0),
+            updated_at: new Date(0)
         }));
 
         posts.push(createPost({// Post 4
@@ -200,7 +229,9 @@ describe('{{ghost_head}} helper', function () {
             authors: [
                 authors[3]
             ],
-            primary_author: authors[3]
+            primary_author: authors[3],
+            published_at: new Date(0),
+            updated_at: new Date(0)
         }));
 
         posts.push(createPost({// Post 5
@@ -219,7 +250,9 @@ describe('{{ghost_head}} helper', function () {
             authors: [
                 authors[3]
             ],
-            primary_author: authors[3]
+            primary_author: authors[3],
+            published_at: new Date(0),
+            updated_at: new Date(0)
         }));
 
         posts.push(createPost({// Post 6
@@ -235,7 +268,9 @@ describe('{{ghost_head}} helper', function () {
             authors: [
                 authors[3]
             ],
-            primary_author: authors[3]
+            primary_author: authors[3],
+            published_at: new Date(0),
+            updated_at: new Date(0)
         }));
 
         posts.push(createPost({// Post 7
@@ -246,7 +281,9 @@ describe('{{ghost_head}} helper', function () {
             authors: [
                 authors[3]
             ],
-            primary_author: authors[3]
+            primary_author: authors[3],
+            published_at: new Date(0),
+            updated_at: new Date(0)
         }));
 
         posts.push(createPost({// Post 8
@@ -261,7 +298,9 @@ describe('{{ghost_head}} helper', function () {
             authors: [
                 authors[5]
             ],
-            primary_author: authors[5]
+            primary_author: authors[5],
+            published_at: new Date(0),
+            updated_at: new Date(0)
         }));
 
         posts.push(createPost({// Post 9
@@ -276,7 +315,9 @@ describe('{{ghost_head}} helper', function () {
             authors: [
                 authors[4]
             ],
-            primary_author: authors[4]
+            primary_author: authors[4],
+            published_at: new Date(0),
+            updated_at: new Date(0)
         }));
     };
 
@@ -303,6 +344,10 @@ describe('{{ghost_head}} helper', function () {
         settingsCache.get.withArgs('description').returns('site description');
         settingsCache.get.withArgs('cover_image').returns('/content/images/site-cover.png');
         settingsCache.get.withArgs('amp').returns(true);
+        settingsCache.get.withArgs('comments_enabled').returns('off');
+
+        // Force the usage of a fixed asset hash so we have reliable snapshots
+        configUtils.set('assetHash', 'asset-hash');
 
         makeFixtures();
     });
@@ -317,65 +362,64 @@ describe('{{ghost_head}} helper', function () {
             configUtils.set({url: 'http://localhost:65530/'});
         });
 
-        it('returns meta tag string on paginated index page without structured data and schema', function (done) {
+        it('returns meta tag string on paginated index page without structured data and schema', async function () {
             // @TODO: later we can extend this fn with an `meta` object e.g. locals.meta
-            ghost_head(testUtils.createHbsResponse({
+            await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/page/2/',
                     context: ['paged', 'index'],
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/page\/2\/" \/>/);
-                rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
-                rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/rss\/" \/>/);
-                rendered.string.should.not.match(/<meta name="description"/);
-                rendered.string.should.not.match(/<meta property="og/);
-                rendered.string.should.not.match(/<script type=\"application\/ld\+json\">/);
-
-                done();
-            }).catch(done);
+            }));
         });
 
-        it('returns structured data on first index page', function (done) {
-            ghost_head(testUtils.createHbsResponse({
+        it('returns structured data on first index page', async function () {
+            await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/" \/>/);
-                rendered.string.should.match(/<meta name="referrer" content="no-referrer-when-downgrade" \/>/);
-                rendered.string.should.match(/<meta name="description" content="site description" \/>/);
-                rendered.string.should.match(/<meta property="og:site_name" content="Ghost" \/>/);
-                rendered.string.should.match(/<meta property="og:type" content="website" \/>/);
-                rendered.string.should.match(/<meta property="og:title" content="Ghost" \/>/);
-                rendered.string.should.match(/<meta property="og:description" content="site description" \/>/);
-                rendered.string.should.match(/<meta property="og:url" content="http:\/\/localhost:65530\/" \/>/);
-                rendered.string.should.match(/<meta property="og:image" content="http:\/\/localhost:65530\/content\/images\/site-cover.png" \/>/);
-                rendered.string.should.match(/<meta name="twitter:card" content="summary_large_image" \/>/);
-                rendered.string.should.match(/<meta name="twitter:title" content="Ghost" \/>/);
-                rendered.string.should.match(/<meta name="twitter:description" content="site description" \/>/);
-                rendered.string.should.match(/<meta name="twitter:url" content="http:\/\/localhost:65530\/" \/>/);
-                rendered.string.should.match(/<meta name="twitter:image" content="http:\/\/localhost:65530\/content\/images\/site-cover.png" \/>/);
-                rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
-                rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/rss\/" \/>/);
-                rendered.string.should.match(/<script type=\"application\/ld\+json\">/);
-                rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
-                rendered.string.should.match(/"@type": "WebSite"/);
-                rendered.string.should.match(/"publisher": {\n        "@type": "Organization",\n        "name": "Ghost",/);
-                rendered.string.should.match(/"url": "http:\/\/localhost:65530\/"/);
-                rendered.string.should.match(/"image": {\n        "@type": "ImageObject",\n        "url": "http:\/\/localhost:65530\/content\/images\/site-cover.png"\n/);
-                rendered.string.should.match(/"description": "site description"/);
-
-                done();
-            }).catch(done);
+            }));
         });
 
-        it('returns meta structured data on homepage with site metadata defined', function (done) {
+        it('does not inject count script if comments off', async function () {
+            settingsCache.get.withArgs('comments_enabled').returns('off');
+
+            await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '0.3'
+                }
+            }));
+        });
+
+        it('injects comment count script if comments paid', async function () {
+            settingsCache.get.withArgs('comments_enabled').returns('paid');
+
+            await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '0.3'
+                }
+            }));
+        });
+
+        it('injects comment count script if comments all', async function () {
+            settingsCache.get.withArgs('comments_enabled').returns('all');
+
+            await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '0.3'
+                }
+            }));
+        });
+
+        it('returns meta structured data on homepage with site metadata defined', async function () {
             settingsCache.get.withArgs('meta_description').returns('site SEO description');
 
             settingsCache.get.withArgs('og_title').returns('facebook site title');
@@ -386,598 +430,193 @@ describe('{{ghost_head}} helper', function () {
             settingsCache.get.withArgs('twitter_description').returns('twitter site description');
             settingsCache.get.withArgs('twitter_image').returns('/content/images/twitter-image.png');
 
-            ghost_head(testUtils.createHbsResponse({
+            await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/" \/>/);
-                rendered.string.should.match(/<meta name="referrer" content="no-referrer-when-downgrade" \/>/);
-                rendered.string.should.match(/<meta name="description" content="site SEO description" \/>/);
-                rendered.string.should.match(/<meta property="og:site_name" content="Ghost" \/>/);
-                rendered.string.should.match(/<meta property="og:type" content="website" \/>/);
-                rendered.string.should.match(/<meta property="og:title" content="facebook site title" \/>/);
-                rendered.string.should.match(/<meta property="og:description" content="facebook site description" \/>/);
-                rendered.string.should.match(/<meta property="og:url" content="http:\/\/localhost:65530\/" \/>/);
-                rendered.string.should.match(/<meta property="og:image" content="http:\/\/localhost:65530\/content\/images\/facebook-image.png" \/>/);
-                rendered.string.should.match(/<meta name="twitter:card" content="summary_large_image" \/>/);
-                rendered.string.should.match(/<meta name="twitter:title" content="twitter site title" \/>/);
-                rendered.string.should.match(/<meta name="twitter:description" content="twitter site description" \/>/);
-                rendered.string.should.match(/<meta name="twitter:url" content="http:\/\/localhost:65530\/" \/>/);
-                rendered.string.should.match(/<meta name="twitter:image" content="http:\/\/localhost:65530\/content\/images\/twitter-image.png" \/>/);
-                rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
-                rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/rss\/" \/>/);
-                rendered.string.should.match(/<script type=\"application\/ld\+json\">/);
-                rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
-                rendered.string.should.match(/"@type": "WebSite"/);
-                rendered.string.should.match(/"publisher": {\n        "@type": "Organization",\n        "name": "Ghost",/);
-                rendered.string.should.match(/"url": "http:\/\/localhost:65530\/"/);
-                rendered.string.should.match(/"image": {\n        "@type": "ImageObject",\n        "url": "http:\/\/localhost:65530\/content\/images\/site-cover.png"\n/);
-                rendered.string.should.match(/"description": "site SEO description"/);
-
-                done();
-            }).catch(done);
+            }));
         });
 
-        it('returns structured data on static page', function (done) {
+        it('returns structured data on static page', async function () {
             const renderObject = {
                 post: posts[0]
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            await testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/about/',
                     context: ['page'],
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/about\/" \/>/);
-                rendered.string.should.match(/<meta name="referrer" content="no-referrer-when-downgrade" \/>/);
-                rendered.string.should.match(/<meta name="description" content="all about our site" \/>/);
-                rendered.string.should.match(/<meta property="og:site_name" content="Ghost" \/>/);
-                rendered.string.should.match(/<meta property="og:type" content="website" \/>/);
-                rendered.string.should.match(/<meta property="og:title" content="About" \/>/);
-                rendered.string.should.match(/<meta property="og:description" content="all about our site" \/>/);
-                rendered.string.should.match(/<meta property="og:url" content="http:\/\/localhost:65530\/about\/" \/>/);
-                rendered.string.should.match(/<meta property="og:image" content="http:\/\/localhost:65530\/content\/images\/test-image-about.png" \/>/);
-                rendered.string.should.match(/<meta property="article:author" content="https:\/\/www.facebook.com\/testuser" \/>/);
-                rendered.string.should.match(/<meta name="twitter:card" content="summary_large_image" \/>/);
-                rendered.string.should.match(/<meta name="twitter:title" content="About" \/>/);
-                rendered.string.should.match(/<meta name="twitter:creator" content="@testuser" \/>/);
-                rendered.string.should.match(/<meta name="twitter:description" content="all about our site" \/>/);
-                rendered.string.should.match(/<meta name="twitter:url" content="http:\/\/localhost:65530\/about\/" \/>/);
-                rendered.string.should.match(/<meta name="twitter:image" content="http:\/\/localhost:65530\/content\/images\/test-image-about.png" \/>/);
-                rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
-                rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/rss\/" \/>/);
-                rendered.string.should.match(/<script type=\"application\/ld\+json\">/);
-                rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
-                rendered.string.should.match(/"@type": "Article"/);
-                rendered.string.should.match(/"publisher": {/);
-                rendered.string.should.match(/"@type": "Organization"/);
-                rendered.string.should.match(/"name": "Ghost"/);
-                rendered.string.should.match(/"url": "http:\/\/localhost:65530\/about\/"/);
-                rendered.string.should.match(/"sameAs": \[\n            "http:\/\/authorwebsite.com",\n            "https:\/\/www.facebook.com\/testuser",\n            "https:\/\/twitter.com\/testuser"\n        \]/);
-                rendered.string.should.match(/"image": {\n        "@type": "ImageObject",\n        "url": "http:\/\/localhost:65530\/content\/images\/test-image-about.png"\n/);
-                rendered.string.should.match(/"image": {\n            "@type": "ImageObject",\n            "url": "http:\/\/localhost:65530\/content\/images\/test-author-image.png"\n/);
-                rendered.string.should.match(/"description": "all about our site"/);
-
-                done();
-            }).catch(done);
+            }));
         });
 
-        it('returns structured data on static page with custom post structured data', function (done) {
+        it('returns structured data on static page with custom post structured data', async function () {
             const renderObject = {
                 post: posts[1]
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            await testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/about/',
                     context: ['page'],
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/about\/" \/>/);
-                rendered.string.should.match(/<meta name="referrer" content="no-referrer-when-downgrade" \/>/);
-                rendered.string.should.match(/<meta name="description" content="all about our site" \/>/);
-                rendered.string.should.match(/<meta property="og:site_name" content="Ghost" \/>/);
-                rendered.string.should.match(/<meta property="og:type" content="website" \/>/);
-                rendered.string.should.match(/<meta property="og:title" content="Custom Facebook title" \/>/);
-                rendered.string.should.match(/<meta property="og:description" content="Custom Facebook description" \/>/);
-                rendered.string.should.match(/<meta property="og:url" content="http:\/\/localhost:65530\/about\/" \/>/);
-                rendered.string.should.match(/<meta property="og:image" content="http:\/\/localhost:65530\/content\/images\/test-og-image.png" \/>/);
-                rendered.string.should.match(/<meta property="article:author" content="https:\/\/www.facebook.com\/testuser" \/>/);
-                rendered.string.should.match(/<meta name="twitter:card" content="summary_large_image" \/>/);
-                rendered.string.should.match(/<meta name="twitter:title" content="Custom Twitter title" \/>/);
-                rendered.string.should.match(/<meta name="twitter:creator" content="@testuser" \/>/);
-                rendered.string.should.match(/<meta name="twitter:description" content="Custom Twitter description" \/>/);
-                rendered.string.should.match(/<meta name="twitter:url" content="http:\/\/localhost:65530\/about\/" \/>/);
-                rendered.string.should.match(/<meta name="twitter:image" content="http:\/\/localhost:65530\/content\/images\/test-twitter-image.png" \/>/);
-                rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
-                rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/rss\/" \/>/);
-                rendered.string.should.match(/<script type=\"application\/ld\+json\">/);
-                rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
-                rendered.string.should.match(/"@type": "Article"/);
-                rendered.string.should.match(/"publisher": {/);
-                rendered.string.should.match(/"@type": "Organization"/);
-                rendered.string.should.match(/"name": "Ghost"/);
-                rendered.string.should.match(/"url": "http:\/\/localhost:65530\/about\/"/);
-                rendered.string.should.match(/"sameAs": \[\n            "http:\/\/authorwebsite.com",\n            "https:\/\/www.facebook.com\/testuser",\n            "https:\/\/twitter.com\/testuser"\n        \]/);
-                rendered.string.should.match(/"image": {\n        "@type": "ImageObject",\n        "url": "http:\/\/localhost:65530\/content\/images\/test-image-about.png"/);
-                rendered.string.should.match(/"image": {\n            "@type": "ImageObject",\n            "url": "http:\/\/localhost:65530\/content\/images\/test-author-image.png"\n/);
-                rendered.string.should.match(/"description": "all about our site"/);
-
-                done();
-            }).catch(done);
+            }));
         });
 
-        it('returns structured data on post page with author image and post cover image', function (done) {
+        it('returns structured data on post page with author image and post cover image', async function () {
             const renderObject = {
                 post: posts[2]
             };
 
             const postBk = _.cloneDeep(renderObject.post);
 
-            ghost_head(testUtils.createHbsResponse({
+            await testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/post/',
                     context: ['post'],
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                const re1 = new RegExp('<meta property="article:published_time" content="' + new Date(renderObject.post.published_at).toISOString());
-                const re2 = new RegExp('<meta property="article:modified_time" content="' + new Date(renderObject.post.updated_at).toISOString());
-                const re3 = new RegExp('"datePublished": "' + new Date(renderObject.post.published_at).toISOString());
-                const re4 = new RegExp('"dateModified": "' + new Date(renderObject.post.updated_at).toISOString());
-
-                should.exist(rendered);
-                rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/post\/" \/>/);
-                rendered.string.should.match(/<link rel="amphtml" href="http:\/\/localhost:65530\/post\/amp\/" \/>/);
-                rendered.string.should.match(/<meta name="description" content="site description" \/>/);
-                rendered.string.should.match(/<meta property="og:site_name" content="Ghost" \/>/);
-                rendered.string.should.match(/<meta property="og:type" content="article" \/>/);
-                rendered.string.should.match(/<meta property="og:title" content="Custom Facebook title" \/>/);
-                rendered.string.should.match(/<meta property="og:description" content="Custom Facebook description" \/>/);
-                rendered.string.should.match(/<meta property="og:url" content="http:\/\/localhost:65530\/post\/" \/>/);
-                rendered.string.should.match(/<meta property="og:image" content="http:\/\/localhost:65530\/content\/images\/test-image.png" \/>/);
-                rendered.string.should.match(re1);
-                rendered.string.should.match(re2);
-                rendered.string.should.match(/<meta property="article:tag" content="tag1" \/>/);
-                rendered.string.should.match(/<meta property="article:tag" content="tag2" \/>/);
-                rendered.string.should.match(/<meta property="article:tag" content="tag3" \/>/);
-                rendered.string.should.match(/<meta property="article:author" content="https:\/\/www.facebook.com\/testuser" \/>/);
-                rendered.string.should.match(/<meta name="twitter:title" content="Welcome to Ghost" \/>/);
-                rendered.string.should.match(/<meta name="twitter:description" content="site description" \/>/);
-                rendered.string.should.match(/<meta name="twitter:url" content="http:\/\/localhost:65530\/post\/" \/>/);
-                rendered.string.should.match(/<meta name="twitter:image" content="http:\/\/localhost:65530\/content\/images\/test-twitter-image.png" \/>/);
-                rendered.string.should.match(/<meta name="twitter:creator" content="@testuser" \/>/);
-                rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
-                rendered.string.should.match(/"@type": "Article"/);
-                rendered.string.should.match(/"publisher": {/);
-                rendered.string.should.match(/"@type": "Organization"/);
-                rendered.string.should.match(/"name": "Ghost"/);
-                rendered.string.should.match(/"author": {/);
-                rendered.string.should.match(/"@type": "Person"/);
-                rendered.string.should.match(/"name": "Author name"/);
-                rendered.string.should.match(/"image": {\n            "@type": "ImageObject",\n            "url": "http:\/\/localhost:65530\/content\/images\/test-author-image.png"\n/);
-                rendered.string.should.match(/"url": "https:\/\/mysite.com\/fakeauthor\/"/);
-                rendered.string.should.match(/"sameAs": \[\n            "http:\/\/authorwebsite.com",\n            "https:\/\/www.facebook.com\/testuser",\n            "https:\/\/twitter.com\/testuser"\n        \]/);
-                rendered.string.should.not.match(/"description": "Author bio"/);
-                rendered.string.should.match(/"headline": "Welcome to Ghost"/);
-                rendered.string.should.match(/"url": "http:\/\/localhost:65530\/post\/"/);
-                rendered.string.should.match(re3);
-                rendered.string.should.match(re4);
-                rendered.string.should.match(/"image": {\n        "@type": "ImageObject",\n        "url": "http:\/\/localhost:65530\/content\/images\/test-image.png"\n/);
-                rendered.string.should.match(/"keywords": "tag1, tag2, tag3"/);
-                rendered.string.should.match(/"description": "site description"/);
-                rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
-                rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
-                rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/rss\/" \/>/);
-
-                renderObject.post.should.eql(postBk);
-
-                done();
-            }).catch(done);
+            }));
         });
 
-        it('returns structured data on post page with custom excerpt for description and meta description', function (done) {
+        it('returns structured data on post page with custom excerpt for description and meta description', async function () {
             const renderObject = {
                 post: posts[3]
             };
 
             const postBk = _.cloneDeep(renderObject.post);
 
-            ghost_head(testUtils.createHbsResponse({
+            await testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/post/',
                     context: ['post'],
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/post\/" \/>/);
-                rendered.string.should.match(/<link rel="amphtml" href="http:\/\/localhost:65530\/post\/amp\/" \/>/);
-                rendered.string.should.match(/<meta name="description" content="site description" \/>/);
-                rendered.string.should.match(/<meta property="og:site_name" content="Ghost" \/>/);
-                rendered.string.should.match(/<meta property="og:type" content="article" \/>/);
-                rendered.string.should.match(/<meta property="og:title" content="Welcome to Ghost" \/>/);
-                rendered.string.should.match(/<meta property="og:description" content="post custom excerpt" \/>/);
-                rendered.string.should.match(/<meta property="og:url" content="http:\/\/localhost:65530\/post\/" \/>/);
-                rendered.string.should.match(/<meta property="og:image" content="http:\/\/localhost:65530\/content\/images\/test-facebook-image.png" \/>/);
-                rendered.string.should.match(/<meta property="article:tag" content="tag1" \/>/);
-                rendered.string.should.match(/<meta property="article:tag" content="tag2" \/>/);
-                rendered.string.should.match(/<meta property="article:tag" content="tag3" \/>/);
-                rendered.string.should.match(/<meta property="article:author" content="https:\/\/www.facebook.com\/testuser" \/>/);
-                rendered.string.should.match(/<meta name="twitter:title" content="Custom Twitter title" \/>/);
-                rendered.string.should.match(/<meta name="twitter:description" content="post custom excerpt" \/>/);
-                rendered.string.should.match(/<meta name="twitter:url" content="http:\/\/localhost:65530\/post\/" \/>/);
-                rendered.string.should.match(/<meta name="twitter:image" content="http:\/\/localhost:65530\/content\/images\/test-twitter-image.png" \/>/);
-                rendered.string.should.match(/<meta name="twitter:creator" content="@testuser" \/>/);
-                rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
-                rendered.string.should.match(/"@type": "Article"/);
-                rendered.string.should.match(/"publisher": {/);
-                rendered.string.should.match(/"@type": "Organization"/);
-                rendered.string.should.match(/"name": "Ghost"/);
-                rendered.string.should.match(/"author": {/);
-                rendered.string.should.match(/"@type": "Person"/);
-                rendered.string.should.match(/"name": "Author name"/);
-                rendered.string.should.match(/"image": {\n            "@type": "ImageObject",\n            "url": "http:\/\/localhost:65530\/content\/images\/test-author-image.png"/);
-                rendered.string.should.match(/"url": "https:\/\/mysite.com\/fakeauthor\/"/);
-                rendered.string.should.match(/"sameAs": \[\n            "http:\/\/authorwebsite.com",\n            "https:\/\/www.facebook.com\/testuser",\n            "https:\/\/twitter.com\/testuser"\n        \]/);
-                rendered.string.should.not.match(/"description": "Author bio"/);
-                rendered.string.should.match(/"headline": "Welcome to Ghost"/);
-                rendered.string.should.match(/"url": "http:\/\/localhost:65530\/post\/"/);
-                rendered.string.should.match(/"image": {\n        "@type": "ImageObject",\n        "url": "http:\/\/localhost:65530\/content\/images\/test-image.png"/);
-                rendered.string.should.match(/"keywords": "tag1, tag2, tag3"/);
-                rendered.string.should.match(/"description": "post custom excerpt"/);
-                rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
-                rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
-                rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/rss\/" \/>/);
-
-                renderObject.post.should.eql(postBk);
-
-                done();
-            }).catch(done);
+            }));
+            renderObject.post.should.eql(postBk);
         });
 
-        it('returns structured data on post page with fall back excerpt if no meta description provided', function (done) {
+        it('returns structured data on post page with fall back excerpt if no meta description provided', async function () {
             const renderObject = {
                 post: posts[4]
             };
 
             const postBk = _.cloneDeep(renderObject.post);
 
-            ghost_head(testUtils.createHbsResponse({
+            await testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/post/',
                     context: ['post'],
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/post\/" \/>/);
-                rendered.string.should.match(/<link rel="amphtml" href="http:\/\/localhost:65530\/post\/amp\/" \/>/);
-                rendered.string.should.not.match(/<meta name="description" content="site description" \/>/);
-                rendered.string.should.match(/<meta property="og:site_name" content="Ghost" \/>/);
-                rendered.string.should.match(/<meta property="og:type" content="article" \/>/);
-                rendered.string.should.match(/<meta property="og:title" content="Welcome to Ghost" \/>/);
-                rendered.string.should.match(/<meta property="og:description" content="This is a short post" \/>/);
-                rendered.string.should.match(/<meta property="og:url" content="http:\/\/localhost:65530\/post\/" \/>/);
-                rendered.string.should.match(/<meta name="twitter:title" content="Welcome to Ghost" \/>/);
-                rendered.string.should.match(/<meta name="twitter:description" content="This is a short post" \/>/);
-                rendered.string.should.match(/<meta name="twitter:url" content="http:\/\/localhost:65530\/post\/" \/>/);
-                rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
-                rendered.string.should.match(/"@type": "Article"/);
-                rendered.string.should.match(/"publisher": {/);
-                rendered.string.should.match(/"@type": "Organization"/);
-                rendered.string.should.match(/"name": "Ghost"/);
-                rendered.string.should.match(/"author": {/);
-                rendered.string.should.match(/"@type": "Person"/);
-                rendered.string.should.match(/"name": "Author name"/);
-                rendered.string.should.match(/"url": "https:\/\/mysite.com\/fakeauthor\/"/);
-                rendered.string.should.not.match(/"description": "Author bio"/);
-                rendered.string.should.match(/"headline": "Welcome to Ghost"/);
-                rendered.string.should.match(/"url": "http:\/\/localhost:65530\/post\/"/);
-                rendered.string.should.match(/"description": "This is a short post"/);
-                rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
-                rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
-                rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/rss\/" \/>/);
-
-                renderObject.post.should.eql(postBk);
-
-                done();
-            }).catch(done);
+            }));
+            renderObject.post.should.eql(postBk);
         });
 
-        it('returns structured data on AMP post page with author image and post cover image', function (done) {
+        it('returns structured data on AMP post page with author image and post cover image', async function () {
             const renderObject = {
                 post: posts[5]
             };
 
             const postBk = _.cloneDeep(renderObject.post);
 
-            ghost_head(testUtils.createHbsResponse({
+            await testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/post/amp/',
                     context: ['amp', 'post'],
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/post\/" \/>/);
-                rendered.string.should.not.match(/<link rel="amphtml" href="http:\/\/localhost:65530\/post\/amp\/" \/>/);
-                rendered.string.should.match(/<meta name="description" content="site description" \/>/);
-                rendered.string.should.match(/<meta property="og:site_name" content="Ghost" \/>/);
-                rendered.string.should.match(/<meta property="og:type" content="article" \/>/);
-                rendered.string.should.match(/<meta property="og:title" content="Custom Facebook title" \/>/);
-                rendered.string.should.match(/<meta property="og:description" content="site description" \/>/);
-                rendered.string.should.match(/<meta property="og:url" content="http:\/\/localhost:65530\/post\/" \/>/);
-                rendered.string.should.match(/<meta property="og:image" content="http:\/\/localhost:65530\/content\/images\/test-facebook-image.png" \/>/);
-                rendered.string.should.match(/<meta property="article:tag" content="tag1" \/>/);
-                rendered.string.should.match(/<meta property="article:tag" content="tag2" \/>/);
-                rendered.string.should.match(/<meta property="article:tag" content="tag3" \/>/);
-                rendered.string.should.match(/<meta property="article:author" content="https:\/\/www.facebook.com\/testuser" \/>/);
-                rendered.string.should.match(/<meta name="twitter:title" content="Custom Twitter title" \/>/);
-                rendered.string.should.match(/<meta name="twitter:description" content="site description" \/>/);
-                rendered.string.should.match(/<meta name="twitter:url" content="http:\/\/localhost:65530\/post\/" \/>/);
-                rendered.string.should.match(/<meta name="twitter:image" content="http:\/\/localhost:65530\/content\/images\/test-twitter-image.png" \/>/);
-                rendered.string.should.match(/<meta name="twitter:creator" content="@testuser" \/>/);
-                rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
-                rendered.string.should.match(/"@type": "Article"/);
-                rendered.string.should.match(/"publisher": {/);
-                rendered.string.should.match(/"@type": "Organization"/);
-                rendered.string.should.match(/"name": "Ghost"/);
-                rendered.string.should.match(/"author": {/);
-                rendered.string.should.match(/"@type": "Person"/);
-                rendered.string.should.match(/"name": "Author name"/);
-                rendered.string.should.match(/"image": {\n            "@type": "ImageObject",\n            "url": "http:\/\/localhost:65530\/content\/images\/test-author-image.png"/);
-                rendered.string.should.match(/"url": "https:\/\/mysite.com\/fakeauthor\/"/);
-                rendered.string.should.match(/"sameAs": \[\n            "http:\/\/authorwebsite.com",\n            "https:\/\/www.facebook.com\/testuser",\n            "https:\/\/twitter.com\/testuser"\n        \]/);
-                rendered.string.should.not.match(/"description": "Author bio"/);
-                rendered.string.should.match(/"headline": "Welcome to Ghost"/);
-                rendered.string.should.match(/"url": "http:\/\/localhost:65530\/post\/"/);
-                rendered.string.should.match(/"image": {\n        "@type": "ImageObject",\n        "url": "http:\/\/localhost:65530\/content\/images\/test-image.png"/);
-                rendered.string.should.match(/"keywords": "tag1, tag2, tag3"/);
-                rendered.string.should.match(/"description": "site description"/);
-                rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
-                rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
-                rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/rss\/" \/>/);
-
-                renderObject.post.should.eql(postBk);
-
-                done();
-            }).catch(done);
+            }));
+            renderObject.post.should.eql(postBk);
         });
 
-        it('returns structured data if metaTitle and metaDescription have double quotes', function (done) {
+        it('returns structured data if metaTitle and metaDescription have double quotes', async function () {
             const renderObject = {
                 post: posts[6]
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            await testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/post/',
                     context: ['post'],
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/post\/" \/>/);
-                rendered.string.should.match(/<link rel="amphtml" href="http:\/\/localhost:65530\/post\/amp\/" \/>/);
-                rendered.string.should.match(/<meta name="description" content="site &quot;test&quot; description" \/>/);
-                rendered.string.should.match(/<meta property="og:site_name" content="Ghost" \/>/);
-                rendered.string.should.match(/<meta property="og:type" content="article" \/>/);
-                rendered.string.should.match(/<meta property="og:title" content="Welcome to Ghost &quot;test&quot;" \/>/);
-                rendered.string.should.match(/<meta property="og:description" content="site &quot;test&quot; description" \/>/);
-                rendered.string.should.match(/<meta property="og:url" content="http:\/\/localhost:65530\/post\/" \/>/);
-                rendered.string.should.match(/<meta property="og:image" content="http:\/\/localhost:65530\/content\/images\/test-image.png" \/>/);
-                rendered.string.should.match(/<meta property="article:author" content="https:\/\/www.facebook.com\/testuser" \/>/);
-                rendered.string.should.match(/<meta property="article:tag" content="tag1" \/>/);
-                rendered.string.should.match(/<meta property="article:tag" content="tag2" \/>/);
-                rendered.string.should.match(/<meta property="article:tag" content="tag3" \/>/);
-                rendered.string.should.match(/<meta name="twitter:card" content="summary_large_image" \/>/);
-                rendered.string.should.match(/<meta name="twitter:title" content="Welcome to Ghost &quot;test&quot;" \/>/);
-                rendered.string.should.match(/<meta name="twitter:description" content="site &quot;test&quot; description" \/>/);
-                rendered.string.should.match(/<meta name="twitter:url" content="http:\/\/localhost:65530\/post\/" \/>/);
-                rendered.string.should.match(/<meta name="twitter:creator" content="@testuser" \/>/);
-                rendered.string.should.match(/<meta name="twitter:image" content="http:\/\/localhost:65530\/content\/images\/test-image.png" \/>/);
-                rendered.string.should.match(/<script type=\"application\/ld\+json\">/);
-                rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
-                rendered.string.should.match(/"@type": "Article"/);
-                rendered.string.should.match(/"publisher": {/);
-                rendered.string.should.match(/"@type": "Organization"/);
-                rendered.string.should.match(/"name": "Ghost"/);
-                rendered.string.should.match(/"author": {/);
-                rendered.string.should.match(/"@type": "Person"/);
-                rendered.string.should.match(/"name": "Author name"/);
-                rendered.string.should.match(/"image": {\n            "@type": "ImageObject",\n            "url": "http:\/\/localhost:65530\/content\/images\/test-author-image.png"/);
-                rendered.string.should.match(/"url": "https:\/\/mysite.com\/fakeauthor\/"/);
-                rendered.string.should.match(/"sameAs": \[\n            "http:\/\/authorwebsite.com",\n            "https:\/\/www.facebook.com\/testuser",\n            "https:\/\/twitter.com\/testuser"\n        \]/);
-                rendered.string.should.match(/"headline": "Welcome to Ghost &quot;test&quot;"/);
-                rendered.string.should.match(/"url": "http:\/\/localhost:65530\/post\/"/);
-                rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
-                rendered.string.should.match(/"image": {\n        "@type": "ImageObject",\n        "url": "http:\/\/localhost:65530\/content\/images\/test-image.png"/);
-                rendered.string.should.match(/"keywords": "tag1, tag2, tag3"/);
-                rendered.string.should.match(/"description": "site &quot;test&quot; description"/);
-                rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
-                rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
-                rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/rss\/" \/>/);
-
-                done();
-            }).catch(done);
+            }));
         });
 
-        it('returns structured data without tags if there are no tags', function (done) {
+        it('returns structured data without tags if there are no tags', async function () {
             const renderObject = {
                 post: posts[7]
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            await testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/post/',
                     context: ['post'],
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/post\/" \/>/);
-                rendered.string.should.match(/<link rel="amphtml" href="http:\/\/localhost:65530\/post\/amp\/" \/>/);
-                rendered.string.should.match(/<meta name="description" content="site description" \/>/);
-                rendered.string.should.match(/<meta property="og:site_name" content="Ghost" \/>/);
-                rendered.string.should.match(/<meta property="og:type" content="article" \/>/);
-                rendered.string.should.match(/<meta property="og:title" content="Welcome to Ghost" \/>/);
-                rendered.string.should.match(/<meta property="og:description" content="site description" \/>/);
-                rendered.string.should.match(/<meta property="og:url" content="http:\/\/localhost:65530\/post\/" \/>/);
-                rendered.string.should.match(/<meta property="og:image" content="http:\/\/localhost:65530\/content\/images\/test-image.png" \/>/);
-                rendered.string.should.match(/<meta property="article:author" content="https:\/\/www.facebook.com\/testuser" \/>/);
-                rendered.string.should.not.match(/<meta property="article:tag"/);
-                rendered.string.should.match(/<meta name="twitter:card" content="summary_large_image" \/>/);
-                rendered.string.should.match(/<meta name="twitter:title" content="Welcome to Ghost" \/>/);
-                rendered.string.should.match(/<meta name="twitter:description" content="site description" \/>/);
-                rendered.string.should.match(/<meta name="twitter:url" content="http:\/\/localhost:65530\/post\/" \/>/);
-                rendered.string.should.match(/<meta name="twitter:image" content="http:\/\/localhost:65530\/content\/images\/test-image.png" \/>/);
-                rendered.string.should.match(/<meta name="twitter:creator" content="@testuser" \/>/);
-                rendered.string.should.match(/<script type=\"application\/ld\+json\">/);
-                rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
-                rendered.string.should.match(/"@type": "Article"/);
-                rendered.string.should.match(/"publisher": {/);
-                rendered.string.should.match(/"@type": "Organization"/);
-                rendered.string.should.match(/"author": {/);
-                rendered.string.should.match(/"@type": "Person"/);
-                rendered.string.should.match(/"name": "Author name"/);
-                rendered.string.should.match(/"image": {\n            "@type": "ImageObject",\n            "url": "http:\/\/localhost:65530\/content\/images\/test-author-image.png"/);
-                rendered.string.should.match(/"url": "https:\/\/mysite.com\/fakeauthor\/"/);
-                rendered.string.should.match(/"sameAs": \[\n            "http:\/\/authorwebsite.com",\n            "https:\/\/www.facebook.com\/testuser",\n            "https:\/\/twitter.com\/testuser"\n        \]/);
-                rendered.string.should.match(/"headline": "Welcome to Ghost"/);
-                rendered.string.should.match(/"url": "http:\/\/localhost:65530\/post\/"/);
-                rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
-                rendered.string.should.match(/"image": {\n        "@type": "ImageObject",\n        "url": "http:\/\/localhost:65530\/content\/images\/test-image.png"/);
-                rendered.string.should.not.match(/"keywords":/);
-                rendered.string.should.match(/"description": "site description"/);
-                rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
-                rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
-                rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/rss\/" \/>/);
-
-                done();
-            }).catch(done);
+            }));
         });
 
-        it('returns structured data on post page with null author image and post cover image', function (done) {
+        it('returns structured data on post page with null author image and post cover image', async function () {
             const renderObject = {
                 post: posts[8]
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            await testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/post/',
                     context: ['post'],
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/post\/" \/>/);
-                rendered.string.should.match(/<link rel="amphtml" href="http:\/\/localhost:65530\/post\/amp\/" \/>/);
-                rendered.string.should.match(/<meta name="description" content="site description" \/>/);
-                rendered.string.should.match(/<meta property="og:site_name" content="Ghost" \/>/);
-                rendered.string.should.match(/<meta property="og:type" content="article" \/>/);
-                rendered.string.should.match(/<meta property="og:title" content="Welcome to Ghost" \/>/);
-                rendered.string.should.match(/<meta property="og:description" content="site description" \/>/);
-                rendered.string.should.match(/<meta property="og:url" content="http:\/\/localhost:65530\/post\/" \/>/);
-                rendered.string.should.match(/<meta property="article:author" content="https:\/\/www.facebook.com\/testuser" \/>/);
-                rendered.string.should.match(/<meta property="og:image"/);
-                rendered.string.should.match(/<meta property="article:tag" content="tag1" \/>/);
-                rendered.string.should.match(/<meta property="article:tag" content="tag2" \/>/);
-                rendered.string.should.match(/<meta property="article:tag" content="tag3" \/>/);
-                rendered.string.should.match(/<meta name="twitter:card" content="summary_large_image" \/>/);
-                rendered.string.should.match(/<meta name="twitter:title" content="Welcome to Ghost" \/>/);
-                rendered.string.should.match(/<meta name="twitter:description" content="site description" \/>/);
-                rendered.string.should.match(/<meta name="twitter:url" content="http:\/\/localhost:65530\/post\/" \/>/);
-                rendered.string.should.match(/<meta name="twitter:creator" content="@testuser" \/>/);
-                rendered.string.should.match(/<meta name="twitter:image"/);
-                rendered.string.should.match(/<script type=\"application\/ld\+json\">/);
-                rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
-                rendered.string.should.match(/"@type": "Article"/);
-                rendered.string.should.match(/"publisher": {/);
-                rendered.string.should.match(/"@type": "Organization"/);
-                rendered.string.should.match(/"name": "Ghost"/);
-                rendered.string.should.match(/"author": {/);
-                rendered.string.should.match(/"@type": "Person"/);
-                rendered.string.should.match(/"name": "Author name"/);
-                rendered.string.should.not.match(/"image\"/);
-                rendered.string.should.match(/"url": "https:\/\/mysite.com\/fakeauthor\/"/);
-                rendered.string.should.match(/"sameAs": \[\n            "http:\/\/authorwebsite.com",\n            "https:\/\/www.facebook.com\/testuser",\n            "https:\/\/twitter.com\/testuser"\n        \]/);
-                rendered.string.should.match(/"headline": "Welcome to Ghost"/);
-                rendered.string.should.match(/"url": "http:\/\/localhost:65530\/post\/"/);
-                rendered.string.should.match(/"keywords": "tag1, tag2, tag3"/);
-                rendered.string.should.match(/"description": "site description"/);
-                rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
-                rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/rss\/" \/>/);
-
-                done();
-            }).catch(done);
+            }));
         });
 
-        it('returns twitter and facebook descriptions even if no meta description available', function (done) {
+        it('returns twitter and facebook descriptions even if no meta description available', async function () {
             const renderObject = {
                 post: posts[9]
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            await testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/post/',
                     context: ['post'],
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.not.match(/<meta name="description" /);
-                rendered.string.should.match(/<link rel="amphtml" href="http:\/\/localhost:65530\/post\/amp\/" \/>/);
-                rendered.string.should.match(/<meta property="og:description" content="This is a short post" \/>/);
-                rendered.string.should.match(/<meta name="twitter:description" content="This is a short post" \/>/);
-
-                done();
-            }).catch(done);
+            }));
         });
 
-        it('returns canonical URL', function (done) {
+        it('returns canonical URL', async function () {
             const renderObject = {
                 post: posts[9]
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            await testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/about/',
                     context: ['page'],
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/about\/" \/>/);
-                rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
-                rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/rss\/" \/>/);
-
-                done();
-            }).catch(done);
+            }));
         });
 
-        it('returns next & prev URL correctly for middle page', function (done) {
-            ghost_head(testUtils.createHbsResponse({
+        it('returns next & prev URL correctly for middle page', async function () {
+            await testGhostHead(testUtils.createHbsResponse({
                 renderObject: {
                     pagination: {total: 4, page: 3, next: 4, prev: 2}
                 },
@@ -986,22 +625,11 @@ describe('{{ghost_head}} helper', function () {
                     context: ['paged', 'index'],
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/page\/3\/" \/>/);
-                rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
-                rendered.string.should.match(/<link rel="prev" href="http:\/\/localhost:65530\/page\/2\/" \/>/);
-                rendered.string.should.match(/<link rel="next" href="http:\/\/localhost:65530\/page\/4\/" \/>/);
-                rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/rss\/" \/>/);
-                rendered.string.should.not.match(/<meta property="og/);
-                rendered.string.should.not.match(/<script type=\"application\/ld\+json\">/);
-
-                done();
-            }).catch(done);
+            }));
         });
 
-        it('returns next & prev URL correctly for second page', function (done) {
-            ghost_head(testUtils.createHbsResponse({
+        it('returns next & prev URL correctly for second page', async function () {
+            await testGhostHead(testUtils.createHbsResponse({
                 renderObject: {
                     pagination: {total: 3, page: 2, next: 3, prev: 1}
                 },
@@ -1010,154 +638,71 @@ describe('{{ghost_head}} helper', function () {
                     context: ['paged', 'index'],
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/page\/2\/" \/>/);
-                rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
-                rendered.string.should.match(/<link rel="prev" href="http:\/\/localhost:65530\/" \/>/);
-                rendered.string.should.match(/<link rel="next" href="http:\/\/localhost:65530\/page\/3\/" \/>/);
-                rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/rss\/" \/>/);
-                rendered.string.should.not.match(/<meta property="og/);
-                rendered.string.should.not.match(/<meta name="description" /);
-                rendered.string.should.not.match(/<script type=\"application\/ld\+json\">/);
-
-                done();
-            }).catch(done);
+            }));
         });
 
-        it('returns structured data and schema first tag page with meta description and meta title', function (done) {
+        it('returns structured data and schema first tag page with meta description and meta title', async function () {
             const renderObject = {
                 tag: tags[0]
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            await testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/tag/tagtitle/',
                     context: ['tag'],
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/tag\/tagtitle\/" \/>/);
-                rendered.string.should.match(/<meta name="description" content="tag meta description" \/>/);
-                rendered.string.should.match(/<meta property="og:site_name" content="Ghost" \/>/);
-                rendered.string.should.match(/<meta property="og:type" content="website" \/>/);
-                rendered.string.should.match(/<meta property="og:title" content="tag meta title" \/>/);
-                rendered.string.should.match(/<meta property="og:description" content="tag meta description" \/>/);
-                rendered.string.should.match(/<meta property="og:url" content="http:\/\/localhost:65530\/tag\/tagtitle\/" \/>/);
-                rendered.string.should.match(/<meta property="og:image" content="http:\/\/localhost:65530\/content\/images\/tag-image.png" \/>/);
-                rendered.string.should.match(/<meta name="twitter:card" content="summary_large_image" \/>/);
-                rendered.string.should.match(/<meta name="twitter:title" content="tag meta title" \/>/);
-                rendered.string.should.match(/<meta name="twitter:description" content="tag meta description" \/>/);
-                rendered.string.should.match(/<meta name="twitter:url" content="http:\/\/localhost:65530\/tag\/tagtitle\/" \/>/);
-                rendered.string.should.match(/<meta name="twitter:image" content="http:\/\/localhost:65530\/content\/images\/tag-image.png" \/>/);
-                rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
-                rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/rss\/" \/>/);
-                rendered.string.should.match(/<script type=\"application\/ld\+json\">/);
-                rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
-                rendered.string.should.match(/"@type": "Series"/);
-                rendered.string.should.match(/"publisher": {\n        "@type": "Organization",\n        "name": "Ghost",/);
-                rendered.string.should.match(/"url": "http:\/\/localhost:65530\/tag\/tagtitle\/"/);
-                rendered.string.should.match(/"image": {\n        "@type": "ImageObject",\n        "url": "http:\/\/localhost:65530\/content\/images\/tag-image.png"/);
-                rendered.string.should.match(/"name": "tagtitle"/);
-                rendered.string.should.match(/"description": "tag meta description"/);
-
-                done();
-            }).catch(done);
+            }));
         });
 
-        it('tag first page without meta data if no meta title and meta description, but model description provided', function (done) {
+        it('tag first page without meta data if no meta title and meta description, but model description provided', async function () {
             const renderObject = {
                 tag: tags[1]
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            await testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/tag/tagtitle/',
                     context: ['tag'],
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/tag\/tagtitle\/" \/>/);
-                rendered.string.should.match(/<meta name="description" content="tag description"/);
-                rendered.string.should.match(/<meta property="og:site_name" content="Ghost" \/>/);
-                rendered.string.should.match(/<meta property="og:type" content="website" \/>/);
-                rendered.string.should.match(/<meta property="og:title" content="tagtitle - Ghost" \/>/);
-                rendered.string.should.match(/<meta property="og:description" content="tag description"/);
-                rendered.string.should.match(/<meta property="og:url" content="http:\/\/localhost:65530\/tag\/tagtitle\/" \/>/);
-                rendered.string.should.match(/<meta property="og:image" content="http:\/\/localhost:65530\/content\/images\/tag-image.png" \/>/);
-                rendered.string.should.match(/<meta name="twitter:card" content="summary_large_image" \/>/);
-                rendered.string.should.match(/<meta name="twitter:title" content="tagtitle - Ghost" \/>/);
-                rendered.string.should.match(/<meta name="twitter:description" content="tag description"/);
-                rendered.string.should.match(/<meta name="twitter:url" content="http:\/\/localhost:65530\/tag\/tagtitle\/" \/>/);
-                rendered.string.should.match(/<meta name="twitter:image" content="http:\/\/localhost:65530\/content\/images\/tag-image.png" \/>/);
-                rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
-                rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/rss\/" \/>/);
-                rendered.string.should.match(/<script type=\"application\/ld\+json\">/);
-                rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
-                rendered.string.should.match(/"@type": "Series"/);
-                rendered.string.should.match(/"publisher": {\n        "@type": "Organization",\n        "name": "Ghost",/);
-                rendered.string.should.match(/"url": "http:\/\/localhost:65530\/tag\/tagtitle\/"/);
-                rendered.string.should.match(/"image": {\n        "@type": "ImageObject",\n        "url": "http:\/\/localhost:65530\/content\/images\/tag-image.png"/);
-                rendered.string.should.match(/"name": "tagtitle"/);
-
-                done();
-            }).catch(done);
+            }));
         });
 
-        it('tag first page without meta and model description returns no description fields', function (done) {
+        it('tag first page without meta and model description returns no description fields', async function () {
             const renderObject = {
                 tag: tags[2]
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            await testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/tag/tagtitle/',
                     context: ['tag'],
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.not.match(/<meta name="description"/);
-                rendered.string.should.not.match(/<meta property="og:description"/);
-                rendered.string.should.not.match(/<meta name="twitter:description"/);
-                rendered.string.should.not.match(/"description":/);
-
-                done();
-            }).catch(done);
+            }));
         });
 
-        it('does not return structured data on paginated tag pages', function (done) {
+        it('does not return structured data on paginated tag pages', async function () {
             const renderObject = {
                 tag: tags[3]
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            await testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/tag/tagtitle/page/2/',
                     context: ['paged', 'tag'],
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/tag\/tagtitle\/page\/2\/" \/>/);
-                rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
-                rendered.string.should.not.match(/<meta name="description" content="tag meta description" \/>/);
-                rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/rss\/" \/>/);
-                rendered.string.should.not.match(/<meta property="og/);
-                rendered.string.should.not.match(/<script type=\"application\/ld\+json\">/);
-
-                done();
-            }).catch(done);
+            }));
         });
 
-        it('returns structured data and schema on first author page with cover image', function (done) {
-            ghost_head(testUtils.createHbsResponse({
+        it('returns structured data and schema on first author page with cover image', async function () {
+            await testGhostHead(testUtils.createHbsResponse({
                 renderObject: {author: users[0]},
                 locals: {
                     // @TODO: WHY?
@@ -1165,38 +710,11 @@ describe('{{ghost_head}} helper', function () {
                     context: ['author'],
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/author\/authorname\/" \/>/);
-                rendered.string.should.match(/<meta name="description" content="Author bio"/);
-                rendered.string.should.match(/<meta property="og:site_name" content="Ghost" \/>/);
-                rendered.string.should.match(/<meta property="og:type" content="profile" \/>/);
-                rendered.string.should.match(/<meta property="og:description" content="Author bio"/);
-                rendered.string.should.match(/<meta property="og:url" content="http:\/\/localhost:65530\/author\/authorname\/" \/>/);
-                rendered.string.should.match(/<meta property="og:image" content="http:\/\/localhost:65530\/content\/images\/author-cover-image.png" \/>/);
-                rendered.string.should.match(/<meta property="article:author" content="https:\/\/www.facebook.com\/testuser\" \/>/);
-                rendered.string.should.match(/<meta name="twitter:card" content="summary_large_image" \/>/);
-                rendered.string.should.match(/<meta name="twitter:title" content="Author name - Ghost" \/>/);
-                rendered.string.should.match(/<meta name="twitter:description" content="Author bio"/);
-                rendered.string.should.match(/<meta name="twitter:url" content="http:\/\/localhost:65530\/author\/authorname\/" \/>/);
-                rendered.string.should.match(/<meta name="twitter:creator" content="@testuser" \/>/);
-                rendered.string.should.match(/<meta name="twitter:image" content="http:\/\/localhost:65530\/content\/images\/author-cover-image.png" \/>/);
-                rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
-                rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/rss\/" \/>/);
-                rendered.string.should.match(/<script type=\"application\/ld\+json\">/);
-                rendered.string.should.match(/"@context": "https:\/\/schema.org"/);
-                rendered.string.should.match(/"@type": "Person"/);
-                rendered.string.should.match(/"sameAs": \[\n        "http:\/\/authorwebsite.com",\n        "https:\/\/www.facebook.com\/testuser",\n        "https:\/\/twitter.com\/testuser"\n    \]/);
-                rendered.string.should.match(/"url": "https:\/\/mysite.com\/fakeauthor\/"/);
-                rendered.string.should.match(/"image": {\n        "@type": "ImageObject",\n        "url": "http:\/\/localhost:65530\/content\/images\/author-cover-image.png"/);
-                rendered.string.should.match(/"name": "Author name"/);
-
-                done();
-            }).catch(done);
+            }));
         });
 
-        it('does not return structured data on paginated author pages', function (done) {
-            ghost_head(testUtils.createHbsResponse({
+        it('does not return structured data on paginated author pages', async function () {
+            await testGhostHead(testUtils.createHbsResponse({
                 renderObject: {author: users[1]},
                 locals: {
                     // @TODO: WHY?
@@ -1204,82 +722,42 @@ describe('{{ghost_head}} helper', function () {
                     context: ['paged', 'author'],
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/author\/authorname1\/page\/2\/" \/>/);
-                rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
-                rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/rss\/" \/>/);
-                rendered.string.should.not.match(/<meta name="description" /);
-                rendered.string.should.not.match(/<meta property="og/);
-                rendered.string.should.not.match(/<script type=\"application\/ld\+json\">/);
-
-                done();
-            }).catch(done);
+            }));
         });
 
-        it('returns meta tag string even if safeVersion is invalid', function (done) {
-            ghost_head(testUtils.createHbsResponse({
+        it('returns meta tag string even if safeVersion is invalid', async function () {
+            await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     context: [],
                     safeVersion: '0.9'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.match(/<meta name="generator" content="Ghost 0.9" \/>/);
-                rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/rss\/" \/>/);
-
-                done();
-            }).catch(done);
+            }));
         });
 
-        it('disallows indexing for preview pages', function (done) {
-            ghost_head(testUtils.createHbsResponse({
+        it('disallows indexing for preview pages', async function () {
+            await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     context: ['preview', 'post']
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.match(/<meta name="robots" content="noindex,nofollow" \/>/);
-
-                done();
-            }).catch(done);
+            }));
         });
 
-        it('implicit indexing settings for non-preview pages', function (done) {
-            ghost_head(testUtils.createHbsResponse({
+        it('implicit indexing settings for non-preview pages', async function () {
+            await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     context: ['featured', 'paged', 'index', 'post', 'amp', 'home', 'unicorn']
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.not.match(/<meta name="robots" content="noindex,nofollow" \/>/);
-
-                done();
-            }).catch(done);
+            }));
         });
 
-        it('outputs structured data but not schema for custom collection', function (done) {
-            ghost_head(testUtils.createHbsResponse({
+        it('outputs structured data but not schema for custom collection', async function () {
+            await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/featured/',
                     context: ['featured'],
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/featured\/" \/>/);
-                rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
-                rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/rss\/" \/>/);
-                rendered.string.should.match(/<meta property="og:site_name" content="Ghost" \/>/);
-                rendered.string.should.match(/<meta property="og:type" content="website" \/>/);
-                rendered.string.should.match(/<meta property="og:title" content="Ghost" \/>/);
-                rendered.string.should.match(/<meta property="og:url" content="http:\/\/localhost:65530\/featured\/" \/>/);
-
-                rendered.string.should.not.match(/<script type=\"application\/ld\+json\">/);
-                rendered.string.should.not.match(/<meta name="description" /);
-
-                done();
-            }).catch(done);
+            }));
         });
     });
 
@@ -1296,22 +774,13 @@ describe('{{ghost_head}} helper', function () {
             routing.registry.getRssUrl.returns('http://localhost:65530/rss/');
         });
 
-        it('returns correct rss url with subdirectory', function (done) {
-            ghost_head(testUtils.createHbsResponse({
+        it('returns correct rss url with subdirectory', async function () {
+            await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     context: ['paged', 'index'],
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.match(/<link rel="icon" href="\/site\/content\/images\/size\/w256h256\/favicon.png" type="image\/png" \/>/);
-                rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/site\/" \/>/);
-                rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
-                rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/site\/rss\/" \/>/);
-                rendered.string.should.not.match(/<meta name="description" /);
-
-                done();
-            }).catch(done);
+            }));
         });
     });
 
@@ -1325,20 +794,13 @@ describe('{{ghost_head}} helper', function () {
             });
         });
 
-        it('contains the changed origin', function (done) {
-            ghost_head(testUtils.createHbsResponse({
+        it('contains the changed origin', async function () {
+            await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     context: ['paged', 'index'],
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.match(/<link rel="icon" href="\/site\/content\/images\/size\/w256h256\/favicon.png" type="image\/png" \/>/);
-                rendered.string.should.match(/<meta name="referrer" content="origin" \/>/);
-                rendered.string.should.not.match(/<meta name="description" /);
-
-                done();
-            }).catch(done);
+            }));
         });
     });
 
@@ -1354,31 +816,19 @@ describe('{{ghost_head}} helper', function () {
             });
         });
 
-        it('does not return structured data', function (done) {
+        it('does not return structured data', async function () {
             const renderObject = {
                 post: posts[2]
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            await testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/post/',
                     context: ['post'],
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.match(/<link rel="icon" href="\/content\/images\/size\/w256h256\/favicon.png" type="image\/png" \/>/);
-                rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/post\/" \/>/);
-                rendered.string.should.match(/<link rel="amphtml" href="http:\/\/localhost:65530\/post\/amp\/" \/>/);
-                rendered.string.should.match(/<meta name="description" content="site description" \/>/);
-                rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
-                rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/rss\/" \/>/);
-                rendered.string.should.not.match(/<meta property="og/);
-                rendered.string.should.not.match(/<script type=\"application\/ld\+json\">/);
-
-                done();
-            }).catch(done);
+            }));
         });
     });
 
@@ -1390,8 +840,8 @@ describe('{{ghost_head}} helper', function () {
             configUtils.set({url: 'http://localhost:65530/'});
         });
 
-        it('returns meta tag plus injected code', function (done) {
-            ghost_head(testUtils.createHbsResponse({
+        it('returns meta tag plus injected code', async function () {
+            await testGhostHead(testUtils.createHbsResponse({
                 renderObject: {
                     post: false
                 },
@@ -1399,23 +849,11 @@ describe('{{ghost_head}} helper', function () {
                     context: ['paged', 'index'],
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.match(/<link rel="icon" href="\/content\/images\/size\/w256h256\/favicon.png" type="image\/png" \/>/);
-                rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/" \/>/);
-                rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
-                rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/rss\/" \/>/);
-                rendered.string.should.match(/<style>body {background: red;}<\/style>/);
-
-                // No default meta desc in paged context
-                rendered.string.should.not.match(/<meta name="description" \/>/);
-
-                done();
-            }).catch(done);
+            }));
         });
 
-        it('outputs post codeinjection as well', function (done) {
-            ghost_head(testUtils.createHbsResponse({
+        it('outputs post codeinjection as well', async function () {
+            await testGhostHead(testUtils.createHbsResponse({
                 renderObject: {
                     post: {
                         codeinjection_head: 'post-codeinjection'
@@ -1425,17 +863,11 @@ describe('{{ghost_head}} helper', function () {
                     context: ['paged', 'index'],
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.match(/<style>body {background: red;}<\/style>/);
-                rendered.string.should.match(/post-codeinjection/);
-
-                done();
-            }).catch(done);
+            }));
         });
 
-        it('handles post codeinjection being empty', function (done) {
-            ghost_head(testUtils.createHbsResponse({
+        it('handles post codeinjection being empty', async function () {
+            await testGhostHead(testUtils.createHbsResponse({
                 renderObject: {
                     post: {
                         codeinjection_head: ''
@@ -1445,17 +877,11 @@ describe('{{ghost_head}} helper', function () {
                     context: ['paged', 'index'],
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.match(/<style>body {background: red;}<\/style>/);
-                rendered.string.should.not.match(/post-codeinjection/);
-
-                done();
-            }).catch(done);
+            }));
         });
 
-        it('handles post codeinjection being null', function (done) {
-            ghost_head(testUtils.createHbsResponse({
+        it('handles post codeinjection being null', async function () {
+            await testGhostHead(testUtils.createHbsResponse({
                 renderObject: {
                     post: {
                         codeinjection_head: null
@@ -1465,36 +891,21 @@ describe('{{ghost_head}} helper', function () {
                     context: ['paged', 'index'],
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.match(/<style>body {background: red;}<\/style>/);
-                rendered.string.should.not.match(/post-codeinjection/);
-
-                done();
-            }).catch(done);
+            }));
         });
 
-        it('returns meta tag without injected code for amp context', function (done) {
+        it('returns meta tag without injected code for amp context', async function () {
             const renderObject = {
                 post: posts[1]
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            await testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     context: ['amp', 'post'],
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.match(/<link rel="icon" href="\/content\/images\/size\/w256h256\/favicon.png" type="image\/png" \/>/);
-                rendered.string.should.match(/<link rel="canonical" href="http:\/\/localhost:65530\/" \/>/);
-                rendered.string.should.match(/<meta name="generator" content="Ghost 0.3" \/>/);
-                rendered.string.should.match(/<link rel="alternate" type="application\/rss\+xml" title="Ghost" href="http:\/\/localhost:65530\/rss\/" \/>/);
-                rendered.string.should.not.match(/<style>body {background: red;}<\/style>/);
-
-                done();
-            }).catch(done);
+            }));
         });
     });
 
@@ -1503,28 +914,24 @@ describe('{{ghost_head}} helper', function () {
             settingsCache.get.withArgs('amp').returns(false);
         });
 
-        it('does not contain amphtml link', function (done) {
+        it('does not contain amphtml link', async function () {
             const renderObject = {
                 post: posts[1]
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            await testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/post/',
                     context: ['post'],
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.not.match(/<link rel="amphtml"/);
-                done();
-            }).catch(done);
+            }));
         });
     });
 
     describe('accent_color', function () {
-        it('includes style tag when set', function (done) {
+        it('includes style tag when set', async function () {
             const renderObject = {
                 post: posts[1]
             };
@@ -1535,7 +942,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            await testGhostHead(testUtils.createHbsResponse({
                 templateOptions,
                 renderObject: renderObject,
                 locals: {
@@ -1543,14 +950,10 @@ describe('{{ghost_head}} helper', function () {
                     context: ['post'],
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.containEql('<style>:root {--ghost-accent-color: #123456;}</style>');
-                done();
-            }).catch(done);
+            }));
         });
 
-        it('does not include style tag when not set', function (done) {
+        it('does not include style tag when not set', async function () {
             const renderObject = {
                 post: posts[1]
             };
@@ -1561,7 +964,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            await testGhostHead(testUtils.createHbsResponse({
                 templateOptions,
                 renderObject: renderObject,
                 locals: {
@@ -1569,14 +972,10 @@ describe('{{ghost_head}} helper', function () {
                     context: ['post'],
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.not.containEql('--ghost-accent-color');
-                done();
-            }).catch(done);
+            }));
         });
 
-        it('attaches style tag to existing script/style tag', function (done) {
+        it('attaches style tag to existing script/style tag', async function () {
             settingsCache.get.withArgs('members_enabled').returns(true);
 
             const renderObject = {
@@ -1589,7 +988,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            await testGhostHead(testUtils.createHbsResponse({
                 templateOptions,
                 renderObject: renderObject,
                 locals: {
@@ -1597,14 +996,10 @@ describe('{{ghost_head}} helper', function () {
                     context: ['post'],
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.match(/[^\s]<style>:root/);
-                done();
-            }).catch(done);
+            }));
         });
 
-        it('includes style tag on templates with no context', function (done) {
+        it('includes style tag on templates with no context', async function () {
             const renderObject = {
                 post: posts[1]
             };
@@ -1615,7 +1010,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            await testGhostHead(testUtils.createHbsResponse({
                 templateOptions,
                 renderObject: renderObject,
                 locals: {
@@ -1623,14 +1018,10 @@ describe('{{ghost_head}} helper', function () {
                     context: null,
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.containEql('<style>:root {--ghost-accent-color: #123456;}</style>');
-                done();
-            }).catch(done);
+            }));
         });
 
-        it('does not include style tag in AMP context', function (done) {
+        it('does not include style tag in AMP context', async function () {
             const renderObject = {
                 post: posts[1]
             };
@@ -1641,7 +1032,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             };
 
-            ghost_head(testUtils.createHbsResponse({
+            await testGhostHead(testUtils.createHbsResponse({
                 templateOptions,
                 renderObject: renderObject,
                 locals: {
@@ -1649,111 +1040,74 @@ describe('{{ghost_head}} helper', function () {
                     context: ['post', 'amp'],
                     safeVersion: '0.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.not.containEql('--ghost-accent-color');
-                done();
-            }).catch(done);
+            }));
         });
     });
 
     describe('members scripts', function () {
-        it('includes portal when members enabled', function (done) {
+        it('includes portal when members enabled', async function () {
             settingsCache.get.withArgs('members_enabled').returns(true);
 
-            ghost_head(testUtils.createHbsResponse({
+            await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
                     safeVersion: '4.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.containEql('<script defer src="https://cdn.jsdelivr.net/npm/@tryghost/portal');
-                rendered.string.should.containEql('data-ghost="http://127.0.0.1:2369/" data-key="xyz" data-api="http://127.0.0.1:2369/ghost/api/content/"');
-                rendered.string.should.containEql('<style id="gh-members-styles">');
-                done();
-            }).catch(done);
+            }));
         });
 
-        it('includes stripe when connected', function (done) {
+        it('includes stripe when connected', async function () {
             settingsCache.get.withArgs('members_enabled').returns(true);
             settingsCache.get.withArgs('paid_members_enabled').returns(true);
 
-            ghost_head(testUtils.createHbsResponse({
+            await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
                     safeVersion: '4.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.containEql('<script defer src="https://cdn.jsdelivr.net/npm/@tryghost/portal');
-                rendered.string.should.containEql('data-ghost="http://127.0.0.1:2369/" data-key="xyz" data-api="http://127.0.0.1:2369/ghost/api/content/"');
-                rendered.string.should.containEql('<style id="gh-members-styles">');
-                rendered.string.should.containEql('<script async src="https://js.stripe.com');
-                done();
-            }).catch(done);
+            }));
         });
 
-        it('skips portal and stripe when members are disabled', function (done) {
+        it('skips portal and stripe when members are disabled', async function () {
             settingsCache.get.withArgs('members_enabled').returns(false);
             settingsCache.get.withArgs('paid_members_enabled').returns(true);
 
-            ghost_head(testUtils.createHbsResponse({
+            await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
                     safeVersion: '4.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.not.containEql('<script defer src="https://cdn.jsdelivr.net/npm/@tryghost/portal');
-                rendered.string.should.not.containEql('data-ghost="http://127.0.0.1:2369/" data-key="xyz" data-api="http://127.0.0.1:2369/ghost/api/content/"');
-                rendered.string.should.not.containEql('<style id="gh-members-styles">');
-                rendered.string.should.not.containEql('<script async src="https://js.stripe.com');
-                done();
-            }).catch(done);
+            }));
         });
 
-        it('skips stripe if not set up', function (done) {
+        it('skips stripe if not set up', async function () {
             settingsCache.get.withArgs('members_enabled').returns(true);
             settingsCache.get.withArgs('paid_members_enabled').returns(false);
 
-            ghost_head(testUtils.createHbsResponse({
+            await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
                     safeVersion: '4.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.containEql('<script defer src="https://cdn.jsdelivr.net/npm/@tryghost/portal');
-                rendered.string.should.containEql('data-ghost="http://127.0.0.1:2369/" data-key="xyz" data-api="http://127.0.0.1:2369/ghost/api/content/"');
-                rendered.string.should.containEql('<style id="gh-members-styles">');
-                rendered.string.should.not.containEql('<script async src="https://js.stripe.com');
-                done();
-            }).catch(done);
+            }));
         });
     });
 
     describe('search scripts', function () {
-        it('includes search when labs flag enabled', function (done) {
+        it('includes search when labs flag enabled', async function () {
             sinon.stub(labs, 'isSet').returns(true);
 
-            ghost_head(testUtils.createHbsResponse({
+            await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
                     safeVersion: '4.3'
                 }
-            })).then(function (rendered) {
-                should.exist(rendered);
-                rendered.string.should.containEql('<script defer src="https://cdn.jsdelivr.net/npm/@tryghost/sodo-search');
-                rendered.string.should.containEql('data-key="xyz" data-styles="https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@~1.0/umd/main.css" data-sodo-search="http://127.0.0.1:2369/"');
-
-                done();
-            }).catch(done);
+            }));
         });
     });
 });

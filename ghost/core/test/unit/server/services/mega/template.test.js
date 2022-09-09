@@ -120,8 +120,6 @@ describe('Mega template', function () {
     });
 
     it('Correctly escapes the contents', function () {
-        // TODO: check html escaping based on mobiledoc instead of invalid html: https://github.com/TryGhost/Team/issues/1871
-
         const post = {
             title: 'I <3 Posts',
             html: '<div class="post-content-html">I am &lt;100 years old</div>',

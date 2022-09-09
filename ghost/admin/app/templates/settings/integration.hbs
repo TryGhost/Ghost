@@ -215,7 +215,7 @@
                                             <li>
                                                 <LinkTo @route="settings.integration.webhooks.edit" @models={{array this.integration webhook}} data-test-link="edit-webhook">
                                                     Edit
-                                                </LinkTo>                                            
+                                                </LinkTo>
                                             </li>
                                             <li>
                                                 <button data-test-button="delete-webhook" type="button" {{on "click" (fn this.confirmWebhookDeletion webhook)}}>
@@ -265,7 +265,7 @@
 
     <section class="gh-main-section">
         <div class="gh-main-section-block">
-            <button class="gh-btn gh-btn-red gh-btn-icon" type="button" {{on "click" this.confirmIntegrationDeletion}}>
+            <button class="gh-btn gh-btn-red gh-btn-icon" type="button" {{on "click" this.confirmIntegrationDeletion}} data-test-button="delete-integration">
                 <span> Delete integration </span>
             </button>
         </div>
@@ -287,20 +287,6 @@
         }}
         @confirm={{this.regenerateKey}}
         @close={{this.cancelRegenerateKeyModal}}
-        @modifier="action wide" />
-{{/if}}
-
-{{#if this.showDeleteIntegrationModal}}
-    <GhFullscreenModal @modal="delete-integration"
-        @confirm={{this.deleteIntegration}}
-        @close={{this.cancelIntegrationDeletion}}
-        @modifier="action wide" />
-{{/if}}
-
-{{#if this.webhookToDelete}}
-    <GhFullscreenModal @modal="delete-webhook"
-        @confirm={{this.deleteWebhook}}
-        @close={{this.cancelWebhookDeletion}}
         @modifier="action wide" />
 {{/if}}
 

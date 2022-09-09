@@ -68,6 +68,13 @@ export default function () {
         return {};
     });
 
+    /* Delete all ----------------------------------------------------------- */
+
+    this.del('/db', function (db) {
+        db.posts.all().remove();
+        db.tags.all().remove();
+    }, 204);
+
     /* External sites ------------------------------------------------------- */
 
     this.head('http://www.gravatar.com/avatar/:md5', function () {

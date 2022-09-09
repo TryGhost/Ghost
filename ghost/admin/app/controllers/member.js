@@ -187,9 +187,21 @@ export default class MemberController extends Controller {
 
             return member;
         } catch (error) {
-            if (error) {
-                this.notifications.showAPIError(error, {key: 'member.save'});
+            if (error === undefined) {
+                // Validation error
+                return;
             }
+
+            if (error.payload && error.payload.errors) {
+                for (const payloadError of error.payload.errors) {
+                    if (payloadError.type === 'ValidationError' && payloadError.property && (payloadError.context || payloadError.message)) {
+                        member.errors.add(payloadError.property, payloadError.context || payloadError.message);
+                        member.hasValidated.pushObject(payloadError.property);
+                    }
+                }
+            }
+
+            throw error;
         }
     }
 
