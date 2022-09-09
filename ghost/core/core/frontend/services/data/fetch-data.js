@@ -6,7 +6,6 @@ const _ = require('lodash');
 const Promise = require('bluebird');
 
 // The default settings for a default post query
-// @TODO: get rid of this config and use v2, v3 config
 const queryDefaults = {
     type: 'browse',
     resource: 'posts',
