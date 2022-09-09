@@ -20,11 +20,8 @@ export default class MemberController extends Controller {
     @tracked isLoading = false;
     @tracked showDeleteMemberModal = false;
     @tracked showImpersonateMemberModal = false;
-    @tracked showUnsavedChangesModal = false;
     @tracked modalLabel = null;
     @tracked showLabelModal = false;
-
-    leaveScreenTransition = null;
 
     constructor() {
         super(...arguments);
@@ -133,37 +130,6 @@ export default class MemberController extends Controller {
         }, (error) => {
             return this.notifications.showAPIError(error, {key: 'member.delete'});
         });
-    }
-
-    @action
-    toggleUnsavedChangesModal(transition) {
-        let leaveTransition = this.leaveScreenTransition;
-
-        if (!transition && this.showUnsavedChangesModal) {
-            this.leaveScreenTransition = null;
-            this.showUnsavedChangesModal = false;
-            return;
-        }
-
-        if (!leaveTransition || transition.targetName === leaveTransition.targetName) {
-            this.leaveScreenTransition = transition;
-
-            // if a save is running, wait for it to finish then transition
-            if (this.save.isRunning) {
-                return this.save.last.then(() => {
-                    transition.retry();
-                });
-            }
-
-            // we genuinely have unsaved data, show the modal
-            this.showUnsavedChangesModal = true;
-        }
-    }
-
-    @action
-    leaveScreen() {
-        this.member.rollbackAttributes();
-        return this.leaveScreenTransition.retry();
     }
 
     // Tasks -------------------------------------------------------------------
