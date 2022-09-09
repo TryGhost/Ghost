@@ -4,7 +4,7 @@ import {ROOT_DIV_ID} from '../utils/constants';
 import Content from './content/Content';
 import Loading from './content/Loading';
 
-const ContentBox = (props) => {
+const ContentBox = ({done}) => {
     const luminance = (r, g, b) => {
         var a = [r, g, b].map(function (v) {
             v /= 255;
@@ -48,7 +48,7 @@ const ContentBox = (props) => {
 
     return (
         <section className={'ghost-display ' + containerClass} style={style} data-testid="content-box">
-            {props.done ? <Content /> : <Loading />}
+            {done ? <Content /> : <Loading />}
         </section>
     );
 };
