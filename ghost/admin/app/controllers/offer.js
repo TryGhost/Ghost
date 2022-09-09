@@ -24,7 +24,6 @@ export default class OffersController extends Controller {
     @tracked cadences = [];
     @tracked tiers = [];
     @tracked portalPreviewUrl = '';
-    @tracked showUnsavedChangesModal = false;
 
     @tracked defaultSiteUrl = this.config.get('blogUrl');
 
@@ -58,7 +57,6 @@ export default class OffersController extends Controller {
     @tracked isDisplayTitleEdited = false;
     @tracked isOfferCodeEdited = false;
 
-    leaveScreenTransition = null;
     portalPreviewGuid = Date.now().valueOf();
 
     constructor() {
@@ -253,37 +251,6 @@ export default class OffersController extends Controller {
     @action
     save() {
         return this.saveTask.perform();
-    }
-
-    @action
-    leaveScreen() {
-        this.offer.rollbackAttributes();
-        return this.leaveScreenTransition.retry();
-    }
-
-    @action
-    toggleUnsavedChangesModal(transition) {
-        let leaveTransition = this.leaveScreenTransition;
-
-        if (!transition && this.showUnsavedChangesModal) {
-            this.leaveScreenTransition = null;
-            this.showUnsavedChangesModal = false;
-            return;
-        }
-
-        if (!leaveTransition || transition.targetName === leaveTransition.targetName) {
-            this.leaveScreenTransition = transition;
-
-            // if a save is running, wait for it to finish then transition
-            if (this.save.isRunning) {
-                return this.save.last.then(() => {
-                    transition.retry();
-                });
-            }
-
-            // we genuinely have unsaved data, show the modal
-            this.showUnsavedChangesModal = true;
-        }
     }
 
     @action
