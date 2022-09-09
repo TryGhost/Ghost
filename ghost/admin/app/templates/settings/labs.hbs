@@ -73,7 +73,7 @@
                             <h4 class="gh-expandable-title">Delete all content</h4>
                             <p class="gh-expandable-description">Permanently delete all posts and tags from the database, a hard reset</p>
                         </div>
-                        <button type="button" class="gh-btn gh-btn-red js-delete" {{action "toggleDeleteAllModal"}}><span>Delete</span></button>
+                        <button type="button" class="gh-btn gh-btn-red" {{on "click" this.confirmDeleteAll}} data-test-button="delete-all"><span>Delete</span></button>
                     </div>
                 </div>
             </div>
@@ -190,7 +190,7 @@
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
                         <div>
-                            <h4 class="gh-expandable-title">Audit Log</h4>
+                            <h4 class="gh-expandable-title">History Log</h4>
                             <p class="gh-expandable-description">
                                Allow visibility into Staff actions
                             </p>
@@ -257,9 +257,3 @@
         {{/if}}
     </section>
 </section>
-
-{{#if this.showDeleteAllModal}}
-    <GhFullscreenModal @modal="delete-all"
-        @close={{action "toggleDeleteAllModal"}}
-        @modifier="action wide" />
-{{/if}}

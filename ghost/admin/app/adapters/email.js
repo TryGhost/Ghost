@@ -1,7 +1,5 @@
 import ApplicationAdapter from './application';
-import classic from 'ember-classic-decorator';
 
-@classic
 export default class Email extends ApplicationAdapter {
     retry(model) {
         let url = `${this.buildURL('email', model.get('id'))}retry/`;

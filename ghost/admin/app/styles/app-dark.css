@@ -66,7 +66,6 @@
 @import "layouts/preview-email.css";
 @import "layouts/portal-settings.css";
 @import "layouts/billing.css";
-@import "layouts/fullscreen-wizard.css";
 @import "layouts/post-preview.css";
 @import "layouts/dashboard.css";
 @import "layouts/tiers.css";
@@ -647,7 +646,7 @@ input:focus,
 }
 
 .settings-code-editor .CodeMirror {
-    color: var(--black);
+    color: var(--darkgrey);
 }
 
 .settings-code-editor .CodeMirror-cursor {
@@ -680,6 +679,22 @@ input:focus,
 
 .CodeMirror .CodeMirror-code .cm-string {
     color: color-mod(#183691 l(+25%));
+}
+
+.settings-code-editor .CodeMirror .cm-variable, .settings-code-editor .CodeMirror .cm-variable-2, .settings-code-editor .CodeMirror .cm-meta {
+    color: var(--black);
+}
+
+.settings-code-editor .CodeMirror .cm-property {
+    color: var(--middarkgrey);
+}
+
+.settings-code-editor .CodeMirror .cm-number {
+    color: color-mod(#164 l(+25%));
+}
+
+.settings-code-editor .CodeMirror .cm-keyword {
+    color: color-mod(#5A5CAD l(+20%));
 }
 
 .id-github img,
@@ -1086,34 +1101,6 @@ input:focus,
     background: var(--main-color-content-greybg)
 }
 
-/* Launch-site wizard */
-.fullscreen-wizard-container {
-    background: var(--dark-main-bg-color);
-}
-
-.gh-launch-wizard-content {
-    background: var(--dark-main-bg-color);
-    border-top: 1px solid var(--hairline-color-1);
-}
-
-.gh-launch-wizard-btn {
-    color: var(--black);
-    background: var(--green-d1);
-}
-
-.gh-launch-wizard-btn:hover {
-    color: #fff;
-    background: var(--green) !important;
-}
-
-.gh-launch-wizard-btn svg {
-    fill: var(--black);
-}
-
-.gh-lw-banner {
-    border: 1px solid color-mod(var(--green) a(60%));
-}
-
 .gh-dashboard-box {
     flex: 1;
     border: 1px solid var(--lightgrey);
@@ -1164,6 +1151,7 @@ kbd {
 
 /* Finishing touches */
 /* ---------------------------------------------------- */
+
 .gh-done {
     background: #15171A;
 }
@@ -1204,6 +1192,18 @@ kbd {
     background: #111213;
 }
 
+.gh-dashboard-explore-mrr {
+    color: var(--black);
+}
+
+.gh-dashboard-explore-feed .gh-dashboard-resource-title:hover a:not(.gh-dashboard-explore-add) {
+    color: var(--middarkgrey-l1);
+}
+
+.gh-dashboard-explore-add:hover {
+    color: var(--pink-l2);
+}
+
 .gh-dashboard-community .gh-dashboard-list-footer {
     border-color: transparent;
 }
@@ -1213,9 +1213,7 @@ kbd {
     background: linear-gradient(270deg, rgba(21,23,25,0) 0%, rgba(21,23,25,1) 100%);
 }
 
-.gh-dashboard-resource-box.is-secondary .gh-dashboard-resource-footer,
-.gh-dashboard-staff-picks .gh-dashboard-resource-box,
-.gh-dashboard-whats-new .gh-dashboard-resource-box {
+.gh-dashboard-resource-box.is-secondary .gh-dashboard-resource-footer {
     border-color: #26282b;
 }
 
@@ -1321,4 +1319,25 @@ kbd {
 
 .gh-input-group-tier-trial-disabled .gh-input-append:before {
     background: #0e0f11;
+}
+
+
+/* Settings Links */
+
+.kg-settings-link-url::before {
+    background: rgb(28,30,33);
+    background: linear-gradient(90deg, rgba(28,30,33,1) 0%, rgba(28,30,33,0) 100%);
+}
+
+.kg-settings-link-url::after {
+    background: rgb(28,30,33);
+    background: linear-gradient(90deg, rgba(28,30,33,0) 0%, rgba(28,30,33,1) 100%);
+}
+
+.ember-power-select-option[aria-current="true"] .kg-settings-link-url.scroller::before {
+    background: linear-gradient(90deg, rgba(19,20,22,1) 0%, rgba(19,20,22,0) 100%);
+}
+
+.ember-power-select-option[aria-current="true"] .kg-settings-link-url::after {
+    background: linear-gradient(90deg, rgba(19,20,22,0) 0%, rgba(19,20,22,1) 100%);
 }

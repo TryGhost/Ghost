@@ -120,7 +120,7 @@ class CacheManager {
      * This method is dangerous in case the cache is "lazily" initialized
      * could result in returning only a partially filled cache
      * @return {object} cache
-     * @deprecated this method is not "cache-friendly" and should be avoided from furhter usage
+     * @deprecated this method is not "cache-friendly" and should be avoided from further usage
      *             instead using multiple "get" calls
      */
     getAll() {

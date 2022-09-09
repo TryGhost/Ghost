@@ -204,7 +204,7 @@
                                     </button>
                                 </div> --}}
                                 <GhBasicDropdown @verticalPosition="below" @horizontalPosition="right" @renderInPlace={{true}} as |dd|>
-                                    <dd.Trigger class="gh-btn gh-btn-action-icon gh-btn-icon gh-btn-outline gh-tier-card-actions-button icon-only">
+                                    <dd.Trigger class="gh-btn gh-btn-action-icon gh-btn-icon gh-btn-outline fill gh-tier-card-actions-button icon-only">
                                         <span data-test-newsletter-menu-trigger>
                                             {{svg-jar "dotdotdot"}}
                                             <span class="hidden">Actions</span>
@@ -215,7 +215,7 @@
                                             <li>
                                                 <LinkTo @route="settings.integration.webhooks.edit" @models={{array this.integration webhook}} data-test-link="edit-webhook">
                                                     Edit
-                                                </LinkTo>                                            
+                                                </LinkTo>
                                             </li>
                                             <li>
                                                 <button data-test-button="delete-webhook" type="button" {{on "click" (fn this.confirmWebhookDeletion webhook)}}>
@@ -231,13 +231,13 @@
                     <tr class="bt b--whitegrey" data-test-webhooks-blank-slate>
                         <td colspan="5" class="pa5 pt15 pb15 tc midgrey f7">
                             <div class="flex flex-column items-center">
-                                <p class="ma0 pa0 tc midgrey lh-title mt2">
+                                <p class="ma0 pa0 tc midgrey lh-title mb2">
                                     No webhooks configured
                                 </p>
                                 <LinkTo @route="settings.integration.webhooks.new" @model={{this.integration}} class="flex items-center" data-test-link="add-webhook">
-                                <div class="flex items-center pa2 pt1">
-                                    {{svg-jar "add" class="w3 h3 fill-green-d1"}}
-                                    <span class="ml1 green">Add webhook</span>
+                                <div class="gh-btn-text green-d1 gh-btn-icon">
+                                    {{svg-jar "plus"}}
+                                    <span>Add webhook</span>
                                 </div>
                                 </LinkTo>
                             </div>
@@ -250,9 +250,9 @@
                     <tr class="gh-list-row new-webhook-cell">
                         <td colspan="5" class="gh-list-data">
                             <LinkTo @route="settings.integration.webhooks.new" @model={{this.integration}} class="flex items-center" data-test-link="add-webhook">
-                            <div class="pt1 pb1 f7">
-                                {{svg-jar "add" class="w3 h3 fill-green-d1"}}
-                                <span class="ml1 green">Add webhook</span>
+                            <div class="gh-btn-text green-d1 gh-btn-icon">
+                                {{svg-jar "plus"}}
+                                <span class="f7">Add webhook</span>
                             </div>
                             </LinkTo>
                         </td>
@@ -265,7 +265,7 @@
 
     <section class="gh-main-section">
         <div class="gh-main-section-block">
-            <button class="gh-btn gh-btn-red gh-btn-icon" type="button" {{on "click" this.confirmIntegrationDeletion}}>
+            <button class="gh-btn gh-btn-red gh-btn-icon" type="button" {{on "click" this.confirmIntegrationDeletion}} data-test-button="delete-integration">
                 <span> Delete integration </span>
             </button>
         </div>
@@ -287,20 +287,6 @@
         }}
         @confirm={{this.regenerateKey}}
         @close={{this.cancelRegenerateKeyModal}}
-        @modifier="action wide" />
-{{/if}}
-
-{{#if this.showDeleteIntegrationModal}}
-    <GhFullscreenModal @modal="delete-integration"
-        @confirm={{this.deleteIntegration}}
-        @close={{this.cancelIntegrationDeletion}}
-        @modifier="action wide" />
-{{/if}}
-
-{{#if this.webhookToDelete}}
-    <GhFullscreenModal @modal="delete-webhook"
-        @confirm={{this.deleteWebhook}}
-        @close={{this.cancelWebhookDeletion}}
         @modifier="action wide" />
 {{/if}}
 

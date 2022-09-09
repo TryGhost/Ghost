@@ -3,9 +3,9 @@
 exports[`Comments API when authenticated can get member data 1: [body] 1`] = `
 Object {
   "avatar_image": null,
-  "bio": null,
   "email": "member@example.com",
   "enable_comment_notifications": true,
+  "expertise": null,
   "firstname": null,
   "name": null,
   "newsletters": Array [
@@ -33,7 +33,7 @@ exports[`Comments API when authenticated can get member data 2: [headers] 1`] = 
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "430",
+  "content-length": "436",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -44,9 +44,9 @@ Object {
 exports[`Comments API when authenticated can update comment notifications 1: [body] 1`] = `
 Object {
   "avatar_image": null,
-  "bio": "test",
   "email": "member@example.com",
   "enable_comment_notifications": false,
+  "expertise": "test",
   "firstname": "Test",
   "name": "Test User",
   "newsletters": Array [
@@ -74,7 +74,7 @@ exports[`Comments API when authenticated can update comment notifications 2: [he
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "442",
+  "content-length": "448",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -199,12 +199,53 @@ Object {
 }
 `;
 
+exports[`Comments API when authenticated can update member expertise 1: [body] 1`] = `
+Object {
+  "avatar_image": null,
+  "email": "member@example.com",
+  "enable_comment_notifications": true,
+  "expertise": "Head of Testing",
+  "firstname": null,
+  "name": null,
+  "newsletters": Array [
+    Object {
+      "description": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Default Newsletter",
+      "sort_order": 0,
+    },
+    Object {
+      "description": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Weekly newsletter",
+      "sort_order": 2,
+    },
+  ],
+  "paid": false,
+  "subscribed": false,
+  "subscriptions": Array [],
+  "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+}
+`;
+
+exports[`Comments API when authenticated can update member expertise 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "449",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
 exports[`Comments API when authenticated can update name 1: [body] 1`] = `
 Object {
   "avatar_image": null,
-  "bio": "test",
   "email": "member@example.com",
   "enable_comment_notifications": true,
+  "expertise": "test",
   "firstname": "Test",
   "name": "Test User",
   "newsletters": Array [
@@ -232,7 +273,7 @@ exports[`Comments API when authenticated can update name 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "441",
+  "content-length": "447",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -274,6 +315,47 @@ Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "432",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Comments API when authenticated trims whitespace from expertise 1: [body] 1`] = `
+Object {
+  "avatar_image": null,
+  "email": "member@example.com",
+  "enable_comment_notifications": true,
+  "expertise": "test",
+  "firstname": null,
+  "name": null,
+  "newsletters": Array [
+    Object {
+      "description": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Default Newsletter",
+      "sort_order": 0,
+    },
+    Object {
+      "description": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Weekly newsletter",
+      "sort_order": 2,
+    },
+  ],
+  "paid": false,
+  "subscribed": false,
+  "subscriptions": Array [],
+  "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+}
+`;
+
+exports[`Comments API when authenticated trims whitespace from expertise 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "438",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",

@@ -20,10 +20,10 @@
     "mocha": "10.0.0",
     "should": "13.2.3",
     "sinon": "14.0.0",
-    "uuid": "8.3.2"
+    "uuid": "9.0.0"
   },
   "dependencies": {
-    "@tryghost/string": "0.1.27",
+    "@tryghost/string": "0.2.1",
     "bcryptjs": "2.4.3"
   }
 }

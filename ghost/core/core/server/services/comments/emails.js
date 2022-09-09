@@ -5,12 +5,13 @@ const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const postEmailSerializer = require('../mega/post-email-serializer');
 
 class CommentsServiceEmails {
-    constructor({config, logging, models, mailer, settingsCache, urlService, urlUtils}) {
+    constructor({config, logging, models, mailer, settingsCache, settingsHelpers, urlService, urlUtils}) {
         this.config = config;
         this.logging = logging;
         this.models = models;
         this.mailer = mailer;
         this.settingsCache = settingsCache;
+        this.settingsHelpers = settingsHelpers;
         this.urlService = urlService;
         this.urlUtils = urlUtils;
 
@@ -40,7 +41,7 @@ class CommentsServiceEmails {
                 commentHtml: comment.get('html'),
                 commentDate: moment(comment.get('created_at')).tz(this.settingsCache.get('timezone')).format('D MMM YYYY'),
                 memberName: memberName,
-                memberBio: member.get('bio'),
+                memberExpertise: member.get('expertise'),
                 memberInitials: this.extractInitials(memberName),
                 accentColor: this.settingsCache.get('accent_color'),
                 fromEmail: this.notificationFromAddress,
@@ -89,7 +90,7 @@ class CommentsServiceEmails {
             replyHtml: reply.get('html'),
             replyDate: moment(reply.get('created_at')).tz(this.settingsCache.get('timezone')).format('D MMM YYYY'),
             memberName: memberName,
-            memberBio: member.get('bio'),
+            memberExpertise: member.get('expertise'),
             memberInitials: this.extractInitials(memberName),
             accentColor: this.settingsCache.get('accent_color'),
             fromEmail: this.notificationFromAddress,
@@ -139,7 +140,7 @@ class CommentsServiceEmails {
 
             memberName: memberName,
             memberEmail: member.get('email'),
-            memberBio: member.get('bio'),
+            memberExpertise: member.get('expertise'),
             memberInitials: this.extractInitials(memberName),
             accentColor: this.settingsCache.get('accent_color'),
             fromEmail: this.notificationFromAddress,
@@ -166,25 +167,8 @@ class CommentsServiceEmails {
         return siteDomain;
     }
 
-    get membersAddress() {
-        // TODO: get from address of default newsletter?
-        return `noreply@${this.siteDomain}`;
-    }
-
-    // TODO: duplicated from services/members/config - exrtact to settings?
-    get supportAddress() {
-        const supportAddress = this.settingsCache.get('members_support_address') || 'noreply';
-
-        // Any fromAddress without domain uses site domain, like default setting `noreply`
-        if (supportAddress.indexOf('@') < 0) {
-            return `${supportAddress}@${this.siteDomain}`;
-        }
-
-        return supportAddress;
-    }
-
     get notificationFromAddress() {
-        return this.supportAddress || this.membersAddress;
+        return this.settingsHelpers.getMembersSupportAddress();
     }
 
     extractInitials(name = '') {

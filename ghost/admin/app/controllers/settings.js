@@ -1,3 +1,4 @@
+import AboutModal from '../components/modals/settings/about';
 import classic from 'ember-classic-decorator';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
@@ -8,6 +9,8 @@ import Controller from '@ember/controller';
 export default class SettingsController extends Controller {
     @service settings;
     @service session;
+    @service modals;
+    @service upgradeStatus;
 
     showLeaveSettingsModal = false;
 
@@ -20,5 +23,10 @@ export default class SettingsController extends Controller {
     async leavePortalSettings() {
         this.settings.rollbackAttributes();
         this.set('showLeaveSettingsModal', false);
+    }
+
+    @action
+    openAbout() {
+        this.advancedModal = this.modals.open(AboutModal);
     }
 }

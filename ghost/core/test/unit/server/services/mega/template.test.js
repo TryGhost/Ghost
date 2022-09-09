@@ -122,7 +122,7 @@ describe('Mega template', function () {
     it('Correctly escapes the contents', function () {
         const post = {
             title: 'I <3 Posts',
-            html: '<div class="post-content-html">I am <100 years old</div>',
+            html: '<div class="post-content-html">I am &lt;100 years old</div>',
             feature_image: 'https://example.com/image.jpg',
             feature_image_alt: 'I <3 alt text',
             feature_image_caption: 'I <3 images'
@@ -196,7 +196,7 @@ describe('Mega template', function () {
 
         should(html).containEql('class="custom"');
         // note that some part of rendering/sanitisation removes spaces from the style description
-        should(html).containEql('style="font-weight:900;display:flex"');
+        should(html).containEql('style="font-weight: 900; display: flex;"');
     });
 
     it('Uses the post title as a fallback for the excerpt', function () {

@@ -15,7 +15,7 @@ const messages = {
 };
 
 class CommentsService {
-    constructor({config, logging, models, mailer, settingsCache, urlService, urlUtils, contentGating}) {
+    constructor({config, logging, models, mailer, settingsCache, settingsHelpers, urlService, urlUtils, contentGating}) {
         /** @private */
         this.models = models;
 
@@ -33,6 +33,7 @@ class CommentsService {
             models,
             mailer,
             settingsCache,
+            settingsHelpers,
             urlService,
             urlUtils
         });
@@ -83,6 +84,58 @@ class CommentsService {
 
         if (comment.get('parent_id')) {
             await this.emails.notifyParentCommentAuthor(comment);
+        }
+    }
+
+    async likeComment(commentId, member, options = {}) {
+        this.checkEnabled();
+
+        const memberModel = await this.models.Member.findOne({
+            id: member.id
+        }, {
+            require: true,
+            ...options,
+            withRelated: ['products']
+        });
+
+        this.checkCommentAccess(memberModel);
+
+        const data = {
+            member_id: memberModel.id,
+            comment_id: commentId
+        };
+
+        const existing = await this.models.CommentLike.findOne(data, options);
+
+        if (existing) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.alreadyLiked)
+            });
+        }
+
+        return await this.models.CommentLike.add(data, options);
+    }
+
+    async unlikeComment(commentId, member, options = {}) {
+        this.checkEnabled();
+
+        try {
+            await this.models.CommentLike.destroy({
+                ...options,
+                destroyBy: {
+                    member_id: member.id,
+                    comment_id: commentId
+                },
+                require: true
+            });
+        } catch (err) {
+            if (err instanceof this.models.CommentLike.NotFoundError) {
+                return Promise.reject(new errors.NotFoundError({
+                    message: tpl(messages.likeNotFound)
+                }));
+            }
+
+            throw err;
         }
     }
 

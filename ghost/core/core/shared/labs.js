@@ -15,6 +15,7 @@ const messages = {
 
 // flags in this list always return `true`, allows quick global enable prior to full flag removal
 const GA_FEATURES = [
+    'auditLog',
     'newsletterPaywall',
     'freeTrial',
     'compExpiring',
@@ -30,7 +31,6 @@ const BETA_FEATURES = [
 ];
 
 const ALPHA_FEATURES = [
-    'auditLog',
     'urlCache',
     'beforeAfterCard'
 ];

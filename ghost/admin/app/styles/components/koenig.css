@@ -927,15 +927,7 @@
 
 .kg-cardmenu-card-hover .kg-cardmenu-action-icon svg {
     margin: 0;
-    height: 1em;
-}
-
-.kg-cardmenu-card-hover .kg-cardmenu-action-icon svg path {
-    fill: var(--red);
-}
-
-.kg-cardmenu-card-hover .kg-cardmenu-action-icon:hover svg path {
-    fill: var(--red);
+    height: 1.6rem;
 }
 
 /* Padded container housing title + editor canvas, scrollable content */
@@ -965,11 +957,6 @@
     max-width: 740px;
 }
 
-.koenig-react-editor {
-    max-width: 740px;
-    margin: 0 auto;
-}
-
 /* ⨁ menu
 /* --------------------------------------------------------------- */
 .koenig-plus-menu-button {
@@ -980,11 +967,13 @@
     border-color: var(--darkgrey);
 }
 
-.koenig-plus-menu-button:hover svg path,
-.koenig-plus-menu-button:hover svg g {
-    stroke: var(--darkgrey);
+.koenig-plus-menu-button svg path {
+    stroke-width: 1.2;
 }
 
+.koenig-plus-menu-button:hover svg path {
+    stroke: var(--darkgrey);
+}
 
 @media (max-width: 500px) {
   .koenig-plus-menu-button {
@@ -2171,6 +2160,7 @@ button.emoji-picker__category-button.active {
     font-size: 5em;
     font-weight: 700;
     line-height: 1.1em;
+    letter-spacing: -0.03em;
 }
 
 .kg-header-card h2 {
@@ -2184,6 +2174,7 @@ button.emoji-picker__category-button.active {
 .kg-header-card.kg-size-small .kg-header-card-header .__mobiledoc-editor.__has-no-content:after,
 .kg-header-card.kg-size-small h2 {
     font-size: 4em;
+    letter-spacing: -0.03em;
 }
 
 .kg-header-card.kg-size-large .kg-header-card-header .__mobiledoc-editor.__has-no-content:after,
@@ -2198,6 +2189,7 @@ button.emoji-picker__category-button.active {
     line-height: 1.4em;
     margin: 0.35em auto 0 !important;
     max-width: 40em;
+    letter-spacing: -0.025em;
 }
 
 .kg-header-card h3 {
@@ -2222,6 +2214,7 @@ button.emoji-picker__category-button.active {
 .kg-header-card.kg-size-large h3 {
     font-size: 1.75em;
     line-height: 1.35em;
+    letter-spacing: -0.03em;
 }
 
 .kg-header-card:not(.kg-style-light) h2,
@@ -3036,7 +3029,7 @@ button.emoji-picker__category-button.active {
 }
 
 .kg-settings-headerstyle-btn-group .kg-headerstyle-btn-image svg path {
-    stroke: var(--midgrey);
+    stroke-width: 1.5;
 }
 
 .kg-settings-headerstyle-btn-group .gh-btn-group-selected {

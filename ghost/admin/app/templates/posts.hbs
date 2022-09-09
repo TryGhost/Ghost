@@ -3,7 +3,7 @@
         <GhCustomViewTitle @title={{if this.session.user.isContributor (concat this.config.blogTitle " posts") "Posts"}} @query={{reset-query-params "posts"}} />
 
         <section class="view-actions">
-            <GhContentfilter
+            <PostsList::ContentFilter
                 @currentUser={{this.session.user}}
                 @selectedType={{this.selectedType}}
                 @availableTypes={{this.availableTypes}}
@@ -32,7 +32,7 @@
                 {{#if this.postsInfinityModel}}
                     <li class="gh-list-row header">
                         <div class="gh-list-header gh-posts-title-header">Title</div>
-                        
+
                         {{#if (and this.feature.memberAttribution (not this.session.user.isContributor)) }}
                         <div class="gh-list-header gh-posts-status-header"></div>
                             <div class="gh-list-header gh-posts-signups-header">Signups</div>
@@ -49,9 +49,10 @@
                 {{/if}}
 
                 {{#each this.postsInfinityModel as |post|}}
-                    <GhPostsListItem
+                    <PostsList::ListItem
                         @post={{post}}
-                        data-test-post-id={{post.id}} />
+                        data-test-post-id={{post.id}}
+                    />
                 {{else}}
                 <li class="no-posts-box">
                     <div class="no-posts">

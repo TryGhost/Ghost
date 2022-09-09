@@ -36,11 +36,6 @@ Router.map(function () {
         this.route('edit', {path: ':type/:post_id'});
     });
 
-    this.route('react-editor', function () {
-        this.route('new', {path: ':type'});
-        this.route('edit', {path: ':type/:post_id'});
-    });
-
     this.route('lexical-editor', function () {
         this.route('new', {path: ':type'});
         this.route('edit', {path: ':type/:post_id'});
@@ -54,7 +49,7 @@ Router.map(function () {
     this.route('settings.general', {path: '/settings/general'});
     this.route('settings.membership', {path: '/settings/members'});
     this.route('settings.code-injection', {path: '/settings/code-injection'});
-    this.route('settings.audit-log', {path: '/settings/audit-log'});
+    this.route('settings.history', {path: '/settings/history'});
 
     // redirect from old /settings/members-email to /settings/newsletters
     this.route('settings.members-email', {path: '/settings/members-email'});

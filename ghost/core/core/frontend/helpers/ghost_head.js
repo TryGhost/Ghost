@@ -167,11 +167,12 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
             }
 
             head.push('<link rel="canonical" href="' + escapeExpression(meta.canonicalUrl) + '" />');
-            head.push('<meta name="referrer" content="' + referrerPolicy + '" />');
 
-            // don't allow indexing of preview URLs!
             if (_.includes(context, 'preview')) {
                 head.push(writeMetaTag('robots', 'noindex,nofollow', 'name'));
+                head.push(writeMetaTag('referrer', 'same-origin', 'name'));
+            } else {
+                head.push(writeMetaTag('referrer', referrerPolicy, 'name'));
             }
 
             // show amp link in post when 1. we are not on the amp page and 2. amp is enabled

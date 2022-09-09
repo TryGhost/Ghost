@@ -7,19 +7,22 @@
                 {{if this.tag.isNew "New tag" this.tag.name}}
             </h2>
             <section class="view-actions">
-                <GhTaskButton @task={{this.saveTask}} @type="button" @class="gh-btn gh-btn-primary gh-btn-icon" @data-test-button="save" />
+                <GhTaskButton
+                    @task={{this.saveTask}}
+                    @type="button"
+                    @class="gh-btn gh-btn-primary gh-btn-icon"
+                    @data-test-button="save"
+                    {{on-key "cmd+s"}}
+                />
             </section>
         </GhCanvasHeader>
 
-        <GhTagSettingsForm
-            @tag={{this.tag}}
-            @scratchTag={{this.scratchTag}}
-            @setProperty={{action "setProperty"}} />
+        <Tags::TagForm @tag={{this.model}} />
     </form>
 
     {{#unless this.tag.isNew}}
         <div>
-            <button type="button" class="gh-btn gh-btn-red gh-btn-icon" {{on "click" (action "openDeleteTagModal")}}>
+            <button type="button" class="gh-btn gh-btn-red gh-btn-icon" {{on "click" this.confirmDeleteTag}} data-test-button="delete-tag">
                 <span>Delete tag</span>
             </button>
         </div>
@@ -29,16 +32,7 @@
 {{#if this.showUnsavedChangesModal}}
     <GhFullscreenModal
         @modal="leave-settings"
-        @confirm={{action "leaveScreen"}}
-        @close={{action "toggleUnsavedChangesModal"}}
-        @modifier="action wide" />
-{{/if}}
-
-{{#if this.showDeleteTagModal}}
-    <GhFullscreenModal
-        @modal="delete-tag"
-        @model={{this.tag}}
-        @confirm={{action "deleteTag"}}
-        @close={{action "closeDeleteTagModal"}}
+        @confirm={{this.leaveScreen}}
+        @close={{this.toggleUnsavedChangesModal}}
         @modifier="action wide" />
 {{/if}}

@@ -29,6 +29,7 @@ class CmEditorComponent extends Component {
 
     // Allowed actions
     'focus-in' = () => {};
+    'focus-out' = () => {};
 
     update = () => {};
 
@@ -123,6 +124,7 @@ class CmEditorComponent extends Component {
 
     _blur/* codeMirror, event */() {
         this.set('isFocused', false);
+        this['focus-out']?.();
     }
 }
 

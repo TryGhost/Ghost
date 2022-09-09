@@ -119,7 +119,7 @@ describe('Acceptance: Members', function () {
             expect(currentURL(), 'new member URL').to.equal('/members/new');
             // it displays the new member form
             expect(find('.gh-canvas-header h2').textContent, 'settings pane title')
-                .to.contain('New member');
+                .to.contain('New');
 
             // all fields start blank
             findAll('.gh-member-settings-primary .gh-input').forEach(function (elem) {

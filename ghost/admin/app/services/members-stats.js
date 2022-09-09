@@ -16,6 +16,17 @@ export default class MembersStatsService extends Service {
     @tracked countStats = null;
     @tracked mrrStats = null;
     @tracked newsletterStats = null;
+    @tracked totalMemberCount = null;
+
+    get memberCount() {
+        let stats = this.totalMemberCount;
+        if (!stats) {
+            return 0;
+        }
+        const {free, paid, comped} = stats.meta.totals;
+        const total = free + paid + comped || 0;
+        return total;
+    }
 
     fetch() {
         let daysChanged = this._lastFetchedDays !== this.days;
@@ -48,6 +59,22 @@ export default class MembersStatsService extends Service {
         }
 
         return this._fetchCountsTask.perform();
+    }
+
+    fetchMemberCount() {
+        let staleData = this._lastFetchedMemberCounts && (new Date() - this._lastFetchedMemberCounts) > ONE_MINUTE;
+
+        // return an already in-progress promise unless params have changed
+        if (this._fetchMemberCountsTask.isRunning) {
+            return this._fetchMemberCountsTask.last;
+        }
+
+        // return existing stats unless data is > 1 min old
+        if (this.totalMemberCount && !this._forceRefresh && !staleData) {
+            return Promise.resolve(this.totalMemberCount);
+        }
+
+        return this._fetchMemberCountsTask.perform();
     }
 
     fetchNewsletterStats() {
@@ -193,6 +220,16 @@ export default class MembersStatsService extends Service {
         let statsUrl = this.ghostPaths.url.api('members/stats/count');
         let stats = yield this.ajax.request(statsUrl);
         this.countStats = stats;
+        return stats;
+    }
+
+    @task
+    *_fetchMemberCountsTask() {
+        this._lastFetchedMemberCounts = new Date();
+
+        let statsUrl = this.ghostPaths.url.api('stats/member_count/');
+        let stats = yield this.ajax.request(statsUrl);
+        this.totalMemberCount = stats;
         return stats;
     }
 

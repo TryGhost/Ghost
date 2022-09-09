@@ -329,8 +329,7 @@
 }
 
 .tag-token--internal svg path {
-    stroke: var(--black);
-    fill: var(--black);
+    stroke: var(--white);
 }
 
 /* Author input */
@@ -460,7 +459,6 @@
 }
 
 .gh-btn-create-snippet svg {
-    width: 1.4rem;
-    height: 1.4rem;
-    fill: var(--green-d1)
+    width: 1.2rem;
+    height: 1.2rem;
 }

@@ -62,6 +62,7 @@ jobs:
       - run: yarn ember coverage-merge
         working-directory: ghost/admin
       - uses: codecov/codecov-action@v3
+        if: matrix.browser == 'Chrome'
 
       - uses: daniellockyer/action-slack-build@master
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -163,6 +164,7 @@ jobs:
       - run: yarn workspaces run test:unit
 
       - uses: codecov/codecov-action@v2
+        if: startsWith(matrix.node, '16')
 
       - uses: daniellockyer/action-slack-build@master
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
