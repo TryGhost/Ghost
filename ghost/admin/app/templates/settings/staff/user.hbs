@@ -19,13 +19,6 @@
             </h2>
         {{/if}}
 
-        {{#if this.showLeaveSettingsModal}}
-            <GhFullscreenModal @modal="leave-settings"
-                @confirm={{action "leaveSettings"}}
-                @close={{action "toggleLeaveSettingsModal"}}
-                @modifier="action wide" />
-        {{/if}}
-
         <section class="view-actions">
             {{#if (or this.userActionsAreVisible (and (feature 'auditLog') this.session.user.isAdmin))}}
                 <span class="dropdown">

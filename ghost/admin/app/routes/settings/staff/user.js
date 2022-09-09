@@ -1,8 +1,11 @@
-import {action} from '@ember/object';
-/* eslint-disable camelcase */
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
+import ConfirmUnsavedChangesModal from '../../../components/modals/confirm-unsaved-changes';
+import {action} from '@ember/object';
+import {inject as service} from '@ember/service';
 
 export default class UserRoute extends AuthenticatedRoute {
+    @service modals;
+
     model(params) {
         return this.store.queryRecord('user', {slug: params.user_slug, include: 'count.posts'});
     }
@@ -35,6 +38,52 @@ export default class UserRoute extends AuthenticatedRoute {
     }
 
     @action
+    async willTransition(transition) {
+        if (this.hasConfirmed) {
+            return true;
+        }
+
+        transition.abort();
+
+        // wait for any existing confirm modal to be closed before allowing transition
+        if (this.confirmModal) {
+            return;
+        }
+
+        if (this.controller.saveTask?.isRunning) {
+            await this.controller.saveTask.last;
+        }
+
+        const shouldLeave = await this.confirmUnsavedChanges();
+
+        if (shouldLeave) {
+            this.controller.reset();
+            this.hasConfirmed = true;
+            return transition.retry();
+        }
+    }
+
+    async confirmUnsavedChanges() {
+        if (this.controller.model.hasDirtyAttributes || this.controller.dirtyAttributes) {
+            this.confirmModal = this.modals
+                .open(ConfirmUnsavedChangesModal)
+                .finally(() => {
+                    this.confirmModal = null;
+                });
+
+            return this.confirmModal;
+        }
+
+        return true;
+    }
+
+    deactivate() {
+        this.confirmModal = null;
+        this.hasConfirmed = false;
+        this.controller.reset();
+    }
+
+    @action
     didTransition() {
         this.modelFor('settings.staff.user').get('errors').clear();
     }
@@ -42,27 +91,6 @@ export default class UserRoute extends AuthenticatedRoute {
     @action
     save() {
         this.controller.save.perform();
-    }
-
-    @action
-    willTransition(transition) {
-        let controller = this.controller;
-        let user = controller.user;
-        let dirtyAttributes = controller.dirtyAttributes;
-        let modelIsDirty = user.get('hasDirtyAttributes');
-
-        // always reset the password properties on the user model when leaving
-        if (user) {
-            user.set('password', '');
-            user.set('newPassword', '');
-            user.set('ne2Password', '');
-        }
-
-        if (modelIsDirty || dirtyAttributes) {
-            transition.abort();
-            controller.send('toggleLeaveSettingsModal', transition);
-            return;
-        }
     }
 
     buildRouteInfoMetadata() {

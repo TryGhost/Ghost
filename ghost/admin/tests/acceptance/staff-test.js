@@ -812,7 +812,7 @@ describe('Acceptance: Staff', function () {
                 expect(findAll('[data-test-modal]').length, 'modal exists').to.equal(1);
 
                 // Leave without saving
-                await click('.fullscreen-modal [data-test-leave-button]');
+                await click('[data-test-modal="unsaved-settings"] [data-test-leave-button]');
 
                 expect(currentURL(), 'currentURL').to.equal('/settings/staff');
 
