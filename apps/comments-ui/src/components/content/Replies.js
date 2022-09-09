@@ -3,8 +3,7 @@ import AppContext from '../../AppContext';
 import Comment from './Comment';
 import RepliesPagination from './RepliesPagination';
 
-const Replies = (props) => {
-    const comment = props.comment;
+const Replies = ({comment}) => {
     const {dispatchAction} = useContext(AppContext);
 
     const repliesLeft = comment.count.replies - comment.replies.length;
