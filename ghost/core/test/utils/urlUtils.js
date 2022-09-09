@@ -12,8 +12,6 @@ const getInstance = (options) => {
         getSubdir: config.getSubdir,
         getSiteUrl: config.getSiteUrl,
         getAdminUrl: config.getAdminUrl,
-        apiVersions: options.apiVersions,
-        defaultApiVersion: 'canary',
         slugs: options.slugs,
         redirectCacheMaxAge: options.redirectCacheMaxAge,
         baseApiPath: '/ghost/api'
