@@ -1038,3 +1038,5 @@ remove|ember-template-lint|no-passed-in-event-handlers|396|24|396|24|3e1dad0fb19
 remove|ember-template-lint|require-input-label|30|28|30|28|af62541280c3dc86d2ca7a4be8c980ee164fba5a|1662508800000|1672880400000|1678064400000|app/components/tags/tag-form.hbs
 remove|ember-template-lint|require-input-label|47|32|47|32|8e299cf5bf0e93e054410239451997a196933d25|1662508800000|1672880400000|1678064400000|app/components/tags/tag-form.hbs
 remove|ember-template-lint|no-action|1|40|1|40|573086f09d13f9bd362afc216e57873538ba48bd|1658102400000|1668474000000|1673658000000|app/templates/tags.hbs
+remove|ember-template-lint|no-action|91|17|91|17|c09dcb3dfe6ae3f5802c4ede66c922ed7b6a94e5|1658102400000|1668474000000|1673658000000|app/templates/settings.hbs
+remove|ember-template-lint|no-action|92|15|92|15|4327a1a496a49bd7460b2972a934a3bfbfb40ce0|1658102400000|1668474000000|1673658000000|app/templates/settings.hbs

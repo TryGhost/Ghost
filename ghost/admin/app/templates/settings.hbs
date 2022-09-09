@@ -109,10 +109,3 @@
         </div>
     </section>
 </section>
-
-{{#if this.showLeaveSettingsModal}}
-    <GhFullscreenModal @modal="leave-settings"
-        @confirm={{action "leavePortalSettings"}}
-        @close={{action "closeLeaveSettingsModal"}}
-        @modifier="action wide" />
-{{/if}}
