@@ -238,6 +238,9 @@ export default class App extends React.Component {
         const api = {
             async getUser() {
                 const result = await callApi('getUser');
+                if (!result || !result.users) {
+                    return null;
+                }
                 return result.users[0];
             },
             async hideComment(id) {
