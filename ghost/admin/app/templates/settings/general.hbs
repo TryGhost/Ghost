@@ -10,13 +10,6 @@
         </section>
     </GhCanvasHeader>
 
-    {{#if this.showLeaveSettingsModal}}
-        <GhFullscreenModal @modal="leave-settings"
-            @confirm={{action "leaveSettings"}}
-            @close={{action "toggleLeaveSettingsModal"}}
-            @modifier="action wide" />
-    {{/if}}
-
     <div>
         <div class="gh-main-section">
             <h4 class="gh-main-section-header small bn">Publication info</h4>

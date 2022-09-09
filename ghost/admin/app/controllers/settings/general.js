@@ -102,47 +102,6 @@ export default class GeneralController extends Controller {
     }
 
     @action
-    toggleLeaveSettingsModal(transition) {
-        let leaveTransition = this.leaveSettingsTransition;
-
-        if (!transition && this.showLeaveSettingsModal) {
-            this.set('leaveSettingsTransition', null);
-            this.set('showLeaveSettingsModal', false);
-            return;
-        }
-
-        if (!leaveTransition || transition.targetName === leaveTransition.targetName) {
-            this.set('leaveSettingsTransition', transition);
-
-            // if a save is running, wait for it to finish then transition
-            if (this.saveTask.isRunning) {
-                return this.saveTask.last.then(() => {
-                    transition.retry();
-                });
-            }
-
-            // we genuinely have unsaved data, show the modal
-            this.set('showLeaveSettingsModal', true);
-        }
-    }
-
-    @action
-    leaveSettings() {
-        let transition = this.leaveSettingsTransition;
-        let settings = this.settings;
-
-        if (!transition) {
-            this.notifications.showAlert('Sorry, there was an error in the application. Please let the Ghost team know what happened.', {type: 'error'});
-            return;
-        }
-
-        // roll back changes on settings props
-        settings.rollbackAttributes();
-
-        return transition.retry();
-    }
-
-    @action
     validateFacebookUrl() {
         let newUrl = this._scratchFacebook;
         let oldUrl = this.get('settings.facebook');
