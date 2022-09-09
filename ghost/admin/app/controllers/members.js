@@ -234,7 +234,7 @@ export default class MembersController extends Controller {
         this.fetchLabelsTask.perform();
         this.membersStats.invalidate();
         this.membersStats.fetchCounts();
-        this.membersStats.updateMemberCounts();
+        this.membersStats.fetchMemberCount();
     }
 
     @action
