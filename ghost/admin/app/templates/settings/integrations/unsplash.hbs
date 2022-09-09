@@ -12,13 +12,6 @@
         </section>
     </GhCanvasHeader>
 
-    {{#if this.showLeaveSettingsModal}}
-        <GhFullscreenModal @modal="leave-settings"
-            @confirm={{action "leaveSettings"}}
-            @close={{action "toggleLeaveSettingsModal"}}
-            @modifier="action wide" />
-    {{/if}}
-
     <section class="view-container">
         <section class="gh-main-section bt app-grid">
             <div class="gh-main-section-block app-detail-heading app-grid">
