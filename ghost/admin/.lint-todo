@@ -1046,3 +1046,5 @@ remove|ember-template-lint|no-action|15|21|15|21|df631bb317cb737790ce8fd9a9b107f
 remove|ember-template-lint|no-action|16|19|16|19|35178fb4b4e564116d2012fda7d3977a471fc8e7|1658102400000|1668474000000|1673658000000|app/templates/settings/general.hbs
 remove|ember-template-lint|no-action|15|21|15|21|df631bb317cb737790ce8fd9a9b107f5a196a10d|1658102400000|1668474000000|1673658000000|app/templates/settings/navigation.hbs
 remove|ember-template-lint|no-action|16|19|16|19|35178fb4b4e564116d2012fda7d3977a471fc8e7|1658102400000|1668474000000|1673658000000|app/templates/settings/navigation.hbs
+remove|ember-template-lint|no-action|17|21|17|21|df631bb317cb737790ce8fd9a9b107f5a196a10d|1658102400000|1668474000000|1673658000000|app/templates/settings/integrations/amp.hbs
+remove|ember-template-lint|no-action|18|19|18|19|35178fb4b4e564116d2012fda7d3977a471fc8e7|1658102400000|1668474000000|1673658000000|app/templates/settings/integrations/amp.hbs

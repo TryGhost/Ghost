@@ -112,10 +112,10 @@ describe('Acceptance: Settings - Integrations - AMP', function () {
 
             await visit('/settings/staff');
 
-            expect(findAll('.fullscreen-modal').length, 'unsaved changes modal exists').to.equal(1);
+            expect(findAll('[data-test-modal="unsaved-settings"]').length, 'unsaved changes modal exists').to.equal(1);
 
             // Leave without saving
-            await click('.fullscreen-modal [data-test-leave-button]');
+            await click('[data-test-leave-button]');
 
             expect(currentURL(), 'currentURL after leave without saving').to.equal('/settings/staff');
 
