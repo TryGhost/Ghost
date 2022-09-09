@@ -93,22 +93,8 @@ module.exports = {
 
         // CASE: Content API access
         if (frame.options.context.public && frame.apiType !== 'comments') {
-            debug('check content permissions');
-
-            // @TODO: Remove when we drop v0.1
-            // @TODO: https://github.com/TryGhost/Ghost/issues/10733
-            return permissions.applyPublicRules(apiConfig.docName, apiConfig.method, {
-                status: frame.options.status,
-                id: frame.options.id,
-                uuid: frame.options.uuid,
-                slug: frame.options.slug,
-                data: {
-                    status: frame.data.status,
-                    id: frame.data.id,
-                    uuid: frame.data.uuid,
-                    slug: frame.data.slug
-                }
-            });
+            debug('content api permissions pass-through');
+            return Promise.resolve(frame.options);
         }
 
         return nonePublicAuth(apiConfig, frame);
