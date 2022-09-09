@@ -40,7 +40,7 @@
     "build:combined": "node ./scripts/build-combined.js",
     "build:bundle": "webpack --config webpack.config.js",
     "test:ui": "react-scripts test",
-    "test": "yarn test:ui --watchAll=false --coverage && yarn cypress:with-server",
+    "test": "yarn test:ui --watchAll=false --coverage",
     "eject": "react-scripts eject",
     "lint": "eslint src --ext .js --cache",
     "preship": "yarn lint",
@@ -50,7 +50,6 @@
     "prepublishOnly": "yarn build",
     "tailwind": "npx tailwindcss -i ./src/index.css -o ./public/main.css --watch --minify",
     "cypress:open": "cypress open",
-    "cypress:with-server": "yarn start-server-and-test 'yarn start &>/dev/null' http://localhost:4000 cypress",
     "cypress": "cypress run"
   },
   "browserslist": {
