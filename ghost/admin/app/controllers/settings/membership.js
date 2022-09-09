@@ -1,3 +1,4 @@
+import ConfirmUnsavedChangesModal from '../../components/modals/confirm-unsaved-changes';
 import Controller from '@ember/controller';
 import envConfig from 'ghost-admin/config/environment';
 import {action} from '@ember/object';
@@ -18,11 +19,11 @@ export default class MembersAccessController extends Controller {
     @service config;
     @service feature;
     @service membersUtils;
+    @service modals;
     @service settings;
     @service store;
     @service session;
 
-    @tracked showLeavePortalModal = false;
     @tracked showPortalSettings = false;
     @tracked showStripeConnect = false;
     @tracked showTierModal = false;
@@ -216,27 +217,21 @@ export default class MembersAccessController extends Controller {
     }
 
     @action
-    closePortalSettings() {
+    async closePortalSettings() {
         const changedAttributes = this.settings.changedAttributes();
+
         if (changedAttributes && Object.keys(changedAttributes).length > 0) {
-            this.showLeavePortalModal = true;
+            const shouldClose = await this.modals.open(ConfirmUnsavedChangesModal);
+
+            if (shouldClose) {
+                this.settings.rollbackAttributes();
+                this.showPortalSettings = false;
+                this.updatePortalPreview();
+            }
         } else {
             this.showPortalSettings = false;
             this.updatePortalPreview();
         }
-    }
-
-    @action
-    async confirmClosePortalSettings() {
-        this.settings.rollbackAttributes();
-        this.showPortalSettings = false;
-        this.showLeavePortalModal = false;
-        this.updatePortalPreview();
-    }
-
-    @action
-    cancelClosePortalSettings() {
-        this.showLeavePortalModal = false;
     }
 
     @action
