@@ -94,13 +94,13 @@
                             {{#if (eq this.router.currentRouteName "members.index")}}
                                 <LinkTo @route="members" @current-when="members member" @query={{reset-query-params "members.index"}} data-test-nav="members">{{svg-jar "members"}}Members
                                     {{#unless this.memberCountLoading}}
-                                        <span class="gh-nav-member-count">{{format-number this.memberCount}}</span>
+                                        <span class="gh-nav-member-count">{{format-number this.membersStats.memberCount}}</span>
                                     {{/unless}}
                                 </LinkTo>
                             {{else}}
                                 <LinkTo @route="members" @current-when="members member" data-test-nav="members">{{svg-jar "members"}}Members
                                     {{#unless this.memberCountLoading}}
-                                        <span class="gh-nav-member-count">{{format-number this.memberCount}}</span>
+                                        <span class="gh-nav-member-count">{{format-number this.membersStats.memberCount}}</span>
                                     {{/unless}}
                                 </LinkTo>
                             {{/if}}

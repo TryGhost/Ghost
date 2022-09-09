@@ -18,6 +18,16 @@ export default class MembersStatsService extends Service {
     @tracked newsletterStats = null;
     @tracked totalMemberCount = null;
 
+    get memberCount() {
+        let stats = this.totalMemberCount;
+        if (!stats) {
+            return 0;
+        }
+        const {free, paid, comped} = stats.meta.totals;
+        const total = free + paid + comped || 0;
+        return total;
+    }
+
     fetch() {
         let daysChanged = this._lastFetchedDays !== this.days;
         let staleData = this._lastFetched && (new Date() - this._lastFetched) > ONE_MINUTE;
