@@ -19,6 +19,5 @@ module.exports = {
     init: init,
     canThis: require('./can-this'),
     // @TODO: Make it so that we don't need to export these
-    parseContext: require('./parse-context'),
-    applyPublicRules: require('./public')
+    parseContext: require('./parse-context')
 };
