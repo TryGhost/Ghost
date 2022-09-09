@@ -119,7 +119,7 @@ const updateMemberNewsletters = async function (req, res) {
 
 const updateMemberData = async function (req, res) {
     try {
-        const data = _.pick(req.body, 'name', 'bio', 'subscribed', 'newsletters', 'enable_comment_notifications');
+        const data = _.pick(req.body, 'name', 'expertise', 'subscribed', 'newsletters', 'enable_comment_notifications');
         const member = await membersService.ssr.getMemberDataFromSession(req, res);
         if (member) {
             const options = {

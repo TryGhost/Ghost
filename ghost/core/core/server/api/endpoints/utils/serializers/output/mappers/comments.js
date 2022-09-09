@@ -14,7 +14,7 @@ const memberFields = [
     'id',
     'uuid',
     'name',
-    'bio',
+    'expertise',
     'avatar_image'
 ];
 
