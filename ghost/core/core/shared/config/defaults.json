@@ -150,7 +150,7 @@
     "comments": {
         "url": "https://cdn.jsdelivr.net/npm/@tryghost/comments-ui@~{version}/umd/comments-ui.min.js",
         "styles": "https://cdn.jsdelivr.net/npm/@tryghost/comments-ui@~{version}/umd/main.css",
-        "version": "0.9"
+        "version": "0.10.1"
     },
     "editor": {
         "url": "https://unpkg.com/@tryghost/koenig-react/dist/umd/koenig-react.min.js",
