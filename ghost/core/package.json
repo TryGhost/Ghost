@@ -53,7 +53,7 @@
   },
   "dependencies": {
     "@sentry/node": "7.12.1",
-    "@tryghost/adapter-base-cache": "0.1.0",
+    "@tryghost/adapter-base-cache": "0.1.1",
     "@tryghost/adapter-manager": "0.0.0",
     "@tryghost/admin-api-schema": "4.1.1",
     "@tryghost/api-framework": "0.0.0",
