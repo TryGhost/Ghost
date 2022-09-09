@@ -3,7 +3,7 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const DomainEvents = require('@tryghost/domain-events');
-const {MemberCreatedEvent, SubscriptionCreatedEvent, MemberSubscribeEvent} = require('@tryghost/member-events');
+const {MemberCreatedEvent, SubscriptionCreatedEvent, MemberSubscribeEvent, SubscriptionCancelledEvent} = require('@tryghost/member-events');
 const ObjectId = require('bson-objectid');
 const {NotFoundError} = require('@tryghost/errors');
 
@@ -203,6 +203,8 @@ module.exports = class MemberRepository {
      * @param {Date} [data.created_at]
      * @param {Object[]} [data.products]
      * @param {Object[]} [data.newsletters]
+     * @param {Object} [data.stripeCustomer]
+     * @param {string} [data.offerId]
      * @param {import('@tryghost/member-attribution/lib/history').Attribution} [data.attribution]
      * @param {*} options
      * @returns
@@ -212,7 +214,7 @@ module.exports = class MemberRepository {
             options = {};
         }
 
-        const {labels} = data;
+        const {labels, stripeCustomer, offerId, attribution} = data;
 
         if (labels) {
             labels.forEach((label, index) => {
@@ -306,6 +308,34 @@ module.exports = class MemberRepository {
                 memberId: member.id,
                 source: source
             }, eventData.created_at));
+        }
+
+        // For paid members created via stripe checkout webhook event, link subscription
+        if (stripeCustomer) {
+            await this.upsertCustomer({
+                member_id: member.id,
+                customer_id: stripeCustomer.id,
+                name: stripeCustomer.name,
+                email: stripeCustomer.email
+            });
+
+            for (const subscription of stripeCustomer.subscriptions.data) {
+                try {
+                    await this.linkSubscription({
+                        id: member.id,
+                        subscription,
+                        offerId,
+                        attribution
+                    });
+                } catch (err) {
+                    if (err.code !== 'ER_DUP_ENTRY' && err.code !== 'SQLITE_CONSTRAINT') {
+                        throw err;
+                    }
+                    throw new errors.ConflictError({
+                        err
+                    });
+                }
+            }
         }
 
         DomainEvents.dispatch(MemberCreatedEvent.create({
