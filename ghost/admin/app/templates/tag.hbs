@@ -28,11 +28,3 @@
         </div>
     {{/unless}}
 </section>
-
-{{#if this.showUnsavedChangesModal}}
-    <GhFullscreenModal
-        @modal="leave-settings"
-        @confirm={{this.leaveScreen}}
-        @close={{this.toggleUnsavedChangesModal}}
-        @modifier="action wide" />
-{{/if}}
