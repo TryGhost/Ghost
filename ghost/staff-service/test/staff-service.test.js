@@ -1,6 +1,7 @@
 // Switch these lines once there are useful utils
 // const testUtils = require('./utils');
 const sinon = require('sinon');
+const {MemberCreatedEvent, SubscriptionCancelledEvent, SubscriptionCreatedEvent} = require('@tryghost/member-events');
 
 require('./utils');
 const StaffService = require('../lib/staff-service');
@@ -106,6 +107,7 @@ describe('StaffService', function () {
 
     describe('email notifications:', function () {
         let mailStub;
+        let subscribeStub;
         let getEmailAlertUsersStub;
         let service;
         let options = {
@@ -145,6 +147,7 @@ describe('StaffService', function () {
 
         beforeEach(function () {
             mailStub = sinon.stub().resolves();
+            subscribeStub = sinon.stub().resolves();
             getEmailAlertUsersStub = sinon.stub().resolves([{
                 email: 'owner@ghost.org',
                 slug: 'ghost'
@@ -162,6 +165,9 @@ describe('StaffService', function () {
                 mailer: {
                     send: mailStub
                 },
+                DomainEvents: {
+                    subscribe: subscribeStub
+                },
                 settingsCache,
                 urlUtils,
                 settingsHelpers
@@ -170,6 +176,135 @@ describe('StaffService', function () {
         });
         afterEach(function () {
             sinon.restore();
+        });
+
+        describe('subscribeEvents', function () {
+            it('subscribes to events', async function () {
+                service.subscribeEvents();
+                subscribeStub.calledThrice.should.be.true();
+                subscribeStub.calledWith(SubscriptionCreatedEvent).should.be.true();
+                subscribeStub.calledWith(SubscriptionCancelledEvent).should.be.true();
+                subscribeStub.calledWith(MemberCreatedEvent).should.be.true();
+            });
+        });
+
+        describe('handleEvent', function () {
+            beforeEach(function () {
+                const models = {
+                    User: {
+                        getEmailAlertUsers: sinon.stub().resolves([{
+                            email: 'owner@ghost.org',
+                            slug: 'ghost'
+                        }])
+                    },
+                    Member: {
+                        findOne: sinon.stub().resolves({
+                            toJSON: sinon.stub().returns({
+                                id: '1',
+                                email: 'jamie@example.com',
+                                name: 'Jamie',
+                                status: 'free',
+                                geolocation: null,
+                                created_at: '2022-08-01T07:30:39.882Z'
+                            })
+                        })
+                    },
+                    Product: {
+                        findOne: sinon.stub().resolves({
+                            toJSON: sinon.stub().returns({
+                                id: 'tier-1',
+                                name: 'Tier 1'
+                            })
+                        })
+                    },
+                    Offer: {
+                        findOne: sinon.stub().resolves({
+                            toJSON: sinon.stub().returns({
+                                discount_amount: 1000,
+                                duration: 'forever',
+                                discount_type: 'fixed',
+                                name: 'Test offer',
+                                duration_in_months: null
+                            })
+                        })
+                    },
+                    StripeCustomerSubscription: {
+                        findOne: sinon.stub().resolves({
+                            toJSON: sinon.stub().returns({
+                                id: 'sub-1',
+                                plan: {
+                                    amount: 5000,
+                                    currency: 'USD',
+                                    interval: 'month'
+                                },
+                                start_date: new Date('2022-08-01T07:30:39.882Z'),
+                                current_period_end: '2024-08-01T07:30:39.882Z',
+                                cancellation_reason: 'Changed my mind!'
+                            })
+                        })
+                    }
+                };
+
+                service = new StaffService({
+                    logging: {
+                        warn: () => {},
+                        error: () => {}
+                    },
+                    models: models,
+                    mailer: {
+                        send: mailStub
+                    },
+                    DomainEvents: {
+                        subscribe: subscribeStub
+                    },
+                    settingsCache,
+                    urlUtils,
+                    settingsHelpers
+                });
+            });
+            it('handles free member created event', async function () {
+                await service.handleEvent(MemberCreatedEvent, {
+                    data: {
+                        source: 'member',
+                        memberId: 'member-1'
+                    }
+                });
+
+                mailStub.calledWith(
+                    sinon.match({subject: '🥳 Free member signup: Jamie'})
+                ).should.be.true();
+            });
+
+            it('handles paid member created event', async function () {
+                await service.handleEvent(SubscriptionCreatedEvent, {
+                    data: {
+                        source: 'member',
+                        memberId: 'member-1',
+                        subscriptionId: 'sub-1',
+                        offerId: 'offer-1',
+                        tierId: 'tier-1'
+                    }
+                });
+
+                mailStub.calledWith(
+                    sinon.match({subject: '💸 Paid subscription started: Jamie'})
+                ).should.be.true();
+            });
+
+            it('handles paid member cancellation event', async function () {
+                await service.handleEvent(SubscriptionCancelledEvent, {
+                    data: {
+                        source: 'member',
+                        memberId: 'member-1',
+                        subscriptionId: 'sub-1',
+                        tierId: 'tier-1'
+                    }
+                });
+
+                mailStub.calledWith(
+                    sinon.match({subject: '⚠️ Cancellation: Jamie'})
+                ).should.be.true();
+            });
         });
 
         describe('notifyFreeMemberSignup', function () {
@@ -182,7 +317,7 @@ describe('StaffService', function () {
                     created_at: '2022-08-01T07:30:39.882Z'
                 };
 
-                await service.notifyFreeMemberSignup(member, options);
+                await service.emails.notifyFreeMemberSignup(member, options);
 
                 mailStub.calledOnce.should.be.true();
                 testCommonMailData(stubs);
@@ -207,7 +342,7 @@ describe('StaffService', function () {
                     created_at: '2022-08-01T07:30:39.882Z'
                 };
 
-                await service.notifyFreeMemberSignup(member, options);
+                await service.emails.notifyFreeMemberSignup(member, options);
 
                 mailStub.calledOnce.should.be.true();
                 testCommonMailData(stubs);
@@ -249,15 +384,15 @@ describe('StaffService', function () {
                 };
 
                 subscription = {
-                    plan_amount: 5000,
-                    plan_currency: 'USD',
-                    plan_interval: 'month',
-                    start_date: '2022-08-01T07:30:39.882Z'
+                    amount: 5000,
+                    currency: 'USD',
+                    interval: 'month',
+                    startDate: '2022-08-01T07:30:39.882Z'
                 };
             });
 
             it('sends paid subscription start alert without offer', async function () {
-                await service.notifyPaidSubscriptionStart({member, offer: null, tier, subscription}, options);
+                await service.emails.notifyPaidSubscriptionStarted({member, offer: null, tier, subscription}, options);
 
                 mailStub.calledOnce.should.be.true();
                 testCommonPaidSubMailData({...stubs, member});
@@ -274,7 +409,7 @@ describe('StaffService', function () {
                     geolocation: '{"country": "France"}',
                     created_at: '2022-08-01T07:30:39.882Z'
                 };
-                await service.notifyPaidSubscriptionStart({member: memberData, offer: null, tier, subscription}, options);
+                await service.emails.notifyPaidSubscriptionStarted({member: memberData, offer: null, tier, subscription}, options);
 
                 mailStub.calledOnce.should.be.true();
                 testCommonPaidSubMailData({...stubs, member: memberData});
@@ -285,7 +420,7 @@ describe('StaffService', function () {
             });
 
             it('sends paid subscription start alert with percent offer - first payment', async function () {
-                await service.notifyPaidSubscriptionStart({member, offer, tier, subscription}, options);
+                await service.emails.notifyPaidSubscriptionStarted({member, offer, tier, subscription}, options);
 
                 mailStub.calledOnce.should.be.true();
                 testCommonPaidSubMailData({...stubs, member});
@@ -305,13 +440,13 @@ describe('StaffService', function () {
                 offer = {
                     name: 'Save ten',
                     duration: 'repeating',
-                    duration_in_months: 3,
+                    durationInMonths: 3,
                     type: 'fixed',
                     currency: 'USD',
                     amount: 1000
                 };
 
-                await service.notifyPaidSubscriptionStart({member, offer, tier, subscription}, options);
+                await service.emails.notifyPaidSubscriptionStarted({member, offer, tier, subscription}, options);
 
                 mailStub.calledOnce.should.be.true();
                 testCommonPaidSubMailData({...stubs, member});
@@ -336,7 +471,7 @@ describe('StaffService', function () {
                     amount: 2000
                 };
 
-                await service.notifyPaidSubscriptionStart({member, offer, tier, subscription}, options);
+                await service.emails.notifyPaidSubscriptionStarted({member, offer, tier, subscription}, options);
 
                 mailStub.calledOnce.should.be.true();
                 testCommonPaidSubMailData({...stubs, member});
@@ -360,7 +495,7 @@ describe('StaffService', function () {
                     amount: 7
                 };
 
-                await service.notifyPaidSubscriptionStart({member, offer, tier, subscription}, options);
+                await service.emails.notifyPaidSubscriptionStarted({member, offer, tier, subscription}, options);
 
                 mailStub.calledOnce.should.be.true();
                 testCommonPaidSubMailData({...stubs, member});
@@ -392,23 +527,19 @@ describe('StaffService', function () {
                 };
 
                 subscription = {
-                    items: {
-                        data: [{
-                            price: {
-                                unit_amount: 5000,
-                                currency: 'USD',
-                                recurring: {interval: 'month'}
-                            }
-                        }]
-                    },
-                    cancel_at: 1690875039,
-                    canceled_at: 1659684639
+                    amount: 5000,
+                    currency: 'USD',
+                    interval: 'month',
+                    cancelAt: '2024-08-01T07:30:39.882Z',
+                    canceledAt: '2022-08-05T07:30:39.882Z'
                 };
             });
 
             it('sends paid subscription cancel alert', async function () {
-                let cancellationReason = 'Changed my mind!';
-                await service.notifyPaidSubscriptionCancel({member, tier, subscription, cancellationReason}, options);
+                await service.emails.notifyPaidSubscriptionCanceled({member, tier, subscription: {
+                    ...subscription,
+                    cancellationReason: 'Changed my mind!'
+                }}, options);
 
                 mailStub.calledOnce.should.be.true();
                 testCommonPaidSubCancelMailData(stubs);
@@ -422,7 +553,7 @@ describe('StaffService', function () {
                 ).should.be.true();
 
                 mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('1 Aug 2023'))
+                    sinon.match.has('html', sinon.match('1 Aug 2024'))
                 ).should.be.true();
 
                 mailStub.calledWith(
@@ -438,7 +569,7 @@ describe('StaffService', function () {
             });
 
             it('sends paid subscription cancel alert without reason', async function () {
-                await service.notifyPaidSubscriptionCancel({member, tier, subscription}, options);
+                await service.emails.notifyPaidSubscriptionCanceled({member, tier, subscription}, options);
 
                 mailStub.calledOnce.should.be.true();
                 testCommonPaidSubCancelMailData(stubs);
@@ -452,7 +583,7 @@ describe('StaffService', function () {
                 ).should.be.true();
 
                 mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('1 Aug 2023'))
+                    sinon.match.has('html', sinon.match('1 Aug 2024'))
                 ).should.be.true();
 
                 mailStub.calledWith(

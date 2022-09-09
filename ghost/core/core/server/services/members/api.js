@@ -13,7 +13,6 @@ const SingleUseTokenProvider = require('./SingleUseTokenProvider');
 const urlUtils = require('../../../shared/url-utils');
 const labsService = require('../../../shared/labs');
 const offersService = require('../offers');
-const staffService = require('../staff');
 const newslettersService = require('../newsletters');
 const memberAttributionService = require('../member-attribution');
 
@@ -198,7 +197,6 @@ function createApiInstance(config) {
         },
         stripeAPIService: stripeService.api,
         offersAPI: offersService.api,
-        staffService: staffService.api,
         labsService: labsService,
         newslettersService: newslettersService,
         memberAttributionService: memberAttributionService.service
