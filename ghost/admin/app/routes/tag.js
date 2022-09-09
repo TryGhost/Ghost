@@ -1,27 +1,29 @@
-/* eslint-disable camelcase */
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import {inject as service} from '@ember/service';
 
-export default AuthenticatedRoute.extend({
-    router: service(),
-    session: service(),
+export default class TagRoute extends AuthenticatedRoute {
+    @service router;
+    @service session;
 
-    _requiresBackgroundRefresh: true,
+    // ensures if a tag model is passed in directly we show it immediately
+    // and refresh in the background
+    _requiresBackgroundRefresh = true;
 
-    init() {
-        this._super(...arguments);
+    constructor() {
+        super(...arguments);
+
         this.router.on('routeWillChange', (transition) => {
             this.showUnsavedChangesModal(transition);
         });
-    },
+    }
 
     beforeModel() {
-        this._super(...arguments);
+        super.beforeModel(...arguments);
 
         if (this.session.user.isAuthorOrContributor) {
             return this.transitionTo('home');
         }
-    },
+    }
 
     model(params) {
         this._requiresBackgroundRefresh = false;
@@ -31,33 +33,28 @@ export default AuthenticatedRoute.extend({
         } else {
             return this.store.createRecord('tag');
         }
-    },
+    }
 
     serialize(tag) {
         return {tag_slug: tag.get('slug')};
-    },
+    }
 
     setupController(controller, tag) {
-        this._super(...arguments);
+        super.setupController(...arguments);
+
         if (this._requiresBackgroundRefresh) {
-            controller.fetchTag.perform(tag.get('slug'));
+            tag.reload();
         }
-    },
+    }
 
     deactivate() {
-        this._super(...arguments);
+        super.deactivate(...arguments);
 
         // clean up newly created records and revert unsaved changes to existing
         this.controller.tag.rollbackAttributes();
 
         this._requiresBackgroundRefresh = true;
-    },
-
-    actions: {
-        save() {
-            this.controller.send('save');
-        }
-    },
+    }
 
     showUnsavedChangesModal(transition) {
         if (transition.from && transition.from.name === this.routeName && transition.targetName) {
@@ -68,9 +65,9 @@ export default AuthenticatedRoute.extend({
 
             if (!controller.tag.isDeleted && isChanged) {
                 transition.abort();
-                controller.send('toggleUnsavedChangesModal', transition);
+                controller.toggleUnsavedChangesModal(transition);
                 return;
             }
         }
     }
-});
+}
