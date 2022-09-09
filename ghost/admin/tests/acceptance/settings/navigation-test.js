@@ -91,10 +91,10 @@ describe('Acceptance: Settings - Navigation', function () {
 
             await visit('/settings/code-injection');
 
-            expect(findAll('.fullscreen-modal').length, 'modal exists').to.equal(1);
+            expect(findAll('[data-test-modal="unsaved-settings"]').length, 'modal exists').to.equal(1);
 
             // Leave without saving
-            await click('.fullscreen-modal [data-test-leave-button]'), 'leave without saving';
+            await click('[data-test-leave-button]'), 'leave without saving';
 
             expect(currentURL(), 'currentURL').to.equal('/settings/code-injection');
 

@@ -1,51 +1,74 @@
-import $ from 'jquery';
 import AdminRoute from 'ghost-admin/routes/admin';
-import RSVP from 'rsvp';
+import ConfirmUnsavedChangesModal from '../../components/modals/confirm-unsaved-changes';
+import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
-export default AdminRoute.extend({
-    settings: service(),
+export default class NavigationRoute extends AdminRoute {
+    @service modals;
+    @service settings;
 
     model() {
-        return RSVP.hash({
-            settings: this.settings.reload()
-        });
-    },
+        this.settings.reload();
+    }
 
     setupController() {
-        this.controller.send('reset');
-    },
+        this.controller.reset();
+    }
 
     deactivate() {
-        this._super(...arguments);
-        this.controller.set('leaveSettingsTransition', null);
-        this.controller.set('showLeaveSettingsModal', false);
-    },
+        this.confirmModal = null;
+        this.hasConfirmed = false;
+        this.controller.reset();
+    }
 
-    actions: {
-        save() {
-            // since shortcuts are run on the route, we have to signal to the components
-            // on the page that we're about to save.
-            $('.page-actions .gh-btn-blue').focus();
-
-            this.controller.send('save');
-        },
-
-        willTransition(transition) {
-            let controller = this.controller;
-            let modelIsDirty = controller.dirtyAttributes;
-
-            if (modelIsDirty) {
-                transition.abort();
-                controller.send('toggleLeaveSettingsModal', transition);
-                return;
-            }
+    @action
+    async willTransition(transition) {
+        if (this.hasConfirmed) {
+            return true;
         }
-    },
+
+        transition.abort();
+
+        // wait for any existing confirm modal to be closed before allowing transition
+        if (this.confirmModal) {
+            return;
+        }
+
+        if (this.controller.saveTask?.isRunning) {
+            await this.controller.saveTask.last;
+        }
+
+        const shouldLeave = await this.confirmUnsavedChanges();
+
+        if (shouldLeave) {
+            this.settings.rollbackAttributes();
+            this.hasConfirmed = true;
+            return transition.retry();
+        }
+    }
+
+    async confirmUnsavedChanges() {
+        if (this.controller.dirtyAttributes) {
+            this.confirmModal = this.modals
+                .open(ConfirmUnsavedChangesModal)
+                .finally(() => {
+                    this.confirmModal = null;
+                });
+
+            return this.confirmModal;
+        }
+
+        return true;
+    }
+
+    @action
+    save() {
+        this.controller.send('save');
+    }
 
     buildRouteInfoMetadata() {
         return {
             titleToken: 'Settings - Navigation'
         };
     }
-});
+}
