@@ -1,4 +1,4 @@
-const Base = require('./Base');
+const Base = require('@tryghost/adapter-base-cache');
 
 class MemoryCache extends Base {
     constructor() {

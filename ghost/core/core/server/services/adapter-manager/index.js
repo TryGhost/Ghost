@@ -15,7 +15,7 @@ const adapterManager = new AdapterManager({
 adapterManager.registerAdapter('storage', require('ghost-storage-base'));
 adapterManager.registerAdapter('scheduling', require('../../adapters/scheduling/SchedulingBase'));
 adapterManager.registerAdapter('sso', require('../../adapters/sso/Base'));
-adapterManager.registerAdapter('cache', require('../../adapters/cache/Base'));
+adapterManager.registerAdapter('cache', require('@tryghost/adapter-base-cache'));
 
 module.exports = {
     /**
