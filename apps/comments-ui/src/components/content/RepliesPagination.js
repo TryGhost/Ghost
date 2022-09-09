@@ -1,9 +1,6 @@
 import React from 'react';
 
-const RepliesPagination = (props) => {
-    const loadMore = props.loadMore;
-    const count = props.count;
-
+const RepliesPagination = ({loadMore, count}) => {
     return (
         <div className="flex w-full items-center justify-start">
             <button type="button" className="group ml-[48px] mb-10 flex w-auto items-center px-0 pt-0 pb-2 text-left font-sans text-md font-semibold text-neutral-700 dark:text-white sm:mb-12 " onClick={loadMore} data-testid="reply-pagination-button">

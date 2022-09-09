@@ -1,20 +1,20 @@
 import React, {useContext} from 'react';
 import AppContext from '../../../AppContext';
 
-const AdminContextMenu = (props) => {
+const AdminContextMenu = ({comment, close}) => {
     const {dispatchAction} = useContext(AppContext);
 
-    const hideComment = (event) => {
-        dispatchAction('hideComment', props.comment);
-        props.close();
+    const hideComment = () => {
+        dispatchAction('hideComment', comment);
+        close();
     };
 
-    const showComment = (event) => {
-        dispatchAction('showComment', props.comment);
-        props.close();
+    const showComment = () => {
+        dispatchAction('showComment', comment);
+        close();
     };
 
-    const isHidden = props.comment.status !== 'published';
+    const isHidden = comment.status !== 'published';
 
     return (
         <div className="flex flex-col">

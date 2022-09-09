@@ -1,15 +1,15 @@
 import React, {useContext} from 'react';
 import AppContext from '../../../AppContext';
 
-const NotAuthorContextMenu = (props) => {
+const NotAuthorContextMenu = ({comment, close}) => {
     const {dispatchAction} = useContext(AppContext);
 
     const openModal = () => {
         dispatchAction('openPopup', {
             type: 'reportPopup',
-            comment: props.comment
+            comment
         });
-        props.close();
+        close();
     };
 
     return (

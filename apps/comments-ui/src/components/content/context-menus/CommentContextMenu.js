@@ -4,16 +4,15 @@ import AdminContextMenu from './AdminContextMenu';
 import AuthorContextMenu from './AuthorContextMenu';
 import NotAuthorContextMenu from './NotAuthorContextMenu';
 
-const CommentContextMenu = (props) => {
+const CommentContextMenu = ({comment, close, toggleEdit}) => {
     const {member, admin} = useContext(AppContext);
-    const comment = props.comment;
     const isAuthor = member && comment.member?.uuid === member?.uuid;
     const isAdmin = !!admin;
     const element = useRef();
 
     useEffect(() => {
         const listener = () => {
-            props.close();
+            close();
         };
 
         // We need to listen for the window outside the iframe, and also the iframe window events
@@ -30,12 +29,12 @@ const CommentContextMenu = (props) => {
                 el.removeEventListener('click', listener, {passive: true});
             }
         };
-    }, [props]);
+    }, [close]);
 
     useEffect(() => {
         const listener = (event) => {
             if (event.key === 'Escape') {
-                props.close();
+                close();
             }
         };
         // For keydown, we only need to listen to the main window, because we pass the events
@@ -45,7 +44,7 @@ const CommentContextMenu = (props) => {
         return () => {
             window.removeEventListener('keydown', listener, {passive: true});
         };
-    });
+    }, [close]);
 
     // Prevent closing the context menu when clicking inside of it
     const stopPropagation = (event) => {
@@ -55,17 +54,17 @@ const CommentContextMenu = (props) => {
     let contextMenu = null;
     if (comment.status === 'published') {
         if (isAuthor) {
-            contextMenu = <AuthorContextMenu comment={comment} close={props.close} toggleEdit={props.toggleEdit} />;
+            contextMenu = <AuthorContextMenu comment={comment} close={close} toggleEdit={toggleEdit} />;
         } else {
             if (isAdmin) {
-                contextMenu = <AdminContextMenu comment={comment} close={props.close}/>;
+                contextMenu = <AdminContextMenu comment={comment} close={close}/>;
             } else {
-                contextMenu = <NotAuthorContextMenu comment={comment} close={props.close}/>;
+                contextMenu = <NotAuthorContextMenu comment={comment} close={close}/>;
             }
         }
     } else {
         if (isAdmin) {
-            contextMenu = <AdminContextMenu comment={comment} close={props.close}/>;
+            contextMenu = <AdminContextMenu comment={comment} close={close}/>;
         } else {
             return null;
         }

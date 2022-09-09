@@ -7,7 +7,7 @@ import Pagination from './Pagination';
 import ContentTitle from './ContentTitle';
 import {ROOT_DIV_ID} from '../../utils/constants';
 
-const Content = (props) => {
+const Content = () => {
     const {pagination, member, comments, commentCount, commentsEnabled, title, showCount, secundaryFormCount} = useContext(AppContext);
     const commentsElements = comments.slice().reverse().map(comment => <Comment comment={comment} key={comment.id} />);
 

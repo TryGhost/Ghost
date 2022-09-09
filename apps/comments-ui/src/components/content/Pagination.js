@@ -1,7 +1,7 @@
 import React, {useContext} from 'react';
 import AppContext from '../../AppContext';
 
-const Pagination = (props) => {
+const Pagination = () => {
     const {pagination, dispatchAction} = useContext(AppContext);
 
     const loadMore = () => {
