@@ -4,7 +4,7 @@ import sinon from 'sinon';
 import {Response} from 'miragejs';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
-import {blur, click, currentRouteName, currentURL, fillIn, find, findAll, triggerEvent} from '@ember/test-helpers';
+import {blur, click, currentRouteName, currentURL, fillIn, find, findAll, triggerEvent, typeIn} from '@ember/test-helpers';
 import {datepickerSelect} from 'ember-power-datepicker/test-support';
 import {expect} from 'chai';
 import {selectChoose} from 'ember-power-select/test-support';
@@ -613,6 +613,24 @@ describe('Acceptance: Editor', function () {
             let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
             let body = JSON.parse(lastRequest.requestBody);
             expect(body.posts[0].title).to.equal('CMD-S Test');
+        });
+
+        // https://github.com/TryGhost/Ghost/issues/15391
+        it('can handle many tags in PSM tags input', async function () {
+            this.server.createList('tag', 1000);
+            let post = this.server.create('post', {authors: [author]});
+
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-psm-trigger]');
+            await click('[data-test-token-input]');
+
+            // by filtering to `Tag 100` it means we start with a long list that is reduced
+            // which is what triggers the slowdown/error
+            await fillIn('[data-test-token-input] input', 'Tag 10');
+            await typeIn('[data-test-token-input] input', '0');
+            await blur('[data-test-token-input] input');
+
+            // no expects, will throw with an error and fail when it hits the bug
         });
     });
 });
