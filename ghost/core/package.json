@@ -194,7 +194,7 @@
     "grunt": "1.5.3",
     "grunt-contrib-symlink": "1.0.0",
     "grunt-shell": "4.0.0",
-    "html-validate": "7.3.3",
+    "html-validate": "7.4.1",
     "inquirer": "8.2.4",
     "jwks-rsa": "2.1.4",
     "mocha": "10.0.0",
