@@ -65,6 +65,7 @@ export default class FeatureService extends Service {
     @feature('memberAttribution') memberAttribution;
     @feature('searchHelper') searchHelper;
     @feature('emailAlerts') emailAlerts;
+    @feature('emailClicks') emailClicks;
 
     _user = null;
 
