@@ -1,0 +1,43 @@
+{
+  "name": "@tryghost/koenig-lexical",
+  "version": "0.0.0",
+  "repository": "https://github.com/TryGhost/Koenig/tree/master/packages/koenig-lexical",
+  "author": "Ghost Foundation",
+  "license": "MIT",
+  "type": "module",
+  "files": [
+    "LICENSE",
+    "README.md",
+    "dist/"
+  ],
+  "main": "./dist/koenig-lexical.umd.cjs",
+  "module": "./dist/koenig-lexical.js",
+  "exports": {
+    ".": {
+      "import": "./dist/koenig-lexical.js",
+      "require": "./dist/koenig-lexical.umd.cjs"
+    }
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint src --ext .js,.jsx --cache",
+    "prepare": "NODE_ENV=production yarn build"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.17",
+    "@types/react-dom": "^18.0.6",
+    "@vitejs/plugin-react": "^2.1.0",
+    "eslint-config-react-app": "^7.0.1",
+    "postcss": "^8.4.16",
+    "postcss-import": "^15.0.0",
+    "tailwindcss": "^3.1.8",
+    "vite": "^3.1.0",
+    "vite-plugin-svgr": "^2.2.1"
+  }
+}
