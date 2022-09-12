@@ -155,7 +155,7 @@ async function initServicesForFrontend({bootLogger}) {
     debug('End: Routing Settings');
 
     debug('Begin: Redirects');
-    const customRedirects = require('./server/services/redirects');
+    const customRedirects = require('./server/services/custom-redirects');
     await customRedirects.init(),
     debug('End: Redirects');
 

@@ -1,6 +1,6 @@
 const should = require('should');
 
-const {validate} = require('../../../../../core/server/services/redirects/validation');
+const {validate} = require('../../../../../core/server/services/custom-redirects/validation');
 
 describe('UNIT: custom redirects validation', function () {
     it('passes validation for a valid redirects config', function () {
