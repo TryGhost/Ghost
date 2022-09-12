@@ -19,7 +19,7 @@ const settingsService = require('../../core/server/services/settings/settings-se
 const routeSettingsService = require('../../core/server/services/route-settings');
 const themeService = require('../../core/server/services/themes');
 const limits = require('../../core/server/services/limits');
-const customRedirectsService = require('../../core/server/services/redirects');
+const customRedirectsService = require('../../core/server/services/custom-redirects');
 
 // Other Test Utilities
 const configUtils = require('./configUtils');
