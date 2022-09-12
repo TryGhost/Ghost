@@ -1,6 +1,6 @@
-# React module package
+# Koenig - Lexical edition
 
-This is a package set up to build a library module containing React components/libraries for use in external apps. Build and development environment provided via [Vite](https://vitejs.dev);
+Early stage re-write of Ghost's editor, using Lexical as the editor framework in place of mobiledoc-kit.
 
 ## Development
 
@@ -14,15 +14,15 @@ The main module source. `/src/index.js` is the entry point for the exposed modul
 
 **`/demo`**
 
-Used for developing the module. Should import from the module `import {Foo} from '../src'` and render the components in a way that facilitates development and manual testing.
+Used for developing/demoing the editor. Renders a blank editor with all features enabled.
 
 ### Set up details
 
 **CSS**
 
-Everything is set up ready for using Tailwind to style the module's components. Top-level components that require styling should have an `import 'styles/index.css';` statement at the top of the file which will inject a `<style>` element to the consuming app's `<head>` with all of the Tailwind CSS used by the module.
+Styling should be done using Tailwind classes where possible.
 
-All styles are scoped under the project name to avoid clashes and keep styling as isolated as possible, e.g. `.module-name .utility`. PostCSS nesting support is present to make this easier.
+All styles are scoped under `.koenig-lexical` class to avoid clashes and keep styling as isolated as possible. PostCSS nesting support is present to make this easier.
 
 - Styles located in `src/styles/` are included in the final built module.
 - Styles located in `demo/*.css` are only used in the demo and will not be included in the built module.
