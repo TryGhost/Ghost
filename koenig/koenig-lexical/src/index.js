@@ -1,5 +1,7 @@
-import CountButton from './components/CountButton';
+import KoenigComposer from './components/KoenigComposer';
+import KoenigEditor from './components/KoenigEditor';
 
 export {
-    CountButton
+    KoenigComposer,
+    KoenigEditor
 };
