@@ -133,4 +133,11 @@ describe('Pages Content API', function () {
 
         tiersPostData.tiers.length.should.eql(1);
     });
+
+    it('Cannot request mobiledoc or lexical formats', async function () {
+        await agent
+            .get(`pages/?formats=mobiledoc,lexical`)
+            .expectStatus(200)
+            .matchBodySnapshot();
+    });
 });

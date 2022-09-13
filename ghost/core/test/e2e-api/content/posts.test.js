@@ -323,4 +323,11 @@ describe('Posts Content API', function () {
             .expectStatus(200)
             .matchBodySnapshot();
     });
+
+    it('Cannot request mobiledoc or lexical formats', async function () {
+        await agent
+            .get(`posts/?formats=mobiledoc,lexical`)
+            .expectStatus(200)
+            .matchBodySnapshot();
+    });
 });
