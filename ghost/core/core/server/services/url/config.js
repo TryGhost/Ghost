@@ -12,6 +12,7 @@ module.exports = [
             exclude: [
                 'title',
                 'mobiledoc',
+                'lexical',
                 'html',
                 'plaintext',
                 // @TODO: https://github.com/TryGhost/Ghost/issues/10335
@@ -55,6 +56,7 @@ module.exports = [
             exclude: [
                 'title',
                 'mobiledoc',
+                'lexical',
                 'html',
                 'plaintext',
                 // @TODO: https://github.com/TryGhost/Ghost/issues/10335

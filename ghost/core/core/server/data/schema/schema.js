@@ -45,6 +45,7 @@ module.exports = {
         title: {type: 'string', maxlength: 2000, nullable: false, validations: {isLength: {max: 255}}},
         slug: {type: 'string', maxlength: 191, nullable: false},
         mobiledoc: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
+        lexical: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         html: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         comment_id: {type: 'string', maxlength: 50, nullable: true},
         plaintext: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
