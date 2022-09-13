@@ -33,7 +33,8 @@ const BETA_FEATURES = [
 const ALPHA_FEATURES = [
     'urlCache',
     'beforeAfterCard',
-    'emailClicks'
+    'emailClicks',
+    'sourceAttribution'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
