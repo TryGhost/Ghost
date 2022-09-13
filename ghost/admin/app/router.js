@@ -29,6 +29,8 @@ Router.map(function () {
     });
 
     this.route('posts');
+    this.route('posts.analytics', {path: '/posts/analytics/:post_id'});
+
     this.route('pages');
 
     this.route('editor', function () {
