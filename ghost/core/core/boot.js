@@ -282,6 +282,7 @@ async function initServices({config}) {
     const staffService = require('./server/services/staff');
     const memberAttribution = require('./server/services/member-attribution');
     const membersEvents = require('./server/services/members-events');
+    const linkReplacement = require('./server/services/link-replacement');
 
     const urlUtils = require('./shared/url-utils');
 
@@ -308,7 +309,8 @@ async function initServices({config}) {
         scheduling.init({
             apiUrl: urlUtils.urlFor('api', {type: 'admin'}, true)
         }),
-        comments.init()
+        comments.init(),
+        linkReplacement.init()
     ]);
     debug('End: Services');
 
