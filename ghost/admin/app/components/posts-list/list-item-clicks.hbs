@@ -1,5 +1,5 @@
 {{!-- template-lint-disable no-invalid-interactive --}}
-<li class="gh-list-row gh-posts-list-item gh-post-list-plain-status"
+<li class="gh-list-row gh-posts-list-item gh-posts-list-item-labs gh-post-list-plain-status"
     {{on "mouseover" this.mouseOver}}
     {{on "mouseleave" this.mouseLeave}}
     ...attributes
@@ -24,6 +24,14 @@
 
                     </span>
                 </p>
+                <p>
+                    <span class="gh-content-status-published nowrap">
+                        Published
+                        {{#if @post.hasEmail}}
+                            &amp; Sent
+                        {{/if}}
+                    </span>
+                </p>
             {{/unless}}
         </a>
     {{else}}
@@ -32,73 +40,46 @@
                 {{@post.title}}
             </h3>
             {{#unless @hideAuthor }}
-                <p>
-                    <span class="gh-content-entry-meta">
-                        By <span class="midgrey-l2 fw5">{{post-author-names @post}}</span>
+                <p class="gh-content-entry-meta">
+                    By {{post-author-names @post}}
 
-                        {{#if @post.primaryTag}}
-                            in <span class="midgrey-l2 fw5">{{@post.primaryTag.name}}</span>
-                        {{/if}}
+                    {{#if @post.primaryTag}}
+                        in {{@post.primaryTag.name}}
+                    {{/if}}
 
-                        • <span data-tooltip="{{gh-format-post-time @post.updatedAtUTC "D MMM YYYY"}}">{{gh-format-post-time @post.updatedAtUTC draft=true}}</span>
+                    • <span data-tooltip="{{gh-format-post-time @post.updatedAtUTC "D MMM YYYY"}}">{{gh-format-post-time @post.updatedAtUTC draft=true}}</span>
+                </p>
+                <p class="gh-content-entry-meta">
+                    {{#if @post.isScheduled}}
+                        <span class="gh-content-status scheduled" title="Scheduled" data-tooltip="To be published {{if @post.newsletter "& sent at "}}{{capitalize this.scheduledText}} to {{@post.emailSegment}} members">
+                            Scheduled
+                        </span>
+                    {{/if}}
 
-                    </span>
+                    {{#if @post.isDraft}}
+                        <span class="gh-content-status draft">
+                            Draft
+                        </span>
+                    {{/if}}
+
+                    {{#if @post.isPublished}}
+                        <span class="gh-content-status published">
+                            Published
+                            {{#if @post.hasEmail}}
+                                and sent
+                            {{/if}}
+                        </span>
+                    {{/if}}
+
+                    {{#if @post.isSent}}
+                        <span class="gh-content-status sent">
+                            Sent
+                        </span>
+                    {{/if}}
                 </p>
             {{/unless}}
         </LinkTo>
     {{/if}}
-
-    {{!-- Status column --}}
-    {{#unless @hideStatusColumn }}
-        {{#if (and this.session.user.isContributor @post.isPublished)}}
-            <a href={{@post.url}} class="permalink gh-list-data gh-post-list-status" target="_blank" rel="noopener noreferrer">
-                <div class="flex items-center">
-                    <span class="gh-content-status-published nowrap">
-                        {{svg-jar "check" class="gh-post-status-icon"}}
-                        Published
-                        {{#if @post.hasEmail}}
-                            &amp; Sent
-                        {{/if}}
-                    </span>
-                </div>
-            </a>
-        {{else}}
-            <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-status">
-                <div class="flex items-center">
-                    {{#if @post.isScheduled}}
-                    <span class="gh-content-status-scheduled gh-badge nowrap" title="Scheduled" data-tooltip="To be published {{if @post.newsletter "& sent at "}}{{capitalize this.scheduledText}} to {{@post.emailSegment}} members">
-                        {{svg-jar "clock" class="gh-post-status-icon"}}
-                        Scheduled
-                    </span>
-                    {{/if}}
-
-                    {{#if @post.isDraft}}
-                    <span class="gh-content-status-draft gh-badge gh-badge-pink nowrap">
-                        {{svg-jar "pen" class="gh-post-status-icon"}}
-                        Draft
-                    </span>
-                    {{/if}}
-
-                    {{#if @post.isPublished}}
-                    <span class="gh-content-status-published nowrap">
-                        {{svg-jar "check" class="gh-post-status-icon"}}
-                        Published
-                        {{#if @post.hasEmail}}
-                            &amp; Sent
-                        {{/if}}
-                    </span>
-                    {{/if}}
-
-                    {{#if @post.isSent}}
-                    <span class="gh-content-status-emailed nowrap">
-                        {{svg-jar "email-stroke" class="gh-post-status-icon"}}
-                        Sent
-                    </span>
-                    {{/if}}
-                </div>
-            </LinkTo>
-        {{/if}}
-    {{/unless}}
 
     {{!-- Opens and clicks columns --}}
     {{#if (and (not-eq this.settings.membersSignupAccess "none") (not-eq this.settings.editorDefaultEmailRecipients "disabled") (not this.session.user.isContributor) this.feature.emailAnalytics (eq @post.displayName "post"))}}
@@ -134,13 +115,20 @@
     {{/if}}
 
     {{!-- Button column --}}
-    {{#if @post.isPublished}}
-        <LinkTo @route="posts.analytics" @model={{@post}} class="permalink gh-list-data">
-            Analytics
-        </LinkTo>
-    {{else}}
-        <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-opens">
-            Edit
-        </LinkTo>
-    {{/if}}
+    <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-cta">
+        {{#if @post.isPublished}}
+            <LinkTo @route="posts.analytics" @model={{@post}} class="gh-btn gh-btn-outline gh-btn-icon">
+                <span>
+                    {{svg-jar "stats" class="stats"}} Stats
+                </span>
+            </LinkTo>
+        {{else}}
+            <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="gh-btn gh-btn-outline gh-btn-icon">
+                <span>
+                    {{svg-jar "pen" class="edit"}} Edit
+                </span>
+            </LinkTo>
+        {{/if}}
+    </LinkTo>
+
 </li>
