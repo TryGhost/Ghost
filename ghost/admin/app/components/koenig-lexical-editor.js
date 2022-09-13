@@ -26,8 +26,8 @@ const fetchKoenig = function () {
     let response;
 
     const fetchPackage = async () => {
-        if (window.KoenigLexical) {
-            return window.KoenigLexical;
+        if (window['@tryghost/koenig-lexical']) {
+            return window['@tryghost/koenig-lexical'];
         }
 
         // the manual specification of the protocol in the import template string is
