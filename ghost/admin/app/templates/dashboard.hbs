@@ -18,7 +18,9 @@
 
                     <div class="gh-dashboard-group {{if this.isTotalMembersZero 'is-zero'}}">
                         <Dashboard::Charts::Anchor />
-
+                        {{#if (feature 'sourceAttribution')}}
+                            <Dashboard::Charts::Attribution />
+                        {{/if}}
                         {{#if this.areNewslettersEnabled}}
                             <Dashboard::Charts::Engagement />
                         {{/if}}
