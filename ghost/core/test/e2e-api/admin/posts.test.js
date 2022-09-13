@@ -1,6 +1,6 @@
 const assert = require('assert');
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyErrorId} = matchers;
+const {anyEtag, anyErrorId, anyObjectId} = matchers;
 
 describe('Posts API', function () {
     let agent;
@@ -13,6 +13,32 @@ describe('Posts API', function () {
 
     afterEach(function () {
         mockManager.restore();
+    });
+
+    it('Can browse', async function () {
+        const res = await agent.get('posts/?limit=2')
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                posts: new Array(2).fill({
+                    id: anyObjectId
+                })
+            });
+    });
+
+    it('Can browse with formats', async function () {
+        const res = await agent.get('posts/?formats=mobiledoc,lexical,html,plaintext&limit=2')
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                posts: new Array(2).fill({
+                    id: anyObjectId
+                })
+            });
     });
 
     describe('Delete', function () {

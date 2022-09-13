@@ -39,6 +39,24 @@ describe('Pages API', function () {
         jsonResponse.pages[1].url.should.eql(`${config.get('url')}/contribute/`);
     });
 
+    it('Can retrieve pages with lexical format', async function () {
+        const res = await request.get(localUtils.API.getApiQuery('pages/?formats=lexical'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        should.not.exist(res.headers['x-cache-invalidate']);
+        const jsonResponse = res.body;
+        should.exist(jsonResponse.pages);
+        localUtils.API.checkResponse(jsonResponse, 'pages');
+        jsonResponse.pages.should.have.length(6);
+
+        const additionalProperties = ['lexical'];
+        const missingProperties = ['mobiledoc'];
+        localUtils.API.checkResponse(jsonResponse.pages[0], 'page', additionalProperties, missingProperties);
+    });
+
     it('Can add a page', async function () {
         const page = {
             title: 'My Page',
