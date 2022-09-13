@@ -14,7 +14,7 @@ export default class EditRoute extends AuthenticatedRoute {
         }
     }
 
-    model(params, transition) {
+    async model(params, transition) {
         // eslint-disable-next-line camelcase
         let {type: modelName, post_id} = params;
 
@@ -28,8 +28,14 @@ export default class EditRoute extends AuthenticatedRoute {
             id: post_id
         };
 
-        return this.store.query(modelName, query)
-            .then(records => records.get('firstObject'));
+        const records = await this.store.query(modelName, query);
+        const post = records.firstObject;
+
+        if (post.mobiledoc) {
+            return this.router.transitionTo('editor.edit', post);
+        }
+
+        return post;
     }
 
     // the API will return a post even if the logged in user doesn't have
