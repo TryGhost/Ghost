@@ -7,10 +7,10 @@ const localUtils = require('../../index');
 const postsMetaSchema = require('../../../../../data/schema').tables.posts_meta;
 const clean = require('./utils/clean');
 
-function removeMobiledocFormat(frame) {
-    if (frame.options.formats && frame.options.formats.includes('mobiledoc')) {
+function removeSourceFormats(frame) {
+    if (frame.options.formats?.includes('mobiledoc') || frame.options.formats?.includes('lexical')) {
         frame.options.formats = frame.options.formats.filter((format) => {
-            return (format !== 'mobiledoc');
+            return !['mobiledoc', 'lexical'].includes(format);
         });
     }
 }
@@ -95,7 +95,7 @@ module.exports = {
         forcePageFilter(frame);
 
         if (localUtils.isContentAPI(frame)) {
-            removeMobiledocFormat(frame);
+            removeSourceFormats(frame);
             setDefaultOrder(frame);
             forceVisibilityColumn(frame);
         }
@@ -113,7 +113,7 @@ module.exports = {
         forcePageFilter(frame);
 
         if (localUtils.isContentAPI(frame)) {
-            removeMobiledocFormat(frame);
+            removeSourceFormats(frame);
             setDefaultOrder(frame);
             forceVisibilityColumn(frame);
         }
