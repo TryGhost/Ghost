@@ -18,16 +18,16 @@ describe('Acceptance: Lexical editor', function () {
         expect(currentURL(), 'currentURL').to.equal('/signin');
     });
 
-    it('redirects to posts screen if editor.lexicalUrl config is missing', async function () {
+    it('redirects to posts screen if editor.url config is missing', async function () {
         await loginAsRole('Administrator', this.server);
         await visit('/lexical-editor/post/');
 
         expect(currentURL(), 'currentURL').to.equal('/posts');
     });
 
-    it('loads when editor.lexicalUrl is present', async function () {
+    it('loads when editor.url is present', async function () {
         const config = this.server.schema.configs.find(1);
-        config.attrs.editor = {lexicalUrl: 'https://cdn.pkg/editor.js'};
+        config.attrs.editor = {url: 'https://cdn.pkg/editor.js'};
         config.save();
 
         // stub loaded external module
