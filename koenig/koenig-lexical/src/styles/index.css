@@ -25,6 +25,10 @@
 }
 
 @layer components {
+    .koenig-lexical {
+        position: relative;
+    }
+
     /* everything is nested here to keep it scoped to our container */
     .koenig-lexical {
         * {

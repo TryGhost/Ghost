@@ -18,9 +18,7 @@ const KoenigEditor = ({
         <div className="koenig-lexical">
             <RichTextPlugin
                 contentEditable={
-                    <div>
-                        <ContentEditable className="kg-prose" />
-                    </div>
+                    <ContentEditable className="kg-prose" />
                 }
                 placeholder={<div className="pointer-events-none absolute top-0 left-0 min-w-full cursor-text">Enter some text...</div>}
             />
