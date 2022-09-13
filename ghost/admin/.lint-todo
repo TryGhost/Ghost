@@ -832,3 +832,8 @@ add|ember-template-lint|no-action|34|16|34|16|5b7ad6ecbae8b6379d42a3c7f343485cf7
 add|ember-template-lint|require-valid-alt-text|3|44|3|44|a7f0566c430150bae4153e0dfb489a218bdeb8a4|1662681600000|1673053200000|1678237200000|lib/koenig-editor/addon/components/koenig-card-embed/nft.hbs
 add|ember-template-lint|require-valid-alt-text|8|20|8|20|9d0c591086dc9139ff38a7b385c3367a83438786|1662681600000|1673053200000|1678237200000|lib/koenig-editor/addon/components/koenig-card-embed/nft.hbs
 add|ember-template-lint|require-input-label|10|12|10|12|8c3c0ea315ff4da828363989a45fa11256a78796|1662681600000|1673053200000|1678237200000|lib/koenig-editor/addon/components/koenig-card-image/selector-tenor.hbs
+remove|ember-template-lint|no-quoteless-attributes|365|127|365|127|7c9b71d827d85d0ffd6dbe85c9f2793c321f744a|1662681600000|1673053200000|1678237200000|app/templates/settings/general.hbs
+remove|ember-template-lint|no-quoteless-attributes|378|125|378|125|939e14038426a56465b8768f3b25f179400c3eee|1662681600000|1673053200000|1678237200000|app/templates/settings/general.hbs
+remove|ember-template-lint|no-quoteless-attributes|428|131|428|131|cf74da438ca6d134c28c9b80fecebd105f18f0ed|1662681600000|1673053200000|1678237200000|app/templates/settings/general.hbs
+remove|ember-template-lint|no-quoteless-attributes|20|23|20|23|20c117eaeeb511ade7f0ac922eb5dd4fa8e226df|1662681600000|1673053200000|1678237200000|lib/koenig-editor/addon/components/koenig-card-html.hbs
+remove|ember-template-lint|no-quoteless-attributes|21|26|21|26|20c117eaeeb511ade7f0ac922eb5dd4fa8e226df|1662681600000|1673053200000|1678237200000|lib/koenig-editor/addon/components/koenig-card-html.hbs
