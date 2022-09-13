@@ -35,7 +35,10 @@
             data-test-editor-title-input={{true}}
         />
 
-        <KoenigLexicalEditor />
+        <KoenigLexicalEditor
+            @lexical={{@body}}
+            @onChange={{@onBodyChange}}
+        />
 
         {{!-- <KoenigEditor
             @mobiledoc={{@body}}

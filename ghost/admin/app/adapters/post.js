@@ -25,6 +25,10 @@ export default class Post extends ApplicationAdapter {
     }
 
     buildQuery(store, modelName, options) {
+        if (!options.formats) {
+            options.formats = 'mobiledoc,lexical';
+        }
+
         return options;
     }
 }

@@ -27,7 +27,7 @@ const TIMEDSAVE_TIMEOUT = 60000;
 
 // this array will hold properties we need to watch for this.hasDirtyAttributes
 let watchedProps = [
-    'post.scratch',
+    'post.lexicalScratch',
     'post.titleScratch',
     'post.hasDirtyAttributes',
     'post.tags.[]',
@@ -190,8 +190,8 @@ export default class LexicalEditorController extends Controller {
     }
 
     @action
-    updateScratch(mobiledoc) {
-        this.set('post.scratch', mobiledoc);
+    updateScratch(lexical) {
+        this.set('post.lexicalScratch', JSON.stringify(lexical));
 
         // save 3 seconds after last edit
         this._autosaveTask.perform();
@@ -544,10 +544,10 @@ export default class LexicalEditorController extends Controller {
 
         // Set the properties that are indirected
 
-        // Set mobiledoc equal to what's in the editor but create a copy so that
+        // Set lexical equal to what's in the editor but create a copy so that
         // nested objects/arrays don't keep references which can mean that both
-        // scratch and mobiledoc get updated simultaneously
-        this.set('post.mobiledoc', JSON.parse(JSON.stringify(this.post.scratch || null)));
+        // scratch and lexical get updated simultaneously
+        this.set('post.lexical', this.post.lexicalScratch || null);
 
         // Set a default title
         if (!this.get('post.titleScratch').trim()) {
@@ -692,17 +692,17 @@ export default class LexicalEditorController extends Controller {
         post.updateTags();
         this._previousTagNames = this._tagNames;
 
-        // update the scratch property if it's `null` and we get a blank mobiledoc
+        // update the scratch property if it's `null` and we get a blank lexical
         // back from the API - prevents "unsaved changes" modal on new+blank posts
-        if (!post.scratch) {
-            post.set('scratch', JSON.parse(JSON.stringify(post.get('mobiledoc'))));
+        if (!post.lexicalScratch) {
+            post.set('lexicalScratch', post.get('lexical'));
         }
 
         // if the two "scratch" properties (title and content) match the post,
         // then it's ok to set hasDirtyAttributes to false
         // TODO: why is this necessary?
         let titlesMatch = post.get('titleScratch') === post.get('title');
-        let bodiesMatch = JSON.stringify(post.get('scratch')) === JSON.stringify(post.get('mobiledoc'));
+        let bodiesMatch = post.get('lexicalScratch') === post.get('lexical');
 
         if (titlesMatch && bodiesMatch) {
             this.set('hasDirtyAttributes', false);
@@ -789,7 +789,7 @@ export default class LexicalEditorController extends Controller {
         // edit of the post
         // TODO: can these be `boundOneWay` on the model as per the other attrs?
         post.set('titleScratch', post.get('title'));
-        post.set('scratch', post.get('mobiledoc'));
+        post.set('lexicalScratch', post.get('lexical'));
 
         this._previousTagNames = this._tagNames;
 
@@ -980,15 +980,12 @@ export default class LexicalEditorController extends Controller {
         }
 
         // scratch isn't an attr so needs a manual dirty check
-        let mobiledoc = post.get('mobiledoc');
-        let scratch = post.get('scratch');
+        let lexical = post.get('lexical');
+        let scratch = post.get('lexicalScratch');
         // additional guard in case we are trying to compare null with undefined
-        if (scratch || mobiledoc) {
-            let mobiledocJSON = JSON.stringify(mobiledoc);
-            let scratchJSON = JSON.stringify(scratch);
-
-            if (scratchJSON !== mobiledocJSON) {
-                this._leaveModalReason = {reason: 'mobiledoc is different', context: {current: mobiledocJSON, scratch: scratchJSON}};
+        if (scratch || lexical) {
+            if (scratch !== lexical) {
+                this._leaveModalReason = {reason: 'lexical is different', context: {current: lexical, scratch}};
                 return true;
             }
         }

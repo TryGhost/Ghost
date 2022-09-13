@@ -610,7 +610,7 @@ Post = ghostBookshelf.Model.extend({
         // CASE: ?force_rerender=true passed via Admin API
         // CASE: html is null, but mobiledoc exists (only important for migrations & importing)
         if (
-            this.hasChanged('mobiledoc')
+            (this.hasChanged('mobiledoc') && !this.get('lexical'))
             || options.force_rerender
             || (!this.get('html') && (options.migrating || options.importing))
         ) {

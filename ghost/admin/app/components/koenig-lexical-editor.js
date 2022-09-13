@@ -91,8 +91,8 @@ export default class KoenigLexicalEditor extends Component {
             <div className={['koenig-react-editor', this.args.className].filter(Boolean).join(' ')}>
                 <ErrorHandler>
                     <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
-                        <KoenigComposer>
-                            <KoenigEditor />
+                        <KoenigComposer initialEditorState={this.args.lexical}>
+                            <KoenigEditor onChange={this.args.onChange} />
                         </KoenigComposer>
                     </Suspense>
                 </ErrorHandler>

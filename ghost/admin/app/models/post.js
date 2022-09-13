@@ -94,7 +94,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     metaDescription: attr('string'),
     metaTitle: attr('string'),
     mobiledoc: attr('json-string'),
-    lexical: attr('json-string'),
+    lexical: attr(),
     plaintext: attr('string'),
     publishedAtUTC: attr('moment-utc'),
     slug: attr('string'),
@@ -122,6 +122,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     primaryTag: reads('tags.firstObject'),
 
     scratch: null,
+    lexicalScratch: null,
     titleScratch: null,
 
     // HACK: used for validation so that date/time can be validated based on

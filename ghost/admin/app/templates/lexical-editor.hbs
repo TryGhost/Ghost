@@ -57,7 +57,7 @@
                 @titlePlaceholder={{concat (capitalize this.post.displayName) " title"}}
                 @onTitleChange={{this.updateTitleScratch}}
                 @onTitleBlur={{perform this.saveTitleTask}}
-                @body={{readonly this.post.scratch}}
+                @body={{readonly this.post.lexicalScratch}}
                 @bodyPlaceholder={{concat "Begin writing your " this.post.displayName "..."}}
                 @onBodyChange={{this.updateScratch}}
                 @headerOffset={{editor.headerHeight}}
