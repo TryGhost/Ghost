@@ -10,66 +10,75 @@ module.exports = {
         colors: {
             transparent: 'transparent',
             current: 'currentColor',
-            white: '#ffffff',
+            white: '#FFF',
             black: '#15171A',
             grey: {
                 DEFAULT: '#ABB4BE',
-                50: '#F9F9FA',
-                100: '#EBEEF0',
-                200: '#DDE1E5',
-                300: '#CED4D9',
-                400: '#BDC5CC',
-                500: '#ABB4BE',
+                50: '#FAFAFB',
+                100: '#F1F3F4',
+                200: '#EBEEF0',
+                300: '#DDE1E5',
+                400: '#CED4D9',
+                500: '#AEB7C1',
                 600: '#95A1AD',
                 700: '#7C8B9A',
                 800: '#626D79',
                 900: '#394047'
             },
             green: {
-                DEFAULT: '#30cf43',
+                DEFAULT: '#30CF43',
                 100: '#E1F9E4',
-                400: '#58da67',
-                500: '#30cf43',
-                600: '#2ab23a'
+                400: '#58DA67',
+                500: '#30CF43',
+                600: '#2AB23A'
             },
             blue: {
-                DEFAULT: '#14b8ff',
+                DEFAULT: '#14B8FF',
                 100: '#DBF4FF',
-                400: '#42c6ff',
-                500: '#14b8ff',
-                600: '#00a4eb'
+                400: '#42C6FF',
+                500: '#14B8FF',
+                600: '#00A4EB'
             },
             purple: {
-                DEFAULT: '#8e42ff',
-                100: '#ede0ff',
-                400: '#a366ff',
-                500: '#8e42ff',
-                600: '7b1fff'
+                DEFAULT: '#8E42FF',
+                100: '#EDE0FF',
+                400: '#A366FF',
+                500: '#8E42FF',
+                600: '7B1FFF'
             },
             pink: {
-                DEFAULT: '#fb2d8d',
+                DEFAULT: '#FB2D8D',
                 100: '#FFDFEE',
-                400: '#ff5ca8',
-                500: '#fb2d8d',
-                600: '#f70878'
+                400: '#FF5CA8',
+                500: '#FB2D8D',
+                600: '#F70878'
             },
             red: {
-                DEFAULT: '#f50b23',
+                DEFAULT: '#F50B23',
                 100: '#FFE0E0',
-                400: '#f9394c',
-                500: '#f50b23',
-                600: '#dc091e'
+                400: '#F9394C',
+                500: '#F50B23',
+                600: '#DC091E'
             },
             yellow: {
-                DEFAULT: '#ffb41f',
-                100: '#fff1d6',
-                400: '#ffc247',
-                500: '#ffb41f',
-                600: '#f0a000'
+                DEFAULT: '#FFB41F',
+                100: '#FFF1D6',
+                400: '#FFC247',
+                500: '#FFB41F',
+                600: '#F0A000'
             },
             lime: {
                 DEFAULT: '#B5FF18'
             }
+        },
+        boxShadow: {
+            DEFAULT: '0 0 1px rgba(0,0,0,.05), 0 5px 18px rgba(0,0,0,.08)',
+            sm: '0 0 1px rgba(0,0,0,.12), 0 1px 6px rgba(0,0,0,0.03), 0 6px 10px -8px rgba(0,0,0,.1)',
+            md: '0 0 1px rgba(0,0,0,.05), 0 8px 28px rgba(0,0,0,.12)',
+            lg: '0 0 7px rgba(0, 0, 0, 0.08), 0 2.1px 2.2px -5px rgba(0, 0, 0, 0.011), 0 5.1px 5.3px -5px rgba(0, 0, 0, 0.016), 0 9.5px 10px -5px rgba(0, 0, 0, 0.02), 0 17px 17.9px -5px rgba(0, 0, 0, 0.024), 0 31.8px 33.4px -5px rgba(0, 0, 0, 0.029), 0 76px 80px -5px rgba(0, 0, 0, 0.04)',
+            xl: '0 2.8px 2.2px rgba(0, 0, 0, 0.02), 0 6.7px 5.3px rgba(0, 0, 0, 0.028), 0 12.5px 10px rgba(0, 0, 0, 0.035), 0 22.3px 17.9px rgba(0, 0, 0, 0.042), 0 41.8px 33.4px rgba(0, 0, 0, 0.05), 0 100px 80px rgba(0, 0, 0, 0.07)',
+            inner: 'inset 0 0 4px 0 rgb(0 0 0 / 0.08)',
+            none: '0 0 #0000'
         },
         extend: {
             spacing: {
@@ -155,6 +164,9 @@ module.exports = {
                 '7xl': ['7.2rem', '1'],
                 '8xl': ['9.6rem', '1'],
                 '9xl': ['12.8rem', '1']
+            },
+            screens: {
+                xs: '480px'
             }
         }
     }

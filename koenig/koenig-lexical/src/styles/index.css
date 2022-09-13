@@ -10,6 +10,14 @@
  /* Global Koenig content styles
 /* -------------------------------------------------------------------- */
 
+/* TODO: will these clash with consuming apps? */
+:root {
+    --grey-200: #EBEEF0;
+    --grey-500: #AEB7C1;
+    --grey-900: #394047;
+    --black: #15171A;
+}
+
 @font-face {
     font-family: "Inter", sans-serif;
     src: url("./assets/fonts/Inter.ttf") format("truetype-variations");
@@ -23,7 +31,7 @@
             font-size: 1.7rem;
             font-weight: 300;
             letter-spacing: 0.1px;
-            color: #394047;
+            color: var(--grey-900);
             text-rendering: optimizeLegibility;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
@@ -36,7 +44,7 @@
 
         /* Selection highlight color */
         ::selection {
-            background: #e6e9eb;
+            background: var(--grey-200);
         }
     }
 }

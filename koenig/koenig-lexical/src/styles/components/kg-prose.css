@@ -36,7 +36,7 @@
         ):not(:where([class~='not-kg-prose'] *)) {
             font-family: "Inter", -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
             font-weight: 700;
-            color: #000;
+            color: var(--black);
         }
 
         h1 strong,
@@ -441,7 +441,7 @@
         }
 
         blockquote {
-            border-left: 0.25rem solid #ff0095;
+            border-left: 0.25rem solid var(--kg-accent-color, #ff0095);
             padding-left: 2.0rem;
             font-style: italic;
         }
