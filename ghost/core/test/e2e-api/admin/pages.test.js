@@ -95,6 +95,159 @@ describe('Pages API', function () {
         modelJson.posts_meta.feature_image_caption.should.eql(page.feature_image_caption);
     });
 
+    it('Can add a page with mobiledoc', async function () {
+        const page = {
+            title: 'Mobiledoc test',
+            mobiledoc: JSON.stringify({
+                version: '0.3.1',
+                ghostVersion: '4.0',
+                markups: [],
+                atoms: [],
+                cards: [],
+                sections: [
+                    [1, 'p', [
+                        [0, [], 0, 'Testing post creation with mobiledoc']
+                    ]]
+                ]
+            })
+        };
+
+        const res = await request.post(localUtils.API.getApiQuery('pages/?formats=mobiledoc,lexical'))
+            .set('Origin', config.get('url'))
+            .send({pages: [page]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201);
+
+        res.body.pages.length.should.eql(1);
+        const [returnedPage] = res.body.pages;
+
+        const additionalProperties = ['lexical'];
+        localUtils.API.checkResponse(returnedPage, 'page', additionalProperties);
+
+        should.equal(returnedPage.mobiledoc, page.mobiledoc);
+        should.equal(returnedPage.lexical, null);
+    });
+
+    it('Can add a page with lexical', async function () {
+        const page = {
+            title: 'Lexical test',
+            lexical: JSON.stringify({
+                editorState: {
+                    root: {
+                        children: [
+                            {
+                                children: [
+                                    {
+                                        detail: 0,
+                                        format: 0,
+                                        mode: 'normal',
+                                        style: '',
+                                        text: 'Testing post creation with lexical',
+                                        type: 'text',
+                                        version: 1
+                                    }
+                                ],
+                                direction: 'ltr',
+                                format: '',
+                                indent: 0,
+                                type: 'paragraph',
+                                version: 1
+                            }
+                        ],
+                        direction: 'ltr',
+                        format: '',
+                        indent: 0,
+                        type: 'root',
+                        version: 1
+                    }
+                },
+                lastSaved: 1663081361393,
+                source: 'Playground',
+                version: '0.4.1'
+            })
+        };
+
+        const res = await request.post(localUtils.API.getApiQuery('pages/?formats=mobiledoc,lexical'))
+            .set('Origin', config.get('url'))
+            .send({pages: [page]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201);
+
+        res.body.pages.length.should.eql(1);
+        const [returnedPage] = res.body.pages;
+
+        const additionalProperties = ['lexical'];
+        localUtils.API.checkResponse(returnedPage, 'page', additionalProperties);
+
+        should.equal(returnedPage.mobiledoc, null);
+        should.equal(returnedPage.lexical, page.lexical);
+    });
+
+    it('Can\'t add a page with both mobiledoc and lexical', async function () {
+        const page = {
+            title: 'Mobiledoc test',
+            mobiledoc: JSON.stringify({
+                version: '0.3.1',
+                ghostVersion: '4.0',
+                markups: [],
+                atoms: [],
+                cards: [],
+                sections: [
+                    [1, 'p', [
+                        [0, [], 0, 'Testing post creation with mobiledoc']
+                    ]]
+                ]
+            }),
+            lexical: JSON.stringify({
+                editorState: {
+                    root: {
+                        children: [
+                            {
+                                children: [
+                                    {
+                                        detail: 0,
+                                        format: 0,
+                                        mode: 'normal',
+                                        style: '',
+                                        text: 'Testing post creation with lexical',
+                                        type: 'text',
+                                        version: 1
+                                    }
+                                ],
+                                direction: 'ltr',
+                                format: '',
+                                indent: 0,
+                                type: 'paragraph',
+                                version: 1
+                            }
+                        ],
+                        direction: 'ltr',
+                        format: '',
+                        indent: 0,
+                        type: 'root',
+                        version: 1
+                    }
+                },
+                lastSaved: 1663081361393,
+                source: 'Playground',
+                version: '0.4.1'
+            })
+        };
+
+        const res = await request.post(localUtils.API.getApiQuery('pages/?formats=mobiledoc,lexical'))
+            .set('Origin', config.get('url'))
+            .send({pages: [page]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(422);
+
+        const [error] = res.body.errors;
+        error.type.should.equal('ValidationError');
+        error.property.should.equal('lexical');
+    });
+
     it('Can include free and paid tiers for public page', async function () {
         const publicPost = testUtils.DataGenerator.forKnex.createPost({
             type: 'page',

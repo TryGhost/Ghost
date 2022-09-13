@@ -596,7 +596,7 @@ Post = ghostBookshelf.Model.extend({
             });
         }
 
-        if (!this.get('mobiledoc')) {
+        if (!this.get('mobiledoc') && !this.get('lexical')) {
             this.set('mobiledoc', JSON.stringify(mobiledocLib.blankDocument));
         }
 
