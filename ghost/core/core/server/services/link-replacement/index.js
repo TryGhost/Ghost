@@ -9,7 +9,10 @@ class LinkReplacementServiceWrapper {
         const LinkReplacementService = require('@tryghost/link-replacement');
 
         // Expose the service
-        this.service = new LinkReplacementService({});
+        this.service = new LinkReplacementService({
+            linkRedirectService: require('../link-redirection').service,
+            linkClickTrackingService: require('../link-click-tracking').service
+        });
     }
 }
 
