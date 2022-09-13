@@ -24,6 +24,15 @@ import {tracked} from '@glimmer/tracking';
 /**
  * @typedef AttributionCountStat
  * @type {Object}
+ * @property {string} date The date (YYYY-MM-DD) on which these counts were recorded
+ * @property {number} source Attribution Source
+ * @property {number} freeSignups Total free members signed up for this source
+ * @property {number} paidConversions Total paid conversions for this source
+ */
+
+/**
+ * @typedef SourceAttributionCounts
+ * @type {Object}
  * @property {number} source Attribution Source
  * @property {number} freeSignups Total free members signed up for this source
  * @property {number} paidConversions Total paid conversions for this source
@@ -116,22 +125,10 @@ export default class DashboardStatsService extends Service {
         membersLastSeen30d = null;
 
     /**
-     * @type {AttributionCountStat[]} Count of Attribution sources in last 7 days
-     */
-    @tracked
-        membersAttributionSources7d = null;
-
-    /**
-     * @type {AttributionCountStat[]} Count of Attribution sources in last 30 days
-     */
-    @tracked
-        membersAttributionSources30d = null;
-
-    /**
-     * @type {AttributionCountStat[]} Count of Attribution sources in last 90 days
+     * @type {AttributionCountStat[]} Count of all attribution sources by date
      */
      @tracked
-         membersAttributionSources90d = null;
+         memberAttributionStats = null;
 
     /**
      * @type {?number} Number of members last seen in last 7 days (could differ if filtered by member status)
@@ -233,6 +230,35 @@ export default class DashboardStatsService extends Service {
             paid: 0,
             free: 0
         };
+    }
+
+    /**
+     * @type {?SourceAttributionCounts}
+     */
+    get memberSourceAttributionCounts() {
+        if (!this.memberAttributionStats) {
+            return [];
+        }
+
+        return this.memberAttributionStats.filter((stat) => {
+            if (this.chartDays === 'all') {
+                return true;
+            }
+            return stat.date >= moment().add(-this.chartDays, 'days').format('YYYY-MM-DD');
+        }).reduce((acc, stat) => {
+            const existingSource = acc.find(s => s.source === stat.source);
+            if (existingSource) {
+                existingSource.freeSignups += stat.freeSignups || 0;
+                existingSource.paidConversions += stat.paidConversions || 0;
+            } else {
+                acc.push({
+                    source: stat.source,
+                    freeSignups: stat.freeSignups || 0,
+                    paidConversions: stat.paidConversions || 0
+                });
+            }
+            return acc;
+        }, []);
     }
 
     get currentMRRTrend() {
@@ -515,15 +541,11 @@ export default class DashboardStatsService extends Service {
      */
      @task
     *_loadMemberAttributionStats() {
-        this.membersAttributionSources7d = null;
-        this.membersAttributionSources30d = null;
-        this.membersAttributionSources90d = null;
+        this.memberAttributionStats = null;
 
         if (this.dashboardMocks.enabled) {
             yield this.dashboardMocks.waitRandom();
-            this.membersAttributionSources7d = this.dashboardMocks.membersAttributionSources7d;
-            this.membersAttributionSources30d = this.dashboardMocks.membersAttributionSources30d;
-            this.membersAttributionSources90d = this.dashboardMocks.membersAttributionSources90d;
+            this.memberAttributionStats = this.dashboardMocks.memberAttributionStats;
             return;
         }
         return;

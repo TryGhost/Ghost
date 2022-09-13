@@ -12,7 +12,7 @@ export default class Recents extends Component {
     }
 
     get sources() {
-        return this.dashboardStats?.membersAttributionSources90d || [];
+        return this.dashboardStats?.memberSourceAttributionCounts;
     }
 
     get areMembersEnabled() {
