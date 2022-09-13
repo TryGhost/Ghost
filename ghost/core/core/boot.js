@@ -156,8 +156,13 @@ async function initServicesForFrontend({bootLogger}) {
 
     debug('Begin: Redirects');
     const customRedirects = require('./server/services/custom-redirects');
-    await customRedirects.init(),
+    await customRedirects.init();
     debug('End: Redirects');
+
+    debug('Begin: Link Redirects');
+    const linkRedirects = require('./server/services/link-redirection');
+    await linkRedirects.init();
+    debug('End: Link Redirects');
 
     debug('Begin: Themes');
     // customThemSettingsService.api must be initialized before any theme activation occurs

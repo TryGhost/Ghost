@@ -15,6 +15,7 @@ const themeMiddleware = themeEngine.middleware;
 const membersService = require('../../server/services/members');
 const offersService = require('../../server/services/offers');
 const customRedirects = require('../../server/services/custom-redirects');
+const linkRedirects = require('../../server/services/link-redirection');
 const siteRoutes = require('./routes');
 const shared = require('../../server/web/shared');
 const errorHandler = require('@tryghost/mw-error-handler');
@@ -48,6 +49,8 @@ module.exports = function setupSiteApp(routerConfig) {
     siteApp.use(mw.cors);
 
     siteApp.use(offersService.middleware);
+
+    siteApp.use(linkRedirects.service.handleRequest);
 
     // you can extend Ghost with a custom redirects file
     // see https://github.com/TryGhost/Ghost/issues/7707
