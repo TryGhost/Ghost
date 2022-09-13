@@ -4,7 +4,8 @@ const {ValidationError} = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 
 const messages = {
-    invalidVisibilityFilter: 'Invalid filter in visibility_filter property'
+    invalidVisibilityFilter: 'Invalid filter in visibility_filter property',
+    onlySingleContentSource: 'It\'s only possible to save mobiledoc or lexical properties, not both'
 };
 
 const validateVisibility = async function (frame) {
@@ -33,15 +34,29 @@ const validateVisibility = async function (frame) {
     }
 };
 
+const validateSingleContentSource = async function (frame) {
+    if (!frame.data.pages?.[0]) {
+        return;
+    }
+
+    const [page] = frame.data.pages;
+    if (page.mobiledoc && page.lexical) {
+        return Promise.reject(new ValidationError({
+            message: tpl(messages.onlySingleContentSource),
+            property: 'lexical'
+        }));
+    }
+};
+
 module.exports = {
-    add(apiConfig, frame) {
-        return jsonSchema.validate(...arguments).then(() => {
-            return validateVisibility(frame);
-        });
+    async add(apiConfig, frame) {
+        await jsonSchema.validate(...arguments);
+        await validateVisibility(frame);
+        await validateSingleContentSource(frame);
     },
-    edit(apiConfig, frame) {
-        return jsonSchema.validate(...arguments).then(() => {
-            return validateVisibility(frame);
-        });
+    async edit(apiConfig, frame) {
+        await jsonSchema.validate(...arguments);
+        await validateVisibility(frame);
+        await validateSingleContentSource(frame);
     }
 };
