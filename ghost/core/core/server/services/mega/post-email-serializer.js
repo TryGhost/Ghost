@@ -14,8 +14,9 @@ const {isUnsplashImage, isLocalContentImage} = require('@tryghost/kg-default-car
 const {textColorForBackgroundColor, darkenToContrastThreshold} = require('@tryghost/color-utils');
 const logging = require('@tryghost/logging');
 const urlService = require('../../services/url');
+const linkReplacement = require('../link-replacement');
 
-const ALLOWED_REPLACEMENTS = ['first_name'];
+const ALLOWED_REPLACEMENTS = ['first_name', 'uuid'];
 
 const PostEmailSerializer = {
     
@@ -243,7 +244,7 @@ const PostEmailSerializer = {
         return templateSettings;
     },
 
-    async serialize(postModel, newsletter, options = {isBrowserPreview: false}) {
+    async serialize(postModel, newsletter, options = {isBrowserPreview: false, isTestEmail: false}) {
         const post = await this.serializePostModel(postModel);
 
         const timezone = settingsCache.get('timezone');
@@ -276,7 +277,7 @@ const PostEmailSerializer = {
         // perform any email specific adjustments to the mobiledoc->HTML render output
         // body wrapper is required so we can get proper top-level selections
         const cheerio = require('cheerio');
-        let _cheerio = cheerio.load(`<body>${post.html}</body>`);
+        const _cheerio = cheerio.load(`<body>${post.html}</body>`);
         // remove leading/trailing HRs
         _cheerio(`
             body > hr:first-child,
@@ -284,8 +285,10 @@ const PostEmailSerializer = {
             body > div:first-child > hr:first-child,
             body > div:last-child > hr:last-child
         `).remove();
-        post.html = _cheerio('body').html();
+        post.html = _cheerio('body').html(); // () (added this comment because of a bug in the syntax highlighter in VSCode)
 
+        // Note: we don't need to do link replacements on the plaintext here
+        // because the plaintext will get recalculated on the updated post html (which already includes link replacements) in renderEmailForSegment
         post.plaintext = htmlToPlaintext.email(post.html);
 
         // Outlook will render feature images at full-size breaking the layout.
@@ -325,16 +328,21 @@ const PostEmailSerializer = {
 
         let htmlTemplate = render({post, site: this.getSite(), templateSettings, newsletter: newsletter.toJSON()});
 
-        if (options.isBrowserPreview) {
-            const previewUnsubscribeUrl = this.createUnsubscribeUrl(null);
-            htmlTemplate = htmlTemplate.replace('%recipient.unsubscribe_url%', previewUnsubscribeUrl);
+        // The plaintext version that is returned here is actually never really used for sending because we'll use htmlToPlaintext again later
+        let content = {
+            html: this.formatHtmlForEmail(htmlTemplate),
+            plaintext: post.plaintext
+        };
+
+        // Also replace the links in the HTML version
+        if (labs.isSet('emailClicks')) {
+            if ((!options.isBrowserPreview && !options.isTestEmail) || process.env.NODE_ENV === 'development') {
+                content.html = await linkReplacement.service.replaceLinks(content.html, newsletter, postModel);
+            }
         }
 
         // Clean up any unknown replacements strings to get our final content
-        const {html, plaintext} = this.normalizeReplacementStrings({
-            html: this.formatHtmlForEmail(htmlTemplate),
-            plaintext: post.plaintext
-        });
+        const {html, plaintext} = this.normalizeReplacementStrings(content);
         const data = {
             subject: post.email_subject || post.title,
             html,
