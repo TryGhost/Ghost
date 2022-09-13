@@ -29,18 +29,6 @@
     <section class="view-container content-list">
         <div class="gh-list-sticky">
             <ol class="posts-list gh-list {{unless this.postsInfinityModel "no-posts"}} feature-memberAttribution">
-                {{#if this.postsInfinityModel}}
-                    <li class="gh-list-row header">
-                        <div class="gh-list-header gh-posts-title-header">Title</div>
-                        <div class="gh-list-header gh-posts-status-header"></div>
-
-                        {{#if (and (not-eq this.settings.membersSignupAccess "none") (not-eq this.settings.editorDefaultEmailRecipients "disabled") (not this.session.user.isContributor) this.feature.emailAnalytics)}}
-                            <div class="gh-list-header gh-posts-opens-header">Opens</div>
-                            <div class="gh-list-header gh-posts-sends-header">Clicks</div>
-                        {{/if}}
-                        <div class="gh-list-header gh-posts-button-header"></div>
-                    </li>
-                {{/if}}
 
                 {{#each this.postsInfinityModel as |post|}}
                     <PostsList::ListItemClicks
