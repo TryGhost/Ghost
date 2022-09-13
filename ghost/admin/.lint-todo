@@ -847,3 +847,8 @@ add|ember-template-lint|no-action|13|36|13|36|addf24b8fbd6518060e412ec8b95309a05
 add|ember-template-lint|no-action|16|32|16|32|5bf020bb7cafdcfbcf809310232be927a9f1b2e4|1663027200000|1673398800000|1678582800000|app/templates/posts.hbs
 add|ember-template-lint|no-action|19|29|19|29|e3023c525990c1f8d1a30aa6ff20eb3bad8ec53b|1663027200000|1673398800000|1678582800000|app/templates/posts.hbs
 add|ember-template-lint|no-action|22|31|22|31|cbf4e21da2010b9af11294f458ef2ad40374d4f0|1663027200000|1673398800000|1678582800000|app/templates/posts.hbs
+add|ember-template-lint|no-action|10|30|10|30|7f6ae6475e94edfe22b59577ca52d10ec66835af|1663027200000|1673398800000|1678582800000|app/templates/posts-clicks.hbs
+add|ember-template-lint|no-action|13|36|13|36|addf24b8fbd6518060e412ec8b95309a05254988|1663027200000|1673398800000|1678582800000|app/templates/posts-clicks.hbs
+add|ember-template-lint|no-action|16|32|16|32|5bf020bb7cafdcfbcf809310232be927a9f1b2e4|1663027200000|1673398800000|1678582800000|app/templates/posts-clicks.hbs
+add|ember-template-lint|no-action|19|29|19|29|e3023c525990c1f8d1a30aa6ff20eb3bad8ec53b|1663027200000|1673398800000|1678582800000|app/templates/posts-clicks.hbs
+add|ember-template-lint|no-action|22|31|22|31|cbf4e21da2010b9af11294f458ef2ad40374d4f0|1663027200000|1673398800000|1678582800000|app/templates/posts-clicks.hbs
