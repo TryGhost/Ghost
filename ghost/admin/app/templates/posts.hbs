@@ -33,18 +33,33 @@
                     <li class="gh-list-row header">
                         <div class="gh-list-header gh-posts-title-header">Title</div>
 
-                        {{#if (and this.feature.memberAttribution (not this.session.user.isContributor)) }}
-                        <div class="gh-list-header gh-posts-status-header"></div>
-                            <div class="gh-list-header gh-posts-signups-header">Signups</div>
-                            <div class="gh-list-header gh-posts-conversions-header">Paid</div>
+                        {{#unless this.feature.emailClicks}}
+                            {{#if (and this.feature.memberAttribution (not this.session.user.isContributor)) }}
+                                <div class="gh-list-header gh-posts-status-header"></div>
+                                <div class="gh-list-header gh-posts-signups-header">Signups</div>
+                                <div class="gh-list-header gh-posts-conversions-header">Paid</div>
+                            {{/if}}
+                        {{/unless}}
+                        {{#if this.feature.emailClicks}}
+                            <div class="gh-list-header gh-posts-status-header"></div>
                         {{/if}}
+
                         {{#if (and (not-eq this.settings.membersSignupAccess "none") (not-eq this.settings.editorDefaultEmailRecipients "disabled") (not this.session.user.isContributor) this.feature.emailAnalytics)}}
-                            <div class="gh-list-header gh-posts-sends-header">Sends</div>
+                            {{#unless this.feature.emailClicks}}
+                                <div class="gh-list-header gh-posts-sends-header">Sends</div>
+                            {{/unless}}
                             <div class="gh-list-header gh-posts-opens-header">Opens</div>
                         {{/if}}
-                        {{#if (or (not this.feature.memberAttribution) this.session.user.isContributor) }}
-                            <div class="gh-list-header gh-posts-status-header">Status</div>
+                        {{#if this.feature.emailClicks}}
+                            <div class="gh-list-header gh-posts-sends-header">Clicks</div>
+                            <div class="gh-list-header gh-posts-analytics-page-header"></div>
                         {{/if}}
+                        
+                        {{#unless this.feature.emailClicks}}
+                            {{#if (or (not this.feature.memberAttribution) this.session.user.isContributor) }}
+                                <div class="gh-list-header gh-posts-status-header">Status</div>
+                            {{/if}}
+                        {{/unless}}
                     </li>
                 {{/if}}
 
