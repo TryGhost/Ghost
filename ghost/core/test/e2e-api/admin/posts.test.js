@@ -12,7 +12,8 @@ const matchPostShallowIncludes = {
     primary_tag: anyObject,
     tiers: anyArray,
     created_at: anyISODateTime,
-    updated_at: anyISODateTime
+    updated_at: anyISODateTime,
+    published_at: anyISODateTime
 };
 
 describe('Posts API', function () {
