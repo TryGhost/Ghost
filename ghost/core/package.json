@@ -82,6 +82,7 @@
     "@tryghost/kg-mobiledoc-html-renderer": "5.3.7",
     "@tryghost/limit-service": "1.2.3",
     "@tryghost/link-redirects": "0.0.0",
+    "@tryghost/link-tracking": "0.0.0",
     "@tryghost/logging": "2.3.0",
     "@tryghost/magic-link": "0.0.0",
     "@tryghost/mailgun-client": "0.0.0",
