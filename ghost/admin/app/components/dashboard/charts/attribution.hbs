@@ -1,0 +1,42 @@
+<section class="gh-dashboard-section gh-dashboard-recents">
+    <article class="gh-dashboard-box" {{did-insert this.loadData}}>
+        <div class="gh-dashboard-recents-posts gh-dashboard-list">
+            <div class="gh-dashboard-list-header">
+                <div class="gh-dashboard-list-title">Sources</div>
+                <div class="gh-dashboard-list-title">Free Signups</div>
+                <div class="gh-dashboard-list-title">Paid Conversions</div>
+            </div>
+            <div class="gh-dashboard-list-body">
+                {{#each this.sources as |sourceData|}}
+                    <div class="gh-dashboard-list-item">
+                        <div class="gh-dashboard-list-item-sub">
+                            <span class="gh-dashboard-list-text">{{sourceData.source}}</span>
+                        </div>
+                        <div class="gh-dashboard-list-item-sub">
+                            <span class="gh-dashboard-metric-minivalue">
+                                {{#if sourceData.freeSignups}}
+                                    {{format-number sourceData.freeSignups}}
+                                {{else}}
+                                    &mdash;
+                                {{/if}}
+                            </span>
+                        </div>
+                        <div class="gh-dashboard-list-item-sub">
+                           <span class="gh-dashboard-metric-minivalue">
+                                {{#if sourceData.paidConversions}}
+                                    {{format-number sourceData.paidConversions}}
+                                {{else}}
+                                    &mdash;
+                                {{/if}}
+                            </span>
+                        </div>
+                    </div>
+                {{else}}
+                    <div class="gh-dashboard-list-empty">
+                        <p>No sources.</p>
+                    </div>
+                {{/each}}
+            </div>
+        </div>
+    </article>
+</section>
