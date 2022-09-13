@@ -85,7 +85,7 @@ const getEmailData = async (postModel, options) => {
  * @param {ValidMemberSegment} [memberSegment]
  */
 const sendTestEmail = async (postModel, toEmails, memberSegment) => {
-    let emailData = await getEmailData(postModel);
+    let emailData = await getEmailData(postModel, {isTestEmail: true});
     emailData.subject = `[Test] ${emailData.subject}`;
 
     // fetch any matching members so that replacements use expected values
