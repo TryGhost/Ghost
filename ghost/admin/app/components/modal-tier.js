@@ -1,11 +1,10 @@
-import EmberObject, {action} from '@ember/object';
 import ModalBase from 'ghost-admin/components/modal-base';
 import TierBenefitItem from '../models/tier-benefit-item';
 import classic from 'ember-classic-decorator';
+import {action} from '@ember/object';
 import {currencies, getCurrencyOptions, getSymbol} from 'ghost-admin/utils/currency';
 import {A as emberA} from '@ember/array';
 import {htmlSafe} from '@ember/template';
-import {isEmpty} from '@ember/utils';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -30,7 +29,6 @@ export default class ModalTierPrice extends ModalBase {
     @tracked stripeMonthlyAmount = 5;
     @tracked stripeYearlyAmount = 50;
     @tracked currency = 'usd';
-    @tracked errors = EmberObject.create();
     @tracked stripePlanError = '';
     @tracked benefits = emberA([]);
     @tracked newBenefit = null;
@@ -159,9 +157,7 @@ export default class ModalTierPrice extends ModalBase {
     @task({drop: true})
     *saveTier() {
         this.validatePrices();
-        if (!isEmpty(this.errors) && Object.keys(this.errors).length > 0) {
-            return;
-        }
+
         if (this.stripePlanError || this.hasTrialDaysError) {
             return;
         }
@@ -183,10 +179,20 @@ export default class ModalTierPrice extends ModalBase {
         }
 
         this.tier.set('benefits', this.benefits.filter(benefit => !benefit.get('isBlank')));
-        yield this.tier.save();
-        this.hasSaved = true;
-        yield this.confirm();
-        this.send('closeModal');
+        
+        try {
+            yield this.tier.save();
+            this.hasSaved = true;
+            yield this.confirm();
+            this.send('closeModal');
+        } catch (error) {
+            if (error === undefined) {
+                // Validation error
+                return;
+            }
+
+            throw error;
+        }
     }
 
     validatePrices() {
