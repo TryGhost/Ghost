@@ -1,6 +1,19 @@
 const assert = require('assert');
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyErrorId, anyObjectId} = matchers;
+const {anyArray, anyEtag, anyErrorId, anyObject, anyObjectId, anyISODateTime, anyString, anyUuid} = matchers;
+
+const matchPostShallowIncludes = {
+    id: anyObjectId,
+    uuid: anyUuid,
+    url: anyString,
+    authors: anyArray,
+    primary_author: anyObject,
+    tags: anyArray,
+    primary_tag: anyObject,
+    tiers: anyArray,
+    created_at: anyISODateTime,
+    updated_at: anyISODateTime
+};
 
 describe('Posts API', function () {
     let agent;
@@ -22,9 +35,7 @@ describe('Posts API', function () {
                 etag: anyEtag
             })
             .matchBodySnapshot({
-                posts: new Array(2).fill({
-                    id: anyObjectId
-                })
+                posts: new Array(2).fill(matchPostShallowIncludes)
             });
     });
 
@@ -35,9 +46,7 @@ describe('Posts API', function () {
                 etag: anyEtag
             })
             .matchBodySnapshot({
-                posts: new Array(2).fill({
-                    id: anyObjectId
-                })
+                posts: new Array(2).fill(matchPostShallowIncludes)
             });
     });
 
