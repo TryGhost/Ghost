@@ -26,11 +26,18 @@ const defaultConfig = {
 };
 
 const KoenigComposer = ({
+    initialEditorState,
     nodes = [...DEFAULT_NODES],
     onError = defaultOnError,
     children
 }) => {
-    const initialConfig = React.useMemo(() => Object.assign({}, defaultConfig, {nodes, onError}), [nodes, onError]);
+    const initialConfig = React.useMemo(() => {
+        return Object.assign({}, defaultConfig, {
+            nodes,
+            editorState: initialEditorState,
+            onError
+        });
+    }, [initialEditorState, nodes, onError]);
 
     return (
         <LexicalComposer initialConfig={initialConfig}>
