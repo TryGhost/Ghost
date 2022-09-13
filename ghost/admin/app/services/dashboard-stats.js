@@ -22,6 +22,14 @@ import {tracked} from '@glimmer/tracking';
  */
 
 /**
+ * @typedef AttributionCountStat
+ * @type {Object}
+ * @property {number} source Attribution Source
+ * @property {number} freeSignups Total free members signed up for this source
+ * @property {number} paidConversions Total paid conversions for this source
+ */
+
+/**
  * @typedef MemberCounts
  * @type {Object}
  * @property {number} total Total amount of members
@@ -106,6 +114,24 @@ export default class DashboardStatsService extends Service {
      */
     @tracked
         membersLastSeen30d = null;
+
+    /**
+     * @type {AttributionCountStat[]} Count of Attribution sources in last 7 days
+     */
+    @tracked
+        membersAttributionSources7d = null;
+
+    /**
+     * @type {AttributionCountStat[]} Count of Attribution sources in last 30 days
+     */
+    @tracked
+        membersAttributionSources30d = null;
+
+    /**
+     * @type {AttributionCountStat[]} Count of Attribution sources in last 90 days
+     */
+     @tracked
+         membersAttributionSources90d = null;
 
     /**
      * @type {?number} Number of members last seen in last 7 days (could differ if filtered by member status)
@@ -476,50 +502,77 @@ export default class DashboardStatsService extends Service {
         });
     }
 
-    loadMrrStats() {
-        if (this._loadMrrStats.isRunning) {
+    loadMemberAttributionStats() {
+        if (this._loadMemberAttributionStats.isRunning) {
             // We need to explicitly wait for the already running task instead of dropping it and returning immediately
-            return this._loadMrrStats.last;
+            return this._loadMemberAttributionStats.last;
         }
-        return this._loadMrrStats.perform();
+        return this._loadMemberAttributionStats.perform();
     }
+
+    /**
+     * Loads the members attribution stats
+     */
+     @task
+    *_loadMemberAttributionStats() {
+        this.membersAttributionSources7d = null;
+        this.membersAttributionSources30d = null;
+        this.membersAttributionSources90d = null;
+
+        if (this.dashboardMocks.enabled) {
+            yield this.dashboardMocks.waitRandom();
+            this.membersAttributionSources7d = this.dashboardMocks.membersAttributionSources7d;
+            this.membersAttributionSources30d = this.dashboardMocks.membersAttributionSources30d;
+            this.membersAttributionSources90d = this.dashboardMocks.membersAttributionSources90d;
+            return;
+        }
+        return;
+    }
+
+     loadMrrStats() {
+         if (this._loadMrrStats.isRunning) {
+             // We need to explicitly wait for the already running task instead of dropping it and returning immediately
+             return this._loadMrrStats.last;
+         }
+         return this._loadMrrStats.perform();
+     }
 
     /**
      * Loads the mrr graphs for the current chartDays days
      */
     @task
-    *_loadMrrStats() {
-        this.mrrStats = null;
-        if (this.dashboardMocks.enabled) {
-            yield this.dashboardMocks.waitRandom();
-            if (this.dashboardMocks.mrrStats === null) {
-                return null;
-            }
-            this.mrrStats = this.dashboardMocks.mrrStats;
-            return;
-        }
+     *_loadMrrStats() {
+         this.mrrStats = null;
+         if (this.dashboardMocks.enabled) {
+             yield this.dashboardMocks.waitRandom();
+             if (this.dashboardMocks.mrrStats === null) {
+                 return null;
+             }
+             this.mrrStats = this.dashboardMocks.mrrStats;
+             return;
+         }
 
-        let statsUrl = this.ghostPaths.url.api('stats/mrr');
-        let stats = yield this.ajax.request(statsUrl);
+         let statsUrl = this.ghostPaths.url.api('stats/mrr');
+         let stats = yield this.ajax.request(statsUrl);
 
-        // Only show the highest value currency and filter the other ones out
-        const totals = stats.meta.totals;
-        let currentMax = totals[0];
-        if (!currentMax) {
-            // No valid data
-            this.mrrStats = [];
-            return;
-        }
+         // Only show the highest value currency and filter the other ones out
+         const totals = stats.meta.totals;
+         let currentMax = totals[0];
+         if (!currentMax) {
+             // No valid data
+             this.mrrStats = [];
+             return;
+         }
 
-        for (const total of totals) {
-            if (total.mrr > currentMax.mrr) {
-                currentMax = total;
-            }
-        }
+         for (const total of totals) {
+             if (total.mrr > currentMax.mrr) {
+                 currentMax = total;
+             }
+         }
 
-        const useCurrency = currentMax.currency;
-        this.mrrStats = stats.stats.filter(d => d.currency === useCurrency);
-    }
+         const useCurrency = currentMax.currency;
+         this.mrrStats = stats.stats.filter(d => d.currency === useCurrency);
+     }
 
     loadLastSeen() {
         // todo: add proper logic to prevent duplicate calls + reuse results if nothing has changed
@@ -703,6 +756,7 @@ export default class DashboardStatsService extends Service {
         await this._loadNewsletterSubscribers.cancelAll();
         await this._loadEmailsSent.cancelAll();
         await this._loadEmailOpenRateStats.cancelAll();
+        await this._loadMemberAttributionStats.cancelAll();
 
         // Restart tasks
         this.loadSiteStatus();
@@ -717,6 +771,7 @@ export default class DashboardStatsService extends Service {
         this.loadNewsletterSubscribers();
         this.loadEmailsSent();
         this.loadEmailOpenRateStats();
+        this.loadMemberAttributionStats();
     }
 
     /**
