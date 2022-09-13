@@ -137,11 +137,11 @@ export default class DashboardMocksService extends Service {
      * This method generates new data and forces a reload for all the charts
      * Might be better to move this code to a temporary mocking service
      */
-    updateMockedData({days}) {    
+    updateMockedData({days}) {
         const generateDays = days;
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - generateDays + 1);
-    
+
         /**
          * @type {MemberCountStat[]}
          */
@@ -236,7 +236,7 @@ export default class DashboardMocksService extends Service {
             let freeDelta = Math.max(0, this._updateGrow(freeGrowth));
 
             viralCounter -= 1;
-            
+
             if (viralCounter <= 0) {
                 viralCounter = Math.floor(Math.random() * 900);
                 freeDelta += Math.floor(Math.random() * 20 * index);
@@ -334,9 +334,78 @@ export default class DashboardMocksService extends Service {
         };
 
         this.emailsSent30d = Math.floor(days * 123 / 90);
-        
+
         this.membersLastSeen7d = Math.round(Math.random() * currentCounts.free / 2);
         this.membersLastSeen30d = this.membersLastSeen7d + Math.round(Math.random() * currentCounts.free / 2);
+
+        this.membersAttributionSources7d = [
+            {
+                source: 'Twitter',
+                freeSignups: Math.floor(Math.random() * currentCounts.free / 3),
+                paidConversions: Math.floor(Math.random() * currentCounts.paid / 3)
+            },
+            {
+                source: 'Ghost Newsletter',
+                freeSignups: Math.floor(Math.random() * currentCounts.free / 3),
+                paidConversions: Math.floor(Math.random() * currentCounts.paid / 3)
+            },
+            {
+                source: 'Ghost Network',
+                freeSignups: Math.floor(Math.random() * currentCounts.free / 3),
+                paidConversions: Math.floor(Math.random() * currentCounts.paid / 3)
+            },
+            {
+                source: 'Direct',
+                freeSignups: Math.floor(Math.random() * currentCounts.free / 3),
+                paidConversions: Math.floor(Math.random() * currentCounts.paid / 3)
+            }
+        ];
+
+        this.membersAttributionSources30d = [
+            {
+                source: 'Twitter',
+                freeSignups: Math.floor(Math.random() * currentCounts.free / 2),
+                paidConversions: Math.floor(Math.random() * currentCounts.paid / 2)
+            },
+            {
+                source: 'Ghost Newsletter',
+                freeSignups: Math.floor(Math.random() * currentCounts.free / 2),
+                paidConversions: Math.floor(Math.random() * currentCounts.paid / 2)
+            },
+            {
+                source: 'Ghost Network',
+                freeSignups: Math.floor(Math.random() * currentCounts.free / 2),
+                paidConversions: Math.floor(Math.random() * currentCounts.paid / 2)
+            },
+            {
+                source: 'Direct',
+                freeSignups: Math.floor(Math.random() * currentCounts.free / 2),
+                paidConversions: Math.floor(Math.random() * currentCounts.paid / 2)
+            }
+        ];
+
+        this.membersAttributionSources90d = [
+            {
+                source: 'Twitter',
+                freeSignups: Math.floor(Math.random() * currentCounts.free / 20),
+                paidConversions: Math.floor(Math.random() * currentCounts.paid / 20)
+            },
+            {
+                source: 'Ghost Newsletter',
+                freeSignups: Math.floor(Math.random() * currentCounts.free / 20),
+                paidConversions: Math.floor(Math.random() * currentCounts.paid / 20)
+            },
+            {
+                source: 'Ghost Network',
+                freeSignups: Math.floor(Math.random() * currentCounts.free / 20),
+                paidConversions: Math.floor(Math.random() * currentCounts.paid / 20)
+            },
+            {
+                source: 'Direct',
+                freeSignups: Math.floor(Math.random() * currentCounts.free / 20),
+                paidConversions: Math.floor(Math.random() * currentCounts.paid / 20)
+            }
+        ];
 
         this.emailOpenRateStats = [];
         if (days >= 7) {
