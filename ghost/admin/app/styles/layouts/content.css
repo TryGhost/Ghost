@@ -243,11 +243,11 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     opacity: 0.5;
 }
 
-.gh-content-entry-title {
+.gh-list .gh-content-entry-title {
     display: flex;
     align-items: center;
     margin: 0 0 3px 0;
-    font-size: 1.6rem !important;
+    font-size: 1.6rem;
     font-weight: 600;
 }
 
@@ -824,4 +824,59 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 .gh-links-list-clicks {
     margin: 0;
     color: var(--darkgrey);
+}
+
+/* Post list – LABS
+/* ---------------------------------------------------------- */
+
+.gh-posts-list-item-labs .gh-list-data {
+    padding: 2rem;
+    vertical-align: top;
+}
+
+.gh-posts-list-item-labs:nth-of-type(2) .gh-list-data {
+    border-top: var(--whitegrey) 1px solid;
+}
+
+.gh-posts-list-item-labs .gh-content-entry-title {
+    margin: 0 0 1rem;
+    font-size: 1.5rem;
+}
+
+.gh-posts-list-item-labs .gh-content-entry-meta {
+    margin: 2px 0 0 0;
+    font-size: 1.35rem;
+    color: var(--midlightgrey-d1);
+}
+
+.gh-posts-list-item-labs .gh-content-status.draft {
+    color: var(--pink);
+}
+
+.gh-posts-list-item-labs .gh-content-status.scheduled {
+    color: var(--purple);
+}
+
+.gh-posts-list-item-labs .gh-post-list-clicks,
+.gh-posts-list-item-labs .gh-post-list-opens,
+.gh-posts-list-item-labs .gh-post-list-cta {
+    width: 120px;
+}
+
+.gh-posts-list-item-labs .gh-btn-outline {
+    min-width: 86px;
+    background: var(--white);
+    box-shadow: none;
+}
+
+.gh-posts-list-item-labs svg.edit {
+    color: var(--midgrey);
+}
+
+.gh-posts-list-item-labs svg.stats {
+    color: var(--green);
+}
+
+.gh-posts-list-item-labs svg path {
+    stroke-width: 2;
 }
