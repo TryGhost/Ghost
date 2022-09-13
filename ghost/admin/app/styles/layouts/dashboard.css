@@ -670,7 +670,6 @@ Dashboard List */
     color: var(--midgrey);
     padding: 0 20px 8px 0;
     text-transform: uppercase;
-    white-space: nowrap;
 }
 
 .gh-dashboard-list-body {
