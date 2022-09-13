@@ -704,3 +704,124 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     animation: keyboard-focus-style-fade-out 1.5s 1 forwards;
     pointer-events: none;
 }
+
+
+/* Post stats
+/* --------------------------------------------------------- */
+
+.gh-post-stats-box {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    margin: 0 0 2.4rem;
+    padding: 2.8rem 2.4rem 2.4rem;
+    border: 1px solid var(--whitegrey);
+    border-radius: 6px;
+}
+
+.gh-post-stats-box.grey {
+    border: none;
+    background: var(--whitegrey-l2);
+}
+
+.gh-post-stats-title {
+    margin: 0;
+    padding: 0 0 2px;
+    color: var(--black);
+    font-size: 1.6rem;
+    font-weight: 600;
+}
+
+.gh-post-stats-meta {
+    margin: 0 0 2.4rem;
+    color: var(--midgrey);
+}
+
+.gh-post-stats {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    padding: 2.8rem 2.4rem 2.4rem;
+    background: var(--main-bg-color);
+    border-radius: 6px;
+    box-shadow: 0 1px 4px -1px rgba(0,0,0,0.1);
+}
+
+.gh-post-stats-item {
+    border-left: 1px solid var(--whitegrey);
+    padding-left: 2rem;
+}
+
+.gh-post-stats-item:first-child {
+    border-left: none;
+    padding-left: 0;
+}
+
+.gh-post-stats-item h3 {
+    margin: 0 0 10px;
+    color: var(--black);
+    font-size: 2.4rem;
+    font-weight: 700;
+    letter-spacing: -.4px;
+    line-height: 1em;
+    white-space: nowrap;
+}
+
+.gh-post-stats-item p {
+    margin: 0;
+    color: var(--midgrey);
+    font-size: 1.3rem;
+    font-weight: 500;
+    letter-spacing: 0;
+}
+
+.gh-post-stats-item p.strong {
+    font-weight: 600;
+}
+
+.gh-links-list-header {
+    margin: 0 0 12px;
+    padding: 0 0 8px;
+    border-bottom: 1px solid var(--whitegrey);
+    color: var(--midgrey);
+    font-size: 1.1rem;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    line-height: 1em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.gh-links-list-item {
+    display: flex;
+    justify-content: space-between;
+    margin: 0 -2.4rem;
+    padding: 1rem 2.4rem;
+    font-size: 1.4rem;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-decoration: none;
+}
+
+.gh-links-list-item:hover {
+    background: linear-gradient(315deg,#fafafb 60%,#fff);
+}
+
+.gh-links-list-item a {
+    margin: 0;
+    padding: 0 32px 0 0;
+    color: var(--darkgrey);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.gh-links-list-item a:hover {
+    color: var(--midgrey-d2);
+}
+
+.gh-links-list-clicks {
+    margin: 0;
+    color: var(--darkgrey);
+}
