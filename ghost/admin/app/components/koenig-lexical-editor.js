@@ -34,7 +34,10 @@ const fetchKoenig = function () {
         // required to work around ember-auto-import complaining about an unknown dynamic import
         // during the build step
         const GhostAdmin = window.GhostAdmin || window.Ember.Namespace.NAMESPACES.find(ns => ns.name === 'ghost-admin');
-        const url = new URL(GhostAdmin.__container__.lookup('service:config').get('editor.lexicalUrl'));
+        const urlTemplate = GhostAdmin.__container__.lookup('service:config').get('editor.url');
+        const urlVersion = GhostAdmin.__container__.lookup('service:config').get('editor.version');
+
+        const url = new URL(urlTemplate.replace('{version}', urlVersion));
 
         if (url.protocol === 'http:') {
             await import(`http://${url.host}${url.pathname}`);
@@ -42,7 +45,7 @@ const fetchKoenig = function () {
             await import(`https://${url.host}${url.pathname}`);
         }
 
-        return window.KoenigLexical;
+        return window['@tryghost/koenig-lexical'];
     };
 
     const suspender = fetchPackage().then(
