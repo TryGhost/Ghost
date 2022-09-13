@@ -67,7 +67,8 @@ describe('Posts API', function () {
                             [0, [], 0, 'Testing post creation with mobiledoc']
                         ]]
                     ]
-                })
+                }),
+                lexical: null
             };
 
             await agent
@@ -86,6 +87,7 @@ describe('Posts API', function () {
         it('Can create a post with lexical', async function () {
             const post = {
                 title: 'Lexical test',
+                mobiledoc: null,
                 lexical: JSON.stringify({
                     editorState: {
                         root: {
