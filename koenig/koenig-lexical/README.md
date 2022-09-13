@@ -4,7 +4,18 @@ Early stage re-write of Ghost's editor, using Lexical as the editor framework in
 
 ## Development
 
-Run `yarn dev` to start the development server. This will generate a demo site from the `index.html` file which renders the demo app in `demo/demo.jsx` and makes it available on http://localhost:5173
+Run `yarn dev` to start the development server to test/develop the editor standalone. This will generate a demo site from the `index.html` file which renders the demo app in `demo/demo.jsx` and makes it available on http://localhost:5173
+
+To test/develop inside of Admin you can run `yarn preview` then in Ghost set your `editor.url` value in `config.local.json` to `http://127.0.0.1:4173/koenig-lexical.umd.js` and load Admin as usual.
+
+```json
+{
+    ...
+    "editor": {
+        "url": "http://127.0.0.1:4173/koenig-lexical.umd.js"
+    }
+}
+```
 
 ### Project structure
 
