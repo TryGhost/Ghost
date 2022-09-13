@@ -1,22 +1,39 @@
-class LinkReplacementService {
-    /// Placeholder method
-    async createRedirect(url) {
-        return Promise.resolve({
-            from: 'https://example.com/r/' + Math.random().toString(36).substring(2, 15),
-            to: url
-        });
-    }
+/**
+ * @typedef {object} ILinkRedirect
+ * @prop {URL} to
+ * @prop {from} to
+ * @prop {from} to
+ */
 
-    // Todo: move to different service
-    addTrackingToRedirect(redirect, memberUuid) {
-        const newUrl = new URL(redirect.from);
-        newUrl.searchParams.append('m', memberUuid);
-        return newUrl;
+/**
+ * @typedef {object} ILinkRedirectService
+ * @prop {(to: URL) => Promise<ILinkRedirect>} addRedirect
+ */
+
+/**
+ * @typedef {object} ILinkClickTrackingService
+ * @prop {(link: ILinkRedirect) => Promise<URL>} addTrackingToRedirect
+ */
+
+class LinkReplacementService {
+    /** @type ILinkRedirectService */
+    #linkRedirectService;
+    /** @type ILinkClickTrackingService */
+    #linkClickTrackingService;
+
+    /**
+     * @param {object} deps
+     * @param {ILinkRedirectService} deps.linkRedirectService
+     * @param {ILinkClickTrackingService} deps.linkClickTrackingService
+     */
+    constructor(deps) {
+        this.#linkRedirectService = deps.linkRedirectService;
+        this.#linkClickTrackingService = deps.linkClickTrackingService;
     }
 
     async replaceLink(url, newsletter, post) {
         // Can probably happen in one call to the MemberAttributionService (but just to make clear what happens here)
-        
+
         // 1. Add attribution
         // TODO: this should move the the attribution service in the future
         url.searchParams.append('rel', newsletter.get('slug') + '-newsletter');
@@ -24,10 +41,11 @@ class LinkReplacementService {
         url.searchParams.append('attribution_type', 'post');
 
         // 2. Add redirect for link click tracking
-        const redirect = await this.createRedirect(url.toString());
+        const redirect = await this.#linkRedirectService.addRedirect(url);
 
         // 3. Add member tracking
-        return this.addTrackingToRedirect(redirect, '--uuid--');
+        const result = await this.#linkClickTrackingService.addTrackingToRedirect(redirect, '--uuid--');
+        return result;
     }
 
     /**
@@ -58,7 +76,6 @@ class LinkReplacementService {
         }
 
         return Promise.resolve($.html());
-    }   
+    }
 }
 module.exports = LinkReplacementService;
-
