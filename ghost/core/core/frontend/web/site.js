@@ -78,11 +78,11 @@ module.exports = function setupSiteApp(routerConfig) {
     // Member attribution
     siteApp.use(mw.servePublicFile('built', 'public/member-attribution.min.js', 'application/javascript', constants.ONE_YEAR_S));
 
-    // Serve blog images using the storage adapter
+    // Serve site images using the storage adapter
     siteApp.use(STATIC_IMAGE_URL_PREFIX, mw.handleImageSizes, storage.getStorage('images').serve());
-    // Serve blog media using the storage adapter
+    // Serve site media using the storage adapter
     siteApp.use(STATIC_MEDIA_URL_PREFIX, storage.getStorage('media').serve());
-    // Serve blog files using the storage adapter
+    // Serve site files using the storage adapter
     siteApp.use(STATIC_FILES_URL_PREFIX, storage.getStorage('files').serve());
 
     // Global handling for member session, ensures a member is logged in to the frontend
@@ -127,7 +127,7 @@ module.exports = function setupSiteApp(routerConfig) {
 
     // ### Caching
     siteApp.use(function (req, res, next) {
-        // Site frontend is cacheable UNLESS request made by a member or blog is in private mode
+        // Site frontend is cacheable UNLESS request made by a member or site is in private mode
         if (req.member || res.isPrivateBlog) {
             return shared.middleware.cacheControl('private')(req, res, next);
         } else {
@@ -148,7 +148,7 @@ module.exports = function setupSiteApp(routerConfig) {
     router = siteRoutes(routerConfig);
     Object.setPrototypeOf(SiteRouter, router);
 
-    // Set up Frontend routes (including private blogging routes)
+    // Set up Frontend routes (including private site routes)
     siteApp.use(SiteRouter);
 
     // ### Error handlers
