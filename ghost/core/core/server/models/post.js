@@ -974,7 +974,7 @@ Post = ghostBookshelf.Model.extend({
         return filter;
     }
 }, {
-    allowedFormats: ['mobiledoc', 'html', 'plaintext'],
+    allowedFormats: ['mobiledoc', 'lexical', 'html', 'plaintext'],
 
     orderDefaultOptions: function orderDefaultOptions() {
         return {
