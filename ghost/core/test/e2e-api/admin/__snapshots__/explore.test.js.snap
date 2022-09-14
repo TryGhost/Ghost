@@ -40,6 +40,7 @@ Object {
       "livemode": false,
     },
     "total_members": 8,
+    "total_posts_published": Any<Number>,
     "version": StringMatching /\\\\d\\+\\\\\\.\\\\d\\+\\\\\\.\\\\d\\+/,
   },
 }
