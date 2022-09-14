@@ -15,8 +15,13 @@
  */
 
 /**
- * @typedef {object} IAttributionService
- * @prop {(url: URL, newsletter, post) => URL} addEmailAttributionToUrl
+ * @typedef {import('@tryghost/member-attribution/lib/service')} IAttributionService
+ */
+
+/**
+ * @typedef {object} UrlUtils
+ * @prop {(context: string, absolute?: boolean) => string} urlFor
+ * @prop {(...parts: string[]) => string} urlJoin
  */
 
 class LinkReplacementService {
@@ -26,32 +31,60 @@ class LinkReplacementService {
     #linkClickTrackingService;
     /** @type IAttributionService */
     #attributionService;
+    /** @type UrlUtils */
+    #urlUtils;
 
     /**
      * @param {object} deps
      * @param {ILinkRedirectService} deps.linkRedirectService
      * @param {ILinkClickTrackingService} deps.linkClickTrackingService
      * @param {IAttributionService} deps.attributionService
+     * @param {UrlUtils} deps.urlUtils
      */
     constructor(deps) {
         this.#linkRedirectService = deps.linkRedirectService;
         this.#linkClickTrackingService = deps.linkClickTrackingService;
         this.#attributionService = deps.attributionService;
+        this.#urlUtils = deps.urlUtils;
+    }
+
+    /**
+     * Return whether the provided URL is a link to the site
+     * @param {URL} url
+     * @returns {boolean}
+     */
+    #isSiteDomain(url) {
+        const siteUrl = new URL(this.#urlUtils.urlFor('home', true));
+        if (siteUrl.host === url.host) {
+            if (url.pathname.startsWith(siteUrl.pathname)) {
+                return true;
+            }
+            return false;
+        }
+        return false;
     }
 
     async replaceLink(url, newsletter, post) {
         // Can probably happen in one call to the MemberAttributionService (but just to make clear what happens here)
+        const isSite = this.#isSiteDomain(url);
 
         // 1. Add attribution
-        // TODO: only add attribution links to our own site (except for the newsletter referrer)
-        url = this.#attributionService.addEmailAttributionToUrl(url, newsletter, post);
+        url = this.#attributionService.addEmailSourceAttributionTracking(url, newsletter);
+
+        if (isSite) {
+            // Only add attribution links to our own site (except for the newsletter referrer)
+            url = this.#attributionService.addPostAttributionTracking(url, post);
+        }
 
         // 2. Add redirect for link click tracking
         const redirect = await this.#linkRedirectService.addRedirect(url);
 
-        // 3. Add member tracking
-        const result = await this.#linkClickTrackingService.addTrackingToRedirect(redirect, '--uuid--');
-        return result;
+        // 3. Add click tracking by members
+        if (isSite) {
+            return this.#linkClickTrackingService.addTrackingToRedirect(redirect, '--uuid--');
+        }
+
+        return redirect.from;
     }
 
     /**

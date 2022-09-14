@@ -1,3 +1,5 @@
+const urlUtils = require('../../../shared/url-utils');
+
 class LinkReplacementServiceWrapper {
     init() {
         if (this.service) {
@@ -12,7 +14,8 @@ class LinkReplacementServiceWrapper {
         this.service = new LinkReplacementService({
             linkRedirectService: require('../link-redirection').service,
             linkClickTrackingService: require('../link-click-tracking').service,
-            attributionService: require('../member-attribution').service
+            attributionService: require('../member-attribution').service,
+            urlUtils
         });
     }
 }
