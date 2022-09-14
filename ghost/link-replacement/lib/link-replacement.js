@@ -49,11 +49,12 @@ class LinkReplacementService {
     }
 
     /**
+     * @private (# doesn't work because this method is being tested)
      * Return whether the provided URL is a link to the site
      * @param {URL} url
      * @returns {boolean}
      */
-    #isSiteDomain(url) {
+    isSiteDomain(url) {
         const siteUrl = new URL(this.#urlUtils.urlFor('home', true));
         if (siteUrl.host === url.host) {
             if (url.pathname.startsWith(siteUrl.pathname)) {
@@ -66,7 +67,7 @@ class LinkReplacementService {
 
     async replaceLink(url, newsletter, post) {
         // Can probably happen in one call to the MemberAttributionService (but just to make clear what happens here)
-        const isSite = this.#isSiteDomain(url);
+        const isSite = this.isSiteDomain(url);
 
         // 1. Add attribution
         url = this.#attributionService.addEmailSourceAttributionTracking(url, newsletter);
