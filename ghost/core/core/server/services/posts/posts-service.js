@@ -8,11 +8,12 @@ const messages = {
 };
 
 class PostsService {
-    constructor({mega, urlUtils, models, isSet}) {
+    constructor({mega, urlUtils, models, isSet, stats}) {
         this.mega = mega;
         this.urlUtils = urlUtils;
         this.models = models;
         this.isSet = isSet;
+        this.stats = stats;
     }
 
     async editPost(frame) {
@@ -77,20 +78,6 @@ class PostsService {
     }
 
     /**
-     * Returns the most recently `published_at` post that was published or sent
-     * via email
-     */
-    async getMostRecentlyPublishedPost() {
-        const recentlyPublishedPost = await this.models.Post.findPage({
-            status: ['published', 'sent'],
-            order: 'published_at DESC',
-            limit: 1
-        });
-
-        return recentlyPublishedPost?.data[0];
-    }
-
-    /**
      * Calculates if the email should be tried to be sent out
      * @private
      * @param {String} currentStatus current status from the post model
@@ -135,12 +122,16 @@ const getPostServiceInstance = () => {
     const {mega} = require('../mega');
     const labs = require('../../../shared/labs');
     const models = require('../../models');
+    const PostStats = require('./stats/post-stats');
+
+    const postStats = new PostStats();
 
     return new PostsService({
         mega: mega,
         urlUtils: urlUtils,
         models: models,
-        isSet: labs.isSet.bind(labs)
+        isSet: labs.isSet.bind(labs),
+        stats: postStats
     });
 };
 

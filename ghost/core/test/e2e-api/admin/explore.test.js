@@ -1,12 +1,12 @@
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyISODate, anyISODateTime, anyStringNumber, stringMatching} = matchers;
+const {anyEtag, anyISODate, anyISODateTime, anyStringNumber, stringMatching, anyNumber} = matchers;
 
 describe('Explore API', function () {
     let agent;
 
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
-        await fixtureManager.init('members');
+        await fixtureManager.init('posts', 'members');
         await agent.loginAsOwner();
     });
 
@@ -18,6 +18,7 @@ describe('Explore API', function () {
                 .matchBodySnapshot({
                     explore: {
                         most_recently_published_at: anyISODateTime,
+                        total_posts_published: anyNumber,
                         mrr_stats: {
                             data: [{
                                 date: anyISODate
