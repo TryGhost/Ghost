@@ -1,14 +1,16 @@
 import {KoenigComposer, KoenigEditor} from '../src';
+import SerializedStateTextarea from './components/SerializedStateTextarea';
 
 function DemoApp() {
     return (
         <div className="demo-container">
-            <div className="demo-editor">
-                <KoenigComposer>
+            <KoenigComposer>
+                <div className="demo-editor">
                     <KoenigEditor>
                     </KoenigEditor>
-                </KoenigComposer>
-            </div>
+                </div>
+                <SerializedStateTextarea />
+            </KoenigComposer>
         </div>
     );
 }
