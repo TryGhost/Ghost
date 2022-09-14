@@ -212,7 +212,7 @@ module.exports = class RouterController {
             const urlHistory = metadata.urlHistory;
             delete metadata.urlHistory;
 
-            const attribution = this._memberAttributionService.getAttribution(urlHistory);
+            const attribution = await this._memberAttributionService.getAttribution(urlHistory);
 
             // Don't set null properties
             if (attribution.id) {
@@ -412,7 +412,7 @@ module.exports = class RouterController {
                     tokenData.reqIp = req.ip;
                 }
                 // Save attribution data in the tokenData
-                tokenData.attribution = this._memberAttributionService.getAttribution(req.body.urlHistory);
+                tokenData.attribution = await this._memberAttributionService.getAttribution(req.body.urlHistory);
 
                 await this._sendEmailWithMagicLink({email, tokenData, requestedType: emailType, referrer: referer});
             }

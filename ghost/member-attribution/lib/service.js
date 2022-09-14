@@ -17,11 +17,32 @@ class MemberAttributionService {
     /**
      *
      * @param {import('./history').UrlHistoryArray} historyArray
-     * @returns {import('./attribution').Attribution}
+     * @returns {Promise<import('./attribution').Attribution>}
      */
-    getAttribution(historyArray) {
+    async getAttribution(historyArray) {
         const history = UrlHistory.create(historyArray);
-        return this.attributionBuilder.getAttribution(history);
+        return await this.attributionBuilder.getAttribution(history);
+    }
+
+    /**
+     * Add some parameters to a URL so that the frontend script can detect this and add the required records
+     * in the URLHistory.
+     * @param {URL} url instance that will get updated
+     * @param {Object} newsletter The newsletter from which a link was clicked
+     * @param {Object} post The post from which a link was clicked
+     * @returns {URL}
+     */
+    addEmailAttributionToUrl(url, newsletter, post) {
+        // Create a deep copy
+        url = new URL(url);
+
+        // Source attribution
+        url.searchParams.append('rel', newsletter.get('slug') + '-newsletter');
+
+        // Post attribution
+        url.searchParams.append('attribution_id', post.id);
+        url.searchParams.append('attribution_type', 'post');
+        return url;
     }
 
     /**

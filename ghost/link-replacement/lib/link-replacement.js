@@ -1,8 +1,7 @@
 /**
  * @typedef {object} ILinkRedirect
  * @prop {URL} to
- * @prop {from} to
- * @prop {from} to
+ * @prop {URL} from
  */
 
 /**
@@ -12,7 +11,12 @@
 
 /**
  * @typedef {object} ILinkClickTrackingService
- * @prop {(link: ILinkRedirect) => Promise<URL>} addTrackingToRedirect
+ * @prop {(link: ILinkRedirect, uuid: string) => Promise<URL>} addTrackingToRedirect
+ */
+
+/**
+ * @typedef {object} IAttributionService
+ * @prop {(url: URL, newsletter, post) => URL} addEmailAttributionToUrl
  */
 
 class LinkReplacementService {
@@ -20,25 +24,27 @@ class LinkReplacementService {
     #linkRedirectService;
     /** @type ILinkClickTrackingService */
     #linkClickTrackingService;
+    /** @type IAttributionService */
+    #attributionService;
 
     /**
      * @param {object} deps
      * @param {ILinkRedirectService} deps.linkRedirectService
      * @param {ILinkClickTrackingService} deps.linkClickTrackingService
+     * @param {IAttributionService} deps.attributionService
      */
     constructor(deps) {
         this.#linkRedirectService = deps.linkRedirectService;
         this.#linkClickTrackingService = deps.linkClickTrackingService;
+        this.#attributionService = deps.attributionService;
     }
 
     async replaceLink(url, newsletter, post) {
         // Can probably happen in one call to the MemberAttributionService (but just to make clear what happens here)
 
         // 1. Add attribution
-        // TODO: this should move the the attribution service in the future
-        url.searchParams.append('rel', newsletter.get('slug') + '-newsletter');
-        url.searchParams.append('attribution_id', post.id);
-        url.searchParams.append('attribution_type', 'post');
+        // TODO: only add attribution links to our own site (except for the newsletter referrer)
+        url = this.#attributionService.addEmailAttributionToUrl(url, newsletter, post);
 
         // 2. Add redirect for link click tracking
         const redirect = await this.#linkRedirectService.addRedirect(url);
