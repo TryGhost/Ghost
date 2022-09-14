@@ -34,7 +34,7 @@
                     <span class="published">
                         Published
                         {{#if @post.hasEmail}}
-                            {{#if isHovered}}
+                            {{#if this.isHovered}}
                                 and sent to 2,467 free subscribers
                             {{else}}
                                 and sent
@@ -84,7 +84,7 @@
                         <span class="published">
                             Published
                             {{#if @post.hasEmail}}
-                                {{#if isHovered}}
+                                {{#if this.isHovered}}
                                     and sent to 2,467 free subscribers
                                 {{else}}
                                     and sent
@@ -95,7 +95,7 @@
 
                     {{#if @post.isSent}}
                         <span class="sent">
-                            {{#if isHovered}}
+                            {{#if this.isHovered}}
                                 Sent to 2,467 free subscribers
                             {{else}}
                                 Sent
@@ -112,21 +112,17 @@
         {{!-- Opens column --}}
         <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-opens">
             {{#if (and @post.email.trackOpens (eq @post.email.status "submitted"))}}
-                <div class="flex">
-                    {{#if (and this.feature.memberAttribution (not this.feature.emailClicks))}}
-                        <span class="gh-list-rate-bar">
-                            <span class="gh-list-rate-number" data-tooltip="Opens: {{format-number @post.email.openedCount}}">{{@post.email.openRate}}%&nbsp;</span>
-                            <span class="gh-list-rate-amount"><span style={{html-safe (concat "width: " @post.email.openRate "%;")}}/></span>
-                        </span>
-                    {{else}}
-                        <span class="darkgrey fw5 gh-content-email-stats">
-                            {{#if this.isHovered}}
-                                1,283
-                            {{else}}
-                                52%
-                            {{/if}}
-                        </span>
-                    {{/if}}
+                <div class="flex flex-column">
+                    <span class="gh-content-email-stats">
+                        {{#if this.isHovered}}
+                            1,283
+                        {{else}}
+                            52%
+                        {{/if}}
+                    </span>
+                    <span class="gh-content-entry-meta">
+                        opens
+                    </span>
                     <span class="midgrey-l2 fw4 gh-content-email-stats-mobile">{{@post.email.openRate}}% opens</span>
                 </div>
             {{/if}}
@@ -135,11 +131,18 @@
         {{!-- Clicks column --}}
         <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-clicks">
             {{#if (and @post.email.trackOpens (eq @post.email.status "submitted"))}}
-                {{#if this.isHovered}}
-                    444
-                {{else}}
-                    18%
-                {{/if}}
+                <div class="flex flex-column">
+                    <span class="gh-content-email-stats">
+                        {{#if this.isHovered}}
+                            444
+                        {{else}}
+                            18%
+                        {{/if}}
+                    </span>
+                    <span class="gh-content-entry-meta">
+                        clicks
+                    </span>
+                </div>
             {{/if}}
         </LinkTo>
     {{/if}}
