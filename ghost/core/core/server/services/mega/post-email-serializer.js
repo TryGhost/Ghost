@@ -336,8 +336,10 @@ const PostEmailSerializer = {
 
         // Also replace the links in the HTML version
         if (labs.isSet('emailClicks')) {
-            if ((!options.isBrowserPreview && !options.isTestEmail) || process.env.NODE_ENV === 'development') {
-                content.html = await linkReplacement.service.replaceLinks(content.html, newsletter, postModel);
+            if (settingsCache.get('email_track_clicks')) {
+                if ((!options.isBrowserPreview && !options.isTestEmail) || process.env.NODE_ENV === 'development') {
+                    content.html = await linkReplacement.service.replaceLinks(content.html, newsletter, postModel);
+                }
             }
         }
 

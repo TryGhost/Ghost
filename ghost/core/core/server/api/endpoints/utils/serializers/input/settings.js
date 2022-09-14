@@ -47,6 +47,7 @@ const EDITABLE_SETTINGS = [
     'mailgun_domain',
     'mailgun_base_url',
     'email_track_opens',
+    'email_track_clicks',
     'amp',
     'amp_gtag_id',
     'slack_url',

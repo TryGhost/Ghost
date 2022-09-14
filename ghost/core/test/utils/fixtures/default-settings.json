@@ -360,6 +360,14 @@
             },
             "type": "boolean"
         },
+        "email_track_clicks": {
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
+        },
         "email_verification_required": {
             "defaultValue": "false",
             "validations": {

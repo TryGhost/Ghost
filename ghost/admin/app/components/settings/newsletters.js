@@ -9,6 +9,7 @@ const EU = {flag: '🇪🇺', name: 'EU', baseUrl: 'https://api.eu.mailgun.net/v
 export default class Newsletters extends Component {
     @service config;
     @service settings;
+    @service feature;
 
     // set recipientsSelectValue as a static property because within this
     // component's lifecycle it's not always derived from the settings values.
@@ -67,6 +68,14 @@ export default class Newsletters extends Component {
             event.preventDefault();
         }
         this.settings.set('emailTrackOpens', !this.settings.get('emailTrackOpens'));
+    }
+
+    @action
+    toggleEmailTrackClicks(event) {
+        if (event) {
+            event.preventDefault();
+        }
+        this.settings.set('emailTrackClicks', !this.settings.get('emailTrackClicks'));
     }
 
     @action
