@@ -94,6 +94,14 @@ describe('LinkReplacementService', function () {
                 const replaced = await service.replaceLinks(html, {}, {id: 'post_id'});
                 assert.equal(replaced, expected);
             });
+
+            it('Ignores invalid links', async function () {
+                const html = '<a href="%%{unsubscribe_url}%%">link</a>';
+                const expected = '<a href="%%{unsubscribe_url}%%">link</a>';
+                
+                const replaced = await service.replaceLinks(html, {}, {id: 'post_id'});
+                assert.equal(replaced, expected);
+            });
         });
     });
 });
