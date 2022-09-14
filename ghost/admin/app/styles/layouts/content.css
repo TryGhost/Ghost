@@ -861,7 +861,13 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 .gh-posts-list-item-labs .gh-post-list-clicks,
 .gh-posts-list-item-labs .gh-post-list-opens,
 .gh-posts-list-item-labs .gh-post-list-cta {
-    width: 120px;
+    width: 104px;
+}
+
+.gh-posts-list-item-labs .gh-content-email-stats {
+    margin: 0 0 3px;
+    font-size: 1.5rem;
+    font-weight: 600;
 }
 
 .gh-posts-list-item-labs .gh-btn-outline {
