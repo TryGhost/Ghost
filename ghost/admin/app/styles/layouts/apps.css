@@ -203,7 +203,7 @@
     display: flex;
     align-items: center;
     color: var(--midgrey);
-    font-weight: 300;
+    font-weight: 400;
 }
 
 .apps-configured svg {
@@ -250,6 +250,19 @@
         flex-basis: 70%;
         padding-right: 10px;
     }
+}
+
+.apps-card-app-disabled .apps-card-meta {
+    opacity: 0.4;
+}
+
+.apps-card-app-disabled .apps-card-meta svg {
+    margin-left: 4px;
+    width: 14px;
+}
+
+.apps-card-app-disabled .apps-card-meta path {
+    fill: #292d33;
 }
 
 .apps-card-app-title {
