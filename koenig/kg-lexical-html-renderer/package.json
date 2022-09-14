@@ -25,5 +25,8 @@
     "should": "13.2.3",
     "sinon": "14.0.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@lexical/headless": "^0.4.1",
+    "lexical": "^0.4.1"
+  }
 }

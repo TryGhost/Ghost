@@ -1,6 +1,12 @@
 # Koenig Lexical Html Renderer
 
-Renders a lexical editor state string to a HTML string
+Renders a lexical editor state string to a HTML string.
+
+This library differs from Lexical's own [lexical-html](https://github.com/facebook/lexical/tree/main/packages/lexical-html) package in a few ways:
+
+1. it's output target is not an editor but rendered web pages or emails which means the handling of nodes (especially custom DecoratorNodes) will differ to the node's built-in editor-focused rendering
+2. render output will vary based on supplied options and targets, e.g. when rendering for email the output may use `<table>` elements in place of modern HTML structure
+3. it's primary usage environment is server-side
 
 ## Install
 
@@ -13,6 +19,25 @@ or
 
 ## Usage
 
+Basic usage:
+
+```js
+const LexicalHTMLRenderer = require('@tryghost/kg-lexical-html-renderer');
+const renderer = new Renderer();
+
+const lexicalState = '{...}';
+const html = renderer.render(lexicalState);
+```
+
+Options can be passed in as the second argument to `.render()`.
+
+```js
+const html = renderer.render(lexicalState, {target: 'email'});
+```
+
+| Option   | Values |
+| -------- | ------ |
+| `target` | `'html'` (default), `'email'` |
 
 ## Develop
 

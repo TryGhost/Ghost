@@ -1,1 +1,1 @@
-module.exports = require('./lib/kg-lexical-html-renderer');
+module.exports = require('./lib/lexical-html-renderer');
