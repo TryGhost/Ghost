@@ -10,8 +10,8 @@ const FORMAT_TAG_MAP = {
     superscript: 'SUP'
 };
 
-// Data structure for storing and rendering text content
-// Based around a linked list
+// Builds and renders text content, useful to ensure proper format tag opening/closing
+// and html escaping
 class TextContent {
     constructor() {
         const jsdom = require('jsdom');
