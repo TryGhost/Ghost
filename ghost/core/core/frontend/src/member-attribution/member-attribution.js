@@ -15,6 +15,11 @@ const LIMIT = 15;
 //         "path": "/about/"
 //     },
 //     {
+//         "time": 12341234,
+//         "id": "manually-added-id",
+//         "type": "post",
+//     },
+//     {
 //         "time": 12341235,
 //         "path": "/welcome/"
 //     }
@@ -64,6 +69,28 @@ const LIMIT = 15;
         } else if (firstNotExpiredIndex === -1) {
             // Not a single valid item found, remove all
             history = [];
+        }
+
+        // Do we have attributions in the query string?
+        try {
+            const url = new URL(window.location.href);
+            const params = url.searchParams;
+            if (params.get('attribution_id') && params.get('attribution_type')) {
+                // Add attribution to history before the current path
+                history.push({
+                    time: currentTime,
+                    id: params.get('attribution_id'),
+                    type: params.get('attribution_type')
+                });
+
+                // Remove attribution from query string
+                params.delete('attribution_id');
+                params.delete('attribution_type');
+                url.search = '?' + params.toString();
+                window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+            }
+        } catch (error) {
+            console.error('[Member Attribution] Parsing attribution from querystring failed', error);
         }
 
         const currentPath = window.location.pathname;

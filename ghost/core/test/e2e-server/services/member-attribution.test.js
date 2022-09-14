@@ -21,7 +21,7 @@ describe('Member Attribution Service', function () {
                 const url = urlUtils.createUrl(subdomainRelative, false);
                 const absoluteUrl = urlUtils.createUrl(subdomainRelative, true);
 
-                const attribution = memberAttributionService.service.getAttribution([
+                const attribution = await memberAttributionService.service.getAttribution([
                     {
                         path: url,
                         time: Date.now()
@@ -46,7 +46,7 @@ describe('Member Attribution Service', function () {
                 const post = await models.Post.where('id', id).fetch({require: true});
                 const url = urlService.getUrlByResourceId(post.id, {absolute: false, withSubdirectory: true});
 
-                const attribution = memberAttributionService.service.getAttribution([
+                const attribution = await memberAttributionService.service.getAttribution([
                     {
                         path: url,
                         time: Date.now()
@@ -75,7 +75,7 @@ describe('Member Attribution Service', function () {
                 const urlWithoutSubdirectory = urlService.getUrlByResourceId(post.id, {absolute: false, withSubdirectory: false});
                 const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true, withSubdirectory: true});
 
-                const attribution = memberAttributionService.service.getAttribution([
+                const attribution = await memberAttributionService.service.getAttribution([
                     {
                         path: url,
                         time: Date.now()
@@ -109,7 +109,7 @@ describe('Member Attribution Service', function () {
 
                 const url = urlService.getUrlByResourceId(post.id, {absolute: false, withSubdirectory: true});
 
-                const attribution = memberAttributionService.service.getAttribution([
+                const attribution = await memberAttributionService.service.getAttribution([
                     {
                         path: url,
                         time: Date.now()
@@ -136,7 +136,7 @@ describe('Member Attribution Service', function () {
                 const tag = await models.Tag.where('id', id).fetch({require: true});
                 const url = urlService.getUrlByResourceId(tag.id, {absolute: false, withSubdirectory: true});
 
-                const attribution = memberAttributionService.service.getAttribution([
+                const attribution = await memberAttributionService.service.getAttribution([
                     {
                         path: url,
                         time: Date.now()
@@ -163,7 +163,7 @@ describe('Member Attribution Service', function () {
                 const author = await models.User.where('id', id).fetch({require: true});
                 const url = urlService.getUrlByResourceId(author.id, {absolute: false, withSubdirectory: true});
 
-                const attribution = memberAttributionService.service.getAttribution([
+                const attribution = await memberAttributionService.service.getAttribution([
                     {
                         path: url,
                         time: Date.now()
@@ -200,7 +200,7 @@ describe('Member Attribution Service', function () {
                 const url = urlUtils.createUrl(subdomainRelative, false);
                 const absoluteUrl = urlUtils.createUrl(subdomainRelative, true);
 
-                const attribution = memberAttributionService.service.getAttribution([
+                const attribution = await memberAttributionService.service.getAttribution([
                     {
                         path: url,
                         time: Date.now()
@@ -229,7 +229,7 @@ describe('Member Attribution Service', function () {
                 // Check if we are actually testing with subdirectories
                 should(url).startWith('/subdirectory/');
 
-                const attribution = memberAttributionService.service.getAttribution([
+                const attribution = await memberAttributionService.service.getAttribution([
                     {
                         path: url,
                         time: Date.now()
@@ -263,7 +263,7 @@ describe('Member Attribution Service', function () {
                 // Check if we are actually testing with subdirectories
                 should(url).startWith('/subdirectory/');
 
-                const attribution = memberAttributionService.service.getAttribution([
+                const attribution = await memberAttributionService.service.getAttribution([
                     {
                         path: url,
                         time: Date.now()
@@ -296,7 +296,7 @@ describe('Member Attribution Service', function () {
                 const url = urlService.getUrlByResourceId(post.id, {absolute: false, withSubdirectory: true});
                 const urlWithoutSubdirectory = urlService.getUrlByResourceId(post.id, {absolute: false, withSubdirectory: false});
 
-                const attribution = memberAttributionService.service.getAttribution([
+                const attribution = await memberAttributionService.service.getAttribution([
                     {
                         path: url,
                         time: Date.now()
@@ -324,7 +324,7 @@ describe('Member Attribution Service', function () {
                 const url = urlService.getUrlByResourceId(tag.id, {absolute: false, withSubdirectory: true});
                 const urlWithoutSubdirectory = urlService.getUrlByResourceId(tag.id, {absolute: false, withSubdirectory: false});
 
-                const attribution = memberAttributionService.service.getAttribution([
+                const attribution = await memberAttributionService.service.getAttribution([
                     {
                         path: url,
                         time: Date.now()
@@ -352,7 +352,7 @@ describe('Member Attribution Service', function () {
                 const url = urlService.getUrlByResourceId(author.id, {absolute: false, withSubdirectory: true});
                 const urlWithoutSubdirectory = urlService.getUrlByResourceId(author.id, {absolute: false, withSubdirectory: false});
 
-                const attribution = memberAttributionService.service.getAttribution([
+                const attribution = await memberAttributionService.service.getAttribution([
                     {
                         path: url,
                         time: Date.now()

@@ -3,6 +3,33 @@
 require('./utils');
 const UrlTranslator = require('../lib/url-translator');
 
+const models = {
+    Post: {
+        findOne({id}) {
+            if (id === 'invalid') {
+                return null;
+            }
+            return {id: 'post_id', get: () => 'Title'};
+        }
+    },
+    User: {
+        findOne({id}) {
+            if (id === 'invalid') {
+                return null;
+            }
+            return {id: 'user_id', get: () => 'Title'};
+        }
+    },
+    Tag: {
+        findOne({id}) {
+            if (id === 'invalid') {
+                return null;
+            }
+            return {id: 'tag_id', get: () => 'Title'};
+        }
+    }
+};
+
 describe('UrlTranslator', function () {
     describe('Constructor', function () {
         it('doesn\'t throw', function () {
@@ -10,7 +37,112 @@ describe('UrlTranslator', function () {
         });
     });
 
-    describe('getTypeAndId', function () {
+    describe('getResourceDetails', function () {
+        let translator;
+        before(function () {
+            translator = new UrlTranslator({
+                urlUtils: {
+                    relativeToAbsolute: (t) => {
+                        return 'https://absolute' + t;
+                    },
+                    absoluteToRelative: (t) => {
+                        return t.replace('https://absolute/with-subdirectory', '').replace('https://absolute', '');
+                    }
+                },
+                urlService: {
+                    getUrlByResourceId: (id) => {
+                        return '/path/' + id;
+                    },
+                    getResource: (path) => {
+                        switch (path) {
+                        case '/path/post': return {
+                            config: {type: 'posts'},
+                            data: {id: 'post'}
+                        };
+                        case '/path/tag': return {
+                            config: {type: 'tags'},
+                            data: {id: 'tag'}
+                        };
+                        case '/path/page': return {
+                            config: {type: 'pages'},
+                            data: {id: 'page'}
+                        };
+                        case '/path/author': return {
+                            config: {type: 'authors'},
+                            data: {id: 'author'}
+                        };
+                        }
+                    }
+                },
+                models
+            });
+        });
+
+        it('returns posts for explicit items', async function () {
+            should(await translator.getResourceDetails({id: 'my-post', type: 'post', time: 123})).eql({
+                type: 'post',
+                id: 'my-post',
+                url: '/path/my-post'
+            });
+        });
+
+        it('returns null if explicit resource not found', async function () {
+            should(await translator.getResourceDetails({id: 'invalid', type: 'post', time: 123})).eql(null);
+        });
+
+        it('returns null for invalid item', async function () {
+            should(await translator.getResourceDetails({time: 123})).eql(null);
+        });
+
+        it('returns url type if no path not matching a resource', async function () {
+            should(await translator.getResourceDetails({path: '/test', time: 123})).eql({
+                type: 'url',
+                id: null,
+                url: '/test'
+            });
+        });
+
+        it('strips subdirectory for url types', async function () {
+            should(await translator.getResourceDetails({path: '/with-subdirectory/test', time: 123})).eql({
+                type: 'url',
+                id: null,
+                url: '/test'
+            });
+        });
+
+        it('returns post type if matching resource', async function () {
+            should(await translator.getResourceDetails({path: '/with-subdirectory/path/post', time: 123})).eql({
+                type: 'post',
+                id: 'post',
+                url: '/path/post'
+            });
+        });
+
+        it('returns page type if matching resource', async function () {
+            should(await translator.getResourceDetails({path: '/with-subdirectory/path/page', time: 123})).eql({
+                type: 'page',
+                id: 'page',
+                url: '/path/page'
+            });
+        });
+    });
+
+    describe('getUrlTitle', function () {
+        let translator;
+        before(function () {
+            translator = new UrlTranslator({});
+        });
+
+        it('returns homepage', function () {
+            should(translator.getUrlTitle('/')).eql('homepage');
+        });
+
+        it('returns url', function () {
+            should(translator.getUrlTitle('/url')).eql('/url');
+        });
+    });
+
+    describe('getTypeAndIdFromPath', function () {
         let translator;
         before(function () {
             translator = new UrlTranslator({
@@ -40,35 +172,35 @@ describe('UrlTranslator', function () {
         });
 
         it('returns posts', function () {
-            should(translator.getTypeAndId('/post')).eql({
+            should(translator.getTypeAndIdFromPath('/post')).eql({
                 type: 'post',
                 id: 'post'
             });
         });
 
         it('returns pages', function () {
-            should(translator.getTypeAndId('/page')).eql({
+            should(translator.getTypeAndIdFromPath('/page')).eql({
                 type: 'page',
                 id: 'page'
             });
         });
 
         it('returns authors', function () {
-            should(translator.getTypeAndId('/author')).eql({
+            should(translator.getTypeAndIdFromPath('/author')).eql({
                 type: 'author',
                 id: 'author'
             });
         });
 
         it('returns tags', function () {
-            should(translator.getTypeAndId('/tag')).eql({
+            should(translator.getTypeAndIdFromPath('/tag')).eql({
                 type: 'tag',
                 id: 'tag'
             });
         });
 
         it('returns undefined', function () {
-            should(translator.getTypeAndId('/other')).eql(undefined);
+            should(translator.getTypeAndIdFromPath('/other')).eql(undefined);
         });
     });
 
@@ -81,32 +213,7 @@ describe('UrlTranslator', function () {
                         return '/path';
                     }
                 },
-                models: {
-                    Post: {
-                        findOne({id}) {
-                            if (id === 'invalid') {
-                                return null;
-                            }
-                            return {id: 'post_id', get: () => 'Title'};
-                        }
-                    },
-                    User: {
-                        findOne({id}) {
-                            if (id === 'invalid') {
-                                return null;
-                            }
-                            return {id: 'user_id', get: () => 'Title'};
-                        }
-                    },
-                    Tag: {
-                        findOne({id}) {
-                            if (id === 'invalid') {
-                                return null;
-                            }
-                            return {id: 'tag_id', get: () => 'Title'};
-                        }
-                    }
-                }
+                models
             });
         });
 
