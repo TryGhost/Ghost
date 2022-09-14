@@ -2392,3 +2392,87 @@ p.gh-members-import-errordetail:first-of-type {
         padding-right: 8px;
     }
 }
+
+/* This needs to be moved once the flag is removed */
+.gh-cp-membertier-attribution.gh-membertier-subscription {
+    display: block !important;
+}
+
+.gh-cp-membertier-attribution {
+    position: relative;
+}
+
+.gh-cp-membertier-attribution .gh-tier-card-header {
+    padding-bottom: 16px;
+}
+
+.gh-cp-membertier-attribution .tier-actions-menu {
+    top: calc(100% + 6px);
+}
+
+.gh-cp-membertier-attribution .gh-tier-card-price {
+    border: none !important;
+    background: #f5f6f6;
+    padding: 10px !important;
+    border-radius: 6px;
+}
+
+.gh-cp-membertier-attribution .amount {
+    font-weight: bold !important;
+    font-size: 2.4rem !important;
+}
+
+.gh-cp-membertier-attribution .currency-symbol {
+    font-weight: bold !important;
+    font-size: 1.4rem !important;
+}
+
+.gh-cp-membertier-attribution .gh-membertier-name {
+    font-weight: bold !important;
+    font-size: 2rem !important;
+}
+
+.gh-cp-membertier-attribution .gh-badge {
+    margin-bottom: -1px !important;
+    margin-left: 8px;
+}
+
+.gh-cp-membertier-attribution .action-menu {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+}
+
+.gh-cp-membertier-attribution span.archived {
+    background: #e4e8ec;
+    color: #7c8b9a;
+    font-size: 1.2rem;
+}
+
+.gh-cp-membertier-attribution .gh-membertier-advanced {
+    padding-top: 16px;
+    border-top:1px solid #ECEEF0;
+}
+
+.gh-cp-membertier-attribution .gh-membertier-advanced h4 {
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    font-weight: 500;
+    color: #7F8B99;
+    margin-bottom: 2px;
+}
+
+.gh-cp-membertier-attribution .gh-membertier-details p {
+    margin: 0;
+}
+
+.gh-cp-membertier-attribution .gh-membertier-details span, .gh-cp-membertier-attribution .gh-membertier-details a {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #15171A;
+}
+
+.gh-cp-membertier-attribution .gh-cp-membertier-renewal {
+    color: #7c8b9a;
+}
