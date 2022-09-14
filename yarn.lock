@@ -3495,7 +3495,7 @@
     lodash "^4.17.21"
     luxon "^1.26.0"
 
-"@tryghost/logging@2.2.3", "@tryghost/logging@2.2.4", "@tryghost/logging@2.3.0", "@tryghost/logging@^2.2.3":
+"@tryghost/logging@2.2.3", "@tryghost/logging@2.3.0", "@tryghost/logging@^2.2.3":
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-2.3.0.tgz#8a55d01ef058461d0e84fa02f403cb1e229afbd7"
   integrity sha512-OPGXCmRW4UN28KSGfIcSTP6VE4L+Cfn9Q5iE/cYa1QwO5ykKPirOmh98WH+9PhzxLz/5dZvXeAxqXj5w9dphEA==
@@ -15002,46 +15002,26 @@ kleur@^4.0.0, kleur@^4.1.0:
   resolved "https://registry.yarnpkg.com/kleur/-/kleur-4.1.5.tgz#95106101795f7050c6c650f350c683febddb1780"
   integrity sha512-o+NO+8WrRiQEE4/7nwRJhN1HWpVmJm511pBHUxPLtp0BUISzlBplORYSmTclCnJvQq2tKu/sgl3xVpkc7ZWuQQ==
 
-knex-migrator@5.0.4:
-  version "5.0.4"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-5.0.4.tgz#1e2a0530bffdb432c4d9c29a1fde9171d82a3565"
-  integrity sha512-/d3cmt5KxGFVSAHZF34vIYhy0wV2RlL+zT/ROTciZTBADcLFIahDCQ9IzwAZjJbKbgOpAGL0mOqjSu64M3R6wQ==
+knex-migrator@5.0.5:
+  version "5.0.5"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-5.0.5.tgz#29a4ab39efac74e2f65d6164c54ba7a4a2cb8608"
+  integrity sha512-+rjHfZ3fjsQhB/NWSKKy7sAWmVOKDaZEtMqtwgLLq79hclyaRzW8ft59G0nmm1gRhet7pi+mlAVxDmMW3a2KXg==
   dependencies:
     "@tryghost/database-info" "0.3.9"
     "@tryghost/errors" "1.2.15"
-    "@tryghost/logging" "2.2.4"
+    "@tryghost/logging" "2.3.0"
     bluebird "3.7.2"
     commander "5.1.0"
     compare-ver "2.0.2"
     debug "4.3.4"
-    knex "2.2.0"
+    knex "2.3.0"
     lodash "4.17.21"
     moment "2.24.0"
     mysql2 "2.3.3"
     nconf "0.12.0"
     resolve "1.22.1"
   optionalDependencies:
-    sqlite3 "5.0.11"
-
-knex@2.2.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/knex/-/knex-2.2.0.tgz#86a3176924d37303b3f9ff7f70087418c263ce7a"
-  integrity sha512-yhm1Qe9Ok0TeXBq3nNHqZYJPrQ4Iw2tq9k/HxjrZ/EWec2ifOjJlkNHr26v8cQrWtk5iG3iwfUazTIWy+VKG5g==
-  dependencies:
-    colorette "2.0.19"
-    commander "^9.1.0"
-    debug "4.3.4"
-    escalade "^3.1.1"
-    esm "^3.2.25"
-    get-package-type "^0.1.0"
-    getopts "2.3.0"
-    interpret "^2.2.0"
-    lodash "^4.17.21"
-    pg-connection-string "2.5.0"
-    rechoir "^0.8.0"
-    resolve-from "^5.0.0"
-    tarn "^3.0.2"
-    tildify "2.0.0"
+    sqlite3 "5.1.0"
 
 knex@2.3.0:
   version "2.3.0"
@@ -20966,6 +20946,17 @@ sqlite3@5.0.11:
   version "5.0.11"
   resolved "https://registry.yarnpkg.com/sqlite3/-/sqlite3-5.0.11.tgz#102c835d70be66da9d95a383fd6ea084a082ef7f"
   integrity sha512-4akFOr7u9lJEeAWLJxmwiV43DJcGV7w3ab7SjQFAFaTVyknY3rZjvXTKIVtWqUoY4xwhjwoHKYs2HDW2SoHVsA==
+  dependencies:
+    "@mapbox/node-pre-gyp" "^1.0.0"
+    node-addon-api "^4.2.0"
+    tar "^6.1.11"
+  optionalDependencies:
+    node-gyp "8.x"
+
+sqlite3@5.1.0:
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/sqlite3/-/sqlite3-5.1.0.tgz#d82bd1f85668453904ef9a6f0a6b13c70b53c837"
+  integrity sha512-/cZl9DfeSQMWR5g9SdluHGt+YL3URetjtvgv1XPQx7rzXOFdZx30EnZj709wCEIznjjzZdo5Lmt5GUeNyGgUbQ==
   dependencies:
     "@mapbox/node-pre-gyp" "^1.0.0"
     node-addon-api "^4.2.0"
