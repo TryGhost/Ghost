@@ -166,7 +166,10 @@
                                         {{#if sub.trialUntil}}
                                             <span class="gh-cp-membertier-pricelabel">Free trial </span>
                                         {{else}}
-                                            <span class="gh-cp-membertier-pricelabel">{{sub.price.nickname}} </span>
+                                            {{#if (or (eq sub.price.nickname "Monthly") (eq sub.price.nickname "Yearly"))}}
+                                            {{else}}
+                                                <span class="gh-cp-membertier-pricelabel">{{sub.price.nickname}}</span><span class="gh-cp-membertier-renewal"> &ndash;</span>
+                                            {{/if}}
                                         {{/if}}
 
                                         {{#if (eq sub.status "canceled")}}
