@@ -1117,6 +1117,45 @@
     background: var(--main-color-content-greybg);
 }
 
+.gh-canvas-header.stacked {
+    padding-top: 36px; 
+}
+
+.gh-canvas-header.stacked .gh-canvas-breadcrumb {
+    display: flex;
+    align-items: center;
+    padding: 6px 0;
+    color: var(--darkgrey-l1);
+    font-size: 1.35rem;
+    font-weight: 500;
+    letter-spacing: .2px;
+    background: none;
+}
+
+.gh-canvas-header.stacked .gh-canvas-breadcrumb svg {
+    display: block;
+    width: 9px;
+    height: 9px;
+    margin: 1px 8px 0 0;
+    transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
+}
+
+.gh-canvas-header.stacked .gh-canvas-breadcrumb svg path {
+    stroke: var(--darkgrey-l1);
+}
+
+.gh-canvas-header.stacked .gh-canvas-breadcrumb:hover svg {
+    transform: translateX(-3px)
+}
+
+.gh-canvas-header.stacked .gh-canvas-breadcrumb:hover svg path {
+    stroke: var(--black);
+}
+
+.gh-canvas-header.stacked .gh-canvas-breadcrumb:hover {
+    color: var(--black);
+}
+
 .gh-main-grey-gradient .gh-canvas-header {
     background: transparent;
     position: relative;
@@ -1129,6 +1168,12 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+.gh-canvas-header.stacked .gh-canvas-header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    height: unset;
 }
 
 .gh-main-width {

@@ -1,59 +1,60 @@
 <section class="gh-canvas">
 
-    <GhCanvasHeader class="gh-canvas-header">
-        <h2 class="gh-canvas-title">
-            <LinkTo @route="posts">Posts</LinkTo>
-            <span>{{svg-jar "arrow-right"}}</span>
-            Stats
+    <GhCanvasHeader class="gh-canvas-header stacked gh-post-stats-header">
+        <LinkTo @route="posts" class="gh-canvas-breadcrumb">{{svg-jar "arrow-left-small"}} Posts</LinkTo>
+        <h2 class="gh-canvas-title gh-post-title">
+            {{this.post.title}}
         </h2>
+        <p class="gh-post-stats-meta">Published and sent on 12 Feb 2022 at 11:57 to free subscribers</p>
     </GhCanvasHeader>
 
-    <div class="gh-post-stats-box grey">
-        <p class="gh-post-stats-title">{{this.post.title}}</p>
-        <p class="gh-post-stats-meta">Published and sent on 12 Feb 2022 at 11:57 to free subscribers</p>
-        <div class="gh-post-stats">
-            <div class="gh-post-stats-item">
-                <h3>20.251</h3>
-                <p>Sent</p>
-            </div>
-            <div class="gh-post-stats-item">
-                <h3>60%</h3>
-                <p><strong>12.200</strong> opened</p>
-            </div>
-            <div class="gh-post-stats-item">
-                <h3>15%</h3>
-                <p><strong>3.038</strong> clicked</p>
-            </div>
-            <div class="gh-post-stats-item">
-                <h3>16</h3>
-                <p>Free signups</p>
-            </div>
-            <div class="gh-post-stats-item">
-                <h3>10</h3>
-                <p>Paid conversions</p>
-            </div>
+    <h4 class="gh-main-section-header small bn">
+        Engagement
+    </h4>
+    <div class="gh-post-stats-box">
+        <div class="gh-post-stats-item">
+            <h3>20.251</h3>
+            <p>Sent</p>
+        </div>
+        <div class="gh-post-stats-item">
+            <h3>60%</h3>
+            <p><strong>12.200</strong> opened</p>
+        </div>
+        <div class="gh-post-stats-item">
+            <h3>15%</h3>
+            <p><strong>3.038</strong> clicked</p>
+        </div>
+        <div class="gh-post-stats-item">
+            <h3>16</h3>
+            <p>Free signups</p>
+        </div>
+        <div class="gh-post-stats-item">
+            <h3>10</h3>
+            <p>Paid conversions</p>
         </div>
     </div>
 
-    <div class="gh-post-stats-box gh-links-list">
-        <div class="gh-links-list-header">
-            Link clicks
-        </div>
-        <div class="gh-links-list-item">
-            <a href="#">https://vanschneider.com/blog/#/portal/signup</a>
-            <p class="gh-links-list-clicks">18</p>
-        </div>
-        <div class="gh-links-list-item">
-            <a href="#">https://vanschneider.com/blog/an-unsolicited-portfolio-review-featuring-2/</a>
-            <p class="gh-links-list-clicks">16</p>
-        </div>
-        <div class="gh-links-list-item">
-            <a href="#">https://vanschneider.com/blog/#/portal/unsubscribe</a>
-            <p class="gh-links-list-clicks">3</p>
-        </div>
-        <div class="gh-links-list-item">
-            <a href="#">https://vanschneider.com/blog/#/portal/signin</a>
-            <p class="gh-links-list-clicks">0</p>
+    <h4 class="gh-main-section-header small bn">
+        Link clicks
+    </h4>
+    <div class="gh-post-stats-box column">
+        <div class="gh-links-list">
+            <div class="gh-links-list-item">
+                <a href="#">https://vanschneider.com/blog/#/portal/signup</a>
+                <p class="gh-links-list-clicks">18</p>
+            </div>
+            <div class="gh-links-list-item">
+                <a href="#">https://vanschneider.com/blog/an-unsolicited-portfolio-review-featuring-2/</a>
+                <p class="gh-links-list-clicks">16</p>
+            </div>
+            <div class="gh-links-list-item">
+                <a href="#">https://vanschneider.com/blog/#/portal/unsubscribe</a>
+                <p class="gh-links-list-clicks">3</p>
+            </div>
+            <div class="gh-links-list-item">
+                <a href="#">https://vanschneider.com/blog/#/portal/signin</a>
+                <p class="gh-links-list-clicks">0</p>
+            </div>
         </div>
     </div>
     
