@@ -7,6 +7,7 @@
  */
 
 class Attribution {
+    /** @type {import('./url-translator')} */
     #urlTranslator;
 
     /**
@@ -74,6 +75,9 @@ class Attribution {
  * Convert a UrlHistory to an attribution object
  */
 class AttributionBuilder {
+    /** @type {import('./url-translator')} */
+    urlTranslator;
+
     /**
      */
     constructor({urlTranslator}) {
@@ -93,10 +97,10 @@ class AttributionBuilder {
 
     /**
      * Last Post Algorithm™️
-     * @param {UrlHistory} history
-     * @returns {Attribution}
+     * @param {import('./history').UrlHistoryArray} history
+     * @returns {Promise<Attribution>}
      */
-    getAttribution(history) {
+    async getAttribution(history) {
         if (history.length === 0) {
             return this.build({
                 id: null,
@@ -105,51 +109,42 @@ class AttributionBuilder {
             });
         }
 
-        // Convert history to subdirectory relative (instead of root relative)
-        // Note: this is ordered from recent to oldest!
-        const subdirectoryRelativeHistory = [];
-        for (const item of history) {
-            subdirectoryRelativeHistory.push({
-                ...item,
-                path: this.urlTranslator.stripSubdirectoryFromPath(item.path)
-            });
-        }
-
-        // TODO: if something is wrong with the attribution script, and it isn't loading
-        // we might get out of date URLs
-        // so we need to check the time of each item and ignore items that are older than 24u here!
+        // Note: history iterator is ordered from recent to oldest!
 
         // Start at the end. Return the first post we find
-        for (const item of subdirectoryRelativeHistory) {
-            const typeId = this.urlTranslator.getTypeAndId(item.path);
+        const resources = [];
+        for (const item of history) {
+            const resource = await this.urlTranslator.getResourceDetails(item);
 
-            if (typeId && typeId.type === 'post') {
-                return this.build({
-                    url: item.path,
-                    ...typeId
-                });
+            if (resource && resource.type === 'post') {
+                return this.build(resource);
+            }
+
+            // Store to avoid that we need to look it up again
+            if (resource) {
+                resources.push(resource);
             }
         }
 
         // No post found?
-        // Try page or tag or author
-        for (const item of subdirectoryRelativeHistory) {
-            const typeId = this.urlTranslator.getTypeAndId(item.path);
-
-            if (typeId) {
-                return this.build({
-                    url: item.path,
-                    ...typeId
-                });
+        // Return first with an id (page, tag, author)
+        for (const resource of resources) {
+            if (resource.id) {
+                return this.build(resource);
             }
         }
 
-        // Default to last URL
-        // In the future we might decide to exclude certain URLs, that can happen here
+        // No post/page/tag/author found?
+        // Return the last path that was visited
+        if (resources.length > 0) {
+            return this.build(resources[0]);
+        }
+
+        // We only have history items without a path that have invalid ids
         return this.build({
             id: null,
-            url: subdirectoryRelativeHistory[0].path,
-            type: 'url'
+            url: null,
+            type: null
         });
     }
 }

@@ -34,6 +34,29 @@ describe('UrlHistory', function () {
             }],
             [{
                 time: 123
+            }],
+            [{
+                time: 123,
+                type: 'post'
+            }],
+            [{
+                time: 123,
+                id: 'id'
+            }],
+            [{
+                time: 123,
+                type: 123,
+                id: 'test'
+            }],
+            [{
+                time: 123,
+                type: 'invalid',
+                id: 'test'
+            }],
+            [{
+                time: 123,
+                type: 'post',
+                id: 123
             }]
         ];
 
@@ -49,6 +72,11 @@ describe('UrlHistory', function () {
             [{
                 time: Date.now(),
                 path: '/test'
+            }],
+            [{
+                time: Date.now(),
+                type: 'post',
+                id: '123'
             }]
         ];
         for (const input of inputs) {
@@ -64,6 +92,10 @@ describe('UrlHistory', function () {
         }, {
             time: Date.now() - 1000 * 60 * 60 * 23,
             path: '/not-old'
+        }, {
+            time: Date.now() - 1000 * 60 * 60 * 25,
+            type: 'post',
+            id: 'old'
         }];
         const history = UrlHistory.create(input);
         should(history.history).eql([input[1]]);

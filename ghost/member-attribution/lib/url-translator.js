@@ -52,8 +52,45 @@ class UrlTranslator {
         return url === '/' ? 'homepage' : url;
     }
 
-    getTypeAndId(url) {
-        const resource = this.urlService.getResource(url);
+    /**
+     * Get the resource type and ID from a URLHistory item that was added by the frontend attribution script
+     * @param {import('./history').UrlHistoryItem} item 
+     * @returns {Promise<{type: string, id: string | null, url: string}|null>} Returns null if the item is invalid
+     */
+    async getResourceDetails(item) {
+        if (item.type) {
+            const resource = await this.getResourceById(item.id, item.type);
+            if (resource) {
+                return {
+                    type: item.type,
+                    id: item.id,
+                    url: this.getUrlByResourceId(item.id, {absolute: false})
+                };
+            }
+
+            // Invalid id: ignore
+            return null;
+        }
+
+        if (!item.path) {
+            return null;
+        }
+
+        const path = this.stripSubdirectoryFromPath(item.path);
+        return {
+            type: 'url',
+            id: null,
+            ...this.getTypeAndIdFromPath(path),
+            url: path
+        };
+    }
+
+    /**
+     * Get the resource type and ID from a path that was visited on the site
+     * @param {string} path (excluding subdirectory)
+     */
+    getTypeAndIdFromPath(path) {
+        const resource = this.urlService.getResource(path);
         if (!resource) {
             return;
         }

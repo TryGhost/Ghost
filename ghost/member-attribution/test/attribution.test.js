@@ -12,29 +12,57 @@ describe('AttributionBuilder', function () {
         now = Date.now();
         attributionBuilder = new AttributionBuilder({
             urlTranslator: {
-                getTypeAndId(path) {
+                getResourceDetails(item) {
+                    if (!item.path) {
+                        if (item.id === 'invalid') {
+                            return null;
+                        }
+
+                        return {
+                            id: item.id,
+                            type: item.type,
+                            url: `/${item.type}/${item.id}`
+                        };
+                    }
+
+                    const path = this.stripSubdirectoryFromPath(item.path);
+
                     if (path === '/my-post') {
                         return {
                             id: 123,
-                            type: 'post'
+                            type: 'post',
+                            url: path
                         };
                     }
                     if (path === '/my-page') {
                         return {
                             id: 845,
-                            type: 'page'
+                            type: 'page',
+                            url: path
                         };
                     }
-                    return;
+                    return {
+                        id: null,
+                        type: 'url',
+                        url: path
+                    };
                 },
-                getResourceById(id) {
+                getResourceById(id, type) {
                     if (id === 'invalid') {
                         return null;
                     }
                     return {
                         id,
-                        get() {
-                            return 'Title';
+                        get(prop) {
+                            if (prop === 'title' && type === 'author') {
+                                // Simulate an author doesn't have a title
+                                return undefined;
+                            }
+                            if (id === 'no-props') {
+                                // Simulate a model without properties for branch coverage
+                                return undefined;
+                            }
+                            return prop;
                         }
                     };
                 },
@@ -57,55 +85,76 @@ describe('AttributionBuilder', function () {
         });
     });
 
-    it('Returns empty if empty history', function () {
+    it('Returns empty if empty history', async function () {
         const history = UrlHistory.create([]);
-        should(attributionBuilder.getAttribution(history)).match({id: null, type: null, url: null});
+        should(await attributionBuilder.getAttribution(history)).match({id: null, type: null, url: null});
     });
 
-    it('Returns last url', function () {
+    it('Returns last url', async function () {
         const history = UrlHistory.create([{path: '/dir/not-last', time: now + 123}, {path: '/dir/test/', time: now + 123}]);
-        should(attributionBuilder.getAttribution(history)).match({type: 'url', id: null, url: '/test/'});
+        should(await attributionBuilder.getAttribution(history)).match({type: 'url', id: null, url: '/test/'});
     });
 
-    it('Returns last post', function () {
+    it('Returns last post', async function () {
         const history = UrlHistory.create([
             {path: '/dir/my-post', time: now + 123},
             {path: '/dir/test', time: now + 124},
             {path: '/dir/unknown-page', time: now + 125}
         ]);
-        should(attributionBuilder.getAttribution(history)).match({type: 'post', id: 123, url: '/my-post'});
+        should(await attributionBuilder.getAttribution(history)).match({type: 'post', id: 123, url: '/my-post'});
     });
 
-    it('Returns last post even when it found pages', function () {
+    it('Returns last post even when it found pages', async function () {
         const history = UrlHistory.create([
             {path: '/dir/my-post', time: now + 123},
             {path: '/dir/my-page', time: now + 124},
             {path: '/dir/unknown-page', time: now + 125}
         ]);
-        should(attributionBuilder.getAttribution(history)).match({type: 'post', id: 123, url: '/my-post'});
+        should(await attributionBuilder.getAttribution(history)).match({type: 'post', id: 123, url: '/my-post'});
     });
 
-    it('Returns last page if no posts', function () {
+    it('Returns last page if no posts', async function () {
         const history = UrlHistory.create([
             {path: '/dir/other', time: now + 123},
             {path: '/dir/my-page', time: now + 124},
             {path: '/dir/unknown-page', time: now + 125}
         ]);
-        should(attributionBuilder.getAttribution(history)).match({type: 'page', id: 845, url: '/my-page'});
+        should(await attributionBuilder.getAttribution(history)).match({type: 'page', id: 845, url: '/my-page'});
     });
 
-    it('Returns all null for invalid histories', function () {
-        const history = UrlHistory.create('invalid');
-        should(attributionBuilder.getAttribution(history)).match({
+    it('Returns last post via id', async function () {
+        const history = UrlHistory.create([
+            {path: '/dir/other', time: now + 123},
+            {id: '123', type: 'post', time: now + 124},
+            {path: '/dir/unknown-page', time: now + 125}
+        ]);
+        should(await attributionBuilder.getAttribution(history)).match({type: 'post', id: '123', url: '/post/123'});
+    });
+
+    it('Returns all null if only invalid ids', async function () {
+        const history = UrlHistory.create([
+            {id: 'invalid', type: 'post', time: now + 124},
+            {id: 'invalid', type: 'post', time: now + 124}
+        ]);
+        should(await attributionBuilder.getAttribution(history)).match({
             type: null,
             id: null,
             url: null
         });
     });
 
-    it('Returns all null for empty histories', function () {
+    it('Returns all null for invalid histories', async function () {
+        const history = UrlHistory.create('invalid');
+        should(await attributionBuilder.getAttribution(history)).match({
+            type: null,
+            id: null,
+            url: null
+        });
+    });
+
+    it('Returns all null for empty histories', async function () {
         const history = UrlHistory.create([]);
-        should(attributionBuilder.getAttribution(history)).match({
+        should(await attributionBuilder.getAttribution(history)).match({
             type: null,
             id: null,
             url: null
@@ -117,7 +166,25 @@ describe('AttributionBuilder', function () {
             type: 'post',
             id: '123',
             url: 'https://absolute/dir/path',
-            title: 'Title'
+            title: 'title'
+        });
+    });
+
+    it('Returns author resource', async function () {
+        should(await attributionBuilder.build({type: 'author', id: '123', url: '/author'}).fetchResource()).match({
+            type: 'author',
+            id: '123',
+            url: 'https://absolute/dir/path',
+            title: 'name'
+        });
+    });
+
+    it('Returns default url title for resource if no title or name', async function () {
+        should(await attributionBuilder.build({type: 'post', id: 'no-props', url: '/post'}).fetchResource()).match({
+            type: 'post',
+            id: 'no-props',
+            url: 'https://absolute/dir/path',
+            title: '/post'
         });
     });
 

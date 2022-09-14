@@ -1,12 +1,19 @@
 /**
  * @typedef {Object} UrlHistoryItem
- * @prop {string} path
+ * @prop {string} [path]
+ * @prop {string} [id]
+ * @prop {string} [type]
  * @prop {number} time
  */
 
 /**
  * @typedef {UrlHistoryItem[]} UrlHistoryArray
  */
+
+/**
+ * Types allowed to add in the URLHistory manually
+ */
+const ALLOWED_TYPES = ['post'];
 
 /**
  * Represents a validated history
@@ -39,7 +46,12 @@ class UrlHistory {
      */
     static isValidHistory(history) {
         for (const item of history) {
-            if (typeof item?.path !== 'string' || !Number.isSafeInteger(item?.time)) {
+            const isValidIdEntry = typeof item?.id === 'string' && typeof item?.type === 'string' && ALLOWED_TYPES.includes(item.type);
+            const isValidPathEntry = typeof item?.path === 'string';
+
+            const isValidEntry = isValidPathEntry || isValidIdEntry;
+
+            if (!isValidEntry || !Number.isSafeInteger(item?.time)) {
                 return false;
             }
         }
