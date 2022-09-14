@@ -12,23 +12,33 @@
                 {{@post.title}} {{svg-jar "external" class="gh-post-list-external"}}
             </h3>
             {{#unless @hideAuthor }}
-                <p>
-                    <span class="gh-content-entry-meta">
-                        By <span class="midgrey-l2 fw5">{{post-author-names @post}}</span>
+                <p class="gh-content-entry-meta">
+                    <span class="gh-content-entry-author">
+                        By {{post-author-names @post}}
 
                         {{#if @post.primaryTag}}
                             in <span class="midgrey-l2 fw5">{{@post.primaryTag.name}}</span>
                         {{/if}}
 
-                        • <span data-tooltip="{{gh-format-post-time @post.updatedAtUTC "D MMM YYYY"}}">{{gh-format-post-time @post.updatedAtUTC draft=true}}</span>
-
+                        •
+                    </span>
+                    <span class="gh-content-entry-date">
+                        {{#if this.isHovered}}
+                            {{gh-format-post-time @post.updatedAtUTC "D MMM YYYY"}}
+                        {{else}}
+                            {{gh-format-post-time @post.updatedAtUTC draft=true}}
+                        {{/if}}
                     </span>
                 </p>
-                <p>
-                    <span class="gh-content-status-published nowrap">
+                <p class="gh-content-entry-status">
+                    <span class="published">
                         Published
                         {{#if @post.hasEmail}}
-                            &amp; Sent
+                            {{#if isHovered}}
+                                and sent to 2,467 free subscribers
+                            {{else}}
+                                and sent
+                            {{/if}}
                         {{/if}}
                     </span>
                 </p>
@@ -41,39 +51,55 @@
             </h3>
             {{#unless @hideAuthor }}
                 <p class="gh-content-entry-meta">
-                    By {{post-author-names @post}}
+                    <span class="gh-content-entry-author">
+                        By {{post-author-names @post}}
 
-                    {{#if @post.primaryTag}}
-                        in {{@post.primaryTag.name}}
-                    {{/if}}
-
-                    • <span data-tooltip="{{gh-format-post-time @post.updatedAtUTC "D MMM YYYY"}}">{{gh-format-post-time @post.updatedAtUTC draft=true}}</span>
+                        {{#if @post.primaryTag}}
+                            in <span class="midgrey-l2 fw5">{{@post.primaryTag.name}}</span>
+                        {{/if}}
+                        • 
+                    </span>
+                    <span class="gh-content-entry-date">
+                        {{#if this.isHovered}}
+                            {{gh-format-post-time @post.updatedAtUTC "D MMM YYYY"}}
+                        {{else}}
+                            {{gh-format-post-time @post.updatedAtUTC draft=true}}
+                        {{/if}}
+                    </span>
                 </p>
-                <p class="gh-content-entry-meta">
+                <p class="gh-content-entry-status">
                     {{#if @post.isScheduled}}
-                        <span class="gh-content-status scheduled" title="Scheduled" data-tooltip="To be published {{if @post.newsletter "& sent at "}}{{capitalize this.scheduledText}} to {{@post.emailSegment}} members">
+                        <span class="scheduled" title="Scheduled" data-tooltip="To be published {{if @post.newsletter "& sent at "}}{{capitalize this.scheduledText}} to {{@post.emailSegment}} members">
                             Scheduled
                         </span>
                     {{/if}}
 
                     {{#if @post.isDraft}}
-                        <span class="gh-content-status draft">
+                        <span class="draft">
                             Draft
                         </span>
                     {{/if}}
 
                     {{#if @post.isPublished}}
-                        <span class="gh-content-status published">
+                        <span class="published">
                             Published
                             {{#if @post.hasEmail}}
-                                and sent
+                                {{#if isHovered}}
+                                    and sent to 2,467 free subscribers
+                                {{else}}
+                                    and sent
+                                {{/if}}
                             {{/if}}
                         </span>
                     {{/if}}
 
                     {{#if @post.isSent}}
-                        <span class="gh-content-status sent">
-                            Sent
+                        <span class="sent">
+                            {{#if isHovered}}
+                                Sent to 2,467 free subscribers
+                            {{else}}
+                                Sent
+                            {{/if}}
                         </span>
                     {{/if}}
                 </p>
@@ -95,28 +121,32 @@
                     {{else}}
                         <span class="darkgrey fw5 gh-content-email-stats">
                             {{#if this.isHovered}}
-                                {{format-number @post.email.openedCount}}
+                                1,283
                             {{else}}
-                                {{@post.email.openRate}}%&nbsp;
+                                52%
                             {{/if}}
                         </span>
                     {{/if}}
                     <span class="midgrey-l2 fw4 gh-content-email-stats-mobile">{{@post.email.openRate}}% opens</span>
                 </div>
-            {{else}}
-                <span class="gh-list-nodata">&mdash;</span>
             {{/if}}
         </LinkTo>
 
         {{!-- Clicks column --}}
         <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-clicks">
-            <span class="gh-list-nodata">&mdash;</span>
+            {{#if (and @post.email.trackOpens (eq @post.email.status "submitted"))}}
+                {{#if this.isHovered}}
+                    444
+                {{else}}
+                    18%
+                {{/if}}
+            {{/if}}
         </LinkTo>
     {{/if}}
 
     {{!-- Button column --}}
     <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-cta">
-        {{#if @post.isPublished}}
+        {{#if (or @post.isSent @post.isPublished)}}
             <LinkTo @route="posts.analytics" @model={{@post}} class="gh-btn gh-btn-outline gh-btn-icon">
                 <span>
                     {{svg-jar "stats" class="stats"}} Stats
