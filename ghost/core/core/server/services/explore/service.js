@@ -46,11 +46,13 @@ module.exports = class ExploreService {
             }
         };
 
-        const mostRecentlyPublishedPost = await this.PostsService.getMostRecentlyPublishedPost();
-        exploreProperties.most_recently_published_at = mostRecentlyPublishedPost?.get('published_at') || null;
+        const mostRecentlyPublishedPost = await this.PostsService.stats.getMostRecentlyPublishedPostDate();
+        const totalPostsPublished = await this.PostsService.stats.getTotalPostsPublished();
+        exploreProperties.most_recently_published_at = mostRecentlyPublishedPost ?? null;
+        exploreProperties.total_posts_published = totalPostsPublished ?? null;
 
         const owner = await this.UserModel.findOne({role: 'Owner', status: 'all'});
-        exploreProperties.owner_email = owner?.get('email') || null;
+        exploreProperties.owner_email = owner?.get('email') ?? null;
 
         return exploreProperties;
     }
