@@ -1789,7 +1789,7 @@ p.theme-validation-details {
     width: 9px;
     height: 9px;
     margin: 1px 8px 0 0;
-    transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);;
+    transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
 }
 
 .gh-nav-menu-back-button svg path {
