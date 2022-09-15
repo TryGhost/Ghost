@@ -7,7 +7,7 @@ const {stringMatching, anyEtag, anyUuid, anyStringNumber} = matchers;
 const models = require('../../../core/server/models');
 const {anyErrorId} = matchers;
 
-const CURRENT_SETTINGS_COUNT = 67;
+const CURRENT_SETTINGS_COUNT = 68;
 
 const settingsMatcher = {};
 
@@ -27,9 +27,9 @@ const matchSettingsArray = (length) => {
         settingsArray[25] = publicHashSettingMatcher;
     }
 
-    if (length > 56) {
+    if (length > 57) {
         // Item at index 56 is the lab settings, which changes as we add and remove features
-        settingsArray[56] = labsSettingMatcher;
+        settingsArray[57] = labsSettingMatcher;
     }
 
     return settingsArray;
