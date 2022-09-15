@@ -10,6 +10,7 @@ export default class ExploreFeed extends Component {
     @tracked loading = null;
     @tracked error = null;
     @tracked sites = null;
+    @tracked meta = null;
 
     @action
     load() {
@@ -34,5 +35,6 @@ export default class ExploreFeed extends Component {
 
         const result = yield response.json();
         this.sites = result.sites || [];
+        this.meta = result.meta || [];
     }
 }

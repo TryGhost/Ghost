@@ -1575,10 +1575,18 @@ Dashboard Resource */
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.3px;
-    color: var(--middarkgrey);
+    color: var(--midgrey);
     margin: 0 0 8px;
     padding: 0;
     transition: color .3s;
+}
+
+.gh-dashboard-resource-title:not(.is-large) h4 a {
+    font-size: 1.1rem;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: var(--black) !important;
 }
 
 .gh-dashboard-resource-title.is-large h4 {
