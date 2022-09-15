@@ -759,11 +759,11 @@ input[type="image"] {
     opacity: 1;
 }
 .anim-fade-in-scale-enter-active {
-    animation: fade-in 0.2s;
+    animation: fade-in 0.15s;
     animation-fill-mode: forwards;
 }
 .anim-fade-in-scale-leave-active {
-    animation: fade-out 0.5s;
+    animation: fade-out 0.15s;
     animation-fill-mode: forwards;
 }
 
