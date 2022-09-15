@@ -256,7 +256,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 }
 
 .gh-posts-list-item p {
-    margin: 2px 0 0;
+    margin: 0 0 1px;
     font-size: 1.3rem;
     overflow-wrap: break-word;
     color: var(--middarkgrey);
@@ -271,7 +271,6 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 }
 
 .gh-content-entry-meta {
-    margin: 4px 0 0 0;
     font-size: 1.3rem;
     color: var(--midlightgrey);
 }
@@ -832,7 +831,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 /* ---------------------------------------------------------- */
 
 .gh-posts-list-item-labs .gh-list-data {
-    padding: 1.6rem 0 3.2rem;
+    padding: 2rem 0;
     vertical-align: top;
 }
 
@@ -841,27 +840,53 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 }
 
 .gh-posts-list-item-labs .gh-content-entry-title {
+    margin: 0 0 3px;
     font-size: 1.5rem;
 }
 
 .gh-posts-list-item-labs .gh-content-entry-meta,
 .gh-posts-list-item-labs .gh-content-entry-status {
-    margin: 2px 0 0 0;
     font-size: 1.35rem;
     color: var(--midlightgrey-d1);
+}
+
+.gh-posts-list-item-labs .gh-content-entry-status .draft {
+    display: flex;
+    align-items: center;
+    color: var(--pink);
+    font-weight: 500;
+}
+
+.gh-posts-list-item-labs .gh-content-entry-status .scheduled {
+    display: flex;
+    align-items: center;
+    color: var(--green);
+    font-weight: 500;
+}
+
+.gh-posts-list-item-labs .gh-content-entry-status .draft::before,
+.gh-posts-list-item-labs .gh-content-entry-status .scheduled::before {
+    content: "";
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin: 1px 6px 0 0;
+    border-radius: 999px;
+}
+
+.gh-posts-list-item-labs .gh-content-entry-status .draft::before {
+    border-color: var(--pink);
+    background: var(--pink);
+}
+
+.gh-posts-list-item-labs .gh-content-entry-status .scheduled::before {
+    border-color: var(--green);
+    background: var(--green);
 }
 
 .gh-content-entry-author,
 .gh-content-entry-date {
     display: inline-block;
-}
-
-.gh-content-entry-status .draft {
-    color: var(--pink);
-}
-
-.gh-content-entry-status .scheduled {
-    color: var(--purple);
 }
 
 .gh-posts-list-item-labs .gh-post-list-clicks,
