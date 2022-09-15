@@ -1,6 +1,7 @@
 class LexicalHTMLRenderer {
     render(lexicalState, userOptions = {}) {
         const {createHeadlessEditor} = require('@lexical/headless');
+        const {HeadingNode} = require('@lexical/rich-text');
         const {$convertToHtmlString} = require('./convert-to-html-string');
 
         const defaultOptions = {
@@ -8,8 +9,12 @@ class LexicalHTMLRenderer {
         };
         const options = Object.assign({}, defaultOptions, userOptions);
 
+        const DEFAULT_NODES = [
+            HeadingNode
+        ];
+
         const editor = createHeadlessEditor({
-            nodes: []
+            nodes: DEFAULT_NODES
         });
 
         editor.setEditorState(editor.parseEditorState(lexicalState));
