@@ -6,7 +6,8 @@
 
 /**
  * @typedef {object} ILinkRedirectService
- * @prop {(to: URL) => Promise<ILinkRedirect>} addRedirect
+ * @prop {(to: URL, slug: string) => Promise<ILinkRedirect>} addRedirect
+ * @prop {() => Promise<string>} getSlug
  */
 
 /**
@@ -87,8 +88,10 @@ class LinkReplacementService {
             url = this.#attributionService.addPostAttributionTracking(url, post);
         }
 
+        const slug = await this.#linkRedirectService.getSlug();
+
         // 2. Add redirect for link click tracking
-        const redirect = await this.#linkRedirectService.addRedirect(url);
+        const redirect = await this.#linkRedirectService.addRedirect(url, slug);
 
         // 3. Add click tracking by members
         // Note: we can always add the tracking params (even when isSite === false)
