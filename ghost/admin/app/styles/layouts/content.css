@@ -898,7 +898,8 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 }
 
 .gh-posts-list-item-labs .gh-post-list-clicks,
-.gh-posts-list-item-labs .gh-post-list-opens {
+.gh-posts-list-item-labs .gh-post-list-opens,
+.gh-posts-list-item-labs .gh-post-list-button {
     width: 120px;
 }
 
@@ -929,7 +930,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 .gh-posts-list-item-labs a.gh-post-list-cta.is-hovered {
     background: var(--white);
     color: var(--midgrey-d2);
-    box-shadow: 0 0 1px rgba(0,0,0,.05), 0 1px 2px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 1px rgba(0,0,0,.1), 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .gh-posts-list-item-labs a.gh-post-list-cta.is-hovered:hover {
