@@ -8,15 +8,15 @@ export default helper(function humanizeRecipientFilter([filter = '']/*, hash*/) 
     const parts = filter.split(',');
 
     if (parts.includes('status:free') && parts.includes('status:-free')) {
-        return 'All members';
+        return 'All subscribers';
     }
 
     let outputParts = [];
 
     if (parts.includes('status:free')) {
-        outputParts.push('Free members');
+        outputParts.push('Free subscribers');
     } else if (parts.includes('status:-free')) {
-        outputParts.push('Paid members');
+        outputParts.push('Paid subscribers');
     }
 
     const labelsArrayRegex = /labels:\[(.*?)\]/;
