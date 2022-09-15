@@ -897,10 +897,6 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     transition: all 1s ease;
 }
 
-.gh-content-entry-date.is-hovered {
-    transition: all 1s ease;
-}
-
 .gh-posts-list-item-labs .gh-post-list-clicks,
 .gh-posts-list-item-labs .gh-post-list-opens {
     width: 120px;
