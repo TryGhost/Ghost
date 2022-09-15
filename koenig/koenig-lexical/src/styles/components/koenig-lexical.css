@@ -1,0 +1,26 @@
+.koenig-lexical {
+    position: relative;
+}
+
+/* everything is nested here to keep it scoped to our container */
+.koenig-lexical {
+    > * {
+        font-size: 1.7rem;
+        font-weight: 300;
+        letter-spacing: 0.1px;
+        color: var(--grey-900);
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        -moz-font-feature-settings: "liga" on;
+    }
+
+    [contenteditable] {
+        outline: none;
+    }
+
+    /* Selection highlight color */
+    ::selection {
+        background: var(--grey-200);
+    }
+}
