@@ -842,7 +842,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 .gh-posts-list-item-labs .gh-content-entry-title {
     margin: 0 0 3px;
     font-size: 1.55rem;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .gh-posts-list-item-labs .gh-content-entry-meta,
@@ -913,7 +913,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 .gh-posts-list-item-labs .gh-content-email-stats strong {
     color: var(--black);
     font-size: 1.5rem;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 
@@ -923,19 +923,30 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     max-width: max-content;
     margin: -6px 16px 0 0;
     padding: 8px 16px;
+    background: var(--white);
+    border: 1px solid var(--lightgrey-l1);
     color: var(--midgrey);
     border-radius: var(--border-radius);
+    transition: all .2s ease;
 }
 
-.gh-posts-list-item-labs a.gh-post-list-cta.is-hovered {
-    background: var(--white);
-    color: var(--midgrey-d2);
-    box-shadow: 0 0 1px rgba(0,0,0,.1), 0 1px 2px rgba(0, 0, 0, 0.1);
+.gh-posts-list-item-labs a.gh-post-list-cta.stats.is-hovered {
+    color: var(--green);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-.gh-posts-list-item-labs a.gh-post-list-cta.is-hovered:hover {
-    color: var(--darkgrey);
-    box-shadow: 0 0 1px rgba(0,0,0,.2), 0 1px 2px rgba(0, 0, 0, 0.1);
+.gh-posts-list-item-labs a.gh-post-list-cta.stats.is-hovered:hover {
+    border-color: var(--lightgrey);
+    color: var(--green-d1);
+}
+
+.gh-posts-list-item-labs a.gh-post-list-cta.edit.is-hovered {
+    color: var(--pink-l2);
+}
+
+.gh-posts-list-item-labs a.gh-post-list-cta.edit.is-hovered:hover {
+    border-color: var(--lightgrey);
+    color: var(--pink-l1);
 }
 
 .gh-posts-list-item-labs .gh-post-list-cta svg {
@@ -943,10 +954,10 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     height: 1.5rem;
 }
 
-.gh-posts-list-item-labs .gh-post-list-cta svg.edit {
+.gh-posts-list-item-labs .gh-post-list-cta.edit svg {
     padding: 1px;
 }
 
 .gh-posts-list-item-labs .gh-post-list-cta svg path {
-    stroke-width: 1.8;
+    stroke-width: 2;
 }
