@@ -24,11 +24,20 @@ export default class Post extends ApplicationAdapter {
         return parsedUrl.toString();
     }
 
-    buildQuery(store, modelName, options) {
-        if (!options.formats) {
-            options.formats = 'mobiledoc,lexical';
+    buildURL() {
+        const url = super.buildURL(...arguments);
+
+        try {
+            const parsedUrl = new URL(url);
+            if (!parsedUrl.searchParams.get('formats')) {
+                parsedUrl.searchParams.set('formats', 'mobiledoc,lexical');
+                return parsedUrl.href;
+            }
+        } catch (e) {
+            // noop, just use the original url
+            console.error('Couldn\'t parse URL', e); // eslint-disable-line
         }
 
-        return options;
+        return url;
     }
 }
