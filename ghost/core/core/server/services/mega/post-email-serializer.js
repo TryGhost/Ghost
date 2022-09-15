@@ -421,13 +421,13 @@ const PostEmailSerializer = {
         const result = {...email};
 
         // Note about link tracking:
-        // Don't add new HTML in here, but add it in the serialize method and surround it with the required comments or attributes
+        // Don't add new HTML in here, but add it in the serialize method and surround it with the required HTML comments or attributes
         // This is because we can't replace links at this point (this is executed multiple times, once per batch and we don't want to generate duplicate links for the same email)
 
-        // Check if we need to hide the paywall or the members-only content (both should be present)
+        // Remove the paywall or members-only content based on the current member segment
         const startMembersOnlyContent = (result.html || '').indexOf('<!--members-only-->');
         const startPaywall = result.html.indexOf('<!-- PAYWALL -->');
-        let endPost = result.html.search(/[\s\n\r]*<!-- POST CONTENT END -->/);
+        let endPost = result.html.indexOf('<!-- POST CONTENT END -->');
 
         if (endPost === -1) {
             // Default to the end of the HTML (shouldn't happen, but just in case if we have members-only content that should get removed)
