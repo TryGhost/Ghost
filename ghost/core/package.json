@@ -82,6 +82,7 @@
     "@tryghost/kg-mobiledoc-html-renderer": "5.3.7",
     "@tryghost/limit-service": "1.2.3",
     "@tryghost/link-redirects": "0.0.0",
+    "@tryghost/link-replacement": "0.0.0",
     "@tryghost/link-tracking": "0.0.0",
     "@tryghost/logging": "2.3.0",
     "@tryghost/magic-link": "0.0.0",
@@ -123,7 +124,6 @@
     "@tryghost/verification-trigger": "0.0.0",
     "@tryghost/version": "0.1.16",
     "@tryghost/zip": "1.1.28",
-    "@tryghost/link-replacement": "0.0.0",
     "amperize": "0.6.1",
     "analytics-node": "6.2.0",
     "bluebird": "3.7.2",
@@ -162,7 +162,7 @@
     "juice": "8.1.0",
     "keypair": "1.0.4",
     "knex": "2.3.0",
-    "knex-migrator": "5.0.5",
+    "knex-migrator": "5.0.6",
     "lodash": "4.17.21",
     "luxon": "3.0.3",
     "moment": "2.24.0",
@@ -183,7 +183,7 @@
   },
   "optionalDependencies": {
     "@tryghost/html-to-mobiledoc": "1.8.12",
-    "sqlite3": "5.1.0"
+    "sqlite3": "5.1.1"
   },
   "devDependencies": {
     "@playwright/test": "1.25.2",
