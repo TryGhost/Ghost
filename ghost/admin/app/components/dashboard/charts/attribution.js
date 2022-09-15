@@ -24,9 +24,14 @@ export default class Recents extends Component {
             cutoutPercentage: 60,
             borderColor: '#555',
             legend: {
-                display: false,
+                display: true,
+                position: 'top',
+                align: 'start',
                 labels: {
-                    color: 'rgb(255, 99, 132)'
+                    color: 'rgb(255, 99, 132)',
+                    fontSize: 12,
+                    boxWidth: 10,
+                    padding: 3
                 }
             }
         };
