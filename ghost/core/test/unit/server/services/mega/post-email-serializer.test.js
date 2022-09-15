@@ -6,12 +6,17 @@ const urlUtils = require('../../../../../core/shared/url-utils');
 const urlService = require('../../../../../core/server/services/url');
 const labs = require('../../../../../core/shared/labs');
 const {parseReplacements, renderEmailForSegment, serialize, _getTemplateSettings, createUnsubscribeUrl, createPostSignupUrl, _PostEmailSerializer} = require('../../../../../core/server/services/mega/post-email-serializer');
-
+const {HtmlValidate} = require('html-validate');
+            
 function assertKeys(object, keys) {
     assert.deepStrictEqual(Object.keys(object).sort(), keys.sort());
 }
 
 describe('Post Email Serializer', function () {
+    afterEach(function () {
+        sinon.restore();
+    });
+    
     it('creates replacement pattern for valid format and value', function () {
         const html = '<html>Hey %%{first_name}%%, what is up?</html>';
         const plaintext = 'Hey %%{first_name}%%, what is up?';
@@ -42,6 +47,10 @@ describe('Post Email Serializer', function () {
     });
 
     describe('serialize', function () {
+        afterEach(function () {
+            sinon.restore();
+        });
+
         it('should output valid HTML and escape HTML characters in mobiledoc', async function () {
             sinon.stub(_PostEmailSerializer, 'serializePostModel').callsFake(async () => {
                 return {
@@ -66,7 +75,7 @@ describe('Post Email Serializer', function () {
             };
 
             const settingsMock = sinon.stub(settingsCache, 'get');
-            settingsMock.callsFake(function (key, options) {
+            settingsMock.callsFake((key, options) => {
                 if (customSettings[key]) {
                     return customSettings[key];
                 }
@@ -97,9 +106,6 @@ describe('Post Email Serializer', function () {
             };
 
             const output = await serialize({}, newsletterMock, {isBrowserPreview: false});
-
-            // Test if the email HTML is valid standard HTML5
-            const {HtmlValidate} = require('html-validate');
 
             const htmlvalidate = new HtmlValidate({
                 extends: [
@@ -160,6 +166,123 @@ describe('Post Email Serializer', function () {
 
             // Check if the template is rendered fully to the end (to make sure we acutally test all these mobiledocs)
             assert.equal(output.html.includes('Heading test &lt;3'), true);
+        });
+
+        it('output should already contain paywall when there is members-only content', async function () {
+            sinon.stub(_PostEmailSerializer, 'serializePostModel').callsFake(async () => {
+                return {
+                    // This is not realistic, but just to test escaping
+                    url: 'https://testpost.com/',
+                    title: 'This is a test',
+                    excerpt: 'This is a test',
+                    authors: 'This is a test',
+                    feature_image_alt: 'This is a test',
+                    feature_image_caption: 'This is a test',
+
+                    // eslint-disable-next-line
+                    mobiledoc: JSON.stringify({"version":"0.3.1","atoms":[],"cards":[["paywall",{}]],"markups":[],"sections":[[1,"p",[[0,[],0,"Free content"]]],[10,0],[1,"p",[[0,[],0,"Members only content"]]]],"ghostVersion":"4.0"})
+                };
+            });
+            const customSettings = {
+                accent_color: '#000099',
+                timezone: 'UTC'
+            };
+
+            const settingsMock = sinon.stub(settingsCache, 'get');
+            settingsMock.callsFake((key, options) => {
+                if (customSettings[key]) {
+                    return customSettings[key];
+                }
+
+                return settingsMock.wrappedMethod.call(settingsCache, key, options);
+            });
+            const template = {
+                name: 'My newsletter',
+                header_image: '',
+                show_header_icon: true,
+                show_header_title: true,
+                show_feature_image: true,
+                title_font_category: 'sans-serif',
+                title_alignment: 'center',
+                body_font_category: 'serif',
+                show_badge: true,
+                show_header_name: true,
+                // Note: we don't need to check the footer content because this should contain valid HTML (not text)
+                footer_content: '<span>Footer content with valid HTML</span>'
+            };
+            const newsletterMock = {
+                get: function (key) {
+                    return template[key];
+                },
+                toJSON: function () {
+                    return template;
+                }
+            };
+
+            const output = await serialize({}, newsletterMock, {isBrowserPreview: false});
+            assert(output.html.includes('<!--members-only-->'));
+            assert(output.html.includes('<!-- PAYWALL -->'));
+            assert(output.html.includes('<!-- POST CONTENT END -->'));
+
+            // Paywall content
+            assert(output.html.includes('Subscribe to'));
+        });
+
+        it('output should not contain paywall if there is no members-only-content', async function () {
+            sinon.stub(_PostEmailSerializer, 'serializePostModel').callsFake(async () => {
+                return {
+                    // This is not realistic, but just to test escaping
+                    url: 'https://testpost.com/',
+                    title: 'This is a test',
+                    excerpt: 'This is a test',
+                    authors: 'This is a test',
+                    feature_image_alt: 'This is a test',
+                    feature_image_caption: 'This is a test',
+
+                    // eslint-disable-next-line
+                    mobiledoc: JSON.stringify({"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"p",[[0,[],0,"Free content only"]]]],"ghostVersion":"4.0"})
+                };
+            });
+            const customSettings = {
+                accent_color: '#000099',
+                timezone: 'UTC'
+            };
+
+            const settingsMock = sinon.stub(settingsCache, 'get');
+            settingsMock.callsFake(function (key, options) {
+                if (customSettings[key]) {
+                    return customSettings[key];
+                }
+
+                return settingsMock.wrappedMethod.call(settingsCache, key, options);
+            });
+            const template = {
+                name: 'My newsletter',
+                header_image: '',
+                show_header_icon: true,
+                show_header_title: true,
+                show_feature_image: true,
+                title_font_category: 'sans-serif',
+                title_alignment: 'center',
+                body_font_category: 'serif',
+                show_badge: true,
+                show_header_name: true,
+                // Note: we don't need to check the footer content because this should contain valid HTML (not text)
+                footer_content: '<span>Footer content with valid HTML</span>'
+            };
+            const newsletterMock = {
+                get: function (key) {
+                    return template[key];
+                },
+                toJSON: function () {
+                    return template;
+                }
+            };
+
+            const output = await serialize({}, newsletterMock, {isBrowserPreview: false});
+            assert(output.html.includes('<!-- POST CONTENT END -->'));
+            assert(!output.html.includes('<!--members-only-->'));
+            assert(!output.html.includes('<!-- PAYWALL -->'));
         });
     });
 
@@ -370,7 +493,7 @@ describe('Post Email Serializer', function () {
             assert.equal(output.plaintext, `Free content\n\n\nPaywall`);
         });
 
-        it('should show full cta for paid members on specific tier posts', function () {
+        it('should show members-only content for paid members on specific tier posts', function () {
             sinon.stub(urlService, 'getUrlByResourceId').returns('https://site.com/blah/');
             sinon.stub(labs, 'isSet').returns(true);
             const email = {

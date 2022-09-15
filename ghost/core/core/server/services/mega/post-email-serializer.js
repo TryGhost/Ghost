@@ -335,17 +335,16 @@ const PostEmailSerializer = {
         };
 
         /** 
-         *  If a part of the email is for members only, already add a paywall.
-         *  Just before sending the email, we'll hide the paywall or paid content depending on the member segment it is sent to.
-         *  But we need to add the paywall to the email here because we need to do link replacements on the HTML already.
-         *  We cannot do link replacement later for each email batch and member segment because links should only be created once for tracking metrics.
+         *  If a part of the email is members-only and the post is paid-only, add a paywall:
+         *  - Just before sending the email, we'll hide the paywall or paid content depending on the member segment it is sent to.
+         *  - We already need to do URL-replacement on the HTML here
+         *  - Link replacement cannot happen later because renderEmailForSegment is called multiple times for a single email (which would result in duplicate redirects)
         */
-        // TODO: never add paywall if target is only to paid members (because then we'll have ghost links)
-        const recipientsIncludeFreeMembers = true; 
+        const isPaidPost = post.visibility === 'paid' || post.visibility === 'tiers';
 
         const paywallIndex = (result.html || '').indexOf('<!--members-only-->');
-        if (paywallIndex !== -1 && recipientsIncludeFreeMembers) {
-            const postContentEndIdx = result.html.search(/[\s\n\r]+?<!-- POST CONTENT END -->/);
+        if (paywallIndex !== -1 && isPaidPost) {
+            const postContentEndIdx = result.html.indexOf('<!-- POST CONTENT END -->');
 
             if (postContentEndIdx !== -1) {
                 const paywallHTML = '<!-- PAYWALL -->' + this.renderPaywallCTA(post);
@@ -431,7 +430,7 @@ const PostEmailSerializer = {
         let endPost = result.html.search(/[\s\n\r]*<!-- POST CONTENT END -->/);
 
         if (endPost === -1) {
-            // Default to the end of the HTML (shouldn't happen, but just in case)
+            // Default to the end of the HTML (shouldn't happen, but just in case if we have members-only content that should get removed)
             endPost = result.html.length;
         }
 

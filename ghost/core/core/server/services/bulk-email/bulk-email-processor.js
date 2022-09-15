@@ -7,7 +7,6 @@ const logging = require('@tryghost/logging');
 const models = require('../../models');
 const MailgunClient = require('@tryghost/mailgun-client');
 const sentry = require('../../../shared/sentry');
-const labs = require('../../../shared/labs');
 const debug = require('@tryghost/debug')('mega');
 const postEmailSerializer = require('../mega/post-email-serializer');
 const configService = require('../../../shared/config');
