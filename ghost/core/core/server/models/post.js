@@ -13,6 +13,7 @@ const config = require('../../shared/config');
 const settingsCache = require('../../shared/settings-cache');
 const limitService = require('../services/limits');
 const mobiledocLib = require('../lib/mobiledoc');
+const lexicalLib = require('../lib/lexical');
 const relations = require('./relations');
 const urlUtils = require('../../shared/url-utils');
 const {Tag} = require('./tag');
@@ -610,9 +611,12 @@ Post = ghostBookshelf.Model.extend({
         // CASE: ?force_rerender=true passed via Admin API
         // CASE: html is null, but mobiledoc exists (only important for migrations & importing)
         if (
-            (this.hasChanged('mobiledoc') && !this.get('lexical'))
-            || options.force_rerender
-            || (!this.get('html') && (options.migrating || options.importing))
+            !this.get('lexical') &&
+            (
+                this.hasChanged('mobiledoc')
+                || options.force_rerender
+                || (!this.get('html') && (options.migrating || options.importing))
+            )
         ) {
             try {
                 this.set('html', mobiledocLib.mobiledocHtmlRenderer.render(JSON.parse(this.get('mobiledoc'))));
@@ -620,6 +624,28 @@ Post = ghostBookshelf.Model.extend({
                 throw new errors.ValidationError({
                     message: 'Invalid mobiledoc structure.',
                     help: 'https://ghost.org/docs/publishing/'
+                });
+            }
+        }
+
+        // CASE: lexical has changed, generate html
+        // CASE: ?force_rerender=true passed via Admin API
+        // CASE: html is null, but lexical exists (only important for migrations & importing)
+        if (
+            !this.get('mobiledoc') &&
+            (
+                this.hasChanged('lexical')
+                || options.force_rerender
+                || (!this.get('html') && (options.migrating || options.importing))
+            )
+        ) {
+            try {
+                this.set('html', lexicalLib.lexicalHtmlRenderer.render(this.get('lexical')));
+            } catch (err) {
+                throw new errors.ValidationError({
+                    message: 'Invalid lexical structure.',
+                    help: 'https://ghost.org/docs/publishing/',
+                    property: 'lexical'
                 });
             }
         }
