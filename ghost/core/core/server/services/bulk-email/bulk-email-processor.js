@@ -173,10 +173,8 @@ module.exports = {
             // Load newsletter data on email
             await emailBatchModel.relations.email.getLazyRelation('newsletter', {require: false, ...knexOptions});
 
-            if (labs.isSet('newsletterPaywall')) {
-                // Load post data on email - for content gating on paywall
-                await emailBatchModel.relations.email.getLazyRelation('post', {require: false, ...knexOptions});
-            }
+            // Load post data on email - for content gating on paywall
+            await emailBatchModel.relations.email.getLazyRelation('post', {require: false, ...knexOptions});
 
             // send the email
             const sendResponse = await this.send(emailBatchModel.relations.email.toJSON(), recipientRows, memberSegment);
