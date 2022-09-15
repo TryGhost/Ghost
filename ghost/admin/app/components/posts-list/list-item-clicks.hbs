@@ -69,8 +69,12 @@
                 </p>
                 <p class="gh-content-entry-status">
                     {{#if @post.isScheduled}}
-                        <span class="scheduled" title="Scheduled" data-tooltip="To be published {{if @post.newsletter "& sent at "}}{{capitalize this.scheduledText}} to {{@post.emailSegment}} members">
-                            Scheduled
+                        <span class="scheduled" title="Scheduled">
+                            {{#if this.isHovered}}
+                                Scheduled to be published {{if @post.newsletter "and sent "}}{{this.scheduledText}} to {{@post.emailSegment}} subscribers
+                            {{else}}
+                                Scheduled
+                            {{/if}}
                         </span>
                     {{/if}}
 
