@@ -12,7 +12,7 @@ const SerializedStateTextarea = () => {
 
     return (
         <>
-            <textarea value={serializedJson} class="h-50 text-md w-full" />
+            <textarea value={serializedJson} readOnly className="h-50 text-md w-full" />
             <OnChangePlugin onChange={onChange} />
         </>
     );
