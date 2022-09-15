@@ -721,7 +721,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 
 .gh-post-stats-meta {
     margin: 0;
-    color: var(--midlightgrey-d1);
+    color: var(--midlightgrey-d2);
     font-size: 1.35rem;
 }
 
