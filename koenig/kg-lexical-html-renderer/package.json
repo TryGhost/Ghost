@@ -26,7 +26,11 @@
     "sinon": "14.0.0"
   },
   "dependencies": {
+    "@lexical/code": "^0.4.1",
     "@lexical/headless": "^0.4.1",
+    "@lexical/link": "^0.4.1",
+    "@lexical/list": "^0.4.1",
+    "@lexical/react": "^0.4.1",
     "@lexical/rich-text": "^0.4.1",
     "jsdom": "^20.0.0",
     "lexical": "^0.4.1"
