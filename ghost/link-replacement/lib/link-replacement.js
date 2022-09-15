@@ -24,6 +24,11 @@
  * @prop {(...parts: string[]) => string} urlJoin
  */
 
+/**
+ * @typedef {object} SettingsCache
+ * @prop {(key: string, options?: any) => any} get
+ */
+
 class LinkReplacementService {
     /** @type ILinkRedirectService */
     #linkRedirectService;
@@ -33,6 +38,8 @@ class LinkReplacementService {
     #attributionService;
     /** @type UrlUtils */
     #urlUtils;
+    /** @type SettingsCache */
+    #settingsCache;
 
     /**
      * @param {object} deps
@@ -40,12 +47,14 @@ class LinkReplacementService {
      * @param {ILinkClickTrackingService} deps.linkClickTrackingService
      * @param {IAttributionService} deps.attributionService
      * @param {UrlUtils} deps.urlUtils
+     * @param {SettingsCache} deps.settingsCache
      */
     constructor(deps) {
         this.#linkRedirectService = deps.linkRedirectService;
         this.#linkClickTrackingService = deps.linkClickTrackingService;
         this.#attributionService = deps.attributionService;
         this.#urlUtils = deps.urlUtils;
+        this.#settingsCache = deps.settingsCache;
     }
 
     /**
@@ -68,11 +77,12 @@ class LinkReplacementService {
     async replaceLink(url, newsletter, post) {
         // Can probably happen in one call to the MemberAttributionService (but just to make clear what happens here)
         const isSite = this.isSiteDomain(url);
+        const enableTracking = this.#settingsCache.get('email_track_clicks');
 
         // 1. Add attribution
         url = this.#attributionService.addEmailSourceAttributionTracking(url, newsletter);
 
-        if (isSite) {
+        if (isSite && enableTracking) {
             // Only add attribution links to our own site (except for the newsletter referrer)
             url = this.#attributionService.addPostAttributionTracking(url, post);
         }
@@ -81,7 +91,10 @@ class LinkReplacementService {
         const redirect = await this.#linkRedirectService.addRedirect(url);
 
         // 3. Add click tracking by members
-        if (isSite) {
+        // Note: we can always add the tracking params (even when isSite === false)
+        // because they are added to the redirect and not the destination URL
+
+        if (enableTracking) {
             return this.#linkClickTrackingService.addTrackingToRedirect(redirect, '--uuid--');
         }
 
