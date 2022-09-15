@@ -94,7 +94,7 @@ module.exports = function setupSiteApp(routerConfig) {
     // /member/.well-known/* serves files (e.g. jwks.json) so it needs to be mounted before the prettyUrl mw to avoid trailing slashes
     siteApp.use(
         '/members/.well-known',
-        shared.middleware.cacheControl('public', {maxAge: 60 * 60 * 24}),
+        shared.middleware.cacheControl('public', {maxAge: constants.ONE_DAY_S}),
         (req, res, next) => membersService.api.middleware.wellKnown(req, res, next)
     );
 
