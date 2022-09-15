@@ -3489,11 +3489,6 @@
     "@tryghost/root-utils" "^0.3.16"
     debug "^4.3.1"
 
-"@tryghost/domain-events@^0.1.14":
-  version "0.1.14"
-  resolved "https://registry.yarnpkg.com/@tryghost/domain-events/-/domain-events-0.1.14.tgz#a0206b21981d8e3337dfc0ed56df182d6e7188b3"
-  integrity sha512-SoJMvrwBXFDciQwjobpuZae0AQ/pVB+RgSj+QEuKNqg6V6CAhNlLrI1rAhkHtXkuKaLDDzH8tKWQEeeApXdBng==
-
 "@tryghost/elasticsearch@^3.0.3":
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/@tryghost/elasticsearch/-/elasticsearch-3.0.3.tgz#6651298989f38bbe30777ab122d56a43f719d2c2"
