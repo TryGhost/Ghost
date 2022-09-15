@@ -61,8 +61,11 @@ jobs:
       # Merge coverage reports and upload
       - run: yarn ember coverage-merge
         working-directory: ghost/admin
-      - uses: codecov/codecov-action@v3
+      - uses: actions/upload-artifact@v3
         if: matrix.browser == 'Chrome'
+        with:
+          name: coverage
+          path: ghost/*/coverage/cobertura-coverage.xml
 
       - uses: daniellockyer/action-slack-build@master
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -163,8 +166,11 @@ jobs:
       - run: yarn
       - run: yarn workspaces run test:unit
 
-      - uses: codecov/codecov-action@v2
+      - uses: actions/upload-artifact@v3
         if: startsWith(matrix.node, '16')
+        with:
+          name: coverage
+          path: ghost/*/coverage/cobertura-coverage.xml
 
       - uses: daniellockyer/action-slack-build@master
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -341,6 +347,19 @@ jobs:
           status: ${{ job.status }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  coverage:
+    name: Coverage
+    needs: [unit-tests, admin-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Restore coverage
+        uses: actions/download-artifact@v3
+        with:
+          path: ghost
+      - run: rsync -av --remove-source-files ghost/coverage/* ghost/
+      - uses: codecov/codecov-action@v3
 
   canary:
     needs: [lint, ghost-cli, admin-tests, migrations, unit-tests, database-tests]
