@@ -216,7 +216,58 @@ describe('Post Email Serializer', function () {
             assert.equal(output.plaintext, 'hello');
         });
 
-        it('should show paywall content for free members on paid posts', function () {
+        it('should show paywall and hide members-only content for free members on paid posts', function () {
+            sinon.stub(urlService, 'getUrlByResourceId').returns('https://site.com/blah/');
+            sinon.stub(labs, 'isSet').returns(true);
+            const email = {
+                post: {
+                    status: 'published',
+                    visibility: 'paid'
+                },
+                html: '<body><p>Free content</p><!--members-only--><p>Members content</p><!-- PAYWALL --><h2>Paywall</h2><!-- POST CONTENT END --></body>',
+                plaintext: 'Free content. Members content'
+            };
+
+            let output = renderEmailForSegment(email, 'status:free');
+            assert.equal(output.html, `<body><p>Free content</p><!-- PAYWALL --><h2>Paywall</h2><!-- POST CONTENT END --></body>`);
+            assert.equal(output.plaintext, `Free content\n\n\nPaywall`);
+        });
+
+        it('should show paywall and hide members-only content for free members on paid posts (without <!-- POST CONTENT END -->)', function () {
+            sinon.stub(urlService, 'getUrlByResourceId').returns('https://site.com/blah/');
+            sinon.stub(labs, 'isSet').returns(true);
+            const email = {
+                post: {
+                    status: 'published',
+                    visibility: 'paid'
+                },
+                html: '<p>Free content</p><!--members-only--><p>Members content</p><!-- PAYWALL --><h2>Paywall</h2>',
+                plaintext: 'Free content. Members content'
+            };
+
+            let output = renderEmailForSegment(email, 'status:free');
+            assert.equal(output.html, `<p>Free content</p><!-- PAYWALL --><h2>Paywall</h2>`);
+            assert.equal(output.plaintext, `Free content\n\n\nPaywall`);
+        });
+
+        it('should hide members-only content for free members on paid posts (without <!-- PAYWALL -->)', function () {
+            sinon.stub(urlService, 'getUrlByResourceId').returns('https://site.com/blah/');
+            sinon.stub(labs, 'isSet').returns(true);
+            const email = {
+                post: {
+                    status: 'published',
+                    visibility: 'paid'
+                },
+                html: '<body><p>Free content</p><!--members-only--><p>Members content</p><!-- POST CONTENT END --></body>',
+                plaintext: 'Free content. Members content'
+            };
+
+            let output = renderEmailForSegment(email, 'status:free');
+            assert.equal(output.html, `<body><p>Free content</p><!-- POST CONTENT END --></body>`);
+            assert.equal(output.plaintext, `Free content`);
+        });
+
+        it('should hide members-only content for free members on paid posts (without <!-- PAYWALL --> and <!-- POST CONTENT END -->)', function () {
             sinon.stub(urlService, 'getUrlByResourceId').returns('https://site.com/blah/');
             sinon.stub(labs, 'isSet').returns(true);
             const email = {
@@ -229,19 +280,11 @@ describe('Post Email Serializer', function () {
             };
 
             let output = renderEmailForSegment(email, 'status:free');
-            assert(output.html.includes());
-            assert(output.html.includes(`<p>Free content</p>`));
-            assert(output.html.includes(`Subscribe to`));
-            assert(output.html.includes(`https://site.com/blah/#/portal/signup`));
-            assert(!output.html.includes(`<p>Members content</p>`));
-
-            assert(output.plaintext.includes(`Free content`));
-            assert(output.plaintext.includes(`Subscribe to`));
-            assert(output.plaintext.includes(`https://site.com/blah/#/portal/signup`));
-            assert(!output.plaintext.includes(`Members content`));
+            assert.equal(output.html, `<p>Free content</p>`);
+            assert.equal(output.plaintext, `Free content`);
         });
 
-        it('should show full cta for paid members on paid posts', function () {
+        it('should not modify HTML when there are no HTML comments', function () {
             sinon.stub(urlService, 'getUrlByResourceId').returns('https://site.com/blah/');
             sinon.stub(labs, 'isSet').returns(true);
             const email = {
@@ -249,12 +292,64 @@ describe('Post Email Serializer', function () {
                     status: 'published',
                     visibility: 'paid'
                 },
-                html: '<p>Free content</p><!--members-only--><p>Members content</p>',
+                html: '<body><p>Free content</p></body>',
+                plaintext: 'Free content. Members content'
+            };
+
+            let output = renderEmailForSegment(email, 'status:free');
+            assert.equal(output.html, `<body><p>Free content</p></body>`);
+            assert.equal(output.plaintext, `Free content`);
+        });
+
+        it('should hide paywall when <!-- POST CONTENT END --> is missing (paid members)', function () {
+            sinon.stub(urlService, 'getUrlByResourceId').returns('https://site.com/blah/');
+            sinon.stub(labs, 'isSet').returns(true);
+            const email = {
+                post: {
+                    status: 'published',
+                    visibility: 'paid'
+                },
+                html: '<p>Free content</p><!-- PAYWALL --><h2>Paywall</h2>',
                 plaintext: 'Free content. Members content'
             };
 
             let output = renderEmailForSegment(email, 'status:-free');
-            assert.equal(output.html, `<p>Free content</p><!--members-only--><p>Members content</p>`);
+            assert.equal(output.html, `<p>Free content</p>`);
+            assert.equal(output.plaintext, `Free content`);
+        });
+
+        it('should show members-only content for paid members on paid posts', function () {
+            sinon.stub(urlService, 'getUrlByResourceId').returns('https://site.com/blah/');
+            sinon.stub(labs, 'isSet').returns(true);
+            const email = {
+                post: {
+                    status: 'published',
+                    visibility: 'paid'
+                },
+                html: '<body><p>Free content</p><!--members-only--><p>Members content</p><!-- PAYWALL --><h2>Paywall</h2><!-- POST CONTENT END --></body>',
+                plaintext: 'Free content. Members content'
+            };
+
+            let output = renderEmailForSegment(email, 'status:-free');
+            assert.equal(output.html, `<body><p>Free content</p><!--members-only--><p>Members content</p><!-- POST CONTENT END --></body>`);
+            assert.equal(output.plaintext, `Free content\n\nMembers content`);
+        });
+
+        it('should show members-only content for unknown members on paid posts', function () {
+            // Test if the default behaviour is to hide any paywalls and show the members-only content
+            sinon.stub(urlService, 'getUrlByResourceId').returns('https://site.com/blah/');
+            sinon.stub(labs, 'isSet').returns(true);
+            const email = {
+                post: {
+                    status: 'published',
+                    visibility: 'paid'
+                },
+                html: '<body><p>Free content</p><!--members-only--><p>Members content</p><!-- PAYWALL --><h2>Paywall</h2><!-- POST CONTENT END --></body>',
+                plaintext: 'Free content. Members content'
+            };
+
+            let output = renderEmailForSegment(email, null);
+            assert.equal(output.html, `<body><p>Free content</p><!--members-only--><p>Members content</p><!-- POST CONTENT END --></body>`);
             assert.equal(output.plaintext, `Free content\n\nMembers content`);
         });
 
@@ -266,20 +361,13 @@ describe('Post Email Serializer', function () {
                     status: 'published',
                     visibility: 'tiers'
                 },
-                html: '<p>Free content</p><!--members-only--><p>Members content</p>',
+                html: '<body><p>Free content</p><!--members-only--><p>Members content</p><!-- PAYWALL --><h2>Paywall</h2><!-- POST CONTENT END --></body>',
                 plaintext: 'Free content. Members content'
             };
 
             let output = renderEmailForSegment(email, 'status:free');
-            assert(output.html.includes(`<p>Free content</p>`));
-            assert(output.html.includes(`Subscribe to`));
-            assert(output.html.includes(`https://site.com/blah/#/portal/signup`));
-            assert(!output.html.includes(`<p>Members content</p>`));
-
-            assert(output.plaintext.includes(`Free content`));
-            assert(output.plaintext.includes(`Subscribe to`));
-            assert(output.plaintext.includes(`https://site.com/blah/#/portal/signup`));
-            assert(!output.plaintext.includes(`Members content`));
+            assert.equal(output.html, `<body><p>Free content</p><!-- PAYWALL --><h2>Paywall</h2><!-- POST CONTENT END --></body>`);
+            assert.equal(output.plaintext, `Free content\n\n\nPaywall`);
         });
 
         it('should show full cta for paid members on specific tier posts', function () {

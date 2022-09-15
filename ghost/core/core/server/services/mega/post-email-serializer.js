@@ -427,8 +427,17 @@ const PostEmailSerializer = {
 
         // Check if we need to hide the paywall or the members-only content (both should be present)
         const startMembersOnlyContent = (result.html || '').indexOf('<!--members-only-->');
+        const startPaywall = result.html.indexOf('<!-- PAYWALL -->');
+        let endPost = result.html.search(/[\s\n\r]*<!-- POST CONTENT END -->/);
 
-        if (startMembersOnlyContent !== -1) {
+        if (endPost === -1) {
+            // Default to the end of the HTML (shouldn't happen, but just in case)
+            endPost = result.html.length;
+        }
+
+        // We support the cases where there is no <!--members-only--> but there is a paywall (in case of bugs)
+        // We also support the case where there is no <!-- PAYWALL --> but there is a <!--members-only--> (in case of bugs)
+        if (startMembersOnlyContent !== -1 || startPaywall !== -1) {
             // By default remove the paywall if no memberSegment is passed
             let memberHasAccess = true;
 
@@ -442,15 +451,16 @@ const PostEmailSerializer = {
                 memberHasAccess = membersService.contentGating.checkPostAccess(result.post, statusFilter);
             }
 
-            const startPaywall = result.html.indexOf('<!-- PAYWALL -->');
-            const endPost = result.html.search(/[\s\n\r]+?<!-- POST CONTENT END -->/);
-
             if (!memberHasAccess) {
-                // Remove the members-only content, but keep the paywall (if there is a paywall)
-                result.html = result.html.slice(0, startMembersOnlyContent) + result.html.slice(startPaywall === -1 ? endPost : startPaywall);
+                if (startMembersOnlyContent !== -1) {
+                    // Remove the members-only content, but keep the paywall (if there is a paywall)
+                    result.html = result.html.slice(0, startMembersOnlyContent) + result.html.slice(startPaywall === -1 ? endPost : startPaywall);
+                }
             } else {
-                // Remove the paywall
-                result.html = result.html.slice(0, startPaywall) + result.html.slice(endPost);
+                if (startPaywall !== -1) {
+                    // Remove the paywall
+                    result.html = result.html.slice(0, startPaywall) + result.html.slice(endPost);
+                }
             }
         }
 
