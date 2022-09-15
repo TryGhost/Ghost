@@ -1124,36 +1124,29 @@
 .gh-canvas-header.stacked .gh-canvas-breadcrumb {
     display: flex;
     align-items: center;
-    padding: 6px 0;
+    height: 24px;
     color: var(--darkgrey-l1);
     font-size: 1.35rem;
     font-weight: 500;
+    line-height: 24px;
     letter-spacing: .2px;
     background: none;
+}
+
+.gh-canvas-header.stacked .gh-canvas-breadcrumb a {
+    color: var(--darkgrey-l1);
+    line-height: 24px;
 }
 
 .gh-canvas-header.stacked .gh-canvas-breadcrumb svg {
     display: block;
     width: 9px;
     height: 9px;
-    margin: 1px 8px 0 0;
-    transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
+    margin: 1px 6px 0;
 }
 
 .gh-canvas-header.stacked .gh-canvas-breadcrumb svg path {
     stroke: var(--darkgrey-l1);
-}
-
-.gh-canvas-header.stacked .gh-canvas-breadcrumb:hover svg {
-    transform: translateX(-3px)
-}
-
-.gh-canvas-header.stacked .gh-canvas-breadcrumb:hover svg path {
-    stroke: var(--black);
-}
-
-.gh-canvas-header.stacked .gh-canvas-breadcrumb:hover {
-    color: var(--black);
 }
 
 .gh-main-grey-gradient .gh-canvas-header {
