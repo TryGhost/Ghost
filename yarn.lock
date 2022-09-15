@@ -15014,10 +15014,10 @@ kleur@^4.0.0, kleur@^4.1.0:
   resolved "https://registry.yarnpkg.com/kleur/-/kleur-4.1.5.tgz#95106101795f7050c6c650f350c683febddb1780"
   integrity sha512-o+NO+8WrRiQEE4/7nwRJhN1HWpVmJm511pBHUxPLtp0BUISzlBplORYSmTclCnJvQq2tKu/sgl3xVpkc7ZWuQQ==
 
-knex-migrator@5.0.5:
-  version "5.0.5"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-5.0.5.tgz#29a4ab39efac74e2f65d6164c54ba7a4a2cb8608"
-  integrity sha512-+rjHfZ3fjsQhB/NWSKKy7sAWmVOKDaZEtMqtwgLLq79hclyaRzW8ft59G0nmm1gRhet7pi+mlAVxDmMW3a2KXg==
+knex-migrator@5.0.6:
+  version "5.0.6"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-5.0.6.tgz#4903af7e8b2e966585c36d585ddf8666697debe9"
+  integrity sha512-WcmQg23ul8mFjIWS9pTmiXmyPPgpDJ39nNY601NTQyql0y+BE7RS9DxuwcQRcepc7ieJHiAiAlQvEDDjr6v+LA==
   dependencies:
     "@tryghost/database-info" "0.3.9"
     "@tryghost/errors" "1.2.15"
@@ -15033,7 +15033,7 @@ knex-migrator@5.0.5:
     nconf "0.12.0"
     resolve "1.22.1"
   optionalDependencies:
-    sqlite3 "5.1.0"
+    sqlite3 "5.1.1"
 
 knex@2.3.0:
   version "2.3.0"
@@ -20954,10 +20954,10 @@ sprintf-js@~1.0.2:
   resolved "https://registry.yarnpkg.com/sprintf-js/-/sprintf-js-1.0.3.tgz#04e6926f662895354f3dd015203633b857297e2c"
   integrity sha512-D9cPgkvLlV3t3IzL0D0YLvGA9Ahk4PcvVwUbN0dSGr1aP0Nrt4AEnTUbuGvquEC0mA64Gqt1fzirlRs5ibXx8g==
 
-sqlite3@5.1.0:
-  version "5.1.0"
-  resolved "https://registry.yarnpkg.com/sqlite3/-/sqlite3-5.1.0.tgz#d82bd1f85668453904ef9a6f0a6b13c70b53c837"
-  integrity sha512-/cZl9DfeSQMWR5g9SdluHGt+YL3URetjtvgv1XPQx7rzXOFdZx30EnZj709wCEIznjjzZdo5Lmt5GUeNyGgUbQ==
+sqlite3@5.1.1:
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/sqlite3/-/sqlite3-5.1.1.tgz#c6561220fd875fd88eb2ef717631e0a11af1ec38"
+  integrity sha512-mMinkrQr/LKJqFiFF+AF7imPSzRCCpTCreusZO3D/ssJHVjZOrbu2Caz+zPH5KTmGGXBxXMGSRDssL+44CLxvg==
   dependencies:
     "@mapbox/node-pre-gyp" "^1.0.0"
     node-addon-api "^4.2.0"
