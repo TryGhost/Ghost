@@ -59,11 +59,10 @@
                         {{/if}}
                         - 
                     </span>
-                    <span class="gh-content-entry-date {{if this.isDateHovered "is-hovered"}}" {{on "mouseover" (fn (mut this.isDateHovered) true)}} {{on "mouseleave" (fn (mut this.isDateHovered) false)}}>
+                    <span class="gh-content-entry-date" {{on "mouseover" (fn (mut this.isDateHovered) true)}} {{on "mouseleave" (fn (mut this.isDateHovered) false)}}>
+                        {{gh-format-post-time @post.updatedAtUTC draft=true}}
                         {{#if this.isDateHovered}}
-                            {{gh-format-post-time @post.updatedAtUTC "D MMM YYYY"}}
-                        {{else}}
-                            {{gh-format-post-time @post.updatedAtUTC draft=true}}
+                            <span {{css-transition "anim-fade-in-scale"}}>on {{gh-format-post-time @post.updatedAtUTC "D MMM YYYY"}}</span>
                         {{/if}}
                     </span>
                 </p>
@@ -72,7 +71,7 @@
                         <span class="scheduled" {{on "mouseover" (fn (mut this.isStateHovered) true)}} {{on "mouseleave" (fn (mut this.isStateHovered) false)}}>
                             Scheduled
                             {{#if this.isStateHovered}}
-                                <span class="schedule-details">- to be published {{if @post.newsletter "and sent "}}{{this.scheduledText}} to {{humanize-recipient-filter @post.emailSegment}}</span>
+                                <span class="schedule-details" {{css-transition "anim-fade-in-scale"}}>- to be published {{if @post.newsletter "and sent "}}{{this.scheduledText}} to {{humanize-recipient-filter @post.emailSegment}}</span>
                             {{/if}}
                         </span>
                     {{/if}}
@@ -87,10 +86,9 @@
                         <span class="published" {{on "mouseover" (fn (mut this.isStateHovered) true)}} {{on "mouseleave" (fn (mut this.isStateHovered) false)}}>
                             Published
                             {{#if @post.hasEmail}}
+                                and sent 
                                 {{#if this.isStateHovered}}
-                                    and sent to 2,467 free subscribers
-                                {{else}}
-                                    and sent
+                                    <span {{css-transition "anim-fade-in-scale"}}>to 2,467 free subscribers</span>
                                 {{/if}}
                             {{/if}}
                         </span>
@@ -98,10 +96,9 @@
 
                     {{#if @post.isSent}}
                         <span class="sent" {{on "mouseover" (fn (mut this.isStateHovered) true)}} {{on "mouseleave" (fn (mut this.isStateHovered) false)}}>
+                            Sent 
                             {{#if this.isStateHovered}}
-                                Sent to 2,467 free subscribers
-                            {{else}}
-                                Sent
+                                <span {{css-transition "anim-fade-in-scale"}}>to 2,467 free subscribers</span>
                             {{/if}}
                         </span>
                     {{/if}}
