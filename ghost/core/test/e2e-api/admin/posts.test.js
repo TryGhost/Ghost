@@ -72,7 +72,7 @@ describe('Posts API', function () {
             };
 
             await agent
-                .post('/posts/?formats=mobiledoc,lexical')
+                .post('/posts/?formats=mobiledoc,lexical,html')
                 .body({posts: [post]})
                 .expectStatus(201)
                 .matchBodySnapshot({
@@ -89,43 +89,38 @@ describe('Posts API', function () {
                 title: 'Lexical test',
                 mobiledoc: null,
                 lexical: JSON.stringify({
-                    editorState: {
-                        root: {
-                            children: [
-                                {
-                                    children: [
-                                        {
-                                            detail: 0,
-                                            format: 0,
-                                            mode: 'normal',
-                                            style: '',
-                                            text: 'Testing post creation with lexical',
-                                            type: 'text',
-                                            version: 1
-                                        }
-                                    ],
-                                    direction: 'ltr',
-                                    format: '',
-                                    indent: 0,
-                                    type: 'paragraph',
-                                    version: 1
-                                }
-                            ],
-                            direction: 'ltr',
-                            format: '',
-                            indent: 0,
-                            type: 'root',
-                            version: 1
-                        }
-                    },
-                    lastSaved: 1663081361393,
-                    source: 'Playground',
-                    version: '0.4.1'
+                    root: {
+                        children: [
+                            {
+                                children: [
+                                    {
+                                        detail: 0,
+                                        format: 0,
+                                        mode: 'normal',
+                                        style: '',
+                                        text: 'Testing post creation with lexical',
+                                        type: 'text',
+                                        version: 1
+                                    }
+                                ],
+                                direction: 'ltr',
+                                format: '',
+                                indent: 0,
+                                type: 'paragraph',
+                                version: 1
+                            }
+                        ],
+                        direction: 'ltr',
+                        format: '',
+                        indent: 0,
+                        type: 'root',
+                        version: 1
+                    }
                 })
             };
 
             await agent
-                .post('/posts/?formats=mobiledoc,lexical')
+                .post('/posts/?formats=mobiledoc,lexical,html')
                 .body({posts: [post]})
                 .expectStatus(201)
                 .matchBodySnapshot({
@@ -153,43 +148,60 @@ describe('Posts API', function () {
                     ]
                 }),
                 lexical: JSON.stringify({
-                    editorState: {
-                        root: {
-                            children: [
-                                {
-                                    children: [
-                                        {
-                                            detail: 0,
-                                            format: 0,
-                                            mode: 'normal',
-                                            style: '',
-                                            text: 'Testing post creation with lexical',
-                                            type: 'text',
-                                            version: 1
-                                        }
-                                    ],
-                                    direction: 'ltr',
-                                    format: '',
-                                    indent: 0,
-                                    type: 'paragraph',
-                                    version: 1
-                                }
-                            ],
-                            direction: 'ltr',
-                            format: '',
-                            indent: 0,
-                            type: 'root',
-                            version: 1
-                        }
-                    },
-                    lastSaved: 1663081361393,
-                    source: 'Playground',
-                    version: '0.4.1'
+                    root: {
+                        children: [
+                            {
+                                children: [
+                                    {
+                                        detail: 0,
+                                        format: 0,
+                                        mode: 'normal',
+                                        style: '',
+                                        text: 'Testing post creation with lexical',
+                                        type: 'text',
+                                        version: 1
+                                    }
+                                ],
+                                direction: 'ltr',
+                                format: '',
+                                indent: 0,
+                                type: 'paragraph',
+                                version: 1
+                            }
+                        ],
+                        direction: 'ltr',
+                        format: '',
+                        indent: 0,
+                        type: 'root',
+                        version: 1
+                    }
                 })
             };
 
             await agent
                 .post('/posts/?formats=mobiledoc,lexical')
+                .body({posts: [post]})
+                .expectStatus(422)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    etag: anyEtag
+                });
+        });
+
+        it('Errors with an invalid lexical state object', async function () {
+            const post = {
+                title: 'Invalid lexical state',
+                lexical: JSON.stringify({
+                    notLexical: true
+                })
+            };
+
+            await agent
+                .post('/posts/?formats=mobiledoc,lexical,html')
                 .body({posts: [post]})
                 .expectStatus(422)
                 .matchBodySnapshot({

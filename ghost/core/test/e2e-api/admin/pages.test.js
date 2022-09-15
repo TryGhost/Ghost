@@ -133,42 +133,37 @@ describe('Pages API', function () {
         const page = {
             title: 'Lexical test',
             lexical: JSON.stringify({
-                editorState: {
-                    root: {
-                        children: [
-                            {
-                                children: [
-                                    {
-                                        detail: 0,
-                                        format: 0,
-                                        mode: 'normal',
-                                        style: '',
-                                        text: 'Testing post creation with lexical',
-                                        type: 'text',
-                                        version: 1
-                                    }
-                                ],
-                                direction: 'ltr',
-                                format: '',
-                                indent: 0,
-                                type: 'paragraph',
-                                version: 1
-                            }
-                        ],
-                        direction: 'ltr',
-                        format: '',
-                        indent: 0,
-                        type: 'root',
-                        version: 1
-                    }
-                },
-                lastSaved: 1663081361393,
-                source: 'Playground',
-                version: '0.4.1'
+                root: {
+                    children: [
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'Testing page creation with lexical',
+                                    type: 'text',
+                                    version: 1
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'paragraph',
+                            version: 1
+                        }
+                    ],
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
             })
         };
 
-        const res = await request.post(localUtils.API.getApiQuery('pages/?formats=mobiledoc,lexical'))
+        const res = await request.post(localUtils.API.getApiQuery('pages/?formats=mobiledoc,lexical,html'))
             .set('Origin', config.get('url'))
             .send({pages: [page]})
             .expect('Content-Type', /json/)
@@ -178,11 +173,12 @@ describe('Pages API', function () {
         res.body.pages.length.should.eql(1);
         const [returnedPage] = res.body.pages;
 
-        const additionalProperties = ['lexical'];
+        const additionalProperties = ['lexical', 'html', 'reading_time'];
         localUtils.API.checkResponse(returnedPage, 'page', additionalProperties);
 
         should.equal(returnedPage.mobiledoc, null);
         should.equal(returnedPage.lexical, page.lexical);
+        should.equal(returnedPage.html, '<p>Testing page creation with lexical</p>');
     });
 
     it('Can\'t add a page with both mobiledoc and lexical', async function () {

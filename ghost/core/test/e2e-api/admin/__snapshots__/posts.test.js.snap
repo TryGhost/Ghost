@@ -296,14 +296,15 @@ Object {
       "email_only": false,
       "email_segment": "all",
       "email_subject": null,
-      "excerpt": null,
+      "excerpt": "Testing post creation with lexical",
       "feature_image": null,
       "feature_image_alt": null,
       "feature_image_caption": null,
       "featured": false,
       "frontmatter": null,
+      "html": "<p>Testing post creation with lexical</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "lexical": "{\\"editorState\\":{\\"root\\":{\\"children\\":[{\\"children\\":[{\\"detail\\":0,\\"format\\":0,\\"mode\\":\\"normal\\",\\"style\\":\\"\\",\\"text\\":\\"Testing post creation with lexical\\",\\"type\\":\\"text\\",\\"version\\":1}],\\"direction\\":\\"ltr\\",\\"format\\":\\"\\",\\"indent\\":0,\\"type\\":\\"paragraph\\",\\"version\\":1}],\\"direction\\":\\"ltr\\",\\"format\\":\\"\\",\\"indent\\":0,\\"type\\":\\"root\\",\\"version\\":1}},\\"lastSaved\\":1663081361393,\\"source\\":\\"Playground\\",\\"version\\":\\"0.4.1\\"}",
+      "lexical": "{\\"root\\":{\\"children\\":[{\\"children\\":[{\\"detail\\":0,\\"format\\":0,\\"mode\\":\\"normal\\",\\"style\\":\\"\\",\\"text\\":\\"Testing post creation with lexical\\",\\"type\\":\\"text\\",\\"version\\":1}],\\"direction\\":\\"ltr\\",\\"format\\":\\"\\",\\"indent\\":0,\\"type\\":\\"paragraph\\",\\"version\\":1}],\\"direction\\":\\"ltr\\",\\"format\\":\\"\\",\\"indent\\":0,\\"type\\":\\"root\\",\\"version\\":1}}",
       "meta_description": null,
       "meta_title": null,
       "mobiledoc": null,
@@ -314,6 +315,7 @@ Object {
       "primary_author": Any<Object>,
       "primary_tag": Any<Object>,
       "published_at": null,
+      "reading_time": 0,
       "slug": "lexical-test",
       "status": "draft",
       "tags": Any<Array>,
@@ -335,7 +337,7 @@ exports[`Posts API Create Can create a post with lexical 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3737",
+  "content-length": "3743",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/posts\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -370,6 +372,7 @@ Object {
       "feature_image_caption": null,
       "featured": false,
       "frontmatter": null,
+      "html": "<p>Testing post creation with mobiledoc</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "lexical": null,
       "meta_description": null,
@@ -382,6 +385,7 @@ Object {
       "primary_author": Any<Object>,
       "primary_tag": Any<Object>,
       "published_at": null,
+      "reading_time": 0,
       "slug": "mobiledoc-test",
       "status": "draft",
       "tags": Any<Array>,
@@ -403,7 +407,7 @@ exports[`Posts API Create Can create a post with mobiledoc 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3489",
+  "content-length": "3559",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/posts\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -435,6 +439,36 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "294",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Posts API Create Errors with an invalid lexical state object 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Invalid lexical structure.",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": "https://ghost.org/docs/publishing/",
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Validation error, cannot save post.",
+      "property": "lexical",
+      "type": "ValidationError",
+    },
+  ],
+}
+`;
+
+exports[`Posts API Create Errors with an invalid lexical state object 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "284",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
