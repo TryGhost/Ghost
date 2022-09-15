@@ -51,7 +51,7 @@ describe('Post Email Serializer', function () {
                     excerpt: 'This is a blog post test <3</body>',
                     authors: 'This is a blog post test <3</body>',
                     feature_image_alt: 'This is a blog post test <3</body>',
-                    feature_image_caption: 'This is a blog post test <3</body>',
+                    feature_image_caption: 'This is escaped in the frontend',
 
                     // This is a markdown post with all cards that contain <3 in all fields + </body> tags
                     // Note that some fields are already escaped in the frontend

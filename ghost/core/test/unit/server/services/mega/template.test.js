@@ -125,7 +125,7 @@ describe('Mega template', function () {
             html: '<div class="post-content-html">I am &lt;100 years old</div>',
             feature_image: 'https://example.com/image.jpg',
             feature_image_alt: 'I <3 alt text',
-            feature_image_caption: 'I <3 images'
+            feature_image_caption: 'I &lt;3 images' // escaped in frontend
         };
         const site = {
             iconUrl: 'site icon url',
