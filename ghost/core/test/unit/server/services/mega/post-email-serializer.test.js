@@ -178,6 +178,7 @@ describe('Post Email Serializer', function () {
                     authors: 'This is a test',
                     feature_image_alt: 'This is a test',
                     feature_image_caption: 'This is a test',
+                    visibility: 'tiers',
 
                     // eslint-disable-next-line
                     mobiledoc: JSON.stringify({"version":"0.3.1","atoms":[],"cards":[["paywall",{}]],"markups":[],"sections":[[1,"p",[[0,[],0,"Free content"]]],[10,0],[1,"p",[[0,[],0,"Members only content"]]]],"ghostVersion":"4.0"})
@@ -226,6 +227,65 @@ describe('Post Email Serializer', function () {
 
             // Paywall content
             assert(output.html.includes('Subscribe to'));
+        });
+
+        it('output should not contain paywall when there is members-only content but it is a free post', async function () {
+            sinon.stub(_PostEmailSerializer, 'serializePostModel').callsFake(async () => {
+                return {
+                    // This is not realistic, but just to test escaping
+                    url: 'https://testpost.com/',
+                    title: 'This is a test',
+                    excerpt: 'This is a test',
+                    authors: 'This is a test',
+                    feature_image_alt: 'This is a test',
+                    feature_image_caption: 'This is a test',
+                    visibility: 'members',
+
+                    // eslint-disable-next-line
+                    mobiledoc: JSON.stringify({"version":"0.3.1","atoms":[],"cards":[["paywall",{}]],"markups":[],"sections":[[1,"p",[[0,[],0,"Free content"]]],[10,0],[1,"p",[[0,[],0,"Members only content"]]]],"ghostVersion":"4.0"})
+                };
+            });
+            const customSettings = {
+                accent_color: '#000099',
+                timezone: 'UTC'
+            };
+
+            const settingsMock = sinon.stub(settingsCache, 'get');
+            settingsMock.callsFake((key, options) => {
+                if (customSettings[key]) {
+                    return customSettings[key];
+                }
+
+                return settingsMock.wrappedMethod.call(settingsCache, key, options);
+            });
+            const template = {
+                name: 'My newsletter',
+                header_image: '',
+                show_header_icon: true,
+                show_header_title: true,
+                show_feature_image: true,
+                title_font_category: 'sans-serif',
+                title_alignment: 'center',
+                body_font_category: 'serif',
+                show_badge: true,
+                show_header_name: true,
+                // Note: we don't need to check the footer content because this should contain valid HTML (not text)
+                footer_content: '<span>Footer content with valid HTML</span>'
+            };
+            const newsletterMock = {
+                get: function (key) {
+                    return template[key];
+                },
+                toJSON: function () {
+                    return template;
+                }
+            };
+
+            const output = await serialize({}, newsletterMock, {isBrowserPreview: false});
+            assert(output.html.includes('<!--members-only-->'));
+            assert(!output.html.includes('<!-- PAYWALL -->'));
+            assert(output.html.includes('<!-- POST CONTENT END -->'));
+            assert(!output.html.includes('Subscribe to'));
         });
 
         it('output should not contain paywall if there is no members-only-content', async function () {
