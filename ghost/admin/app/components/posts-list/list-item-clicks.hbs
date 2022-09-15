@@ -20,7 +20,7 @@
                             in <span class="midgrey-l2 fw5">{{@post.primaryTag.name}}</span>
                         {{/if}}
 
-                        •
+                        -
                     </span>
                     <span class="gh-content-entry-date">
                         {{#if this.isHovered}}
@@ -57,10 +57,10 @@
                         {{#if @post.primaryTag}}
                             in <span class="midgrey-l2 fw5">{{@post.primaryTag.name}}</span>
                         {{/if}}
-                        • 
+                        - 
                     </span>
-                    <span class="gh-content-entry-date">
-                        {{#if this.isHovered}}
+                    <span class="gh-content-entry-date {{if this.isDateHovered "is-hovered"}}" {{on "mouseover" (fn (mut this.isDateHovered) true)}} {{on "mouseleave" (fn (mut this.isDateHovered) false)}}>
+                        {{#if this.isDateHovered}}
                             {{gh-format-post-time @post.updatedAtUTC "D MMM YYYY"}}
                         {{else}}
                             {{gh-format-post-time @post.updatedAtUTC draft=true}}
@@ -69,11 +69,10 @@
                 </p>
                 <p class="gh-content-entry-status">
                     {{#if @post.isScheduled}}
-                        <span class="scheduled" title="Scheduled">
-                            {{#if this.isHovered}}
-                                Scheduled to be published {{if @post.newsletter "and sent "}}{{this.scheduledText}} to {{@post.emailSegment}} subscribers
-                            {{else}}
-                                Scheduled
+                        <span class="scheduled" {{on "mouseover" (fn (mut this.isStateHovered) true)}} {{on "mouseleave" (fn (mut this.isStateHovered) false)}}>
+                            Scheduled
+                            {{#if this.isStateHovered}}
+                                <span class="schedule-details">- to be published {{if @post.newsletter "and sent "}}{{this.scheduledText}} to {{humanize-recipient-filter @post.emailSegment}}</span>
                             {{/if}}
                         </span>
                     {{/if}}
@@ -85,10 +84,10 @@
                     {{/if}}
 
                     {{#if @post.isPublished}}
-                        <span class="published">
+                        <span class="published" {{on "mouseover" (fn (mut this.isStateHovered) true)}} {{on "mouseleave" (fn (mut this.isStateHovered) false)}}>
                             Published
                             {{#if @post.hasEmail}}
-                                {{#if this.isHovered}}
+                                {{#if this.isStateHovered}}
                                     and sent to 2,467 free subscribers
                                 {{else}}
                                     and sent
@@ -98,8 +97,8 @@
                     {{/if}}
 
                     {{#if @post.isSent}}
-                        <span class="sent">
-                            {{#if this.isHovered}}
+                        <span class="sent" {{on "mouseover" (fn (mut this.isStateHovered) true)}} {{on "mouseleave" (fn (mut this.isStateHovered) false)}}>
+                            {{#if this.isStateHovered}}
                                 Sent to 2,467 free subscribers
                             {{else}}
                                 Sent
@@ -117,17 +116,13 @@
         <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-opens">
             {{#if (and @post.email.trackOpens (eq @post.email.status "submitted"))}}
                 <div class="flex flex-column">
-                    <span class="gh-content-email-stats">
-                        {{#if this.isHovered}}
-                            1,283
+                    <span class="gh-content-email-stats" {{on "mouseover" (fn (mut this.isOpenStatHovered) true)}} {{on "mouseleave" (fn (mut this.isOpenStatHovered) false)}}>
+                        {{#if this.isOpenStatHovered}}
+                            <strong>1,283</strong> opens
                         {{else}}
-                            52%
+                            <strong>52%</strong> opens
                         {{/if}}
                     </span>
-                    <span class="gh-content-entry-meta">
-                        opens
-                    </span>
-                    <span class="midgrey-l2 fw4 gh-content-email-stats-mobile">{{@post.email.openRate}}% opens</span>
                 </div>
             {{/if}}
         </LinkTo>
@@ -136,15 +131,12 @@
         <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-clicks">
             {{#if (and @post.email.trackOpens (eq @post.email.status "submitted"))}}
                 <div class="flex flex-column">
-                    <span class="gh-content-email-stats">
-                        {{#if this.isHovered}}
-                            444
+                    <span class="gh-content-email-stats" {{on "mouseover" (fn (mut this.isClickStatHovered) true)}} {{on "mouseleave" (fn (mut this.isClickStatHovered) false)}}>
+                        {{#if this.isClickStatHovered}}
+                            <strong>419</strong> clicks
                         {{else}}
-                            18%
+                            <strong>17%</strong> clicks
                         {{/if}}
-                    </span>
-                    <span class="gh-content-entry-meta">
-                        clicks
                     </span>
                 </div>
             {{/if}}
@@ -152,18 +144,14 @@
     {{/if}}
 
     {{!-- Button column --}}
-    <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-cta">
+    <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data">
         {{#if (or @post.isSent @post.isPublished)}}
-            <LinkTo @route="posts.analytics" @model={{@post}} class="gh-btn gh-btn-outline gh-btn-icon">
-                <span>
-                    {{svg-jar "stats" class="stats"}} Stats
-                </span>
+            <LinkTo @route="posts.analytics" @model={{@post}} class="gh-post-list-cta {{if this.isHovered "is-hovered"}}">
+                {{svg-jar "stats"}}
             </LinkTo>
         {{else}}
-            <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="gh-btn gh-btn-outline gh-btn-icon">
-                <span>
-                    {{svg-jar "pen" class="edit"}} Edit
-                </span>
+            <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="gh-post-list-cta {{if this.isHovered "is-hovered"}}">
+                {{svg-jar "pen" class="edit"}}
             </LinkTo>
         {{/if}}
     </LinkTo>
