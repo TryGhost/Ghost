@@ -26,7 +26,7 @@ const sanitizeKeys = (obj, keys) => {
 module.exports = ({post, site, newsletter, templateSettings}) => {
     const date = new Date();
     const hasFeatureImageCaption = templateSettings.showFeatureImage && post.feature_image && post.feature_image_caption;
-    const cleanPost = sanitizeKeys(post, ['url', 'published_at', 'title', 'excerpt', 'authors', 'feature_image', 'feature_image_alt', 'feature_image_caption']);
+    const cleanPost = sanitizeKeys(post, ['url', 'published_at', 'title', 'excerpt', 'authors', 'feature_image', 'feature_image_alt']);
     const cleanSite = sanitizeKeys(site, ['title']);
     const cleanNewsletter = sanitizeKeys(newsletter, ['name']);
 
