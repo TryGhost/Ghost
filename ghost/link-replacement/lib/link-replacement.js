@@ -26,7 +26,7 @@
 
 /**
  * @typedef {object} SettingsCache
- * @prop {(key: string) => any} get
+ * @prop {(key: string, options?: any) => any} get
  */
 
 class LinkReplacementService {
