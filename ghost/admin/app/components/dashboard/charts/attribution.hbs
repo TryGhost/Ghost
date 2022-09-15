@@ -1,5 +1,5 @@
 <section class="gh-dashboard-section gh-dashboard-recents">
-    
+
     <article class="gh-dashboard-box" {{did-insert this.loadData}}>
         <h3 class="gh-dashboard-metric-label">Source attribution</h3>
         <div style="display: grid;
@@ -46,40 +46,13 @@
             </div>
             <div style="border-left: 1px solid #eceef0; padding-left: 48px;display: flex;justify-content: center;align-items: center;">
                 <div style="max-width: 200px;">
-                    <canvas id="myChart" width="400" height="400"></canvas>
+                    <EmberChart
+                        @type='doughnut'
+                        @data={{this.chartData}}
+                        @options={{this.chartOptions}}
+                        @height={{400}}
+                    />
                 </div>
-                <script>
-                const ctx = document.getElementById('myChart');
-                const myChart = new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Red', 'Blue', 'Yellow', 'Bigi'],
-                        datasets: [{
-                            label: '# of Votes',
-                            data: [19, 12, 6, 4, 2],
-                            backgroundColor: [
-                                '#853EED',
-                                '#CA3FED',
-                                '#E993CC',
-                                '#EE9696',
-                                '#FEC7C0'
-                            ],
-                            borderWidth: 2,
-                            borderColor: '#fff',
-                        }]
-                    },
-                    options: {
-                        cutoutPercentage: 60,
-                        borderColor: '#555',
-                        legend: {
-                            display: false,
-                            labels: {
-                                color: 'rgb(255, 99, 132)'
-                            }
-                        }
-                    }
-                });
-                </script>
             </div>
         </div>
     </article>
