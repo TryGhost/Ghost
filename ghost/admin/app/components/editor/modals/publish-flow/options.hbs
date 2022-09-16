@@ -98,7 +98,7 @@
                 {{svg-jar "member"}}
                 <div class="gh-publish-setting-trigger">
                     Already sent to
-                    {{@publishOptions.post.email.emailCount}}
+                    {{format-number @publishOptions.post.email.emailCount}}
                     {{if (not-eq @recipientType "all") @recipientType}} {{!-- free/paid/specific --}}
                     {{gh-pluralize @publishOptions.post.email.emailCount "subscriber" without-count=true}}
                     {{#unless @publishOptions.onlyDefaultNewsletter}}

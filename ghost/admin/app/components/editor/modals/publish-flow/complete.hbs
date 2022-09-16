@@ -27,7 +27,7 @@
             {{#if post.emailOnly}}
                 Your email has been sent.
             {{else if (and post.isPost @postCount)}}
-                That’s {{gh-pluralize @postCount "post"}} published, keep going!
+                That’s {{format-number @postCount}} {{gh-pluralize @postCount "post" without-count=true}} published, keep going!
             {{else}}
                 Your {{post.displayName}} has been published.
             {{/if}}
@@ -45,7 +45,7 @@
                     <strong>
                         {{if (eq @recipientType "all") "all"}}
 
-                        {{countFetcher.count}}
+                        {{format-number countFetcher.count}}
 
                         {{!-- @recipientType = free/paid/all/specific --}}
                         {{if (not-eq @recipientType "all") @recipientType}}
