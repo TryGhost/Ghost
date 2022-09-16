@@ -66,6 +66,7 @@ export default class FeatureService extends Service {
     @feature('emailAlerts') emailAlerts;
     @feature('emailClicks') emailClicks;
     @feature('sourceAttribution') sourceAttribution;
+    @feature('lexicalEditor') lexicalEditor;
 
     _user = null;
 
