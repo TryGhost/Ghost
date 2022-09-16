@@ -11,7 +11,10 @@
         {{#if (and this.error @showErrors)}}
             <p class="pt2 error">{{this.error.message}}</p>
         {{/if}}
-        <p class="pt2">If an email address in your CSV matches an existing member, they will be updated with the mapped values.</p>
+
+        {{#if this.membersStats.memberCount}}
+            <p class="pt2">If an email address in your CSV matches an existing member, they will be updated with the mapped values.</p>
+        {{/if}}
 
         <div class="mt6">
             <label for="label-input"><span class="fw6 f8 dib mb1">Label these members</span></label>

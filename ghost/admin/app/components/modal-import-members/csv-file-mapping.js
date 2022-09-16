@@ -3,12 +3,15 @@ import MemberImportError from 'ghost-admin/errors/member-import-error';
 import papaparse from 'papaparse';
 import {action} from '@ember/object';
 import {isNone} from '@ember/utils';
+import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
 export default class CsvFileMapping extends Component {
     @tracked error = null;
     @tracked fileData = null;
     @tracked labels = null;
+
+    @service membersStats;
 
     constructor(...args) {
         super(...args);

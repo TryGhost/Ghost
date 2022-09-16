@@ -1490,6 +1490,11 @@ p.gh-members-import-errordetailtext {
     border-bottom: 1px solid var(--member-import-table-outline);
 }
 
+.gh-members-import-table td span,
+.gh-members-import-table th span {
+    user-select: none !important;
+}
+
 .gh-members-import-datanav {
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.01), 0 1px 2px rgba(0, 0, 0, 0.05);
 }
@@ -1630,6 +1635,17 @@ p.gh-members-import-errordetail:first-of-type {
 .gh-member-import-icon-confetti circle,
 .gh-member-import-icon-confetti ellipse {
     stroke-width: 0.85px;
+}
+
+.gh-import-member-icon {
+    color: var(--darkgrey);
+    width: 54px !important;
+    height: 54px !important;
+    margin-right: -8px;
+}
+
+.gh-import-member-icon * {
+    stroke-width: 0.8px !important;
 }
 
 /* Fixing Firefox's select padding */
