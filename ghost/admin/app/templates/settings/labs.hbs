@@ -265,6 +265,19 @@
                         </div>
                     </div>
                 </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Lexical editor</h4>
+                            <p class="gh-expandable-description">
+                               Makes lexical editor the default when creating new posts/pages.
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                           <GhFeatureFlag @flag="lexicalEditor" />
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         {{/if}}
