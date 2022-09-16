@@ -117,16 +117,21 @@ export default class TagForm extends Component {
             newValue = newValue.trim();
         }
 
-        tag[property] = newValue;
-
         // Generate slug based on name for new tag when empty
-        if (property === 'name' && !tag.slug && tag.isNew) {
+        if (property === 'name' && tag.isNew && !this.hasChangedSlug) {
             let slugValue = slugify(newValue);
             if (/^#/.test(newValue)) {
                 slugValue = 'hash-' + slugValue;
             }
             tag.slug = slugValue;
         }
+
+        // ensure manual changes of slug don't get reset when changing name
+        if (property === 'slug') {
+            this.hasChangedSlug = !!newValue;
+        }
+
+        tag[property] = newValue;
 
         // clear validation message when typing
         tag.hasValidated.addObject(property);
