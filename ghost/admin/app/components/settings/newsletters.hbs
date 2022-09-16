@@ -146,7 +146,7 @@
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
                         <div>
-                            <h4 class="gh-expandable-title">Newsletter tracking</h4>
+                            <h4 class="gh-expandable-title">Newsletter analytics</h4>
                             <p class="gh-expandable-description">Track how many members are opening emails and clicking links</p>
                         </div>
                         <button type="button" class="gh-btn" {{on "click" (toggle-action "newsletterTrackingOpen" this)}} data-test-toggle-membersemail>
@@ -159,7 +159,7 @@
                                 <div class="gh-newsletter-tracking">
                                     <div class="gh-newsletter-tracking-row">
                                         <div>
-                                            <h4 class="gh-newsletter-tracking-title">Enable open-rate tracking</h4>
+                                            <h4 class="gh-newsletter-tracking-title">Track newsletter opens</h4>
                                         </div>
                                         <div class="for-switch">
                                             <label class="switch" data-test-label="email-track-opens">
@@ -177,7 +177,7 @@
                                     </div>
                                     <div class="gh-newsletter-tracking-row">
                                         <div>
-                                            <h4 class="gh-newsletter-tracking-title">Enable newsletter click tracking</h4>
+                                            <h4 class="gh-newsletter-tracking-title">Track newsletter link clicks</h4>
                                         </div>
                                         <div class="for-switch">
                                             <label class="switch" data-test-label="email-track-opens">
@@ -200,6 +200,7 @@
                 </div>
 
             {{else}}
+
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
                         <div>
@@ -221,6 +222,7 @@
                         </div>
                     </div>
                 </div>
+                
             {{/if}}
         </div>
     </section>

@@ -866,9 +866,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     font-weight: 500;
 }
 
-.gh-posts-list-item-labs .gh-content-entry-status .draft::before,
-.gh-posts-list-item-labs .gh-content-entry-status .scheduled::before {
-    content: "";
+.gh-posts-list-item-labs .gh-content-entry-status .status-dot {
     display: inline-block;
     width: 6px;
     height: 6px;
@@ -876,19 +874,25 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     border-radius: 999px;
 }
 
-.gh-posts-list-item-labs .gh-content-entry-status .draft::before {
-    border-color: var(--pink);
-    background: var(--pink);
-}
-
-.gh-posts-list-item-labs .gh-content-entry-status .scheduled::before {
+.gh-posts-list-item-labs .gh-content-entry-status .scheduled .status-dot {
     border-color: var(--green);
     background: var(--green);
+}
+
+.gh-posts-list-item-labs .gh-content-entry-status .draft .status-dot {
+    border-color: var(--pink);
+    background: var(--pink);
 }
 
 .gh-posts-list-item-labs .schedule-details {
     margin-left: 3px;
     color: var(--midlightgrey-d1);
+}
+
+.gh-posts-list-item-labs .schedule-details.absolute {
+    position: absolute;
+    transform: translateX(-100%);
+    min-width: max-content;
 }
 
 .gh-content-entry-author,
