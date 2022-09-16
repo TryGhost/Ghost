@@ -12,6 +12,8 @@ function $convertToHtmlString(options = {}) {
     const output = [];
     const children = $getRoot().getChildren();
 
+    options.usedIdAttributes = options.usedIdAttributes || {};
+
     for (const child of children) {
         const result = exportTopLevelElementOrDecorator(child, options);
 

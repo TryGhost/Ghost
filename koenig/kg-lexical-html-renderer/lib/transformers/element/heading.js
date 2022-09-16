@@ -1,4 +1,5 @@
 const {$isHeadingNode} = require('@lexical/rich-text');
+const generateId = require('../../utils/generate-id');
 
 module.exports = {
     export(node, options, exportChildren) {
@@ -7,7 +8,8 @@ module.exports = {
         }
 
         const tag = node.getTag();
+        const id = generateId(node.getTextContent(), options);
 
-        return `<${tag}>${exportChildren(node)}</${tag}>`;
+        return `<${tag} id="${id}">${exportChildren(node)}</${tag}>`;
     }
 };
