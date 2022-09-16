@@ -250,6 +250,18 @@ describe('Unit: models/post', function () {
             should.not.exist(json.mobiledoc_revisions);
             should.exist(json.mobiledoc);
         });
+
+        it('ensure post revisions are never exposed', function () {
+            const post = {
+                lexical: '{}',
+                post_revisions: []
+            };
+
+            const json = toJSON(post, {formats: ['lexical']});
+
+            should.not.exist(json.post_revisions);
+            should.exist(json.lexical);
+        });
     });
 
     describe('extraFilters', function () {

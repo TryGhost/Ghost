@@ -97,6 +97,7 @@ describe('Exporter', function () {
             const excludedTables = [
                 'sessions',
                 'mobiledoc_revisions',
+                'post_revisions',
                 'email_batches',
                 'email_recipients',
                 'members_cancel_events',
