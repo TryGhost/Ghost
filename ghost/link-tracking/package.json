@@ -24,7 +24,7 @@
     "sinon": "14.0.0"
   },
   "dependencies": {
-    "@tryghost/domain-events": "^0.1.14",
+    "@tryghost/domain-events": "0.0.0",
     "@tryghost/link-redirects": "0.0.0"
   }
 }

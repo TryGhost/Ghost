@@ -54,6 +54,9 @@ describe('LinkReplacementService', function () {
         const linkRedirectService = {
             addRedirect: (to) => {
                 return Promise.resolve({to, from: 'https://redirected.service/r/ro0sdD92'});
+            },
+            getSlug: () => {
+                return Promise.resolve('slug');
             }
         };
         const service = new LinkReplacementService({
@@ -120,19 +123,19 @@ describe('LinkReplacementService', function () {
             it('returns the redirected URL with uuid', async function () {
                 const replaced = await service.replaceLink(new URL('http://localhost:2368/dir/path'), {}, {id: 'post_id'});
                 assert.equal(replaced.toString(), 'https://redirected.service/r/ro0sdD92?m=--uuid--');
-                assert(redirectSpy.calledOnceWithExactly(new URL('http://localhost:2368/dir/path?rel=newsletter&attribution_id=post_id')));
+                assert(redirectSpy.calledOnceWithExactly(new URL('http://localhost:2368/dir/path?rel=newsletter&attribution_id=post_id'), 'slug'));
             });
 
             it('does not add attribution for external sites', async function () {
                 const replaced = await service.replaceLink(new URL('http://external.domain/dir/path'), {}, {id: 'post_id'});
                 assert.equal(replaced.toString(), 'https://redirected.service/r/ro0sdD92?m=--uuid--');
-                assert(redirectSpy.calledOnceWithExactly(new URL('http://external.domain/dir/path?rel=newsletter')));
+                assert(redirectSpy.calledOnceWithExactly(new URL('http://external.domain/dir/path?rel=newsletter'), 'slug'));
             });
 
             it('does not add attribution or member tracking if click tracking is disabled', async function () {
                 const replaced = await disabledService.replaceLink(new URL('http://external.domain/dir/path'), {}, {id: 'post_id'});
                 assert.equal(replaced.toString(), 'https://redirected.service/r/ro0sdD92');
-                assert(redirectSpy.calledOnceWithExactly(new URL('http://external.domain/dir/path?rel=newsletter')));
+                assert(redirectSpy.calledOnceWithExactly(new URL('http://external.domain/dir/path?rel=newsletter'), 'slug'));
             });
         });
 
@@ -140,7 +143,7 @@ describe('LinkReplacementService', function () {
             it('Replaces hrefs inside links', async function () {
                 const html = '<a href="http://localhost:2368/dir/path">link</a>';
                 const expected = '<a href="https://redirected.service/r/ro0sdD92?m=%%{uuid}%%">link</a>';
-                
+
                 const replaced = await service.replaceLinks(html, {}, {id: 'post_id'});
                 assert.equal(replaced, expected);
             });
@@ -148,7 +151,7 @@ describe('LinkReplacementService', function () {
             it('Ignores invalid links', async function () {
                 const html = '<a href="%%{unsubscribe_url}%%">link</a>';
                 const expected = '<a href="%%{unsubscribe_url}%%">link</a>';
-                
+
                 const replaced = await service.replaceLinks(html, {}, {id: 'post_id'});
                 assert.equal(replaced, expected);
             });
