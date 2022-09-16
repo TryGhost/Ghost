@@ -1,7 +1,6 @@
 import ApplicationAdapter from 'ghost-admin/adapters/application';
 
 export default class Post extends ApplicationAdapter {
-    // posts and pages now include everything by default
     buildIncludeURL(store, modelName, id, snapshot, requestType, query) {
         const url = this.buildURL(modelName, id, snapshot, requestType, query);
         const parsedUrl = new URL(url);
@@ -39,5 +38,12 @@ export default class Post extends ApplicationAdapter {
         }
 
         return url;
+    }
+
+    // posts and pages now include all relations by default so we don't want
+    // EmbeddedRelationAdapter.buildQuery adding an `?include=` param that
+    // overrides the defaults with a more restrictive list
+    buildQuery(store, modelName, options) {
+        return options;
     }
 }
