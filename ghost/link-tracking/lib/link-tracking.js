@@ -1,8 +1,27 @@
+const ObjectID = require('bson-objectid').default;
 const DomainEvents = require('@tryghost/domain-events');
 const {RedirectEvent} = require('@tryghost/link-redirects');
+const logging = require('@tryghost/logging');
+const LinkClick = require('./LinkClick');
+
+/**
+ * @typedef {object} ILinkClickRepository
+ * @prop {(event: LinkClick) => Promise<void>} save
+ */
 
 class LinkClickTrackingService {
     #initialised = false;
+
+    /** @type ILinkClickRepository */
+    #linkClickRepository;
+
+    /**
+     * @param {object} deps
+     * @param {ILinkClickRepository} deps.linkClickRepository
+     */
+    constructor(deps) {
+        this.#linkClickRepository = deps.linkClickRepository;
+    }
 
     async init() {
         if (this.#initialised) {
@@ -13,7 +32,7 @@ class LinkClickTrackingService {
     }
 
     /**
-     * @param {import('@tryghost/link-redirects/LinkRedirect')} redirect
+     * @param {import('@tryghost/link-redirects').LinkRedirect} redirect
      * @param {string} id
      * @return {Promise<URL>}
      */
@@ -24,18 +43,25 @@ class LinkClickTrackingService {
     }
 
     subscribe() {
-        DomainEvents.subscribe(RedirectEvent, (event) => {
+        DomainEvents.subscribe(RedirectEvent, async (event) => {
             const id = event.data.url.searchParams.get('m');
-            if (typeof id !== 'string') {
+            if (!id) {
                 return;
             }
 
-            const clickEvent = {
-                member_id: id,
+            let memberId;
+            try {
+                memberId = ObjectID.createFromHexString(id);
+            } catch (err) {
+                logging.warn(`Invalid member_id "${id}" found during redirect`);
+                return;
+            }
+
+            const click = new LinkClick({
+                member_id: memberId,
                 link_id: event.data.link.link_id
-            };
-            // eslint-disable-next-line no-console
-            console.log('Finna store a click event', clickEvent);
+            });
+            await this.#linkClickRepository.save(click);
         });
     }
 }
