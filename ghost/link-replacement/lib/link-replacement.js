@@ -1,7 +1,16 @@
+const ObjectID = require('bson-objectid').default;
+const PostLink = require('./PostLink');
+
 /**
  * @typedef {object} ILinkRedirect
+ * @prop {ObjectID} link_id
  * @prop {URL} to
  * @prop {URL} from
+ */
+
+/**
+ * @typedef {object} IPostLinkRepository
+ * @prop {(obj: PostLink) => Promise<void>} save
  */
 
 /**
@@ -41,6 +50,8 @@ class LinkReplacementService {
     #urlUtils;
     /** @type SettingsCache */
     #settingsCache;
+    /** @type IPostLinkRepository */
+    #postLinkRepository;
 
     /**
      * @param {object} deps
@@ -49,6 +60,7 @@ class LinkReplacementService {
      * @param {IAttributionService} deps.attributionService
      * @param {UrlUtils} deps.urlUtils
      * @param {SettingsCache} deps.settingsCache
+     * @param {IPostLinkRepository} deps.postLinkRepository
      */
     constructor(deps) {
         this.#linkRedirectService = deps.linkRedirectService;
@@ -56,6 +68,7 @@ class LinkReplacementService {
         this.#attributionService = deps.attributionService;
         this.#urlUtils = deps.urlUtils;
         this.#settingsCache = deps.settingsCache;
+        this.#postLinkRepository = deps.postLinkRepository;
     }
 
     /**
@@ -100,6 +113,13 @@ class LinkReplacementService {
         if (enableTracking) {
             return this.#linkClickTrackingService.addTrackingToRedirect(redirect, '--uuid--');
         }
+
+        // 4. Store a reference of the link against the post
+        const postLink = new PostLink({
+            link_id: redirect.link_id,
+            post_id: ObjectID.createFromHexString(post.id)
+        });
+        await this.#postLinkRepository.save(postLink);
 
         return redirect.from;
     }

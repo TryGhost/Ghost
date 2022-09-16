@@ -10,13 +10,20 @@ class LinkReplacementServiceWrapper {
         const urlUtils = require('../../../shared/url-utils');
         const settingsCache = require('../../../shared/settings-cache');
 
+        const store = [];
+
         // Expose the service
         this.service = new LinkReplacementService({
             linkRedirectService: require('../link-redirection').service,
             linkClickTrackingService: require('../link-click-tracking').service,
             attributionService: require('../member-attribution').service,
             urlUtils,
-            settingsCache
+            settingsCache,
+            postLinkRepository: {
+                async save(postLink) {
+                    store.push(postLink);
+                }
+            }
         });
     }
 }
