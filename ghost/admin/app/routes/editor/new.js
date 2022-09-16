@@ -1,6 +1,18 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
+import {inject as service} from '@ember/service';
 
 export default class NewRoute extends AuthenticatedRoute {
+    @service feature;
+    @service router;
+
+    beforeModel(transition) {
+        super.beforeModel(...arguments);
+
+        if (this.feature.lexicalEditor) {
+            return this.transitionTo('lexical-editor.new', transition.to.params.type);
+        }
+    }
+
     model(params, transition) {
         let {type: modelName} = params;
 
@@ -13,7 +25,7 @@ export default class NewRoute extends AuthenticatedRoute {
     }
 
     // there's no specific controller for this route, instead all editor
-    // handling is done on the editor route/controler
+    // handling is done on the editor route/controller
     setupController(controller, newPost) {
         let editor = this.controllerFor('editor');
         editor.setPost(newPost);
