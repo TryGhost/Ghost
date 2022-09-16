@@ -1,3 +1,4 @@
+const {$isLinkNode} = require('@lexical/link');
 const {$isTextNode} = require('lexical');
 
 const FORMAT_TAG_MAP = {
@@ -62,6 +63,19 @@ class TextContent {
 
     addLineBreak() {
         this.queueLineBreak = true;
+    }
+
+    addLinkNode(node, parentNode, exportChildren, options) {
+        if (!$isLinkNode(node)) {
+            return;
+        }
+
+        const a = this.doc.createElement('a');
+
+        a.setAttribute('href', node.getURL());
+        a.innerHTML = exportChildren(node, options);
+
+        this.currentNode.append(a);
     }
 
     isEmpty() {

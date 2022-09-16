@@ -4,10 +4,9 @@ const {
     $isLineBreakNode,
     $isTextNode
 } = require('lexical');
+const {$isLinkNode} = require('@lexical/link');
 const TextContent = require('./utils/text-content');
-const {
-    elementTransformers
-} = require('./transformers');
+const {elementTransformers} = require('./transformers');
 
 function $convertToHtmlString(options = {}) {
     const output = [];
@@ -45,7 +44,7 @@ function exportChildren(node, options) {
     const textContent = new TextContent();
 
     for (const child of children) {
-        if (!textContent.isEmpty() && !$isLineBreakNode(child) && !$isTextNode(child)) {
+        if (!textContent.isEmpty() && !$isLineBreakNode(child) && !$isTextNode(child) && !$isLinkNode(child)) {
             output.push(textContent.render());
             textContent.clear();
         }
@@ -54,6 +53,8 @@ function exportChildren(node, options) {
             textContent.addLineBreak();
         } else if ($isTextNode(child)) {
             textContent.addTextNode(child, node, options);
+        } else if ($isLinkNode(child)) {
+            textContent.addLinkNode(child, node, exportChildren, options);
         } else if ($isElementNode(child)) {
             output.push(exportChildren(child, options));
         }
