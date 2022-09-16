@@ -22,4 +22,11 @@ export default class Page extends ApplicationAdapter {
 
         return url;
     }
+
+    // posts and pages now include all relations by default so we don't want
+    // EmbeddedRelationAdapter.buildQuery adding an `?include=` param that
+    // overrides the defaults with a more restrictive list
+    buildQuery(store, modelName, options) {
+        return options;
+    }
 }
