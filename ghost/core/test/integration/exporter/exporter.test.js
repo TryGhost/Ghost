@@ -61,6 +61,7 @@ describe('Exporter', function () {
                 'permissions',
                 'permissions_roles',
                 'permissions_users',
+                'post_revisions',
                 'posts',
                 'posts_authors',
                 'posts_meta',
