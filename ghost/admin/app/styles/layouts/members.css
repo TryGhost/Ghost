@@ -1373,7 +1373,6 @@ p.gh-members-import-errorcontext {
 .gh-members-import-scrollarea {
     position: relative;
     max-height: calc(100vh - 350px - 12vw);
-    min-height: 175px;
     overflow-y: scroll;
     margin: 0 -32px;
     padding: 0 32px;
