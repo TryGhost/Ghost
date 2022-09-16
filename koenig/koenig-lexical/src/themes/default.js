@@ -12,7 +12,7 @@ const defaultTheme = {
     aside: undefined,
     list: {
         nested: {
-            listitem: undefined
+            listitem: '!list-none'
         },
         ol: undefined,
         ul: undefined,
