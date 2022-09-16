@@ -1,5 +1,8 @@
+import * as Sentry from '@sentry/browser';
 import Component from '@glimmer/component';
 import React, {Suspense} from 'react';
+import {action} from '@ember/object';
+import {inject as service} from '@ember/service';
 
 class ErrorHandler extends React.Component {
     state = {
@@ -86,12 +89,30 @@ const KoenigEditor = (props) => {
 };
 
 export default class KoenigLexicalEditor extends Component {
+    @service config;
+
+    @action
+    onError(error) {
+        // ensure we're still showing errors in development
+        console.error(error); // eslint-disable-line
+
+        if (this.config.get('sentry_dsn')) {
+            Sentry.captureException(error, {
+                tags: {
+                    lexical: true
+                }
+            });
+        }
+
+        // don't rethrow, Lexical will attempt to gracefully recover
+    }
+
     ReactComponent = () => {
         return (
             <div className={['koenig-react-editor', this.args.className].filter(Boolean).join(' ')}>
                 <ErrorHandler>
                     <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
-                        <KoenigComposer initialEditorState={this.args.lexical}>
+                        <KoenigComposer initialEditorState={this.args.lexical} onError={this.onError}>
                             <KoenigEditor onChange={this.args.onChange} />
                         </KoenigComposer>
                     </Suspense>
