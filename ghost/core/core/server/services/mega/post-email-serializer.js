@@ -14,7 +14,9 @@ const {isUnsplashImage, isLocalContentImage} = require('@tryghost/kg-default-car
 const {textColorForBackgroundColor, darkenToContrastThreshold} = require('@tryghost/color-utils');
 const logging = require('@tryghost/logging');
 const urlService = require('../../services/url');
-const linkReplacement = require('../link-replacement');
+const linkReplacer = require('@tryghost/link-replacer');
+const linkTracking = require('../link-click-tracking');
+const memberAttribution = require('../member-attribution');
 
 const ALLOWED_REPLACEMENTS = ['first_name', 'uuid'];
 
@@ -357,7 +359,31 @@ const PostEmailSerializer = {
         // Now replace the links in the HTML version
         if (labs.isSet('emailClicks')) {
             if ((!options.isBrowserPreview && !options.isTestEmail) || process.env.NODE_ENV === 'development') {
-                result.html = await linkReplacement.service.replaceLinks(result.html, newsletter, postModel);
+                const enableTracking = settingsCache.get('email_track_clicks');
+                result.html = await linkReplacer.replace(result.html, async (url) => {
+                    // Add newsletter source attribution
+                    url = memberAttribution.service.addEmailSourceAttributionTracking(url, newsletter);
+                    const isSite = urlUtils.isSiteUrl(url);
+
+                    // Add post attribution tracking
+                    if (isSite && enableTracking) {
+                        // Only add attribution links to our own site (except for the newsletter referrer)
+                        url = memberAttribution.service.addPostAttributionTracking(url, post);
+                    }
+
+                    // Add link click tracking
+                    if (enableTracking) {
+                        url = await linkTracking.service.addTrackingToUrl(url, post, '--uuid--');
+                        
+                        // We need to convert to a string at this point, because we need invalid string characters in the URL
+                        const str = url.toString().replace(/--uuid--/g, '%%{uuid}%%');
+                        return str;
+                    }
+
+                    // Replace the URL with a normal redirect so we can change it later, but don't include tracking
+                    url = linkTracking.service.addRedirectToUrl(url, post);
+                    return url;
+                });
             }
         }
 
