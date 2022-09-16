@@ -1,15 +1,4 @@
-// Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-require('./utils');
-
-const Renderer = require('../');
-
-function shouldRender({input, output}) {
-    return function () {
-        const renderer = new Renderer();
-        renderer.render(input).should.equal(output);
-    };
-}
+const {shouldRender} = require('./utils');
 
 describe('Links', function () {
     it('a', shouldRender({
