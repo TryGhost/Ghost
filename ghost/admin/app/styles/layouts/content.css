@@ -701,10 +701,10 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 }
 
 
-/* Post stats
+/* Post analytics
 /* --------------------------------------------------------- */
 
-.gh-post-stats-header {
+.gh-post-analytics-header {
     position: relative;
     margin: 0 0 2.4rem;
     padding: 0 0 1.6rem;
@@ -719,13 +719,13 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     white-space: inherit;
 }
 
-.gh-post-stats-meta {
+.gh-post-analytics-meta {
     margin: 0;
     color: var(--midlightgrey-d2);
     font-size: 1.35rem;
 }
 
-.gh-post-stats-box {
+.gh-post-analytics-box {
     position: relative;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
@@ -735,17 +735,17 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     border-radius: var(--border-radius);
 }
 
-.gh-post-stats-box.column {
+.gh-post-analytics-box.column {
     display: flex;
     flex-direction: column;
 }
 
-.gh-post-stats-box.resources {
+.gh-post-analytics-box.resources {
     grid-template-columns: 1fr 1fr;
     grid-gap: 24px;
 }
 
-.gh-post-stats-resource {
+.gh-post-analytics-resource {
     padding: 2.4rem;
     background: var(--white);
     border-radius: var(--border-radius);
@@ -753,7 +753,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     transition: all .3s ease-in-out;
 }
 
-.gh-post-stats-resource:hover {
+.gh-post-analytics-resource:hover {
     transform: translateY(-4px);
     transition: all .3s ease-in-out;
     box-shadow: 
@@ -765,13 +765,13 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     ;
 }
 
-.gh-post-stats-resource {
+.gh-post-analytics-resource {
     display: grid;
     grid-template-columns: 2fr 3fr;
     grid-gap: 24px;
 }
 
-.gh-post-stats-resource .thumbnail {
+.gh-post-analytics-resource .thumbnail {
     border-radius: var(--border-radius);
     width: 100%;
     height: auto;
@@ -783,7 +783,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     filter: brightness(1.08);
 }
 
-.gh-post-stats-resource p {
+.gh-post-analytics-resource p {
     font-size: 1.5rem;
     letter-spacing: 0;
     line-height: 1.55;
@@ -791,7 +791,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     margin: 0 0 1rem;
 }
 
-.gh-post-stats-title {
+.gh-post-analytics-title {
     margin: 0;
     padding: 0 0 2px;
     color: var(--black);
@@ -799,17 +799,17 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     font-weight: 600;
 }
 
-.gh-post-stats-item {
+.gh-post-analytics-item {
     border-left: 1px solid var(--whitegrey-d2);
     padding-left: 2rem;
 }
 
-.gh-post-stats-item:first-child {
+.gh-post-analytics-item:first-child {
     border-left: none;
     padding-left: 0;
 }
 
-.gh-post-stats-item h3 {
+.gh-post-analytics-item h3 {
     margin: 0 0 10px;
     color: var(--black);
     font-size: 2.2rem;
@@ -819,7 +819,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     white-space: nowrap;
 }
 
-.gh-post-stats-item p {
+.gh-post-analytics-item p {
     margin: 0;
     color: var(--midgrey);
     font-size: 1.3rem;
@@ -827,7 +827,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     letter-spacing: 0;
 }
 
-.gh-post-stats-item p.strong {
+.gh-post-analytics-item p.strong {
     font-weight: 600;
 }
 
