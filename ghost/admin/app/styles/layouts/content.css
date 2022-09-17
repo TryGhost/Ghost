@@ -730,7 +730,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
     margin: 0 0 2.4rem;
-    padding: 2.8rem 2.4rem 2.4rem;
+    padding: 2.4rem;
     background: var(--main-color-content-greybg);
     border-radius: var(--border-radius);
 }
@@ -741,7 +741,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 }
 
 .gh-post-stats-box.resources {
-    grid-template-columns: 1fr 2fr;
+    grid-template-columns: 1fr 1fr;
     grid-gap: 24px;
 }
 
@@ -765,9 +765,9 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     ;
 }
 
-.gh-post-stats-resource.image {
+.gh-post-stats-resource {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 2fr 3fr;
     grid-gap: 24px;
 }
 
@@ -779,8 +779,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     background-repeat: no-repeat;
     background-position: center;
     background-size: cover;
-    background-image: url(img/marketing/analytics-1.jpg);
-    aspect-ratio: 3 / 2;
+    aspect-ratio: 1;
     filter: brightness(1.08);
 }
 
