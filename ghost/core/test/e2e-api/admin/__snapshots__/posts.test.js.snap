@@ -451,7 +451,7 @@ Object {
   "errors": Array [
     Object {
       "code": null,
-      "context": "Invalid lexical structure. Cannot read properties of undefined (reading 'type')",
+      "context": StringMatching /Invalid lexical structure\\\\\\.\\.\\*/,
       "details": null,
       "ghostErrorCode": null,
       "help": "https://ghost.org/docs/publishing/",
