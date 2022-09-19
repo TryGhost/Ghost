@@ -17,7 +17,7 @@ To test/develop inside of Admin you can run `yarn preview` then in Ghost set you
 }
 ```
 
-`yarn preview` by itself only serves the library files, it's possible ro run `yarn built --watch` in a separate terminal tab to have auto-rebuild whilst developing.
+`yarn preview` by itself only serves the library files, it's possible ro run `yarn build --watch` in a separate terminal tab to have auto-rebuild whilst developing.
 
 ### Project structure
 
