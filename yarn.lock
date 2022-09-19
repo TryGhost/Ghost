@@ -1825,14 +1825,6 @@
     "@elastic/transport" "^8.2.0"
     tslib "^2.4.0"
 
-"@elastic/elasticsearch@8.4.0":
-  version "8.4.0"
-  resolved "https://registry.yarnpkg.com/@elastic/elasticsearch/-/elasticsearch-8.4.0.tgz#3fe2c7a9c06de261a465e7a8bca5955b93e4a726"
-  integrity sha512-0QZDBePnb5a+d76zjlMYq96IDf0AOuGP7JHugFUYlYwTC7rZvROuZSpoUsvpUjNH2CzMqWgNLIekIR6EHRMIQA==
-  dependencies:
-    "@elastic/transport" "^8.2.0"
-    tslib "^2.4.0"
-
 "@elastic/transport@^8.2.0":
   version "8.2.0"
   resolved "https://registry.yarnpkg.com/@elastic/transport/-/transport-8.2.0.tgz#f292cb79c918a36268dd853431e41f13544814ad"
@@ -3826,15 +3818,6 @@
     "@tryghost/root-utils" "^0.3.16"
     debug "^4.3.1"
 
-"@tryghost/elasticsearch@^3.0.2":
-  version "3.0.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/elasticsearch/-/elasticsearch-3.0.4.tgz#f8572122bb34a0192471226d2c5c9e61d049a821"
-  integrity sha512-ysExjEWI7VXWedmEbi757ub2avPRIZOAvzCWM5XC3vi9FyroW+invABmLfN9jsPX99eGpTWe1ENguslpLEvtdA==
-  dependencies:
-    "@elastic/elasticsearch" "8.4.0"
-    "@tryghost/debug" "^0.1.18"
-    split2 "4.1.0"
-
 "@tryghost/elasticsearch@^3.0.3":
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/@tryghost/elasticsearch/-/elasticsearch-3.0.3.tgz#6651298989f38bbe30777ab122d56a43f719d2c2"
@@ -3878,7 +3861,7 @@
     utils-copy-error "^1.0.1"
     uuid "^8.3.2"
 
-"@tryghost/errors@1.2.16", "@tryghost/errors@^1.2.16":
+"@tryghost/errors@1.2.16":
   version "1.2.16"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.16.tgz#01b66cf3fca91a0be94d65d3c5036640e52ccc32"
   integrity sha512-9ND78qP1ZcVFSrcOP0MRW5NpDwBmuK+RlP9LSXsdRpuqspGmSXxa6OWrWKuW9I1ZzQujFAqsm3XuDP5NaOAZEQ==
@@ -3911,14 +3894,6 @@
     "@tryghost/kg-parser-plugins" "^2.12.1"
     "@tryghost/mobiledoc-kit" "^0.12.4-ghost.1"
     jsdom "^18.0.0"
-
-"@tryghost/http-stream@^0.1.10":
-  version "0.1.12"
-  resolved "https://registry.yarnpkg.com/@tryghost/http-stream/-/http-stream-0.1.12.tgz#91d271d5a1b97af3c414a06cac106de2d008b10a"
-  integrity sha512-DnSO+6OZmF8DOjwLMYpDMnRbcxPEi9ta6ysWW1+nKYQnRdPidEtXfZSh8+gQgl3pFDUBiYgW7JX2wz88jKRu8A==
-  dependencies:
-    "@tryghost/errors" "^1.2.16"
-    "@tryghost/request" "^0.1.30"
 
 "@tryghost/http-stream@^0.1.11":
   version "0.1.11"
@@ -4036,24 +4011,7 @@
     lodash "^4.17.21"
     luxon "^1.26.0"
 
-"@tryghost/logging@2.2.3":
-  version "2.2.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-2.2.3.tgz#40575a42e18b907a49cee5dfdfa62deb820954aa"
-  integrity sha512-ACCm84U4HITt3mQhDSpyDLZetxzjYo4ux2MoSVGL3zxPfQBPFoI6hWEiSzYWX/4RGq2l2tR4di+5LWjIe8Ow6A==
-  dependencies:
-    "@tryghost/bunyan-rotating-filestream" "^0.0.7"
-    "@tryghost/elasticsearch" "^3.0.2"
-    "@tryghost/http-stream" "^0.1.10"
-    "@tryghost/pretty-stream" "^0.1.11"
-    "@tryghost/root-utils" "^0.3.15"
-    bunyan "^1.8.15"
-    bunyan-loggly "^1.4.2"
-    fs-extra "^10.0.0"
-    gelf-stream "^1.1.1"
-    json-stringify-safe "^5.0.1"
-    lodash "^4.17.21"
-
-"@tryghost/logging@2.3.0", "@tryghost/logging@^2.2.3":
+"@tryghost/logging@2.2.3", "@tryghost/logging@2.3.0", "@tryghost/logging@^2.2.3":
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-2.3.0.tgz#8a55d01ef058461d0e84fa02f403cb1e229afbd7"
   integrity sha512-OPGXCmRW4UN28KSGfIcSTP6VE4L+Cfn9Q5iE/cYa1QwO5ykKPirOmh98WH+9PhzxLz/5dZvXeAxqXj5w9dphEA==
@@ -4157,7 +4115,7 @@
     chalk "^4.1.0"
     sywac "^1.3.0"
 
-"@tryghost/pretty-stream@^0.1.11", "@tryghost/pretty-stream@^0.1.12":
+"@tryghost/pretty-stream@^0.1.12":
   version "0.1.12"
   resolved "https://registry.yarnpkg.com/@tryghost/pretty-stream/-/pretty-stream-0.1.12.tgz#e1991415610142d9895d3e5cb84ac838c58d8c8b"
   integrity sha512-0FZxJG5K6Nz9nK347jkMwb0x+Gr988z1IRAY/Fi9OIebBxq8ZLnFDZvFIW1zlALoBwX2QW6X6K/tABzlI7ofoA==
@@ -4180,17 +4138,6 @@
   dependencies:
     "@tryghost/errors" "^1.2.15"
     "@tryghost/validator" "^0.1.27"
-    "@tryghost/version" "^0.1.16"
-    got "9.6.0"
-    lodash "^4.17.21"
-
-"@tryghost/request@^0.1.30":
-  version "0.1.30"
-  resolved "https://registry.yarnpkg.com/@tryghost/request/-/request-0.1.30.tgz#285d7240147fe7aadadc53c650a3f0d7af7e4169"
-  integrity sha512-XFWHP4cGRjiQk8P8niG7BO2Gp+EmFVI8Y+prMT0VX2Hxo7BqF8tRyTYPnTPh/2run4NZOUHFFKsmUjFz9HRpYQ==
-  dependencies:
-    "@tryghost/errors" "^1.2.16"
-    "@tryghost/validator" "^0.1.28"
     "@tryghost/version" "^0.1.16"
     got "9.6.0"
     lodash "^4.17.21"
@@ -4272,17 +4219,6 @@
   integrity sha512-0GFCSt4S5DmL1U1InSP9M5egqsqHh7Y1+GP62nLP9ZK9UhZoksAcYUv/VpvBh3slx4tIvp8k+0395B1OLnUhHg==
   dependencies:
     "@tryghost/errors" "^1.2.15"
-    "@tryghost/tpl" "^0.1.18"
-    lodash "^4.17.21"
-    moment-timezone "^0.5.23"
-    validator "7.2.0"
-
-"@tryghost/validator@^0.1.28":
-  version "0.1.28"
-  resolved "https://registry.yarnpkg.com/@tryghost/validator/-/validator-0.1.28.tgz#65e4204057c12d54e590c8c077b3f629316de302"
-  integrity sha512-XoGG75ruqNZ/WZoEkHqBWyFYIAW+NtY8/fw8V95UrlZPUAodiLn3+s05SVGjQHQSbkkmlMU/z9BAlZV4WzwUiA==
-  dependencies:
-    "@tryghost/errors" "^1.2.16"
     "@tryghost/tpl" "^0.1.18"
     lodash "^4.17.21"
     moment-timezone "^0.5.23"
@@ -17298,46 +17234,17 @@ mock-knex@TryGhost/mock-knex#8ecb8c227bf463c991c3d820d33f59efc3ab9682:
     lodash "^4.14.2"
     semver "^5.3.0"
 
-moment-timezone@0.5.23, moment-timezone@^0.5.13, moment-timezone@^0.5.23:
+moment-timezone@0.5.23, moment-timezone@0.5.34, moment-timezone@^0.5.13, moment-timezone@^0.5.23, moment-timezone@^0.5.31, moment-timezone@^0.5.33:
   version "0.5.23"
   resolved "https://registry.yarnpkg.com/moment-timezone/-/moment-timezone-0.5.23.tgz#7cbb00db2c14c71b19303cb47b0fb0a6d8651463"
   integrity sha512-WHFH85DkCfiNMDX5D3X7hpNH3/PUhjTGcD0U1SgfBGZxJ3qUmJh5FdvaFjcClxOvB3rzdfj4oRffbI38jEnC1w==
   dependencies:
     moment ">= 2.9.0"
 
-moment-timezone@0.5.34:
-  version "0.5.34"
-  resolved "https://registry.yarnpkg.com/moment-timezone/-/moment-timezone-0.5.34.tgz#a75938f7476b88f155d3504a9343f7519d9a405c"
-  integrity sha512-3zAEHh2hKUs3EXLESx/wsgw6IQdusOT8Bxm3D9UrHPQR7zlMmzwybC8zHEM1tQ4LJwP7fcxrWr8tuBg05fFCbg==
-  dependencies:
-    moment ">= 2.9.0"
-
-moment-timezone@^0.5.31, moment-timezone@^0.5.33:
-  version "0.5.37"
-  resolved "https://registry.yarnpkg.com/moment-timezone/-/moment-timezone-0.5.37.tgz#adf97f719c4e458fdb12e2b4e87b8bec9f4eef1e"
-  integrity sha512-uEDzDNFhfaywRl+vwXxffjjq1q0Vzr+fcQpQ1bU0kbzorfS7zVtZnCnGc8mhWmF39d4g4YriF6kwA75mJKE/Zg==
-  dependencies:
-    moment ">= 2.9.0"
-
-moment@2.24.0, "moment@>= 2.9.0", moment@^2.10.2, moment@^2.18.1, moment@^2.19.3:
+moment@2.24.0, moment@2.27.0, moment@2.29.1, moment@2.29.4, "moment@>= 2.9.0", moment@^2.10.2, moment@^2.18.1, moment@^2.19.3, moment@^2.27.0, moment@^2.29.1, moment@^2.29.3:
   version "2.24.0"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.24.0.tgz#0d055d53f5052aa653c9f6eb68bb5d12bf5c2b5b"
   integrity sha512-bV7f+6l2QigeBBZSM/6yTNq4P2fNpSWj/0e7jQcy87A8e7o2nAfP/34/2ky5Vw4B9S446EtIhodAzkFCcR4dQg==
-
-moment@2.27.0:
-  version "2.27.0"
-  resolved "https://registry.yarnpkg.com/moment/-/moment-2.27.0.tgz#8bff4e3e26a236220dfe3e36de756b6ebaa0105d"
-  integrity sha512-al0MUK7cpIcglMv3YF13qSgdAIqxHTO7brRtaz3DlSULbqfazqkc5kEjNrLDOM7fsjshoFIihnU8snrP7zUvhQ==
-
-moment@2.29.1:
-  version "2.29.1"
-  resolved "https://registry.yarnpkg.com/moment/-/moment-2.29.1.tgz#b2be769fa31940be9eeea6469c075e35006fa3d3"
-  integrity sha512-kHmoybcPV8Sqy59DwNDY3Jefr64lK/by/da0ViFcuA4DH0vQg5Q6Ze5VimxkfQNSC+Mls/Kx53s7TjP1RhFEDQ==
-
-moment@2.29.4, moment@^2.27.0, moment@^2.29.1, moment@^2.29.3:
-  version "2.29.4"
-  resolved "https://registry.yarnpkg.com/moment/-/moment-2.29.4.tgz#3dbe052889fe7c1b2ed966fcb3a77328964ef108"
-  integrity sha512-5LC9SOxjSc2HF6vO2CyuTDNivEdoz2IvyJJGj6X8DJ0eFyfszE0QiEd+iXmBvUP3WHxSjFH/vIsA0EN00cgr8w==
 
 moo@^0.5.0, moo@^0.5.1:
   version "0.5.1"
