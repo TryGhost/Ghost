@@ -26,6 +26,7 @@
     "sinon": "14.0.0"
   },
   "dependencies": {
+    "@lexical/clipboard": "^0.4.1",
     "@lexical/code": "^0.4.1",
     "@lexical/headless": "^0.4.1",
     "@lexical/link": "^0.4.1",
