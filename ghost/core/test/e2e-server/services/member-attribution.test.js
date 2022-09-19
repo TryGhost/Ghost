@@ -375,4 +375,30 @@ describe('Member Attribution Service', function () {
             });
         });
     });
+
+    /**
+     * Test that getAttribution correctly resolves all model types that are supported
+     */
+    describe('getAttribution for referrer', function () {
+        it('resolves urls', async function () {
+            const attribution = await memberAttributionService.service.getAttribution([
+                {
+                    id: null,
+                    path: '/',
+                    time: Date.now(),
+                    refSource: 'ghost-explore',
+                    refMedium: null,
+                    refUrl: null
+                }
+            ]);
+            attribution.should.match(({
+                id: null,
+                url: '/',
+                type: 'url',
+                refSource: 'Ghost Explore',
+                refMedium: 'Ghost Network',
+                refUrl: null
+            }));
+        });
+    });
 });

@@ -15,11 +15,19 @@ class Attribution {
      * @param {string|null} [data.id]
      * @param {string|null} [data.url] Relative to subdirectory
      * @param {'page'|'post'|'author'|'tag'|'url'} [data.type]
+     * @param {string|null} [data.refSource]
+     * @param {string|null} [data.refMedium]
+     * @param {URL|null} [data.refUrl]
      */
-    constructor({id, url, type}, {urlTranslator}) {
+    constructor({
+        id, url, type, refSource, refMedium, refUrl
+    }, {urlTranslator}) {
         this.id = id;
         this.url = url;
         this.type = type;
+        this.refSource = refSource;
+        this.refMedium = refMedium;
+        this.refUrl = refUrl;
 
         /**
          * @private
@@ -80,18 +88,22 @@ class AttributionBuilder {
 
     /**
      */
-    constructor({urlTranslator}) {
+    constructor({urlTranslator, referrerTranslator}) {
         this.urlTranslator = urlTranslator;
+        this.referrerTranslator = referrerTranslator;
     }
 
     /**
      * Creates an Attribution object with the dependencies injected
      */
-    build({id, url, type}) {
+    build({id, url, type, refSource, refMedium, refUrl}) {
         return new Attribution({
             id,
             url,
-            type
+            type,
+            refSource,
+            refMedium,
+            refUrl
         }, {urlTranslator: this.urlTranslator});
     }
 
@@ -105,19 +117,31 @@ class AttributionBuilder {
             return this.build({
                 id: null,
                 url: null,
-                type: null
+                type: null,
+                refSource: null,
+                refMedium: null,
+                refUrl: null
             });
         }
 
-        // Note: history iterator is ordered from recent to oldest!
+        const referrerData = this.referrerTranslator.getReferrerDetails(history) || {
+            refSource: null,
+            refMedium: null,
+            refUrl: null
+        };
 
         // Start at the end. Return the first post we find
         const resources = [];
+
+        // Note: history iterator is ordered from recent to oldest!
         for (const item of history) {
             const resource = await this.urlTranslator.getResourceDetails(item);
 
             if (resource && resource.type === 'post') {
-                return this.build(resource);
+                return this.build({
+                    ...resource,
+                    ...referrerData
+                });
             }
 
             // Store to avoid that we need to look it up again
@@ -130,18 +154,25 @@ class AttributionBuilder {
         // Return first with an id (page, tag, author)
         for (const resource of resources) {
             if (resource.id) {
-                return this.build(resource);
+                return this.build({
+                    ...resource,
+                    ...referrerData
+                });
             }
         }
 
         // No post/page/tag/author found?
         // Return the last path that was visited
         if (resources.length > 0) {
-            return this.build(resources[0]);
+            return this.build({
+                ...referrerData,
+                ...resources[0]
+            });
         }
 
         // We only have history items without a path that have invalid ids
         return this.build({
+            ...referrerData,
             id: null,
             url: null,
             type: null
