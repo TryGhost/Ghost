@@ -3,9 +3,9 @@ class LexicalHTMLRenderer {
         const {createHeadlessEditor} = require('@lexical/headless');
         const {ListItemNode, ListNode} = require('@lexical/list');
         const {HeadingNode, QuoteNode} = require('@lexical/rich-text');
-        const {HorizontalRuleNode} = require('@lexical/react/LexicalHorizontalRuleNode');
         const {CodeNode} = require('@lexical/code');
         const {LinkNode} = require('@lexical/link');
+        const {HorizontalRuleNode} = require('./nodes/HorizontalRuleNode');
         const {$convertToHtmlString} = require('./convert-to-html-string');
 
         const defaultOptions = {
@@ -19,8 +19,8 @@ class LexicalHTMLRenderer {
             ListItemNode,
             QuoteNode,
             LinkNode,
-            CodeNode, // TODO: replace with our own card
-            HorizontalRuleNode // TODO: replace with our own card
+            HorizontalRuleNode,
+            CodeNode // TODO: replace with our own card
         ];
 
         const editor = createHeadlessEditor({
