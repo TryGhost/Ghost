@@ -1,7 +1,7 @@
 {
-  "name": "@tryghost/link-replacement",
+  "name": "@tryghost/link-replacer",
   "version": "0.0.0",
-  "repository": "https://github.com/TryGhost/Ghost/tree/main/packages/link-replacement",
+  "repository": "https://github.com/TryGhost/Ghost/tree/main/packages/link-replacer",
   "author": "Ghost Foundation",
   "private": true,
   "main": "index.js",
