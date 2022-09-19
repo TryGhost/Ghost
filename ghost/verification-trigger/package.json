@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@tryghost/domain-events": "0.0.0",
-    "@tryghost/errors": "1.2.15",
+    "@tryghost/errors": "1.2.16",
     "@tryghost/member-events": "0.0.0"
   }
 }
