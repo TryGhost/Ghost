@@ -163,6 +163,80 @@ describe('ReferrerTranslator', function () {
             });
         });
 
+        describe('returns source and medium for', function () {
+            it('known external url with path', async function () {
+                should(translator.getReferrerDetails([
+                    {
+                        refSource: null,
+                        refMedium: null,
+                        refUrl: 'https://google.ac/products'
+                    },
+                    {
+                        refSource: null,
+                        refMedium: null,
+                        refUrl: 'https://t.co/'
+                    },
+                    {
+                        refSource: 'publisher-weekly-newsletter',
+                        refMedium: null,
+                        refUrl: null
+                    },
+                    {
+                        refSource: 'ghost-explore',
+                        refMedium: null,
+                        refUrl: null
+                    }
+                ])).eql({
+                    refSource: 'Google Product Search',
+                    refMedium: 'search',
+                    refUrl: new URL('https://google.ac/products')
+                });
+            });
+
+            it('known external url without path', async function () {
+                should(translator.getReferrerDetails([
+                    {
+                        refSource: null,
+                        refMedium: null,
+                        refUrl: 'https://t.co/'
+                    },
+                    {
+                        refSource: 'publisher-weekly-newsletter',
+                        refMedium: null,
+                        refUrl: null
+                    },
+                    {
+                        refSource: 'ghost-explore',
+                        refMedium: null,
+                        refUrl: null
+                    }
+                ])).eql({
+                    refSource: 'Twitter',
+                    refMedium: 'social',
+                    refUrl: new URL('https://t.co/')
+                });
+            });
+        });
+
+        it('returns external ref url if nothing matches', async function () {
+            should(translator.getReferrerDetails([
+                {
+                    refSource: null,
+                    refMedium: null,
+                    refUrl: 'https://example.com'
+                },
+                {
+                    refSource: null,
+                    refMedium: null,
+                    refUrl: 'https://sample.com'
+                }
+            ])).eql({
+                refSource: null,
+                refMedium: null,
+                refUrl: new URL('https://sample.com')
+            });
+        });
+
         it('returns null for empty history', async function () {
             should(translator.getReferrerDetails([])).eql(null);
         });

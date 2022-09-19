@@ -5,6 +5,8 @@
  * @prop {URL|null} [refUrl]
  */
 
+const knownReferrers = require('@tryghost/referrers');
+
 /**
  * Translates referrer info into Source and Medium
  */
@@ -64,7 +66,7 @@ class ReferrerTranslator {
 
             // If referrer is from query params
             if (refSource) {
-                const urlData = this.getDataFromUrl() || {};
+                const urlData = refUrl ? this.getDataFromUrl(refUrl) : null;
                 return {
                     refSource: refSource,
                     refMedium: refMedium || urlData?.medium || null,
@@ -73,9 +75,8 @@ class ReferrerTranslator {
             }
 
             // If referrer is known external URL
-            // TODO: Use list of known external urls to fetch source/medium
             if (refUrl && !this.isSiteDomain(refUrl)) {
-                const urlData = this.getDataFromUrl();
+                const urlData = this.getDataFromUrl(refUrl);
 
                 if (urlData) {
                     return {
@@ -87,13 +88,34 @@ class ReferrerTranslator {
             }
         }
 
+        // Return any referrer URL in history that is not site domain
+        for (const item of history) {
+            const refUrl = this.getUrlFromStr(item.refUrl);
+
+            if (refUrl && !this.isSiteDomain(refUrl)) {
+                return {
+                    refSource: null,
+                    refMedium: null,
+                    refUrl: refUrl
+                };
+            }
+        }
+
         return null;
     }
 
     // Fetches referrer data from known external URLs
-    //TODO: Use list of known external urls to fetch source/medium
-    getDataFromUrl() {
-        return null;
+    getDataFromUrl(url) {
+        // Allow matching both "google.ac/products" and "google.ac" as a source
+        const urlHostPath = url?.host + url?.pathname;
+        const urlDataKey = Object.keys(knownReferrers).sort((a, b) => {
+            // The longer key has higher the priority so google.ac/products is selected before google.ac
+            return b.length - a.length;
+        }).find((source) => {
+            return urlHostPath?.startsWith(source);
+        });
+
+        return urlDataKey ? knownReferrers[urlDataKey] : null;
     }
 
     /**
