@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@tryghost/debug": "0.1.18",
-    "@tryghost/errors": "1.2.15",
+    "@tryghost/errors": "1.2.16",
     "@tryghost/tpl": "0.1.18",
     "lodash": "4.17.21",
     "semver": "7.3.7"
