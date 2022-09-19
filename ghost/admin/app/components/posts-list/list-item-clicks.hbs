@@ -73,7 +73,7 @@
                                 <span class="status-dot"></span>
                                 Scheduled
                                 {{#if this.isStateHovered}}
-                                    <span class="schedule-details" {{css-transition "anim-fade-in-scale"}}>- to be published {{if @post.newsletter "and sent "}}{{this.scheduledText}} to {{humanize-recipient-filter @post.emailSegment}}</span>
+                                    <span class="schedule-details" {{css-transition "anim-fade-in-scale"}}>to be published {{if @post.newsletter "and sent "}}{{this.scheduledText}} to {{humanize-recipient-filter @post.emailSegment}}</span>
                                 {{/if}}
                             </span>
                         {{/if}}
