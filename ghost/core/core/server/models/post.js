@@ -130,6 +130,7 @@ Post = ghostBookshelf.Model.extend({
         // transform URLs from __GHOST_URL__ to absolute
         [
             'mobiledoc',
+            'lexical',
             'html',
             'plaintext',
             'custom_excerpt',
@@ -158,6 +159,7 @@ Post = ghostBookshelf.Model.extend({
                     cardTransformers: mobiledocLib.cards
                 }
             },
+            lexical: 'lexicalToTransformReady',
             html: 'htmlToTransformReady',
             plaintext: 'plaintextToTransformReady',
             custom_excerpt: 'htmlToTransformReady',
