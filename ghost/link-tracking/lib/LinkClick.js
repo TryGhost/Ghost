@@ -3,8 +3,8 @@ const ObjectID = require('bson-objectid').default;
 module.exports = class ClickEvent {
     /** @type {ObjectID} */
     event_id;
-    /** @type {ObjectID} */
-    member_id;
+    /** @type {string} */
+    member_uuid;
     /** @type {ObjectID} */
     link_id;
 
@@ -19,7 +19,7 @@ module.exports = class ClickEvent {
             this.event_id = data.id;
         }
 
-        this.member_id = data.member_id;
+        this.member_uuid = data.member_uuid;
         this.link_id = data.link_id;
     }
 };

@@ -1,4 +1,5 @@
 const urlUtils = require('../../../shared/url-utils');
+const LinkRedirectRepository = require('./LinkRedirectRepository');
 
 class LinkRedirectsServiceWrapper {
     async init() {
@@ -8,21 +9,18 @@ class LinkRedirectsServiceWrapper {
         }
 
         // Wire up all the dependencies
+        const models = require('../../models');
+
         const {LinkRedirectsService} = require('@tryghost/link-redirects');
 
-        const store = [];
+        const linkRedirectRepository = new LinkRedirectRepository({
+            LinkRedirect: models.LinkRedirect,
+            urlUtils
+        });
+
         // Expose the service
         this.service = new LinkRedirectsService({
-            linkRedirectRepository: {
-                async save(linkRedirect) {
-                    store.push(linkRedirect);
-                },
-                async getByURL(url) {
-                    return store.find((link) => {
-                        return link.from.pathname === url.pathname;
-                    });
-                }
-            },
+            linkRedirectRepository,
             config: {
                 baseURL: new URL(urlUtils.getSiteUrl())
             }
