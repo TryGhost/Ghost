@@ -4189,10 +4189,10 @@
   dependencies:
     lodash.template "^4.5.0"
 
-"@tryghost/url-utils@4.0.3":
-  version "4.0.3"
-  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-4.0.3.tgz#a019ecd7b453c456abcac0e6657afcba106cf669"
-  integrity sha512-rbMfsrdGQvgwoXbCwOdPuTYpBfyOSHPQJtN3ulo07gdWvIWyxTA18mkzHH9gyLG4tP/nK0JQsBMshYtvKUm29A==
+"@tryghost/url-utils@4.1.0":
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-4.1.0.tgz#b07aa36dee52322fe989617a8cbff530dc12fbda"
+  integrity sha512-ou0F8/7ql8d53FqoJWCmYZx1I0NgmiWOxWvlzyfZviSwzpw2qYcIj56FOYMcdTxYCShjQel6lP1jgoFEURUpHA==
   dependencies:
     cheerio "^0.22.0"
     moment "^2.27.0"
