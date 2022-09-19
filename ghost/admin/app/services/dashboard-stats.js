@@ -258,7 +258,9 @@ export default class DashboardStatsService extends Service {
                 });
             }
             return acc;
-        }, []);
+        }, []).sort((a, b) => {
+            return (b.freeSignups + b.paidConversions) - (a.freeSignups - a.paidConversions);
+        });
     }
 
     get currentMRRTrend() {
