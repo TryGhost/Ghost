@@ -201,6 +201,12 @@
     padding-left: 10px;
 }
 
+.gh-post-list-title .gh-lexical-indicator {
+    margin: 2px 8px 0;
+    padding: 0 8px;
+    font-size: 1.2rem;
+}
+
 .gh-post-list-external {
     width: 13px;
     height: 13px;

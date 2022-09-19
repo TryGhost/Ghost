@@ -629,14 +629,12 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
 }
 
 .gh-lexical-indicator {
-    position: absolute;
-    left: 30px;
-    bottom: 30px;
+    margin: 1px 0 0 8px;
     padding: 1px 8px;
-    background: var(--black);
-    color: var(--white);
+    background: var(--whitegrey-d1);
+    color: var(--black);
     font-family: var(--font-family-mono);
-    font-size: 1.3rem;
+    font-size: 1.25rem;
     border-radius: var(--border-radius);
 }
 

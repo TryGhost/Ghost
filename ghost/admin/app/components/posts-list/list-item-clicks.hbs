@@ -48,6 +48,9 @@
         <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-title">
             <h3 class="gh-content-entry-title">
                 {{@post.title}}
+                {{#if @post.lexical}}
+                    <span class="gh-lexical-indicator">L</span>
+                {{/if}}
             </h3>
             {{#unless @hideAuthor }}
                 <p class="gh-content-entry-meta">
@@ -65,6 +68,9 @@
                             <span {{css-transition "anim-fade-in-scale"}}>on {{gh-format-post-time @post.updatedAtUTC "D MMM YYYY"}}</span>
                         {{/if}}
                     </span>
+                    {{!-- {{#if @post.lexical}}
+                        <span class="gh-content-entry-date">– Lexical</span>
+                    {{/if}} --}}
                 </p>
                 {{#if (not-eq this.settings.membersSignupAccess "none")}}
                     <p class="gh-content-entry-status">
