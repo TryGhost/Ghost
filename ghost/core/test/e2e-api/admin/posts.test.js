@@ -1,7 +1,7 @@
 const should = require('should');
 const assert = require('assert');
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
-const {anyArray, anyEtag, anyErrorId, anyLocationFor, anyObject, anyObjectId, anyISODateTime, anyString, anyUuid, stringMatching} = matchers;
+const {anyArray, anyEtag, anyErrorId, anyLocationFor, anyObject, anyObjectId, anyISODateTime, anyString, anyStringNumber, anyUuid, stringMatching} = matchers;
 const models = require('../../../core/server/models');
 
 const matchPostShallowIncludes = {
@@ -291,7 +291,8 @@ describe('Posts API', function () {
                 })
                 .matchHeaderSnapshot({
                     etag: anyEtag,
-                    'x-cache-invalidate': anyString
+                    'x-cache-invalidate': anyString,
+                    'content-length': anyStringNumber
                 });
 
             // post revisions are created
