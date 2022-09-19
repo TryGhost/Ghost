@@ -9,20 +9,27 @@ class MemberAttributionServiceWrapper {
         }
 
         // Wire up all the dependencies
-        const {MemberAttributionService, UrlTranslator, AttributionBuilder} = require('@tryghost/member-attribution');
+        const {
+            MemberAttributionService, UrlTranslator, ReferrerTranslator, AttributionBuilder
+        } = require('@tryghost/member-attribution');
         const models = require('../../models');
 
         const urlTranslator = new UrlTranslator({
-            urlService, 
+            urlService,
             urlUtils,
             models: {
-                Post: models.Post, 
-                User: models.User, 
+                Post: models.Post,
+                User: models.User,
                 Tag: models.Tag
             }
         });
 
-        this.attributionBuilder = new AttributionBuilder({urlTranslator});
+        const referrerTranslator = new ReferrerTranslator({
+            siteUrl: urlUtils.urlFor('home', true),
+            adminUrl: urlUtils.urlFor('admin', true)
+        });
+
+        this.attributionBuilder = new AttributionBuilder({urlTranslator, referrerTranslator});
 
         // Expose the service
         this.service = new MemberAttributionService({
