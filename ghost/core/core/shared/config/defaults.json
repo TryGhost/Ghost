@@ -139,17 +139,17 @@
         "emailAnalytics": true
     },
     "portal": {
-        "url": "https://cdn.jsdelivr.net/npm/@tryghost/portal@~{version}/umd/portal.min.js",
+        "url": "https://cdn.jsdelivr.net/ghost/portal@~{version}/umd/portal.min.js",
         "version": "2.12"
     },
     "sodoSearch": {
-        "url": "https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@~{version}/umd/sodo-search.min.js",
-        "styles": "https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@~{version}/umd/main.css",
+        "url": "https://cdn.jsdelivr.net/ghost/sodo-search@~{version}/umd/sodo-search.min.js",
+        "styles": "https://cdn.jsdelivr.net/ghost/sodo-search@~{version}/umd/main.css",
         "version": "1.1"
     },
     "comments": {
-        "url": "https://cdn.jsdelivr.net/npm/@tryghost/comments-ui@~{version}/umd/comments-ui.min.js",
-        "styles": "https://cdn.jsdelivr.net/npm/@tryghost/comments-ui@~{version}/umd/main.css",
+        "url": "https://cdn.jsdelivr.net/ghost/comments-ui@~{version}/umd/comments-ui.min.js",
+        "styles": "https://cdn.jsdelivr.net/ghost/comments-ui@~{version}/umd/main.css",
         "version": "0.10.1"
     },
     "editor": {
