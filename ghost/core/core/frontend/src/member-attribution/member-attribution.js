@@ -62,7 +62,7 @@ const LIMIT = 15;
             // Valid item (so all following items are also valid by definition)
             return true;
         });
-        
+
         if (firstNotExpiredIndex > 0) {
             // Remove until the first valid item
             history.splice(0, firstNotExpiredIndex);
@@ -70,6 +70,26 @@ const LIMIT = 15;
             // Not a single valid item found, remove all
             history = [];
         }
+
+        // Fetch referrer data from query params
+        let refParam;
+        let sourceParam;
+        let utmSourceParam;
+        let utmMediumParam;
+        try {
+            // Fetch source/medium from query param
+            const url = new URL(window.location.href);
+            refParam = url.searchParams.get('ref');
+            sourceParam = url.searchParams.get('source');
+            utmSourceParam = url.searchParams.get('utm_source');
+            utmMediumParam = url.searchParams.get('utm_medium');
+        } catch (e) {
+            console.error('[Member Attribution] Parsing referrer from querystring failed', e);
+        }
+
+        const refSource = refParam || sourceParam || utmSourceParam || null;
+        const refMedium = utmMediumParam || null;
+        const refUrl = window.document.referrer || null;
 
         // Do we have attributions in the query string?
         try {
@@ -80,7 +100,10 @@ const LIMIT = 15;
                 history.push({
                     time: currentTime,
                     id: params.get('attribution_id'),
-                    type: params.get('attribution_type')
+                    type: params.get('attribution_type'),
+                    refSource,
+                    refMedium,
+                    refUrl
                 });
 
                 // Remove attribution from query string
@@ -98,12 +121,23 @@ const LIMIT = 15;
         if (history.length === 0 || history[history.length - 1].path !== currentPath) {
             history.push({
                 path: currentPath,
-                time: currentTime
+                time: currentTime,
+                refSource,
+                refMedium,
+                refUrl
             });
         } else if (history.length > 0) {
             history[history.length - 1].time = currentTime;
+            // Update referrer information for same path if available (e.g. when opening a link on same path via external referrer)
+            if (refSource) {
+                history[history.length - 1].refSource = refSource;
+                history[history.length - 1].refMedium = refMedium;
+            }
+            if (refUrl) {
+                history[history.length - 1].refUrl = refUrl;
+            }
         }
-        
+
         // Restrict length
         if (history.length > LIMIT) {
             history = history.slice(-LIMIT);
