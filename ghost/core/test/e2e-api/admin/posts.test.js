@@ -203,7 +203,8 @@ describe('Posts API', function () {
                     }]
                 })
                 .matchHeaderSnapshot({
-                    etag: anyEtag
+                    etag: anyEtag,
+                    'content-length': anyStringNumber
                 });
         });
     });
@@ -291,8 +292,7 @@ describe('Posts API', function () {
                 })
                 .matchHeaderSnapshot({
                     etag: anyEtag,
-                    'x-cache-invalidate': anyString,
-                    'content-length': anyStringNumber
+                    'x-cache-invalidate': anyString
                 });
 
             // post revisions are created
