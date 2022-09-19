@@ -122,12 +122,12 @@
         {{!-- Opens column --}}
         <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-opens">
             {{#if (and @post.email.trackOpens (eq @post.email.status "submitted"))}}
-                <div class="flex flex-column items-end">
-                    <span class="gh-content-email-stats" {{on "mouseover" (fn (mut this.isOpenStatHovered) true)}} {{on "mouseleave" (fn (mut this.isOpenStatHovered) false)}}>
+                <div class="flex flex-column items-end" {{on "mouseover" (fn (mut this.isOpenStatHovered) true)}} {{on "mouseleave" (fn (mut this.isOpenStatHovered) false)}}>
+                    <span class="gh-content-email-stats">
                         {{#if this.isOpenStatHovered}}
-                            <strong>1,283</strong> opens
+                            <strong>{{format-number @post.email.openedCount}}</strong> opens
                         {{else}}
-                            <strong>52%</strong> opens
+                            <strong>{{@post.email.openRate}}%</strong> opens
                         {{/if}}
                     </span>
                 </div>
@@ -137,12 +137,12 @@
         {{!-- Clicks column --}}
         <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-clicks">
             {{#if (and @post.email.trackOpens (eq @post.email.status "submitted"))}}
-                <div class="flex flex-column items-end">
-                    <span class="gh-content-email-stats" {{on "mouseover" (fn (mut this.isClickStatHovered) true)}} {{on "mouseleave" (fn (mut this.isClickStatHovered) false)}}>
+                <div class="flex flex-column items-end" {{on "mouseover" (fn (mut this.isClickStatHovered) true)}} {{on "mouseleave" (fn (mut this.isClickStatHovered) false)}}>
+                    <span class="gh-content-email-stats">
                         {{#if this.isClickStatHovered}}
-                            <strong>419</strong> clicks
+                            <strong>{{format-number @post.count.clicks}}</strong> clicks
                         {{else}}
-                            <strong>17%</strong> clicks
+                            <strong>{{@post.clickRate}}%</strong> clicks
                         {{/if}}
                     </span>
                 </div>

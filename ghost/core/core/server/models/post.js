@@ -1345,6 +1345,15 @@ Post = ghostBookshelf.Model.extend({
                         .whereRaw('posts.id = members_subscription_created_events.attribution_id')
                         .as('count__conversions');
                 });
+            },
+            clicks(modelOrCollection) {
+                modelOrCollection.query('columns', 'posts.*', (qb) => {
+                    qb.countDistinct('members_link_click_events.member_id')
+                        .from('members_link_click_events')
+                        .join('link_redirects', 'members_link_click_events.link_id', 'link_redirects.id')
+                        .whereRaw('posts.id = link_redirects.post_id')
+                        .as('count__clicks');
+                });
             }
         };
     }
