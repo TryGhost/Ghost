@@ -3,11 +3,14 @@ import Model, {attr, belongsTo, hasMany} from '@ember-data/model';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import moment from 'moment';
+import {BLANK_DOC as BLANK_MOBILEDOC} from 'koenig-editor/components/koenig-editor';
 import {compare, isBlank} from '@ember/utils';
 import {computed, observer} from '@ember/object';
 import {equal, filterBy, reads} from '@ember/object/computed';
 import {on} from '@ember/object/evented';
 import {inject as service} from '@ember/service';
+
+const BLANK_LEXICAL = '{"root":{"children":[{"children":[],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}';
 
 // ember-cli-shims doesn't export these so we must get them manually
 const {Comparable} = Ember;
@@ -93,8 +96,21 @@ export default Model.extend(Comparable, ValidationEngine, {
     visibility: attr('string'),
     metaDescription: attr('string'),
     metaTitle: attr('string'),
-    mobiledoc: attr('json-string'),
-    lexical: attr(),
+    mobiledoc: attr('json-string', {defaultValue: (modelInstance) => {
+        if (modelInstance.feature.lexicalEditor) {
+            return null;
+        }
+
+        // avoid modifying any references in the original blank doc object
+        return JSON.parse(JSON.stringify(BLANK_MOBILEDOC));
+    }}),
+    lexical: attr('string', {defaultValue: (modelInstance) => {
+        if (modelInstance.feature.lexicalEditor) {
+            return BLANK_LEXICAL;
+        }
+
+        return null;
+    }}),
     plaintext: attr('string'),
     publishedAtUTC: attr('moment-utc'),
     slug: attr('string'),
