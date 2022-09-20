@@ -62,7 +62,6 @@ export default class FeatureService extends Service {
     @feature('freeTrial') freeTrial;
     @feature('compExpiring') compExpiring;
     @feature('memberAttribution') memberAttribution;
-    @feature('searchHelper') searchHelper;
     @feature('emailAlerts') emailAlerts;
     @feature('emailClicks') emailClicks;
     @feature('sourceAttribution') sourceAttribution;

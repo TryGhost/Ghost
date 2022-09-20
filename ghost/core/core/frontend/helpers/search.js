@@ -1,9 +1,8 @@
 // # search helper
 
 const {SafeString} = require('../services/handlebars');
-const {labs} = require('../services/proxy');
 
-function search() {
+module.exports = function search() {
     // We want this to output as one line, but splitting for readability
     const svg = '<button class="gh-search-icon" aria-label="search" data-ghost-search '
               + 'style="display: inline-flex; justify-content: center; align-items: center; width: 32px; height: 32px; padding: 0; border: 0; color: inherit; background-color: transparent; cursor: pointer; outline: none;">'
@@ -11,17 +10,4 @@ function search() {
               + '<path d="M10 3a7 7 0 1 0 0 14 7 7 0 0 0 0-14Zm-9 7a9 9 0 1 1 18 0 9 9 0 0 1-18 0Z" fill="currentColor"/></svg></button>';
 
     return new SafeString(svg);
-}
-
-module.exports = function searchLabsWrapper() {
-    let self = this;
-    let args = arguments;
-
-    return labs.enabledHelper({
-        flagKey: 'searchHelper',
-        flagName: 'Search helper',
-        helperName: 'search'
-    }, () => {
-        return search.apply(self, args); // eslint-disable-line camelcase
-    });
 };
