@@ -90,11 +90,6 @@ module.exports.prepareError = (err, req, res, next) => {
     // alternative for res.status();
     res.statusCode = err.statusCode;
 
-    // never cache errors
-    res.set({
-        'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
-    });
-
     next(err);
 };
 
@@ -120,6 +115,17 @@ const jsonErrorRenderer = (err, req, res, next) => { // eslint-disable-line no-u
             ghostErrorCode: err.ghostErrorCode || null
         }]
     });
+};
+
+module.exports.prepareErrorCacheControl = (err, req, res, next) => {
+    // never cache errors
+    let cacheControl = 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0';
+
+    res.set({
+        'Cache-Control': cacheControl
+    });
+
+    next(err);
 };
 
 const prepareUserMessage = (err, req) => {
@@ -221,6 +227,8 @@ module.exports.pageNotFound = (req, res, next) => {
 module.exports.handleJSONResponse = sentry => [
     // Make sure the error can be served
     module.exports.prepareError,
+    // Add cache-control header
+    module.exports.prepareErrorCacheControl,
     // Handle the error in Sentry
     sentry.errorHandler,
     // Format the stack for the user
