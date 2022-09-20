@@ -325,13 +325,17 @@ export default class DashboardStatsService extends Service {
             return {
                 count: obj.count,
                 positiveDelta: 0,
-                negativeDelta: 0
+                negativeDelta: 0,
+                signups: 0,
+                cancellations: 0
             };
         }
         return this.fillMissingDates(this.subscriptionCountStats, {
             positiveDelta: 0,
             negativeDelta: 0,
-            count: 0
+            count: 0,
+            signups: 0,
+            cancellations: 0
         }, copyData, this.chartDays);
     }
 
