@@ -2,6 +2,7 @@
   "name": "@tryghost/stats-service",
   "version": "0.0.0",
   "repository": "https://github.com/TryGhost/Analytics/tree/main/packages/stats",
+  "private": true,
   "author": "Ghost Foundation",
   "license": "MIT",
   "main": "index.js",
@@ -17,9 +18,6 @@
     "index.js",
     "lib"
   ],
-  "publishConfig": {
-    "access": "public"
-  },
   "devDependencies": {
     "@types/luxon": "^2.3.1",
     "@types/mocha": "^9.1.0",
