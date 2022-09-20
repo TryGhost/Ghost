@@ -116,7 +116,7 @@
     "@tryghost/settings-path-manager": "0.0.0",
     "@tryghost/social-urls": "0.1.33",
     "@tryghost/staff-service": "0.0.0",
-    "@tryghost/stats-service": "0.3.0",
+    "@tryghost/stats-service": "0.0.0",
     "@tryghost/string": "0.2.1",
     "@tryghost/tpl": "0.1.18",
     "@tryghost/update-check-service": "0.0.0",
