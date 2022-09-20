@@ -37,23 +37,23 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@types/jest": "^29.0.3",
+    "@types/jest": "29.0.3",
     "@types/react": "18.0.20",
     "@types/react-dom": "18.0.6",
     "@vitejs/plugin-react": "2.1.0",
-    "@vitest/coverage-c8": "^0.23.4",
-    "@vitest/ui": "^0.23.4",
+    "@vitest/coverage-c8": "0.23.4",
+    "@vitest/ui": "0.23.4",
     "autoprefixer": "10.4.11",
     "eslint-config-react-app": "7.0.1",
     "eslint-plugin-jest": "^27.0.4",
     "eslint-plugin-tailwindcss": "^3.6.2",
     "postcss": "8.4.16",
     "postcss-import": "15.0.0",
-    "prettier": "^2.7.1",
-    "puppeteer": "^18.0.3",
+    "prettier": "2.7.1",
+    "puppeteer": "18.0.3",
     "tailwindcss": "3.1.8",
     "vite": "3.0.8",
     "vite-plugin-svgr": "2.2.1",
-    "vitest": "^0.23.4"
+    "vitest": "0.23.4"
   }
 }
