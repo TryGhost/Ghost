@@ -47,3 +47,11 @@ When packaging the module, styles are included inside the JS file rather than be
 SVGs can be imported as React components in the [same way as create-react-app](https://create-react-app.dev/docs/adding-images-fonts-and-files/#adding-svgs). Typically files are stored in `src/assets/`.
 
 All imported files are processed/optimised via SVGO (see `svgo.config.js` for optimisation config) and included in the built JS file.
+
+## Testing
+
+- `yarn test` starts a test watcher that re-runs tests on file changes
+- `yarn test --ui` same as `yarn test` but also opens a browser UI for exploring and re-running tests
+- `yarn test run` same as `yarn test` but exits after tests have run
+
+Before tests are started we build a version of the demo app that is used for e2e tests. Config for that is located in `vite.config.test.js` and should mostly mirror the main config file in `vite.config.js` except for building a full site rather than a UMD library file.

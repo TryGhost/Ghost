@@ -21,13 +21,14 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:demo": "vite build --config vite.config.demo.js",
     "preview": "vite preview",
-    "test": "jest",
-    "lint": "eslint --ext .js,.cjs,.jsx --cache demo src test",
-    "prepare": "NODE_ENV=production yarn build",
-    "pretest": "yarn build",
+    "pretest": "yarn build --config vite.config.test.js",
+    "test": "vitest",
     "posttest": "yarn lint",
-    "build:demo": "vite build --config vite.config.demo.js"
+    "coverage": "vitest run --coverage",
+    "lint": "eslint --ext .js,.cjs,.jsx --cache demo src test",
+    "prepare": "NODE_ENV=production yarn build"
   },
   "dependencies": {
     "@lexical/react": "^0.4.1",
@@ -40,15 +41,19 @@
     "@types/react": "18.0.20",
     "@types/react-dom": "18.0.6",
     "@vitejs/plugin-react": "2.1.0",
+    "@vitest/coverage-c8": "^0.23.4",
+    "@vitest/ui": "^0.23.4",
     "autoprefixer": "10.4.11",
     "eslint-config-react-app": "7.0.1",
     "eslint-plugin-jest": "^27.0.4",
     "eslint-plugin-tailwindcss": "^3.6.2",
-    "jest": "^29.0.3",
     "postcss": "8.4.16",
     "postcss-import": "15.0.0",
+    "prettier": "^2.7.1",
+    "puppeteer": "^18.0.3",
     "tailwindcss": "3.1.8",
     "vite": "3.0.8",
-    "vite-plugin-svgr": "2.2.1"
+    "vite-plugin-svgr": "2.2.1",
+    "vitest": "^0.23.4"
   }
 }
