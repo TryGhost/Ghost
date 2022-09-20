@@ -21,17 +21,24 @@ export default class Recents extends Component {
 
     get chartOptions() {
         return {
-            cutoutPercentage: 60,
-            borderColor: '#555',
+            cutoutPercentage: 70,
+            borderColor: '#fff',
             legend: {
-                display: true,
-                position: 'top',
-                align: 'start',
+                display: false,
+                position: 'bottom',
+                align: 'center',
                 labels: {
                     color: 'rgb(255, 99, 132)',
                     fontSize: 12,
                     boxWidth: 10,
-                    padding: 3
+                    padding: 6,
+                    usePointStyle: true,
+                    fontFamily: "Inter,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Droid Sans,Helvetica Neue,sans-serif"
+                }
+            },
+            hover: {
+                onHover: function (e) {
+                    e.target.style.cursor = 'pointer';
                 }
             }
         };
@@ -70,6 +77,31 @@ export default class Recents extends Component {
             };
         }
     }
+
+    get chartOptions() {
+    return {
+        cutoutPercentage: 70,
+        borderColor: '#fff',
+        legend: {
+            display: false,
+            position: 'bottom',
+            align: 'center',
+            labels: {
+                color: 'rgb(255, 99, 132)',
+                fontSize: 12,
+                boxWidth: 10,
+                padding: 6,
+                usePointStyle: true,
+                fontFamily: "Inter,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Droid Sans,Helvetica Neue,sans-serif"
+            }
+        },
+        hover: {
+            onHover: function (e) {
+                e.target.style.cursor = 'pointer';
+            }
+        }
+    };
+}
 
     get sources() {
         return this.dashboardStats?.memberSourceAttributionCounts || [];
