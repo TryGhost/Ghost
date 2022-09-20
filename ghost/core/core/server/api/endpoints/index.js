@@ -185,6 +185,10 @@ module.exports = {
         return apiFramework.pipeline(require('./comments'), localUtils);
     },
 
+    get links() {
+        return apiFramework.pipeline(require('./links'), localUtils);
+    },
+
     /**
      * Content API Controllers
      *
