@@ -253,6 +253,17 @@ export default Model.extend(Comparable, ValidationEngine, {
         }
     }),
 
+    clickRate: computed('email.emailCount', 'count.clicks', function () {
+        if (!this.email || !this.email.emailCount) {
+            return 0;
+        }
+        if (!this.count.clicks) {
+            return 0;
+        }
+        
+        return Math.round(this.count.clicks / this.email.emailCount * 100);
+    }),
+
     _getPublishedAtBlogTZ() {
         let publishedAtUTC = this.publishedAtUTC;
         let publishedAtBlogDate = this.publishedAtBlogDate;
