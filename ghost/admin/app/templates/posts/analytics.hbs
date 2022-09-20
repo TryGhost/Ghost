@@ -12,12 +12,12 @@
         </h2>
         <p class="gh-post-analytics-meta">
             {{#if
-                (or post.isSent
-                    (and post.isPublished post.email)
-                    post.willEmail
+                (or this.post.isSent
+                    (and this.post.isPublished this.post.email)
+                    this.post.willEmail
                 )
             }}
-                {{#if post.emailOnly}}
+                {{#if this.post.emailOnly}}
                     Sent
                 {{else}}
                     Published and sent
@@ -26,7 +26,7 @@
                 Published on your site
             {{/if}}
 
-            {{#let (moment-site-tz post.publishedAtUTC) as |publishedAt|}}
+            {{#let (moment-site-tz this.post.publishedAtUTC) as |publishedAt|}}
                 on
                 {{moment-format publishedAt "D MMM YYYY"}}
                 at
