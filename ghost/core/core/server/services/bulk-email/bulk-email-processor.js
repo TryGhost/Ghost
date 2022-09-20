@@ -256,7 +256,8 @@ module.exports = {
             let ghostError = new errors.EmailError({
                 err: error,
                 context: tpl(messages.error),
-                code: 'BULK_EMAIL_SEND_FAILED'
+                code: 'BULK_EMAIL_SEND_FAILED',
+                help: error.error.details
             });
 
             sentry.captureException(ghostError);
