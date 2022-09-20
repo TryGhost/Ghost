@@ -3988,15 +3988,16 @@
   dependencies:
     lodash "^4.17.11"
 
-"@tryghost/nodemailer@0.3.26":
-  version "0.3.26"
-  resolved "https://registry.yarnpkg.com/@tryghost/nodemailer/-/nodemailer-0.3.26.tgz#733d5570ca98b670f580807533e600a8580ecc5d"
-  integrity sha512-ZmQnW+WwIyz513Yp2MOiKt8Q5MKOyskkb8Kw9bZZyhUetC62Chx/oKMR8RIAXi0r12aFZ2DlxP7s2/gZasF2ig==
+"@tryghost/nodemailer@0.3.27":
+  version "0.3.27"
+  resolved "https://registry.yarnpkg.com/@tryghost/nodemailer/-/nodemailer-0.3.27.tgz#62f4f491340a61f12dd671d3f04434c138aaaaac"
+  integrity sha512-0cBc0WrqLyDdOYcUzZarLAPV1kFoznuazVfqT4MCLn/WY8LTUNluwwEknVW/rvi+ePrzA1sgQQdGM2plPa5Xfg==
   dependencies:
     "@aws-sdk/client-ses" "^3.31.0"
     "@tryghost/errors" "^1.2.16"
     nodemailer "^6.6.3"
     nodemailer-direct-transport "^3.3.2"
+    nodemailer-mailgun-transport "^2.1.5"
     nodemailer-stub-transport "^1.1.0"
 
 "@tryghost/nql-lang@0.3.2", "@tryghost/nql-lang@^0.3.2":
@@ -6407,7 +6408,7 @@ blank-object@^1.0.1:
   resolved "https://registry.yarnpkg.com/blank-object/-/blank-object-1.0.2.tgz#f990793fbe9a8c8dd013fb3219420bec81d5f4b9"
   integrity sha512-kXQ19Xhoghiyw66CUiGypnuRpWlbHAzY/+NyvqTEdTfhfQGH1/dbEMYiXju7fYKIFePpzp/y9dsu5Cu/PkmawQ==
 
-bluebird@3.7.2, bluebird@^3.3.5, bluebird@^3.4.1, bluebird@^3.4.6, bluebird@^3.5.0, bluebird@^3.5.3, bluebird@^3.5.5, bluebird@^3.7.2:
+bluebird@3.7.2, bluebird@^3.1.1, bluebird@^3.3.5, bluebird@^3.4.1, bluebird@^3.4.6, bluebird@^3.5.0, bluebird@^3.5.3, bluebird@^3.5.5, bluebird@^3.7.2:
   version "3.7.2"
   resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.7.2.tgz#9f229c15be272454ffa973ace0dbee79a1b0c36f"
   integrity sha512-XpNj6GDQzdfW+r2Wnn7xiSAd7TM3jzkxGXBGTtWKuSXv1xUV+azxAm8jdWZN06QTQk+2N2XB9jRDkvbmQmcRtg==
@@ -8448,6 +8449,13 @@ console-ui@^3.0.4, console-ui@^3.1.1, console-ui@^3.1.2:
     json-stable-stringify "^1.0.1"
     ora "^3.4.0"
     through2 "^3.0.1"
+
+consolidate@^0.15.1:
+  version "0.15.1"
+  resolved "https://registry.yarnpkg.com/consolidate/-/consolidate-0.15.1.tgz#21ab043235c71a07d45d9aad98593b0dba56bab7"
+  integrity sha512-DW46nrsMJgy9kqAbPt5rKaCr7uFtpo4mSUvLHIUbJEjm0vo+aY5QLwBUq3FK4tRnJr/X0Psc0C4jf/h+HtXSMw==
+  dependencies:
+    bluebird "^3.1.1"
 
 consolidate@^0.16.0:
   version "0.16.0"
@@ -16337,7 +16345,7 @@ magic-string@^0.26.0:
   dependencies:
     sourcemap-codec "^1.4.8"
 
-mailgun.js@8.0.1:
+mailgun.js@8.0.1, mailgun.js@^8.0.1:
   version "8.0.1"
   resolved "https://registry.yarnpkg.com/mailgun.js/-/mailgun.js-8.0.1.tgz#918fb7bf72474ef16f47f10659a2588534252af3"
   integrity sha512-YeyugcYx01j96RmbrMFPbv0EQmDXtSlEeQTCYdmyewSBI2/Z+F3NulLLlkTGDIvf9+sCyD0MVxBBszPNSesbug==
@@ -17644,6 +17652,15 @@ nodemailer-fetch@1.6.0:
   version "1.6.0"
   resolved "https://registry.yarnpkg.com/nodemailer-fetch/-/nodemailer-fetch-1.6.0.tgz#79c4908a1c0f5f375b73fe888da9828f6dc963a4"
   integrity sha512-P7S5CEVGAmDrrpn351aXOLYs1R/7fD5NamfMCHyi6WIkbjS2eeZUB/TkuvpOQr0bvRZicVqo59+8wbhR3yrJbQ==
+
+nodemailer-mailgun-transport@^2.1.5:
+  version "2.1.5"
+  resolved "https://registry.yarnpkg.com/nodemailer-mailgun-transport/-/nodemailer-mailgun-transport-2.1.5.tgz#4a83dfa4541dc2b56d891e74f8288a25125948a4"
+  integrity sha512-hF7POkaxFgMvYEd5aHLaQJI2511ld+aQlQi7JH6bGjhjlZ33cIbTB9PimlIrLu5XC3z76Kde6e65OIwL9lOdTA==
+  dependencies:
+    consolidate "^0.15.1"
+    form-data "^4.0.0"
+    mailgun.js "^8.0.1"
 
 nodemailer-shared@1.1.0:
   version "1.1.0"
