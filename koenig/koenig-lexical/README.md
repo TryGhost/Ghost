@@ -50,8 +50,14 @@ All imported files are processed/optimised via SVGO (see `svgo.config.js` for op
 
 ## Testing
 
+Tests use [Vitest](https://vitest.dev) as the test runner, with [Puppeteer](https://pptr.dev) used for e2e testing.
+
 - `yarn test` starts a test watcher that re-runs tests on file changes
 - `yarn test --ui` same as `yarn test` but also opens a browser UI for exploring and re-running tests
 - `yarn test run` same as `yarn test` but exits after tests have run
 
 Before tests are started we build a version of the demo app that is used for e2e tests. Config for that is located in `vite.config.test.js` and should mostly mirror the main config file in `vite.config.js` except for building a full site rather than a UMD library file.
+
+### Editor integration
+
+There's a [vitest vscode extension](https://marketplace.visualstudio.com/items?itemName=ZixuanChen.vitest-explorer) that lets you run and debug individual tests/groups directly inside vscode.
