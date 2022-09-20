@@ -618,6 +618,20 @@ Dashboard Metric */
     font-size: 2rem;
 }
 
+.gh-dashboard-metric.is-embedded {
+    background: radial-gradient(#fff,hsla(0,0%,100%,.5686274509803921));
+    z-index: 1;
+    margin-top: 4px;
+    align-self: flex-start;
+    padding-right: 24px;
+    padding-bottom: 16px;
+    opacity: 1;
+}
+
+.gh-dashboard-hero.source-attribution:not(.is-solo) {
+    margin-top: -64px;
+}
+
 .gh-dashboard-metric-minivalue {
     font-size: 1.5rem;
     letter-spacing: 0;
