@@ -2304,13 +2304,14 @@
   resolved "https://registry.yarnpkg.com/@tryghost/mw-api-version-mismatch/-/mw-api-version-mismatch-0.1.1.tgz#913c8941ebe274eac4c3ac872fbe6268534f0003"
   integrity sha512-N1H3P/ua7MCJTQrhFd6RjBFL95pjB+y3Ih1ZyKToBzicU3RShLUsgVlBC7YNaJVGFG/RYCImzlm09QCV8qwgpg==
 
-"@tryghost/mw-error-handler@0.2.2":
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/mw-error-handler/-/mw-error-handler-0.2.2.tgz#ab507e8b9079b6cbcbef2ac3fee4266342188165"
-  integrity sha512-9J6d1gce+PzdLkSGxap5oWjG3INb3J9QLoC4NHXOqIGZ+7GERlao3q6AFVBo5xUBoUzkd+Q7+3ZQfeLarNEwUA==
+"@tryghost/mw-error-handler@0.2.5":
+  version "0.2.5"
+  resolved "https://registry.yarnpkg.com/@tryghost/mw-error-handler/-/mw-error-handler-0.2.5.tgz#2a67fe0d8c5402e9261d270c47c76cfcdc71974d"
+  integrity sha512-jl/CLpVFQygXGbjfuznQYe+VF6xT0YPixcT4LfFKN+H/Kpm+8/MIDLzfAAnxJDlIM4w5Ux1YQYAQMtsbU0rxqg==
   dependencies:
     "@tryghost/debug" "^0.1.9"
     "@tryghost/errors" "1.2.12"
+    "@tryghost/http-cache-utils" "0.1.3"
     "@tryghost/tpl" "^0.1.8"
     lodash "^4.17.21"
     semver "^7.3.6"

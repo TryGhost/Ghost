@@ -87,7 +87,7 @@ module.exports.handleThemeResponse = [
     // Make sure the error can be served
     prepareError,
     // Add cache-control header
-    prepareErrorCacheControl,
+    prepareErrorCacheControl(),
     // Handle the error in Sentry
     sentry.errorHandler,
     // Format the stack for the user
