@@ -3812,6 +3812,16 @@
     "@tryghost/mobiledoc-kit" "^0.12.4-ghost.1"
     jsdom "^20.0.0"
 
+"@tryghost/http-cache-utils@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/http-cache-utils/-/http-cache-utils-0.1.0.tgz#a5a023434f8c312c846560bc375a34e43f09bbfc"
+  integrity sha512-vWuseNuS4UqBIoVntYWw2LrhgEUABunLLJ7hPTq4QO1sPbpazITqNDi4rbO3BUf2k60cVf0N2W4wfs4AVHoT1w==
+
+"@tryghost/http-cache-utils@0.1.3":
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/http-cache-utils/-/http-cache-utils-0.1.3.tgz#a3a07e55dbe3a62b7d51e98f19c063d03a1ef804"
+  integrity sha512-QganheP/zhcpFnDLPJYlQ4gBIhd+lAEMh8byx7ocCPM37nuEQ3zlmcM6KzDfUmKYwU+5oI/ya/0Wn0kmnyZ37A==
+
 "@tryghost/http-stream@^0.1.12":
   version "0.1.12"
   resolved "https://registry.yarnpkg.com/@tryghost/http-stream/-/http-stream-0.1.12.tgz#91d271d5a1b97af3c414a06cac106de2d008b10a"

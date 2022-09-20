@@ -38,7 +38,7 @@ describe('Default Frontend routing', function () {
     describe('Error', function () {
         it('should 404 for unknown post', async function () {
             await request.get('/spectacular/')
-                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect('Cache-Control', testUtils.cacheRules.noCache)
                 .expect(404)
                 .expect(/Page not found/)
                 .expect(assertCorrectFrontendHeaders);
@@ -46,7 +46,7 @@ describe('Default Frontend routing', function () {
 
         it('should 404 for unknown file', async function () {
             await request.get('/content/images/some/file/that/doesnt-exist.jpg')
-                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect('Cache-Control', testUtils.cacheRules.noCache)
                 .expect(404)
                 .expect(/Image not found/)
                 .expect(assertCorrectFrontendHeaders);
@@ -137,7 +137,7 @@ describe('Default Frontend routing', function () {
             const date = moment().format('YYYY/MM/DD');
 
             await request.get('/' + date + '/welcome/')
-                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect('Cache-Control', testUtils.cacheRules.noCache)
                 .expect(404)
                 .expect(/Page not found/)
                 .expect(assertCorrectFrontendHeaders);
@@ -155,7 +155,7 @@ describe('Default Frontend routing', function () {
 
         it('should 404 for non-edit parameter', async function () {
             await request.get('/welcome/notedit/')
-                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect('Cache-Control', testUtils.cacheRules.noCache)
                 .expect(404)
                 .expect(/Page not found/)
                 .expect(assertCorrectFrontendHeaders);
@@ -178,7 +178,7 @@ describe('Default Frontend routing', function () {
 
             it('/edit/ should NOT redirect to the editor', async function () {
                 await request.get('/welcome/edit/')
-                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect('Cache-Control', testUtils.cacheRules.noCache)
                     .expect(404)
                     .expect(assertCorrectFrontendHeaders);
             });
@@ -226,7 +226,7 @@ describe('Default Frontend routing', function () {
                 const date = moment().format('YYYY/MM/DD');
 
                 await request.get('/' + date + '/welcome/amp/')
-                    .expect('Cache-Control', testUtils.cacheRules.private)
+                    .expect('Cache-Control', testUtils.cacheRules.noCache)
                     .expect(404)
                     .expect(/Page not found/)
                     .expect(assertCorrectFrontendHeaders);

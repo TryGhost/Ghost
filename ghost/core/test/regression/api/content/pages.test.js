@@ -46,7 +46,7 @@ describe('api/endpoints/content/pages', function () {
             .get(localUtils.API.getApiQuery(`pages/${testUtils.DataGenerator.Content.posts[0].id}/?key=${key}`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect('Cache-Control', testUtils.cacheRules.noCache)
             .expect(404);
     });
 });

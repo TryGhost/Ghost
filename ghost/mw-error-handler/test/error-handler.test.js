@@ -2,11 +2,15 @@
 // const testUtils = require('./utils');
 require('./utils');
 const should = require('should');
-const {InternalServerError} = require('@tryghost/errors');
+const assert = require('assert');
+const {InternalServerError, NotFoundError} = require('@tryghost/errors');
+const {cacheControlValues} = require('@tryghost/http-cache-utils');
 const {
     prepareError,
-    handleJSONResponse,
+    jsonErrorRenderer,
     handleHTMLResponse,
+    handleJSONResponse,
+    prepareErrorCacheControl,
     prepareStack,
     resourceNotFound,
     pageNotFound
@@ -74,13 +78,67 @@ describe('Prepare Stack', function () {
     });
 });
 
+describe('Prepare Error Cache Control', function () {
+    it('Sets private cache control by default', function (done) {
+        const res = {
+            set: sinon.spy()
+        };
+        prepareErrorCacheControl()(new Error('generic error'), {}, res, () => {
+            assert(res.set.calledOnce);
+            assert(res.set.calledWith({
+                'Cache-Control': cacheControlValues.private
+            }));
+            done();
+        });
+    });
+
+    it('Sets private cache-control header for user-specific 404 responses', function (done) {
+        const req = {
+            method: 'GET',
+            get: (header) => {
+                if (header === 'authorization') {
+                    return 'Basic YWxhZGRpbjpvcGVuc2VzYW1l';
+                }
+            }
+        };
+        const res = {
+            set: sinon.spy()
+        };
+        prepareErrorCacheControl()(new NotFoundError(), req, res, () => {
+            assert(res.set.calledOnce);
+            assert(res.set.calledWith({
+                'Cache-Control': cacheControlValues.private
+            }));
+            done();
+        });
+    });
+
+    it('Sets noCache cache-control header for non-user-specific 404 responses', function (done) {
+        const req = {
+            method: 'GET',
+            get: () => {
+                return false;
+            }
+        };
+        const res = {
+            set: sinon.spy(),
+            get: () => {
+                return false;
+            }
+        };
+        prepareErrorCacheControl()(new NotFoundError(), req, res, () => {
+            assert(res.set.calledOnce);
+            assert(res.set.calledWith({
+                'Cache-Control': cacheControlValues.noCacheDynamic
+            }));
+            done();
+        });
+    });
+});
+
 describe('Error renderers', function () {
     it('Renders JSON', function (done) {
-        const errorRenderer = handleJSONResponse({
-            errorHandler: () => {}
-        })[3];
-
-        errorRenderer(new Error('test!'), {}, {
+        jsonErrorRenderer(new Error('test!'), {}, {
             json: (data) => {
                 data.errors.length.should.eql(1);
                 data.errors[0].message.should.eql('test!');
@@ -90,11 +148,7 @@ describe('Error renderers', function () {
     });
 
     it('Handles unknown errors when preparing user message', function (done) {
-        const errorRenderer = handleJSONResponse({
-            errorHandler: () => {}
-        })[3];
-
-        errorRenderer(new RangeError('test!'), {
+        jsonErrorRenderer(new RangeError('test!'), {
             frameOptions: {
                 docName: 'oembed',
                 method: 'read'
@@ -110,11 +164,7 @@ describe('Error renderers', function () {
     });
 
     it('Uses templates when required', function (done) {
-        const errorRenderer = handleJSONResponse({
-            errorHandler: () => {}
-        })[3];
-
-        errorRenderer(new InternalServerError({
+        jsonErrorRenderer(new InternalServerError({
             message: 'test!'
         }), {
             frameOptions: {
@@ -132,11 +182,7 @@ describe('Error renderers', function () {
     });
 
     it('Uses defined message + context when available', function (done) {
-        const errorRenderer = handleJSONResponse({
-            errorHandler: () => {}
-        })[3];
-
-        errorRenderer(new InternalServerError({
+        jsonErrorRenderer(new InternalServerError({
             message: 'test!',
             context: 'Image was too large.'
         }), {
@@ -159,7 +205,15 @@ describe('Error renderers', function () {
             errorHandler: () => {}
         });
 
-        renderer.length.should.eql(3);
+        renderer.length.should.eql(4);
+    });
+
+    it('Exports the JSON renderer', function () {
+        const renderer = handleJSONResponse({
+            errorHandler: () => {}
+        });
+
+        renderer.length.should.eql(5);
     });
 });
 
