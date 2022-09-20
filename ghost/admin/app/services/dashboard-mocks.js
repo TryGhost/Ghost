@@ -294,11 +294,14 @@ export default class DashboardMocksService extends Service {
 
         this.memberCountStats = stats;
         this.subscriptionCountStats = stats.map((data) => {
+            const signups = (data.paidSubscribed - data.paidCanceled);
             return {
                 date: data.date,
                 count: data.paid,
                 positiveDelta: data.paidSubscribed,
-                negativeDelta: data.paidCanceled
+                negativeDelta: data.paidCanceled,
+                signups: signups < 0 ? 0 : signups,
+                cancellations: Math.floor(signups * 0.3) ? Math.floor(signups * 0.3) : 0
             };
         });
 
