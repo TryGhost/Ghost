@@ -6,6 +6,7 @@ const LinkRedirect = require('./LinkRedirect');
 /**
  * @typedef {object} ILinkRedirectRepository
  * @prop {(url: URL) => Promise<LinkRedirect|undefined>} getByURL
+ * @prop {({filter: string}) => Promise<LinkRedirect[]>} getAll
  * @prop {(linkRedirect: LinkRedirect) => Promise<void>} save
  */
 
@@ -58,6 +59,10 @@ class LinkRedirectsService {
         await this.#linkRedirectRepository.save(link);
 
         return link;
+    }
+
+    async getAll(options) {
+        return this.#linkRedirectRepository.getAll(options);
     }
 
     /**

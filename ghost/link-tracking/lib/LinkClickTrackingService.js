@@ -7,6 +7,7 @@ const ObjectID = require('bson-objectid').default;
 /**
  * @typedef {object} ILinkClickRepository
  * @prop {(event: LinkClick) => Promise<void>} save
+ * @prop {({filter: string}) => Promise<LinkClick[]>} getAll
  */
 
 /**
@@ -20,6 +21,7 @@ const ObjectID = require('bson-objectid').default;
  * @typedef {object} ILinkRedirectService
  * @prop {(to: URL, slug: string) => Promise<ILinkRedirect>} addRedirect
  * @prop {() => Promise<string>} getSlug
+ * @prop {({filter: string}) => Promise<ILinkRedirect[]>} getAll
  */
 
 /**
@@ -30,6 +32,7 @@ const ObjectID = require('bson-objectid').default;
 /**
  * @typedef {object} IPostLinkRepository
  * @prop {(postLink: PostLink) => Promise<void>} save
+ * @prop {({filter: string}) => Promise<PostLink[]>} getAll
  */
 
 class LinkClickTrackingService {
@@ -60,6 +63,45 @@ class LinkClickTrackingService {
         }
         this.subscribe();
         this.#initialised = true;
+    }
+
+    /**
+     * @param {object} options
+     * @param {string} options.filter
+     */
+    async getLinks(options) {
+        const data = [];
+
+        const postLinks = await this.#postLinkRepository.getAll({
+            filter: options.filter
+        });
+
+        if (postLinks.length === 0) {
+            return data;
+        }
+
+        const links = await this.#linkRedirectService.getAll({
+            filter: `id:[${postLinks.map(x => x.link_id.toHexString())}]`
+        });
+
+        for (const link of links) {
+            const events = await this.#linkClickRepository.getAll({
+                filter: `link_id:[${link.link_id.toHexString()}]`
+            });
+
+            const result = {
+                id: link.link_id.toHexString(),
+                url: link.to.toString(),
+                post_id: postLinks.find((postLink) => {
+                    return postLink.link_id.equals(link.link_id);
+                }).post_id.toHexString(),
+                click_events: events
+            };
+
+            data.push(result);
+        }
+
+        return data;
     }
 
     /**
