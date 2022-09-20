@@ -37,6 +37,11 @@
                                                                 <GhEmailPreviewLink @data={{event.email}} />
                                                             {{/if}}
                                                         </span>
+                                                        {{#if event.description}}
+                                                            <div>
+                                                                {{event.description}}
+                                                            </div>
+                                                        {{/if}}
                                                     </span>
                                                 </div>
                                                 <div class="gh-member-feed-time">
