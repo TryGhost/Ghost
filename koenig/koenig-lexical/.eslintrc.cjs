@@ -17,15 +17,5 @@ module.exports = {
         'tailwindcss/no-arbitrary-value': 'off',
         'tailwindcss/no-custom-classname': 'off',
         'tailwindcss/no-contradicting-classname': 'error'
-    },
-    overrides: [
-        {
-            files: ['test/**'],
-            plugins: ['jest'],
-            extends: ['plugin:jest/recommended'],
-            rules: {
-                'jest/no-disabled-tests': 'warn'
-            }
-        }
-    ]
+    }
 };
