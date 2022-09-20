@@ -9,10 +9,6 @@ describe('Search helper', function () {
         handlebars.registerHelper('search', searchHelper);
     });
 
-    beforeEach(function () {
-        sinon.stub(labs, 'isSet').returns(true);
-    });
-
     afterEach(function () {
         sinon.restore();
     });
