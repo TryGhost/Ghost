@@ -27,6 +27,22 @@ module.exports = class LinkRedirectRepository {
         linkRedirect.link_id = ObjectID.createFromHexString(model.id);
     }
 
+    async getAll(options) {
+        const collection = await this.#LinkRedirect.findAll(options);
+
+        const result = [];
+
+        for (const model of collection.models) {
+            result.push(new LinkRedirect({
+                id: model.id,
+                from: new URL(model.get('from'), this.#urlUtils.getSiteUrl()),
+                to: new URL(this.#urlUtils.transformReadyToAbsolute(model.get('to')))
+            }));
+        }
+
+        return result;
+    }
+
     /**
      * 
      * @param {URL} url 
