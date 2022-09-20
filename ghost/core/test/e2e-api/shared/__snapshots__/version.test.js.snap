@@ -504,7 +504,7 @@ Object {
 exports[`API Versioning Content API responds with 404 error when the resource cannot be found 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "no-cache, max-age=0, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
