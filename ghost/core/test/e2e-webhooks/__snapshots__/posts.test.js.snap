@@ -180,6 +180,7 @@ Object {
       "codeinjection_head": null,
       "comment_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "count": Object {
+        "clicks": 0,
         "conversions": 0,
         "signups": 0,
       },
