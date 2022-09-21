@@ -14,6 +14,7 @@
 /* TODO: will these clash with consuming apps? */
 :root {
     --grey-200: #EBEEF0;
+    --grey-300: #DDE1E5;
     --grey-500: #AEB7C1;
     --grey-900: #394047;
     --black: #15171A;

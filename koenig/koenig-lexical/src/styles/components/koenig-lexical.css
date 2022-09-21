@@ -21,6 +21,6 @@
 
     /* Selection highlight color */
     ::selection {
-        background: var(--grey-200);
+        background: var(--grey-300);
     }
 }

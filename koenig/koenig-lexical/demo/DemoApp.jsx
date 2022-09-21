@@ -3,9 +3,9 @@ import SerializedStateTextarea from './components/SerializedStateTextarea';
 
 function DemoApp() {
     return (
-        <div className="demo-container koenig-lexical">
+        <div className="koenig-lexical">
             <KoenigComposer>
-                <div className="demo-editor">
+                <div className="mx-auto mt-[20vmin] max-w-3xl">
                     <KoenigEditor>
                     </KoenigEditor>
                 </div>

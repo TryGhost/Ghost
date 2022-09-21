@@ -1,29 +1,14 @@
 :root {
-    font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-    font-size: 16px;
-    line-height: 24px;
-    font-weight: 400;
+    font-size: 62.5%;
+    line-height: 1.65;
+    -ms-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
 
-    color-scheme: light dark;
-    color: rgba(255, 255, 255, 0.87);
+    color-scheme: light;
 
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-text-size-adjust: 100%;
-}
-
-.demo-container {
-    display: flex;
-    flex-direction: row;
-}
-
-.demo-editor {
-    position: relative;
-    margin-left: 2rem;
-    margin-right: 2rem;
-    margin-top: 4rem;
-    width: 100%;
-    max-width: 67.2rem;
 }
