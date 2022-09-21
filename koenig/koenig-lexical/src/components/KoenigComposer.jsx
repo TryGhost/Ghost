@@ -1,21 +1,7 @@
 import React from 'react';
 import {LexicalComposer} from '@lexical/react/LexicalComposer';
-import {ListItemNode, ListNode} from '@lexical/list';
-import {HeadingNode, QuoteNode} from '@lexical/rich-text';
-import {HorizontalRuleNode} from '@lexical/react/LexicalHorizontalRuleNode';
-import {CodeNode} from '@lexical/code';
-import {LinkNode} from '@lexical/link';
+import DEFAULT_NODES from '../nodes/DefaultNodes';
 import defaultTheme from '../themes/default';
-
-export const DEFAULT_NODES = [
-    HeadingNode,
-    ListNode,
-    ListItemNode,
-    QuoteNode,
-    LinkNode,
-    CodeNode, // TODO: replace with our own card
-    HorizontalRuleNode // TODO: replace with our own card
-];
 
 // Catch any errors that occur during Lexical updates and log them
 // or throw them as needed. If you don't throw them, Lexical will

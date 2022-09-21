@@ -32,12 +32,12 @@
   },
   "dependencies": {
     "@lexical/react": "^0.4.1",
+    "@lexical/utils": "^0.4.1",
     "lexical": "^0.4.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@types/jest": "29.0.3",
     "@types/react": "18.0.20",
     "@types/react-dom": "18.0.6",
     "@vitejs/plugin-react": "2.1.0",
