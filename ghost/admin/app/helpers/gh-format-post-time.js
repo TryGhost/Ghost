@@ -3,13 +3,18 @@ import moment from 'moment';
 import {assert} from '@ember/debug';
 import {inject as service} from '@ember/service';
 
-export function formatPostTime(timeago, {timezone = 'etc/UTC', draft, scheduled, published}) {
+export function formatPostTime(timeago, {timezone = 'etc/UTC', format, draft, scheduled, published}) {
     if (draft) {
         // No special handling for drafts, just use moment.from
         return moment(timeago).from(moment.utc());
     }
 
     let time = moment.tz(timeago, timezone);
+
+    if (format) {
+        return time.format(format);
+    }
+
     let now = moment.tz(moment.utc(), timezone);
 
     let utcOffset;
@@ -44,8 +49,8 @@ export function formatPostTime(timeago, {timezone = 'etc/UTC', draft, scheduled,
     }
 
     // Else, render just the date if published, or the time & date if scheduled
-    let format = scheduled ? `[at] HH:mm [${utcOffset}] [on] DD MMM YYYY` : 'DD MMM YYYY';
-    return time.format(format);
+    let f = scheduled ? `[at] HH:mm [${utcOffset}] [on] DD MMM YYYY` : 'DD MMM YYYY';
+    return time.format(f);
 }
 
 export default class GhFormatPostTimeHelper extends Helper {
