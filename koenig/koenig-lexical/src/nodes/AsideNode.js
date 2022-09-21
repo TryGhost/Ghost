@@ -15,10 +15,6 @@ export class AsideNode extends ElementNode {
         return new AsideNode(node.__key);
     }
 
-    constructor(key) {
-        super(key);
-    }
-
     // View
 
     createDOM(config) {
