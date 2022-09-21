@@ -1,11 +1,11 @@
-<section class="gh-dashboard-section gh-dashboard-recents">
+<section class="gh-dashboard-section gh-dashboard-attribution">
 
     <article class="gh-dashboard-box" {{did-insert this.loadData}}>
         <div style="display: grid;grid-template-columns: 1fr 2fr;grid-gap: 24px;">
             <div>
                 <h3 class="gh-dashboard-metric-label">Attribution</h3>
                 <div style="display: flex;justify-content: center;align-items: center;">
-                    <div style="max-width: 200px;">
+                    <div style="max-width: 200px; max-height: 200px;">
                         <EmberChart
                             @type='doughnut'
                             @data={{this.chartData}}
@@ -15,17 +15,18 @@
                     </div>
                 </div>
             </div>
-            <div class="gh-dashboard-recents-posts gh-dashboard-list">
+            <div class="gh-dashboard-attribution-list gh-dashboard-list" style="justify-content:flex-start;">
                 <div class="gh-dashboard-list-header">
                     <div class="gh-dashboard-list-title">Sources</div>
                     <div class="gh-dashboard-list-title">Free Signups</div>
                     <div class="gh-dashboard-list-title">Paid Conversions</div>
                 </div>
-                <div class="gh-dashboard-list-body" style="max-height: 230px; overflow-y: scroll; justify-content: flex-start;">
+                <div class="gh-dashboard-list-body" style="max-height: 230px; overflow-y: clip; justify-content: flex-start;">
+                    <div class="gh-dashboard-attribution-list-scrollable">
                     {{#each this.sources as |sourceData|}}
                         <div class="gh-dashboard-list-item">
                             <div class="gh-dashboard-list-item-sub">
-                                <span class="gh-dashboard-list-text">{{sourceData.source}}</span>
+                                <span class="gh-dashboard-list-text gh-dashboard-list-item-source">{{sourceData.source}}</span>
                             </div>
                             <div class="gh-dashboard-list-item-sub">
                                 <span class="gh-dashboard-metric-minivalue">
@@ -51,6 +52,7 @@
                             <p>No sources.</p>
                         </div>
                     {{/each}}
+                    </div>
                 </div>
             </div>
         </div>

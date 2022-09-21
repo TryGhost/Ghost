@@ -269,7 +269,7 @@ export default class DashboardMocksService extends Service {
                 paidSubscribed: paidSubscribed1 + paidSubscribed2,
                 paidCanceled: paidCanceled1 + paidCanceled2
             });
-            const attributionSources = ['Twitter', 'Ghost Network', 'Product Hunt', 'Direct', 'Ghost Newsletter'];
+            const attributionSources = ['Twitter', 'Ghost Network', 'Product Hunt', 'Direct', 'Ghost Newsletter', 'Rediverge Newsletter', 'Reddit', 'The Lever Newsletter', 'The Browser Newsletter'];
 
             this.memberAttributionStats.push({
                 date: date.toISOString().split('T')[0],

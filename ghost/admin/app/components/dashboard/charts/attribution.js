@@ -8,7 +8,8 @@ const CHART_COLORS = [
     '#CA3FED',
     '#E993CC',
     '#EE9696',
-    '#FEC7C0'
+    '#FEC7C0',
+    '#E6E9EB'
 ];
 export default class Recents extends Component {
     @service dashboardStats;
