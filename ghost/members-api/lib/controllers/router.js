@@ -228,15 +228,15 @@ module.exports = class RouterController {
             }
 
             if (attribution.refSource) {
-                metadata.attribution_ref_source = attribution.refSource;
+                metadata.referrer_source = attribution.refSource;
             }
 
             if (attribution.refMedium) {
-                metadata.attribution_ref_medium = attribution.refMedium;
+                metadata.referrer_medium = attribution.refMedium;
             }
 
             if (attribution.refUrl) {
-                metadata.attribution_ref_url = attribution.refUrl;
+                metadata.referrer_url = attribution.refUrl;
             }
         }
 
