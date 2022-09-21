@@ -1542,13 +1542,26 @@ DataGenerator.forKnex = (function () {
     ];
 
     const members_created_events = members.map((member, index) => {
+        const sources = [
+            {
+                referrer_source: 'Twitter',
+                referrer_medium: 'Social',
+                referrer_url: 'https://twitter.com'
+            },
+            {
+                referrer_source: 'Direct',
+                referrer_medium: null,
+                referrer_url: null
+            }
+        ];
         return {
             id: ObjectId().toHexString(),
             member_id: member.id,
             source: 'system',
             attribution_type: 'post',
             attribution_id: DataGenerator.Content.posts[index % 3].id,
-            attribution_url: '/' + DataGenerator.Content.posts[index % 3].slug
+            attribution_url: '/' + DataGenerator.Content.posts[index % 3].slug,
+            ...sources[index % 2]
         };
     });
 
@@ -1613,6 +1626,18 @@ DataGenerator.forKnex = (function () {
     ];
 
     const members_subscription_created_events = stripe_customer_subscriptions.map((subscription, index) => {
+        const sources = [
+            {
+                referrer_source: 'Twitter',
+                referrer_medium: 'Social',
+                referrer_url: 'https://twitter.com'
+            },
+            {
+                referrer_source: 'Direct',
+                referrer_medium: null,
+                referrer_url: null
+            }
+        ];
         return {
             id: ObjectId().toHexString(),
             member_id: members[index].id,
@@ -1620,7 +1645,8 @@ DataGenerator.forKnex = (function () {
             source: 'system',
             attribution_type: 'post',
             attribution_id: DataGenerator.Content.posts[index % 3].id,
-            attribution_url: '/' + DataGenerator.Content.posts[index % 3].slug
+            attribution_url: '/' + DataGenerator.Content.posts[index % 3].slug,
+            ...sources[index % 2]
         };
     });
 
