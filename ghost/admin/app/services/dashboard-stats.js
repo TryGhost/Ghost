@@ -26,7 +26,7 @@ import {tracked} from '@glimmer/tracking';
  * @type {Object}
  * @property {string} date The date (YYYY-MM-DD) on which these counts were recorded
  * @property {number} source Attribution Source
- * @property {number} freeSignups Total free members signed up for this source
+ * @property {number} signups Total free members signed up for this source
  * @property {number} paidConversions Total paid conversions for this source
  */
 
@@ -34,7 +34,7 @@ import {tracked} from '@glimmer/tracking';
  * @typedef SourceAttributionCount
  * @type {Object}
  * @property {string} source Attribution Source
- * @property {number} freeSignups Total free members signed up for this source
+ * @property {number} signups Total free members signed up for this source
  * @property {number} paidConversions Total paid conversions for this source
  */
 
@@ -248,18 +248,18 @@ export default class DashboardStatsService extends Service {
         }).reduce((acc, stat) => {
             const existingSource = acc.find(s => s.source === stat.source);
             if (existingSource) {
-                existingSource.freeSignups += stat.freeSignups || 0;
+                existingSource.signups += stat.signups || 0;
                 existingSource.paidConversions += stat.paidConversions || 0;
             } else {
                 acc.push({
                     source: stat.source,
-                    freeSignups: stat.freeSignups || 0,
+                    signups: stat.signups || 0,
                     paidConversions: stat.paidConversions || 0
                 });
             }
             return acc;
         }, []).sort((a, b) => {
-            return (b.freeSignups + b.paidConversions) - (a.freeSignups - a.paidConversions);
+            return (b.signups + b.paidConversions) - (a.signups - a.paidConversions);
         });
     }
 

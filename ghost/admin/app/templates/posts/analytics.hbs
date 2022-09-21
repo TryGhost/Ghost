@@ -86,23 +86,25 @@
     </div>
 
     {{#if (feature 'sourceAttribution')}}
-        <h4 class="gh-main-section-header small bn">
+        <h4 class="gh-main-section-header small bn" {{did-insert this.loadData}}>
             Source attribution
         </h4>
-        <div class="gh-post-analytics-box resources">
-            <div style="display: grid;
-                grid-template-columns: 2fr 1fr;
-                grid-gap: 64px;
-            ">
-                <MemberAttribution::SourceAttributionTable @sources={{this.sources}} />
+        {{#if this.sources}}
+            <div class="gh-post-analytics-box resources">
+                <div style="display: grid;
+                    grid-template-columns: 2fr 1fr;
+                    grid-gap: 64px;
+                ">
+                    <MemberAttribution::SourceAttributionTable @sources={{this.sources}} />
 
-                <div style="border-left: 1px solid #eceef0; padding-left: 48px;display: flex;justify-content: center;align-items: center;">
-                    <div style="max-width: 200px;">
-                        <MemberAttribution::SourceAttributionChart @sources={{this.sources}} />
+                    <div style="border-left: 1px solid #eceef0; padding-left: 48px;display: flex;justify-content: center;align-items: center;">
+                        <div style="max-width: 200px;">
+                            <MemberAttribution::SourceAttributionChart @sources={{this.sources}} />
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        {{/if}}
     {{/if}}
 
     <h4 class="gh-main-section-header small bn">

@@ -274,7 +274,7 @@ export default class DashboardMocksService extends Service {
             this.memberAttributionStats.push({
                 date: date.toISOString().split('T')[0],
                 source: attributionSources[Math.floor(Math.random() * attributionSources.length)],
-                freeSignups: Math.floor(Math.random() * 50),
+                signups: Math.floor(Math.random() * 50),
                 paidConversions: Math.floor(Math.random() * 30)
             });
         }
