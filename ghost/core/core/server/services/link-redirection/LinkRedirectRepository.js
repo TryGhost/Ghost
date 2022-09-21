@@ -4,17 +4,13 @@ const ObjectID = require('bson-objectid').default;
 module.exports = class LinkRedirectRepository {
     /** @type {Object} */
     #LinkRedirect;
-    /** @type {Object} */
-    #urlUtils;
 
     /**
      * @param {object} deps
      * @param {object} deps.LinkRedirect Bookshelf Model
-     * @param {object} deps.urlUtils 
      */
     constructor(deps) {
         this.#LinkRedirect = deps.LinkRedirect;
-        this.#urlUtils = deps.urlUtils;
     }
 
     /**
@@ -25,7 +21,7 @@ module.exports = class LinkRedirectRepository {
         const model = await this.#LinkRedirect.add({
             // Only store the parthname (no support for variable query strings)
             from: linkRedirect.from.pathname, 
-            to: this.#urlUtils.absoluteToTransformReady(linkRedirect.to.href)
+            to: linkRedirect.to.href
         }, {});
 
         linkRedirect.link_id = ObjectID.createFromHexString(model.id);
@@ -47,7 +43,7 @@ module.exports = class LinkRedirectRepository {
             return new LinkRedirect({
                 id: linkRedirect.id,
                 from: url,
-                to: new URL(this.#urlUtils.transformReadyToAbsolute(linkRedirect.get('to')))
+                to: new URL(linkRedirect.get('to'))
             });
         }
     }

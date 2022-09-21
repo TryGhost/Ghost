@@ -32,6 +32,11 @@
                             <span class="{{if (feature "memberAttribution") 'hidden'}}"><GhEmailPreviewLink @data={{event.email}} /></span>
                         {{/if}}
                     </span>
+                    {{#if event.description}}
+                        <div>
+                            {{event.description}}
+                        </div>
+                    {{/if}}
                 </div>
             </div>
         </div>

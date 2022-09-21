@@ -18,6 +18,15 @@ const memberFields = [
     'avatar_image'
 ];
 
+const memberFieldsAdmin = [
+    'id',
+    'uuid',
+    'name',
+    'email',
+    'expertise',
+    'avatar_image'
+];
+
 const postFields = [
     'id',
     'uuid',
@@ -36,7 +45,7 @@ const commentMapper = (model, frame) => {
     const response = _.pick(jsonModel, commentFields);
 
     if (jsonModel.member) {
-        response.member = _.pick(jsonModel.member, memberFields);
+        response.member = _.pick(jsonModel.member, utils.isMembersAPI(frame) ? memberFields : memberFieldsAdmin);
     } else {
         response.member = null;
     }

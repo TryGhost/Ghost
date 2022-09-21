@@ -51,6 +51,7 @@ module.exports = function MembersAPI({
         MemberAnalyticEvent,
         MemberCreatedEvent,
         SubscriptionCreatedEvent,
+        MemberLinkClickEvent,
         Offer,
         OfferRedemption,
         StripeProduct,
@@ -110,6 +111,7 @@ module.exports = function MembersAPI({
         MemberLoginEvent,
         MemberCreatedEvent,
         SubscriptionCreatedEvent,
+        MemberLinkClickEvent,
         Comment,
         labsService,
         memberAttributionService
