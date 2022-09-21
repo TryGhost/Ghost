@@ -31,9 +31,9 @@ import {tracked} from '@glimmer/tracking';
  */
 
 /**
- * @typedef SourceAttributionCounts
+ * @typedef SourceAttributionCount
  * @type {Object}
- * @property {number} source Attribution Source
+ * @property {string} source Attribution Source
  * @property {number} freeSignups Total free members signed up for this source
  * @property {number} paidConversions Total paid conversions for this source
  */
@@ -233,7 +233,7 @@ export default class DashboardStatsService extends Service {
     }
 
     /**
-     * @type {?SourceAttributionCounts}
+     * @type {SourceAttributionCount[]}
      */
     get memberSourceAttributionCounts() {
         if (!this.memberAttributionStats) {
