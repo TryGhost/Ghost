@@ -2,7 +2,7 @@
  * @typedef {Object} ReferrerData
  * @prop {string|null} [refSource]
  * @prop {string|null} [refMedium]
- * @prop {URL|null} [refUrl]
+ * @prop {string|null} [refUrl]
  */
 
 const knownReferrers = require('@tryghost/referrers');
@@ -29,7 +29,11 @@ class ReferrerTranslator {
      */
     getReferrerDetails(history) {
         if (history.length === 0) {
-            return null;
+            return {
+                refSource: 'Direct',
+                refMedium: null,
+                refUrl: null
+            };
         }
 
         for (const item of history) {
@@ -42,7 +46,7 @@ class ReferrerTranslator {
                 return {
                     refSource: 'Ghost Explore',
                     refMedium: 'Ghost Network',
-                    refUrl: refUrl
+                    refUrl: refUrl?.hostname ?? null
                 };
             }
 
@@ -51,7 +55,7 @@ class ReferrerTranslator {
                 return {
                     refSource: 'Ghost.org',
                     refMedium: 'Ghost Network',
-                    refUrl: refUrl
+                    refUrl: refUrl?.hostname
                 };
             }
 
@@ -60,7 +64,7 @@ class ReferrerTranslator {
                 return {
                     refSource: refSource.replace(/-/g, ' '),
                     refMedium: 'Email',
-                    refUrl: refUrl
+                    refUrl: refUrl?.hostname ?? null
                 };
             }
 
@@ -70,7 +74,7 @@ class ReferrerTranslator {
                 return {
                     refSource: refSource,
                     refMedium: refMedium || urlData?.medium || null,
-                    refUrl: refUrl
+                    refUrl: refUrl?.hostname ?? null
                 };
             }
 
@@ -78,30 +82,28 @@ class ReferrerTranslator {
             if (refUrl && !this.isSiteDomain(refUrl)) {
                 const urlData = this.getDataFromUrl(refUrl);
 
+                // Use known source/medium if available
                 if (urlData) {
                     return {
-                        refSource: urlData?.source,
-                        refMedium: urlData?.medium,
-                        refUrl: refUrl
+                        refSource: urlData?.source ?? null,
+                        refMedium: urlData?.medium ?? null,
+                        refUrl: refUrl?.hostname ?? null
                     };
                 }
-            }
-        }
-
-        // Return any referrer URL in history that is not site domain
-        for (const item of history) {
-            const refUrl = this.getUrlFromStr(item.refUrl);
-
-            if (refUrl && !this.isSiteDomain(refUrl)) {
+                // Use the hostname as a source
                 return {
-                    refSource: null,
+                    refSource: refUrl?.hostname ?? null,
                     refMedium: null,
-                    refUrl: refUrl
+                    refUrl: refUrl?.hostname ?? null
                 };
             }
         }
 
-        return null;
+        return {
+            refSource: 'Direct',
+            refMedium: null,
+            refUrl: null
+        };
     }
 
     // Fetches referrer data from known external URLs
