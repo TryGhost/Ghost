@@ -38,8 +38,11 @@
                                                             {{/if}}
                                                         </span>
                                                         {{#if event.description}}
-                                                            <div>
-                                                                {{event.description}}
+                                                            <div class="ghost-members-activity-event-description">
+                                                                <div class="ghost-members-activity-event-prefix">URL</div>
+                                                                <div class="ghost-members-activity-event-url" {{on "mouseenter" this.enterLinkURL}} {{on "mouseleave" this.leaveLinkURL}}>
+                                                                    <span>{{event.description}}</span>
+                                                                </div>
                                                             </div>
                                                         {{/if}}
                                                     </span>
