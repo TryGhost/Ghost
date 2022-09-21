@@ -3,6 +3,7 @@ const elementTransformers = [
     require('./element/heading'),
     require('./element/list'),
     require('./element/hr'),
+    require('./element/blockquote'),
     require('./element/aside')
 ];
 
