@@ -156,7 +156,7 @@ export default class ParseMemberEventHelper extends Helper {
         }
 
         if (event.type === 'click_event') {
-            return 'clicked email';
+            return 'click in email';
         }
     }
 
@@ -231,11 +231,11 @@ export default class ParseMemberEventHelper extends Helper {
 
                 // Remove protocol, querystring and hash
                 // + strip trailing /
-                return 'URL: ' + parsedURL.host + (parsedURL.pathname === '/' ? '' : parsedURL.pathname);
+                return parsedURL.host + (parsedURL.pathname === '/' ? '' : parsedURL.pathname);
             } catch (e) {
                 // Invalid URL
             }
-            return 'URL: ' + event.data.link.to;
+            return event.data.link.to;
         }
         return;
     }

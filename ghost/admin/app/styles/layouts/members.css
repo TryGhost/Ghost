@@ -1159,12 +1159,6 @@ textarea.gh-member-details-textarea {
     width: 0;
 }
 
-@media (max-width: 600px) {
-    .gh-member-feed-detail {
-        flex-direction: column;
-    }
-}
-
 .gh-member-feed-event {
     flex: 1;
     min-width: 0;
