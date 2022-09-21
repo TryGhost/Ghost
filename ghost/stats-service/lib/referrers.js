@@ -51,14 +51,6 @@ class ReferrersStatsService {
 
         return [...map.values()].sort((a, b) => b.paid_conversions - a.paid_conversions);
     }
-
-    /**
-     * Return a list of all the attribution sources (with signup and conversion counts) grouped per date
-     * @returns {Promise<AttributionCountStatDate[]>}
-     */
-    async getHistory() {
-        // TODO: implement
-    }
 }
 
 module.exports = ReferrersStatsService;
