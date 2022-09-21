@@ -38,13 +38,13 @@ export default class SourceAttributionChart extends Component {
         if (this.chartType === 'free') {
             const sortedByFree = [...this.sources];
             sortedByFree.sort((a, b) => {
-                return b.freeSignups - a.freeSignups;
+                return b.signups - a.signups;
             });
             return {
                 labels: sortedByFree.slice(0, 5).map(source => source.source),
                 datasets: [{
                     label: 'Free Signups',
-                    data: sortedByFree.slice(0, 5).map(source => source.freeSignups),
+                    data: sortedByFree.slice(0, 5).map(source => source.signups),
                     backgroundColor: CHART_COLORS.slice(0, 5),
                     borderWidth: 2,
                     borderColor: '#fff'
