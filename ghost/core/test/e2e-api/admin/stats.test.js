@@ -6,7 +6,7 @@ let agent;
 describe('Stats API', function () {
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
-        await fixtureManager.init('members');
+        await fixtureManager.init('posts', 'members');
         await agent.loginAsOwner();
     });
 
@@ -62,5 +62,28 @@ describe('Stats API', function () {
             .matchHeaderSnapshot({
                 etag: anyEtag
             });
+    });
+
+    describe('Post attribution stats', function () {
+        it('Can fetch attribution stats', async function () {
+            await agent
+                .get(`/stats/referrers/posts/${fixtureManager.get('posts', 1).id}/`)
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    stats: [
+                        {
+                            source: 'Direct',
+                            signups: 2,
+                            paid_conversions: 1
+                        },
+                        {
+                            source: 'Twitter',
+                            signups: 1,
+                            paid_conversions: 0
+                        }
+                    ],
+                    meta: {}
+                });
+        });
     });
 });

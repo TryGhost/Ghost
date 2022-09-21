@@ -125,3 +125,21 @@ Object {
   "x-powered-by": "Express",
 }
 `;
+
+exports[`Stats API Post attribution stats Can fetch attribution stats 1: [body] 1`] = `
+Object {
+  "meta": Object {},
+  "stats": Array [
+    Object {
+      "paid_conversions": 1,
+      "signups": 2,
+      "source": "Direct",
+    },
+    Object {
+      "paid_conversions": 0,
+      "signups": 1,
+      "source": "Twitter",
+    },
+  ],
+}
+`;
