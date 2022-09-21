@@ -52,9 +52,9 @@ All imported files are processed/optimised via SVGO (see `svgo.config.js` for op
 
 Tests use [Vitest](https://vitest.dev) as the test runner, with [Puppeteer](https://pptr.dev) used for e2e testing.
 
-- `yarn test` starts a test watcher that re-runs tests on file changes
-- `yarn test --ui` same as `yarn test` but also opens a browser UI for exploring and re-running tests
-- `yarn test run` same as `yarn test` but exits after tests have run
+- `yarn test run` runs tests and exits
+- `yarn test:watch` runs tests and starts a test watcher that re-runs tests on file changes
+- `yarn test:watch --ui` same as `yarn test:watch` but also opens a browser UI for exploring and re-running tests
 
 Before tests are started we build a version of the demo app that is used for e2e tests. Config for that is located in `vite.config.test.js` and should mostly mirror the main config file in `vite.config.js` except for building a full site rather than a UMD library file.
 
