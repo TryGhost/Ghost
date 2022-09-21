@@ -14,7 +14,7 @@ class ReferrersStatsService {
      */
     async getForPost(postId) {
         const knex = this.knex;
-        const sigupRows = await knex('members_created_events')
+        const signupRows = await knex('members_created_events')
             .select('referrer_source')
             .select(knex.raw('COUNT(id) AS total'))
             .where('attribution_id', postId)
@@ -31,7 +31,7 @@ class ReferrersStatsService {
         // Stitch them toghether, grouping them by source
 
         const map = new Map();
-        for (const row of sigupRows) {
+        for (const row of signupRows) {
             map.set(row.referrer_source, {
                 source: row.referrer_source,
                 signups: row.total,
