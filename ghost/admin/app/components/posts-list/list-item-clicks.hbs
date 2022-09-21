@@ -24,7 +24,7 @@
                     </span>
                     <span class="gh-content-entry-date">
                         {{#if this.isHovered}}
-                            {{gh-format-post-time @post.updatedAtUTC "D MMM YYYY"}}
+                            {{gh-format-post-time @post.updatedAtUTC format="D MMM YYYY"}}
                         {{else}}
                             {{gh-format-post-time @post.updatedAtUTC draft=true}}
                         {{/if}}
@@ -65,7 +65,7 @@
                     <span class="gh-content-entry-date" {{on "mouseover" (fn (mut this.isDateHovered) true)}} {{on "mouseleave" (fn (mut this.isDateHovered) false)}}>
                         {{gh-format-post-time @post.updatedAtUTC draft=true}}
                         {{#if this.isDateHovered}}
-                            <span {{css-transition "anim-fade-in-scale"}}>on {{gh-format-post-time @post.updatedAtUTC "D MMM YYYY"}}</span>
+                            <span {{css-transition "anim-fade-in-scale"}}>on {{gh-format-post-time @post.updatedAtUTC format="D MMM YYYY"}}</span>
                         {{/if}}
                     </span>
                     {{!-- {{#if @post.lexical}}
