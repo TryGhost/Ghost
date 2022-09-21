@@ -9,7 +9,7 @@ export default defineConfig({
         svgr(),
         react()
     ],
-    base: '/Koenig/',
+    base: '/',
     build: {
         rollupOptions: {
             input: {
