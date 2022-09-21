@@ -25,6 +25,7 @@
     "preview": "vite preview",
     "pretest": "yarn build --config vite.config.test.js",
     "test": "vitest run",
+    "pretest:watch": "yarn pretest",
     "test:watch": "vitest",
     "posttest": "yarn lint",
     "coverage": "vitest run --coverage",
