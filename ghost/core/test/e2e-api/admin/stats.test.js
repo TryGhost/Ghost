@@ -86,4 +86,27 @@ describe('Stats API', function () {
                 });
         });
     });
+
+    describe('Referrer source history stats', function () {
+        it('Can fetch attribution stats', async function () {
+            await agent
+                .get(`/stats/referrers/history/`)
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    stats: [
+                        {
+                            source: 'Direct',
+                            signups: 4,
+                            paid_conversions: 1
+                        },
+                        {
+                            source: 'Twitter',
+                            signups: 4,
+                            paid_conversions: 2
+                        }
+                    ],
+                    meta: {}
+                });
+        });
+    });
 });

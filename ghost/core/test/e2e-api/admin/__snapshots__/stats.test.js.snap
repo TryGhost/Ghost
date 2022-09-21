@@ -143,3 +143,23 @@ Object {
   ],
 }
 `;
+
+exports[`Stats API Referrer source history stats Can fetch attribution stats 1: [body] 1`] = `
+Object {
+  "meta": Object {},
+  "stats": Array [
+    Object {
+      "date": "2022-09-21",
+      "paid_conversions": 1,
+      "signups": 4,
+      "source": "Direct",
+    },
+    Object {
+      "date": "2022-09-21",
+      "paid_conversions": 2,
+      "signups": 4,
+      "source": "Twitter",
+    },
+  ],
+}
+`;
