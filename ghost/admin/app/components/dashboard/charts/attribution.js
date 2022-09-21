@@ -41,6 +41,9 @@ export default class Recents extends Component {
                 onHover: function (e) {
                     e.target.style.cursor = 'pointer';
                 }
+            },
+            tooltips: {
+                enabled: false
             }
         };
     }
@@ -99,6 +102,63 @@ export default class Recents extends Component {
         hover: {
             onHover: function (e) {
                 e.target.style.cursor = 'pointer';
+            }
+        },
+        tooltips: {
+            enabled: false,
+            intersect: false,
+            mode: 'single',
+            custom: function (tooltip) {
+                // get tooltip element
+                const tooltipEl = document.getElementById('gh-dashboard-attribution-tooltip');
+                const chartContainerEl = tooltipEl.parentElement;
+                const chartWidth = chartContainerEl.offsetWidth;
+                const tooltipWidth = tooltipEl.offsetWidth;
+
+                // only show tooltip when active
+                if (tooltip.opacity === 0) {
+                    tooltipEl.style.opacity = 0;
+                    return; 
+                }
+
+                let offsetX = 0;
+
+                if (that.mode === 'cadence') {
+                    // these adjustments should match the special width and margin values in css
+                    if (tooltip.x > (chartWidth * 0.69) - tooltipWidth) {
+                        offsetX = tooltipWidth - 10;
+                    }
+                    offsetX -= (chartWidth * 0.30);
+                } else {
+                    if (tooltip.x > chartWidth - tooltipWidth) {
+                        offsetX = tooltipWidth - 10;
+                    } 
+                }
+
+                // update tooltip styles
+                tooltipEl.style.opacity = 1;
+                tooltipEl.style.position = 'absolute';
+                tooltipEl.style.left = tooltip.x - offsetX + 'px';
+                tooltipEl.style.top = '30px';
+            },
+            callbacks: {
+                label: (tooltipItems, data) => {
+                    const tooltipTextEl = document.querySelector('#gh-dashboard-attribution-tooltip .gh-dashboard-tooltip-value');
+                    const label = data.datasets[tooltipItems.datasetIndex].label || '';
+                    var value = data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index] || 0;
+                    if (value < 0) {
+                        value = -value;
+                    }
+                    if (that.isTotalMembersZero || totalCadence === 0) {
+                        value = 0;
+                    } else {
+                        value += '%';
+                    }
+                    tooltipTextEl.innerHTML = `<span class="indicator solid" style="background-color: ${data.datasets[tooltipItems.datasetIndex].backgroundColor}"></span><span class="value">${value}</span><span class="metric">${label}</span>`;
+                },
+                title: () => {
+                    return null;
+                }
             }
         }
     };
