@@ -5,6 +5,7 @@ import {HistoryPlugin} from '@lexical/react/LexicalHistoryPlugin';
 import {OnChangePlugin} from '@lexical/react/LexicalOnChangePlugin';
 import {ListPlugin} from '@lexical/react/LexicalListPlugin';
 import {MarkdownShortcutPlugin} from '@lexical/react/LexicalMarkdownShortcutPlugin';
+import FloatingFormatToolbarPlugin from '../plugins/FloatingFormatToolbar';
 import '../styles/index.css';
 
 const KoenigEditor = ({
@@ -15,11 +16,22 @@ const KoenigEditor = ({
         onChange?.(json);
     }, [onChange]);
 
+    // we need an element reference for the container element that
+    // any floating elements in plugins will be rendered inside
+    const [floatingAnchorElem, setFloatingAnchorElem] = React.useState(null);
+    const onRef = (_floatingAnchorElem) => {
+        if (_floatingAnchorElem !== null) {
+            setFloatingAnchorElem(_floatingAnchorElem);
+        }
+    };
+
     return (
         <div className="koenig-lexical">
             <RichTextPlugin
                 contentEditable={
-                    <ContentEditable className="kg-prose" />
+                    <div ref={onRef}>
+                        <ContentEditable className="kg-prose" />
+                    </div>
                 }
                 placeholder={<div className="text-grey-500 pointer-events-none absolute top-0 left-0 min-w-full cursor-text font-serif text-xl">Begin writing your post...</div>}
             />
@@ -27,6 +39,7 @@ const KoenigEditor = ({
             <HistoryPlugin /> {/* adds undo/redo */}
             <ListPlugin /> {/* adds indent/outdent/remove etc support */}
             <MarkdownShortcutPlugin />
+            {floatingAnchorElem && (<FloatingFormatToolbarPlugin anchorElem={floatingAnchorElem} />)}
         </div>
     );
 };
