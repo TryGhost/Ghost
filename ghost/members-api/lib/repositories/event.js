@@ -11,6 +11,7 @@ module.exports = class EventRepository {
         MemberCreatedEvent,
         SubscriptionCreatedEvent,
         MemberPaidSubscriptionEvent,
+        MemberLinkClickEvent,
         Comment,
         labsService,
         memberAttributionService
@@ -25,7 +26,57 @@ module.exports = class EventRepository {
         this._labsService = labsService;
         this._MemberCreatedEvent = MemberCreatedEvent;
         this._SubscriptionCreatedEvent = SubscriptionCreatedEvent;
+        this._MemberLinkClickEvent = MemberLinkClickEvent;
         this._memberAttributionService = memberAttributionService;
+    }
+
+    async getEventTimeline(options = {}) {
+        if (!options.limit) {
+            options.limit = 10;
+        }
+
+        // Changing this order might need a change in the query functions
+        // because of the different underlying models.
+        options.order = 'created_at desc';
+
+        // Create a list of all events that can be queried
+        const pageActions = [
+            {type: 'newsletter_event', action: 'getNewsletterSubscriptionEvents'},
+            {type: 'subscription_event', action: 'getSubscriptionEvents'},
+            {type: 'login_event', action: 'getLoginEvents'},
+            {type: 'payment_event', action: 'getPaymentEvents'},
+            {type: 'signup_event', action: 'getSignupEvents'},
+            {type: 'comment_event', action: 'getCommentEvents'}
+        ];
+
+        if (this._labsService.isSet('emailClicks')) {
+            pageActions.push({type: 'click_event', action: 'getClickEvents'});
+        }
+
+        if (this._EmailRecipient) {
+            pageActions.push({type: 'email_delivered_event', action: 'getEmailDeliveredEvents'});
+            pageActions.push({type: 'email_opened_event', action: 'getEmailOpenedEvents'});
+            pageActions.push({type: 'email_failed_event', action: 'getEmailFailedEvents'});
+        }
+
+        let filters = this.getNQLSubset(options.filter);
+
+        //Filter events to query
+        const filteredPages = filters.type ? pageActions.filter(page => nql(filters.type).queryJSON(page)) : pageActions;
+
+        //Start the promises
+        const pages = filteredPages.map(page => this[page.action](options, filters));
+
+        const allEventPages = await Promise.all(pages);
+
+        const allEvents = allEventPages.reduce((accumulator, page) => accumulator.concat(page.data), []);
+
+        return allEvents.sort((a, b) => {
+            return new Date(b.data.created_at) - new Date(a.data.created_at);
+        }).reduce((memo, event) => {
+            //disable the event filtering
+            return memo.concat(event);
+        }, []).slice(0, options.limit);
     }
 
     async registerPayment(data) {
@@ -276,6 +327,35 @@ module.exports = class EventRepository {
         };
     }
 
+    async getClickEvents(options = {}, filters = {}) {
+        options = {
+            ...options,
+            withRelated: ['member', 'link', 'link.post'],
+            filter: []
+        };
+        if (filters['data.created_at']) {
+            options.filter.push(filters['data.created_at'].replace(/data.created_at:/g, 'created_at:'));
+        }
+        if (filters['data.member_id']) {
+            options.filter.push(filters['data.member_id'].replace(/data.member_id:/g, 'member_id:'));
+        }
+        options.filter = options.filter.join('+');
+
+        const {data: models, meta} = await this._MemberLinkClickEvent.findPage(options);
+
+        const data = models.map((model) => {
+            return {
+                type: 'click_event',
+                data: model.toJSON(options)
+            };
+        });
+
+        return {
+            data,
+            meta
+        };
+    }
+
     async getEmailDeliveredEvents(options = {}, filters = {}) {
         options = {
             ...options,
@@ -442,50 +522,6 @@ module.exports = class EventRepository {
         }
 
         return result;
-    }
-
-    async getEventTimeline(options = {}) {
-        if (!options.limit) {
-            options.limit = 10;
-        }
-
-        // Changing this order might need a change in the query functions
-        // because of the different underlying models.
-        options.order = 'created_at desc';
-
-        // Create a list of all events that can be queried
-        const pageActions = [
-            {type: 'newsletter_event', action: 'getNewsletterSubscriptionEvents'},
-            {type: 'subscription_event', action: 'getSubscriptionEvents'},
-            {type: 'login_event', action: 'getLoginEvents'},
-            {type: 'payment_event', action: 'getPaymentEvents'},
-            {type: 'signup_event', action: 'getSignupEvents'},
-            {type: 'comment_event', action: 'getCommentEvents'}
-        ];
-        if (this._EmailRecipient) {
-            pageActions.push({type: 'email_delivered_event', action: 'getEmailDeliveredEvents'});
-            pageActions.push({type: 'email_opened_event', action: 'getEmailOpenedEvents'});
-            pageActions.push({type: 'email_failed_event', action: 'getEmailFailedEvents'});
-        }
-
-        let filters = this.getNQLSubset(options.filter);
-
-        //Filter events to query
-        const filteredPages = filters.type ? pageActions.filter(page => nql(filters.type).queryJSON(page)) : pageActions;
-
-        //Start the promises
-        const pages = filteredPages.map(page => this[page.action](options, filters));
-
-        const allEventPages = await Promise.all(pages);
-
-        const allEvents = allEventPages.reduce((accumulator, page) => accumulator.concat(page.data), []);
-
-        return allEvents.sort((a, b) => {
-            return new Date(b.data.created_at) - new Date(a.data.created_at);
-        }).reduce((memo, event) => {
-            //disable the event filtering
-            return memo.concat(event);
-        }, []).slice(0, options.limit);
     }
 
     async getSubscriptions() {
