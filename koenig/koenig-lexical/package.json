@@ -54,7 +54,7 @@
     "postcss": "8.4.16",
     "postcss-import": "15.0.0",
     "prettier": "2.7.1",
-    "puppeteer": "18.0.3",
+    "puppeteer": "18.0.4",
     "tailwindcss": "3.1.8",
     "vite": "3.0.8",
     "vite-plugin-svgr": "2.2.1",
