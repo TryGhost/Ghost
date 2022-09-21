@@ -257,7 +257,7 @@ export default Model.extend(Comparable, ValidationEngine, {
         if (!this.email || !this.email.emailCount) {
             return 0;
         }
-        if (!this.count.clicks) {
+        if (!this.count || !this.count.clicks) {
             return 0;
         }
         
