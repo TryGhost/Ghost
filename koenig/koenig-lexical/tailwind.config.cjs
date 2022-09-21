@@ -4,7 +4,8 @@ module.exports = {
     },
     important: '.koenig-lexical',
     content: [
-        './src/**/*.{js,jsx,ts,tsx}'
+        './src/**/*.{js,jsx,ts,tsx}',
+        './demo/**/*.{js,jsx,ts,tsx}'
     ],
     theme: {
         colors: {
