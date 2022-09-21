@@ -5,8 +5,8 @@ const {MemberCreatedEvent, SubscriptionCreatedEvent} = require('@tryghost/member
  */
 class EventStorage {
     /**
-     * 
-     * @param {Object} deps 
+     *
+     * @param {Object} deps
      * @param {Object} deps.labsService
      * @param {Object} deps.models
      * @param {Object} deps.models.MemberCreatedEvent
@@ -37,7 +37,10 @@ class EventStorage {
                 attribution_id: attribution?.id ?? null,
                 attribution_url: attribution?.url ?? null,
                 attribution_type: attribution?.type ?? null,
-                source: event.data.source
+                source: event.data.source,
+                referrer_source: attribution?.refSource ?? null,
+                referrer_medium: attribution?.refMedium ?? null,
+                referrer_url: attribution?.refUrl ?? null
             });
         });
 
@@ -56,7 +59,10 @@ class EventStorage {
                 created_at: event.timestamp,
                 attribution_id: attribution?.id ?? null,
                 attribution_url: attribution?.url ?? null,
-                attribution_type: attribution?.type ?? null
+                attribution_type: attribution?.type ?? null,
+                referrer_source: attribution?.refSource ?? null,
+                referrer_medium: attribution?.refMedium ?? null,
+                referrer_url: attribution?.refUrl ?? null
             });
         });
     }
