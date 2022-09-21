@@ -66,7 +66,7 @@ module.exports = ReferrersStatsService;
 /**
  * @typedef AttributionCountStat
  * @type {Object}
- * @property {number} source Attribution Source
+ * @property {string} source Attribution Source
  * @property {number} signups Total free members signed up for this source
  * @property {number} paid_conversions Total paid conversions for this source
  */
