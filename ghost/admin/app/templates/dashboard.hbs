@@ -24,13 +24,13 @@
                         {{/if}}
                         {{#if this.hasPaidTiers}}
                             {{#if (feature 'sourceAttribution')}}
-                                <Dashboard::Charts::Attribution />
                                 <section class="gh-dashboard-section">
                                     <article class="gh-dashboard-box" style="display:flex; flex:1;flex-direction:row;">
                                         <Dashboard::Charts::PaidBreakdown />
                                         <Dashboard::Charts::PaidMix />
                                     </article>
                                 </section>
+                                <Dashboard::Charts::Attribution />
                             {{/if}}
                         {{/if}}
                         {{#if this.areNewslettersEnabled}}
