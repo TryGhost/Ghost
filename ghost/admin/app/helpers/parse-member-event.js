@@ -11,6 +11,7 @@ export default class ParseMemberEventHelper extends Helper {
         const icon = this.getIcon(event);
         const action = this.getAction(event, hasMultipleNewsletters);
         const info = this.getInfo(event);
+        const description = this.getDescription(event);
 
         const join = this.getJoin(event);
         const object = this.getObject(event);
@@ -28,6 +29,7 @@ export default class ParseMemberEventHelper extends Helper {
             join,
             object,
             info,
+            description,
             url,
             timestamp
         };
@@ -79,6 +81,10 @@ export default class ParseMemberEventHelper extends Helper {
 
         if (event.type === 'comment_event') {
             icon = 'comment';
+        }
+
+        if (event.type === 'click_event') {
+            icon = 'click';
         }
 
         return 'event-' + icon + (this.feature.get('memberAttribution') ? '--feature-attribution' : '');
@@ -148,6 +154,10 @@ export default class ParseMemberEventHelper extends Helper {
             }
             return 'commented';
         }
+
+        if (event.type === 'click_event') {
+            return 'clicked email';
+        }
     }
 
     /**
@@ -191,6 +201,12 @@ export default class ParseMemberEventHelper extends Helper {
             }
         }
 
+        if (event.type === 'click_event') {
+            if (event.data.post) {
+                return event.data.post.title;
+            }
+        }
+
         return '';
     }
 
@@ -207,11 +223,34 @@ export default class ParseMemberEventHelper extends Helper {
         return;
     }
 
+    getDescription(event) {
+        if (event.type === 'click_event') {
+            // Clean URL
+            try {
+                const parsedURL = new URL(event.data.link.to);
+
+                // Remove protocol, querystring and hash
+                // + strip trailing /
+                return 'URL: ' + parsedURL.host + (parsedURL.pathname === '/' ? '' : parsedURL.pathname);
+            } catch (e) {
+                // Invalid URL
+            }
+            return 'URL: ' + event.data.link.to;
+        }
+        return;
+    }
+
     /**
      * Make the object clickable
      */
     getURL(event) {
         if (event.type === 'comment_event') {
+            if (event.data.post) {
+                return event.data.post.url;
+            }
+        }
+
+        if (event.type === 'click_event') {
             if (event.data.post) {
                 return event.data.post.url;
             }
