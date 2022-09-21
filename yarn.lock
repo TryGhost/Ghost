@@ -10494,10 +10494,10 @@ ember-could-get-used-to-this@1.0.1:
     ember-cli-babel "^7.22.1"
     ember-cli-htmlbars "^4.2.0"
 
-ember-css-transitions@4.1.0:
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/ember-css-transitions/-/ember-css-transitions-4.1.0.tgz#c030ab1efbc0d9d9084d3c8c13673342759eaf93"
-  integrity sha512-4/7aF59U+OriXrD39X4x9uvShB5Q3wPlPmvrB3zWnmo4SAG6aMitVzlcwGRJwtipEmM9RTaT4Vw5ShajLYxXCA==
+ember-css-transitions@4.2.0:
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/ember-css-transitions/-/ember-css-transitions-4.2.0.tgz#f1e21bef3438fd74997363a94404b077b5b8a3a5"
+  integrity sha512-qvpTyP3BjfFhxWuIhIy/rBOZ2Wb/UOzCf5CWZ6turkR7qq1ouR5KyA2FyaetQdCssb2JqnovLvHmWI6K0AbF9g==
   dependencies:
     "@embroider/addon-shim" "^1.5.0"
     ember-modifier "^2.1.2 || ^3.1.0 || ^4.0.0"
