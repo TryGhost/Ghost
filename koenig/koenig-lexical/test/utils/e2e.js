@@ -30,10 +30,10 @@ export async function initialize({page}) {
     page.setViewport({width: 1000, height: 1000});
 
     await page.goto(url);
-    await page.waitForSelector('.demo-container');
+    await page.waitForSelector('.koenig-lexical');
 }
 
-export async function focusEditor(page, parentSelector = '.demo-container') {
+export async function focusEditor(page, parentSelector = '.koenig-lexical') {
     const selector = `${parentSelector} div[contenteditable="true"]`;
     await page.focus(selector);
 }
