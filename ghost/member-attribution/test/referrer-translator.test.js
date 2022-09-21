@@ -63,7 +63,7 @@ describe('ReferrerTranslator', function () {
             ])).eql({
                 refSource: 'Ghost Explore',
                 refMedium: 'Ghost Network',
-                refUrl: new URL('https://ghost.org/explore')
+                refUrl: 'ghost.org'
             });
         });
 
@@ -87,7 +87,7 @@ describe('ReferrerTranslator', function () {
             ])).eql({
                 refSource: 'Ghost Explore',
                 refMedium: 'Ghost Network',
-                refUrl: new URL('https://admin.example.com/ghost/#/dashboard')
+                refUrl: 'admin.example.com'
             });
         });
 
@@ -135,7 +135,7 @@ describe('ReferrerTranslator', function () {
             ])).eql({
                 refSource: 'Ghost.org',
                 refMedium: 'Ghost Network',
-                refUrl: new URL('https://ghost.org/creators/')
+                refUrl: 'ghost.org'
             });
         });
 
@@ -189,7 +189,7 @@ describe('ReferrerTranslator', function () {
                 ])).eql({
                     refSource: 'Google Product Search',
                     refMedium: 'search',
-                    refUrl: new URL('https://google.ac/products')
+                    refUrl: 'google.ac'
                 });
             });
 
@@ -213,12 +213,12 @@ describe('ReferrerTranslator', function () {
                 ])).eql({
                     refSource: 'Twitter',
                     refMedium: 'social',
-                    refUrl: new URL('https://t.co/')
+                    refUrl: 't.co'
                 });
             });
         });
 
-        it('returns external ref url if nothing matches', async function () {
+        it('returns external ref url as source', async function () {
             should(translator.getReferrerDetails([
                 {
                     refSource: null,
@@ -229,16 +229,25 @@ describe('ReferrerTranslator', function () {
                     refSource: null,
                     refMedium: null,
                     refUrl: 'https://sample.com'
+                },
+                {
+                    refSource: 'publisher-weekly-newsletter',
+                    refMedium: null,
+                    refUrl: null
                 }
             ])).eql({
-                refSource: null,
+                refSource: 'sample.com',
                 refMedium: null,
-                refUrl: new URL('https://sample.com')
+                refUrl: 'sample.com'
             });
         });
 
         it('returns null for empty history', async function () {
-            should(translator.getReferrerDetails([])).eql(null);
+            should(translator.getReferrerDetails([])).eql({
+                refSource: 'Direct',
+                refMedium: null,
+                refUrl: null
+            });
         });
 
         it('returns null for history with only site url', async function () {
@@ -248,7 +257,11 @@ describe('ReferrerTranslator', function () {
                     refMedium: null,
                     refUrl: 'https://example.com'
                 }
-            ])).eql(null);
+            ])).eql({
+                refSource: 'Direct',
+                refMedium: null,
+                refUrl: null
+            });
         });
     });
 });
