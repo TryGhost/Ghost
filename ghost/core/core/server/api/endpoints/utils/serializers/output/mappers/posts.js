@@ -110,7 +110,7 @@ module.exports = async (model, frame, options = {}) => {
         });
     }
 
-    if (!labs.isSet('memberAttribution')) {
+    if (!labs.isSet('memberAttribution') && !labs.isSet('emailClicks')) {
         delete jsonModel.count;
     }
 
