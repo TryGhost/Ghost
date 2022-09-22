@@ -1,30 +1,48 @@
-const {PostLink} = require('@tryghost/link-tracking');
+const {FullPostLink} = require('@tryghost/link-tracking');
+
 /**
  * @typedef {import('bson-objectid').default} ObjectID
+ * @typedef {import('@tryghost/link-tracking/lib/PostLink')} PostLink
  */
 
 module.exports = class PostLinkRepository {
     /** @type {Object} */
     #LinkRedirect;
+    /** @type {Object} */
+    #linkRedirectRepository;
 
     /**
      * @param {object} deps
      * @param {object} deps.LinkRedirect Bookshelf Model
+     * @param {object} deps.linkRedirectRepository Bookshelf Model
      */
     constructor(deps) {
         this.#LinkRedirect = deps.LinkRedirect;
+        this.#linkRedirectRepository = deps.linkRedirectRepository;
     }
 
+    /**
+     * 
+     * @param {*} options 
+     * @returns {Promise<InstanceType<FullPostLink>[]>}
+     */
     async getAll(options) {
-        const collection = await this.#LinkRedirect.findAll(options);
+        const collection = await this.#LinkRedirect.findAll({...options, withRelated: ['count.clicks']});
 
         const result = [];
 
         for (const model of collection.models) {
-            result.push(new PostLink({
-                link_id: model.get('id'),
-                post_id: model.get('post_id')
-            }));
+            const link = this.#linkRedirectRepository.fromModel(model);
+
+            result.push(
+                new FullPostLink({
+                    post_id: model.get('post_id'),
+                    link,
+                    count: {
+                        clicks: model.get('count__clicks')
+                    }
+                })
+            );
         }
 
         return result;

@@ -1,4 +1,3 @@
-const linksService = require('../../services/link-redirection');
 const linkTrackingService = require('../../services/link-click-tracking');
 
 module.exports = {
