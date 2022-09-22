@@ -26,7 +26,7 @@ describe('api/endpoints/content/tags', function () {
             .get(localUtils.API.getApiQuery(`tags/${testUtils.DataGenerator.Content.tags[0].id}/?key=${validKey}&fields=name,slug`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect('Cache-Control', testUtils.cacheRules.public)
             .expect(200)
             .then((res) => {
                 localUtils.API.checkResponse(res.body.tags[0], 'tag', null, null, ['id', 'name', 'slug']);
@@ -39,7 +39,7 @@ describe('api/endpoints/content/tags', function () {
             .set('Origin', testUtils.API.getURL())
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect('Cache-Control', testUtils.cacheRules.public)
             .expect(200)
             .then((res) => {
                 should.not.exist(res.headers['x-cache-invalidate']);
@@ -68,7 +68,7 @@ describe('api/endpoints/content/tags', function () {
     it('Browse tags with slug filter, should order in slug order', function () {
         return request.get(localUtils.API.getApiQuery(`tags/?key=${validKey}&filter=slug:[kitchen-sink,bacon,chorizo]`))
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect('Cache-Control', testUtils.cacheRules.public)
             .expect(200)
             .then((res) => {
                 const jsonResponse = res.body;
