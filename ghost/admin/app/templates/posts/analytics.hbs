@@ -1,4 +1,4 @@
-<section class="gh-canvas">
+<section class="gh-canvas" {{did-insert this.loadData}}>
 
     <GhCanvasHeader class="gh-canvas-header stacked gh-post-analytics-header">
         <div class="gh-canvas-breadcrumb">
@@ -61,32 +61,24 @@
         </div>
     </div>
 
+    {{#if (and this.links this.links.length) }}
     <h4 class="gh-main-section-header small bn">
         Link clicks
     </h4>
-    <div class="gh-post-analytics-box column">
-        <div class="gh-links-list">
-            <div class="gh-links-list-item">
-                <a href="#">https://vanschneider.com/blog/#/portal/signup</a>
-                <p class="gh-links-list-clicks">18</p>
-            </div>
-            <div class="gh-links-list-item">
-                <a href="#">https://vanschneider.com/blog/an-unsolicited-portfolio-review-featuring-2/</a>
-                <p class="gh-links-list-clicks">16</p>
-            </div>
-            <div class="gh-links-list-item">
-                <a href="#">https://vanschneider.com/blog/#/portal/unsubscribe</a>
-                <p class="gh-links-list-clicks">3</p>
-            </div>
-            <div class="gh-links-list-item">
-                <a href="#">https://vanschneider.com/blog/#/portal/signin</a>
-                <p class="gh-links-list-clicks">0</p>
+        <div class="gh-post-analytics-box column">
+            <div class="gh-links-list">
+                {{#each this.links as |link|}}
+                    <div class="gh-links-list-item">
+                        <a href="{{link.link.to}}">{{link.link.title}}</a>
+                        <p class="gh-links-list-clicks">{{link.count.clicks}}</p>
+                    </div>
+                {{/each}}
             </div>
         </div>
-    </div>
+    {{/if}}
 
-    {{#if (feature 'sourceAttribution')}}
-        <h4 class="gh-main-section-header small bn" {{did-insert this.loadData}}>
+    {{#if (and (feature 'sourceAttribution') this.sources this.sources.length)}}
+        <h4 class="gh-main-section-header small bn">
             Source attribution
         </h4>
         {{#if this.sources}}

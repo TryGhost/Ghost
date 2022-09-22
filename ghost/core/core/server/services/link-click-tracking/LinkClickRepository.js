@@ -1,3 +1,4 @@
+const {LinkClick} = require('@tryghost/link-tracking');
 const ObjectID = require('bson-objectid').default;
 
 module.exports = class LinkClickRepository {
@@ -17,8 +18,24 @@ module.exports = class LinkClickRepository {
         this.#Member = deps.Member;
     }
 
+    async getAll(options) {
+        const collection = await this.#MemberLinkClickEvent.findAll(options);
+
+        const result = [];
+
+        for (const model of collection.models) {
+            const member = await this.#Member.findOne({id: model.get('member_id')});
+            result.push(new LinkClick({
+                link_id: model.get('link_id'),
+                member_uuid: member.get('uuid')
+            }));
+        }
+
+        return result;
+    }
+
     /**
-     * @param {import('@tryghost/link-tracking').LinkClick} linkClick 
+     * @param {LinkClick} linkClick
      * @returns {Promise<void>}
      */
     async save(linkClick) {
