@@ -23,7 +23,7 @@ describe('Authors Content API', function () {
         return request.get(localUtils.API.getApiQuery(`authors/1/?key=${validKey}&fields=name`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect('Cache-Control', testUtils.cacheRules.public)
             .expect(200)
             .then((res) => {
                 should.not.exist(res.headers['x-cache-invalidate']);
@@ -36,7 +36,7 @@ describe('Authors Content API', function () {
     it('browse authors with slug filter, should order in slug order', function () {
         return request.get(localUtils.API.getApiQuery(`authors/?key=${validKey}&filter=slug:[joe-bloggs,ghost,slimer-mcectoplasm]`))
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect('Cache-Control', testUtils.cacheRules.public)
             .expect(200)
             .then((res) => {
                 const jsonResponse = res.body;

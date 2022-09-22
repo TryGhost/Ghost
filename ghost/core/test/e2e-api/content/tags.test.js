@@ -28,7 +28,7 @@ describe('Tags Content API', function () {
         const res = await request.get(localUtils.API.getApiQuery(`tags/?key=${validKey}`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect('Cache-Control', testUtils.cacheRules.public)
             .expect(200);
 
         should.not.exist(res.headers['x-cache-invalidate']);
@@ -59,7 +59,7 @@ describe('Tags Content API', function () {
         const res = await request.get(localUtils.API.getApiQuery(`tags/?limit=all&key=${validKey}`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect('Cache-Control', testUtils.cacheRules.public)
             .expect(200);
 
         should.not.exist(res.headers['x-cache-invalidate']);
@@ -75,7 +75,7 @@ describe('Tags Content API', function () {
         const res = await request.get(localUtils.API.getApiQuery(`tags/?limit=3&key=${validKey}`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect('Cache-Control', testUtils.cacheRules.public)
             .expect(200);
 
         should.not.exist(res.headers['x-cache-invalidate']);
@@ -91,7 +91,7 @@ describe('Tags Content API', function () {
         const res = await request.get(localUtils.API.getApiQuery(`tags/?key=${validKey}&include=count.posts`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect('Cache-Control', testUtils.cacheRules.public)
             .expect(200);
 
         const jsonResponse = res.body;
@@ -110,7 +110,7 @@ describe('Tags Content API', function () {
         const res = await request.get(localUtils.API.getApiQuery(`tags/?key=${validKey}&fields=url,name`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect('Cache-Control', testUtils.cacheRules.public)
             .expect(200);
 
         const jsonResponse = res.body;
@@ -129,7 +129,7 @@ describe('Tags Content API', function () {
         const res = await request.get(localUtils.API.getApiQuery(`tags/?key=${validKey}&fields=url`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect('Cache-Control', testUtils.cacheRules.public)
             .expect(200);
 
         const jsonResponse = res.body;
