@@ -554,7 +554,7 @@ export default class DashboardStatsService extends Service {
             this.memberAttributionStats = this.dashboardMocks.memberAttributionStats;
             return;
         }
-        let statsUrl = this.ghostPaths.url.api('stats/referrers/history');
+        let statsUrl = this.ghostPaths.url.api('stats/referrers');
         let stats = yield this.ajax.request(statsUrl);
 
         this.memberAttributionStats = stats.stats.map((stat) => {
