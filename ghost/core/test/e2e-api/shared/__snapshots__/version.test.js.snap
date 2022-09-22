@@ -471,7 +471,7 @@ Object {
 exports[`API Versioning Content API Does an internal rewrite with accept version set when version is included in the URL 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "public, max-age=0",
   "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -598,7 +598,7 @@ Object {
 exports[`API Versioning Content API responds with current content version header when requested version is BEHIND current version and CAN respond 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "public, max-age=0",
   "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -692,7 +692,7 @@ Object {
 exports[`API Versioning Content API responds with no content version header when accept version header is NOT PRESENT 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "public, max-age=0",
   "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

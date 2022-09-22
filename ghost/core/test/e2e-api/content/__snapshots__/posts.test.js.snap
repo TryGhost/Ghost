@@ -56,7 +56,7 @@ Object {
 exports[`Posts Content API Can filter by published date 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "public, max-age=0",
   "content-length": "4576",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -133,7 +133,7 @@ Object {
 exports[`Posts Content API Can filter by published date 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "public, max-age=0",
   "content-length": "5867",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -198,7 +198,7 @@ Object {
 exports[`Posts Content API Can filter by published date 6: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "public, max-age=0",
   "content-length": "4577",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1049,7 +1049,7 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
 exports[`Posts Content API Can filter posts by authors 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "public, max-age=0",
   "content-length": "54906",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1427,7 +1427,7 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
 exports[`Posts Content API Can filter posts by tag 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "public, max-age=0",
   "content-length": "13977",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2309,7 +2309,7 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
 exports[`Posts Content API Can include relations 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "public, max-age=0",
   "content-length": "65235",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2364,7 +2364,7 @@ Object {
 exports[`Posts Content API Can request a single post 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "public, max-age=0",
   "content-length": "2362",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2426,7 +2426,7 @@ Object {
 exports[`Posts Content API Can request fields of posts 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "public, max-age=0",
   "content-length": "587",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2910,7 +2910,7 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
 exports[`Posts Content API Can request posts 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "public, max-age=0",
   "content-length": "46354",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3394,7 +3394,7 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
 exports[`Posts Content API Can request posts from different origin 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "public, max-age=0",
   "content-length": "46354",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
