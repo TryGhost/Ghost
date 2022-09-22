@@ -96,6 +96,7 @@ describe('Front-end members behaviour', function () {
 
         it('should serve member site endpoint', async function () {
             await request.get('/members/api/site')
+                .expect('Cache-Control', 'no-cache, max-age=0, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0')
                 .expect(200);
         });
 
