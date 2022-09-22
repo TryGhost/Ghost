@@ -156,6 +156,15 @@ Dashboard Layout */
     background: transparent;
 }
 
+.gh-dashboard-minicharts-attribution {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    position: relative;
+    align-items: stretch;
+    background: transparent;
+}
+
 .gh-dashboard-minichart {
     flex: 1;
     border-left: 1px solid var(--whitegrey);
@@ -1003,12 +1012,12 @@ Dashboard Zero */
 /* ---------------------------------
 Dashboard Attribution */
 
-.gh-dashboard-list-item-source {
+.gh-dashboard-list-item-sub-source {
     padding-left: 20px;
     position: relative;
 }
 
-.gh-dashboard-list-item-source::after {
+.gh-dashboard-list-item-sub-source::after {
     content: "";
     width: 9px;
     height: 9px;
@@ -1020,23 +1029,23 @@ Dashboard Attribution */
     background: #E6E9EB;
 }
 
-.gh-dashboard-list-item:first-child .gh-dashboard-list-item-source::after {
+.gh-dashboard-list-item:first-child .gh-dashboard-list-item-sub-source::after {
     background: #8e42ff;
 }
 
-.gh-dashboard-list-item:nth-child(2) .gh-dashboard-list-item-source::after {
+.gh-dashboard-list-item:nth-child(2) .gh-dashboard-list-item-sub-source::after {
     background: #BB4AE5;
 }
 
-.gh-dashboard-list-item:nth-child(3) .gh-dashboard-list-item-source::after {
+.gh-dashboard-list-item:nth-child(3) .gh-dashboard-list-item-sub-source::after {
     background: #DD97C9;
 }
 
-.gh-dashboard-list-item:nth-child(4) .gh-dashboard-list-item-source::after {
+.gh-dashboard-list-item:nth-child(4) .gh-dashboard-list-item-sub-source::after {
     background: #E19A98;
 }
 
-.gh-dashboard-list-item:nth-child(5) .gh-dashboard-list-item-source::after {
+.gh-dashboard-list-item:nth-child(5) .gh-dashboard-list-item-sub-source::after {
     background: #F5C9C2;
 }
 
@@ -2184,6 +2193,10 @@ Dashboard Tooltips */
 
 @media screen and (max-width: 1120px) {
     .gh-dashboard-minicharts {
+        flex-direction: column;
+    }
+
+    .gh-dashboard-minicharts-attribution {
         flex-direction: column;
     }
 

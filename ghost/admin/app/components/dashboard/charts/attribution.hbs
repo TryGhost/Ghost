@@ -4,8 +4,8 @@
         <div style="display: grid;grid-template-columns: 1fr 2fr;grid-gap: 24px;">
             <div>
                 <h3 class="gh-dashboard-metric-label">Attribution</h3>
-                <div style="display: flex;justify-content: center;align-items: center;">
-                    <div style="max-width: 200px; max-height: 200px;">
+                <div style="display:flex;justify-content:center;align-items: center;height:100%;">
+                    <div style="max-width: 200px; position: relative;">
                         <MemberAttribution::SourceAttributionChart @sources={{this.chartSources}} />
                     </div>
                     <div id="gh-dashboard-attribution-tooltip" class="gh-dashboard-tooltip">
