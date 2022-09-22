@@ -622,7 +622,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
         display: none;
     }
 
-    .gh-post-analytics-item .hide-when-small {
+    .hide-when-small {
         display: none;
     }
 }
@@ -735,9 +735,19 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 }
 
 .gh-post-analytics-meta {
+    width: 100%;
     margin: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.gh-post-analytics-meta-text {
     color: var(--midlightgrey-d2);
     font-size: 1.35rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
 }
 
 .gh-post-analytics-box {
@@ -858,6 +868,33 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 
 .gh-post-analytics-item p:first-letter {
     text-transform: uppercase;
+}
+
+.gh-attribution-box {
+    margin: 0;
+    padding: 20px;
+    background: var(--white);
+    box-shadow: 0 1px 4px -1px rgba(0,0,0,0.1);
+    border-radius: var(--border-radius);
+    display: flex;
+    gap: 0;
+}
+
+.gh-attribution-chart-column {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.gh-attribution-chart-column-inner {
+    padding: 0 24px;
+    max-width: 296px;
+}
+
+.gh-attribution-table-column {
+    flex: 2;
+    padding: 2rem 0;
 }
 
 .gh-links-list {
@@ -1001,7 +1038,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 }
 
 
-.gh-posts-list-item-labs a.gh-post-list-cta {
+a.gh-post-list-cta {
     display: flex;
     align-items: center;
     max-width: max-content;
@@ -1014,37 +1051,42 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     transition: all .2s ease;
 }
 
-.gh-posts-list-item-labs a.gh-post-list-cta.stats.is-hovered {
+a.gh-post-list-cta.stats.is-hovered {
     color: var(--green);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-.gh-posts-list-item-labs a.gh-post-list-cta.stats.is-hovered:hover {
+a.gh-post-list-cta.stats.is-hovered:hover {
     border-color: var(--lightgrey);
     color: var(--green-d1);
 }
 
-.gh-posts-list-item-labs a.gh-post-list-cta.edit.is-hovered {
+a.gh-post-list-cta.edit.is-hovered {
     color: var(--pink-l2);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-.gh-posts-list-item-labs a.gh-post-list-cta.edit.is-hovered:hover {
+a.gh-post-list-cta.edit.is-hovered:hover,
+a.gh-post-list-cta.edit:not(.is-hovered):hover {
     border-color: var(--lightgrey);
     color: var(--pink-l1);
 }
 
-.gh-posts-list-item-labs .gh-post-list-cta svg {
+a.gh-post-list-cta svg {
     width: 1.5rem;
     height: 1.5rem;
 }
 
-.gh-posts-list-item-labs .gh-post-list-cta.edit svg {
+a.gh-post-list-cta.edit svg {
     padding: 1px;
 }
 
-.gh-posts-list-item-labs .gh-post-list-cta svg path {
+a.gh-post-list-cta svg path {
     stroke-width: 2;
+}
+
+.gh-post-analytics-meta a.gh-post-list-cta {
+    margin-right: 0;
 }
 
 @media screen and (max-width: 1080px) {
@@ -1056,6 +1098,15 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 @media screen and (max-width: 1000px) {
     .gh-post-analytics-box {
         flex-direction: column;
+    }
+
+    .gh-attribution-box {
+        flex-direction: column;
+    }
+
+    .gh-attribution-chart-column-inner {
+        padding: 8px;
+        max-width: 300px;
     }
 
     .gh-post-analytics-item {
