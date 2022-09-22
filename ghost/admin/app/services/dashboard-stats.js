@@ -259,7 +259,7 @@ export default class DashboardStatsService extends Service {
             }
             return acc;
         }, []).sort((a, b) => {
-            return (b.signups + b.paidConversions) - (a.signups - a.paidConversions);
+            return b.signups - a.signups;
         });
     }
 
@@ -547,14 +547,22 @@ export default class DashboardStatsService extends Service {
      */
      @task
     *_loadMemberAttributionStats() {
-        this.memberAttributionStats = null;
+        this.memberAttributionStats = [];
 
         if (this.dashboardMocks.enabled) {
             yield this.dashboardMocks.waitRandom();
             this.memberAttributionStats = this.dashboardMocks.memberAttributionStats;
             return;
         }
-        return;
+        let statsUrl = this.ghostPaths.url.api('stats/referrers/history');
+        let stats = yield this.ajax.request(statsUrl);
+
+        this.memberAttributionStats = stats.stats.map((stat) => {
+            return {
+                ...stat,
+                paidConversions: stat.paid_conversions
+            };
+        });
     }
 
      loadMrrStats() {

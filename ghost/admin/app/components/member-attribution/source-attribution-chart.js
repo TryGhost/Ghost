@@ -53,7 +53,7 @@ export default class SourceAttributionChart extends Component {
         } else {
             const sortedByPaid = [...this.sources];
             sortedByPaid.sort((a, b) => {
-                return b.paidPercentage - a.paidPercentage;
+                return b.paidConversions - a.paidConversions;
             });
             return {
                 labels: sortedByPaid.slice(0, 5).map(source => source.source),
