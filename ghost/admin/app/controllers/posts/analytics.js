@@ -11,6 +11,8 @@ import {tracked} from '@glimmer/tracking';
 export default class AnalyticsController extends Controller {
     @service ajax;
     @service ghostPaths;
+    @service settings;
+    @service membersUtils;
 
     @tracked sources = null;
     @tracked links = null;

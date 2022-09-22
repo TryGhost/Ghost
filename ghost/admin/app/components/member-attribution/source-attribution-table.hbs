@@ -2,7 +2,9 @@
     <div class="gh-dashboard-list-header">
         <div class="gh-dashboard-list-title">Sources</div>
         <div class="gh-dashboard-list-title">Signups</div>
-        <div class="gh-dashboard-list-title">Paid Conversions</div>
+        {{#if this.membersUtils.paidMembersEnabled}}
+            <div class="gh-dashboard-list-title">Paid Conversions</div>
+        {{/if}}
     </div>
     <div class="gh-dashboard-list-body">
         {{#each @sources as |sourceData|}}
@@ -19,15 +21,17 @@
                         {{/if}}
                     </span>
                 </div>
-                <div class="gh-dashboard-list-item-sub">
-                <span class="gh-dashboard-metric-minivalue">
-                        {{#if sourceData.paidConversions}}
-                            {{format-number sourceData.paidConversions}}
-                        {{else}}
-                            &mdash;
-                        {{/if}}
-                    </span>
-                </div>
+                {{#if this.membersUtils.paidMembersEnabled}}
+                    <div class="gh-dashboard-list-item-sub">
+                        <span class="gh-dashboard-metric-minivalue">
+                            {{#if sourceData.paidConversions}}
+                                {{format-number sourceData.paidConversions}}
+                            {{else}}
+                                &mdash;
+                            {{/if}}
+                        </span>
+                    </div>
+                {{/if}}
             </div>
         {{else}}
             <div class="gh-dashboard-list-empty">

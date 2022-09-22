@@ -118,84 +118,86 @@
     {{/if}}
 
     {{!-- Opens and clicks columns --}}
-    {{#if (and (not-eq this.settings.membersSignupAccess "none") (not-eq this.settings.editorDefaultEmailRecipients "disabled") (not this.session.user.isContributor) this.feature.emailAnalytics (eq @post.displayName "post"))}}
+    {{#if (and @post.email (not-eq this.settings.membersSignupAccess "none") (not-eq this.settings.editorDefaultEmailRecipients "disabled") (not this.session.user.isContributor) (or @post.isSent @post.isPublished) this.settings.emailTrackOpens @post.email.trackOpens this.feature.emailAnalytics (eq @post.displayName "post"))}}
         {{!-- Opens column --}}
         <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-opens">
-            {{#if (and @post.email.trackOpens (eq @post.email.status "submitted"))}}
-                <div class="flex flex-column items-end" {{on "mouseover" (fn (mut this.isOpenStatHovered) true)}} {{on "mouseleave" (fn (mut this.isOpenStatHovered) false)}}>
-                    <span class="gh-content-email-stats">
-                        {{#if this.isOpenStatHovered}}
-                            <strong>{{format-number @post.email.openedCount}}</strong> opens
-                        {{else}}
-                            <strong>{{@post.email.openRate}}%</strong> opens
-                        {{/if}}
-                    </span>
-                </div>
-            {{/if}}
+            <div class="flex flex-column items-end" {{on "mouseover" (fn (mut this.isOpenStatHovered) true)}} {{on "mouseleave" (fn (mut this.isOpenStatHovered) false)}}>
+                <span class="gh-content-email-stats">
+                    {{#if this.isOpenStatHovered}}
+                        <strong>{{format-number @post.email.openedCount}}</strong> opens
+                    {{else}}
+                        <strong>{{@post.email.openRate}}%</strong> opens
+                    {{/if}}
+                </span>
+            </div>
         </LinkTo>
-
+    {{else}}
+        <div class="gh-list-data"></div>
+    {{/if}}
+    
+    {{#if (and @post.email (not-eq this.settings.membersSignupAccess "none") (not-eq this.settings.editorDefaultEmailRecipients "disabled") (not this.session.user.isContributor) (or @post.isSent @post.isPublished) this.settings.emailTrackClicks this.feature.emailAnalytics)}}
         {{!-- Clicks column --}}
         <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-clicks">
-            {{#if (and @post.email.trackOpens (eq @post.email.status "submitted"))}}
-                <div class="flex flex-column items-end" {{on "mouseover" (fn (mut this.isClickStatHovered) true)}} {{on "mouseleave" (fn (mut this.isClickStatHovered) false)}}>
-                    <span class="gh-content-email-stats">
-                        {{#if this.isClickStatHovered}}
-                            <strong>{{format-number @post.count.clicks}}</strong> clicks
-                        {{else}}
-                            <strong>{{@post.clickRate}}%</strong> clicks
-                        {{/if}}
-                    </span>
-                </div>
-            {{/if}}
+            <div class="flex flex-column items-end" {{on "mouseover" (fn (mut this.isClickStatHovered) true)}} {{on "mouseleave" (fn (mut this.isClickStatHovered) false)}}>
+                <span class="gh-content-email-stats">
+                    {{#if this.isClickStatHovered}}
+                        <strong>{{format-number @post.count.clicks}}</strong> clicks
+                    {{else}}
+                        <strong>{{@post.clickRate}}%</strong> clicks
+                    {{/if}}
+                </span>
+            </div>
         </LinkTo>
+    {{else}}
+        <div class="gh-list-data"></div>
     {{/if}}
 
     {{!-- Button column --}}
-        <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data {{if (not-eq this.settings.membersSignupAccess "none") "gh-post-list-button"}}">
-            {{#if (not-eq this.settings.membersSignupAccess "none")}}
-                <div class="flex flex-column items-end">
-                    {{#if (or @post.isSent @post.isPublished)}}
-                        <LinkTo @route="posts.analytics" @model={{@post}} class="gh-post-list-cta stats {{if this.isHovered "is-hovered"}}">
-                            {{svg-jar "stats"}}
-                        </LinkTo>
-                    {{else}}
-                        <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="gh-post-list-cta edit {{if this.isHovered "is-hovered"}}">
-                            {{svg-jar "pen"}}
-                        </LinkTo>
-                    {{/if}}
-                </div>
-            {{else}}
-                <p class="gh-content-entry-status">
-                    {{#if @post.isScheduled}}
-                        <span class="scheduled" data-tooltip="Published {{this.scheduledText}}">
-                            <span class="status-dot"></span>
-                            Scheduled
-                        </span>
-                    {{/if}}
+    <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data {{if (not-eq this.settings.membersSignupAccess "none") "gh-post-list-button"}}">
+        {{#if (not-eq this.settings.membersSignupAccess "none")}}
+            <div class="flex flex-column items-end">
+                {{#if (and (not this.session.user.isContributor) (or @post.isSent @post.isPublished) (or this.settings.emailTrackClicks (feature "memberAttribution")))}}
+                    <LinkTo @route="posts.analytics" @model={{@post}} class="gh-post-list-cta stats {{if this.isHovered "is-hovered"}}">
+                        {{svg-jar "stats"}}
+                    </LinkTo>
+                {{else}}
+                    <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="gh-post-list-cta edit {{if this.isHovered "is-hovered"}}">
+                        {{svg-jar "pen"}}
+                    </LinkTo>
+                {{/if}}
+            </div>
+        {{else}}
+            <p class="gh-content-entry-status">
+                {{#if @post.isScheduled}}
+                    <span class="scheduled" data-tooltip="Published {{this.scheduledText}}">
+                        <span class="status-dot"></span>
+                        Scheduled
+                    </span>
+                {{/if}}
 
-                    {{#if @post.isDraft}}
-                        <span class="draft">
-                            <span class="status-dot"></span>
-                            Draft
-                        </span>
-                    {{/if}}
+                {{#if @post.isDraft}}
+                    <span class="draft">
+                        <span class="status-dot"></span>
+                        Draft
+                    </span>
+                {{/if}}
 
-                    {{#if @post.isPublished}}
-                        <span class="published">
-                            Published
-                            {{#if @post.hasEmail}}
-                                and sent 
-                            {{/if}}
-                        </span>
-                    {{/if}}
+                {{#if @post.isPublished}}
+                    <span class="published">
+                        Published
+                        {{#if @post.hasEmail}}
+                            and sent 
+                        {{/if}}
+                    </span>
+                {{/if}}
 
-                    {{#if @post.isSent}}
-                        <span class="sent">
-                            Sent
-                        </span>
-                    {{/if}}
-                </p>
-            {{/if}}
-        </LinkTo>
+                {{#if @post.isSent}}
+                    <span class="sent">
+                        Sent
+                    </span>
+                {{/if}}
+            </p>
+        {{/if}}
+    </LinkTo>
 
 </li>

@@ -39,63 +39,92 @@
         Engagement
     </h4>
     <div class="gh-post-analytics-box">
-        <div class="gh-post-analytics-item">
-            <h3>{{format-number this.post.email.emailCount}}</h3>
-            <p>Sent</p>
-        </div>
-        <div class="gh-post-analytics-item">
-            <h3>{{this.post.email.openRate}}<sup>%</sup></h3>
-            <p><strong>{{format-number this.post.email.openedCount}}</strong> opened</p>
-        </div>
-        <div class="gh-post-analytics-item">
-            <h3>{{this.post.clickRate}}<sup>%</sup></h3>
-            <p><strong>{{format-number this.post.count.clicks}}</strong> clicked</p>
-        </div>
-        <div class="gh-post-analytics-item">
-            <h3>{{format-number this.post.count.signups}}</h3>
-            <p>{{gh-pluralize this.post.count.signups "Signup" without-count=true}}</p>
-        </div>
-        <div class="gh-post-analytics-item">
-            <h3>{{format-number this.post.count.conversions}}</h3>
-            <p><span class="hide-when-small">Paid </span>{{gh-pluralize this.post.count.conversions "conversion" without-count=true}}</p>
-        </div>
+        {{#if (or this.post.isSent (and this.post.isPublished this.post.email))}}
+            <div class="gh-post-analytics-item">
+                <h3>{{format-number this.post.email.emailCount}}</h3>
+                <p>Sent</p>
+            </div>
+
+            {{#if (and this.post.email.trackOpens this.settings.emailTrackOpens) }}
+                <div class="gh-post-analytics-item">
+                    <h3>{{this.post.email.openRate}}<sup>%</sup></h3>
+                    <p><strong>{{format-number this.post.email.openedCount}}</strong> opened</p>
+                </div>
+            {{/if}}
+
+            {{#if this.settings.emailTrackClicks}}
+                <div class="gh-post-analytics-item">
+                    <h3>{{this.post.clickRate}}<sup>%</sup></h3>
+                    <p><strong>{{format-number this.post.count.clicks}}</strong> clicked</p>
+                </div>
+            {{/if}}
+        {{/if}}
+
+
+        {{#if (and (feature 'memberAttribution') (not this.post.emailOnly)) }}
+            <div class="gh-post-analytics-item">
+                <h3>{{format-number this.post.count.signups}}</h3>
+                <p>{{gh-pluralize this.post.count.signups "Signup" without-count=true}}</p>
+            </div>
+
+            {{#if this.membersUtils.paidMembersEnabled}}
+                <div class="gh-post-analytics-item">
+                    <h3>{{format-number this.post.count.conversions}}</h3>
+                    <p><span class="hide-when-small">Paid </span>{{gh-pluralize this.post.count.conversions "conversion" without-count=true}}</p>
+                </div>
+            {{/if}}
+        {{/if}}
     </div>
 
-    {{#if (and this.links this.links.length) }}
-    <h4 class="gh-main-section-header small bn">
-        Link clicks
-    </h4>
-        <div class="gh-post-analytics-box column">
-            <div class="gh-links-list">
-                {{#each this.links as |link|}}
-                    <div class="gh-links-list-item">
-                        <a href="{{link.link.to}}">{{link.link.title}}</a>
-                        <p class="gh-links-list-clicks">{{link.count.clicks}}</p>
+    {{#if (and this.settings.emailTrackClicks (or this.post.isSent (and this.post.isPublished this.post.email)))}}
+        <h4 class="gh-main-section-header small bn">
+            Link clicks
+        </h4>
+        {{#if (not-eq this.links null)}}
+            {{#if (is-empty this.links) }}
+                No links in email.
+            {{else}}
+                <div class="gh-post-analytics-box column">
+                    <div class="gh-links-list">
+                        {{#each this.links as |link|}}
+                            <div class="gh-links-list-item">
+                                <a href="{{link.link.to}}">{{link.link.title}}</a>
+                                <p class="gh-links-list-clicks">{{link.count.clicks}}</p>
+                            </div>
+                        {{/each}}
                     </div>
-                {{/each}}
-            </div>
-        </div>
+                </div>
+            {{/if}}
+        {{else}}
+            Loading...
+        {{/if}}
     {{/if}}
 
-    {{#if (and (feature 'sourceAttribution') this.sources this.sources.length)}}
+    {{#if (and (feature 'sourceAttribution') (not this.post.emailOnly))}}
         <h4 class="gh-main-section-header small bn">
             Source attribution
         </h4>
-        {{#if this.sources}}
-            <div class="gh-post-analytics-box resources">
-                <div style="display: grid;
-                    grid-template-columns: 2fr 1fr;
-                    grid-gap: 64px;
-                ">
-                    <MemberAttribution::SourceAttributionTable @sources={{this.sources}} />
+        {{#if (not-eq this.sources null) }}
+            {{#if (is-empty this.sources) }}
+                No data yet.
+            {{else}}
+                <div class="gh-post-analytics-box resources">
+                    <div style="display: grid;
+                        grid-template-columns: 2fr 1fr;
+                        grid-gap: 64px;
+                    ">
+                        <MemberAttribution::SourceAttributionTable @sources={{this.sources}} />
 
-                    <div style="border-left: 1px solid #eceef0; padding-left: 48px;display: flex;justify-content: center;align-items: center;">
-                        <div style="max-width: 200px;">
-                            <MemberAttribution::SourceAttributionChart @sources={{this.sources}} />
+                        <div style="border-left: 1px solid #eceef0; padding-left: 48px;display: flex;justify-content: center;align-items: center;">
+                            <div style="max-width: 200px;">
+                                <MemberAttribution::SourceAttributionChart @sources={{this.sources}} />
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            {{/if}}
+        {{else}}
+            Loading...
         {{/if}}
     {{/if}}
 
