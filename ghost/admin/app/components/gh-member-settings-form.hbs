@@ -144,7 +144,7 @@
                                     </div>
                                     <div class="period">{{if (eq sub.price.interval "year") "yearly" "monthly"}}</div>
                                 </div>
-                                <div style="margin-left: 16px;">
+                                <div style="margin-left: 16px; flex-grow: 1;">
                                     <h3 class="gh-membertier-name" data-test-text="tier-name" style="align-items:center !important; justify-content:flex-start !important;">
                                         {{tier.name}}
                                         {{#if (eq sub.status "canceled")}}
@@ -183,6 +183,51 @@
                                         {{else}}
                                             <span class="gh-cp-membertier-renewal">Renews {{sub.validUntil}}</span>
                                         {{/if}}
+                                    </div>
+                                    <div class="flex flex-row gh-cp-membertier-details">
+                                        Details {{svg-jar "arrow-right-stroke"}}
+                                    </div>
+                                    <div class="gh-membertier-advanced" data-test-subscription={{index}}>
+                                        <div class="gh-membertier-details-container">
+                                            {{#if sub.cancellationReason}}
+                                                <div class="mb4">
+                                                    <h4>Cancellation reason</h4>
+                                                    <div class="gh-membertier-cancelreason">{{sub.cancellationReason}}</div>
+                                                </div>
+                                            {{/if}}
+                                            {{#if sub.offer}}
+                                                {{#if (eq sub.offer.type "trial")}}
+                                                    <div class="mb4">
+                                                        <h4>Offer</h4>
+                                                        <span class="gh-cp-membertier-pricelabel"> {{sub.offer.name}} </span>
+                                                        &ndash; {{sub.offer.amount}} days free
+                                                    </div>
+                                                {{else}}
+                                                    <div class="mb4">
+                                                        <h4>Offer</h4>
+                                                        <span class="gh-cp-membertier-pricelabel"> {{sub.offer.name}} </span>
+                                                        {{#if (eq sub.offer.type 'fixed')}}
+                                                            &ndash; {{currency-symbol sub.offer.currency}}{{gh-price-amount sub.offer.amount}} off
+                                                        {{else}}
+                                                            &ndash; {{sub.offer.amount}}% off
+                                                        {{/if}}
+                                                    </div>
+                                                {{/if}}
+                                            {{/if}}
+                                            <div class="gh-membertier-details">
+                                                <div class="gh-membertier-detail">
+                                                    <h4>Subscription Source</h4>
+                                                    <p><span class="fw6">Twitter / Social</span></p>
+                                                </div>
+                                                {{#if (and sub.attribution sub.attribution.url sub.attribution.title)}}
+                                                <div class="gh-membertier-detail">
+                                                    <h4>Subscription page</h4>
+                                                    <a href="{{sub.attribution.url}}" target="_blank" rel="noopener noreferrer">{{ sub.attribution.title }}</a>
+                                                </div>
+                                                {{/if}}
+                                                <p class="gh-membertier-detail-timestamp">Created on {{sub.startDate}}</p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 {{#if sub.isComplimentary}}
@@ -251,43 +296,6 @@
                                     </span>
                                 {{/if}}
                             </div>
-                            <div class="gh-membertier-advanced" data-test-subscription={{index}}>
-                                    <div class="gh-membertier-details-container">
-                                        {{#if sub.cancellationReason}}
-                                            <div class="mb4">
-                                                <h4>Cancellation reason</h4>
-                                                <div class="gh-membertier-cancelreason">{{sub.cancellationReason}}</div>
-                                            </div>
-                                        {{/if}}
-                                        {{#if sub.offer}}
-                                            {{#if (eq sub.offer.type "trial")}}
-                                                <div class="mb4">
-                                                    <h4>Offer</h4>
-                                                    <span class="gh-cp-membertier-pricelabel"> {{sub.offer.name}} </span>
-                                                    &ndash; {{sub.offer.amount}} days free
-                                                </div>
-                                            {{else}}
-                                                <div class="mb4">
-                                                    <h4>Offer</h4>
-                                                    <span class="gh-cp-membertier-pricelabel"> {{sub.offer.name}} </span>
-                                                    {{#if (eq sub.offer.type 'fixed')}}
-                                                        &ndash; {{currency-symbol sub.offer.currency}}{{gh-price-amount sub.offer.amount}} off
-                                                    {{else}}
-                                                        &ndash; {{sub.offer.amount}}% off
-                                                    {{/if}}
-                                                </div>
-                                            {{/if}}
-                                        {{/if}}
-                                        <div class="gh-membertier-details">
-                                            <h4>Source</h4>
-                                            <p>From <span class="fw6">Social: Twitter</span>
-                                            {{#if (and sub.attribution sub.attribution.url sub.attribution.title)}}
-                                            , subscribed on <a href="{{sub.attribution.url}}" target="_blank" rel="noopener noreferrer">{{ sub.attribution.title }}</a>
-                                            {{/if}}
-                                             on {{sub.startDate}}</p>
-                                        </div>
-                                    </div>
-                                </div>
                             {{/each}}
 
                             {{#if (eq tier.subscriptions.length 0)}}

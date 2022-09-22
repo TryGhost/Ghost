@@ -1,18 +1,21 @@
-<section class="gh-dashboard-section gh-dashboard-recents">
+<section class="gh-dashboard-section gh-dashboard-attribution">
 
     <article class="gh-dashboard-box" {{did-insert this.loadData}}>
-        <h3 class="gh-dashboard-metric-label">Source attribution</h3>
-        <div style="display: grid;
-    grid-template-columns: 2fr 1fr;
-    grid-gap: 64px;
-">
-            <MemberAttribution::SourceAttributionTable @sources={{this.sources}} class="gh-dashboard-recents-posts gh-dashboard-list" />
-
-            <div style="border-left: 1px solid #eceef0; padding-left: 48px;display: flex;justify-content: center;align-items: center;">
-                <div style="max-width: 200px;">
-                    <MemberAttribution::SourceAttributionChart @sources={{this.chartSources}} />
+        <div style="display: grid;grid-template-columns: 1fr 2fr;grid-gap: 24px;">
+            <div>
+                <h3 class="gh-dashboard-metric-label">Attribution</h3>
+                <div style="display: flex;justify-content: center;align-items: center;">
+                    <div style="max-width: 200px; max-height: 200px;">
+                        <MemberAttribution::SourceAttributionChart @sources={{this.chartSources}} />
+                    </div>
+                    <div id="gh-dashboard-attribution-tooltip" class="gh-dashboard-tooltip">
+                        <div class="gh-dashboard-tooltip-value">
+                            -
+                        </div>
+                    </div>
                 </div>
             </div>
+            <MemberAttribution::SourceAttributionTable @sources={{this.sources}} class="gh-dashboard-attribution-list gh-dashboard-list" style="justify-content:flex-start;" />
         </div>
     </article>
 </section>
