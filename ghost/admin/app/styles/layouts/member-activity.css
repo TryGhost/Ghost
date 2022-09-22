@@ -164,12 +164,14 @@
 
 .gh-members-activity-description.feature-memberAttribution a {
     font-weight: 400;
-    color: var(--midgrey) !important;
+    color: var(--middarkgrey) !important;
+    opacity: 0.9;
     transition: all 150ms ease;
 }
 
 .gh-members-activity-description.feature-memberAttribution a:hover {
     color: var(--middarkgrey) !important;
+    opacity: 1;
 }
 
 .gh-members-activity-description a {
@@ -261,6 +263,11 @@
     padding-right: 8px; /* extra padding used for dynamic positioning with js */
 }
 
+.feature-memberAttribution .ghost-members-activity-event-url > span {
+    font-weight: 500;
+    color: #b4bcc2;
+}
+
 .gh-members-activity-icon {
     width: 24px;
     min-width: 24px;
@@ -288,6 +295,7 @@
     color: var(--middarkgrey);
     font-weight: 500;
     white-space: nowrap;
+    width: 100%;
 }
 
 .gh-members-activity-event > a {
