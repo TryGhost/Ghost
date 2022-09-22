@@ -58,6 +58,37 @@ describe('ReferrersStatsService', function () {
                 });
             }
 
+            // Insert null referrer data for signups
+            signupInsert.push(...[
+                {
+                    referrer_source: null,
+                    referrer_medium: null,
+                    referrer_url: null,
+                    created_at: '1970-01-09'
+                },
+                {
+                    referrer_source: null,
+                    referrer_medium: null,
+                    referrer_url: null,
+                    created_at: '1970-01-09'
+                }
+            ]);
+
+            // Insert null referrer data for paid conversions
+            paidInsert.push(...[
+                {
+                    referrer_source: null,
+                    referrer_medium: null,
+                    referrer_url: null,
+                    created_at: '1970-01-09'
+                },
+                {
+                    referrer_source: null,
+                    referrer_medium: null,
+                    referrer_url: null,
+                    created_at: '1970-01-09'
+                }
+            ]);
             await db('members_created_events').insert(signupInsert);
             await db('members_subscription_created_events').insert(paidInsert);
         }
@@ -75,11 +106,12 @@ describe('ReferrersStatsService', function () {
             };
 
             // Is sorted by date
-            assert.deepStrictEqual(results.data.map(result => result.date), ['1970-01-01', '1970-01-02', '1970-01-03', '1970-01-04', '1970-01-05', '1970-01-06', '1970-01-07', '1970-01-08', '1970-01-09']);
+            assert.deepStrictEqual(results.data.map(result => result.date), ['1970-01-01', '1970-01-02', '1970-01-03', '1970-01-04', '1970-01-05', '1970-01-06', '1970-01-07', '1970-01-08', '1970-01-09', '1970-01-09']);
 
             const firstDayCounts = results.data.find(finder('Twitter', '1970-01-01'));
             const secondDayCounts = results.data.find(finder('Ghost Newsletter', '1970-01-02'));
             const thirdDayCounts = results.data.find(finder('Ghost Explore', '1970-01-03'));
+            const nullReferrerCounts = results.data.find(finder(null, '1970-01-09'));
 
             assert(firstDayCounts.signups === 0);
             assert(firstDayCounts.paid_conversions === 1);
@@ -89,6 +121,9 @@ describe('ReferrersStatsService', function () {
 
             assert(thirdDayCounts.signups === 1);
             assert(thirdDayCounts.paid_conversions === 1);
+
+            assert(nullReferrerCounts.signups === 2);
+            assert(nullReferrerCounts.paid_conversions === 2);
         });
     });
 });
