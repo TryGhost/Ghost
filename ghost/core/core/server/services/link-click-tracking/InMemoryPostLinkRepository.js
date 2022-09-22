@@ -18,7 +18,7 @@ class InMemoryPostLinkRepository {
      * @param {object} deps.linkRedirectRepository Bookshelf Model
      * @param {object} deps.linkClickRepository Bookshelf Model
      */
-     constructor(deps) {
+    constructor(deps) {
         this.#linkRedirectRepository = deps.linkRedirectRepository;
         this.#linkClickRepository = deps.linkClickRepository;
     }
@@ -39,7 +39,6 @@ class InMemoryPostLinkRepository {
      * @returns {Promise<void>}
      */
     async save(postLink) {
-        console.log(postLink);
         this.#store.push(postLink);
     }
 
