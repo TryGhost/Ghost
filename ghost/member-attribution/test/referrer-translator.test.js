@@ -244,7 +244,7 @@ describe('ReferrerTranslator', function () {
 
         it('returns null for empty history', async function () {
             should(translator.getReferrerDetails([])).eql({
-                refSource: 'Direct',
+                refSource: null,
                 refMedium: null,
                 refUrl: null
             });
