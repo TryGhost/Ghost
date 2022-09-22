@@ -15,7 +15,7 @@ module.exports = {
                 data: links,
                 meta: {
                     pagination: {
-                        total: 1,
+                        total: links.length,
                         page: 1,
                         pages: 1
                     }
