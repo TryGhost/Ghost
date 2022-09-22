@@ -85,6 +85,11 @@ class ReferrersStatsService {
             }
         });
 
+        // sort allEntries in date ascending format
+        allEntries.sort((a, b) => {
+            return moment(a.date).diff(moment(b.date));
+        });
+
         return {
             data: allEntries,
             meta: {}

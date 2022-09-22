@@ -74,6 +74,9 @@ describe('ReferrersStatsService', function () {
                 return result.date === date && result.source === source;
             };
 
+            // Is sorted by date
+            assert.deepStrictEqual(results.data.map(result => result.date), ['1970-01-01', '1970-01-02', '1970-01-03', '1970-01-04', '1970-01-05', '1970-01-06', '1970-01-07', '1970-01-08', '1970-01-09']);
+
             const firstDayCounts = results.data.find(finder('Twitter', '1970-01-01'));
             const secondDayCounts = results.data.find(finder('Ghost Newsletter', '1970-01-02'));
             const thirdDayCounts = results.data.find(finder('Ghost Explore', '1970-01-03'));

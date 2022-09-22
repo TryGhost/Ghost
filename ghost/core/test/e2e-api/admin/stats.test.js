@@ -90,7 +90,7 @@ describe('Stats API', function () {
     describe('Referrer source history stats', function () {
         it('Can fetch attribution stats', async function () {
             await agent
-                .get(`/stats/referrers/history/`)
+                .get(`/stats/referrers/`)
                 .expectStatus(200)
                 .matchBodySnapshot({
                     stats: [
