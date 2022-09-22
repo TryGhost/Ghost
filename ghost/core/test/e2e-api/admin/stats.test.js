@@ -95,11 +95,13 @@ describe('Stats API', function () {
                 .matchBodySnapshot({
                     stats: [
                         {
+                            date: anyISODate,
                             source: 'Direct',
                             signups: 4,
                             paid_conversions: 1
                         },
                         {
+                            date: anyISODate,
                             source: 'Twitter',
                             signups: 4,
                             paid_conversions: 2

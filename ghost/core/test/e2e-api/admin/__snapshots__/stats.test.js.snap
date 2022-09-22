@@ -149,13 +149,13 @@ Object {
   "meta": Object {},
   "stats": Array [
     Object {
-      "date": "2022-09-21",
+      "date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
       "paid_conversions": 1,
       "signups": 4,
       "source": "Direct",
     },
     Object {
-      "date": "2022-09-21",
+      "date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
       "paid_conversions": 2,
       "signups": 4,
       "source": "Twitter",
