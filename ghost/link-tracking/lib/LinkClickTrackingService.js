@@ -7,6 +7,7 @@ const ObjectID = require('bson-objectid').default;
 /**
  * @typedef {object} ILinkClickRepository
  * @prop {(event: LinkClick) => Promise<void>} save
+ * @prop {({filter: string}) => Promise<LinkClick[]>} getAll
  */
 
 /**
@@ -17,9 +18,14 @@ const ObjectID = require('bson-objectid').default;
  */
 
 /**
+ * @typedef {import('./FullPostLink')} FullPostLink
+ */
+
+/**
  * @typedef {object} ILinkRedirectService
  * @prop {(to: URL, slug: string) => Promise<ILinkRedirect>} addRedirect
  * @prop {() => Promise<string>} getSlug
+ * @prop {({filter: string}) => Promise<ILinkRedirect[]>} getAll
  */
 
 /**
@@ -30,6 +36,7 @@ const ObjectID = require('bson-objectid').default;
 /**
  * @typedef {object} IPostLinkRepository
  * @prop {(postLink: PostLink) => Promise<void>} save
+ * @prop {({filter: string}) => Promise<FullPostLink[]>} getAll
  */
 
 class LinkClickTrackingService {
@@ -60,6 +67,17 @@ class LinkClickTrackingService {
         }
         this.subscribe();
         this.#initialised = true;
+    }
+
+    /**
+     * @param {object} options
+     * @param {string} options.filter
+     * @return {Promise<FullPostLink[]>}
+     */
+    async getLinks(options) {
+        return await this.#postLinkRepository.getAll({
+            filter: options.filter
+        });
     }
 
     /**

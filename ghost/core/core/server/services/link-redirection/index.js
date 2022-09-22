@@ -13,13 +13,14 @@ class LinkRedirectsServiceWrapper {
 
         const {LinkRedirectsService} = require('@tryghost/link-redirects');
 
-        const linkRedirectRepository = new LinkRedirectRepository({
-            LinkRedirect: models.LinkRedirect
+        this.linkRedirectRepository = new LinkRedirectRepository({
+            LinkRedirect: models.LinkRedirect,
+            urlUtils
         });
 
         // Expose the service
         this.service = new LinkRedirectsService({
-            linkRedirectRepository,
+            linkRedirectRepository: this.linkRedirectRepository,
             config: {
                 baseURL: new URL(urlUtils.getSiteUrl())
             }
