@@ -40,5 +40,17 @@ module.exports = {
         async query(frame) {
             return await statsService.getPostReferrers(frame.data.id);
         }
+    },
+    referrersHistory: {
+        data: [
+            'id'
+        ],
+        permissions: {
+            docName: 'posts',
+            method: 'browse'
+        },
+        async query() {
+            return await statsService.getReferrersHistory();
+        }
     }
 };
