@@ -14,6 +14,12 @@ export default class Recents extends Component {
         return this.dashboardStats?.memberSourceAttributionCounts || [];
     }
 
+    get chartSources() {
+        const counts = this.dashboardStats?.memberSourceAttributionCounts || [];
+        // filter null source from the list
+        return counts.filter(source => source.source);
+    }
+
     get areMembersEnabled() {
         return this.dashboardStats.siteStatus?.membersEnabled;
     }
