@@ -21,8 +21,10 @@ module.exports = function setupApiApp() {
     // Query parsing
     apiApp.use(boolParser());
 
-    // API shouldn't be cached
-    apiApp.use(shared.middleware.cacheControl('private'));
+    // Content API should allow public caching
+    apiApp.use(shared.middleware.cacheControl('public', {
+        maxAge: 0
+    }));
 
     // Routing
     apiApp.use(routes());

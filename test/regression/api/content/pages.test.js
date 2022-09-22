@@ -24,7 +24,7 @@ describe('api/canary/content/pages', function () {
         return request.get(localUtils.API.getApiQuery(`pages/?key=${key}&filter=page:false`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect('Cache-Control', testUtils.cacheRules.public)
             .expect(200)
             .then((res) => {
                 res.headers.vary.should.eql('Accept-Encoding');
@@ -42,7 +42,7 @@ describe('api/canary/content/pages', function () {
     it('browse pages with slug filter, should order in slug order', function () {
         return request.get(localUtils.API.getApiQuery(`pages/?key=${key}&filter=slug:[static-page-test]`))
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect('Cache-Control', testUtils.cacheRules.public)
             .expect(200)
             .then((res) => {
                 const jsonResponse = res.body;
