@@ -157,12 +157,12 @@
         {{#if (not-eq this.settings.membersSignupAccess "none")}}
             <div class="flex flex-column items-end">
                 {{#if (and (not this.session.user.isContributor) (or @post.isSent @post.isPublished) (or this.settings.emailTrackClicks (feature "memberAttribution")))}}
-                    <LinkTo @route="posts.analytics" @model={{@post}} class="gh-post-list-cta stats {{if this.isHovered "is-hovered"}}">
-                        {{svg-jar "stats"}}
+                    <LinkTo @route="posts.analytics" @model={{@post}} class="gh-post-list-cta stats {{if this.isHovered "is-hovered"}}" title="View post analytics">
+                        {{svg-jar "stats" title="View post analytics"}}
                     </LinkTo>
                 {{else}}
-                    <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="gh-post-list-cta edit {{if this.isHovered "is-hovered"}}">
-                        {{svg-jar "pen"}}
+                    <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="gh-post-list-cta edit {{if this.isHovered "is-hovered"}}" title="Edit this post">
+                        {{svg-jar "pen" title="Edit this post"}}
                     </LinkTo>
                 {{/if}}
             </div>
