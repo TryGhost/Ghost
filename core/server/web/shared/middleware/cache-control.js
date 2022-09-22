@@ -7,16 +7,18 @@
 // Allows each app to declare its own default caching rules
 
 const isString = require('lodash/isString');
+const {cacheControlValues} = require('@tryghost/http-cache-utils');
 
 /**
- * @param {'public'|'private'} profile Use "private" if you do not want caching
+ * @param {'public'|'private'|'noCacheDynamic'} profile Use "private" if you do not want caching
  * @param {object} [options]
  * @param {number} [options.maxAge] The max-age in seconds to use when profile is "public"
  */
 const cacheControl = (profile, options = {maxAge: 0}) => {
     const profiles = {
         public: `public, max-age=${options.maxAge}`,
-        private: 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
+        private: 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0',
+        noCacheDynamic: cacheControlValues.noCacheDynamic
     };
 
     let output;
