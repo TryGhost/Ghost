@@ -40,7 +40,7 @@ module.exports = class LinkRedirectRepository {
             result.push(new LinkRedirect({
                 id: model.id,
                 from: new URL(this.#trimLeadingSlash(model.get('from')), this.#urlUtils.getSiteUrl()),
-                to: new URL(this.#urlUtils.transformReadyToAbsolute(model.get('to')))
+                to: new URL(model.get('to'))
             }));
         }
 
