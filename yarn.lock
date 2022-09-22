@@ -3856,14 +3856,14 @@
   resolved "https://registry.yarnpkg.com/@tryghost/kg-default-atoms/-/kg-default-atoms-3.1.4.tgz#58916cbd350e865246f95143d14ba62a06f7a1a7"
   integrity sha512-LBDW1uD70Wh27LiYzpctvIv6MExcgq7KkGy/RWUo0K/1EExtyEjLhNeeBrJ9taPouW2AQVwkqu69RHQ7NJW6eA==
 
-"@tryghost/kg-default-cards@5.18.0":
-  version "5.18.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-cards/-/kg-default-cards-5.18.0.tgz#ab46a9c899fadbd4ba226be46b484e4dc8990164"
-  integrity sha512-ssgb65gbsGDtvkNjuR+O1SIlTNSDmbQYs33bCmuTMiA6rjUCTTDtPcAKqtiE5/KEFYPryxkmWgHTggTkAgoy9g==
+"@tryghost/kg-default-cards@5.18.2":
+  version "5.18.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-cards/-/kg-default-cards-5.18.2.tgz#c56c15e2c793504803753498b7b46225b32e2bc8"
+  integrity sha512-FZ6PsnwyVlIeiOzc2hfmIXA1WLugnlafN1nOHqf889JXo01Kp28oNX2N4Z7u5vUu1jA4jkdlAa2DQZjnRvsQ4A==
   dependencies:
     "@tryghost/kg-markdown-html-renderer" "^5.1.7"
     "@tryghost/string" "^0.2.0"
-    "@tryghost/url-utils" "^2.0.0"
+    "@tryghost/url-utils" "^4.0.0"
     handlebars "^4.7.6"
     juice "^8.0.0"
     lodash "^4.17.21"
@@ -4100,22 +4100,10 @@
   dependencies:
     lodash.template "^4.5.0"
 
-"@tryghost/url-utils@4.2.0":
+"@tryghost/url-utils@4.2.0", "@tryghost/url-utils@^4.0.0":
   version "4.2.0"
   resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-4.2.0.tgz#342c73c840dda4f2ba2316fc581167404e219554"
   integrity sha512-ipeGBj6CJau/17J+M1t2vUJvdptoTnCPVgph2mbKGclOEdAMv9h3/S15cNMnxIqoSNURAvwMKD+QxkOboM/7zg==
-  dependencies:
-    cheerio "^0.22.0"
-    moment "^2.27.0"
-    moment-timezone "^0.5.31"
-    remark "^11.0.2"
-    remark-footnotes "^1.0.0"
-    unist-util-visit "^2.0.0"
-
-"@tryghost/url-utils@^2.0.0":
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-2.1.0.tgz#5b30921eeb27fdcb9c1fc1360879a0d99304ddf2"
-  integrity sha512-3oID3Pzgew17eZF6YpJvG4Iy8F5CDealvcZ3zRwGFBT/oSUBGHY4nQfAUAH0Uo7dPAEDx9zOcMyNk/cJ/VN3nQ==
   dependencies:
     cheerio "^0.22.0"
     moment "^2.27.0"
