@@ -81,20 +81,20 @@
             Link clicks
         </h4>
         {{#if (not-eq this.links null)}}
-            {{#if (is-empty this.links) }}
-                No links in email.
-            {{else}}
-                <div class="gh-post-analytics-box column">
-                    <div class="gh-links-list">
+            <div class="gh-post-analytics-box column">
+                <div class="gh-links-list">
+                    {{#if (is-empty this.links) }}
+                        There are no links in this email.
+                    {{else}}
                         {{#each this.links as |link|}}
                             <div class="gh-links-list-item">
                                 <a href="{{link.link.to}}">{{link.link.title}}</a>
                                 <p class="gh-links-list-clicks">{{link.count.clicks}}</p>
                             </div>
                         {{/each}}
-                    </div>
+                    {{/if}}
                 </div>
-            {{/if}}
+            </div>
         {{else}}
             Loading...
         {{/if}}
