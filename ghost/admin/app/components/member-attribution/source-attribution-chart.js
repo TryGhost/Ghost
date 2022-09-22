@@ -41,7 +41,8 @@ export default class SourceAttributionChart extends Component {
             },
             tooltips: {
                 enabled: false
-            }
+            },
+            aspectRatio: 1
         };
     }
 
