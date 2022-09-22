@@ -46,13 +46,14 @@
                     {{svg-jar "member-add"}}
                     Created on {{moment-format (moment-site-tz @member.createdAtUTC) "D MMM YYYY"}}
                 </p>
-                {{#if (and @member.attribution @member.attribution.url @member.attribution.title) }}
-                    {{#unless (feature 'sourceAttribution')}}
-                    <p>
-                        {{svg-jar "satellite"}}
-                        Signed up on&nbsp;<a href="{{@member.attribution.url}}" target="_blank" rel="noopener noreferrer">{{ @member.attribution.title }}</a>
-                    </p>
-                    {{/unless}}
+                {{#if (feature 'sourceAttribution')}}
+                {{else}}
+                    {{#if (and @member.attribution @member.attribution.url @member.attribution.title) }}
+                        <p>
+                            {{svg-jar "satellite"}}
+                            Signed up on&nbsp;<a href="{{@member.attribution.url}}" target="_blank" rel="noopener noreferrer">{{ @member.attribution.title }}</a>
+                        </p>
+                    {{/if}}
                 {{/if}}
                 <p class="gh-member-last-seen">
                     {{svg-jar "eye"}}
