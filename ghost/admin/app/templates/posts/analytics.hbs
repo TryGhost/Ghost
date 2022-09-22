@@ -30,7 +30,7 @@
                 on
                 {{moment-format publishedAt "D MMM YYYY"}}
                 at
-                {{moment-format publishedAt "HH:mm"}}.
+                {{moment-format publishedAt "HH:mm"}}
             {{/let}}
         </p>
     </GhCanvasHeader>
@@ -44,20 +44,20 @@
             <p>Sent</p>
         </div>
         <div class="gh-post-analytics-item">
-            <h3>{{this.post.email.openRate}}%</h3>
+            <h3>{{this.post.email.openRate}}<sup>%</sup></h3>
             <p><strong>{{format-number this.post.email.openedCount}}</strong> opened</p>
         </div>
         <div class="gh-post-analytics-item">
-            <h3>{{this.post.clickRate}}%</h3>
+            <h3>{{this.post.clickRate}}<sup>%</sup></h3>
             <p><strong>{{format-number this.post.count.clicks}}</strong> clicked</p>
         </div>
         <div class="gh-post-analytics-item">
             <h3>{{format-number this.post.count.signups}}</h3>
-            <p>Free {{gh-pluralize this.post.count.signups "signup" without-count=true}}</p>
+            <p><span class="hide-when-small">Free </span>{{gh-pluralize this.post.count.signups "signup" without-count=true}}</p>
         </div>
         <div class="gh-post-analytics-item">
             <h3>{{format-number this.post.count.conversions}}</h3>
-            <p>Paid {{gh-pluralize this.post.count.conversions "conversion" without-count=true}}</p>
+            <p><span class="hide-when-small">Paid </span>{{gh-pluralize this.post.count.conversions "conversion" without-count=true}}</p>
         </div>
     </div>
 
