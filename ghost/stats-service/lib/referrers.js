@@ -104,12 +104,7 @@ class ReferrersStatsService {
         const rows = await knex('members_subscription_created_events')
             .select(knex.raw(`DATE(created_at) as date`))
             .select(knex.raw(`COUNT(*) as paid_conversions`))
-            .select(knex.raw(`
-                CASE
-                    WHEN referrer_source IS NULL THEN 'Unavailable'
-                    ELSE referrer_source
-                END
-            as source`))
+            .select(knex.raw(`referrer_source as source`))
             .groupBy('date', 'referrer_source')
             .orderBy('date');
 
@@ -124,12 +119,7 @@ class ReferrersStatsService {
         const rows = await knex('members_created_events')
             .select(knex.raw(`DATE(created_at) as date`))
             .select(knex.raw(`COUNT(*) as signups`))
-            .select(knex.raw(`
-                CASE
-                    WHEN referrer_source IS NULL THEN 'Unavailable'
-                    ELSE referrer_source
-                END
-            as source`))
+            .select(knex.raw(`referrer_source as source`))
             .groupBy('date', 'referrer_source')
             .orderBy('date');
 
