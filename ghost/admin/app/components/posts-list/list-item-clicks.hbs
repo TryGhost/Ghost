@@ -35,7 +35,7 @@
                         Published
                         {{#if @post.hasEmail}}
                             {{#if this.isHovered}}
-                                and sent to 2,467 free subscribers
+                                and sent to {{gh-pluralize @post.email.emailCount "member"}}
                             {{else}}
                                 and sent
                             {{/if}}
@@ -97,7 +97,7 @@
                                 {{#if @post.hasEmail}}
                                     and sent 
                                     {{#if this.isStateHovered}}
-                                        <span {{css-transition "anim-fade-in-scale"}}>to 2,467 free subscribers</span>
+                                        <span {{css-transition "anim-fade-in-scale"}}>to {{gh-pluralize @post.email.emailCount "member"}}</span>
                                     {{/if}}
                                 {{/if}}
                             </span>
@@ -107,7 +107,7 @@
                             <span class="sent" {{on "mouseover" (fn (mut this.isStateHovered) true)}} {{on "mouseleave" (fn (mut this.isStateHovered) false)}}>
                                 Sent 
                                 {{#if this.isStateHovered}}
-                                    <span {{css-transition "anim-fade-in-scale"}}>to 2,467 free subscribers</span>
+                                    <span {{css-transition "anim-fade-in-scale"}}>to {{gh-pluralize @post.email.emailCount "member"}}</span>
                                 {{/if}}
                             </span>
                         {{/if}}
