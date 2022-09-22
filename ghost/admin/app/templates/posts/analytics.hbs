@@ -10,29 +10,34 @@
         <h2 class="gh-canvas-title gh-post-title">
             {{this.post.title}}
         </h2>
-        <p class="gh-post-analytics-meta">
-            {{#if
-                (or this.post.isSent
-                    (and this.post.isPublished this.post.email)
-                    this.post.willEmail
-                )
-            }}
-                {{#if this.post.emailOnly}}
-                    Sent
+        <div class="gh-post-analytics-meta">
+            <div class="gh-post-analytics-meta-text">
+                {{#if
+                    (or this.post.isSent
+                        (and this.post.isPublished this.post.email)
+                        this.post.willEmail
+                    )
+                }}
+                    {{#if this.post.emailOnly}}
+                        Sent
+                    {{else}}
+                        Published and sent
+                    {{/if}}
                 {{else}}
-                    Published and sent
+                    Published on your site
                 {{/if}}
-            {{else}}
-                Published on your site
-            {{/if}}
 
-            {{#let (moment-site-tz this.post.publishedAtUTC) as |publishedAt|}}
-                on
-                {{moment-format publishedAt "D MMM YYYY"}}
-                at
-                {{moment-format publishedAt "HH:mm"}}
-            {{/let}}
-        </p>
+                {{#let (moment-site-tz this.post.publishedAtUTC) as |publishedAt|}}
+                    on
+                    {{moment-format publishedAt "D MMM YYYY"}}
+                    at
+                    {{moment-format publishedAt "HH:mm"}}
+                {{/let}}
+            </div>
+            <LinkTo @route="editor.edit" @models={{array this.post.displayName this.post.id}} class="gh-post-list-cta edit" title="Edit this post">
+                {{svg-jar "pen" title="Edit this post"}}
+            </LinkTo>
+        </div>
     </GhCanvasHeader>
 
     <h4 class="gh-main-section-header small bn">
@@ -60,11 +65,10 @@
             {{/if}}
         {{/if}}
 
-
         {{#if (and (feature 'memberAttribution') (not this.post.emailOnly)) }}
             <div class="gh-post-analytics-item">
                 <h3>{{format-number this.post.count.signups}}</h3>
-                <p>{{gh-pluralize this.post.count.signups "Signup" without-count=true}}</p>
+                <p>{{gh-pluralize this.post.count.signups "signup" without-count=true}}</p>
             </div>
 
             {{#if this.membersUtils.paidMembersEnabled}}
@@ -77,48 +81,46 @@
     </div>
 
     {{#if (and this.settings.emailTrackClicks (or this.post.isSent (and this.post.isPublished this.post.email)))}}
-        <h4 class="gh-main-section-header small bn">
-            Link clicks
-        </h4>
         {{#if (not-eq this.links null)}}
-            <div class="gh-post-analytics-box column">
-                <div class="gh-links-list">
-                    {{#if (is-empty this.links) }}
-                        There are no links in this email.
-                    {{else}}
+            {{#if (is-empty this.links) }}
+                {{!-- Empty state --}}
+            {{else}}
+                <h4 class="gh-main-section-header small bn">
+                    Link clicks
+                </h4>
+                <div class="gh-post-analytics-box column">
+                    <div class="gh-links-list">
                         {{#each this.links as |link|}}
                             <div class="gh-links-list-item">
                                 <a href="{{link.link.to}}">{{link.link.title}}</a>
                                 <p class="gh-links-list-clicks">{{link.count.clicks}}</p>
                             </div>
                         {{/each}}
-                    {{/if}}
+                    </div>
                 </div>
-            </div>
+            {{/if}}
         {{else}}
             Loading...
         {{/if}}
     {{/if}}
 
     {{#if (and (feature 'sourceAttribution') (not this.post.emailOnly))}}
-        <h4 class="gh-main-section-header small bn">
-            Source attribution
-        </h4>
         {{#if (not-eq this.sources null) }}
             {{#if (is-empty this.sources) }}
-                No data yet.
+                {{!-- Empty state --}}
             {{else}}
-                <div class="gh-post-analytics-box resources">
-                    <div style="display: grid;
-                        grid-template-columns: 2fr 1fr;
-                        grid-gap: 64px;
-                    ">
-                        <MemberAttribution::SourceAttributionTable @sources={{this.sources}} />
-
-                        <div style="border-left: 1px solid #eceef0; padding-left: 48px;display: flex;justify-content: center;align-items: center;">
-                            <div style="max-width: 200px;">
+                <h4 class="gh-main-section-header small bn">
+                    Source attribution
+                </h4>
+                <div class="gh-post-analytics-box column">
+                    <div class="gh-attribution-box">
+                        <div class="gh-attribution-chart-column">
+                            <div class="gh-attribution-chart-column-inner">
                                 <MemberAttribution::SourceAttributionChart @sources={{this.sources}} />
                             </div>
+                        </div>
+                        <div class="gh-attribution-table-column">
+                            <MemberAttribution::SourceAttributionTable @sources={{this.sources}} />
                         </div>
                     </div>
                 </div>
@@ -132,17 +134,17 @@
         Get started with analytics
     </h4>
     <div class="gh-post-analytics-box resources">
-        <div class="gh-post-analytics-resource">
+        <a href="https://ghost.org/help/" target="_blank" class="gh-post-analytics-resource" rel="noopener noreferrer">
             <div class="thumbnail" style="background-image: url(assets/img/marketing/analytics-1.jpg);"></div>
             <div class="flex flex-column justify-between">
                 <div>
-                    <h3>📈 Understand analytics in Ghost</h3>
+                    <h3>Understand analytics in Ghost</h3>
                     <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
                 </div>
                 <div class="gh-btn gh-btn-link">Become an expert &rarr;</div>
             </div>
-        </div>
-        <div class="gh-post-analytics-resource">
+        </a>
+        <a href="https://ghost.org/resources" target="_blank" class="gh-post-analytics-resource" rel="noopener noreferrer">
             <div class="thumbnail" style="background-image: url(assets/img/marketing/analytics-2.jpg);"></div>
             <div class="flex flex-column justify-between">
                 <div>
@@ -151,7 +153,7 @@
                 </div>
                 <div class="gh-btn gh-btn-link">Sharing is caring &rarr;</div>
             </div>
-        </div>
+        </a>
     </div>
     
 </section>
