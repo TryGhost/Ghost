@@ -1214,6 +1214,7 @@ textarea.gh-member-details-textarea {
     white-space: nowrap;
     overflow: hidden; 
     padding-right: 1rem;
+    width: 100%;
 }
 
 .gh-member-feed-event-inner:first-letter {
