@@ -12,8 +12,7 @@ const DATE_FORMAT = 'D MMM, YYYY';
 const DISPLAY_OPTIONS = [{
     name: 'MRR',
     value: 'mrr'
-},
-    {
+},{
     name: 'Total members',
     value: 'total'
 }, {
