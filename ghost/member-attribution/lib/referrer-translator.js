@@ -28,9 +28,10 @@ class ReferrerTranslator {
      * @returns {ReferrerData|null}
      */
     getReferrerDetails(history) {
+        // Empty history will return null as it means script is not loaded
         if (history.length === 0) {
             return {
-                refSource: 'Direct',
+                refSource: null,
                 refMedium: null,
                 refUrl: null
             };
