@@ -30,8 +30,12 @@ class StatsService {
         return this.subscriptions.getSubscriptionHistory();
     }
 
+    async getReferrersHistory() {
+        return this.referrers.getReferrersHistory();
+    }
+
     /**
-     * @param {string} postId 
+     * @param {string} postId
      */
     async getPostReferrers(postId) {
         return {
