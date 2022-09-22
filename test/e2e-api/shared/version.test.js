@@ -77,7 +77,7 @@ describe('API Versioning', function () {
                 })
                 .matchBodySnapshot({
                     errors: [{
-                        context: stringMatching(/Provided client version v999\.1 is ahead of current Ghost instance version v\d+\.\d+/),
+                        context: stringMatching(/Provided client accept-version v999\.1 is ahead of current Ghost version v\d+\.\d+/),
                         id: anyErrorId
                     }]
                 });
@@ -96,7 +96,7 @@ describe('API Versioning', function () {
                 })
                 .matchBodySnapshot({
                     errors: [{
-                        context: stringMatching(/Provided client version v3.1 is outdated and is behind current Ghost version v\d+\.\d+/),
+                        context: stringMatching(/Provided client accept-version v3.1 is behind current Ghost version v\d+\.\d+/),
                         id: anyErrorId
                     }]
                 });
@@ -121,7 +121,7 @@ describe('API Versioning', function () {
                 })
                 .matchBodySnapshot({
                     errors: [{
-                        context: stringMatching(/Provided client version v3.5 is outdated and is behind current Ghost version v\d+\.\d+/),
+                        context: stringMatching(/Provided client accept-version v3.5 is behind current Ghost version v\d+\.\d+/),
                         id: anyErrorId
                     }]
                 });
@@ -144,7 +144,7 @@ describe('API Versioning', function () {
                 })
                 .matchBodySnapshot({
                     errors: [{
-                        context: stringMatching(/Provided client version v3.5 is outdated and is behind current Ghost version v\d+\.\d+/),
+                        context: stringMatching(/Provided client accept-version v3.5 is behind current Ghost version v\d+\.\d+/),
                         id: anyErrorId
                     }]
                 });
@@ -179,7 +179,7 @@ describe('API Versioning', function () {
                     'content-version': stringMatching(/v\d+\.\d+/)
                 })
                 .matchBodySnapshot({errors: [{
-                    context: stringMatching(/Provided client version v99\.0 is ahead of current Ghost instance version v\d+\.\d+/)
+                    context: stringMatching(/Provided client accept-version v99\.0 is ahead of current Ghost version v\d+\.\d+/)
                     // @NOTE: ID is missing because we use the old formatter here
                 }]});
         });
@@ -194,7 +194,7 @@ describe('API Versioning', function () {
                     'content-version': stringMatching(/v\d+\.\d+/)
                 })
                 .matchBodySnapshot({errors: [{
-                    context: stringMatching(/Provided client version v1\.0 is outdated and is behind current Ghost version v\d+\.\d+/)
+                    context: stringMatching(/Provided client accept-version v1\.0 is behind current Ghost version v\d+\.\d+/)
                     // @NOTE: ID is missing because we use the old formatter here
                 }]});
         });
