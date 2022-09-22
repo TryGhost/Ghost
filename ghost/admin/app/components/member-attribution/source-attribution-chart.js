@@ -43,7 +43,7 @@ export default class SourceAttributionChart extends Component {
             return {
                 labels: sortedByFree.slice(0, 5).map(source => source.source),
                 datasets: [{
-                    label: 'Free Signups',
+                    label: 'Signups',
                     data: sortedByFree.slice(0, 5).map(source => source.signups),
                     backgroundColor: CHART_COLORS.slice(0, 5),
                     borderWidth: 2,
