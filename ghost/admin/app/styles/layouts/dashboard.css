@@ -618,6 +618,20 @@ Dashboard Metric */
     font-size: 2rem;
 }
 
+.gh-dashboard-metric.is-embedded {
+    background: radial-gradient(#fff,hsla(0,0%,100%,.5686274509803921));
+    z-index: 1;
+    margin-top: 4px;
+    align-self: flex-start;
+    padding-right: 24px;
+    padding-bottom: 16px;
+    opacity: 1;
+}
+
+.gh-dashboard-hero.source-attribution:not(.is-solo) {
+    margin-top: -64px;
+}
+
 .gh-dashboard-metric-minivalue {
     font-size: 1.5rem;
     letter-spacing: 0;
@@ -986,6 +1000,77 @@ Dashboard Zero */
     filter: brightness(0.8);
 }
 
+/* ---------------------------------
+Dashboard Attribution */
+
+.gh-dashboard-list-item-source {
+    padding-left: 20px;
+    position: relative;
+}
+
+.gh-dashboard-list-item-source::after {
+    content: "";
+    width: 9px;
+    height: 9px;
+    border-radius: 8px;
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    background: #E6E9EB;
+}
+
+.gh-dashboard-list-item:first-child .gh-dashboard-list-item-source::after {
+    background: #8e42ff;
+}
+
+.gh-dashboard-list-item:nth-child(2) .gh-dashboard-list-item-source::after {
+    background: #BB4AE5;
+}
+
+.gh-dashboard-list-item:nth-child(3) .gh-dashboard-list-item-source::after {
+    background: #DD97C9;
+}
+
+.gh-dashboard-list-item:nth-child(4) .gh-dashboard-list-item-source::after {
+    background: #E19A98;
+}
+
+.gh-dashboard-list-item:nth-child(5) .gh-dashboard-list-item-source::after {
+    background: #F5C9C2;
+}
+
+.gh-dashboard-attribution-list .gh-dashboard-list-body{
+    position: relative;
+}
+
+.gh-dashboard-attribution-list-scrollable {
+    overflow-y: auto;
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
+.gh-dashboard-attribution-list .gh-dashboard-list-body:after {
+    content: " ";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 24px;
+    bottom: 0;
+    background: linear-gradient(180deg,#ffffff00,hsl(0deg 0% 100%) 100%);
+    z-index: 1;
+}
+
+.gh-dashboard-attribution-list .gh-dashboard-list-body:before {
+    content: " ";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 24px;
+    top: 0;
+    background: linear-gradient(0deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);
+    z-index: 1;
+}
 
 /* ---------------------------------
 Dashboard Engagement */

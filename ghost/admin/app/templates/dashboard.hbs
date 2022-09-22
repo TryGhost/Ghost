@@ -17,9 +17,21 @@
                     {{/if}}
 
                     <div class="gh-dashboard-group {{if this.isTotalMembersZero 'is-zero'}}">
-                        <Dashboard::Charts::Anchor />
                         {{#if (feature 'sourceAttribution')}}
-                            <Dashboard::Charts::Attribution />
+                            <Dashboard::Charts::Anchors />
+                        {{else}}
+                            <Dashboard::Charts::Anchor />
+                        {{/if}}
+                        {{#if this.hasPaidTiers}}
+                            {{#if (feature 'sourceAttribution')}}
+                                <section class="gh-dashboard-section">
+                                    <article class="gh-dashboard-box" style="display:flex; flex:1;flex-direction:row;">
+                                        <Dashboard::Charts::PaidBreakdown />
+                                        <Dashboard::Charts::PaidMix />
+                                    </article>
+                                </section>
+                                <Dashboard::Charts::Attribution />
+                            {{/if}}
                         {{/if}}
                         {{#if this.areNewslettersEnabled}}
                             <Dashboard::Charts::Engagement />

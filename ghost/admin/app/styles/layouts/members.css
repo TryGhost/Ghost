@@ -747,6 +747,45 @@ label[for="member-description"] + p {
     stroke: var(--midgrey);
 }
 
+.gh-member-details-attribution {
+    display: grid;
+    grid-template-columns: 1fr;
+    padding: 0 0 3.2rem 0;
+}
+
+.gh-member-details-attribution svg {
+    width: 1.6rem;
+    height: 1.6rem;
+    margin-right: .8rem;
+    flex-shrink: 0;
+}
+
+.gh-member-details-attribution p {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.gh-member-details-attribution p a {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    font-weight: 600;
+    color: var(--darkgrey);
+}
+
+.gh-member-details-attribution svg path, .gh-member-details-attribution svg circle {
+    stroke: var(--midgrey);
+    fill: none;
+}
+
+.gh-member-details-attribution .gh-main-section-header {
+    margin-bottom: 1.6rem;
+    border-bottom: 1px solid var(--whitegrey);
+    grid-column: 1 !important;
+}
+
 .gh-member-details-stats-container {
     display: flex;
     flex-direction: column;
@@ -2321,6 +2360,22 @@ p.gh-members-import-errordetail:first-of-type {
     left: auto;
 }
 
+.gh-cp-membertier-details {
+    margin-top: 1px;
+    color: var(--middarkgrey);
+    font-weight: 500;
+}
+
+.gh-cp-membertier-details svg {
+    width: 10px;
+    margin-left: 4px;
+}
+
+.gh-cp-membertier-details svg path {
+    stroke-width: 3px;
+    stroke: var(--middarkgrey);
+}
+
 .gh-membertier-subscription .action-menu .gh-btn-subscription-action:not(:hover) {
     border: 1px solid var(--whitegrey);
     background: var(--main-bg-color) !important;
@@ -2412,7 +2467,8 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .gh-cp-membertier-attribution .gh-tier-card-header {
-    padding-bottom: 16px;
+    display: flex;
+    align-items: flex-start;
 }
 
 .gh-cp-membertier-attribution .tier-actions-menu {
@@ -2422,7 +2478,7 @@ p.gh-members-import-errordetail:first-of-type {
 .gh-cp-membertier-attribution .gh-tier-card-price {
     border: none !important;
     background: #f5f6f6;
-    padding: 10px !important;
+    padding: 20px 10px !important;
     border-radius: 6px;
 }
 
@@ -2459,6 +2515,7 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .gh-cp-membertier-attribution .gh-membertier-advanced {
+    margin-top: 16px;
     padding-top: 16px;
     border-top:1px solid #ECEEF0;
 }
@@ -2476,6 +2533,10 @@ p.gh-members-import-errordetail:first-of-type {
     margin: 0;
 }
 
+.gh-cp-membertier-attribution .gh-membertier-detail {
+    margin-bottom: 1.6rem;
+}
+
 .gh-cp-membertier-attribution .gh-membertier-details span, .gh-cp-membertier-attribution .gh-membertier-details a {
     font-size: 1.4rem;
     font-weight: 600;
@@ -2484,4 +2545,9 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-cp-membertier-attribution .gh-cp-membertier-renewal {
     color: #7c8b9a;
+}
+
+.gh-cp-membertier-attribution .gh-membertier-detail-timestamp {
+    font-size: 1.2rem;
+    color: var(--midgrey);
 }
