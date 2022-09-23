@@ -1,7 +1,7 @@
 <section class="gh-dashboard-section gh-dashboard-anchor" {{did-insert this.loadCharts}}>
     <article class="gh-dashboard-box">
         {{#if this.hasPaidTiers}}
-            <div class="gh-dashboard-select-title">
+            <div class="gh-dashboard-select-title gh-dashboard-select-title-attribution">
                 <PowerSelect
                     @selected={{this.selectedDisplayOption}}
                     @options={{this.displayOptions}}
