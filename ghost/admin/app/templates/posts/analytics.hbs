@@ -92,7 +92,7 @@
                     <div class="gh-links-list">
                         {{#each this.links as |link|}}
                             <div class="gh-links-list-item">
-                                <a href="{{link.link.to}}">{{link.link.title}}</a>
+                                <a href="{{link.link.to}}" target="_blank" rel="noopener noreferrer">{{link.link.title}}</a>
                                 <p class="gh-links-list-clicks">{{link.count.clicks}}</p>
                             </div>
                         {{/each}}
