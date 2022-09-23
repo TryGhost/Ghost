@@ -123,8 +123,7 @@ export default class PostsRoute extends AuthenticatedRoute {
 
     buildRouteInfoMetadata() {
         return {
-            titleToken: 'Posts',
-            mainClasses: this.feature.get('memberAttribution') ? ['gh-main-fullwidth'] : null
+            titleToken: 'Posts'
         };
     }
 
