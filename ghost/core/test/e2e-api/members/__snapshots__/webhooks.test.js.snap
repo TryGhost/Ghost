@@ -6,6 +6,9 @@ Object {
     Object {
       "attribution": Object {
         "id": "1",
+        "referrer_medium": null,
+        "referrer_source": null,
+        "referrer_url": null,
         "title": "Joe Bloggs",
         "type": "author",
         "url": "http://127.0.0.1:2369/author/joe-bloggs/",
@@ -39,7 +42,7 @@ exports[`Members API Member attribution Creates a SubscriptionCreatedEvent with 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2795",
+  "content-length": "2927",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -53,6 +56,9 @@ Object {
     Object {
       "attribution": Object {
         "id": null,
+        "referrer_medium": null,
+        "referrer_source": null,
+        "referrer_url": null,
         "title": "/removed-blog-post/",
         "type": "url",
         "url": "http://127.0.0.1:2369/removed-blog-post/",
@@ -86,7 +92,7 @@ exports[`Members API Member attribution Creates a SubscriptionCreatedEvent with 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2809",
+  "content-length": "2941",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -142,6 +148,9 @@ Object {
     Object {
       "attribution": Object {
         "id": "618ba1ffbe2896088840a6e9",
+        "referrer_medium": null,
+        "referrer_source": null,
+        "referrer_url": null,
         "title": "This is a static page",
         "type": "page",
         "url": "http://127.0.0.1:2369/static-page-test/",
@@ -175,7 +184,7 @@ exports[`Members API Member attribution Creates a SubscriptionCreatedEvent with 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2857",
+  "content-length": "2989",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -189,6 +198,9 @@ Object {
     Object {
       "attribution": Object {
         "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": null,
+        "referrer_source": null,
+        "referrer_url": null,
         "title": "HTML Ipsum",
         "type": "post",
         "url": "http://127.0.0.1:2369/html-ipsum/",
@@ -222,7 +234,7 @@ exports[`Members API Member attribution Creates a SubscriptionCreatedEvent with 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2823",
+  "content-length": "2955",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -236,6 +248,9 @@ Object {
     Object {
       "attribution": Object {
         "id": "618ba1febe2896088840a6db",
+        "referrer_medium": null,
+        "referrer_source": null,
+        "referrer_url": null,
         "title": "kitchen sink",
         "type": "tag",
         "url": "http://127.0.0.1:2369/tag/kitchen-sink/",
@@ -269,7 +284,7 @@ exports[`Members API Member attribution Creates a SubscriptionCreatedEvent with 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2837",
+  "content-length": "2969",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -283,6 +298,9 @@ Object {
     Object {
       "attribution": Object {
         "id": null,
+        "referrer_medium": null,
+        "referrer_source": null,
+        "referrer_url": null,
         "title": "homepage",
         "type": "url",
         "url": "http://127.0.0.1:2369/",
@@ -316,7 +334,7 @@ exports[`Members API Member attribution Creates a SubscriptionCreatedEvent with 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2751",
+  "content-length": "2883",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -421,7 +439,7 @@ exports[`Members API Member attribution Returns subscription created attribution
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "14106",
+  "content-length": "14502",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
