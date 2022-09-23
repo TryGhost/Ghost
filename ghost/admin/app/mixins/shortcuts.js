@@ -3,7 +3,7 @@ import Mixin from '@ember/object/mixin';
 import {run} from '@ember/runloop';
 import {typeOf} from '@ember/utils';
 
-import shortcutsCache from '../utils/shortcuts';
+import * as shortcutsCache from '../utils/shortcuts';
 
 // Configure KeyMaster to respond to all shortcuts,
 // even inside of
