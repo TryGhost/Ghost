@@ -775,6 +775,10 @@ label[for="member-description"] + p {
     color: var(--darkgrey);
 }
 
+.gh-member-details-attribution p a::first-letter {
+    text-transform: capitalize;
+}
+
 .gh-member-details-attribution svg path, .gh-member-details-attribution svg circle {
     stroke: var(--midgrey);
     fill: none;
@@ -2540,7 +2544,7 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-cp-membertier-attribution .gh-membertier-details span, .gh-cp-membertier-attribution .gh-membertier-details a {
     font-size: 1.4rem;
-    font-weight: 600;
+    font-weight: 500;
     color: #15171A;
 }
 
@@ -2551,4 +2555,8 @@ p.gh-members-import-errordetail:first-of-type {
 .gh-cp-membertier-attribution .gh-membertier-detail-timestamp {
     font-size: 1.2rem;
     color: var(--midgrey);
+}
+
+.gh-cp-membertier-attribution .gh-membertier-cancelreason {
+    font-weight: 500;
 }
