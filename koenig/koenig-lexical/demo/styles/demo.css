@@ -22,3 +22,32 @@ body,
     margin: 0;
     overflow-x: hidden;
 }
+
+.koenig-lexical.top {
+    display: flex;
+}
+
+.w-tc-editor textarea {
+    overflow: auto;
+}
+
+@media (prefers-color-scheme: light) {
+    .w-tc-editor {
+        --color-fg-default: #c9d1d9;
+        --color-canvas-subtle: #161b22;
+        --color-prettylights-syntax-comment: #8b949e;
+        --color-prettylights-syntax-entity-tag: #7ee787;
+        --color-prettylights-syntax-entity: #d2a8ff;
+        --color-prettylights-syntax-sublimelinter-gutter-mark: #606a76;
+        --color-prettylights-syntax-constant: #79c0ff;
+        --color-prettylights-syntax-string: #a5d6ff;
+        --color-prettylights-syntax-keyword: #ff7b72;
+        --color-prettylights-syntax-markup-bold: #c9d1d9;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    .w-tc-editor {
+        --color-prettylights-syntax-sublimelinter-gutter-mark: #606a76;
+    }
+}
