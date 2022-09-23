@@ -7717,14 +7717,6 @@ chalk@^2.0.0, chalk@^2.0.1, chalk@^2.1.0, chalk@^2.3.0, chalk@^2.4.1, chalk@^2.4
     escape-string-regexp "^1.0.5"
     supports-color "^5.3.0"
 
-chalk@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/chalk/-/chalk-3.0.0.tgz#3f73c2bf526591f574cc492c51e2456349f844e4"
-  integrity sha512-4D3B6Wf41KOYRFdszmDqMCGq5VV/uMAB273JILmO+3jAlh8X4qDtdtgCR3fxtbLEMzSx22QdhnDcJvu2u1fVwg==
-  dependencies:
-    ansi-styles "^4.1.0"
-    supports-color "^7.1.0"
-
 character-entities-html4@^1.0.0:
   version "1.1.4"
   resolved "https://registry.yarnpkg.com/character-entities-html4/-/character-entities-html4-1.1.4.tgz#0e64b0a3753ddbf1fdc044c5fd01d0199a02e125"
@@ -13224,15 +13216,6 @@ grunt-legacy-util@~2.0.1:
     lodash "~4.17.21"
     underscore.string "~3.3.5"
     which "~2.0.2"
-
-grunt-shell@4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/grunt-shell/-/grunt-shell-4.0.0.tgz#9b04a18a59c3113f24391a3fb5625320538cbd1c"
-  integrity sha512-dHFy8VZDfWGYLTeNvIHze4PKXGvIlDWuN0UE7hUZstTQeiEyv1VmW1MaDYQ3X5tE3bCi3bEia1gGKH8z/f1czQ==
-  dependencies:
-    chalk "^3.0.0"
-    npm-run-path "^2.0.0"
-    strip-ansi "^6.0.1"
 
 grunt@1.5.3:
   version "1.5.3"

@@ -1,30 +1,6 @@
-const config = require('./core/shared/config');
-
 module.exports = function (grunt) {
     // --- Configuration
     grunt.initConfig({
-        shell: {
-            ember: {
-                command: function (mode) {
-                    const liveReloadBaseUrl = config.getSubdir() || '/ghost/';
-
-                    switch (mode) {
-                    case 'watch':
-                        return `yarn start --live-reload-base-url=${liveReloadBaseUrl} --live-reload-port=4201`;
-                    }
-                },
-                options: {
-                    execOptions: {
-                        cwd: '../admin'
-                    }
-                }
-            },
-
-            options: {
-                preferLocal: true
-            }
-        },
-
         // grunt-contrib-symlink
         // Create symlink for git hooks
         symlink: {
@@ -44,5 +20,4 @@ module.exports = function (grunt) {
 
     // Load all grunt tasks
     grunt.loadNpmTasks('grunt-contrib-symlink');
-    grunt.loadNpmTasks('grunt-shell');
 };
