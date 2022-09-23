@@ -15,7 +15,7 @@ const {textColorForBackgroundColor, darkenToContrastThreshold} = require('@trygh
 const logging = require('@tryghost/logging');
 const urlService = require('../../services/url');
 const linkReplacer = require('@tryghost/link-replacer');
-const linkTracking = require('../link-click-tracking');
+const linkTracking = require('../link-tracking');
 const memberAttribution = require('../member-attribution');
 
 const ALLOWED_REPLACEMENTS = ['first_name', 'uuid'];

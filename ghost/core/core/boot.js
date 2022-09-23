@@ -287,7 +287,7 @@ async function initServices({config}) {
     const staffService = require('./server/services/staff');
     const memberAttribution = require('./server/services/member-attribution');
     const membersEvents = require('./server/services/members-events');
-    const linkTracking = require('./server/services/link-click-tracking');
+    const linkTracking = require('./server/services/link-tracking');
 
     const urlUtils = require('./shared/url-utils');
 
