@@ -13,6 +13,7 @@ export default class AnalyticsController extends Controller {
     @service ghostPaths;
     @service settings;
     @service membersUtils;
+    @service utils;
 
     @tracked sources = null;
     @tracked links = null;
@@ -32,20 +33,6 @@ export default class AnalyticsController extends Controller {
             return this._fetchReferrersStats.last;
         }
         return this._fetchReferrersStats.perform();
-    }
-
-    cleanURL(url, display = false) {
-        // Remove our own querystring parameters and protocol
-        const removeParams = ['rel', 'attribution_id', 'attribution_type'];
-        const urlObj = new URL(url);
-        for (const param of removeParams) {
-            urlObj.searchParams.delete(param);
-        }
-        if (!display) {
-            return urlObj.toString();
-        }
-        // Return URL without protocol
-        return urlObj.host + (urlObj.pathname === '/' ? '' : urlObj.pathname) + (urlObj.search ? '?' + urlObj.search : '');
     }
 
     async fetchLinks() {
@@ -78,8 +65,8 @@ export default class AnalyticsController extends Controller {
                 ...link,
                 link: {
                     ...link.link,
-                    to: this.cleanURL(link.link.to, false),
-                    title: this.cleanURL(link.link.to, true)
+                    to: this.utils.cleanTrackedUrl(link.link.to, false),
+                    title: this.utils.cleanTrackedUrl(link.link.to, true)
                 }
             };
         });
