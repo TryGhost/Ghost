@@ -1,6 +1,6 @@
 import Service from '@ember/service';
 import hbs from 'htmlbars-inline-precompile';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import sinon from 'sinon';
 import {blur, click, fillIn, find, render} from '@ember/test-helpers';
 import {datepickerSelect} from 'ember-power-datepicker/test-support';

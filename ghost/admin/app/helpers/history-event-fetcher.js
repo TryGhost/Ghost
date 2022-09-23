@@ -1,4 +1,4 @@
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {Resource} from 'ember-could-get-used-to-this';
 import {TrackedArray} from 'tracked-built-ins';
 import {action} from '@ember/object';

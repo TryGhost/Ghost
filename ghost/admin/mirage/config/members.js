@@ -1,5 +1,5 @@
 import faker from 'faker';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import nql from '@tryghost/nql';
 import {Response} from 'miragejs';
 import {extractFilterParam, paginateModelCollection} from '../utils';

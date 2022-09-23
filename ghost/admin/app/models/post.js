@@ -2,7 +2,7 @@ import Ember from 'ember';
 import Model, {attr, belongsTo, hasMany} from '@ember-data/model';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {BLANK_DOC as BLANK_MOBILEDOC} from 'koenig-editor/components/koenig-editor';
 import {compare, isBlank} from '@ember/utils';
 import {computed, observer} from '@ember/object';
@@ -260,7 +260,7 @@ export default Model.extend(Comparable, ValidationEngine, {
         if (!this.count || !this.count.clicks) {
             return 0;
         }
-        
+
         return Math.round(this.count.clicks / this.email.emailCount * 100);
     }),
 

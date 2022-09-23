@@ -4,7 +4,7 @@ import Application from '@ember/application';
 import Resolver from 'ember-resolver';
 import config from 'ghost-admin/config/environment';
 import loadInitializers from 'ember-load-initializers';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {registerWarnHandler} from '@ember/debug';
 
 moment.updateLocale('en', {

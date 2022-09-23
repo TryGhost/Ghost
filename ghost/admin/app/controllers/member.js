@@ -1,7 +1,7 @@
 import Controller, {inject as controller} from '@ember/controller';
 import EmberObject, {action, defineProperty} from '@ember/object';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';

@@ -1,5 +1,5 @@
 import faker from 'faker';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {Factory, trait} from 'miragejs';
 
 let randomDate = function randomDate(start = moment().subtract(30, 'days').toDate(), end = new Date()) {

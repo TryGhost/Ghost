@@ -1,7 +1,7 @@
 /* global Chart */
 
 import Component from '@glimmer/component';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {getSymbol} from 'ghost-admin/utils/currency';
 import {ghPriceAmount} from '../../../helpers/gh-price-amount';
 import {inject as service} from '@ember/service';
@@ -76,7 +76,7 @@ export default class PaidMrr extends Component {
         if (this.dashboardStats.mrrStats === null) {
             return '';
         }
-        
+
         const firstCurrency = this.dashboardStats.mrrStats[0] ? this.dashboardStats.mrrStats[0].currency : 'usd';
         return getSymbol(firstCurrency);
     }
@@ -111,7 +111,7 @@ export default class PaidMrr extends Component {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         const gradient = ctx.createLinearGradient(0, 0, 0, 120);
-        gradient.addColorStop(0, 'rgba(143, 66, 255, 0.15'); 
+        gradient.addColorStop(0, 'rgba(143, 66, 255, 0.15');
         gradient.addColorStop(1, 'rgba(143, 66, 255, 0.0');
 
         return {
@@ -178,7 +178,7 @@ export default class PaidMrr extends Component {
                     // only show tooltip when active
                     if (tooltip.opacity === 0) {
                         tooltipEl.style.opacity = 0;
-                        return; 
+                        return;
                     }
 
                     let offsetX = 0;
@@ -190,7 +190,7 @@ export default class PaidMrr extends Component {
                     tooltipEl.style.opacity = 1;
                     tooltipEl.style.position = 'absolute';
                     tooltipEl.style.left = tooltip.x - offsetX + 'px';
-                    tooltipEl.style.top = tooltip.y + 'px';    
+                    tooltipEl.style.top = tooltip.y + 'px';
                 },
                 callbacks: {
                     label: (tooltipItems, data) => {

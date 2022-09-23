@@ -1,5 +1,5 @@
 import Component from '@glimmer/component';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {action} from '@ember/object';
 import {isBlank} from '@ember/utils';
 import {tracked} from '@glimmer/tracking';

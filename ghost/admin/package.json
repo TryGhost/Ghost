@@ -81,7 +81,6 @@
     "ember-cli-htmlbars": "6.1.1",
     "ember-cli-inject-live-reload": "2.1.0",
     "ember-cli-mirage": "2.4.0",
-    "ember-cli-moment-shim": "3.8.0",
     "ember-cli-node-assets": "0.2.2",
     "ember-cli-postcss": "6.0.1",
     "ember-cli-shims": "1.2.0",
@@ -108,7 +107,6 @@
     "ember-modifier": "3.2.7",
     "ember-moment": "10.0.0",
     "ember-one-way-select": "4.0.1",
-    "ember-power-calendar-moment": "0.1.7",
     "ember-power-datepicker": "cibernox/ember-power-datepicker",
     "ember-power-select": "4.1.5",
     "ember-resolver": "8.0.3",
@@ -138,6 +136,7 @@
     "markdown-it-sub": "1.0.0",
     "markdown-it-sup": "1.0.0",
     "miragejs": "0.1.45",
+    "moment-timezone": "0.5.23",
     "normalize.css": "3.0.3",
     "papaparse": "5.3.2",
     "postcss-color-mod-function": "3.0.3",
@@ -160,12 +159,16 @@
   "ember-addon": {
     "paths": [
       "lib/asset-delivery",
-      "lib/koenig-editor"
+      "lib/koenig-editor",
+      "lib/ember-power-calendar-utils",
+      "lib/ember-power-calendar-moment"
     ]
   },
   "resolutions": {
     "ember-basic-dropdown": "4.0.5",
-    "ember-in-viewport": "4.0.2"
+    "ember-in-viewport": "4.0.2",
+    "moment": "2.24.0",
+    "moment-timezone": "0.5.23"
   },
   "ember": {
     "edition": "octane"

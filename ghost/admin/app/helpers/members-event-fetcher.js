@@ -1,4 +1,4 @@
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {Resource} from 'ember-could-get-used-to-this';
 import {TrackedArray} from 'tracked-built-ins';
 import {action} from '@ember/object';
@@ -17,7 +17,7 @@ export default class MembersEventsFetcher extends Resource {
     @tracked errorMessage = null;
     @tracked hasReachedEnd = false;
 
-    /** 
+    /**
      * Keep track whether we have multiple newsletters (required for parsing events)
     */
     @tracked hasMultipleNewsletters = null;

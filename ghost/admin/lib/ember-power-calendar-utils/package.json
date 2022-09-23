@@ -1,0 +1,14 @@
+{
+  "name": "ember-power-calendar-utils",
+  "version": "0.0.1",
+  "description": "Copy of ember-power-calendar-moment without the ember-cli-moment-shim dependency.",
+  "license": "MIT",
+  "private": true,
+  "keywords": [
+    "ember-addon"
+  ],
+  "dependencies": {
+    "ember-cli-babel": "7.26.11",
+    "moment-timezone": "0.5.23"
+  }
+}

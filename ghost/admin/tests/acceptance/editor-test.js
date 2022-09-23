@@ -1,5 +1,5 @@
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import sinon from 'sinon';
 import {Response} from 'miragejs';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';

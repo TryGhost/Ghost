@@ -1,5 +1,5 @@
 import Service, {inject as service} from '@ember/service';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 

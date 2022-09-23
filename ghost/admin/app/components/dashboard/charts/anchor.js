@@ -1,7 +1,7 @@
 /* global Chart */
 
 import Component from '@glimmer/component';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {action} from '@ember/object';
 import {getSymbol} from 'ghost-admin/utils/currency';
 import {inject as service} from '@ember/service';
@@ -82,7 +82,7 @@ export default class Anchor extends Component {
         }
     }
 
-    @action 
+    @action
     onDisplayChange(selected) {
         this.chartDisplay = selected.value;
     }
@@ -112,7 +112,7 @@ export default class Anchor extends Component {
     }
 
     get hasTrends() {
-        return this.dashboardStats.memberCounts !== null 
+        return this.dashboardStats.memberCounts !== null
             && this.dashboardStats.memberCountsTrend !== null;
     }
 
@@ -181,16 +181,16 @@ export default class Anchor extends Component {
         const canvasLine = document.createElement('canvas');
         const ctxLine = canvasLine.getContext('2d');
         const gradientLine = ctxLine.createLinearGradient(0, 0, 1000, 0);
-        gradientLine.addColorStop(0, 'rgba(250, 45, 142, 1');   
+        gradientLine.addColorStop(0, 'rgba(250, 45, 142, 1');
         gradientLine.addColorStop(1, 'rgba(143, 66, 255, 1');
-  
+
         // gradient for fill
         const canvasFill = document.createElement('canvas');
         const ctxFill = canvasFill.getContext('2d');
         const gradientFill = ctxFill.createLinearGradient(0, 0, 1000, 0);
-        gradientFill.addColorStop(0, 'rgba(250, 45, 142, 0.2');   
+        gradientFill.addColorStop(0, 'rgba(250, 45, 142, 0.2');
         gradientFill.addColorStop(1, 'rgba(143, 66, 255, 0.1');
-        
+
         return {
             labels: labels,
             datasets: [{
@@ -217,7 +217,7 @@ export default class Anchor extends Component {
         if (this.dashboardStats.mrrStats === null) {
             return '';
         }
-        
+
         const firstCurrency = this.dashboardStats.mrrStats[0] ? this.dashboardStats.mrrStats[0].currency : 'usd';
         return getSymbol(firstCurrency);
     }
@@ -263,7 +263,7 @@ export default class Anchor extends Component {
                     // only show tooltip when active
                     if (tooltip.opacity === 0) {
                         tooltipEl.style.opacity = 0;
-                        return; 
+                        return;
                     }
 
                     // update tooltip styles

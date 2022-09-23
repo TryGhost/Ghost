@@ -4,7 +4,7 @@ import BulkRemoveMembersLabelModal from '../components/members/modals/bulk-remov
 import BulkUnsubscribeMembersModal from '../components/members/modals/bulk-unsubscribe';
 import Controller from '@ember/controller';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {A} from '@ember/array';
 import {action} from '@ember/object';
 import {capitalize} from '@ember/string';

@@ -1,5 +1,5 @@
 import Service, {inject as service} from '@ember/service';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {action} from '@ember/object';
 import {ghPluralize} from 'ghost-admin/helpers/gh-pluralize';
 import {task} from 'ember-concurrency';

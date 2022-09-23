@@ -1,4 +1,4 @@
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {action, get} from '@ember/object';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';

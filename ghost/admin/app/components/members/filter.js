@@ -1,5 +1,5 @@
 import Component from '@glimmer/component';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import nql from '@tryghost/nql-lang';
 import {TrackedArray} from 'tracked-built-ins';
 import {action} from '@ember/object';
@@ -196,7 +196,7 @@ export default class MembersFilter extends Component {
 
     /**
      * This method is not super clean as it uses did-update, but for now this is required to make URL changes work
-     * properly. 
+     * properly.
      * Problem: filter parameter is changed in the members controller by modifying the URL directly
      * -> the filters property is not updated in the members controller because the new parameter is not parsed again
      * -> we need to listen for changes in the property and parse it again
