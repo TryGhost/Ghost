@@ -6,6 +6,9 @@ Object {
     Object {
       "attribution": Object {
         "id": "618ba1ffbe2896088840a6e9",
+        "referrer_medium": null,
+        "referrer_source": null,
+        "referrer_url": null,
         "title": "This is a static page",
         "type": "page",
         "url": "http://127.0.0.1:2369/static-page-test/",
@@ -39,7 +42,7 @@ exports[`Members API - member attribution Can read member attributed to a page 2
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1955",
+  "content-length": "2021",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -53,6 +56,9 @@ Object {
     Object {
       "attribution": Object {
         "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": null,
+        "referrer_source": null,
+        "referrer_url": null,
         "title": "HTML Ipsum",
         "type": "post",
         "url": "http://127.0.0.1:2369/html-ipsum/",
@@ -86,7 +92,7 @@ exports[`Members API - member attribution Can read member attributed to a post 2
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1938",
+  "content-length": "2004",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -100,6 +106,9 @@ Object {
     Object {
       "attribution": Object {
         "id": "618ba1febe2896088840a6db",
+        "referrer_medium": null,
+        "referrer_source": null,
+        "referrer_url": null,
         "title": "kitchen sink",
         "type": "tag",
         "url": "http://127.0.0.1:2369/tag/kitchen-sink/",
@@ -133,7 +142,7 @@ exports[`Members API - member attribution Can read member attributed to a tag 2:
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1944",
+  "content-length": "2010",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -147,6 +156,9 @@ Object {
     Object {
       "attribution": Object {
         "id": "1",
+        "referrer_medium": null,
+        "referrer_source": null,
+        "referrer_url": null,
         "title": "Joe Bloggs",
         "type": "author",
         "url": "http://127.0.0.1:2369/author/joe-bloggs/",
@@ -180,7 +192,7 @@ exports[`Members API - member attribution Can read member attributed to an autho
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1926",
+  "content-length": "1992",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -194,6 +206,9 @@ Object {
     Object {
       "attribution": Object {
         "id": null,
+        "referrer_medium": null,
+        "referrer_source": null,
+        "referrer_url": null,
         "title": "/a-static-page/",
         "type": "url",
         "url": "http://127.0.0.1:2369/a-static-page/",
@@ -227,7 +242,7 @@ exports[`Members API - member attribution Can read member attributed to an url 2
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1922",
+  "content-length": "1988",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -266,7 +281,7 @@ exports[`Members API - member attribution Returns sign up attributions in activi
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "8874",
+  "content-length": "9204",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -612,6 +627,9 @@ Object {
     Object {
       "attribution": Object {
         "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
         "title": "HTML Ipsum",
         "type": "post",
         "url": "http://127.0.0.1:2369/html-ipsum/",
@@ -685,7 +703,7 @@ exports[`Members API Can add a subscription 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2283",
+  "content-length": "2375",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -699,6 +717,9 @@ Object {
     Object {
       "attribution": Object {
         "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
         "title": "HTML Ipsum",
         "type": "post",
         "url": "http://127.0.0.1:2369/html-ipsum/",
@@ -772,7 +793,7 @@ exports[`Members API Can add a subscription 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2283",
+  "content-length": "2375",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -2219,6 +2240,44 @@ Object {
 }
 `;
 
+exports[`Members API Can filter by signup attribution 2: [body] 1`] = `
+Object {
+  "members": Array [
+    Object {
+      "avatar_image": null,
+      "comped": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "member1@test.com",
+      "email_count": 0,
+      "email_open_rate": null,
+      "email_opened_count": 0,
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Any<Array>,
+      "last_seen_at": null,
+      "name": "Mr Egg",
+      "newsletters": Any<Array>,
+      "note": null,
+      "status": "free",
+      "subscribed": true,
+      "subscriptions": Any<Array>,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 15,
+      "next": null,
+      "page": 1,
+      "pages": 1,
+      "prev": null,
+      "total": 1,
+    },
+  },
+}
+`;
+
 exports[`Members API Can filter by signup attribution 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
@@ -2266,6 +2325,18 @@ Object {
       "total": 1,
     },
   },
+}
+`;
+
+exports[`Members API Can filter by signup attribution 3: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "1379",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Origin, Accept-Encoding",
+  "x-powered-by": "Express",
 }
 `;
 
@@ -3183,6 +3254,9 @@ Object {
     Object {
       "attribution": Object {
         "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
         "title": "HTML Ipsum",
         "type": "post",
         "url": "http://127.0.0.1:2369/html-ipsum/",
@@ -3216,7 +3290,7 @@ exports[`Members API Can read 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1427",
+  "content-length": "1519",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -3230,6 +3304,9 @@ Object {
     Object {
       "attribution": Object {
         "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
         "title": "HTML Ipsum",
         "type": "post",
         "url": "http://127.0.0.1:2369/html-ipsum/",
@@ -3264,7 +3341,7 @@ exports[`Members API Can read and include email_recipients 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1449",
+  "content-length": "1541",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -3278,6 +3355,9 @@ Object {
     Object {
       "attribution": Object {
         "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
         "title": "HTML Ipsum",
         "type": "post",
         "url": "http://127.0.0.1:2369/html-ipsum/",
@@ -3311,7 +3391,7 @@ exports[`Members API Can read and include tiers 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1427",
+  "content-length": "1519",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",

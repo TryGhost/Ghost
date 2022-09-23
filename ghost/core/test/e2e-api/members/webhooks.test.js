@@ -1836,7 +1836,10 @@ describe('Members API', function () {
                 id: null,
                 url: absoluteUrl,
                 type: 'url',
-                title: 'homepage'
+                title: 'homepage',
+                referrer_source: null,
+                referrer_medium: null,
+                referrer_url: null
             });
         });
 
@@ -1856,7 +1859,10 @@ describe('Members API', function () {
                 id: post.id,
                 url: absoluteUrl,
                 type: 'post',
-                title: post.get('title')
+                title: post.get('title'),
+                referrer_source: null,
+                referrer_medium: null,
+                referrer_url: null
             });
         });
 
@@ -1873,7 +1879,10 @@ describe('Members API', function () {
                 id: null,
                 url: absoluteUrl,
                 type: 'url',
-                title: '/removed-blog-post/'
+                title: '/removed-blog-post/',
+                referrer_source: null,
+                referrer_medium: null,
+                referrer_url: null
             });
         });
 
@@ -1893,7 +1902,10 @@ describe('Members API', function () {
                 id: post.id,
                 url: absoluteUrl,
                 type: 'page',
-                title: post.get('title')
+                title: post.get('title'),
+                referrer_source: null,
+                referrer_medium: null,
+                referrer_url: null
             });
         });
 
@@ -1913,7 +1925,10 @@ describe('Members API', function () {
                 id: tag.id,
                 url: absoluteUrl,
                 type: 'tag',
-                title: tag.get('name')
+                title: tag.get('name'),
+                referrer_source: null,
+                referrer_medium: null,
+                referrer_url: null
             });
         });
 
@@ -1933,7 +1948,10 @@ describe('Members API', function () {
                 id: author.id,
                 url: absoluteUrl,
                 type: 'author',
-                title: author.get('name')
+                title: author.get('name'),
+                referrer_source: null,
+                referrer_medium: null,
+                referrer_url: null
             });
         });
 
