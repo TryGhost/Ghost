@@ -3,23 +3,33 @@ const ObjectID = require('bson-objectid').default;
 
 module.exports = class LinkClickRepository {
     /** @type {Object} */
+    #MemberLinkClickEventModel;
+
+    /** @type {Object} */
     #MemberLinkClickEvent;
 
     /** @type {object} */
     #Member;
 
+    /** @type {object} */
+    #DomainEvents;
+
     /**
      * @param {object} deps
-     * @param {object} deps.MemberLinkClickEvent Bookshelf Model
+     * @param {object} deps.MemberLinkClickEventModel Bookshelf Model
      * @param {object} deps.Member Bookshelf Model
+     * @param {object} deps.MemberLinkClickEvent Event
+     * @param {object} deps.DomainEvents
      */
     constructor(deps) {
-        this.#MemberLinkClickEvent = deps.MemberLinkClickEvent;
+        this.#MemberLinkClickEventModel = deps.MemberLinkClickEventModel;
         this.#Member = deps.Member;
+        this.#MemberLinkClickEvent = deps.MemberLinkClickEvent;
+        this.#DomainEvents = deps.DomainEvents;
     }
 
     async getAll(options) {
-        const collection = await this.#MemberLinkClickEvent.findAll(options);
+        const collection = await this.#MemberLinkClickEventModel.findAll(options);
 
         const result = [];
 
@@ -45,12 +55,15 @@ module.exports = class LinkClickRepository {
             return;
         }
 
-        const model = await this.#MemberLinkClickEvent.add({
+        const model = await this.#MemberLinkClickEventModel.add({
             // Only store the parthname (no support for variable query strings)
             link_id: linkClick.link_id.toHexString(), 
             member_id: member.id
         }, {});
 
         linkClick.event_id = ObjectID.createFromHexString(model.id);
+
+        // Dispatch event
+        this.#DomainEvents.dispatch(this.#MemberLinkClickEvent.create({memberId: member.id, memberLastSeenAt: member.get('last_seen_at'), linkId: linkClick.link_id.toHexString()}, new Date()));
     }
 };
