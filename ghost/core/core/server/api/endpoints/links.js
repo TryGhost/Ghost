@@ -1,4 +1,4 @@
-const linkTrackingService = require('../../services/link-click-tracking');
+const linkTrackingService = require('../../services/link-tracking');
 
 module.exports = {
     docName: 'links',

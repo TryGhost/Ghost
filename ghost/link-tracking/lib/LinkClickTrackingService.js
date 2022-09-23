@@ -1,4 +1,3 @@
-const DomainEvents = require('@tryghost/domain-events');
 const {RedirectEvent} = require('@tryghost/link-redirects');
 const LinkClick = require('./LinkClick');
 const PostLink = require('./PostLink');
@@ -43,17 +42,21 @@ class LinkClickTrackingService {
     #linkRedirectService;
     /** @type IPostLinkRepository */
     #postLinkRepository;
+    /** @type DomainEvents */
+    #DomainEvents;
 
     /**
      * @param {object} deps
      * @param {ILinkClickRepository} deps.linkClickRepository
      * @param {ILinkRedirectService} deps.linkRedirectService
      * @param {IPostLinkRepository} deps.postLinkRepository
+     * @param {DomainEvents} deps.DomainEvents
      */
     constructor(deps) {
         this.#linkClickRepository = deps.linkClickRepository;
         this.#linkRedirectService = deps.linkRedirectService;
         this.#postLinkRepository = deps.postLinkRepository;
+        this.#DomainEvents = deps.DomainEvents;
     }
 
     async init() {
@@ -109,7 +112,7 @@ class LinkClickTrackingService {
     }
 
     subscribe() {
-        DomainEvents.subscribe(RedirectEvent, async (event) => {
+        this.#DomainEvents.subscribe(RedirectEvent, async (event) => {
             const uuid = event.data.url.searchParams.get('m');
             if (!uuid) {
                 return;
