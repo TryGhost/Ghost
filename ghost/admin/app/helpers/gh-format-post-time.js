@@ -1,5 +1,5 @@
 import Helper from '@ember/component/helper';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {assert} from '@ember/debug';
 import {inject as service} from '@ember/service';
 

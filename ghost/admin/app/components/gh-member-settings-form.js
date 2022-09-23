@@ -1,5 +1,5 @@
 import Component from '@glimmer/component';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {action} from '@ember/object';
 import {getNonDecimal, getSymbol} from 'ghost-admin/utils/currency';
 import {inject as service} from '@ember/service';

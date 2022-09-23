@@ -1,5 +1,5 @@
 import ModalComponent from 'ghost-admin/components/modal-base';
-import moment from 'moment';
+import moment from 'moment-timezone';
 // TODO: expose this via a helper
 import {IMAGE_EXTENSIONS} from 'ghost-admin/components/gh-image-uploader';
 import {action} from '@ember/object';
