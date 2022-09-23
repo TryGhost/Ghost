@@ -24,7 +24,7 @@ module.exports = class LinkRedirectRepository {
     async save(linkRedirect) {
         const model = await this.#LinkRedirect.add({
             // Only store the parthname (no support for variable query strings)
-            from: linkRedirect.from.pathname, 
+            from: this.stripSubdirectoryFromPath(linkRedirect.from.pathname),
             to: linkRedirect.to.href
         }, {});
 
@@ -61,14 +61,28 @@ module.exports = class LinkRedirectRepository {
      * @returns {Promise<InstanceType<LinkRedirect>|undefined>} linkRedirect 
      */
     async getByURL(url) {
-        // TODO: strip subdirectory from url.pathname
+        // Strip subdirectory from path
+        const from = this.stripSubdirectoryFromPath(url.pathname);
 
         const linkRedirect = await this.#LinkRedirect.findOne({
-            from: url.pathname
+            from
         }, {});
 
         if (linkRedirect) {
             return this.fromModel(linkRedirect);
         }
+    }
+
+    /**
+     * Convert root relative URLs to subdirectory relative URLs
+    */
+    stripSubdirectoryFromPath(path) {
+        // Bit weird, but only way to do it with the urlUtils atm
+
+        // First convert path to an absolute path
+        const absolute = this.#urlUtils.relativeToAbsolute(path);
+
+        // Then convert it to a relative path, but without subdirectory
+        return this.#urlUtils.absoluteToRelative(absolute, {withoutSubdirectory: true});
     }
 };
