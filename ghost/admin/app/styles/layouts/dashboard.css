@@ -361,6 +361,10 @@ Dashboard Layout */
     z-index: 1;
 }
 
+.gh-dashboard-select-title-attribution {
+    z-index: 2;
+}
+
 .gh-dashboard-select-title .ember-power-select-selected-item {
     font-size: 1.5rem;
     letter-spacing: 0;
@@ -628,13 +632,21 @@ Dashboard Metric */
 }
 
 .gh-dashboard-metric.is-embedded {
-    background: radial-gradient(#fff,hsla(0,0%,100%,.5686274509803921));
+    background: #fff;
     z-index: 1;
     margin-top: 4px;
     align-self: flex-start;
-    padding-right: 24px;
-    padding-bottom: 16px;
+    padding: 8px 8px 8px 0;
     opacity: 1;
+    border-radius: 3px;
+}
+
+.gh-dashboard-metric.is-embedded h5 {
+    display: none;
+}
+
+.gh-dashboard-metric.is-embedded .gh-dashboard-metric-value {
+    font-size: 2.4rem;
 }
 
 .gh-dashboard-hero.source-attribution:not(.is-solo) {
