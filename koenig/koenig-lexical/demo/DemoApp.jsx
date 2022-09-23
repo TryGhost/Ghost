@@ -11,6 +11,16 @@ function DemoApp() {
         setSidebarState(!sidebarState);
     }
 
+    const SidebarContainer = () => {
+        if (sidebarState) {
+            return (
+                <div className="absolute bottom-0 right-0 flex h-full w-full max-w-md flex-col items-end gap-5">
+                    <SerializedStateTextarea toggle={sidebarState} />
+                </div>
+            );
+        }
+    };
+
     return (
         <div className="koenig-lexical top">
             <KoenigComposer>
@@ -21,10 +31,8 @@ function DemoApp() {
                         </KoenigEditor>
                     </div>
                 </div>
-                <div className="absolute bottom-0 right-0 flex h-full w-full max-w-md flex-col items-end gap-5">
-                    <SerializedStateTextarea toggle={sidebarState} />
-                    <FloatingButton onClick={openSidebar} />
-                </div>
+                <SidebarContainer />
+                <FloatingButton onClick={openSidebar} />
             </KoenigComposer>
         </div>
     );
