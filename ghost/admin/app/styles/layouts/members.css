@@ -2560,3 +2560,7 @@ p.gh-members-import-errordetail:first-of-type {
 .gh-cp-membertier-attribution .gh-membertier-cancelreason {
     font-weight: 500;
 }
+
+.gh-cp-membertier-attribution .gh-membertier-details a {
+    text-transform: capitalize;
+}
