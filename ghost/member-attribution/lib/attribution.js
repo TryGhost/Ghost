@@ -4,6 +4,9 @@
  * @prop {string|null} url (absolute URL)
  * @prop {'page'|'post'|'author'|'tag'|'url'} type
  * @prop {string|null} title
+ * @prop {string|null} referrerSource
+ * @prop {string|null} referrerMedium
+ * @prop {string|null} referrerUrl
  */
 
 class Attribution {
@@ -17,7 +20,7 @@ class Attribution {
      * @param {'page'|'post'|'author'|'tag'|'url'} [data.type]
      * @param {string|null} [data.refSource]
      * @param {string|null} [data.refMedium]
-     * @param {URL|null} [data.refUrl]
+     * @param {string|null} [data.refUrl]
      */
     constructor({
         id, url, type, refSource, refMedium, refUrl
@@ -50,7 +53,10 @@ class Attribution {
                 id: null,
                 type: 'url',
                 url: this.#urlTranslator.relativeToAbsolute(this.url),
-                title: this.#urlTranslator.getUrlTitle(this.url)
+                title: this.#urlTranslator.getUrlTitle(this.url),
+                referrerSource: this.refSource,
+                referrerMedium: this.refMedium,
+                referrerUrl: this.refUrl
             };
         }
 
@@ -60,7 +66,10 @@ class Attribution {
             id: model.id,
             type: this.type,
             url: updatedUrl,
-            title: model.get('title') ?? model.get('name') ?? this.#urlTranslator.getUrlTitle(this.url)
+            title: model.get('title') ?? model.get('name') ?? this.#urlTranslator.getUrlTitle(this.url),
+            referrerSource: this.refSource,
+            referrerMedium: this.refMedium,
+            referrerUrl: this.refUrl
         };
     }
 
