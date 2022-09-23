@@ -1,7 +1,7 @@
 /* global key */
+import * as shortcuts from '../utils/shortcuts';
 import Component from '@glimmer/component';
 import Ember from 'ember';
-import shortcuts from '../utils/shortcuts';
 import {A, isArray} from '@ember/array';
 import {action, get} from '@ember/object';
 import {
