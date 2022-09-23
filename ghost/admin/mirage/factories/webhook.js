@@ -1,4 +1,4 @@
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {AVAILABLE_EVENTS} from 'ghost-admin/helpers/event-name';
 import {Factory} from 'miragejs';
 

@@ -1,7 +1,7 @@
 import Service from '@ember/service';
 import classic from 'ember-classic-decorator';
 import config from 'ghost-admin/config/environment';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {run} from '@ember/runloop';
 
 const ONE_SECOND = 1000;

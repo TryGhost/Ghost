@@ -1,5 +1,5 @@
 import loginAsRole from '../../helpers/login-as-role';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {blur, click, fillIn, find, findAll} from '@ember/test-helpers';
 import {clickTrigger, selectChoose} from 'ember-power-select/test-support/helpers';
 import {disableMailgun, enableMailgun} from '../../helpers/mailgun';

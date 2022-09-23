@@ -1,6 +1,6 @@
 import Component from '@ember/component';
 import classic from 'ember-classic-decorator';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {action, computed} from '@ember/object';
 import {isBlank, isEmpty} from '@ember/utils';
 import {or, reads} from '@ember/object/computed';

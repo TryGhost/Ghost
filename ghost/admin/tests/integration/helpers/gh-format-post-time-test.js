@@ -1,5 +1,5 @@
 import hbs from 'htmlbars-inline-precompile';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import sinon from 'sinon';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';

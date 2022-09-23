@@ -1,4 +1,4 @@
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {helper} from '@ember/component/helper';
 
 export function mostRecentlyUpdated(objs) {
