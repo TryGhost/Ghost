@@ -262,7 +262,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 }
 
 .gh-posts-list-item p {
-    margin: 0 0 1px;
+    margin: 0 0 3px;
     font-size: 1.3rem;
     overflow-wrap: break-word;
     color: var(--middarkgrey);
