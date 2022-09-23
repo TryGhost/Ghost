@@ -29,11 +29,6 @@ const ObjectID = require('bson-objectid').default;
  */
 
 /**
- * @typedef {object} ILinkClickTrackingService
- * @prop {(link: ILinkRedirect, uuid: string) => Promise<URL>} addTrackingToRedirect
- */
-
-/**
  * @typedef {object} IPostLinkRepository
  * @prop {(postLink: PostLink) => Promise<void>} save
  * @prop {({filter: string}) => Promise<FullPostLink[]>} getAll
@@ -85,10 +80,10 @@ class LinkClickTrackingService {
      */
     async addRedirectToUrl(url, post) {
         // Generate a unique redirect slug
-        const slug = await this.#linkRedirectService.getSlug();
+        const slugUrl = await this.#linkRedirectService.getSlugUrl();
 
         // Add redirect for link click tracking
-        const redirect = await this.#linkRedirectService.addRedirect(url, slug);
+        const redirect = await this.#linkRedirectService.addRedirect(slugUrl, url);
 
         // Store a reference of the link against the post
         const postLink = new PostLink({
