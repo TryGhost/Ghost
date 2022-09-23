@@ -16,6 +16,9 @@ class LinkTrackingServiceWrapper {
 
         // Wire up all the dependencies
         const models = require('../../models');
+        const {MemberLinkClickEvent} = require('@tryghost/member-events');
+        const DomainEvents = require('@tryghost/domain-events');
+
         const {LinkTrackingService} = require('@tryghost/link-tracking');
 
         const postLinkRepository = new PostLinkRepository({
@@ -24,8 +27,10 @@ class LinkTrackingServiceWrapper {
         });
 
         const linkClickRepository = new LinkClickRepository({
-            MemberLinkClickEvent: models.MemberLinkClickEvent,
-            Member: models.Member
+            MemberLinkClickEventModel: models.MemberLinkClickEvent,
+            Member: models.Member,
+            MemberLinkClickEvent: MemberLinkClickEvent,
+            DomainEvents
         });
 
         // Expose the service
