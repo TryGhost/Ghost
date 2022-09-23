@@ -217,7 +217,7 @@
                                             <div class="gh-membertier-details">
                                                 <div class="gh-membertier-detail">
                                                     <h4>Subscription Source</h4>
-                                                    <p><span class="fw6">Twitter / Social</span></p>
+                                                    <p><span class="fw6">{{sub.attribution.referrerSource}} / {{sub.attribution.referrerMedium}}</span></p>
                                                 </div>
                                                 {{#if (and sub.attribution sub.attribution.url sub.attribution.title)}}
                                                 <div class="gh-membertier-detail">

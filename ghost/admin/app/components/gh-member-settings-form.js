@@ -73,6 +73,11 @@ export default class extends Component {
         }).map((sub) => {
             const data = {
                 ...sub,
+                attribution: {
+                    ...sub.attribution,
+                    referrerSource: sub.attribution?.referrer_source || 'Unknown',
+                    referrerMedium: sub.attribution?.referrer_medium || '-'
+                },
                 startDate: sub.start_date ? moment(sub.start_date).format('D MMM YYYY') : '-',
                 validUntil: sub.current_period_end ? moment(sub.current_period_end).format('D MMM YYYY') : '-',
                 cancellationReason: sub.cancellation_reason,
