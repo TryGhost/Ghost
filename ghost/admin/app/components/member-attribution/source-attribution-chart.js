@@ -40,7 +40,44 @@ export default class SourceAttributionChart extends Component {
                 }
             },
             tooltips: {
-                enabled: true
+                enabled: false,
+                intersect: false,
+                mode: 'single',
+                custom: function (tooltip) {
+                    // get tooltip element
+                    const tooltipEl = document.getElementById('gh-dashboard-attribution-tooltip');
+
+                    // only show tooltip when active
+                    if (tooltip.opacity === 0) {
+                        tooltipEl.style.opacity = 0;
+                        return;
+                    }
+
+                    let offsetX = 10;
+                    let offsetY = 15;
+
+                    // update tooltip styles
+                    tooltipEl.style.opacity = 1;
+                    tooltipEl.style.position = 'absolute';
+                    tooltipEl.style.left = tooltip.x + offsetX + 'px';
+                    tooltipEl.style.top = tooltip.y + offsetY + 'px';
+                },
+                callbacks: {
+                    label: (tooltipItems, data) => {
+                        const tooltipTextEl = document.querySelector('#gh-dashboard-attribution-tooltip .gh-dashboard-tooltip-value');
+                        // const label = data.datasets[tooltipItems.datasetIndex].label || '';
+                        const label = data.labels[tooltipItems.index] || '';
+                        var value = data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index] || 0;
+                        if (value < 0) {
+                            value = -value;
+                        }
+
+                        tooltipTextEl.innerHTML = `<span class="indicator solid" style="background-color: ${data.datasets[tooltipItems.datasetIndex].backgroundColor[tooltipItems.index]}"></span><span class="value">${value}</span><span class="metric">${label}</span>`;
+                    },
+                    title: () => {
+                        return null;
+                    }
+                }
             },
             aspectRatio: 1
         };
