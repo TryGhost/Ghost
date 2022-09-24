@@ -4,6 +4,7 @@ import Component from '@glimmer/component';
 import moment from 'moment-timezone';
 import {action} from '@ember/object';
 import {getSymbol} from 'ghost-admin/utils/currency';
+import {ghPriceAmount} from '../../../helpers/gh-price-amount';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
@@ -53,7 +54,7 @@ Chart.controllers.hoverLine = Chart.controllers.line.extend({
 export default class Anchor extends Component {
     @service dashboardStats;
     @service feature;
-    @tracked chartDisplay = 'total';
+    @tracked chartDisplay = 'mrr';
     @tracked resizing = false;
     @tracked resizeTimer = null;
 
@@ -90,12 +91,40 @@ export default class Anchor extends Component {
         this.chartDisplay = selected.value;
     }
 
+    get chartMetric() {
+        if (this.chartDisplay === 'mrr') {
+            return {
+                total: this.currentMRRFormatted,
+                trend: this.mrrTrend
+            };
+        }
+        return {};
+    }
+
     get selectedDisplayOption() {
         return this.displayOptions.find(d => d.value === this.chartDisplay) ?? this.displayOptions[0];
     }
 
     get loading() {
-        return this.dashboardStats.memberCountStats === null || this.resizing;
+        return this.dashboardStats.memberCountStats === null || this.dashboardStats.mrrStats === null || this.resizing;
+    }
+
+    get currentMRR() {
+        return this.dashboardStats.currentMRR ?? 0;
+    }
+
+    get currentMRRFormatted() {
+        // fake empty data
+        if (this.isTotalMembersZero) {
+            return '$123';
+        }
+
+        if (this.dashboardStats.mrrStats === null) {
+            return '-';
+        }
+
+        const valueText = ghPriceAmount(this.currentMRR, {cents: false});
+        return `${this.mrrCurrencySymbol}${valueText}`;
     }
 
     get totalMembers() {
@@ -120,15 +149,31 @@ export default class Anchor extends Component {
     }
 
     get totalMembersTrend() {
-        return this.calculatePercentage(this.dashboardStats.memberCountsTrend.total, this.dashboardStats.memberCounts.total);
+        if (this.dashboardStats.memberCountsTrend) {
+            return this.calculatePercentage(this.dashboardStats.memberCountsTrend.total, this.dashboardStats.memberCounts.total);
+        }
+        return 0;
     }
 
     get paidMembersTrend() {
-        return this.calculatePercentage(this.dashboardStats.memberCountsTrend.paid, this.dashboardStats.memberCounts.paid);
+        if (this.dashboardStats.memberCountsTrend) {
+            return this.calculatePercentage(this.dashboardStats.memberCountsTrend.paid, this.dashboardStats.memberCounts.paid);
+        }
+        return 0;
     }
 
     get freeMembersTrend() {
-        return this.calculatePercentage(this.dashboardStats.memberCountsTrend.free, this.dashboardStats.memberCounts.free);
+        if (this.dashboardStats.memberCountsTrend) {
+            return this.calculatePercentage(this.dashboardStats.memberCountsTrend.free, this.dashboardStats.memberCounts.free);
+        }
+        return 0;
+    }
+
+    get mrrTrend() {
+        if (this.dashboardStats.currentMRRTrend) {
+            return this.calculatePercentage(this.dashboardStats.currentMRRTrend, this.dashboardStats.currentMRR);
+        }
+        return 0;
     }
 
     get hasPaidTiers() {
@@ -169,6 +214,10 @@ export default class Anchor extends Component {
             stats = this.dashboardStats.filledMemberCountStats;
             labels = stats.map(stat => stat.date);
             data = stats.map(stat => stat.free);
+        } else if (this.chartDisplay === 'mrr') {
+            stats = this.dashboardStats.filledMrrStats;
+            labels = stats.map(stat => stat.date);
+            data = stats.map(stat => stat.mrr);
         } else {
             // total
             stats = this.dashboardStats.filledMemberCountStats;
@@ -229,6 +278,7 @@ export default class Anchor extends Component {
     }
 
     get chartOptions() {
+        const that = this;
         let activeDays = this.dashboardStats.chartDays;
         let barColor = this.feature.nightShift ? 'rgba(200, 204, 217, 0.25)' : 'rgba(200, 204, 217, 0.65)';
 
@@ -286,12 +336,22 @@ export default class Anchor extends Component {
                 },
                 callbacks: {
                     label: (tooltipItems, data) => {
-                        const value = data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-                        document.querySelector('#gh-dashboard-anchor-tooltip .gh-dashboard-tooltip-value .value').innerHTML = value;
+                        if (this.chartDisplay === 'mrr') {
+                            const value = `${that.mrrCurrencySymbol}${ghPriceAmount(data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index], {cents: false})}`;
+                            document.querySelector('#gh-dashboard-anchor-tooltip .gh-dashboard-tooltip-value .value').innerHTML = value;
+                        } else {
+                            const value = data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                            document.querySelector('#gh-dashboard-anchor-tooltip .gh-dashboard-tooltip-value .value').innerHTML = value;
+                        }
                     },
                     title: (tooltipItems) => {
-                        const value = moment(tooltipItems[0].xLabel).format(DATE_FORMAT);
-                        document.querySelector('#gh-dashboard-anchor-tooltip .gh-dashboard-tooltip-label').innerHTML = value;
+                        if (this.chartType === 'mrr') {
+                            const value = moment(tooltipItems[0].xLabel).format(DATE_FORMAT);
+                            document.querySelector('#gh-dashboard-anchor-tooltip .gh-dashboard-tooltip-label').innerHTML = value;
+                        } else {
+                            const value = moment(tooltipItems[0].xLabel).format(DATE_FORMAT);
+                            document.querySelector('#gh-dashboard-anchor-tooltip .gh-dashboard-tooltip-label').innerHTML = value;
+                        }
                     }
                 }
             },

@@ -17,12 +17,20 @@
                     {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
                 </PowerSelect>
             </div>
-            <Dashboard::Parts::Metric
-                @value={{format-number this.totalMembers}}
-                @trends={{this.hasTrends}}
-                @percentage={{this.totalMembersTrend}}
-                @large={{true}}
-                @embedded={{true}}/>
+            {{#if (eq this.chartDisplay "mrr")}}
+                <Dashboard::Parts::Metric
+                    @value="{{this.chartMetric.total}}"
+                    @trends={{this.hasTrends}}
+                    @percentage={{this.chartMetric.trend}}
+                    @large={{true}}
+                    @embedded={{true}}/>
+            {{else}}
+                <Dashboard::Parts::Metric
+                    @value=''
+                    @trends={{false}}
+                    @large={{true}}
+                    @embedded={{true}}/>
+            {{/if}}
         {{else}}
             <Dashboard::Parts::Metric
                 @label="Total members"
