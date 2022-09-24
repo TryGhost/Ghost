@@ -36,7 +36,10 @@
     "@ember/optional-features": "2.0.0",
     "@ember/render-modifiers": "2.0.4",
     "@ember/test-helpers": "2.8.1",
+    "@embroider/compat": "^1.8.3",
+    "@embroider/core": "^1.9.0",
     "@embroider/macros": "1.9.0",
+    "@embroider/webpack": "^1.9.0",
     "@glimmer/component": "1.1.2",
     "@html-next/vertical-collection": "3.0.0",
     "@joeattardi/emoji-button": "4.6.4",
@@ -166,6 +169,7 @@
   },
   "resolutions": {
     "ember-basic-dropdown": "6.0.1",
+    "ember-element-helper": "0.6.1",
     "ember-in-viewport": "4.0.2",
     "moment": "2.24.0",
     "moment-timezone": "0.5.23"

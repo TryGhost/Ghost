@@ -123,16 +123,16 @@ module.exports = function (defaults) {
         'ember-promise-modals': {
             excludeCSS: true
         },
-        outputPaths: {
-            app: {
-                js: 'assets/ghost.js',
-                css: {
-                    app: 'assets/ghost.css',
-                    // TODO: find a way to use the .min file with the lazyLoader
-                    'app-dark': 'assets/ghost-dark.css'
-                }
-            }
-        },
+        // outputPaths: {
+        //     app: {
+        //         js: 'assets/ghost.js',
+        //         css: {
+        //             app: 'assets/ghost.css',
+        //             // TODO: find a way to use the .min file with the lazyLoader
+        //             'app-dark': 'assets/ghost-dark.css'
+        //         }
+        //     }
+        // },
         fingerprint: {
             enabled: isProduction,
             extensions: ['js', 'css', 'png', 'jpg', 'jpeg', 'gif', 'map', 'svg', 'ttf', 'ico']
@@ -261,5 +261,22 @@ module.exports = function (defaults) {
         app.import('vendor/simplemde/debug/simplemde.js', {type: 'test'});
     }
 
-    return app.toTree();
+    const {Webpack} = require('@embroider/webpack');
+    return require('@embroider/compat').compatBuild(app, Webpack, {
+        packagerOptions: {
+            webpackConfig: {
+                resolve: {
+                    fallback: {
+                        fs: false,
+                        path: false
+                    }
+                },
+                plugins: [
+                    new webpack.ProvidePlugin({
+                        process: 'process/browser'
+                    })
+                ]
+            }
+        }
+    });
 };

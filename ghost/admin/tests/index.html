@@ -11,7 +11,7 @@
     {{content-for "test-head"}}
 
     <link rel="stylesheet" href="{{rootURL}}assets/vendor.css">
-    <link rel="stylesheet" href="{{rootURL}}assets/ghost.css">
+    <link rel="stylesheet" href="{{rootURL}}assets/ghost-admin.css">
     <link rel="stylesheet" href="{{rootURL}}assets/test-support.css">
 
     {{content-for "head-footer"}}
@@ -38,10 +38,10 @@
     {{content-for "body"}}
     {{content-for "test-body"}}
 
-    <script src="/testem.js" integrity=""></script>
+    <script src="{{rootURL}}testem.js" integrity=""></script>
     <script src="{{rootURL}}assets/vendor.js"></script>
     <script src="{{rootURL}}assets/test-support.js"></script>
-    <script src="{{rootURL}}assets/ghost.js"></script>
+    <script src="{{rootURL}}assets/ghost-admin.js"></script>
     <script src="{{rootURL}}assets/tests.js"></script>
 
     {{content-for "body-footer"}}

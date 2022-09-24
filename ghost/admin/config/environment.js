@@ -5,7 +5,7 @@ module.exports = function (environment) {
     let ENV = {
         modulePrefix: 'ghost-admin',
         environment,
-        rootURL: '',
+        rootURL: './',
         locationType: 'trailing-hash',
         EmberENV: {
             FEATURES: {
