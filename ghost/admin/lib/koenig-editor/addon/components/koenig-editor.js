@@ -24,7 +24,7 @@ import {TrackedObject} from 'tracked-built-ins';
 import {assign} from '@ember/polyfills';
 import {camelize, capitalize} from '@ember/string';
 import {canInsertCardsFromFiles, insertCardsFromFiles} from '../utils/insert-cards-from-files';
-import {captureMessage} from '@sentry/browser';
+import {captureMessage} from '@sentry/ember';
 import {createParserPlugins} from '@tryghost/kg-parser-plugins';
 import {getContentFromPasteEvent} from 'mobiledoc-kit/utils/parse-utils';
 import {getLinkMarkupFromRange} from '../utils/markup-utils';

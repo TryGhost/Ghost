@@ -1,4 +1,4 @@
-import * as Sentry from '@sentry/browser';
+import * as Sentry from '@sentry/ember';
 import Service, {inject as service} from '@ember/service';
 import {TrackedArray} from 'tracked-built-ins';
 import {dasherize} from '@ember/string';

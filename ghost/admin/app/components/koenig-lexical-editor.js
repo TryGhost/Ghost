@@ -1,4 +1,4 @@
-import * as Sentry from '@sentry/browser';
+import * as Sentry from '@sentry/ember';
 import Component from '@glimmer/component';
 import React, {Suspense} from 'react';
 import {action} from '@ember/object';

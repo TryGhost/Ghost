@@ -1,6 +1,6 @@
 import ESASessionService from 'ember-simple-auth/services/session';
 import RSVP from 'rsvp';
-import {configureScope} from '@sentry/browser';
+import {configureScope} from '@sentry/ember';
 import {getOwner} from '@ember/application';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
