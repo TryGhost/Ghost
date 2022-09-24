@@ -79,8 +79,8 @@ testemail@example.com,Test Email,This is a test template for importing your memb
         const labelInput = '[data-test-csv-file-mapping] .gh-member-label-input';
         expect(find(labelInput), 'label input').to.exist;
 
-        const dropdownContentId = find(`${labelInput} .ember-basic-dropdown-trigger`).getAttribute('aria-owns');
-        await click(`${labelInput} .ember-basic-dropdown-trigger`);
+        const dropdownContentId = find(`${labelInput}`).getAttribute('aria-owns');
+        await click(`${labelInput}`);
 
         expect(findAll(`#${dropdownContentId} li.ember-power-select-option`).length, '# of label options').to.equal(1);
 
