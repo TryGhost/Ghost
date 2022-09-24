@@ -149,15 +149,15 @@ export function localeStartOfWeek(locale) {
     return idx >= 0 ? idx : 0;
 }
 
-export function startOfWeek(day, startOfWeek) {
-    while (isoWeekday(day) % 7 !== startOfWeek) {
+export function startOfWeek(day, _startOfWeek) {
+    while (isoWeekday(day) % 7 !== _startOfWeek) {
         day = add(day, -1, 'day');
     }
     return day;
 }
 
-export function endOfWeek(day, startOfWeek) {
-    let eow = (startOfWeek + 6) % 7;
+export function endOfWeek(day, _startOfWeek) {
+    let eow = (_startOfWeek + 6) % 7;
     while (isoWeekday(day) % 7 !== eow) {
         day = add(day, 1, 'day');
     }
