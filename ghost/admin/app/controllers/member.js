@@ -1,4 +1,5 @@
 import Controller, {inject as controller} from '@ember/controller';
+import DeleteMemberModal from '../components/members/modals/delete-member';
 import EmberObject, {action, defineProperty} from '@ember/object';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import moment from 'moment-timezone';
@@ -13,12 +14,12 @@ export default class MemberController extends Controller {
     @service session;
     @service dropdown;
     @service membersStats;
+    @service modals;
     @service notifications;
     @service router;
     @service store;
 
     @tracked isLoading = false;
-    @tracked showDeleteMemberModal = false;
     @tracked showImpersonateMemberModal = false;
     @tracked modalLabel = null;
     @tracked showLabelModal = false;
@@ -32,6 +33,10 @@ export default class MemberController extends Controller {
 
     get member() {
         return this.model;
+    }
+
+    set member(member) {
+        this.model = member;
     }
 
     get labelModalData() {
@@ -54,10 +59,6 @@ export default class MemberController extends Controller {
         options.unshiftObject({name: 'All labels', slug: null});
 
         return options;
-    }
-
-    set member(member) {
-        this.model = member;
     }
 
     get scratchMember() {
@@ -97,8 +98,15 @@ export default class MemberController extends Controller {
     }
 
     @action
-    toggleDeleteMemberModal() {
-        this.showDeleteMemberModal = !this.showDeleteMemberModal;
+    confirmDeleteMember() {
+        this.modals.open(DeleteMemberModal, {
+            member: this.member,
+            afterDelete: () => {
+                this.membersStats.invalidate();
+                this.members.refreshData();
+                this.transitionToRoute('members');
+            }
+        });
     }
 
     @action
@@ -114,22 +122,6 @@ export default class MemberController extends Controller {
     @action
     save() {
         return this.saveTask.perform();
-    }
-
-    @action
-    deleteMember(cancelSubscriptions = false) {
-        let options = {
-            adapterOptions: {
-                cancel: cancelSubscriptions
-            }
-        };
-        return this.member.destroyRecord(options).then(() => {
-            this.members.refreshData();
-            this.transitionToRoute('members');
-            return;
-        }, (error) => {
-            return this.notifications.showAPIError(error, {key: 'member.delete'});
-        });
     }
 
     // Tasks -------------------------------------------------------------------

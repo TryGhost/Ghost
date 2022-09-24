@@ -39,7 +39,7 @@
                                 <button
                                     type="button"
                                     class="mr2"
-                                    {{on "click" this.toggleDeleteMemberModal}}
+                                    {{on "click" this.confirmDeleteMember}}
                                     data-test-button="delete-member"
                                 >
                                     <span class="red">Delete member</span>
@@ -67,15 +67,6 @@
         </form>
     </div>
 </section>
-
-{{#if this.showDeleteMemberModal}}
-    <GhFullscreenModal
-        @modal="delete-member"
-        @model={{this.member}}
-        @confirm={{this.deleteMember}}
-        @close={{this.toggleDeleteMemberModal}}
-        @modifier="action wide" />
-{{/if}}
 
 {{#if this.showImpersonateMemberModal}}
     <GhFullscreenModal
