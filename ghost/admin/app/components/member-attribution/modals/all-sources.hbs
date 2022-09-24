@@ -1,0 +1,57 @@
+<div class="modal-content">
+    <header class="modal-header" data-test-modal="all-source-attributions">
+        <h1>All Sources</h1>
+    </header>
+    <button class="close" type="button" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+    <div class="modal-body pa">
+        <div>
+            <div class="gh-dashboard-list-header">
+                <div class="gh-dashboard-list-title">Sources</div>
+                <div class="gh-dashboard-list-title">Signups</div>
+                {{#if this.membersUtils.paidMembersEnabled}}
+                    <div class="gh-dashboard-list-title"><span class="hide-when-small">Paid </span>Conversions</div>
+                {{/if}}
+            </div>
+            <div class="gh-dashboard-list-body" style="max-height: 230px; overflow-y: clip; justify-content: flex-start;">
+                <div class="gh-dashboard-attribution-list-scrollable">
+                    {{#each this.sources as |sourceData|}}
+                        <div class="gh-dashboard-list-item">
+                            <div class="gh-dashboard-list-item-sub gh-dashboard-list-item-sub-source">
+                                <span class="gh-dashboard-list-text">{{sourceData.source}}</span>
+                            </div>
+                            <div class="gh-dashboard-list-item-sub">
+                                <span class="gh-dashboard-metric-minivalue">
+                                    {{#if sourceData.signups}}
+                                        {{format-number sourceData.signups}}
+                                    {{else}}
+                                        &mdash;
+                                    {{/if}}
+                                </span>
+                            </div>
+                            {{#if this.membersUtils.paidMembersEnabled}}
+                                <div class="gh-dashboard-list-item-sub">
+                                    <span class="gh-dashboard-metric-minivalue">
+                                        {{#if sourceData.paidConversions}}
+                                            {{format-number sourceData.paidConversions}}
+                                        {{else}}
+                                            &mdash;
+                                        {{/if}}
+                                    </span>
+                                </div>
+                            {{/if}}
+                        </div>
+                    {{else}}
+                        <div class="gh-dashboard-list-empty">
+                            <p>No sources.</p>
+                        </div>
+                    {{/each}}
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="modal-footer">
+    </div>
+</div>

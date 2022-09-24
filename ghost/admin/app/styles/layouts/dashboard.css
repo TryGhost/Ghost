@@ -1041,6 +1041,11 @@ Dashboard Attribution */
     background: #E6E9EB;
 }
 
+.gh-dsahboard-list-item-other-source {
+    text-decoration: underline;
+    cursor: pointer;
+}
+
 .gh-dashboard-list-item:first-child .gh-dashboard-list-item-sub-source::after {
     background: #8e42ff;
 }

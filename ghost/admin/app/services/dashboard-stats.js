@@ -246,13 +246,14 @@ export default class DashboardStatsService extends Service {
             }
             return stat.date >= moment().add(-this.chartDays, 'days').format('YYYY-MM-DD');
         }).reduce((acc, stat) => {
-            const existingSource = acc.find(s => s.source === stat.source);
+            const statSource = stat.source ?? '';
+            const existingSource = acc.find(s => s.source === statSource);
             if (existingSource) {
                 existingSource.signups += stat.signups || 0;
                 existingSource.paidConversions += stat.paidConversions || 0;
             } else {
                 acc.push({
-                    source: stat.source,
+                    source: statSource,
                     signups: stat.signups || 0,
                     paidConversions: stat.paidConversions || 0
                 });
