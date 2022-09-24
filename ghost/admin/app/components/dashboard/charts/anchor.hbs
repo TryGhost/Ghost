@@ -7,7 +7,7 @@
                     @options={{this.displayOptions}}
                     @searchEnabled={{false}}
                     @onChange={{this.onDisplayChange}}
-                    @triggerComponent="gh-power-select/trigger"
+                    @triggerComponent={{component "gh-power-select/trigger"}}
                     @triggerClass="gh-contentfilter-menu-trigger"
                     @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
                     @matchTriggerWidth={{false}}
@@ -23,7 +23,7 @@
                 @value={{format-number this.totalMembers}}
                 @trends={{this.hasTrends}}
                 @percentage={{this.totalMembersTrend}}
-                @large={{true}} /> 
+                @large={{true}} />
         {{/if}}
 
         <div class="gh-dashboard-hero {{unless this.hasPaidTiers 'is-solo'}}">
@@ -33,7 +33,7 @@
                         {{#if this.loading}}
                             <div class="gh-dashboard-chart-loading">
                                 <div class="gh-loading-spinner"></div>
-                            </div>      
+                            </div>
                         {{else}}
                             <div class="gh-dashboard-fader">
                                 <EmberChart

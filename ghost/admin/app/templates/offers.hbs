@@ -9,7 +9,7 @@
                         @options={{this.availableTypes}}
                         @searchEnabled={{false}}
                         @onChange={{this.onTypeChange}}
-                        @triggerComponent="gh-power-select/trigger"
+                        @triggerComponent={{component "gh-power-select/trigger"}}
                         @triggerClass="gh-contentfilter-menu-trigger"
                         @dropdownClass="gh-contentfilter-menu-dropdown"
                         @matchTriggerWidth={{false}}
@@ -68,7 +68,7 @@
                                     {{/if}}
                                 {{/if}}
                                 {{#if (not (eq offer.type 'trial'))}}
-                                    <span class="dib ml1 midgrey ttc"> – 
+                                    <span class="dib ml1 midgrey ttc"> –
                                         {{if (eq offer.duration 'once') "First-payment" "Repeating"}}
                                     </span>
                                 {{/if}}

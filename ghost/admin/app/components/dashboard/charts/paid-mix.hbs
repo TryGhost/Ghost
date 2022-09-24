@@ -2,7 +2,7 @@
     <div class="gh-dashboard-content">
         <div class="gh-dashboard-data">
             <Dashboard::Parts::Metric
-                @label="Paid mix" /> 
+                @label="Paid mix" />
 
             {{#if this.isChartCadence}}
                 <div class="gh-dashboard-legend">
@@ -23,14 +23,14 @@
                             @type={{this.chartType}}
                             @data={{this.chartData}}
                             @options={{this.chartOptions}}
-                            @height={{110}} /> 
+                            @height={{110}} />
                     </div>
 
                     <div id="gh-dashboard-mix-tooltip" class="gh-dashboard-tooltip">
                         <div class="gh-dashboard-tooltip-value">
                             -
                         </div>
-                    </div> 
+                    </div>
                 </div>
             {{/if}}
         </div>
@@ -43,7 +43,7 @@
                 @options={{this.modeOptions}}
                 @searchEnabled={{false}}
                 @onChange={{this.onSwitchMode}}
-                @triggerComponent="gh-power-select/trigger"
+                @triggerComponent={{component "gh-power-select/trigger"}}
                 @triggerClass="gh-contentfilter-menu-trigger"
                 @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
                 @matchTriggerWidth={{false}}

@@ -97,7 +97,7 @@
                                                     @onChange={{this.setMailgunRegion}}
                                                     @class="gh-select"
                                                     @searchEnabled={{false}}
-                                                    @triggerComponent="gh-power-select/trigger"
+                                                    @triggerComponent={{component "gh-power-select/trigger"}}
                                                     as |region|
                                                 >
                                                     {{region.flag}} {{region.name}}
@@ -222,7 +222,7 @@
                         </div>
                     </div>
                 </div>
-                
+
             {{/if}}
         </div>
     </section>
