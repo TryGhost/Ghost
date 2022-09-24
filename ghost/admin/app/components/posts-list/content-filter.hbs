@@ -1,12 +1,12 @@
 <div class="gh-contentfilter view-actions-bottom-row" ...attributes>
-    
+
     <div class="gh-contentfilter-menu gh-contentfilter-type {{if @selectedType.value "gh-contentfilter-selected"}}" data-test-type-select="true">
         <PowerSelect
             @selected={{@selectedType}}
             @options={{@availableTypes}}
             @searchEnabled={{false}}
             @onChange={{@onTypeChange}}
-            @triggerComponent="gh-power-select/trigger"
+            @triggerComponent={{component "gh-power-select/trigger"}}
             @triggerClass="gh-contentfilter-menu-trigger"
             @dropdownClass="gh-contentfilter-menu-dropdown"
             @matchTriggerWidth={{false}}
@@ -23,7 +23,7 @@
                 @options={{@availableVisibilities}}
                 @searchEnabled={{false}}
                 @onChange={{@onVisibilityChange}}
-                @triggerComponent="gh-power-select/trigger"
+                @triggerComponent={{component "gh-power-select/trigger"}}
                 @triggerClass="gh-contentfilter-menu-trigger"
                 @dropdownClass="gh-contentfilter-menu-dropdown"
                 @matchTriggerWidth={{false}}
@@ -41,7 +41,7 @@
                 @options={{@availableAuthors}}
                 @searchField="name"
                 @onChange={{@onAuthorChange}}
-                @triggerComponent="gh-power-select/trigger"
+                @triggerComponent={{component "gh-power-select/trigger"}}
                 @triggerClass="gh-contentfilter-menu-trigger"
                 @dropdownClass="gh-contentfilter-menu-dropdown"
                 @searchPlaceholder="Search authors"
@@ -60,12 +60,12 @@
                 @options={{@availableTags}}
                 @searchField="name"
                 @onChange={{@onTagChange}}
-                @triggerComponent="gh-power-select/trigger"
+                @triggerComponent={{component "gh-power-select/trigger"}}
                 @triggerClass="gh-contentfilter-menu-trigger"
                 @dropdownClass="gh-contentfilter-menu-dropdown"
                 @searchPlaceholder="Search tags"
                 @matchTriggerWidth={{false}}
-                @optionsComponent="power-select-vertical-collection-options"
+                @optionsComponent={{component "power-select-vertical-collection-options"}}
                 as |tag|
             >
                 {{#if tag.name}}{{tag.name}}{{else}}<span class="red">Unknown tag</span>{{/if}}
@@ -79,7 +79,7 @@
             @options={{@availableOrders}}
             @searchEnabled={{false}}
             @onChange={{@onOrderChange}}
-            @triggerComponent="gh-power-select/trigger"
+            @triggerComponent={{component "gh-power-select/trigger"}}
             @triggerClass="gh-contentfilter-menu-trigger"
             @dropdownClass="gh-contentfilter-menu-dropdown"
             @matchTriggerWidth={{false}}
