@@ -2,11 +2,11 @@ import Component from '@glimmer/component';
 import {tracked} from '@glimmer/tracking';
 
 const CHART_COLORS = [
-    '#853EED',
-    '#CA3FED',
-    '#E993CC',
-    '#EE9696',
-    '#FEC7C0',
+    '#8e42ff',
+    '#BB4AE5',
+    '#DD97C9',
+    '#E19A98',
+    '#F5C9C2',
     '#E6E9EB'
 ];
 
@@ -40,7 +40,7 @@ export default class SourceAttributionChart extends Component {
                 }
             },
             tooltips: {
-                enabled: false
+                enabled: true
             },
             aspectRatio: 1
         };
