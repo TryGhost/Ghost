@@ -852,3 +852,9 @@ add|ember-template-lint|no-action|13|36|13|36|addf24b8fbd6518060e412ec8b95309a05
 add|ember-template-lint|no-action|16|32|16|32|5bf020bb7cafdcfbcf809310232be927a9f1b2e4|1663027200000|1673398800000|1678582800000|app/templates/posts-clicks.hbs
 add|ember-template-lint|no-action|19|29|19|29|e3023c525990c1f8d1a30aa6ff20eb3bad8ec53b|1663027200000|1673398800000|1678582800000|app/templates/posts-clicks.hbs
 add|ember-template-lint|no-action|22|31|22|31|cbf4e21da2010b9af11294f458ef2ad40374d4f0|1663027200000|1673398800000|1678582800000|app/templates/posts-clicks.hbs
+remove|ember-template-lint|no-duplicate-attributes|9|4|9|4|6b5f76f812df2b84f2ed9ee5a557ca1bf98710df|1662681600000|1673053200000|1678237200000|app/components/gh-members-segment-select.hbs
+remove|ember-template-lint|table-groups|29|12|29|12|5e48c01ff0ffa6804cd43bb95ef5ab978a1be2d5|1662681600000|1673053200000|1678237200000|app/templates/offers.hbs
+remove|ember-template-lint|no-unused-block-params|1|0|1|0|6640f2d788e2ebf173ee6ae789259ca65c097404|1662681600000|1673053200000|1678237200000|lib/koenig-editor/addon/components/koenig-card-email-cta.hbs
+add|ember-template-lint|no-duplicate-attributes|9|4|9|4|1bd74ed221db1070a4ef257ccb712285f6e4ebc6|1663977600000|1674349200000|1679533200000|app/components/gh-members-segment-select.hbs
+add|ember-template-lint|table-groups|29|12|29|12|fd6c7d9c26f38dac21ab2603a31d20617717ab33|1663977600000|1674349200000|1679533200000|app/templates/offers.hbs
+add|ember-template-lint|no-unused-block-params|1|0|1|0|1709beda164cdda6c0196211f71d73a81b9251dd|1663977600000|1674349200000|1679533200000|lib/koenig-editor/addon/components/koenig-card-email-cta.hbs
