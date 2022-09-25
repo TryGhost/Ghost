@@ -68,7 +68,7 @@
                 @snippets={{this.snippets}}
                 @saveSnippet={{if this.canManageSnippets this.saveSnippet}}
                 @updateSnippet={{if this.canManageSnippets this.toggleUpdateSnippetModal}}
-                @deleteSnippet={{if this.canManageSnippets this.toggleDeleteSnippetModal}}
+                @deleteSnippet={{if this.canManageSnippets this.confirmDeleteSnippet}}
                 @featureImage={{this.post.featureImage}}
                 @featureImageAlt={{this.post.featureImageAlt}}
                 @featureImageCaption={{this.post.featureImageCaption}}
@@ -134,16 +134,6 @@
             @model={{this.snippetToUpdate}}
             @confirm={{this.updateSnippet}}
             @close={{this.toggleUpdateSnippetModal}}
-            @modifier="action wide"
-        />
-    {{/if}}
-
-    {{#if this.snippetToDelete}}
-        <GhFullscreenModal
-            @modal="delete-snippet"
-            @model={{this.snippetToDelete}}
-            @confirm={{this.deleteSnippet}}
-            @close={{this.toggleDeleteSnippetModal}}
             @modifier="action wide"
         />
     {{/if}}
