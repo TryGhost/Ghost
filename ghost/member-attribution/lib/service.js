@@ -99,7 +99,7 @@ class MemberAttributionService {
      */
     async getMemberCreatedAttribution(memberId) {
         const memberCreatedEvent = await this.models.MemberCreatedEvent.findOne({member_id: memberId}, {require: false, withRelated: []});
-        if (!memberCreatedEvent || !memberCreatedEvent.get('attribution_type')) {
+        if (!memberCreatedEvent) {
             return null;
         }
         const attribution = this.attributionBuilder.build({
@@ -120,7 +120,7 @@ class MemberAttributionService {
      */
     async getSubscriptionCreatedAttribution(subscriptionId) {
         const subscriptionCreatedEvent = await this.models.SubscriptionCreatedEvent.findOne({subscription_id: subscriptionId}, {require: false, withRelated: []});
-        if (!subscriptionCreatedEvent || !subscriptionCreatedEvent.get('attribution_type')) {
+        if (!subscriptionCreatedEvent) {
             return null;
         }
         const attribution = this.attributionBuilder.build({
