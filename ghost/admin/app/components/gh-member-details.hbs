@@ -73,12 +73,13 @@
                         Signed up on&nbsp;<a href="{{@member.attribution.url}}" target="_blank" rel="noopener noreferrer" title="{{ @member.attribution.title }}">{{ @member.attribution.title }}</a>
                     </p>
                     {{/if}}
-                    {{#unless (eq this.referrerAttribution.source "Unknown")}}
+                    {{#if (eq this.referrerAttribution.source "Unknown")}}
+                    {{else}}
                     <p>
                         {{svg-jar "earth"}}
                         Coming from&nbsp;<p title="{{this.referrerAttribution.source}}">{{this.referrerAttribution.source}}</p>
                     </p>
-                    {{/unless}}
+                    {{/if}}
                 </div>
             {{/if}}
 
