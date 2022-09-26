@@ -1,5 +1,5 @@
 <aside class="custom-post-upgrade-cta">
-    <div class="custom-post-upgrade-cta-content" style="background-color: {{accentColor}}">
+    <div class="custom-post-upgrade-cta-content" style="background-color: {{@site.accent_color}}">
         {{#has visibility="paid"}}
             {{#is "page"}}
                 <h2>This page is for paying subscribers only</h2>
@@ -22,9 +22,9 @@
             {{/is}}
         {{/has}}
         {{#if @member}}
-            <a class="gh-btn" data-portal="account/plans" style="color:{{accentColor}}">Account upgrade link</a>
+            <a class="gh-btn" data-portal="account/plans" style="color:{{@site.accent_color}}">Account upgrade link</a>
         {{else}}
-            <a class="gh-btn" data-portal="signup" style="color:{{accentColor}}">Subscribe now</a>
+            <a class="gh-btn" data-portal="signup" style="color:{{@site.accent_color}}">Subscribe now</a>
             <p><small>Already have an account? <a data-portal="signin">Sign in</a></small></p>
         {{/if}}
     </div>
