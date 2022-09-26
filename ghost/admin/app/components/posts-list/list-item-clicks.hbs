@@ -122,15 +122,15 @@
         {{!-- Opens column --}}
         <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-opens">
             <div class="flex flex-column" {{on "mouseover" (fn (mut this.isOpenStatHovered) true)}} {{on "mouseleave" (fn (mut this.isOpenStatHovered) false)}}>
-                <span class="gh-content-email-stats">
-                    Opened
-                </span>
                 <span class="gh-content-email-stats-value">
                     {{#if this.isOpenStatHovered}}
                         {{format-number @post.email.openedCount}}
                     {{else}}
                         {{@post.email.openRate}}%
                     {{/if}}
+                </span>
+                <span class="gh-content-email-stats">
+                    opened
                 </span>
             </div>
         </LinkTo>
@@ -142,15 +142,15 @@
         {{!-- Clicks column --}}
         <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-clicks">
             <div class="flex flex-column" {{on "mouseover" (fn (mut this.isClickStatHovered) true)}} {{on "mouseleave" (fn (mut this.isClickStatHovered) false)}}>
-                <span class="gh-content-email-stats">
-                    Clicked
-                </span>
                 <span class="gh-content-email-stats-value">
                     {{#if this.isClickStatHovered}}
                         {{format-number @post.count.clicks}}
                     {{else}}
                         {{@post.clickRate}}%
                     {{/if}}
+                </span>
+                <span class="gh-content-email-stats">
+                    clicked
                 </span>
             </div>
         </LinkTo>
@@ -164,7 +164,7 @@
             <div class="flex">
                 {{#if (and (not this.session.user.isContributor) (or @post.isSent @post.isPublished) (or this.settings.emailTrackClicks (feature "memberAttribution")))}}
                     <LinkTo @route="posts.analytics" @model={{@post}} class="gh-post-list-cta stats {{if this.isHovered "is-hovered"}}" title="View post analytics">
-                        {{svg-jar "stats" title="View post analytics"}}&nbsp;&nbsp;Stats
+                        {{svg-jar "stats" title="View post analytics"}}<span>Stats</span>
                     </LinkTo>
                 {{else}}
                     {{!-- <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="gh-post-list-cta edit {{if this.isHovered "is-hovered"}}" title="Edit this post">
