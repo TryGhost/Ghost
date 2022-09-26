@@ -1,13 +1,12 @@
 <div ...attributes>
     <div class="gh-dashboard-list-header">
-        <div class="gh-dashboard-list-title">Sources</div>
+        <div class="gh-dashboard-list-title gh-dashboard-list-title-sources">Sources</div>
         <div class="gh-dashboard-list-title">Signups</div>
         {{#if this.membersUtils.paidMembersEnabled}}
             <div class="gh-dashboard-list-title"><span class="hide-when-small">Paid </span>Conversions</div>
         {{/if}}
     </div>
-    <div class="gh-dashboard-list-body" style="max-height: 230px; overflow-y: clip; justify-content: flex-start;">
-        <div class="gh-dashboard-attribution-list-scrollable">
+    <div class="gh-dashboard-list-body">
             {{#each this.sources as |sourceData|}}
                 <div class="gh-dashboard-list-item">
                     <div class="gh-dashboard-list-item-sub gh-dashboard-list-item-sub-source">
@@ -44,7 +43,7 @@
                     {{on "click" this.openAllSources}}
                 >
                     <div class="gh-dashboard-list-item-sub gh-dashboard-list-item-sub-source gh-dsahboard-list-item-other-source">
-                        <span class="gh-dashboard-list-text">Other</span>
+                        <span class="gh-dashboard-list-text">Other sources →</span>
                     </div>
                     <div class="gh-dashboard-list-item-sub">
                         <span class="gh-dashboard-metric-minivalue">
@@ -68,6 +67,5 @@
                     {{/if}}
                 </div>
             {{/if}}
-        </div>
     </div>
 </div>
