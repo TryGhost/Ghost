@@ -96,7 +96,9 @@ export default class SourceAttributionChart extends Component {
                     data: sortedByFree.slice(0, 5).map(source => source.signups),
                     backgroundColor: CHART_COLORS.slice(0, 5),
                     borderWidth: 2,
-                    borderColor: '#fff'
+                    borderColor: '#fff',
+                    hoverBorderWidth: 2,
+                    hoverBorderColor: '#fff'
                 }]
             };
         } else {
@@ -111,7 +113,9 @@ export default class SourceAttributionChart extends Component {
                     data: sortedByPaid.slice(0, 5).map(source => source.paidConversions),
                     backgroundColor: CHART_COLORS.slice(0, 5),
                     borderWidth: 2,
-                    borderColor: '#fff'
+                    borderColor: '#fff',
+                    hoverBorderWidth: 2,
+                    hoverBorderColor: '#fff'
                 }]
             };
         }
