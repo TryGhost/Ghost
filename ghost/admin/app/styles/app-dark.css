@@ -983,6 +983,31 @@ input:focus,
     border-top: 1px solid var(--hairline-color-1);
 }
 
+a.gh-post-list-cta {
+    background: #26282b;
+    color: #ffffff;
+    border: 1px solid #33373d;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 10%);
+}
+
+a.gh-post-list-cta > svg {
+    color: #ffffff;
+}
+
+a.gh-post-list-cta > span {
+    color: #ffffff;
+}
+
+a.gh-post-list-cta.is-hovered {
+    background: #1d1e20;
+    border-color: #33373d;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 10%);
+}
+
+a.gh-post-list-cta.is-hovered:hover {
+    background: #1d1e20;
+}
+
 @media (max-width: 1200px) {
     .gh-list-data {
         border-top: 0 none;
