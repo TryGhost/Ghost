@@ -8,7 +8,7 @@ import {
     TEXT_MATCH_TRANSFORMERS
 } from '@lexical/markdown';
 import {$createHorizontalRuleNode, $isHorizontalRuleNode} from '../nodes/HorizontalRuleNode';
-import {$isCodeBlockNode, $createCodeBlockNode} from '../nodes/CodeBlockNode';
+import {$isCodeBlockNode, $createCodeBlockNode, CodeBlockNode} from '../nodes/CodeBlockNode';
 
 export const HR = {
     dependencies: [], // todo: docs a bit unclear regarding the usage of this property, but required as of 0.4.0 https://github.com/facebook/lexical/pull/2910
@@ -32,7 +32,7 @@ export const HR = {
 };
 
 export const CODE_BLOCK = {
-    dependencies: [], // todo: docs a bit unclear regarding the usage of this property, but required as of 0.4.0
+    dependencies: [CodeBlockNode], // todo: docs a bit unclear regarding the usage of this property, but required as of 0.4.0
     export: (node) => {
         if (!$isCodeBlockNode(node)) {
             return null;
@@ -47,9 +47,10 @@ export const CODE_BLOCK = {
         );
     },
     regExp: /^```(\w{1,10})?\s/,
-    replace: (textNode, match) => {
+    replace: (textNode, match, text) => {
+        const initCode = text[1] || '';
         const language = match[1];
-        const codeBlockNode = $createCodeBlockNode(language);
+        const codeBlockNode = $createCodeBlockNode(language, initCode);
         textNode.replace(codeBlockNode);
     },
     type: 'element'

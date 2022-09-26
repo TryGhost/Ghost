@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {$getNodeByKey, createCommand, DecoratorNode} from 'lexical';
+import {$getNodeByKey, createCommand, DecoratorNode, $createParagraphNode} from 'lexical';
 // import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
 
@@ -15,14 +15,17 @@ function CodeBlockComponent({className, code, language, nodeKey, editor}) {
 
     return (
         <KoenigCardWrapper className={className} nodeKey={nodeKey} >
-            <textarea 
-                autoCorrect="off" 
-                autoCapitalize="off" 
-                spellCheck="false" 
-                tabIndex="0" 
-                className='bg-grey-50 min-h-170 w-full p-3' 
-                value={code} 
-                onChange={updateCode} />
+            <code>
+                <textarea 
+                    autoCorrect="off" 
+                    autoCapitalize="off" 
+                    spellCheck="false" 
+                    tabIndex="0"
+                    autoFocus
+                    className='bg-grey-50 min-h-170 w-full p-3' 
+                    value={code} 
+                    onChange={updateCode} />
+            </code>
         </KoenigCardWrapper>
     );
 }
@@ -52,13 +55,14 @@ export class CodeBlockNode extends DecoratorNode {
         };
     }
 
-    constructor(language, key) {
+    constructor(language, initCode, key) {
         super(key);
         this.__language = language;
+        this.__code = initCode;
     }
 
     createDOM(config) {
-        return document.createElement('code');
+        return document.createElement('div');
     }
 
     updateDOM() {
@@ -110,10 +114,18 @@ export class CodeBlockNode extends DecoratorNode {
     isTopLevel() {
         return true;
     }
+
+    insertNewAfter() {
+        const newBlock = $createParagraphNode();
+        const direction = this.getDirection();
+        newBlock.setDirection(direction);
+        this.insertNewAfter(newBlock);
+        return newBlock;
+    }
 }
 
-export function $createCodeBlockNode(code) {
-    return new CodeBlockNode(code);
+export function $createCodeBlockNode(language, initCode) {
+    return new CodeBlockNode(language, initCode);
 }
 
 export function $isCodeBlockNode(node) {
