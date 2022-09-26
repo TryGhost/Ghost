@@ -4,12 +4,13 @@ import {ContentEditable} from '@lexical/react/LexicalContentEditable';
 import {HistoryPlugin} from '@lexical/react/LexicalHistoryPlugin';
 import {OnChangePlugin} from '@lexical/react/LexicalOnChangePlugin';
 import {ListPlugin} from '@lexical/react/LexicalListPlugin';
-import {MarkdownShortcutPlugin} from '@lexical/react/LexicalMarkdownShortcutPlugin';
+import MarkdownShortcutPlugin from '../plugins/MarkdownShortcutPlugin';
 import FloatingFormatToolbarPlugin from '../plugins/FloatingFormatToolbar';
 import '../styles/index.css';
 
 const KoenigEditor = ({
-    onChange
+    onChange,
+    markdownTransformers
 }) => {
     const _onChange = React.useCallback((editorState) => {
         const json = editorState.toJSON();
@@ -38,7 +39,7 @@ const KoenigEditor = ({
             <OnChangePlugin onChange={_onChange} />
             <HistoryPlugin /> {/* adds undo/redo */}
             <ListPlugin /> {/* adds indent/outdent/remove etc support */}
-            <MarkdownShortcutPlugin />
+            <MarkdownShortcutPlugin transformers={markdownTransformers} />
             {floatingAnchorElem && (<FloatingFormatToolbarPlugin anchorElem={floatingAnchorElem} />)}
         </div>
     );

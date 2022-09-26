@@ -1,9 +1,9 @@
 import {ListItemNode, ListNode} from '@lexical/list';
-import {CodeNode} from '@lexical/code';
 import {HeadingNode, QuoteNode} from '@lexical/rich-text';
 import {LinkNode} from '@lexical/link';
 import {AsideNode} from './AsideNode';
-import {HorizontalRuleNode} from '@lexical/react/LexicalHorizontalRuleNode';
+import {HorizontalRuleNode} from './HorizontalRuleNode';
+import {CodeBlockNode} from './CodeBlockNode';
 
 const DEFAULT_NODES = [
     HeadingNode,
@@ -12,8 +12,8 @@ const DEFAULT_NODES = [
     QuoteNode,
     AsideNode,
     LinkNode,
-    CodeNode, // TODO: replace with our own card
-    HorizontalRuleNode // TODO: replace with our own card
+    CodeBlockNode, // TODO: replace with our own card
+    HorizontalRuleNode
 ];
 
 export default DEFAULT_NODES;
