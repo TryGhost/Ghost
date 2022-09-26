@@ -26,9 +26,9 @@ function defaultRelations(frame) {
     }
 
     if (labs.isSet('emailClicks')) {
-        frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'email', 'tiers', 'newsletter', 'count.signups', 'count.conversions', 'count.clicks'];
+        frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'email', 'tiers', 'newsletter', 'count.signups', 'count.paid_conversions', 'count.clicks'];
     } else {
-        frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'email', 'tiers', 'newsletter', 'count.signups', 'count.conversions'];
+        frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'email', 'tiers', 'newsletter', 'count.signups', 'count.paid_conversions'];
     }
 }
 
