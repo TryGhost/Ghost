@@ -126,7 +126,7 @@
                     {{#if this.isOpenStatHovered}}
                         {{format-number @post.email.openedCount}}
                     {{else}}
-                        {{@post.email.openRate}}%
+                        {{@post.email.openRate}}<sup>%</sup>
                     {{/if}}
                 </span>
                 <span class="gh-content-email-stats">
@@ -146,7 +146,7 @@
                     {{#if this.isClickStatHovered}}
                         {{format-number @post.count.clicks}}
                     {{else}}
-                        {{@post.clickRate}}%
+                        {{@post.clickRate}}<sup>%</sup>
                     {{/if}}
                 </span>
                 <span class="gh-content-email-stats">
