@@ -39,11 +39,10 @@
                 </div>
             {{/each}}
             {{#if this.others}}
-                <div class="gh-dashboard-list-item" role="button" aria-label="Show sources"
-                    {{on "click" this.openAllSources}}
-                >
-                    <div class="gh-dashboard-list-item-sub gh-dashboard-list-item-sub-source gh-dsahboard-list-item-other-source">
-                        <span class="gh-dashboard-list-text">Other sources →</span>
+                <div class="gh-dashboard-list-item">
+                    <div class="gh-dashboard-list-item-sub gh-dashboard-list-item-sub-source gh-dashboard-list-item-other-source">
+                        <div class="gh-dashboard-list-text">Other <span role="button" aria-label="Show sources"
+                    {{on "click" this.openAllSources}}>(<span>see all</span>)</span></div>
                     </div>
                     <div class="gh-dashboard-list-item-sub">
                         <span class="gh-dashboard-metric-minivalue">
