@@ -1065,6 +1065,18 @@ Dashboard Attribution */
     text-decoration: underline;
 }
 
+.gh-dashboard-list-title svg {
+    height: 4px;
+    width: 6.11px;
+    margin-left: 2px;
+    margin-top: -2px;
+    vertical-align: middle;
+}
+
+.gh-dashboard-list-title svg path {
+    stroke: var(--midgrey);
+}
+
 .gh-dashboard-list-item:first-child .gh-dashboard-list-item-sub-source::after {
     background: #8e42ff;
 }
