@@ -1075,7 +1075,7 @@ Dashboard Attribution */
 }
 
 .gh-dashboard-list-title.sorted-by svg {
-    display: block;
+    display: inline;
 }
 
 .gh-dashboard-list-title svg path {
