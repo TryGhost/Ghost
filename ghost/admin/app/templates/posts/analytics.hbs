@@ -73,8 +73,8 @@
 
             {{#if this.membersUtils.paidMembersEnabled}}
                 <div class="gh-post-analytics-item">
-                    <h3>{{format-number this.post.count.conversions}}</h3>
-                    <p><span class="hide-when-small">Paid </span>{{gh-pluralize this.post.count.conversions "conversion" without-count=true}}</p>
+                    <h3>{{format-number this.post.count.paid_conversions}}</h3>
+                    <p><span class="hide-when-small">Paid </span>{{gh-pluralize this.post.count.paid_conversions "conversion" without-count=true}}</p>
                 </div>
             {{/if}}
         {{/if}}

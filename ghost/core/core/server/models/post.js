@@ -1338,12 +1338,12 @@ Post = ghostBookshelf.Model.extend({
                         .as('count__signups');
                 });
             },
-            conversions(modelOrCollection) {
+            paid_conversions(modelOrCollection) {
                 modelOrCollection.query('columns', 'posts.*', (qb) => {
                     qb.count('members_subscription_created_events.id')
                         .from('members_subscription_created_events')
                         .whereRaw('posts.id = members_subscription_created_events.attribution_id')
-                        .as('count__conversions');
+                        .as('count__paid_conversions');
                 });
             },
             clicks(modelOrCollection) {
