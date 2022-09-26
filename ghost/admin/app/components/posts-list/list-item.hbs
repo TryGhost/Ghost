@@ -120,15 +120,15 @@
     {{/if}}
 
     {{#if (and this.feature.memberAttribution (not this.session.user.isContributor)) }}
-        {{#if @post.count.conversions}}
+        {{#if @post.count.paid_conversions}}
             <LinkTo @route="members" @query={{hash filterParam=(concat "conversion:[" @post.id "]") }} class="permalink gh-list-data gh-post-list-conversions active">
-                <span class="midlightgrey {{if (not (eq @post.count.conversions 0)) 'darkgrey'}} fw5 gh-content-attribution-stats">{{@post.count.conversions}}</span>
-                <span class="midgrey-l2 fw4 gh-content-attribution-stats-mobile">{{gh-pluralize @post.count.conversions "conversion"}}</span>
+                <span class="midlightgrey {{if (not (eq @post.count.paid_conversions 0)) 'darkgrey'}} fw5 gh-content-attribution-stats">{{@post.count.paid_conversions}}</span>
+                <span class="midgrey-l2 fw4 gh-content-attribution-stats-mobile">{{gh-pluralize @post.count.paid_conversions "conversion"}}</span>
             </LinkTo>
         {{else}}
             <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-conversions">
-                <span class="midlightgrey {{if (not (eq @post.count.conversions 0)) 'darkgrey'}} fw5 gh-content-attribution-stats">{{@post.count.conversions}}</span>
-                <span class="midgrey-l2 fw4 gh-content-attribution-stats-mobile">{{gh-pluralize @post.count.conversions "conversion"}}</span>
+                <span class="midlightgrey {{if (not (eq @post.count.paid_conversions 0)) 'darkgrey'}} fw5 gh-content-attribution-stats">{{@post.count.paid_conversions}}</span>
+                <span class="midgrey-l2 fw4 gh-content-attribution-stats-mobile">{{gh-pluralize @post.count.paid_conversions "conversion"}}</span>
             </LinkTo>
         {{/if}}
     {{/if}}
