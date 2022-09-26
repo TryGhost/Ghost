@@ -24,6 +24,24 @@ export default class PostsListItemClicks extends Component {
         return text.join(' ');
     }
 
+    get isAnalytics() {
+        return ((!this.session.user.isContributor) && (this.args.post.isSent || this.args.post.isPublished) && (this.settings.get('emailTrackClicks') || this.feature.get('memberAttribution')));
+    }
+
+    get routeForLink() {
+        if (this.isAnalytics) {
+            return 'posts.analytics';
+        }
+        return 'editor.edit';
+    }
+
+    get modelsForLink() {
+        if (this.isAnalytics) {
+            return [this.args.post];
+        }
+        return [this.args.post.displayName, this.args.post.id];
+    }
+
     @action
     mouseOver() {
         this.isHovered = true;
