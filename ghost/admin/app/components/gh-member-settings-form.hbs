@@ -184,7 +184,7 @@
                                             <span class="gh-cp-membertier-renewal">Renews {{sub.validUntil}}</span>
                                         {{/if}}
                                     </div>
-                                    <button type="button" class="flex pointer flex-row items-center gh-cp-membertier-details" {{on "click" (fn this.toggleSubscriptionExpanded sub.id)}} role="button" aria-label="Show details">
+                                    <button type="button" class="flex pointer flex-row items-center gh-cp-membertier-details {{if sub.showDetails "rotate"}}" {{on "click" (fn this.toggleSubscriptionExpanded sub.id)}} role="button" aria-label="Show details">
                                         Details {{svg-jar "arrow-right-stroke"}}
                                     </button>
                                     <div class="gh-membertier-advanced {{unless sub.showDetails "hide"}}" data-test-subscription={{index}}>

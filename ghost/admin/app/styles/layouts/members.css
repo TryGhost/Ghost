@@ -2374,11 +2374,16 @@ p.gh-members-import-errordetail:first-of-type {
 .gh-cp-membertier-details svg {
     width: 10px;
     margin-left: 4px;
+    transition: transform 0.2s ease-in-out;
 }
 
 .gh-cp-membertier-details svg path {
     stroke-width: 3px;
     stroke: var(--middarkgrey);
+}
+
+.gh-cp-membertier-details.rotate svg {
+    transform: rotate(90deg);
 }
 
 .gh-membertier-subscription .action-menu .gh-btn-subscription-action:not(:hover) {
