@@ -256,7 +256,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 .gh-list .gh-content-entry-title {
     display: flex;
     align-items: center;
-    margin: 0 0 3px 0;
+    margin: 0 0 2px;
     font-size: 1.6rem;
     font-weight: 600;
 }
@@ -266,7 +266,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 }
 
 .gh-posts-list-item p {
-    margin: 0 0 3px;
+    margin: 0 0 2px;
     font-size: 1.3rem;
     overflow-wrap: break-word;
     color: var(--middarkgrey);
@@ -567,6 +567,11 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 
     .gh-posts-list-item.gh-posts-list-item-labs .gh-post-list-opens,
     .gh-posts-list-item.gh-posts-list-item-labs .gh-post-list-clicks {
+        width: 0;
+    }
+
+    .gh-posts-list-item.gh-posts-list-item-labs .gh-post-list-opens > div,
+    .gh-posts-list-item.gh-posts-list-item-labs .gh-post-list-clicks > div {
         display: none;
     }
 
@@ -961,7 +966,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 }
 
 .gh-posts-list-item-labs .gh-content-entry-title {
-    margin: 0 0 3px;
+    margin: 0 0 2px;
     font-size: 1.55rem;
     font-weight: 600;
 }
@@ -1025,10 +1030,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 .gh-posts-list-item-labs .gh-post-list-clicks,
 .gh-posts-list-item-labs .gh-post-list-opens {
     padding-right: 24px;
-}
-
-.gh-posts-list-item-labs .gh-post-list-opens {
-    padding-right: 36px;
+    width: 120px;
 }
 
 .gh-posts-list-item-labs .gh-content-email-stats,
@@ -1045,56 +1047,10 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 
 .gh-content-email-stats-value {
     color: var(--black);
-    font-size: 1.5rem;
+    font-size: 1.55rem;
     font-weight: 600;
+    margin: 0 0 3px;
 }
-/* 
-.gh-posts-list-item-labs a.gh-post-list-cta {
-    display: flex;
-    align-items: center;
-    color: var(--green-d1);
-}
-
-a.gh-post-list-cta.edit {
-    color: var(--midlightgrey-d2);
-}
-
-a.gh-post-list-cta svg {
-    display: block;
-    width: 8px;
-    height: 8px;
-    margin: 2px 6px 0;
-    transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
-}
-
-a.gh-post-list-cta svg path {
-    stroke-width: 4;
-    stroke: var(--green-d1);
-}
-
-a.gh-post-list-cta.edit svg path {
-    stroke: var(--midlightgrey-d2);
-}
-
-a.gh-post-list-cta.is-hovered svg {
-    transform: translateX(2px)
-}
-
-a.gh-post-list-cta.is-hovered:hover {
-    color: var(--green-d2);
-}
-
-.gh-post-analytics-meta a.gh-post-list-cta {
-    margin-right: 0;
-}
-
-
-
-
-
- */
-
-
 
 a.gh-post-list-cta {
     display: flex;
@@ -1143,6 +1099,10 @@ a.gh-post-list-cta.edit svg {
 
 a.gh-post-list-cta svg path {
     stroke-width: 2;
+}
+
+a.gh-post-list-cta > span {
+    padding: 0 0 0 1rem;
 }
 
 
