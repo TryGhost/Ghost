@@ -1019,70 +1019,57 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 }
 
 .gh-posts-list-item-labs .gh-post-list-clicks,
-.gh-posts-list-item-labs .gh-post-list-opens,
-.gh-posts-list-item-labs .gh-post-list-button {
-    width: 120px;
+.gh-posts-list-item-labs .gh-post-list-opens {
+    padding-right: 28px;
 }
 
-.gh-posts-list-item-labs .gh-content-email-stats {
+.gh-posts-list-item-labs .gh-content-email-stats,
+.gh-posts-list-item-labs a.gh-post-list-cta {
     margin: 0 0 3px;
     color: var(--midlightgrey-d2);
     font-size: 1.35rem;
     font-weight: 400;
 }
 
-.gh-posts-list-item-labs .gh-content-email-stats strong {
+.gh-content-email-stats-value {
     color: var(--black);
     font-size: 1.5rem;
     font-weight: 600;
 }
 
-
-a.gh-post-list-cta {
+.gh-posts-list-item-labs a.gh-post-list-cta {
     display: flex;
     align-items: center;
-    max-width: max-content;
-    margin: -6px 16px 0 0;
-    padding: 8px 16px;
-    background: var(--white);
-    border: 1px solid var(--lightgrey-l1);
-    color: var(--midgrey);
-    border-radius: var(--border-radius);
-    transition: all .2s ease;
-}
-
-a.gh-post-list-cta.stats.is-hovered {
-    color: var(--green);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-a.gh-post-list-cta.stats.is-hovered:hover {
-    border-color: var(--lightgrey);
     color: var(--green-d1);
 }
 
-a.gh-post-list-cta.edit.is-hovered {
-    color: var(--pink-l2);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-a.gh-post-list-cta.edit.is-hovered:hover,
-a.gh-post-list-cta.edit:not(.is-hovered):hover {
-    border-color: var(--lightgrey);
-    color: var(--pink-l1);
+a.gh-post-list-cta.edit {
+    color: var(--midlightgrey-d2);
 }
 
 a.gh-post-list-cta svg {
-    width: 1.5rem;
-    height: 1.5rem;
-}
-
-a.gh-post-list-cta.edit svg {
-    padding: 1px;
+    display: block;
+    width: 8px;
+    height: 8px;
+    margin: 2px 6px 0;
+    transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
 }
 
 a.gh-post-list-cta svg path {
-    stroke-width: 2;
+    stroke-width: 4;
+    stroke: var(--green-d1);
+}
+
+a.gh-post-list-cta.edit svg path {
+    stroke: var(--midlightgrey-d2);
+}
+
+a.gh-post-list-cta.is-hovered svg {
+    transform: translateX(2px)
+}
+
+a.gh-post-list-cta.is-hovered:hover {
+    color: var(--green-d2);
 }
 
 .gh-post-analytics-meta a.gh-post-list-cta {
