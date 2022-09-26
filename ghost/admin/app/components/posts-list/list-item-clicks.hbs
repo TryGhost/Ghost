@@ -121,12 +121,15 @@
     {{#if (and @post.email (not-eq this.settings.membersSignupAccess "none") (not-eq this.settings.editorDefaultEmailRecipients "disabled") (not this.session.user.isContributor) (or @post.isSent @post.isPublished) this.settings.emailTrackOpens @post.email.trackOpens this.feature.emailAnalytics (eq @post.displayName "post"))}}
         {{!-- Opens column --}}
         <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-opens">
-            <div class="flex flex-column items-end" {{on "mouseover" (fn (mut this.isOpenStatHovered) true)}} {{on "mouseleave" (fn (mut this.isOpenStatHovered) false)}}>
+            <div class="flex flex-column" {{on "mouseover" (fn (mut this.isOpenStatHovered) true)}} {{on "mouseleave" (fn (mut this.isOpenStatHovered) false)}}>
                 <span class="gh-content-email-stats">
+                    Opened
+                </span>
+                <span class="gh-content-email-stats-value">
                     {{#if this.isOpenStatHovered}}
-                        <strong>{{format-number @post.email.openedCount}}</strong> opens
+                        {{format-number @post.email.openedCount}}
                     {{else}}
-                        <strong>{{@post.email.openRate}}%</strong> opens
+                        {{@post.email.openRate}}%
                     {{/if}}
                 </span>
             </div>
@@ -138,12 +141,15 @@
     {{#if (and @post.email (not-eq this.settings.membersSignupAccess "none") (not-eq this.settings.editorDefaultEmailRecipients "disabled") (not this.session.user.isContributor) (or @post.isSent @post.isPublished) this.settings.emailTrackClicks this.feature.emailAnalytics)}}
         {{!-- Clicks column --}}
         <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data gh-post-list-clicks">
-            <div class="flex flex-column items-end" {{on "mouseover" (fn (mut this.isClickStatHovered) true)}} {{on "mouseleave" (fn (mut this.isClickStatHovered) false)}}>
+            <div class="flex flex-column" {{on "mouseover" (fn (mut this.isClickStatHovered) true)}} {{on "mouseleave" (fn (mut this.isClickStatHovered) false)}}>
                 <span class="gh-content-email-stats">
+                    Clicked
+                </span>
+                <span class="gh-content-email-stats-value">
                     {{#if this.isClickStatHovered}}
-                        <strong>{{format-number @post.count.clicks}}</strong> clicks
+                        {{format-number @post.count.clicks}}
                     {{else}}
-                        <strong>{{@post.clickRate}}%</strong> clicks
+                        {{@post.clickRate}}%
                     {{/if}}
                 </span>
             </div>
@@ -155,14 +161,14 @@
     {{!-- Button column --}}
     <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="permalink gh-list-data {{if (not-eq this.settings.membersSignupAccess "none") "gh-post-list-button"}}">
         {{#if (not-eq this.settings.membersSignupAccess "none")}}
-            <div class="flex flex-column items-end">
+            <div class="flex">
                 {{#if (and (not this.session.user.isContributor) (or @post.isSent @post.isPublished) (or this.settings.emailTrackClicks (feature "memberAttribution")))}}
-                    <LinkTo @route="posts.analytics" @model={{@post}} class="gh-post-list-cta stats {{if this.isHovered "is-hovered"}}" title="View post analytics">
-                        {{svg-jar "stats" title="View post analytics"}}
+                    <LinkTo @route="posts.analytics" @model={{@post}} class="gh-post-list-cta {{if this.isHovered "is-hovered"}}" title="View post analytics">
+                        Stats {{svg-jar "arrow-right-small"}}
                     </LinkTo>
                 {{else}}
                     <LinkTo @route="editor.edit" @models={{array @post.displayName @post.id}} class="gh-post-list-cta edit {{if this.isHovered "is-hovered"}}" title="Edit this post">
-                        {{svg-jar "pen" title="Edit this post"}}
+                        Edit {{svg-jar "arrow-right-small"}}
                     </LinkTo>
                 {{/if}}
             </div>
