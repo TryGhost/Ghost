@@ -34,8 +34,8 @@
                     {{moment-format publishedAt "HH:mm"}}
                 {{/let}}
             </div>
-            <LinkTo @route="editor.edit" @models={{array this.post.displayName this.post.id}} class="gh-post-list-cta edit" title="Edit this post">
-                {{svg-jar "pen" title="Edit this post"}}
+            <LinkTo @route="editor.edit" @models={{array this.post.displayName this.post.id}} class="gh-post-list-cta edit" title="">
+                {{svg-jar "pen" title=""}}<span>Edit post</span>
             </LinkTo>
         </div>
     </GhCanvasHeader>

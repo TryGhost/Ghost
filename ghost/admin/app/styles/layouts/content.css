@@ -961,6 +961,12 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     vertical-align: top;
 }
 
+.gh-posts-list-item-labs .gh-list-data-inner {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 20px 0 0;
+}
+
 .gh-posts-list-item-labs:nth-of-type(2) .gh-list-data {
     border-top: var(--whitegrey) 1px solid;
 }
@@ -1061,61 +1067,85 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 a.gh-post-list-cta {
     display: flex;
     align-items: center;
-    max-width: max-content;
-    margin: -6px 16px 0 0;
-    padding: 8px 14px;
+    justify-content: flex-start;
+    margin: -7px 16px 0 0;
+    padding: 1px 14px;
+    border: 1px solid rgb(222, 227, 231);
+    box-shadow: rgb(0 0 0 / 10%) 0px 1px 2px;
     background: var(--white);
-    border: 1px solid var(--lightgrey-l1);
-    color: var(--midgrey);
+    color: var(--darkgrey);
     border-radius: var(--border-radius);
     transition: all .2s ease;
-    height: 40px;
+    white-space: nowrap;
+    height: 38px;
     overflow: hidden;
+    transition: all .1s linear;
+}
+
+.gh-post-analytics-header a.gh-post-list-cta {
+    margin-top: -14px;
+    margin-right: 0;
+}
+
+a.gh-post-list-cta.is-hovered {
+    border-color: rgb(186, 191, 194);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 a.gh-post-list-cta.stats.is-hovered {
     color: var(--green);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 a.gh-post-list-cta.stats.is-hovered:hover {
-    border-color: var(--lightgrey);
     color: var(--green-d1);
+    border-color: var(--green-d1);
 }
 
 a.gh-post-list-cta.edit.is-hovered {
-    color: var(--pink-l2);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    color: var(--pink);
 }
 
 a.gh-post-list-cta.edit.is-hovered:hover,
 a.gh-post-list-cta.edit:not(.is-hovered):hover {
-    border-color: var(--lightgrey);
-    color: var(--pink-l1);
+    color: var(--pink-d1);
+    border-color: var(--pink-d1);
 }
 
-a.gh-post-list-cta svg {
+a.gh-post-list-cta > svg {
     width: 1.5rem;
     height: 1.5rem;
+    color: var(--darkgrey);
+    stroke: var(--darkgrey);
 }
 
-a.gh-post-list-cta.edit svg {
-    padding: 1px;
-}
-
-a.gh-post-list-cta svg path {
+a.gh-post-list-cta > svg path {
     stroke-width: 2;
 }
 
 a.gh-post-list-cta > span {
-    padding: 0 0 0 1rem;
+    line-height: 36px;
+    font-weight: 600;
+    padding: 0 0 0 0.75rem;
+    color: var(--darkgrey-l1);
+    transition: all .1s linear;
 }
 
+a.gh-post-list-cta.edit.is-hovered > * {
+    color: var(--pink-d1);
+}
 
+a.gh-post-list-cta.edit.is-hovered:hover > *,
+a.gh-post-list-cta.edit:not(.is-hovered):hover > * {
+    color: var(--pink-d2);
+}
 
+a.gh-post-list-cta.stats.is-hovered > * {
+    color: var(--green-d1);
+}
 
-
-
+a.gh-post-list-cta.stats.is-hovered:hover > * {
+    color: var(--green-d2);
+}
 
 @media screen and (max-width: 1080px) {
     .gh-post-analytics-box.resources {
