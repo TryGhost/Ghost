@@ -2523,6 +2523,11 @@ p.gh-members-import-errordetail:first-of-type {
     margin-top: 16px;
     padding-top: 16px;
     border-top:1px solid #ECEEF0;
+    animation: fade-in .25s ease-in-out;
+}
+
+.gh-cp-membertier-attribution .gh-membertier-advanced.hide {
+    display: none;
 }
 
 .gh-cp-membertier-attribution .gh-membertier-advanced h4 {
