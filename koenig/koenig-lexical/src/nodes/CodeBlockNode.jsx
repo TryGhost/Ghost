@@ -1,11 +1,14 @@
 import * as React from 'react';
-import {$getNodeByKey, createCommand, DecoratorNode, $createParagraphNode} from 'lexical';
+import {$getNodeByKey, createCommand, DecoratorNode} from 'lexical';
 // import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
+import useAutoExpandTextArea from '../utils/autoExpandTextArea';
 
 export const INSERT_HORIZONTAL_RULE_COMMAND = createCommand();
 
 function CodeBlockComponent({className, code, language, nodeKey, editor}) {
+    const el = React.useRef(null);
+    useAutoExpandTextArea({el, value: code});
     const updateCode = (event) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
@@ -16,7 +19,8 @@ function CodeBlockComponent({className, code, language, nodeKey, editor}) {
     return (
         <KoenigCardWrapper className={className} nodeKey={nodeKey} >
             <code>
-                <textarea 
+                <textarea
+                    ref={el}
                     autoCorrect="off" 
                     autoCapitalize="off" 
                     spellCheck="false" 
@@ -100,6 +104,7 @@ export class CodeBlockNode extends DecoratorNode {
             base: codeBlockTheme.base || '',
             focus: codeBlockTheme.focus || ''
         };
+
         return (
             <CodeBlockComponent
                 className={className}
@@ -113,14 +118,6 @@ export class CodeBlockNode extends DecoratorNode {
 
     isTopLevel() {
         return true;
-    }
-
-    insertNewAfter() {
-        const newBlock = $createParagraphNode();
-        const direction = this.getDirection();
-        newBlock.setDirection(direction);
-        this.insertNewAfter(newBlock);
-        return newBlock;
     }
 }
 
