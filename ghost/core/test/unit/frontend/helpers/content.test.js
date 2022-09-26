@@ -108,6 +108,7 @@ describe('{{content}} helper with no access', function () {
         rendered.string.should.containEql('gh-post-upgrade-cta');
         rendered.string.should.containEql('gh-post-upgrade-cta-content');
         rendered.string.should.containEql('"background-color: #abcdef"');
+        rendered.string.should.containEql('"color:#abcdef"');
 
         should.exist(rendered);
     });
