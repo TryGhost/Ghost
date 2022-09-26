@@ -19,6 +19,7 @@
     "**/node_modules/**"
   ],
   "scripts": {
+    "build": "yarn workspace ghost run build",
     "dev:debug": "DEBUG_COLORS=true DEBUG=@tryghost*,ghost:* yarn dev",
     "dev:admin": "node .github/dev.js --admin",
     "dev:ghost": "node .github/dev.js --ghost",
