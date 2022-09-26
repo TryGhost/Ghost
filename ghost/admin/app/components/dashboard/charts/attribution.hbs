@@ -3,7 +3,7 @@
     <article class="gh-dashboard-box" {{did-insert this.loadData}}>
         <div style="display: grid;grid-template-columns: 2fr 1fr;grid-gap: 24px; position: relative;">
             <div>
-                <h3 class="gh-dashboard-metric-label">Attribution</h3>
+                <h3 class="gh-dashboard-metric-label">Top sources</h3>
                 <MemberAttribution::SourceAttributionTable @sources={{this.sources}} class="gh-dashboard-attribution-list gh-dashboard-list" style="justify-content:flex-start;" />
             </div>
             <div style="display:flex;justify-content:center;align-items: center;height:100%;position: relative;">
