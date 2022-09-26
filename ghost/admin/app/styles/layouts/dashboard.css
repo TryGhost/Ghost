@@ -1056,6 +1056,7 @@ Dashboard Attribution */
 }
 
 .gh-dashboard-list-item-other-source span {
+    font-weight: 500;
     color: var(--midgrey);
     cursor: pointer;
 }
