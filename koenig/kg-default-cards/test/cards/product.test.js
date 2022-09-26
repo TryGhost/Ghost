@@ -29,16 +29,53 @@ describe('Product card', function () {
         });
     });
 
-    it('renders nothing if productText and productDescription is missing', function () {
-        let opts = {
-            env: {dom: new SimpleDom.Document()},
-            payload: {
-                productText: '',
-                productDescription: ''
-            }
-        };
+    describe('render requirements', function () {
+        it('renders nothing if title, description, and button is missing', function () {
+            let opts = {
+                env: {dom: new SimpleDom.Document()},
+                payload: {
+                    productTitle: '',
+                    productDescription: ''
+                }
+            };
 
-        serializer.serialize(card.render(opts)).should.equal('');
+            serializer.serialize(card.render(opts)).should.equal('');
+        });
+
+        it('renders if only title is present', function () {
+            let opts = {
+                env: {dom: new SimpleDom.Document()},
+                payload: {
+                    productTitle: 'Just a title'
+                }
+            };
+
+            serializer.serialize(card.render(opts)).should.not.equal('');
+        });
+
+        it('renders if only description is present', function () {
+            let opts = {
+                env: {dom: new SimpleDom.Document()},
+                payload: {
+                    productTitle: 'Just a description'
+                }
+            };
+
+            serializer.serialize(card.render(opts)).should.not.equal('');
+        });
+
+        it('renders if only button is present', function () {
+            let opts = {
+                env: {dom: new SimpleDom.Document()},
+                payload: {
+                    productButtonEnabled: true,
+                    productButton: 'Just a button',
+                    productUrl: 'https://example.com/product'
+                }
+            };
+
+            serializer.serialize(card.render(opts)).should.not.equal('');
+        });
     });
 
     describe('image dimensions', function () {

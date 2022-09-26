@@ -17,7 +17,9 @@ module.exports = {
     type: 'dom',
 
     render({payload, env: {dom}, options = {}}) {
-        if (!payload.productTitle && !payload.productDescription) {
+        const productButtonEnabled = payload.productButtonEnabled && payload.productButton && payload.productUrl;
+
+        if (!payload.productTitle && !payload.productDescription && !productButtonEnabled) {
             return dom.createTextNode('');
         }
 
@@ -90,7 +92,7 @@ module.exports = {
         `;
 
         const templateData = {
-            productButtonEnabled: payload.productButtonEnabled && payload.productButton && payload.productUrl,
+            productButtonEnabled,
             productRatingEnabled: payload.productRatingEnabled,
             productImageEnabled: Boolean(payload.productImageSrc),
 
