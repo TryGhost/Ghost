@@ -1071,6 +1071,11 @@ Dashboard Attribution */
     margin-left: 2px;
     margin-top: -2px;
     vertical-align: middle;
+    display: none;
+}
+
+.gh-dashboard-list-title.sorted-by svg {
+    display: block;
 }
 
 .gh-dashboard-list-title svg path {
