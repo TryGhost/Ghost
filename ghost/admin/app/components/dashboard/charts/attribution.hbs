@@ -4,11 +4,20 @@
         <div style="display: grid;grid-template-columns: 2fr 1fr;grid-gap: 24px; position: relative;">
             <div>
                 <h3 class="gh-dashboard-metric-label">Top sources</h3>
-                <MemberAttribution::SourceAttributionTable @sources={{this.sources}} class="gh-dashboard-attribution-list gh-dashboard-list" style="justify-content:flex-start;" />
+                <MemberAttribution::SourceAttributionTable
+                    @sources={{this.sources}}
+                    @sortColumn={{this.sortColumn}}
+                    @setSortColumn={{this.setSortColumn}}
+                    class="gh-dashboard-attribution-list gh-dashboard-list" style="justify-content:flex-start;"
+                />
             </div>
             <div style="display:flex;justify-content:center;align-items: center;height:100%;position: relative;">
                 <div style="max-width: 200px; position: relative;">
-                    <MemberAttribution::SourceAttributionChart @sources={{this.chartSources}} />
+                    <MemberAttribution::SourceAttributionChart
+                        @sources={{this.chartSources}}
+                        @sortColumn={{this.sortColumn}}
+                        @setSortColumn={{this.setSortColumn}}
+                    />
                 </div>
                 <div id="gh-dashboard-attribution-tooltip" class="gh-dashboard-tooltip">
                     <div class="gh-dashboard-tooltip-value">

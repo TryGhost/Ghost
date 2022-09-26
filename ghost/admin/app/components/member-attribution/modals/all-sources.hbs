@@ -15,7 +15,7 @@
             </div>
             <div class="gh-dashboard-list-body" style="max-height: 230px; overflow-y: clip; justify-content: flex-start;">
                 <div class="gh-dashboard-attribution-list-scrollable">
-                    {{#each this.sources as |sourceData|}}
+                    {{#each @data.sources as |sourceData|}}
                         <div class="gh-dashboard-list-item">
                             <div class="gh-dashboard-list-item-sub gh-dashboard-list-item-sub-source">
                                 <span class="gh-dashboard-list-text">{{sourceData.source}}</span>

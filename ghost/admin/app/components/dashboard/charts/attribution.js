@@ -1,9 +1,16 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
+import {tracked} from '@glimmer/tracking';
 
 export default class Recents extends Component {
     @service dashboardStats;
+    @tracked sortColumn = 'signups';
+
+    @action
+    setSortColumn(column) {
+        this.sortColumn = column;
+    }
 
     @action
     loadData() {

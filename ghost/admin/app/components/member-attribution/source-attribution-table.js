@@ -10,12 +10,24 @@ export default class SourceAttributionTable extends Component {
     @action
     openAllSources() {
         this.modals.open(AllSourcesModal, {
-            sources: this.args.sources
+            sources: [
+                ...this.sortedSources,
+                ...this.unavailableSource
+            ]
+        });
+    }
+
+    get unavailableSource() {
+        return this.args.sources.filter(sourceData => !sourceData.source).map((sourceData) => {
+            return {
+                ...sourceData,
+                source: 'Unavailable'
+            };
         });
     }
 
     get others() {
-        const availableSources = this.args.sources.filter(source => source.source);
+        const availableSources = this.sortedSources;
         const unavailableSource = this.args.sources.find(sourceData => !sourceData.source);
         if (!availableSources.length && !unavailableSource) {
             return null;
@@ -32,20 +44,17 @@ export default class SourceAttributionTable extends Component {
         });
     }
 
-    get sources() {
-        return this.args.sources.filter(source => source.source).slice(0, 5);
-        // const availableSources = this.args.sources.filter(source => source.source);
-        // return availableSources.slice(0, 5);
+    get sortedSources() {
+        return this.args.sources?.filter(source => source.source).sort((a, b) => {
+            if (this.args.sortColumn === 'signups') {
+                return b.signups - a.signups;
+            } else {
+                return b.paidConversions - a.paidConversions;
+            }
+        }) || [];
+    }
 
-        // const unavailableSources = this.args.sources.filter(sourceData => !sourceData.source).map((sourceData) => {
-        //     return {
-        //         ...sourceData,
-        //         source: 'Unavailable'
-        //     };
-        // });
-        // return [
-        //     ...availableSources,
-        //     ...unavailableSources
-        // ];
+    get sources() {
+        return this.sortedSources.slice(0, 5);
     }
 }

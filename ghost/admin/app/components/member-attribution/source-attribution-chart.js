@@ -1,5 +1,4 @@
 import Component from '@glimmer/component';
-import {tracked} from '@glimmer/tracking';
 
 const CHART_COLORS = [
     '#8e42ff',
@@ -11,8 +10,6 @@ const CHART_COLORS = [
 ];
 
 export default class SourceAttributionChart extends Component {
-    @tracked chartType = 'free';
-
     get sources() {
         return this.args.sources;
     }
@@ -84,7 +81,7 @@ export default class SourceAttributionChart extends Component {
     }
 
     get chartData() {
-        if (this.chartType === 'free') {
+        if (this.args.sortColumn === 'signups') {
             const sortedByFree = [...this.sources];
             sortedByFree.sort((a, b) => {
                 return b.signups - a.signups;
