@@ -249,6 +249,10 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     opacity: 0.5;
 }
 
+.gh-post-list-button {
+    width: 106px;
+}
+
 .gh-list .gh-content-entry-title {
     display: flex;
     align-items: center;
@@ -1020,7 +1024,11 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 
 .gh-posts-list-item-labs .gh-post-list-clicks,
 .gh-posts-list-item-labs .gh-post-list-opens {
-    padding-right: 28px;
+    padding-right: 24px;
+}
+
+.gh-posts-list-item-labs .gh-post-list-opens {
+    padding-right: 36px;
 }
 
 .gh-posts-list-item-labs .gh-content-email-stats,
@@ -1031,12 +1039,16 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     font-weight: 400;
 }
 
+.gh-posts-list-item-labs .gh-content-email-stats {
+    margin-top: -1px;
+}
+
 .gh-content-email-stats-value {
     color: var(--black);
     font-size: 1.5rem;
     font-weight: 600;
 }
-
+/* 
 .gh-posts-list-item-labs a.gh-post-list-cta {
     display: flex;
     align-items: center;
@@ -1075,6 +1087,69 @@ a.gh-post-list-cta.is-hovered:hover {
 .gh-post-analytics-meta a.gh-post-list-cta {
     margin-right: 0;
 }
+
+
+
+
+
+ */
+
+
+
+a.gh-post-list-cta {
+    display: flex;
+    align-items: center;
+    max-width: max-content;
+    margin: -6px 16px 0 0;
+    padding: 8px 14px;
+    background: var(--white);
+    border: 1px solid var(--lightgrey-l1);
+    color: var(--midgrey);
+    border-radius: var(--border-radius);
+    transition: all .2s ease;
+    height: 40px;
+    overflow: hidden;
+}
+
+a.gh-post-list-cta.stats.is-hovered {
+    color: var(--green);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+a.gh-post-list-cta.stats.is-hovered:hover {
+    border-color: var(--lightgrey);
+    color: var(--green-d1);
+}
+
+a.gh-post-list-cta.edit.is-hovered {
+    color: var(--pink-l2);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+a.gh-post-list-cta.edit.is-hovered:hover,
+a.gh-post-list-cta.edit:not(.is-hovered):hover {
+    border-color: var(--lightgrey);
+    color: var(--pink-l1);
+}
+
+a.gh-post-list-cta svg {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+a.gh-post-list-cta.edit svg {
+    padding: 1px;
+}
+
+a.gh-post-list-cta svg path {
+    stroke-width: 2;
+}
+
+
+
+
+
+
 
 @media screen and (max-width: 1080px) {
     .gh-post-analytics-box.resources {
