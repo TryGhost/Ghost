@@ -639,6 +639,7 @@ Dashboard Metric */
     padding: 8px 8px 8px 0;
     opacity: 1;
     border-radius: 3px;
+    min-height: 40px;
 }
 
 .gh-dashboard-metric.is-embedded h5 {
@@ -650,7 +651,7 @@ Dashboard Metric */
 }
 
 .gh-dashboard-hero.source-attribution:not(.is-solo) {
-    margin-top: -64px;
+    margin-top: -40px;
 }
 
 .gh-dashboard-metric-minivalue {
