@@ -1052,6 +1052,12 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     margin: 0 0 3px;
 }
 
+.gh-content-email-stats-value sup {
+    top: -0.225em;
+    font-size: 75%;
+    padding: 0 0 0 1px;
+}
+
 a.gh-post-list-cta {
     display: flex;
     align-items: center;
