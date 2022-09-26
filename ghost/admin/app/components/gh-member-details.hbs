@@ -67,17 +67,17 @@
             {{#if (feature 'sourceAttribution')}}
                 <div class="gh-member-details-attribution">
                     <h4 class="gh-main-section-header small bn">Attribution</h4>
-                    {{#if (and @member.attribution.url @member.attribution.title)}}
-                    <p>
-                        {{svg-jar "posts"}}
-                        Signed up on&nbsp;<a href="{{@member.attribution.url}}" target="_blank" rel="noopener noreferrer" title="{{ @member.attribution.title }}">{{ @member.attribution.title }}</a>
-                    </p>
-                    {{/if}}
                     {{#if (eq this.referrerAttribution.source "Unknown")}}
                     {{else}}
                     <p>
                         {{svg-jar "earth"}}
-                        Coming from&nbsp;<p title="{{this.referrerAttribution.source}}">{{this.referrerAttribution.source}}</p>
+                        Sign up source:&nbsp;<p title="{{this.referrerAttribution.source}}">{{this.referrerAttribution.source}}</p>
+                    </p>
+                    {{/if}}
+                    {{#if (and @member.attribution.url @member.attribution.title)}}
+                    <p>
+                        {{svg-jar "posts"}}
+                        Sign up page:&nbsp;<a href="{{@member.attribution.url}}" target="_blank" rel="noopener noreferrer" title="{{ @member.attribution.title }}">{{ @member.attribution.title }}</a>
                     </p>
                     {{/if}}
                 </div>
