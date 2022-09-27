@@ -118,7 +118,7 @@ module.exports = function setupSiteApp(routerConfig) {
     debug('Themes done');
 
     // Serve robots.txt if not found in theme
-    siteApp.use(mw.servePublicFile('static', 'robots.txt', 'text/plain', constants.ONE_HOUR_S));
+    siteApp.use(mw.servePublicFile('static', 'robots.txt', 'text/plain', config.get('caching:robotstxt:maxAge')));
 
     // site map - this should probably be refactored to be an internal app
     sitemapHandler(siteApp);
