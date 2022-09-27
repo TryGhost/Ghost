@@ -2,6 +2,7 @@ import App from '../App';
 import {site as FixturesSite, member as FixtureMember} from '../utils/test-fixtures';
 import {fireEvent, appRender, within} from '../utils/test-utils';
 import setupGhostApi from '../utils/api';
+import * as helpers from '../utils/helpers';
 const {formSubmitHandler, planClickHandler} = require('../data-attributes');
 
 // Mock data
@@ -114,6 +115,17 @@ describe('Member Data attributes:', () => {
             };
         });
 
+        // Mock url history method
+        jest.spyOn(helpers, 'getUrlHistory').mockImplementation(() => {
+            return [{
+                path: '/blog/',
+                refMedium: null,
+                refSource: 'ghost-explore',
+                refUrl: 'https://example.com/blog/',
+                time: 1611234567890
+            }];
+        });
+
         // Mock window.location
         let locationMock = jest.fn();
         delete window.location;
@@ -130,8 +142,21 @@ describe('Member Data attributes:', () => {
             formSubmitHandler({event, form, errorEl, siteUrl, submitHandler});
 
             expect(window.fetch).toHaveBeenCalledTimes(1);
-
-            expect(window.fetch).toHaveBeenCalledWith('https://portal.localhost/members/api/send-magic-link/', {body: `{"email":"jamie@example.com","emailType":"signup","labels":["Gold"],"name":"Jamie Larsen","autoRedirect":${true}}`, headers: {'Content-Type': 'application/json'}, method: 'POST'});
+            const expectedBody = JSON.stringify({
+                email: 'jamie@example.com',
+                emailType: 'signup',
+                labels: ['Gold'],
+                name: 'Jamie Larsen',
+                autoRedirect: true,
+                urlHistory: [{
+                    path: '/blog/',
+                    refMedium: null,
+                    refSource: 'ghost-explore',
+                    refUrl: 'https://example.com/blog/',
+                    time: 1611234567890
+                }]
+            });
+            expect(window.fetch).toHaveBeenCalledWith('https://portal.localhost/members/api/send-magic-link/', {body: expectedBody, headers: {'Content-Type': 'application/json'}, method: 'POST'});
         });
     });
 
@@ -148,9 +173,24 @@ describe('Member Data attributes:', () => {
                     credentials: 'same-origin'
                 }
             );
+            const expectedBody = {
+                priceId: plan,
+                identity: 'session-identity',
+                successUrl: 'https://portal.localhost/success',
+                cancelUrl: 'https://portal.localhost/cancel',
+                metadata: {
+                    urlHistory: [{
+                        path: '/blog/',
+                        refMedium: null,
+                        refSource: 'ghost-explore',
+                        refUrl: 'https://example.com/blog/',
+                        time: 1611234567890
+                    }]
+                }
+            };
             expect(window.fetch).toHaveBeenNthCalledWith(2,
                 'https://portal.localhost/members/api/create-stripe-checkout-session/', {
-                    body: `{"priceId":"${plan}","identity":"session-identity","successUrl":"https://portal.localhost/success","cancelUrl":"https://portal.localhost/cancel","metadata":{}}`,
+                    body: JSON.stringify(expectedBody),
                     headers: {
                         'Content-Type': 'application/json'
                     },
@@ -171,8 +211,24 @@ describe('Member Data attributes:', () => {
             expect(window.fetch).toHaveBeenNthCalledWith(1, 'https://portal.localhost/members/api/session', {
                 credentials: 'same-origin'
             });
+            const expectedBody = {
+                priceId: plan,
+                identity: 'session-identity',
+                successUrl: 'https://portal.localhost/success',
+                cancelUrl: 'https://portal.localhost/cancel',
+                metadata: {
+                    checkoutType: 'upgrade',
+                    urlHistory: [{
+                        path: '/blog/',
+                        refMedium: null,
+                        refSource: 'ghost-explore',
+                        refUrl: 'https://example.com/blog/',
+                        time: 1611234567890
+                    }]
+                }
+            };
             expect(window.fetch).toHaveBeenNthCalledWith(2, 'https://portal.localhost/members/api/create-stripe-checkout-session/', {
-                body: `{"priceId":"${plan}","identity":"session-identity","successUrl":"https://portal.localhost/success","cancelUrl":"https://portal.localhost/cancel","metadata":{"checkoutType":"upgrade"}}`,
+                body: JSON.stringify(expectedBody),
                 headers: {
                     'Content-Type': 'application/json'
                 },
