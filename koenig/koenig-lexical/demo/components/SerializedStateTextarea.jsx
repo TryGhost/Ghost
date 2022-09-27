@@ -13,7 +13,7 @@ const SerializedStateTextarea = (props) => {
     };
 
     return (
-        <div className={`border-grey-100 h-full grow overflow-hidden bg-black pb-14 transition-all ease-in-out ${sidebarState ? 'right-0 w-[440px] opacity-100' : 'right-[-100%] w-0 opacity-0'}`}>
+        <div className={`h-full grow overflow-hidden border-grey-100 bg-black pb-14 transition-all ease-in-out ${sidebarState ? 'right-0 w-[440px] opacity-100' : 'right-[-100%] w-0 opacity-0'}`}>
             <CodeEditor
                 value={serializedJson}
                 language="JSON"

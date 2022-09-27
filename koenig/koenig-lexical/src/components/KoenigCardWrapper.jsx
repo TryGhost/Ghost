@@ -1,6 +1,6 @@
 const KoenigCardWrapperComponent = ({children}) => {
     return (
-        <div className="caret-grey-800 hover:shadow-green relative hover:shadow-[0_0_0_1px]" data-kg-card>
+        <div className="relative caret-grey-800 hover:shadow-[0_0_0_1px] hover:shadow-green" data-kg-card>
             {children}
         </div>
     );
