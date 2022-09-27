@@ -65,7 +65,7 @@ module.exports = function setupSiteApp(routerConfig) {
     siteApp.use(mw.serveFavicon());
 
     // Serve sitemap.xsl file
-    siteApp.use(mw.servePublicFile('static', 'sitemap.xsl', 'text/xsl', constants.ONE_DAY_S));
+    siteApp.use(mw.servePublicFile('static', 'sitemap.xsl', 'text/xsl', config.get('caching:sitemapXSL:maxAge')));
 
     // Serve stylesheets for default templates
     siteApp.use(mw.servePublicFile('static', 'public/ghost.css', 'text/css', constants.ONE_HOUR_S));
