@@ -894,6 +894,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     display: flex;
     justify-content: center;
     align-items: center;
+    padding: 2rem 0 0;
 }
 
 .gh-attribution-chart-column-inner {
@@ -903,7 +904,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 
 .gh-attribution-table-column {
     flex: 2;
-    padding: 2rem 0;
+    padding: 1rem 0;
 }
 
 .gh-links-list {
