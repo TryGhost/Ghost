@@ -767,7 +767,7 @@ label[for="member-description"] + p {
     min-width: 0;
 }
 
-.gh-member-details-attribution p a {
+.gh-member-details-attribution p a, .gh-member-details-attribution p span {
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
