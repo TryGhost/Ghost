@@ -87,9 +87,9 @@ const LIMIT = 15;
             console.error('[Member Attribution] Parsing referrer from querystring failed', e);
         }
 
-        const refSource = refParam || sourceParam || utmSourceParam || null;
-        const refMedium = utmMediumParam || null;
-        const refUrl = window.document.referrer || null;
+        const referrerSource = refParam || sourceParam || utmSourceParam || null;
+        const referrerMedium = utmMediumParam || null;
+        const referrerUrl = window.document.referrer || null;
 
         // Do we have attributions in the query string?
         try {
@@ -101,9 +101,9 @@ const LIMIT = 15;
                     time: currentTime,
                     id: params.get('attribution_id'),
                     type: params.get('attribution_type'),
-                    refSource,
-                    refMedium,
-                    refUrl
+                    referrerSource,
+                    referrerMedium,
+                    referrerUrl
                 });
 
                 // Remove attribution from query string
@@ -122,19 +122,19 @@ const LIMIT = 15;
             history.push({
                 path: currentPath,
                 time: currentTime,
-                refSource,
-                refMedium,
-                refUrl
+                referrerSource,
+                referrerMedium,
+                referrerUrl
             });
         } else if (history.length > 0) {
             history[history.length - 1].time = currentTime;
             // Update referrer information for same path if available (e.g. when opening a link on same path via external referrer)
-            if (refSource) {
-                history[history.length - 1].refSource = refSource;
-                history[history.length - 1].refMedium = refMedium;
+            if (referrerSource) {
+                history[history.length - 1].referrerSource = referrerSource;
+                history[history.length - 1].referrerMedium = referrerMedium;
             }
-            if (refUrl) {
-                history[history.length - 1].refUrl = refUrl;
+            if (referrerUrl) {
+                history[history.length - 1].referrerUrl = referrerUrl;
             }
         }
 
