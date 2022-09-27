@@ -500,7 +500,7 @@ describe('Default Frontend routing', function () {
         // NOTE: this test extends the unit test, checking that there is no other robots.txt middleware overriding private blogging
         it('should serve private robots.txt', async function () {
             await request.get('/robots.txt')
-                .expect('Cache-Control', 'public, max-age=3600000')
+                .expect('Cache-Control', 'public, max-age=3600')
                 .expect(200)
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {

@@ -124,7 +124,7 @@
             "maxAge": 86400
         },
         "robotstxt": {
-            "maxAge": 3600000
+            "maxAge": 3600
         },
         "wellKnown": {
             "maxAge": 86400
