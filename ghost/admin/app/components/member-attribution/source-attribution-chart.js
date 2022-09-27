@@ -15,21 +15,27 @@ export default class SourceAttributionChart extends Component {
     }
 
     get chartOptions() {
+        let chartTitle = 'Free signups';
+        if (this.args.sortColumn === 'signups') {
+            chartTitle = 'Free signups';
+        } else {
+            chartTitle = 'Paid conversions';
+        }
+
         return {
             cutoutPercentage: 70,
             borderColor: '#fff',
-            legend: {
-                display: false,
+            title: {
+                display: true,
+                text: chartTitle,
                 position: 'bottom',
-                align: 'center',
-                labels: {
-                    color: 'rgb(255, 99, 132)',
-                    fontSize: 12,
-                    boxWidth: 10,
-                    padding: 6,
-                    usePointStyle: true,
-                    fontFamily: 'Inter,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Droid Sans,Helvetica Neue,sans-serif'
-                }
+                fontFamily: 'Inter,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Droid Sans,Helvetica Neue,sans-serif',
+                color: '#7c8b9a',
+                fontStyle: 'Semibold',
+                fontSize: 25
+            },
+            legend: {
+                display: false
             },
             hover: {
                 onHover: function (e) {
