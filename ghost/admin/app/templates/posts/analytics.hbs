@@ -100,7 +100,17 @@
                 </div>
             {{/if}}
         {{else}}
-            Loading...
+            {{!-- TODO: better way to stop repeating code for loading? --}}
+            <h4 class="gh-main-section-header small bn">
+                Newsletter clicks
+            </h4>
+            <div class="gh-post-analytics-box column">
+                <div class="gh-attribution-box gh-post-analytics-loading">
+                    <div class="gh-loading-spinner-outer">
+                        <div class="gh-loading-spinner"></div>
+                    </div>
+                </div>
+            </div>
         {{/if}}
     {{/if}}
 
@@ -134,7 +144,17 @@
                 </div>
             {{/if}}
         {{else}}
-            Loading...
+            {{!-- TODO: better way to stop repeating code for loading? --}}
+            <h4 class="gh-main-section-header small bn">
+                Source attribution
+            </h4>
+            <div class="gh-post-analytics-box column">
+                <div class="gh-attribution-box">
+                    <div class="gh-loading-spinner-outer">
+                        <div class="gh-loading-spinner"></div>
+                    </div>
+                </div>
+            </div>
         {{/if}}
     {{/if}}
 

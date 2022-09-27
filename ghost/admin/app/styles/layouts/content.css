@@ -728,6 +728,21 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 /* Post analytics
 /* --------------------------------------------------------- */
 
+@keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+.gh-loading-spinner-outer {
+    width: 100%;
+    height: 150px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    animation: .25s fadeIn .5s normal forwards;
+}
+
 .gh-post-analytics-header {
     position: relative;
     margin: 0 0 2.4rem;
