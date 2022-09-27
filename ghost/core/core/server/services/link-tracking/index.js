@@ -26,7 +26,7 @@ class LinkTrackingServiceWrapper {
             linkRedirectRepository: linkRedirection.linkRedirectRepository
         });
 
-        const linkClickRepository = new LinkClickRepository({
+        this.linkClickRepository = new LinkClickRepository({
             MemberLinkClickEventModel: models.MemberLinkClickEvent,
             Member: models.Member,
             MemberLinkClickEvent: MemberLinkClickEvent,
@@ -36,7 +36,7 @@ class LinkTrackingServiceWrapper {
         // Expose the service
         this.service = new LinkClickTrackingService({
             linkRedirectService: linkRedirection.service,
-            linkClickRepository,
+            linkClickRepository: this.linkClickRepository,
             postLinkRepository,
             DomainEvents
         });
