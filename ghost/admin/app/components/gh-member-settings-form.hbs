@@ -215,10 +215,13 @@
                                                 {{/if}}
                                             {{/if}}
                                             <div class="gh-membertier-details">
+                                                {{#if (eq sub.attribution.referrerSource 'Unknown')}}
+                                                {{else}}
                                                 <div class="gh-membertier-detail">
                                                     <h4>Subscription source</h4>
                                                     <p><span class="fw6">{{sub.attribution.referrerSource}}</span></p>
                                                 </div>
+                                                {{/if}}
                                                 {{#if (and sub.attribution sub.attribution.url sub.attribution.title)}}
                                                 <div class="gh-membertier-detail">
                                                     <h4>Subscription page</h4>
