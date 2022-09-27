@@ -1,3 +1,4 @@
+import DesignSandbox from './components/DesignSandbox';
 import KoenigComposer from './components/KoenigComposer';
 import KoenigEditor from './components/KoenigEditor';
 import DEFAULT_NODES from './nodes/DefaultNodes';
@@ -9,6 +10,7 @@ import MarkdownShortcutPlugin, {
 } from './plugins/MarkdownShortcutPlugin';
 
 export {
+    DesignSandbox,
     KoenigComposer,
     KoenigEditor,
     MarkdownShortcutPlugin,
