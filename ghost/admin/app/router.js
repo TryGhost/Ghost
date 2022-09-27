@@ -42,6 +42,7 @@ Router.map(function () {
         this.route('new', {path: ':type'});
         this.route('edit', {path: ':type/:post_id'});
     });
+    this.route('lexicalsandbox');
 
     this.route('tags');
     this.route('tag.new', {path: '/tags/new'});
