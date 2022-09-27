@@ -74,7 +74,7 @@ Router.map(function () {
         this.route('user', {path: ':user_slug'});
     });
 
-    this.route('explore');
+    this.route('explore-connect');
 
     this.route('settings.integrations', {path: '/settings/integrations'}, function () {
         this.route('new');
