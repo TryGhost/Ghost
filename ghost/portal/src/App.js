@@ -11,8 +11,8 @@ import ActionHandler from './actions';
 import './App.css';
 import NotificationParser from './utils/notifications';
 import {allowCompMemberUpgrade, createPopupNotification, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isComplimentaryMember, isInviteOnlySite, isPaidMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
+import {handleDataAttributes} from './data-attributes';
 
-const {handleDataAttributes} = require('./data-attributes');
 const React = require('react');
 
 const DEV_MODE_DATA = {
