@@ -2,7 +2,6 @@ const _ = require('lodash');
 const template = require('./template');
 const settingsCache = require('../../../shared/settings-cache');
 const urlUtils = require('../../../shared/url-utils');
-const labs = require('../../../shared/labs');
 const moment = require('moment-timezone');
 const api = require('../../api').endpoints;
 const apiFramework = require('@tryghost/api-framework');
@@ -357,34 +356,24 @@ const PostEmailSerializer = {
         }
 
         // Now replace the links in the HTML version
-        if (labs.isSet('emailClicks')) {
-            if ((!options.isBrowserPreview && !options.isTestEmail) || process.env.NODE_ENV === 'development') {
-                const enableTracking = settingsCache.get('email_track_clicks');
-                result.html = await linkReplacer.replace(result.html, async (url) => {
-                    // Add newsletter source attribution
-                    url = memberAttribution.service.addEmailSourceAttributionTracking(url, newsletter);
-                    const isSite = urlUtils.isSiteUrl(url);
+        if (!options.isBrowserPreview && !options.isTestEmail && settingsCache.get('email_track_clicks')) {
+            result.html = await linkReplacer.replace(result.html, async (url) => {
+                // Add newsletter source attribution
+                url = memberAttribution.service.addEmailSourceAttributionTracking(url, newsletter);
+                const isSite = urlUtils.isSiteUrl(url);
 
-                    // Add post attribution tracking
-                    if (isSite && enableTracking) {
-                        // Only add attribution links to our own site (except for the newsletter referrer)
-                        url = memberAttribution.service.addPostAttributionTracking(url, post);
-                    }
+                if (isSite) {
+                    // Only add post attribution to our own site (because external sites could/should not process this information)
+                    url = memberAttribution.service.addPostAttributionTracking(url, post);
+                }
 
-                    // Add link click tracking
-                    if (enableTracking) {
-                        url = await linkTracking.service.addTrackingToUrl(url, post, '--uuid--');
-                        
-                        // We need to convert to a string at this point, because we need invalid string characters in the URL
-                        const str = url.toString().replace(/--uuid--/g, '%%{uuid}%%');
-                        return str;
-                    }
-
-                    // Replace the URL with a normal redirect so we can change it later, but don't include tracking
-                    url = linkTracking.service.addRedirectToUrl(url, post);
-                    return url;
-                });
-            }
+                // Add link click tracking
+                url = await linkTracking.service.addTrackingToUrl(url, post, '--uuid--');
+                
+                // We need to convert to a string at this point, because we need invalid string characters in the URL
+                const str = url.toString().replace(/--uuid--/g, '%%{uuid}%%');
+                return str;
+            });
         }
 
         // Clean up any unknown replacements strings to get our final content
