@@ -124,6 +124,9 @@ describe('MEGA', function () {
         });
 
         it('Tracks all the links in an email', async function () {
+            const linkRedirectService = require('../../../core/server/services/link-redirection');
+            const linkRedirectRepository = linkRedirectService.linkRedirectRepository;
+
             sinon.stub(_mailgunClient, 'getInstance').returns({});
             const sendStub = sinon.stub(_mailgunClient, 'send');
 
@@ -188,16 +191,15 @@ describe('MEGA', function () {
                     firstLink = new URL(href);
                 }
             }
-            const links = (await models.LinkRedirect.findAll({post_id: emailModel.get('post_id')})).models;
-            const link = links.find(l => l.get('from') === firstLink.pathname);
-            assert(link, 'Link model not created');
 
-            const to = new URL(link.get('to'));
+            const links = await linkRedirectRepository.getAll({post_id: emailModel.get('post_id')});
+            const link = links.find(l => l.from.pathname === firstLink.pathname);
+            assert(link, 'Link model not created');
 
             // Mimic a click on a link
             const path = firstLink.pathname + firstLink.search;
             await frontendAgent.get(path)
-                .expect('Location', to.href)
+                .expect('Location', link.to.href)
                 .expect(302);
 
             // Since this is all event based, we need to wait a coulple of ms
@@ -208,7 +210,7 @@ describe('MEGA', function () {
             const member = await models.Member.findOne({uuid: memberUuid});
             const clickEvent = await models.MemberLinkClickEvent.findOne({
                 member_id: member.id,
-                link_id: link.id
+                link_id: link.link_id.toHexString()
             });
             assert(member, 'Invalid member');
             assert(clickEvent, 'Click event was not tracked');
