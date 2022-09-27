@@ -1128,6 +1128,10 @@ a.gh-post-list-cta.is-hovered:hover {
     border-top: 1px solid rgb(23, 25, 28);
 }
 
+.gh-dashboard-metric.is-embedded {
+    background: var(--white);
+}
+
 /* Offers */
 .gh-btn-green svg {
     fill: #fff !important;
@@ -1284,7 +1288,7 @@ kbd {
     background: #1c1e21;
 }
 
-.gh-dashboard-recents .gh-dashboard-list-item:hover {
+.gh-dashboard-recents .gh-dashboard-list-item:hover, .gh-dashboard-attribution .gh-dashboard-list-item:hover {
     background: linear-gradient(90deg, rgba(21,23,25,0) 0%, rgba(21,23,25,1) 100%);
 }
 

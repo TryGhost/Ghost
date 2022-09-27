@@ -738,7 +738,7 @@ Dashboard List */
     border-bottom: 0;
 }
 
-.gh-dashboard-recents .gh-dashboard-list-item:hover {
+.gh-dashboard-recents .gh-dashboard-list-item:hover, .gh-dashboard-attribution .gh-dashboard-list-item:hover {
     background: linear-gradient(315deg,#fafafb 60%,#fff);
 }
 
