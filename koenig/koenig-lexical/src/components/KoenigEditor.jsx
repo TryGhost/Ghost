@@ -34,7 +34,7 @@ const KoenigEditor = ({
                         <ContentEditable className="kg-prose" />
                     </div>
                 }
-                placeholder={<div className="kg-absolute kg-text-grey-500 kg-font-serif kg-pointer-events-none kg-top-0 kg-left-0 kg-min-w-full kg-cursor-text kg-text-xl">Begin writing your post...</div>}
+                placeholder={<div className="kg-pointer-events-none kg-absolute kg-top-0 kg-left-0 kg-min-w-full kg-cursor-text kg-font-serif kg-text-xl kg-text-grey-500">Begin writing your post...</div>}
             />
             <OnChangePlugin onChange={_onChange} />
             <HistoryPlugin /> {/* adds undo/redo */}
