@@ -10,7 +10,7 @@ import {
     SELECTION_CHANGE_COMMAND
 } from 'lexical';
 import {
-    $wrapLeafNodesInElements
+    $wrapNodes
 } from '@lexical/selection';
 import {
     $createHeadingNode,
@@ -86,7 +86,7 @@ function FloatingFormatToolbar({editor, anchorElem, blockType, isBold, isItalic}
                 const selection = $getSelection();
 
                 if ($isRangeSelection(selection)) {
-                    $wrapLeafNodesInElements(selection, () => $createParagraphNode());
+                    $wrapNodes(selection, () => $createParagraphNode());
                 }
             });
         }
@@ -98,7 +98,7 @@ function FloatingFormatToolbar({editor, anchorElem, blockType, isBold, isItalic}
                 const selection = $getSelection();
 
                 if ($isRangeSelection(selection)) {
-                    $wrapLeafNodesInElements(selection, () => $createHeadingNode(headingSize));
+                    $wrapNodes(selection, () => $createHeadingNode(headingSize));
                 }
             });
         }
@@ -110,11 +110,11 @@ function FloatingFormatToolbar({editor, anchorElem, blockType, isBold, isItalic}
 
             if ($isRangeSelection(selection)) {
                 if (blockType === 'quote') {
-                    $wrapLeafNodesInElements(selection, () => $createAsideNode());
+                    $wrapNodes(selection, () => $createAsideNode());
                 } else if (blockType === 'aside') {
-                    $wrapLeafNodesInElements(selection, () => $createParagraphNode());
+                    $wrapNodes(selection, () => $createParagraphNode());
                 } else {
-                    $wrapLeafNodesInElements(selection, () => $createQuoteNode());
+                    $wrapNodes(selection, () => $createQuoteNode());
                 }
             }
         });

@@ -26,13 +26,13 @@
     "sinon": "14.0.0"
   },
   "dependencies": {
-    "@lexical/clipboard": "^0.4.1",
-    "@lexical/code": "^0.4.1",
-    "@lexical/headless": "^0.4.1",
-    "@lexical/link": "^0.4.1",
-    "@lexical/list": "^0.4.1",
-    "@lexical/rich-text": "^0.4.1",
+    "@lexical/clipboard": "^0.5.0",
+    "@lexical/code": "^0.5.0",
+    "@lexical/headless": "^0.5.0",
+    "@lexical/link": "^0.5.0",
+    "@lexical/list": "^0.5.0",
+    "@lexical/rich-text": "^0.5.0",
     "jsdom": "^20.0.0",
-    "lexical": "^0.4.1"
+    "lexical": "^0.5.0"
   }
 }

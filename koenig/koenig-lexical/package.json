@@ -33,12 +33,12 @@
     "prepare": "NODE_ENV=production yarn build"
   },
   "dependencies": {
-    "@lexical/list": "^0.4.1",
-    "@lexical/react": "^0.4.1",
-    "@lexical/selection": "^0.4.1",
-    "@lexical/utils": "^0.4.1",
+    "@lexical/list": "^0.5.0",
+    "@lexical/react": "^0.5.0",
+    "@lexical/selection": "^0.5.0",
+    "@lexical/utils": "^0.5.0",
     "@uiw/react-textarea-code-editor": "^2.0.3",
-    "lexical": "^0.4.1",
+    "lexical": "^0.5.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
