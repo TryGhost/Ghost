@@ -1037,6 +1037,10 @@ Dashboard Attribution */
     margin-top: -20px;
 }
 
+.gh-dashboard-attribution-list .gh-dashboard-list-title:not(.sorted-by) {
+    cursor: pointer;
+}
+
 .gh-dashboard-attribution-list .gh-dashboard-list-body {
     padding-top: 8px;
     padding-bottom: 8px;
