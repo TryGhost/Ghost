@@ -36,6 +36,14 @@
     color: var(--darkgrey);
 }
 
+.gh-members-activity .gh-list-data {
+    height: 84px;
+}
+
+.gh-members-activity.gh-members-activity-single .gh-list-data {
+    height: 68px;
+}
+
 .no-posts .gh-members-placeholder {
     fill: var(--lightgrey);
     width: 60px;
@@ -141,7 +149,6 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    padding: 1.25rem 0;
 }
 
 .gh-members-activity-detail {
@@ -153,6 +160,7 @@
     display: block;
     font-weight: 500;
     font-size: 1.4rem;
+    letter-spacing: 0;
     color: var(--middarkgrey);
     text-overflow: ellipsis;
     overflow: hidden;
@@ -179,6 +187,10 @@
     color: var(--darkgrey);
 }
 
+.gh-members-activity-event-dash {
+    color: var(--midgrey);
+}
+
 .gh-members-activity-event-join {
     font-weight: 500;
     color: var(--middarkgrey);
@@ -190,10 +202,7 @@
 }
 
 .ghost-members-activity-event-description {
-    display: flex;
-    flex-direction: row;
-    align-items: baseline;
-    gap: 6px;
+    margin-top: -1px;
 }
 
 .ghost-members-activity-event-prefix {
@@ -254,7 +263,7 @@
 .ghost-members-activity-event-url > span {
     display: inline-block;
     font-weight: 400;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     color: var(--midgrey);
     letter-spacing: 0;
     line-height: 1.3em;

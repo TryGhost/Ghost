@@ -26,15 +26,16 @@
                         {{/if}}
                         {{#if event.url}}
                             <span class="gh-members-activity-event-join">{{event.join}}</span>
+                            {{#if (feature "emailClicks")}}<span class="gh-members-activity-event-dash">–</span>{{/if}}
                             <a class="ghost-members-activity-object-link" href="{{event.url}}" target="_blank" rel="noopener noreferrer">{{event.object}}</a>
                         {{/if}}
                         {{#if event.email}}
-                            <span class="{{if (feature "memberAttribution") 'hidden'}}"><GhEmailPreviewLink @data={{event.email}} /></span>
+                            {{#if (feature "emailClicks")}}<span class="gh-members-activity-event-dash">–</span>{{/if}}
+                            <GhEmailPreviewLink @data={{event.email}} />
                         {{/if}}
                     </span>
                     {{#if event.description}}
                         <div class="ghost-members-activity-event-description {{if (feature "memberAttribution") 'feature-memberAttribution'}}">
-                            <div class="ghost-members-activity-event-prefix">URL</div>
                             <div class="ghost-members-activity-event-url" {{on "mouseenter" this.enterLinkURL}} {{on "mouseleave" this.leaveLinkURL}}>
                                 <span>{{event.description}}</span>
                             </div>
