@@ -1123,6 +1123,11 @@ a.gh-post-list-cta.is-hovered:hover {
     opacity: 0.75;
 }
 
+/* Member */
+.gh-cp-membertier-attribution .gh-membertier-advanced {
+    border-top: 1px solid rgb(23, 25, 28);
+}
+
 /* Offers */
 .gh-btn-green svg {
     fill: #fff !important;

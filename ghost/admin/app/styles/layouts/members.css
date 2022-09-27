@@ -2487,7 +2487,7 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-cp-membertier-attribution .gh-tier-card-price {
     border: none !important;
-    background: #f5f6f6;
+    background: var(--main-color-content-greybg);
     padding: 20px 10px !important;
     border-radius: 6px;
 }
@@ -2554,8 +2554,8 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-cp-membertier-attribution .gh-membertier-details span, .gh-cp-membertier-attribution .gh-membertier-details a {
     font-size: 1.4rem;
-    font-weight: 500;
-    color: #15171A;
+    font-weight: 600;
+    color: unset;
 }
 
 .gh-cp-membertier-attribution .gh-cp-membertier-renewal {
