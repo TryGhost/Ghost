@@ -131,6 +131,9 @@
         },
         "cors": {
             "maxAge": 86400
+        },
+        "contentAPI": {
+            "maxAge": 0
         }
     },
     "imageOptimization": {
