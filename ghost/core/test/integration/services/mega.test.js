@@ -211,7 +211,7 @@ describe('MEGA', function () {
 
             // Check if click was tracked and associated with the correct member
             const member = await models.Member.findOne({uuid: memberUuid});
-            const clickEvent = await linkClickRepository.getAll({member_id: member.id, link_id: link.link_id.toHexString()})
+            const clickEvent = await linkClickRepository.getAll({member_id: member.id, link_id: link.link_id.toHexString()});
             assert(clickEvent.length === 1, 'Click event was not tracked');
         });
     });
