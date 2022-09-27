@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 
-const {getQueryPrice} = require('./utils/helpers');
+import {getQueryPrice, getUrlHistory} from './utils/helpers';
 
 function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler}) {
     form.removeEventListener('submit', submitHandler);
@@ -27,19 +27,24 @@ function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler}) {
     }
 
     form.classList.add('loading');
+    const urlHistory = getUrlHistory();
+    const reqBody = {
+        email: email,
+        emailType: emailType,
+        labels: labels,
+        name: name,
+        autoRedirect: (autoRedirect === 'true')
+    };
+    if (urlHistory) {
+        reqBody.urlHistory = urlHistory;
+    }
 
     fetch(`${siteUrl}/members/api/send-magic-link/`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-            email: email,
-            emailType: emailType,
-            labels: labels,
-            name: name,
-            autoRedirect: (autoRedirect === 'true')
-        })
+        body: JSON.stringify(reqBody)
     }).then(function (res) {
         form.addEventListener('submit', submitHandler);
         form.classList.remove('loading');
@@ -83,6 +88,12 @@ function planClickHandler({event, el, errorEl, siteUrl, site, member, clickHandl
     const metadata = member ? {
         checkoutType: 'upgrade'
     } : {};
+    const urlHistory = getUrlHistory();
+
+    if (urlHistory) {
+        metadata.urlHistory = urlHistory;
+    }
+
     return fetch(`${siteUrl}/members/api/session`, {
         credentials: 'same-origin'
     }).then(function (res) {
