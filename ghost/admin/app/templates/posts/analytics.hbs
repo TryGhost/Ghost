@@ -114,13 +114,21 @@
                 </h4>
                 <div class="gh-post-analytics-box column">
                     <div class="gh-attribution-box">
+                        <div class="gh-attribution-table-column">
+                            <MemberAttribution::SourceAttributionTable 
+                                @sources={{this.sources}}
+                                @sortColumn={{this.sortColumn}}
+                                @setSortColumn={{this.setSortColumn}}
+                            />
+                        </div>
                         <div class="gh-attribution-chart-column">
                             <div class="gh-attribution-chart-column-inner">
-                                <MemberAttribution::SourceAttributionChart @sources={{this.sources}} />
+                                <MemberAttribution::SourceAttributionChart
+                                    @sources={{this.sources}}
+                                    @sortColumn={{this.sortColumn}}
+                                    @setSortColumn={{this.setSortColumn}}
+                                />
                             </div>
-                        </div>
-                        <div class="gh-attribution-table-column">
-                            <MemberAttribution::SourceAttributionTable @sources={{this.sources}} />
                         </div>
                     </div>
                 </div>

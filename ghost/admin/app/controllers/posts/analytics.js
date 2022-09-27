@@ -17,9 +17,15 @@ export default class AnalyticsController extends Controller {
 
     @tracked sources = null;
     @tracked links = null;
+    @tracked sortColumn = 'signups';
 
     get post() {
         return this.model;
+    }
+
+    @action
+    setSortColumn(column) {
+        this.sortColumn = column;
     }
 
     @action
