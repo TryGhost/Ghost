@@ -1,18 +1,24 @@
 <section class="gh-dashboard-section gh-dashboard-attribution">
-
     <article class="gh-dashboard-box" {{did-insert this.loadData}}>
-        <div style="display: grid;grid-template-columns: 2fr 1fr;grid-gap: 24px; position: relative;">
+        <!-- Empty state -->
+        {{!-- <h3 class="gh-dashboard-metric-label">Top sources</h3>
+        <div class="attribution-list-empty">
+            {{svg-jar "members-outline"}}
+            <h4>No new members in the past 7 days</h4>
+            <p>Once someone signs up, you’ll be able to see where they came from here.</p>
+        </div> --}}
+        <div class="gh-dashboard-attribution-grid">
             <div>
                 <h3 class="gh-dashboard-metric-label">Top sources</h3>
                 <MemberAttribution::SourceAttributionTable
                     @sources={{this.sources}}
                     @sortColumn={{this.sortColumn}}
                     @setSortColumn={{this.setSortColumn}}
-                    class="gh-dashboard-attribution-list gh-dashboard-list" style="justify-content:flex-start;"
+                    class="gh-dashboard-attribution-list gh-dashboard-list"
                 />
             </div>
-            <div style="display:flex;justify-content:center;align-items: center;height:100%;position: relative;">
-                <div style="max-width: 280px; position: relative;">
+            <div class="gh-dashboard-attribution-chart">
+                <div class="gh-dashboard-attribution-chart-container">
                     <MemberAttribution::SourceAttributionChart
                         @sources={{this.chartSources}}
                         @sortColumn={{this.sortColumn}}

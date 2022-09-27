@@ -1033,6 +1033,26 @@ Dashboard Zero */
 /* ---------------------------------
 Dashboard Attribution */
 
+.gh-dashboard-attribution-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    grid-gap: 24px;
+    position: relative;
+}
+
+.gh-dashboard-attribution-chart {
+    display:flex;
+    justify-content:center;
+    align-items: center;
+    height:100%;
+    position: relative;
+}
+
+.gh-dashboard-attribution-chart-container {
+    max-width: 280px;
+    position: relative;
+}
+
 .gh-dashboard-attribution-list {
     margin-top: -20px;
 }
@@ -1121,6 +1141,32 @@ Dashboard Attribution */
 
 .gh-dashboard-attribution-list .gh-dashboard-list-body{
     position: relative;
+}
+
+.attribution-list-empty {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    align-items: center;
+    justify-content: center;
+    padding: 2vw 4vw;
+}
+
+.attribution-list-empty h4 {
+    color: var(--black);
+    text-align: center;
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 1.5rem;
+}
+
+.attribution-list-empty p {
+    max-width: 390px;
+    color: var(--midgrey);
+    text-align: center;
+    line-height: 1.45em;
+    margin: 0;
+    padding: 0;
 }
 
 /* ---------------------------------
