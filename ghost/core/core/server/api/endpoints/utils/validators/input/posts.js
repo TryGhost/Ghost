@@ -5,7 +5,9 @@ const tpl = require('@tryghost/tpl');
 
 const messages = {
     invalidVisibilityFilter: 'Invalid filter in visibility_filter property',
-    onlySingleContentSource: 'It\'s only possible to save mobiledoc or lexical properties, not both'
+    onlySingleContentSource: 'Posts can have either a mobiledoc or a lexical property, never both.',
+    onlySingleContentSourceContext: 'Both the mobiledoc and lexical properties are set, one must be null',
+    onlySingleContentSourceHelp: 'https://ghost.org/docs/admin-api/#the-post-object'
 };
 
 const validateVisibility = async function (frame) {
@@ -43,6 +45,8 @@ const validateSingleContentSource = async function (frame) {
     if (post.mobiledoc && post.lexical) {
         return Promise.reject(new ValidationError({
             message: tpl(messages.onlySingleContentSource),
+            context: tpl(messages.onlySingleContentSourceContext),
+            help: tpl(messages.onlySingleContentSourceHelp),
             property: 'lexical'
         }));
     }
