@@ -32,6 +32,7 @@ const db = require('./db-utils');
 
 // Services that need resetting
 const settingsService = require('../../core/server/services/settings/settings-service');
+const supertest = require('supertest');
 
 /**
  * @param {Object} [options={}]
@@ -278,6 +279,44 @@ const getAgentsForMembers = async () => {
     };
 };
 
+/**
+ * TODO: for now this agent returns a supertest agent instead of a proper test agent.
+ * We need to add support for this.
+ */
+const getAgentsWithFrontend = async () => {
+    let membersAgent;
+    let adminAgent;
+    let frontendAgent;
+
+    const bootOptions = {
+        frontend: true,
+        server: true
+    };
+    try {
+        const app = (await startGhost(bootOptions)).rootApp;
+        const originURL = configUtils.config.get('url');
+
+        membersAgent = new MembersAPITestAgent(app, {
+            apiURL: '/members/',
+            originURL
+        });
+        adminAgent = new AdminAPITestAgent(app, {
+            apiURL: '/ghost/api/admin/',
+            originURL
+        });
+        frontendAgent = supertest.agent(originURL);
+    } catch (error) {
+        error.message = `Unable to create test agent. ${error.message}`;
+        throw error;
+    }
+
+    return {
+        adminAgent,
+        membersAgent,
+        frontendAgent
+    };
+};
+
 const insertWebhook = ({event, url}) => {
     return fixtureUtils.fixtures.insertWebhook({
         event: event,
@@ -292,7 +331,8 @@ module.exports = {
         getMembersAPIAgent,
         getContentAPIAgent,
         getAgentsForMembers,
-        getGhostAPIAgent
+        getGhostAPIAgent,
+        getAgentsWithFrontend
     },
 
     // Mocks and Stubs
