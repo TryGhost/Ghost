@@ -105,6 +105,9 @@
         "frontend": {
             "maxAge": 0
         },
+        "publicAssets": {
+            "maxAge": 31536000
+        },
         "301": {
             "maxAge": 31536000
         },
