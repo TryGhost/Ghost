@@ -32,10 +32,11 @@ export default class SourceAttributionChart extends Component {
                 display: true,
                 text: chartTitle,
                 position: 'bottom',
+                padding: 12,
                 fontFamily: 'Inter,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Droid Sans,Helvetica Neue,sans-serif',
                 color: '#7c8b9a',
-                fontStyle: 'Semibold',
-                fontSize: 25
+                fontSize: 12,
+                fontStyle: '600'
             },
             legend: {
                 display: false
