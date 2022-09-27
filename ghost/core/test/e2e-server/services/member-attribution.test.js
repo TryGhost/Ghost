@@ -386,18 +386,18 @@ describe('Member Attribution Service', function () {
                     id: null,
                     path: '/',
                     time: Date.now(),
-                    refSource: 'ghost-explore',
-                    refMedium: null,
-                    refUrl: null
+                    referrerSource: 'ghost-explore',
+                    referrerMedium: null,
+                    referrerUrl: null
                 }
             ]);
             attribution.should.match(({
                 id: null,
                 url: '/',
                 type: 'url',
-                refSource: 'Ghost Explore',
-                refMedium: 'Ghost Network',
-                refUrl: null
+                referrerSource: 'Ghost Explore',
+                referrerMedium: 'Ghost Network',
+                referrerUrl: null
             }));
         });
     });

@@ -193,9 +193,9 @@ describe('Members API - member attribution', function () {
                 id,
                 url: '/out-of-date/',
                 type: 'post',
-                refSource: null,
-                refMedium: null,
-                refUrl: null
+                referrerSource: null,
+                referrerMedium: null,
+                referrerUrl: null
             })
         });
 
@@ -235,9 +235,9 @@ describe('Members API - member attribution', function () {
                 id,
                 url: '/out-of-date/',
                 type: 'page',
-                refSource: null,
-                refMedium: null,
-                refUrl: null
+                referrerSource: null,
+                referrerMedium: null,
+                referrerUrl: null
             })
         });
 
@@ -277,9 +277,9 @@ describe('Members API - member attribution', function () {
                 id,
                 url: '/out-of-date/',
                 type: 'tag',
-                refSource: null,
-                refMedium: null,
-                refUrl: null
+                referrerSource: null,
+                referrerMedium: null,
+                referrerUrl: null
             })
         });
 
@@ -319,9 +319,9 @@ describe('Members API - member attribution', function () {
                 id,
                 url: '/out-of-date/',
                 type: 'author',
-                refSource: null,
-                refMedium: null,
-                refUrl: null
+                referrerSource: null,
+                referrerMedium: null,
+                referrerUrl: null
             })
         });
 
@@ -358,9 +358,9 @@ describe('Members API - member attribution', function () {
                 id: null,
                 url: '/a-static-page/',
                 type: 'url',
-                refSource: null,
-                refMedium: null,
-                refUrl: null
+                referrerSource: null,
+                referrerMedium: null,
+                referrerUrl: null
             })
         });
 

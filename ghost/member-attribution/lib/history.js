@@ -3,9 +3,9 @@
  * @prop {string} [path]
  * @prop {string} [id]
  * @prop {string} [type]
- * @prop {string} [refSource]
- * @prop {string} [refMedium]
- * @prop {string} [refUrl]
+ * @prop {string} [referrerSource]
+ * @prop {string} [referrerMedium]
+ * @prop {string} [referrerUrl]
  * @prop {number} time
  */
 

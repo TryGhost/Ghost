@@ -1,8 +1,8 @@
 /**
  * @typedef {Object} ReferrerData
- * @prop {string|null} [refSource]
- * @prop {string|null} [refMedium]
- * @prop {string|null} [refUrl]
+ * @prop {string|null} [referrerSource]
+ * @prop {string|null} [referrerMedium]
+ * @prop {string|null} [referrerUrl]
  */
 
 const knownReferrers = require('@tryghost/referrers');
@@ -31,79 +31,79 @@ class ReferrerTranslator {
         // Empty history will return null as it means script is not loaded
         if (history.length === 0) {
             return {
-                refSource: null,
-                refMedium: null,
-                refUrl: null
+                referrerSource: null,
+                referrerMedium: null,
+                referrerUrl: null
             };
         }
 
         for (const item of history) {
-            const refUrl = this.getUrlFromStr(item.refUrl);
-            const refSource = item.refSource;
-            const refMedium = item.refMedium;
+            const referrerUrl = this.getUrlFromStr(item.referrerUrl);
+            const referrerSource = item.referrerSource;
+            const referrerMedium = item.referrerMedium;
 
             // If referrer is Ghost Explore
-            if (this.isGhostExploreRef({refUrl, refSource})) {
+            if (this.isGhostExploreRef({referrerUrl, referrerSource})) {
                 return {
-                    refSource: 'Ghost Explore',
-                    refMedium: 'Ghost Network',
-                    refUrl: refUrl?.hostname ?? null
+                    referrerSource: 'Ghost Explore',
+                    referrerMedium: 'Ghost Network',
+                    referrerUrl: referrerUrl?.hostname ?? null
                 };
             }
 
             // If referrer is Ghost.org
-            if (this.isGhostOrgUrl(refUrl)) {
+            if (this.isGhostOrgUrl(referrerUrl)) {
                 return {
-                    refSource: 'Ghost.org',
-                    refMedium: 'Ghost Network',
-                    refUrl: refUrl?.hostname
+                    referrerSource: 'Ghost.org',
+                    referrerMedium: 'Ghost Network',
+                    referrerUrl: referrerUrl?.hostname
                 };
             }
 
             // If referrer is Ghost Newsletter
-            if (this.isGhostNewsletter({refSource})) {
+            if (this.isGhostNewsletter({referrerSource})) {
                 return {
-                    refSource: refSource.replace(/-/g, ' '),
-                    refMedium: 'Email',
-                    refUrl: refUrl?.hostname ?? null
+                    referrerSource: referrerSource.replace(/-/g, ' '),
+                    referrerMedium: 'Email',
+                    referrerUrl: referrerUrl?.hostname ?? null
                 };
             }
 
             // If referrer is from query params
-            if (refSource) {
-                const urlData = refUrl ? this.getDataFromUrl(refUrl) : null;
+            if (referrerSource) {
+                const urlData = referrerUrl ? this.getDataFromUrl(referrerUrl) : null;
                 return {
-                    refSource: refSource,
-                    refMedium: refMedium || urlData?.medium || null,
-                    refUrl: refUrl?.hostname ?? null
+                    referrerSource: referrerSource,
+                    referrerMedium: referrerMedium || urlData?.medium || null,
+                    referrerUrl: referrerUrl?.hostname ?? null
                 };
             }
 
             // If referrer is known external URL
-            if (refUrl && !this.isSiteDomain(refUrl)) {
-                const urlData = this.getDataFromUrl(refUrl);
+            if (referrerUrl && !this.isSiteDomain(referrerUrl)) {
+                const urlData = this.getDataFromUrl(referrerUrl);
 
                 // Use known source/medium if available
                 if (urlData) {
                     return {
-                        refSource: urlData?.source ?? null,
-                        refMedium: urlData?.medium ?? null,
-                        refUrl: refUrl?.hostname ?? null
+                        referrerSource: urlData?.source ?? null,
+                        referrerMedium: urlData?.medium ?? null,
+                        referrerUrl: referrerUrl?.hostname ?? null
                     };
                 }
                 // Use the hostname as a source
                 return {
-                    refSource: refUrl?.hostname ?? null,
-                    refMedium: null,
-                    refUrl: refUrl?.hostname ?? null
+                    referrerSource: referrerUrl?.hostname ?? null,
+                    referrerMedium: null,
+                    referrerUrl: referrerUrl?.hostname ?? null
                 };
             }
         }
 
         return {
-            refSource: 'Direct',
-            refMedium: null,
-            refUrl: null
+            referrerSource: 'Direct',
+            referrerMedium: null,
+            referrerUrl: null
         };
     }
 
@@ -159,45 +159,45 @@ class ReferrerTranslator {
      * @private
      * Return whether provided ref is a Ghost newsletter
      * @param {Object} deps
-     * @param {string|null} deps.refSource
+     * @param {string|null} deps.referrerSource
      * @returns {boolean}
      */
-    isGhostNewsletter({refSource}) {
+    isGhostNewsletter({referrerSource}) {
         // if refferer source ends with -newsletter
-        return refSource?.endsWith('-newsletter');
+        return referrerSource?.endsWith('-newsletter');
     }
 
     /**
      * @private
      * Return whether provided ref is a Ghost.org URL
-     * @param {URL|null} refUrl
+     * @param {URL|null} referrerUrl
      * @returns {boolean}
      */
-    isGhostOrgUrl(refUrl) {
-        return refUrl?.hostname === 'ghost.org';
+    isGhostOrgUrl(referrerUrl) {
+        return referrerUrl?.hostname === 'ghost.org';
     }
 
     /**
      * @private
      * Return whether provided ref is Ghost Explore
      * @param {Object} deps
-     * @param {URL|null} deps.refUrl
-     * @param {string|null} deps.refSource
+     * @param {URL|null} deps.referrerUrl
+     * @param {string|null} deps.referrerSource
      * @returns {boolean}
      */
-    isGhostExploreRef({refUrl, refSource}) {
-        if (refSource === 'ghost-explore') {
+    isGhostExploreRef({referrerUrl, referrerSource}) {
+        if (referrerSource === 'ghost-explore') {
             return true;
         }
 
-        if (refUrl?.hostname
-            && this.adminUrl?.hostname === refUrl?.hostname
-            && refUrl?.pathname?.startsWith(this.adminUrl?.pathname)
+        if (referrerUrl?.hostname
+            && this.adminUrl?.hostname === referrerUrl?.hostname
+            && referrerUrl?.pathname?.startsWith(this.adminUrl?.pathname)
         ) {
             return true;
         }
 
-        if (refUrl?.hostname === 'ghost.org' && refUrl?.pathname?.startsWith('/explore')) {
+        if (referrerUrl?.hostname === 'ghost.org' && referrerUrl?.pathname?.startsWith('/explore')) {
             return true;
         }
 
