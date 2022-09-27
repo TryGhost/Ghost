@@ -34,7 +34,7 @@ class MemberAttributionService {
     addEmailSourceAttributionTracking(url, newsletter) {
         // Create a deep copy
         url = new URL(url);
-        url.searchParams.append('rel', newsletter.get('slug') + '-newsletter');
+        url.searchParams.append('ref', newsletter.get('slug') + '-newsletter');
         return url;
     }
 
