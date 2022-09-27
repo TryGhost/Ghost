@@ -1050,12 +1050,12 @@ Dashboard Attribution */
     opacity: 0;
 }
 
-.gh-dashboard-list-item-sub-source {
+.gh-dashboard-attribution .gh-dashboard-list-item-sub-source {
     padding-left: 20px;
     position: relative;
 }
 
-.gh-dashboard-list-item-sub-source::after {
+.gh-dashboard-attribution .gh-dashboard-list-item-sub-source::after {
     content: "";
     width: 9px;
     height: 9px;
