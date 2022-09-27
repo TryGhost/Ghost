@@ -70,9 +70,9 @@ class MemberAttributionService {
             id: eventModel.get('attribution_id'),
             url: eventModel.get('attribution_url'),
             type: eventModel.get('attribution_type'),
-            refSource: eventModel.get('referrer_source'),
-            refMedium: eventModel.get('referrer_medium'),
-            refUrl: eventModel.get('referrer_url')
+            referrerSource: eventModel.get('referrer_source'),
+            referrerMedium: eventModel.get('referrer_medium'),
+            referrerUrl: eventModel.get('referrer_url')
         });
 
         if (_attribution.type !== 'url') {
@@ -106,9 +106,9 @@ class MemberAttributionService {
             id: memberCreatedEvent.get('attribution_id'),
             url: memberCreatedEvent.get('attribution_url'),
             type: memberCreatedEvent.get('attribution_type'),
-            refSource: memberCreatedEvent.get('referrer_source'),
-            refMedium: memberCreatedEvent.get('referrer_medium'),
-            refUrl: memberCreatedEvent.get('referrer_url')
+            referrerSource: memberCreatedEvent.get('referrer_source'),
+            referrerMedium: memberCreatedEvent.get('referrer_medium'),
+            referrerUrl: memberCreatedEvent.get('referrer_url')
         });
         return await attribution.fetchResource();
     }
@@ -127,9 +127,9 @@ class MemberAttributionService {
             id: subscriptionCreatedEvent.get('attribution_id'),
             url: subscriptionCreatedEvent.get('attribution_url'),
             type: subscriptionCreatedEvent.get('attribution_type'),
-            refSource: subscriptionCreatedEvent.get('referrer_source'),
-            refMedium: subscriptionCreatedEvent.get('referrer_medium'),
-            refUrl: subscriptionCreatedEvent.get('referrer_url')
+            referrerSource: subscriptionCreatedEvent.get('referrer_source'),
+            referrerMedium: subscriptionCreatedEvent.get('referrer_medium'),
+            referrerUrl: subscriptionCreatedEvent.get('referrer_url')
         });
         return await attribution.fetchResource();
     }
