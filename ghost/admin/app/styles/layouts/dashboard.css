@@ -1114,6 +1114,11 @@ Dashboard Attribution */
     background: #F5C9C2;
 }
 
+.gh-dashboard-list-item-sub.gh-dashboard-list-item-other-source.gh-dashboard-list-item-sub-source::after {
+    background: transparent;
+    border: 1px solid var(--lightgrey);
+}
+
 .gh-dashboard-attribution-list .gh-dashboard-list-body{
     position: relative;
 }
