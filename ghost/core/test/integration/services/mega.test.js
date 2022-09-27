@@ -127,6 +127,9 @@ describe('MEGA', function () {
             const linkRedirectService = require('../../../core/server/services/link-redirection');
             const linkRedirectRepository = linkRedirectService.linkRedirectRepository;
 
+            const linkTrackingService = require('../../../core/server/services/link-tracking');
+            const linkClickRepository = linkTrackingService.linkClickRepository;
+
             sinon.stub(_mailgunClient, 'getInstance').returns({});
             const sendStub = sinon.stub(_mailgunClient, 'send');
 
@@ -208,12 +211,8 @@ describe('MEGA', function () {
 
             // Check if click was tracked and associated with the correct member
             const member = await models.Member.findOne({uuid: memberUuid});
-            const clickEvent = await models.MemberLinkClickEvent.findOne({
-                member_id: member.id,
-                link_id: link.link_id.toHexString()
-            });
-            assert(member, 'Invalid member');
-            assert(clickEvent, 'Click event was not tracked');
+            const clickEvent = await linkClickRepository.getAll({member_id: member.id, link_id: link.link_id.toHexString()})
+            assert(clickEvent.length === 1, 'Click event was not tracked');
         });
     });
 });
