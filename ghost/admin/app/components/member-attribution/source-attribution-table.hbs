@@ -25,23 +25,27 @@
                         <span class="gh-dashboard-list-text">{{sourceData.source}}</span>
                     </div>
                     <div class="gh-dashboard-list-item-sub">
-                        <span class="gh-dashboard-metric-minivalue">
-                            {{#if sourceData.signups}}
+                        {{#if sourceData.signups}}
+                            <span class="gh-dashboard-metric-minivalue">
                                 {{format-number sourceData.signups}}
-                            {{else}}
+                            </span>
+                        {{else}}
+                            <span class="gh-dashboard-metric-minivalue na">
                                 &mdash;
-                            {{/if}}
-                        </span>
+                            </span>
+                        {{/if}}
                     </div>
                     {{#if this.membersUtils.paidMembersEnabled}}
                         <div class="gh-dashboard-list-item-sub">
-                            <span class="gh-dashboard-metric-minivalue">
-                                {{#if sourceData.paidConversions}}
+                            {{#if sourceData.paidConversions}}
+                                <span class="gh-dashboard-metric-minivalue">
                                     {{format-number sourceData.paidConversions}}
-                                {{else}}
+                                </span>
+                            {{else}}
+                                <span class="gh-dashboard-metric-minivalue na">
                                     &mdash;
-                                {{/if}}
-                            </span>
+                                </span>
+                            {{/if}}
                         </div>
                     {{/if}}
                 </div>
@@ -57,23 +61,27 @@
                     {{on "click" this.openAllSources}}>(<span>see all</span>)</span></div>
                     </div>
                     <div class="gh-dashboard-list-item-sub">
-                        <span class="gh-dashboard-metric-minivalue">
-                            {{#if this.others.signups}}
+                        {{#if this.others.signups}}
+                            <span class="gh-dashboard-metric-minivalue">
                                 {{format-number this.others.signups}}
-                            {{else}}
+                            </span>
+                        {{else}}
+                            <span class="gh-dashboard-metric-minivalue na">
                                 &mdash;
-                            {{/if}}
-                        </span>
+                            </span>
+                        {{/if}}
                     </div>
                     {{#if this.membersUtils.paidMembersEnabled}}
                         <div class="gh-dashboard-list-item-sub">
-                            <span class="gh-dashboard-metric-minivalue">
-                                {{#if this.others.paidConversions}}
+                            {{#if this.others.paidConversions}}
+                                <span class="gh-dashboard-metric-minivalue">
                                     {{format-number this.others.paidConversions}}
-                                {{else}}
+                                </span>
+                            {{else}}
+                                <span class="gh-dashboard-metric-minivalue na">
                                     &mdash;
-                                {{/if}}
-                            </span>
+                                </span>
+                            {{/if}}
                         </div>
                     {{/if}}
                 </div>
