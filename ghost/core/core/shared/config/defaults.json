@@ -126,6 +126,9 @@
         "robotstxt": {
             "maxAge": 3600000
         },
+        "wellKnown": {
+            "maxAge": 86400
+        },
         "cors": {
             "maxAge": 86400
         }
