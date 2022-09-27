@@ -21,13 +21,13 @@ function CodeBlockComponent({className, code, language, nodeKey, editor}) {
             <code>
                 <textarea
                     ref={el}
-                    autoCorrect="off" 
-                    autoCapitalize="off" 
-                    spellCheck="false" 
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck="false"
                     tabIndex="0"
                     autoFocus
-                    className='bg-grey-50 min-h-170 w-full p-3' 
-                    value={code} 
+                    className='min-h-170 w-full bg-grey-50 p-3'
+                    value={code}
                     onChange={updateCode} />
             </code>
         </KoenigCardWrapper>
