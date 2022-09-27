@@ -18,7 +18,6 @@ const SerializedStateTextarea = (props) => {
                 value={serializedJson}
                 language="JSON"
                 className="h-full w-full resize-none !overflow-auto bg-black !p-4 font-mono text-sm"
-                data-color-mode="dark"
                 readOnly
             />
             <OnChangePlugin onChange={onChange} />
