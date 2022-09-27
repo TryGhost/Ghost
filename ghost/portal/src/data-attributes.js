@@ -2,7 +2,7 @@
 
 import {getQueryPrice, getUrlHistory} from './utils/helpers';
 
-function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler}) {
+export function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler}) {
     form.removeEventListener('submit', submitHandler);
     event.preventDefault();
     if (errorEl) {
@@ -59,7 +59,7 @@ function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler}) {
     });
 }
 
-function planClickHandler({event, el, errorEl, siteUrl, site, member, clickHandler}) {
+export function planClickHandler({event, el, errorEl, siteUrl, site, member, clickHandler}) {
     el.removeEventListener('click', clickHandler);
     event.preventDefault();
     let plan = el.dataset.membersPlan;
@@ -140,7 +140,7 @@ function planClickHandler({event, el, errorEl, siteUrl, site, member, clickHandl
     });
 }
 
-function handleDataAttributes({siteUrl, site, member}) {
+export function handleDataAttributes({siteUrl, site, member}) {
     if (!siteUrl) {
         return;
     }
@@ -351,9 +351,3 @@ function handleDataAttributes({siteUrl, site, member}) {
         el.addEventListener('click', clickHandler);
     });
 }
-
-module.exports = {
-    handleDataAttributes,
-    formSubmitHandler,
-    planClickHandler
-};

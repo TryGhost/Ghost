@@ -3,7 +3,7 @@ import {site as FixturesSite, member as FixtureMember} from '../utils/test-fixtu
 import {fireEvent, appRender, within} from '../utils/test-utils';
 import setupGhostApi from '../utils/api';
 import * as helpers from '../utils/helpers';
-const {formSubmitHandler, planClickHandler} = require('../data-attributes');
+import {formSubmitHandler, planClickHandler} from '../data-attributes';
 
 // Mock data
 function getMockData() {
