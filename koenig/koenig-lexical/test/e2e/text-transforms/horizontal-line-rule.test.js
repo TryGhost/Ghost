@@ -21,7 +21,12 @@ describe('Renders horizontal line rule', async () => {
         await focusEditor(page);
         await page.keyboard.type('--- ');
         await assertHTML(page, html`
-        <div data-lexical-decorator="true" contenteditable="false" style="display: contents;"><div class="caret-grey-800 hover:shadow-green relative hover:shadow-[0_0_0_1px]" data-kg-card="true"><hr></div></div><p><br></p>
-        `); // TODO: Lexical appends a <br> to the end of this element, which is not ideal. It might be an upstream bug https://github.com/facebook/lexical/discussions/3021
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div data-kg-card="true">
+                    <hr>
+                </div>
+            </div>
+            <p><br></p>
+        `);
     });
 });

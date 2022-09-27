@@ -41,7 +41,7 @@ export async function focusEditor(page, parentSelector = '.koenig-lexical') {
 export async function assertHTML(
     page,
     expectedHtml,
-    {ignoreClasses = false, ignoreInlineStyles = false} = {}
+    {ignoreClasses = true, ignoreInlineStyles = true} = {}
 ) {
     const actualHtml = await page.$eval('div[contenteditable="true"]', e => e.innerHTML);
     const actual = prettifyHTML(actualHtml.replace(/\n/gm, ''), {

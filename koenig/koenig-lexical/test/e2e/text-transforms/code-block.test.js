@@ -28,9 +28,6 @@ describe('Renders code block node', async () => {
                     </code>
                 </div>
             </div>
-        `, {
-            ignoreClasses: true,
-            ignoreInlineStyles: true
-        });
+        `);
     });
 });
