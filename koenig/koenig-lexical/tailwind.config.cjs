@@ -7,7 +7,6 @@ module.exports = {
         './src/**/*.{js,jsx,ts,tsx}',
         './demo/**/*.{js,jsx,ts,tsx}'
     ],
-    prefix: 'kg-',
     theme: {
         colors: {
             transparent: 'transparent',
