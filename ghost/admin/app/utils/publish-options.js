@@ -383,6 +383,11 @@ export default class PublishOptions {
     }
 
     async _checkPublishingLimit() {
+        // non-admin users cannot fetch members count so we can't error at this stage for them
+        if (!this.user.isAdmin) {
+            return;
+        }
+
         try {
             if (this.limit.limiter?.isLimited('members')) {
                 await this.limit.limiter.errorIfIsOverLimit('members');
