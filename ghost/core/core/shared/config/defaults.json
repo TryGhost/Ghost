@@ -117,6 +117,9 @@
         "sitemap": {
             "maxAge": 3600
         },
+        "sitemapXSL": {
+            "maxAge": 86400
+        },
         "robotstxt": {
             "maxAge": 3600000
         },
