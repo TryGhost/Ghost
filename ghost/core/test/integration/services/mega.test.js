@@ -6,9 +6,12 @@ const models = require('../../../core/server/models');
 const sinon = require('sinon');
 const assert = require('assert');
 let agent;
-const testUtils = require('../../utils');
-const supertest = require('supertest');
-const configUtils = require('../../utils/configUtils');
+
+async function sleep(ms) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
+}
 
 async function createPublishedPostEmail() {
     const post = {
@@ -196,6 +199,10 @@ describe('MEGA', function () {
             await frontendAgent.get(path)
                 .expect('Location', to.href)
                 .expect(302);
+
+            // Since this is all event based, we need to wait a coulple of ms
+            // in the future we should wait for all dispatched events to be completed.
+            await sleep(200);
 
             // Check if click was tracked and associated with the correct member
             const member = await models.Member.findOne({uuid: memberUuid});
