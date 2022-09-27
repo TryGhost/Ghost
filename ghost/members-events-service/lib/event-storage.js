@@ -38,9 +38,9 @@ class EventStorage {
                 attribution_url: attribution?.url ?? null,
                 attribution_type: attribution?.type ?? null,
                 source: event.data.source,
-                referrer_source: attribution?.refSource ?? null,
-                referrer_medium: attribution?.refMedium ?? null,
-                referrer_url: attribution?.refUrl ?? null
+                referrer_source: attribution?.referrerSource ?? null,
+                referrer_medium: attribution?.referrerMedium ?? null,
+                referrer_url: attribution?.referrerUrl ?? null
             });
         });
 
@@ -60,9 +60,9 @@ class EventStorage {
                 attribution_id: attribution?.id ?? null,
                 attribution_url: attribution?.url ?? null,
                 attribution_type: attribution?.type ?? null,
-                referrer_source: attribution?.refSource ?? null,
-                referrer_medium: attribution?.refMedium ?? null,
-                referrer_url: attribution?.refUrl ?? null
+                referrer_source: attribution?.referrerSource ?? null,
+                referrer_medium: attribution?.referrerMedium ?? null,
+                referrer_url: attribution?.referrerUrl ?? null
             });
         });
     }

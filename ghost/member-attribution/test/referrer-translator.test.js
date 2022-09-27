@@ -22,144 +22,144 @@ describe('ReferrerTranslator', function () {
         it('returns ghost explore from source ref for valid history', async function () {
             should(translator.getReferrerDetails([
                 {
-                    refSource: 'ghost-explore',
-                    refMedium: null,
-                    refUrl: null
+                    referrerSource: 'ghost-explore',
+                    referrerMedium: null,
+                    referrerUrl: null
                 },
                 {
-                    refSource: 'ghost-newsletter',
-                    refMedium: null,
-                    refUrl: null
+                    referrerSource: 'ghost-newsletter',
+                    referrerMedium: null,
+                    referrerUrl: null
                 },
                 {
-                    refSource: 'ghost-newsletter',
-                    refMedium: null,
-                    refUrl: 'https://t.co'
+                    referrerSource: 'ghost-newsletter',
+                    referrerMedium: null,
+                    referrerUrl: 'https://t.co'
                 }
             ])).eql({
-                refSource: 'Ghost Explore',
-                refMedium: 'Ghost Network',
-                refUrl: null
+                referrerSource: 'Ghost Explore',
+                referrerMedium: 'Ghost Network',
+                referrerUrl: null
             });
         });
 
         it('returns ghost explore from url for valid history', async function () {
             should(translator.getReferrerDetails([
                 {
-                    refSource: null,
-                    refMedium: null,
-                    refUrl: 'https://ghost.org/explore'
+                    referrerSource: null,
+                    referrerMedium: null,
+                    referrerUrl: 'https://ghost.org/explore'
                 },
                 {
-                    refSource: 'ghost-newsletter',
-                    refMedium: null,
-                    refUrl: null
+                    referrerSource: 'ghost-newsletter',
+                    referrerMedium: null,
+                    referrerUrl: null
                 },
                 {
-                    refSource: 'ghost-newsletter',
-                    refMedium: null,
-                    refUrl: 'https://t.co'
+                    referrerSource: 'ghost-newsletter',
+                    referrerMedium: null,
+                    referrerUrl: 'https://t.co'
                 }
             ])).eql({
-                refSource: 'Ghost Explore',
-                refMedium: 'Ghost Network',
-                refUrl: 'ghost.org'
+                referrerSource: 'Ghost Explore',
+                referrerMedium: 'Ghost Network',
+                referrerUrl: 'ghost.org'
             });
         });
 
         it('returns ghost explore from admin url for valid history', async function () {
             should(translator.getReferrerDetails([
                 {
-                    refSource: null,
-                    refMedium: null,
-                    refUrl: 'https://admin.example.com/ghost/#/dashboard'
+                    referrerSource: null,
+                    referrerMedium: null,
+                    referrerUrl: 'https://admin.example.com/ghost/#/dashboard'
                 },
                 {
-                    refSource: 'ghost-newsletter',
-                    refMedium: null,
-                    refUrl: null
+                    referrerSource: 'ghost-newsletter',
+                    referrerMedium: null,
+                    referrerUrl: null
                 },
                 {
-                    refSource: 'ghost-newsletter',
-                    refMedium: null,
-                    refUrl: 'https://t.co'
+                    referrerSource: 'ghost-newsletter',
+                    referrerMedium: null,
+                    referrerUrl: 'https://t.co'
                 }
             ])).eql({
-                refSource: 'Ghost Explore',
-                refMedium: 'Ghost Network',
-                refUrl: 'admin.example.com'
+                referrerSource: 'Ghost Explore',
+                referrerMedium: 'Ghost Network',
+                referrerUrl: 'admin.example.com'
             });
         });
 
         it('returns ghost newsletter ref for valid history', async function () {
             should(translator.getReferrerDetails([
                 {
-                    refSource: 'publisher-weekly-newsletter',
-                    refMedium: null,
-                    refUrl: null
+                    referrerSource: 'publisher-weekly-newsletter',
+                    referrerMedium: null,
+                    referrerUrl: null
                 },
                 {
-                    refSource: 'ghost-explore',
-                    refMedium: null,
-                    refUrl: null
+                    referrerSource: 'ghost-explore',
+                    referrerMedium: null,
+                    referrerUrl: null
                 },
                 {
-                    refSource: 'ghost-newsletter',
-                    refMedium: null,
-                    refUrl: 'https://t.co'
+                    referrerSource: 'ghost-newsletter',
+                    referrerMedium: null,
+                    referrerUrl: 'https://t.co'
                 }
             ])).eql({
-                refSource: 'publisher weekly newsletter',
-                refMedium: 'Email',
-                refUrl: null
+                referrerSource: 'publisher weekly newsletter',
+                referrerMedium: 'Email',
+                referrerUrl: null
             });
         });
 
         it('returns ghost.org ref for valid history', async function () {
             should(translator.getReferrerDetails([
                 {
-                    refSource: null,
-                    refMedium: null,
-                    refUrl: 'https://ghost.org/creators/'
+                    referrerSource: null,
+                    referrerMedium: null,
+                    referrerUrl: 'https://ghost.org/creators/'
                 },
                 {
-                    refSource: 'publisher-weekly-newsletter',
-                    refMedium: null,
-                    refUrl: null
+                    referrerSource: 'publisher-weekly-newsletter',
+                    referrerMedium: null,
+                    referrerUrl: null
                 },
                 {
-                    refSource: 'ghost-explore',
-                    refMedium: null,
-                    refUrl: null
+                    referrerSource: 'ghost-explore',
+                    referrerMedium: null,
+                    referrerUrl: null
                 }
             ])).eql({
-                refSource: 'Ghost.org',
-                refMedium: 'Ghost Network',
-                refUrl: 'ghost.org'
+                referrerSource: 'Ghost.org',
+                referrerMedium: 'Ghost Network',
+                referrerUrl: 'ghost.org'
             });
         });
 
         it('returns ref source for valid history', async function () {
             should(translator.getReferrerDetails([
                 {
-                    refSource: 'twitter',
-                    refMedium: null,
-                    refUrl: null
+                    referrerSource: 'twitter',
+                    referrerMedium: null,
+                    referrerUrl: null
                 },
                 {
-                    refSource: 'publisher-weekly-newsletter',
-                    refMedium: null,
-                    refUrl: null
+                    referrerSource: 'publisher-weekly-newsletter',
+                    referrerMedium: null,
+                    referrerUrl: null
                 },
                 {
-                    refSource: 'ghost-explore',
-                    refMedium: null,
-                    refUrl: null
+                    referrerSource: 'ghost-explore',
+                    referrerMedium: null,
+                    referrerUrl: null
                 }
             ])).eql({
-                refSource: 'twitter',
-                refMedium: null,
-                refUrl: null
+                referrerSource: 'twitter',
+                referrerMedium: null,
+                referrerUrl: null
             });
         });
 
@@ -167,53 +167,53 @@ describe('ReferrerTranslator', function () {
             it('known external url with path', async function () {
                 should(translator.getReferrerDetails([
                     {
-                        refSource: null,
-                        refMedium: null,
-                        refUrl: 'https://google.ac/products'
+                        referrerSource: null,
+                        referrerMedium: null,
+                        referrerUrl: 'https://google.ac/products'
                     },
                     {
-                        refSource: null,
-                        refMedium: null,
-                        refUrl: 'https://t.co/'
+                        referrerSource: null,
+                        referrerMedium: null,
+                        referrerUrl: 'https://t.co/'
                     },
                     {
-                        refSource: 'publisher-weekly-newsletter',
-                        refMedium: null,
-                        refUrl: null
+                        referrerSource: 'publisher-weekly-newsletter',
+                        referrerMedium: null,
+                        referrerUrl: null
                     },
                     {
-                        refSource: 'ghost-explore',
-                        refMedium: null,
-                        refUrl: null
+                        referrerSource: 'ghost-explore',
+                        referrerMedium: null,
+                        referrerUrl: null
                     }
                 ])).eql({
-                    refSource: 'Google Product Search',
-                    refMedium: 'search',
-                    refUrl: 'google.ac'
+                    referrerSource: 'Google Product Search',
+                    referrerMedium: 'search',
+                    referrerUrl: 'google.ac'
                 });
             });
 
             it('known external url without path', async function () {
                 should(translator.getReferrerDetails([
                     {
-                        refSource: null,
-                        refMedium: null,
-                        refUrl: 'https://t.co/'
+                        referrerSource: null,
+                        referrerMedium: null,
+                        referrerUrl: 'https://t.co/'
                     },
                     {
-                        refSource: 'publisher-weekly-newsletter',
-                        refMedium: null,
-                        refUrl: null
+                        referrerSource: 'publisher-weekly-newsletter',
+                        referrerMedium: null,
+                        referrerUrl: null
                     },
                     {
-                        refSource: 'ghost-explore',
-                        refMedium: null,
-                        refUrl: null
+                        referrerSource: 'ghost-explore',
+                        referrerMedium: null,
+                        referrerUrl: null
                     }
                 ])).eql({
-                    refSource: 'Twitter',
-                    refMedium: 'social',
-                    refUrl: 't.co'
+                    referrerSource: 'Twitter',
+                    referrerMedium: 'social',
+                    referrerUrl: 't.co'
                 });
             });
         });
@@ -221,46 +221,46 @@ describe('ReferrerTranslator', function () {
         it('returns external ref url as source', async function () {
             should(translator.getReferrerDetails([
                 {
-                    refSource: null,
-                    refMedium: null,
-                    refUrl: 'https://example.com'
+                    referrerSource: null,
+                    referrerMedium: null,
+                    referrerUrl: 'https://example.com'
                 },
                 {
-                    refSource: null,
-                    refMedium: null,
-                    refUrl: 'https://sample.com'
+                    referrerSource: null,
+                    referrerMedium: null,
+                    referrerUrl: 'https://sample.com'
                 },
                 {
-                    refSource: 'publisher-weekly-newsletter',
-                    refMedium: null,
-                    refUrl: null
+                    referrerSource: 'publisher-weekly-newsletter',
+                    referrerMedium: null,
+                    referrerUrl: null
                 }
             ])).eql({
-                refSource: 'sample.com',
-                refMedium: null,
-                refUrl: 'sample.com'
+                referrerSource: 'sample.com',
+                referrerMedium: null,
+                referrerUrl: 'sample.com'
             });
         });
 
         it('returns null for empty history', async function () {
             should(translator.getReferrerDetails([])).eql({
-                refSource: null,
-                refMedium: null,
-                refUrl: null
+                referrerSource: null,
+                referrerMedium: null,
+                referrerUrl: null
             });
         });
 
         it('returns null for history with only site url', async function () {
             should(translator.getReferrerDetails([
                 {
-                    refSource: null,
-                    refMedium: null,
-                    refUrl: 'https://example.com'
+                    referrerSource: null,
+                    referrerMedium: null,
+                    referrerUrl: 'https://example.com'
                 }
             ])).eql({
-                refSource: 'Direct',
-                refMedium: null,
-                refUrl: null
+                referrerSource: 'Direct',
+                referrerMedium: null,
+                referrerUrl: null
             });
         });
     });

@@ -55,9 +55,9 @@ describe('MemberAttributionService', function () {
                 type: 'url',
                 url: '/my/url/',
                 title: 'added',
-                refMedium: null,
-                refSource: null,
-                refUrl: null
+                referrerMedium: null,
+                referrerSource: null,
+                referrerUrl: null
             });
         });
 
@@ -105,9 +105,9 @@ describe('MemberAttributionService', function () {
                 type: 'user',
                 url: '/my/url/',
                 title: 'added',
-                refMedium: null,
-                refSource: null,
-                refUrl: null
+                referrerMedium: null,
+                referrerSource: null,
+                referrerUrl: null
             });
         });
     });

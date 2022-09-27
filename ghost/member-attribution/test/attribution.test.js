@@ -88,9 +88,9 @@ describe('AttributionBuilder', function () {
                 getReferrerDetails(history) {
                     if (history) {
                         return {
-                            refSource: 'Ghost Explore',
-                            refMedium: 'Ghost Network',
-                            refUrl: 'https://ghost.org/explore'
+                            referrerSource: 'Ghost Explore',
+                            referrerMedium: 'Ghost Network',
+                            referrerUrl: 'https://ghost.org/explore'
                         };
                     }
                     return null;
@@ -101,7 +101,7 @@ describe('AttributionBuilder', function () {
 
     it('Returns empty if empty history', async function () {
         const history = UrlHistory.create([]);
-        should(await attributionBuilder.getAttribution(history)).match({id: null, type: null, url: null, refSource: null, refMedium: null, refUrl: null});
+        should(await attributionBuilder.getAttribution(history)).match({id: null, type: null, url: null, referrerSource: null, referrerMedium: null, referrerUrl: null});
     });
 
     it('Returns last url', async function () {
@@ -152,9 +152,9 @@ describe('AttributionBuilder', function () {
             {path: '/dir/unknown-page', time: now + 125}
         ]);
         should(await attributionBuilder.getAttribution(history)).match({
-            refSource: 'Ghost Explore',
-            refMedium: 'Ghost Network',
-            refUrl: 'https://ghost.org/explore'
+            referrerSource: 'Ghost Explore',
+            referrerMedium: 'Ghost Network',
+            referrerUrl: 'https://ghost.org/explore'
         });
     });
 
@@ -173,9 +173,9 @@ describe('AttributionBuilder', function () {
             {path: '/dir/unknown-page', time: now + 125}
         ]);
         should(await attributionBuilder.getAttribution(history)).match({
-            refSource: null,
-            refMedium: null,
-            refUrl: null
+            referrerSource: null,
+            referrerMedium: null,
+            referrerUrl: null
         });
     });
 

@@ -18,19 +18,19 @@ class Attribution {
      * @param {string|null} [data.id]
      * @param {string|null} [data.url] Relative to subdirectory
      * @param {'page'|'post'|'author'|'tag'|'url'} [data.type]
-     * @param {string|null} [data.refSource]
-     * @param {string|null} [data.refMedium]
-     * @param {string|null} [data.refUrl]
+     * @param {string|null} [data.referrerSource]
+     * @param {string|null} [data.referrerMedium]
+     * @param {string|null} [data.referrerUrl]
      */
     constructor({
-        id, url, type, refSource, refMedium, refUrl
+        id, url, type, referrerSource, referrerMedium, referrerUrl
     }, {urlTranslator}) {
         this.id = id;
         this.url = url;
         this.type = type;
-        this.refSource = refSource;
-        this.refMedium = refMedium;
-        this.refUrl = refUrl;
+        this.referrerSource = referrerSource;
+        this.referrerMedium = referrerMedium;
+        this.referrerUrl = referrerUrl;
 
         /**
          * @private
@@ -54,9 +54,9 @@ class Attribution {
                 type: 'url',
                 url: this.#urlTranslator.relativeToAbsolute(this.url),
                 title: this.#urlTranslator.getUrlTitle(this.url),
-                referrerSource: this.refSource,
-                referrerMedium: this.refMedium,
-                referrerUrl: this.refUrl
+                referrerSource: this.referrerSource,
+                referrerMedium: this.referrerMedium,
+                referrerUrl: this.referrerUrl
             };
         }
 
@@ -67,9 +67,9 @@ class Attribution {
             type: this.type,
             url: updatedUrl,
             title: model.get('title') ?? model.get('name') ?? this.#urlTranslator.getUrlTitle(this.url),
-            referrerSource: this.refSource,
-            referrerMedium: this.refMedium,
-            referrerUrl: this.refUrl
+            referrerSource: this.referrerSource,
+            referrerMedium: this.referrerMedium,
+            referrerUrl: this.referrerUrl
         };
     }
 
@@ -94,6 +94,8 @@ class Attribution {
 class AttributionBuilder {
     /** @type {import('./url-translator')} */
     urlTranslator;
+    /** @type {import('./referrer-translator')} */
+    referrerTranslator;
 
     /**
      */
@@ -105,14 +107,14 @@ class AttributionBuilder {
     /**
      * Creates an Attribution object with the dependencies injected
      */
-    build({id, url, type, refSource, refMedium, refUrl}) {
+    build({id, url, type, referrerSource, referrerMedium, referrerUrl}) {
         return new Attribution({
             id,
             url,
             type,
-            refSource,
-            refMedium,
-            refUrl
+            referrerSource,
+            referrerMedium,
+            referrerUrl
         }, {urlTranslator: this.urlTranslator});
     }
 
@@ -127,16 +129,16 @@ class AttributionBuilder {
                 id: null,
                 url: null,
                 type: null,
-                refSource: null,
-                refMedium: null,
-                refUrl: null
+                referrerSource: null,
+                referrerMedium: null,
+                referrerUrl: null
             });
         }
 
         const referrerData = this.referrerTranslator.getReferrerDetails(history) || {
-            refSource: null,
-            refMedium: null,
-            refUrl: null
+            referrerSource: null,
+            referrerMedium: null,
+            referrerUrl: null
         };
 
         // Start at the end. Return the first post we find
