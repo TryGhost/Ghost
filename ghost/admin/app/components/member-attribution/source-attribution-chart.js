@@ -1,4 +1,5 @@
 import Component from '@glimmer/component';
+import {inject as service} from '@ember/service';
 
 const CHART_COLORS = [
     '#8e42ff',
@@ -10,6 +11,8 @@ const CHART_COLORS = [
 ];
 
 export default class SourceAttributionChart extends Component {
+    @service feature;
+
     get sources() {
         return this.args.sources;
     }
@@ -24,7 +27,7 @@ export default class SourceAttributionChart extends Component {
 
         return {
             cutoutPercentage: 70,
-            borderColor: '#fff',
+            borderColor: '#000',
             title: {
                 display: true,
                 text: chartTitle,
@@ -87,6 +90,8 @@ export default class SourceAttributionChart extends Component {
     }
 
     get chartData() {
+        let borderColor = this.feature.nightShift ? '#101114' : '#fff';
+
         if (this.args.sortColumn === 'signups') {
             const sortedByFree = [...this.sources];
             sortedByFree.sort((a, b) => {
@@ -99,9 +104,9 @@ export default class SourceAttributionChart extends Component {
                     data: sortedByFree.slice(0, 5).map(source => source.signups),
                     backgroundColor: CHART_COLORS.slice(0, 5),
                     borderWidth: 2,
-                    borderColor: '#fff',
+                    borderColor: borderColor,
                     hoverBorderWidth: 2,
-                    hoverBorderColor: '#fff'
+                    hoverBorderColor: borderColor
                 }]
             };
         } else {
@@ -116,9 +121,9 @@ export default class SourceAttributionChart extends Component {
                     data: sortedByPaid.slice(0, 5).map(source => source.paidConversions),
                     backgroundColor: CHART_COLORS.slice(0, 5),
                     borderWidth: 2,
-                    borderColor: '#fff',
+                    borderColor: borderColor,
                     hoverBorderWidth: 2,
-                    hoverBorderColor: '#fff'
+                    hoverBorderColor: borderColor
                 }]
             };
         }
