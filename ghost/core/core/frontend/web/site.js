@@ -68,18 +68,18 @@ module.exports = function setupSiteApp(routerConfig) {
     siteApp.use(mw.servePublicFile('static', 'sitemap.xsl', 'text/xsl', config.get('caching:sitemapXSL:maxAge')));
 
     // Serve stylesheets for default templates
-    siteApp.use(mw.servePublicFile('static', 'public/ghost.css', 'text/css', constants.ONE_HOUR_S));
-    siteApp.use(mw.servePublicFile('static', 'public/ghost.min.css', 'text/css', constants.ONE_YEAR_S));
+    siteApp.use(mw.servePublicFile('static', 'public/ghost.css', 'text/css', config.get('caching:publicAssets:maxAge')));
+    siteApp.use(mw.servePublicFile('static', 'public/ghost.min.css', 'text/css', config.get('caching:publicAssets:maxAge')));
 
     // Card assets
-    siteApp.use(mw.servePublicFile('built', 'public/cards.min.css', 'text/css', constants.ONE_YEAR_S));
-    siteApp.use(mw.servePublicFile('built', 'public/cards.min.js', 'application/javascript', constants.ONE_YEAR_S));
+    siteApp.use(mw.servePublicFile('built', 'public/cards.min.css', 'text/css', config.get('caching:publicAssets:maxAge')));
+    siteApp.use(mw.servePublicFile('built', 'public/cards.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
 
     // Comment counts
-    siteApp.use(mw.servePublicFile('built', 'public/comment-counts.min.js', 'application/javascript', constants.ONE_YEAR_S));
+    siteApp.use(mw.servePublicFile('built', 'public/comment-counts.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
 
     // Member attribution
-    siteApp.use(mw.servePublicFile('built', 'public/member-attribution.min.js', 'application/javascript', constants.ONE_YEAR_S));
+    siteApp.use(mw.servePublicFile('built', 'public/member-attribution.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
 
     // Serve site images using the storage adapter
     siteApp.use(STATIC_IMAGE_URL_PREFIX, mw.handleImageSizes, storage.getStorage('images').serve());
