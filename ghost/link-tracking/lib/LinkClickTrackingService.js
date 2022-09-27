@@ -78,7 +78,8 @@ class LinkClickTrackingService {
         });
     }
 
-    /**
+    /** 
+     * @private (not using # to allow tests)
      * Replace URL with a redirect that redirects to the original URL, and link that redirect with the given post
      */
     async addRedirectToUrl(url, post) {
