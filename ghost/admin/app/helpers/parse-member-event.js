@@ -157,7 +157,7 @@ export default class ParseMemberEventHelper extends Helper {
         }
 
         if (event.type === 'click_event') {
-            return 'clicked in email';
+            return 'clicked link in email';
         }
     }
 
