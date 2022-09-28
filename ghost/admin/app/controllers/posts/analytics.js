@@ -8,6 +8,14 @@ import {tracked} from '@glimmer/tracking';
  * @typedef {import('../../services/dashboard-stats').SourceAttributionCount} SourceAttributionCount
 */
 
+const DISPLAY_OPTIONS = [{
+    name: 'Free signups',
+    value: 'signups'
+}, {
+    name: 'Paid conversions',
+    value: 'paid'
+}];
+
 export default class AnalyticsController extends Controller {
     @service ajax;
     @service ghostPaths;
@@ -19,9 +27,19 @@ export default class AnalyticsController extends Controller {
     @tracked sources = null;
     @tracked links = null;
     @tracked sortColumn = 'signups';
+    displayOptions = DISPLAY_OPTIONS;
 
     get post() {
         return this.model;
+    }
+
+    get selectedDisplayOption() {
+        return this.displayOptions.find(d => d.value === this.sortColumn) ?? this.displayOptions[0];
+    }
+
+    @action
+    onDisplayChange(selected) {
+        this.sortColumn = selected.value;
     }
 
     @action
