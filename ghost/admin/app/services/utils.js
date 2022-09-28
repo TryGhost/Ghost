@@ -31,6 +31,6 @@ export default class UtilsService extends Service {
             return urlObj.toString();
         }
         // Return URL without protocol
-        return urlObj.host + (urlObj.pathname === '/' && !urlObj.search ? '' : urlObj.pathname) + (urlObj.search ? urlObj.search : '');
+        return urlObj.host + (urlObj.pathname === '/' && !urlObj.search ? '' : urlObj.pathname) + (urlObj.search ? urlObj.search : '') + (urlObj.hash ? urlObj.hash : '');
     }
 }
