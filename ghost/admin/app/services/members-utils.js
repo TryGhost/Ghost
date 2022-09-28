@@ -14,6 +14,10 @@ export default class MembersUtilsService extends Service {
         return this.settings.get('paidMembersEnabled');
     }
 
+    get isMembersInviteOnly() {
+        return this.settings.get('membersInviteOnly');
+    }
+
     /**
      * Note: always use paidMembersEnabled! Only use this getter for the Stripe Connection UI.
      */

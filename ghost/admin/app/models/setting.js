@@ -73,6 +73,7 @@ export default Model.extend(ValidationEngine, {
 
     membersEnabled: attr('boolean'),
     paidMembersEnabled: attr('boolean'),
+    membersInviteOnly: attr('boolean'),
 
     commentsEnabled: attr(), // "off", "free", "paid"
 
