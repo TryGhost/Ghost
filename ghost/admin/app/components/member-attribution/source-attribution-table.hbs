@@ -26,7 +26,9 @@
             {{#each this.sources as |sourceData|}}
                 <div class="gh-dashboard-list-item">
                     <div class="gh-dashboard-list-item-sub gh-dashboard-list-item-sub-source">
-                        <span class="gh-dashboard-list-text">{{sourceData.source}}</span>
+                        <span class="gh-dashboard-list-text">{{sourceData.source}}
+                            {{!-- <sup class="gh-dashboard-list-asterisk">*</sup> --}}
+                            </span>
                     </div>
                     {{#if (eq @sortColumn "signups")}}
                     <div class="gh-dashboard-list-item-sub">
@@ -57,16 +59,12 @@
                         {{/if}}
                     {{/if}}
                 </div>
-            {{!-- {{else}}
-                <div class="gh-dashboard-list-empty">
-                    <p>No sources.</p>
-                </div> --}}
             {{/each}}
             {{#if this.others}}
                 <div class="gh-dashboard-list-item">
                     <div class="gh-dashboard-list-item-sub gh-dashboard-list-item-sub-source gh-dashboard-list-item-other-source">
                         <span class="gh-dashboard-list-text" role="button" aria-label="Show sources"
-                    {{on "click" this.openAllSources}}>Other sources →</span>
+                    {{on "click" this.openAllSources}}>Other sources</span>
                     </div>
                     {{#if (eq @sortColumn "signups")}}
                         <div class="gh-dashboard-list-item-sub">
@@ -100,3 +98,4 @@
             {{/if}}
     </div>
 </div>
+{{!-- <p class="gh-dashboard-attribution-footnote"><sup class="gh-dashboard-list-asterisk">*</sup>New member signups originating from your newsletter are the result of it being shared and forwarded.</p> --}}

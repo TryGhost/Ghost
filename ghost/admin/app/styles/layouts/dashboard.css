@@ -1179,6 +1179,15 @@ Dashboard Attribution */
     color: var(--lightgrey);
 }
 
+.gh-dashboard-attribution-footnote {
+    font-size: 1.2rem;
+    margin-bottom: 0;
+    line-height: 1.4;
+    color: var(--midlightgrey);
+    padding-top: 12px;
+    font-weight: 500;
+}
+
 @media screen and (max-width: 1120px) {
     .gh-dashboard-attribution-grid .gh-dashboard-metric-label {
         position: absolute;
