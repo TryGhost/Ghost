@@ -46,6 +46,13 @@ const Member = ghostBookshelf.Model.extend({
         }, {
             key: 'conversion',
             replacement: 'conversions.attribution_id'
+        }, {
+            key: 'clicked_links',
+            replacement: 'clicked_links'
+        }, {
+            key: 'opened_emails.post_id',
+            replacement: 'emails.post_id',
+            expansion: 'email_recipients.opened_at:>=emails.created_at' // this is a tiny hack for mongo-knex not supporting value based checks
         }];
     },
 
@@ -92,6 +99,22 @@ const Member = ghostBookshelf.Model.extend({
                 tableNameAs: 'conversions',
                 type: 'oneToOne',
                 joinFrom: 'member_id'
+            },
+            clicked_links: {
+                tableName: 'link_redirects',
+                tableNameAs: 'clicked_links',
+                type: 'manyToMany',
+                joinTable: 'members_link_click_events',
+                joinFrom: 'member_id',
+                joinTo: 'link_id'
+            },
+            emails: {
+                tableName: 'emails',
+                tableNameAs: 'emails',
+                type: 'manyToMany',
+                joinTable: 'email_recipients',
+                joinFrom: 'member_id',
+                joinTo: 'email_id'
             }
         };
     },
