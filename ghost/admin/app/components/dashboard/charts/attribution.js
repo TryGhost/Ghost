@@ -4,11 +4,11 @@ import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
 const DISPLAY_OPTIONS = [{
-    name: 'Paid Conversions',
-    value: 'paid'
-}, {
-    name: 'Signups',
+    name: 'Free signups',
     value: 'signups'
+}, {
+    name: 'Paid conversions',
+    value: 'paid'
 }];
 
 export default class Recents extends Component {

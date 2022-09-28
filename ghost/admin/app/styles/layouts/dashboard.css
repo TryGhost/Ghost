@@ -1035,8 +1035,8 @@ Dashboard Attribution */
 
 .gh-dashboard-attribution-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr;
-    grid-gap: 24px;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 0;
     position: relative;
 }
 
@@ -1049,12 +1049,16 @@ Dashboard Attribution */
 }
 
 .gh-dashboard-attribution-chart-container {
-    max-width: 280px;
+    max-width: 240px;
     position: relative;
 }
 
 .gh-dashboard-attribution-list {
     margin-top: -20px;
+}
+
+.gh-dashboard-attribution-list .gh-dashboard-list-header, .gh-dashboard-attribution-list .gh-dashboard-list-item {
+    grid-template-columns: 70% 30%;
 }
 
 .gh-dashboard-attribution-list .gh-dashboard-list-title:not(.sorted-by) {

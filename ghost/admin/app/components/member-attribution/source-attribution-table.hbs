@@ -7,7 +7,7 @@
                 role="button" aria-label="Sort by free signups"
                 {{on "click" (fn @setSortColumn "signups")}}
             >
-                Signups {{svg-jar "arrow-down-small"}}
+                Free signups
             </div>
         {{/if}}
         {{#if (eq @sortColumn "paid")}}
@@ -17,7 +17,7 @@
                     class="gh-dashboard-list-title {{if (eq @sortColumn "paid") "sorted-by"}}"
                     {{on "click" (fn @setSortColumn "paid")}}
                 >
-                    <span class="hide-when-small">Paid </span>Conversions {{svg-jar "arrow-down-small"}}
+                    <span class="hide-when-small">Paid </span>Conversions
                 </div>
             {{/if}}
         {{/if}}
