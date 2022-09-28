@@ -104,10 +104,13 @@ describe('EventStorage', function () {
             sinon.assert.calledOnceWithMatch(MemberCreatedEventModel.add, {
                 member_id: '123',
                 created_at: new Date(0),
-                attribution_id: null,
-                attribution_type: null,
-                attribution_url: null,
-                source: 'test'
+                attribution_id: '123',
+                attribution_type: 'post',
+                attribution_url: 'url',
+                source: 'test',
+                referrer_source: null,
+                referrer_medium: null,
+                referrer_url: null
             });
             sinon.assert.calledTwice(subscribeSpy);
         });
@@ -178,7 +181,7 @@ describe('EventStorage', function () {
             sinon.assert.calledTwice(subscribeSpy);
         });
 
-        it('filters if disabled', function () {
+        it('works with flag disabled', function () {
             const DomainEvents = {
                 subscribe: (type, handler) => {
                     if (type === SubscriptionCreatedEvent) {
@@ -207,9 +210,12 @@ describe('EventStorage', function () {
                 member_id: '123',
                 subscription_id: '456',
                 created_at: new Date(0),
-                attribution_id: null,
-                attribution_type: null,
-                attribution_url: null
+                attribution_id: '123',
+                attribution_type: 'post',
+                attribution_url: 'url',
+                referrer_source: null,
+                referrer_medium: null,
+                referrer_url: null
             });
             sinon.assert.calledTwice(subscribeSpy);
         });

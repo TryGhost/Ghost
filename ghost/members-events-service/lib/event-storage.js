@@ -25,12 +25,6 @@ class EventStorage {
         domainEvents.subscribe(MemberCreatedEvent, async (event) => {
             let attribution = event.data.attribution;
 
-            if (!this.labsService.isSet('memberAttribution')){
-                // Prevent storing attribution
-                // Can replace this later with a privacy toggle
-                attribution = {};
-            }
-
             await this.models.MemberCreatedEvent.add({
                 member_id: event.data.memberId,
                 created_at: event.timestamp,
@@ -46,12 +40,6 @@ class EventStorage {
 
         domainEvents.subscribe(SubscriptionCreatedEvent, async (event) => {
             let attribution = event.data.attribution;
-
-            if (!this.labsService.isSet('memberAttribution')){
-                // Prevent storing attribution
-                // Can replace this later with a privacy toggle
-                attribution = {};
-            }
 
             await this.models.SubscriptionCreatedEvent.add({
                 member_id: event.data.memberId,
