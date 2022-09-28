@@ -269,13 +269,24 @@ export default class DashboardMocksService extends Service {
                 paidSubscribed: paidSubscribed1 + paidSubscribed2,
                 paidCanceled: paidCanceled1 + paidCanceled2
             });
+
+            // More than 5 sources
             const attributionSources = ['Twitter', 'Ghost Network', 'Product Hunt', 'Direct', 'Ghost Newsletter', 'Rediverge Newsletter', 'Reddit', 'The Lever Newsletter', 'The Browser Newsletter'];
+            // const attributionSources = ['Twitter', 'Ghost Network', 'Product Hunt', 'Direct'];
 
             this.memberAttributionStats.push({
                 date: date.toISOString().split('T')[0],
                 source: attributionSources[Math.floor(Math.random() * attributionSources.length)],
                 signups: Math.floor(Math.random() * 50),
                 paidConversions: Math.floor(Math.random() * 30)
+            });
+
+            // Comment this out to hide Unavailable source
+            this.memberAttributionStats.push({
+                date: date.toISOString().split('T')[0],
+                source: null,
+                signups: Math.floor(Math.random() * 5),
+                paidConversions: Math.floor(Math.random() * 3)
             });
         }
 
