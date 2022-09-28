@@ -3,9 +3,23 @@ import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
+const DISPLAY_OPTIONS = [{
+    name: 'Paid Conversions',
+    value: 'paid'
+}, {
+    name: 'Signups',
+    value: 'signups'
+}];
+
 export default class Recents extends Component {
     @service dashboardStats;
     @tracked sortColumn = 'signups';
+    displayOptions = DISPLAY_OPTIONS;
+
+    @action
+    onDisplayChange(selected) {
+        this.sortColumn = selected.value;
+    }
 
     @action
     setSortColumn(column) {
@@ -15,6 +29,10 @@ export default class Recents extends Component {
     @action
     loadData() {
         this.dashboardStats.loadMemberAttributionStats();
+    }
+
+    get selectedDisplayOption() {
+        return this.displayOptions.find(d => d.value === this.sortColumn) ?? this.displayOptions[0];
     }
 
     get sources() {
