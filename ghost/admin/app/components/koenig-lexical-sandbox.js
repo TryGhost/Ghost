@@ -13,7 +13,7 @@ class ErrorHandler extends React.Component {
     render() {
         if (this.state.hasError) {
             return (
-                <p className="koenig-react-editor-error">Loading has failed. Try refreshing the browser!</p>
+                <p>Loading has failed. Try refreshing the browser!</p>
             );
         }
 
@@ -83,7 +83,7 @@ const KoenigSandbox = (props) => {
 export default class LexicalSandbox extends Component {
     ReactComponent = () => {
         return (
-            <div className={['koenig-react-editor', this.args.className].filter(Boolean).join(' ')}>
+            <div className={[this.args.className].filter(Boolean).join(' ')}>
                 <ErrorHandler>
                     <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
                         <KoenigSandbox />
