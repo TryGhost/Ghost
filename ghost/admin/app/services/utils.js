@@ -22,7 +22,7 @@ export default class UtilsService extends Service {
      */
     cleanTrackedUrl(url, display = false) {
         // Remove our own querystring parameters and protocol
-        const removeParams = ['rel', 'attribution_id', 'attribution_type'];
+        const removeParams = ['ref', 'attribution_id', 'attribution_type'];
         const urlObj = new URL(url);
         for (const param of removeParams) {
             urlObj.searchParams.delete(param);
