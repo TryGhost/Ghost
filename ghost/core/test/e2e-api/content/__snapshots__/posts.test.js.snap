@@ -60,7 +60,7 @@ Object {
   "content-length": "4576",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Accept-Version, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -137,7 +137,7 @@ Object {
   "content-length": "5867",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Accept-Version, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -202,7 +202,7 @@ Object {
   "content-length": "4577",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Accept-Version, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -1053,7 +1053,7 @@ Object {
   "content-length": "54906",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Accept-Version, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -1431,7 +1431,7 @@ Object {
   "content-length": "13977",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Accept-Version, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -2313,7 +2313,7 @@ Object {
   "content-length": "65235",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Accept-Version, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -2368,7 +2368,7 @@ Object {
   "content-length": "2362",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Accept-Version, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -2430,7 +2430,7 @@ Object {
   "content-length": "587",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Accept-Version, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -2914,7 +2914,7 @@ Object {
   "content-length": "46354",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Accept-Version, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
@@ -3398,7 +3398,7 @@ Object {
   "content-length": "46354",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
+  "vary": "Accept-Version, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
