@@ -300,6 +300,11 @@ export default class EditorController extends Controller {
         this.set('wordCount', counts);
     }
 
+    get isAnalytics() {
+        return !this.session.user.isContributor
+            && this.post.hasAnalytics;
+    }
+
     @action
     setFeatureImage(url) {
         this.post.set('featureImage', url);
