@@ -13,7 +13,7 @@ const DesignSandbox = () => {
             <h3 className="mb-4 mt-8 text-xl font-bold">Floating toolbar</h3>
 
             <div className="max-w-fit">
-                <ul className="text-md m-0 flex items-center justify-evenly rounded bg-black px-1 py-0 font-sans font-normal text-white">
+                <ul className="m-0 flex items-center justify-evenly rounded bg-black px-1 py-0 font-sans text-md font-normal text-white">
                     <MenuItem label="Format text as bold" Icon={BoldIcon} />
                     <MenuItem label="Format text as italics" Icon={ItalicIcon} />
                     <MenuItem label="Toggle heading 1" Icon={HeadingOneIcon} />
@@ -24,7 +24,10 @@ const DesignSandbox = () => {
                     <MenuSeparator />
                     <MenuItem label="Save as snippet" Icon={SnippetIcon} />
                 </ul>
-            </div>      
+            </div>    
+
+            <h3 className="mb-4 mt-12 text-xl font-bold">Plus menu</h3>
+  
         </div>
     );
 
@@ -43,7 +46,7 @@ const DesignSandbox = () => {
     
     function MenuSeparator() {
         return (
-            <li className="bg-grey-900 m-0 mx-1 h-5 w-px"></li>
+            <li className="m-0 mx-1 h-5 w-px bg-grey-900"></li>
         );
     }
 };
