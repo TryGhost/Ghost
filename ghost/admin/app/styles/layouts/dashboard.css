@@ -1096,14 +1096,8 @@ Dashboard Attribution */
     background: #E6E9EB;
 }
 
-.gh-dashboard-list-item-other-source span {
-    font-weight: 500;
-    color: var(--midgrey);
+.gh-dashboard-list-item-other-source {
     cursor: pointer;
-}
-
-.gh-dashboard-list-item-other-source span span {
-    text-decoration: underline;
 }
 
 .gh-dashboard-list-title svg {
