@@ -23,7 +23,6 @@ export default class extends Component {
     @tracked showMemberTierModal = false;
     @tracked tiersList;
     @tracked newslettersList;
-    @tracked isSubscriptionExpanded = {};
 
     get isAddComplimentaryAllowed() {
         if (!this.membersUtils.paidMembersEnabled) {
@@ -99,7 +98,6 @@ export default class extends Component {
             if (!sub.id && this.feature.get('compExpiring') && sub.tier?.expiry_at) {
                 data.compExpiry = moment(sub.tier.expiry_at).format('D MMM YYYY');
             }
-            data.showDetails = !!this.isSubscriptionExpanded[sub.id];
             return data;
         });
         return tiers.map((tier) => {
@@ -134,14 +132,6 @@ export default class extends Component {
             const newsletter = this.newslettersList.firstObject;
             this.member.set('newsletters', [newsletter]);
         }
-    }
-
-    @action
-    toggleSubscriptionExpanded(subId) {
-        this.isSubscriptionExpanded = {
-            ...this.isSubscriptionExpanded,
-            [subId]: !this.isSubscriptionExpanded[subId]
-        };
     }
 
     @action
