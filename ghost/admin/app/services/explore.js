@@ -4,6 +4,7 @@ import {tracked} from '@glimmer/tracking';
 export default class ExploreService extends Service {
     @service router;
     @service feature;
+    @service ghostPaths;
 
     exploreUrl = 'http://localhost:3000/explore/';
     exploreRouteRoot = '#/explore';
@@ -15,6 +16,15 @@ export default class ExploreService extends Service {
 
     get enabled() {
         return this.feature.exploreApp;
+    }
+
+    get apiUrl() {
+        const origin = new URL(window.location.origin);
+        const subdir = this.ghostPaths.subdir;
+        // We want the API URL without protocol
+        let url = this.ghostPaths.url.join(origin.host, subdir);
+
+        return url.replace(/\/$/, '');
     }
 
     constructor() {

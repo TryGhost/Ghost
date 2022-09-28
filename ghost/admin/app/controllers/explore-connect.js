@@ -4,15 +4,7 @@ import {inject as service} from '@ember/service';
 
 export default class ExploreController extends Controller {
     @service ghostPaths;
-
-    get apiUrl() {
-        const origin = new URL(window.location.origin);
-        const subdir = this.ghostPaths.subdir;
-        // We want the API URL without protocol
-        let url = this.ghostPaths.url.join(origin.host, subdir);
-
-        return url.replace(/\/$/, '');
-    }
+    @service explore;
 
     get exploreCredentials() {
         const explore = this.model.findBy('slug', 'ghost-explore');
@@ -24,7 +16,7 @@ export default class ExploreController extends Controller {
     @action
     submitExploreSite() {
         const token = this.exploreCredentials;
-        const apiUrl = this.apiUrl;
+        const apiUrl = this.explore.apiUrl;
 
         // Ghost Explore URL to submit a new site
         const destination = new URL('http://localhost:3000/explore/submit');
