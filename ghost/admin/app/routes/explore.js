@@ -10,6 +10,10 @@ export default class ExploreRoute extends AuthenticatedRoute {
     beforeModel(transition) {
         super.beforeModel(...arguments);
 
+        if (transition.to?.queryParams?.new === 'true' || !this.explore.enabled) {
+            return this.router.transitionTo('explore-connect');
+        }
+
         this.explore.previousTransition = transition;
     }
 

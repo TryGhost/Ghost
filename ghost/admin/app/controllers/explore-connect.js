@@ -19,7 +19,7 @@ export default class ExploreController extends Controller {
         const apiUrl = this.explore.apiUrl;
 
         // Ghost Explore URL to submit a new site
-        const destination = new URL('http://localhost:3000/explore/submit');
+        const destination = new URL('https://ghost.org/explore/submit');
         const query = new URLSearchParams();
 
         query.append('token', token);

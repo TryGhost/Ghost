@@ -3,22 +3,16 @@ import {inject as service} from '@ember/service';
 
 export default class GhExploreIframe extends Component {
     @service explore;
-    @service ghostPaths;
-    @service ajax;
 
-    fetchingToken = false;
-
-    didInsertElement() {
+    async didInsertElement() {
         super.didInsertElement(...arguments);
 
         this.explore.getExploreIframe().src = this.explore.getIframeURL();
-        console.log('🤖 → didInsertElement → this.explore.getExploreIframe().src', this.explore.getExploreIframe().src);
 
-        window.addEventListener('message', (event) => {
-            console.log('🤖 → window.addEventListener → event', event);
+        window.addEventListener('message', async (event) => {
             if (event?.data) {
-                if (event.data?.request === 'token') {
-                    this._handleTokenRequest();
+                if (event.data?.request === 'apiUrl') {
+                    this._handleUrlRequest();
                 }
 
                 if (event.data?.siteData) {
@@ -28,36 +22,15 @@ export default class GhExploreIframe extends Component {
         });
     }
 
-    _handleTokenRequest() {
-        this.fetchingToken = false;
-        let token;
-        console.log('🤖 → _handleTokenRequest → token', token);
-        const ghostIdentityUrl = this.ghostPaths.url.api('identities');
-
-        this.ajax.request(ghostIdentityUrl).then((response) => {
-            token = response && response.identities && response.identities[0] && response.identities[0].token;
-            this.explore.getExploreIframe().contentWindow.postMessage({
-                request: 'token',
-                response: token
-            }, '*');
-        }).catch((error) => {
-            if (error.payload?.errors && error.payload.errors[0]?.type === 'NoPermissionError') {
-                // no permission means the current user requesting the token is not the owner of the site.
-
-                // Avoid letting the BMA waiting for a message and send an empty token response instead
-                this.explore.getExploreIframe().contentWindow.postMessage({
-                    request: 'token',
-                    response: null
-                }, '*');
-            } else {
-                throw error;
-            }
-        });
+    _handleUrlRequest() {
+        this.explore.getExploreIframe().contentWindow.postMessage({
+            request: 'apiUrl',
+            response: this.explore.apiUrl
+        }, '*');
 
         // NOTE: the handler is placed here to avoid additional logic to check if iframe has loaded
         //       receiving a 'token' request is an indication that page is ready
-        if (!this.fetchingToken && !this.explore.siteData && token) {
-            this.fetchingToken = true;
+        if (!this.explore.siteData) {
             this.explore.getExploreIframe().contentWindow.postMessage({
                 query: 'getSiteData',
                 response: 'siteData'
@@ -66,6 +39,7 @@ export default class GhExploreIframe extends Component {
     }
 
     _handleSiteDataUpdate(data) {
+        // TODO: now we received the site data, we can show the fireworks and the actual data
         this.explore.siteData = data.siteData;
     }
 }
