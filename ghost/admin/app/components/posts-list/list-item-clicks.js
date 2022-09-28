@@ -25,7 +25,19 @@ export default class PostsListItemClicks extends Component {
     }
 
     get isAnalytics() {
-        return ((!this.session.user.isContributor) && this.args.post.isPost && (this.args.post.isSent || this.args.post.isPublished) && (this.settings.get('emailTrackClicks') || this.feature.get('memberAttribution')));
+        return !this.session.user.isContributor
+            && this.args.post.isPost
+            && (
+                (
+                    // We have clicks or opens data
+                    (this.args.post.isSent || (this.args.post.isPublished && this.args.post.email)) 
+                        && (this.settings.get('emailTrackClicks') || this.settings.get('emailTrackOpens'))
+                ) 
+                || (
+                    // We have attribution data for pubished posts
+                    this.args.post.isPublished && this.feature.get('memberAttribution')
+                )
+            );
     }
 
     get routeForLink() {
