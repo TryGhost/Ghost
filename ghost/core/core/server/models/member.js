@@ -49,7 +49,9 @@ const Member = ghostBookshelf.Model.extend({
         }, {
             key: 'opened_emails.post_id',
             replacement: 'emails.post_id',
-            expansion: 'email_recipients.opened_at:>=emails.created_at' // this is a tiny hack for mongo-knex not supporting value based checks
+            // Currently we cannot expand on values such as null or a string in mongo-knex
+            // But the line below is essentially the same as: `email_recipients.opened_at:-null`
+            expansion: 'email_recipients.opened_at:>=0' 
         }];
     },
 
