@@ -3,12 +3,14 @@ import {ReactComponent as BoldIcon} from '../assets/icons/kg-bold.svg';
 import {ReactComponent as ItalicIcon} from '../assets/icons/kg-italic.svg';
 import {ReactComponent as HeadingOneIcon} from '../assets/icons/kg-heading-1.svg';
 import {ReactComponent as HeadingTwoIcon} from '../assets/icons/kg-heading-2.svg';
-import {ReactComponent as QuoteOneIcon} from '../assets/icons/kg-quote-1.svg';
+import {ReactComponent as LinkIcon} from '../assets/icons/kg-link.svg';
+import {ReactComponent as QuoteIcon} from '../assets/icons/kg-quote.svg';
+import {ReactComponent as SnippetIcon} from '../assets/icons/kg-snippet.svg';
 
 const DesignSandbox = () => {
     return (
         <div className="koenig-lexical">
-            <h3 className="mb-4 text-xl font-bold">Floating toolbar</h3>
+            <h3 className="mb-4 mt-8 text-xl font-bold">Floating toolbar</h3>
 
             <div className="max-w-fit">
                 <ul className="text-md m-0 flex items-center justify-evenly rounded bg-black px-1 py-0 font-sans font-normal text-white">
@@ -17,7 +19,10 @@ const DesignSandbox = () => {
                     <MenuItem label="Toggle heading 1" Icon={HeadingOneIcon} />
                     <MenuItem label="Toggle heading 2" Icon={HeadingTwoIcon} />
                     <MenuSeparator />
-                    <MenuItem label="Toggle blockquote" Icon={QuoteOneIcon} />
+                    <MenuItem label="Toggle blockquote" Icon={QuoteIcon} />
+                    <MenuItem label="Insert link" Icon={LinkIcon} />
+                    <MenuSeparator />
+                    <MenuItem label="Save as snippet" Icon={SnippetIcon} />
                 </ul>
             </div>      
         </div>
