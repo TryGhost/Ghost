@@ -1100,6 +1100,14 @@ Dashboard Attribution */
     cursor: pointer;
 }
 
+.gh-dashboard-list-item-other-source .gh-dashboard-list-item-other-source-arrow {
+    transition: margin 0.2s ease-in-out;
+}
+
+.gh-dashboard-list-item-other-source:hover .gh-dashboard-list-item-other-source-arrow {
+    margin-left: 4px;
+}
+
 .gh-dashboard-list-title svg {
     height: 4px;
     width: 6.11px;
