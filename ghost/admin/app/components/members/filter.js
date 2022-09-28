@@ -30,7 +30,11 @@ const FILTER_PROPERTIES = [
     // Emails
     {label: 'Emails sent (all time)', name: 'email_count', group: 'Email'},
     {label: 'Emails opened (all time)', name: 'email_opened_count', group: 'Email'},
-    {label: 'Open rate (all time)', name: 'email_open_rate', group: 'Email'}
+    {label: 'Open rate (all time)', name: 'email_open_rate', group: 'Email'},
+    {label: 'Received email', name: 'emails.post_id', group: 'Email', valueType: 'array', feature: 'emailClicks'},
+    {label: 'Opened email', name: 'opened_emails.post_id', group: 'Email', valueType: 'array', feature: 'emailClicks'},
+    {label: 'Clicked email', name: 'clicked_links.post_id', group: 'Email', valueType: 'array', feature: 'emailClicks'}
+
     // {label: 'Emails sent (30 days)', name: 'x', group: 'Email'},
     // {label: 'Emails opened (30 days)', name: 'x', group: 'Email'},
     // {label: 'Open rate (30 days)', name: 'x', group: 'Email'},
@@ -86,7 +90,10 @@ const FILTER_RELATIONS_OPTIONS = {
     email_opened_count: NUMBER_RELATION_OPTIONS,
     email_open_rate: NUMBER_RELATION_OPTIONS,
     signup: MATCH_RELATION_OPTIONS,
-    conversion: MATCH_RELATION_OPTIONS
+    conversion: MATCH_RELATION_OPTIONS,
+    'emails.post_id': MATCH_RELATION_OPTIONS,
+    'clicked_links.post_id': MATCH_RELATION_OPTIONS,
+    'opened_emails.post_id': MATCH_RELATION_OPTIONS
 };
 
 const FILTER_VALUE_OPTIONS = {

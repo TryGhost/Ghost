@@ -42,19 +42,12 @@
         />
     </div>
 
-{{else if (eq @filter.type 'conversion')}}
+{{else if this.isResourceFilter }}
     <div class="relative">
          <GhResourceSelect
-            @onChange={{fn this.setConversionAttributionFilterValue @filter}}
-            @resources={{this.conversionAttributionFilterValue}}
-        />
-    </div>
-
-{{else if (eq @filter.type 'signup')}}
-    <div class="relative">
-         <GhResourceSelect
-            @onChange={{fn this.setSignupAttributionFilterValue @filter}}
-            @resources={{this.signupAttributionFilterValue}}
+            @onChange={{fn this.setResourceFilterValue @filter}}
+            @type={{this.resourceFilterType}}
+            @resources={{this.resourceFilterValue}}
         />
     </div>
 

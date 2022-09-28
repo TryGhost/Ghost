@@ -46,21 +46,27 @@
     <div class="gh-post-analytics-box">
         {{#if (or this.post.isSent (and this.post.isPublished this.post.email))}}
             <div class="gh-post-analytics-item">
-                <h3>{{format-number this.post.email.emailCount}}</h3>
-                <p>Sent</p>
+                <LinkTo @route="members" @query={{hash filterParam=(concat "emails.post_id:[" this.post.id "]") }}>
+                    <h3>{{format-number this.post.email.emailCount}}</h3>
+                    <p>Sent</p>
+                </LinkTo>
             </div>
 
             {{#if (and this.post.email.trackOpens this.settings.emailTrackOpens) }}
                 <div class="gh-post-analytics-item">
-                    <h3>{{this.post.email.openRate}}<sup>%</sup></h3>
-                    <p><strong>{{format-number this.post.email.openedCount}}</strong> opened</p>
+                    <LinkTo @route="members" @query={{hash filterParam=(concat "opened_emails.post_id:[" this.post.id "]") }}>
+                        <h3>{{this.post.email.openRate}}<sup>%</sup></h3>
+                        <p><strong>{{format-number this.post.email.openedCount}}</strong> opened</p>
+                    </LinkTo>
                 </div>
             {{/if}}
 
             {{#if this.settings.emailTrackClicks}}
                 <div class="gh-post-analytics-item">
-                    <h3>{{this.post.clickRate}}<sup>%</sup></h3>
-                    <p><strong>{{format-number this.post.count.clicks}}</strong> clicked</p>
+                    <LinkTo @route="members" @query={{hash filterParam=(concat "clicked_links.post_id:[" this.post.id "]") }}>
+                        <h3>{{this.post.clickRate}}<sup>%</sup></h3>
+                        <p><strong>{{format-number this.post.count.clicks}}</strong> clicked</p>
+                    </LinkTo>
                 </div>
             {{/if}}
         {{/if}}

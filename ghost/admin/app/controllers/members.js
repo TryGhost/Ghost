@@ -183,7 +183,7 @@ export default class MembersController extends Controller {
         };
         return this.filterColumns.filter((d) => {
             // Exclude Signup and conversions (data not yet available in backend when browsing members)
-            return !['signup', 'conversion'].includes(d);
+            return !['signup', 'conversion', 'emails.post_id', 'clicked_links.post_id', 'opened_emails.post_id'].includes(d);
         }).map((d) => {
             return {
                 name: d,
