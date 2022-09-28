@@ -73,14 +73,18 @@
 
         {{#if (and (feature 'memberAttribution') (not this.post.emailOnly)) }}
             <div class="gh-post-analytics-item">
-                <h3>{{format-number this.post.count.signups}}</h3>
-                <p>{{gh-pluralize this.post.count.signups "signup" without-count=true}}</p>
+                <LinkTo @route="members" @query={{hash filterParam=(concat "signup:[" this.post.id "]") }}>
+                    <h3>{{format-number this.post.count.signups}}</h3>
+                    <p>{{gh-pluralize this.post.count.signups "signup" without-count=true}}</p>
+                </LinkTo>
             </div>
 
             {{#if this.membersUtils.paidMembersEnabled}}
                 <div class="gh-post-analytics-item">
-                    <h3>{{format-number this.post.count.paid_conversions}}</h3>
-                    <p><span class="hide-when-small">Paid </span>{{gh-pluralize this.post.count.paid_conversions "conversion" without-count=true}}</p>
+                    <LinkTo @route="members" @query={{hash filterParam=(concat "conversion:[" this.post.id "]") }}>
+                        <h3>{{format-number this.post.count.paid_conversions}}</h3>
+                        <p><span class="hide-when-small">Paid </span>{{gh-pluralize this.post.count.paid_conversions "conversion" without-count=true}}</p>
+                    </LinkTo>
                 </div>
             {{/if}}
         {{/if}}
