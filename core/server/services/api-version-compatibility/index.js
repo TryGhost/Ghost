@@ -37,6 +37,8 @@ module.exports.contentVersion = (req, res, next) => {
     if (req.header('accept-version')) {
         res.header('Content-Version', `v${ghostVersion.safe}`);
     }
+
+    res.vary('Accept-Version');
     next();
 };
 

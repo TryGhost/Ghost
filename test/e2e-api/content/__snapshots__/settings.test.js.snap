@@ -86,7 +86,7 @@ Object {
   "content-length": "942",
   "content-type": "application/json; charset=utf-8",
   "etag": "W/\\"3ae-FBGPtlUjSvGtTGLOj2sW5Rbn33s\\"",
-  "vary": "Accept-Encoding",
+  "vary": "Accept-Version, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;

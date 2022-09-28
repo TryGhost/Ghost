@@ -27,7 +27,7 @@ describe('api/canary/content/pages', function () {
             .expect('Cache-Control', testUtils.cacheRules.public)
             .expect(200)
             .then((res) => {
-                res.headers.vary.should.eql('Accept-Encoding');
+                res.headers.vary.should.eql('Accept-Version, Accept-Encoding');
                 should.exist(res.headers['access-control-allow-origin']);
                 should.not.exist(res.headers['x-cache-invalidate']);
 
