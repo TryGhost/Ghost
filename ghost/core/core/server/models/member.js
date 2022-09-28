@@ -47,9 +47,6 @@ const Member = ghostBookshelf.Model.extend({
             key: 'conversion',
             replacement: 'conversions.attribution_id'
         }, {
-            key: 'clicked_links',
-            replacement: 'clicked_links'
-        }, {
             key: 'opened_emails.post_id',
             replacement: 'emails.post_id',
             expansion: 'email_recipients.opened_at:>=emails.created_at' // this is a tiny hack for mongo-knex not supporting value based checks
