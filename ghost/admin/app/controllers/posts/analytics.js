@@ -105,7 +105,7 @@ export default class AnalyticsController extends Controller {
     }
 
     get showSources() {
-        return this.feature.get('sourceAttribution') && !this.post.emailOnly;
+        return this.feature.get('sourceAttribution') && !this.membersUtils.isMembersInviteOnly && !this.post.emailOnly;
     }
 
     get isLoaded() {
