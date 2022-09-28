@@ -1040,6 +1040,11 @@ Dashboard Attribution */
     position: relative;
 }
 
+.gh-dashboard-attribution .gh-dashboard-select {
+    top: 18px;
+    right: 6px;
+}
+
 .gh-dashboard-attribution-chart {
     display:flex;
     justify-content:center;
@@ -1178,6 +1183,32 @@ Dashboard Attribution */
     height: 40px;
     margin-bottom: 12px;
     color: var(--lightgrey);
+}
+
+@media screen and (max-width: 1120px) {
+    .gh-dashboard-attribution-grid .gh-dashboard-metric-label {
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+
+    .gh-dashboard-attribution-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: 2fr;
+    }
+
+    .gh-dashboard-attribution-grid > div:first-child {
+        grid-row: 2;
+    }
+
+    .gh-dashboard-attribution .gh-dashboard-list-title-sources {
+        opacity: 1;
+    }
+
+    .gh-dashboard-attribution-chart {
+        padding-top: 24px;
+        padding-bottom: 40px;
+    }
 }
 
 /* ---------------------------------
