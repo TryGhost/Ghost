@@ -30,7 +30,9 @@
                                         <Dashboard::Charts::PaidMix />
                                     </article>
                                 </section>
-                                <Dashboard::Charts::Attribution />
+                                {{#unless this.membersUtils.isMembersInviteOnly}}
+                                    <Dashboard::Charts::Attribution />
+                                {{/unless}}
                             {{/if}}
                         {{/if}}
                         {{#if this.areNewslettersEnabled}}
