@@ -14,6 +14,7 @@ export default class AnalyticsController extends Controller {
     @service settings;
     @service membersUtils;
     @service utils;
+    @service feature;
 
     @tracked sources = null;
     @tracked links = null;
@@ -30,8 +31,17 @@ export default class AnalyticsController extends Controller {
 
     @action
     loadData() {
-        this.fetchReferrersStats();
-        this.fetchLinks();
+        if (this.showSources) {
+            this.fetchReferrersStats();
+        } else {
+            this.sources = [];
+        }
+
+        if (this.showLinks) {
+            this.fetchLinks();
+        } else {
+            this.links = [];
+        }
     }
 
     async fetchReferrersStats() {
@@ -88,5 +98,17 @@ export default class AnalyticsController extends Controller {
         }, {});
 
         this.links = Object.values(linksByTitle);
+    }
+
+    get showLinks() {
+        return this.settings.get('emailTrackClicks') && (this.post.isSent || (this.post.isPublished && this.post.email));
+    }
+
+    get showSources() {
+        return this.feature.get('sourceAttribution') && !this.post.emailOnly;
+    }
+
+    get isLoaded() {
+        return this.links !== null && this.souces !== null;
     }
 }

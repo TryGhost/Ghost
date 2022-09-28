@@ -80,8 +80,8 @@
         {{/if}}
     </div>
 
-    {{#if (and this.settings.emailTrackClicks (or this.post.isSent (and this.post.isPublished this.post.email)))}}
-        {{#if (not-eq this.links null)}}
+    {{#if this.isLoaded }}
+        {{#if this.showLinks }}
             {{#if (is-empty this.links) }}
                 {{!-- Empty state --}}
             {{else}}
@@ -99,23 +99,9 @@
                     </div>
                 </div>
             {{/if}}
-        {{else}}
-            {{!-- TODO: better way to stop repeating code for loading? --}}
-            <h4 class="gh-main-section-header small bn">
-                Newsletter clicks
-            </h4>
-            <div class="gh-post-analytics-box column">
-                <div class="gh-attribution-box gh-post-analytics-loading">
-                    <div class="gh-loading-spinner-outer">
-                        <div class="gh-loading-spinner"></div>
-                    </div>
-                </div>
-            </div>
         {{/if}}
-    {{/if}}
 
-    {{#if (and (feature 'sourceAttribution') (not this.post.emailOnly))}}
-        {{#if (not-eq this.sources null) }}
+        {{#if this.showSources }}
             {{#if (is-empty this.sources) }}
                 {{!-- Empty state --}}
             {{else}}
@@ -143,45 +129,38 @@
                     </div>
                 </div>
             {{/if}}
-        {{else}}
-            {{!-- TODO: better way to stop repeating code for loading? --}}
-            <h4 class="gh-main-section-header small bn">
-                Source attribution
-            </h4>
-            <div class="gh-post-analytics-box column">
-                <div class="gh-attribution-box">
-                    <div class="gh-loading-spinner-outer">
-                        <div class="gh-loading-spinner"></div>
-                    </div>
-                </div>
-            </div>
         {{/if}}
-    {{/if}}
 
-    <h4 class="gh-main-section-header small bn">
-        Get started with analytics
-    </h4>
-    <div class="gh-post-analytics-box resources">
-        <a href="https://ghost.org/help/" target="_blank" class="gh-post-analytics-resource" rel="noopener noreferrer">
-            <div class="thumbnail" style="background-image: url(assets/img/marketing/analytics-1.jpg);"></div>
-            <div class="flex flex-column justify-between">
-                <div>
-                    <h3>Understand analytics in Ghost</h3>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+        <h4 class="gh-main-section-header small bn">
+            Get started with analytics
+        </h4>
+        <div class="gh-post-analytics-box resources">
+            <a href="https://ghost.org/help/" target="_blank" class="gh-post-analytics-resource" rel="noopener noreferrer">
+                <div class="thumbnail" style="background-image: url(assets/img/marketing/analytics-1.jpg);"></div>
+                <div class="flex flex-column justify-between">
+                    <div>
+                        <h3>Understand analytics in Ghost</h3>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                    </div>
+                    <div class="gh-btn gh-btn-link">Become an expert &rarr;</div>
                 </div>
-                <div class="gh-btn gh-btn-link">Become an expert &rarr;</div>
-            </div>
-        </a>
-        <a href="https://ghost.org/resources" target="_blank" class="gh-post-analytics-resource" rel="noopener noreferrer">
-            <div class="thumbnail" style="background-image: url(assets/img/marketing/analytics-2.jpg);"></div>
-            <div class="flex flex-column justify-between">
-                <div>
-                    <h3>How to best share your shiz</h3>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+            </a>
+            <a href="https://ghost.org/resources" target="_blank" class="gh-post-analytics-resource" rel="noopener noreferrer">
+                <div class="thumbnail" style="background-image: url(assets/img/marketing/analytics-2.jpg);"></div>
+                <div class="flex flex-column justify-between">
+                    <div>
+                        <h3>How to best share your shiz</h3>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                    </div>
+                    <div class="gh-btn gh-btn-link">Sharing is caring &rarr;</div>
                 </div>
-                <div class="gh-btn gh-btn-link">Sharing is caring &rarr;</div>
+            </a>
+        </div>
+    {{else}}
+        <div class="gh-post-analytics-loading">
+            <div class="gh-loading-spinner-outer">
+                <div class="gh-loading-spinner"></div>
             </div>
-        </a>
-    </div>
-    
+        </div>
+    {{/if}}
 </section>
