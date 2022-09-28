@@ -43,10 +43,18 @@
                 {{/unless}}
 
                 {{#each this.postsInfinityModel as |page|}}
-                    <PostsList::ListItem
-                        @post={{page}}
-                        data-test-page-id={{page.id}}
-                    />
+                    {{#if this.feature.emailClicks}}
+                        <PostsList::ListItemClicks
+                            @post={{page}}
+                            data-test-page-id={{page.id}}
+                        />
+                    {{/if}}
+                    {{#unless this.feature.emailClicks}}
+                        <PostsList::ListItem
+                            @post={{page}}
+                            data-test-page-id={{page.id}}
+                        />
+                    {{/unless}}
                 {{else}}
                     <li class="no-posts-box">
                         <div class="no-posts">
