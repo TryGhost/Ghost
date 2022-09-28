@@ -27,9 +27,8 @@ export default class SourceAttributionChart extends Component {
 
         return {
             cutoutPercentage: 70,
-            borderColor: '#000',
             title: {
-                display: true,
+                display: false,
                 text: chartTitle,
                 position: 'bottom',
                 padding: 12,

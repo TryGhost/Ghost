@@ -6,7 +6,7 @@
             <h4>No new members in the past 7 days</h4>
             <p>Once someone signs up, you’ll be able to see where they came from here.</p>
         </div> --}}
-        <div class="gh-dashboard-select-title">
+        <div class="gh-dashboard-select">
             <PowerSelect
                 @selected={{this.selectedDisplayOption}}
                 @options={{this.displayOptions}}
@@ -16,7 +16,8 @@
                 @triggerClass="gh-contentfilter-menu-trigger"
                 @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
                 @matchTriggerWidth={{false}}
-                @horizontalPosition="left"
+                @horizontalPosition="right"
+                
                 as |option|
             >
                 {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
