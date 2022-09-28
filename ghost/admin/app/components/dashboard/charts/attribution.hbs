@@ -6,6 +6,22 @@
             <h4>No new members in the past 7 days</h4>
             <p>Once someone signs up, you’ll be able to see where they came from here.</p>
         </div> --}}
+        <div class="gh-dashboard-select-title">
+            <PowerSelect
+                @selected={{this.selectedDisplayOption}}
+                @options={{this.displayOptions}}
+                @searchEnabled={{false}}
+                @onChange={{this.onDisplayChange}}
+                @triggerComponent={{component "gh-power-select/trigger"}}
+                @triggerClass="gh-contentfilter-menu-trigger"
+                @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
+                @matchTriggerWidth={{false}}
+                @horizontalPosition="left"
+                as |option|
+            >
+                {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
+            </PowerSelect>
+        </div>
         <div class="gh-dashboard-attribution-grid">
             <div>
                 <h3 class="gh-dashboard-metric-label">Top sources</h3>
