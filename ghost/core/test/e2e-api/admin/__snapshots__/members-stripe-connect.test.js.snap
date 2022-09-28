@@ -10,7 +10,7 @@ Object {
   "set-cookie": Array [
     StringMatching /\\^ghost-admin-api-session=/,
   ],
-  "vary": "Origin, Accept, Accept-Encoding",
+  "vary": "Accept-Version, Origin, Accept, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
