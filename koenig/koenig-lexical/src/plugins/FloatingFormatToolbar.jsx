@@ -73,7 +73,7 @@ function MenuItem({label, isActive, onClick, Icon, ...props}) {
 
 function MenuSeparator() {
     return (
-        <li className="m-0 mx-1 h-5 w-px bg-grey-900"></li>
+        <li className="bg-grey-900 m-0 mx-1 h-5 w-px"></li>
     );
 }
 
@@ -190,7 +190,7 @@ function FloatingFormatToolbar({editor, anchorElem, blockType, isBold, isItalic}
 
     return (
         <div className="absolute" ref={toolbarRef} data-kg-floating-toolbar>
-            <ul className="m-0 flex items-center justify-evenly rounded bg-black px-1 py-0 font-sans text-md font-normal text-white">
+            <ul className="text-md m-0 flex items-center justify-evenly rounded bg-black px-1 py-0 font-sans font-normal text-white">
                 <MenuItem label="Format text as bold" isActive={isBold} Icon={BoldIcon} onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold')} data-kg-toolbar-button="bold" />
                 <MenuItem label="Format text as italics" isActive={isItalic} Icon={ItalicIcon} onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic')} data-kg-toolbar-button="italic" />
                 <MenuItem label="Toggle heading 1" isActive={blockType === 'h2'} Icon={HeadingOneIcon} onClick={() => (blockType === 'h2' ? formatParagraph() : formatHeading('h2'))} data-kg-toolbar-button="h2" />

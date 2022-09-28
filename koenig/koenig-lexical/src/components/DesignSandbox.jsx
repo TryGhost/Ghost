@@ -1,17 +1,46 @@
 import '../styles/index.css';
+import {ReactComponent as BoldIcon} from '../assets/icons/kg-bold.svg';
+import {ReactComponent as ItalicIcon} from '../assets/icons/kg-italic.svg';
+import {ReactComponent as HeadingOneIcon} from '../assets/icons/kg-heading-1.svg';
+import {ReactComponent as HeadingTwoIcon} from '../assets/icons/kg-heading-2.svg';
+import {ReactComponent as QuoteOneIcon} from '../assets/icons/kg-quote-1.svg';
 
 const DesignSandbox = () => {
     return (
         <div className="koenig-lexical">
-            <div className="text-slate-700 ring-slate-700/10 hover:bg-slate-50 hover:text-slate-900 pointer-events-auto relative inline-flex rounded-md bg-white text-[0.8125rem] font-medium leading-5 shadow-sm ring-1">
-                <div className="flex py-2 px-3">
-                    <svg className="fill-slate-400 mr-2.5 h-5 w-5 flex-none"><path d="M5 4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v14l-5-2.5L5 18V4Z"></path></svg>
-                    Bookmark
-                </div>
-                <div className="border-slate-400/20 border-l py-2 px-2.5">12k</div>
-            </div>
+            <h3 className="mb-4 text-xl font-bold">Floating toolbar</h3>
+
+            <div className="max-w-fit">
+                <ul className="text-md m-0 flex items-center justify-evenly rounded bg-black px-1 py-0 font-sans font-normal text-white">
+                    <MenuItem label="Format text as bold" Icon={BoldIcon} />
+                    <MenuItem label="Format text as italics" Icon={ItalicIcon} />
+                    <MenuItem label="Toggle heading 1" Icon={HeadingOneIcon} />
+                    <MenuItem label="Toggle heading 2" Icon={HeadingTwoIcon} />
+                    <MenuSeparator />
+                    <MenuItem label="Toggle blockquote" Icon={QuoteOneIcon} />
+                </ul>
+            </div>      
         </div>
     );
+
+    function MenuItem({label, Icon, ...props}) {
+        return (
+            <li className="m-0 flex p-0 first:m-0" {...props}>
+                <div
+                    type="button"
+                    className="flex h-9 w-9 items-center justify-center"
+                >
+                    <Icon className="fill-white" />
+                </div>
+            </li>
+        );
+    }
+    
+    function MenuSeparator() {
+        return (
+            <li className="bg-grey-900 m-0 mx-1 h-5 w-px"></li>
+        );
+    }
 };
 
 export default DesignSandbox;
