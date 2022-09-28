@@ -23,7 +23,7 @@
                     </li>
                     {{#if this.showExplore}}
                         <li class="relative">
-                            <a href="javascript:void(0)" class={{if this.explore.exploreWindowOpen "active"}} {{action "toggleExploreModal" }} data-test-nav="explore">
+                            <a href="javascript:void(0)" class={{if this.explore.exploreWindowOpen "active"}} {{on "click" (action "toggleExploreModal")}} data-test-nav="explore">
                                 {{svg-jar "globe"}} Explore
                             </a>
                         </li>
