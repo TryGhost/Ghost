@@ -119,6 +119,44 @@ class AttributionBuilder {
     }
 
     /**
+     * Maps the framework context to members_*.source table record value
+     * @param {AttributionResource} attribution the attribution to update
+     * @param {'import' | 'system' | 'api' | 'admin' | 'member'} source source of member creation
+     * @returns {AttributionResource}
+     */
+    updateAttributionForSource(attribution, source) {
+        if (attribution?.referrerSource) {
+            return attribution;
+        }
+
+        const updatedAttribution = {
+            id: null,
+            type: null,
+            url: null,
+            referrerSource: null,
+            referrerMedium: null,
+            referrerUrl: null,
+            ...attribution
+        };
+
+        if (source === 'import') {
+            updatedAttribution.referrerSource = 'Imported';
+            return updatedAttribution;
+        }
+        if (source === 'api') {
+            updatedAttribution.referrerSource = 'API';
+            return updatedAttribution;
+        }
+
+        if (source === 'admin') {
+            updatedAttribution.referrerSource = 'Manually created';
+            return updatedAttribution;
+        }
+
+        return attribution;
+    }
+
+    /**
      * Last Post Algorithm™️
      * @param {import('./history').UrlHistoryArray} history
      * @returns {Promise<Attribution>}

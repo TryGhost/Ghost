@@ -43,6 +43,7 @@ module.exports = class MemberRepository {
      * @param {any} deps.offerRepository
      * @param {ITokenService} deps.tokenService
      * @param {any} deps.newslettersService
+     * @param {any} deps.memberAttributionService
      */
     constructor({
         Member,
@@ -60,7 +61,8 @@ module.exports = class MemberRepository {
         productRepository,
         offerRepository,
         tokenService,
-        newslettersService
+        newslettersService,
+        memberAttributionService
     }) {
         this._Member = Member;
         this._MemberCancelEvent = MemberCancelEvent;
@@ -76,6 +78,7 @@ module.exports = class MemberRepository {
         this._offerRepository = offerRepository;
         this.tokenService = tokenService;
         this._newslettersService = newslettersService;
+        this._memberAttributionService = memberAttributionService;
         this._labsService = labsService;
 
         DomainEvents.subscribe(SubscriptionCreatedEvent, async function (event) {
@@ -337,10 +340,10 @@ module.exports = class MemberRepository {
                 }
             }
         }
-
+        const updatedAttribution = this._memberAttributionService.updateAttributionForSource(data.attribution, source);
         DomainEvents.dispatch(MemberCreatedEvent.create({
             memberId: member.id,
-            attribution: data.attribution,
+            attribution: updatedAttribution,
             source
         }, eventData.created_at));
 

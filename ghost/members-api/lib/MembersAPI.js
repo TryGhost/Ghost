@@ -88,6 +88,7 @@ module.exports = function MembersAPI({
         tokenService,
         newslettersService,
         labsService,
+        memberAttributionService,
         productRepository,
         Member,
         MemberCancelEvent,
