@@ -15,6 +15,7 @@ import {task} from 'ember-concurrency';
 @tagName('')
 export default class Main extends Component.extend(ShortcutsMixin) {
     @service billing;
+    @service explore;
     @service config;
     @service customViews;
     @service feature;
@@ -52,6 +53,9 @@ export default class Main extends Component.extend(ShortcutsMixin) {
 
     @reads('config.hostSettings.billing.enabled')
         showBilling;
+
+    @reads('explore.enabled')
+        showExplore;
 
     init() {
         super.init(...arguments);
@@ -104,6 +108,11 @@ export default class Main extends Component.extend(ShortcutsMixin) {
     @action
     toggleBillingModal() {
         this.billing.openBillingWindow(this.router.currentURL);
+    }
+
+    @action
+    toggleExploreModal() {
+        this.explore.openExploreWindow(this.router.currentURL);
     }
 
     @task(function* () {

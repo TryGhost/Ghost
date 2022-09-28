@@ -8,6 +8,7 @@ import Controller from '@ember/controller';
 @classic
 export default class ApplicationController extends Controller {
     @service billing;
+    @service explore;
     @service config;
     @service dropdown;
     @service feature;
@@ -18,6 +19,9 @@ export default class ApplicationController extends Controller {
 
     @reads('config.hostSettings.billing.enabled')
         showBilling;
+
+    @reads('explore.enabled')
+        showExplore;
 
     @computed(
         'router.currentRouteName',
