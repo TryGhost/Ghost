@@ -2,7 +2,7 @@
     rotate"}}" {{on "click" this.toggleSubscriptionExpanded}} role="button" aria-label="Show details">
     Details {{svg-jar "arrow-right-stroke"}}
 </button>
-<div class="gh-membertier-advanced {{unless this.showDetails " hide"}}" data-test-subscription={{index}}>
+<div class="gh-membertier-advanced {{unless this.showDetails " hide"}}" data-test-subscription={{@index}}>
     <div class="gh-membertier-details-container">
         {{#if @sub.cancellationReason}}
         <div class="mb4">

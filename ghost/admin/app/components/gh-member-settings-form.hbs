@@ -184,7 +184,7 @@
                                             <span class="gh-cp-membertier-renewal">Renews {{sub.validUntil}}</span>
                                         {{/if}}
                                     </div>
-                                    <Member::SubscriptionDetailBox @sub={{sub}} />
+                                    <Member::SubscriptionDetailBox @sub={{sub}} @index={{index}} />
                                 </div>
                                 {{#if sub.isComplimentary}}
                                     <span class="action-menu">
