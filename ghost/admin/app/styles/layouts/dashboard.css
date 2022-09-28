@@ -1169,6 +1169,13 @@ Dashboard Attribution */
     padding: 0;
 }
 
+.attribution-list-empty svg {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 12px;
+    color: var(--lightgrey);
+}
+
 /* ---------------------------------
 Dashboard Engagement */
 
