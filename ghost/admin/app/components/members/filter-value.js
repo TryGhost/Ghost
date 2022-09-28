@@ -48,30 +48,6 @@ export default class MembersFilterValue extends Component {
         return [];
     }
 
-    get signupAttributionFilterValue() {
-        if (this.args.filter?.type === 'signup') {
-            const resources = this.args.filter?.value || [];
-            return resources.map((resource) => {
-                return {
-                    id: resource
-                };
-            });
-        }
-        return [];
-    }
-
-    get conversionAttributionFilterValue() {
-        if (this.args.filter?.type === 'conversion') {
-            const resources = this.args.filter?.value || [];
-            return resources.map((resource) => {
-                return {
-                    id: resource
-                };
-            });
-        }
-        return [];
-    }
-
     @action
     setInputFilterValue(filter, event) {
         this.filterValue = event.target.value;
@@ -103,13 +79,36 @@ export default class MembersFilterValue extends Component {
         this.args.setFilterValue(filter, tiers.map(tier => tier.slug));
     }
 
-    @action
-    setConversionAttributionFilterValue(filter, resources) {
-        this.args.setFilterValue(filter, resources.map(resource => resource.id));
+    get isResourceFilter() {
+        return ['signup', 'conversion', 'emails.post_id', 'opened_emails.post_id', 'clicked_links.post_id'].includes(this.args.filter?.type);
+    }
+
+    get resourceFilterType() {
+        if (!this.isResourceFilter) {
+            return '';
+        }
+
+        if (['emails.post_id', 'opened_emails.post_id', 'clicked_links.post_id'].includes(this.args.filter?.type)) {
+            return 'email';
+        }
+
+        return '';
+    }
+
+    get resourceFilterValue() {
+        if (!this.isResourceFilter) {
+            return [];
+        }
+        const resources = this.args.filter?.value || [];
+        return resources.map((resource) => {
+            return {
+                id: resource
+            };
+        });
     }
 
     @action
-    setSignupAttributionFilterValue(filter, resources) {
+    setResourceFilterValue(filter, resources) {
         this.args.setFilterValue(filter, resources.map(resource => resource.id));
     }
 }

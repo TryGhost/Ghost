@@ -46,6 +46,12 @@ const Member = ghostBookshelf.Model.extend({
         }, {
             key: 'conversion',
             replacement: 'conversions.attribution_id'
+        }, {
+            key: 'opened_emails.post_id',
+            replacement: 'emails.post_id',
+            // Currently we cannot expand on values such as null or a string in mongo-knex
+            // But the line below is essentially the same as: `email_recipients.opened_at:-null`
+            expansion: 'email_recipients.opened_at:>=0' 
         }];
     },
 
@@ -92,6 +98,22 @@ const Member = ghostBookshelf.Model.extend({
                 tableNameAs: 'conversions',
                 type: 'oneToOne',
                 joinFrom: 'member_id'
+            },
+            clicked_links: {
+                tableName: 'link_redirects',
+                tableNameAs: 'clicked_links',
+                type: 'manyToMany',
+                joinTable: 'members_link_click_events',
+                joinFrom: 'member_id',
+                joinTo: 'link_id'
+            },
+            emails: {
+                tableName: 'emails',
+                tableNameAs: 'emails',
+                type: 'manyToMany',
+                joinTable: 'email_recipients',
+                joinFrom: 'member_id',
+                joinTo: 'email_id'
             }
         };
     },
