@@ -110,8 +110,25 @@
                 </h4>
                 <div class="gh-post-analytics-box column">
                     <div class="gh-attribution-box">
+                        <div class="gh-dashboard-select" style="top:40px;right:24px">
+                            <PowerSelect
+                                @selected={{this.selectedDisplayOption}}
+                                @options={{this.displayOptions}}
+                                @searchEnabled={{false}}
+                                @onChange={{this.onDisplayChange}}
+                                @triggerComponent={{component "gh-power-select/trigger"}}
+                                @triggerClass="gh-contentfilter-menu-trigger"
+                                @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
+                                @matchTriggerWidth={{false}}
+                                @horizontalPosition="right"
+
+                                as |option|
+                            >
+                                {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
+                            </PowerSelect>
+                        </div>
                         <div class="gh-attribution-table-column">
-                            <MemberAttribution::SourceAttributionTable 
+                            <MemberAttribution::SourceAttributionTable
                                 @sources={{this.sources}}
                                 @sortColumn={{this.sortColumn}}
                                 @setSortColumn={{this.setSortColumn}}
