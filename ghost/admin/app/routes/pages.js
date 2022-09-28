@@ -8,8 +8,7 @@ export default class PagesRoute extends PostsRoute {
 
     buildRouteInfoMetadata() {
         return {
-            titleToken: 'Pages',
-            mainClasses: this.feature.get('memberAttribution') ? ['gh-main-fullwidth'] : null
+            titleToken: 'Pages'
         };
     }
 }
