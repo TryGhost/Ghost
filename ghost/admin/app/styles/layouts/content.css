@@ -1086,8 +1086,8 @@ a.gh-post-list-cta {
     justify-content: flex-start;
     margin: -7px 16px 0 0;
     padding: 1px 14px;
-    border: 1px solid rgb(222, 227, 231);
-    box-shadow: rgb(0 0 0 / 10%) 0px 1px 2px;
+    border: 1px solid var(--whitegrey-d1);
+    /* box-shadow: rgb(0 0 0 / 10%) 0px 1px 2px; */
     background: var(--white);
     color: var(--darkgrey);
     border-radius: var(--border-radius);
@@ -1104,8 +1104,7 @@ a.gh-post-list-cta {
 }
 
 a.gh-post-list-cta.is-hovered {
-    border-color: rgb(186, 191, 194);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    border-color: var(--whitegrey-d2);
 }
 
 a.gh-post-list-cta.stats.is-hovered {
@@ -1114,7 +1113,8 @@ a.gh-post-list-cta.stats.is-hovered {
 
 a.gh-post-list-cta.stats.is-hovered:hover {
     color: var(--green-d1);
-    border-color: var(--green-d1);
+    border-color: var(--lightgrey-l1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 a.gh-post-list-cta.edit.is-hovered {
@@ -1124,7 +1124,8 @@ a.gh-post-list-cta.edit.is-hovered {
 a.gh-post-list-cta.edit.is-hovered:hover,
 a.gh-post-list-cta.edit:not(.is-hovered):hover {
     color: var(--pink-d1);
-    border-color: var(--pink-d1);
+    border-color: var(--lightgrey-l1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 a.gh-post-list-cta > svg {
