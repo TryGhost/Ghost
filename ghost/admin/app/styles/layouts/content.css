@@ -936,15 +936,6 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     border-radius: var(--border-radius);
 }
 
-.gh-links-list-item:first-child {
-    padding-top: 0;
-}
-
-.gh-links-list-item:last-child {
-    padding-bottom: 0;
-    border-bottom: none;
-}
-
 .gh-links-list-item {
     display: flex;
     justify-content: space-between;
@@ -954,6 +945,19 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     font-weight: 500;
     letter-spacing: 0;
     text-decoration: none;
+}
+
+.gh-links-list-item:first-child {
+    padding-top: 0;
+}
+
+.gh-links-list-item:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.gh-links-list > .gh-links-list-item:last-child {
+    border-bottom: 0 none;
 }
 
 .gh-links-list-item a {
@@ -973,6 +977,79 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 .gh-links-list-clicks {
     margin: 0;
     color: var(--darkgrey);
+}
+
+.gh-links-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: calc(100% + 40px);
+    background: linear-gradient(180deg, #FBFBFB 0%, #FFFFFF 50%);
+    padding: 20px;
+    margin: -1px -20px -20px -20px;
+    border-top: 1px solid var(--lightgrey-l1);
+    border-radius: 0 0 3px 3px;
+}
+
+.gh-links-pagination-progress {
+    font-weight: 500;
+    font-size: 13px;
+    line-height: 16px;
+    letter-spacing: 0.01em;
+    color: var(--midlightgrey);
+}
+
+.gh-links-pagination-actions {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+}
+
+.gh-links-pagination-action {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 8px;
+    color: var(--green);
+    font-weight: 600;
+    font-size: 13px;
+    line-height: 16px;
+    letter-spacing: 0.01em;
+    transition: color .2s linear;
+}
+
+.gh-links-pagination-action.gh-links-pagination-prev {
+    position: relative;
+    padding-right: 20px;
+}
+
+.gh-links-pagination-action.gh-links-pagination-prev:after {
+    content: "";
+    position: absolute;
+    top: 20%;
+    bottom: 20%;
+    right: 0;
+    background: var(--lightgrey);
+    border-radius: 2px;
+    width: 1.5px;
+    height: 60%;
+}
+
+.gh-links-pagination-action svg {
+    width: 6px;
+    fill: var(--green);
+    stroke: var(--green);
+    transition: all .2s linear;
+}
+
+.gh-links-pagination-action:hover {
+    color: var(--green-d2);
+}
+
+.gh-links-pagination-action:hover svg {
+    fill: var(--green-d2);
+    stroke: var(--green-d2);
 }
 
 /* Post list – LABS
