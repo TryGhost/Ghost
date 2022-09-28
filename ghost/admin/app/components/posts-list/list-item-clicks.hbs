@@ -118,7 +118,7 @@
     {{!-- Opened / Signups column --}}
     <LinkTo @route={{this.routeForLink}} @models={{this.modelsForLink}} class="permalink gh-list-data gh-post-list-opens">
         {{#if (and @post.email (not-eq this.settings.membersSignupAccess "none") (not-eq this.settings.editorDefaultEmailRecipients "disabled") (not this.session.user.isContributor) (or @post.isSent @post.isPublished) this.settings.emailTrackOpens @post.email.trackOpens this.feature.emailAnalytics (eq @post.displayName "post"))}}
-            <div class="flex flex-column" {{on "mouseover" (fn (mut this.isOpenStatHovered) true)}} {{on "mouseleave" (fn (mut this.isOpenStatHovered) false)}}>
+            <LinkTo @route="members" @query={{hash filterParam=(concat "opened_emails.post_id:[" @post.id "]") }} class="flex flex-column gh-post-row-event" {{on "mouseover" (fn (mut this.isOpenStatHovered) true)}} {{on "mouseleave" (fn (mut this.isOpenStatHovered) false)}}>
                 <span class="gh-content-email-stats-value">
                     {{#if this.isHovered}}
                         {{format-number @post.email.openedCount}}
@@ -129,25 +129,25 @@
                 <span class="gh-content-email-stats">
                     opened
                 </span>
-            </div>
+            </LinkTo>
         {{/if}}
 
         {{#if (and this.feature.memberAttribution (not-eq this.settings.membersSignupAccess "none") (and @post.isPage) (not this.session.user.isContributor)) }}
-            <div class="flex flex-column" {{on "mouseover" (fn (mut this.isOpenStatHovered) true)}} {{on "mouseleave" (fn (mut this.isOpenStatHovered) false)}}>
+            <LinkTo @route="members" @query={{hash filterParam=(concat "signup:[" @post.id "]") }} class="flex flex-column gh-post-row-event" {{on "mouseover" (fn (mut this.isOpenStatHovered) true)}} {{on "mouseleave" (fn (mut this.isOpenStatHovered) false)}}>
                 <span class="gh-content-email-stats-value">
                     {{@post.count.signups}}
-            </span>
+                </span>
                 <span class="gh-content-email-stats">
                     signups
                 </span>
-            </div>
+            </LinkTo>
         {{/if}}
     </LinkTo>
     
     {{!-- Clicked / Conversions column --}}
     <LinkTo @route={{this.routeForLink}} @models={{this.modelsForLink}} class="permalink gh-list-data gh-post-list-clicks">
         {{#if (and @post.email (not-eq this.settings.membersSignupAccess "none") (not-eq this.settings.editorDefaultEmailRecipients "disabled") (not this.session.user.isContributor) (or @post.isSent @post.isPublished) this.settings.emailTrackClicks this.feature.emailAnalytics)}}
-            <div class="flex flex-column" {{on "mouseover" (fn (mut this.isClickStatHovered) true)}} {{on "mouseleave" (fn (mut this.isClickStatHovered) false)}}>
+            <LinkTo @route="members" @query={{hash filterParam=(concat "clicked_links.post_id:[" @post.id "]") }} class="flex flex-column gh-post-row-event" {{on "mouseover" (fn (mut this.isClickStatHovered) true)}} {{on "mouseleave" (fn (mut this.isClickStatHovered) false)}}>
                 <span class="gh-content-email-stats-value">
                     {{#if this.isHovered}}
                         {{format-number @post.count.clicks}}
@@ -158,18 +158,18 @@
                 <span class="gh-content-email-stats">
                     clicked
                 </span>
-            </div>
+            </LinkTo>
         {{/if}}
 
         {{#if (and this.feature.memberAttribution (not-eq this.settings.membersSignupAccess "none") (and @post.isPage) (not this.session.user.isContributor)) }}
-            <div class="flex flex-column" {{on "mouseover" (fn (mut this.isClickStatHovered) true)}} {{on "mouseleave" (fn (mut this.isClickStatHovered) false)}}>
+            <LinkTo @route="members" @query={{hash filterParam=(concat "conversion:[" @post.id "]") }} class="flex flex-column gh-post-row-event" {{on "mouseover" (fn (mut this.isClickStatHovered) true)}} {{on "mouseleave" (fn (mut this.isClickStatHovered) false)}}>
                 <span class="gh-content-email-stats-value">
                     {{@post.count.paid_conversions}}
                 </span>
                 <span class="gh-content-email-stats">
                     conversions
                 </span>
-            </div>
+            </LinkTo>
         {{/if}}
     </LinkTo>
 
