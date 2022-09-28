@@ -9,38 +9,43 @@ export default class SourceAttributionTable extends Component {
 
     @action
     openAllSources() {
+        // add unavailableSource to sortedSources array only if it has value
+        const allSources = this.unavailableSource ? [...this.sortedSources, this.unavailableSource] : this.sortedSources;
+
         this.modals.open(AllSourcesModal, {
-            sources: [
-                ...this.sortedSources,
-                ...this.unavailableSource
-            ]
+            sources: allSources
         });
     }
 
     get unavailableSource() {
-        return this.args.sources.filter(sourceData => !sourceData.source).map((sourceData) => {
-            return {
-                ...sourceData,
-                source: 'Unavailable'
-            };
-        });
+        const emptySource = this.args.sources.find(sourceData => !sourceData.source);
+        if (!emptySource) {
+            return null;
+        }
+        return {
+            ...emptySource,
+            source: 'Unavailable'
+        };
     }
 
+    // Others data includes all sources except the first 5
     get others() {
-        const availableSources = this.sortedSources;
-        const unavailableSource = this.args.sources.find(sourceData => !sourceData.source);
-        if (!availableSources.length && !unavailableSource) {
+        if (this.sortedSources.length < 5) {
             return null;
         }
 
-        return availableSources.slice(5).reduce((acc, source) => {
+        if (this.sortedSources === 5 && !this.unavailableSource.length) {
+            return null;
+        }
+
+        return this.sortedSources.slice(5).reduce((acc, source) => {
             return {
                 signups: acc.signups + source.signups,
                 paidConversions: acc.paidConversions + source.paidConversions
             };
         }, {
-            signups: unavailableSource?.signups ?? 0,
-            paidConversions: unavailableSource?.paidConversions ?? 0
+            signups: this.unavailableSource?.signups ?? 0,
+            paidConversions: this.unavailableSource?.paidConversions ?? 0
         });
     }
 
@@ -55,6 +60,10 @@ export default class SourceAttributionTable extends Component {
     }
 
     get sources() {
-        return this.sortedSources.slice(0, 5);
+        if (this.sortedSources.length >= 5) {
+            return this.sortedSources.slice(0, 5);
+        }
+
+        return this.unavailableSource ? [...this.sortedSources, this.unavailableSource] : this.sortedSources;
     }
 }
