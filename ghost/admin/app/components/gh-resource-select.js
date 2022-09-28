@@ -48,9 +48,26 @@ export default class GhResourceSelect extends Component {
         this.args.onChange(options);
     }
 
+    get placeholderText() {
+        if (this.args.type === 'email') {
+            return 'Select an email';
+        }
+        return 'Select a page/post';
+    }
+
     @task
     *fetchOptionsTask() {
         const options = yield [];
+        
+        if (this.args.type === 'email') {
+            const posts = yield this.store.query('post', {filter: '(status:published,status:sent)+newsletter_id:-null', limit: 'all'});
+            options.push({
+                groupName: 'Emails',
+                options: posts.map(mapResource)
+            });
+            this._options = options;
+            return;
+        }
 
         const posts = yield this.store.query('post', {filter: 'status:published', limit: 'all'});
         const pages = yield this.store.query('page', {filter: 'status:published', limit: 'all'});
