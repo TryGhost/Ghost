@@ -72,52 +72,50 @@
                         <span class="gh-content-entry-date">– Lexical</span>
                     {{/if}} --}}
                 </p>
-                {{#if (not-eq this.settings.membersSignupAccess "none")}}
-                    <p class="gh-content-entry-status">
-                        {{#if @post.isScheduled}}
-                            <span class="scheduled" {{on "mouseover" (fn (mut this.isStateHovered) true)}} {{on "mouseleave" (fn (mut this.isStateHovered) false)}}>
-                                <span class="status-dot"></span>
-                                Scheduled
-                                {{#if this.isStateHovered}}
-                                    <span class="schedule-details" {{css-transition "anim-fade-in-scale"}}>to be published {{if @post.newsletter "and sent "}}{{this.scheduledText}} to {{humanize-recipient-filter @post.emailSegment}}</span>
-                                {{/if}}
-                            </span>
-                        {{/if}}
+                <p class="gh-content-entry-status">
+                    {{#if @post.isScheduled}}
+                        <span class="scheduled" {{on "mouseover" (fn (mut this.isStateHovered) true)}} {{on "mouseleave" (fn (mut this.isStateHovered) false)}}>
+                            <span class="status-dot"></span>
+                            Scheduled
+                            {{#if this.isStateHovered}}
+                                <span class="schedule-details" {{css-transition "anim-fade-in-scale"}}>to be published {{if @post.newsletter "and sent "}}{{this.scheduledText}} to {{humanize-recipient-filter @post.emailSegment}}</span>
+                            {{/if}}
+                        </span>
+                    {{/if}}
 
-                        {{#if @post.isDraft}}
-                            <span class="draft">
-                                <span class="status-dot"></span>
-                                Draft
-                            </span>
-                        {{/if}}
+                    {{#if @post.isDraft}}
+                        <span class="draft">
+                            <span class="status-dot"></span>
+                            Draft
+                        </span>
+                    {{/if}}
 
-                        {{#if @post.isPublished}}
-                            <span class="published" {{on "mouseover" (fn (mut this.isStateHovered) true)}} {{on "mouseleave" (fn (mut this.isStateHovered) false)}}>
-                                Published
-                                {{#if @post.hasEmail}}
-                                    and sent 
-                                    {{#if this.isHovered}}
-                                        <span {{css-transition "anim-fade-in-scale"}}>to {{gh-pluralize @post.email.emailCount "member"}}</span>
-                                    {{/if}}
-                                {{/if}}
-                            </span>
-                        {{/if}}
-
-                        {{#if @post.isSent}}
-                            <span class="sent" {{on "mouseover" (fn (mut this.isStateHovered) true)}} {{on "mouseleave" (fn (mut this.isStateHovered) false)}}>
-                                Sent 
+                    {{#if @post.isPublished}}
+                        <span class="published" {{on "mouseover" (fn (mut this.isStateHovered) true)}} {{on "mouseleave" (fn (mut this.isStateHovered) false)}}>
+                            Published
+                            {{#if @post.hasEmail}}
+                                and sent 
                                 {{#if this.isHovered}}
                                     <span {{css-transition "anim-fade-in-scale"}}>to {{gh-pluralize @post.email.emailCount "member"}}</span>
                                 {{/if}}
-                            </span>
-                        {{/if}}
-                    </p>
-                {{/if}}
+                            {{/if}}
+                        </span>
+                    {{/if}}
+
+                    {{#if @post.isSent}}
+                        <span class="sent" {{on "mouseover" (fn (mut this.isStateHovered) true)}} {{on "mouseleave" (fn (mut this.isStateHovered) false)}}>
+                            Sent 
+                            {{#if this.isHovered}}
+                                <span {{css-transition "anim-fade-in-scale"}}>to {{gh-pluralize @post.email.emailCount "member"}}</span>
+                            {{/if}}
+                        </span>
+                    {{/if}}
+                </p>
             {{/unless}}
         </LinkTo>
     {{/if}}
 
-    {{!-- Opens column --}}
+    {{!-- Opened / Signups column --}}
     <LinkTo @route={{this.routeForLink}} @models={{this.modelsForLink}} class="permalink gh-list-data gh-post-list-opens">
         {{#if (and @post.email (not-eq this.settings.membersSignupAccess "none") (not-eq this.settings.editorDefaultEmailRecipients "disabled") (not this.session.user.isContributor) (or @post.isSent @post.isPublished) this.settings.emailTrackOpens @post.email.trackOpens this.feature.emailAnalytics (eq @post.displayName "post"))}}
             <div class="flex flex-column" {{on "mouseover" (fn (mut this.isOpenStatHovered) true)}} {{on "mouseleave" (fn (mut this.isOpenStatHovered) false)}}>
@@ -133,9 +131,20 @@
                 </span>
             </div>
         {{/if}}
+
+        {{#if (and this.feature.memberAttribution (not-eq this.settings.membersSignupAccess "none") (and @post.isPage) (not this.session.user.isContributor)) }}
+            <div class="flex flex-column" {{on "mouseover" (fn (mut this.isOpenStatHovered) true)}} {{on "mouseleave" (fn (mut this.isOpenStatHovered) false)}}>
+                <span class="gh-content-email-stats-value">
+                    {{@post.count.signups}}
+            </span>
+                <span class="gh-content-email-stats">
+                    signups
+                </span>
+            </div>
+        {{/if}}
     </LinkTo>
     
-    {{!-- Clicks column --}}
+    {{!-- Clicked / Conversions column --}}
     <LinkTo @route={{this.routeForLink}} @models={{this.modelsForLink}} class="permalink gh-list-data gh-post-list-clicks">
         {{#if (and @post.email (not-eq this.settings.membersSignupAccess "none") (not-eq this.settings.editorDefaultEmailRecipients "disabled") (not this.session.user.isContributor) (or @post.isSent @post.isPublished) this.settings.emailTrackClicks this.feature.emailAnalytics)}}
             <div class="flex flex-column" {{on "mouseover" (fn (mut this.isClickStatHovered) true)}} {{on "mouseleave" (fn (mut this.isClickStatHovered) false)}}>
@@ -151,54 +160,31 @@
                 </span>
             </div>
         {{/if}}
-    </LinkTo>
 
-    {{!-- Button column --}}
-    <LinkTo @route={{this.routeForLink}} @models={{this.modelsForLink}} class="permalink gh-list-data {{if (not-eq this.settings.membersSignupAccess "none") "gh-post-list-button"}}">
-        {{#if (not-eq this.settings.membersSignupAccess "none")}}
-            <div class="gh-list-data-inner">
-                {{#if this.isAnalytics}}
-                    <LinkTo @route={{this.routeForLink}} @models={{this.modelsForLink}} class="gh-post-list-cta stats {{if this.isHovered "is-hovered"}}" title="">
-                        {{svg-jar "stats" title=""}}<span>Stats</span>
-                    </LinkTo>
-                {{else}}
-                    <LinkTo @route={{this.routeForLink}} @models={{this.modelsForLink}} class="gh-post-list-cta edit {{if this.isHovered "is-hovered"}}" title="">
-                        {{svg-jar "pen" title=""}}<span>Edit</span>
-                    </LinkTo>
-                {{/if}}
+        {{#if (and this.feature.memberAttribution (not-eq this.settings.membersSignupAccess "none") (and @post.isPage) (not this.session.user.isContributor)) }}
+            <div class="flex flex-column" {{on "mouseover" (fn (mut this.isClickStatHovered) true)}} {{on "mouseleave" (fn (mut this.isClickStatHovered) false)}}>
+                <span class="gh-content-email-stats-value">
+                    {{@post.count.paid_conversions}}
+                </span>
+                <span class="gh-content-email-stats">
+                    conversions
+                </span>
             </div>
-        {{else}}
-            <p class="gh-content-entry-status">
-                {{#if @post.isScheduled}}
-                    <span class="scheduled" data-tooltip="Published {{this.scheduledText}}">
-                        <span class="status-dot"></span>
-                        Scheduled
-                    </span>
-                {{/if}}
- 
-                {{#if @post.isDraft}}
-                    <span class="draft">
-                        <span class="status-dot"></span>
-                        Draft
-                    </span>
-                {{/if}}
-
-                {{#if @post.isPublished}}
-                    <span class="published">
-                        Published
-                        {{#if @post.hasEmail}}
-                            and sent 
-                        {{/if}}
-                    </span>
-                {{/if}}
-
-                {{#if @post.isSent}}
-                    <span class="sent">
-                        Sent
-                    </span>
-                {{/if}}
-            </p>
         {{/if}}
     </LinkTo>
 
+    {{!-- Button column --}}
+    <LinkTo @route={{this.routeForLink}} @models={{this.modelsForLink}} class="permalink gh-list-data gh-post-list-button">
+        <div class="gh-list-data-inner">
+            {{#if this.isAnalytics}}
+                <LinkTo @route={{this.routeForLink}} @models={{this.modelsForLink}} class="gh-post-list-cta stats {{if this.isHovered "is-hovered"}}" title="">
+                    {{svg-jar "stats" title=""}}<span>Stats</span>
+                </LinkTo>
+            {{else}}
+                <LinkTo @route={{this.routeForLink}} @models={{this.modelsForLink}} class="gh-post-list-cta edit {{if this.isHovered "is-hovered"}}" title="">
+                    {{svg-jar "pen" title=""}}<span>Edit</span>
+                </LinkTo>
+            {{/if}}
+        </div>
+    </LinkTo>
 </li>
