@@ -39,6 +39,15 @@ export default class Recents extends Component {
         return this.dashboardStats?.memberSourceAttributionCounts || [];
     }
 
+    // chartDays value for more than 7 days has an extra day to show all ticks
+    get chartPeriod() {
+        if (this.dashboardStats.chartDays > 7) {
+            return this.dashboardStats.chartDays - 1;
+        }
+
+        return this.dashboardStats.chartDays;
+    }
+
     get chartSources() {
         const counts = this.dashboardStats?.memberSourceAttributionCounts || [];
         // filter null source from the list
