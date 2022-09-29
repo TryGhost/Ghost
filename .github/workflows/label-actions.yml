@@ -4,10 +4,14 @@ on:
   workflow_dispatch:
   issues:
     types: [opened, closed, labeled]
-  pull_request:
+  pull_request_target:
     types: [closed, labeled]
   schedule:
     - cron:  '0 * * * *'
+
+permissions:
+  issues: write
+  pull-requests: write
 
 jobs:
   action:
