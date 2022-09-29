@@ -110,18 +110,6 @@ class MemberAttributionService {
      * @returns {import('./attribution').AttributionResource|null}
      */
     getEventAttribution(eventModel) {
-        if (eventModel.get('attribution_type') === null) {
-            return {
-                id: null,
-                url: null,
-                title: null,
-                type: null,
-                referrerSource: null,
-                referrerMedium: null,
-                referrerUrl: null
-            };
-        }
-
         const _attribution = this.attributionBuilder.build({
             id: eventModel.get('attribution_id'),
             url: eventModel.get('attribution_url'),
