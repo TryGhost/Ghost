@@ -518,12 +518,12 @@ class ProductRepository {
                 });
 
                 for (const existingPrice of existingPrices) {
-                    const productId = existingPrice.stripe_product_id;
-                    let stripeProduct = await this._StripeProduct.findOne({stripe_product_id: productId}, options);
+                    const existingProductId = existingPrice.stripe_product_id;
+                    let stripeProduct = await this._StripeProduct.findOne({stripe_product_id: existingProductId}, options);
                     if (!stripeProduct) {
                         stripeProduct = await this._StripeProduct.add({
                             product_id: product.id,
-                            stripe_product_id: productId
+                            stripe_product_id: existingProductId
                         }, options);
                     }
                     const stripePrice = await this._StripePrice.findOne({stripe_price_id: existingPrice.stripe_price_id}, options);
@@ -558,9 +558,9 @@ class ProductRepository {
                 }
 
                 for (const newPrice of newPrices) {
-                    const productId = newPrice.stripe_product_id;
-                    const stripeProduct = productId ?
-                        await this._StripeProduct.findOne({stripe_product_id: productId}, options) : defaultStripeProduct;
+                    const newProductId = newPrice.stripe_product_id;
+                    const stripeProduct = newProductId ?
+                        await this._StripeProduct.findOne({stripe_product_id: newProductId}, options) : defaultStripeProduct;
 
                     const price = await this._stripeAPIService.createPrice({
                         product: stripeProduct.get('stripe_product_id'),
