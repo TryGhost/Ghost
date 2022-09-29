@@ -5,7 +5,7 @@ function reverseMigration({up, down, config}) {
         config,
         up: down,
         down: up
-   };
+    };
 }
 
 module.exports = reverseMigration(
