@@ -4,8 +4,6 @@
         {{#if (eq @sortColumn "signups")}}
             <div
                 class="gh-dashboard-list-title {{if (eq @sortColumn "signups") "sorted-by"}}"
-                role="button" aria-label="Sort by free signups"
-                {{on "click" (fn @setSortColumn "signups")}}
             >
                 Free signups
             </div>
@@ -13,9 +11,7 @@
         {{#if (eq @sortColumn "paid")}}
             {{#if this.membersUtils.paidMembersEnabled}}
                 <div
-                    role="button" aria-label="Sort by paid signups"
                     class="gh-dashboard-list-title {{if (eq @sortColumn "paid") "sorted-by"}}"
-                    {{on "click" (fn @setSortColumn "paid")}}
                 >
                     <span class="hide-when-small">Paid </span>Conversions
                 </div>
