@@ -520,5 +520,41 @@
         div + aside {
             margin: 2.8rem 0 0;
         }
+
+        /* Cards in general
+        /* -------------------------------------------------------------------- */
+
+        div {
+            line-height: 0;
+            min-width: 100%;
+        }
+
+        div + div {
+            margin: 3.2rem 0 0;
+        }
+
+        p + div,
+        blockquote + div,
+        aside + div,
+        ul + div,
+        ol + div {
+            margin: 3.2rem 0 0;
+        }
+
+        h1 + div {
+            margin: 2.8rem 0 0;
+        }
+
+        h2 + div,
+        h3 + div,
+        h4 + div,
+        h5 + div,
+        h6 + div {
+            margin: 1.6rem 0 0;
+        }
+
+        hr {
+            margin: 1.6rem 0;
+        }
     }
 }

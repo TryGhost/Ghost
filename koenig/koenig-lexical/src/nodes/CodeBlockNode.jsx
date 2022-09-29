@@ -47,7 +47,7 @@ function CodeBlockComponent({className, code, language, nodeKey, editor}) {
                     spellCheck="false"
                     tabIndex="0"
                     autoFocus
-                    className='min-h-170 w-full bg-grey-50 p-3' 
+                    className='min-h-170 w-full bg-grey-50 p-3 text-grey-900' 
                     value={code} 
                     onChange={updateCode} />
             </code>
