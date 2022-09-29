@@ -178,11 +178,11 @@
         <div class="gh-list-data-inner">
             {{#if this.isAnalytics}}
                 <LinkTo @route={{this.routeForLink}} @models={{this.modelsForLink}} class="gh-post-list-cta stats {{if this.isHovered "is-hovered"}}" title="">
-                    {{svg-jar "stats" title=""}}<span>Stats</span>
+                    {{svg-jar "stats" title=""}}
                 </LinkTo>
             {{else}}
                 <LinkTo @route={{this.routeForLink}} @models={{this.modelsForLink}} class="gh-post-list-cta edit {{if this.isHovered "is-hovered"}}" title="">
-                    {{svg-jar "pen" title=""}}<span>Edit</span>
+                    {{svg-jar "pen" title=""}}
                 </LinkTo>
             {{/if}}
         </div>
