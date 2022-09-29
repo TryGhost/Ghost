@@ -25,7 +25,7 @@
     <div class="gh-dashboard-list-body">
             {{#each this.sources as |sourceData|}}
                 <div class="gh-dashboard-list-item">
-                    <div class="gh-dashboard-list-item-sub gh-dashboard-list-item-sub-source">
+                    <div class="gh-dashboard-list-item-sub gh-dashboard-list-item-sub-source {{if (eq sourceData.source "Unavailable") "gh-dashboard-list-item-unavailable-source"}}">
                         <span class="gh-dashboard-list-text">{{sourceData.source}}
                             {{!-- <sup class="gh-dashboard-list-asterisk">*</sup> --}}
                             </span>
