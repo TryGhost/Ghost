@@ -41,7 +41,7 @@ class MemberAttributionService {
                 attribution.referrerSource = 'Imported';
                 attribution.referrerMedium = 'importer';
             } else if (source === 'admin') {
-                attribution.referrerSource = 'Created Manually';
+                attribution.referrerSource = 'Created manually';
                 attribution.referrerMedium = 'admin';
             } else if (source === 'api') {
                 attribution.referrerSource = 'Created via API';

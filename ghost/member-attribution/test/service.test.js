@@ -39,7 +39,7 @@ describe('MemberAttributionService', function () {
             const service = new MemberAttributionService({});
             const attribution = await service.getAttributionFromContext({user: 'abc'});
 
-            should(attribution).containEql({referrerSource: 'Created Manually', referrerMedium: 'admin'});
+            should(attribution).containEql({referrerSource: 'Created manually', referrerMedium: 'admin'});
         });
 
         it('returns attribution for api without integration context', async function () {
