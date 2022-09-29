@@ -11,12 +11,15 @@ export default class PostsListItemClicks extends Component {
 
     @tracked isHovered = false;
 
+    get post() {
+        return this.args.post;
+    }
+
     get scheduledText() {
-        let {post} = this.args;
         let text = [];
 
         let formattedTime = formatPostTime(
-            post.publishedAtUTC,
+            this.post.publishedAtUTC,
             {timezone: this.settings.get('timezone'), scheduled: true}
         );
         text.push(formattedTime);
@@ -25,17 +28,17 @@ export default class PostsListItemClicks extends Component {
     }
 
     get routeForLink() {
-        if (this.isAnalytics) {
+        if (this.post.hasAnalyticsPage) {
             return 'posts.analytics';
         }
         return 'editor.edit';
     }
 
     get modelsForLink() {
-        if (this.isAnalytics) {
-            return [this.args.post];
+        if (this.post.hasAnalyticsPage) {
+            return [this.post];
         }
-        return [this.args.post.displayName, this.args.post.id];
+        return [this.post.displayName, this.post.id];
     }
 
     @action
