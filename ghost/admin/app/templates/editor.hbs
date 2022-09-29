@@ -16,7 +16,7 @@
                 >
                     <div class="flex items-center pe-auto h-100">
                         {{#if this.ui.isFullScreen}}
-                            {{#if this.isAnalytics }}
+                            {{#if this.fromAnalytics }}
                                 <LinkTo @route="posts.analytics" @model={{this.post}} class="gh-btn-editor gh-editor-back-button">
                                     <span>
                                         {{svg-jar "arrow-left"}}
@@ -32,7 +32,7 @@
                                 </LinkTo>
                             {{/if}}
                         {{/if}}
-                        {{#if (or (not this.ui.isFullScreen) (not this.isAnalytics)) }}
+                        {{#if (or (not this.ui.isFullScreen) (not this.fromAnalytics)) }}
                             <div class="gh-editor-post-status">
                                 <span>
                                     <GhEditorPostStatus

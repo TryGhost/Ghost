@@ -112,6 +112,10 @@ export default class EditorController extends Controller {
     showUpgradeModal = false;
     showSettingsMenu = false;
     hostLimitError = null;
+    /**
+     * Flag used to determine if we should return to the analytics page or to the posts/pages overview
+     */
+    fromAnalytics = false;
 
     // koenig related properties
     wordcount = null;
@@ -298,11 +302,6 @@ export default class EditorController extends Controller {
     @action
     updateWordCount(counts) {
         this.set('wordCount', counts);
-    }
-
-    get isAnalytics() {
-        return !this.session.user.isContributor
-            && this.post.hasAnalytics;
     }
 
     @action
