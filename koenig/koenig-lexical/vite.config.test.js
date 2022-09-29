@@ -12,6 +12,9 @@ export default defineConfig({
         svgr(),
         react()
     ],
+    define: {
+        'process.env.VITEST_SEGFAULT_RETRY': 3
+    },
     build: {
         rollupOptions: {
             input: {
