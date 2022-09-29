@@ -283,7 +283,7 @@ export default class PaidBreakdown extends Component {
                     tooltipEl.style.display = 'block';
                     tooltipEl.style.opacity = 1;
                     tooltipEl.style.position = 'absolute';
-                    tooltipEl.style.left = tooltip.x - offsetX + 'px';
+                    tooltipEl.style.left = tooltip.x - offsetX + 120 + 'px';
                     tooltipEl.style.top = '70px';
                 },
                 callbacks: {
