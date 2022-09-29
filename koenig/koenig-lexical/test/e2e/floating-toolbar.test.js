@@ -1,12 +1,12 @@
 import {afterAll, beforeAll, beforeEach, describe, expect, it, test} from 'vitest';
-import {start, initialize, focusEditor, assertHTML, html} from '../utils/e2e';
+import {startApp, initialize, focusEditor, assertHTML, html} from '../utils/e2e';
 
 describe('Floating format toolbar', async () => {
     let app;
     let page;
 
     beforeAll(async () => {
-        ({app, page} = await start());
+        ({app, page} = await startApp());
     });
 
     afterAll(async () => {

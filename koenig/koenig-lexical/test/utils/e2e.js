@@ -5,7 +5,7 @@ import prettier from 'prettier';
 
 export const E2E_PORT = process.env.E2E_PORT || 3000;
 
-export async function start() {
+export async function startApp() {
     const server = await preview({preview: {port: E2E_PORT}});
     const browser = await puppeteer.launch();
     const page = await browser.newPage();

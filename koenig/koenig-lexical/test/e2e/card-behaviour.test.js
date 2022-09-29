@@ -1,12 +1,12 @@
 import {beforeAll, afterAll, beforeEach, describe, test} from 'vitest';
-import {start, initialize, focusEditor, assertHTML, html} from '../utils/e2e';
+import {startApp, initialize, focusEditor, assertHTML, html} from '../utils/e2e';
 
 describe('Card behaviour', async () => {
     let app;
     let page;
 
     beforeAll(async function () {
-        ({app, page} = await start());
+        ({app, page} = await startApp());
     });
 
     afterAll(async function () {
