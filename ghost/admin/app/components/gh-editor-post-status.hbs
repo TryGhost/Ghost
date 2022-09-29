@@ -19,6 +19,8 @@
             and sending to {{gh-pluralize @post.email.emailCount "member"}}
         {{else if (eq @post.email.status "submitted")}}
             and sent to {{gh-pluralize @post.email.emailCount "member"}}
+        {{else if (eq @post.email.status "failed")}}
+            and failed to sent to {{gh-pluralize @post.email.emailCount "member"}}
         {{/if}}
     {{else if @post.isScheduled}}
         <time datetime="{{@post.publishedAtUTC}}" class="ml1 green-d1" data-test-schedule-countdown>

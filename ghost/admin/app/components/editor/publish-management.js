@@ -181,7 +181,7 @@ export default class PublishManagement extends Component {
         yield this.args.afterPublish(result);
 
         // if emailed, wait until it has been submitted so we can show a failure message if needed
-        if (willEmail && this.publishOptions.post.email) {
+        if (this.publishOptions.post.email && (this.publishOptions.post.isPublished || this.publishOptions.post.isSent)) {
             yield this.confirmEmailTask.perform();
         }
 

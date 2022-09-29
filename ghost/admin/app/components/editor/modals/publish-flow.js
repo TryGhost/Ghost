@@ -13,7 +13,7 @@ export default class PublishModalComponent extends Component {
 
     @service store;
 
-    @tracked emailErrorMessage;
+    @tracked emailErrorMessage = this.args.data.publishOptions.post.isPublished ? this.args.data.publishOptions.post.email.error : undefined;
     @tracked isConfirming = false;
     @tracked isComplete = false;
     @tracked postCount = null;
