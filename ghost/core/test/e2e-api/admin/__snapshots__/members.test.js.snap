@@ -541,7 +541,7 @@ Object {
     Object {
       "attribution": Object {
         "id": null,
-        "referrer_medium": "admin",
+        "referrer_medium": "Ghost Admin",
         "referrer_source": "Created manually",
         "referrer_url": null,
         "title": null,
@@ -577,7 +577,7 @@ exports[`Members API Can add 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "768",
+  "content-length": "774",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -592,7 +592,7 @@ Object {
     Object {
       "attribution": Object {
         "id": null,
-        "referrer_medium": "admin",
+        "referrer_medium": "Ghost Admin",
         "referrer_source": "Created manually",
         "referrer_url": null,
         "title": null,
@@ -628,7 +628,7 @@ exports[`Members API Can add a member that is not subscribed (old) 2: [headers] 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "644",
+  "content-length": "650",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": Any<String>,
@@ -823,7 +823,7 @@ Object {
     Object {
       "attribution": Object {
         "id": null,
-        "referrer_medium": "admin",
+        "referrer_medium": "Ghost Admin",
         "referrer_source": "Created manually",
         "referrer_url": null,
         "title": null,
@@ -886,7 +886,7 @@ exports[`Members API Can add and edit with custom newsletters 2: [headers] 1`] =
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1488",
+  "content-length": "1494",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -901,7 +901,7 @@ Object {
     Object {
       "attribution": Object {
         "id": null,
-        "referrer_medium": "admin",
+        "referrer_medium": "Ghost Admin",
         "referrer_source": "Created manually",
         "referrer_url": null,
         "title": null,
@@ -964,7 +964,7 @@ exports[`Members API Can add and edit with custom newsletters 4: [headers] 1`] =
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1487",
+  "content-length": "1493",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -978,7 +978,7 @@ Object {
     Object {
       "attribution": Object {
         "id": null,
-        "referrer_medium": "admin",
+        "referrer_medium": "Ghost Admin",
         "referrer_source": "Created manually",
         "referrer_url": null,
         "title": null,
@@ -1067,7 +1067,7 @@ exports[`Members API Can add and send a signup confirmation email (old) 2: [head
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1983",
+  "content-length": "1989",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": Any<String>,
@@ -1092,7 +1092,7 @@ Object {
     Object {
       "attribution": Object {
         "id": null,
-        "referrer_medium": "admin",
+        "referrer_medium": "Ghost Admin",
         "referrer_source": "Created manually",
         "referrer_url": null,
         "title": null,
@@ -1181,7 +1181,7 @@ exports[`Members API Can add and send a signup confirmation email 2: [headers] 1
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1978",
+  "content-length": "1984",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": Any<String>,
@@ -1206,7 +1206,7 @@ Object {
     Object {
       "attribution": Object {
         "id": null,
-        "referrer_medium": "admin",
+        "referrer_medium": "Ghost Admin",
         "referrer_source": "Created manually",
         "referrer_url": null,
         "title": null,
@@ -1242,7 +1242,7 @@ exports[`Members API Can add complimentary subscription (out of date) 2: [header
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1246",
+  "content-length": "1252",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -1257,7 +1257,7 @@ Object {
     Object {
       "attribution": Object {
         "id": null,
-        "referrer_medium": "admin",
+        "referrer_medium": "Ghost Admin",
         "referrer_source": "Created manually",
         "referrer_url": null,
         "title": null,
@@ -1310,7 +1310,7 @@ exports[`Members API Can add complimentary subscription (out of date) 4: [header
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2782",
+  "content-length": "2788",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -1621,7 +1621,7 @@ Object {
     Object {
       "attribution": Object {
         "id": null,
-        "referrer_medium": "admin",
+        "referrer_medium": "Ghost Admin",
         "referrer_source": "Created manually",
         "referrer_url": null,
         "title": null,
@@ -1701,7 +1701,7 @@ exports[`Members API Can create a member with an existing complimentary subscrip
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2833",
+  "content-length": "2839",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -1716,7 +1716,7 @@ Object {
     Object {
       "attribution": Object {
         "id": null,
-        "referrer_medium": "admin",
+        "referrer_medium": "Ghost Admin",
         "referrer_source": "Created manually",
         "referrer_url": null,
         "title": null,
@@ -1779,7 +1779,7 @@ exports[`Members API Can create a member with an existing paid subscription 2: [
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2819",
+  "content-length": "2825",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -1794,7 +1794,7 @@ Object {
     Object {
       "attribution": Object {
         "id": null,
-        "referrer_medium": "admin",
+        "referrer_medium": "Ghost Admin",
         "referrer_source": "Created manually",
         "referrer_url": null,
         "title": null,
@@ -1874,7 +1874,7 @@ exports[`Members API Can create a new member with a product (complimentary) 2: [
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2590",
+  "content-length": "2596",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -1899,7 +1899,7 @@ Object {
     Object {
       "attribution": Object {
         "id": null,
-        "referrer_medium": "admin",
+        "referrer_medium": "Ghost Admin",
         "referrer_source": "Created manually",
         "referrer_url": null,
         "title": null,
@@ -1935,7 +1935,7 @@ exports[`Members API Can destroy 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1953",
+  "content-length": "1959",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -1990,7 +1990,7 @@ Object {
     Object {
       "attribution": Object {
         "id": null,
-        "referrer_medium": "admin",
+        "referrer_medium": "Ghost Admin",
         "referrer_source": "Created manually",
         "referrer_url": null,
         "title": null,
@@ -2026,7 +2026,7 @@ exports[`Members API Can edit by id 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1264",
+  "content-length": "1270",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -2041,7 +2041,7 @@ Object {
     Object {
       "attribution": Object {
         "id": null,
-        "referrer_medium": "admin",
+        "referrer_medium": "Ghost Admin",
         "referrer_source": "Created manually",
         "referrer_url": null,
         "title": null,
@@ -2077,7 +2077,7 @@ exports[`Members API Can edit by id 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "619",
+  "content-length": "625",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -3517,7 +3517,7 @@ Object {
     Object {
       "attribution": Object {
         "id": null,
-        "referrer_medium": "admin",
+        "referrer_medium": "Ghost Admin",
         "referrer_source": "Created manually",
         "referrer_url": null,
         "title": null,
@@ -3553,7 +3553,7 @@ exports[`Members API Can subscribe by setting (old) subscribed property to true 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "626",
+  "content-length": "632",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -3568,7 +3568,7 @@ Object {
     Object {
       "attribution": Object {
         "id": null,
-        "referrer_medium": "admin",
+        "referrer_medium": "Ghost Admin",
         "referrer_source": "Created manually",
         "referrer_url": null,
         "title": null,
@@ -3657,7 +3657,7 @@ exports[`Members API Can subscribe by setting (old) subscribed property to true 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1967",
+  "content-length": "1973",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -3671,7 +3671,7 @@ Object {
     Object {
       "attribution": Object {
         "id": null,
-        "referrer_medium": "admin",
+        "referrer_medium": "Ghost Admin",
         "referrer_source": "Created manually",
         "referrer_url": null,
         "title": null,
@@ -3707,7 +3707,7 @@ exports[`Members API Can subscribe to a newsletter 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1254",
+  "content-length": "1260",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -3722,7 +3722,7 @@ Object {
     Object {
       "attribution": Object {
         "id": null,
-        "referrer_medium": "admin",
+        "referrer_medium": "Ghost Admin",
         "referrer_source": "Created manually",
         "referrer_url": null,
         "title": null,
@@ -3758,7 +3758,7 @@ exports[`Members API Can subscribe to a newsletter 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1310",
+  "content-length": "1316",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -3770,7 +3770,7 @@ exports[`Members API Can subscribe to a newsletter 5: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4839",
+  "content-length": "4845",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -3784,7 +3784,7 @@ Object {
     Object {
       "attribution": Object {
         "id": null,
-        "referrer_medium": "admin",
+        "referrer_medium": "Ghost Admin",
         "referrer_source": "Created manually",
         "referrer_url": null,
         "title": null,
@@ -3847,7 +3847,7 @@ exports[`Members API Can unsubscribe by setting (old) subscribed property to fal
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1272",
+  "content-length": "1278",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -3862,7 +3862,7 @@ Object {
     Object {
       "attribution": Object {
         "id": null,
-        "referrer_medium": "admin",
+        "referrer_medium": "Ghost Admin",
         "referrer_source": "Created manually",
         "referrer_url": null,
         "title": null,
@@ -3898,7 +3898,7 @@ exports[`Members API Can unsubscribe by setting (old) subscribed property to fal
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "631",
+  "content-length": "637",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -4237,7 +4237,7 @@ Object {
     Object {
       "attribution": Object {
         "id": null,
-        "referrer_medium": "admin",
+        "referrer_medium": "Ghost Admin",
         "referrer_source": "Created manually",
         "referrer_url": null,
         "title": null,
@@ -4273,7 +4273,7 @@ exports[`Members API Subscribes to default newsletters 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1954",
+  "content-length": "1960",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
