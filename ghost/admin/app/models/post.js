@@ -68,6 +68,7 @@ function publishedAtCompare(postA, postB) {
 
 export default Model.extend(Comparable, ValidationEngine, {
     config: service(),
+    session: service(),
     feature: service(),
     ghostPaths: service(),
     clock: service(),
@@ -181,6 +182,23 @@ export default Model.extend(Comparable, ValidationEngine, {
         return this.isScheduled && !!this.newsletter && !this.email;
     }),
 
+    hasAnalytics: computed('isPost', 'isSent', 'isPublished', 'email', function () {
+        return this.isPost
+            && !this.session.user.isContributor
+            && this.settings.get('membersSignupAccess') !== 'none'
+            && (
+                (
+                    // We have clicks or opens data
+                    (this.isSent || (this.isPublished && this.email)) 
+                        && (this.settings.get('emailTrackClicks') || this.settings.get('emailTrackOpens'))
+                ) 
+                || (
+                    // We have attribution data for pubished posts
+                    this.isPublished && this.feature.get('memberAttribution')
+                )
+            );
+    }),
+   
     previewUrl: computed('uuid', 'ghostPaths.url', 'config.blogUrl', function () {
         let blogUrl = this.get('config.blogUrl');
         let uuid = this.uuid;

@@ -15,6 +15,16 @@ export default AuthenticatedRoute.extend({
         this.ui.set('isFullScreen', true);
     },
 
+    setupController(controller, model, transition) {
+        if (transition.from?.name === 'posts.analytics') {
+            controller.fromAnalytics = true;
+        }
+    },
+
+    resetController(controller) {
+        controller.fromAnalytics = false;
+    },
+
     deactivate() {
         this._super(...arguments);
         this.ui.set('isFullScreen', false);
