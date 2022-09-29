@@ -117,7 +117,7 @@
 
     {{!-- Opened / Signups column --}}
     <LinkTo @route={{this.routeForLink}} @models={{this.modelsForLink}} class="permalink gh-list-data gh-post-list-opens">
-        {{#if @post.showEmailOpenAnalytics }}
+        {{#if (and @post.showEmailOpenAnalytics @post.showEmailClickAnalytics) }}
             <LinkTo @route="members" @query={{hash filterParam=(concat "opened_emails.post_id:[" @post.id "]") }} class="flex flex-column gh-post-row-event" {{on "mouseover" (fn (mut this.isOpenStatHovered) true)}} {{on "mouseleave" (fn (mut this.isOpenStatHovered) false)}}>
                 <span class="gh-content-email-stats-value">
                     {{#if this.isHovered}}
@@ -144,6 +144,22 @@
     
     {{!-- Clicked / Conversions column --}}
     <LinkTo @route={{this.routeForLink}} @models={{this.modelsForLink}} class="permalink gh-list-data gh-post-list-clicks">
+        {{#unless @post.showEmailClickAnalytics}}
+            {{#if @post.showEmailOpenAnalytics }}
+                <LinkTo @route="members" @query={{hash filterParam=(concat "opened_emails.post_id:[" @post.id "]") }} class="flex flex-column gh-post-row-event" {{on "mouseover" (fn (mut this.isOpenStatHovered) true)}} {{on "mouseleave" (fn (mut this.isOpenStatHovered) false)}}>
+                    <span class="gh-content-email-stats-value">
+                        {{#if this.isHovered}}
+                            {{format-number @post.email.openedCount}}
+                        {{else}}
+                            {{@post.email.openRate}}<sup>%</sup>
+                        {{/if}}
+                    </span>
+                    <span class="gh-content-email-stats">
+                        opened
+                    </span>
+                </LinkTo>
+            {{/if}}
+        {{/unless}}
         {{#if @post.showEmailClickAnalytics }}
             <LinkTo @route="members" @query={{hash filterParam=(concat "clicked_links.post_id:[" @post.id "]") }} class="flex flex-column gh-post-row-event" {{on "mouseover" (fn (mut this.isClickStatHovered) true)}} {{on "mouseleave" (fn (mut this.isClickStatHovered) false)}}>
                 <span class="gh-content-email-stats-value">
