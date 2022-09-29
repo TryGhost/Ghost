@@ -1,0 +1,30 @@
+<h4 class="gh-main-section-header small bn">
+    Newsletter clicks
+</h4>
+<div class="gh-post-analytics-box column">
+    <div class="gh-links-list">
+        {{#each this.visibleLinks as |link|}}
+            <div class="gh-links-list-item">
+                <a href="{{link.link.to}}" target="_blank" rel="noopener noreferrer">{{link.link.title}}</a>
+                <p class="gh-links-list-clicks">{{link.count.clicks}}</p>
+            </div>
+        {{/each}}
+        {{#if this.showPagination }}
+        <div class="gh-links-pagination" >
+            <div class="gh-links-pagination-progress">
+                Showing {{this.startOffset}}-{{this.endOffset}} of {{this.totalLinks}}
+            </div>
+            <div class="gh-links-pagination-actions">
+                <button type="button" class="gh-links-pagination-action gh-links-pagination-prev" {{on "click" this.openPreviousPage}} disabled={{this.disablePreviousPage}}>
+                    {{svg-jar "arrow-left-pagination"}}
+                    Previous
+                </button>
+                <button type="button" class="gh-links-pagination-action gh-links-pagination-next" {{on "click" this.openNextPage}} disabled={{this.disableNextPage}}>
+                    Next
+                    {{svg-jar "arrow-right-pagination"}}
+                </button>
+            </div>
+        </div>
+        {{/if}}
+    </div>
+</div>
