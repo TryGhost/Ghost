@@ -174,7 +174,7 @@ module.exports = class MemberBREADService {
     async attachAttributionsToMember(member, subscriptionIdMap) {
         // Created attribution
         member.attribution = await this.memberAttributionService.getMemberCreatedAttribution(member.id);
-        
+
         // Subscriptions attributions
         for (const subscription of member.subscriptions) {
             if (!subscription.id) {
@@ -254,6 +254,10 @@ module.exports = class MemberBREADService {
         let model;
 
         try {
+            const attribution = await this.memberAttributionService.getAttributionFromContext(options?.context);
+            if (attribution) {
+                data.attribution = attribution;
+            }
             model = await this.memberRepository.create(data, options);
         } catch (error) {
             if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {

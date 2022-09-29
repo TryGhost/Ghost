@@ -539,7 +539,15 @@ exports[`Members API Can add 1: [body] 1`] = `
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -569,7 +577,7 @@ exports[`Members API Can add 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "641",
+  "content-length": "774",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -582,7 +590,15 @@ exports[`Members API Can add a member that is not subscribed (old) 1: [body] 1`]
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -612,7 +628,7 @@ exports[`Members API Can add a member that is not subscribed (old) 2: [headers] 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "517",
+  "content-length": "650",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": Any<String>,
@@ -652,7 +668,15 @@ Object {
       "subscribed": true,
       "subscriptions": Array [
         Object {
-          "attribution": null,
+          "attribution": Object {
+            "id": null,
+            "referrer_medium": null,
+            "referrer_source": null,
+            "referrer_url": null,
+            "title": null,
+            "type": "url",
+            "url": null,
+          },
           "cancel_at_period_end": false,
           "cancellation_reason": null,
           "current_period_end": Any<String>,
@@ -703,7 +727,7 @@ exports[`Members API Can add a subscription 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2375",
+  "content-length": "2485",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -742,7 +766,15 @@ Object {
       "subscribed": true,
       "subscriptions": Array [
         Object {
-          "attribution": null,
+          "attribution": Object {
+            "id": null,
+            "referrer_medium": null,
+            "referrer_source": null,
+            "referrer_url": null,
+            "title": null,
+            "type": "url",
+            "url": null,
+          },
           "cancel_at_period_end": false,
           "cancellation_reason": null,
           "current_period_end": Any<String>,
@@ -793,7 +825,7 @@ exports[`Members API Can add a subscription 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2375",
+  "content-length": "2485",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -805,7 +837,15 @@ exports[`Members API Can add and edit with custom newsletters 1: [body] 1`] = `
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -862,7 +902,7 @@ exports[`Members API Can add and edit with custom newsletters 2: [headers] 1`] =
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1361",
+  "content-length": "1494",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -875,7 +915,15 @@ exports[`Members API Can add and edit with custom newsletters 3: [body] 1`] = `
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -932,7 +980,7 @@ exports[`Members API Can add and edit with custom newsletters 4: [headers] 1`] =
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1360",
+  "content-length": "1493",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -944,7 +992,15 @@ exports[`Members API Can add and send a signup confirmation email (old) 1: [body
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1027,7 +1083,7 @@ exports[`Members API Can add and send a signup confirmation email (old) 2: [head
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1856",
+  "content-length": "1989",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": Any<String>,
@@ -1050,7 +1106,15 @@ exports[`Members API Can add and send a signup confirmation email 1: [body] 1`] 
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1133,7 +1197,7 @@ exports[`Members API Can add and send a signup confirmation email 2: [headers] 1
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1851",
+  "content-length": "1984",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": Any<String>,
@@ -1156,7 +1220,15 @@ exports[`Members API Can add complimentary subscription (out of date) 1: [body] 
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1186,7 +1258,7 @@ exports[`Members API Can add complimentary subscription (out of date) 2: [header
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1119",
+  "content-length": "1252",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -1199,7 +1271,15 @@ exports[`Members API Can add complimentary subscription (out of date) 3: [body] 
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": true,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1246,7 +1326,7 @@ exports[`Members API Can add complimentary subscription (out of date) 4: [header
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2655",
+  "content-length": "2898",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -1555,7 +1635,15 @@ exports[`Members API Can create a member with an existing complimentary subscrip
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": true,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1629,7 +1717,7 @@ exports[`Members API Can create a member with an existing complimentary subscrip
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2706",
+  "content-length": "2949",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -1642,7 +1730,15 @@ exports[`Members API Can create a member with an existing paid subscription 1: [
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1699,7 +1795,7 @@ exports[`Members API Can create a member with an existing paid subscription 2: [
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2692",
+  "content-length": "2935",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -1712,7 +1808,15 @@ exports[`Members API Can create a new member with a product (complimentary) 1: [
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": true,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1786,7 +1890,7 @@ exports[`Members API Can create a new member with a product (complimentary) 2: [
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2463",
+  "content-length": "2596",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -1809,7 +1913,15 @@ exports[`Members API Can destroy 1: [body] 1`] = `
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1839,7 +1951,7 @@ exports[`Members API Can destroy 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1826",
+  "content-length": "1959",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -1892,7 +2004,15 @@ exports[`Members API Can edit by id 1: [body] 1`] = `
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1922,7 +2042,7 @@ exports[`Members API Can edit by id 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1137",
+  "content-length": "1270",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -1935,7 +2055,15 @@ exports[`Members API Can edit by id 3: [body] 1`] = `
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1965,7 +2093,7 @@ exports[`Members API Can edit by id 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "492",
+  "content-length": "625",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -3403,7 +3531,15 @@ exports[`Members API Can subscribe by setting (old) subscribed property to true 
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -3433,7 +3569,7 @@ exports[`Members API Can subscribe by setting (old) subscribed property to true 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "499",
+  "content-length": "632",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -3446,7 +3582,15 @@ exports[`Members API Can subscribe by setting (old) subscribed property to true 
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -3529,7 +3673,7 @@ exports[`Members API Can subscribe by setting (old) subscribed property to true 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1840",
+  "content-length": "1973",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -3541,7 +3685,15 @@ exports[`Members API Can subscribe to a newsletter 1: [body] 1`] = `
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -3571,7 +3723,7 @@ exports[`Members API Can subscribe to a newsletter 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1127",
+  "content-length": "1260",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -3584,7 +3736,15 @@ exports[`Members API Can subscribe to a newsletter 3: [body] 1`] = `
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -3614,7 +3774,7 @@ exports[`Members API Can subscribe to a newsletter 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1183",
+  "content-length": "1316",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -3626,7 +3786,7 @@ exports[`Members API Can subscribe to a newsletter 5: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4822",
+  "content-length": "4978",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -3638,7 +3798,15 @@ exports[`Members API Can unsubscribe by setting (old) subscribed property to fal
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -3695,7 +3863,7 @@ exports[`Members API Can unsubscribe by setting (old) subscribed property to fal
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1145",
+  "content-length": "1278",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -3708,7 +3876,15 @@ exports[`Members API Can unsubscribe by setting (old) subscribed property to fal
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -3738,7 +3914,7 @@ exports[`Members API Can unsubscribe by setting (old) subscribed property to fal
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "504",
+  "content-length": "637",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -4075,7 +4251,15 @@ exports[`Members API Subscribes to default newsletters 1: [body] 1`] = `
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": "url",
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -4105,7 +4289,7 @@ exports[`Members API Subscribes to default newsletters 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1827",
+  "content-length": "1960",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/members\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
