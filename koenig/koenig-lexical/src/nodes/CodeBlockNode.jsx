@@ -1,9 +1,9 @@
 import * as React from 'react';
-import {$getNodeByKey, 
-    createCommand, 
-    DecoratorNode, 
-    $createParagraphNode,
-    COMMAND_PRIORITY_EDITOR} from 'lexical';
+import {
+    $getNodeByKey,
+    createCommand,
+    DecoratorNode
+} from 'lexical';
 // import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import useAutoExpandTextArea from '../utils/autoExpandTextArea';
@@ -12,30 +12,15 @@ export const CODE_BLOCK_COMMAND = createCommand();
 
 function CodeBlockComponent({className, code, language, nodeKey, editor}) {
     const el = React.useRef(null);
+
     useAutoExpandTextArea({el, value: code});
+
     const updateCode = (event) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
             node.setCode(event.target.value);
         });
     };
-
-    React.useEffect(() => {
-        return editor.registerCommand(
-            CODE_BLOCK_COMMAND,
-            () => {
-                const node = $getNodeByKey(nodeKey);
-                const nextSibling = node.getNextSibling();
-                if (nextSibling) {
-                    return;
-                } else {
-                    const paragraph = $createParagraphNode();
-                    node.insertAfter(paragraph);
-                }
-                return true;
-            }, COMMAND_PRIORITY_EDITOR
-        );
-    }, [editor, nodeKey]);
 
     return (
         <KoenigCardWrapper className={className} nodeKey={nodeKey} >
@@ -47,8 +32,8 @@ function CodeBlockComponent({className, code, language, nodeKey, editor}) {
                     spellCheck="false"
                     tabIndex="0"
                     autoFocus
-                    className='min-h-170 w-full bg-grey-50 p-3 text-grey-900' 
-                    value={code} 
+                    className='min-h-170 w-full bg-grey-50 p-3 text-grey-900'
+                    value={code}
                     onChange={updateCode} />
             </code>
         </KoenigCardWrapper>
@@ -125,7 +110,7 @@ export class CodeBlockNode extends DecoratorNode {
             base: codeBlockTheme.base || '',
             focus: codeBlockTheme.focus || ''
         };
-        editor.dispatchCommand(CODE_BLOCK_COMMAND);
+
         return (
             <CodeBlockComponent
                 className={className}
