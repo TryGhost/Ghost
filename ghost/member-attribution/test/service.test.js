@@ -19,17 +19,7 @@ describe('MemberAttributionService', function () {
         });
 
         it('returns attribution for importer context', async function () {
-            const service = new MemberAttributionService({
-                models: {
-                    Integration: {
-                        findOne: () => {
-                            return {
-                                get: () => 'Test'
-                            };
-                        }
-                    }
-                }
-            });
+            const service = new MemberAttributionService({});
             const attribution = await service.getAttributionFromContext({importer: true});
 
             should(attribution).containEql({referrerSource: 'Imported', referrerMedium: 'importer'});
@@ -43,17 +33,7 @@ describe('MemberAttributionService', function () {
         });
 
         it('returns attribution for api without integration context', async function () {
-            const service = new MemberAttributionService({
-                models: {
-                    Integration: {
-                        findOne: () => {
-                            return {
-                                get: () => 'Test Integration'
-                            };
-                        }
-                    }
-                }
-            });
+            const service = new MemberAttributionService({});
             const attribution = await service.getAttributionFromContext({
                 api_key: 'abc'
             });
@@ -78,7 +58,7 @@ describe('MemberAttributionService', function () {
                 integration: {id: 'integration_1'}
             });
 
-            should(attribution).containEql({referrerSource: 'Test Integration', referrerMedium: 'api'});
+            should(attribution).containEql({referrerSource: 'Integration: Test Integration', referrerMedium: 'api'});
         });
     });
 

@@ -52,7 +52,7 @@ class MemberAttributionService {
             if (context?.integration?.id) {
                 try {
                     const integration = await this.models.Integration.findOne({id: context.integration.id});
-                    attribution.referrerSource = integration?.get('name');
+                    attribution.referrerSource = `Integration: ${integration?.get('name')}`;
                 } catch (error) {
                     // ignore error for integration not found
                 }
@@ -147,7 +147,7 @@ class MemberAttributionService {
      */
     async getMemberCreatedAttribution(memberId) {
         const memberCreatedEvent = await this.models.MemberCreatedEvent.findOne({member_id: memberId}, {require: false, withRelated: []});
-        if (!memberCreatedEvent || !memberCreatedEvent.get('attribution_type')) {
+        if (!memberCreatedEvent) {
             return null;
         }
         const attribution = this.attributionBuilder.build({
