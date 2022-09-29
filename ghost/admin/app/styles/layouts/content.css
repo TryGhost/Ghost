@@ -955,14 +955,19 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 }
 
 .gh-links-list-item {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 85% 15%;
     padding: 1.6rem 0;
     border-bottom: 1px solid var(--whitegrey);
     font-size: 1.4rem;
     font-weight: 500;
     letter-spacing: 0;
     text-decoration: none;
+}
+
+.gh-links-list-item .gh-links-list-clicks {
+    text-align: right;
+    padding-right: 2px;
 }
 
 .gh-links-list-item:first-child {
@@ -997,6 +1002,30 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     color: var(--darkgrey);
 }
 
+.gh-links-list-header {
+    display: grid;
+    grid-template-columns: 85% 15%;
+    padding: 0 0 8px;
+    border-bottom: 1px solid var(--whitegrey);
+}
+
+.gh-links-list-title {
+    align-items: center;
+    line-height: 1em;
+    white-space: nowrap;
+    font-size: 1.1rem;
+    font-weight: 500;
+    letter-spacing: .03em;
+    color: #7c8b9a;
+    padding: 0 20px 8px 0;
+    text-transform: uppercase;
+}
+
+.gh-links-list-header .gh-links-list-title:last-child {
+    text-align: right;
+    padding-right: 2px;
+}
+
 .gh-links-pagination {
     display: flex;
     justify-content: space-between;
@@ -1020,7 +1049,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 .gh-links-pagination-actions {
     display: flex;
     flex-direction: row;
-    gap: 20px;
+    gap: 12px;
 }
 
 .gh-links-pagination-action {
@@ -1028,7 +1057,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     flex-direction: row;
     justify-content: flex-start;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     color: var(--green);
     font-weight: 600;
     font-size: 13px;
@@ -1039,7 +1068,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 
 .gh-links-pagination-action.gh-links-pagination-prev {
     position: relative;
-    padding-right: 20px;
+    padding-right: 12px;
 }
 
 .gh-links-pagination-action.gh-links-pagination-prev:after {
@@ -1052,6 +1081,11 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     border-radius: 2px;
     width: 1.5px;
     height: 60%;
+}
+
+.gh-links-pagination-disabled {
+    cursor: default;
+    opacity: 0.25;
 }
 
 .gh-links-pagination-action svg {
