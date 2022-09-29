@@ -28,7 +28,15 @@ class MemberAttributionService {
 
         // We consider only select internal context sources
         if (['import', 'api', 'admin'].includes(source)) {
-            let attribution = {};
+            let attribution = {
+                id: null,
+                type: null,
+                url: null,
+                title: null,
+                referrerUrl: null,
+                referrerSource: null,
+                referrerMedium: null
+            };
             if (source === 'import') {
                 attribution.referrerSource = 'Imported';
                 attribution.referrerMedium = 'importer';
@@ -46,8 +54,7 @@ class MemberAttributionService {
                     const integration = await this.models.Integration.findOne({id: context.integration.id});
                     attribution.referrerSource = integration?.get('name');
                 } catch (error) {
-                    // return null for integration name if not found
-                    attribution.referrerMedium = null;
+                    // ignore error for integration not found
                 }
             }
             return attribution;
