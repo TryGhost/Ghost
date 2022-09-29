@@ -205,7 +205,7 @@ module.exports = class MemberRepository {
      * @param {Object[]} [data.newsletters]
      * @param {Object} [data.stripeCustomer]
      * @param {string} [data.offerId]
-     * @param {import('@tryghost/member-attribution/lib/history').Attribution} [data.attribution]
+     * @param {import('@tryghost/member-attribution/lib/attribution').AttributionResource} [data.attribution]
      * @param {*} options
      * @returns
      */
@@ -778,7 +778,7 @@ module.exports = class MemberRepository {
      * @param {String} data.id - member ID
      * @param {Object} data.subscription
      * @param {String} data.offerId
-     * @param {import('@tryghost/member-attribution/lib/history').Attribution} data.attribution
+     * @param {import('@tryghost/member-attribution/lib/attribution').AttributionResource} [data.attribution]
      * @param {*} options
      * @returns
      */

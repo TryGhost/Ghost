@@ -36,9 +36,7 @@ class MemberAttributionService {
             // If context has integration, set referrer medium as integration anme
             if (context?.integration?.id) {
                 try {
-                    const integration = await this.models.Integration.findOne({id: context.integration.id}, {
-                        withRelated: ['api_keys', 'webhooks']
-                    });
+                    const integration = await this.models.Integration.findOne({id: context.integration.id});
                     attribution.referrerMedium = integration?.get('name');
                 } catch (error) {
                     // return null for integration name if not found
