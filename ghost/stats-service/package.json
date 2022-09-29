@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/stats-service",
   "version": "0.0.0",
-  "repository": "https://github.com/TryGhost/Analytics/tree/main/packages/stats",
+  "repository": "https://github.com/TryGhost/Ghost/tree/main/ghost/stats-service",
   "private": true,
   "author": "Ghost Foundation",
   "license": "MIT",
