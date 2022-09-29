@@ -1,0 +1,210 @@
+<section class="gh-canvas" {{did-insert this.loadData}}>
+
+    <GhCanvasHeader class="gh-canvas-header stacked gh-post-analytics-header">
+        <div class="gh-canvas-breadcrumb">
+            <LinkTo @route="posts">
+                Posts
+            </LinkTo>
+            {{svg-jar "arrow-right-small"}}Analytics
+        </div>
+        <h2 class="gh-canvas-title gh-post-title">
+            {{this.post.title}}
+        </h2>
+        <div class="gh-post-analytics-meta">
+            <div class="gh-post-analytics-meta-text">
+                {{#if
+                    (or this.post.isSent
+                        (and this.post.isPublished this.post.email)
+                        this.post.willEmail
+                    )
+                }}
+                    {{#if this.post.emailOnly}}
+                        Sent
+                    {{else}}
+                        Published and sent
+                    {{/if}}
+                {{else}}
+                    Published on your site
+                {{/if}}
+
+                {{#let (moment-site-tz this.post.publishedAtUTC) as |publishedAt|}}
+                    on
+                    {{moment-format publishedAt "D MMM YYYY"}}
+                    at
+                    {{moment-format publishedAt "HH:mm"}}
+                {{/let}}
+            </div>
+            <LinkTo @route="editor.edit" @models={{array this.post.displayName this.post.id}} class="gh-post-list-cta edit" title="">
+                {{svg-jar "pen" title=""}}<span>Edit post</span>
+            </LinkTo>
+        </div>
+    </GhCanvasHeader>
+
+    <h4 class="gh-main-section-header small bn">
+        Engagement
+    </h4>
+    <div class="gh-post-analytics-box">
+        {{#if (or this.post.isSent (and this.post.isPublished this.post.email))}}
+            <div class="gh-post-analytics-item">
+                <LinkTo @route="members" @query={{hash filterParam=(concat "emails.post_id:[" this.post.id "]") }}>
+                    <h3>{{format-number this.post.email.emailCount}}</h3>
+                    <p>Sent</p>
+                </LinkTo>
+            </div>
+
+            {{#if (and this.post.email.trackOpens this.settings.emailTrackOpens) }}
+                <div class="gh-post-analytics-item">
+                    <LinkTo @route="members" @query={{hash filterParam=(concat "opened_emails.post_id:[" this.post.id "]") }}>
+                        <h3>{{this.post.email.openRate}}<sup>%</sup></h3>
+                        <p><strong>{{format-number this.post.email.openedCount}}</strong> opened</p>
+                    </LinkTo>
+                </div>
+            {{/if}}
+
+            {{#if this.settings.emailTrackClicks}}
+                <div class="gh-post-analytics-item">
+                    <LinkTo @route="members" @query={{hash filterParam=(concat "clicked_links.post_id:[" this.post.id "]") }}>
+                        <h3>{{this.post.clickRate}}<sup>%</sup></h3>
+                        <p><strong>{{format-number this.post.count.clicks}}</strong> clicked</p>
+                    </LinkTo>
+                </div>
+            {{/if}}
+        {{/if}}
+
+        {{#if (and (feature 'memberAttribution') (not this.post.emailOnly)) }}
+            <div class="gh-post-analytics-item">
+                <LinkTo @route="members" @query={{hash filterParam=(concat "signup:[" this.post.id "]") }}>
+                    <h3>{{format-number this.post.count.signups}}</h3>
+                    <p>{{gh-pluralize this.post.count.signups "signup" without-count=true}}</p>
+                </LinkTo>
+            </div>
+
+            {{#if this.membersUtils.paidMembersEnabled}}
+                <div class="gh-post-analytics-item">
+                    <LinkTo @route="members" @query={{hash filterParam=(concat "conversion:[" this.post.id "]") }}>
+                        <h3>{{format-number this.post.count.paid_conversions}}</h3>
+                        <p><span class="hide-when-small">Paid </span>{{gh-pluralize this.post.count.paid_conversions "conversion" without-count=true}}</p>
+                    </LinkTo>
+                </div>
+            {{/if}}
+        {{/if}}
+    </div>
+
+    {{#if this.isLoaded }}
+        {{#if this.showLinks }}
+            {{#if (is-empty this.links) }}
+                {{!-- Empty state --}}
+            {{else}}
+                <h4 class="gh-main-section-header small bn">
+                    Newsletter clicks
+                </h4>
+                <div class="gh-post-analytics-box column">
+                    <div class="gh-links-list">
+                        {{#each this.links as |link|}}
+                            <div class="gh-links-list-item">
+                                <a href="{{link.link.to}}" target="_blank" rel="noopener noreferrer">{{link.link.title}}</a>
+                                <p class="gh-links-list-clicks">{{link.count.clicks}}</p>
+                            </div>
+                        {{/each}}
+                        {{!-- TODO: Wire this pagination up
+                        <div class="gh-links-pagination">
+                            <div class="gh-links-pagination-progress">
+                                Showing 10-20 of 24
+                            </div>
+                            <div class="gh-links-pagination-actions">
+                                <button type="button" class="gh-links-pagination-action gh-links-pagination-prev">
+                                    {{svg-jar "arrow-left-pagination"}}
+                                    Previous
+                                </button>
+                                <button type="button" class="gh-links-pagination-action gh-links-pagination-next">
+                                    Next
+                                    {{svg-jar "arrow-right-pagination"}}
+                                </button>
+                            </div>
+                        </div>
+                        --}}
+                    </div>
+                </div>
+            {{/if}}
+        {{/if}}
+
+        {{#if this.showSources }}
+            {{#if (is-empty this.sources) }}
+                {{!-- Empty state --}}
+            {{else}}
+                <h4 class="gh-main-section-header small bn">
+                    Source attribution
+                </h4>
+                <div class="gh-post-analytics-box column">
+                    <div class="gh-attribution-box">
+                        <div class="gh-dashboard-select" style="top:40px;right:24px">
+                            <PowerSelect
+                                @selected={{this.selectedDisplayOption}}
+                                @options={{this.displayOptions}}
+                                @searchEnabled={{false}}
+                                @onChange={{this.onDisplayChange}}
+                                @triggerComponent={{component "gh-power-select/trigger"}}
+                                @triggerClass="gh-contentfilter-menu-trigger"
+                                @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
+                                @matchTriggerWidth={{false}}
+                                @horizontalPosition="right"
+
+                                as |option|
+                            >
+                                {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
+                            </PowerSelect>
+                        </div>
+                        <div class="gh-attribution-table-column">
+                            <MemberAttribution::SourceAttributionTable
+                                @sources={{this.sources}}
+                                @sortColumn={{this.sortColumn}}
+                                @setSortColumn={{this.setSortColumn}}
+                            />
+                        </div>
+                        <div class="gh-attribution-chart-column">
+                            <div class="gh-attribution-chart-column-inner">
+                                <MemberAttribution::SourceAttributionChart
+                                    @sources={{this.sources}}
+                                    @sortColumn={{this.sortColumn}}
+                                    @setSortColumn={{this.setSortColumn}}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {{/if}}
+        {{/if}}
+
+        <h4 class="gh-main-section-header small bn">
+            Get started with analytics
+        </h4>
+        <div class="gh-post-analytics-box resources">
+            <a href="https://ghost.org/help/" target="_blank" class="gh-post-analytics-resource" rel="noopener noreferrer">
+                <div class="thumbnail" style="background-image: url(assets/img/marketing/analytics-1.jpg);"></div>
+                <div class="flex flex-column justify-between">
+                    <div>
+                        <h3>Understand analytics in Ghost</h3>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                    </div>
+                    <div class="gh-btn gh-btn-link">Become an expert &rarr;</div>
+                </div>
+            </a>
+            <a href="https://ghost.org/resources" target="_blank" class="gh-post-analytics-resource" rel="noopener noreferrer">
+                <div class="thumbnail" style="background-image: url(assets/img/marketing/analytics-2.jpg);"></div>
+                <div class="flex flex-column justify-between">
+                    <div>
+                        <h3>How to best share your shiz</h3>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                    </div>
+                    <div class="gh-btn gh-btn-link">Sharing is caring &rarr;</div>
+                </div>
+            </a>
+        </div>
+    {{else}}
+        <div class="gh-post-analytics-loading">
+            <div class="gh-loading-spinner-outer">
+                <div class="gh-loading-spinner"></div>
+            </div>
+        </div>
+    {{/if}}
+</section>

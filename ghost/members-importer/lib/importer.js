@@ -163,7 +163,7 @@ module.exports = class MembersCSVImporter {
                     }));
                 }
 
-                if (row.stripe_customer_id) {
+                if (row.stripe_customer_id && typeof row.stripe_customer_id === 'string') {
                     await membersApi.members.linkStripeCustomer({
                         customer_id: row.stripe_customer_id,
                         member_id: member.id
