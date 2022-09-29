@@ -66,6 +66,11 @@ const DesignSandbox = () => {
                 <DividerCard />
             </div>
 
+            <ComponentTitle label="Code block" />
+            <div className="relative max-w-[740px]">
+                <CodeBlock />
+            </div>
+
             <ComponentTitle label="Image card" />
             <div className="relative max-w-[740px]">
                 <ImageCard />
@@ -256,6 +261,20 @@ const DesignSandbox = () => {
         return (
             <div>
                 <hr className="block h-[1px] border-0 border-t border-grey-300" />
+            </div>
+        );
+    }
+
+    /* Code block
+    /* ---------------------------------------------------------- */
+
+    function CodeBlock() {
+        return (
+            <div className="border-2 border-green">
+                <div className="rounded bg-grey-50 px-3 py-2">
+                    <textarea className="w-full resize-none bg-grey-50 font-mono text-[1.7rem]" />
+                </div>
+                <CaptionEditor placeholder="Type caption for code block (optional)" />
             </div>
         );
     }
