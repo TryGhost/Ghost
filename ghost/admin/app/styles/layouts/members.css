@@ -2481,6 +2481,16 @@ p.gh-members-import-errordetail:first-of-type {
     align-items: flex-start;
 }
 
+.gh-cp-membertier-attribution .gh-tier-card-header:nth-of-type(2) {
+    margin-top: 16px;
+    border-top: 1px solid var(--whitegrey);
+    padding-top: 16px;
+}
+
+.gh-cp-membertier-attribution .gh-membertier-subcount {
+    display: none;
+}
+
 .gh-cp-membertier-attribution .tier-actions-menu {
     top: calc(100% + 6px);
 }
