@@ -71,7 +71,15 @@ describe('MemberAttributionService', function () {
                     return null;
                 }
             };
-            should(service.getEventAttribution(model)).eql(null);
+            should(service.getEventAttribution(model)).eql({
+                id: null,
+                url: null,
+                title: null,
+                type: null,
+                referrerSource: null,
+                referrerMedium: null,
+                referrerUrl: null
+            });
         });
 
         it('returns url attribution types', function () {
