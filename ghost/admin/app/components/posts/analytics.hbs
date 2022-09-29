@@ -95,36 +95,7 @@
             {{#if (is-empty this.links) }}
                 {{!-- Empty state --}}
             {{else}}
-                <h4 class="gh-main-section-header small bn">
-                    Newsletter clicks
-                </h4>
-                <div class="gh-post-analytics-box column">
-                    <div class="gh-links-list">
-                        {{#each this.links as |link|}}
-                            <div class="gh-links-list-item">
-                                <a href="{{link.link.to}}" target="_blank" rel="noopener noreferrer">{{link.link.title}}</a>
-                                <p class="gh-links-list-clicks">{{link.count.clicks}}</p>
-                            </div>
-                        {{/each}}
-                        {{!-- TODO: Wire this pagination up
-                        <div class="gh-links-pagination">
-                            <div class="gh-links-pagination-progress">
-                                Showing 10-20 of 24
-                            </div>
-                            <div class="gh-links-pagination-actions">
-                                <button type="button" class="gh-links-pagination-action gh-links-pagination-prev">
-                                    {{svg-jar "arrow-left-pagination"}}
-                                    Previous
-                                </button>
-                                <button type="button" class="gh-links-pagination-action gh-links-pagination-next">
-                                    Next
-                                    {{svg-jar "arrow-right-pagination"}}
-                                </button>
-                            </div>
-                        </div>
-                        --}}
-                    </div>
-                </div>
+                <Posts::LinksTable @links={{this.links}} />
             {{/if}}
         {{/if}}
 
