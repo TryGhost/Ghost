@@ -910,6 +910,23 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     gap: 0;
 }
 
+.gh-attribution-box .gh-dashboard-list-item-sub-source {
+    padding-left: 20px;
+    position: relative;
+}
+
+.gh-attribution-box .gh-dashboard-list-item-sub-source:after {
+    content: "";
+    width: 9px;
+    height: 9px;
+    border-radius: 8px;
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    background: #e6e9eb;
+}
+
 .gh-attribution-chart-column {
     flex: 1;
     display: flex;
@@ -921,6 +938,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 .gh-attribution-chart-column-inner {
     padding: 0 24px;
     max-width: 296px;
+    position: relative;
 }
 
 .gh-attribution-table-column {
