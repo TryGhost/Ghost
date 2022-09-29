@@ -799,19 +799,6 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     background: var(--white);
     border-radius: var(--border-radius);
     box-shadow: 0 1px 4px -1px rgba(0,0,0,.1);
-    transition: all .3s ease-in-out;
-}
-
-.gh-post-analytics-resource:hover {
-    transform: translateY(-4px);
-    transition: all .3s ease-in-out;
-    box-shadow: 
-        0 54px 80px rgba(0,0,0,.07),
-        0 19.7109px 29.2013px rgba(0,0,0,.0482987),
-        0 9.56927px 14.1767px rgba(0,0,0,.0389404),
-        0 4.69103px 6.94968px rgba(0,0,0,.0310596),
-        0 1.85484px 2.74791px rgba(0,0,0,.0217013)
-    ;
 }
 
 .gh-post-analytics-resource {
@@ -833,12 +820,25 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     filter: brightness(1.08);
 }
 
+.gh-post-analytics-resource h3 {
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
 .gh-post-analytics-resource p {
     font-size: 1.5rem;
     letter-spacing: 0;
     line-height: 1.55;
     color: var(--middarkgrey);
     margin: 0 0 1rem;
+}
+
+.gh-post-analytics-resource .gh-btn-link {
+    color: #30cf43;
+}
+
+.gh-post-analytics-resource:hover .gh-btn-link {
+    color: #2bba3c;
 }
 
 .gh-post-analytics-title {
