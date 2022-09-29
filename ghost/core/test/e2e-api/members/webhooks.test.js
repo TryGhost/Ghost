@@ -1957,7 +1957,15 @@ describe('Members API', function () {
 
         it('Creates a SubscriptionCreatedEvent without attribution', async function () {
             const attribution = undefined;
-            await testWithAttribution(attribution, null);
+            await testWithAttribution(attribution, {
+                id: null,
+                url: null,
+                type: null,
+                title: null,
+                referrer_source: null,
+                referrer_medium: null,
+                referrer_url: null
+            });
         });
 
         it('Creates a SubscriptionCreatedEvent with empty attribution object', async function () {
