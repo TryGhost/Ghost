@@ -64,7 +64,21 @@ describe('MemberAttributionService', function () {
 
     describe('getEventAttribution', function () {
         it('returns null if attribution_type is null', function () {
-            const service = new MemberAttributionService({});
+            const service = new MemberAttributionService({
+                attributionBuilder: {
+                    build(attribution) {
+                        return {
+                            ...attribution,
+                            getResource() {
+                                return {
+                                    ...attribution,
+                                    title: 'added'
+                                };
+                            }
+                        };
+                    }
+                }
+            });
             const model = {
                 id: 'event_id',
                 get() {
@@ -74,7 +88,7 @@ describe('MemberAttributionService', function () {
             should(service.getEventAttribution(model)).eql({
                 id: null,
                 url: null,
-                title: null,
+                title: 'added',
                 type: null,
                 referrerSource: null,
                 referrerMedium: null,
