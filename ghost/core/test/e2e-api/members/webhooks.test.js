@@ -1663,6 +1663,7 @@ describe('Members API', function () {
             subscriptions: anyArray,
             labels: anyArray,
             tiers: anyArray,
+            attribution: anyObject,
             newsletters: anyArray
         };
 
@@ -1960,7 +1961,7 @@ describe('Members API', function () {
             await testWithAttribution(attribution, {
                 id: null,
                 url: null,
-                type: null,
+                type: 'url',
                 title: null,
                 referrer_source: null,
                 referrer_medium: null,
@@ -1971,7 +1972,15 @@ describe('Members API', function () {
         it('Creates a SubscriptionCreatedEvent with empty attribution object', async function () {
             // Shouldn't happen, but to make sure we handle it
             const attribution = {};
-            await testWithAttribution(attribution, null);
+            await testWithAttribution(attribution, {
+                id: null,
+                url: null,
+                type: 'url',
+                title: null,
+                referrer_source: null,
+                referrer_medium: null,
+                referrer_url: null
+            });
         });
 
         // Activity feed

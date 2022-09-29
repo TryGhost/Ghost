@@ -110,10 +110,6 @@ class MemberAttributionService {
      * @returns {import('./attribution').AttributionResource|null}
      */
     getEventAttribution(eventModel) {
-        if (eventModel.get('attribution_type') === null) {
-            return null;
-        }
-
         const _attribution = this.attributionBuilder.build({
             id: eventModel.get('attribution_id'),
             url: eventModel.get('attribution_url'),
@@ -123,7 +119,7 @@ class MemberAttributionService {
             referrerUrl: eventModel.get('referrer_url')
         });
 
-        if (_attribution.type !== 'url') {
+        if (_attribution.type && _attribution.type !== 'url') {
             // Find the right relation to use to fetch the resource
             const tryRelations = [
                 eventModel.related('postAttribution'),
@@ -168,7 +164,7 @@ class MemberAttributionService {
      */
     async getSubscriptionCreatedAttribution(subscriptionId) {
         const subscriptionCreatedEvent = await this.models.SubscriptionCreatedEvent.findOne({subscription_id: subscriptionId}, {require: false, withRelated: []});
-        if (!subscriptionCreatedEvent || !subscriptionCreatedEvent.get('attribution_type')) {
+        if (!subscriptionCreatedEvent) {
             return null;
         }
         const attribution = this.attributionBuilder.build({
