@@ -78,6 +78,7 @@ function MenuSeparator() {
 }
 
 function FloatingFormatToolbar({isText, editor, anchorElem, blockType, isBold, isItalic}) {
+    const [stickyToolbar, setStickyToolbar] = React.useState(false);
     const toolbarRef = React.useRef(null);
     // const [isVisible, setIsVisible] = React.useState(false);
 
@@ -140,9 +141,11 @@ function FloatingFormatToolbar({isText, editor, anchorElem, blockType, isBold, i
             rootElement.contains(nativeSelection.anchorNode)
         ) {
             const rangeRect = getDOMRangeRect(nativeSelection, rootElement);
-            setFloatingElemPosition(rangeRect, toolbarElement, anchorElem);
+            if (!stickyToolbar) {
+                setFloatingElemPosition(rangeRect, toolbarElement, anchorElem);
+            }
         }
-    }, [editor, anchorElem]);
+    }, [editor, anchorElem, stickyToolbar]);
 
     const toggleVis = React.useCallback(() => {
         if (isText !== false) {
@@ -223,12 +226,27 @@ function FloatingFormatToolbar({isText, editor, anchorElem, blockType, isBold, i
     return (
         <div className={`absolute`} ref={toolbarRef} data-kg-floating-toolbar style={{opacity: 0}}>
             <ul className="m-0 flex items-center justify-evenly rounded bg-black px-1 py-0 font-sans text-md font-normal text-white">
-                <MenuItem label="Format text as bold" isActive={isBold} Icon={BoldIcon} onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold')} data-kg-toolbar-button="bold" />
-                <MenuItem label="Format text as italics" isActive={isItalic} Icon={ItalicIcon} onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic')} data-kg-toolbar-button="italic" />
-                <MenuItem label="Toggle heading 1" isActive={blockType === 'h2'} Icon={HeadingOneIcon} onClick={() => (blockType === 'h2' ? formatParagraph() : formatHeading('h2'))} data-kg-toolbar-button="h2" />
-                <MenuItem label="Toggle heading 2" isActive={blockType === 'h3'} Icon={HeadingTwoIcon} onClick={() => (blockType === 'h3' ? formatParagraph() : formatHeading('h3'))} data-kg-toolbar-button="h3" />
+                <MenuItem label="Format text as bold" isActive={isBold} Icon={BoldIcon} onClick={() => {
+                    setStickyToolbar(true); 
+                    editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
+                }} data-kg-toolbar-button="bold" />
+                <MenuItem label="Format text as italics" isActive={isItalic} Icon={ItalicIcon} onClick={() => {
+                    setStickyToolbar(true);
+                    editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic');
+                }} data-kg-toolbar-button="italic" />
+                <MenuItem label="Toggle heading 1" isActive={blockType === 'h2'} Icon={HeadingOneIcon} onClick={() => {
+                    (blockType === 'h2' ? formatParagraph() : formatHeading('h2'));
+                    setStickyToolbar(true);
+                }} data-kg-toolbar-button="h2" />
+                <MenuItem label="Toggle heading 2" isActive={blockType === 'h3'} Icon={HeadingTwoIcon} onClick={() => {
+                    (blockType === 'h3' ? formatParagraph() : formatHeading('h3'));
+                    setStickyToolbar(true);
+                }} data-kg-toolbar-button="h3" />
                 <MenuSeparator />
-                <MenuItem label="Toggle blockquote" isActive={blockType === 'quote' || blockType === 'aside'} Icon={blockType === 'aside' ? QuoteTwoIcon : QuoteOneIcon} onClick={() => (formatQuote())} data-kg-toolbar-button="quote" />
+                <MenuItem label="Toggle blockquote" isActive={blockType === 'quote' || blockType === 'aside'} Icon={blockType === 'aside' ? QuoteTwoIcon : QuoteOneIcon} onClick={() => {
+                    (formatQuote());
+                    setStickyToolbar(true);
+                }} data-kg-toolbar-button="quote" />
             </ul>
         </div>
     );
