@@ -250,7 +250,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 }
 
 .gh-post-list-button {
-    width: 106px;
+    width: 78px;
 }
 
 .gh-list .gh-content-entry-title {
@@ -608,7 +608,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
         display: none;
     }
 
-    .gh-content-email-stats {
+    .gh-list-data a.gh-post-row-event {
         display: none;
     }
 
@@ -1188,7 +1188,6 @@ a.gh-post-list-cta {
     margin: -7px 16px 0 0;
     padding: 1px 14px;
     border: 1px solid var(--whitegrey-d1);
-    /* box-shadow: rgb(0 0 0 / 10%) 0px 1px 2px; */
     background: var(--white);
     color: var(--darkgrey);
     border-radius: var(--border-radius);
@@ -1197,6 +1196,11 @@ a.gh-post-list-cta {
     height: 38px;
     overflow: hidden;
     transition: all .1s linear;
+}
+
+.gh-post-list-button a.gh-post-list-cta {
+    justify-content: center;
+    width: 56px;
 }
 
 .gh-post-analytics-header a.gh-post-list-cta {
