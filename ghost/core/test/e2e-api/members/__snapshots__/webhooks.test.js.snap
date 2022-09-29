@@ -4,15 +4,7 @@ exports[`Members API Member attribution Creates a SubscriptionCreatedEvent with 
 Object {
   "members": Array [
     Object {
-      "attribution": Object {
-        "id": "1",
-        "referrer_medium": null,
-        "referrer_source": null,
-        "referrer_url": null,
-        "title": "Joe Bloggs",
-        "type": "author",
-        "url": "http://127.0.0.1:2369/author/joe-bloggs/",
-      },
+      "attribution": Any<Object>,
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -54,15 +46,7 @@ exports[`Members API Member attribution Creates a SubscriptionCreatedEvent with 
 Object {
   "members": Array [
     Object {
-      "attribution": Object {
-        "id": null,
-        "referrer_medium": null,
-        "referrer_source": null,
-        "referrer_url": null,
-        "title": "/removed-blog-post/",
-        "type": "url",
-        "url": "http://127.0.0.1:2369/removed-blog-post/",
-      },
+      "attribution": Any<Object>,
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -104,7 +88,7 @@ exports[`Members API Member attribution Creates a SubscriptionCreatedEvent with 
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Any<Object>,
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -134,7 +118,7 @@ exports[`Members API Member attribution Creates a SubscriptionCreatedEvent with 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2611",
+  "content-length": "2831",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -146,15 +130,7 @@ exports[`Members API Member attribution Creates a SubscriptionCreatedEvent with 
 Object {
   "members": Array [
     Object {
-      "attribution": Object {
-        "id": "618ba1ffbe2896088840a6e9",
-        "referrer_medium": null,
-        "referrer_source": null,
-        "referrer_url": null,
-        "title": "This is a static page",
-        "type": "page",
-        "url": "http://127.0.0.1:2369/static-page-test/",
-      },
+      "attribution": Any<Object>,
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -196,15 +172,7 @@ exports[`Members API Member attribution Creates a SubscriptionCreatedEvent with 
 Object {
   "members": Array [
     Object {
-      "attribution": Object {
-        "id": "618ba1ffbe2896088840a6df",
-        "referrer_medium": null,
-        "referrer_source": null,
-        "referrer_url": null,
-        "title": "HTML Ipsum",
-        "type": "post",
-        "url": "http://127.0.0.1:2369/html-ipsum/",
-      },
+      "attribution": Any<Object>,
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -246,15 +214,7 @@ exports[`Members API Member attribution Creates a SubscriptionCreatedEvent with 
 Object {
   "members": Array [
     Object {
-      "attribution": Object {
-        "id": "618ba1febe2896088840a6db",
-        "referrer_medium": null,
-        "referrer_source": null,
-        "referrer_url": null,
-        "title": "kitchen sink",
-        "type": "tag",
-        "url": "http://127.0.0.1:2369/tag/kitchen-sink/",
-      },
+      "attribution": Any<Object>,
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -296,15 +256,7 @@ exports[`Members API Member attribution Creates a SubscriptionCreatedEvent with 
 Object {
   "members": Array [
     Object {
-      "attribution": Object {
-        "id": null,
-        "referrer_medium": null,
-        "referrer_source": null,
-        "referrer_url": null,
-        "title": "homepage",
-        "type": "url",
-        "url": "http://127.0.0.1:2369/",
-      },
+      "attribution": Any<Object>,
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -346,7 +298,7 @@ exports[`Members API Member attribution Creates a SubscriptionCreatedEvent witho
 Object {
   "members": Array [
     Object {
-      "attribution": null,
+      "attribution": Any<Object>,
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -376,7 +328,7 @@ exports[`Members API Member attribution Creates a SubscriptionCreatedEvent witho
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2611",
+  "content-length": "2831",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -439,7 +391,7 @@ exports[`Members API Member attribution Returns subscription created attribution
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "14502",
+  "content-length": "14722",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",

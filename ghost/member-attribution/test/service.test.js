@@ -10,16 +10,90 @@ describe('MemberAttributionService', function () {
         });
     });
 
+    describe('getAttributionFromContext', function () {
+        it('returns null if no context is provided', async function () {
+            const service = new MemberAttributionService({});
+            const attribution = await service.getAttributionFromContext();
+
+            should(attribution).be.null();
+        });
+
+        it('returns attribution for importer context', async function () {
+            const service = new MemberAttributionService({});
+            const attribution = await service.getAttributionFromContext({importer: true});
+
+            should(attribution).containEql({referrerSource: 'Imported', referrerMedium: 'Member Importer'});
+        });
+
+        it('returns attribution for admin context', async function () {
+            const service = new MemberAttributionService({});
+            const attribution = await service.getAttributionFromContext({user: 'abc'});
+
+            should(attribution).containEql({referrerSource: 'Created manually', referrerMedium: 'Ghost Admin'});
+        });
+
+        it('returns attribution for api without integration context', async function () {
+            const service = new MemberAttributionService({});
+            const attribution = await service.getAttributionFromContext({
+                api_key: 'abc'
+            });
+
+            should(attribution).containEql({referrerSource: 'Created via API', referrerMedium: 'Admin API'});
+        });
+
+        it('returns attribution for api with integration context', async function () {
+            const service = new MemberAttributionService({
+                models: {
+                    Integration: {
+                        findOne: () => {
+                            return {
+                                get: () => 'Test Integration'
+                            };
+                        }
+                    }
+                }
+            });
+            const attribution = await service.getAttributionFromContext({
+                api_key: 'abc',
+                integration: {id: 'integration_1'}
+            });
+
+            should(attribution).containEql({referrerSource: 'Integration: Test Integration', referrerMedium: 'Admin API'});
+        });
+    });
+
     describe('getEventAttribution', function () {
         it('returns null if attribution_type is null', function () {
-            const service = new MemberAttributionService({});
+            const service = new MemberAttributionService({
+                attributionBuilder: {
+                    build(attribution) {
+                        return {
+                            ...attribution,
+                            getResource() {
+                                return {
+                                    ...attribution,
+                                    title: 'added'
+                                };
+                            }
+                        };
+                    }
+                }
+            });
             const model = {
                 id: 'event_id',
                 get() {
                     return null;
                 }
             };
-            should(service.getEventAttribution(model)).eql(null);
+            should(service.getEventAttribution(model)).eql({
+                id: null,
+                url: null,
+                title: 'added',
+                type: null,
+                referrerSource: null,
+                referrerMedium: null,
+                referrerUrl: null
+            });
         });
 
         it('returns url attribution types', function () {
