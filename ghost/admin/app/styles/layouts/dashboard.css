@@ -1103,6 +1103,11 @@ Dashboard Attribution */
     background: #E6E9EB;
 }
 
+.gh-dashboard-attribution .ember-power-select-trigger[aria-disabled=true], .gh-attribution-box .ember-power-select-trigger[aria-disabled=true] {
+    background: transparent;
+    opacity: 0.3;
+}
+
 .gh-dashboard-list-item-other-source {
     cursor: pointer;
 }
