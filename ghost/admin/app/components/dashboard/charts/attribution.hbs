@@ -19,7 +19,7 @@
                 @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
                 @matchTriggerWidth={{false}}
                 @horizontalPosition="right"
-                @disabled={{true}}
+                @disabled={{this.isDropdownDisabled}}
                 as |option|
             >
                 {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
