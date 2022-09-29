@@ -271,8 +271,8 @@ export default class DashboardMocksService extends Service {
             });
 
             // More than 5 sources
-            // const attributionSources = ['Twitter', 'Ghost Network', 'Product Hunt', 'Direct', 'Ghost Newsletter', 'Rediverge Newsletter', 'Reddit', 'The Lever Newsletter', 'The Browser Newsletter'];
-            const attributionSources = ['Twitter', 'Ghost Network', 'Product Hunt', 'Direct'];
+            const attributionSources = ['Twitter', 'Ghost Network', 'Product Hunt', 'Direct', 'Ghost Newsletter', 'Rediverge Newsletter', 'Reddit', 'The Lever Newsletter', 'The Browser Newsletter', 'Green Newsletter', 'Yellow Newsletter', 'Brown Newsletter', 'Red Newsletter'];
+            // const attributionSources = ['Twitter', 'Ghost Network', 'Product Hunt', 'Direct'];
             const hasPaidConversions = true;
             const hasFreeSignups = true;
 
