@@ -723,6 +723,7 @@ module.exports = {
         html: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         plaintext: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         track_opens: {type: 'bool', nullable: false, defaultTo: false},
+        track_clicks: {type: 'bool', nullable: false, defaultTo: false},
         submitted_at: {type: 'dateTime', nullable: false},
         newsletter_id: {type: 'string', maxlength: 24, nullable: true, references: 'newsletters.id'},
         created_at: {type: 'dateTime', nullable: false},

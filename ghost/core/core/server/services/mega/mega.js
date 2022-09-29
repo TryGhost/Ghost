@@ -239,6 +239,7 @@ const addEmail = async (postModel, options) => {
             plaintext: emailData.plaintext,
             submitted_at: moment().toDate(),
             track_opens: !!settingsCache.get('email_track_opens'),
+            track_clicks: !!settingsCache.get('email_track_clicks'),
             recipient_filter: emailRecipientFilter,
             newsletter_id: newsletter.id
         }, knexOptions);
