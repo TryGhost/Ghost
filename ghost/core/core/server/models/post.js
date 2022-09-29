@@ -1348,10 +1348,10 @@ Post = ghostBookshelf.Model.extend({
             },
             clicks(modelOrCollection) {
                 modelOrCollection.query('columns', 'posts.*', (qb) => {
-                    qb.countDistinct('members_link_click_events.member_id')
-                        .from('members_link_click_events')
-                        .join('link_redirects', 'members_link_click_events.link_id', 'link_redirects.id')
-                        .whereRaw('posts.id = link_redirects.post_id')
+                    qb.countDistinct('members_click_events.member_id')
+                        .from('members_click_events')
+                        .join('redirects', 'members_click_events.redirect_id', 'redirects.id')
+                        .whereRaw('posts.id = redirects.post_id')
                         .as('count__clicks');
                 });
             }

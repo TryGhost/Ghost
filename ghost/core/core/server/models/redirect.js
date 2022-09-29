@@ -1,8 +1,8 @@
 const ghostBookshelf = require('./base');
 const urlUtils = require('../../shared/url-utils');
 
-const LinkRedirect = ghostBookshelf.Model.extend({
-    tableName: 'link_redirects',
+const Redirect = ghostBookshelf.Model.extend({
+    tableName: 'redirects',
 
     post() {
         return this.belongsTo('Post', 'post_id');
@@ -49,10 +49,10 @@ const LinkRedirect = ghostBookshelf.Model.extend({
     countRelations() {
         return {
             clicks(modelOrCollection) {
-                modelOrCollection.query('columns', 'link_redirects.*', (qb) => {
-                    qb.countDistinct('members_link_click_events.member_id')
-                        .from('members_link_click_events')
-                        .whereRaw('link_redirects.id = members_link_click_events.link_id')
+                modelOrCollection.query('columns', 'redirects.*', (qb) => {
+                    qb.countDistinct('members_click_events.member_id')
+                        .from('members_click_events')
+                        .whereRaw('redirects.id = members_click_events.redirect_id')
                         .as('count__clicks');
                 });
             }
@@ -61,5 +61,5 @@ const LinkRedirect = ghostBookshelf.Model.extend({
 });
 
 module.exports = {
-    LinkRedirect: ghostBookshelf.model('LinkRedirect', LinkRedirect)
+    Redirect: ghostBookshelf.model('Redirect', Redirect)
 };

@@ -36,7 +36,7 @@ module.exports = class LinkClickRepository {
         for (const model of collection.models) {
             const member = await this.#Member.findOne({id: model.get('member_id')});
             result.push(new LinkClick({
-                link_id: model.get('link_id'),
+                link_id: model.get('redirect_id'),
                 member_uuid: member.get('uuid')
             }));
         }
@@ -57,7 +57,7 @@ module.exports = class LinkClickRepository {
 
         const model = await this.#MemberLinkClickEventModel.add({
             // Only store the parthname (no support for variable query strings)
-            link_id: linkClick.link_id.toHexString(), 
+            redirect_id: linkClick.link_id.toHexString(),
             member_id: member.id
         }, {});
 

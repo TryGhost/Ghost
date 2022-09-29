@@ -38,7 +38,7 @@ function addTable(name, tableSpec) {
 /**
  * Creates migration which will drop a table
  *
- * @param {[string]} names  - names of the tables to drop
+ * @param {string[]} names  - names of the tables to drop
  */
 function dropTables(names) {
     return createIrreversibleMigration(
