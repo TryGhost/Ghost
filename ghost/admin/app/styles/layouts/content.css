@@ -915,7 +915,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 2rem 0 0;
+    padding: 2rem 0;
 }
 
 .gh-attribution-chart-column-inner {
@@ -924,7 +924,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 }
 
 .gh-attribution-table-column {
-    flex: 2;
+    flex: 1;
     padding: 1rem 0;
 }
 
@@ -1195,9 +1195,8 @@ a.gh-post-list-cta.stats.is-hovered {
 }
 
 a.gh-post-list-cta.stats.is-hovered:hover {
-    color: var(--green-d1);
-    border-color: var(--lightgrey-l1);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    border-color: var(--lightgrey-l2);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
 a.gh-post-list-cta.edit.is-hovered {
@@ -1206,9 +1205,8 @@ a.gh-post-list-cta.edit.is-hovered {
 
 a.gh-post-list-cta.edit.is-hovered:hover,
 a.gh-post-list-cta.edit:not(.is-hovered):hover {
-    color: var(--pink-d1);
-    border-color: var(--lightgrey-l1);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    border-color: var(--lightgrey-l2);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
 a.gh-post-list-cta > svg {
@@ -1216,6 +1214,7 @@ a.gh-post-list-cta > svg {
     height: 1.5rem;
     color: var(--darkgrey);
     stroke: var(--darkgrey);
+    transition: all .1s linear;
 }
 
 a.gh-post-list-cta > svg path {
@@ -1230,21 +1229,15 @@ a.gh-post-list-cta > span {
     transition: all .1s linear;
 }
 
-a.gh-post-list-cta.edit.is-hovered > * {
+a.gh-post-list-cta.edit.is-hovered > *,
+a.gh-post-list-cta.edit.is-hovered:hover > *,
+a.gh-post-list-cta.edit:not(.is-hovered):hover > *  {
     color: var(--pink-d1);
 }
 
-a.gh-post-list-cta.edit.is-hovered:hover > *,
-a.gh-post-list-cta.edit:not(.is-hovered):hover > * {
-    color: var(--pink-d2);
-}
-
-a.gh-post-list-cta.stats.is-hovered > * {
-    color: var(--green-d1);
-}
-
+a.gh-post-list-cta.stats.is-hovered > *,
 a.gh-post-list-cta.stats.is-hovered:hover > * {
-    color: var(--green-d2);
+    color: var(--green-d1);
 }
 
 @media screen and (max-width: 1080px) {
