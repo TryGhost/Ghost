@@ -19,7 +19,8 @@ const GA_FEATURES = [
     'freeTrial',
     'compExpiring',
     'searchHelper',
-    'emailAlerts'
+    'emailAlerts',
+    'emailClicks'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
@@ -32,7 +33,6 @@ const BETA_FEATURES = [
 const ALPHA_FEATURES = [
     'urlCache',
     'beforeAfterCard',
-    'emailClicks',
     'sourceAttribution',
     'lexicalEditor'
 ];
