@@ -16,6 +16,42 @@ class MemberAttributionService {
 
     /**
      *
+     * @param {Object} context instance of ghost framework context object
+     * @returns {Promise<import('./attribution').AttributionResource>}
+     */
+    async getAttributionFromContext(context) {
+        const source = this._resolveContextSource(context);
+
+        // We consider only select internal context sources
+        if (['import', 'api', 'admin'].includes(source)) {
+            let attribution = {};
+            if (source === 'import') {
+                attribution.referrerSource = 'Imported';
+            } else if (source === 'admin') {
+                attribution.referrerSource = 'Created Manually';
+            } else if (source === 'api') {
+                attribution.referrerSource = 'Created via API';
+            }
+
+            // If context has integration, set referrer medium as integration anme
+            if (context?.integration?.id) {
+                try {
+                    const integration = await this.models.Integration.findOne({id: context.integration.id}, {
+                        withRelated: ['api_keys', 'webhooks']
+                    });
+                    attribution.referrerMedium = integration?.get('name');
+                } catch (error) {
+                    // return null for integration name if not found
+                    attribution.referrerMedium = null;
+                }
+            }
+            return attribution;
+        }
+        return null;
+    }
+
+    /**
+     *
      * @param {import('./history').UrlHistoryArray} historyArray
      * @returns {Promise<import('./attribution').Attribution>}
      */
@@ -132,6 +168,30 @@ class MemberAttributionService {
             referrerUrl: subscriptionCreatedEvent.get('referrer_url')
         });
         return await attribution.fetchResource();
+    }
+
+    /**
+     * Maps the framework context to source string
+     * @param {Object} context instance of ghost framework context object
+     * @returns {'import' | 'system' | 'api' | 'admin' | 'member'}
+     * @private
+     */
+    _resolveContextSource(context) {
+        let source;
+
+        if (context.import || context.importer) {
+            source = 'import';
+        } else if (context.internal) {
+            source = 'system';
+        } else if (context.api_key) {
+            source = 'api';
+        } else if (context.user) {
+            source = 'admin';
+        } else {
+            source = 'member';
+        }
+
+        return source;
     }
 }
 
