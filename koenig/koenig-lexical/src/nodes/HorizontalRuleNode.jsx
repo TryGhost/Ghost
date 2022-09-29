@@ -4,10 +4,10 @@ import KoenigCardWrapper from '../components/KoenigCardWrapper';
 
 export const INSERT_HORIZONTAL_RULE_COMMAND = createCommand();
 
-function HorizontalRuleComponent() {
+function HorizontalRuleComponent({nodeKey}) {
     return (
         <div className="inline-block">
-            <KoenigCardWrapper>
+            <KoenigCardWrapper nodeKey={nodeKey}>
                 <hr className="block h-[1px] border-0 border-t border-grey-300" />
             </KoenigCardWrapper>
         </div>
@@ -52,7 +52,7 @@ export class HorizontalRuleNode extends DecoratorNode {
     }
 
     decorate() {
-        return <HorizontalRuleComponent />;
+        return <HorizontalRuleComponent nodeKey={this.getKey()} />;
     }
 }
 
