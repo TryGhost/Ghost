@@ -22,18 +22,18 @@
                         {{else}}
                             <Dashboard::Charts::Anchor />
                         {{/if}}
-                        {{#if this.hasPaidTiers}}
-                            {{#if (feature 'sourceAttribution')}}
+                        {{#if (feature 'sourceAttribution')}}
+                            {{#if this.hasPaidTiers}}
                                 <section class="gh-dashboard-section">
                                     <article class="gh-dashboard-box gh-dashboard-minicharts-attribution">
                                         <Dashboard::Charts::PaidBreakdown />
                                         <Dashboard::Charts::PaidMix />
                                     </article>
                                 </section>
-                                {{#unless this.membersUtils.isMembersInviteOnly}}
-                                    <Dashboard::Charts::Attribution />
-                                {{/unless}}
                             {{/if}}
+                            {{#unless this.membersUtils.isMembersInviteOnly}}
+                                <Dashboard::Charts::Attribution />
+                            {{/unless}}
                         {{/if}}
                         {{#if this.areNewslettersEnabled}}
                             <Dashboard::Charts::Engagement />
