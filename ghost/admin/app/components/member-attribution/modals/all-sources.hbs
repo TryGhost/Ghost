@@ -5,10 +5,10 @@
     <button class="close" type="button" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
     <div class="modal-body pa">
-        <div>
+        <div class="gh-all-sources">
             <div class="gh-dashboard-list-header">
                 <div class="gh-dashboard-list-title">Sources</div>
-                <div class="gh-dashboard-list-title">Signups</div>
+                <div class="gh-dashboard-list-title">Free signups</div>
                 {{#if this.membersUtils.paidMembersEnabled}}
                     <div class="gh-dashboard-list-title"><span class="hide-when-small">Paid </span>Conversions</div>
                 {{/if}}

@@ -1201,6 +1201,44 @@ Dashboard Attribution */
     font-weight: 500;
 }
 
+.gh-all-sources .gh-dashboard-attribution-list-scrollable {
+    overflow-y: auto;
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
+.gh-all-sources .gh-dashboard-list-body {
+    max-height: calc(100vh - 215px);
+    position: relative;
+}
+
+.gh-all-sources .modal-footer {
+    display: none;
+}
+
+.gh-all-sources .gh-dashboard-list-body:after {
+    content: " ";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 24px;
+    bottom: 0;
+    background: linear-gradient(180deg,#ffffff00,hsl(0deg 0% 100%) 100%);
+    z-index: 1;
+}
+
+.gh-all-sources .gh-dashboard-list-body:before {
+    content: " ";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 24px;
+    top: 0;
+    background: linear-gradient(0deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);
+    z-index: 1;
+}
+
+
 @media screen and (max-width: 1120px) {
     .gh-dashboard-attribution-grid .gh-dashboard-metric-label {
         position: absolute;
