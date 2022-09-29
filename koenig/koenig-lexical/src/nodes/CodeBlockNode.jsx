@@ -122,8 +122,8 @@ export class CodeBlockNode extends DecoratorNode {
         );
     }
 
-    isTopLevel() {
-        return true;
+    isInline() {
+        return false;
     }
 }
 

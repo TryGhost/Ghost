@@ -43,8 +43,8 @@ export class HorizontalRuleNode extends DecoratorNode {
         return '\n';
     }
 
-    isTopLevel() {
-        return true;
+    isInline() {
+        return false;
     }
 
     updateDOM() {
