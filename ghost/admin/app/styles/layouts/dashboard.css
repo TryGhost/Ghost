@@ -1033,6 +1033,13 @@ Dashboard Zero */
 /* ---------------------------------
 Dashboard Attribution */
 
+.gh-dashboard-select-title-attribution .gh-contentfilter-menu-trigger:hover {
+    cursor: pointer;
+    color: #394047;
+    background: transparent;
+    opacity: 0.6;
+}
+
 .gh-dashboard-attribution-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
