@@ -2,7 +2,6 @@ const _ = require('lodash');
 const template = require('./template');
 const settingsCache = require('../../../shared/settings-cache');
 const urlUtils = require('../../../shared/url-utils');
-const labs = require('../../../shared/labs');
 const moment = require('moment-timezone');
 const api = require('../../api').endpoints;
 const apiFramework = require('@tryghost/api-framework');
@@ -14,8 +13,11 @@ const {isUnsplashImage, isLocalContentImage} = require('@tryghost/kg-default-car
 const {textColorForBackgroundColor, darkenToContrastThreshold} = require('@tryghost/color-utils');
 const logging = require('@tryghost/logging');
 const urlService = require('../../services/url');
+const linkReplacer = require('@tryghost/link-replacer');
+const linkTracking = require('../link-tracking');
+const memberAttribution = require('../member-attribution');
 
-const ALLOWED_REPLACEMENTS = ['first_name'];
+const ALLOWED_REPLACEMENTS = ['first_name', 'uuid'];
 
 const PostEmailSerializer = {
     
@@ -243,7 +245,7 @@ const PostEmailSerializer = {
         return templateSettings;
     },
 
-    async serialize(postModel, newsletter, options = {isBrowserPreview: false}) {
+    async serialize(postModel, newsletter, options = {isBrowserPreview: false, isTestEmail: false}) {
         const post = await this.serializePostModel(postModel);
 
         const timezone = settingsCache.get('timezone');
@@ -276,7 +278,7 @@ const PostEmailSerializer = {
         // perform any email specific adjustments to the mobiledoc->HTML render output
         // body wrapper is required so we can get proper top-level selections
         const cheerio = require('cheerio');
-        let _cheerio = cheerio.load(`<body>${post.html}</body>`);
+        const _cheerio = cheerio.load(`<body>${post.html}</body>`);
         // remove leading/trailing HRs
         _cheerio(`
             body > hr:first-child,
@@ -284,8 +286,10 @@ const PostEmailSerializer = {
             body > div:first-child > hr:first-child,
             body > div:last-child > hr:last-child
         `).remove();
-        post.html = _cheerio('body').html();
+        post.html = _cheerio('body').html(); // () (added this comment because of a bug in the syntax highlighter in VSCode)
 
+        // Note: we don't need to do link replacements on the plaintext here
+        // because the plaintext will get recalculated on the updated post html (which already includes link replacements) in renderEmailForSegment
         post.plaintext = htmlToPlaintext.email(post.html);
 
         // Outlook will render feature images at full-size breaking the layout.
@@ -325,24 +329,63 @@ const PostEmailSerializer = {
 
         let htmlTemplate = render({post, site: this.getSite(), templateSettings, newsletter: newsletter.toJSON()});
 
-        if (options.isBrowserPreview) {
-            const previewUnsubscribeUrl = this.createUnsubscribeUrl(null);
-            htmlTemplate = htmlTemplate.replace('%recipient.unsubscribe_url%', previewUnsubscribeUrl);
+        // The plaintext version that is returned here is actually never really used for sending because we'll use htmlToPlaintext again later
+        let result = {
+            html: this.formatHtmlForEmail(htmlTemplate),
+            plaintext: post.plaintext
+        };
+
+        /** 
+         *  If a part of the email is members-only and the post is paid-only, add a paywall:
+         *  - Just before sending the email, we'll hide the paywall or paid content depending on the member segment it is sent to.
+         *  - We already need to do URL-replacement on the HTML here
+         *  - Link replacement cannot happen later because renderEmailForSegment is called multiple times for a single email (which would result in duplicate redirects)
+        */
+        const isPaidPost = post.visibility === 'paid' || post.visibility === 'tiers';
+
+        const paywallIndex = (result.html || '').indexOf('<!--members-only-->');
+        if (paywallIndex !== -1 && isPaidPost) {
+            const postContentEndIdx = result.html.indexOf('<!-- POST CONTENT END -->');
+
+            if (postContentEndIdx !== -1) {
+                const paywallHTML = '<!-- PAYWALL -->' + this.renderPaywallCTA(post);
+
+                // Append it just before the end of the post content
+                result.html = result.html.slice(0, postContentEndIdx) + paywallHTML + result.html.slice(postContentEndIdx);
+            }
+        }
+
+        // Now replace the links in the HTML version
+        if (!options.isBrowserPreview && !options.isTestEmail && settingsCache.get('email_track_clicks')) {
+            result.html = await linkReplacer.replace(result.html, async (url) => {
+                // Add newsletter source attribution
+                url = memberAttribution.service.addEmailSourceAttributionTracking(url, newsletter);
+                const isSite = urlUtils.isSiteUrl(url);
+
+                if (isSite) {
+                    // Only add post attribution to our own site (because external sites could/should not process this information)
+                    url = memberAttribution.service.addPostAttributionTracking(url, post);
+                }
+
+                // Add link click tracking
+                url = await linkTracking.service.addTrackingToUrl(url, post, '--uuid--');
+                
+                // We need to convert to a string at this point, because we need invalid string characters in the URL
+                const str = url.toString().replace(/--uuid--/g, '%%{uuid}%%');
+                return str;
+            });
         }
 
         // Clean up any unknown replacements strings to get our final content
-        const {html, plaintext} = this.normalizeReplacementStrings({
-            html: this.formatHtmlForEmail(htmlTemplate),
-            plaintext: post.plaintext
-        });
+        const {html, plaintext} = this.normalizeReplacementStrings(result);
         const data = {
             subject: post.email_subject || post.title,
             html,
             plaintext
         };
-        if (labs.isSet('newsletterPaywall')) {
-            data.post = post;
-        }
+
+        // Add post for checking access in renderEmailForSegment (only for previews)
+        data.post = post;
         return data;
     },
 
@@ -392,25 +435,45 @@ const PostEmailSerializer = {
 
         const result = {...email};
 
-        /** Checks and hides content for newsletter behind paywall card
-         *  based on member's status and post access
-         *  Adds CTA in case content is hidden.
-        */
-        if (labs.isSet('newsletterPaywall')) {
-            const paywallIndex = (result.html || '').indexOf('<!--members-only-->');
-            if (paywallIndex !== -1 && memberSegment && result.post) {
+        // Note about link tracking:
+        // Don't add new HTML in here, but add it in the serialize method and surround it with the required HTML comments or attributes
+        // This is because we can't replace links at this point (this is executed multiple times, once per batch and we don't want to generate duplicate links for the same email)
+
+        // Remove the paywall or members-only content based on the current member segment
+        const startMembersOnlyContent = (result.html || '').indexOf('<!--members-only-->');
+        const startPaywall = result.html.indexOf('<!-- PAYWALL -->');
+        let endPost = result.html.indexOf('<!-- POST CONTENT END -->');
+
+        if (endPost === -1) {
+            // Default to the end of the HTML (shouldn't happen, but just in case if we have members-only content that should get removed)
+            endPost = result.html.length;
+        }
+
+        // We support the cases where there is no <!--members-only--> but there is a paywall (in case of bugs)
+        // We also support the case where there is no <!-- PAYWALL --> but there is a <!--members-only--> (in case of bugs)
+        if (startMembersOnlyContent !== -1 || startPaywall !== -1) {
+            // By default remove the paywall if no memberSegment is passed
+            let memberHasAccess = true;
+
+            if (memberSegment && result.post) {
                 let statusFilter = memberSegment === 'status:free' ? {status: 'free'} : {status: 'paid'};
                 const postVisiblity = result.post.visibility;
 
                 // For newsletter paywall, specific tiers visibility is considered on par to paid tiers
                 result.post.visibility = postVisiblity === 'tiers' ? 'paid' : postVisiblity;
 
-                const memberHasAccess = membersService.contentGating.checkPostAccess(result.post, statusFilter);
+                memberHasAccess = membersService.contentGating.checkPostAccess(result.post, statusFilter);
+            }
 
-                if (!memberHasAccess) {
-                    const postContentEndIdx = result.html.search(/[\s\n\r]+?<!-- POST CONTENT END -->/);
-                    result.html = result.html.slice(0, paywallIndex) + this.renderPaywallCTA(result.post) + result.html.slice(postContentEndIdx);
-                    result.plaintext = htmlToPlaintext.excerpt(result.html);
+            if (!memberHasAccess) {
+                if (startMembersOnlyContent !== -1) {
+                    // Remove the members-only content, but keep the paywall (if there is a paywall)
+                    result.html = result.html.slice(0, startMembersOnlyContent) + result.html.slice(startPaywall === -1 ? endPost : startPaywall);
+                }
+            } else {
+                if (startPaywall !== -1) {
+                    // Remove the paywall
+                    result.html = result.html.slice(0, startPaywall) + result.html.slice(endPost);
                 }
             }
         }
@@ -427,7 +490,7 @@ const PostEmailSerializer = {
         });
 
         result.html = this.formatHtmlForEmail($.html());
-        result.plaintext = htmlToPlaintext.email(result.html);
+        result.plaintext = htmlToPlaintext.email(result.html); 
         delete result.post;
 
         return result;

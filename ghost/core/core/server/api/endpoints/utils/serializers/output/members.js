@@ -96,6 +96,22 @@ function exportCSV(data) {
     return unparse(data.data);
 }
 
+function serializeAttribution(attribution) {
+    if (!attribution) {
+        return attribution;
+    }
+
+    return {
+        id: attribution?.id,
+        type: attribution?.type,
+        url: attribution?.url,
+        title: attribution?.title,
+        referrer_source: attribution?.referrerSource,
+        referrer_medium: attribution?.referrerMedium,
+        referrer_url: attribution.referrerUrl
+    };
+}
+
 /**
  * @param {import('bookshelf').Model} member
  * @param {object} options
@@ -129,7 +145,7 @@ function serializeMember(member, options) {
         email_recipients: json.email_recipients,
         status: json.status,
         last_seen_at: json.last_seen_at,
-        attribution: json.attribution
+        attribution: serializeAttribution(json.attribution)
     };
 
     if (json.products) {
@@ -141,15 +157,16 @@ function serializeMember(member, options) {
         if (!subscription.price) {
             continue;
         }
-        
+
         if (!subscription.price.tier && subscription.price.product) {
             subscription.price.tier = subscription.price.product;
-            
+
             if (!subscription.price.tier.tier_id) {
                 subscription.price.tier.tier_id = subscription.price.tier.product_id;
             }
             delete subscription.price.tier.product_id;
         }
+        subscription.attribution = serializeAttribution(subscription.attribution);
         delete subscription.price.product;
     }
 

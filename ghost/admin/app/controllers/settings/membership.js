@@ -1,3 +1,4 @@
+import ConfirmUnsavedChangesModal from '../../components/modals/confirm-unsaved-changes';
 import Controller from '@ember/controller';
 import envConfig from 'ghost-admin/config/environment';
 import {action} from '@ember/object';
@@ -18,12 +19,11 @@ export default class MembersAccessController extends Controller {
     @service config;
     @service feature;
     @service membersUtils;
+    @service modals;
     @service settings;
     @service store;
     @service session;
 
-    @tracked showLeavePortalModal = false;
-    @tracked showLeaveRouteModal = false;
     @tracked showPortalSettings = false;
     @tracked showStripeConnect = false;
     @tracked showTierModal = false;
@@ -93,25 +93,8 @@ export default class MembersAccessController extends Controller {
         this.updatePortalPreview();
     }
 
-    leaveRoute(transition) {
-        if (this.settings.get('hasDirtyAttributes') || this.hasChangedPrices) {
-            transition.abort();
-            this.leaveSettingsTransition = transition;
-            this.showLeaveRouteModal = true;
-        }
-    }
-
-    @action
-    async confirmLeave() {
-        this.settings.rollbackAttributes();
-        this.resetPrices();
-        this.leaveSettingsTransition.retry();
-    }
-
-    @action
-    cancelLeave() {
-        this.showLeaveRouteModal = false;
-        this.leaveSettingsTransition = null;
+    get isDirty() {
+        return this.settings.get('hasDirtyAttributes') || this.hasChangedPrices;
     }
 
     @action
@@ -234,27 +217,21 @@ export default class MembersAccessController extends Controller {
     }
 
     @action
-    closePortalSettings() {
+    async closePortalSettings() {
         const changedAttributes = this.settings.changedAttributes();
+
         if (changedAttributes && Object.keys(changedAttributes).length > 0) {
-            this.showLeavePortalModal = true;
+            const shouldClose = await this.modals.open(ConfirmUnsavedChangesModal);
+
+            if (shouldClose) {
+                this.settings.rollbackAttributes();
+                this.showPortalSettings = false;
+                this.updatePortalPreview();
+            }
         } else {
             this.showPortalSettings = false;
             this.updatePortalPreview();
         }
-    }
-
-    @action
-    async confirmClosePortalSettings() {
-        this.settings.rollbackAttributes();
-        this.showPortalSettings = false;
-        this.showLeavePortalModal = false;
-        this.updatePortalPreview();
-    }
-
-    @action
-    cancelClosePortalSettings() {
-        this.showLeavePortalModal = false;
     }
 
     @action
@@ -389,18 +366,20 @@ export default class MembersAccessController extends Controller {
         }
     }
 
+    @action
+    reset() {
+        this.settings.rollbackAttributes();
+        this.resetPrices();
+        this.showLeavePortalModal = false;
+        this.showPortalSettings = false;
+    }
+
     resetPrices() {
         const monthlyPrice = this.tier.get('monthlyPrice');
         const yearlyPrice = this.tier.get('yearlyPrice');
 
         this.stripeMonthlyAmount = monthlyPrice ? (monthlyPrice.amount / 100) : 5;
         this.stripeYearlyAmount = yearlyPrice ? (yearlyPrice.amount / 100) : 50;
-    }
-
-    reset() {
-        this.showLeaveRouteModal = false;
-        this.showLeavePortalModal = false;
-        this.showPortalSettings = false;
     }
 
     _validateSignupRedirect(url, type) {

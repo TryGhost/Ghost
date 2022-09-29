@@ -1,12 +1,13 @@
 import ConfirmEditorLeaveModal from '../components/modals/editor/confirm-leave';
 import Controller, {inject as controller} from '@ember/controller';
 import DeletePostModal from '../components/modals/delete-post';
+import DeleteSnippetModal from '../components/editor/modals/delete-snippet';
 import PostModel from 'ghost-admin/models/post';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import classic from 'ember-classic-decorator';
 import config from 'ghost-admin/config/environment';
 import isNumber from 'ghost-admin/utils/isNumber';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {action, computed} from '@ember/object';
 import {alias, mapBy} from '@ember/object/computed';
 import {capitalize} from '@ember/string';
@@ -109,7 +110,6 @@ export default class EditorController extends Controller {
     shouldFocusTitle = false;
     showReAuthenticateModal = false;
     showUpgradeModal = false;
-    showDeleteSnippetModal = false;
     showSettingsMenu = false;
     hostLimitError = null;
 
@@ -409,13 +409,10 @@ export default class EditorController extends Controller {
     }
 
     @action
-    toggleDeleteSnippetModal(snippet) {
-        this.set('snippetToDelete', snippet);
-    }
-
-    @action
-    deleteSnippet(snippet) {
-        return snippet.destroyRecord();
+    async confirmDeleteSnippet(snippet) {
+        await this.modals.open(DeleteSnippetModal, {
+            snippet
+        });
     }
 
     /* Public tasks ----------------------------------------------------------*/

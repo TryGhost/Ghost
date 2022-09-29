@@ -1,5 +1,6 @@
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {action, get} from '@ember/object';
+import {htmlSafe} from '@ember/template';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
@@ -14,6 +15,7 @@ export default class PublishOptions {
     post = null;
     user = null;
 
+    @tracked publishDisabledError = null;
     @tracked totalMemberCount = 0;
 
     get isLoading() {
@@ -270,8 +272,10 @@ export default class PublishOptions {
             this.totalMemberCount = 1;
         }
 
-        // email limits
+        // limits
         promises.push(this._checkSendingLimit());
+        promises.push(this._checkPublishingLimit());
+
         // newsletters
         promises.push(this.store.query('newsletter', {status: 'active', limit: 'all', include: 'count.members'}));
 
@@ -375,6 +379,22 @@ export default class PublishOptions {
             }
         } catch (e) {
             this.emailDisabledError = e.message;
+        }
+    }
+
+    async _checkPublishingLimit() {
+        // non-admin users cannot fetch members count so we can't error at this stage for them
+        if (!this.user.isAdmin) {
+            return;
+        }
+
+        try {
+            if (this.limit.limiter?.isLimited('members')) {
+                await this.limit.limiter.errorIfIsOverLimit('members');
+            }
+        } catch (e) {
+            const linkedMessage = htmlSafe(e.message.replace(/please upgrade/i, '<a href="#/pro">$&</a>'));
+            this.publishDisabledError = linkedMessage;
         }
     }
 }

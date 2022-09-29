@@ -1,5 +1,5 @@
 import BaseValidator from './base';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import validator from 'validator';
 import {isBlank, isEmpty, isPresent} from '@ember/utils';
 

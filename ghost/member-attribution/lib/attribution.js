@@ -4,9 +4,13 @@
  * @prop {string|null} url (absolute URL)
  * @prop {'page'|'post'|'author'|'tag'|'url'} type
  * @prop {string|null} title
+ * @prop {string|null} referrerSource
+ * @prop {string|null} referrerMedium
+ * @prop {string|null} referrerUrl
  */
 
 class Attribution {
+    /** @type {import('./url-translator')} */
     #urlTranslator;
 
     /**
@@ -14,11 +18,19 @@ class Attribution {
      * @param {string|null} [data.id]
      * @param {string|null} [data.url] Relative to subdirectory
      * @param {'page'|'post'|'author'|'tag'|'url'} [data.type]
+     * @param {string|null} [data.referrerSource]
+     * @param {string|null} [data.referrerMedium]
+     * @param {string|null} [data.referrerUrl]
      */
-    constructor({id, url, type}, {urlTranslator}) {
+    constructor({
+        id, url, type, referrerSource, referrerMedium, referrerUrl
+    }, {urlTranslator}) {
         this.id = id;
         this.url = url;
         this.type = type;
+        this.referrerSource = referrerSource;
+        this.referrerMedium = referrerMedium;
+        this.referrerUrl = referrerUrl;
 
         /**
          * @private
@@ -41,7 +53,10 @@ class Attribution {
                 id: null,
                 type: 'url',
                 url: this.#urlTranslator.relativeToAbsolute(this.url),
-                title: this.#urlTranslator.getUrlTitle(this.url)
+                title: this.#urlTranslator.getUrlTitle(this.url),
+                referrerSource: this.referrerSource,
+                referrerMedium: this.referrerMedium,
+                referrerUrl: this.referrerUrl
             };
         }
 
@@ -51,7 +66,10 @@ class Attribution {
             id: model.id,
             type: this.type,
             url: updatedUrl,
-            title: model.get('title') ?? model.get('name') ?? this.#urlTranslator.getUrlTitle(this.url)
+            title: model.get('title') ?? model.get('name') ?? this.#urlTranslator.getUrlTitle(this.url),
+            referrerSource: this.referrerSource,
+            referrerMedium: this.referrerMedium,
+            referrerUrl: this.referrerUrl
         };
     }
 
@@ -74,82 +92,101 @@ class Attribution {
  * Convert a UrlHistory to an attribution object
  */
 class AttributionBuilder {
+    /** @type {import('./url-translator')} */
+    urlTranslator;
+    /** @type {import('./referrer-translator')} */
+    referrerTranslator;
+
     /**
      */
-    constructor({urlTranslator}) {
+    constructor({urlTranslator, referrerTranslator}) {
         this.urlTranslator = urlTranslator;
+        this.referrerTranslator = referrerTranslator;
     }
 
     /**
      * Creates an Attribution object with the dependencies injected
      */
-    build({id, url, type}) {
+    build({id, url, type, referrerSource, referrerMedium, referrerUrl}) {
         return new Attribution({
             id,
             url,
-            type
+            type,
+            referrerSource,
+            referrerMedium,
+            referrerUrl
         }, {urlTranslator: this.urlTranslator});
     }
 
     /**
      * Last Post Algorithm™️
-     * @param {UrlHistory} history
-     * @returns {Attribution}
+     * @param {import('./history').UrlHistoryArray} history
+     * @returns {Promise<Attribution>}
      */
-    getAttribution(history) {
+    async getAttribution(history) {
         if (history.length === 0) {
             return this.build({
                 id: null,
                 url: null,
-                type: null
+                type: null,
+                referrerSource: null,
+                referrerMedium: null,
+                referrerUrl: null
             });
         }
 
-        // Convert history to subdirectory relative (instead of root relative)
-        // Note: this is ordered from recent to oldest!
-        const subdirectoryRelativeHistory = [];
-        for (const item of history) {
-            subdirectoryRelativeHistory.push({
-                ...item,
-                path: this.urlTranslator.stripSubdirectoryFromPath(item.path)
-            });
-        }
-
-        // TODO: if something is wrong with the attribution script, and it isn't loading
-        // we might get out of date URLs
-        // so we need to check the time of each item and ignore items that are older than 24u here!
+        const referrerData = this.referrerTranslator.getReferrerDetails(history) || {
+            referrerSource: null,
+            referrerMedium: null,
+            referrerUrl: null
+        };
 
         // Start at the end. Return the first post we find
-        for (const item of subdirectoryRelativeHistory) {
-            const typeId = this.urlTranslator.getTypeAndId(item.path);
+        const resources = [];
 
-            if (typeId && typeId.type === 'post') {
+        // Note: history iterator is ordered from recent to oldest!
+        for (const item of history) {
+            const resource = await this.urlTranslator.getResourceDetails(item);
+
+            if (resource && resource.type === 'post') {
                 return this.build({
-                    url: item.path,
-                    ...typeId
+                    ...resource,
+                    ...referrerData
                 });
+            }
+
+            // Store to avoid that we need to look it up again
+            if (resource) {
+                resources.push(resource);
             }
         }
 
         // No post found?
-        // Try page or tag or author
-        for (const item of subdirectoryRelativeHistory) {
-            const typeId = this.urlTranslator.getTypeAndId(item.path);
-
-            if (typeId) {
+        // Return first with an id (page, tag, author)
+        for (const resource of resources) {
+            if (resource.id) {
                 return this.build({
-                    url: item.path,
-                    ...typeId
+                    ...resource,
+                    ...referrerData
                 });
             }
         }
 
-        // Default to last URL
-        // In the future we might decide to exclude certain URLs, that can happen here
+        // No post/page/tag/author found?
+        // Return the last path that was visited
+        if (resources.length > 0) {
+            return this.build({
+                ...referrerData,
+                ...resources[0]
+            });
+        }
+
+        // We only have history items without a path that have invalid ids
         return this.build({
+            ...referrerData,
             id: null,
-            url: subdirectoryRelativeHistory[0].path,
-            type: 'url'
+            url: null,
+            type: null
         });
     }
 }

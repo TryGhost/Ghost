@@ -29,22 +29,32 @@
     <section class="view-container content-list">
         <div class="{{if this.feature.memberAttribution 'gh-list-sticky'}}">
             <ol class="pages-list gh-list {{unless this.postsInfinityModel "no-posts"}} {{if this.feature.memberAttribution 'feature-memberAttribution'}}">
-                {{#if this.postsInfinityModel}}
-                    <li class="gh-list-row header">
-                        <div class="gh-list-header gh-posts-title-header">Title</div>
-                        <div class="gh-list-header gh-posts-status-header">{{#unless this.feature.memberAttribution}}Status{{/unless}}</div>
-                        {{#if this.feature.memberAttribution}}
-                            <div class="gh-list-header gh-posts-signups-header">Signups</div>
-                            <div class="gh-list-header gh-posts-conversions-header">Conversions</div>
-                        {{/if}}
-                    </li>
-                {{/if}}
+                {{#unless this.feature.emailClicks}}
+                    {{#if this.postsInfinityModel}}
+                        <li class="gh-list-row header">
+                            <div class="gh-list-header gh-posts-title-header">Title</div>
+                            <div class="gh-list-header gh-posts-status-header">{{#unless this.feature.memberAttribution}}Status{{/unless}}</div>
+                            {{#if this.feature.memberAttribution}}
+                                <div class="gh-list-header gh-posts-signups-header">Signups</div>
+                                <div class="gh-list-header gh-posts-conversions-header">Conversions</div>
+                            {{/if}}
+                        </li>
+                    {{/if}}
+                {{/unless}}
 
                 {{#each this.postsInfinityModel as |page|}}
-                    <PostsList::ListItem
-                        @post={{page}}
-                        data-test-page-id={{page.id}}
-                    />
+                    {{#if this.feature.emailClicks}}
+                        <PostsList::ListItemClicks
+                            @post={{page}}
+                            data-test-page-id={{page.id}}
+                        />
+                    {{/if}}
+                    {{#unless this.feature.emailClicks}}
+                        <PostsList::ListItem
+                            @post={{page}}
+                            data-test-page-id={{page.id}}
+                        />
+                    {{/unless}}
                 {{else}}
                     <li class="no-posts-box">
                         <div class="no-posts">

@@ -7,14 +7,13 @@ const logging = require('@tryghost/logging');
 const models = require('../../models');
 const MailgunClient = require('@tryghost/mailgun-client');
 const sentry = require('../../../shared/sentry');
-const labs = require('../../../shared/labs');
 const debug = require('@tryghost/debug')('mega');
 const postEmailSerializer = require('../mega/post-email-serializer');
 const configService = require('../../../shared/config');
 const settingsCache = require('../../../shared/settings-cache');
 
 const messages = {
-    error: 'The email service was unable to send an email batch.'
+    error: 'The email service received an error from mailgun and was unable to send.'
 };
 
 const mailgunClient = new MailgunClient({config: configService, settings: settingsCache});
@@ -173,10 +172,8 @@ module.exports = {
             // Load newsletter data on email
             await emailBatchModel.relations.email.getLazyRelation('newsletter', {require: false, ...knexOptions});
 
-            if (labs.isSet('newsletterPaywall')) {
-                // Load post data on email - for content gating on paywall
-                await emailBatchModel.relations.email.getLazyRelation('post', {require: false, ...knexOptions});
-            }
+            // Load post data on email - for content gating on paywall
+            await emailBatchModel.relations.email.getLazyRelation('post', {require: false, ...knexOptions});
 
             // send the email
             const sendResponse = await this.send(emailBatchModel.relations.email.toJSON(), recipientRows, memberSegment);
@@ -254,11 +251,13 @@ module.exports = {
             const response = await mailgunClient.send(emailData, recipientData, replacements);
             debug(`sent message (${Date.now() - startTime}ms)`);
             return response;
-        } catch (error) {
-            // REF: possible mailgun errors https://documentation.mailgun.com/en/latest/api-intro.html#errors
+        } catch (err) {
             let ghostError = new errors.EmailError({
-                err: error,
-                context: tpl(messages.error),
+                err,
+                message: tpl(messages.error),
+                context: `Mailgun Error ${err.error.status}: ${err.error.details}`,
+                // REF: possible mailgun errors https://documentation.mailgun.com/en/latest/api-intro.html#errors
+                help: `https://ghost.org/docs/newsletters/#bulk-email-configuration`,
                 code: 'BULK_EMAIL_SEND_FAILED'
             });
 

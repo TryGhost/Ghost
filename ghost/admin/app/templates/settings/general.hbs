@@ -10,13 +10,6 @@
         </section>
     </GhCanvasHeader>
 
-    {{#if this.showLeaveSettingsModal}}
-        <GhFullscreenModal @modal="leave-settings"
-            @confirm={{action "leaveSettings"}}
-            @close={{action "toggleLeaveSettingsModal"}}
-            @modifier="action wide" />
-    {{/if}}
-
     <div>
         <div class="gh-main-section">
             <h4 class="gh-main-section-header small bn">Publication info</h4>
@@ -369,7 +362,7 @@
                                     @focus-out={{action "validateFacebookUrl"}}
                                     data-test-facebook-input={{true}}
                                 />
-                                <GhErrorMessage @errors={{this.settings.errors}} @property="facebook" data-test-facebook-error=true />
+                                <GhErrorMessage @errors={{this.settings.errors}} @property="facebook" data-test-facebook-error />
                                 <p>URL of your publication's Facebook Page</p>
                             </GhFormGroup>
                             <GhFormGroup @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}} @property="twitter">
@@ -382,7 +375,7 @@
                                     @focus-out={{action "validateTwitterUrl"}}
                                     data-test-twitter-input={{true}}
                                 />
-                                <GhErrorMessage @errors={{this.settings.errors}} @property="twitter" data-test-twitter-error=true />
+                                <GhErrorMessage @errors={{this.settings.errors}} @property="twitter" data-test-twitter-error />
                                 <p>URL of your publication's Twitter profile</p>
                             </GhFormGroup>
                         </div>
@@ -432,7 +425,7 @@
                                         @input={{action (mut this.settings.password) value="target.value"}}
                                         data-test-password-input={{true}}
                                     />
-                                    <GhErrorMessage @errors={{this.settings.errors}} @property="password" data-test-password-error=true />
+                                    <GhErrorMessage @errors={{this.settings.errors}} @property="password" data-test-password-error />
                                     <p>Set the password for this site</p>
                                 </GhFormGroup>
                             </div>

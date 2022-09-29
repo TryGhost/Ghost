@@ -1,5 +1,5 @@
 import Component from '@glimmer/component';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {action} from '@ember/object';
 import {getNonDecimal, getSymbol} from 'ghost-admin/utils/currency';
 import {inject as service} from '@ember/service';
@@ -73,6 +73,11 @@ export default class extends Component {
         }).map((sub) => {
             const data = {
                 ...sub,
+                attribution: {
+                    ...sub.attribution,
+                    referrerSource: sub.attribution?.referrer_source || 'Unknown',
+                    referrerMedium: sub.attribution?.referrer_medium || '-'
+                },
                 startDate: sub.start_date ? moment(sub.start_date).format('D MMM YYYY') : '-',
                 validUntil: sub.current_period_end ? moment(sub.current_period_end).format('D MMM YYYY') : '-',
                 cancellationReason: sub.cancellation_reason,
@@ -93,7 +98,6 @@ export default class extends Component {
             if (!sub.id && this.feature.get('compExpiring') && sub.tier?.expiry_at) {
                 data.compExpiry = moment(sub.tier.expiry_at).format('D MMM YYYY');
             }
-
             return data;
         });
         return tiers.map((tier) => {

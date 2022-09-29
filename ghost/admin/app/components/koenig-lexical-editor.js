@@ -1,5 +1,8 @@
+import * as Sentry from '@sentry/ember';
 import Component from '@glimmer/component';
 import React, {Suspense} from 'react';
+import {action} from '@ember/object';
+import {inject as service} from '@ember/service';
 
 class ErrorHandler extends React.Component {
     state = {
@@ -26,15 +29,18 @@ const fetchKoenig = function () {
     let response;
 
     const fetchPackage = async () => {
-        if (window.KoenigLexical) {
-            return window.KoenigLexical;
+        if (window['@tryghost/koenig-lexical']) {
+            return window['@tryghost/koenig-lexical'];
         }
 
         // the manual specification of the protocol in the import template string is
         // required to work around ember-auto-import complaining about an unknown dynamic import
         // during the build step
         const GhostAdmin = window.GhostAdmin || window.Ember.Namespace.NAMESPACES.find(ns => ns.name === 'ghost-admin');
-        const url = new URL(GhostAdmin.__container__.lookup('service:config').get('editor.lexicalUrl'));
+        const urlTemplate = GhostAdmin.__container__.lookup('service:config').get('editor.url');
+        const urlVersion = GhostAdmin.__container__.lookup('service:config').get('editor.version');
+
+        const url = new URL(urlTemplate.replace('{version}', urlVersion));
 
         if (url.protocol === 'http:') {
             await import(`http://${url.host}${url.pathname}`);
@@ -42,7 +48,7 @@ const fetchKoenig = function () {
             await import(`https://${url.host}${url.pathname}`);
         }
 
-        return window.KoenigLexical;
+        return window['@tryghost/koenig-lexical'];
     };
 
     const suspender = fetchPackage().then(
@@ -83,13 +89,31 @@ const KoenigEditor = (props) => {
 };
 
 export default class KoenigLexicalEditor extends Component {
+    @service config;
+
+    @action
+    onError(error) {
+        // ensure we're still showing errors in development
+        console.error(error); // eslint-disable-line
+
+        if (this.config.get('sentry_dsn')) {
+            Sentry.captureException(error, {
+                tags: {
+                    lexical: true
+                }
+            });
+        }
+
+        // don't rethrow, Lexical will attempt to gracefully recover
+    }
+
     ReactComponent = () => {
         return (
             <div className={['koenig-react-editor', this.args.className].filter(Boolean).join(' ')}>
                 <ErrorHandler>
                     <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
-                        <KoenigComposer>
-                            <KoenigEditor />
+                        <KoenigComposer initialEditorState={this.args.lexical} onError={this.onError}>
+                            <KoenigEditor onChange={this.args.onChange} />
                         </KoenigComposer>
                     </Suspense>
                 </ErrorHandler>

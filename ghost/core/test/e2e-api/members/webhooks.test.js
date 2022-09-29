@@ -43,6 +43,12 @@ async function assertSubscription(subscriptionId, asserts) {
     models.Base.Model.prototype.serialize.call(subscription).should.match(asserts);
 }
 
+async function sleep(ms) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
+}
+
 describe('Members API', function () {
     // @todo: Test what happens when a complimentary subscription ends (should create comped -> free event)
     // @todo: Test what happens when a complimentary subscription starts a paid subscription
@@ -658,11 +664,6 @@ describe('Members API', function () {
             assert.equal(member.subscriptions.length, 1, 'The member should have a single subscription');
 
             mockManager.assert.sentEmail({
-                subject: '💸 Paid subscription started: checkout-webhook-test@email.com',
-                to: 'jbloggs@example.com'
-            });
-
-            mockManager.assert.sentEmail({
                 subject: '🙌 Thank you for signing up to Ghost!',
                 to: 'checkout-webhook-test@email.com'
             });
@@ -705,6 +706,14 @@ describe('Members API', function () {
                         mrr_delta: 500
                     }
                 ]
+            });
+
+            // Wait for the dispatched events (because this happens async)
+            await sleep(250);
+
+            mockManager.assert.sentEmail({
+                subject: '💸 Paid subscription started: checkout-webhook-test@email.com',
+                to: 'jbloggs@example.com'
             });
         });
 
@@ -1827,7 +1836,10 @@ describe('Members API', function () {
                 id: null,
                 url: absoluteUrl,
                 type: 'url',
-                title: 'homepage'
+                title: 'homepage',
+                referrer_source: null,
+                referrer_medium: null,
+                referrer_url: null
             });
         });
 
@@ -1847,7 +1859,10 @@ describe('Members API', function () {
                 id: post.id,
                 url: absoluteUrl,
                 type: 'post',
-                title: post.get('title')
+                title: post.get('title'),
+                referrer_source: null,
+                referrer_medium: null,
+                referrer_url: null
             });
         });
 
@@ -1864,7 +1879,10 @@ describe('Members API', function () {
                 id: null,
                 url: absoluteUrl,
                 type: 'url',
-                title: '/removed-blog-post/'
+                title: '/removed-blog-post/',
+                referrer_source: null,
+                referrer_medium: null,
+                referrer_url: null
             });
         });
 
@@ -1884,7 +1902,10 @@ describe('Members API', function () {
                 id: post.id,
                 url: absoluteUrl,
                 type: 'page',
-                title: post.get('title')
+                title: post.get('title'),
+                referrer_source: null,
+                referrer_medium: null,
+                referrer_url: null
             });
         });
 
@@ -1904,7 +1925,10 @@ describe('Members API', function () {
                 id: tag.id,
                 url: absoluteUrl,
                 type: 'tag',
-                title: tag.get('name')
+                title: tag.get('name'),
+                referrer_source: null,
+                referrer_medium: null,
+                referrer_url: null
             });
         });
 
@@ -1924,7 +1948,10 @@ describe('Members API', function () {
                 id: author.id,
                 url: absoluteUrl,
                 type: 'author',
-                title: author.get('name')
+                title: author.get('name'),
+                referrer_source: null,
+                referrer_medium: null,
+                referrer_url: null
             });
         });
 

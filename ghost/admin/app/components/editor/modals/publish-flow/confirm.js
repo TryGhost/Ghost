@@ -1,5 +1,5 @@
 import Component from '@glimmer/component';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {htmlSafe} from '@ember/template';
 import {isArray} from '@ember/array';
 import {isServerUnreachableError} from 'ghost-admin/services/ajax';
@@ -101,15 +101,19 @@ export default class PublishFlowOptions extends Component {
 
             let errorMessage = '';
 
+            const payloadError = e?.payload?.errors?.[0];
+
             if (isServerUnreachableError(e)) {
                 errorMessage = 'Unable to connect, please check your internet connection and try again.';
+            } else if (payloadError?.type === 'HostLimitError') {
+                errorMessage = htmlSafe(payloadError.context.replace(/please upgrade/i, '<a href="#/pro">$&</a>'));
             } else if (e && isString(e)) {
                 errorMessage = e;
             } else if (e && isArray(e)) {
                 // This is here because validation errors are returned as an array
                 // TODO: remove this once validations are fixed
                 errorMessage = e[0];
-            } else if (e?.payload?.errors?.[0].message) {
+            } else if (payloadError?.message) {
                 errorMessage = e.payload.errors[0].message;
             } else {
                 errorMessage = 'Unknown Error';

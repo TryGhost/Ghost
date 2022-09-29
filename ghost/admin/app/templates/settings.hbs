@@ -3,7 +3,6 @@
         <h2 class="gh-canvas-title" data-test-screen-title>
             Settings
         </h2>
-        {{#if (feature 'auditLog')}}
         <section class="view-actions">
             {{#if this.upgradeStatus.message}}
                 <button type="button" class="gh-btn gh-btn-with-notification" {{on "click" (fn this.openAbout null)}} data-tooltip="Update available!">
@@ -16,7 +15,6 @@
                 </button>
             {{/if}}
         </section>
-        {{/if}}
     </GhCanvasHeader>
 
     <section class="view-container">
@@ -90,29 +88,20 @@
             </LinkTo>
 
             <LinkTo class="gh-setting-group" @route="settings.labs" data-test-nav="labs">
-                <span class="{{if (feature 'auditLog') "blue" "pink"}}">{{svg-jar "labs"}}</span>
+                <span class="blue">{{svg-jar "labs"}}</span>
                 <div>
                     <h4>Labs</h4>
                     <p>Testing ground for new features</p>
                 </div>
             </LinkTo>
 
-            {{#if (feature 'auditLog')}}
-                <LinkTo class="gh-setting-group" @route="settings.history" data-test-nav="history">
-                    <span class="pink">{{svg-jar "calendar-stroke"}}</span>
-                    <div>
-                        <h4>History</h4>
-                        <p>View system event log</p>
-                    </div>
-                </LinkTo>
-            {{/if}}
+            <LinkTo class="gh-setting-group" @route="settings.history" data-test-nav="history">
+                <span class="pink">{{svg-jar "calendar-stroke"}}</span>
+                <div>
+                    <h4>History</h4>
+                    <p>View system event log</p>
+                </div>
+            </LinkTo>
         </div>
     </section>
 </section>
-
-{{#if this.showLeaveSettingsModal}}
-    <GhFullscreenModal @modal="leave-settings"
-        @confirm={{action "leavePortalSettings"}}
-        @close={{action "closeLeaveSettingsModal"}}
-        @modifier="action wide" />
-{{/if}}

@@ -1,6 +1,5 @@
 const {promises: fs} = require('fs');
 const path = require('path');
-const _ = require('lodash');
 const moment = require('moment');
 
 class StaffServiceEmails {
@@ -55,16 +54,16 @@ class StaffServiceEmails {
 
             const subject = `💸 Paid subscription started: ${memberData.name}`;
 
-            const amount = this.getAmount(subscription?.plan_amount);
-            const formattedAmount = this.getFormattedAmount({currency: subscription?.plan_currency, amount});
-            const interval = subscription?.plan_interval || '';
+            const amount = this.getAmount(subscription?.amount);
+            const formattedAmount = this.getFormattedAmount({currency: subscription?.currency, amount});
+            const interval = subscription?.interval || '';
             const tierData = {
                 name: tier?.name || '',
                 details: `${formattedAmount}/${interval}`
             };
 
             const subscriptionData = {
-                startedOn: this.getFormattedDate(subscription.start_date)
+                startedOn: this.getFormattedDate(subscription.startDate)
             };
 
             let offerData = this.getOfferData(offer);
@@ -94,17 +93,17 @@ class StaffServiceEmails {
         }
     }
 
-    async notifyPaidSubscriptionCanceled({member, cancellationReason, tier, subscription}, options = {}) {
+    async notifyPaidSubscriptionCanceled({member, tier, subscription}, options = {}) {
         const users = await this.models.User.getEmailAlertUsers('paid-canceled', options);
-        const subscriptionPriceData = _.get(subscription, 'items.data[0].price');
+
         for (const user of users) {
             const to = user.email;
             const memberData = this.getMemberData(member);
             const subject = `⚠️ Cancellation: ${memberData.name}`;
 
-            const amount = this.getAmount(subscriptionPriceData?.unit_amount);
-            const formattedAmount = this.getFormattedAmount({currency: subscriptionPriceData?.currency, amount});
-            const interval = subscriptionPriceData?.recurring?.interval;
+            const amount = this.getAmount(subscription?.amount);
+            const formattedAmount = this.getFormattedAmount({currency: subscription?.currency, amount});
+            const interval = subscription?.interval;
             const tierDetail = `${formattedAmount}/${interval}`;
             const tierData = {
                 name: tier?.name || '',
@@ -112,9 +111,9 @@ class StaffServiceEmails {
             };
 
             const subscriptionData = {
-                expiryAt: this.getFormattedStripeDate(subscription.cancel_at),
-                canceledAt: this.getFormattedStripeDate(subscription.canceled_at),
-                cancellationReason: cancellationReason || ''
+                expiryAt: this.getFormattedDate(subscription.cancelAt),
+                canceledAt: this.getFormattedDate(subscription.canceledAt),
+                cancellationReason: subscription.cancellationReason || ''
             };
 
             const templateData = {
@@ -203,16 +202,6 @@ class StaffServiceEmails {
     }
 
     /** @private */
-    getFormattedStripeDate(stripeDate) {
-        if (!stripeDate) {
-            return '';
-        }
-        const date = new Date(stripeDate * 1000);
-
-        return this.getFormattedDate(date);
-    }
-
-    /** @private */
     getOfferData(offer) {
         if (offer) {
             let offAmount = '';
@@ -221,7 +210,7 @@ class StaffServiceEmails {
             if (offer.duration === 'once') {
                 offDuration = ', first payment';
             } else if (offer.duration === 'repeating') {
-                offDuration = `, first ${offer.duration_in_months} months`;
+                offDuration = `, first ${offer.durationInMonths} months`;
             } else if (offer.duration === 'forever') {
                 offDuration = `, forever`;
             } else if (offer.duration === 'trial') {

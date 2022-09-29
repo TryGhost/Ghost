@@ -22,7 +22,7 @@ const unparse = (members, columns = DEFAULT_COLUMNS.slice()) => {
         return column;
     });
     const mappedMembers = members.map((member) => {
-        if (member.error) {
+        if (member.error && !columns.includes('error')) {
             columns.push('error');
         }
 

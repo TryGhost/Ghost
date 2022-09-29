@@ -54,7 +54,10 @@ describe('MemberAttributionService', function () {
                 id: null,
                 type: 'url',
                 url: '/my/url/',
-                title: 'added'
+                title: 'added',
+                referrerMedium: null,
+                referrerSource: null,
+                referrerUrl: null
             });
         });
 
@@ -83,6 +86,9 @@ describe('MemberAttributionService', function () {
                     if (name === 'attribution_url') {
                         return '/my/url/';
                     }
+                    if (name.startsWith('referrer')) {
+                        return null;
+                    }
                     return 'test_user_id';
                 },
                 related(name) {
@@ -98,7 +104,10 @@ describe('MemberAttributionService', function () {
                 id: 'test_user_id',
                 type: 'user',
                 url: '/my/url/',
-                title: 'added'
+                title: 'added',
+                referrerMedium: null,
+                referrerSource: null,
+                referrerUrl: null
             });
         });
     });

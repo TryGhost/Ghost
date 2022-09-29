@@ -1,5 +1,11 @@
+const DomainEvents = require('@tryghost/domain-events');
 class StaffServiceWrapper {
     init() {
+        if (this.api) {
+            // Prevent creating duplicate DomainEvents subscribers
+            return;
+        }
+
         const StaffService = require('@tryghost/staff-service');
 
         const logging = require('@tryghost/logging');
@@ -16,8 +22,11 @@ class StaffServiceWrapper {
             mailer,
             settingsHelpers,
             settingsCache,
-            urlUtils
+            urlUtils,
+            DomainEvents
         });
+
+        this.api.subscribeEvents();
     }
 }
 

@@ -43,6 +43,7 @@ export default Model.extend(ValidationEngine, {
     mailgunDomain: attr('string'),
     mailgunBaseUrl: attr('string'),
     emailTrackOpens: attr('boolean'),
+    emailTrackClicks: attr('boolean'),
     portalButton: attr('boolean'),
     portalName: attr('boolean'),
     portalPlans: attr('json-string'),
@@ -72,6 +73,7 @@ export default Model.extend(ValidationEngine, {
 
     membersEnabled: attr('boolean'),
     paidMembersEnabled: attr('boolean'),
+    membersInviteOnly: attr('boolean'),
 
     commentsEnabled: attr(), // "off", "free", "paid"
 

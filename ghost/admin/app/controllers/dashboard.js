@@ -17,6 +17,7 @@ const DAYS_OPTIONS = [{
 
 export default class DashboardController extends Controller {
     @service dashboardStats;
+    @service membersUtils;
 
     daysOptions = DAYS_OPTIONS;
 
@@ -26,7 +27,7 @@ export default class DashboardController extends Controller {
         return {};
     }
 
-    @action 
+    @action
     onDaysChange(selected) {
         this.days = selected.value;
     }

@@ -1,5 +1,5 @@
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import windowProxy from 'ghost-admin/utils/window-proxy';
 import {Response} from 'miragejs';
 import {afterEach, beforeEach, describe, it} from 'mocha';
@@ -812,7 +812,7 @@ describe('Acceptance: Staff', function () {
                 expect(findAll('[data-test-modal]').length, 'modal exists').to.equal(1);
 
                 // Leave without saving
-                await click('.fullscreen-modal [data-test-leave-button]');
+                await click('[data-test-modal="unsaved-settings"] [data-test-leave-button]');
 
                 expect(currentURL(), 'currentURL').to.equal('/settings/staff');
 

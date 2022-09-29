@@ -129,6 +129,15 @@ ul.nostyle li {
     color: var(--darkgrey);
 }
 
+.gh-list-data a.gh-post-row-event { 
+    opacity: 1;
+    transition: opacity .1s linear;
+}
+
+.gh-list-data a.gh-post-row-event:hover { 
+    opacity: 0.7;
+}
+
 .gh-list-data-date {
     font-weight: 500;
     font-size: 1.3rem;
@@ -455,6 +464,7 @@ ul.nostyle li {
     background: var(--main-bg-color);
     background: linear-gradient(90deg, rgba(255,255,255,1) 90%, rgba(255,255,255,0) 100%);
     padding: 0 60px 0 0;
+    z-index: 99;
 }
 
 .gh-list-scrolling thead th:first-child::before,

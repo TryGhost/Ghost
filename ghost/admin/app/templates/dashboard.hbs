@@ -17,8 +17,24 @@
                     {{/if}}
 
                     <div class="gh-dashboard-group {{if this.isTotalMembersZero 'is-zero'}}">
-                        <Dashboard::Charts::Anchor />
-
+                        {{#if (feature 'sourceAttribution')}}
+                            <Dashboard::Charts::Anchors />
+                        {{else}}
+                            <Dashboard::Charts::Anchor />
+                        {{/if}}
+                        {{#if this.hasPaidTiers}}
+                            {{#if (feature 'sourceAttribution')}}
+                                <section class="gh-dashboard-section">
+                                    <article class="gh-dashboard-box gh-dashboard-minicharts-attribution">
+                                        <Dashboard::Charts::PaidBreakdown />
+                                        <Dashboard::Charts::PaidMix />
+                                    </article>
+                                </section>
+                                {{#unless this.membersUtils.isMembersInviteOnly}}
+                                    <Dashboard::Charts::Attribution />
+                                {{/unless}}
+                            {{/if}}
+                        {{/if}}
                         {{#if this.areNewslettersEnabled}}
                             <Dashboard::Charts::Engagement />
                         {{/if}}
@@ -51,7 +67,7 @@
                         @options={{this.daysOptions}}
                         @searchEnabled={{false}}
                         @onChange={{this.onDaysChange}}
-                        @triggerComponent="gh-power-select/trigger"
+                        @triggerComponent={{component "gh-power-select/trigger"}}
                         @triggerClass="gh-contentfilter-menu-trigger"
                         @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
                         @matchTriggerWidth={{false}}

@@ -29,6 +29,8 @@ Router.map(function () {
     });
 
     this.route('posts');
+    this.route('posts.analytics', {path: '/posts/analytics/:post_id'});
+
     this.route('pages');
 
     this.route('editor', function () {
@@ -40,6 +42,7 @@ Router.map(function () {
         this.route('new', {path: ':type'});
         this.route('edit', {path: ':type/:post_id'});
     });
+    this.route('lexicalsandbox');
 
     this.route('tags');
     this.route('tag.new', {path: '/tags/new'});

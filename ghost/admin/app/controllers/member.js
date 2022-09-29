@@ -1,7 +1,8 @@
 import Controller, {inject as controller} from '@ember/controller';
+import DeleteMemberModal from '../components/members/modals/delete-member';
 import EmberObject, {action, defineProperty} from '@ember/object';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -13,18 +14,15 @@ export default class MemberController extends Controller {
     @service session;
     @service dropdown;
     @service membersStats;
+    @service modals;
     @service notifications;
     @service router;
     @service store;
 
     @tracked isLoading = false;
-    @tracked showDeleteMemberModal = false;
     @tracked showImpersonateMemberModal = false;
-    @tracked showUnsavedChangesModal = false;
     @tracked modalLabel = null;
     @tracked showLabelModal = false;
-
-    leaveScreenTransition = null;
 
     constructor() {
         super(...arguments);
@@ -35,6 +33,10 @@ export default class MemberController extends Controller {
 
     get member() {
         return this.model;
+    }
+
+    set member(member) {
+        this.model = member;
     }
 
     get labelModalData() {
@@ -57,10 +59,6 @@ export default class MemberController extends Controller {
         options.unshiftObject({name: 'All labels', slug: null});
 
         return options;
-    }
-
-    set member(member) {
-        this.model = member;
     }
 
     get scratchMember() {
@@ -100,8 +98,15 @@ export default class MemberController extends Controller {
     }
 
     @action
-    toggleDeleteMemberModal() {
-        this.showDeleteMemberModal = !this.showDeleteMemberModal;
+    confirmDeleteMember() {
+        this.modals.open(DeleteMemberModal, {
+            member: this.member,
+            afterDelete: () => {
+                this.membersStats.invalidate();
+                this.members.refreshData();
+                this.transitionToRoute('members');
+            }
+        });
     }
 
     @action
@@ -117,53 +122,6 @@ export default class MemberController extends Controller {
     @action
     save() {
         return this.saveTask.perform();
-    }
-
-    @action
-    deleteMember(cancelSubscriptions = false) {
-        let options = {
-            adapterOptions: {
-                cancel: cancelSubscriptions
-            }
-        };
-        return this.member.destroyRecord(options).then(() => {
-            this.members.refreshData();
-            this.transitionToRoute('members');
-            return;
-        }, (error) => {
-            return this.notifications.showAPIError(error, {key: 'member.delete'});
-        });
-    }
-
-    @action
-    toggleUnsavedChangesModal(transition) {
-        let leaveTransition = this.leaveScreenTransition;
-
-        if (!transition && this.showUnsavedChangesModal) {
-            this.leaveScreenTransition = null;
-            this.showUnsavedChangesModal = false;
-            return;
-        }
-
-        if (!leaveTransition || transition.targetName === leaveTransition.targetName) {
-            this.leaveScreenTransition = transition;
-
-            // if a save is running, wait for it to finish then transition
-            if (this.save.isRunning) {
-                return this.save.last.then(() => {
-                    transition.retry();
-                });
-            }
-
-            // we genuinely have unsaved data, show the modal
-            this.showUnsavedChangesModal = true;
-        }
-    }
-
-    @action
-    leaveScreen() {
-        this.member.rollbackAttributes();
-        return this.leaveScreenTransition.retry();
     }
 
     // Tasks -------------------------------------------------------------------

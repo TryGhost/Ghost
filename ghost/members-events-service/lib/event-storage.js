@@ -5,8 +5,8 @@ const {MemberCreatedEvent, SubscriptionCreatedEvent} = require('@tryghost/member
  */
 class EventStorage {
     /**
-     * 
-     * @param {Object} deps 
+     *
+     * @param {Object} deps
      * @param {Object} deps.labsService
      * @param {Object} deps.models
      * @param {Object} deps.models.MemberCreatedEvent
@@ -25,30 +25,21 @@ class EventStorage {
         domainEvents.subscribe(MemberCreatedEvent, async (event) => {
             let attribution = event.data.attribution;
 
-            if (!this.labsService.isSet('memberAttribution')){
-                // Prevent storing attribution
-                // Can replace this later with a privacy toggle
-                attribution = {};
-            }
-
             await this.models.MemberCreatedEvent.add({
                 member_id: event.data.memberId,
                 created_at: event.timestamp,
                 attribution_id: attribution?.id ?? null,
                 attribution_url: attribution?.url ?? null,
                 attribution_type: attribution?.type ?? null,
-                source: event.data.source
+                source: event.data.source,
+                referrer_source: attribution?.referrerSource ?? null,
+                referrer_medium: attribution?.referrerMedium ?? null,
+                referrer_url: attribution?.referrerUrl ?? null
             });
         });
 
         domainEvents.subscribe(SubscriptionCreatedEvent, async (event) => {
             let attribution = event.data.attribution;
-
-            if (!this.labsService.isSet('memberAttribution')){
-                // Prevent storing attribution
-                // Can replace this later with a privacy toggle
-                attribution = {};
-            }
 
             await this.models.SubscriptionCreatedEvent.add({
                 member_id: event.data.memberId,
@@ -56,7 +47,10 @@ class EventStorage {
                 created_at: event.timestamp,
                 attribution_id: attribution?.id ?? null,
                 attribution_url: attribution?.url ?? null,
-                attribution_type: attribution?.type ?? null
+                attribution_type: attribution?.type ?? null,
+                referrer_source: attribution?.referrerSource ?? null,
+                referrer_medium: attribution?.referrerMedium ?? null,
+                referrer_url: attribution?.referrerUrl ?? null
             });
         });
     }

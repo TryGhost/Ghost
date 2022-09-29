@@ -17,11 +17,42 @@ class MemberAttributionService {
     /**
      *
      * @param {import('./history').UrlHistoryArray} historyArray
-     * @returns {import('./attribution').Attribution}
+     * @returns {Promise<import('./attribution').Attribution>}
      */
-    getAttribution(historyArray) {
+    async getAttribution(historyArray) {
         const history = UrlHistory.create(historyArray);
-        return this.attributionBuilder.getAttribution(history);
+        return await this.attributionBuilder.getAttribution(history);
+    }
+
+    /**
+     * Add some parameters to a URL so that the frontend script can detect this and add the required records
+     * in the URLHistory.
+     * @param {URL} url instance that will get updated
+     * @param {Object} newsletter The newsletter from which a link was clicked
+     * @returns {URL}
+     */
+    addEmailSourceAttributionTracking(url, newsletter) {
+        // Create a deep copy
+        url = new URL(url);
+        url.searchParams.append('ref', newsletter.get('slug') + '-newsletter');
+        return url;
+    }
+
+    /**
+     * Add some parameters to a URL so that the frontend script can detect this and add the required records
+     * in the URLHistory.
+     * @param {URL} url instance that will get updated
+     * @param {Object} post The post from which a link was clicked
+     * @returns {URL}
+     */
+    addPostAttributionTracking(url, post) {
+        // Create a deep copy
+        url = new URL(url);
+
+        // Post attribution
+        url.searchParams.append('attribution_id', post.id);
+        url.searchParams.append('attribution_type', 'post');
+        return url;
     }
 
     /**
@@ -38,7 +69,10 @@ class MemberAttributionService {
         const _attribution = this.attributionBuilder.build({
             id: eventModel.get('attribution_id'),
             url: eventModel.get('attribution_url'),
-            type: eventModel.get('attribution_type')
+            type: eventModel.get('attribution_type'),
+            referrerSource: eventModel.get('referrer_source'),
+            referrerMedium: eventModel.get('referrer_medium'),
+            referrerUrl: eventModel.get('referrer_url')
         });
 
         if (_attribution.type !== 'url') {
@@ -71,7 +105,10 @@ class MemberAttributionService {
         const attribution = this.attributionBuilder.build({
             id: memberCreatedEvent.get('attribution_id'),
             url: memberCreatedEvent.get('attribution_url'),
-            type: memberCreatedEvent.get('attribution_type')
+            type: memberCreatedEvent.get('attribution_type'),
+            referrerSource: memberCreatedEvent.get('referrer_source'),
+            referrerMedium: memberCreatedEvent.get('referrer_medium'),
+            referrerUrl: memberCreatedEvent.get('referrer_url')
         });
         return await attribution.fetchResource();
     }
@@ -89,7 +126,10 @@ class MemberAttributionService {
         const attribution = this.attributionBuilder.build({
             id: subscriptionCreatedEvent.get('attribution_id'),
             url: subscriptionCreatedEvent.get('attribution_url'),
-            type: subscriptionCreatedEvent.get('attribution_type')
+            type: subscriptionCreatedEvent.get('attribution_type'),
+            referrerSource: subscriptionCreatedEvent.get('referrer_source'),
+            referrerMedium: subscriptionCreatedEvent.get('referrer_medium'),
+            referrerUrl: subscriptionCreatedEvent.get('referrer_url')
         });
         return await attribution.fetchResource();
     }

@@ -46,11 +46,14 @@
                     {{svg-jar "member-add"}}
                     Created on {{moment-format (moment-site-tz @member.createdAtUTC) "D MMM YYYY"}}
                 </p>
-                {{#if (and @member.attribution @member.attribution.url @member.attribution.title) }}
-                    <p>
-                        {{svg-jar "satellite"}}
-                        Signed up on&nbsp;<a href="{{@member.attribution.url}}" target="_blank" rel="noopener noreferrer">{{ @member.attribution.title }}</a>
-                    </p>
+                {{#if (feature 'sourceAttribution')}}
+                {{else}}
+                    {{#if (and @member.attribution @member.attribution.url @member.attribution.title) }}
+                        <p>
+                            {{svg-jar "satellite"}}
+                            Signed up on&nbsp;<a href="{{@member.attribution.url}}" target="_blank" rel="noopener noreferrer">{{ @member.attribution.title }}</a>
+                        </p>
+                    {{/if}}
                 {{/if}}
                 <p class="gh-member-last-seen">
                     {{svg-jar "eye"}}
@@ -61,6 +64,25 @@
                     {{/if}}
                 </p>
             </div>
+            {{#if (and (feature 'sourceAttribution') @member.attribution)}}
+                <div class="gh-member-details-attribution">
+                    <h4 class="gh-main-section-header small bn">Attribution</h4>
+                    {{#if this.referrerSource}}
+                        <p>
+                            {{svg-jar "earth"}}
+                            Sign up source:&nbsp;<span title="{{this.referrerSource}}">{{this.referrerSource}}</span>
+                        </p>
+                    {{/if}}
+                    {{#if (and @member.attribution.url @member.attribution.title)}}
+                    <p>
+                        {{svg-jar "posts"}}
+                        Sign up page:&nbsp;<a href="{{@member.attribution.url}}" target="_blank" rel="noopener noreferrer" title="{{ @member.attribution.title }}">{{ @member.attribution.title }}</a>
+                    </p>
+                    <a href="#" class="gh-member-details-attribution-docs">Learn more →</a>
+                    {{/if}}
+                </div>
+            {{/if}}
+
             {{#if (and (not-eq this.settings.membersSignupAccess "none") (not-eq this.settings.editorDefaultEmailRecipients "disabled"))}}
                 <div class="gh-member-details-stats-container">
                     <h4 class="gh-main-section-header small bn">Engagement</h4>

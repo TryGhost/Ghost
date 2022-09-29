@@ -62,7 +62,7 @@
                         @selected={{this.selectedSegment}}
                         @onChange={{this.setSegment}}
                         @searchEnabled={{false}}
-                        @triggerComponent="gh-power-select/trigger"
+                        @triggerComponent={{component "gh-power-select/trigger"}}
                         @dropdownClass="gh-member-segment-select-dropdown"
                         as |segment|
                     >
@@ -153,7 +153,7 @@
                     </div>
                 </div>
             {{/if}}
-        </KoenigSettingsPanel>        
+        </KoenigSettingsPanel>
     {{else}}
         <div class="gh-email-cta-segment-indicator">
             <p>{{capitalize this.selectedSegment.name}}</p>

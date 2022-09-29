@@ -1,4 +1,4 @@
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {Response} from 'miragejs';
 import {paginatedResponse} from '../utils';
 

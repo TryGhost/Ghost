@@ -1,5 +1,5 @@
 import loginAsRole from '../../helpers/login-as-role';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {blur, click, fillIn, find, findAll} from '@ember/test-helpers';
 import {clickTrigger, selectChoose} from 'ember-power-select/test-support/helpers';
 import {disableMailgun, enableMailgun} from '../../helpers/mailgun';
@@ -444,7 +444,79 @@ describe('Acceptance: Publish flow', function () {
             expect(find('[data-test-publish-type="send"]')).to.have.attribute('disabled');
         });
 
-        it('handles member limits');
+        it('handles over-member limit before publish', async function () {
+            // set members limit
+            const config = this.server.db.configs.find(1);
+            config.hostSettings = {
+                limits: {
+                    members: {
+                        max: 9,
+                        error: 'Your plan supports up to {{max}} members. Please upgrade to reenable publishing.'
+                    }
+                }
+            };
+            this.server.db.configs.update(1, config);
+
+            // go over limit (7 created by default in beforeEach)
+            this.server.createList('member', 3);
+
+            // simulate /members/stats/count/ endpoint that's used to get total member count
+            // TODO: can the default endpoint mock handle this?
+            this.server.get('/members/stats/count', function () {
+                return {
+                    total: 10,
+                    resource: 'members',
+                    data: []
+                };
+            });
+
+            // try to publish post
+            const post = this.server.create('post', {status: 'draft'});
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+
+            expect(find('[data-test-publish-type-error]'), 'publish disabled error').to.exist;
+            expect(find('[data-test-publish-type-error="publish-disabled"]'), 'publish disabled error')
+                .to.have.trimmed.text('Your plan supports up to 9 members. Please upgrade to reenable publishing.');
+
+            expect(find('[data-test-button="continue"]'), 'continue button').to.not.exist;
+        });
+
+        it('handles over-member limit when confirming', async function () {
+            const post = this.server.create('post', {status: 'draft'});
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+            await click('[data-test-button="continue"]');
+
+            this.server.put('/posts/:id/', function () {
+                return {
+                    errors: [
+                        {
+                            message: 'Host Limit error, cannot edit post.',
+                            context: 'Your plan supports up to 1,000 members. Please upgrade to reenable publishing.',
+                            type: 'HostLimitError',
+                            details: {
+                                name: 'members',
+                                limit: 1000,
+                                total: 37406
+                            },
+                            property: null,
+                            help: 'https://ghost.org/help/',
+                            code: null,
+                            id: '212d9110-3db6-11ed-9651-e9a82ad49a7a',
+                            ghostErrorCode: null
+                        }
+                    ]
+                };
+            });
+
+            await click('[data-test-button="confirm-publish"]');
+
+            expect(find('[data-test-confirm-error]'), 'confirm error').to.exist;
+            expect(find('[data-test-confirm-error]'), 'confirm error')
+                .to.have.trimmed.text('Your plan supports up to 1,000 members. Please upgrade to reenable publishing.');
+        });
+
         it('handles server error when confirming');
         it('handles email sending error');
     });

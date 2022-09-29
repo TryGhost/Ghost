@@ -1,0 +1,101 @@
+<div ...attributes>
+    <div class="gh-dashboard-list-header">
+        <div class="gh-dashboard-list-title gh-dashboard-list-title-sources">Sources</div>
+        {{#if (eq @sortColumn "signups")}}
+            <div
+                class="gh-dashboard-list-title {{if (eq @sortColumn "signups") "sorted-by"}}"
+                role="button" aria-label="Sort by free signups"
+                {{on "click" (fn @setSortColumn "signups")}}
+            >
+                Free signups
+            </div>
+        {{/if}}
+        {{#if (eq @sortColumn "paid")}}
+            {{#if this.membersUtils.paidMembersEnabled}}
+                <div
+                    role="button" aria-label="Sort by paid signups"
+                    class="gh-dashboard-list-title {{if (eq @sortColumn "paid") "sorted-by"}}"
+                    {{on "click" (fn @setSortColumn "paid")}}
+                >
+                    <span class="hide-when-small">Paid </span>Conversions
+                </div>
+            {{/if}}
+        {{/if}}
+    </div>
+    <div class="gh-dashboard-list-body">
+            {{#each this.sources as |sourceData|}}
+                <div class="gh-dashboard-list-item">
+                    <div class="gh-dashboard-list-item-sub gh-dashboard-list-item-sub-source">
+                        <span class="gh-dashboard-list-text">{{sourceData.source}}
+                            {{!-- <sup class="gh-dashboard-list-asterisk">*</sup> --}}
+                            </span>
+                    </div>
+                    {{#if (eq @sortColumn "signups")}}
+                    <div class="gh-dashboard-list-item-sub">
+                        {{#if sourceData.signups}}
+                            <span class="gh-dashboard-metric-minivalue">
+                                {{format-number sourceData.signups}}
+                            </span>
+                        {{else}}
+                            <span class="gh-dashboard-metric-minivalue na">
+                                &mdash;
+                            </span>
+                        {{/if}}
+                    </div>
+                    {{/if}}
+                    {{#if (eq @sortColumn "paid")}}
+                        {{#if this.membersUtils.paidMembersEnabled}}
+                            <div class="gh-dashboard-list-item-sub">
+                                {{#if sourceData.paidConversions}}
+                                    <span class="gh-dashboard-metric-minivalue">
+                                        {{format-number sourceData.paidConversions}}
+                                    </span>
+                                {{else}}
+                                    <span class="gh-dashboard-metric-minivalue na">
+                                        &mdash;
+                                    </span>
+                                {{/if}}
+                            </div>
+                        {{/if}}
+                    {{/if}}
+                </div>
+            {{/each}}
+            {{#if this.others}}
+                <div class="gh-dashboard-list-item">
+                    <div class="gh-dashboard-list-item-sub gh-dashboard-list-item-sub-source gh-dashboard-list-item-other-source">
+                        <span class="gh-dashboard-list-text" role="button" aria-label="Show sources"
+                    {{on "click" this.openAllSources}}>Other sources <span class="gh-dashboard-list-item-other-source-arrow">→</span></span>
+                    </div>
+                    {{#if (eq @sortColumn "signups")}}
+                        <div class="gh-dashboard-list-item-sub">
+                            {{#if this.others.signups}}
+                                <span class="gh-dashboard-metric-minivalue">
+                                    {{format-number this.others.signups}}
+                                </span>
+                            {{else}}
+                                <span class="gh-dashboard-metric-minivalue na">
+                                    &mdash;
+                                </span>
+                            {{/if}}
+                        </div>
+                    {{/if}}
+                    {{#if (eq @sortColumn "paid")}}
+                        {{#if this.membersUtils.paidMembersEnabled}}
+                            <div class="gh-dashboard-list-item-sub">
+                                {{#if this.others.paidConversions}}
+                                    <span class="gh-dashboard-metric-minivalue">
+                                        {{format-number this.others.paidConversions}}
+                                    </span>
+                                {{else}}
+                                    <span class="gh-dashboard-metric-minivalue na">
+                                        &mdash;
+                                    </span>
+                                {{/if}}
+                            </div>
+                        {{/if}}
+                    {{/if}}
+                </div>
+            {{/if}}
+    </div>
+</div>
+{{!-- <p class="gh-dashboard-attribution-footnote"><sup class="gh-dashboard-list-asterisk">*</sup>New member signups originating from your newsletter are the result of it being shared and forwarded.</p> --}}

@@ -14,7 +14,7 @@
                 <h4 class="gh-main-section-header small bn">Basic</h4>
                 <div class="gh-main-section-content grey gh-tier-priceform-block">
                     {{#unless this.isFreeTier}}
-                        <GhFormGroup @errors={{this.errors}} @property="name" data-test-formgroup="name">
+                        <GhFormGroup @errors={{this.tier.errors}} @hasValidated={{this.tier.hasValidated}} @property="name" data-test-formgroup="name">
                             <label for="name" class="fw6">Name</label>
                             <GhTextInput
                                 @value={{readonly this.tier.name}}
@@ -25,11 +25,11 @@
                                 @id="name"
                                 @class="gh-input"
                                 data-test-input="tier-name" />
-                            <GhErrorMessage @errors={{this.errors}} @property="name" />
+                            <GhErrorMessage @errors={{this.tier.errors}} @property="name" />
                         </GhFormGroup>
                     {{/unless}}
 
-                    <GhFormGroup @errors={{this.errors}} @property="description" data-test-formgroup="description">
+                    <GhFormGroup @errors={{this.tier.errors}} @property="description" data-test-formgroup="description">
                         <label for="description" class="fw6">Description</label>
                         {{#if this.isFreeTier}}
                             <GhTextInput
@@ -50,7 +50,7 @@
                                 @class="gh-input"
                                 data-test-input="tier-description" />
                         {{/if}}
-                        <GhErrorMessage @errors={{this.errors}} @property="description" />
+                        <GhErrorMessage @errors={{this.tier.errors}} @property="description" />
                     </GhFormGroup>
 
                     {{#unless this.isFreeTier}}
@@ -107,7 +107,7 @@
                                 {{/if}}
                             </GhFormGroup>
                             
-                            <GhFormGroup @errors={{this.errors}} @property="trialDays" data-test-formgroup="trialDays">
+                            <GhFormGroup @errors={{this.tier.errors}} @property="trialDays" data-test-formgroup="trialDays">
                                 <div class="flex justify-between items-center mb2">
                                     <div>
                                         <h4 class="gh-tier-setting-title">Add a free trial</h4>

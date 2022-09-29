@@ -1,6 +1,6 @@
 import Component from '@ember/component';
 import classic from 'ember-classic-decorator';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {computed} from '@ember/object';
 import {tagName} from '@ember-decorators/component';
 

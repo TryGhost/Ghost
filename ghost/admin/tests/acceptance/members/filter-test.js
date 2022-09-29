@@ -1,4 +1,4 @@
-import moment from 'moment';
+import moment from 'moment-timezone';
 import sinon from 'sinon';
 import {authenticateSession} from 'ember-simple-auth/test-support';
 import {blur, click, currentURL, fillIn, find, findAll, focus} from '@ember/test-helpers';
@@ -90,7 +90,7 @@ describe('Acceptance: Members filtering', function () {
             expect(operatorOptions[1]).to.have.value('is-not');
 
             // value dropdown can open and has all labels
-            await click(`${filterSelector} .gh-member-label-input .ember-basic-dropdown-trigger`);
+            await click(`${filterSelector} .gh-member-label-input`);
             expect(findAll(`${filterSelector} [data-test-label-filter]`).length, '# of label options').to.equal(5);
 
             // selecting a value updates table
@@ -140,7 +140,7 @@ describe('Acceptance: Members filtering', function () {
             expect(operatorOptions[1]).to.have.value('is-not');
 
             // value dropdown can open and has all labels
-            await click(`${filterSelector} .gh-tier-token-input .ember-basic-dropdown-trigger`);
+            await click(`${filterSelector} .gh-tier-token-input`);
             expect(findAll(`${filterSelector} [data-test-tiers-segment]`).length, '# of label options').to.equal(5);
 
             // selecting a value updates table

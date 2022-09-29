@@ -985,6 +985,36 @@
     padding-bottom: 12px;
 }
 
+.gh-newsletter-tracking {
+    padding: 16px 20px;
+    background: var(--main-bg-color);
+    box-shadow: 0 1px 4px -1px rgb(0 0 0 / 10%);
+    border-radius: 3px;
+}
+
+.gh-newsletter-tracking-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--whitegrey);
+    padding: 16px 0;
+}
+
+.gh-newsletter-tracking-row:first-child {
+    padding-top: 0;
+}
+
+.gh-newsletter-tracking-row:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.gh-newsletter-tracking-title {
+    font-weight: 600;
+    font-size: 1.4rem;
+    margin-bottom: 0;
+}
+
 .gh-newsletter-card-container {
     margin-left: -24px;
     padding-left: 24px;
@@ -1789,7 +1819,7 @@ p.theme-validation-details {
     width: 9px;
     height: 9px;
     margin: 1px 8px 0 0;
-    transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);;
+    transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
 }
 
 .gh-nav-menu-back-button svg path {

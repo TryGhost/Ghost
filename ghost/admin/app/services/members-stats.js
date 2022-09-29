@@ -1,5 +1,5 @@
 import Service, {inject as service} from '@ember/service';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
@@ -32,14 +32,9 @@ export default class MembersStatsService extends Service {
         let daysChanged = this._lastFetchedDays !== this.days;
         let staleData = this._lastFetched && (new Date() - this._lastFetched) > ONE_MINUTE;
 
-        // return an already in-progress promise unless params have changed
-        if (this._fetchTask.isRunning && !this._forceRefresh && !daysChanged) {
+        // return existing stats unless data is > 1 min old or days param has changed
+        if (this.stats && !this._forceRefresh && !daysChanged && !staleData && this._fetchTask.last) {
             return this._fetchTask.last;
-        }
-
-        // return existing stats unless data is > 1 min old
-        if (this.stats && !this._forceRefresh && !daysChanged && !staleData) {
-            return Promise.resolve(this.stats);
         }
 
         return this._fetchTask.perform();
@@ -48,14 +43,9 @@ export default class MembersStatsService extends Service {
     fetchCounts() {
         let staleData = this._lastFetchedCounts && (new Date() - this._lastFetchedCounts) > ONE_MINUTE;
 
-        // return an already in-progress promise unless params have changed
-        if (this._fetchCountsTask.isRunning) {
-            return this._fetchCountsTask.last;
-        }
-
         // return existing stats unless data is > 1 min old
-        if (this.countStats && !this._forceRefresh && !staleData) {
-            return Promise.resolve(this.countStats);
+        if (this.countStats && !this._forceRefresh && !staleData && this._fetchCountsTask.last) {
+            return this._fetchCountsTask.last;
         }
 
         return this._fetchCountsTask.perform();
@@ -64,14 +54,9 @@ export default class MembersStatsService extends Service {
     fetchMemberCount() {
         let staleData = this._lastFetchedMemberCounts && (new Date() - this._lastFetchedMemberCounts) > ONE_MINUTE;
 
-        // return an already in-progress promise unless params have changed
-        if (this._fetchMemberCountsTask.isRunning) {
-            return this._fetchMemberCountsTask.last;
-        }
-
         // return existing stats unless data is > 1 min old
-        if (this.totalMemberCount && !this._forceRefresh && !staleData) {
-            return Promise.resolve(this.totalMemberCount);
+        if (this.totalMemberCount && !this._forceRefresh && !staleData && this._fetchMemberCountsTask.last) {
+            return this._fetchMemberCountsTask.last;
         }
 
         return this._fetchMemberCountsTask.perform();
@@ -80,14 +65,9 @@ export default class MembersStatsService extends Service {
     fetchNewsletterStats() {
         let staleData = this._lastFetchedNewsletterStats && (new Date() - this._lastFetchedNewsletterStats) > ONE_MINUTE;
 
-        // return an already in-progress promise unless params have changed
-        if (this._fetchNewsletterStatsTask.isRunning) {
-            return this._fetchNewsletterStatsTask.last;
-        }
-
         // return existing stats unless data is > 1 min old
-        if (this.newsletterStats && !this._forceRefresh && !staleData) {
-            return Promise.resolve(this.newsletterStats);
+        if (this.newsletterStats && !this._forceRefresh && !staleData && this._fetchNewsletterStatsTask.last) {
+            return this._fetchNewsletterStatsTask.last;
         }
 
         return this._fetchNewsletterStatsTask.perform();
@@ -160,14 +140,9 @@ export default class MembersStatsService extends Service {
     fetchMRR() {
         let staleData = this._lastFetchedMRR && (new Date() - this._lastFetchedMRR) > ONE_MINUTE;
 
-        // return an already in-progress promise unless params have changed
-        if (this._fetchMRRTask.isRunning) {
-            return this._fetchMRRTask.last;
-        }
-
         // return existing stats unless data is > 1 min old
-        if (this.mrrStats && !this._forceRefresh && !staleData) {
-            return Promise.resolve(this.mrrStats);
+        if (this.mrrStats && !this._forceRefresh && !staleData && this._fetchMRRTask) {
+            return this._fetchMRRTask.last;
         }
 
         return this._fetchMRRTask.perform();

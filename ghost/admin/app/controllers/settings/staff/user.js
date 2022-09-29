@@ -26,7 +26,6 @@ export default Controller.extend({
     personalToken: null,
     limitErrorMessage: null,
     personalTokenRegenerated: false,
-    leaveSettingsTransition: null,
     dirtyAttributes: false,
     showDeleteUserModal: false,
     showSuspendUserModal: false,
@@ -286,50 +285,6 @@ export default Controller.extend({
             });
         },
 
-        toggleLeaveSettingsModal(transition) {
-            let leaveTransition = this.leaveSettingsTransition;
-
-            if (!transition && this.showLeaveSettingsModal) {
-                this.set('leaveSettingsTransition', null);
-                this.set('showLeaveSettingsModal', false);
-                return;
-            }
-
-            if (!leaveTransition || transition.targetName === leaveTransition.targetName) {
-                this.set('leaveSettingsTransition', transition);
-
-                // if a save is running, wait for it to finish then transition
-                if (this.get('saveHandlers.isRunning')) {
-                    return this.get('saveHandlers.last').then(() => {
-                        transition.retry();
-                    });
-                }
-
-                // we genuinely have unsaved data, show the modal
-                this.set('showLeaveSettingsModal', true);
-            }
-        },
-
-        leaveSettings() {
-            let transition = this.leaveSettingsTransition;
-            let user = this.user;
-
-            if (!transition) {
-                this.notifications.showAlert('Sorry, there was an error in the application. Please let the Ghost team know what happened.', {type: 'error'});
-                return;
-            }
-
-            // roll back changes on user props
-            user.rollbackAttributes();
-            // roll back the slugValue property
-            if (this.dirtyAttributes) {
-                this.set('slugValue', user.get('slug'));
-                this.set('dirtyAttributes', false);
-            }
-
-            return transition.retry();
-        },
-
         toggleTransferOwnerModal() {
             if (this.canMakeOwner) {
                 this.toggleProperty('showTransferOwnerModal');
@@ -383,6 +338,15 @@ export default Controller.extend({
             });
         }
     },
+
+    reset: action(function () {
+        this.user.rollbackAttributes();
+        this.user.password = '';
+        this.user.newPassword = '';
+        this.user.ne2Password = '';
+        this.set('slugValue', this.user.slug);
+        this.set('dirtyAttributes', false);
+    }),
 
     toggleCommentNotifications: action(function (event) {
         this.user.commentNotifications = event.target.checked;

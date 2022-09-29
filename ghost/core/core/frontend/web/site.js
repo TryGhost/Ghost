@@ -14,7 +14,8 @@ const themeEngine = require('../services/theme-engine');
 const themeMiddleware = themeEngine.middleware;
 const membersService = require('../../server/services/members');
 const offersService = require('../../server/services/offers');
-const customRedirects = require('../../server/services/redirects');
+const customRedirects = require('../../server/services/custom-redirects');
+const linkRedirects = require('../../server/services/link-redirection');
 const siteRoutes = require('./routes');
 const shared = require('../../server/web/shared');
 const errorHandler = require('@tryghost/mw-error-handler');
@@ -49,6 +50,8 @@ module.exports = function setupSiteApp(routerConfig) {
 
     siteApp.use(offersService.middleware);
 
+    siteApp.use(linkRedirects.service.handleRequest);
+
     // you can extend Ghost with a custom redirects file
     // see https://github.com/TryGhost/Ghost/issues/7707
     siteApp.use(customRedirects.middleware);
@@ -62,27 +65,27 @@ module.exports = function setupSiteApp(routerConfig) {
     siteApp.use(mw.serveFavicon());
 
     // Serve sitemap.xsl file
-    siteApp.use(mw.servePublicFile('static', 'sitemap.xsl', 'text/xsl', constants.ONE_DAY_S));
+    siteApp.use(mw.servePublicFile('static', 'sitemap.xsl', 'text/xsl', config.get('caching:sitemapXSL:maxAge')));
 
     // Serve stylesheets for default templates
-    siteApp.use(mw.servePublicFile('static', 'public/ghost.css', 'text/css', constants.ONE_HOUR_S));
-    siteApp.use(mw.servePublicFile('static', 'public/ghost.min.css', 'text/css', constants.ONE_YEAR_S));
+    siteApp.use(mw.servePublicFile('static', 'public/ghost.css', 'text/css', config.get('caching:publicAssets:maxAge')));
+    siteApp.use(mw.servePublicFile('static', 'public/ghost.min.css', 'text/css', config.get('caching:publicAssets:maxAge')));
 
     // Card assets
-    siteApp.use(mw.servePublicFile('built', 'public/cards.min.css', 'text/css', constants.ONE_YEAR_S));
-    siteApp.use(mw.servePublicFile('built', 'public/cards.min.js', 'application/javascript', constants.ONE_YEAR_S));
+    siteApp.use(mw.servePublicFile('built', 'public/cards.min.css', 'text/css', config.get('caching:publicAssets:maxAge')));
+    siteApp.use(mw.servePublicFile('built', 'public/cards.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
 
     // Comment counts
-    siteApp.use(mw.servePublicFile('built', 'public/comment-counts.min.js', 'application/javascript', constants.ONE_YEAR_S));
+    siteApp.use(mw.servePublicFile('built', 'public/comment-counts.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
 
     // Member attribution
-    siteApp.use(mw.servePublicFile('built', 'public/member-attribution.min.js', 'application/javascript', constants.ONE_YEAR_S));
+    siteApp.use(mw.servePublicFile('built', 'public/member-attribution.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
 
-    // Serve blog images using the storage adapter
+    // Serve site images using the storage adapter
     siteApp.use(STATIC_IMAGE_URL_PREFIX, mw.handleImageSizes, storage.getStorage('images').serve());
-    // Serve blog media using the storage adapter
+    // Serve site media using the storage adapter
     siteApp.use(STATIC_MEDIA_URL_PREFIX, storage.getStorage('media').serve());
-    // Serve blog files using the storage adapter
+    // Serve site files using the storage adapter
     siteApp.use(STATIC_FILES_URL_PREFIX, storage.getStorage('files').serve());
 
     // Global handling for member session, ensures a member is logged in to the frontend
@@ -91,7 +94,7 @@ module.exports = function setupSiteApp(routerConfig) {
     // /member/.well-known/* serves files (e.g. jwks.json) so it needs to be mounted before the prettyUrl mw to avoid trailing slashes
     siteApp.use(
         '/members/.well-known',
-        shared.middleware.cacheControl('public', {maxAge: 60 * 60 * 24}),
+        shared.middleware.cacheControl('public', {maxAge: config.get('caching:wellKnown:maxAge')}),
         (req, res, next) => membersService.api.middleware.wellKnown(req, res, next)
     );
 
@@ -115,7 +118,7 @@ module.exports = function setupSiteApp(routerConfig) {
     debug('Themes done');
 
     // Serve robots.txt if not found in theme
-    siteApp.use(mw.servePublicFile('static', 'robots.txt', 'text/plain', constants.ONE_HOUR_S));
+    siteApp.use(mw.servePublicFile('static', 'robots.txt', 'text/plain', config.get('caching:robotstxt:maxAge')));
 
     // site map - this should probably be refactored to be an internal app
     sitemapHandler(siteApp);
@@ -127,7 +130,7 @@ module.exports = function setupSiteApp(routerConfig) {
 
     // ### Caching
     siteApp.use(function (req, res, next) {
-        // Site frontend is cacheable UNLESS request made by a member or blog is in private mode
+        // Site frontend is cacheable UNLESS request made by a member or site is in private mode
         if (req.member || res.isPrivateBlog) {
             return shared.middleware.cacheControl('private')(req, res, next);
         } else {
@@ -148,7 +151,7 @@ module.exports = function setupSiteApp(routerConfig) {
     router = siteRoutes(routerConfig);
     Object.setPrototypeOf(SiteRouter, router);
 
-    // Set up Frontend routes (including private blogging routes)
+    // Set up Frontend routes (including private site routes)
     siteApp.use(SiteRouter);
 
     // ### Error handlers

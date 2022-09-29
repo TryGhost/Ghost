@@ -60,6 +60,11 @@
     max-width: 550px;
 }
 
+.fullscreen-modal-wider {
+    width: 100%;
+    max-width: 720px;
+}
+
 .fullscreen-modal-narrow {
     width: 100%;
     max-width: 420px;

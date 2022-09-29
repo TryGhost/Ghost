@@ -12,7 +12,7 @@
         @onChange={{@onChange}}
         @triggerClass="gh-member-filter-search-trigger"
         @dropdownClass="gh-member-filter-search-dropdown"
-        @triggerComponent="gh-input-with-select/trigger"
+        @triggerComponent={{component "gh-input-with-select/trigger"}}
         @placeholder="Search members"
         @extra={{hash showSearchMessage=false}}
         as |member|

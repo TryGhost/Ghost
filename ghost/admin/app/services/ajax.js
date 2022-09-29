@@ -1,9 +1,9 @@
 import AjaxService from 'ember-ajax/services/ajax';
 import classic from 'ember-classic-decorator';
 import config from 'ghost-admin/config/environment';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {AjaxError, isAjaxError, isForbiddenError} from 'ember-ajax/errors';
-import {captureMessage} from '@sentry/browser';
+import {captureMessage} from '@sentry/ember';
 import {get} from '@ember/object';
 import {isArray as isEmberArray} from '@ember/array';
 import {isNone} from '@ember/utils';

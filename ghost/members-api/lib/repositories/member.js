@@ -3,7 +3,7 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const DomainEvents = require('@tryghost/domain-events');
-const {MemberCreatedEvent, SubscriptionCreatedEvent, MemberSubscribeEvent} = require('@tryghost/member-events');
+const {MemberCreatedEvent, SubscriptionCreatedEvent, MemberSubscribeEvent, SubscriptionCancelledEvent} = require('@tryghost/member-events');
 const ObjectId = require('bson-objectid');
 const {NotFoundError} = require('@tryghost/errors');
 
@@ -39,7 +39,6 @@ module.exports = class MemberRepository {
      * @param {any} deps.OfferRedemption
      * @param {import('../../services/stripe-api')} deps.stripeAPIService
      * @param {any} deps.labsService
-     * @param {any} deps.staffService
      * @param {any} deps.productRepository
      * @param {any} deps.offerRepository
      * @param {ITokenService} deps.tokenService
@@ -61,7 +60,6 @@ module.exports = class MemberRepository {
         productRepository,
         offerRepository,
         tokenService,
-        staffService,
         newslettersService
     }) {
         this._Member = Member;
@@ -77,7 +75,6 @@ module.exports = class MemberRepository {
         this._productRepository = productRepository;
         this._offerRepository = offerRepository;
         this.tokenService = tokenService;
-        this.staffService = staffService;
         this._newslettersService = newslettersService;
         this._labsService = labsService;
 
@@ -206,6 +203,8 @@ module.exports = class MemberRepository {
      * @param {Date} [data.created_at]
      * @param {Object[]} [data.products]
      * @param {Object[]} [data.newsletters]
+     * @param {Object} [data.stripeCustomer]
+     * @param {string} [data.offerId]
      * @param {import('@tryghost/member-attribution/lib/history').Attribution} [data.attribution]
      * @param {*} options
      * @returns
@@ -215,7 +214,7 @@ module.exports = class MemberRepository {
             options = {};
         }
 
-        const {labels} = data;
+        const {labels, stripeCustomer, offerId, attribution} = data;
 
         if (labels) {
             labels.forEach((label, index) => {
@@ -309,6 +308,34 @@ module.exports = class MemberRepository {
                 memberId: member.id,
                 source: source
             }, eventData.created_at));
+        }
+
+        // For paid members created via stripe checkout webhook event, link subscription
+        if (stripeCustomer) {
+            await this.upsertCustomer({
+                member_id: member.id,
+                customer_id: stripeCustomer.id,
+                name: stripeCustomer.name,
+                email: stripeCustomer.email
+            });
+
+            for (const subscription of stripeCustomer.subscriptions.data) {
+                try {
+                    await this.linkSubscription({
+                        id: member.id,
+                        subscription,
+                        offerId,
+                        attribution
+                    });
+                } catch (err) {
+                    if (err.code !== 'ER_DUP_ENTRY' && err.code !== 'SQLITE_CONSTRAINT') {
+                        throw err;
+                    }
+                    throw new errors.ConflictError({
+                        err
+                    });
+                }
+            }
         }
 
         DomainEvents.dispatch(MemberCreatedEvent.create({
@@ -751,6 +778,7 @@ module.exports = class MemberRepository {
      * @param {String} data.id - member ID
      * @param {Object} data.subscription
      * @param {String} data.offerId
+     * @param {import('@tryghost/member-attribution/lib/history').Attribution} data.attribution
      * @param {*} options
      * @returns
      */
@@ -967,14 +995,23 @@ module.exports = class MemberRepository {
             const context = options?.context || {};
             const source = this._resolveContextSource(context);
 
-            // Notify paid member subscription start
-            if (this._labsService.isSet('emailAlerts') && ['member', 'api'].includes(source)) {
-                await this.staffService.notifyPaidSubscriptionStart({
-                    member: member.toJSON(),
-                    offer: offer ? this._offerRepository.toJSON(offer) : null,
-                    tier: ghostProduct?.toJSON(),
-                    subscription: subscriptionData
-                }, {transacting: options.transacting, forUpdate: true});
+            const event = SubscriptionCreatedEvent.create({
+                source,
+                tierId: ghostProduct?.get('id'),
+                memberId: member.id,
+                subscriptionId: model.get('id'),
+                offerId: data.offerId,
+                attribution: data.attribution
+            });
+
+            if (options?.transacting) {
+                // Only dispatch the event after the transaction has finished
+                // Because else the offer won't be committed to the database yet
+                options.transacting.executionPromise.then(() => {
+                    DomainEvents.dispatch(event);
+                });
+            } else {
+                DomainEvents.dispatch(event);
             }
         }
 
@@ -1231,22 +1268,6 @@ module.exports = class MemberRepository {
                     member_id: member.id,
                     from_plan: subscriptionModel.get('plan_id')
                 }, sharedOptions);
-
-                if (this._labsService.isSet('emailAlerts')) {
-                    const subscriptionPriceData = _.get(updatedSubscription, 'items.data[0].price');
-                    let ghostProduct;
-                    try {
-                        ghostProduct = await this._productRepository.get({stripe_product_id: subscriptionPriceData.product}, {...sharedOptions, forUpdate: true});
-                    } catch (e) {
-                        ghostProduct = null;
-                    }
-                    await this.staffService.notifyPaidSubscriptionCancel({
-                        member: member.toJSON(),
-                        subscription: updatedSubscription,
-                        cancellationReason: data.subscription.cancellationReason,
-                        tier: ghostProduct?.toJSON()
-                    });
-                }
             } else {
                 updatedSubscription = await this._stripeAPIService.continueSubscriptionAtPeriodEnd(
                     data.subscription.subscription_id
@@ -1259,6 +1280,42 @@ module.exports = class MemberRepository {
                 id: member.id,
                 subscription: updatedSubscription
             }, options);
+
+            // Dispatch cancellation event
+            if (data.subscription.cancel_at_period_end) {
+                const stripeProductId = _.get(updatedSubscription, 'items.data[0].price.product');
+
+                let ghostProduct;
+                try {
+                    ghostProduct = await this._productRepository.get(
+                        {stripe_product_id: stripeProductId},
+                        {...sharedOptions, forUpdate: true}
+                    );
+                } catch (e) {
+                    ghostProduct = null;
+                }
+
+                const context = options?.context || {};
+                const source = this._resolveContextSource(context);
+                const cancellationTimestamp = updatedSubscription.canceled_at
+                    ? new Date(updatedSubscription.canceled_at * 1000)
+                    : new Date();
+                const cancelEventData = {
+                    source,
+                    memberId: member.id,
+                    subscriptionId: subscriptionModel.get('id'),
+                    tierId: ghostProduct?.get('id')
+                };
+                if (options?.transacting) {
+                    // Only dispatch the event after the transaction has finished
+                    // Because else the offer won't be committed to the database yet
+                    options.transacting.executionPromise.then(() => {
+                        DomainEvents.dispatch(SubscriptionCancelledEvent.create(cancelEventData, cancellationTimestamp));
+                    });
+                } else {
+                    DomainEvents.dispatch(SubscriptionCancelledEvent.create(cancelEventData, cancellationTimestamp));
+                }
+            }
         }
     }
 

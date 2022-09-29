@@ -1117,6 +1117,38 @@
     background: var(--main-color-content-greybg);
 }
 
+.gh-canvas-header.stacked {
+    padding-top: 36px; 
+}
+
+.gh-canvas-header.stacked .gh-canvas-breadcrumb {
+    display: flex;
+    align-items: center;
+    height: 24px;
+    color: var(--darkgrey-l1);
+    font-size: 1.35rem;
+    font-weight: 500;
+    line-height: 24px;
+    letter-spacing: .2px;
+    background: none;
+}
+
+.gh-canvas-header.stacked .gh-canvas-breadcrumb a {
+    color: var(--darkgrey-l1);
+    line-height: 24px;
+}
+
+.gh-canvas-header.stacked .gh-canvas-breadcrumb svg {
+    display: block;
+    width: 9px;
+    height: 9px;
+    margin: 1px 6px 0;
+}
+
+.gh-canvas-header.stacked .gh-canvas-breadcrumb svg path {
+    stroke: var(--darkgrey-l1);
+}
+
 .gh-main-grey-gradient .gh-canvas-header {
     background: transparent;
     position: relative;
@@ -1129,6 +1161,12 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+.gh-canvas-header.stacked .gh-canvas-header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    height: unset;
 }
 
 .gh-main-width {

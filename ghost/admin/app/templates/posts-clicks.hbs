@@ -1,0 +1,64 @@
+<section class="gh-canvas gh-canvas-sticky">
+    <GhCanvasHeader class="gh-canvas-header break tablet post-header">
+        <GhCustomViewTitle @title={{if this.session.user.isContributor (concat this.config.blogTitle " posts") "Posts"}} @query={{reset-query-params "posts"}} />
+
+        <section class="view-actions">
+            <PostsList::ContentFilter
+                @currentUser={{this.session.user}}
+                @selectedType={{this.selectedType}}
+                @availableTypes={{this.availableTypes}}
+                @onTypeChange={{action "changeType"}}
+                @selectedVisibility={{this.selectedVisibility}}
+                @availableVisibilities={{this.availableVisibilities}}
+                @onVisibilityChange={{action "changeVisibility"}}
+                @selectedAuthor={{this.selectedAuthor}}
+                @availableAuthors={{this.availableAuthors}}
+                @onAuthorChange={{action "changeAuthor"}}
+                @selectedTag={{this.selectedTag}}
+                @availableTags={{this.availableTags}}
+                @onTagChange={{action "changeTag"}}
+                @selectedOrder={{this.selectedOrder}}
+                @availableOrders={{this.availableOrders}}
+                @onOrderChange={{action "changeOrder"}}
+            />
+
+            <LinkTo @route="editor.new" @model="post" class="gh-btn gh-btn-primary view-actions-top-row" data-test-new-post-button={{true}}><span>New post</span></LinkTo>
+        </section>
+    </GhCanvasHeader>
+
+    <section class="view-container content-list">
+        <ol class="posts-list gh-list {{unless this.postsInfinityModel "no-posts"}} feature-memberAttribution">
+
+            {{#each this.postsInfinityModel as |post|}}
+                <PostsList::ListItemClicks
+                    @post={{post}}
+                    data-test-post-id={{post.id}}
+                />
+            {{else}}
+            <li class="no-posts-box">
+                <div class="no-posts">
+                    {{#if this.showingAll}}
+                        {{svg-jar "posts-placeholder" class="gh-posts-placeholder"}}
+                        <h4>Start creating content.</h4>
+                        <LinkTo @route="editor.new" @model="post" class="gh-btn gh-btn-green">
+                            <span>Write a new post</span>
+                        </LinkTo>
+                    {{else}}
+                        <h4>No posts match the current filter</h4>
+                        <LinkTo @route="posts" @query={{hash type=null author=null tag=null}} class="gh-btn">
+                            <span>Show all posts</span>
+                        </LinkTo>
+                    {{/if}}
+                </div>
+            </li>
+            {{/each}}
+        </ol>
+
+        <GhInfinityLoader
+            @infinityModel={{this.postsInfinityModel}}
+            @scrollable=".gh-main"
+            @triggerOffset={{1000}} />
+    </section>
+
+    {{outlet}}
+</section>

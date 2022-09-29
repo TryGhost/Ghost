@@ -1,4 +1,4 @@
-const {MemberPageViewEvent, MemberCommentEvent} = require('@tryghost/member-events');
+const {MemberPageViewEvent, MemberCommentEvent, MemberLinkClickEvent} = require('@tryghost/member-events');
 const moment = require('moment-timezone');
 const {IncorrectUsageError} = require('@tryghost/errors');
 
@@ -32,6 +32,10 @@ class LastSeenAtUpdater {
      */
     subscribe(domainEvents) {
         domainEvents.subscribe(MemberPageViewEvent, async (event) => {
+            await this.updateLastSeenAt(event.data.memberId, event.data.memberLastSeenAt, event.timestamp);
+        });
+
+        domainEvents.subscribe(MemberLinkClickEvent, async (event) => {
             await this.updateLastSeenAt(event.data.memberId, event.data.memberLastSeenAt, event.timestamp);
         });
 

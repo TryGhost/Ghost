@@ -192,7 +192,10 @@ describe('Members API - member attribution', function () {
             attribution: memberAttributionService.attributionBuilder.build({
                 id,
                 url: '/out-of-date/',
-                type: 'post'
+                type: 'post',
+                referrerSource: null,
+                referrerMedium: null,
+                referrerUrl: null
             })
         });
 
@@ -212,7 +215,10 @@ describe('Members API - member attribution', function () {
                     id: post.id,
                     url: absoluteUrl,
                     type: 'post',
-                    title: post.get('title')
+                    title: post.get('title'),
+                    referrer_source: null,
+                    referrer_medium: null,
+                    referrer_url: null
                 });
                 signupAttributions.push(body.members[0].attribution);
             });
@@ -228,7 +234,10 @@ describe('Members API - member attribution', function () {
             attribution: memberAttributionService.attributionBuilder.build({
                 id,
                 url: '/out-of-date/',
-                type: 'page'
+                type: 'page',
+                referrerSource: null,
+                referrerMedium: null,
+                referrerUrl: null
             })
         });
 
@@ -248,7 +257,10 @@ describe('Members API - member attribution', function () {
                     id: post.id,
                     url: absoluteUrl,
                     type: 'page',
-                    title: post.get('title')
+                    title: post.get('title'),
+                    referrer_source: null,
+                    referrer_medium: null,
+                    referrer_url: null
                 });
                 signupAttributions.push(body.members[0].attribution);
             });
@@ -264,7 +276,10 @@ describe('Members API - member attribution', function () {
             attribution: memberAttributionService.attributionBuilder.build({
                 id,
                 url: '/out-of-date/',
-                type: 'tag'
+                type: 'tag',
+                referrerSource: null,
+                referrerMedium: null,
+                referrerUrl: null
             })
         });
 
@@ -284,7 +299,10 @@ describe('Members API - member attribution', function () {
                     id: tag.id,
                     url: absoluteUrl,
                     type: 'tag',
-                    title: tag.get('name')
+                    title: tag.get('name'),
+                    referrer_source: null,
+                    referrer_medium: null,
+                    referrer_url: null
                 });
                 signupAttributions.push(body.members[0].attribution);
             });
@@ -300,7 +318,10 @@ describe('Members API - member attribution', function () {
             attribution: memberAttributionService.attributionBuilder.build({
                 id,
                 url: '/out-of-date/',
-                type: 'author'
+                type: 'author',
+                referrerSource: null,
+                referrerMedium: null,
+                referrerUrl: null
             })
         });
 
@@ -320,7 +341,10 @@ describe('Members API - member attribution', function () {
                     id: author.id,
                     url: absoluteUrl,
                     type: 'author',
-                    title: author.get('name')
+                    title: author.get('name'),
+                    referrer_source: null,
+                    referrer_medium: null,
+                    referrer_url: null
                 });
                 signupAttributions.push(body.members[0].attribution);
             });
@@ -333,7 +357,10 @@ describe('Members API - member attribution', function () {
             attribution: memberAttributionService.attributionBuilder.build({
                 id: null,
                 url: '/a-static-page/',
-                type: 'url'
+                type: 'url',
+                referrerSource: null,
+                referrerMedium: null,
+                referrerUrl: null
             })
         });
 
@@ -353,7 +380,10 @@ describe('Members API - member attribution', function () {
                     id: null,
                     url: absoluteUrl,
                     type: 'url',
-                    title: '/a-static-page/'
+                    title: '/a-static-page/',
+                    referrer_source: null,
+                    referrer_medium: null,
+                    referrer_url: null
                 });
                 signupAttributions.push(body.members[0].attribution);
             });

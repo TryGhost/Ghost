@@ -1,51 +1,83 @@
 import AdminRoute from 'ghost-admin/routes/admin';
+import ConfirmUnsavedChangesModal from '../../components/modals/confirm-unsaved-changes';
 import RSVP from 'rsvp';
+import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
-export default AdminRoute.extend({
-    config: service(),
-    settings: service(),
+export default class GeneralSettingsRoute extends AdminRoute {
+    @service modals;
+    @service config;
+    @service settings;
 
     model() {
         return RSVP.hash({
             settings: this.settings.reload(),
-            availableTimezones: this.get('config.availableTimezones')
+            availableTimezones: this.config.get('availableTimezones')
         });
-    },
+    }
 
     setupController(controller, models) {
-        // reset the leave setting transition
-        controller.set('showLeaveSettingsModal', false);
-        controller.set('leaveSettingsTransition', null);
         controller.set('availableTimezones', models.availableTimezones);
-    },
+    }
 
-    actions: {
-        save() {
-            return this.controller.send('save');
-        },
+    deactivate() {
+        this.confirmModal = null;
+        this.hasConfirmed = false;
+    }
 
-        reloadSettings() {
-            return this.settings.reload();
-        },
-
-        willTransition(transition) {
-            let controller = this.controller;
-            let settings = this.settings;
-            let settingsIsDirty = settings.get('hasDirtyAttributes');
-
-            if (settingsIsDirty) {
-                transition.abort();
-                controller.send('toggleLeaveSettingsModal', transition);
-                return;
-            }
+    @action
+    async willTransition(transition) {
+        if (this.hasConfirmed) {
+            return true;
         }
 
-    },
+        transition.abort();
+
+        // wait for any existing confirm modal to be closed before allowing transition
+        if (this.confirmModal) {
+            return;
+        }
+
+        if (this.controller.saveTask?.isRunning) {
+            await this.controller.saveTask.last;
+        }
+
+        const shouldLeave = await this.confirmUnsavedChanges();
+
+        if (shouldLeave) {
+            this.settings.rollbackAttributes();
+            this.hasConfirmed = true;
+            return transition.retry();
+        }
+    }
+
+    async confirmUnsavedChanges() {
+        if (this.settings.get('hasDirtyAttributes')) {
+            this.confirmModal = this.modals
+                .open(ConfirmUnsavedChangesModal)
+                .finally(() => {
+                    this.confirmModal = null;
+                });
+
+            return this.confirmModal;
+        }
+
+        return true;
+    }
+
+    @action
+    save() {
+        return this.controller.send('save');
+    }
+
+    @action
+    reloadSettings() {
+        return this.settings.reload();
+    }
 
     buildRouteInfoMetadata() {
         return {
             titleToken: 'Settings - General'
         };
     }
-});
+}

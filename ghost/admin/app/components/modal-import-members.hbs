@@ -15,7 +15,7 @@
 
     {{#if (eq this.state 'PROCESSING')}}
         <header class="modal-header icon-center" data-test-modal="import-members">
-            <GhLoadingSpinner />
+            {{svg-jar "import-in-progress" class="gh-import-member-icon"}}
             <h1>Import in progress</h1>
         </header>
     {{/if}}

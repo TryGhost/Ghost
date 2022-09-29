@@ -190,19 +190,6 @@
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
                         <div>
-                            <h4 class="gh-expandable-title">History Log</h4>
-                            <p class="gh-expandable-description">
-                               Allow visibility into Staff actions
-                            </p>
-                        </div>
-                        <div class="for-switch">
-                           <GhFeatureFlag @flag="auditLog" />
-                        </div>
-                    </div>
-                </div>
-                <div class="gh-expandable-block">
-                    <div class="gh-expandable-header">
-                        <div>
                             <h4 class="gh-expandable-title">URL Cache</h4>
                             <p class="gh-expandable-description">
                                Enable URL Caching
@@ -242,13 +229,39 @@
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
                         <div>
-                            <h4 class="gh-expandable-title">Search helper</h4>
+                            <h4 class="gh-expandable-title">Source Attribution</h4>
                             <p class="gh-expandable-description">
-                               Enable the <code>&#123;&#123;search&#125;&#125;</code> handlebars helper.
+                               Track which external sources are driving Member Subscriptions & Paid Conversions (Needs Member Attribution flag)
                             </p>
                         </div>
                         <div class="for-switch">
-                           <GhFeatureFlag @flag="searchHelper" />
+                           <GhFeatureFlag @flag="sourceAttribution" />
+                        </div>
+                    </div>
+                </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Email clicks</h4>
+                            <p class="gh-expandable-description">
+                               Enable email clicks tracking.
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                           <GhFeatureFlag @flag="emailClicks" />
+                        </div>
+                    </div>
+                </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Lexical editor</h4>
+                            <p class="gh-expandable-description">
+                               Makes lexical editor the default when creating new posts/pages.
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                           <GhFeatureFlag @flag="lexicalEditor" />
                         </div>
                     </div>
                 </div>

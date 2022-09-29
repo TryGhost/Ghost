@@ -747,6 +747,49 @@ label[for="member-description"] + p {
     stroke: var(--midgrey);
 }
 
+.gh-member-details-attribution {
+    display: grid;
+    grid-template-columns: 1fr;
+    padding: 0 0 3.2rem 0;
+}
+
+.gh-member-details-attribution svg {
+    width: 1.6rem;
+    height: 1.6rem;
+    margin-right: .8rem;
+    flex-shrink: 0;
+}
+
+.gh-member-details-attribution p {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.gh-member-details-attribution p a, .gh-member-details-attribution p span {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    font-weight: 600;
+    color: var(--darkgrey);
+}
+
+.gh-member-details-attribution p a::first-letter {
+    text-transform: capitalize;
+}
+
+.gh-member-details-attribution svg path, .gh-member-details-attribution svg circle {
+    stroke: var(--midgrey);
+    fill: none;
+}
+
+.gh-member-details-attribution .gh-main-section-header {
+    margin-bottom: 1.6rem;
+    border-bottom: 1px solid var(--whitegrey);
+    grid-column: 1 !important;
+}
+
 .gh-member-details-stats-container {
     display: flex;
     flex-direction: column;
@@ -1159,12 +1202,6 @@ textarea.gh-member-details-textarea {
     width: 0;
 }
 
-@media (max-width: 600px) {
-    .gh-member-feed-detail {
-        flex-direction: column;
-    }
-}
-
 .gh-member-feed-event {
     flex: 1;
     min-width: 0;
@@ -1179,8 +1216,9 @@ textarea.gh-member-details-textarea {
     font-weight: 500;
     text-overflow: ellipsis;
     white-space: nowrap;
-    overflow: hidden; 
+    overflow: hidden;
     padding-right: 1rem;
+    width: 100%;
 }
 
 .gh-member-feed-event-inner:first-letter {
@@ -1373,7 +1411,6 @@ p.gh-members-import-errorcontext {
 .gh-members-import-scrollarea {
     position: relative;
     max-height: calc(100vh - 350px - 12vw);
-    min-height: 175px;
     overflow-y: scroll;
     margin: 0 -32px;
     padding: 0 32px;
@@ -1488,6 +1525,11 @@ p.gh-members-import-errordetailtext {
 
 .gh-members-import-table tr:last-of-type td {
     border-bottom: 1px solid var(--member-import-table-outline);
+}
+
+.gh-members-import-table td span,
+.gh-members-import-table th span {
+    user-select: none !important;
 }
 
 .gh-members-import-datanav {
@@ -1630,6 +1672,17 @@ p.gh-members-import-errordetail:first-of-type {
 .gh-member-import-icon-confetti circle,
 .gh-member-import-icon-confetti ellipse {
     stroke-width: 0.85px;
+}
+
+.gh-import-member-icon {
+    color: var(--darkgrey);
+    width: 54px !important;
+    height: 54px !important;
+    margin-right: -8px;
+}
+
+.gh-import-member-icon * {
+    stroke-width: 0.8px !important;
 }
 
 /* Fixing Firefox's select padding */
@@ -2312,6 +2365,27 @@ p.gh-members-import-errordetail:first-of-type {
     left: auto;
 }
 
+.gh-cp-membertier-details {
+    margin-top: 1px;
+    color: var(--middarkgrey);
+    font-weight: 500;
+}
+
+.gh-cp-membertier-details svg {
+    width: 10px;
+    margin-left: 4px;
+    transition: transform 0.2s ease-in-out;
+}
+
+.gh-cp-membertier-details svg path {
+    stroke-width: 3px;
+    stroke: var(--middarkgrey);
+}
+
+.gh-cp-membertier-details.rotate svg {
+    transform: rotate(90deg);
+}
+
 .gh-membertier-subscription .action-menu .gh-btn-subscription-action:not(:hover) {
     border: 1px solid var(--whitegrey);
     background: var(--main-bg-color) !important;
@@ -2391,4 +2465,126 @@ p.gh-members-import-errordetail:first-of-type {
     .gh-contentfilter-menu:last-of-type {
         padding-right: 8px;
     }
+}
+
+/* This needs to be moved once the flag is removed */
+.gh-cp-membertier-attribution.gh-membertier-subscription {
+    display: block !important;
+}
+
+.gh-cp-membertier-attribution {
+    position: relative;
+}
+
+.gh-cp-membertier-attribution .gh-tier-card-header {
+    display: flex;
+    align-items: flex-start;
+}
+
+.gh-cp-membertier-attribution .tier-actions-menu {
+    top: calc(100% + 6px);
+}
+
+.gh-cp-membertier-attribution .gh-tier-card-price {
+    border: none !important;
+    background: var(--main-color-content-greybg);
+    padding: 20px 10px !important;
+    border-radius: 6px;
+}
+
+.gh-cp-membertier-attribution .amount {
+    font-weight: bold !important;
+    font-size: 2.4rem !important;
+}
+
+.gh-cp-membertier-attribution .currency-symbol {
+    font-weight: bold !important;
+    font-size: 1.4rem !important;
+}
+
+.gh-cp-membertier-attribution .gh-membertier-name {
+    font-weight: bold !important;
+    font-size: 2rem !important;
+}
+
+.gh-cp-membertier-attribution .gh-badge {
+    margin-bottom: -1px !important;
+    margin-left: 8px;
+}
+
+.gh-cp-membertier-attribution .action-menu {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+}
+
+.gh-cp-membertier-attribution span.archived {
+    background: #e4e8ec;
+    color: #7c8b9a;
+    font-size: 1.2rem;
+}
+
+.gh-cp-membertier-attribution .gh-membertier-advanced {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top:1px solid #ECEEF0;
+    animation: fade-in .25s ease-in-out;
+}
+
+.gh-cp-membertier-attribution .gh-membertier-advanced.hide {
+    display: none;
+}
+
+.gh-cp-membertier-attribution .gh-membertier-advanced h4 {
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    font-weight: 500;
+    color: #7F8B99;
+    margin-bottom: 2px;
+}
+
+.gh-cp-membertier-attribution .gh-membertier-details p {
+    margin: 0;
+}
+
+.gh-cp-membertier-attribution .gh-membertier-detail {
+    margin-bottom: 1.6rem;
+}
+
+.gh-cp-membertier-attribution .gh-membertier-details span, .gh-cp-membertier-attribution .gh-membertier-details a {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: unset;
+}
+
+.gh-cp-membertier-attribution .gh-cp-membertier-renewal {
+    color: #7c8b9a;
+}
+
+.gh-cp-membertier-attribution .gh-membertier-detail-timestamp {
+    font-size: 1.2rem;
+    color: var(--midgrey);
+}
+
+.gh-cp-membertier-attribution .gh-membertier-cancelreason {
+    font-weight: 500;
+}
+
+.gh-cp-membertier-attribution .gh-membertier-details a {
+    text-transform: capitalize;
+}
+
+.gh-member-details-attribution .gh-member-details-attribution-docs {
+    margin-top: 6px;
+    color: #2bba3c;
+    font-weight: 500;
+    font-size: 1.3rem;
+}
+
+.gh-member-details-attribution .gh-member-details-attribution-docs:hover {
+    margin-top: 6px;
+    color: rgb(38, 154, 52);
+    font-weight: 500;
+    font-size: 1.3rem;
 }

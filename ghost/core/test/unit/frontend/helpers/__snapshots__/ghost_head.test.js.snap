@@ -70,7 +70,7 @@ Object {
 
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
-    <script defer src=\\"https://cdn.jsdelivr.net/npm/@tryghost/portal@~2.12/umd/portal.min.js\\" data-ghost=\\"http://127.0.0.1:2369/\\" data-key=\\"xyz\\" data-api=\\"http://127.0.0.1:2369/ghost/api/content/\\" crossorigin=\\"anonymous\\"></script><style id=\\"gh-members-styles\\">.gh-post-upgrade-cta-content,
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/portal@~2.13/umd/portal.min.js\\" data-ghost=\\"http://127.0.0.1:2369/\\" data-key=\\"xyz\\" data-api=\\"http://127.0.0.1:2369/ghost/api/content/\\" crossorigin=\\"anonymous\\"></script><style id=\\"gh-members-styles\\">.gh-post-upgrade-cta-content,
 .gh-post-upgrade-cta {
     display: flex;
     flex-direction: column;
@@ -134,7 +134,8 @@ Object {
 .gh-post-upgrade-cta a.gh-btn:hover {
     opacity: 0.92;
 }</style>
-    <script defer src=\\"https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@~1.0/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@~1.0/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script><style>:root {--ghost-accent-color: #123456;}</style>",
+    <script defer src=\\"https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@~1.0/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@~1.0/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>
+    <script defer src=\\"/public/member-attribution.min.js?v=asset-hash\\"></script><style>:root {--ghost-accent-color: #123456;}</style>",
 }
 `;
 
@@ -489,7 +490,7 @@ Object {
 
     <meta name=\\"generator\\" content=\\"Ghost 4.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
-    <script defer src=\\"https://cdn.jsdelivr.net/npm/@tryghost/portal@~2.12/umd/portal.min.js\\" data-ghost=\\"http://127.0.0.1:2369/\\" data-key=\\"xyz\\" data-api=\\"http://127.0.0.1:2369/ghost/api/content/\\" crossorigin=\\"anonymous\\"></script><style id=\\"gh-members-styles\\">.gh-post-upgrade-cta-content,
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/portal@~2.13/umd/portal.min.js\\" data-ghost=\\"http://127.0.0.1:2369/\\" data-key=\\"xyz\\" data-api=\\"http://127.0.0.1:2369/ghost/api/content/\\" crossorigin=\\"anonymous\\"></script><style id=\\"gh-members-styles\\">.gh-post-upgrade-cta-content,
 .gh-post-upgrade-cta {
     display: flex;
     flex-direction: column;
@@ -553,7 +554,8 @@ Object {
 .gh-post-upgrade-cta a.gh-btn:hover {
     opacity: 0.92;
 }</style>
-    <script defer src=\\"https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@~1.0/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@~1.0/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@~1.0/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@~1.0/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>
+    <script defer src=\\"/public/member-attribution.min.js?v=asset-hash\\"></script>",
 }
 `;
 
@@ -603,7 +605,7 @@ Object {
 
     <meta name=\\"generator\\" content=\\"Ghost 4.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
-    <script defer src=\\"https://cdn.jsdelivr.net/npm/@tryghost/portal@~2.12/umd/portal.min.js\\" data-ghost=\\"http://127.0.0.1:2369/\\" data-key=\\"xyz\\" data-api=\\"http://127.0.0.1:2369/ghost/api/content/\\" crossorigin=\\"anonymous\\"></script><style id=\\"gh-members-styles\\">.gh-post-upgrade-cta-content,
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/portal@~2.13/umd/portal.min.js\\" data-ghost=\\"http://127.0.0.1:2369/\\" data-key=\\"xyz\\" data-api=\\"http://127.0.0.1:2369/ghost/api/content/\\" crossorigin=\\"anonymous\\"></script><style id=\\"gh-members-styles\\">.gh-post-upgrade-cta-content,
 .gh-post-upgrade-cta {
     display: flex;
     flex-direction: column;
@@ -667,7 +669,8 @@ Object {
 .gh-post-upgrade-cta a.gh-btn:hover {
     opacity: 0.92;
 }</style><script async src=\\"https://js.stripe.com/v3/\\"></script>
-    <script defer src=\\"https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@~1.0/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@~1.0/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@~1.0/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@~1.0/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>
+    <script defer src=\\"/public/member-attribution.min.js?v=asset-hash\\"></script>",
 }
 `;
 
@@ -768,7 +771,7 @@ Object {
 
     <meta name=\\"generator\\" content=\\"Ghost 4.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
-    <script defer src=\\"https://cdn.jsdelivr.net/npm/@tryghost/portal@~2.12/umd/portal.min.js\\" data-ghost=\\"http://127.0.0.1:2369/\\" data-key=\\"xyz\\" data-api=\\"http://127.0.0.1:2369/ghost/api/content/\\" crossorigin=\\"anonymous\\"></script><style id=\\"gh-members-styles\\">.gh-post-upgrade-cta-content,
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/portal@~2.13/umd/portal.min.js\\" data-ghost=\\"http://127.0.0.1:2369/\\" data-key=\\"xyz\\" data-api=\\"http://127.0.0.1:2369/ghost/api/content/\\" crossorigin=\\"anonymous\\"></script><style id=\\"gh-members-styles\\">.gh-post-upgrade-cta-content,
 .gh-post-upgrade-cta {
     display: flex;
     flex-direction: column;
@@ -832,7 +835,8 @@ Object {
 .gh-post-upgrade-cta a.gh-btn:hover {
     opacity: 0.92;
 }</style>
-    <script defer src=\\"https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@~1.0/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@~1.0/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@~1.0/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@~1.0/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>
+    <script defer src=\\"/public/member-attribution.min.js?v=asset-hash\\"></script>",
 }
 `;
 
@@ -884,8 +888,7 @@ Object {
     <meta name=\\"ghost-analytics-id\\" content=\\"\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
     
-    <script defer src=\\"https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@~1.0/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@~1.0/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>
-    <script defer src=\\"/public/member-attribution.min.js?v=asset-hash\\"></script>",
+    <script defer src=\\"https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@~1.0/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@~1.0/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>",
 }
 `;
 

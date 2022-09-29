@@ -26,7 +26,7 @@ describe('Content API key authentication', function () {
 
         await request.get(localUtils.API.getApiQuery(`posts/?key=${key}`))
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect('Cache-Control', testUtils.cacheRules.public)
             .expect(200);
     });
 
@@ -61,7 +61,7 @@ describe('Content API key authentication', function () {
             // CASE: explore endpoint can only be reached by Admin API
             const secondResponse = await request.get(localUtils.API.getApiQuery('explore/'))
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect('Cache-Control', testUtils.cacheRules.noCache)
                 .expect(404);
 
             secondResponse.body.errors[0].type.should.equal('NotFoundError');

@@ -6,11 +6,12 @@ const localUtils = require('../../index');
 const mobiledoc = require('../../../../../lib/mobiledoc');
 const postsMetaSchema = require('../../../../../data/schema').tables.posts_meta;
 const clean = require('./utils/clean');
+const labs = require('../../../../../../shared/labs');
 
-function removeMobiledocFormat(frame) {
-    if (frame.options.formats && frame.options.formats.includes('mobiledoc')) {
+function removeSourceFormats(frame) {
+    if (frame.options.formats?.includes('mobiledoc') || frame.options.formats?.includes('lexical')) {
         frame.options.formats = frame.options.formats.filter((format) => {
-            return (format !== 'mobiledoc');
+            return !['mobiledoc', 'lexical'].includes(format);
         });
     }
 }
@@ -24,7 +25,11 @@ function defaultRelations(frame) {
         return false;
     }
 
-    frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'email', 'tiers', 'newsletter', 'count.signups', 'count.conversions'];
+    if (labs.isSet('emailClicks')) {
+        frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'email', 'tiers', 'newsletter', 'count.signups', 'count.paid_conversions', 'count.clicks'];
+    } else {
+        frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'email', 'tiers', 'newsletter', 'count.signups', 'count.paid_conversions'];
+    }
 }
 
 function setDefaultOrder(frame) {
@@ -101,8 +106,8 @@ module.exports = {
          * - user exists? admin api access
          */
         if (localUtils.isContentAPI(frame)) {
-            // CASE: the content api endpoint for posts should not return mobiledoc
-            removeMobiledocFormat(frame);
+            // CASE: the content api endpoint for posts should not return mobiledoc or lexical
+            removeSourceFormats(frame);
 
             setDefaultOrder(frame);
             forceVisibilityColumn(frame);
@@ -127,8 +132,8 @@ module.exports = {
          * - user exists? admin api access
          */
         if (localUtils.isContentAPI(frame)) {
-            // CASE: the content api endpoint for posts should not return mobiledoc
-            removeMobiledocFormat(frame);
+            // CASE: the content api endpoint for posts should not return mobiledoc or lexical
+            removeSourceFormats(frame);
 
             setDefaultOrder(frame);
             forceVisibilityColumn(frame);

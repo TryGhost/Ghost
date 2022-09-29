@@ -1,16 +1,18 @@
 import Helper from '@ember/component/helper';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import {getNonDecimal, getSymbol} from 'ghost-admin/utils/currency';
 import {inject as service} from '@ember/service';
 
 export default class ParseMemberEventHelper extends Helper {
     @service feature;
+    @service utils;
 
     compute([event, hasMultipleNewsletters]) {
         const subject = event.data.member.name || event.data.member.email;
         const icon = this.getIcon(event);
         const action = this.getAction(event, hasMultipleNewsletters);
         const info = this.getInfo(event);
+        const description = this.getDescription(event);
 
         const join = this.getJoin(event);
         const object = this.getObject(event);
@@ -28,6 +30,7 @@ export default class ParseMemberEventHelper extends Helper {
             join,
             object,
             info,
+            description,
             url,
             timestamp
         };
@@ -79,6 +82,10 @@ export default class ParseMemberEventHelper extends Helper {
 
         if (event.type === 'comment_event') {
             icon = 'comment';
+        }
+
+        if (event.type === 'click_event') {
+            icon = 'click';
         }
 
         return 'event-' + icon + (this.feature.get('memberAttribution') ? '--feature-attribution' : '');
@@ -148,6 +155,10 @@ export default class ParseMemberEventHelper extends Helper {
             }
             return 'commented';
         }
+
+        if (event.type === 'click_event') {
+            return 'clicked link in email';
+        }
     }
 
     /**
@@ -191,6 +202,12 @@ export default class ParseMemberEventHelper extends Helper {
             }
         }
 
+        if (event.type === 'click_event') {
+            if (event.data.post) {
+                return event.data.post.title;
+            }
+        }
+
         return '';
     }
 
@@ -207,11 +224,30 @@ export default class ParseMemberEventHelper extends Helper {
         return;
     }
 
+    getDescription(event) {
+        if (event.type === 'click_event') {
+            // Clean URL
+            try {
+                return this.utils.cleanTrackedUrl(event.data.link.to, true);
+            } catch (e) {
+                // Invalid URL
+            }
+            return event.data.link.to;
+        }
+        return;
+    }
+
     /**
      * Make the object clickable
      */
     getURL(event) {
         if (event.type === 'comment_event') {
+            if (event.data.post) {
+                return event.data.post.url;
+            }
+        }
+
+        if (event.type === 'click_event') {
             if (event.data.post) {
                 return event.data.post.url;
             }

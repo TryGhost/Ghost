@@ -19,15 +19,8 @@
             </h2>
         {{/if}}
 
-        {{#if this.showLeaveSettingsModal}}
-            <GhFullscreenModal @modal="leave-settings"
-                @confirm={{action "leaveSettings"}}
-                @close={{action "toggleLeaveSettingsModal"}}
-                @modifier="action wide" />
-        {{/if}}
-
         <section class="view-actions">
-            {{#if (or this.userActionsAreVisible (and (feature 'auditLog') this.session.user.isAdmin))}}
+            {{#if (or this.userActionsAreVisible this.session.user.isAdmin)}}
                 <span class="dropdown">
                     <GhDropdownButton @dropdownName="user-actions-menu" @classNames="gh-btn gh-btn-white gh-btn-icon icon-only user-actions-cog" @title="User Actions" data-test-user-actions={{true}}>
                         <span>
@@ -71,13 +64,11 @@
                             {{/if}}
                         {{/if}}
 
-                        {{#if (feature 'auditLog')}}
                         <li>
                             <LinkTo @route="settings.history" @query={{hash user=this.user.id}}>
                                 <span>View user activity</span>
                             </LinkTo>
                         </li>
-                        {{/if}}
                     </GhDropdown>
                 </span>
             {{/if}}

@@ -7,7 +7,7 @@ const config = require('../../../shared/config');
 const renderer = require('../../services/rendering');
 
 // @TODO: make this properly shared code
-const {prepareError, prepareStack} = require('@tryghost/mw-error-handler');
+const {prepareError, prepareErrorCacheControl, prepareStack} = require('@tryghost/mw-error-handler');
 
 const messages = {
     oopsErrorTemplateHasError: 'Oops, seems there is an error in the error template.',
@@ -86,6 +86,8 @@ const themeErrorRenderer = (err, req, res, next) => {
 module.exports.handleThemeResponse = [
     // Make sure the error can be served
     prepareError,
+    // Add cache-control header
+    prepareErrorCacheControl(),
     // Handle the error in Sentry
     sentry.errorHandler,
     // Format the stack for the user

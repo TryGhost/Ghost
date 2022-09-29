@@ -23,7 +23,7 @@
         <div class="gh-main-layout gh-setting-membership content-preview">
             <div class="gh-setting-members-basicsform">
                 <p class="intro">Fund your work with subscription revenue. Connect your Stripe account and offer premium content to your audience. Our creators are already making over $12 million per year, while <strong>Ghost takes 0% payment fees</strong>.</p>
-                
+
                 <div class="flex flex-column justify-between mt3">
                     <section class="gh-expandable gh-setting-members-portalcta">
                         <div class="gh-expandable-block">
@@ -160,17 +160,9 @@
         </div>
     </section>
 
-    {{#if this.showLeaveRouteModal}}
-        <GhFullscreenModal
-            @modal="leave-settings"
-            @confirm={{this.confirmLeave}}
-            @close={{this.cancelLeave}}
-            @modifier="action wide"
-        />
-    {{/if}}
-
     {{#if this.showPortalSettings}}
-        <GhFullscreenModal @modal="portal-settings"
+        <GhFullscreenModal
+            @modal="portal-settings"
             @model={{hash
                 preloadTask=this.saveSettingsTask
                 openStripeConnect=this.openStripeConnect
@@ -178,15 +170,6 @@
             }}
             @close={{this.closePortalSettings}}
             @modifier="full-overlay portal-settings" />
-    {{/if}}
-
-    {{#if this.showLeavePortalModal}}
-        <GhFullscreenModal
-            @modal="leave-settings"
-            @confirm={{this.confirmClosePortalSettings}}
-            @close={{this.cancelClosePortalSettings}}
-            @modifier="action wide"
-        />
     {{/if}}
 
     {{#if this.showStripeConnect}}

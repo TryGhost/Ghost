@@ -292,7 +292,12 @@ describe('Comments API', function () {
                 await membersAgent.loginAs('member@example.com');
                 member = await models.Member.findOne({email: 'member@example.com'}, {require: true});
                 await membersAgent2.loginAs('member2@example.com');
+                
+                // Wait before we mock emails from newly created members
+                // todo: in the future we need a way to wait for DomainEvents to be fired and handled correctly
+                await sleep(200);
             });
+
             beforeEach(function () {
                 getStub = sinon.stub(settingsCache, 'get');
                 getStub.callsFake((key, options) => {
