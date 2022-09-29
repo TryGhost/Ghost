@@ -11,7 +11,7 @@
         <div class="gh-dashboard-select">
             <PowerSelect
                 @selected={{this.selectedDisplayOption}}
-                @options={{this.displayOptions}}
+                @options={{this.allowedDisplayOptions}}
                 @searchEnabled={{false}}
                 @onChange={{this.onDisplayChange}}
                 @triggerComponent={{component "gh-power-select/trigger"}}
@@ -19,7 +19,7 @@
                 @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
                 @matchTriggerWidth={{false}}
                 @horizontalPosition="right"
-
+                @disabled={{true}}
                 as |option|
             >
                 {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
@@ -30,7 +30,7 @@
                 <h3 class="gh-dashboard-metric-label">Top sources</h3>
                 <MemberAttribution::SourceAttributionTable
                     @sources={{this.sources}}
-                    @sortColumn={{this.sortColumn}}
+                    @sortColumn={{this.selectedSortColumn}}
                     @setSortColumn={{this.setSortColumn}}
                     class="gh-dashboard-attribution-list gh-dashboard-list"
                 />
@@ -39,7 +39,7 @@
                 <div class="gh-dashboard-attribution-chart-container">
                     <MemberAttribution::SourceAttributionChart
                         @sources={{this.chartSources}}
-                        @sortColumn={{this.sortColumn}}
+                        @sortColumn={{this.selectedSortColumn}}
                         @setSortColumn={{this.setSortColumn}}
                     />
                 </div>

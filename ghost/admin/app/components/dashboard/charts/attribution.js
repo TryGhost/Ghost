@@ -31,8 +31,55 @@ export default class Recents extends Component {
         this.dashboardStats.loadMemberAttributionStats();
     }
 
+    get allowedDisplayOptions() {
+        if (!this.hasPaidConversionData) {
+            return this.displayOptions.filter(d => d.value === 'signups');
+        }
+
+        if (!this.hasFreeSignups) {
+            return this.displayOptions.filter(d => d.value === 'paid');
+        }
+
+        return this.displayOptions;
+    }
+
+    get isDropdownDisabled() {
+        if (!this.hasPaidConversionData || !this.hasFreeSignups) {
+            return true;
+        }
+
+        return false;
+    }
+
     get selectedDisplayOption() {
+        if (!this.hasPaidConversionData) {
+            return this.displayOptions.find(d => d.value === 'signups');
+        }
+
+        if (!this.hasFreeSignups) {
+            return this.displayOptions.find(d => d.value === 'paid');
+        }
+
         return this.displayOptions.find(d => d.value === this.sortColumn) ?? this.displayOptions[0];
+    }
+
+    get selectedSortColumn() {
+        if (!this.hasPaidConversionData) {
+            return 'signups';
+        }
+
+        if (!this.hasFreeSignups) {
+            return 'paid';
+        }
+        return this.sortColumn;
+    }
+
+    get hasPaidConversionData() {
+        return this.sources.some(sourceData => sourceData.paidConversions > 0);
+    }
+
+    get hasFreeSignups() {
+        return this.sources.some(sourceData => sourceData.signups > 0);
     }
 
     get sources() {
