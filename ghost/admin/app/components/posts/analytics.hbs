@@ -52,7 +52,7 @@
                 </LinkTo>
             </div>
 
-            {{#if (and this.post.email.trackOpens this.settings.emailTrackOpens) }}
+            {{#if this.post.showEmailOpenAnalytics }}
                 <div class="gh-post-analytics-item">
                     <LinkTo @route="members" @query={{hash filterParam=(concat "opened_emails.post_id:[" this.post.id "]") }}>
                         <h3>{{this.post.email.openRate}}<sup>%</sup></h3>
@@ -61,7 +61,7 @@
                 </div>
             {{/if}}
 
-            {{#if this.settings.emailTrackClicks}}
+            {{#if this.post.showEmailClickAnalytics }}
                 <div class="gh-post-analytics-item">
                     <LinkTo @route="members" @query={{hash filterParam=(concat "clicked_links.post_id:[" this.post.id "]") }}>
                         <h3>{{this.post.clickRate}}<sup>%</sup></h3>
@@ -71,7 +71,7 @@
             {{/if}}
         {{/if}}
 
-        {{#if (and (feature 'memberAttribution') (not this.post.emailOnly)) }}
+        {{#if this.post.showAttributionAnalytics }}
             <div class="gh-post-analytics-item">
                 <LinkTo @route="members" @query={{hash filterParam=(concat "signup:[" this.post.id "]") }}>
                     <h3>{{format-number this.post.count.signups}}</h3>
@@ -79,7 +79,7 @@
                 </LinkTo>
             </div>
 
-            {{#if this.membersUtils.paidMembersEnabled}}
+            {{#if this.post.showPaidAttributionAnalytics }}
                 <div class="gh-post-analytics-item">
                     <LinkTo @route="members" @query={{hash filterParam=(concat "conversion:[" this.post.id "]") }}>
                         <h3>{{format-number this.post.count.paid_conversions}}</h3>

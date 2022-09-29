@@ -10,6 +10,7 @@ const Email = ghostBookshelf.Model.extend({
             status: 'pending',
             recipient_filter: 'status:-free',
             track_opens: false,
+            track_clicks: false,
             delivered_count: 0,
             opened_count: 0,
             failed_count: 0
