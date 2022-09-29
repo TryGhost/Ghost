@@ -35,7 +35,8 @@ class MemberAttributionServiceWrapper {
         this.service = new MemberAttributionService({
             models: {
                 MemberCreatedEvent: models.MemberCreatedEvent,
-                SubscriptionCreatedEvent: models.SubscriptionCreatedEvent
+                SubscriptionCreatedEvent: models.SubscriptionCreatedEvent,
+                Integration: models.Integration
             },
             attributionBuilder: this.attributionBuilder
         });
