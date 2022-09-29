@@ -5,6 +5,6 @@ export default class FullAttributionTable extends Component {
     @service membersUtils;
 
     static modalOptions = {
-        className: 'epm-modal fullscreen-modal-action fullscreen-modal-wider'
+        className: 'epm-modal fullscreen-modal-action fullscreen-modal-wide'
     };
 }
