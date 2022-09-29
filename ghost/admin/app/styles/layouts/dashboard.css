@@ -1219,6 +1219,14 @@ Dashboard Attribution */
     position: relative;
 }
 
+.gh-all-sources .gh-dashboard-list-header {
+    grid-template-columns: 70% 30%;
+}
+
+.gh-all-sources .gh-dashboard-list-item {
+    grid-template-columns: 70% 30%;
+}
+
 .gh-all-sources .modal-footer {
     display: none;
 }
