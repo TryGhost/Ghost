@@ -17,9 +17,13 @@ class MemberAttributionService {
     /**
      *
      * @param {Object} context instance of ghost framework context object
-     * @returns {Promise<import('./attribution').AttributionResource>}
+     * @returns {Promise<import('./attribution').AttributionResource|null>}
      */
     async getAttributionFromContext(context) {
+        if (!context) {
+            return null;
+        }
+
         const source = this._resolveContextSource(context);
 
         // We consider only select internal context sources
@@ -27,17 +31,20 @@ class MemberAttributionService {
             let attribution = {};
             if (source === 'import') {
                 attribution.referrerSource = 'Imported';
+                attribution.referrerMedium = 'importer';
             } else if (source === 'admin') {
                 attribution.referrerSource = 'Created Manually';
+                attribution.referrerMedium = 'admin';
             } else if (source === 'api') {
                 attribution.referrerSource = 'Created via API';
+                attribution.referrerMedium = 'api';
             }
 
             // If context has integration, set referrer medium as integration anme
             if (context?.integration?.id) {
                 try {
                     const integration = await this.models.Integration.findOne({id: context.integration.id});
-                    attribution.referrerMedium = integration?.get('name');
+                    attribution.referrerSource = integration?.get('name');
                 } catch (error) {
                     // return null for integration name if not found
                     attribution.referrerMedium = null;
