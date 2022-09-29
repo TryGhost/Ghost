@@ -13,7 +13,8 @@ export default class SourceAttributionTable extends Component {
         const allSources = this.unavailableSource ? [...this.sortedSources, this.unavailableSource] : this.sortedSources;
 
         this.modals.open(AllSourcesModal, {
-            sources: allSources
+            sources: allSources,
+            sortColumn: this.args.sortColumn
         });
     }
 
