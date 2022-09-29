@@ -39,13 +39,13 @@ class MemberAttributionService {
             };
             if (source === 'import') {
                 attribution.referrerSource = 'Imported';
-                attribution.referrerMedium = 'importer';
+                attribution.referrerMedium = 'Member Importer';
             } else if (source === 'admin') {
                 attribution.referrerSource = 'Created manually';
-                attribution.referrerMedium = 'admin';
+                attribution.referrerMedium = 'Ghost Admin';
             } else if (source === 'api') {
                 attribution.referrerSource = 'Created via API';
-                attribution.referrerMedium = 'api';
+                attribution.referrerMedium = 'Admin API';
             }
 
             // If context has integration, set referrer medium as integration anme
