@@ -1,5 +1,5 @@
 import {beforeAll, afterAll, beforeEach, describe, test} from 'vitest';
-import {startApp, initialize, focusEditor, assertHTML, html} from '../utils/e2e';
+import {startApp, initialize, focusEditor, assertHTML, html, assertSelection} from '../utils/e2e';
 
 describe('Card behaviour', async () => {
     let app;
@@ -146,6 +146,13 @@ describe('Card behaviour', async () => {
                 </div>
                 <p><br></p>
             `);
+
+            await assertSelection(page, {
+                anchorOffset: 0,
+                anchorPath: [1],
+                focusOffset: 0,
+                focusPath: [1]
+            });
         });
 
         test('LEFT onto paragraph deselects', async function () {
@@ -179,6 +186,13 @@ describe('Card behaviour', async () => {
                 </div>
                 <p><br></p>
             `);
+
+            await assertSelection(page, {
+                anchorOffset: 0,
+                anchorPath: [0],
+                focusOffset: 0,
+                focusPath: [0]
+            });
         });
 
         test('ENTER creates paragraph after and moves selection', async function () {
@@ -210,6 +224,13 @@ describe('Card behaviour', async () => {
                 <p><br></p>
                 <p><br></p>
             `);
+
+            await assertSelection(page, {
+                anchorOffset: 0,
+                anchorPath: [1],
+                focusOffset: 0,
+                focusPath: [1]
+            });
         });
     });
 });

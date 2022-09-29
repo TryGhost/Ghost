@@ -89,3 +89,52 @@ export function html(partials, ...params) {
     }
     return output;
 }
+
+export async function assertSelection(page, expected) {
+    // Assert the selection of the editor matches the snapshot
+    const selection = await page.evaluate(() => {
+        const rootElement = document.querySelector('div[contenteditable="true"]');
+
+        const getPathFromNode = (node) => {
+            const path = [];
+            if (node === rootElement) {
+                return [];
+            }
+            while (node !== null) {
+                const parent = node.parentNode;
+                if (parent === null || node === rootElement) {
+                    break;
+                }
+                path.push(Array.from(parent.childNodes).indexOf(node));
+                node = parent;
+            }
+            return path.reverse();
+        };
+
+        const {anchorNode, anchorOffset, focusNode, focusOffset} =
+        window.getSelection();
+
+        return {
+            anchorOffset,
+            anchorPath: getPathFromNode(anchorNode),
+            focusOffset,
+            focusPath: getPathFromNode(focusNode)
+        };
+    }, expected);
+    expect(selection.anchorPath).toEqual(expected.anchorPath);
+    expect(selection.focusPath).toEqual(expected.focusPath);
+    if (Array.isArray(expected.anchorOffset)) {
+        const [start, end] = expected.anchorOffset;
+        expect(selection.anchorOffset).toBeGreaterThanOrEqual(start);
+        expect(selection.anchorOffset).toBeLessThanOrEqual(end);
+    } else {
+        expect(selection.anchorOffset).toEqual(expected.anchorOffset);
+    }
+    if (Array.isArray(expected.focusOffset)) {
+        const [start, end] = expected.focusOffset;
+        expect(selection.focusOffset).toBeGreaterThanOrEqual(start);
+        expect(selection.focusOffset).toBeLessThanOrEqual(end);
+    } else {
+        expect(selection.focusOffset).toEqual(expected.focusOffset);
+    }
+}
