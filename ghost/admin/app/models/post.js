@@ -73,6 +73,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     ghostPaths: service(),
     clock: service(),
     settings: service(),
+    membersUtils: service(),
 
     displayName: 'post',
     validationType: 'post',
@@ -182,20 +183,44 @@ export default Model.extend(Comparable, ValidationEngine, {
         return this.isScheduled && !!this.newsletter && !this.email;
     }),
 
-    hasAnalytics: computed('isPost', 'isSent', 'isPublished', 'email', function () {
+    showEmailOpenAnalytics: computed('isPost', 'isSent', 'isPublished', 'email', function () {
         return this.isPost
             && !this.session.user.isContributor
             && this.settings.get('membersSignupAccess') !== 'none'
+            && this.settings.get('editorDefaultEmailRecipients') !== 'disabled'
+            && (this.isSent || this.isPublished) 
+            && this.email
+            && this.email.trackOpens
+            && this.settings.get('emailTrackOpens');
+    }),
+
+    showEmailClickAnalytics: computed('isPost', 'isSent', 'isPublished', 'email', function () {
+        return this.isPost
+            && !this.session.user.isContributor
+            && this.settings.get('membersSignupAccess') !== 'none'
+            && this.settings.get('editorDefaultEmailRecipients') !== 'disabled'
+            && (this.isSent || this.isPublished) 
+            && this.email
+            && this.email.trackClicks
+            && this.settings.get('emailTrackClicks');
+    }),
+
+    showAttributionAnalytics: computed('isPage', 'emailOnly', 'isPublished', 'membersUtils.isMembersInviteOnly', function () {
+        return (this.isPage || !this.emailOnly) 
+                && this.isPublished 
+                && this.feature.get('memberAttribution')
+                && !this.membersUtils.isMembersInviteOnly
+                && !this.session.user.isContributor;
+    }),
+
+    showPaidAttributionAnalytics: computed.and('showAttributionAnalytics', 'membersUtils.paidMembersEnabled'),
+
+    hasAnalyticsPage: computed('isPost', 'showEmailOpenAnalytics', 'showEmailClickAnalytics', 'showAttributionAnalytics', function () {
+        return this.isPost
             && (
-                (
-                    // We have clicks or opens data
-                    (this.isSent || (this.isPublished && this.email)) 
-                        && (this.settings.get('emailTrackClicks') || this.settings.get('emailTrackOpens'))
-                ) 
-                || (
-                    // We have attribution data for pubished posts
-                    this.isPublished && this.feature.get('memberAttribution')
-                )
+                this.showEmailOpenAnalytics
+                || this.showEmailClickAnalytics
+                || this.showAttributionAnalytics
             );
     }),
    

@@ -119,11 +119,11 @@ export default class Analytics extends Component {
     }
 
     get showLinks() {
-        return this.settings.get('emailTrackClicks') && (this.post.isSent || (this.post.isPublished && this.post.email));
+        return this.post.showEmailClickAnalytics;
     }
 
     get showSources() {
-        return this.feature.get('sourceAttribution') && !this.membersUtils.isMembersInviteOnly && !this.post.emailOnly;
+        return this.feature.get('sourceAttribution') && this.post.showAttributionAnalytics;
     }
 
     get isLoaded() {

@@ -24,10 +24,6 @@ export default class PostsListItemClicks extends Component {
         return text.join(' ');
     }
 
-    get isAnalytics() {
-        return this.args.post.hasAnalytics;
-    }
-
     get routeForLink() {
         if (this.isAnalytics) {
             return 'posts.analytics';
