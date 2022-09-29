@@ -1122,6 +1122,20 @@ a.gh-post-list-cta.is-hovered:hover {
     opacity: 0.75;
 }
 
+/* Post Analytics Newsletter Links */
+.gh-links-pagination {
+    background: transparent;
+    border-color: rgba(150,150,150,0.1);
+}
+
+.gh-links-pagination-progress {
+    color: rgba(255,255,255,0.5);
+}
+
+.gh-links-pagination-action.gh-links-pagination-prev:after {
+    background: rgba(150,150,150,0.4);
+}
+
 /* Member */
 .gh-cp-membertier-attribution .gh-membertier-advanced {
     border-top: 1px solid rgb(23, 25, 28);
