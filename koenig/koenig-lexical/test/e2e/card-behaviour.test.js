@@ -17,53 +17,53 @@ describe('Card behaviour', async () => {
         await initialize({page});
     });
 
-    test('click selects card', async function () {
-        await focusEditor(page);
-        await page.keyboard.type('--- ');
-        await page.keyboard.type('--- ');
+    describe('CLICKS', function () {
+        test('click selects card', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('--- ');
+            await page.keyboard.type('--- ');
 
-        // clicking first HR card makes it selected
-        await page.click('hr');
-        await assertHTML(page, html`
-            <div data-lexical-decorator="true" contenteditable="false">
-                <div>
-                    <div data-kg-card="true" data-kg-card-selected="true">
-                        <hr>
+            // clicking first HR card makes it selected
+            await page.click('hr');
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div>
+                        <div data-kg-card="true" data-kg-card-selected="true">
+                            <hr>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div data-lexical-decorator="true" contenteditable="false">
-                <div>
-                    <div data-kg-card="true" data-kg-card-selected="false">
-                        <hr>
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div>
+                        <div data-kg-card="true" data-kg-card-selected="false">
+                            <hr>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <p><br></p>
-        `);
+                <p><br></p>
+            `);
 
-        // clicking second HR card deselects the first and selects the second
-        await page.click('[data-lexical-decorator]:nth-of-type(2) hr');
-        await assertHTML(page, html`
-            <div data-lexical-decorator="true" contenteditable="false">
-                <div>
-                    <div data-kg-card="true" data-kg-card-selected="false">
-                        <hr>
+            // clicking second HR card deselects the first and selects the second
+            await page.click('[data-lexical-decorator]:nth-of-type(2) hr');
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div>
+                        <div data-kg-card="true" data-kg-card-selected="false">
+                            <hr>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div data-lexical-decorator="true" contenteditable="false">
-                <div>
-                    <div data-kg-card="true" data-kg-card-selected="true">
-                        <hr>
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div>
+                        <div data-kg-card="true" data-kg-card-selected="true">
+                            <hr>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <p><br></p>
-        `);
-    });
+                <p><br></p>
+            `);
+        });
 
-    describe('when selected', function () {
         test('click keeps selection', async function () {
             await focusEditor(page);
             await page.keyboard.type('--- ');
@@ -118,44 +118,13 @@ describe('Card behaviour', async () => {
             `);
         });
 
-        test('RIGHT onto paragraph deselects', async function () {
-            await focusEditor(page);
-            await page.keyboard.type('--- ');
-            await page.click('hr');
+        test.todo('double-click puts card in edit mode');
+        test.todo('lazy click puts card in edit mode');
+    });
 
-            await assertHTML(page, html`
-                <div data-lexical-decorator="true" contenteditable="false">
-                    <div>
-                        <div data-kg-card="true" data-kg-card-selected="true">
-                            <hr>
-                        </div>
-                    </div>
-                </div>
-                <p><br></p>
-            `);
-
-            await page.keyboard.press('ArrowRight');
-
-            await assertHTML(page, html`
-                <div data-lexical-decorator="true" contenteditable="false">
-                    <div>
-                        <div data-kg-card="true" data-kg-card-selected="false">
-                            <hr>
-                        </div>
-                    </div>
-                </div>
-                <p><br></p>
-            `);
-
-            await assertSelection(page, {
-                anchorOffset: 0,
-                anchorPath: [1],
-                focusOffset: 0,
-                focusPath: [1]
-            });
-        });
-
-        test('LEFT onto paragraph deselects', async function () {
+    describe('LEFT', function () {
+        // deselects card and moves cursor onto paragraph
+        test('with selected card after paragraph', async function () {
             await focusEditor(page);
             await page.keyboard.press('Enter');
             await page.keyboard.type('--- ');
@@ -195,7 +164,53 @@ describe('Card behaviour', async () => {
             });
         });
 
-        test('ENTER creates paragraph after and moves selection', async function () {
+        // moves selection to previous card
+        test.todo('when selected card after card');
+        // triggers "caret left at top" prop fn
+        test.todo('when selected card is first section');
+    });
+
+    describe('RIGHT', function () {
+        test('with selected card before paragraph', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('--- ');
+            await page.click('hr');
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div>
+                        <div data-kg-card="true" data-kg-card-selected="true">
+                            <hr>
+                        </div>
+                    </div>
+                </div>
+                <p><br></p>
+            `);
+
+            await page.keyboard.press('ArrowRight');
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div>
+                        <div data-kg-card="true" data-kg-card-selected="false">
+                            <hr>
+                        </div>
+                    </div>
+                </div>
+                <p><br></p>
+            `);
+
+            await assertSelection(page, {
+                anchorOffset: 0,
+                anchorPath: [1],
+                focusOffset: 0,
+                focusPath: [1]
+            });
+        });
+    });
+
+    describe('ENTER', function () {
+        test('with selected card creates paragraph after and moves selection', async function () {
             await focusEditor(page);
             await page.keyboard.type('--- ');
             await page.click('hr');
@@ -232,5 +247,15 @@ describe('Card behaviour', async () => {
                 focusPath: [1]
             });
         });
+    });
+
+    describe('BACKSPACE', function () {
+        test.todo('with selected card after paragraph');
+        test.todo('with selected card as first section');
+    });
+
+    describe('DELETE', function () {
+        test.todo('with selected card after paragraph');
+        test.todo('with selected card as first section');
     });
 });
