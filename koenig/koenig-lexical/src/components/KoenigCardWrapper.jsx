@@ -1,13 +1,17 @@
 import React from 'react';
 import {
+    $createNodeSelection,
     $createParagraphNode,
     $getNodeByKey,
     $getSelection,
+    $isDecoratorNode,
     $isNodeSelection,
+    $setSelection,
     BLUR_COMMAND,
     CLICK_COMMAND,
     COMMAND_PRIORITY_EDITOR,
     COMMAND_PRIORITY_LOW,
+    KEY_BACKSPACE_COMMAND,
     KEY_ENTER_COMMAND
 } from 'lexical';
 import {mergeRegister} from '@lexical/utils';
@@ -64,6 +68,46 @@ const KoenigCardWrapperComponent = ({nodeKey, children}) => {
                         const paragraphNode = $createParagraphNode();
                         cardNode.getTopLevelElementOrThrow().insertAfter(paragraphNode);
                         paragraphNode.select();
+                        return true;
+                    }
+                    return false;
+                },
+                COMMAND_PRIORITY_EDITOR
+            ),
+            editor.registerCommand(
+                KEY_BACKSPACE_COMMAND,
+                (event) => {
+                    const latestSelection = $getSelection();
+                    if (isSelected && $isNodeSelection(latestSelection) && latestSelection.getNodes().length === 1) {
+                        event.preventDefault();
+                        const cardNode = $getNodeByKey(nodeKey);
+                        const previousSibling = cardNode.getPreviousSibling();
+                        const nextSibling = cardNode.getNextSibling();
+
+                        if (previousSibling) {
+                            if (previousSibling.selectEnd) {
+                                previousSibling.selectEnd();
+                            } else if ($isDecoratorNode(previousSibling)) {
+                                const nodeSelection = $createNodeSelection();
+                                nodeSelection.add(previousSibling.getKey());
+                                $setSelection(nodeSelection);
+                            } else {
+                                cardNode.selectPrevious();
+                            }
+                        } else if (nextSibling) {
+                            if (nextSibling.selectStart) {
+                                nextSibling.selectStart();
+                            } else if ($isDecoratorNode(nextSibling)) {
+                                const nodeSelection = $createNodeSelection();
+                                nodeSelection.add(nextSibling.getKey());
+                                $setSelection(nodeSelection);
+                            } else {
+                                cardNode.selectNext();
+                            }
+                        }
+
+                        cardNode.remove();
+
                         return true;
                     }
                     return false;

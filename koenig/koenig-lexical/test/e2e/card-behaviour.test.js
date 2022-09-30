@@ -250,8 +250,116 @@ describe('Card behaviour', async () => {
     });
 
     describe('BACKSPACE', function () {
-        test.todo('with selected card after paragraph');
-        test.todo('with selected card as first section');
+        // deletes card and puts cursor at end of previous paragraph
+        test('with selected card after paragraph', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('Testing');
+            await page.keyboard.press('Enter');
+            await page.keyboard.type('--- ');
+            await page.click('hr');
+
+            await assertHTML(page, html`
+                <p dir="ltr"><span data-lexical-text="true">Testing</span></p>
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div>
+                        <div data-kg-card="true" data-kg-card-selected="true">
+                            <hr>
+                        </div>
+                    </div>
+                </div>
+                <p><br></p>
+            `);
+
+            await page.keyboard.press('Backspace');
+
+            await assertHTML(page, html`
+                <p dir="ltr"><span data-lexical-text="true">Testing</span></p>
+                <p><br></p>
+            `);
+
+            await assertSelection(page, {
+                anchorOffset: 7,
+                anchorPath: [0, 0, 0],
+                focusOffset: 7,
+                focusPath: [0, 0, 0]
+            });
+        });
+
+        test('with selected card after card', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('--- ');
+            await page.keyboard.type('--- ');
+            await page.click('[data-lexical-decorator]:nth-of-type(2) hr');
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div>
+                        <div data-kg-card="true" data-kg-card-selected="false">
+                            <hr>
+                        </div>
+                    </div>
+                </div>
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div>
+                        <div data-kg-card="true" data-kg-card-selected="true">
+                            <hr>
+                        </div>
+                    </div>
+                </div>
+                <p><br></p>
+            `);
+
+            await page.keyboard.press('Backspace');
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div>
+                        <div data-kg-card="true" data-kg-card-selected="true">
+                            <hr>
+                        </div>
+                    </div>
+                </div>
+                <p><br></p>
+            `);
+        });
+
+        test('with selected card as first section followed by paragraph', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('--- ');
+            await page.keyboard.type('Testing');
+            await page.click('hr');
+            await page.keyboard.press('Backspace');
+
+            await assertHTML(page, html`
+                <p dir="ltr"><span data-lexical-text="true">Testing</span></p>
+            `);
+
+            await assertSelection(page, {
+                anchorOffset: 0,
+                anchorPath: [0, 0, 0],
+                focusOffset: 0,
+                focusPath: [0, 0, 0]
+            });
+        });
+
+        test('with selected card as first section followed card', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('--- ');
+            await page.keyboard.type('--- ');
+            await page.click('hr');
+            await page.keyboard.press('Backspace');
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div>
+                        <div data-kg-card="true" data-kg-card-selected="true">
+                            <hr>
+                        </div>
+                    </div>
+                </div>
+                <p><br></p>
+            `);
+        });
     });
 
     describe('DELETE', function () {
