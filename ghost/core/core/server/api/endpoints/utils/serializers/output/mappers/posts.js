@@ -114,8 +114,8 @@ module.exports = async (model, frame, options = {}) => {
         if (jsonModel.email && jsonModel.count) {
             jsonModel.email.opened_count = Math.min(
                 Math.max(
-                    jsonModel.email.opened_count,
-                    jsonModel.count.clicks
+                    jsonModel.email.opened_count || 0,
+                    jsonModel.count.clicks || 0
                 ),
                 jsonModel.email.email_count
             );
