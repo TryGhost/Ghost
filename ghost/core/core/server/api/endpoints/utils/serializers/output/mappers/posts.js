@@ -110,6 +110,18 @@ module.exports = async (model, frame, options = {}) => {
         });
     }
 
+    if (labs.isSet('emailClicks')) {
+        if (jsonModel.email && jsonModel.count) {
+            jsonModel.email.opened_count = Math.min(
+                Math.max(
+                    jsonModel.email.opened_count,
+                    jsonModel.count.clicks
+                ),
+                jsonModel.email.email_count
+            );
+        }
+    }
+
     if (!labs.isSet('memberAttribution') && !labs.isSet('emailClicks')) {
         delete jsonModel.count;
     }
