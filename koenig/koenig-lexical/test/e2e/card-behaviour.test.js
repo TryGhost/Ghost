@@ -363,7 +363,59 @@ describe('Card behaviour', async () => {
     });
 
     describe('DELETE', function () {
-        test.todo('with selected card after paragraph');
-        test.todo('with selected card as first section');
+        test('with selected card before paragraph', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('--- ');
+            await page.keyboard.type('Testing');
+            await page.click('hr');
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div>
+                        <div data-kg-card="true" data-kg-card-selected="true">
+                            <hr>
+                        </div>
+                    </div>
+                </div>
+                <p dir="ltr"><span data-lexical-text="true">Testing</span></p>
+            `);
+
+            await page.keyboard.press('Delete');
+
+            await assertHTML(page, html`
+                <p dir="ltr"><span data-lexical-text="true">Testing</span></p>
+            `);
+
+            await assertSelection(page, {
+                anchorOffset: 0,
+                anchorPath: [0, 0, 0],
+                focusOffset: 0,
+                focusPath: [0, 0, 0]
+            });
+        });
+
+        test('with selected card before card', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('--- ');
+            await page.keyboard.type('--- ');
+            await page.click('hr');
+
+            await page.keyboard.press('Delete');
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div>
+                        <div data-kg-card="true" data-kg-card-selected="true">
+                            <hr>
+                        </div>
+                    </div>
+                </div>
+                <p><br></p>
+            `);
+        });
+
+        // general BACKSPACE behaviour needed to delete trailing
+        // paragraph after HR card without also deleting the card
+        test.todo('with selected card as last section');
     });
 });
