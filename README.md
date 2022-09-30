@@ -30,7 +30,7 @@
     </a>
 </p>
 <p align="center">
-  Love open source? <a href="https://careers.ghost.org/product-engineer-node-js/">We're hiring</a> Node.js engineers to work on Ghost full-time.
+  Love open source? <a href="https://careers.ghost.org">We're hiring</a> JavaScript engineers to work on Ghost full-time.
 </p>
 
 &nbsp;
