@@ -2147,3 +2147,24 @@ section.gh-ds h2 {
         justify-content: center;
     }
 }
+
+@media (max-width: 330px) {
+    .text-sm {
+    font-size: 1rem;
+    }
+    .text-2xl {
+    font-size: 2rem;
+    }
+}
+
+@media (max-width: 264px) {
+    .text-sm {
+    font-size: 0.6rem;
+    }
+    .py-\[8px\] {
+    padding-top: 0px;
+    }
+}
+
+
+
