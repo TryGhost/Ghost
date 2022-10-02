@@ -2,12 +2,12 @@ import moment from 'moment-timezone';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
 import {blur, click, currentURL, fillIn, find, findAll, settled} from '@ember/test-helpers';
+import {enablePaidMembers} from '../helpers/members';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {timeout} from 'ember-concurrency';
 import {visit} from '../helpers/visit';
-import {enablePaidMembers} from '../helpers/members';
 
 describe('Acceptance: Offers', function () {
     let hooks = setupApplicationTest();
