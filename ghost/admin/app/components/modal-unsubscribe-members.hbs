@@ -1,7 +1,7 @@
 <header class="modal-header" data-test-modal="unsubscribe-members">
     <h1>Unsubscribe members from email?</h1>
 </header>
-<a class="close" href="" role="button" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
+<button class="close" role="button" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
 {{#if this.confirmed}}
     <div class="gh-content-box pa" data-test-state="unsubscribe-complete">
