@@ -5,7 +5,7 @@ const MemberClickEvent = ghostBookshelf.Model.extend({
     tableName: 'members_click_events',
 
     link() {
-        return this.belongsTo('Redirect', 'link_id');
+        return this.belongsTo('Redirect', 'redirect_id');
     },
 
     member() {
