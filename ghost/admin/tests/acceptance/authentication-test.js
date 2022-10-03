@@ -165,6 +165,7 @@ describe('Acceptance: Authentication', function () {
             expect(findAll('.gh-alert').length, 'no of alerts').to.equal(0);
 
             // update the post
+            testOn = 'edit';
             await fillIn('.__mobiledoc-editor', 'Edited post body');
             await triggerKeyEvent('.gh-editor-title', 'keydown', 83, {
                 metaKey: ctrlOrCmd === 'command',
