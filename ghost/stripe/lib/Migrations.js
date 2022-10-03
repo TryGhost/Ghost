@@ -174,9 +174,9 @@ module.exports = class StripeMigrations {
         }
 
         for (const plan of plans) {
-            const price = await this.findPriceByPlan(plan, options);
+            const existingPrice = await this.findPriceByPlan(plan, options);
 
-            if (!price) {
+            if (!existingPrice) {
                 logging.info(`Could not find Stripe Price ${JSON.stringify(plan)}`);
 
                 try {
@@ -240,8 +240,8 @@ module.exports = class StripeMigrations {
         const newPortalPlans = await portalPlans.reduce(async (newPortalPlansPromise, plan) => {
             let newPlan = plan;
             if (plan === 'monthly') {
-                const monthlyPlan = plans.find((plan) => {
-                    return plan.name === 'Monthly';
+                const monthlyPlan = plans.find((planItem) => {
+                    return planItem.name === 'Monthly';
                 });
                 if (!monthlyPlan) {
                     return newPortalPlansPromise;
@@ -250,8 +250,8 @@ module.exports = class StripeMigrations {
                 newPlan = price.id;
             }
             if (plan === 'yearly') {
-                const yearlyPlan = plans.find((plan) => {
-                    return plan.name === 'Yearly';
+                const yearlyPlan = plans.find((planItem) => {
+                    return planItem.name === 'Yearly';
                 });
                 if (!yearlyPlan) {
                     return newPortalPlansPromise;
@@ -259,8 +259,8 @@ module.exports = class StripeMigrations {
                 const price = await this.findPriceByPlan(yearlyPlan, options);
                 newPlan = price.id;
             }
-            const newPortalPlans = await newPortalPlansPromise;
-            return newPortalPlans.concat(newPlan);
+            const newPortalPlansMemo = await newPortalPlansPromise;
+            return newPortalPlansMemo.concat(newPlan);
         }, []);
 
         logging.info(`Updating portal_plans setting to ${JSON.stringify(newPortalPlans)}`);
@@ -515,8 +515,8 @@ module.exports = class StripeMigrations {
                 return newPortalPlansPromise;
             }
 
-            const newPortalPlans = await newPortalPlansPromise;
-            const updatedPortalPlans = newPortalPlans.filter(d => d !== plan).concat(plan);
+            const newPortalPlansMemo = await newPortalPlansPromise;
+            const updatedPortalPlans = newPortalPlansMemo.filter(d => d !== plan).concat(plan);
 
             return updatedPortalPlans;
         }, defaultPortalPlans);
