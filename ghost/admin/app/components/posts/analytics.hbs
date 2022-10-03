@@ -55,8 +55,8 @@
             {{#if this.post.showEmailOpenAnalytics }}
                 <div class="gh-post-analytics-item">
                     <LinkTo @route="members" @query={{hash filterParam=(concat "opened_emails.post_id:[" this.post.id "]") }}>
-                        <h3>{{this.post.email.openRate}}<sup>%</sup></h3>
-                        <p><strong>{{format-number this.post.email.openedCount}}</strong> opened</p>
+                        <h3>{{format-number this.post.email.openedCount}}</h3>
+                        <p>Opened &mdash; <strong>{{this.post.email.openRate}}%</strong></p>
                     </LinkTo>
                 </div>
             {{/if}}
@@ -64,8 +64,8 @@
             {{#if this.post.showEmailClickAnalytics }}
                 <div class="gh-post-analytics-item">
                     <LinkTo @route="members" @query={{hash filterParam=(concat "clicked_links.post_id:[" this.post.id "]") }}>
-                        <h3>{{this.post.clickRate}}<sup>%</sup></h3>
-                        <p><strong>{{format-number this.post.count.clicks}}</strong> clicked</p>
+                        <h3>{{format-number this.post.count.clicks}}</h3>
+                        <p>Clicked &mdash; <strong>{{this.post.clickRate}}%</strong></p>
                     </LinkTo>
                 </div>
             {{/if}}
