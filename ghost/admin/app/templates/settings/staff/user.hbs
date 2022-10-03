@@ -31,33 +31,27 @@
                     <GhDropdown @name="user-actions-menu" @tagName="ul" @classNames="user-actions-menu dropdown-menu dropdown-align-right">
                         {{#if this.canMakeOwner}}
                             <li>
-                                <button type="button" {{action "toggleTransferOwnerModal"}}>
+                                <button type="button" {{on "click" this.transferOwnership}}>
                                     Make owner
                                 </button>
-                                {{#if this.showTransferOwnerModal}}
-                                    <GhFullscreenModal @modal="transfer-owner"
-                                        @confirm={{action "transferOwnership"}}
-                                        @close={{action "toggleTransferOwnerModal"}}
-                                        @modifier="action wide" />
-                                {{/if}}
                             </li>
                         {{/if}}
                         {{#if this.deleteUserActionIsVisible}}
                             <li>
-                                <button class="delete" data-test-delete-button type="button" {{action "toggleDeleteUserModal"}}>
+                                <button class="delete" data-test-delete-button type="button" {{on "click" this.deleteUser}}>
                                     Delete user
                                 </button>
                             </li>
                             {{#if this.user.isActive}}
                                 <li>
-                                    <button class="suspend" data-test-suspend-button type="button" {{action "toggleSuspendUserModal"}}>
+                                    <button class="suspend" data-test-suspend-button type="button" {{on "click" this.suspendUser}}>
                                         Suspend user
                                     </button>
                                 </li>
                             {{/if}}
                             {{#if this.user.isSuspended}}
                                 <li>
-                                    <button class="unsuspend" data-test-unsuspend-button type="button" {{action "toggleUnsuspendUserModal"}}>
+                                    <button class="unsuspend" data-test-unsuspend-button type="button" {{on "click" this.unsuspendUser}}>
                                         Un-suspend user
                                     </button>
                                 </li>
@@ -74,39 +68,6 @@
             {{/if}}
 
             <GhTaskButton @class="gh-btn gh-btn-primary gh-btn-icon" @task={{this.save}} data-test-save-button={{true}} />
-
-            {{#if this.showDeleteUserModal}}
-                <GhFullscreenModal @modal="delete-user"
-                    @model={{this.user}}
-                    @confirm={{action (perform this.deleteUser)}}
-                    @close={{action "toggleDeleteUserModal"}}
-                    @modifier="action wide" />
-            {{/if}}
-
-            {{#if this.showSuspendUserModal}}
-                <GhFullscreenModal @modal="suspend-user"
-                    @model={{this.user}}
-                    @confirm={{action "suspendUser"}}
-                    @close={{action "toggleSuspendUserModal"}}
-                    @modifier="action wide" />
-            {{/if}}
-
-            {{#if this.showUnsuspendUserModal}}
-                {{#if this.limitErrorMessage}}
-                    <GhFullscreenModal @modal="upgrade-unsuspend-user-host-limit"
-                        @model={{hash
-                            message=this.limitErrorMessage
-                        }}
-                        @close={{action "toggleUnsuspendUserModal"}}
-                        @modifier="action wide" />
-                {{else}}
-                    <GhFullscreenModal @modal="unsuspend-user"
-                        @model={{this.user}}
-                        @confirm={{action "unsuspendUser"}}
-                        @close={{action "toggleUnsuspendUserModal"}}
-                        @modifier="action wide" />
-                {{/if}}
-            {{/if}}
         </section>
     </GhCanvasHeader>
 
@@ -120,24 +81,12 @@
             <form class="user-profile" novalidate="novalidate" autocomplete="off" {{action (perform this.save) on="submit"}}>
 
                 <figure class="user-cover" style={{background-image-style this.user.coverImageUrl}}>
-                    <button type="button" class="gh-btn gh-btn-default user-cover-edit" {{action "toggleUploadCoverModal"}}><span>Change cover</span></button>
-                    {{#if this.showUploadCoverModal}}
-                        <GhFullscreenModal @modal="upload-image"
-                            @model={{hash model=this.user imageProperty="coverImage"}}
-                            @close={{action "toggleUploadCoverModal"}}
-                            @modifier="action wide" />
-                    {{/if}}
+                    <button type="button" class="gh-btn gh-btn-default user-cover-edit" {{on "click" this.changeCoverImage}}><span>Change cover</span></button>
                 </figure>
 
                 <figure class="user-image bg-whitegrey">
                     <div id="user-image" class="img" style={{background-image-style this.user.profileImageUrl}}><span class="hidden">{{this.user.name}}"s picture</span></div>
-                    <button type="button" {{action "toggleUploadImageModal"}} class="edit-user-image">Edit picture</button>
-                    {{#if this.showUploadImageModal}}
-                        <GhFullscreenModal @modal="upload-image"
-                            @model={{hash model=this.user imageProperty="profileImage" paramsHash=(hash purpose="profile_image")}}
-                            @close={{action "toggleUploadImageModal"}}
-                            @modifier="action wide" />
-                    {{/if}}
+                    <button type="button" class="edit-user-image" {{on "click" this.changeProfileImage}}>Edit picture</button>
                 </figure>
 
                 <div class="pa5">
@@ -205,19 +154,9 @@
                         {{#if this.rolesDropdownIsVisible}}
                             <div class="form-group">
                                 <label for="user-role">Role</label>
-                                <div class="gh-input pointer" {{on "click" (action "toggleRoleSelectionModal")}}>{{this.user.role.name}}{{svg-jar "arrow-down-small"}}</div>
+                                <button type="button" class="gh-input tl" {{on "click" this.selectRole}}>{{this.user.role.name}}{{svg-jar "arrow-down-small"}}</button>
                                 <p>What permissions should this user have?</p>
                             </div>
-
-                            {{#if this.showRoleSelectionModal}}
-                                <GhFullscreenModal
-                                    @modal="select-user-role"
-                                    @model={{readonly this.user.role}}
-                                    @confirm={{action "changeRole"}}
-                                    @close={{action "toggleRoleSelectionModal"}}
-                                    @modifier="change-role"
-                                />
-                            {{/if}}
                         {{/if}}
 
                         <GhFormGroup @errors={{this.user.errors}} @hasValidated={{this.user.hasValidated}} @property="location">
@@ -468,14 +407,14 @@
                                             onclick="this.select()"
                                         />
                                     <div class="app-api-personal-token-buttons child">
-                                        <button type="button" {{action "confirmRegenerateTokenModal"}} class="app-button-regenerate" data-tooltip="Regenerate">
+                                        <button type="button" class="app-button-regenerate" {{on "click" this.regenerateStaffToken}} data-tooltip="Regenerate">
                                             {{svg-jar "reload" class="w4 h4 stroke-midgrey"}}
                                         </button>
                                         <button type="button" {{action (perform this.copyContentKey)}} class="app-button-copy">
                                             {{#if this.copyContentKey.isRunning}}
-                                            {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
+                                                {{svg-jar "check-circle" class="w3 v-mid mr2 stroke-white"}} Copied
                                             {{else}}
-                                            Copy
+                                                Copy
                                             {{/if}}
                                         </button>
                                     </div>
@@ -486,13 +425,6 @@
                                 {{#if this.personalTokenRegenerated}}
                                     <p class="green">Staff access token was successfully regenerated </p>
                                 {{/if}}
-                                {{#if this.showRegenerateTokenModal}}
-                                    <GhFullscreenModal @modal="regenerate-token"
-                                        @confirm={{action "regenerateToken"}}
-                                        @close={{action "cancelRegenerateTokenModal"}}
-                                        @modifier="action wide" />
-                                {{/if}}
-
                             </GhFormGroup>
                         </fieldset>
                     </div>
