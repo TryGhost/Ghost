@@ -89,7 +89,7 @@ ghostBookshelf.plugin('bookshelf-relations', {
                     return existing.updatePivot({
                         sort_order: index
                     }, _.extend({}, options, queryOptions));
-                }))
+                }));
             },
             beforeRelationCreation: function onCreatingRelation(model, data) {
                 data.id = ObjectId().toHexString();
