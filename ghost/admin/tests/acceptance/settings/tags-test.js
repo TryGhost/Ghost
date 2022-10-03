@@ -94,6 +94,10 @@ describe('Acceptance: Tags', function () {
             await visit('tags');
             await click(`[data-test-tag="${tag.id}"] [data-test-tag-name]`);
 
+            // it maintains active state in nav menu
+            expect(find('[data-test-nav="tags"]'), 'highlights nav menu item')
+                .to.have.class('active');
+
             expect(currentURL()).to.equal('/tags/to-be-edited');
 
             expect(find('[data-test-input="tag-name"]')).to.have.value('To be edited');
@@ -155,6 +159,13 @@ describe('Acceptance: Tags', function () {
 
             expect(currentRouteName()).to.equal('error404');
             expect(currentURL()).to.equal('/tags/unknown');
+        });
+
+        it('maintains active state in nav menu when creating a new tag', async function () {
+            await visit('tags/new');
+            expect(currentURL()).to.equal('tags/new');
+            expect(find('[data-test-nav="tags"]'), 'highlights nav menu item')
+                .to.have.class('active');
         });
     });
 });
