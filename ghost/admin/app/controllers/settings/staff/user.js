@@ -1,4 +1,11 @@
 import Controller from '@ember/controller';
+import DeleteUserModal from '../../../components/settings/staff/modals/delete-user';
+import RegenerateStaffTokenModal from '../../../components/settings/staff/modals/regenerate-staff-token';
+import SelectRoleModal from '../../../components/settings/staff/modals/select-role';
+import SuspendUserModal from '../../../components/settings/staff/modals/suspend-user';
+import TransferOwnershipModal from '../../../components/settings/staff/modals/transfer-ownership';
+import UnsuspendUserModal from '../../../components/settings/staff/modals/unsuspend-user';
+import UploadImageModal from '../../../components/settings/staff/modals/upload-image';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import isNumber from 'ghost-admin/utils/isNumber';
@@ -6,7 +13,6 @@ import validator from 'validator';
 import windowProxy from 'ghost-admin/utils/window-proxy';
 import {action, computed} from '@ember/object';
 import {alias, and, not, or, readOnly} from '@ember/object/computed';
-import {isArray as isEmberArray} from '@ember/array';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {task, taskGroup, timeout} from 'ember-concurrency';
@@ -14,26 +20,17 @@ import {task, taskGroup, timeout} from 'ember-concurrency';
 export default Controller.extend({
     ajax: service(),
     config: service(),
-    dropdown: service(),
     ghostPaths: service(),
-    limit: service(),
+    membersUtils: service(),
+    modals: service(),
     notifications: service(),
     session: service(),
     slugGenerator: service(),
     utils: service(),
-    membersUtils: service(),
 
     personalToken: null,
-    limitErrorMessage: null,
     personalTokenRegenerated: false,
     dirtyAttributes: false,
-    showDeleteUserModal: false,
-    showSuspendUserModal: false,
-    showTransferOwnerModal: false,
-    showUploadCoverModal: false,
-    showUploadImageModal: false,
-    showRegenerateTokenModal: false,
-    showRoleSelectionModal: false,
     _scratchFacebook: null,
     _scratchTwitter: null,
 
@@ -88,62 +85,6 @@ export default Controller.extend({
     }),
 
     actions: {
-        toggleRoleSelectionModal(event) {
-            event?.preventDefault?.();
-            this.toggleProperty('showRoleSelectionModal');
-        },
-
-        changeRole(newRole) {
-            this.user.set('role', newRole);
-            this.set('dirtyAttributes', true);
-        },
-
-        toggleDeleteUserModal() {
-            if (this.deleteUserActionIsVisible) {
-                this.toggleProperty('showDeleteUserModal');
-            }
-        },
-
-        suspendUser() {
-            this.user.set('status', 'inactive');
-            return this.save.perform();
-        },
-
-        toggleSuspendUserModal() {
-            if (this.deleteUserActionIsVisible) {
-                this.toggleProperty('showSuspendUserModal');
-            }
-        },
-
-        unsuspendUser() {
-            this.user.set('status', 'active');
-            return this.save.perform();
-        },
-
-        toggleUnsuspendUserModal() {
-            if (this.deleteUserActionIsVisible) {
-                if (this.user.role.name !== 'Contributor'
-                    && this.limit.limiter
-                    && this.limit.limiter.isLimited('staff')
-                ) {
-                    this.limit.limiter.errorIfWouldGoOverLimit('staff')
-                        .then(() => {
-                            this.toggleProperty('showUnsuspendUserModal');
-                        })
-                        .catch((error) => {
-                            if (error.errorType === 'HostLimitError') {
-                                this.limitErrorMessage = error.message;
-                                this.toggleProperty('showUnsuspendUserModal');
-                            } else {
-                                this.notifications.showAPIError(error, {key: 'staff.limit'});
-                            }
-                        });
-                } else {
-                    this.toggleProperty('showUnsuspendUserModal');
-                }
-            }
-        },
-
         validateFacebookUrl() {
             let newUrl = this._scratchFacebook;
             let oldUrl = this.get('user.facebook');
@@ -255,50 +196,6 @@ export default Controller.extend({
             }
         },
 
-        transferOwnership() {
-            let user = this.user;
-            let url = this.get('ghostPaths.url').api('users', 'owner');
-
-            this.dropdown.closeDropdowns();
-
-            return this.ajax.put(url, {
-                data: {
-                    owner: [{
-                        id: user.get('id')
-                    }]
-                }
-            }).then((response) => {
-                // manually update the roles for the users that just changed roles
-                // because store.pushPayload is not working with embedded relations
-                if (response && isEmberArray(response.users)) {
-                    response.users.forEach((userJSON) => {
-                        let updatedUser = this.store.peekRecord('user', userJSON.id);
-                        let role = this.store.peekRecord('role', userJSON.roles[0].id);
-
-                        updatedUser.set('role', role);
-                    });
-                }
-
-                this.notifications.showAlert(`Ownership successfully transferred to ${user.get('name')}`, {type: 'success', key: 'owner.transfer.success'});
-            }).catch((error) => {
-                this.notifications.showAPIError(error, {key: 'owner.transfer'});
-            });
-        },
-
-        toggleTransferOwnerModal() {
-            if (this.canMakeOwner) {
-                this.toggleProperty('showTransferOwnerModal');
-            }
-        },
-
-        toggleUploadCoverModal() {
-            this.toggleProperty('showUploadCoverModal');
-        },
-
-        toggleUploadImageModal() {
-            this.toggleProperty('showUploadImageModal');
-        },
-
         // TODO: remove those mutation actions once we have better
         // inline validations that auto-clear errors on input
         updatePassword(password) {
@@ -317,27 +214,76 @@ export default Controller.extend({
             this.set('user.ne2Password', password);
             this.get('user.hasValidated').removeObject('ne2Password');
             this.get('user.errors').remove('ne2Password');
-        },
-
-        confirmRegenerateTokenModal() {
-            this.set('showRegenerateTokenModal', true);
-        },
-
-        cancelRegenerateTokenModal() {
-            this.set('showRegenerateTokenModal', false);
-        },
-
-        regenerateToken() {
-            let url = this.get('ghostPaths.url').api('users', 'me', 'token');
-
-            return this.ajax.put(url, {data: {}}).then(({apiKey}) => {
-                this.set('personalToken', apiKey.id + ':' + apiKey.secret);
-                this.set('personalTokenRegenerated', true);
-            }).catch((error) => {
-                this.notifications.showAPIError(error, {key: 'token.regenerate'});
-            });
         }
     },
+
+    deleteUser: action(async function () {
+        if (this.deleteUserActionIsVisible) {
+            await this.modals.open(DeleteUserModal, {
+                user: this.model
+            });
+        }
+    }),
+
+    suspendUser: action(async function () {
+        if (this.deleteUserActionIsVisible) {
+            await this.modals.open(SuspendUserModal, {
+                user: this.model,
+                saveTask: this.save
+            });
+        }
+    }),
+
+    unsuspendUser: action(async function () {
+        if (this.deleteUserActionIsVisible) {
+            await this.modals.open(UnsuspendUserModal, {
+                user: this.model,
+                saveTask: this.save
+            });
+        }
+    }),
+
+    transferOwnership: action(async function () {
+        if (this.canMakeOwner) {
+            await this.modals.open(TransferOwnershipModal, {
+                user: this.model
+            });
+        }
+    }),
+
+    regenerateStaffToken: action(async function () {
+        const apiToken = await this.modals.open(RegenerateStaffTokenModal);
+
+        if (apiToken) {
+            this.set('personalToken', apiToken);
+            this.set('personalTokenRegenerated', true);
+        }
+    }),
+
+    selectRole: action(async function () {
+        const newRole = await this.modals.open(SelectRoleModal, {
+            currentRole: this.model.role
+        });
+
+        if (newRole) {
+            this.user.role = newRole;
+            this.set('dirtyAttributes', true);
+        }
+    }),
+
+    changeCoverImage: action(async function () {
+        await this.modals.open(UploadImageModal, {
+            model: this.model,
+            modelProperty: 'coverImage'
+        });
+    }),
+
+    changeProfileImage: action(async function () {
+        await this.modals.open(UploadImageModal, {
+            model: this.model,
+            modelProperty: 'profileImage'
+        });
+    }),
 
     reset: action(function () {
         this.user.rollbackAttributes();
@@ -359,19 +305,6 @@ export default Controller.extend({
             this.user.paidSubscriptionStartedNotification = event.target.checked;
         } else if (type === 'paid-canceled') {
             this.user.paidSubscriptionCanceledNotification = event.target.checked;
-        }
-    }),
-
-    deleteUser: task(function *() {
-        try {
-            yield this.user.destroyRecord();
-
-            this.notifications.closeAlerts('user.delete');
-            this.store.unloadAll('post');
-            this.transitionToRoute('settings.staff');
-        } catch (error) {
-            this.notifications.showAlert('The user could not be deleted. Please try again.', {type: 'error', key: 'user.delete.failed'});
-            throw error;
         }
     }),
 
