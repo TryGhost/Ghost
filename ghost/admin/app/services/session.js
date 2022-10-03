@@ -78,14 +78,19 @@ export default class SessionService extends ESASessionService {
 
     async requireAuthentication(transition, route) {
         if (!this.isAuthenticated) {
-            // try to re-setup session if user data is still available
+            /**
+             * Always try to re-setup session if user data is still available
+             * although the session is invalid and retry the original transition.
+             * If success, it will retry the original transition.
+             * If failed, it will be handled by the redirect to sign in.
+             */
             await this.reSetupSession(transition);
         }
 
         super.requireAuthentication(transition, route);
     }
 
-    // TODO: feels a bit hacky to re-setup session if user data is available
+    // TODO: feels a bit hacky, maybe got a better way to handle this
     async reSetupSession(transition) {
         if (this.user) {
             await this.setup();
