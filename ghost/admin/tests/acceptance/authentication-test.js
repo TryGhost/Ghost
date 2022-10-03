@@ -69,6 +69,27 @@ describe('Acceptance: Authentication', function () {
             expect(currentURL(), 'url after 401').to.equal('/signin');
         });
 
+        it('invalidates session on 403 API response', async function () {
+            // return a 401 when attempting to retrieve users
+            this.server.get('/users/', () => new Response(403, {}, {
+                errors: [
+                    {message: 'Authorization failed', type: 'NoPermissionError'}
+                ]
+            }));
+
+            await authenticateSession();
+            await visit('/settings/staff');
+
+            // running `visit(url)` inside windowProxy.replaceLocation breaks
+            // the async behaviour so we need to run `visit` here to simulate
+            // the browser visiting the new page
+            if (newLocation) {
+                await visit(newLocation);
+            }
+
+            expect(currentURL(), 'url after 403').to.equal('/signin');
+        });
+
         it('doesn\'t show navigation menu on invalid url when not authenticated', async function () {
             await invalidateSession();
 
