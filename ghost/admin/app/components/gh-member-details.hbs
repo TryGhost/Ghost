@@ -70,13 +70,13 @@
                     {{#if this.referrerSource}}
                         <p>
                             {{svg-jar "earth"}}
-                            Signup source-&nbsp;<span title="{{this.referrerSource}}">{{this.referrerSource}}</span>
+                            Signup source&nbsp;–&nbsp;<span title="{{this.referrerSource}}">{{this.referrerSource}}</span>
                         </p>
                     {{/if}}
                     {{#if (and @member.attribution.url @member.attribution.title)}}
                     <p>
                         {{svg-jar "posts"}}
-                        Signup page-&nbsp;<a href="{{@member.attribution.url}}" target="_blank" rel="noopener noreferrer" title="{{ @member.attribution.title }}">{{ @member.attribution.title }}</a>
+                        Signup page&nbsp;–&nbsp;<a href="{{@member.attribution.url}}" target="_blank" rel="noopener noreferrer" title="{{ @member.attribution.title }}">{{ @member.attribution.title }}</a>
                     </p>
                     {{!-- <a href="#" class="gh-member-details-attribution-docs">Learn more →</a> --}}
                     {{/if}}
