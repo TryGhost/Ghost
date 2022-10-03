@@ -91,8 +91,15 @@ export default class Anchor extends Component {
         this.chartDisplay = selected.value;
     }
 
+    get selectedChartDisplay() {
+        if (!this.hasPaidTiers && this.chartDisplay === 'mrr') {
+            return 'total';
+        }
+        return this.chartDisplay;
+    }
+
     get chartMetric() {
-        if (this.chartDisplay === 'mrr') {
+        if (this.selectedChartDisplay === 'mrr') {
             return {
                 total: this.currentMRRFormatted,
                 trend: this.mrrTrend
@@ -102,11 +109,11 @@ export default class Anchor extends Component {
     }
 
     get selectedDisplayOption() {
-        return this.displayOptions.find(d => d.value === this.chartDisplay) ?? this.displayOptions[0];
+        return this.displayOptions.find(d => d.value === this.selectedChartDisplay) ?? this.displayOptions[0];
     }
 
     get loading() {
-        return this.dashboardStats.memberCountStats === null || this.dashboardStats.mrrStats === null || this.resizing;
+        return this.dashboardStats.memberCountStats === null || (this.hasPaidTiers && this.dashboardStats.mrrStats === null) || this.resizing;
     }
 
     get currentMRR() {
@@ -186,13 +193,13 @@ export default class Anchor extends Component {
 
     get chartTitle() {
         // paid
-        if (this.chartDisplay === 'paid') {
+        if (this.selectedChartDisplay === 'paid') {
             return 'Paid members';
         // free
-        } else if (this.chartDisplay === 'free') {
+        } else if (this.selectedChartDisplay === 'free') {
             return 'Free members';
         // MRR
-        } else if (this.chartDisplay === 'mrr') {
+        } else if (this.selectedChartDisplay === 'mrr') {
             return 'MRR';
         }
         // total
@@ -204,17 +211,17 @@ export default class Anchor extends Component {
         let labels;
         let data;
 
-        if (this.chartDisplay === 'paid') {
+        if (this.selectedChartDisplay === 'paid') {
             // paid
             stats = this.dashboardStats.filledMemberCountStats;
             labels = stats.map(stat => stat.date);
             data = stats.map(stat => stat.paid + stat.comped);
-        } else if (this.chartDisplay === 'free') {
+        } else if (this.selectedChartDisplay === 'free') {
             // free
             stats = this.dashboardStats.filledMemberCountStats;
             labels = stats.map(stat => stat.date);
             data = stats.map(stat => stat.free);
-        } else if (this.chartDisplay === 'mrr') {
+        } else if (this.selectedChartDisplay === 'mrr') {
             stats = this.dashboardStats.filledMrrStats;
             labels = stats.map(stat => stat.date);
             data = stats.map(stat => stat.mrr);
@@ -336,7 +343,7 @@ export default class Anchor extends Component {
                 },
                 callbacks: {
                     label: (tooltipItems, data) => {
-                        if (this.chartDisplay === 'mrr') {
+                        if (this.selectedChartDisplay === 'mrr') {
                             const value = `${that.mrrCurrencySymbol}${ghPriceAmount(data.datasets[tooltipItems.datasetIndex].data[tooltipItems.index], {cents: false})}`;
                             document.querySelector('#gh-dashboard-anchor-tooltip .gh-dashboard-tooltip-value .value').innerHTML = value;
                         } else {
@@ -345,7 +352,7 @@ export default class Anchor extends Component {
                         }
                     },
                     title: (tooltipItems) => {
-                        if (this.chartType === 'mrr') {
+                        if (this.selectedChartDisplay === 'mrr') {
                             const value = moment(tooltipItems[0].xLabel).format(DATE_FORMAT);
                             document.querySelector('#gh-dashboard-anchor-tooltip .gh-dashboard-tooltip-label').innerHTML = value;
                         } else {
