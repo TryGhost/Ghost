@@ -165,8 +165,6 @@ export default class PublishManagement extends Component {
 
     @task
     *publishTask({taskName = 'saveTask'} = {}) {
-        const willEmail = this.publishOptions.willEmail;
-
         // clean up blank editor cards
         // apply cloned mobiledoc
         // apply scratch values
