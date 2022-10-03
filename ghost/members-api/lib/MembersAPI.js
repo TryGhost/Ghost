@@ -91,7 +91,7 @@ module.exports = function MembersAPI({
         productRepository,
         Member,
         MemberCancelEvent,
-        MemberSubscribeEvent,
+        MemberSubscribeEventModel: MemberSubscribeEvent,
         MemberPaidSubscriptionEvent,
         MemberEmailChangeEvent,
         MemberStatusEvent,

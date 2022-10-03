@@ -321,8 +321,8 @@ describe('SubscriptionStatsService', function () {
              *
              * @returns {(result: import('../../lib/subscriptions').SubscriptionHistoryEntry) => boolean}
              **/
-            const finder = (tier, cadence, date) => (result) => {
-                return result.tier === tier && result.cadence === cadence && result.date === date;
+            const finder = (tier, cadence, date) => (resultItem) => {
+                return resultItem.tier === tier && resultItem.cadence === cadence && resultItem.date === date;
             };
 
             const days = [{

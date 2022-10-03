@@ -276,16 +276,16 @@ function createServer(hostname, server, pretest) {
 
         let index = 0;
         function next(err) {
-            const vhost = vhosts[index];
+            const foundVhost = vhosts[index];
             index = index + 1;
 
-            if (!vhost || err) {
+            if (!foundVhost || err) {
                 res.statusCode = err ? (err.status || 500) : 404;
                 res.end(err ? err.message : `no vhost for "${req.headers.host}"`);
                 return;
             }
 
-            vhost(req, res, next);
+            foundVhost(req, res, next);
         }
 
         next();
