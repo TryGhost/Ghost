@@ -22,6 +22,7 @@ export default class SessionService extends ESASessionService {
     @tracked user = null;
 
     skipAuthSuccessHandler = false;
+    forceTransition = false;
 
     async populateUser(options = {}) {
         if (this.user) {
@@ -73,6 +74,30 @@ export default class SessionService extends ESASessionService {
 
             super.handleAuthentication('home');
         });
+    }
+
+    async requireAuthentication(transition, route) {
+        if (!this.isAuthenticated) {
+            // try to re-setup session if user data is still available
+            await this.reSetupSession(transition);
+        }
+
+        super.requireAuthentication(transition, route);
+    }
+
+    // TODO: feels a bit hacky to re-setup session if user data is available
+    async reSetupSession(transition) {
+        if (this.user) {
+            await this.setup();
+            this.forceTransition = true;
+            this.notifications.clearAll();
+        }
+
+        // retry previous transition if there is active session
+        if (this.forceTransition) {
+            transition.retry();
+            return;
+        }
     }
 
     handleInvalidation() {
