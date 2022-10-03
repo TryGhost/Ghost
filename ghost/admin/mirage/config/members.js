@@ -3,29 +3,37 @@ import moment from 'moment-timezone';
 import nql from '@tryghost/nql';
 import {Response} from 'miragejs';
 import {extractFilterParam, paginateModelCollection} from '../utils';
-// import {getContext} from '@ember/test-helpers';
 import {underscore} from '@ember/string';
 
 function hasInvalidPermissions() {
-    return false;
+    const {schema, request} = this;
 
-    // const {owner} = getContext(this);
-    // const session = owner.lookup('service:session');
+    // always allow dev requests through - the logged in user will be real so
+    // we can't check against it in the mocked db
+    if (!request.requestHeaders['X-Test-User']) {
+        return false;
+    }
 
-    // if (!session?.user?.isAdmin) {
-    //     return new Response(403, {}, {
-    //         errors: [{
-    //             type: 'NoPermissionError',
-    //             message: 'You do not have permission to perform this action'
-    //         }]
-    //     });
-    // }
+    const invalidPermsResponse = new Response(403, {}, {
+        errors: [{
+            type: 'NoPermissionError',
+            message: 'You do not have permission to perform this action'
+        }]
+    });
+
+    const user = schema.users.find(request.requestHeaders['X-Test-User']);
+    const adminRoles = user.roles.filter(role => ['Owner', 'Administrator'].includes(role.name));
+
+    if (adminRoles.length === 0) {
+        return invalidPermsResponse;
+    }
 }
 
 function withPermissionsCheck(fn) {
     return function () {
+        const boundPermsCheck = hasInvalidPermissions.bind(this);
         const boundFn = fn.bind(this);
-        return hasInvalidPermissions() || boundFn(...arguments);
+        return boundPermsCheck() || boundFn(...arguments);
     };
 }
 
