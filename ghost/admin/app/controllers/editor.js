@@ -265,6 +265,8 @@ export default class EditorController extends Controller {
 
     @action
     toggleReAuthenticateModal() {
+        this._reAuthenticateModalToggle = true;
+
         if (this.showReAuthenticateModal) {
             // closing, re-attempt save if needed
             if (this._reauthSave) {
