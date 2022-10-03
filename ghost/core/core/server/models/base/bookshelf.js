@@ -83,13 +83,13 @@ ghostBookshelf.plugin('bookshelf-relations', {
                     return Promise.resolve();
                 }
 
-                return Promise.all([targets.models, function (target, index) {
+                return Promise.all(targets.models.map((target, index) => {
                     queryOptions.query.where[existing.relatedData.otherKey] = target.id;
 
                     return existing.updatePivot({
                         sort_order: index
                     }, _.extend({}, options, queryOptions));
-                }]);
+                }))
             },
             beforeRelationCreation: function onCreatingRelation(model, data) {
                 data.id = ObjectId().toHexString();
