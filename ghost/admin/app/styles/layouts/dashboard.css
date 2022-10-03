@@ -1106,6 +1106,7 @@ Dashboard Attribution */
 .gh-dashboard-attribution .ember-power-select-trigger[aria-disabled=true], .gh-attribution-box .ember-power-select-trigger[aria-disabled=true] {
     background: transparent;
     opacity: 0.3;
+    cursor: not-allowed;
 }
 
 .gh-dashboard-list-item-other-source {
