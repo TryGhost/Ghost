@@ -13,10 +13,12 @@ const FILTER_PROPERTIES = [
     {label: 'Email', name: 'email', group: 'Basic', valueType: 'text'},
     // {label: 'Location', name: 'location', group: 'Basic'},
     {label: 'Label', name: 'label', group: 'Basic', valueType: 'array'},
-    {label: 'Newsletter subscription', name: 'subscribed', group: 'Basic'},
     {label: 'Last seen', name: 'last_seen_at', group: 'Basic', valueType: 'date'},
     {label: 'Created', name: 'created_at', group: 'Basic', valueType: 'date'},
     {label: 'Signed up on post/page', name: 'signup', group: 'Basic', valueType: 'array', feature: 'memberAttribution'},
+
+    // Newsletters
+    {label: 'Newsletter subscription', name: 'subscribed', group: 'Newsletters'},
 
     // Member subscription
     {label: 'Membership tier', name: 'tier', group: 'Subscription', valueType: 'array'},
@@ -161,14 +163,26 @@ export default class MembersFilter extends Component {
         })
     ]);
 
+    newsletters = this.store.peekAll('newsletter');
     availableFilterRelationsOptions = FILTER_RELATIONS_OPTIONS;
     availableFilterValueOptions = FILTER_VALUE_OPTIONS;
 
     get availableFilterProperties() {
         let availableFilters = FILTER_PROPERTIES;
         const hasMultipleTiers = this.store.peekAll('tier').length > 1;
+        const hasMultipleNewsletters = this.newsletters.length > 1;
 
-        // exclude any filters that are behind disabled feature flags
+        if (hasMultipleNewsletters) {
+            this.newsletters.map((item) => {
+                return availableFilters.push({
+                    label: item.name,
+                    name: `newsletters.${item.id}`,
+                    valueType: 'text',
+                    group: 'Newsletters'
+                });
+            });
+        }
+
         availableFilters = availableFilters.filter(prop => !prop.feature || this.feature[prop.feature]);
 
         // exclude tiers filter if site has only single tier
@@ -441,11 +455,14 @@ export default class MembersFilter extends Component {
 
     @action
     setFilterType(filter, newType) {
+        console.log(filter);
+        console.log(newType);
         if (newType instanceof Event) {
             newType = newType.target.value;
         }
 
         const newProp = FILTER_PROPERTIES.find(prop => prop.name === newType);
+        console.log(newType);
 
         let defaultValue = this.availableFilterValueOptions[newType]
             ? this.availableFilterValueOptions[newType][0].name
