@@ -2,6 +2,7 @@ import moment from 'moment-timezone';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
 import {blur, click, currentURL, fillIn, find, findAll, settled} from '@ember/test-helpers';
+import {enablePaidMembers} from '../helpers/members';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -38,6 +39,8 @@ describe('Acceptance: Offers', function () {
             let role = this.server.create('role', {name: 'Owner'});
             this.server.create('user', {roles: [role]});
 
+            enablePaidMembers(this.server);
+
             return await authenticateSession();
         });
 
@@ -56,6 +59,12 @@ describe('Acceptance: Offers', function () {
             // it has correct page title
             expect(document.title, 'page title').to.equal('Offers - Test Blog');
 
+            // it highlights active state in nav menu
+            expect(
+                find('[data-test-nav="offers"]'),
+                'highlights nav menu item'
+            ).to.have.class('active');
+
             // it lists all offers
             expect(findAll('[data-test-list="offers-list-item"]').length, 'offers list count')
                 .to.equal(2);
@@ -73,6 +82,12 @@ describe('Acceptance: Offers', function () {
             expect(find('[data-test-input="offer-name"]').value, 'loads correct offer into form')
                 .to.equal(offer1.name);
 
+            // it maintains active state in nav menu
+            expect(
+                find('[data-test-nav="offers"]'),
+                'highlights nav menu item'
+            ).to.have.class('active');
+
             // trigger save
             await fillIn('[data-test-input="offer-name"]', 'New Name');
             await blur('[data-test-input="offer-name"]');
@@ -87,6 +102,13 @@ describe('Acceptance: Offers', function () {
 
             // lands on correct page
             expect(currentURL(), 'currentURL').to.equal('/offers');
+        });
+
+        it('maintains active state in nav menu when creating a new tag', async function () {
+            await visit('offers/new');
+            expect(currentURL()).to.equal('offers/new');
+            expect(find('[data-test-nav="offers"]'), 'highlights nav menu item')
+                .to.have.class('active');
         });
     });
 });
