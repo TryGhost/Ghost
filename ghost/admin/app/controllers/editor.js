@@ -124,6 +124,7 @@ export default class EditorController extends Controller {
 
     _leaveConfirmed = false;
     _previousTagNames = null; // set by setPost and _postSaved, used in hasDirtyAttributes
+    _reAuthenticateModalToggle = false;
 
     /* computed properties ---------------------------------------------------*/
 
@@ -476,6 +477,9 @@ export default class EditorController extends Controller {
 
             post.set('statusScratch', null);
 
+            // Clear any error notification (if any)
+            this.notifications.clearAll();
+
             if (!options.silent) {
                 this._showSaveNotification(prevStatus, post.get('status'), isNew ? true : false);
             }
@@ -490,6 +494,11 @@ export default class EditorController extends Controller {
 
             return post;
         } catch (error) {
+            if (!this.session.isAuthenticated && !this._reAuthenticateModalToggle) {
+                this.toggleProperty('showReAuthenticateModal');
+            }
+
+            this._reAuthenticateModalToggle = false;
             if (this.showReAuthenticateModal) {
                 this._reauthSave = true;
                 this._reauthSaveOptions = options;
