@@ -7,4 +7,8 @@ export default class extends Component {
     get referrerSource() {
         return this.args.member.get('attribution')?.referrer_source;
     }
+
+    get showAttribution() {
+        return this.referrerSource || (this.args.member?.attribution?.url && this.args.member?.attribution?.title);
+    }
 }
