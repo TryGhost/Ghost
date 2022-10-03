@@ -17,7 +17,7 @@
                     {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
                 </PowerSelect>
             </div>
-            {{#if (eq this.chartDisplay "mrr")}}
+            {{#if (eq this.selectedChartDisplay "mrr")}}
                 <Dashboard::Parts::Metric
                     @value="{{this.chartMetric.total}}"
                     @trends={{this.hasTrends}}
