@@ -3,21 +3,23 @@ import moment from 'moment-timezone';
 import nql from '@tryghost/nql';
 import {Response} from 'miragejs';
 import {extractFilterParam, paginateModelCollection} from '../utils';
-import {getContext} from '@ember/test-helpers';
+// import {getContext} from '@ember/test-helpers';
 import {underscore} from '@ember/string';
 
 function hasInvalidPermissions() {
-    const {owner} = getContext();
-    const session = owner.lookup('service:session');
+    return false;
 
-    if (!session?.user?.isAdmin) {
-        return new Response(403, {}, {
-            errors: [{
-                type: 'NoPermissionError',
-                message: 'You do not have permission to perform this action'
-            }]
-        });
-    }
+    // const {owner} = getContext(this);
+    // const session = owner.lookup('service:session');
+
+    // if (!session?.user?.isAdmin) {
+    //     return new Response(403, {}, {
+    //         errors: [{
+    //             type: 'NoPermissionError',
+    //             message: 'You do not have permission to perform this action'
+    //         }]
+    //     });
+    // }
 }
 
 function withPermissionsCheck(fn) {
