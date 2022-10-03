@@ -50,7 +50,7 @@ describe('Acceptance: Authentication', function () {
 
         it('invalidates session on 401 API response', async function () {
             // return a 401 when attempting to retrieve users
-            this.server.get('/users/', () => new Response(401, {}, {
+            this.server.get('/users/me', () => new Response(401, {}, {
                 errors: [
                     {message: 'Access denied.', type: 'UnauthorizedError'}
                 ]
@@ -71,7 +71,7 @@ describe('Acceptance: Authentication', function () {
 
         it('invalidates session on 403 API response', async function () {
             // return a 401 when attempting to retrieve users
-            this.server.get('/users/', () => new Response(403, {}, {
+            this.server.get('/users/me', () => new Response(403, {}, {
                 errors: [
                     {message: 'Authorization failed', type: 'NoPermissionError'}
                 ]
