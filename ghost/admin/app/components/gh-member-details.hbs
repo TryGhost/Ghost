@@ -64,7 +64,7 @@
                     {{/if}}
                 </p>
             </div>
-            {{#if (and (feature 'sourceAttribution') @member.attribution)}}
+            {{#if (and (feature 'sourceAttribution') this.showAttribution)}}
                 <div class="gh-member-details-attribution">
                     <h4 class="gh-main-section-header small bn">Attribution</h4>
                     {{#if this.referrerSource}}
