@@ -13,9 +13,10 @@ export default class TransferOwnershipModal extends Component {
     @task({drop: true})
     *transferOwnershipTask() {
         try {
-            const {user} = this.args.data;
-
             this.dropdown.closeDropdowns();
+
+            const {user} = this.args.data;
+            const url = this.ghostPaths.url.api('users', 'owner');
 
             const response = yield this.ajax.put(url, {
                 data: {
