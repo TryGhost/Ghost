@@ -3,8 +3,12 @@
     {{#if (and this.isSaving @post.isDraft)}}
         Saving...
     {{else if @post.isSent}}
-        <button type="button" {{on "click" @openUpdateFlow}} class="gh-editor-post-status-btn">Sent</button>
-        to {{gh-pluralize @post.email.emailCount "member"}}
+        {{#if @post.didEmailFail }}
+            Failed to send
+        {{else}}
+            <button type="button" {{on "click" @openUpdateFlow}} class="gh-editor-post-status-btn">Sent</button>
+            to {{gh-pluralize @post.email.emailCount "member"}}
+        {{/if}}
     {{else if (and @post.emailOnly @post.isScheduled)}}
         Scheduled
         {{#if this.isHovered}}
@@ -20,7 +24,7 @@
         {{else if (eq @post.email.status "submitted")}}
             and sent to {{gh-pluralize @post.email.emailCount "member"}}
         {{else if (eq @post.email.status "failed")}}
-            and failed to sent to {{gh-pluralize @post.email.emailCount "member"}}
+            (failed to send)
         {{/if}}
     {{else if @post.isScheduled}}
         <time datetime="{{@post.publishedAtUTC}}" class="ml1 green-d1" data-test-schedule-countdown>

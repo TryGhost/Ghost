@@ -56,7 +56,7 @@
             data-test-button="publish-save"
         />
 
-        {{#if (and @publishManagement.post.isPublished (eq @publishManagement.post.email.status "failed"))}}
+        {{#if @publishManagement.post.didEmailFail }}
             <button
                 type="button"
                 class="gh-btn gh-btn-editor darkgrey gh-publish-trigger"

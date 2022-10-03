@@ -13,12 +13,7 @@
             </h2>
             <div class="gh-post-analytics-meta">
                 <div class="gh-post-analytics-meta-text">
-                    {{#if
-                        (or this.post.isSent
-                            (and this.post.isPublished this.post.email)
-                            this.post.willEmail
-                        )
-                    }}
+                    {{#if this.post.hasBeenEmailed }}
                         {{#if this.post.emailOnly}}
                             Sent
                         {{else}}
@@ -46,7 +41,7 @@
         Engagement
     </h4>
     <div class="gh-post-analytics-box">
-        {{#if (or this.post.isSent (and this.post.isPublished this.post.email))}}
+        {{#if this.post.hasBeenEmailed}}
             <div class="gh-post-analytics-item">
                 <LinkTo @route="members" @query={{hash filterParam=(concat "emails.post_id:[" this.post.id "]") }}>
                     <h3>{{format-number this.post.email.emailCount}}</h3>

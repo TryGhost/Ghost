@@ -183,24 +183,34 @@ export default Model.extend(Comparable, ValidationEngine, {
         return this.isScheduled && !!this.newsletter && !this.email;
     }),
 
-    showEmailOpenAnalytics: computed('isPost', 'isSent', 'isPublished', 'email', function () {
+    hasBeenEmailed: computed('isPost', 'isSent', 'isPublished', 'email', function () {
         return this.isPost
+            && (this.isSent || this.isPublished) 
+            && this.email && this.email.status !== 'failed';
+    }),
+
+    didEmailFail: computed('isPost', 'isSent', 'isPublished', 'email.status', function () {
+        return this.isPost
+            && (this.isSent || this.isPublished) 
+            && this.email && this.email.status === 'failed';
+    }),
+
+    showEmailOpenAnalytics: computed('hasBeenEmailed', 'isSent', 'isPublished', function () {
+        return this.hasBeenEmailed
             && !this.session.user.isContributor
             && this.settings.get('membersSignupAccess') !== 'none'
             && this.settings.get('editorDefaultEmailRecipients') !== 'disabled'
-            && (this.isSent || this.isPublished) 
-            && this.email
+            && this.hasBeenEmailed
             && this.email.trackOpens
             && this.settings.get('emailTrackOpens');
     }),
 
-    showEmailClickAnalytics: computed('isPost', 'isSent', 'isPublished', 'email', function () {
-        return this.isPost
+    showEmailClickAnalytics: computed('hasBeenEmailed', 'isSent', 'isPublished', 'email', function () {
+        return this.hasBeenEmailed
             && !this.session.user.isContributor
             && this.settings.get('membersSignupAccess') !== 'none'
             && this.settings.get('editorDefaultEmailRecipients') !== 'disabled'
             && (this.isSent || this.isPublished) 
-            && this.email
             && this.email.trackClicks
             && this.settings.get('emailTrackClicks');
     }),
