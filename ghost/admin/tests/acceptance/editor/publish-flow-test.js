@@ -157,11 +157,10 @@ describe('Acceptance: Publish flow', function () {
             // at least one member is required for publish+send to be available
             this.server.createList('member', 3, {status: 'free'});
             this.server.createList('member', 4, {status: 'paid'});
-
-            await loginAsRole('Administrator', this.server);
         });
 
         it('can publish+send with single newsletter', async function () {
+            await loginAsRole('Administrator', this.server);
             const post = this.server.create('post', {status: 'draft'});
             await visit(`/editor/post/${post.id}`);
             await click('[data-test-button="publish-flow"]');
@@ -212,7 +211,9 @@ describe('Acceptance: Publish flow', function () {
 
             this.server.create('member', {newsletters: [newsletter], status: 'free'});
 
+            await loginAsRole('Administrator', this.server);
             const post = this.server.create('post', {status: 'draft'});
+
             await visit(`/editor/post/${post.id}`);
             await click('[data-test-button="publish-flow"]');
 
@@ -249,6 +250,7 @@ describe('Acceptance: Publish flow', function () {
         });
 
         it('can schedule publish+send', async function () {
+            await loginAsRole('Administrator', this.server);
             const post = this.server.create('post', {status: 'draft'});
             await visit(`/editor/post/${post.id}`);
             await click('[data-test-button="publish-flow"]');
@@ -300,6 +302,7 @@ describe('Acceptance: Publish flow', function () {
         });
 
         it('can send', async function () {
+            await loginAsRole('Administrator', this.server);
             const post = this.server.create('post', {status: 'draft'});
             await visit(`/editor/post/${post.id}`);
             await click('[data-test-button="publish-flow"]');
@@ -325,6 +328,7 @@ describe('Acceptance: Publish flow', function () {
         });
 
         it('can schedule send', async function () {
+            await loginAsRole('Administrator', this.server);
             const post = this.server.create('post', {status: 'draft'});
             await visit(`/editor/post/${post.id}`);
             await click('[data-test-button="publish-flow"]');
@@ -369,6 +373,7 @@ describe('Acceptance: Publish flow', function () {
         it('respects default recipient settings - usually nobody', async function () {
             // switch to "usually nobody" setting
             // - doing it this way so we're not testing potentially stale mocked setting keys/values
+            await loginAsRole('Administrator', this.server);
             await visit('/settings/newsletters');
             await click('[data-test-toggle-membersemail]');
             await selectChoose('[data-test-select="default-recipients"]', 'Usually nobody');
@@ -402,7 +407,9 @@ describe('Acceptance: Publish flow', function () {
         it('handles Mailgun not being set up', async function () {
             disableMailgun(this.server);
 
+            await loginAsRole('Administrator', this.server);
             const post = this.server.create('post', {status: 'draft'});
+
             await visit(`/editor/post/${post.id}`);
             await click('[data-test-button="publish-flow"]');
 
@@ -425,7 +432,9 @@ describe('Acceptance: Publish flow', function () {
             this.server.db.members.remove();
             this.server.db.newsletters.update({memberIds: []});
 
+            await loginAsRole('Administrator', this.server);
             const post = this.server.create('post', {status: 'draft'});
+
             await visit(`/editor/post/${post.id}`);
             await click('[data-test-button="publish-flow"]');
 
@@ -470,8 +479,10 @@ describe('Acceptance: Publish flow', function () {
                 };
             });
 
-            // try to publish post
+            await loginAsRole('Administrator', this.server);
             const post = this.server.create('post', {status: 'draft'});
+
+            // try to publish post
             await visit(`/editor/post/${post.id}`);
             await click('[data-test-button="publish-flow"]');
 
@@ -483,7 +494,61 @@ describe('Acceptance: Publish flow', function () {
         });
 
         it('handles over-member limit when confirming', async function () {
+            await loginAsRole('Administrator', this.server);
             const post = this.server.create('post', {status: 'draft'});
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+            await click('[data-test-button="continue"]');
+
+            this.server.put('/posts/:id/', function () {
+                return {
+                    errors: [
+                        {
+                            message: 'Host Limit error, cannot edit post.',
+                            context: 'Your plan supports up to 1,000 members. Please upgrade to reenable publishing.',
+                            type: 'HostLimitError',
+                            details: {
+                                name: 'members',
+                                limit: 1000,
+                                total: 37406
+                            },
+                            property: null,
+                            help: 'https://ghost.org/help/',
+                            code: null,
+                            id: '212d9110-3db6-11ed-9651-e9a82ad49a7a',
+                            ghostErrorCode: null
+                        }
+                    ]
+                };
+            });
+
+            await click('[data-test-button="confirm-publish"]');
+
+            expect(find('[data-test-confirm-error]'), 'confirm error').to.exist;
+            expect(find('[data-test-confirm-error]'), 'confirm error')
+                .to.have.trimmed.text('Your plan supports up to 1,000 members. Please upgrade to reenable publishing.');
+        });
+
+        it('(as editor) handles over-member limits', async function () {
+            // set members limit
+            const config = this.server.db.configs.find(1);
+            config.hostSettings = {
+                limits: {
+                    members: {
+                        max: 9,
+                        error: 'Your plan supports up to {{max}} members. Please upgrade to reenable publishing.'
+                    }
+                }
+            };
+            this.server.db.configs.update(1, config);
+
+            // go over limit (7 created by default in beforeEach)
+            this.server.createList('member', 3);
+
+            await loginAsRole('Editor', this.server);
+            const post = this.server.create('post', {status: 'draft'});
+
+            // try to publish post
             await visit(`/editor/post/${post.id}`);
             await click('[data-test-button="publish-flow"]');
             await click('[data-test-button="continue"]');

@@ -1,11 +1,10 @@
 import moment from 'moment-timezone';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
-import {blur, click, currentURL, fillIn, find, findAll, settled} from '@ember/test-helpers';
+import {blur, click, currentURL, fillIn, find, findAll} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
-import {timeout} from 'ember-concurrency';
 import {visit} from '../helpers/visit';
 
 describe('Acceptance: Members', function () {
@@ -47,8 +46,6 @@ describe('Acceptance: Members', function () {
 
             await visit('/members');
 
-            await settled();
-
             // lands on correct page
             expect(currentURL(), 'currentURL').to.equal('/members');
 
@@ -69,9 +66,6 @@ describe('Acceptance: Members', function () {
 
             await visit(`/members/${member1.id}`);
 
-            // // second wait is needed for the member details to settle
-            await settled();
-
             // it shows selected member form
             expect(find('[data-test-input="member-name"]').value, 'loads correct member into form')
                 .to.equal(member1.name);
@@ -85,10 +79,6 @@ describe('Acceptance: Members', function () {
 
             await click('[data-test-button="save"]');
 
-            // extra timeout needed for Travis - sometimes it doesn't update
-            // quick enough and an extra wait() call doesn't help
-            await timeout(100);
-
             await click('[data-test-link="members-back"]');
 
             // lands on correct page
@@ -99,8 +89,6 @@ describe('Acceptance: Members', function () {
             this.server.create('member', {createdAt: moment.utc().subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss')});
 
             await visit('/members');
-
-            await settled();
 
             // lands on correct page
             expect(currentURL(), 'currentURL').to.equal('/members');
