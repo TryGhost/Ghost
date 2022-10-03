@@ -95,6 +95,7 @@ export default class SessionService extends ESASessionService {
 
         // retry previous transition if there is active session
         if (this.forceTransition) {
+            this.forceTransition = false;
             transition.retry();
             return;
         }
