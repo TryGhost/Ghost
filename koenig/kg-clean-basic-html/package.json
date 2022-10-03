@@ -38,6 +38,6 @@
     "rollup": "2.79.1",
     "rollup-plugin-babel": "4.4.0",
     "should": "13.2.3",
-    "sinon": "14.0.0"
+    "sinon": "14.0.1"
   }
 }
