@@ -9,6 +9,7 @@ import {
     IMAGE_MIME_TYPES
 } from 'ghost-admin/components/gh-image-uploader';
 import {TrackedObject} from 'tracked-built-ins';
+import {run} from '@ember/runloop';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
@@ -150,5 +151,20 @@ export default class GeneralController extends Controller {
             }
             throw error;
         }
+    }
+
+    @action
+    saveViaKeyboard(event) {
+        event.preventDefault();
+
+        // trigger any set-on-blur actions
+        const focusedElement = document.activeElement;
+        focusedElement?.blur();
+
+        // schedule save for when set-on-blur actions have finished
+        run.schedule('actions', this, function () {
+            focusedElement?.focus();
+            this.saveTask.perform();
+        });
     }
 }

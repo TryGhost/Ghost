@@ -66,11 +66,6 @@ export default class GeneralSettingsRoute extends AdminRoute {
     }
 
     @action
-    save() {
-        return this.controller.send('save');
-    }
-
-    @action
     reloadSettings() {
         return this.settings.reload();
     }

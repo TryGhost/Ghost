@@ -1,8 +1,8 @@
-import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
 import {blur, click, currentURL, fillIn, find, findAll, focus, triggerEvent} from '@ember/test-helpers';
 import {expect} from 'chai';
+import {keyDown} from 'ember-keyboard/test-support/test-helpers';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
@@ -82,11 +82,7 @@ describe('Acceptance: Settings - General', function () {
             // CMD-S shortcut works
             // -------------------------------------------------------------- //
             await fillIn('[data-test-title-input]', 'CMD-S Test');
-            await triggerEvent('.gh-app', 'keydown', {
-                keyCode: 83, // s
-                metaKey: ctrlOrCmd === 'command',
-                ctrlKey: ctrlOrCmd === 'ctrl'
-            });
+            await keyDown('cmd+s');
             // we've already saved in this test so there's no on-screen indication
             // that we've had another save, check the request was fired instead
             let [lastRequest] = this.server.pretender.handledRequests.slice(-1);

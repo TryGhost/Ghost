@@ -88,11 +88,6 @@ export default class UserRoute extends AuthenticatedRoute {
         this.modelFor('settings.staff.user').get('errors').clear();
     }
 
-    @action
-    save() {
-        this.controller.save.perform();
-    }
-
     buildRouteInfoMetadata() {
         return {
             titleToken: 'Staff - User'

@@ -299,6 +299,20 @@ export default Controller.extend({
         }
     }).group('saveHandlers'),
 
+    saveViaKeyboard: action(function (event) {
+        event.preventDefault();
+
+        // trigger any set-on-blur actions
+        const focusedElement = document.activeElement;
+        focusedElement?.blur();
+
+        // schedule save for when set-on-blur actions have finished
+        run.schedule('actions', this, function () {
+            focusedElement?.focus();
+            this.save.perform();
+        });
+    }),
+
     copyContentKey: task(function* () {
         copyTextToClipboard(this.personalToken);
         yield timeout(this.isTesting ? 50 : 3000);
