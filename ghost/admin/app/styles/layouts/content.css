@@ -743,10 +743,8 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     animation: .25s fadeIn .5s normal forwards;
 }
 
-.gh-post-analytics-header {
-    position: relative;
-    margin: 0 0 2.4rem;
-    padding: 0 0 1.6rem;
+.gh-post-analytics-header .gh-canvas-header-content {
+    padding-bottom: 1.6rem;
     border-bottom: 1px solid var(--whitegrey);
 }
 
@@ -767,7 +765,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 }
 
 .gh-post-analytics-meta-text {
-    color: var(--midlightgrey-d2);
+    color: var(--midgrey-l2);
     font-size: 1.35rem;
     display: flex;
     align-items: center;

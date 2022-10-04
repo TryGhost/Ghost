@@ -326,11 +326,6 @@ input:focus,
     border-bottom: 1px solid var(--hairline-color-1);
 }
 
-.gh-main-section.no-heading,
-.gh-main-section.bt {
-    border-top: 1px solid var(--hairline-color-1);
-}
-
 .gh-btn-tabs .gh-btn {
     background: transparent !important;
 }
