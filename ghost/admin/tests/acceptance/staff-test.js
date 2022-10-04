@@ -519,7 +519,7 @@ describe('Acceptance: Staff', function () {
                 expect(params.users[0].name).to.equal('Test User');
 
                 // CMD-S shortcut works
-                await fillIn('[data-test-slug-input]', 'Test User');
+                await fillIn('[data-test-slug-input]', 'New Slug');
                 await keyDown('cmd+s');
 
                 // Since we reset save status so there's no on-screen indication
@@ -527,10 +527,11 @@ describe('Acceptance: Staff', function () {
                 [lastRequest] = this.server.pretender.handledRequests.slice(-1);
                 params = JSON.parse(lastRequest.requestBody);
 
-                expect(params.users[0].name).to.equal('Test User');
+                // slug should have been correctly slugified before save
+                expect(params.users[0].slug).to.equal('new-slug');
 
                 // check that the history state has been updated
-                expect(newLocation).to.equal('Test User');
+                expect(newLocation).to.equal('new-slug');
 
                 await fillIn('[data-test-slug-input]', 'white space');
                 await blur('[data-test-slug-input]');
