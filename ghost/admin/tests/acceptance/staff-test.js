@@ -1,13 +1,8 @@
-import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import moment from 'moment-timezone';
 import windowProxy from 'ghost-admin/utils/window-proxy';
 import {Response} from 'miragejs';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
-import {enableLabsFlag} from '../helpers/labs-flag';
-import {enableMembers} from '../helpers/members';
-import {enableStripe} from '../helpers/stripe';
-
 import {
     blur,
     click,
@@ -20,7 +15,11 @@ import {
     triggerEvent,
     triggerKeyEvent
 } from '@ember/test-helpers';
+import {enableLabsFlag} from '../helpers/labs-flag';
+import {enableMembers} from '../helpers/members';
+import {enableStripe} from '../helpers/stripe';
 import {expect} from 'chai';
+import {keyDown} from 'ember-keyboard/test-support/test-helpers';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../helpers/visit';
@@ -521,11 +520,7 @@ describe('Acceptance: Staff', function () {
 
                 // CMD-S shortcut works
                 await fillIn('[data-test-slug-input]', 'Test User');
-                await triggerEvent('.gh-app', 'keydown', {
-                    keyCode: 83, // s
-                    metaKey: ctrlOrCmd === 'command',
-                    ctrlKey: ctrlOrCmd === 'ctrl'
-                });
+                await keyDown('cmd+s');
 
                 // Since we reset save status so there's no on-screen indication
                 // that we've had a save, check the request was fired instead

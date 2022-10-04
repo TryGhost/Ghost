@@ -1,4 +1,4 @@
-<section class="gh-canvas">
+<section class="gh-canvas" {{on-key "cmd+s" this.saveViaKeyboard}}>
     <GhCanvasHeader class="gh-canvas-header">
         {{!-- Remove breadcrumbs for Authors and Contributors --}}
         {{#if this.currentUser.isAuthorOrContributor}}
