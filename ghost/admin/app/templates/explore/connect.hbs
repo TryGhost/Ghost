@@ -1,6 +1,6 @@
 <div class="{{this.visibilityClass}}">
     <div class="explore-close">
-        <a href="javascript:void(0)" {{on "click" (action "closeConnect")}} data-test-button="close-explore">
+        <a href="javascript:void(0)" {{on "click" this.closeConnect}} data-test-button="close-explore">
             {{svg-jar "close"}}<span class="hidden">Close</span>
         </a>
     </div>
@@ -28,7 +28,7 @@
             </div>
         </div>
 
-        <button type="button" class="gh-btn gh-btn-black gh-btn-large gh-btn-icon-right" {{on "click" (action "submitExploreSite")}} data-test-button="submit-explore">
+        <button type="button" class="gh-btn gh-btn-black gh-btn-large gh-btn-icon-right" {{on "click" this.submitExploreSite}} data-test-button="submit-explore">
             <span>Connect data &amp; edit listing {{svg-jar "arrow-right-tail"}}</span>
         </button>
     </div>
