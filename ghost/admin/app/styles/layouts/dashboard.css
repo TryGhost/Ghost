@@ -754,6 +754,18 @@ Dashboard List */
     overflow: hidden;
 }
 
+.gh-dashboard-list-item sup {
+    display: none;
+}
+
+.gh-dashboard-list-item-deemphasized span {
+    color: var(--midlightgrey);
+}
+
+.gh-dashboard-list-item-deemphasized sup {
+    display: inline;
+}
+
 .gh-dashboard-list-subtext {
     font-weight: 500;
     font-size: 1.4rem;
@@ -1234,7 +1246,7 @@ Dashboard Attribution */
 }
 
 .gh-all-sources .modal-footer {
-    display: none;
+    margin-top: 0;
 }
 
 .gh-all-sources .gh-dashboard-list-body:after {
