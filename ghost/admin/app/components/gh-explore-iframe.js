@@ -4,6 +4,7 @@ import {inject as service} from '@ember/service';
 export default class GhExploreIframe extends Component {
     @service explore;
     @service router;
+    @service feature;
 
     async didInsertElement() {
         super.didInsertElement(...arguments);
@@ -39,18 +40,8 @@ export default class GhExploreIframe extends Component {
     _handleUrlRequest() {
         this.explore.getExploreIframe().contentWindow.postMessage({
             request: 'apiUrl',
-            response: this.explore.apiUrl
+            response: {apiUrl: this.explore.apiUrl, darkMode: this.feature.nightShift}
         }, '*');
-
-        // NOTE: the handler is placed here to avoid additional logic to check if iframe has loaded
-        //       receiving a 'token' request is an indication that page is ready
-        // TODO: send flag if dark mode is setup or not
-        if (!this.explore.siteData) {
-            this.explore.getExploreIframe().contentWindow.postMessage({
-                query: 'getSiteData',
-                response: 'siteData'
-            }, '*');
-        }
     }
 
     _handleSiteDataUpdate(data) {
