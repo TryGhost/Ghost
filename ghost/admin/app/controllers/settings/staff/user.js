@@ -9,13 +9,14 @@ import UploadImageModal from '../../../components/settings/staff/modals/upload-i
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import isNumber from 'ghost-admin/utils/isNumber';
-import validator from 'validator';
 import windowProxy from 'ghost-admin/utils/window-proxy';
+import {TrackedObject} from 'tracked-built-ins';
 import {action, computed} from '@ember/object';
 import {alias, and, not, or, readOnly} from '@ember/object/computed';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {task, taskGroup, timeout} from 'ember-concurrency';
+import {tracked} from '@glimmer/tracking';
 
 export default Controller.extend({
     ajax: service(),
@@ -31,8 +32,13 @@ export default Controller.extend({
     personalToken: null,
     personalTokenRegenerated: false,
     dirtyAttributes: false,
-    _scratchFacebook: null,
-    _scratchTwitter: null,
+
+    init() {
+        this._super(...arguments);
+        this.clearScratchValues();
+    },
+
+    scratchValues: tracked(),
 
     saveHandlers: taskGroup().enqueue(),
 
@@ -85,117 +91,6 @@ export default Controller.extend({
     }),
 
     actions: {
-        validateFacebookUrl() {
-            let newUrl = this._scratchFacebook;
-            let oldUrl = this.get('user.facebook');
-            let errMessage = '';
-
-            // reset errors and validation
-            this.get('user.errors').remove('facebook');
-            this.get('user.hasValidated').removeObject('facebook');
-
-            if (newUrl === '') {
-                // Clear out the Facebook url
-                this.set('user.facebook', '');
-                return;
-            }
-
-            // _scratchFacebook will be null unless the user has input something
-            if (!newUrl) {
-                newUrl = oldUrl;
-            }
-
-            try {
-                // strip any facebook URLs out
-                newUrl = newUrl.replace(/(https?:\/\/)?(www\.)?facebook\.com/i, '');
-
-                // don't allow any non-facebook urls
-                if (newUrl.match(/^(http|\/\/)/i)) {
-                    throw 'invalid url';
-                }
-
-                // strip leading / if we have one then concat to full facebook URL
-                newUrl = newUrl.replace(/^\//, '');
-                newUrl = `https://www.facebook.com/${newUrl}`;
-
-                // don't allow URL if it's not valid
-                if (!validator.isURL(newUrl)) {
-                    throw 'invalid url';
-                }
-
-                this.set('user.facebook', '');
-                run.schedule('afterRender', this, function () {
-                    this.set('user.facebook', newUrl);
-                });
-            } catch (e) {
-                if (e === 'invalid url') {
-                    errMessage = 'The URL must be in a format like '
-                               + 'https://www.facebook.com/yourPage';
-                    this.get('user.errors').add('facebook', errMessage);
-                    return;
-                }
-
-                throw e;
-            } finally {
-                this.get('user.hasValidated').pushObject('facebook');
-            }
-        },
-
-        validateTwitterUrl() {
-            let newUrl = this._scratchTwitter;
-            let oldUrl = this.get('user.twitter');
-            let errMessage = '';
-
-            // reset errors and validation
-            this.get('user.errors').remove('twitter');
-            this.get('user.hasValidated').removeObject('twitter');
-
-            if (newUrl === '') {
-                // Clear out the Twitter url
-                this.set('user.twitter', '');
-                return;
-            }
-
-            // _scratchTwitter will be null unless the user has input something
-            if (!newUrl) {
-                newUrl = oldUrl;
-            }
-
-            if (newUrl.match(/(?:twitter\.com\/)(\S+)/) || newUrl.match(/([a-z\d.]+)/i)) {
-                let username = [];
-
-                if (newUrl.match(/(?:twitter\.com\/)(\S+)/)) {
-                    [, username] = newUrl.match(/(?:twitter\.com\/)(\S+)/);
-                } else {
-                    [username] = newUrl.match(/([^/]+)\/?$/mi);
-                }
-
-                // check if username starts with http or www and show error if so
-                if (username.match(/^(http|www)|(\/)/) || !username.match(/^[a-z\d._]{1,15}$/mi)) {
-                    errMessage = !username.match(/^[a-z\d._]{1,15}$/mi) ? 'Your Username is not a valid Twitter Username' : 'The URL must be in a format like https://twitter.com/yourUsername';
-
-                    this.get('user.errors').add('twitter', errMessage);
-                    this.get('user.hasValidated').pushObject('twitter');
-                    return;
-                }
-
-                newUrl = `https://twitter.com/${username}`;
-
-                this.get('user.hasValidated').pushObject('twitter');
-
-                this.set('user.twitter', '');
-                run.schedule('afterRender', this, function () {
-                    this.set('user.twitter', newUrl);
-                });
-            } else {
-                errMessage = 'The URL must be in a format like '
-                           + 'https://twitter.com/yourUsername';
-                this.get('user.errors').add('twitter', errMessage);
-                this.get('user.hasValidated').pushObject('twitter');
-                return;
-            }
-        },
-
         // TODO: remove those mutation actions once we have better
         // inline validations that auto-clear errors on input
         updatePassword(password) {
@@ -285,6 +180,14 @@ export default Controller.extend({
         });
     }),
 
+    setScratchValue: action(function (property, value) {
+        this.scratchValues[property] = value;
+    }),
+
+    clearScratchValues() {
+        this.scratchValues = new TrackedObject();
+    },
+
     reset: action(function () {
         this.user.rollbackAttributes();
         this.user.password = '';
@@ -292,6 +195,7 @@ export default Controller.extend({
         this.user.ne2Password = '';
         this.set('slugValue', this.user.slug);
         this.set('dirtyAttributes', false);
+        this.clearScratchValues();
     }),
 
     toggleCommentNotifications: action(function (event) {
@@ -366,7 +270,9 @@ export default Controller.extend({
         }
 
         try {
-            user = yield user.save({format: false});
+            user = yield user.save();
+
+            this.clearScratchValues();
 
             // If the user's slug has changed, change the URL and replace
             // the history so refresh and back button still work

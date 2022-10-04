@@ -85,7 +85,7 @@
     {{!-- <div class="bg-"> --}}
     <section>
         <div class="gm-main view-container settings-user">
-            <form class="user-profile" novalidate="novalidate" autocomplete="off" {{action (perform this.save) on="submit"}}>
+            <form id="user-settings-form" class="user-profile" novalidate="novalidate" autocomplete="off" {{on "submit" (perform this.save)}}>
 
                 <figure class="user-cover" style={{background-image-style this.user.coverImageUrl}}>
                     <button type="button" class="gh-btn gh-btn-default user-cover-edit" {{on "click" this.changeCoverImage}}><span>Change cover</span></button>
@@ -196,16 +196,12 @@
 
                         <GhFormGroup @errors={{this.user.errors}} @hasValidated={{this.user.hasValidated}} @property="facebook">
                             <label for="user-facebook">Facebook profile</label>
-                            <GhTextInput
-                                @type="url"
-                                @placeholder="https://www.facebook.com/username"
-                                @autocorrect="off"
-                                @id="user-facebook"
-                                @name="user[facebook]"
-                                @value={{readonly this.user.facebook}}
-                                @input={{action (mut this._scratchFacebook) value="target.value"}}
-                                @focus-out={{action "validateFacebookUrl"}}
-                                data-test-facebook-input={{true}}
+                            <GhFacebookUrlInput
+                                id="user-facebook"
+                                @scratchValue={{this.scratchValues.facebook}}
+                                @setScratchValue={{fn this.setScratchValue "facebook"}}
+                                @model={{this.user}}
+                                @modelProperty="facebook"
                             />
                             <GhErrorMessage @errors={{this.user.errors}} @property="facebook" data-test-error="user-facebook" />
                             <p>URL of your personal Facebook Profile</p>
@@ -213,16 +209,12 @@
 
                         <GhFormGroup @errors={{this.user.errors}} @hasValidated={{this.user.hasValidated}} @property="twitter">
                             <label for="user-twitter">Twitter profile</label>
-                            <GhTextInput
-                                @type="url"
-                                @placeholder="https://twitter.com/username"
-                                @autocorrect="off"
-                                @id="user-twitter"
-                                @name="user[twitter]"
-                                @value={{readonly this.user.twitter}}
-                                @input={{action (mut this._scratchTwitter) value="target.value"}}
-                                @focus-out={{action "validateTwitterUrl"}}
-                                data-test-twitter-input={{true}}
+                            <GhTwitterUrlInput
+                                id="user-twitter"
+                                @scratchValue={{this.scratchValues.twitter}}
+                                @setScratchValue={{fn this.setScratchValue "twitter"}}
+                                @model={{this.user}}
+                                @modelProperty="twitter"
                             />
                             <GhErrorMessage @errors={{this.user.errors}} @property="twitter" data-test-error="user-twitter" />
                             <p>URL of your personal Twitter profile</p>
@@ -339,7 +331,7 @@
 
             {{!-- If an administrator is viewing Owner's profile then hide inputs for change password --}}
             {{#if this.canChangePassword}}
-                <form id="password-reset" class="user-profile" novalidate="novalidate" autocomplete="off" {{action (perform this.user.saveNewPassword) on="submit"}}>
+                <form id="password-reset" class="user-profile" novalidate="novalidate" autocomplete="off" {{on "submit" (perform this.user.saveNewPassword)}}>
                     <div class="pa5">
                         <fieldset class="user-details-form">
                             {{#if this.isOwnProfile}}
