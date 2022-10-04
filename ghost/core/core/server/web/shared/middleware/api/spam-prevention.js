@@ -5,7 +5,7 @@ const errors = require('@tryghost/errors');
 const config = require('../../../../../shared/config');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
-const spam = config.get('spam') || {};
+let spam = config.get('spam') || {};
 
 const messages = {
     forgottenPasswordEmail: {
@@ -22,13 +22,13 @@ const messages = {
     },
     tooManyAttempts: 'Too many attempts.'
 };
-
-const spamPrivateBlock = spam.private_block || {};
-const spamGlobalBlock = spam.global_block || {};
-const spamGlobalReset = spam.global_reset || {};
-const spamUserReset = spam.user_reset || {};
-const spamUserLogin = spam.user_login || {};
-const spamContentApiKey = spam.content_api_key || {};
+let spamPrivateBlock = spam.private_block || {};
+let spamGlobalBlock = spam.global_block || {};
+let spamGlobalReset = spam.global_reset || {};
+let spamUserReset = spam.user_reset || {};
+let spamUserLogin = spam.user_login || {};
+let spamMemberLogin = spam.member_login || {};
+let spamContentApiKey = spam.content_api_key || {};
 
 let store;
 let memoryStore;
@@ -37,6 +37,7 @@ let globalResetInstance;
 let globalBlockInstance;
 let userLoginInstance;
 let membersAuthInstance;
+let membersAuthEnumerationInstance;
 let userResetInstance;
 let contentApiKeyInstance;
 
@@ -150,6 +151,39 @@ const membersAuth = () => {
     }
 
     return membersAuthInstance;
+};
+
+/**
+ * This one should have higher limits because it checks across all email addresses
+ */
+const membersAuthEnumeration = () => {
+    const ExpressBrute = require('express-brute');
+    const BruteKnex = require('brute-knex');
+    const db = require('../../../../data/db');
+
+    store = store || new BruteKnex({
+        tablename: 'brute',
+        createTable: false,
+        knex: db.knex
+    });
+
+    if (!membersAuthEnumerationInstance) {
+        membersAuthEnumerationInstance = new ExpressBrute(store,
+            extend({
+                attachResetToRequest: true,
+                failCallback(req, res, next, nextValidRequestDate) {
+                    return next(new errors.TooManyRequestsError({
+                        message: `Too many different sign-in attempts try again in ${moment(nextValidRequestDate).fromNow(true)}`,
+                        context: tpl(messages.tooManySigninAttempts.context),
+                        help: tpl(messages.tooManySigninAttempts.context)
+                    }));
+                },
+                handleStoreError: handleStoreError
+            }, pick(spamMemberLogin, spamConfigKeys))
+        );
+    }
+
+    return membersAuthEnumerationInstance;
 };
 
 // Stops login attempts for a user+IP pair with an increasing time period starting from 10 minutes
@@ -281,7 +315,29 @@ module.exports = {
     globalReset: globalReset,
     userLogin: userLogin,
     membersAuth: membersAuth,
+    membersAuthEnumeration: membersAuthEnumeration,
     userReset: userReset,
     privateBlog: privateBlog,
-    contentApiKey: contentApiKey
+    contentApiKey: contentApiKey,
+    reset: () => {
+        store = undefined;
+        memoryStore = undefined;
+        privateBlogInstance = undefined;
+        globalResetInstance = undefined;
+        globalBlockInstance = undefined;
+        userLoginInstance = undefined;
+        membersAuthInstance = undefined;
+        membersAuthEnumerationInstance = undefined;
+        userResetInstance = undefined;
+        contentApiKeyInstance = undefined;
+
+        spam = config.get('spam') || {};
+        spamPrivateBlock = spam.private_block || {};
+        spamGlobalBlock = spam.global_block || {};
+        spamGlobalReset = spam.global_reset || {};
+        spamUserReset = spam.user_reset || {};
+        spamUserLogin = spam.user_login || {};
+        spamMemberLogin = spam.member_login || {};
+        spamContentApiKey = spam.content_api_key || {};
+    }
 };
