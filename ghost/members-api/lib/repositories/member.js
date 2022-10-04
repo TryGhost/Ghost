@@ -29,7 +29,7 @@ module.exports = class MemberRepository {
      * @param {object} deps
      * @param {any} deps.Member
      * @param {any} deps.MemberCancelEvent
-     * @param {any} deps.MemberSubscribeEvent
+     * @param {any} deps.MemberSubscribeEventModel
      * @param {any} deps.MemberEmailChangeEvent
      * @param {any} deps.MemberPaidSubscriptionEvent
      * @param {any} deps.MemberStatusEvent
@@ -47,7 +47,7 @@ module.exports = class MemberRepository {
     constructor({
         Member,
         MemberCancelEvent,
-        MemberSubscribeEvent,
+        MemberSubscribeEventModel,
         MemberEmailChangeEvent,
         MemberPaidSubscriptionEvent,
         MemberStatusEvent,
@@ -64,7 +64,7 @@ module.exports = class MemberRepository {
     }) {
         this._Member = Member;
         this._MemberCancelEvent = MemberCancelEvent;
-        this._MemberSubscribeEvent = MemberSubscribeEvent;
+        this._MemberSubscribeEvent = MemberSubscribeEventModel;
         this._MemberEmailChangeEvent = MemberEmailChangeEvent;
         this._MemberPaidSubscriptionEvent = MemberPaidSubscriptionEvent;
         this._MemberStatusEvent = MemberStatusEvent;
@@ -931,9 +931,9 @@ module.exports = class MemberRepository {
                 const originalMrrDelta = model.get('mrr');
                 const updatedMrrDelta = updated.get('mrr');
 
-                const getStatus = (model) => {
-                    const status = model.get('status');
-                    const canceled = model.get('cancel_at_period_end');
+                const getStatus = (modelToCheck) => {
+                    const status = modelToCheck.get('status');
+                    const canceled = modelToCheck.get('cancel_at_period_end');
 
                     if (status === 'canceled') {
                         return 'expired';
@@ -979,16 +979,16 @@ module.exports = class MemberRepository {
             }
         } else {
             eventData.created_at = new Date(subscription.start_date * 1000);
-            const model = await this._StripeCustomerSubscription.add(subscriptionData, options);
+            const subscriptionModel = await this._StripeCustomerSubscription.add(subscriptionData, options);
             await this._MemberPaidSubscriptionEvent.add({
                 member_id: member.id,
-                subscription_id: model.id,
+                subscription_id: subscriptionModel.id,
                 type: 'created',
                 source: 'stripe',
                 from_plan: null,
                 to_plan: subscriptionPriceData.id,
                 currency: subscriptionPriceData.currency,
-                mrr_delta: model.get('mrr'),
+                mrr_delta: subscriptionModel.get('mrr'),
                 ...eventData
             }, options);
 
@@ -999,7 +999,7 @@ module.exports = class MemberRepository {
                 source,
                 tierId: ghostProduct?.get('id'),
                 memberId: member.id,
-                subscriptionId: model.get('id'),
+                subscriptionId: subscriptionModel.get('id'),
                 offerId: data.offerId,
                 attribution: data.attribution
             });
@@ -1045,10 +1045,10 @@ module.exports = class MemberRepository {
 
                         let activeSubscriptionForChangedProduct = false;
 
-                        for (const subscription of subscriptions.models) {
-                            if (this.isActiveSubscriptionStatus(subscription.get('status'))) {
+                        for (const subscriptionModel of subscriptions.models) {
+                            if (this.isActiveSubscriptionStatus(subscriptionModel.get('status'))) {
                                 try {
-                                    const subscriptionProduct = await this._productRepository.get({stripe_price_id: subscription.get('stripe_price_id')}, options);
+                                    const subscriptionProduct = await this._productRepository.get({stripe_price_id: subscriptionModel.get('stripe_price_id')}, options);
                                     if (subscriptionProduct && changedProduct && subscriptionProduct.id === changedProduct.id) {
                                         activeSubscriptionForChangedProduct = true;
                                     }
@@ -1070,11 +1070,11 @@ module.exports = class MemberRepository {
         } else {
             const subscriptions = await member.related('stripeSubscriptions').fetch(options);
             let activeSubscriptionForGhostProduct = false;
-            for (const subscription of subscriptions.models) {
-                if (this.isActiveSubscriptionStatus(subscription.get('status'))) {
+            for (const subscriptionModel of subscriptions.models) {
+                if (this.isActiveSubscriptionStatus(subscriptionModel.get('status'))) {
                     status = 'paid';
                     try {
-                        const subscriptionProduct = await this._productRepository.get({stripe_price_id: subscription.get('stripe_price_id')}, options);
+                        const subscriptionProduct = await this._productRepository.get({stripe_price_id: subscriptionModel.get('stripe_price_id')}, options);
                         if (subscriptionProduct && ghostProduct && subscriptionProduct.id === ghostProduct.id) {
                             activeSubscriptionForGhostProduct = true;
                         }

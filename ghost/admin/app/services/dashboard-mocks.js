@@ -275,21 +275,24 @@ export default class DashboardMocksService extends Service {
             // const attributionSources = ['Twitter', 'Ghost Network', 'Product Hunt', 'Direct'];
             const hasPaidConversions = true;
             const hasFreeSignups = true;
+            const showEmptyState = true;
 
-            this.memberAttributionStats.push({
-                date: date.toISOString().split('T')[0],
-                source: attributionSources[Math.floor(Math.random() * attributionSources.length)],
-                signups: hasFreeSignups ? Math.floor(Math.random() * 50) : 0,
-                paidConversions: hasPaidConversions ? Math.floor(Math.random() * 30) : 0
-            });
+            if (!showEmptyState) {
+                this.memberAttributionStats.push({
+                    date: date.toISOString().split('T')[0],
+                    source: attributionSources[Math.floor(Math.random() * attributionSources.length)],
+                    signups: hasFreeSignups ? Math.floor(Math.random() * 50) : 0,
+                    paidConversions: hasPaidConversions ? Math.floor(Math.random() * 30) : 0
+                });
 
-            // Comment this out to hide Unavailable source
-            this.memberAttributionStats.push({
-                date: date.toISOString().split('T')[0],
-                source: null,
-                signups: hasFreeSignups ? Math.floor(Math.random() * 5) : 0,
-                paidConversions: hasPaidConversions ? Math.floor(Math.random() * 3) : 0
-            });
+                // Comment this out to hide Unavailable source
+                this.memberAttributionStats.push({
+                    date: date.toISOString().split('T')[0],
+                    source: null,
+                    signups: hasFreeSignups ? Math.floor(Math.random() * 5) : 0,
+                    paidConversions: hasPaidConversions ? Math.floor(Math.random() * 3) : 0
+                });
+            }
         }
 
         if (stats.length === 0) {
