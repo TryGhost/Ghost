@@ -887,3 +887,17 @@ remove|ember-template-lint|no-action|125|88|125|88|ea7c6e414cc202b6e4049eae4f60e
 remove|ember-template-lint|no-action|129|35|129|35|ea7c6e414cc202b6e4049eae4f60eb0829bd3ff0|1662681600000|1673053200000|1678237200000|app/templates/settings/staff/user.hbs
 remove|ember-template-lint|no-action|136|42|136|42|7a2a7a1b2159d811b310a9b89817108ddff9df88|1662681600000|1673053200000|1678237200000|app/templates/settings/staff/user.hbs
 remove|ember-template-lint|no-action|140|35|140|35|7a2a7a1b2159d811b310a9b89817108ddff9df88|1662681600000|1673053200000|1678237200000|app/templates/settings/staff/user.hbs
+remove|ember-template-lint|no-action|361|43|361|43|1f32c13702a8b46410e9e10f9988fa2e0df41968|1662681600000|1673053200000|1678237200000|app/templates/settings/general.hbs
+remove|ember-template-lint|no-action|362|47|362|47|69b8d823159491abd67494eba728616ac0a928a5|1662681600000|1673053200000|1678237200000|app/templates/settings/general.hbs
+remove|ember-template-lint|no-action|374|43|374|43|226e659be4c2c10c0e5fbebb40f712f3016c9b90|1662681600000|1673053200000|1678237200000|app/templates/settings/general.hbs
+remove|ember-template-lint|no-action|375|47|375|47|d746c5532ce38d23d8537195a3afa6ce7235f577|1662681600000|1673053200000|1678237200000|app/templates/settings/general.hbs
+remove|ember-template-lint|no-passed-in-event-handlers|361|36|361|36|c14e20b2b090706f9af9fa416c4300c06e206894|1662681600000|1673053200000|1678237200000|app/templates/settings/general.hbs
+remove|ember-template-lint|no-passed-in-event-handlers|374|36|374|36|e286f50c92a17a31581207e4c65054f146cbd533|1662681600000|1673053200000|1678237200000|app/templates/settings/general.hbs
+remove|ember-template-lint|no-action|122|82|122|82|e2e24a0e1efe19ed982cc8140248570c03eee7b9|1662681600000|1673053200000|1678237200000|app/templates/settings/staff/user.hbs
+remove|ember-template-lint|no-action|262|39|262|39|1f32c13702a8b46410e9e10f9988fa2e0df41968|1662681600000|1673053200000|1678237200000|app/templates/settings/staff/user.hbs
+remove|ember-template-lint|no-action|263|43|263|43|69b8d823159491abd67494eba728616ac0a928a5|1662681600000|1673053200000|1678237200000|app/templates/settings/staff/user.hbs
+remove|ember-template-lint|no-action|279|39|279|39|226e659be4c2c10c0e5fbebb40f712f3016c9b90|1662681600000|1673053200000|1678237200000|app/templates/settings/staff/user.hbs
+remove|ember-template-lint|no-action|280|43|280|43|d746c5532ce38d23d8537195a3afa6ce7235f577|1662681600000|1673053200000|1678237200000|app/templates/settings/staff/user.hbs
+remove|ember-template-lint|no-action|398|106|398|106|d2028f094665a3702bbea21159b1c12237c94bc9|1662681600000|1673053200000|1678237200000|app/templates/settings/staff/user.hbs
+remove|ember-template-lint|no-passed-in-event-handlers|262|32|262|32|c14e20b2b090706f9af9fa416c4300c06e206894|1662681600000|1673053200000|1678237200000|app/templates/settings/staff/user.hbs
+remove|ember-template-lint|no-passed-in-event-handlers|279|32|279|32|e286f50c92a17a31581207e4c65054f146cbd533|1662681600000|1673053200000|1678237200000|app/templates/settings/staff/user.hbs
