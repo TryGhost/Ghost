@@ -2,7 +2,7 @@
     <header class="modal-header" data-test-modal="remove-label-members">
         <h1>Remove Label</h1>
     </header>
-    <a class="close" href="" role="button" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
+    <button type="button" class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
     {{#if this.hasRun}}
         <div class="gh-content-box pa" data-test-state="remove-complete">
