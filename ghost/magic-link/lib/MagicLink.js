@@ -1,4 +1,9 @@
-const {IncorrectUsageError} = require('@tryghost/errors');
+const {IncorrectUsageError, BadRequestError} = require('@tryghost/errors');
+const {isEmail} = require('@tryghost/validator');
+const tpl = require('@tryghost/tpl');
+const messages = {
+    invalidEmail: 'Email is not valid'
+};
 
 /**
  * @typedef { import('nodemailer').Transporter } MailTransporter
@@ -52,6 +57,11 @@ class MagicLink {
      * @returns {Promise<{token: Token, info: SentMessageInfo}>}
      */
     async sendMagicLink(options) {
+        if (!isEmail(options.email)) {
+            throw new BadRequestError({
+                message: tpl(messages.invalidEmail)
+            });
+        }
         const token = await this.tokenProvider.create(options.tokenData);
 
         const type = options.type || 'signin';
