@@ -87,22 +87,16 @@ export default Controller.extend({
     actions: {
         validateFacebookUrl() {
             let newUrl = this._scratchFacebook;
-            let oldUrl = this.get('user.facebook');
             let errMessage = '';
 
             // reset errors and validation
             this.get('user.errors').remove('facebook');
             this.get('user.hasValidated').removeObject('facebook');
 
-            if (newUrl === '') {
+            if (!newUrl) {
                 // Clear out the Facebook url
                 this.set('user.facebook', '');
                 return;
-            }
-
-            // _scratchFacebook will be null unless the user has input something
-            if (!newUrl) {
-                newUrl = oldUrl;
             }
 
             try {
@@ -143,22 +137,16 @@ export default Controller.extend({
 
         validateTwitterUrl() {
             let newUrl = this._scratchTwitter;
-            let oldUrl = this.get('user.twitter');
             let errMessage = '';
 
             // reset errors and validation
             this.get('user.errors').remove('twitter');
             this.get('user.hasValidated').removeObject('twitter');
 
-            if (newUrl === '') {
-                // Clear out the Twitter url
-                this.set('user.twitter', '');
-                return;
-            }
-
-            // _scratchTwitter will be null unless the user has input something
             if (!newUrl) {
-                newUrl = oldUrl;
+                // Clear out the Twitter url
+                this.set('user.twitter', null);
+                return;
             }
 
             if (newUrl.match(/(?:twitter\.com\/)(\S+)/) || newUrl.match(/([a-z\d.]+)/i)) {
@@ -392,6 +380,18 @@ export default Controller.extend({
             }
         }
     }).group('saveHandlers'),
+
+    saveViaKeyboard: action(function (event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+
+        // trigger a blur and wait for any resulting validation actions to complete
+        document.activeElement.blur();
+
+        run.schedule('actions', () => {
+            this.save.perform();
+        });
+    }),
 
     copyContentKey: task(function* () {
         copyTextToClipboard(this.personalToken);
