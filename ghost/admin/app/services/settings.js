@@ -63,6 +63,7 @@ export default class SettingsService extends Service.extend(_ProxyMixin, Validat
         }
 
         await settings.save();
+        await this.validate();
         this.set('settledIcon', settings.icon);
         return settings;
     }
