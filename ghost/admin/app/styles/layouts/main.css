@@ -1097,14 +1097,18 @@
 }
 
 .gh-canvas-header {
+    min-height: calc(var(--main-layout-vpanel-height) - 1px);;
     margin: 0 calc(-1 * var(--main-layout-content-sidepadding));
-    padding: 0 var(--main-layout-content-sidepadding);
-    position: sticky;
+    padding: 32px var(--main-layout-content-sidepadding);
     top: 0;
     background: var(--main-bg-color);
     z-index: 700;
     border-bottom: 1px solid;
     border-color: transparent;
+}
+
+.gh-canvas-header.sticky {
+    position: sticky;
 }
 
 .gh-canvas.circle-bg .gh-canvas-header {
@@ -1117,36 +1121,36 @@
     background: var(--main-color-content-greybg);
 }
 
-.gh-canvas-header.stacked {
-    padding-top: 36px; 
-}
-
-.gh-canvas-header.stacked .gh-canvas-breadcrumb {
+.gh-canvas-header .gh-canvas-breadcrumb {
     display: flex;
     align-items: center;
-    height: 24px;
-    color: var(--darkgrey-l1);
+    height: 34px;
+    color: var(--midgrey-l2);
     font-size: 1.35rem;
-    font-weight: 500;
-    line-height: 24px;
+    font-weight: 400;
+    line-height: 34px;
     letter-spacing: .2px;
     background: none;
 }
 
-.gh-canvas-header.stacked .gh-canvas-breadcrumb a {
-    color: var(--darkgrey-l1);
+.gh-canvas-header.sticky .gh-canvas-breadcrumb {
+    position: sticky
+}
+
+.gh-canvas-header .gh-canvas-breadcrumb a {
+    color: var(--darkgrey);
     line-height: 24px;
 }
 
-.gh-canvas-header.stacked .gh-canvas-breadcrumb svg {
+.gh-canvas-header .gh-canvas-breadcrumb svg {
     display: block;
     width: 9px;
     height: 9px;
     margin: 1px 6px 0;
 }
 
-.gh-canvas-header.stacked .gh-canvas-breadcrumb svg path {
-    stroke: var(--darkgrey-l1);
+.gh-canvas-header .gh-canvas-breadcrumb svg path {
+    stroke: var(--midgrey-l2);
 }
 
 .gh-main-grey-gradient .gh-canvas-header {
@@ -1155,18 +1159,11 @@
 }
 
 .gh-canvas-header-content {
-    height: calc(var(--main-layout-vpanel-height) - 1px);
     position: relative;
     flex-shrink: 0;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.gh-canvas-header.stacked .gh-canvas-header-content {
-    flex-direction: column;
     align-items: flex-start;
-    height: unset;
+    justify-content: space-between;
 }
 
 .gh-main-width {
@@ -1211,11 +1208,6 @@
     grid-template-columns: 1fr;
     margin-bottom: 3vw;
     grid-column-gap: 0;
-}
-
-.gh-main-section.no-heading,
-.gh-main-section.bt {
-    border-top: 1px solid var(--whitegrey);
 }
 
 .gh-main-section.bb { border-bottom: 1px solid var(--whitegrey); }
@@ -1488,7 +1480,7 @@
     padding: 0;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 3.1rem;
+    font-size: 3.2rem;
     line-height: 1.3em;
     font-weight: 700;
     letter-spacing: -0.021em;
@@ -1511,6 +1503,10 @@
     width: 0.5em;
     height: 0.5em;
     margin: 0 10px;
+}
+
+.gh-canvas-breadcrumb + .gh-canvas-title {
+    padding: 12px 0 0;
 }
 
 .gh-btn-edit-view {

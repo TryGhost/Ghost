@@ -1,42 +1,44 @@
 <section class="gh-canvas" {{did-insert this.loadData}}>
 
-    <GhCanvasHeader class="gh-canvas-header stacked gh-post-analytics-header">
-        <div class="gh-canvas-breadcrumb">
-            <LinkTo @route="posts">
-                Posts
-            </LinkTo>
-            {{svg-jar "arrow-right-small"}}Analytics
-        </div>
-        <h2 class="gh-canvas-title gh-post-title">
-            {{this.post.title}}
-        </h2>
-        <div class="gh-post-analytics-meta">
-            <div class="gh-post-analytics-meta-text">
-                {{#if
-                    (or this.post.isSent
-                        (and this.post.isPublished this.post.email)
-                        this.post.willEmail
-                    )
-                }}
-                    {{#if this.post.emailOnly}}
-                        Sent
-                    {{else}}
-                        Published and sent
-                    {{/if}}
-                {{else}}
-                    Published on your site
-                {{/if}}
-
-                {{#let (moment-site-tz this.post.publishedAtUTC) as |publishedAt|}}
-                    on
-                    {{moment-format publishedAt "D MMM YYYY"}}
-                    at
-                    {{moment-format publishedAt "HH:mm"}}
-                {{/let}}
+    <GhCanvasHeader class="gh-canvas-header gh-post-analytics-header">
+        <div class="flex flex-column flex-grow-1">
+            <div class="gh-canvas-breadcrumb">
+                <LinkTo @route="posts">
+                    Posts
+                </LinkTo>
+                {{svg-jar "arrow-right-small"}}Analytics
             </div>
-            <LinkTo @route="editor.edit" @models={{array this.post.displayName this.post.id}} class="gh-post-list-cta edit" title="">
-                {{svg-jar "pen" title=""}}<span>Edit post</span>
-            </LinkTo>
+            <h2 class="gh-canvas-title gh-post-title">
+                {{this.post.title}}
+            </h2>
+            <div class="gh-post-analytics-meta">
+                <div class="gh-post-analytics-meta-text">
+                    {{#if
+                        (or this.post.isSent
+                            (and this.post.isPublished this.post.email)
+                            this.post.willEmail
+                        )
+                    }}
+                        {{#if this.post.emailOnly}}
+                            Sent
+                        {{else}}
+                            Published and sent
+                        {{/if}}
+                    {{else}}
+                        Published on your site
+                    {{/if}}
+
+                    {{#let (moment-site-tz this.post.publishedAtUTC) as |publishedAt|}}
+                        on
+                        {{moment-format publishedAt "D MMM YYYY"}}
+                        at
+                        {{moment-format publishedAt "HH:mm"}}
+                    {{/let}}
+                </div>
+                <LinkTo @route="editor.edit" @models={{array this.post.displayName this.post.id}} class="gh-post-list-cta edit" title="">
+                    {{svg-jar "pen" title=""}}<span>Edit post</span>
+                </LinkTo>
+            </div>
         </div>
     </GhCanvasHeader>
 

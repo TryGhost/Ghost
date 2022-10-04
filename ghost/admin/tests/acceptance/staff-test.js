@@ -140,11 +140,11 @@ describe('Acceptance: Staff', function () {
 
             // view title should exist and be linkable and active
             expect(
-                find('[data-test-screen-title] a[href="/ghost/settings/staff"]').classList.contains('active'),
+                find('[data-test-breadcrumb] a[href="/ghost/settings/staff"]').classList.contains('active'),
                 'has linkable url back to staff main page'
             ).to.be.true;
 
-            await click('[data-test-screen-title] a');
+            await click('[data-test-breadcrumb] a');
 
             // url should be /staff again
             expect(currentURL(), 'url after clicking back').to.equal('/settings');

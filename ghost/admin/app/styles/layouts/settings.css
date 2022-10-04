@@ -1798,40 +1798,33 @@ p.theme-validation-details {
 }
 
 .gh-nav-header {
-    height: 100px;
-    padding: 32px 32px 16px;
+    display: flex;
+    align-items: center;
+    padding: 32px 32px 48px;
+    color: var(--midgrey-l2);
+    font-size: 1.35rem;
+    font-weight: 400;
+    line-height: 36px;
+    letter-spacing: .2px;
 }
 
 .gh-nav-menu-back-button {
     display: flex;
     align-items: center;
-    margin-bottom: 40px;
-    padding: 6px 0;
-    color: var(--darkgrey-l1);
-    font-size: 1.35rem;
-    font-weight: 500;
-    letter-spacing: .2px;
+    height: 36px;
+    color: var(--darkgrey);
     background: none;
 }
 
-.gh-nav-menu-back-button svg {
+.gh-nav-header svg {
     display: block;
     width: 9px;
     height: 9px;
-    margin: 1px 8px 0 0;
-    transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
+    margin: 1px 6px 0;
 }
 
-.gh-nav-menu-back-button svg path {
+.gh-nav-header svg path {
     stroke: var(--darkgrey-l1);
-}
-
-.gh-nav-menu-back-button:hover svg {
-    transform: translateX(-3px)
-}
-
-.gh-nav-menu-back-button:hover svg path {
-    stroke: var(--black);
 }
 
 .gh-nav-menu-back-button:hover {

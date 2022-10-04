@@ -197,7 +197,7 @@ describe('Acceptance: Content', function () {
             // clicking sidebar custom view link works
             await click('[data-test-nav-custom="posts-Scheduled"]');
             expect(currentURL()).to.equal('/posts?type=scheduled');
-            expect(find('[data-test-screen-title]').innerText).to.match(/Posts[\n\s]+Scheduled/);
+            expect(find('[data-test-screen-title]').innerText).to.match(/Scheduled/);
             expect(find('[data-test-nav-custom="posts-Scheduled"]')).to.have.class('active');
 
             // clicking the main posts link resets
@@ -210,7 +210,7 @@ describe('Acceptance: Content', function () {
             await selectChoose('[data-test-type-select]', 'Scheduled posts');
             expect(currentURL()).to.equal('/posts?type=scheduled');
             expect(find('[data-test-nav-custom="posts-Scheduled"]')).to.have.class('active');
-            expect(find('[data-test-screen-title]').innerText).to.match(/Posts[\n\s]+Scheduled/);
+            expect(find('[data-test-screen-title]').innerText).to.match(/Scheduled/);
         });
     });
 

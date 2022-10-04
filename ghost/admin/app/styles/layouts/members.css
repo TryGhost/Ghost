@@ -681,7 +681,7 @@ label[for="member-description"] + p {
 
 .gh-member-details {
     position: sticky;
-    top: 96px;
+    top: 158px;
     left: 0;
     height: max-content;
 }

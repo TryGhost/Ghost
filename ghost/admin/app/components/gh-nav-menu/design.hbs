@@ -1,6 +1,7 @@
 <div class="flex flex-column h-100" {{css-transition "gh-nav-contextual"}} data-test-nav-menu="design" ...attributes>
     <header class="gh-nav-header">
-        <LinkTo @route="settings" class="gh-nav-menu-back-button" data-test-link="back-to-settings">{{svg-jar "arrow-left-small"}} Settings</LinkTo>
+        <LinkTo @route="settings" class="gh-nav-menu-back-button" data-test-link="back-to-settings">Settings</LinkTo>
+        {{svg-jar "arrow-right-small"}} Design
     </header>
     <section class="gh-nav-body gh-nav-design">
         <div class="gh-nav-top" {{on "click" this.transitionBackToIndex}}>
