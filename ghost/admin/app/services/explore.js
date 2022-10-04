@@ -8,11 +8,12 @@ export default class ExploreService extends Service {
 
     exploreUrl = 'http://localhost:3000/explore/';
     exploreRouteRoot = '#/explore';
+    submitRoute = 'submit';
 
     @tracked exploreWindowOpen = false;
     @tracked siteData = null;
     @tracked previousRoute = null;
-    // @tracked action = null;
+    @tracked isIframeTransition = false;
 
     get enabled() {
         return this.feature.exploreApp;
@@ -69,20 +70,12 @@ export default class ExploreService extends Service {
 
     // Sends a route update to a child route in the BMA, because we can't control
     // navigating to it otherwise
-    // sendRouteUpdate() {
-    //     const action = this.action;
-
-    //     if (action) {
-    //         if (action === 'checkout') {
-    //             this.getExploreIframe().contentWindow.postMessage({
-    //                 query: 'routeUpdate',
-    //                 response: this.submitRoute
-    //             }, '*');
-    //         }
-
-    //         this.action = null;
-    //     }
-    // }
+    sendRouteUpdate(route) {
+        this.getExploreIframe().contentWindow.postMessage({
+            query: 'routeUpdate',
+            response: route
+        }, '*');
+    }
 
     // Controls explore window modal visibility and sync of the URL visible in browser
     // and the URL opened on the iframe. It is responsible to non user triggered iframe opening,
@@ -92,16 +85,13 @@ export default class ExploreService extends Service {
             // don't attempt to open again
             return;
         }
-
-        // this.sendRouteUpdate();
-
         this.exploreWindowOpen = value;
     }
 
     // Controls navigation to explore window modal which is triggered from the application UI.
     // For example: pressing "View explore" link in navigation menu. It's main side effect is
     // remembering the route from which the action has been triggered - "previousRoute" so it
-    // could be reused when closing explore window
+    // could be reused when closing the explore window
     openExploreWindow(currentRoute, childRoute) {
         if (this.exploreWindowOpen) {
             // don't attempt to open again
@@ -114,9 +104,8 @@ export default class ExploreService extends Service {
         // in toggleExploreWindow
         window.location.hash = childRoute || '/explore';
 
-        // this.sendRouteUpdate();
-
         this.router.transitionTo(childRoute || '/explore');
+        this.toggleExploreWindow(true);
     }
 
     getExploreIframe() {

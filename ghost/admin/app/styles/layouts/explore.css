@@ -54,6 +54,24 @@
 }
 
 /* Connect */
+.explore {
+    position: relative;
+}
+
+.iframe-explore-container {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    transform: translate3d(0, 0, 0);
+    height: 100vh;
+    background: linear-gradient(180deg, var(--white) 0%, #E1E1E1 100%);
+}
+
 .fullscreen-explore-container {
     position: fixed;
     top: 0;

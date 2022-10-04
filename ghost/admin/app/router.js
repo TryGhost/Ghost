@@ -74,9 +74,9 @@ Router.map(function () {
         this.route('user', {path: ':user_slug'});
     });
 
-    this.route('explore-connect');
     this.route('explore', function () {
-        this.route('explore-sub', {path: '/*sub'});
+        this.route('connect');
+        // this.route('explore-sub', {path: '/*sub'});
     });
 
     this.route('settings.integrations', {path: '/settings/integrations'}, function () {
