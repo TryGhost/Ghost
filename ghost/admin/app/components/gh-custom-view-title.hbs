@@ -1,7 +1,17 @@
-<h2 class="gh-canvas-title" data-test-screen-title>
-    <LinkTo @route={{this.router.currentRouteName}} @query={{@query}}>{{or @title "No @title provided"}}</LinkTo>
+<div class="flex flex-column">
     {{#if this.customViews.activeView}}
-        <span>{{svg-jar "arrow-right"}}</span>
-        <span class="truncate">{{this.customViews.activeView.name}}</span>
+        <div class="gh-canvas-breadcrumb">
+            <LinkTo @route={{this.router.currentRouteName}} @query={{@query}}>
+                {{or @title "No @title provided"}}
+            </LinkTo>
+            {{svg-jar "arrow-right-small"}} {{this.customViews.activeView.name}}
+        </div>
+        <h2 class="gh-canvas-title gh-post-title" data-test-screen-title>
+            {{this.customViews.activeView.name}}
+        </h2>
+    {{else}}
+        <h2 class="gh-canvas-title" data-test-screen-title>
+            <LinkTo @route={{this.router.currentRouteName}} @query={{@query}}>{{or @title "No @title provided"}}</LinkTo>
+        </h2>
     {{/if}}
-</h2>
+</div>

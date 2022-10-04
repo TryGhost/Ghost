@@ -1,5 +1,5 @@
 <section class="gh-canvas">
-    <GhCanvasHeader class="gh-canvas-header break tablet post-header">
+    <GhCanvasHeader class="gh-canvas-header sticky break tablet post-header">
         <GhCustomViewTitle @title={{if this.session.user.isContributor (concat this.config.blogTitle " posts") "Posts"}} @query={{reset-query-params "posts"}} />
         <section class="view-actions">
             <PostsList::ContentFilter
