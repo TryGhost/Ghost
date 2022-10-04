@@ -104,16 +104,22 @@ export default class GeneralController extends Controller {
     @action
     validateFacebookUrl() {
         let newUrl = this._scratchFacebook;
+        let oldUrl = this.get('settings.facebook');
         let errMessage = '';
 
         // reset errors and validation
         this.get('settings.errors').remove('facebook');
         this.get('settings.hasValidated').removeObject('facebook');
 
-        if (!newUrl) {
+        if (newUrl === '') {
             // Clear out the Facebook url
-            this.set('settings.facebook', null);
+            this.set('settings.facebook', '');
             return;
+        }
+
+        // _scratchFacebook will be null unless the user has input something
+        if (!newUrl) {
+            newUrl = oldUrl;
         }
 
         try {
@@ -153,16 +159,22 @@ export default class GeneralController extends Controller {
     @action
     validateTwitterUrl() {
         let newUrl = this._scratchTwitter;
+        let oldUrl = this.get('settings.twitter');
         let errMessage = '';
 
         // reset errors and validation
         this.get('settings.errors').remove('twitter');
         this.get('settings.hasValidated').removeObject('twitter');
 
-        if (!newUrl) {
+        if (newUrl === '') {
             // Clear out the Twitter url
             this.set('settings.twitter', '');
             return;
+        }
+
+        // _scratchTwitter will be null unless the user has input something
+        if (!newUrl) {
+            newUrl = oldUrl;
         }
 
         if (newUrl.match(/(?:twitter\.com\/)(\S+)/) || newUrl.match(/([a-z\d.]+)/i)) {
