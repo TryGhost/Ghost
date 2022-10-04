@@ -16,11 +16,11 @@
 }
 
 .gh-members-activity .gh-list-scrolling {
-    height: calc(100vh - 96px);
+    height: calc(100vh - 150px);
 }
 
 .gh-members-activity-single .gh-list-scrolling {
-    height: calc(100vh - 96px - 116px);
+    height: calc(100vh - 150px - 116px);
 }
 
 .gh-member-details-activity .gh-main-section-block {
@@ -447,7 +447,7 @@
     }
 
     .gh-members-activity-single .gh-list-scrolling {
-        height: calc(100vh - 96px - 116px -64px);
+        height: calc(100vh - 150px - 116px -64px);
     }
 
     .gh-members-activity .gh-list-scrolling {
