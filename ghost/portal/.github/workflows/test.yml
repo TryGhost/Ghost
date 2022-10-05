@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-18.04
     strategy:
       matrix:
-        node: [ '14' ]
+        node: [ '16' ]
     env:
       FORCE_COLOR: 1
       CI: true
