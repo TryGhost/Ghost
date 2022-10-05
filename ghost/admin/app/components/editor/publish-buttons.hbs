@@ -59,7 +59,7 @@
         {{#if @publishManagement.post.didEmailFail }}
             <button
                 type="button"
-                class="gh-btn gh-btn-editor darkgrey gh-publish-trigger"
+                class="gh-btn gh-btn-editor darkgrey gh-retry-trigger"
                 {{on "click" @publishManagement.openPublishFlow}}
                 {{on-key "cmd+shift+p"}}
                 disabled={{@publishManagement.publishOptions.isLoading}}
