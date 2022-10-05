@@ -402,7 +402,7 @@ export default class AccountPlanPage extends React.Component {
                 });
             }
         }
-    }
+    };
 
     onCancelSubscription({subscriptionId, cancelAtPeriodEnd}) {
         const {member} = this.context;
