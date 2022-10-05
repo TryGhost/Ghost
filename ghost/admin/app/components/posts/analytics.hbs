@@ -20,7 +20,12 @@
                             Published and sent
                         {{/if}}
                     {{else}}
-                        Published on your site
+                        Published 
+                        {{#if @post.didEmailFail}}
+                            but failed to send
+                        {{else}}
+                            on your site
+                        {{/if}}
                     {{/if}}
 
                     {{#let (moment-site-tz this.post.publishedAtUTC) as |publishedAt|}}

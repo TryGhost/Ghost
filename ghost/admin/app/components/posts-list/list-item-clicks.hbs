@@ -94,7 +94,7 @@
                         <span class="published" {{on "mouseover" (fn (mut this.isStateHovered) true)}} {{on "mouseleave" (fn (mut this.isStateHovered) false)}}>
                             Published
                             {{#if @post.didEmailFail}}
-                                (failed to send)
+                                but failed to send
                             {{else if @post.hasBeenEmailed}}
                                 and sent 
                                 {{#if this.isHovered}}
