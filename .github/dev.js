@@ -10,7 +10,7 @@ let commands = [];
 
 const COMMAND_GHOST = {
     name: 'ghost',
-    command: 'yarn nodemon -q -i ghost/admin -i ghost/core/content -i ghost/core/core/built',
+    command: 'yarn nodemon -q -i ghost/admin -i ghost/core/content -i ghost/core/core/built -i ghost/portal',
     prefixColor: 'blue',
     env: {}
 };
@@ -29,6 +29,16 @@ if (DASH_DASH_ARGS.includes('ghost')) {
     commands = [COMMAND_ADMIN];
 } else {
     commands = [COMMAND_GHOST, COMMAND_ADMIN];
+}
+
+if (DASH_DASH_ARGS.includes('portal')) {
+    commands.push({
+        name: 'portal',
+        command: 'yarn dev',
+        cwd: path.resolve(__dirname, '../ghost/portal'),
+        prefixColor: 'magenta'
+    });
+    COMMAND_GHOST.env['portal__url'] = 'http://localhost:5368/umd/portal.min.js';
 }
 
 if (!commands.length) {
