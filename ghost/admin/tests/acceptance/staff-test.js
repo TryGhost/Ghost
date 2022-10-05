@@ -12,8 +12,7 @@ import {
     find,
     findAll,
     focus,
-    triggerEvent,
-    triggerKeyEvent
+    triggerEvent
 } from '@ember/test-helpers';
 import {enableLabsFlag} from '../helpers/labs-flag';
 import {enableMembers} from '../helpers/members';
@@ -22,6 +21,7 @@ import {expect} from 'chai';
 import {keyDown} from 'ember-keyboard/test-support/test-helpers';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
+import {submitForm} from '../helpers/forms';
 import {visit} from '../helpers/visit';
 
 describe('Acceptance: Staff', function () {
@@ -456,7 +456,8 @@ describe('Acceptance: Staff', function () {
         });
 
         describe('existing user', function () {
-            let user, newLocation, originalReplaceState;
+            let user, originalReplaceState;
+            let newLocation; // eslint-disable-line
 
             beforeEach(function () {
                 user = this.server.create('user', {
@@ -511,7 +512,7 @@ describe('Acceptance: Staff', function () {
                 // Save changes
                 await click('[data-test-save-button]');
 
-                // Since we reset save status so there's no on-screen indication
+                // Since we reset save button's status there's no on-screen indication
                 // that we've had a save, check the request was fired instead
                 let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
                 let params = JSON.parse(lastRequest.requestBody);
@@ -519,19 +520,16 @@ describe('Acceptance: Staff', function () {
                 expect(params.users[0].name).to.equal('Test User');
 
                 // CMD-S shortcut works
-                await fillIn('[data-test-slug-input]', 'New Slug');
+                await fillIn('[data-test-name-input]', 'New Name');
                 await keyDown('cmd+s');
 
-                // Since we reset save status so there's no on-screen indication
+                // Since we reset save button's status there's no on-screen indication
                 // that we've had a save, check the request was fired instead
                 [lastRequest] = this.server.pretender.handledRequests.slice(-1);
                 params = JSON.parse(lastRequest.requestBody);
 
-                // slug should have been correctly slugified before save
-                expect(params.users[0].slug).to.equal('new-slug');
-
-                // check that the history state has been updated
-                expect(newLocation).to.equal('new-slug');
+                // name should have been correctly set before save (we set on blur)
+                expect(params.users[0].name, 'saved name').to.equal('New Name');
 
                 await fillIn('[data-test-slug-input]', 'white space');
                 await blur('[data-test-slug-input]');
@@ -703,7 +701,7 @@ describe('Acceptance: Staff', function () {
                 await fillIn('[data-test-ne2-pass-input]', 'notlong');
 
                 // enter key triggers action
-                await triggerKeyEvent('[data-test-new-pass-input]', 'keyup', 13);
+                await submitForm('[data-test-new-pass-input]');
 
                 expect(
                     find('[data-test-new-pass-input]').closest('.form-group'),
@@ -720,7 +718,7 @@ describe('Acceptance: Staff', function () {
                 await fillIn('[data-test-ne2-pass-input]', 'ghostisawesome');
 
                 // enter key triggers action
-                await triggerKeyEvent('#user-password-new', 'keyup', 13);
+                await submitForm('#user-password-new');
 
                 expect(
                     find('#user-password-new').closest('.form-group'),
@@ -742,7 +740,7 @@ describe('Acceptance: Staff', function () {
                 ).to.not.have.class('error');
 
                 // enter key triggers action
-                await triggerKeyEvent('[data-test-new-pass-input]', 'keyup', 13);
+                await submitForm('[data-test-new-pass-input]');
 
                 expect(
                     find('[data-test-ne2-pass-input]').closest('.form-group'),
