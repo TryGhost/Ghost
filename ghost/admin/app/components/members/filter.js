@@ -98,6 +98,11 @@ const FILTER_RELATIONS_OPTIONS = {
     'opened_emails.post_id': MATCH_RELATION_OPTIONS
 };
 
+const SUBSCRIPTION_VALUES = [
+    {label: 'Subscribed', name: 'true'},
+    {label: 'Unsubscribed', name: 'false'}
+];
+
 const FILTER_VALUE_OPTIONS = {
     'subscriptions.plan_interval': [
         {label: 'Monthly', name: 'month'},
@@ -109,8 +114,7 @@ const FILTER_VALUE_OPTIONS = {
         {label: 'Complimentary', name: 'comped'}
     ],
     subscribed: [
-        {label: 'Subscribed', name: 'true'},
-        {label: 'Unsubscribed', name: 'false'}
+        SUBSCRIPTION_VALUES
     ],
     'subscriptions.status': [
         {label: 'Active', name: 'active'},
@@ -135,15 +139,17 @@ class Filter {
         this.relationOptions = options.relationOptions;
         this.timezone = options.timezone || 'Etc/UTC';
 
-        const filterProperty = FILTER_PROPERTIES.find(prop => this.type === prop.name);
-
+        const filterProperty = FILTER_PROPERTIES.find(prop => (this.type === prop.name));
+        const isNewsletter = filterProperty.name.includes('newsletter.');
+        if (isNewsletter) {
+            this.type = 'newsletter';
+        }
         // date string values are passed in as UTC strings
         // we need to convert them to the site timezone and make a local date that matches
         // so the date string output in the filter inputs is correct
         const value = filterProperty.valueType === 'date' && typeof options.value === 'string'
             ? moment(moment.tz(moment.utc(options.value), this.timezone).format('YYYY-MM-DD')).toDate()
             : options.value;
-
         this.value = value;
     }
 }
@@ -174,17 +180,21 @@ export default class MembersFilter extends Component {
 
         if (hasMultipleNewsletters) {
             this.newsletters.map((item) => {
-                return availableFilters.push({
-                    label: item.name,
-                    name: `newsletters.${item.id}`,
-                    valueType: 'text',
-                    group: 'Newsletters'
-                });
+                const exists = availableFilters.find(nsl => nsl.label === item.name);
+                if (!exists){
+                    var name = `newsletter.${item.id}`;
+                    Object.assign(FILTER_RELATIONS_OPTIONS, {[name]: MATCH_RELATION_OPTIONS});
+                    // Object.assign(this.availableFilterValueOptions, {[name]: [SUBSCRIPTION_VALUES]});
+                    availableFilters.push({
+                        label: item.name,
+                        name: name,
+                        group: 'Newsletters'
+                    });
+                }
+                return {};
             });
         }
-
         availableFilters = availableFilters.filter(prop => !prop.feature || this.feature[prop.feature]);
-
         // exclude tiers filter if site has only single tier
         availableFilters = availableFilters
             .filter((filter) => {
@@ -455,15 +465,10 @@ export default class MembersFilter extends Component {
 
     @action
     setFilterType(filter, newType) {
-        console.log(filter);
-        console.log(newType);
         if (newType instanceof Event) {
             newType = newType.target.value;
         }
-
         const newProp = FILTER_PROPERTIES.find(prop => prop.name === newType);
-        console.log(newType);
-
         let defaultValue = this.availableFilterValueOptions[newType]
             ? this.availableFilterValueOptions[newType][0].name
             : '';

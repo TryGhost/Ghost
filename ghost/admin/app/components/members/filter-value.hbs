@@ -52,7 +52,7 @@
     </div>
 
 {{else if (eq @filter.type 'subscribed')}}
-    <span class="gh-select">
+    <span class="gh-select" id="subval">
         <OneWaySelect
             @value={{@filter.value}}
             @options={{this.availableFilterOptions.subscribed}}
@@ -177,6 +177,20 @@
         @onChange={{fn @setFilterValue @filter}}
         data-test-input="members-filter-value"
     />
+
+{{else if (eq @filter.type 'newsletter')}}
+    <span class="gh-select" id="subval" data-test={{this.availableFilterOptions.subscribed}}>
+        <OneWaySelect
+            @value={{@filter.value}}
+            @options={{this.availableFilterOptions.subscribed}}
+            @optionValuePath="name"
+            @optionLabelPath="label"
+            @optionTargetPath="name"
+            @update={{fn @setFilterValue @filter}}
+            data-test-select="members-filter-value"
+        />
+        {{svg-jar "arrow-down-small"}}
+    </span>
 
 {{else}}
     <input
