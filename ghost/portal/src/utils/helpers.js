@@ -649,7 +649,7 @@ export const getSupportAddress = ({site}) => {
     }
 
     if (supportAddress?.split('@')?.length > 1) {
-        const [recipient, domain] = supportAddress?.split('@');
+        const [recipient, domain] = supportAddress.split('@');
         const updatedDomain = domain?.replace(/^(www)\.(?=[^/]*\..{2,5})/, '') || '';
         return `${recipient}@${updatedDomain}`;
     }

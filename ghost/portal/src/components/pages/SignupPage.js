@@ -336,7 +336,7 @@ class SignupPage extends React.Component {
                 };
             });
         }, 5);
-    }
+    };
 
     onKeyDown(e) {
         // Handles submit on Enter press
