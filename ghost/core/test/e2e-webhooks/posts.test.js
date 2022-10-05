@@ -1,5 +1,5 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../utils/e2e-framework');
-const {anyObjectId, anyISODateTime, anyUuid, stringMatching} = matchers;
+const {anyObjectId, anyISODateTime, anyUuid, anyContentVersion, anyNumber, stringMatching} = matchers;
 
 const tierSnapshot = {
     id: anyObjectId,
@@ -98,9 +98,13 @@ describe('post.* events', function () {
             })
             .expectStatus(200);
 
-        await webhookMockReceiver
-            // TODO: implement header matching feature next!
-            // .matchHeaderSnapshot();
+        await webhookMockReceiver.receivedRequest();
+
+        webhookMockReceiver
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                'content-length': anyNumber
+            })
             .matchBodySnapshot({
                 post: {
                     current: buildPostSnapshotWithTiers({
@@ -133,9 +137,13 @@ describe('post.* events', function () {
             })
             .expectStatus(201);
 
-        await webhookMockReceiver
-            // TODO: implement header matching feature next!
-            // .matchHeaderSnapshot();
+        await webhookMockReceiver.receivedRequest();
+
+        webhookMockReceiver
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                'content-length': anyNumber
+            })
             .matchBodySnapshot({
                 post: {
                     current: buildPostSnapshotWithTiers({

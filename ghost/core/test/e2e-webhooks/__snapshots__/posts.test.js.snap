@@ -1,6 +1,16 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`post.* events post.added event is triggered 1: [body] 1`] = `
+exports[`post.* events post.added event is triggered 1: [headers] 1`] = `
+Object {
+  "accept-encoding": "gzip, deflate",
+  "content-length": Any<Number>,
+  "content-type": "application/json",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "user-agent": "Ghost/5.17.1 (https://github.com/TryGhost/Ghost)",
+}
+`;
+
+exports[`post.* events post.added event is triggered 2: [body] 1`] = `
 Object {
   "post": Object {
     "current": Object {
@@ -134,7 +144,17 @@ Object {
 }
 `;
 
-exports[`post.* events post.published event is triggered 1: [body] 1`] = `
+exports[`post.* events post.published event is triggered 1: [headers] 1`] = `
+Object {
+  "accept-encoding": "gzip, deflate",
+  "content-length": Any<Number>,
+  "content-type": "application/json",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "user-agent": "Ghost/5.17.1 (https://github.com/TryGhost/Ghost)",
+}
+`;
+
+exports[`post.* events post.published event is triggered 2: [body] 1`] = `
 Object {
   "post": Object {
     "current": Object {
