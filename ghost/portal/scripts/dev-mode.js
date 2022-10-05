@@ -20,16 +20,6 @@ const {v, verbose, port = 5368, basic, b} = minimist(process.argv.slice(2));
 const showVerbose = !!(v || verbose);
 const showBasic = !!(b || basic);
 
-function clearConsole({withHistory = true} = {}) {
-    if (!withHistory) {
-        process.stdout.write('\x1Bc');
-        return;
-    }
-    process.stdout.write(
-        process.platform === 'win32' ? '\x1B[2J\x1B[0f' : '\x1B[2J\x1B[3J\x1B[H'
-    );
-}
-
 function maybePluralize(count, noun, suffix = 's') {
     return `${count} ${noun}${count !== 1 ? suffix : ''}`;
 }
@@ -104,14 +94,6 @@ function printConfigInstruction() {
             log(chalk.bold.whiteBright(_data));
         }
     });
-    log();
-}
-
-function printInstructions() {
-    log();
-    log(chalk.yellowBright.underline(`Add portal to your local Ghost config`));
-    printConfigInstruction();
-    log(chalk.cyanBright('='.repeat(50)));
     log();
 }
 
@@ -211,10 +193,8 @@ function startDevServer() {
 
     server.listen(port, () => {
         log(chalk.whiteBright(`Portal dev server is running on http://localhost:${port}`));
-        printInstructions();
         watchFiles();
     });
 }
 
-clearConsole({withHistory: false});
 startDevServer();
