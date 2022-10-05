@@ -29,7 +29,7 @@ export default class PublishOptions {
                 && this.post.isDraft
                 && !this.post.email
             )
-                || (this.post.email && this.post.email.status === 'failed')
+                || (this.post.isDraft && this.post.email && this.post.email.status === 'failed')
         );
     }
 
