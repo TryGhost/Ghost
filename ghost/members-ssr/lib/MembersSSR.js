@@ -217,6 +217,13 @@ class MembersSSR {
         const token = Array.isArray(query.token) ? query.token[0] : query.token;
         const member = await this._getMemberDataFromToken(token);
 
+        if (!member) {
+            // The member doesn't exist any longer (could be a sign in token for a member that was deleted)
+            return Promise.reject(new BadRequestError({
+                message: 'Invalid token'
+            }));
+        }
+
         // perform and store geoip lookup for members when they log in
         if (!member.geolocation) {
             try {

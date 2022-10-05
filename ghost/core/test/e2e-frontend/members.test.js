@@ -24,11 +24,14 @@ describe('Front-end members behavior', function () {
     let request;
 
     async function loginAsMember(email) {
+        // Member should exist, because we are signin in
+        await models.Member.findOne({email}, {require: true});
+
         // membersService needs to be required after Ghost start so that settings
         // are pre-populated with defaults
         const membersService = require('../../core/server/services/members');
 
-        const signinLink = await membersService.api.getMagicLink(email);
+        const signinLink = await membersService.api.getMagicLink(email, 'signin');
         const signinURL = new URL(signinLink);
         // request needs a relative path rather than full url with host
         const signinPath = `${signinURL.pathname}${signinURL.search}`;
@@ -411,11 +414,14 @@ describe('Front-end members behavior', function () {
         describe('as paid member', function () {
             const email = 'paid@test.com';
             before(async function () {
+                // Member should exist, because we are signin in
+                await models.Member.findOne({email}, {require: true});
+
                 // membersService needs to be required after Ghost start so that settings
                 // are pre-populated with defaults
                 const membersService = require('../../core/server/services/members');
 
-                const signinLink = await membersService.api.getMagicLink(email);
+                const signinLink = await membersService.api.getMagicLink(email, 'signin');
                 const signinURL = new URL(signinLink);
                 // request needs a relative path rather than full url with host
                 const signinPath = `${signinURL.pathname}${signinURL.search}`;
