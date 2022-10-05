@@ -1,3 +1,5 @@
+/* eslint-disable camelcase */
+
 export const sites = {
     singleProduct: getSiteData({
         products: getProductsData({numOfProducts: 1})

@@ -678,7 +678,9 @@ describe('Signup', () => {
             });
 
             // added fake timeout for react state delay in setting plan
-            await new Promise(r => setTimeout(r, 10));
+            await new Promise((r) => {
+                setTimeout(r, 10);
+            });
             fireEvent.click(chooseBtns[1]);
             await waitFor(() => expect(ghostApi.member.checkoutPlan).toHaveBeenCalledTimes(1));
         });

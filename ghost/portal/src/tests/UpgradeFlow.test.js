@@ -205,7 +205,9 @@ describe('Logged-in free member', () => {
             const monthlyPlanContainer = await within(popupIframeDocument).findByText('Monthly');
             fireEvent.click(monthlyPlanContainer);
             // added fake timeout for react state delay in setting plan
-            await new Promise(r => setTimeout(r, 10));
+            await new Promise((r) => {
+                setTimeout(r, 10);
+            });
 
             const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
 
@@ -242,7 +244,9 @@ describe('Logged-in free member', () => {
             const yearlyPlanContainer = await within(popupIframeDocument).findByText('Yearly');
             fireEvent.click(yearlyPlanContainer);
             // added fake timeout for react state delay in setting plan
-            await new Promise(r => setTimeout(r, 10));
+            await new Promise((r) => {
+                setTimeout(r, 10);
+            });
 
             const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
 
@@ -364,7 +368,9 @@ describe('Logged-in free member', () => {
             await within(popupIframeDocument).findByText('Monthly');
 
             // allow default checkbox switch to yearly
-            await new Promise(r => setTimeout(r, 10));
+            await new Promise((r) => {
+                setTimeout(r, 10);
+            });
 
             const chooseBtns = within(popupIframeDocument).queryAllByRole('button', {name: 'Choose'});
 
