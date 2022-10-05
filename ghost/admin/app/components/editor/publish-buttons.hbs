@@ -61,9 +61,7 @@
                 type="button"
                 class="gh-btn gh-btn-editor darkgrey gh-retry-trigger"
                 {{on "click" @publishManagement.openPublishFlow}}
-                {{on-key "cmd+shift+p"}}
                 disabled={{@publishManagement.publishOptions.isLoading}}
-                data-test-button="publish-flow"
             >
                 <span>Retry</span>
             </button>
