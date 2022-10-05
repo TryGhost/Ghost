@@ -4256,11 +4256,6 @@
   resolved "https://registry.yarnpkg.com/@tryghost/database-info/-/database-info-0.3.10.tgz#8796123321108d345536c316bfb0627c213ee364"
   integrity sha512-5buRTO4BL9hySxaDOs0Jdz9yKgUHX5OLY/mL5eT2Y6OS3zXZvLLP3lOnNK9AsfFsGBUTAHYfm4WAiXNzjCc/eA==
 
-"@tryghost/database-info@0.3.9":
-  version "0.3.9"
-  resolved "https://registry.yarnpkg.com/@tryghost/database-info/-/database-info-0.3.9.tgz#76a995a5ec489e0adf55699223cd91e372584552"
-  integrity sha512-aWeWk1bJVpBBZ5sX3+66z/pEyYG3nselSSua3VOxC3Ii8pbppDkcJJlm2Z6TSLNEEHtrhHtXJJH4+eBfLA24kQ==
-
 "@tryghost/debug@0.1.17":
   version "0.1.17"
   resolved "https://registry.yarnpkg.com/@tryghost/debug/-/debug-0.1.17.tgz#2655fa1c71b2608e71de7f166f5f7b1a1c086915"
@@ -4306,15 +4301,6 @@
   version "1.2.14"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.14.tgz#af5e0ea1450b6fac7bde94585177943f85f0e41f"
   integrity sha512-ycXhblMBlbwXo+PfmVJZtT26/B1wu6Ae/8SBjXlzHAp6qlkho/Z5hZPKMRo0frfBt6CDGyX/abKTeVQzSkTPYA==
-  dependencies:
-    lodash "^4.17.21"
-    utils-copy-error "^1.0.1"
-    uuid "^8.3.2"
-
-"@tryghost/errors@1.2.15":
-  version "1.2.15"
-  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.15.tgz#0f9e63f3c8d1024fe53fd5e6eb600657f366a46f"
-  integrity sha512-3T0KA5qpxM3JU2ZI3s5w2qUztA2CG3h+G86zKxbZc9ZnOP+nzsJ2fn9nkkqVwFUvxOr76mjWMgVETdH6yXiu1g==
   dependencies:
     lodash "^4.17.21"
     utils-copy-error "^1.0.1"
@@ -4487,7 +4473,7 @@
     lodash "^4.17.21"
     luxon "^1.26.0"
 
-"@tryghost/logging@2.2.3", "@tryghost/logging@2.3.0", "@tryghost/logging@2.3.2", "@tryghost/logging@^2.2.3":
+"@tryghost/logging@2.2.3", "@tryghost/logging@2.3.2", "@tryghost/logging@^2.2.3":
   version "2.3.2"
   resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-2.3.2.tgz#31559c2f6eebb481a0ee8e9a958b2a2d8d55f82e"
   integrity sha512-XIKSNwcG1ARNzSakXXk0jX2Pph3LMHSXQAKAm9q50fKgvX5kMdyHlunmu/NikkFsctOF8MTBGm6BJ97QW3F5IA==
@@ -17570,14 +17556,14 @@ klona@^2.0.4, klona@^2.0.5:
   resolved "https://registry.yarnpkg.com/klona/-/klona-2.0.5.tgz#d166574d90076395d9963aa7a928fabb8d76afbc"
   integrity sha512-pJiBpiXMbt7dkzXe8Ghj/u4FfXOOa98fPW+bihOJ4SjnoijweJrNThJfd3ifXpXhREjpoF2mZVH1GfS9LV3kHQ==
 
-knex-migrator@5.0.6:
-  version "5.0.6"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-5.0.6.tgz#4903af7e8b2e966585c36d585ddf8666697debe9"
-  integrity sha512-WcmQg23ul8mFjIWS9pTmiXmyPPgpDJ39nNY601NTQyql0y+BE7RS9DxuwcQRcepc7ieJHiAiAlQvEDDjr6v+LA==
+knex-migrator@5.0.7:
+  version "5.0.7"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-5.0.7.tgz#270f369ba2217744d0162b75f797ca63de2118dc"
+  integrity sha512-53ycXsT7k02ofWezDb6eJ670RrhVhSr5QbJNCv5XFEy8Z/AGyvCFfm1V/iYfIZ+r6ZX9c7nH6iasGDAlBfp78Q==
   dependencies:
-    "@tryghost/database-info" "0.3.9"
-    "@tryghost/errors" "1.2.15"
-    "@tryghost/logging" "2.3.0"
+    "@tryghost/database-info" "0.3.10"
+    "@tryghost/errors" "1.2.17"
+    "@tryghost/logging" "2.3.2"
     bluebird "3.7.2"
     commander "5.1.0"
     compare-ver "2.0.2"
@@ -17589,7 +17575,7 @@ knex-migrator@5.0.6:
     nconf "0.12.0"
     resolve "1.22.1"
   optionalDependencies:
-    sqlite3 "5.1.1"
+    sqlite3 "5.1.2"
 
 knex@2.3.0:
   version "2.3.0"
@@ -24118,17 +24104,6 @@ sprintf-js@~1.0.2:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/sprintf-js/-/sprintf-js-1.0.3.tgz#04e6926f662895354f3dd015203633b857297e2c"
   integrity sha512-D9cPgkvLlV3t3IzL0D0YLvGA9Ahk4PcvVwUbN0dSGr1aP0Nrt4AEnTUbuGvquEC0mA64Gqt1fzirlRs5ibXx8g==
-
-sqlite3@5.1.1:
-  version "5.1.1"
-  resolved "https://registry.yarnpkg.com/sqlite3/-/sqlite3-5.1.1.tgz#c6561220fd875fd88eb2ef717631e0a11af1ec38"
-  integrity sha512-mMinkrQr/LKJqFiFF+AF7imPSzRCCpTCreusZO3D/ssJHVjZOrbu2Caz+zPH5KTmGGXBxXMGSRDssL+44CLxvg==
-  dependencies:
-    "@mapbox/node-pre-gyp" "^1.0.0"
-    node-addon-api "^4.2.0"
-    tar "^6.1.11"
-  optionalDependencies:
-    node-gyp "8.x"
 
 sqlite3@5.1.2:
   version "5.1.2"
