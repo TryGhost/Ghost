@@ -1,5 +1,5 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyString} = matchers;
+const {anyEtag, anyString, anyContentLength} = matchers;
 
 const uuid = require('uuid');
 const should = require('should');
@@ -47,7 +47,7 @@ async function testOutput(member, asserts, filters = []) {
             .expectEmptyBody()
             .matchHeaderSnapshot({
                 etag: anyEtag,
-                'content-length': anyString,
+                'content-length': anyContentLength,
                 'content-disposition': anyString
             });
 
