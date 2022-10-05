@@ -49,6 +49,13 @@ export default class PublishModalComponent extends Component {
         }
     }
 
+    @action
+    setCompleted() {
+        this.emailErrorMessage = undefined;
+        this.isConfirming = false;
+        this.isComplete = true;
+    }
+
     @task
     *saveTask() {
         try {

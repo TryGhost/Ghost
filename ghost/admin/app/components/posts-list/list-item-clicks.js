@@ -15,6 +15,13 @@ export default class PostsListItemClicks extends Component {
         return this.args.post;
     }
 
+    get errorClass() {
+        if (this.post.didEmailFail) {
+            return 'error';
+        }
+        return '';
+    }
+
     get scheduledText() {
         let text = [];
 

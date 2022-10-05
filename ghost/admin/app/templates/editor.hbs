@@ -37,6 +37,7 @@
                                 <span>
                                     <GhEditorPostStatus
                                         @post={{this.post}}
+                                        @publishManagement={{publishManagement}}
                                         @hasDirtyAttributes={{this.hasDirtyAttributes}}
                                         @isSaving={{or this.autosaveTask.isRunning this.saveTasks.isRunning}}
                                         @openUpdateFlow={{publishManagement.openUpdateFlow}}

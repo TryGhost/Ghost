@@ -56,17 +56,6 @@
             data-test-button="publish-save"
         />
 
-        {{#if @publishManagement.post.didEmailFail }}
-            <button
-                type="button"
-                class="gh-btn gh-btn-editor darkgrey gh-retry-trigger"
-                {{on "click" @publishManagement.openPublishFlow}}
-                disabled={{@publishManagement.publishOptions.isLoading}}
-            >
-                <span>Retry</span>
-            </button>
-        {{/if}}
-
         {{#if (not (and @publishManagement.post.isSent (not @publishManagement.post.isPublished)))}}
             <button
                 type="button"

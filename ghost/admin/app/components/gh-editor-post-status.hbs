@@ -4,7 +4,14 @@
         Saving...
     {{else if @post.isSent}}
         {{#if @post.didEmailFail }}
-            Failed to send
+            Failed to send. <button
+                type="button"
+                class="gh-btn gh-btn-editor midgrey gh-retry-trigger"
+                {{on "click" @publishManagement.openPublishFlow}}
+                disabled={{@publishManagement.publishOptions.isLoading}}
+            >
+                <span>Retry</span>
+            </button>
         {{else}}
             <button type="button" {{on "click" @openUpdateFlow}} class="gh-editor-post-status-btn">Sent</button>
             to {{gh-pluralize @post.email.emailCount "member"}}
@@ -24,7 +31,14 @@
         {{else if (eq @post.email.status "submitted")}}
             and sent to {{gh-pluralize @post.email.emailCount "member"}}
         {{else if (eq @post.email.status "failed")}}
-            but failed to send
+            but failed to send. <button
+                type="button"
+                class="gh-btn gh-btn-editor midgrey gh-retry-trigger"
+                {{on "click" @publishManagement.openPublishFlow}}
+                disabled={{@publishManagement.publishOptions.isLoading}}
+            >
+                <span>Retry</span>
+            </button>
         {{/if}}
     {{else if @post.isScheduled}}
         <time datetime="{{@post.publishedAtUTC}}" class="ml1 green-d1" data-test-schedule-countdown>
