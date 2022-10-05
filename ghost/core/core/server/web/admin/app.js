@@ -20,6 +20,8 @@ module.exports = function setupAdminApp() {
     // @NOTE: when we start working on HTTP/3 optimizations the immutable headers
     //        produced below should be split into separate 'Cache-Control' entry.
     //        For reference see: https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching#validation_2
+    // @NOTE: the maxAge config passed below are in milliseconds and the config
+    //        is specified in seconds. See https://github.com/expressjs/serve-static/issues/150 for more context
     adminApp.use('/assets', serveStatic(
         path.join(config.get('paths').adminAssets, 'assets'), {
             maxAge: (configMaxAge || configMaxAge === 0) ? configMaxAge : constants.ONE_YEAR_MS,
