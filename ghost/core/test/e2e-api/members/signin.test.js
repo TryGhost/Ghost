@@ -279,8 +279,8 @@ describe('Members Signin', function () {
                 })
                 .expectStatus(429);
 
-            // Waiting one hour is enough to reset it completely
-            clock.tick(60 * 60 * 1000 + 1000);
+            // Waiting 12 hours is enough to reset it completely
+            clock.tick(12 * 60 * 60 * 1000 + 1000);
 
             // We can try multiple times again
             await membersAgent.post('/api/send-magic-link')
