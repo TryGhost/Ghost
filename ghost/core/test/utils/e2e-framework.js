@@ -129,6 +129,15 @@ const getFixture = (type, index = 0) => {
 };
 
 /**
+ * Reset rate limit instances (not the brute table)
+ */
+const resetRateLimits = async () => {
+    // Reset rate limiting instances
+    const {spamPrevention} = require('../../core/server/web/shared/middleware/api');
+    spamPrevention.reset();
+};
+
+/**
  * This function ensures that Ghost's data is reset back to "factory settings"
  *
  */
@@ -140,6 +149,9 @@ const resetData = async () => {
 
     // Clear out the database
     await db.reset({truncate: true});
+
+    // Reset rate limiting instances (resetting the table is not enough!)
+    await resetRateLimits();
 };
 
 /**
@@ -378,5 +390,6 @@ module.exports = {
     // utilities
     configUtils: require('./configUtils'),
     dbUtils: require('./db-utils'),
-    urlUtils: require('./urlUtils')
+    urlUtils: require('./urlUtils'),
+    resetRateLimits
 };

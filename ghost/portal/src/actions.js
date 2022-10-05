@@ -1,3 +1,4 @@
+import {HumanReadableError} from './utils/errors';
 import {createPopupNotification, getMemberEmail, getMemberName, getProductCadenceFromPrice, removePortalLinkFromUrl} from './utils/helpers';
 
 function switchPage({data, state}) {
@@ -77,7 +78,7 @@ async function signout({api, state}) {
 
 async function signin({data, api, state}) {
     try {
-        await api.member.sendMagicLink(data);
+        await api.member.sendMagicLink({...data, emailType: 'signin'});
         return {
             page: 'magiclink',
             lastPage: 'signin'
@@ -87,7 +88,7 @@ async function signin({data, api, state}) {
             action: 'signin:failed',
             popupNotification: createPopupNotification({
                 type: 'signin:failed', autoHide: false, closeable: true, state, status: 'error',
-                message: 'Failed to log in, please try again'
+                message: HumanReadableError.getMessageFromError(e, 'Failed to log in, please try again')
             })
         };
     }
@@ -97,7 +98,7 @@ async function signup({data, state, api}) {
     try {
         let {plan, tierId, cadence, email, name, newsletters, offerId} = data;
         if (plan.toLowerCase() === 'free') {
-            await api.member.sendMagicLink(data);
+            await api.member.sendMagicLink({emailType: 'signup', ...data});
         } else {
             if (tierId && cadence) {
                 await api.member.checkoutPlan({plan, tierId, cadence, email, name, newsletters, offerId});

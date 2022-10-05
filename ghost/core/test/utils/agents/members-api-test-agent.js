@@ -18,7 +18,7 @@ class MembersAPITestAgent extends TestAgent {
 
     async loginAs(email) {
         const membersService = require('../../../core/server/services/members');
-        const magicLink = await membersService.api.getMagicLink(email);
+        const magicLink = await membersService.api.getMagicLink(email, 'signup');
         const magicLinkUrl = new URL(magicLink);
         const token = magicLinkUrl.searchParams.get('token');
 
