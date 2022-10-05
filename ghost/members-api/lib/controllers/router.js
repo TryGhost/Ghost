@@ -2,14 +2,19 @@ const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const _ = require('lodash');
 const {BadRequestError, NoPermissionError, NotFoundError, UnauthorizedError} = require('@tryghost/errors');
+const errors = require('@tryghost/errors');
 
 const messages = {
+    emailRequired: 'Email is required.',
     badRequest: 'Bad Request.',
     notFound: 'Not Found.',
     offerArchived: 'This offer is archived.',
     tierArchived: 'This tier is archived.',
     existingSubscription: 'A subscription exists for this Member.',
-    unableToCheckout: 'Unable to initiate checkout session'
+    unableToCheckout: 'Unable to initiate checkout session',
+    inviteOnly: 'This site is invite-only, contact the owner for access.',
+    memberNotFound: 'No member exists with this e-mail address.',
+    memberNotFoundSignUp: 'No member exists with this e-mail address. Please sign up first.'
 };
 
 module.exports = class RouterController {
@@ -401,24 +406,43 @@ module.exports = class RouterController {
     }
 
     async sendMagicLink(req, res) {
-        const {email, emailType, autoRedirect} = req.body;
+        const {email, autoRedirect} = req.body;
+        let {emailType} = req.body;
+
         let referer = req.get('referer');
         if (autoRedirect === false){
             referer = null;
         }
         if (!email) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.emailRequired)
+            });
+        }
+
+        if (!emailType) {
+            // Default to subscribe form that also allows to login (safe fallback for older clients)
+            if (!this._allowSelfSignup()) {
+                emailType = 'signin';
+            } else {
+                emailType = 'subscribe';
+            }
+        }
+
+        if (!['signin', 'signup', 'subscribe'].includes(emailType)) {
             res.writeHead(400);
             return res.end('Bad Request.');
         }
 
         try {
-            if (!this._allowSelfSignup()) {
-                const member = await this._memberRepository.get({email});
-                if (member) {
-                    const tokenData = {};
-                    await this._sendEmailWithMagicLink({email, tokenData, requestedType: emailType, referrer: referer});
+            if (emailType === 'signup' || emailType === 'subscribe') {
+                if (!this._allowSelfSignup()) {
+                    throw new errors.BadRequestError({
+                        message: tpl(messages.inviteOnly)
+                    });
                 }
-            } else {
+
+                // Someone tries to signup with a user that already exists
+                // -> doesn't really matter: we'll send a login link
                 const tokenData = _.pick(req.body, ['labels', 'name', 'newsletters']);
                 if (req.ip) {
                     tokenData.reqIp = req.ip;
@@ -427,19 +451,32 @@ module.exports = class RouterController {
                 tokenData.attribution = await this._memberAttributionService.getAttribution(req.body.urlHistory);
 
                 await this._sendEmailWithMagicLink({email, tokenData, requestedType: emailType, referrer: referer});
+                
+                res.writeHead(201);
+                return res.end('Created.');
             }
-            res.writeHead(201);
-            return res.end('Created.');
+
+            // Signin
+            const member = await this._memberRepository.get({email});
+            if (member) {
+                const tokenData = {};
+                await this._sendEmailWithMagicLink({email, tokenData, requestedType: emailType, referrer: referer});
+                res.writeHead(201);
+                return res.end('Created.');
+            }
+            
+            throw new errors.BadRequestError({
+                message: this._allowSelfSignup() ? tpl(messages.memberNotFoundSignUp) : tpl(messages.memberNotFound)
+            });
         } catch (err) {
             if (err.code === 'EENVELOPE') {
                 logging.error(err);
                 res.writeHead(400);
                 return res.end('Bad Request.');
             }
-            const statusCode = (err && err.statusCode) || 500;
-            logging.error(err);
-            res.writeHead(statusCode);
-            return res.end('Internal Server Error.');
+
+            // Let the normal error middleware handle this error
+            throw err;
         }
     }
 };

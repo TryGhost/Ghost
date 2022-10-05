@@ -99,6 +99,12 @@
             "maxWait": 86400000,
             "lifetime": 3600,
             "freeRetries": 99
+        },
+        "member_login": {
+            "minWait": 600000,
+            "maxWait": 43200000,
+            "lifetime": 43200,
+            "freeRetries": 8
         }
     },
     "caching": {
