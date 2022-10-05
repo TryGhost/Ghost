@@ -4,7 +4,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git://github.com/TryGhost/Portal.git"
+    "url": "git://github.com/TryGhost/Ghost.git"
   },
   "author": "Ghost Foundation",
   "unpkg": "umd/portal.min.js",
