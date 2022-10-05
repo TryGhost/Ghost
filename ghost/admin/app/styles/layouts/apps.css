@@ -256,13 +256,29 @@
     opacity: 0.4;
 }
 
+.apps-card-app-disabled .apps-card-app-title-container {
+    display: flex;
+}
+
+.apps-card-app-disabled .apps-card-app-icon {
+    filter:grayscale(1);
+    opacity:0.3;
+}
+
 .apps-card-app-disabled .apps-card-meta svg {
     margin-left: 4px;
     width: 14px;
+    opacity: 0.9;
 }
 
 .apps-card-app-disabled .apps-card-meta path {
     fill: #292d33;
+}
+
+.apps-card-app-disabled .apps-card-app-disabled-cta {
+    color: #30cf43;
+    margin-right: 28px;
+    font-weight: 600;
 }
 
 .apps-card-app-title {
