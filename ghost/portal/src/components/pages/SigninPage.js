@@ -32,7 +32,7 @@ export default class SigninPage extends React.Component {
             return {
                 errors: ValidateInputForm({fields: this.getInputFields({state})})
             };
-        }, () => {
+        }, async () => {
             const {email, errors} = this.state;
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
             if (!hasFormErrors) {
