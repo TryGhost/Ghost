@@ -21107,10 +21107,10 @@ simple-update-notifier@^1.0.7:
   uid "4c39702de7d97f9b32d5c101f39237b6dab7c3ee"
   resolved "https://github.com/kevinansfield/simplemde-markdown-editor.git#4c39702de7d97f9b32d5c101f39237b6dab7c3ee"
 
-sinon@14.0.0:
-  version "14.0.0"
-  resolved "https://registry.yarnpkg.com/sinon/-/sinon-14.0.0.tgz#203731c116d3a2d58dc4e3cbe1f443ba9382a031"
-  integrity sha512-ugA6BFmE+WrJdh0owRZHToLd32Uw3Lxq6E6LtNRU+xTVBefx632h03Q7apXWRsRdZAJ41LB8aUfn2+O4jsDNMw==
+sinon@14.0.1:
+  version "14.0.1"
+  resolved "https://registry.yarnpkg.com/sinon/-/sinon-14.0.1.tgz#9f02e13ad86b695c0c554525e3bf7f8245b31a9c"
+  integrity sha512-JhJ0jCiyBWVAHDS+YSjgEbDn7Wgz9iIjA1/RK+eseJN0vAAWIWiXBdrnb92ELPyjsfreCYntD1ORtLSfIrlvSQ==
   dependencies:
     "@sinonjs/commons" "^1.8.3"
     "@sinonjs/fake-timers" "^9.1.2"
@@ -21825,10 +21825,10 @@ superagent@^8.0.0:
     readable-stream "^4.2.0"
     semver "^7.3.7"
 
-supertest@6.2.4:
-  version "6.2.4"
-  resolved "https://registry.yarnpkg.com/supertest/-/supertest-6.2.4.tgz#3dcebe42f7fd6f28dd7ac74c6cba881f7101b2f0"
-  integrity sha512-M8xVnCNv+q2T2WXVzxDECvL2695Uv2uUj2O0utxsld/HRyJvOU8W9f1gvsYxSNU4wmIe0/L/ItnpU4iKq0emDA==
+supertest@6.3.0:
+  version "6.3.0"
+  resolved "https://registry.yarnpkg.com/supertest/-/supertest-6.3.0.tgz#06c21234ff0be9e398ba19f7a75f237930d57442"
+  integrity sha512-QgWju1cNoacP81Rv88NKkQ4oXTzGg0eNZtOoxp1ROpbS4OHY/eK5b8meShuFtdni161o5X0VQvgo7ErVyKK+Ow==
   dependencies:
     methods "^1.1.2"
     superagent "^8.0.0"
