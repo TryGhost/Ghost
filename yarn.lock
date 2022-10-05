@@ -1688,6 +1688,335 @@
   resolved "https://registry.yarnpkg.com/@sinonjs/text-encoding/-/text-encoding-0.7.1.tgz#8da5c6530915653f3a1f38fd5f101d8c3f8079c5"
   integrity sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==
 
+"@stdlib/array@^0.0.x":
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/@stdlib/array/-/array-0.0.12.tgz#12f40ab95bb36d424cdad991f29fc3cb491ee29e"
+  integrity sha512-nDksiuvRC1dSTHrf5yOGQmlRwAzSKV8MdFQwFSvLbZGGhi5Y4hExqea5HloLgNVouVs8lnAFi2oubSM4Mc7YAg==
+  dependencies:
+    "@stdlib/assert" "^0.0.x"
+    "@stdlib/blas" "^0.0.x"
+    "@stdlib/complex" "^0.0.x"
+    "@stdlib/constants" "^0.0.x"
+    "@stdlib/math" "^0.0.x"
+    "@stdlib/symbol" "^0.0.x"
+    "@stdlib/types" "^0.0.x"
+    "@stdlib/utils" "^0.0.x"
+
+"@stdlib/assert@^0.0.x":
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/@stdlib/assert/-/assert-0.0.12.tgz#1648c9016e5041291f55a6464abcc4069c5103ce"
+  integrity sha512-38FxFf+ZoQZbdc+m09UsWtaCmzd/2e7im0JOaaFYE7icmRfm+4KiE9BRvBT4tIn7ioLB2f9PsBicKjIsf+tY1w==
+  dependencies:
+    "@stdlib/array" "^0.0.x"
+    "@stdlib/cli" "^0.0.x"
+    "@stdlib/complex" "^0.0.x"
+    "@stdlib/constants" "^0.0.x"
+    "@stdlib/fs" "^0.0.x"
+    "@stdlib/math" "^0.0.x"
+    "@stdlib/ndarray" "^0.0.x"
+    "@stdlib/number" "^0.0.x"
+    "@stdlib/os" "^0.0.x"
+    "@stdlib/process" "^0.0.x"
+    "@stdlib/regexp" "^0.0.x"
+    "@stdlib/streams" "^0.0.x"
+    "@stdlib/string" "^0.0.x"
+    "@stdlib/symbol" "^0.0.x"
+    "@stdlib/types" "^0.0.x"
+    "@stdlib/utils" "^0.0.x"
+
+"@stdlib/bigint@^0.0.x":
+  version "0.0.11"
+  resolved "https://registry.yarnpkg.com/@stdlib/bigint/-/bigint-0.0.11.tgz#c416a1d727001c55f4897e6424124199d638f2fd"
+  integrity sha512-uz0aYDLABAYyqxaCSHYbUt0yPkXYUCR7TrVvHN+UUD3i8FZ02ZKcLO+faKisDyxKEoSFTNtn3Ro8Ir5ebOlVXQ==
+  dependencies:
+    "@stdlib/utils" "^0.0.x"
+
+"@stdlib/blas@^0.0.x":
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/@stdlib/blas/-/blas-0.0.12.tgz#7e93e42b4621fc6903bf63264f045047333536c2"
+  integrity sha512-nWY749bWceuoWQ7gz977blCwR7lyQ/rsIXVO4b600h+NFpeA2i/ea7MYC680utIbeu2cnDWHdglBPoK535VAzA==
+  dependencies:
+    "@stdlib/array" "^0.0.x"
+    "@stdlib/assert" "^0.0.x"
+    "@stdlib/math" "^0.0.x"
+    "@stdlib/number" "^0.0.x"
+    "@stdlib/types" "^0.0.x"
+    "@stdlib/utils" "^0.0.x"
+
+"@stdlib/buffer@^0.0.x":
+  version "0.0.11"
+  resolved "https://registry.yarnpkg.com/@stdlib/buffer/-/buffer-0.0.11.tgz#6137b00845e6c905181cc7ebfae9f7e47c01b0ce"
+  integrity sha512-Jeie5eDDa1tVuRcuU+cBXI/oOXSmMxUUccZpqXzgYe0IO8QSNtNxv9mUTzJk/m5wH+lmLoDvNxzPpOH9TODjJg==
+  dependencies:
+    "@stdlib/array" "^0.0.x"
+    "@stdlib/assert" "^0.0.x"
+    "@stdlib/process" "^0.0.x"
+    "@stdlib/types" "^0.0.x"
+    "@stdlib/utils" "^0.0.x"
+
+"@stdlib/cli@^0.0.x":
+  version "0.0.10"
+  resolved "https://registry.yarnpkg.com/@stdlib/cli/-/cli-0.0.10.tgz#28e2fbe6865d7f5cd15b7dc5846c99bd3b91674f"
+  integrity sha512-OITGaxG46kwK799+NuOd/+ccosJ9koVuQBC610DDJv0ZJf8mD7sbjGXrmue9C4EOh8MP7Vm/6HN14BojX8oTCg==
+  dependencies:
+    "@stdlib/utils" "^0.0.x"
+    minimist "^1.2.0"
+
+"@stdlib/complex@^0.0.x":
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/@stdlib/complex/-/complex-0.0.12.tgz#3afbc190cd0a9b37fc7c6e508c3aa9fda9106944"
+  integrity sha512-UbZBdaUxT2G+lsTIrVlRZwx2IRY6GXnVILggeejsIVxHSuK+oTyapfetcAv0FJFLP+Rrr+ZzrN4b9G3hBw6NHA==
+  dependencies:
+    "@stdlib/array" "^0.0.x"
+    "@stdlib/assert" "^0.0.x"
+    "@stdlib/types" "^0.0.x"
+    "@stdlib/utils" "^0.0.x"
+
+"@stdlib/constants@^0.0.x":
+  version "0.0.11"
+  resolved "https://registry.yarnpkg.com/@stdlib/constants/-/constants-0.0.11.tgz#78cd56d6c2982b30264843c3d75bde7125e90cd2"
+  integrity sha512-cWKy0L9hXHUQTvFzdPkTvZnn/5Pjv7H4UwY0WC1rLt+A5CxFDJKjvnIi9ypSzJS3CAiGl1ZaHCdadoqXhNdkUg==
+  dependencies:
+    "@stdlib/array" "^0.0.x"
+    "@stdlib/assert" "^0.0.x"
+    "@stdlib/number" "^0.0.x"
+    "@stdlib/utils" "^0.0.x"
+
+"@stdlib/fs@^0.0.x":
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/@stdlib/fs/-/fs-0.0.12.tgz#662365fd5846a51f075724b4f2888ae88441b70d"
+  integrity sha512-zcDLbt39EEM3M3wJW6luChS53B8T+TMJkjs2526UpKJ71O0/0adR57cI7PfCpkMd33d05uM7GM+leEj4eks4Cw==
+  dependencies:
+    "@stdlib/array" "^0.0.x"
+    "@stdlib/assert" "^0.0.x"
+    "@stdlib/cli" "^0.0.x"
+    "@stdlib/math" "^0.0.x"
+    "@stdlib/process" "^0.0.x"
+    "@stdlib/string" "^0.0.x"
+    "@stdlib/utils" "^0.0.x"
+    debug "^2.6.9"
+
+"@stdlib/math@^0.0.x":
+  version "0.0.11"
+  resolved "https://registry.yarnpkg.com/@stdlib/math/-/math-0.0.11.tgz#eb6638bc03a20fbd6727dd5b977ee0170bda4649"
+  integrity sha512-qI78sR1QqGjHj8k/aAqkZ51Su2fyBvaR/jMKQqcB/ML8bpYpf+QGlGvTty5Qdru/wpqds4kVFOVbWGcNFIV2+Q==
+  dependencies:
+    "@stdlib/assert" "^0.0.x"
+    "@stdlib/constants" "^0.0.x"
+    "@stdlib/ndarray" "^0.0.x"
+    "@stdlib/number" "^0.0.x"
+    "@stdlib/strided" "^0.0.x"
+    "@stdlib/symbol" "^0.0.x"
+    "@stdlib/types" "^0.0.x"
+    "@stdlib/utils" "^0.0.x"
+    debug "^2.6.9"
+
+"@stdlib/ndarray@^0.0.x":
+  version "0.0.13"
+  resolved "https://registry.yarnpkg.com/@stdlib/ndarray/-/ndarray-0.0.13.tgz#2e8fc645e10f56a645a0ab81598808c0e8f43b82"
+  integrity sha512-Z+U9KJP4U2HWrLtuAXSPvhNetAdqaNLMcliR6S/fz+VPlFDeymRK7omRFMgVQ+1zcAvIgKZGJxpLC3vjiPUYEw==
+  dependencies:
+    "@stdlib/array" "^0.0.x"
+    "@stdlib/assert" "^0.0.x"
+    "@stdlib/bigint" "^0.0.x"
+    "@stdlib/buffer" "^0.0.x"
+    "@stdlib/complex" "^0.0.x"
+    "@stdlib/constants" "^0.0.x"
+    "@stdlib/math" "^0.0.x"
+    "@stdlib/number" "^0.0.x"
+    "@stdlib/string" "^0.0.x"
+    "@stdlib/types" "^0.0.x"
+    "@stdlib/utils" "^0.0.x"
+
+"@stdlib/nlp@^0.0.x":
+  version "0.0.11"
+  resolved "https://registry.yarnpkg.com/@stdlib/nlp/-/nlp-0.0.11.tgz#532ec0f7267b8d639e4c20c6de864e8de8a09054"
+  integrity sha512-D9avYWANm0Db2W7RpzdSdi5GxRYALGAqUrNnRnnKIO6sMEfr/DvONoAbWruda4QyvSC+0MJNwcEn7+PHhRwYhw==
+  dependencies:
+    "@stdlib/array" "^0.0.x"
+    "@stdlib/assert" "^0.0.x"
+    "@stdlib/math" "^0.0.x"
+    "@stdlib/random" "^0.0.x"
+    "@stdlib/string" "^0.0.x"
+    "@stdlib/utils" "^0.0.x"
+
+"@stdlib/number@^0.0.x":
+  version "0.0.10"
+  resolved "https://registry.yarnpkg.com/@stdlib/number/-/number-0.0.10.tgz#4030ad8fc3fac19a9afb415c443cee6deea0e65c"
+  integrity sha512-RyfoP9MlnX4kccvg8qv7vYQPbLdzfS1Mnp/prGOoWhvMG3pyBwFAan34kwFb5IS/zHC3W5EmrgXCV2QWyLg/Kg==
+  dependencies:
+    "@stdlib/array" "^0.0.x"
+    "@stdlib/assert" "^0.0.x"
+    "@stdlib/constants" "^0.0.x"
+    "@stdlib/math" "^0.0.x"
+    "@stdlib/os" "^0.0.x"
+    "@stdlib/string" "^0.0.x"
+    "@stdlib/types" "^0.0.x"
+    "@stdlib/utils" "^0.0.x"
+
+"@stdlib/os@^0.0.x":
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/@stdlib/os/-/os-0.0.12.tgz#08bbf013c62a7153099fa9cbac086ca1349a4677"
+  integrity sha512-O7lklZ/9XEzoCmYvzjPh7jrFWkbpOSHGI71ve3dkSvBy5tyiSL3TtivfKsIC+9ZxuEJZ3d3lIjc9e+yz4HVbqQ==
+  dependencies:
+    "@stdlib/assert" "^0.0.x"
+    "@stdlib/cli" "^0.0.x"
+    "@stdlib/fs" "^0.0.x"
+    "@stdlib/process" "^0.0.x"
+    "@stdlib/utils" "^0.0.x"
+
+"@stdlib/process@^0.0.x":
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/@stdlib/process/-/process-0.0.12.tgz#123325079d89a32f4212f72fb694f8fe3614cf18"
+  integrity sha512-P0X0TMvkissBE1Wr877Avi2/AxmP7X5Toa6GatHbpJdDg6jQmN4SgPd+NZNp98YtZUyk478c8XSIzMr1krQ20g==
+  dependencies:
+    "@stdlib/assert" "^0.0.x"
+    "@stdlib/buffer" "^0.0.x"
+    "@stdlib/cli" "^0.0.x"
+    "@stdlib/fs" "^0.0.x"
+    "@stdlib/streams" "^0.0.x"
+    "@stdlib/string" "^0.0.x"
+    "@stdlib/utils" "^0.0.x"
+
+"@stdlib/random@^0.0.x":
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/@stdlib/random/-/random-0.0.12.tgz#e819c3abd602ed5559ba800dba751e49c633ff85"
+  integrity sha512-c5yND4Ahnm9Jx0I+jsKhn4Yrz10D53ALSrIe3PG1qIz3kNFcIPnmvCuNGd+3V4ch4Mbrez55Y8z/ZC5RJh4vJQ==
+  dependencies:
+    "@stdlib/array" "^0.0.x"
+    "@stdlib/assert" "^0.0.x"
+    "@stdlib/blas" "^0.0.x"
+    "@stdlib/buffer" "^0.0.x"
+    "@stdlib/cli" "^0.0.x"
+    "@stdlib/constants" "^0.0.x"
+    "@stdlib/fs" "^0.0.x"
+    "@stdlib/math" "^0.0.x"
+    "@stdlib/process" "^0.0.x"
+    "@stdlib/stats" "^0.0.x"
+    "@stdlib/streams" "^0.0.x"
+    "@stdlib/symbol" "^0.0.x"
+    "@stdlib/types" "^0.0.x"
+    "@stdlib/utils" "^0.0.x"
+    debug "^2.6.9"
+    readable-stream "^2.1.4"
+
+"@stdlib/regexp@^0.0.x":
+  version "0.0.13"
+  resolved "https://registry.yarnpkg.com/@stdlib/regexp/-/regexp-0.0.13.tgz#80b98361dc7a441b47bc3fa964bb0c826759e971"
+  integrity sha512-3JT5ZIoq/1nXY+dY+QtkU8/m7oWDeekyItEEXMx9c/AOf0ph8fmvTUGMDNfUq0RetcznFe3b66kFz6Zt4XHviA==
+  dependencies:
+    "@stdlib/assert" "^0.0.x"
+    "@stdlib/utils" "^0.0.x"
+
+"@stdlib/stats@^0.0.x":
+  version "0.0.13"
+  resolved "https://registry.yarnpkg.com/@stdlib/stats/-/stats-0.0.13.tgz#87c973f385379d794707c7b5196a173dba8b07e1"
+  integrity sha512-hm+t32dKbx/L7+7WlQ1o4NDEzV0J4QSnwFBCsIMIAO8+VPxTZ4FxyNERl4oKlS3hZZe4AVKjoOVhBDtgEWrS4g==
+  dependencies:
+    "@stdlib/array" "^0.0.x"
+    "@stdlib/assert" "^0.0.x"
+    "@stdlib/blas" "^0.0.x"
+    "@stdlib/constants" "^0.0.x"
+    "@stdlib/math" "^0.0.x"
+    "@stdlib/ndarray" "^0.0.x"
+    "@stdlib/random" "^0.0.x"
+    "@stdlib/string" "^0.0.x"
+    "@stdlib/symbol" "^0.0.x"
+    "@stdlib/types" "^0.0.x"
+    "@stdlib/utils" "^0.0.x"
+
+"@stdlib/streams@^0.0.x":
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/@stdlib/streams/-/streams-0.0.12.tgz#07f5ceae5852590afad8e1cb7ce94174becc8739"
+  integrity sha512-YLUlXwjJNknHp92IkJUdvn5jEQjDckpawKhDLLCoxyh3h5V+w/8+61SH7TMTfKx5lBxKJ8vvtchZh90mIJOAjQ==
+  dependencies:
+    "@stdlib/assert" "^0.0.x"
+    "@stdlib/buffer" "^0.0.x"
+    "@stdlib/cli" "^0.0.x"
+    "@stdlib/fs" "^0.0.x"
+    "@stdlib/types" "^0.0.x"
+    "@stdlib/utils" "^0.0.x"
+    debug "^2.6.9"
+    readable-stream "^2.1.4"
+
+"@stdlib/strided@^0.0.x":
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/@stdlib/strided/-/strided-0.0.12.tgz#86ac48e660cb7f64a45cf07e80cbbfe58be21ae1"
+  integrity sha512-1NINP+Y7IJht34iri/bYLY7TVxrip51f6Z3qWxGHUCH33kvk5H5QqV+RsmFEGbbyoGtdeHrT2O+xA+7R2e3SNg==
+  dependencies:
+    "@stdlib/assert" "^0.0.x"
+    "@stdlib/math" "^0.0.x"
+    "@stdlib/ndarray" "^0.0.x"
+    "@stdlib/types" "^0.0.x"
+    "@stdlib/utils" "^0.0.x"
+
+"@stdlib/string@^0.0.x":
+  version "0.0.14"
+  resolved "https://registry.yarnpkg.com/@stdlib/string/-/string-0.0.14.tgz#4feea4f9089ab72428eebb65fe7b93d90a7f34f4"
+  integrity sha512-1ClvUTPysens7GZz3WsrkFYIFs8qDmnXkyAd3zMvTXgRpy7hqrv6nNzLMQj8BHv5cBWaWPOXYd/cZ+JyMnZNQQ==
+  dependencies:
+    "@stdlib/assert" "^0.0.x"
+    "@stdlib/cli" "^0.0.x"
+    "@stdlib/constants" "^0.0.x"
+    "@stdlib/fs" "^0.0.x"
+    "@stdlib/math" "^0.0.x"
+    "@stdlib/nlp" "^0.0.x"
+    "@stdlib/process" "^0.0.x"
+    "@stdlib/regexp" "^0.0.x"
+    "@stdlib/streams" "^0.0.x"
+    "@stdlib/types" "^0.0.x"
+    "@stdlib/utils" "^0.0.x"
+
+"@stdlib/symbol@^0.0.x":
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/@stdlib/symbol/-/symbol-0.0.12.tgz#b9f396b0bf269c2985bb7fe99810a8e26d7288c3"
+  integrity sha512-2IDhpzWVGeLHgsvIsX12RXvf78r7xBkc4QLoRUv3k7Cp61BisR1Ym1p0Tq9PbxT8fknlvLToh9n5RpmESi2d4w==
+  dependencies:
+    "@stdlib/assert" "^0.0.x"
+    "@stdlib/utils" "^0.0.x"
+
+"@stdlib/time@^0.0.x":
+  version "0.0.14"
+  resolved "https://registry.yarnpkg.com/@stdlib/time/-/time-0.0.14.tgz#ea6daa438b1d3b019b99f5091117ee4bcef55d60"
+  integrity sha512-1gMFCQTabMVIgww+k4g8HHHIhyy1tIlvwT8mC0BHW7Q7TzDAgobwL0bvor+lwvCb5LlDAvNQEpaRgVT99QWGeQ==
+  dependencies:
+    "@stdlib/assert" "^0.0.x"
+    "@stdlib/cli" "^0.0.x"
+    "@stdlib/constants" "^0.0.x"
+    "@stdlib/fs" "^0.0.x"
+    "@stdlib/math" "^0.0.x"
+    "@stdlib/string" "^0.0.x"
+    "@stdlib/utils" "^0.0.x"
+
+"@stdlib/types@^0.0.x":
+  version "0.0.14"
+  resolved "https://registry.yarnpkg.com/@stdlib/types/-/types-0.0.14.tgz#02d3aab7a9bfaeb86e34ab749772ea22f7b2f7e0"
+  integrity sha512-AP3EI9/il/xkwUazcoY+SbjtxHRrheXgSbWZdEGD+rWpEgj6n2i63hp6hTOpAB5NipE0tJwinQlDGOuQ1lCaCw==
+
+"@stdlib/utils@^0.0.12", "@stdlib/utils@^0.0.x":
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/@stdlib/utils/-/utils-0.0.12.tgz#670de5a7b253f04f11a4cba38f790e82393bcb46"
+  integrity sha512-+JhFpl6l7RSq/xGnbWRQ5dAL90h9ONj8MViqlb7teBZFtePZLMwoRA1wssypFcJ8SFMRWQn7lPmpYVUkGwRSOg==
+  dependencies:
+    "@stdlib/array" "^0.0.x"
+    "@stdlib/assert" "^0.0.x"
+    "@stdlib/blas" "^0.0.x"
+    "@stdlib/buffer" "^0.0.x"
+    "@stdlib/cli" "^0.0.x"
+    "@stdlib/constants" "^0.0.x"
+    "@stdlib/fs" "^0.0.x"
+    "@stdlib/math" "^0.0.x"
+    "@stdlib/os" "^0.0.x"
+    "@stdlib/process" "^0.0.x"
+    "@stdlib/random" "^0.0.x"
+    "@stdlib/regexp" "^0.0.x"
+    "@stdlib/streams" "^0.0.x"
+    "@stdlib/string" "^0.0.x"
+    "@stdlib/symbol" "^0.0.x"
+    "@stdlib/time" "^0.0.x"
+    "@stdlib/types" "^0.0.x"
+    debug "^2.6.9"
+
 "@szmarczak/http-timer@^1.1.2":
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/@szmarczak/http-timer/-/http-timer-1.1.2.tgz#b1665e2c461a2cd92f4c1bbf50d5454de0d4b421"
@@ -1953,6 +2282,15 @@
     utils-copy-error "^1.0.1"
     uuid "^8.3.2"
 
+"@tryghost/errors@^1.2.17":
+  version "1.2.18"
+  resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.18.tgz#beb71d794a25af01f1a0c79b4a4afc903fa963a7"
+  integrity sha512-4XKfiVQe6GgRCcCvLE6LmeMwWNQAowuNwV58rPI8rnFgsDp49gTsMqL/1HOqK/L2x2BIETbYt1kFHO5ai4qa0Q==
+  dependencies:
+    "@stdlib/utils" "^0.0.12"
+    lodash "^4.17.21"
+    uuid "^9.0.0"
+
 "@tryghost/express-dynamic-redirects@0.2.11":
   version "0.2.11"
   resolved "https://registry.yarnpkg.com/@tryghost/express-dynamic-redirects/-/express-dynamic-redirects-0.2.11.tgz#7b2906c21d40923e0431d1ba98bb613a8f1caad3"
@@ -2118,11 +2456,13 @@
     json-stringify-safe "^5.0.1"
     lodash "^4.17.21"
 
-"@tryghost/magic-link@1.0.24", "@tryghost/magic-link@^1.0.24":
-  version "1.0.24"
-  resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-1.0.24.tgz#6cbcb46640cd7d0b327e442d60837dbc5c4ddd80"
-  integrity sha512-BmN+jFgBgpawZs/sj95fW9skrDjGoOYB55xMrMwkAlPVZRXBIwceI2Lrecn5doQgi5eDzkgWqsBomuV9dP40Mw==
+"@tryghost/magic-link@1.0.27", "@tryghost/magic-link@^1.0.24":
+  version "1.0.27"
+  resolved "https://registry.yarnpkg.com/@tryghost/magic-link/-/magic-link-1.0.27.tgz#3c378536d3bc8cb9c9875f71500ba07fd21c20e0"
+  integrity sha512-O8OuBFyWhNVe+zyKJ6g1wfSqB1tkwO0WSv4CpTHsGSbEQvNCfHaD+f2hbvADYbVgh7egw/oLBdbEIb19ASEpcA==
   dependencies:
+    "@tryghost/tpl" "0.1.18"
+    "@tryghost/validator" "0.1.29"
     bluebird "^3.5.5"
     jsonwebtoken "^8.5.1"
     lodash "^4.17.15"
@@ -2470,6 +2810,13 @@
   dependencies:
     lodash.template "^4.5.0"
 
+"@tryghost/tpl@0.1.18", "@tryghost/tpl@^0.1.18":
+  version "0.1.18"
+  resolved "https://registry.yarnpkg.com/@tryghost/tpl/-/tpl-0.1.18.tgz#a4c87e3a82cd75aba72b2325c91d87677cc615f2"
+  integrity sha512-frhPu9ScllYof5Xrhn4FrOluBSOEQiAQP67EOiFV6XE8UKJtAYTB48Xf9XtAWm9IfznpOGuy/2w84nK1SN7lvg==
+  dependencies:
+    lodash.template "^4.5.0"
+
 "@tryghost/update-check-service@0.3.2":
   version "0.3.2"
   resolved "https://registry.yarnpkg.com/@tryghost/update-check-service/-/update-check-service-0.3.2.tgz#748ce1a57aad8b1d2457ffe44098977cbd273203"
@@ -2502,6 +2849,17 @@
   dependencies:
     "@tryghost/errors" "^1.2.12"
     "@tryghost/tpl" "^0.1.16"
+    lodash "^4.17.21"
+    moment-timezone "^0.5.23"
+    validator "7.2.0"
+
+"@tryghost/validator@0.1.29":
+  version "0.1.29"
+  resolved "https://registry.yarnpkg.com/@tryghost/validator/-/validator-0.1.29.tgz#8015195d883dcb015e651b6c54f63955a96c84f7"
+  integrity sha512-YGVMTjuZpFP7w2MSZjE/83XAmuSKNpC2eiXP+zagkmkxyjUFnmej/xKdcLSSHvNhSB6bq0Y9JMoI3bgT5RMPHA==
+  dependencies:
+    "@tryghost/errors" "^1.2.17"
+    "@tryghost/tpl" "^0.1.18"
     lodash "^4.17.21"
     moment-timezone "^0.5.23"
     validator "7.2.0"
@@ -4501,7 +4859,7 @@ dayjs@^1.10.0:
   resolved "https://registry.yarnpkg.com/dayjs/-/dayjs-1.11.0.tgz#009bf7ef2e2ea2d5db2e6583d2d39a4b5061e805"
   integrity sha512-JLC809s6Y948/FuCZPm5IX8rRhQwOiyMb2TfVVQEixG7P8Lm/gt5S7yoQZmC8x1UehI9Pb7sksEt4xx14m+7Ug==
 
-debug@2, debug@2.6.9, debug@^2.2.0, debug@^2.3.3:
+debug@2, debug@2.6.9, debug@^2.2.0, debug@^2.3.3, debug@^2.6.9:
   version "2.6.9"
   resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.9.tgz#5d128515df134ff327e90a4c93f4e077a536341f"
   integrity sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==
@@ -10732,7 +11090,7 @@ readable-stream@1.1.x:
     isarray "0.0.1"
     string_decoder "~0.10.x"
 
-readable-stream@2, readable-stream@^2.0.0, readable-stream@^2.0.5, readable-stream@^2.0.6, readable-stream@^2.2.2, readable-stream@^2.3.7:
+readable-stream@2, readable-stream@^2.0.0, readable-stream@^2.0.5, readable-stream@^2.0.6, readable-stream@^2.1.4, readable-stream@^2.2.2, readable-stream@^2.3.7:
   version "2.3.7"
   resolved "https://registry.yarnpkg.com/readable-stream/-/readable-stream-2.3.7.tgz#1eca1cf711aef814c04f62252a36a62f6cb23b57"
   integrity sha512-Ebho8K4jIbHAxnuxi7o42OrZgF/ZTNcsZj6nRKyUmkhLFq8CHItp/fy6hQZuZmP/n3yZ9VBUbp4zz/mX8hmYPw==
@@ -12534,6 +12892,11 @@ uuid@^7.0.1:
   version "7.0.3"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-7.0.3.tgz#c5c9f2c8cf25dc0a372c4df1441c41f5bd0c680b"
   integrity sha512-DPSke0pXhTZgoF/d+WSt2QaKMCFSfx7QegxEWT+JOuHF5aWrKEn0G+ztjuJg/gG8/ItK+rbPCD/yNv8yyih6Cg==
+
+uuid@^9.0.0:
+  version "9.0.0"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-9.0.0.tgz#592f550650024a38ceb0c562f2f6aa435761efb5"
+  integrity sha512-MXcSTerfPa4uqyzStbRoTgt5XIe3x5+42+q1sDuy3R5MDk66URdLMOZe5aPX/SQd+kuYAh0FdP/pO28IkQyTeg==
 
 v8-compile-cache@^2.0.3:
   version "2.3.0"

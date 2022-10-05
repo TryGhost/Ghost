@@ -20,6 +20,15 @@ describe('Members Signin', function () {
         mockManager.restore();
     });
 
+    it('Errors when passed multiple emails', async function () {
+        await membersAgent.post('/api/send-magic-link')
+            .body({
+                email: 'one@test.com,two@test.com',
+                emailType: 'signup'
+            })
+            .expectStatus(400);
+    });
+
     it('Will not set a cookie if the token is invalid', async function () {
         await membersAgent.get('/?token=blah')
             .expectStatus(302)
