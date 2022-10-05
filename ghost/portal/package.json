@@ -38,6 +38,7 @@
     "build:bundle": "webpack --config webpack.config.js",
     "test": "react-scripts test",
     "test:ci": "yarn test --watchAll=false --coverage",
+    "test:unit": "yarn test:ci",
     "eject": "react-scripts eject",
     "lint": "eslint src --ext .js --cache",
     "preship": "yarn lint",
