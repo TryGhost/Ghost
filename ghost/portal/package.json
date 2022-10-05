@@ -42,7 +42,8 @@
     "eject": "react-scripts eject",
     "lint": "eslint src --ext .js --cache",
     "preship": "yarn lint",
-    "ship": "STATUS=$(git status --porcelain); echo $STATUS; if [ -z \"$STATUS\" ]; then yarn publish && git push ${GHOST_UPSTREAM:-upstream} main --follow-tags; fi",
+    "ship": "STATUS=$(git status --porcelain); echo $STATUS; if [ -z \"$STATUS\" ]; then yarn version; fi",
+    "postship": "git push ${GHOST_UPSTREAM:-origin} main --follow-tags && yarn publish . --tag $npm_package_version",
     "posttest": "yarn lint",
     "analyze": "source-map-explorer 'umd/*.js'",
     "prepublishOnly": "yarn build"
