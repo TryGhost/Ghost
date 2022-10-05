@@ -368,6 +368,10 @@ module.exports = {
         anyLocationFor: (resource) => {
             return stringMatching(new RegExp(`https?://.*?/${resource}/[a-f0-9]{24}/`));
         },
+        // @NOTE: hack here! it's due to https://github.com/TryGhost/Toolbox/issues/341
+        //        this matcher should be removed once the issue is solved - routing is redesigned
+        //        An ideal solution would be removal of this matcher altogether.
+        anyLocalURL: stringMatching(/http:\/\/127.0.0.1:2369\/\w+\//),
         stringMatching
     },
 

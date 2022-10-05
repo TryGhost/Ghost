@@ -1,5 +1,5 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../utils/e2e-framework');
-const {anyObjectId, anyISODateTime, anyUuid, anyContentVersion, anyNumber, stringMatching} = matchers;
+const {anyObjectId, anyISODateTime, anyUuid, anyContentVersion, anyNumber, anyLocalURL} = matchers;
 
 const tierSnapshot = {
     id: anyObjectId,
@@ -35,9 +35,7 @@ const buildPostSnapshotWithTiers = ({published, tiersCount, roles = false}) => {
         published_at: published ? anyISODateTime : null,
         created_at: anyISODateTime,
         updated_at: anyISODateTime,
-        // @TODO: hack here! it's due to https://github.com/TryGhost/Toolbox/issues/341
-        //        this matcher should be removed once the issue is solved
-        url: stringMatching(/http:\/\/127.0.0.1:2369\/\w+\//),
+        url: anyLocalURL,
         tiers: new Array(tiersCount).fill(tierSnapshot),
         primary_author: buildAuthorSnapshot(roles),
         authors: new Array(1).fill(buildAuthorSnapshot(roles))
