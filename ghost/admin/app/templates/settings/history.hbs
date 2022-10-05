@@ -1,23 +1,31 @@
 <section class="gh-canvas gh-members-activity">
     <GhCanvasHeader class="gh-canvas-header">
         <div class="flex flex-column">
-            <div class="gh-canvas-breadcrumb">
-                <LinkTo @route="settings">
-                    Settings
-                </LinkTo>
-                {{#if this.userRecord}}
-                    {{svg-jar "arrow-right-small"}}
-                    <LinkTo @route="settings.history" @query={{reset-query-params "settings.history"}} data-test-link="history-back">
-                        History
+            {{#if this.userRecord}}
+                <div class="gh-canvas-breadcrumb">
+                    <LinkTo @route="settings">
+                        Settings
                     </LinkTo>
-                    {{svg-jar "arrow-right-small"}} {{or this.userRecord.name this.userRecord.email}}
-                {{else}}
-                    {{svg-jar "arrow-right-small"}} History
-                {{/if}}
-            </div>
-            <h2 class="gh-canvas-title" data-test-screen-title>
-                History
-            </h2>
+                        {{svg-jar "arrow-right-small"}}
+                        <LinkTo @route="settings.history" @query={{reset-query-params "settings.history"}} data-test-link="history-back">
+                            History
+                        </LinkTo>
+                        {{svg-jar "arrow-right-small"}} User
+                </div>
+                <h2 class="gh-canvas-title" data-test-screen-title>
+                    {{or this.userRecord.name this.userRecord.email}}
+                </h2>
+            {{else}}
+                <div class="gh-canvas-breadcrumb">
+                    <LinkTo @route="settings">
+                        Settings
+                    </LinkTo>
+                        {{svg-jar "arrow-right-small"}} History
+                </div>
+                <h2 class="gh-canvas-title" data-test-screen-title>
+                    History
+                </h2>
+            {{/if}}
         </div>
         <div class="view-actions">
             <Settings::History::EventFilter
