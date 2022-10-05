@@ -1,6 +1,5 @@
 # Portal
 
-[![CI Status](https://github.com/TryGhost/portal/workflows/Test/badge.svg?branch=main)](https://github.com/TryGhost/portal/actions)
 [![npm version](https://badge.fury.io/js/%40tryghost%2Fportal.svg)](https://badge.fury.io/js/%40tryghost%2Fportal)
 
 [Drop-in script](https://ghost.org/help/setting-up-portal/) to make the bulk of Ghost membership features work on any theme.
@@ -21,28 +20,13 @@ The `data-ghost` attribute expects the URL for your Ghost site, which is the onl
 
 By default, the script adds a default floating trigger button on the bottom right of your page which is used to trigger the popup on screen.
 
-Its possible to add custom trigger button of your own by adding data attribute `data-portal` to any HTML tag on page, and also specify a specfic [page](https://github.com/TryGhost/Portal/blob/main/src/pages.js#L13-L22) to open from it by using it as `data-portal=signup`.
+Its possible to add custom trigger button of your own by adding data attribute `data-portal` to any HTML tag on page, and also specify a specific [page](https://github.com/TryGhost/Ghost/blob/main/ghost/portal/src/pages.js#L13-L22) to open from it by using it as `data-portal=signup`.
 
 The script also adds custom class names to this element for open and close state of popup - `gh-portal-open` and `gh-portal-close`, allowing devs to update its UI based on popup state.
 
 Refer the [docs](https://ghost.org/help/setup-members/#customize-portal-settings) to read about ways in which Portal can be customized for your site.
 
 ## Basic Setup
-
-1. Clone this repository:
-
-```shell
-git@github.com:TryGhost/portal.git
-```
-
-2. Change into the new directory and install the dependencies:
-
-```shell
-cd portal
-yarn
-```
-
-## For local development
 
 This section is mostly relevant for core team only for active Portal development. Always use the unpkg link for testing/using latest released portal script.
 
@@ -89,7 +73,3 @@ Run `yarn ship` to publish new version of script.
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-# Copyright & License
-
-Copyright (c) 2013-2022 Ghost Foundation - Released under the [MIT license](LICENSE).
