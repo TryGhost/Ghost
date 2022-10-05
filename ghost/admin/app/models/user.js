@@ -97,8 +97,8 @@ export default BaseModel.extend(ValidationEngine, {
         return this.coverImage || defaultPath;
     }),
 
-    saveNewPassword: task(function* () {
-        let validation = this.isLoggedIn ? 'ownPasswordChange' : 'passwordChange';
+    saveNewPasswordTask: task(function* () {
+        const validation = this.isLoggedIn ? 'ownPasswordChange' : 'passwordChange';
 
         try {
             yield this.validate({property: validation});
@@ -108,7 +108,7 @@ export default BaseModel.extend(ValidationEngine, {
         }
 
         try {
-            let url = this.get('ghostPaths.url').api('users', 'password');
+            let url = this.ghostPaths.url.api('users', 'password');
 
             yield this.ajax.put(url, {
                 data: {
@@ -121,16 +121,14 @@ export default BaseModel.extend(ValidationEngine, {
                 }
             });
 
-            this.setProperties({
-                password: '',
-                newPassword: '',
-                ne2Password: ''
-            });
+            this.password = '';
+            this.newPassword = '';
+            this.ne2Password = '';
 
             this.notifications.showNotification('Password updated', {type: 'success', key: 'user.change-password.success'});
 
             // clear errors manually for ne2password because validation
-            // engine only clears the "validated proeprty"
+            // engine only clears the "validated property"
             // TODO: clean up once we have a better validations library
             this.errors.remove('ne2Password');
 
