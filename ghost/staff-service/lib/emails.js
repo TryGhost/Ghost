@@ -1,6 +1,7 @@
-const {promises: fs} = require('fs');
+const {promises: fs, readFileSync} = require('fs');
 const path = require('path');
 const moment = require('moment');
+const glob = require('glob');
 
 class StaffServiceEmails {
     constructor({logging, models, mailer, settingsHelpers, settingsCache, urlUtils}) {
@@ -12,6 +13,7 @@ class StaffServiceEmails {
         this.urlUtils = urlUtils;
 
         this.Handlebars = require('handlebars');
+        this.registerPartials();
     }
 
     async notifyFreeMemberSignup(member, options) {
@@ -269,6 +271,17 @@ class StaffServiceEmails {
         }, message);
 
         return this.mailer.send(msg);
+    }
+
+    registerPartials() {
+        const rootDirname = './email-templates/partials/';
+        const files = glob.sync('*.hbs', {cwd: path.join(__dirname, rootDirname)});
+        files.forEach((fileName) => {
+            const name = fileName.replace(/.hbs$/, '');
+            const filePath = path.join(__dirname, rootDirname, `${name}.hbs`);
+            const content = readFileSync(filePath, 'utf8');
+            this.Handlebars.registerPartial(name, content);
+        });
     }
 
     async renderEmailTemplate(templateName, data) {
