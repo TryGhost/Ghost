@@ -223,7 +223,7 @@ module.exports = function MembersAPI({
 
         if (member) {
             await MemberLoginEvent.add({member_id: member.id});
-            if (oldEmail) {
+            if (oldEmail && (!type || type === 'updateEmail')) {
                 // user exists but wants to change their email address
                 await users.update({email}, {id: member.id});
                 return getMemberIdentityData(email);
@@ -231,7 +231,8 @@ module.exports = function MembersAPI({
             return member;
         }
 
-        if (type === 'signin') {
+        // Note: old tokens can still have a missing type (we can remove this after a couple of weeks)
+        if (type && !['signup', 'subscribe'].includes(type)) {
             // Don't allow sign up
             // Note that we use the type from inside the magic token so this behaviour can't be changed
             return null;
