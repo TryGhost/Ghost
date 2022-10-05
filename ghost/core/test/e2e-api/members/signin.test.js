@@ -224,6 +224,79 @@ describe('Members Signin', function () {
                     emailType: 'signup'
                 })
                 .expectStatus(201);
+
+            // But only once
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: 'any2@test.com',
+                    emailType: 'signup'
+                })
+                .expectStatus(429);
+
+            // Waiting 10 minutes is still enough (fibonacci)
+            clock.tick(10 * 60 * 1000);
+
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: 'any2@test.com',
+                    emailType: 'signup'
+                })
+                .expectStatus(201);
+
+            // Blocked again
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: 'any3@test.com',
+                    emailType: 'signup'
+                })
+                .expectStatus(429);
+
+            // Waiting 10 minutes is not enough any longer
+            clock.tick(10 * 60 * 1000);
+
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: 'any3@test.com',
+                    emailType: 'signup'
+                })
+                .expectStatus(429);
+
+            // Waiting 20 minutes is enough
+            clock.tick(10 * 60 * 1000);
+
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: 'any2@test.com',
+                    emailType: 'signup'
+                })
+                .expectStatus(201);
+
+            // Blocked again
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: 'any3@test.com',
+                    emailType: 'signup'
+                })
+                .expectStatus(429);
+
+            // Waiting one hour is enough to reset it completely
+            clock.tick(60 * 60 * 1000 + 1000);
+
+            // We can try multiple times again
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: 'any4@test.com',
+                    emailType: 'signup'
+                })
+                .expectStatus(201);
+
+            // Blocked again
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: 'any5@test.com',
+                    emailType: 'signup'
+                })
+                .expectStatus(201);
         });
 
         it('Will clear rate limits for members auth', async function () {
