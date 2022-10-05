@@ -32,6 +32,15 @@ describe('sendMagicLink', function () {
         mockManager.restore();
     });
 
+    it('Errors when passed multiple emails', async function () {
+        await membersAgent.post('/api/send-magic-link')
+            .body({
+                email: 'one@test.com,two@test.com',
+                emailType: 'signup'
+            })
+            .expectStatus(400);
+    });
+
     it('Throws an error when logging in to a email that does not exist', async function () {
         const email = 'this-member-does-not-exist@test.com';
         await membersAgent.post('/api/send-magic-link')
