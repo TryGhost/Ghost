@@ -4690,10 +4690,12 @@
     "@tryghost/root-utils" "^0.3.16"
     semver "^7.3.5"
 
-"@tryghost/webhook-mock-receiver@0.1.2":
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/webhook-mock-receiver/-/webhook-mock-receiver-0.1.2.tgz#feeaad6298cbcda16447804e0b7829f2aa32584c"
-  integrity sha512-urg+UERP6CPUaCYoZBg1ANe1DCu1+QbJL8V2hDrkJlRCAjokJpXwy9Wwc/VdHXbVSTeH6JVAK1LNH3gjJVGhVw==
+"@tryghost/webhook-mock-receiver@0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/webhook-mock-receiver/-/webhook-mock-receiver-0.2.0.tgz#5f77636e40c82df8c06afbbcef1c49ec6d1d70e5"
+  integrity sha512-/VqNp5/NQ7us5RgrkZQztgYFlP9qpKogonQRDYgYMYH+7CMmm8cwm7734GDdwS/kJrUl2kPhyvehV6pIbGASNw==
+  dependencies:
+    p-wait-for "3.1.0"
 
 "@tryghost/zip@1.1.27":
   version "1.1.27"
