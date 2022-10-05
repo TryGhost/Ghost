@@ -6,7 +6,7 @@ Object {
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "user-agent": "Ghost/5.17.2 (https://github.com/TryGhost/Ghost)",
+  "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\\\\\.\\\\d\\+\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
 }
 `;
 
@@ -150,7 +150,7 @@ Object {
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "user-agent": "Ghost/5.17.2 (https://github.com/TryGhost/Ghost)",
+  "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\\\\\.\\\\d\\+\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
 }
 `;
 
