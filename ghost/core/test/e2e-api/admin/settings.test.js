@@ -3,7 +3,7 @@ const SingleUseTokenProvider = require('../../../core/server/services/members/Si
 const settingsService = require('../../../core/server/services/settings/settings-service');
 const settingsCache = require('../../../core/shared/settings-cache');
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
-const {stringMatching, anyEtag, anyUuid, anyStringNumber} = matchers;
+const {stringMatching, anyEtag, anyUuid, anyContentLength} = matchers;
 const models = require('../../../core/server/models');
 const {anyErrorId} = matchers;
 
@@ -65,7 +65,7 @@ describe('Settings API', function () {
                 .matchHeaderSnapshot({
                     etag: anyEtag,
                     // Special rule for this test, as the labs setting changes a lot
-                    'content-length': anyStringNumber
+                    'content-length': anyContentLength
                 });
         });
 
@@ -201,7 +201,7 @@ describe('Settings API', function () {
                 .matchHeaderSnapshot({
                     etag: anyEtag,
                     // Special rule for this test, as the labs setting changes a lot
-                    'content-length': anyStringNumber
+                    'content-length': anyContentLength
                 });
 
             // Check returned WITH prefix
@@ -228,7 +228,7 @@ describe('Settings API', function () {
                 .matchHeaderSnapshot({
                     etag: anyEtag,
                     // Special rule for this test, as the labs setting changes a lot
-                    'content-length': anyStringNumber
+                    'content-length': anyContentLength
                 })
                 .expect(({body}) => {
                     const emailVerificationRequired = body.settings.find(setting => setting.key === 'email_verification_required');
@@ -249,7 +249,7 @@ describe('Settings API', function () {
                 .matchHeaderSnapshot({
                     etag: anyEtag,
                     // Special rule for this test, as the labs setting changes a lot
-                    'content-length': anyStringNumber
+                    'content-length': anyContentLength
                 })
                 .expect(({body}) => {
                     const membersSupportAddress = body.settings.find(setting => setting.key === 'members_support_address');
@@ -284,7 +284,7 @@ describe('Settings API', function () {
                 .matchHeaderSnapshot({
                     etag: anyEtag,
                     // Special rule for this test, as the labs setting changes a lot
-                    'content-length': anyStringNumber
+                    'content-length': anyContentLength
                 })
                 .expect(({body}) => {
                     const membersSupportAddress = body.settings.find(setting => setting.key === 'members_support_address');
@@ -311,7 +311,7 @@ describe('Settings API', function () {
                 .matchHeaderSnapshot({
                     etag: anyEtag,
                     // Special rule for this test, as the labs setting changes a lot
-                    'content-length': anyStringNumber
+                    'content-length': anyContentLength
                 })
                 .expect(({body}) => {
                     const membersSupportAddress = body.settings.find(setting => setting.key === 'members_support_address');
