@@ -7,7 +7,7 @@
 
 <form>
 <div class="modal-body" {{did-insert this.updateSuccessModifier}}>
-    <GhMembersPaymentsSetting
+    <Settings::Members::StripeSettingsForm
         @setStripeConnectIntegrationTokenSetting={{this.setStripeConnectIntegrationTokenSetting}}
         @onConnected={{this.updateSuccessModifier}}
         @onDisconnected={{this.updateSuccessModifier}}

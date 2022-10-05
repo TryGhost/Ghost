@@ -931,3 +931,14 @@ remove|ember-template-lint|no-passed-in-event-handlers|426|36|426|36|2a5f6ae5ef1
 remove|ember-template-lint|no-passed-in-event-handlers|441|36|441|36|c9d092bb6707073e3f11bdc393d1c1361e5f87c4|1662681600000|1673053200000|1678237200000|app/templates/settings/staff/user.hbs
 remove|ember-template-lint|no-potential-path-strings|470|53|470|53|5c3a010b4844cd530c312ef2aa32de64b8a43db1|1662681600000|1673053200000|1678237200000|app/templates/settings/staff/user.hbs
 remove|ember-template-lint|no-valueless-arguments|468|44|468|44|5d042f1f94738e82cc1b0c5c008cece383beaa30|1662681600000|1673053200000|1678237200000|app/templates/settings/staff/user.hbs
+add|ember-template-lint|no-action|11|35|11|35|6f79b46dcaccf8061b341b369ec20f6e0f0805bd|1665014400000|1675386000000|1680566400000|app/components/settings/members/stripe-settings-form.hbs
+add|ember-template-lint|no-action|20|35|20|35|c84840bfbe762e604dc56cf4df06ab19d38a4777|1665014400000|1675386000000|1680566400000|app/components/settings/members/stripe-settings-form.hbs
+add|ember-template-lint|no-action|71|78|71|78|09238ca0047aba9705befa8bb94c6d577d7b78cf|1665014400000|1675386000000|1680566400000|app/components/settings/members/stripe-settings-form.hbs
+add|ember-template-lint|no-action|82|85|82|85|8d227d609618ed70d583fd1c1ecec3638f03138d|1665014400000|1675386000000|1680566400000|app/components/settings/members/stripe-settings-form.hbs
+add|ember-template-lint|no-action|83|123|83|123|d5b4c9ae3e5c4e36db552abdbc83280f9e6f8d0b|1665014400000|1675386000000|1680566400000|app/components/settings/members/stripe-settings-form.hbs
+add|ember-template-lint|no-action|93|35|93|35|1808b6250616df5c80cd814986955242d49e70c0|1665014400000|1675386000000|1680566400000|app/components/settings/members/stripe-settings-form.hbs
+add|ember-template-lint|no-action|131|17|131|17|79c12d2474c1fd8c0ff5ab8cf1fdb3952ab1825b|1665014400000|1675386000000|1680566400000|app/components/settings/members/stripe-settings-form.hbs
+add|ember-template-lint|no-action|132|15|132|15|c7db9d737e3f06cc754d7a49a3e35897117e5777|1665014400000|1675386000000|1680566400000|app/components/settings/members/stripe-settings-form.hbs
+add|ember-template-lint|no-passed-in-event-handlers|11|28|11|28|02c81dfb804e41f5b3c10730e431d1e4b0958e6f|1665014400000|1675386000000|1680566400000|app/components/settings/members/stripe-settings-form.hbs
+add|ember-template-lint|no-passed-in-event-handlers|20|28|20|28|1591adfb7d0dbab4321126ada2e2c5a4a8c66516|1665014400000|1675386000000|1680566400000|app/components/settings/members/stripe-settings-form.hbs
+add|ember-template-lint|no-passed-in-event-handlers|93|28|93|28|55dadf0e7dc5e2ed57771f46ca3cb82607d1799c|1665014400000|1675386000000|1680566400000|app/components/settings/members/stripe-settings-form.hbs
