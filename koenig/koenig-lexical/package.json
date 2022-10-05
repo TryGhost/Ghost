@@ -61,7 +61,7 @@
     "autoprefixer": "10.4.12",
     "babel-loader": "8.2.5",
     "eslint-config-react-app": "7.0.1",
-    "eslint-plugin-jest": "27.1.0",
+    "eslint-plugin-jest": "27.1.1",
     "eslint-plugin-tailwindcss": "3.6.2",
     "postcss": "8.4.17",
     "postcss-import": "15.0.0",
