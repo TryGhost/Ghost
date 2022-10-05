@@ -1,3 +1,4 @@
+import {HumanReadableError} from './errors';
 import {transformApiSiteData, transformApiTiersData, getUrlHistory} from './helpers';
 
 function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
@@ -192,7 +193,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
         },
 
-        sendMagicLink({email, emailType, labels, name, oldEmail, newsletters}) {
+        async sendMagicLink({email, emailType, labels, name, oldEmail, newsletters}) {
             const url = endpointFor({type: 'members', resource: 'send-magic-link'});
             const body = {
                 name,
@@ -208,20 +209,25 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 body.urlHistory = urlHistory;
             }
 
-            return makeRequest({
+            const res = await makeRequest({
                 url,
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(body)
-            }).then(function (res) {
-                if (res.ok) {
-                    return 'Success';
-                } else {
-                    throw new Error('Failed to send magic link email');
-                }
             });
+
+            if (res.ok) {
+                return 'Success';
+            } else {
+                // Try to read body error message that is human readable and should be shown to the user
+                const humanError = await HumanReadableError.fromApiResponse(res);
+                if (humanError) {
+                    throw humanError;
+                }
+                throw new Error('Failed to send magic link email');
+            }
         },
 
         signout() {

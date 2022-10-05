@@ -73,13 +73,12 @@ class MagicLink {
      *
      * @param {object} options
      * @param {TokenData} options.tokenData - The data for token
-     * @param {string=} [options.type='signin'] - The type to be passed to the url and content generator functions
+     * @param {string=} [options.type='signin'] - The type to be passed to the url and content generator functions. This type will also get stored in the token data.
      * @returns {Promise<URL>} - signin URL
      */
     async getMagicLink(options) {
-        const token = await this.tokenProvider.create(options.tokenData);
-
-        const type = options.type || 'signin';
+        const type = options.type ?? 'signin';
+        const token = await this.tokenProvider.create({...options.tokenData, type});
 
         return this.getSigninURL(token, type);
     }

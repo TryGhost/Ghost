@@ -15,7 +15,7 @@ const setupProvider = (context) => {
 };
 
 const customRender = (ui, {options = {}, overrideContext = {}} = {}) => {
-    const mockOnActionFn = jest.fn();
+    const mockOnActionFn = jest.fn().mockResolvedValue(undefined);
 
     const context = {
         site: testSite,

@@ -141,7 +141,8 @@ describe('Signin', () => {
 
             fireEvent.click(submitButton);
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
-                email: 'jamie@example.com'
+                email: 'jamie@example.com',
+                emailType: 'signin'
             });
 
             const magicLink = await within(popupIframeDocument).findByText(/sent you a login link/i);
@@ -166,7 +167,8 @@ describe('Signin', () => {
 
             fireEvent.click(submitButton);
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
-                email: 'jamie@example.com'
+                email: 'jamie@example.com',
+                emailType: 'signin'
             });
 
             const magicLink = await within(popupIframeDocument).findByText(/sent you a login link/i);
@@ -191,7 +193,8 @@ describe('Signin', () => {
 
             fireEvent.click(submitButton);
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
-                email: 'jamie@example.com'
+                email: 'jamie@example.com',
+                emailType: 'signin'
             });
 
             const magicLink = await within(popupIframeDocument).findByText(/sent you a login link/i);
@@ -230,7 +233,8 @@ describe('Signin', () => {
 
             fireEvent.click(submitButton);
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
-                email: 'jamie@example.com'
+                email: 'jamie@example.com',
+                emailType: 'signin'
             });
 
             const magicLink = await within(popupIframeDocument).findByText(/sent you a login link/i);
@@ -255,7 +259,8 @@ describe('Signin', () => {
 
             fireEvent.click(submitButton);
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
-                email: 'jamie@example.com'
+                email: 'jamie@example.com',
+                emailType: 'signin'
             });
 
             const magicLink = await within(popupIframeDocument).findByText(/sent you a login link/i);
@@ -280,7 +285,8 @@ describe('Signin', () => {
 
             fireEvent.click(submitButton);
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
-                email: 'jamie@example.com'
+                email: 'jamie@example.com',
+                emailType: 'signin'
             });
 
             const magicLink = await within(popupIframeDocument).findByText(/sent you a login link/i);

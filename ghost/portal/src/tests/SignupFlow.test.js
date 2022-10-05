@@ -208,6 +208,7 @@ describe('Signup', () => {
             fireEvent.click(chooseBtns[0]);
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
+                emailType: 'signup',
                 name: 'Jamie Larsen',
                 plan: 'free'
             });
@@ -242,6 +243,7 @@ describe('Signup', () => {
 
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
+                emailType: 'signup',
                 name: '',
                 plan: 'free'
             });
@@ -281,6 +283,7 @@ describe('Signup', () => {
 
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
+                emailType: 'signup',
                 name: 'Jamie Larsen',
                 plan: 'free'
             });
@@ -566,6 +569,7 @@ describe('Signup', () => {
             fireEvent.click(chooseBtns[0]);
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
+                emailType: 'signup',
                 name: 'Jamie Larsen',
                 plan: 'free'
             });
@@ -596,6 +600,7 @@ describe('Signup', () => {
 
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
+                emailType: 'signup',
                 name: '',
                 plan: 'free'
             });
@@ -632,6 +637,7 @@ describe('Signup', () => {
 
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
+                emailType: 'signup',
                 name: 'Jamie Larsen',
                 plan: 'free'
             });

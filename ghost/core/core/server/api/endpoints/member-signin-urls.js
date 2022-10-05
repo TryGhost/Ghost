@@ -22,7 +22,7 @@ module.exports = {
                 });
             }
 
-            const magicLink = await membersService.api.getMagicLink(model.get('email'));
+            const magicLink = await membersService.api.getMagicLink(model.get('email'), 'signin');
 
             return {
                 member_id: model.get('id'),
