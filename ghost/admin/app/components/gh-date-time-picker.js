@@ -121,7 +121,7 @@ export default class GhDateTimePicker extends Component {
 
         // unless min/max date is at midnight moment will disable that day
         if (minDate === 'now') {
-            this.set('_minDate', moment(moment().format(DATE_FORMAT)));
+            this.set('_minDate', moment.tz(moment().format(DATE_FORMAT)), blogTimezone);
         } else if (!isBlank(minDate)) {
             this.set('_minDate', moment(moment(minDate).format(DATE_FORMAT)));
         } else {
@@ -129,7 +129,7 @@ export default class GhDateTimePicker extends Component {
         }
 
         if (maxDate === 'now') {
-            this.set('_maxDate', moment(moment().format(DATE_FORMAT)));
+            this.set('_maxDate', moment.tz(moment().format(DATE_FORMAT)), blogTimezone);
         } else if (!isBlank(maxDate)) {
             this.set('_maxDate', moment(moment(maxDate).format(DATE_FORMAT)));
         } else {
