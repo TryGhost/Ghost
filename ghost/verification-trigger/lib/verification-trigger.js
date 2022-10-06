@@ -1,6 +1,6 @@
 const errors = require('@tryghost/errors');
 const DomainEvents = require('@tryghost/domain-events');
-const {MemberSubscribeEvent} = require('@tryghost/member-events');
+const {MemberCreatedEvent} = require('@tryghost/member-events');
 
 const messages = {
     emailVerificationNeeded: `We're hard at work processing your import. To make sure you get great deliverability, we'll need to enable some extra features for your account. A member of our team will be in touch with you by email to review your account make sure everything is configured correctly so you're ready to go.`,
@@ -45,15 +45,15 @@ class VerificationTrigger {
         this._Settings = Settings;
         this._eventRepository = eventRepository;
 
-        this._handleMemberSubscribeEvent = this._handleMemberSubscribeEvent.bind(this);
-        DomainEvents.subscribe(MemberSubscribeEvent, this._handleMemberSubscribeEvent);
+        this._handleMemberCreatedEvent = this._handleMemberCreatedEvent.bind(this);
+        DomainEvents.subscribe(MemberCreatedEvent, this._handleMemberCreatedEvent);
     }
 
     /**
      * 
-     * @param {MemberSubscribeEvent} event 
+     * @param {MemberCreatedEvent} event 
      */
-    async _handleMemberSubscribeEvent(event) {
+    async _handleMemberCreatedEvent(event) {
         const source = event.data?.source;
         let sourceThreshold;
 
@@ -66,7 +66,7 @@ class VerificationTrigger {
         if (['api', 'admin'].includes(source) && isFinite(sourceThreshold)) {
             const createdAt = new Date();
             createdAt.setDate(createdAt.getDate() - 30);
-            const events = await this._eventRepository.getNewsletterSubscriptionEvents({}, {
+            const events = await this._eventRepository.getCreatedEvents({}, {
                 'data.source': `data.source:'${source}'`,
                 'data.created_at': `data.created_at:>'${createdAt.toISOString().replace('T', ' ').substring(0, 19)}'`
             });
@@ -99,7 +99,7 @@ class VerificationTrigger {
 
         const createdAt = new Date();
         createdAt.setDate(createdAt.getDate() - 30);
-        const events = await this._eventRepository.getNewsletterSubscriptionEvents({}, {
+        const events = await this._eventRepository.getCreatedEvents({}, {
             'data.source': `data.source:'import'`,
             'data.created_at': `data.created_at:>'${createdAt.toISOString().replace('T', ' ').substring(0, 19)}'`
         });
