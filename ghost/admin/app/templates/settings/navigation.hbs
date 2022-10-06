@@ -24,7 +24,7 @@
                     <SortableObjects @sortableObjectList={{this.settings.navigation}} @useSwap={{false}}>
                         {{#each this.settings.navigation as |navItem index|}}
                             <DraggableObject @content={{navItem}} @dragHandle=".gh-blognav-grab" @isSortable={{true}}>
-                                <GhNavitem
+                                <Settings::Navigation::NavItem
                                     @navItem={{navItem}}
                                     @baseUrl={{this.blogUrl}}
                                     @addItem={{this.addNavItem}}
@@ -35,7 +35,7 @@
                             </DraggableObject>
                         {{/each}}
                     </SortableObjects>
-                    <GhNavitem
+                    <Settings::Navigation::NavItem
                         @navItem={{this.newNavItem}}
                         @baseUrl={{this.blogUrl}}
                         @addItem={{this.addNavItem}}
@@ -53,7 +53,7 @@
                     <SortableObjects @sortableObjectList={{this.settings.secondaryNavigation}} @useSwap={{false}}>
                         {{#each this.settings.secondaryNavigation as |navItem index|}}
                             <DraggableObject @content={{navItem}} @dragHandle=".gh-blognav-grab" @isSortable={{true}}>
-                                <GhNavitem
+                                <Settings::Navigation::NavItem
                                     @navItem={{navItem}}
                                     @baseUrl={{this.blogUrl}}
                                     @addItem={{this.addNavItem}}
@@ -64,7 +64,7 @@
                             </DraggableObject>
                         {{/each}}
                     </SortableObjects>
-                    <GhNavitem
+                    <Settings::Navigation::NavItem
                         @navItem={{this.newSecondaryNavItem}}
                         @baseUrl={{this.blogUrl}}
                         @addItem={{this.addNavItem}}

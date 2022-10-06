@@ -969,3 +969,12 @@ remove|ember-template-lint|no-action|56|49|56|49|115cc8adc4c0f98e2d93a59ff8efbee
 remove|ember-template-lint|no-action|64|33|64|33|812038f28c7626209e8ae622703ea8c4e75b7f60|1662681600000|1673053200000|1678237200000|app/templates/settings/navigation.hbs
 remove|ember-template-lint|no-action|65|35|65|35|3c723798059c71aedfa95cd70507bc0308728544|1662681600000|1673053200000|1678237200000|app/templates/settings/navigation.hbs
 remove|ember-template-lint|no-action|66|37|66|37|115cc8adc4c0f98e2d93a59ff8efbee711541336|1662681600000|1673053200000|1678237200000|app/templates/settings/navigation.hbs
+add|ember-template-lint|no-action|20|19|20|19|1cf358e2bf9d6fbb6abdc967c327ac9236e817dc|1665014400000|1675386000000|1680566400000|app/components/settings/navigation/nav-item.hbs
+add|ember-template-lint|no-action|21|22|21|22|b05a3bfe0536cd1cacb3a5803246be6f16857425|1665014400000|1675386000000|1680566400000|app/components/settings/navigation/nav-item.hbs
+add|ember-template-lint|no-action|22|23|22|23|29e3a04f98d37252bdd540ec2adcda840bd6f929|1665014400000|1675386000000|1680566400000|app/components/settings/navigation/nav-item.hbs
+add|ember-template-lint|no-action|38|20|38|20|3c723798059c71aedfa95cd70507bc0308728544|1665014400000|1675386000000|1680566400000|app/components/settings/navigation/nav-item.hbs
+add|ember-template-lint|no-action|39|25|39|25|e27fd2ebfccd2eed3d401b8854fc4d5d2f74cfc2|1665014400000|1675386000000|1680566400000|app/components/settings/navigation/nav-item.hbs
+add|ember-template-lint|no-action|47|49|47|49|18f748b67f9fe570b08c7a1c1d99114f31b41598|1665014400000|1675386000000|1680566400000|app/components/settings/navigation/nav-item.hbs
+add|ember-template-lint|no-action|51|52|51|52|4d50f3b33a672c365969169a4c0ca14cf83fe39c|1665014400000|1675386000000|1680566400000|app/components/settings/navigation/nav-item.hbs
+add|ember-template-lint|no-passed-in-event-handlers|20|12|20|12|4069dec45ac2a31d440780c914b2307ad1c6ea5f|1665014400000|1675386000000|1680566400000|app/components/settings/navigation/nav-item.hbs
+add|ember-template-lint|no-passed-in-event-handlers|21|12|21|12|e53f64794fdd0fe8c8b027d1831942d7c78c503b|1665014400000|1675386000000|1680566400000|app/components/settings/navigation/nav-item.hbs
