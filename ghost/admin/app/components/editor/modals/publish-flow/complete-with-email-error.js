@@ -42,6 +42,8 @@ export default class PublishFlowCompleteWithEmailError extends Component {
                 }
             }
 
+            this.args.setCompleted();
+
             return email;
         } catch (e) {
             // update "failed" state if email fails again

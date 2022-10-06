@@ -32,11 +32,12 @@
                                 </LinkTo>
                             {{/if}}
                         {{/if}}
-                        {{#if (or (not this.ui.isFullScreen) (not this.fromAnalytics)) }}
+                        {{#if (or (not this.ui.isFullScreen) (not this.fromAnalytics) this.post.didEmailFail) }}
                             <div class="gh-editor-post-status">
                                 <span>
                                     <GhEditorPostStatus
                                         @post={{this.post}}
+                                        @publishManagement={{publishManagement}}
                                         @hasDirtyAttributes={{this.hasDirtyAttributes}}
                                         @isSaving={{or this.autosaveTask.isRunning this.saveTasks.isRunning}}
                                         @openUpdateFlow={{publishManagement.openUpdateFlow}}

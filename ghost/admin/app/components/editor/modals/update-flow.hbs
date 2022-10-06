@@ -35,8 +35,7 @@
                     {{if post.isScheduled "will be" "was"}}
 
                     {{#if
-                        (or post.isSent
-                            (and post.isPublished post.email)
+                        (or post.hasBeenEmailed
                             post.willEmail
                         )
                     }}

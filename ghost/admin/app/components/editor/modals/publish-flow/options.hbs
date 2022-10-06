@@ -107,7 +107,11 @@
             <div class="gh-publish-setting-title disabled" data-test-setting-title>
                 {{svg-jar "member"}}
                 <div class="gh-publish-setting-trigger">
-                    Already sent to
+                    {{#if (eq @publishOptions.post.email.status "failed") }}
+                        Retry sending to
+                    {{else}}
+                        Already sent to
+                    {{/if}}
                     {{format-number @publishOptions.post.email.emailCount}}
                     {{if (not-eq @recipientType "all") @recipientType}} {{!-- free/paid/specific --}}
                     {{gh-pluralize @publishOptions.post.email.emailCount "subscriber" without-count=true}}

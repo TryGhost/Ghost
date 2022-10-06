@@ -356,6 +356,10 @@
     color: var(--green-d1);
 }
 
+.gh-btn-editor.midgrey span {
+    color: var(--midgrey-l2);
+}
+
 .gh-editor-wordcount-container {
     position: absolute;
     right: 30px;

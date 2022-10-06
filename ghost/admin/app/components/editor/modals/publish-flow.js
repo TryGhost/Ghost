@@ -13,7 +13,7 @@ export default class PublishModalComponent extends Component {
 
     @service store;
 
-    @tracked emailErrorMessage;
+    @tracked emailErrorMessage = this.args.data.publishOptions.post.didEmailFail ? this.args.data.publishOptions.post.email.error : undefined;
     @tracked isConfirming = false;
     @tracked isComplete = false;
     @tracked postCount = null;
@@ -47,6 +47,13 @@ export default class PublishModalComponent extends Component {
         if (this.isConfirming) {
             this.fetchPostCountTask.perform();
         }
+    }
+
+    @action
+    setCompleted() {
+        this.emailErrorMessage = undefined;
+        this.isConfirming = false;
+        this.isComplete = true;
     }
 
     @task

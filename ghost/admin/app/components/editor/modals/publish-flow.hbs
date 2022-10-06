@@ -33,6 +33,7 @@
             <Editor::Modals::PublishFlow::CompleteWithEmailError
                 @emailErrorMessage={{this.emailErrorMessage}}
                 @publishOptions={{@data.publishOptions}}
+                @setCompleted={{this.setCompleted}}
                 @close={{@close}}
             />
         {{else if this.isConfirming}}
