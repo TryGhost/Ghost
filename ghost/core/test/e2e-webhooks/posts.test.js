@@ -7,15 +7,13 @@ const tierSnapshot = {
     updated_at: anyISODateTime
 };
 
-const buildAuthorSnapshot = (roles = false) => {
+const buildAuthorSnapshot = (roles = true) => {
     const authorSnapshot = {
         last_seen: anyISODateTime,
         created_at: anyISODateTime,
         updated_at: anyISODateTime
     };
 
-    // NOTE: this is such a bad hack! for the reasons I did not investigate the "add" event does not include
-    //       the roles but the "published" does! massive inconsistency and needs to be fixed one day
     if (roles) {
         authorSnapshot.roles = new Array(1).fill({
             id: anyObjectId,
@@ -27,7 +25,7 @@ const buildAuthorSnapshot = (roles = false) => {
     return authorSnapshot;
 };
 
-const buildPostSnapshotWithTiers = ({published, tiersCount, roles = false}) => {
+const buildPostSnapshotWithTiers = ({published, tiersCount, roles = true}) => {
     return {
         id: anyObjectId,
         uuid: anyUuid,
@@ -108,8 +106,7 @@ describe('post.* events', function () {
                 post: {
                     current: buildPostSnapshotWithTiers({
                         published: true,
-                        tiersCount: 2,
-                        roles: true
+                        tiersCount: 2
                     }),
                     previous: buildPreviousPostSnapshotWithTiers({
                         tiersCount: 2
@@ -148,7 +145,10 @@ describe('post.* events', function () {
                 post: {
                     current: buildPostSnapshotWithTiers({
                         published: false,
-                        tiersCount: 2
+                        tiersCount: 2,
+                        // @NOTE: post.added event does not include post author's roles
+                        //        see commit message for more context
+                        roles: false
                     })
                 }
             });
