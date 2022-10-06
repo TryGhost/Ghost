@@ -1165,6 +1165,11 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     background: var(--pink);
 }
 
+.gh-posts-list-item-labs .gh-content-entry-status .error {
+    color: var(--red);
+    font-weight: 500;
+}
+
 .gh-posts-list-item-labs .schedule-details {
     margin-left: 3px;
     color: var(--midlightgrey-d1);
