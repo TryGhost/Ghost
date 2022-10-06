@@ -1,8 +1,12 @@
 const path = require('path');
+const util = require('util');
+const exec = util.promisify(require('child_process').exec);
+
 const concurrently = require('concurrently');
 
 const config = require('../ghost/core/core/shared/config');
 const liveReloadBaseUrl = config.getSubdir() || '/ghost/';
+const siteUrl = config.getSiteUrl();
 
 const DASH_DASH_ARGS = process.argv.filter(a => a.startsWith('--')).map(a => a.slice(2));
 
@@ -36,17 +40,40 @@ if (DASH_DASH_ARGS.includes('portal')) {
         name: 'portal',
         command: 'yarn dev',
         cwd: path.resolve(__dirname, '../ghost/portal'),
-        prefixColor: 'magenta'
+        prefixColor: 'magenta',
+        env: {}
     });
     COMMAND_GHOST.env['portal__url'] = 'http://localhost:5368/umd/portal.min.js';
 }
 
-if (!commands.length) {
-    console.log(`No commands provided`);
-    process.exit(0);
-}
-
 (async () => {
+    if (DASH_DASH_ARGS.includes('stripe')) {
+        let stripeSecret;
+        try {
+            stripeSecret = await exec('stripe listen --print-secret');
+        } catch (err) {
+            console.error('Failed to fetch Stripe secret token, do you need to connect Stripe CLI?', err);
+        }
+
+        if (!stripeSecret || !stripeSecret.stdout) {
+            console.error('No Stripe secret was present');
+            return;
+        }
+
+        COMMAND_GHOST.env['WEBHOOK_SECRET'] = stripeSecret.stdout.trim();
+        commands.push({
+            name: 'stripe',
+            command: `stripe listen --forward-to ${siteUrl}members/webhooks/stripe/`,
+            prefixColor: 'yellow',
+            env: {}
+        });
+    }
+
+    if (!commands.length) {
+        console.log(`No commands provided`);
+        process.exit(0);
+    }
+
     const {result} = concurrently(commands, {
         prefix: 'name',
         killOthers: ['failure', 'success']
