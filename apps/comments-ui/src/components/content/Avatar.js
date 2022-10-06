@@ -11,8 +11,8 @@ export const BlankAvatar = () => {
     const dimensionClasses = getDimensionClasses();
     return (
         <figure className={`relative ${dimensionClasses}`}>
-            <div className={`flex items-center justify-center rounded-full bg-[rgba(200,200,200,0.3)] ${dimensionClasses}`}>
-                <AvatarIcon className="stroke-white dark:opacity-70" />
+            <div className={`flex items-center justify-center rounded-full bg-[rgba(0,0,0,0.085)] dark:bg-[rgba(255,255,255,0.15)] ${dimensionClasses}`}>
+                <AvatarIcon className="stroke-white opacity-80" />
             </div>
         </figure>
     );
