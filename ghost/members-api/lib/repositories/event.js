@@ -267,6 +267,10 @@ module.exports = class EventRepository {
             };
         }
 
+        return this.getCreatedEvents(options, filters);
+    }
+
+    async getCreatedEvents(options = {}, filters = {}) {
         options = {
             ...options,
             withRelated: ['member', 'postAttribution', 'userAttribution', 'tagAttribution'],
@@ -277,6 +281,9 @@ module.exports = class EventRepository {
         }
         if (filters['data.member_id']) {
             options.filter.push(filters['data.member_id'].replace(/data.member_id:/g, 'member_id:'));
+        }
+        if (filters['data.source']) {
+            options.filter.push(filters['data.source'].replace(/data.source:/g, 'source:'));
         }
         options.filter = options.filter.join('+');
 

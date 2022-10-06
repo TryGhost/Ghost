@@ -4,7 +4,7 @@ const sinon = require('sinon');
 require('./utils');
 const VerificationTrigger = require('../index');
 const DomainEvents = require('@tryghost/domain-events');
-const {MemberSubscribeEvent} = require('@tryghost/member-events');
+const {MemberCreatedEvent} = require('@tryghost/member-events');
 
 describe('Import threshold', function () {
     it('Creates a threshold based on config', async function () {
@@ -175,11 +175,11 @@ describe('Email verification flow', function () {
             isVerificationRequired: () => false,
             sendVerificationEmail: emailStub,
             eventRepository: {
-                getNewsletterSubscriptionEvents: eventStub
+                getCreatedEvents: eventStub
             }
         });
 
-        DomainEvents.dispatch(MemberSubscribeEvent.create({
+        DomainEvents.dispatch(MemberCreatedEvent.create({
             memberId: 'hello!',
             source: 'api'
         }, new Date()));
@@ -214,7 +214,7 @@ describe('Email verification flow', function () {
             isVerificationRequired: () => false,
             sendVerificationEmail: emailStub,
             eventRepository: {
-                getNewsletterSubscriptionEvents: eventStub
+                getCreatedEvents: eventStub
             }
         });
 
@@ -257,11 +257,11 @@ describe('Email verification flow', function () {
             isVerificationRequired: () => false,
             sendVerificationEmail: emailStub,
             eventRepository: {
-                getNewsletterSubscriptionEvents: eventStub
+                getCreatedEvents: eventStub
             }
         });
 
-        await trigger._handleMemberSubscribeEvent({
+        await trigger._handleMemberCreatedEvent({
             data: {
                 source: 'admin'
             }
@@ -305,11 +305,11 @@ describe('Email verification flow', function () {
             isVerificationRequired: () => false,
             sendVerificationEmail: emailStub,
             eventRepository: {
-                getNewsletterSubscriptionEvents: eventStub
+                getCreatedEvents: eventStub
             }
         });
 
-        await trigger._handleMemberSubscribeEvent({
+        await trigger._handleMemberCreatedEvent({
             data: {
                 source: 'api'
             }
@@ -352,7 +352,7 @@ describe('Email verification flow', function () {
             isVerificationRequired: () => false,
             sendVerificationEmail: emailStub,
             eventRepository: {
-                getNewsletterSubscriptionEvents: eventStub
+                getCreatedEvents: eventStub
             }
         });
 
