@@ -43,13 +43,15 @@ export default class ExploreRoute extends AuthenticatedRoute {
 
             if (destinationUrl?.includes('/explore')) {
                 isExploreTransition = true;
+
+                // Send the updated route to the iframe
+                if (transition?.to?.params?.sub) {
+                    this.explore.sendRouteUpdate({path: transition.to.params.sub});
+                }
             }
         }
 
         this.explore.toggleExploreWindow(isExploreTransition);
-        if (transition?.to?.params?.sub) {
-            this.explore.sendRouteUpdate({pathName: transition.to.params.sub});
-        }
     }
 
     buildRouteInfoMetadata() {
