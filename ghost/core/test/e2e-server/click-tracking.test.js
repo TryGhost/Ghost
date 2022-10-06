@@ -104,8 +104,8 @@ describe('Click Tracking', function () {
             `/members/events/?filter=data.member_id:${memberToClickLink.id}${encodeURIComponent('+')}type:click_event`
         );
 
-        const clickEvent = clickEvents.find((/** @type any */ clickEvent) => {
-            return clickEvent.data.post.id === post.id && clickEvent.data.link.from === urlOfLinkToClick.pathname;
+        const clickEvent = clickEvents.find((/** @type any */ event) => {
+            return event.data.post.id === post.id && event.data.link.from === urlOfLinkToClick.pathname;
         });
 
         assert(clickEvent);
