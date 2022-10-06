@@ -1656,6 +1656,26 @@ DataGenerator.forKnex = (function () {
         createBasic(DataGenerator.Content.members_paid_subscription_events[2])
     ];
 
+    const redirects = posts.map((post, index) => {
+        return {
+            id: ObjectId().toHexString(),
+            from: '/r/' + index,
+            to: 'https:://ghost.org',
+            post_id: post.id,
+            created_at: new Date(),
+            updated_at: new Date()
+        };
+    });
+
+    const members_click_events = redirects.map((redirect, index) => {
+        return {
+            id: ObjectId().toHexString(),
+            member_id: members[index].id,
+            redirect_id: redirect.id,
+            created_at: new Date()
+        };
+    });
+
     const snippets = [
         createBasic(DataGenerator.Content.snippets[0])
     ];
@@ -1730,10 +1750,12 @@ DataGenerator.forKnex = (function () {
         snippets,
         custom_theme_settings,
         comments,
+        redirects,
 
         members_paid_subscription_events,
         members_created_events,
-        members_subscription_created_events
+        members_subscription_created_events,
+        members_click_events
     };
 }());
 
