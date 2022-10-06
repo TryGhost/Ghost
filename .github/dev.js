@@ -4,7 +4,10 @@ const exec = util.promisify(require('child_process').exec);
 
 const concurrently = require('concurrently');
 
-const config = require('../ghost/core/core/shared/config');
+const config = require('../ghost/core/core/shared/config').withOptions({
+    customConfigPath: path.join(__dirname, '../ghost/core')
+});
+
 const liveReloadBaseUrl = config.getSubdir() || '/ghost/';
 const siteUrl = config.getSiteUrl();
 
