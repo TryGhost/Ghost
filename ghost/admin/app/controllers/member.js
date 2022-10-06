@@ -24,6 +24,9 @@ export default class MemberController extends Controller {
     @tracked modalLabel = null;
     @tracked showLabelModal = false;
 
+    _previousLabels = null;
+    _previousNewsletters = null;
+
     constructor() {
         super(...arguments);
         this._availableLabels = this.store.peekAll('label');
@@ -37,6 +40,18 @@ export default class MemberController extends Controller {
 
     set member(member) {
         this.model = member;
+    }
+
+    get dirtyAttributes() {
+        return this._hasDirtyAttributes();
+    }
+
+    get _labels() {
+        return this.member.get('labels').map(label => label.name);
+    }
+
+    get _newsletters() {
+        return this.member.get('newsletters').map(newsletter => newsletter.id);
     }
 
     get labelModalData() {
@@ -75,6 +90,12 @@ export default class MemberController extends Controller {
     }
 
     // Actions -----------------------------------------------------------------
+
+    @action
+    setInitialRelationshipValues() {
+        this._previousLabels = this._labels;
+        this._previousNewsletters = this._newsletters;
+    }
 
     @action
     toggleLabelModal() {
@@ -140,6 +161,8 @@ export default class MemberController extends Controller {
             member.updateLabels();
             this.members.refreshData();
 
+            this.setInitialRelationshipValues();
+
             // replace 'member.new' route with 'member' route
             this.replaceRoute('member', member);
 
@@ -172,6 +195,8 @@ export default class MemberController extends Controller {
             include: 'tiers'
         });
 
+        this.setInitialRelationshipValues();
+
         this.isLoading = false;
     }
 
@@ -190,5 +215,37 @@ export default class MemberController extends Controller {
         }
 
         this.member.set(propKey, newValue);
+    }
+
+    _hasDirtyAttributes() {
+        let member = this.member;
+
+        if (!member) {
+            return false;
+        }
+
+        // member.labels is an array so hasDirtyAttributes doesn't pick up
+        // changes unless the array ref is changed
+        let currentLabels = (this._labels || []).join(', ');
+        let previousLabels = (this._previousLabels || []).join(', ');
+        console.log(currentLabels + '==' + previousLabels)
+        if (currentLabels !== previousLabels) {
+            return true;
+        }
+
+        // member.newsletters is an array so hasDirtyAttributes doesn't pick up
+        // changes unless the array ref is changed
+        let currentNewsletters = (this._newsletters || []).join(', ');
+        let previousNewsletters = (this._previousNewsletters || []).join(', ');
+        console.log(currentNewsletters + '==' + previousNewsletters)
+        if (currentNewsletters !== previousNewsletters) {
+            return true;
+        }
+
+        // we've covered all the non-tracked cases we care about so fall
+        // back on Ember Data's default dirty attribute checks
+        let {hasDirtyAttributes} = member;
+
+        return hasDirtyAttributes;
     }
 }
