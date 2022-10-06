@@ -23,10 +23,14 @@ export default class PublishOptions {
     }
 
     get willEmail() {
-        return this.publishType !== 'publish'
-            && this.recipientFilter
-            && this.post.isDraft
-            && !this.post.email;
+        return (
+            (this.publishType !== 'publish'
+                && this.recipientFilter
+                && this.post.isDraft
+                && !this.post.email
+            )
+                || (this.post.isDraft && this.post.email && this.post.email.status === 'failed')
+        );
     }
 
     get willPublish() {
@@ -254,6 +258,10 @@ export default class PublishOptions {
             this.settings.get('editorDefaultEmailRecipientsFilter') === null
         ) {
             this.publishType = 'publish';
+        }
+
+        if (this.post.isSent) {
+            this.publishType = 'send';
         }
     }
 
