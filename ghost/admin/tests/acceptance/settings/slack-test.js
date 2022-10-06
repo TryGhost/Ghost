@@ -96,6 +96,9 @@ describe('Acceptance: Settings - Integrations - Slack', function () {
             expect(find('[data-test-error="slack-url"]'), 'inline validation response')
                 .to.not.exist;
 
+            // modify model data or there will be no api call
+            await fillIn('[data-test-slack-url-input]', 'https://hooks.slack.com/services/1275958431');
+
             this.server.put('/settings/', function () {
                 return new Response(422, {}, {
                     errors: [
