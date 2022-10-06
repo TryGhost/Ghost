@@ -9,7 +9,7 @@ import {expect} from 'chai';
 import {setupRenderingTest} from 'ember-mocha';
 
 class SettingsStub extends Service {
-    timezone = 'Etc/UTC';
+    timezone = 'UTC';
 
     get(key) {
         if (key === 'timezone') {
@@ -50,7 +50,7 @@ describe('Integration: Component: gh-date-time-picker', function () {
     });
 
     it('shows passed in @date value', async function () {
-        this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+        this.set('date', '2022-02-22 22:22');
 
         await render(hbs`<GhDateTimePicker @date={{this.date}} />`);
         expect(find('[data-test-date-time-picker-date-input]'), 'date input').to.have.value('2022-02-22');
@@ -67,11 +67,13 @@ describe('Integration: Component: gh-date-time-picker', function () {
     });
 
     it('can update date via date input', async function () {
-        this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
-        this.set('time', '22:22');
+        this.set('date','2022-02-22');
+        this.set('time', '22:22'); // = blog timezone
 
         this.set('updateDate', (newDate) => {
-            expect(moment(newDate).toISOString()).to.equal('2022-02-28T00:00:00.000Z');
+            // Note: the newDate should be 2022-02-28 in the current blog timezone, this is not the same timezone as the user timezone
+            // Blog timezone is UTC, so ending of Z is needed here
+            expect(moment.utc(newDate).toISOString()).to.equal('2022-02-28T00:00:00.000Z');
             this.set('date', newDate);
         });
         this.set('updateTime', (newTime) => {
@@ -85,11 +87,11 @@ describe('Integration: Component: gh-date-time-picker', function () {
     });
 
     it('can update time via time input', async function () {
-        this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+        this.set('date', '2022-02-22');
         this.set('time', '22:22');
 
         this.set('updateDate', (newDate) => {
-            expect(moment(newDate).toISOString()).to.equal('2022-02-28T00:00:00.000Z');
+            expect(moment.utc(newDate).toISOString()).to.equal('2022-02-28T00:00:00.000');
             this.set('date', newDate);
         });
         this.set('updateTime', (newTime) => {
@@ -103,11 +105,11 @@ describe('Integration: Component: gh-date-time-picker', function () {
     });
 
     it('can update date via datepicker', async function () {
-        this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+        this.set('date', '2022-02-22');
         this.set('time', '12:00');
 
         this.set('updateDate', (newDate) => {
-            expect(moment(newDate).toISOString()).to.equal('2022-02-27T00:00:00.000Z');
+            expect(moment.utc(newDate).toISOString()).to.equal('2022-02-27T00:00:00.000Z', newDate);
             this.set('date', newDate);
         });
         this.set('updateTime', (newTime) => {
@@ -120,21 +122,21 @@ describe('Integration: Component: gh-date-time-picker', function () {
     });
 
     it('updates when @date is changed externally', async function () {
-        this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+        this.set('date','2022-02-22');
         this.set('time', '12:00');
 
         await render(hbs`<GhDateTimePicker @date={{this.date}} @time={{this.time}} />`);
         expect(find('[data-test-date-time-picker-date-input]'), 'date input').to.have.value('2022-02-22');
         expect(find('[data-test-date-time-picker-time-input]'), 'time input').to.have.value('12:00');
 
-        this.set('date', moment('2022-02-28 10:00:00.000Z')).toDate();
+        this.set('date', '2022-02-28');
 
         expect(find('[data-test-date-time-picker-date-input]'), 'date input').to.have.value('2022-02-28');
         expect(find('[data-test-date-time-picker-time-input]'), 'time input').to.have.value('12:00');
     });
 
     it('updates when @time is changed externally', async function () {
-        this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+        this.set('date', '2022-02-22');
         this.set('time', '12:00');
 
         await render(hbs`<GhDateTimePicker @date={{this.date}} @time={{this.time}} />`);
@@ -148,7 +150,7 @@ describe('Integration: Component: gh-date-time-picker', function () {
     });
 
     it('handles invalid date input', async function () {
-        this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+        this.set('date', '2022-02-22');
         this.set('time', '12:00');
 
         const dateSpy = sinon.spy();
@@ -174,7 +176,7 @@ describe('Integration: Component: gh-date-time-picker', function () {
 
     // TODO: move time format handling into component?
     // it('handles invalid time input', async function () {
-    //     this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+    //     this.set('date', '2022-02-22');
     //     this.set('time', '12:00');
 
     //     const dateSpy = sinon.spy();
@@ -200,10 +202,10 @@ describe('Integration: Component: gh-date-time-picker', function () {
 
     describe('min/max', function () {
         it('disables datepicker dates outside of range', async function () {
-            this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+            this.set('date', '2022-02-22');
             this.set('time', '12:00');
-            this.set('minDate', moment('2022-02-11 12:00:00.000Z').toDate());
-            this.set('maxDate', moment('2022-02-24 12:00:00.000Z').toDate());
+            this.set('minDate', moment('2022-02-11 12:00:00.000').toDate());
+            this.set('maxDate', moment('2022-02-24 12:00:00.000').toDate());
 
             await render(hbs`<GhDateTimePicker @date={{this.date}} @time={{this.time}} @minDate={{this.minDate}} @maxDate={{this.maxDate}} />`);
             await click('[data-test-date-time-picker-datepicker]');
@@ -214,9 +216,9 @@ describe('Integration: Component: gh-date-time-picker', function () {
 
         // TODO: move date validation into component?
         // it('errors when date input is earlier than min', async function () {
-        //     this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+        //     this.set('date', moment('2022-02-22 22:22:22.000')).toDate();
         //     this.set('time', '12:00');
-        //     this.set('minDate', moment('2022-02-11 12:00:00.000Z').toDate());
+        //     this.set('minDate', moment('2022-02-11 12:00:00.000').toDate());
 
         //     const dateSpy = sinon.spy();
         //     this.set('updateDate', dateSpy);
