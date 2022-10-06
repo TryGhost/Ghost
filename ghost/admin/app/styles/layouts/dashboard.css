@@ -1134,10 +1134,9 @@ Dashboard Attribution */
 }
 
 .gh-dashboard-list-title svg {
-    height: 4px;
-    width: 6.11px;
-    margin-left: 2px;
-    margin-top: -2px;
+    width: 9px;
+    margin-left: 4px;
+    margin-top: -3px;
     vertical-align: middle;
     display: none;
 }
@@ -1146,8 +1145,20 @@ Dashboard Attribution */
     display: inline;
 }
 
+.gh-dashboard-attribution-chart-label {
+    position: absolute;
+    top: 45%;
+    left: 44%;
+    font-weight: 600;
+    color: var(--midgrey);
+}
+
 .gh-dashboard-list-title svg path {
-    stroke: var(--midgrey);
+    fill: var(--midlightgrey);
+}
+
+.gh-dashboard-list-item-sub-signup:not(.sorted-by), .gh-dashboard-list-item-sub-paid:not(.sorted-by) {
+    opacity: 0.6;
 }
 
 .gh-dashboard-list-item:first-child .gh-dashboard-list-item-sub-source::after {
