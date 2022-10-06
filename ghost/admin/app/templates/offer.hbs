@@ -5,7 +5,7 @@
                 <LinkTo @route="offers" data-test-link="offers-back">
                     Offers
                 </LinkTo>
-                {{svg-jar "arrow-right-small"}} Offer
+                {{svg-jar "arrow-right-small"}} {{if this.offer.isNew "New offer" "Edit offer"}}
             </div>
             <h2 class="gh-canvas-title" data-test-screen-title>
                 {{#if this.offer.isNew}}

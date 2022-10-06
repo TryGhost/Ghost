@@ -478,7 +478,7 @@ p.gh-members-list-email {
     }
 
     .members-header .view-actions {
-        margin-top: 30px;
+        margin-top: 2px;
         width: 100%;
     }
 
@@ -982,6 +982,10 @@ textarea.gh-member-details-textarea {
         position: relative;
         top: unset;
         left: unset;
+    }
+
+    .gh-member-header.sticky {
+        position: relative;
     }
 }
 
