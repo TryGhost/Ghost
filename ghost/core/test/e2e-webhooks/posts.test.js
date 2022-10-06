@@ -1,13 +1,11 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../utils/e2e-framework');
-const {stringMatching, anyObjectId, anyISODateTime, anyUuid, anyContentVersion, anyNumber, anyLocalURL} = matchers;
+const {anyGhostAgent, anyObjectId, anyISODateTime, anyUuid, anyContentVersion, anyNumber, anyLocalURL} = matchers;
 
 const tierSnapshot = {
     id: anyObjectId,
     created_at: anyISODateTime,
     updated_at: anyISODateTime
 };
-
-const anyGhostAgent = stringMatching(/Ghost\/\d+\.\d+\.\d+\s\(https:\/\/github.com\/TryGhost\/Ghost\)/);
 
 const buildAuthorSnapshot = (roles = false) => {
     const authorSnapshot = {
