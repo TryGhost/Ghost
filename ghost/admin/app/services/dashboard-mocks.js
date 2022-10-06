@@ -275,7 +275,7 @@ export default class DashboardMocksService extends Service {
             // const attributionSources = ['Twitter', 'Ghost Network', 'Product Hunt', 'Direct'];
             const hasPaidConversions = true;
             const hasFreeSignups = true;
-            const showEmptyState = true;
+            const showEmptyState = false;
 
             if (!showEmptyState) {
                 this.memberAttributionStats.push({
