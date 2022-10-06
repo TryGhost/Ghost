@@ -33,7 +33,7 @@ export default class GhExploreIframe extends Component {
     _handleRouteUpdate(data) {
         const route = data.route;
         this.explore.isIframeTransition = route?.includes('/explore');
-        this.explore.toggleExploreWindow(false);
+        this.explore.toggleExploreWindow(this.explore.isIframeTransition);
         this.router.transitionTo(route);
     }
 

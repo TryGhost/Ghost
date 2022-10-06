@@ -47,6 +47,9 @@ export default class ExploreRoute extends AuthenticatedRoute {
         }
 
         this.explore.toggleExploreWindow(isExploreTransition);
+        if (transition?.to?.params?.sub) {
+            this.explore.sendRouteUpdate({pathName: transition.to.params.sub});
+        }
     }
 
     buildRouteInfoMetadata() {

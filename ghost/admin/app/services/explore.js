@@ -41,6 +41,10 @@ export default class ExploreService extends Service {
         if (this.exploreWindowOpen) {
             let exploreRoute = this.exploreRouteRoot;
 
+            if (destinationRoute.match(/^\/explore(\/.*)?/)) {
+                destinationRoute = destinationRoute.replace(/\/explore/, '');
+            }
+
             if (destinationRoute !== '/') {
                 exploreRoute += destinationRoute;
             }
@@ -59,11 +63,11 @@ export default class ExploreService extends Service {
 
             // Connect is an Ember route, do not use it as iframe src
             if (destinationRoute && !destinationRoute.includes('connect')) {
-                url += destinationRoute;
+                url += destinationRoute.replace(/^\//, '');
             }
         }
 
-        return url;
+        return url += '/';
     }
 
     // Sends a route update to a child route in the BMA, because we can't control
