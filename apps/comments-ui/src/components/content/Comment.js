@@ -105,7 +105,7 @@ function UnpublishedComment({comment, openEditMode}) {
         <CommentLayout hasReplies={hasReplies} avatar={avatar}>
             <div className="-mt-[3px] mb-2 flex items-start">
                 <div className="flex h-12 flex-row items-center gap-4 pb-[8px] pr-4">
-                    <p className="mt-[4px] font-sans text-[16px] italic leading-normal text-neutral-300 dark:text-[rgba(255,255,255,0.5)]">{notPublishedMessage}</p>
+                    <p className="mt-[4px] font-sans text-[16px] italic leading-normal text-[rgba(0,0,0,0.2)] dark:text-[rgba(255,255,255,0.35)]">{notPublishedMessage}</p>
                     <div className="mt-[4px]">
                         <MoreButton comment={comment} toggleEdit={openEditMode} />
                     </div>
@@ -237,7 +237,7 @@ function RepliesLine({hasReplies}) {
         return null;
     }
 
-    return (<div className="mb-2 h-full w-[3px] grow rounded bg-gradient-to-b from-[rgba(229,229,229,0.5)] via-[rgba(229,229,229,0.5)] to-transparent dark:from-[rgba(255,255,255,0.05)] dark:via-[rgba(255,255,255,0.05)]" />);
+    return (<div className="mb-2 h-full w-[3px] grow rounded bg-gradient-to-b from-[rgba(0,0,0,0.05)] via-[rgba(0,0,0,0.05)] to-transparent dark:from-[rgba(255,255,255,0.08)] dark:via-[rgba(255,255,255,0.08)]" />);
 }
 
 function CommentLayout({children, avatar, hasReplies}) {
