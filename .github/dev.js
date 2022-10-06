@@ -51,6 +51,8 @@ if (DASH_DASH_ARGS.includes('portal')) {
 
 (async () => {
     if (DASH_DASH_ARGS.includes('stripe')) {
+        console.log('Fetching Stripe secret token..');
+
         let stripeSecret;
         try {
             stripeSecret = await exec('stripe listen --print-secret');
