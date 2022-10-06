@@ -643,6 +643,18 @@ const fixtures = {
         }));
     },
 
+    insertRedirects: async function insertClicks() {
+        await Promise.all(DataGenerator.forKnex.redirects.map((click) => {
+            return models.Redirect.add(click, context.internal);
+        }));
+    },
+
+    insertClicks: async function insertClicks() {
+        await Promise.all(DataGenerator.forKnex.members_click_events.map((click) => {
+            return models.MemberClickEvent.add(click, context.internal);
+        }));
+    },
+
     insertSnippets: function insertSnippets() {
         return Promise.map(DataGenerator.forKnex.snippets, function (snippet) {
             return models.Snippet.add(snippet, context.internal);
@@ -776,6 +788,12 @@ const toDoList = {
     },
     comments: function insertComments() {
         return fixtures.insertComments();
+    },
+    redirects: function insertRedirects() {
+        return fixtures.insertRedirects();
+    },
+    clicks: function insertClicks() {
+        return fixtures.insertClicks();
     }
 };
 
