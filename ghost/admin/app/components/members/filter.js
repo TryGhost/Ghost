@@ -132,17 +132,22 @@ class Filter {
     @tracked value;
     @tracked relation;
     @tracked relationOptions;
+    @tracked isNewsletter;
 
     constructor(options) {
         this.type = options.type;
         this.relation = options.relation;
         this.relationOptions = options.relationOptions;
         this.timezone = options.timezone || 'Etc/UTC';
+        this.id = options.id || null;
+        this.isNewsletter = false;
 
-        const filterProperty = FILTER_PROPERTIES.find(prop => (this.type === prop.name));
-        const isNewsletter = filterProperty.name.includes('newsletter.');
+        const filterProperty = FILTER_PROPERTIES.find(prop => (this.type === prop?.name)) || FILTER_PROPERTIES.find(prop => (`newsletter-${this.id}` === prop?.name));
+
+        const isNewsletter = filterProperty?.name.includes('newsletter');
         if (isNewsletter) {
-            this.type = 'newsletter';
+            this.type = `newsletter-${this.id}`;
+            this.isNewsletter = true;
         }
         // date string values are passed in as UTC strings
         // we need to convert them to the site timezone and make a local date that matches
@@ -165,7 +170,8 @@ export default class MembersFilter extends Component {
             type: 'name',
             relation: 'is',
             value: '',
-            relationOptions: FILTER_RELATIONS_OPTIONS.name
+            relationOptions: FILTER_RELATIONS_OPTIONS.name,
+            id: ''
         })
     ]);
 
@@ -182,7 +188,7 @@ export default class MembersFilter extends Component {
             this.newsletters.map((item) => {
                 const exists = availableFilters.find(nsl => nsl.label === item.name);
                 if (!exists){
-                    var name = `newsletter.${item.id}`;
+                    var name = `newsletter-${item.id}`;
                     Object.assign(FILTER_RELATIONS_OPTIONS, {[name]: MATCH_RELATION_OPTIONS});
                     // Object.assign(this.availableFilterValueOptions, {[name]: [SUBSCRIPTION_VALUES]});
                     availableFilters.push({
@@ -237,7 +243,6 @@ export default class MembersFilter extends Component {
     parseDefaultFilters() {
         if (this.args.defaultFilterParam) {
             this.parseNqlFilter(this.args.defaultFilterParam);
-
             // Pass the parsed filter to the parent component
             // this doesn't start a new network request, and doesn't update filterParam again
             this.applyParsedFilter();
@@ -465,34 +470,51 @@ export default class MembersFilter extends Component {
 
     @action
     setFilterType(filter, newType) {
-        if (newType instanceof Event) {
+        const newTypeCache = newType;
+        const nsl = newType?.includes('newsletter');
+        let newProp = {};
+        let newsletterId = null;
+        if (nsl) {
+            newType = 'newsletter';
+            newProp = FILTER_PROPERTIES.find(prop => prop.name === newTypeCache);
+            newsletterId = newTypeCache.split('-')[1];
+        } else if (newType instanceof Event) {
             newType = newType.target.value;
         }
-        const newProp = FILTER_PROPERTIES.find(prop => prop.name === newType);
+        
+        if (newType !== 'newsletter') {
+            newProp = FILTER_PROPERTIES.find(prop => prop.name === newType);
+        }
+
         let defaultValue = this.availableFilterValueOptions[newType]
-            ? this.availableFilterValueOptions[newType][0].name
+            ? this.availableFilterValueOptions[newType][0]?.name
             : '';
 
-        if (newProp.valueType === 'array' && !defaultValue) {
+        if (newProp?.valueType === 'array' && !defaultValue) {
             defaultValue = [];
         }
 
-        if (newProp.valueType === 'date' && !defaultValue) {
+        if (newProp?.valueType === 'date' && !defaultValue) {
             defaultValue = moment(moment.tz(this.settings.get('timezone')).format('YYYY-MM-DD')).toDate();
         }
+        let defaultRelation = {};
+        if (nsl) {
+            defaultRelation = this.availableFilterRelationsOptions[newTypeCache][0].name;
+        } else {
+            defaultRelation = this.availableFilterRelationsOptions[newType][0].name;
+        }
 
-        let defaultRelation = this.availableFilterRelationsOptions[newType][0].name;
-
-        if (newProp.valueType === 'date') {
+        if (newProp?.valueType === 'date') {
             defaultRelation = 'is-or-less';
         }
 
         const newFilter = new Filter({
             type: newType,
             relation: defaultRelation,
-            relationOptions: this.availableFilterRelationsOptions[newType],
+            relationOptions: this.availableFilterRelationsOptions[newType] || this.availableFilterRelationsOptions[newTypeCache],
             value: defaultValue,
-            timezone: this.settings.get('timezone')
+            timezone: this.settings.get('timezone'),
+            id: newsletterId
         });
 
         const filterToSwap = this.filters.find(f => f === filter);
@@ -539,8 +561,8 @@ export default class MembersFilter extends Component {
             }
             return filter.value;
         });
-
         const query = this.generateNqlFilter(validFilters);
+        console.log(query);
         this.args.onApplyFilter(query, validFilters);
     }
 

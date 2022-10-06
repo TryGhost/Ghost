@@ -178,7 +178,7 @@
         data-test-input="members-filter-value"
     />
 
-{{else if (eq @filter.type 'newsletter')}}
+{{else if @filter.isNewsletter}}
     <span class="gh-select" id="subval" data-test={{this.availableFilterOptions.subscribed}}>
         <OneWaySelect
             @value={{@filter.value}}

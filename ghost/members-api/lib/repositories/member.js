@@ -597,7 +597,13 @@ module.exports = class MemberRepository {
     }
 
     async list(options) {
-        return this._Member.findPage(options);
+        console.log(options);
+        const memberList = await this._Member.findPage(options);
+        console.log(memberList);
+        return memberList;
+
+        // console.log('list here');
+        // return this._Member.findPage(options);
     }
 
     async destroy(data, options) {
