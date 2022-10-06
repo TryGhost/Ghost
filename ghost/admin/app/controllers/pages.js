@@ -20,10 +20,10 @@ const TYPES = [{
 }];
 
 const ORDERS = [{
-    name: 'Newest',
+    name: 'Newest first',
     value: null
 }, {
-    name: 'Oldest',
+    name: 'Oldest first',
     value: 'published_at asc'
 }, {
     name: 'Recently updated',
