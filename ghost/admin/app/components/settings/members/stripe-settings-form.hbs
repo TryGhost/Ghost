@@ -4,21 +4,23 @@
             <div class="flex flex-column flex-row-l items-start justify-between">
                 <div class="w-100 w-50-l">
                     <div class="mb4">
-                        <label class="fw6 f8">Stripe Publishable key</label>
-                        <GhTextInput
-                            @type="password"
-                            @value={{readonly this.stripeDirectPublicKey}}
-                            @input={{action "setStripeDirectPublicKey"}}
-                            @class="mt1 password"
+                        <label class="fw6 f8" for="stripe-publishable-key">Stripe Publishable key</label>
+                        <input
+                            type="text"
+                            id="stripe-publishable-key"
+                            class="gh-input mt1 password"
+                            value={{this.stripeDirectPublicKey}}
+                            {{on "input" this.setStripeDirectPublicKey}}
                         />
                     </div>
                     <div class="nudge-top--3">
-                        <label class="fw6 f8 mt4">Stripe Secret key</label>
-                        <GhTextInput
-                            @type="password"
-                            @value={{readonly this.stripeDirectSecretKey}}
-                            @input={{action "setStripeDirectSecretKey"}}
-                            @class="mt1 password"
+                        <label class="fw6 f8 mt4" for="stripe-secret-key">Stripe Secret key</label>
+                        <input
+                            type="text"
+                            id="stripe-secret-key"
+                            class="gh-input mt1 password"
+                            value={{this.stripeDirectSecretKey}}
+                            {{on "input" this.setStripeDirectSecretKey}}
                         />
                         <a href="https://dashboard.stripe.com/account/apikeys" target="_blank" class="mt1 fw4 f8" rel="noopener noreferrer">
                             Find your Stripe API keys here &raquo;
@@ -41,8 +43,9 @@
         </section>
 
         <div class="mb4 mt4 flex justify-end">
-            <GhTaskButton @buttonText="Save settings"
-                @task={{this.saveSettings}}
+            <GhTaskButton
+                @buttonText="Save settings"
+                @task={{this.saveSettingsTask}}
                 @successText="Saved"
                 @runningText="Saving"
                 @class="gh-btn gh-btn-primary gh-btn-icon"
@@ -68,7 +71,7 @@
                     </span>
                     {{/if}}
                 </div>
-                <button type="button" class="gh-btn gh-btn-stripe-disconnect" {{action "openDisconnectStripeModal"}}><span>Disconnect</span></button>
+                <button type="button" class="gh-btn gh-btn-stripe-disconnect" {{on "click" this.openDisconnectStripeModal}}><span>Disconnect</span></button>
             </div>
         {{else}}
             <div class="flex flex-column flex-row-l items-start justify-between">
@@ -79,19 +82,20 @@
                         <div class="ml2 flex items-center flex-nowrap">
                             <span class="mr2 f8 midgrey nowrap {{if this.stripeConnectTestMode "gh-members-connect-testmodeon"}}">{{if this.stripeConnectTestMode "Using" "Use"}} test mode</span>
                             <div class="for-switch small">
-                                <label class="switch" for="stripe-connect-test-mode" {{action (toggle "stripeConnectTestMode" this) bubbles="false"}}>
-                                    <input type="checkbox" class="gh-input" checked={{this.stripeConnectTestMode}} onclick={{action (toggle "stripeConnectTestMode" this)}} data-test-checkbox="stripe-connect-test-mode">
+                                <label class="switch" for="stripe-connect-test-mode">
+                                    <input type="checkbox" id="stripe-connect-test-mode" class="gh-input" checked={{this.stripeConnectTestMode}} {{on "input" this.setStripeConnectTestMode}} aria-label="Use Stripe test mode" data-test-checkbox="stripe-connect-test-mode">
                                     <span class="input-toggle-component mt1"></span>
                                 </label>
                             </div>
                         </div>
                     </div>
                     <div class="nudge-top--3">
-                        <GhTextarea
-                            @class="gh-members-stripe-connect-token"
-                            @placeholder="Paste your secure key here"
-                            @input={{action "setStripeConnectIntegrationToken"}}
-                        />
+                        <textarea
+                            class="gh-input gh-members-stripe-connect-token"
+                            placeholder="Paste your secure key here"
+                            aria-label="Stripe connect secure key"
+                            {{on "input" this.setStripeConnectIntegrationToken}}
+                        ></textarea>
                         {{#if this.stripeConnectError}}<p class="mb0 mt2 f8 red">{{this.stripeConnectError}}</p>{{/if}}
                     </div>
                 </div>
@@ -110,14 +114,15 @@
             </div>
 
             <div class="gh-members-connect-savecontainer {{if this.settings.stripeConnectIntegrationToken "expanded"}}">
-                <GhTaskButton @buttonText="Save Stripe settings"
-                            @task={{this.saveStripeSettings}}
-                            @unlinkedTask={{true}}
-                            @successText="Saved"
-                            @disabled={{is-empty this.settings.stripeConnectIntegrationToken}}
-                            @runningText="Saving"
-                            @class="gh-btn gh-btn-green gh-btn-icon"
-                        />
+                <GhTaskButton
+                    @buttonText="Save Stripe settings"
+                    @task={{this.saveStripeSettingsTask}}
+                    @unlinkedTask={{true}}
+                    @successText="Saved"
+                    @disabled={{is-empty this.settings.stripeConnectIntegrationToken}}
+                    @runningText="Saving"
+                    @class="gh-btn gh-btn-green gh-btn-icon"
+                />
             </div>
         {{/if}}
     {{/if}}
@@ -128,7 +133,7 @@
         @model={{hash
             stripeConnectAccountName=this.stripeConnectAccountName
         }}
-        @confirm={{action "disconnectStripeConnectIntegration"}}
-        @close={{action "closeDisconnectStripeModal"}}
+        @confirm={{this.disconnectStripeConnectIntegration}}
+        @close={{this.closeDisconnectStripeModal}}
         @modifier="action wide" />
 {{/if}}
