@@ -6,6 +6,10 @@ import {isBlank} from '@ember/utils';
 export default class Trigger extends EmberPowerSelectMultipleTrigger {
     @action
     handleOptionMouseDown(event) {
+        event.stopPropagation();
+
+        this.args.select.actions.close();
+
         if (!event.target.closest('[data-selected-index]')) {
             let optionMouseDown = this.args.extra.optionMouseDown;
             if (optionMouseDown) {
