@@ -4,12 +4,12 @@ const {agentProvider, mockManager, fixtureManager} = require('../utils/e2e-frame
 const urlUtils = require('../../core/shared/url-utils');
 
 describe('Click Tracking', function () {
-    let agents;
+    let agent;
 
     before(async function () {
-        agents = await agentProvider.getAgentsWithFrontend();
+        agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('newsletters', 'members:newsletters');
-        await agents.adminAgent.loginAsOwner();
+        await agent.loginAsOwner();
     });
 
     beforeEach(function () {
@@ -21,7 +21,7 @@ describe('Click Tracking', function () {
     });
 
     it('Full test', async function () {
-        const {body: {posts: [draft]}} = await agents.adminAgent.post('/posts/', {
+        const {body: {posts: [draft]}} = await agent.post('/posts/', {
             body: {
                 posts: [{
                     title: 'My Newsletter'
@@ -30,7 +30,7 @@ describe('Click Tracking', function () {
         });
 
         const newsletterSlug = fixtureManager.get('newsletters', 0).slug;
-        const {body: {posts: [post]}} = await agents.adminAgent.put(
+        const {body: {posts: [post]}} = await agent.put(
             `/posts/${draft.id}/?newsletter=${newsletterSlug}`,
             {
                 body: {
@@ -42,7 +42,7 @@ describe('Click Tracking', function () {
             }
         );
 
-        const {body: {links}} = await agents.adminAgent.get(
+        const {body: {links}} = await agent.get(
             `/links/?filter=post_id:${post.id}`
         );
 
@@ -79,7 +79,7 @@ describe('Click Tracking', function () {
         assert(internalRedirectHappened);
         assert(externalRedirectHappened);
 
-        const {body: {members}} = await agents.adminAgent.get(
+        const {body: {members}} = await agent.get(
             `/members/`
         );
 
@@ -94,13 +94,13 @@ describe('Click Tracking', function () {
 
         await fetchWithoutFollowingRedirect(urlOfLinkToClick.href);
 
-        const {body: {links: [clickedLink]}} = await agents.adminAgent.get(
+        const {body: {links: [clickedLink]}} = await agent.get(
             `/links/?filter=post_id:${post.id}`
         );
 
         const clickCount = clickedLink.count.clicks;
 
-        const {body: {events: clickEvents}} = await agents.adminAgent.get(
+        const {body: {events: clickEvents}} = await agent.get(
             `/members/events/?filter=data.member_id:${memberToClickLink.id}${encodeURIComponent('+')}type:click_event`
         );
 
