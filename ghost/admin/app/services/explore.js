@@ -16,10 +16,6 @@ export default class ExploreService extends Service {
     @tracked previousRoute = null;
     @tracked isIframeTransition = false;
 
-    get enabled() {
-        return this.feature.exploreApp;
-    }
-
     get apiUrl() {
         const origin = new URL(window.location.origin);
         const subdir = this.ghostPaths.subdir;

@@ -6,6 +6,7 @@ export default class ExploreRoute extends AuthenticatedRoute {
     @service explore;
     @service store;
     @service router;
+    @service feature;
 
     beforeModel(transition) {
         super.beforeModel(...arguments);
@@ -14,13 +15,13 @@ export default class ExploreRoute extends AuthenticatedRoute {
         // older versions of Ghost where the `connect` part lives in the
         // explore route directly. By using the query param, we avoid causing
         // a 404 and handle the redirect here.
-        if (transition.to?.queryParams?.new === 'true' || !this.explore.enabled) {
+        if (transition.to?.queryParams?.new === 'true' || !this.feature.get('exploreApp')) {
             this.explore.isIframeTransition = false;
             return this.router.transitionTo('explore.connect');
         }
 
         // Ensure the explore window is set to open
-        if (this.explore.enabled && transition.to?.localName === 'index' && !this.explore.exploreWindowOpen) {
+        if (this.feature.get('exploreApp') && transition.to?.localName === 'index' && !this.explore.exploreWindowOpen) {
             this.explore.openExploreWindow(this.router.currentURL);
         }
     }
