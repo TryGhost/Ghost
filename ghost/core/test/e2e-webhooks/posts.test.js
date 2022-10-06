@@ -78,7 +78,8 @@ describe('post.* events', function () {
             .body({
                 posts: [{
                     title: 'webhookz',
-                    status: 'draft'
+                    status: 'draft',
+                    mobiledoc: fixtureManager.get('posts', 1).mobiledoc
                 }]
             })
             .expectStatus(201);
