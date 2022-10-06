@@ -61,7 +61,8 @@ export default class ExploreService extends Service {
         if (window.location.hash && window.location.hash.includes(this.exploreRouteRoot)) {
             let destinationRoute = window.location.hash.replace(this.exploreRouteRoot, '');
 
-            if (destinationRoute) {
+            // Connect is an Ember route, do not use it as iframe src
+            if (destinationRoute && !destinationRoute.includes('connect')) {
                 url += destinationRoute;
             }
         }
