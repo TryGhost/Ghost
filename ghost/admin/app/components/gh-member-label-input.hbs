@@ -15,10 +15,10 @@
     @allowCreation={{@allowCreation}}
     as |label|
 >
-    <div style="display: flex">
+    <div style="display: flex; width: 100%;">
         <span
             class="dropdown-label"
-            style="flex-grow: 1"
+            style="flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
             title="{{label.name}}"
             data-test-label-filter={{label.name}}>
             {{label.name}}

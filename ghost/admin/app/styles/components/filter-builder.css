@@ -54,7 +54,8 @@
     color: var(--middarkgrey);
 }
 
-.gh-filter-builder .gh-delete-filter:hover {
+.gh-filter-builder .gh-delete-filter:hover,
+.gh-filter-builder .gh-delete-filter:focus {
     color: var(--red);
 }
 
@@ -67,6 +68,20 @@
     width: 10px;
     height: 10px;
     margin: 0 6px 0 2px;
+}
+
+.gh-filter-builder .gh-btn-text.green.gh-add-filter:hover span,
+.gh-filter-builder .gh-btn-text.green.gh-add-filter:focus-visible span {
+    color: #1da42d;
+}
+
+.gh-filter-builder-footer .gh-btn:not(.gh-btn-primary):focus-visible {
+    color: #394047;
+    background: #dde0e2;
+}
+
+.gh-filter-builder-footer .gh-btn.gh-btn-primary:focus-visible {
+    box-shadow: 0 0 0 2px var(--green-d2);
 }
 
 .gh-filter-builder .gh-filter-block-divider {
@@ -134,12 +149,17 @@
 }
 
 .gh-filter-builder .ember-power-select-multiple-option {
-    padding: 1px 6px;
+    padding: 1px 1px 1px 6px;
+    z-index: 9999;
 }
 
 .gh-filter-builder .ember-power-select-trigger-multiple-input {
     height: 23px;
     display: flex;
+}
+
+.gh-filter-builder .ember-power-select-multiple-options {
+    padding-right: 28px;
 }
 
 @media (max-width: 690px) {

@@ -427,6 +427,15 @@ export default class MembersFilter extends Component {
     }
 
     @action
+    handleSubmitKeyup(e) {
+        e.preventDefault();
+    
+        if (e.key === 'Enter') {
+            this.applyFilter();
+        }
+    }
+
+    @action
     deleteFilter(filter, event) {
         event.stopPropagation();
         event.preventDefault();

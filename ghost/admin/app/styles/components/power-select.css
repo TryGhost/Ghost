@@ -243,11 +243,14 @@
 }
 
 .ember-power-select-multiple-remove-btn {
-    padding: 2px;
-    width: 10px;
-    height: 10px;
+    flex: 1;
+    display: flex;
+    width: 20px;
+    height: 100%;
     line-height: 0;
-    margin-left: 4px;
+    padding: 0;
+    justify-content: center;
+    align-items: center;
 }
 
 .ember-power-select-multiple-remove-btn:not(:hover) {
@@ -257,6 +260,7 @@
 .ember-power-select-multiple-remove-btn svg {
     width: 8px;
     height: 8px;
+    pointer-events: none;
 }
 
 .ember-power-select-multiple-remove-btn svg path {
