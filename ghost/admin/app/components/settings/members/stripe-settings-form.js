@@ -1,46 +1,84 @@
-import Component from '@ember/component';
-import {computed} from '@ember/object';
+import Component from '@glimmer/component';
+import {action} from '@ember/object';
 import {currencies} from 'ghost-admin/utils/currency';
-import {reads} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
+import {tracked} from '@glimmer/tracking';
 
 const RETRY_PRODUCT_SAVE_POLL_LENGTH = 1000;
 const RETRY_PRODUCT_SAVE_MAX_POLL = 15 * RETRY_PRODUCT_SAVE_POLL_LENGTH;
 
-export default Component.extend({
-    config: service(),
-    ghostPaths: service(),
-    ajax: service(),
-    settings: service(),
-    membersUtils: service(),
-    store: service(),
+const NO_OF_TOP_CURRENCIES = 5;
 
-    topCurrencies: null,
-    currencies: null,
-    allCurrencies: null,
-    stripePlanInvalidAmount: false,
-    _scratchStripeYearlyAmount: null,
-    _scratchStripeMonthlyAmount: null,
+export default class StripeSettingsForm extends Component {
+    @service config;
+    @service ghostPaths;
+    @service ajax;
+    @service settings;
+    @service membersUtils;
+    @service store;
 
-    stripeDirect: false,
+    @tracked hasActiveStripeSubscriptions = false;
+    @tracked showDisconnectStripeConnectModal = false;
+    @tracked stripeConnectError = null;
+    @tracked stripeConnectTestMode = false;
+    @tracked stripeDirect = false;
+    @tracked stripePlanInvalidAmount = false;
 
-    // passed in actions
-    setStripeConnectIntegrationTokenSetting() {},
+    @tracked _scratchStripeYearlyAmount = null;
+    @tracked _scratchStripeMonthlyAmount = null;
+
+    topCurrencies = currencies.slice(0, NO_OF_TOP_CURRENCIES).map((currency) => {
+        return {
+            value: currency.isoCode.toLowerCase(),
+            label: `${currency.isoCode} - ${currency.name}`,
+            isoCode: currency.isoCode
+        };
+    });
+
+    currencies = currencies.slice(NO_OF_TOP_CURRENCIES, currencies.length).map((currency) => {
+        return {
+            value: currency.isoCode.toLowerCase(),
+            label: `${currency.isoCode} - ${currency.name}`,
+            isoCode: currency.isoCode
+        };
+    });
+
+    allCurrencies = [
+        {
+            groupName: '—',
+            options: this.topCurrencies
+        },
+        {
+            groupName: '—',
+            options: this.currencies
+        }
+    ];
 
     /** OLD **/
-    stripeDirectPublicKey: reads('settings.stripePublishableKey'),
-    stripeDirectSecretKey: reads('settings.stripeSecretKey'),
+    get stripeDirectPublicKey() {
+        return this.settings.get('stripePublishableKey');
+    }
+    get stripeDirectSecretKey() {
+        return this.settings.settings.get('stripeSecretKey');
+    }
 
-    stripeConnectAccountId: reads('settings.stripeConnectAccountId'),
-    stripeConnectAccountName: reads('settings.stripeConnectDisplayName'),
-    stripeConnectLivemode: reads('settings.stripeConnectLivemode'),
+    get stripeConnectAccountId() {
+        return this.settings.get('stripeConnectAccountId');
+    }
+    get stripeConnectAccountName() {
+        return this.settings.get('stripeConnectDisplayName');
+    }
+    get stripeConnectLivemode() {
+        return this.settings.get('stripeConnectLivemode');
+    }
 
-    selectedCurrency: computed('stripePlans.monthly.currency', function () {
-        return this.currencies.findBy('value', this.get('stripePlans.monthly.currency')) || this.topCurrencies.findBy('value', this.get('stripePlans.monthly.currency'));
-    }),
+    get selectedCurrency() {
+        return this.currencies.findBy('value', this.stripePlans.monthly.currency)
+            || this.topCurrencies.findBy('value', this.stripePlans.monthly.currency);
+    }
 
-    stripePlans: computed('settings.stripePlans', function () {
+    get stripePlans() {
         const plans = this.settings.get('stripePlans');
         const monthly = plans.find(plan => plan.interval === 'month');
         const yearly = plans.find(plan => plan.interval === 'year' && plan.name !== 'Complimentary');
@@ -55,114 +93,103 @@ export default Component.extend({
                 currency: yearly.currency
             }
         };
-    }),
+    }
 
-    init() {
-        this._super(...arguments);
+    get liveStripeConnectAuthUrl() {
+        return this.ghostPaths.url.api('members/stripe_connect') + '?mode=live';
+    }
+
+    get testStripeConnectAuthUrl() {
+        return this.ghostPaths.url.api('members/stripe_connect') + '?mode=test';
+    }
+
+    constructor() {
+        super(...arguments);
 
         // Allow disabling stripe direct keys if stripe is still enabled, while the config is disabled
         this.updateStripeDirect();
+    }
 
-        const noOfTopCurrencies = 5;
-        this.set('topCurrencies', currencies.slice(0, noOfTopCurrencies).map((currency) => {
-            return {
-                value: currency.isoCode.toLowerCase(),
-                label: `${currency.isoCode} - ${currency.name}`,
-                isoCode: currency.isoCode
-            };
-        }));
+    @action
+    setStripeDirectPublicKey(event) {
+        this.settings.set('stripeProductName', this.settings.get('title'));
+        this.settings.set('stripePublishableKey', event.target.value);
+    }
 
-        this.set('currencies', currencies.slice(noOfTopCurrencies, currencies.length).map((currency) => {
-            return {
-                value: currency.isoCode.toLowerCase(),
-                label: `${currency.isoCode} - ${currency.name}`,
-                isoCode: currency.isoCode
-            };
-        }));
+    @action
+    setStripeDirectSecretKey(event) {
+        this.settings.set('stripeProductName', this.settings.get('title'));
+        this.settings.set('stripeSecretKey', event.target.value);
+    }
 
-        this.set('allCurrencies', [
-            {
-                groupName: '—',
-                options: this.topCurrencies
-            },
-            {
-                groupName: '—',
-                options: this.currencies
-            }
-        ]);
-    },
+    @action
+    setStripeConnectTestMode(event) {
+        this.stripeConnectTestMode = event.target.checked;
+    }
 
-    actions: {
-        setStripeDirectPublicKey(event) {
-            this.set('settings.stripeProductName', this.get('settings.title'));
-            this.set('settings.stripePublishableKey', event.target.value);
-        },
-
-        setStripeDirectSecretKey(event) {
-            this.set('settings.stripeProductName', this.get('settings.title'));
-            this.set('settings.stripeSecretKey', event.target.value);
-        },
-
-        validateStripePlans() {
-            this.validateStripePlans();
-        },
-
-        setStripePlansCurrency(event) {
-            const newCurrency = event.value;
-            const updatedPlans = this.get('settings.stripePlans').map((plan) => {
-                if (plan.name !== 'Complimentary') {
-                    return Object.assign({}, plan, {
-                        currency: newCurrency
-                    });
-                }
-                return plan;
-            });
-
-            const currentComplimentaryPlan = updatedPlans.find((plan) => {
-                return plan.name === 'Complimentary' && plan.currency === event.value;
-            });
-
-            if (!currentComplimentaryPlan) {
-                updatedPlans.push({
-                    name: 'Complimentary',
-                    currency: event.value,
-                    interval: 'year',
-                    amount: 0
+    @action
+    setStripePlansCurrency(event) {
+        const newCurrency = event.value;
+        const updatedPlans = this.settings.get('stripePlans').map((plan) => {
+            if (plan.name !== 'Complimentary') {
+                return Object.assign({}, plan, {
+                    currency: newCurrency
                 });
             }
+            return plan;
+        });
 
-            this.set('settings.stripePlans', updatedPlans);
-            this.set('_scratchStripeYearlyAmount', null);
-            this.set('_scratchStripeMonthlyAmount', null);
-            this.validateStripePlans();
-        },
+        const currentComplimentaryPlan = updatedPlans.find((plan) => {
+            return plan.name === 'Complimentary' && plan.currency === event.value;
+        });
 
-        setStripeConnectIntegrationToken(event) {
-            this.set('settings.stripeProductName', this.get('settings.title'));
-            this.setStripeConnectIntegrationTokenSetting(event.target.value);
-        },
-
-        openDisconnectStripeModal() {
-            this.openDisconnectStripeConnectModal.perform();
-        },
-
-        closeDisconnectStripeModal() {
-            this.set('showDisconnectStripeConnectModal', false);
-        },
-
-        disconnectStripeConnectIntegration() {
-            this.disconnectStripeConnectIntegration.perform();
+        if (!currentComplimentaryPlan) {
+            updatedPlans.push({
+                name: 'Complimentary',
+                currency: event.value,
+                interval: 'year',
+                amount: 0
+            });
         }
-    },
 
+        this.settings.set('stripePlans', updatedPlans);
+        this._scratchStripeYearlyAmount = null;
+        this._scratchStripeMonthlyAmount = null;
+        this.validateStripePlans();
+    }
+
+    @action
+    setStripeConnectIntegrationToken(event) {
+        this.settings.set('stripeProductName', this.settings.get('title'));
+        this.args.setStripeConnectIntegrationTokenSetting(event.target.value);
+    }
+
+    @action
+    openDisconnectStripeModal() {
+        this.openDisconnectStripeConnectModalTask.perform();
+    }
+
+    @action
+    closeDisconnectStripeModal() {
+        this.showDisconnectStripeConnectModal = false;
+    }
+
+    @action
+    disconnectStripeConnectIntegration() {
+        this.disconnectStripeConnectIntegrationTask.perform();
+    }
+
+    @action
     updateStripeDirect() {
         // Allow disabling stripe direct keys if stripe is still enabled, while the config is disabled
-        this.set('stripeDirect', this.get('config.stripeDirect') || (this.get('membersUtils.isStripeEnabled') && !this.get('settings.stripeConnectAccountId')));
-    },
+        this.stripeDirect = this.config.get('stripeDirect')
+            || (this.membersUtils.isStripeEnabled && !this.settings.get('stripeConnectAccountId'));
+    }
 
+    @action
     validateStripePlans() {
-        this.get('settings.errors').remove('stripePlans');
-        this.get('settings.hasValidated').removeObject('stripePlans');
+        this.settings.get('errors').remove('stripePlans');
+        this.settings.get('hasValidated').removeObject('stripePlans');
 
         if (this._scratchStripeYearlyAmount === null) {
             this._scratchStripeYearlyAmount = this.stripePlans.yearly.amount;
@@ -184,7 +211,7 @@ export default Component.extend({
                 throw new TypeError(`Subscription amount must be at least ${minimum}`);
             }
 
-            const updatedPlans = this.get('settings.stripePlans').map((plan) => {
+            const updatedPlans = this.settings.get('stripePlans').map((plan) => {
                 if (plan.name !== 'Complimentary') {
                     let newAmount;
                     if (plan.interval === 'year') {
@@ -199,16 +226,17 @@ export default Component.extend({
                 return plan;
             });
 
-            this.set('settings.stripePlans', updatedPlans);
+            this.settings.set('stripePlans', updatedPlans);
         } catch (err) {
-            this.get('settings.errors').add('stripePlans', err.message);
+            this.settings.get('errors').add('stripePlans', err.message);
         } finally {
-            this.get('settings.hasValidated').pushObject('stripePlans');
+            this.settings.get('hasValidated').pushObject('stripePlans');
         }
-    },
+    }
 
-    openDisconnectStripeConnectModal: task(function* () {
-        this.set('hasActiveStripeSubscriptions', false);
+    @task({drop: true})
+    *openDisconnectStripeConnectModalTask() {
+        this.hasActiveStripeSubscriptions = false;
         if (!this.stripeConnectAccountId) {
             return;
         }
@@ -216,36 +244,39 @@ export default Component.extend({
         const response = yield this.ajax.request(url);
 
         if (response?.meta?.pagination?.total !== 0) {
-            this.set('hasActiveStripeSubscriptions', true);
+            this.hasActiveStripeSubscriptions = true;
             return;
         }
-        this.set('showDisconnectStripeConnectModal', true);
-    }).drop(),
+        this.showDisconnectStripeConnectModal = true;
+    }
 
-    disconnectStripeConnectIntegration: task(function* () {
-        this.set('disconnectStripeError', false);
-        const url = this.get('ghostPaths.url').api('/settings/stripe/connect');
+    @task
+    *disconnectStripeConnectIntegrationTask() {
+        const url = this.ghostPaths.url.api('/settings/stripe/connect');
 
         yield this.ajax.delete(url);
         yield this.settings.reload();
 
-        this.onDisconnected?.();
-    }),
+        this.args.onDisconnected?.();
+    }
 
-    saveTier: task(function* () {
+    @task
+    *saveTier() {
         const tiers = yield this.store.query('tier', {filter: 'type:paid', include: 'monthly_price, yearly_price'});
-        this.tier = tiers.firstObject;
-        if (this.tier) {
-            this.tier.set('monthlyPrice', 500);
-            this.tier.set('yearlyPrice', 5000);
-            this.tier.set('currency', 'usd');
+        const tier = tiers.firstObject;
+
+        if (tier) {
+            tier.monthlyPrice = 500;
+            tier.yearlyPrice = 5000;
+            tier.currency = 'usd';
+
             let pollTimeout = 0;
             /** To allow Stripe config to be ready in backend, we poll the save tier request */
             while (pollTimeout < RETRY_PRODUCT_SAVE_MAX_POLL) {
                 yield timeout(RETRY_PRODUCT_SAVE_POLL_LENGTH);
 
                 try {
-                    const updatedTier = yield this.tier.save();
+                    const updatedTier = yield tier.save();
                     return updatedTier;
                 } catch (error) {
                     if (error.payload?.errors && error.payload.errors[0].code === 'STRIPE_NOT_CONFIGURED') {
@@ -258,13 +289,14 @@ export default Component.extend({
                 }
             }
         }
-        return this.tier;
-    }),
+        return tier;
+    }
 
-    saveStripeSettings: task(function* () {
-        this.set('stripeConnectError', null);
-        this.set('stripeConnectSuccess', null);
-        if (this.get('settings.stripeConnectIntegrationToken')) {
+    @task({drop: true})
+    *saveStripeSettingsTask() {
+        this.stripeConnectError = null;
+
+        if (this.settings.get('stripeConnectIntegrationToken')) {
             try {
                 let response = yield this.settings.save();
 
@@ -273,33 +305,25 @@ export default Component.extend({
 
                 response = yield this.settings.save();
 
-                this.set('stripeConnectSuccess', true);
-                this.onConnected?.();
+                this.args.onConnected?.();
 
                 return response;
             } catch (error) {
                 if (error.payload && error.payload.errors) {
-                    this.set('stripeConnectError', 'Invalid secure key');
+                    this.stripeConnectError = 'Invalid secure key';
                     return false;
                 }
                 throw error;
             }
         } else {
-            this.set('stripeConnectError', 'Please enter a secure key');
+            this.stripeConnectError = 'Please enter a secure key';
         }
-    }).drop(),
-
-    saveSettings: task(function* () {
-        const s = yield this.settings.save();
-        this.updateStripeDirect();
-        return s;
-    }).drop(),
-
-    get liveStripeConnectAuthUrl() {
-        return this.ghostPaths.url.api('members/stripe_connect') + '?mode=live';
-    },
-
-    get testStripeConnectAuthUrl() {
-        return this.ghostPaths.url.api('members/stripe_connect') + '?mode=test';
     }
-});
+
+    @task({drop: true})
+    *saveSettingsTask() {
+        yield this.settings.save();
+        this.updateStripeDirect();
+        return this.settings;
+    }
+}
