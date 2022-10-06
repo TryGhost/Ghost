@@ -6,7 +6,8 @@ export default class ExploreService extends Service {
     @service feature;
     @service ghostPaths;
 
-    exploreUrl = 'http://localhost:3000/explore/';
+    // TODO: make this a config value
+    exploreUrl = 'https://ghost.org/explore/';
     exploreRouteRoot = '#/explore';
     submitRoute = 'submit';
 
