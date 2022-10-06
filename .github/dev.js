@@ -53,6 +53,7 @@ if (DASH_DASH_ARGS.includes('portal')) {
             stripeSecret = await exec('stripe listen --print-secret');
         } catch (err) {
             console.error('Failed to fetch Stripe secret token, do you need to connect Stripe CLI?', err);
+            return;
         }
 
         if (!stripeSecret || !stripeSecret.stdout) {
