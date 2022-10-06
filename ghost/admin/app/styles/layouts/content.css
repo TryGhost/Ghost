@@ -7,7 +7,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin: 0 24px;
+    margin: 0 16px;
     padding: 0;
     list-style: none;
 }
@@ -54,7 +54,7 @@
     letter-spacing: 0.2px;
     height: 34px;
     padding: 6px 12px 6px;
-    margin-right: 8px;
+    margin-right: 6px;
     outline: none;
     border: none;
     border-radius: 2px !important;
@@ -122,8 +122,8 @@
     white-space: nowrap;
 }
 
-.gh-contentfilter-sort .gh-contentfilter-menu-trigger .ember-power-select-selected-item::before {
-    content: "Sort by: ";
+.gh-contentfilter-sort .gh-contentfilter-menu-trigger {
+    margin: 0;
 }
 
 .gh-contentfilter-actions svg {
@@ -140,6 +140,7 @@
 .gh-contentfilter-button {
     display: flex;
     height: 33px;
+    margin: 0 0 0 6px;
     line-height: 33px;
     background: color-mod(var(--whitegrey-l1) l(-3%));
 }
@@ -751,9 +752,27 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 .gh-canvas-title.gh-post-title {
     max-width: 880px;
     padding: 12px 0 8px;
-    font-size: 3.1rem;
+    font-size: 3.2rem;
     overflow: inherit;
     white-space: inherit;
+}
+
+.post-header .gh-canvas-title.gh-post-title {
+    display: block;
+    padding: 6px 0 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: initial;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+}
+
+@media (max-width: 1280px) {
+    .post-header .gh-canvas-title.gh-post-title {
+        white-space: nowrap;
+        padding: 0;
+    }
 }
 
 .gh-post-analytics-meta {

@@ -434,11 +434,6 @@
         display: none;
     }
 
-    .gh-offer.circle-bg .gh-canvas-header {
-        background: var(--main-bg-color);
-        position: sticky;
-    }
-
     .gh-offer .gh-main-layout.content-preview {
         display: flex;
         flex-direction: column;

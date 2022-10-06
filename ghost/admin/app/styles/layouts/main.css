@@ -1097,7 +1097,7 @@
 }
 
 .gh-canvas-header {
-    min-height: calc(var(--main-layout-vpanel-height) - 1px);;
+    min-height: calc(var(--main-layout-vpanel-height) - 1px);
     margin: 0 calc(-1 * var(--main-layout-content-sidepadding));
     padding: 32px var(--main-layout-content-sidepadding);
     top: 0;
@@ -1124,13 +1124,15 @@
 .gh-canvas-header .gh-canvas-breadcrumb {
     display: flex;
     align-items: center;
+    flex-shrink: 0;
     height: 34px;
     color: var(--midgrey-l2);
     font-size: 1.35rem;
-    font-weight: 400;
+    font-weight: 500;
     line-height: 34px;
     letter-spacing: .2px;
     background: none;
+    white-space: nowrap;
 }
 
 .gh-canvas-header.sticky .gh-canvas-breadcrumb {
@@ -1506,7 +1508,7 @@
 }
 
 .gh-canvas-breadcrumb + .gh-canvas-title {
-    padding: 12px 0 0;
+    padding: 6px 0 0;
 }
 
 .gh-btn-edit-view {
@@ -1723,23 +1725,23 @@
     align-items: center;
 }
 
-@media (max-width: 1450px) {
+@media (max-width: 1440px) {
+    .gh-canvas-header.break.tablet {
+        padding: 32px var(--main-layout-content-sidepadding) 12px;
+    }
+
     .gh-canvas-header.break.tablet .gh-canvas-header-content {
-        height: 128px;
+        min-height: calc(var(--main-layout-vpanel-height) - 1px);
         align-items: flex-start;
     }
 
-    .gh-canvas-header.break.tablet .gh-canvas-title {
-        margin-top: 26px;
+    .gh-canvas-title.gh-post-title {
+        padding: 0;
     }
 
     .gh-canvas-header.break.tablet .view-actions {
-        position: absolute;
-        top: 30px;
-        right: 0;
         flex-direction: column;
         align-items: flex-end;
-        width: 100%;
         max-height: 100px;
     }
 
@@ -1747,13 +1749,13 @@
         position: relative;
         order: 2;
         margin: 0;
-        padding: 6px 0 0;
+        padding: 0;
         max-width: calc(100vw - 390px);
         justify-content: space-between;
     }
 
     .view-actions-top-row {
-        margin-bottom: 16px;
+        margin-bottom: 8px;
     }
 
     .view-actions-bottom-row {
@@ -1767,11 +1769,22 @@
     }
 }
 
-@media (max-width: 1000px) {
-    .gh-canvas-title svg {
-        margin: 0 5px;
+@media (max-width: 1280px) {
+    .gh-canvas-header.break.tablet .gh-canvas-breadcrumb {
+        display: none;
     }
 
+    .gh-canvas-header.break.tablet .view-actions {
+        position: absolute;
+        right: 0;
+    }
+
+    .gh-canvas-header.break.post-header .view-actions-bottom-row {
+        padding-top: 20px;
+    }
+}
+
+@media (max-width: 1000px) {
     .gh-canvas-header.break.mobile .gh-canvas-header-content {
         border-bottom: 1px solid var(--main-color-area-divider);
     }

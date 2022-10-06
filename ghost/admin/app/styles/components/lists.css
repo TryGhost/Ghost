@@ -422,7 +422,7 @@ ul.nostyle li {
 .gh-list-scrolling thead tr {
     position: sticky;
     background: var(--main-bg-color);
-    z-index: 2;
+    z-index: 999;
     top: 0;
 }
 
