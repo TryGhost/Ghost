@@ -358,13 +358,17 @@ const PostEmailSerializer = {
         // Now replace the links in the HTML version
         if (!options.isBrowserPreview && !options.isTestEmail && settingsCache.get('email_track_clicks')) {
             result.html = await linkReplacer.replace(result.html, async (url) => {
-                // Add newsletter source attribution
-                url = memberAttribution.service.addEmailSourceAttributionTracking(url, newsletter);
                 const isSite = urlUtils.isSiteUrl(url);
 
                 if (isSite) {
+                    url = memberAttribution.service.addEmailSourceAttributionTracking(url, newsletter);
+
                     // Only add post attribution to our own site (because external sites could/should not process this information)
                     url = memberAttribution.service.addPostAttributionTracking(url, post);
+                } else {
+                    // For external sites, add ref to the site URL instead of newsletter
+                    const siteUrl = new URL(urlUtils.urlFor('home', true));
+                    url.searchParams.append('ref', siteUrl.hostname);
                 }
 
                 // Add link click tracking
