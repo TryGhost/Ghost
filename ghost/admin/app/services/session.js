@@ -76,11 +76,26 @@ export default class SessionService extends ESASessionService {
         });
     }
 
+    /**
+     * Always try to re-setup session & retry the original transition
+     * if user data is still available in session store although the
+     * ember-session is unauthenticated.
+     *
+     * If success, it will retry the original transition.
+     * If failed, it will be handled by the redirect to sign in.
+     */
     async requireAuthentication(transition, route) {
-        if (this.forceTransition) {
-            this.forceTransition = false;
-            transition.retry();
-            return;
+        // Only when ember session invalidated
+        if (!this.isAuthenticated) {
+            transition.abort();
+
+            if (this.user) {
+                await this.setup();
+                this.forceTransition = true;
+                this.notifications.clearAll();
+
+                transition.retry();
+            }
         }
 
         super.requireAuthentication(transition, route);
