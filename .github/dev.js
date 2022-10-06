@@ -4,7 +4,7 @@ const exec = util.promisify(require('child_process').exec);
 
 const concurrently = require('concurrently');
 
-const config = require('../ghost/core/core/shared/config').withOptions({
+const config = require('../ghost/core/core/shared/config/loader').loadNconf({
     customConfigPath: path.join(__dirname, '../ghost/core')
 });
 
