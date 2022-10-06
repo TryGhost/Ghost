@@ -20,9 +20,6 @@ export default class ApplicationController extends Controller {
     @reads('config.hostSettings.billing.enabled')
         showBilling;
 
-    @reads('explore.enabled')
-        showExplore;
-
     @computed(
         'router.currentRouteName',
         'session.{isAuthenticated,user}',

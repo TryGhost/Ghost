@@ -4,9 +4,8 @@ import {inject as service} from '@ember/service';
 
 export default class ExploreRoute extends AuthenticatedRoute {
     @service explore;
-    @service session;
-    @service config;
     @service store;
+    @service router;
 
     beforeModel(transition) {
         super.beforeModel(...arguments);
@@ -21,11 +20,9 @@ export default class ExploreRoute extends AuthenticatedRoute {
         }
 
         // Ensure the explore window is set to open
-        if (transition.to?.localName === 'index' && !this.explore.exploreWindowOpen) {
-            this.explore.toggleExploreWindow(true);
+        if (this.explore.enabled && transition.to?.localName === 'index' && !this.explore.exploreWindowOpen) {
+            this.explore.openExploreWindow(this.router.currentURL);
         }
-
-        this.explore.previousTransition = transition;
     }
 
     model() {

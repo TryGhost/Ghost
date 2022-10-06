@@ -1,4 +1,5 @@
-import Component from '@ember/component';
+import Component from '@glimmer/component';
+import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 export default class GhExploreIframe extends Component {
@@ -6,9 +7,8 @@ export default class GhExploreIframe extends Component {
     @service router;
     @service feature;
 
-    async didInsertElement() {
-        super.didInsertElement(...arguments);
-
+    @action
+    setup() {
         this.explore.getExploreIframe().src = this.explore.getIframeURL();
 
         window.addEventListener('message', async (event) => {
