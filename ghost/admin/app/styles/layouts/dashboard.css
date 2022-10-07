@@ -1154,11 +1154,11 @@ Dashboard Attribution */
 }
 
 .gh-dashboard-list-title svg path {
-    fill: var(--midlightgrey);
+    fill: var(--midgrey);
 }
 
-.gh-dashboard-list-item-sub-signup:not(.sorted-by), .gh-dashboard-list-item-sub-paid:not(.sorted-by), .gh-dashboard-list-item-sub-other:not(.sorted-by) {
-    opacity: 0.6;
+.gh-dashboard-list-item-sub-signup:not(.sorted-by) .gh-dashboard-metric-minivalue, .gh-dashboard-list-item-sub-paid:not(.sorted-by) .gh-dashboard-metric-minivalue, .gh-dashboard-list-item-sub-other:not(.sorted-by) .gh-dashboard-metric-minivalue {
+    color: var(--midlightgrey);
 }
 
 .gh-dashboard-list-item:first-child .gh-dashboard-list-item-sub-source::after {
