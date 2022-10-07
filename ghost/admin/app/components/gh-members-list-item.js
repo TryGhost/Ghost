@@ -1,5 +1,4 @@
 import Component from '@glimmer/component';
-import {get} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 export default class GhMembersListItem extends Component {
@@ -14,7 +13,7 @@ export default class GhMembersListItem extends Component {
     }
 
     get tiers() {
-        const tierData = get(this.args.member, 'tiers') || [];
+        const tierData = this.args.member?.tiers || [];
         return tierData.map(tier => tier.name).join(', ');
     }
 }
