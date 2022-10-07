@@ -6,7 +6,7 @@ describe('Unit | Route | explore', function () {
     setupTest();
 
     it('exists', function () {
-        let route = this.owner.lookup('route:explore');
+        let route = this.owner.lookup('route:explore.connect');
         expect(route).to.be.ok;
     });
 });

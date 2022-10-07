@@ -21,6 +21,11 @@
                     <li class="relative">
                         <LinkTo @route="dashboard" @alt="Dashboard" title="Dashboard" data-test-nav="dashboard">{{svg-jar "house"}} Dashboard</LinkTo>
                     </li>
+                        {{#if (feature "exploreApp")}}
+                        <li class="relative">
+                            <LinkTo @route="explore" title="Ghost Explore" data-test-nav="explore">{{svg-jar "globe"}} Explore</LinkTo>
+                        </li>
+                        {{/if}}
                     {{/if}}
                     <li class="relative">
                         <span {{action "transitionToOrRefreshSite" on="click"}}>
