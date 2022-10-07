@@ -1,8 +1,8 @@
 <div class="gh-date-time-picker" data-test-component="gh-date-time-picker">
     <PowerDatepicker
-        @selected={{this._date}}
-        @center={{this._date}}
-        @onSelect={{action "setDateInternal" value="date"}}
+        @selected={{readonly this.localDateValue}}
+        @center={{readonly this.localDateValue}}
+        @onSelect={{action "setLocalDate" value="date"}}
         @renderInPlace={{this.renderInPlaceWithFallback}}
         @disabled={{this.disabled}} as |dp|
     >

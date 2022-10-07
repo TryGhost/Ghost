@@ -38,7 +38,7 @@ describe('Integration: Component: gh-date-picker', function () {
 
     it('defaults to now when @value is empty', async function () {
         clock = sinon.useFakeTimers({
-            now: moment('2022-02-22 22:22:22.000Z').toDate()
+            now: moment('2022-02-22 22:22:22.000').toDate()
         });
 
         await render(hbs`<GhDatePicker />`);
@@ -46,14 +46,14 @@ describe('Integration: Component: gh-date-picker', function () {
     });
 
     it('shows passed in @value value', async function () {
-        this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+        this.set('date', moment('2022-02-22 22:22:22.000')).toDate();
 
         await render(hbs`<GhDatePicker @value={{this.date}} />`);
         expect(find('[data-test-date-picker-input]'), 'date input').to.have.value('2022-02-22');
     });
 
     it('updates date via input blur', async function () {
-        this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+        this.set('date', moment('2022-02-22 22:22:22.000')).toDate();
 
         const changeSpy = sinon.spy();
         this.set('onChange', changeSpy);
@@ -64,11 +64,11 @@ describe('Integration: Component: gh-date-picker', function () {
 
         expect(changeSpy.callCount).to.equal(1);
         expect(changeSpy.firstCall.args[0]).to.be.an.instanceof(Date);
-        expect(changeSpy.firstCall.args[0].toISOString()).to.equal(moment('2022-02-28T00:00:00.000Z').toISOString());
+        expect(changeSpy.firstCall.args[0].toISOString()).to.equal(moment('2022-02-28T00:00:00.000').toISOString());
     });
 
     it('updates date via input Enter keydown', async function () {
-        this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+        this.set('date', moment('2022-02-22 22:22:22.000')).toDate();
 
         const changeSpy = sinon.spy();
         this.set('onChange', changeSpy);
@@ -79,11 +79,11 @@ describe('Integration: Component: gh-date-picker', function () {
 
         expect(changeSpy.callCount).to.equal(1);
         expect(changeSpy.firstCall.args[0]).to.be.an.instanceof(Date);
-        expect(changeSpy.firstCall.args[0].toISOString()).to.equal(moment('2022-02-28T00:00:00.000Z').toISOString());
+        expect(changeSpy.firstCall.args[0].toISOString()).to.equal(moment('2022-02-28T00:00:00.000').toISOString());
     });
 
     it('updates date via datepicker selection', async function () {
-        this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+        this.set('date', moment('2022-02-22 22:22:22.000')).toDate();
 
         const onChange = (newDate) => {
             this.set('date', newDate);
@@ -92,28 +92,28 @@ describe('Integration: Component: gh-date-picker', function () {
         this.set('onChange', changeSpy);
 
         await render(hbs`<GhDatePicker @value={{this.date}} @onChange={{this.onChange}} />`);
-        await datepickerSelect('[data-test-date-picker-trigger]', moment('2022-02-27T13:00:00.000Z').toDate());
+        await datepickerSelect('[data-test-date-picker-trigger]', moment('2022-02-27T13:00:00.000').toDate());
 
         expect(find('[data-test-date-picker-input]')).to.have.value('2022-02-27');
 
         expect(changeSpy.callCount).to.equal(1);
         expect(changeSpy.firstCall.args[0]).to.be.an.instanceof(Date);
-        expect(changeSpy.firstCall.args[0].toISOString()).to.equal(moment('2022-02-27T00:00:00.000Z').toISOString());
+        expect(changeSpy.firstCall.args[0].toISOString()).to.equal(moment('2022-02-27T00:00:00.000').toISOString());
     });
 
     it('updates when @value is changed externally', async function () {
-        this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+        this.set('date', moment('2022-02-22 22:22:22.000')).toDate();
 
         await render(hbs`<GhDatePicker @value={{this.date}} />`);
         expect(find('[data-test-date-picker-input]'), 'date input').to.have.value('2022-02-22');
 
-        this.set('date', moment('2022-02-28 10:00:00.000Z')).toDate();
+        this.set('date', moment('2022-02-28 10:00:00.000')).toDate();
 
         expect(find('[data-test-date-picker-input]'), 'date input').to.have.value('2022-02-28');
     });
 
     it('updates when @value is changed externally when we have a scratch date', async function () {
-        this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+        this.set('date', moment('2022-02-22 22:22:22.000')).toDate();
 
         await render(hbs`<GhDatePicker @value={{this.date}} />`);
         expect(find('[data-test-date-picker-input]'), 'date input').to.have.value('2022-02-22');
@@ -121,12 +121,12 @@ describe('Integration: Component: gh-date-picker', function () {
         await fillIn('[data-test-date-picker-input]', '2022-02-27');
         expect(find('[data-test-date-picker-input]'), 'date input').to.have.value('2022-02-27');
 
-        this.set('date', moment('2022-02-28 10:00:00.000Z')).toDate();
+        this.set('date', moment('2022-02-28 10:00:00.000')).toDate();
         expect(find('[data-test-date-picker-input]'), 'date input').to.have.value('2022-02-28');
     });
 
     it('calls @onInput on input events', async function () {
-        this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+        this.set('date', moment('2022-02-22 22:22:22.000')).toDate();
 
         const inputSpy = sinon.spy();
         this.set('onInput', inputSpy);
@@ -139,7 +139,7 @@ describe('Integration: Component: gh-date-picker', function () {
     });
 
     it('calls @onKeydown on input keydown events', async function () {
-        this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+        this.set('date', moment('2022-02-22 22:22:22.000')).toDate();
 
         const keydownSpy = sinon.spy();
         this.set('onKeydown', keydownSpy);
@@ -152,7 +152,7 @@ describe('Integration: Component: gh-date-picker', function () {
     });
 
     it('calls @onBlur on input blur events', async function () {
-        this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+        this.set('date', moment('2022-02-22 22:22:22.000')).toDate();
 
         const blurSpy = sinon.spy();
         this.set('onBlur', blurSpy);
@@ -166,7 +166,7 @@ describe('Integration: Component: gh-date-picker', function () {
     });
 
     it('resets input value on Escape', async function () {
-        this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+        this.set('date', moment('2022-02-22 22:22:22.000')).toDate();
 
         const changeSpy = sinon.spy();
         this.set('onChange', changeSpy);
@@ -180,7 +180,7 @@ describe('Integration: Component: gh-date-picker', function () {
     });
 
     it('handles invalid date input', async function () {
-        this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+        this.set('date', moment('2022-02-22 22:22:22.000')).toDate();
 
         const changeSpy = sinon.spy();
         this.set('onChange', changeSpy);
@@ -201,7 +201,7 @@ describe('Integration: Component: gh-date-picker', function () {
     });
 
     it('handles invalid date format input', async function () {
-        this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+        this.set('date', moment('2022-02-22 22:22:22.000')).toDate();
 
         const changeSpy = sinon.spy();
         this.set('onChange', changeSpy);
@@ -260,9 +260,9 @@ describe('Integration: Component: gh-date-picker', function () {
 
     describe('min/max', function () {
         it('disables datepicker dates outside of range', async function () {
-            this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
-            this.set('minDate', moment('2022-02-11 12:00:00.000Z').toDate());
-            this.set('maxDate', moment('2022-02-24 12:00:00.000Z').toDate());
+            this.set('date', moment('2022-02-22 22:22:22.000')).toDate();
+            this.set('minDate', moment('2022-02-11 12:00:00.000').toDate());
+            this.set('maxDate', moment('2022-02-24 12:00:00.000').toDate());
 
             await render(hbs`<GhDatePicker @value={{this.date}} @minDate={{this.minDate}} @maxDate={{this.maxDate}} />`);
             await click('[data-test-date-picker-trigger]');
@@ -272,8 +272,8 @@ describe('Integration: Component: gh-date-picker', function () {
         });
 
         it('errors when date input is earlier than min', async function () {
-            this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
-            this.set('minDate', moment('2022-02-11 12:00:00.000Z').toDate());
+            this.set('date', moment('2022-02-22 22:22:22.000')).toDate();
+            this.set('minDate', moment('2022-02-11 12:00:00.000').toDate());
 
             const changeSpy = sinon.spy();
             this.set('onChange', changeSpy);
@@ -295,8 +295,8 @@ describe('Integration: Component: gh-date-picker', function () {
         });
 
         it('allows for min date error override', async function () {
-            this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
-            this.set('minDate', moment('2022-02-11 12:00:00.000Z').toDate());
+            this.set('date', moment('2022-02-22 22:22:22.000')).toDate();
+            this.set('minDate', moment('2022-02-11 12:00:00.000').toDate());
 
             await render(hbs`<GhDatePicker @value={{this.date}} @minDate={{this.minDate}} @minDateError="Must be in the future" @onChange={{this.onChange}} />`);
 
@@ -307,8 +307,8 @@ describe('Integration: Component: gh-date-picker', function () {
         });
 
         it('errors when date input is later than max', async function () {
-            this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
-            this.set('maxDate', moment('2022-02-25 12:00:00.000Z').toDate());
+            this.set('date', moment('2022-02-22 22:22:22.000')).toDate();
+            this.set('maxDate', moment('2022-02-25 12:00:00.000').toDate());
 
             const changeSpy = sinon.spy();
             this.set('onChange', changeSpy);
@@ -330,8 +330,8 @@ describe('Integration: Component: gh-date-picker', function () {
         });
 
         it('allows for max date error override', async function () {
-            this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
-            this.set('maxDate', moment('2022-02-25 12:00:00.000Z').toDate());
+            this.set('date', moment('2022-02-22 22:22:22.000')).toDate();
+            this.set('maxDate', moment('2022-02-25 12:00:00.000').toDate());
 
             await render(hbs`<GhDatePicker @value={{this.date}} @maxDate={{this.maxDate}} @maxDateError="Must be in the past" @onChange={{this.onChange}} />`);
 
@@ -345,11 +345,11 @@ describe('Integration: Component: gh-date-picker', function () {
     describe('block invocation', function () {
         it('exposes Nav and Days components', async function () {
             clock = sinon.useFakeTimers({
-                now: moment('2022-02-02 22:22:22.000Z').toDate()
+                now: moment('2022-02-02 22:22:22.000').toDate()
             });
 
-            this.set('date', moment('2022-02-02 22:22:22.000Z')).toDate();
-            this.set('maxDate', moment('2022-02-05 12:00:00.000Z').toDate());
+            this.set('date', moment('2022-02-02 22:22:22.000')).toDate();
+            this.set('maxDate', moment('2022-02-05 12:00:00.000').toDate());
 
             await render(hbs`<GhDatePicker @value={{this.date}} @maxDate={{this.maxDate}} as |dp|><dp.Nav /><dp.Days /></GhDatePicker>`);
 

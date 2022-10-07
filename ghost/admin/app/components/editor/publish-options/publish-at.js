@@ -8,7 +8,8 @@ export default class PublishAtOption extends Component {
 
     @action
     setDate(selectedDate) {
-        const selectedMoment = moment(selectedDate);
+        // selectedDate is a Date object that contains the correct date string in the blog timezone
+        const selectedMoment = moment.tz(selectedDate, this.settings.get('timezone'));
         const {years, months, date} = selectedMoment.toObject();
 
         // Create a new moment from existing scheduledAtUTC _in site timezone_.
