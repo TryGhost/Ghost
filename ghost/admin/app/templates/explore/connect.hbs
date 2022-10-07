@@ -1,8 +1,8 @@
-<div class="explore fullscreen-explore-container">
+<div class="{{this.visibilityClass}}">
     <div class="explore-close">
-        <LinkTo data-test-button="close-explore" @route="dashboard">
+        <a href="javascript:void(0)" {{on "click" this.closeConnect}} data-test-button="close-explore">
             {{svg-jar "close"}}<span class="hidden">Close</span>
-        </LinkTo>
+        </a>
     </div>
     <div class="explore-content">
 
