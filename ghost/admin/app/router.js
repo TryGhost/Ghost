@@ -75,8 +75,15 @@ Router.map(function () {
     });
 
     this.route('explore', function () {
+        // actual Ember route, not rendered in iframe
         this.route('connect');
-        this.route('explore-sub', {path: '/*sub'});
+        // iframe sub pages, used for categories
+        this.route('explore-sub', {path: '/*sub'}, function () {
+            // needed to allow search to work, as it uses URL
+            // params for search queries. They don't need to
+            // be visible, but may not be cut off.
+            this.route('explore-query', {path: '/*query'});
+        });
     });
 
     this.route('settings.integrations', {path: '/settings/integrations'}, function () {
