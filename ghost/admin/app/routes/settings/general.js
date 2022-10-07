@@ -52,7 +52,7 @@ export default class GeneralSettingsRoute extends AdminRoute {
     }
 
     async confirmUnsavedChanges() {
-        if (this.settings.get('hasDirtyAttributes')) {
+        if (this.settings.hasDirtyAttributes) {
             this.confirmModal = this.modals
                 .open(ConfirmUnsavedChangesModal)
                 .finally(() => {

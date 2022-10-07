@@ -45,7 +45,7 @@ export default class CodeInjectionRoute extends AdminRoute {
     async confirmUnsavedChanges() {
         const settings = this.settings;
 
-        if (settings.get('hasDirtyAttributes')) {
+        if (settings.hasDirtyAttributes) {
             this.confirmModal = this.modals
                 .open(ConfirmUnsavedChangesModal)
                 .finally(() => {

@@ -21,7 +21,7 @@ export default class TagForm extends Component {
     @tracked codeInjectionOpen = false;
 
     get seoTitle() {
-        const settingsTitle = this.settings.get('title') || '';
+        const settingsTitle = this.settings.title || '';
         const tagName = settingsTitle ? `${this.args.tag.name} - ${settingsTitle}` : this.args.tag.name;
         let metaTitle = this.args.tag.metaTitle || tagName;
 
@@ -74,7 +74,7 @@ export default class TagForm extends Component {
     }
 
     get twitterDescription() {
-        return this.args.tag.twitterDescription || this.seoDescription || this.settings.get('metaDescription') || '';
+        return this.args.tag.twitterDescription || this.seoDescription || this.settings.metaDescription || '';
     }
 
     get twitterImage() {
@@ -86,7 +86,7 @@ export default class TagForm extends Component {
     }
 
     get facebookDescription() {
-        return this.args.tag.facebookDescription || this.seoDescription || this.settings.get('metaDescription') || '';
+        return this.args.tag.facebookDescription || this.seoDescription || this.settings.metaDescription || '';
     }
 
     get facebookImage() {
