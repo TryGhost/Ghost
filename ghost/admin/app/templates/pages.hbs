@@ -7,19 +7,19 @@
                 @currentUser={{this.session.user}}
                 @selectedType={{this.selectedType}}
                 @availableTypes={{this.availableTypes}}
-                @onTypeChange={{action "changeType"}}
+                @onTypeChange={{this.changeType}}
                 @selectedVisibility={{this.selectedVisibility}}
                 @availableVisibilities={{this.availableVisibilities}}
-                @onVisibilityChange={{action "changeVisibility"}}
+                @onVisibilityChange={{this.changeVisibility}}
                 @selectedAuthor={{this.selectedAuthor}}
                 @availableAuthors={{this.availableAuthors}}
-                @onAuthorChange={{action "changeAuthor"}}
+                @onAuthorChange={{this.changeAuthor}}
                 @selectedTag={{this.selectedTag}}
                 @availableTags={{this.availableTags}}
-                @onTagChange={{action "changeTag"}}
+                @onTagChange={{this.changeTag}}
                 @selectedOrder={{this.selectedOrder}}
                 @availableOrders={{this.availableOrders}}
-                @onOrderChange={{action "changeOrder"}}
+                @onOrderChange={{this.changeOrder}}
             />
 
             <LinkTo @route="editor.new" @model="page" class="gh-btn gh-btn-primary view-actions-top-row" data-test-new-page-button={{true}}><span>New page</span></LinkTo>
