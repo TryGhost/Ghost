@@ -65,7 +65,12 @@ describe('Job Manager', function () {
 
             it('handles failed job gracefully', async function () {
                 const spy = sinon.stub().throws();
-                const jobManager = new JobManager({});
+                const jobModelSpy = {
+                    findOne: sinon.spy()
+                };
+                const jobManager = new JobManager({
+                    JobModel: jobModelSpy
+                });
 
                 jobManager.addJob({
                     job: spy,
@@ -81,6 +86,8 @@ describe('Job Manager', function () {
                 should(spy.called).be.true();
                 should(spy.args[0][0]).equal('test data');
                 should(logging.error.called).be.true();
+                // a one-off job without a name should not have persistance
+                should(jobModelSpy.findOne.called).be.false();
             });
         });
 
