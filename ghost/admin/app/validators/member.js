@@ -13,7 +13,7 @@ export default BaseValidator.create({
     },
 
     email(model) {
-        let email = model.get('email');
+        let email = model.email;
 
         if (isBlank(email)) {
             model.errors.add('email', 'Please enter an email.');
@@ -27,17 +27,17 @@ export default BaseValidator.create({
             this.invalidate();
         }
 
-        model.get('hasValidated').addObject('email');
+        model.hasValidated.addObject('email');
     },
 
     note(model) {
-        let note = model.get('note');
+        let note = model.note;
 
         if (!validator.isLength(note || '', 0, 500)) {
             model.errors.add('note', 'Note is too long.');
             this.invalidate();
         }
 
-        model.get('hasValidated').addObject('note');
+        model.hasValidated.addObject('note');
     }
 });

@@ -7,43 +7,43 @@ export default BaseValidator.create({
     invalidMessage: 'Email address is not valid',
 
     identification(model) {
-        let id = model.get('identification');
+        let id = model.identification;
 
         if (!isBlank(id) && !validator.isEmail(id)) {
-            model.get('errors').add('identification', this.invalidMessage);
+            model.errors.add('identification', this.invalidMessage);
             this.invalidate();
         }
     },
 
     signin(model) {
-        let id = model.get('identification');
-        let password = model.get('password');
+        let id = model.identification;
+        let password = model.password;
 
-        model.get('errors').clear();
+        model.errors.clear();
 
         if (isBlank(id)) {
-            model.get('errors').add('identification', 'Please enter an email');
+            model.errors.add('identification', 'Please enter an email');
             this.invalidate();
         }
 
         if (!isBlank(id) && !validator.isEmail(id)) {
-            model.get('errors').add('identification', this.invalidMessage);
+            model.errors.add('identification', this.invalidMessage);
             this.invalidate();
         }
 
         if (isBlank(password)) {
-            model.get('errors').add('password', 'Please enter a password');
+            model.errors.add('password', 'Please enter a password');
             this.invalidate();
         }
     },
 
     forgotPassword(model) {
-        let id = model.get('identification');
+        let id = model.identification;
 
-        model.get('errors').clear();
+        model.errors.clear();
 
         if (isBlank(id) || !validator.isEmail(id)) {
-            model.get('errors').add('identification', this.invalidMessage);
+            model.errors.add('identification', this.invalidMessage);
             this.invalidate();
         }
     }

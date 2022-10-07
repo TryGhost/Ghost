@@ -107,8 +107,8 @@ export default Mixin.create({
             model = this.model;
         }
 
-        type = this.validationType || model.get('validationType');
-        validator = this.get(`validators.${type}`) || model.get(`validators.${type}`);
+        type = this.validationType || model.validationType;
+        validator = this.get(`validators.${type}`) || model.validators[type];
         hasValidated = this.hasValidated;
 
         opts.validationType = type;
@@ -123,9 +123,9 @@ export default Mixin.create({
             if (opts.property) {
                 // If property isn't in `hasValidated`, add it to mark that this field can show a validation result
                 hasValidated.addObject(opts.property);
-                model.get('errors').remove(opts.property);
+                model.errors.remove(opts.property);
             } else {
-                model.get('errors').clear();
+                model.errors.clear();
             }
 
             passed = validator.check(model, opts.property);
