@@ -35,7 +35,7 @@ describe('Acceptance: Error Handling', function () {
                 this.server.put('/posts/:id', versionMismatchResponse);
 
                 await visit('/posts');
-                await click('.posts-list li:nth-of-type(2) a'); // select second post
+                await click('.posts-list li:nth-of-type(1) a'); // select first draft post (otherwise no automatic saving on blur)
                 await fillIn('[data-test-editor-title-input]', 'Updated post');
                 await blur('[data-test-editor-title-input]');
 

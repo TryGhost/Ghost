@@ -19,8 +19,7 @@ const GA_FEATURES = [
     'freeTrial',
     'compExpiring',
     'searchHelper',
-    'emailAlerts',
-    'emailClicks'
+    'emailAlerts'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
@@ -34,7 +33,8 @@ const ALPHA_FEATURES = [
     'urlCache',
     'beforeAfterCard',
     'sourceAttribution',
-    'lexicalEditor'
+    'lexicalEditor',
+    'exploreApp'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

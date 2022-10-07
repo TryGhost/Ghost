@@ -1054,7 +1054,7 @@ Dashboard Attribution */
 
 .gh-dashboard-attribution-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 2fr 1fr;
     grid-gap: 0;
     position: relative;
 }
@@ -1082,7 +1082,7 @@ Dashboard Attribution */
 }
 
 .gh-dashboard-attribution-list .gh-dashboard-list-header, .gh-dashboard-attribution-list .gh-dashboard-list-item {
-    grid-template-columns: 70% 30%;
+    grid-template-columns: 50% 25% 25%;
 }
 
 .gh-dashboard-attribution-list .gh-dashboard-list-title:not(.sorted-by) {
@@ -1134,9 +1134,9 @@ Dashboard Attribution */
 }
 
 .gh-dashboard-list-title svg {
-    width: 9px;
+    width: 8px;
     margin-left: 4px;
-    margin-top: -3px;
+    margin-top: -2px;
     vertical-align: middle;
     display: none;
 }
@@ -1154,11 +1154,11 @@ Dashboard Attribution */
 }
 
 .gh-dashboard-list-title svg path {
-    fill: var(--midlightgrey);
+    fill: var(--midgrey);
 }
 
-.gh-dashboard-list-item-sub-signup:not(.sorted-by), .gh-dashboard-list-item-sub-paid:not(.sorted-by) {
-    opacity: 0.6;
+.gh-dashboard-list-item-sub-signup:not(.sorted-by) .gh-dashboard-metric-minivalue, .gh-dashboard-list-item-sub-paid:not(.sorted-by) .gh-dashboard-metric-minivalue, .gh-dashboard-list-item-sub-other:not(.sorted-by) .gh-dashboard-metric-minivalue {
+    color: var(--midlightgrey);
 }
 
 .gh-dashboard-list-item:first-child .gh-dashboard-list-item-sub-source::after {
@@ -1244,16 +1244,14 @@ Dashboard Attribution */
 }
 
 .gh-all-sources .gh-dashboard-list-body {
-    max-height: calc(100vh - 215px);
+    max-height: calc(100vh - 255px);
     position: relative;
 }
 
 .gh-all-sources .gh-dashboard-list-header {
-    grid-template-columns: 70% 30%;
 }
 
 .gh-all-sources .gh-dashboard-list-item {
-    grid-template-columns: 70% 30%;
 }
 
 .gh-all-sources .modal-footer {

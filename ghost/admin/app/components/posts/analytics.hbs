@@ -20,7 +20,7 @@
                             Published and sent
                         {{/if}}
                     {{else}}
-                        Published 
+                        Published
                         {{#if @post.didEmailFail}}
                             but failed to send
                         {{else}}
@@ -106,7 +106,7 @@
                 {{!-- Empty state --}}
             {{else}}
                 <h4 class="gh-main-section-header small bn">
-                    Source attribution
+                    Growth from this post
                 </h4>
                 <div class="gh-post-analytics-box column">
                     <div class="gh-attribution-box">
@@ -132,6 +132,7 @@
                             <MemberAttribution::SourceAttributionTable
                                 @sources={{this.sources}}
                                 @sortColumn={{this.sortColumn}}
+                                @setSortColumn={{this.setSortColumn}}
                             />
                         </div>
                         <div class="gh-attribution-chart-column">
