@@ -20,7 +20,7 @@
                             Published and sent
                         {{/if}}
                     {{else}}
-                        Published 
+                        Published
                         {{#if @post.didEmailFail}}
                             but failed to send
                         {{else}}
@@ -132,6 +132,7 @@
                             <MemberAttribution::SourceAttributionTable
                                 @sources={{this.sources}}
                                 @sortColumn={{this.sortColumn}}
+                                @setSortColumn={{this.setSortColumn}}
                             />
                         </div>
                         <div class="gh-attribution-chart-column">
