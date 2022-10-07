@@ -134,7 +134,9 @@ module.exports = class MembersCSVImporter {
         const result = await rows.reduce(async (resultPromise, row) => {
             const resultAccumulator = await resultPromise;
 
-            const trx = await this._knex.transaction();
+            // Use doNotReject config to reject `executionPromise` on rollback
+            // https://github.com/knex/knex/blob/master/UPGRADING.md
+            const trx = await this._knex.transaction(undefined, {doNotRejectOnRollback: false});
             const options = {
                 transacting: trx,
                 context: this._context
