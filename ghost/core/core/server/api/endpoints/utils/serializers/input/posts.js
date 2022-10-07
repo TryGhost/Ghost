@@ -25,11 +25,7 @@ function defaultRelations(frame) {
         return false;
     }
 
-    if (labs.isSet('emailClicks')) {
-        frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'email', 'tiers', 'newsletter', 'count.signups', 'count.paid_conversions', 'count.clicks'];
-    } else {
-        frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'email', 'tiers', 'newsletter', 'count.signups', 'count.paid_conversions'];
-    }
+    frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'email', 'tiers', 'newsletter', 'count.signups', 'count.paid_conversions', 'count.clicks'];
 }
 
 function setDefaultOrder(frame) {
