@@ -1,27 +1,28 @@
-import Ember from 'ember';
-import RSVP from 'rsvp';
 import Service, {inject as service} from '@ember/service';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
-import classic from 'ember-classic-decorator';
-import {get} from '@ember/object';
+import {tracked} from '@glimmer/tracking';
 
-// ember-cli-shims doesn't export _ProxyMixin
-const {_ProxyMixin} = Ember;
-
-@classic
-export default class SettingsService extends Service.extend(_ProxyMixin, ValidationEngine) {
+export default class SettingsService extends Service.extend(ValidationEngine) {
     @service store;
 
     // will be set to the single Settings model, it's a reference so any later
     // changes to the settings object in the store will be reflected
-    content = null;
+    settingsModel = null;
 
     validationType = 'setting';
     _loadingPromise = null;
 
     // this is an odd case where we only want to react to changes that we get
     // back from the API rather than local updates
-    settledIcon = '';
+    @tracked settledIcon = '';
+
+    get hasDirtyAttributes() {
+        return this.settingsModel?.hasDirtyAttributes || false;
+    }
+
+    get mailgunIsConfigured() {
+        return this.mailgunApiKey && this.mailgunDomain && this.mailgunBaseUrl;
+    }
 
     // the settings API endpoint is a little weird as it's singular and we have
     // to pass in all types - if we ever fetch settings without all types then
@@ -39,40 +40,56 @@ export default class SettingsService extends Service.extend(_ProxyMixin, Validat
         return this._loadingPromise;
     }
 
-    fetch() {
-        if (!this.content) {
+    async fetch() {
+        if (!this.settingsModel) {
             return this.reload();
         } else {
-            return RSVP.resolve(this);
+            return this;
         }
     }
 
-    reload() {
-        return this._loadSettings().then((settings) => {
-            this.set('content', settings);
-            this.set('settledIcon', get(settings, 'icon'));
-            return this;
+    async reload() {
+        const settingsModel = await this._loadSettings();
+
+        this.settingsModel = settingsModel;
+        this.settledIcon = settingsModel.icon;
+
+        settingsModel.eachAttribute((name) => {
+            if (!Object.prototype.hasOwnProperty.call(this, name)) {
+                Object.defineProperty(this, name, {
+                    get() {
+                        return this.settingsModel[name];
+                    },
+                    set(newValue) {
+                        this.settingsModel[name] = newValue;
+                    }
+                });
+            }
         });
+
+        return this;
     }
 
     async save() {
-        let settings = this.content;
+        const {settingsModel} = this;
 
-        if (!settings) {
+        if (!settingsModel) {
             return false;
         }
 
-        await settings.save();
+        await settingsModel.save();
         await this.validate();
-        this.set('settledIcon', settings.icon);
-        return settings;
+
+        this.settledIcon = settingsModel.icon;
+
+        return this;
     }
 
     rollbackAttributes() {
-        return this.content?.rollbackAttributes();
+        return this.settingsModel?.rollbackAttributes();
     }
 
     changedAttributes() {
-        return this.content?.changedAttributes();
+        return this.settingsModel?.changedAttributes();
     }
 }

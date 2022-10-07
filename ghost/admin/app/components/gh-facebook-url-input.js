@@ -1,14 +1,11 @@
 import Component from '@glimmer/component';
 import validator from 'validator';
 import {action} from '@ember/object';
-import {get, set} from '@ember/object';
 
 export default class GhFacebookUrlInput extends Component {
-    // NOTE: `get` and `set` are required when reading/writing model properties
-    // because we can be dealing with proxy objects such as the settings service
     get value() {
         const {model, modelProperty, scratchValue} = this.args;
-        return scratchValue || get(model, modelProperty);
+        return scratchValue || model[modelProperty];
     }
 
     @action
@@ -28,7 +25,7 @@ export default class GhFacebookUrlInput extends Component {
 
         if (!newUrl) {
             // Clear out the Facebook url
-            set(model, modelProperty, null);
+            model[modelProperty] = null;
             this.args.setScratchValue?.(null);
             return;
         }
@@ -51,7 +48,7 @@ export default class GhFacebookUrlInput extends Component {
                 throw 'invalid url';
             }
 
-            set(model, modelProperty, newUrl);
+            model[modelProperty] = newUrl;
             this.args.setScratchValue?.(null);
         } catch (e) {
             if (e === 'invalid url') {

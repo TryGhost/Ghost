@@ -21,7 +21,7 @@ export default class GhKoenigEditorReactComponent extends Component {
     }
 
     get accentColor() {
-        const color = this.settings.get('accentColor');
+        const color = this.settings.accentColor;
         if (color && color[0] === '#') {
             return color.slice(1);
         }

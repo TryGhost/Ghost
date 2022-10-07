@@ -178,12 +178,12 @@ export default class MembersFilter extends Component {
             });
 
         // exclude subscription filters if Stripe isn't connected
-        if (!this.settings.get('paidMembersEnabled')) {
+        if (!this.settings.paidMembersEnabled) {
             availableFilters = availableFilters.reject(prop => prop.group === 'Subscription');
         }
 
         // exclude email filters if email functionality is disabled
-        if (this.settings.get('editorDefaultEmailRecipients') === 'disabled') {
+        if (this.settings.editorDefaultEmailRecipients === 'disabled') {
             availableFilters = availableFilters.reject(prop => prop.group === 'Email');
         }
 
@@ -253,7 +253,7 @@ export default class MembersFilter extends Component {
             } else if (filterProperty.valueType === 'date') {
                 let filterValue;
 
-                let tzMoment = moment.tz(moment(filter.value).format('YYYY-MM-DD'), this.settings.get('timezone'));
+                let tzMoment = moment.tz(moment(filter.value).format('YYYY-MM-DD'), this.settings.timezone);
 
                 if (relationStr === '>') {
                     tzMoment = tzMoment.set({hour: 23, minute: 59, second: 59});
@@ -364,7 +364,7 @@ export default class MembersFilter extends Component {
                 relation,
                 relationOptions: FILTER_RELATIONS_OPTIONS[key],
                 value,
-                timezone: this.settings.get('timezone')
+                timezone: this.settings.timezone
             });
         }
     }
@@ -429,7 +429,7 @@ export default class MembersFilter extends Component {
     @action
     handleSubmitKeyup(e) {
         e.preventDefault();
-    
+
         if (e.key === 'Enter') {
             this.applyFilter();
         }
@@ -465,7 +465,7 @@ export default class MembersFilter extends Component {
         }
 
         if (newProp.valueType === 'date' && !defaultValue) {
-            defaultValue = moment(moment.tz(this.settings.get('timezone')).format('YYYY-MM-DD')).toDate();
+            defaultValue = moment(moment.tz(this.settings.timezone).format('YYYY-MM-DD')).toDate();
         }
 
         let defaultRelation = this.availableFilterRelationsOptions[newType][0].name;
@@ -479,7 +479,7 @@ export default class MembersFilter extends Component {
             relation: defaultRelation,
             relationOptions: this.availableFilterRelationsOptions[newType],
             value: defaultValue,
-            timezone: this.settings.get('timezone')
+            timezone: this.settings.timezone
         });
 
         const filterToSwap = this.filters.find(f => f === filter);

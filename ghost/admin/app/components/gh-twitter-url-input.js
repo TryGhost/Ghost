@@ -1,13 +1,10 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
-import {get, set} from '@ember/object';
 
 export default class GhTwitterUrlInput extends Component {
-    // NOTE: `get` and `set` are required when reading/writing model properties
-    // because we can be dealing with proxy objects such as the settings service
     get value() {
         const {model, modelProperty, scratchValue} = this.args;
-        return scratchValue || get(model, modelProperty);
+        return scratchValue || model[modelProperty];
     }
 
     @action
@@ -27,7 +24,7 @@ export default class GhTwitterUrlInput extends Component {
 
         if (!newUrl) {
             // Clear out the Twitter url
-            set(model, modelProperty, '');
+            model[modelProperty] = '';
             this.args.setScratchValue?.(null);
             return;
         }
@@ -52,7 +49,7 @@ export default class GhTwitterUrlInput extends Component {
                 return;
             }
 
-            set(model, modelProperty, `https://twitter.com/${username}`);
+            model[modelProperty] = `https://twitter.com/${username}`;
             this.args.setScratchValue?.(null);
 
             model.hasValidated.pushObject(modelProperty);

@@ -9,7 +9,7 @@ export default class PublishAtOption extends Component {
     @action
     setDate(selectedDate) {
         // selectedDate is a Date object that contains the correct date string in the blog timezone
-        const selectedMoment = moment.tz(selectedDate, this.settings.get('timezone'));
+        const selectedMoment = moment.tz(selectedDate, this.settings.timezone);
         const {years, months, date} = selectedMoment.toObject();
 
         // Create a new moment from existing scheduledAtUTC _in site timezone_.
@@ -17,7 +17,7 @@ export default class PublishAtOption extends Component {
         // to account for the converted UTC date being yesterday/tomorrow.
         const newDate = moment.tz(
             this.args.publishOptions.scheduledAtUTC,
-            this.settings.get('timezone')
+            this.settings.timezone
         );
         newDate.set({years, months, date});
 
@@ -27,7 +27,7 @@ export default class PublishAtOption extends Component {
 
     @action
     setTime(time, event) {
-        const newDate = moment.tz(this.args.publishOptions.scheduledAtUTC, this.settings.get('timezone'));
+        const newDate = moment.tz(this.args.publishOptions.scheduledAtUTC, this.settings.timezone);
 
         // used to reset the time value on blur if it's invalid
         const oldTime = newDate.format('HH:mm');

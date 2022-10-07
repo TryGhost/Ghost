@@ -39,7 +39,7 @@ export default class GeneralController extends Controller {
     @computed('config.blogUrl', 'settings.publicHash')
     get privateRSSUrl() {
         let blogUrl = this.get('config.blogUrl');
-        let publicHash = this.get('settings.publicHash');
+        let publicHash = this.settings.publicHash;
 
         return `${blogUrl}/${publicHash}/rss`;
     }
@@ -51,13 +51,13 @@ export default class GeneralController extends Controller {
 
     @action
     setTimezone(timezone) {
-        this.set('settings.timezone', timezone.name);
+        this.settings.timezone = timezone.name;
     }
 
     @action
     removeImage(image) {
         // setting `null` here will error as the server treats it as "null"
-        this.settings.set(image, '');
+        this.settings[image] = '';
     }
 
     /**
@@ -80,7 +80,7 @@ export default class GeneralController extends Controller {
     @action
     imageUploaded(property, results) {
         if (results[0]) {
-            return this.settings.set(property, results[0].url);
+            return this.settings[property] = results[0].url;
         }
     }
 
@@ -88,18 +88,18 @@ export default class GeneralController extends Controller {
     toggleIsPrivate(isPrivate) {
         let settings = this.settings;
 
-        settings.set('isPrivate', isPrivate);
-        settings.get('errors').remove('password');
+        settings.isPrivate = isPrivate;
+        settings.errors.remove('password');
 
         let changedAttrs = settings.changedAttributes();
 
         // set a new random password when isPrivate is enabled
         if (isPrivate && changedAttrs.isPrivate) {
-            settings.set('password', randomPassword());
+            settings.password = randomPassword();
 
         // reset the password when isPrivate is disabled
         } else if (changedAttrs.password) {
-            settings.set('password', changedAttrs.password[0]);
+            settings.password = changedAttrs.password[0];
         }
     }
 
@@ -135,7 +135,7 @@ export default class GeneralController extends Controller {
 
             this.clearScratchValues();
 
-            config.set('blogTitle', settings.get('title'));
+            config.set('blogTitle', settings.title);
 
             if (changedAttrs.password) {
                 this.frontend.loginIfNeeded();
