@@ -9,7 +9,7 @@ export default class AmpController extends Controller {
 
     @action
     update(value) {
-        this.settings.set('amp', value);
+        this.settings.amp = value;
     }
 
     @action

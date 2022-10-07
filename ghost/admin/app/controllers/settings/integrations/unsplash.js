@@ -9,7 +9,7 @@ export default class UnsplashController extends Controller {
 
     @action
     update(value) {
-        this.settings.set('unsplash', value);
+        this.settings.unsplash = value;
     }
 
     @action

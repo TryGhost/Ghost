@@ -11,7 +11,7 @@ export default class SlackController extends Controller {
     @service settings;
 
     get testNotificationDisabled() {
-        const slackUrl = this.settings.get('slackUrl');
+        const slackUrl = this.settings.slackUrl;
         return !slackUrl;
     }
 

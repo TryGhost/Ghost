@@ -27,7 +27,7 @@ export default class PostsListItemClicks extends Component {
 
         let formattedTime = formatPostTime(
             this.post.publishedAtUTC,
-            {timezone: this.settings.get('timezone'), scheduled: true}
+            {timezone: this.settings.timezone, scheduled: true}
         );
         text.push(formattedTime);
 

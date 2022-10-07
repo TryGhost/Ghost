@@ -56,7 +56,7 @@ export default class NavigationController extends Controller {
             return;
         }
 
-        let navItems = item.isSecondary ? this.get('settings.secondaryNavigation') : this.get('settings.navigation');
+        let navItems = item.isSecondary ? this.settings.secondaryNavigation : this.settings.navigation;
 
         navItems.removeObject(item);
         this.set('dirtyAttributes', true);
@@ -95,7 +95,7 @@ export default class NavigationController extends Controller {
     }
 
     addNewNavItem(item) {
-        let navItems = item.isSecondary ? this.get('settings.secondaryNavigation') : this.get('settings.navigation');
+        let navItems = item.isSecondary ? this.settings.secondaryNavigation : this.settings.navigation;
 
         item.set('isNew', false);
         navItems.pushObject(item);
@@ -112,8 +112,8 @@ export default class NavigationController extends Controller {
 
     @task
     *saveTask() {
-        let navItems = this.get('settings.navigation');
-        let secondaryNavItems = this.get('settings.secondaryNavigation');
+        let navItems = this.settings.navigation;
+        let secondaryNavItems = this.settings.secondaryNavigation;
 
         let notifications = this.notifications;
         let validationPromises = [];
