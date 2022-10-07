@@ -4,7 +4,7 @@ export default class ErrorController extends Controller {
     stack = false;
 
     get error() {
-        return this.error;
+        return this.model;
     }
 
     get code() {
