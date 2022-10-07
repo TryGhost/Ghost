@@ -1157,7 +1157,7 @@ Dashboard Attribution */
     fill: var(--midlightgrey);
 }
 
-.gh-dashboard-list-item-sub-signup:not(.sorted-by), .gh-dashboard-list-item-sub-paid:not(.sorted-by) {
+.gh-dashboard-list-item-sub-signup:not(.sorted-by), .gh-dashboard-list-item-sub-paid:not(.sorted-by), .gh-dashboard-list-item-sub-other:not(.sorted-by) {
     opacity: 0.6;
 }
 
