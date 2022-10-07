@@ -12,7 +12,6 @@ export default class PostsRoute extends AuthenticatedRoute {
     queryParams = {
         type: {refreshModel: true},
         visibility: {refreshModel: true},
-        access: {refreshModel: true},
         author: {refreshModel: true},
         tag: {refreshModel: true},
         order: {refreshModel: true}
@@ -79,7 +78,7 @@ export default class PostsRoute extends AuthenticatedRoute {
         return this.infinity.model(this.modelName, paginationSettings);
     }
 
-    // trigger a background load of all tags, authors, and snipps for use in filter dropdowns and card menu
+    // trigger a background load of all tags and authors for use in filter dropdowns
     setupController(controller) {
         super.setupController(...arguments);
 
@@ -92,12 +91,6 @@ export default class PostsRoute extends AuthenticatedRoute {
         if (!this.session.user.isAuthorOrContributor && !controller._hasLoadedAuthors) {
             this.store.query('user', {limit: 'all'}).then(() => {
                 controller._hasLoadedAuthors = true;
-            });
-        }
-
-        if (!controller._hasLoadedSnippets) {
-            this.store.query('snippet', {limit: 'all'}).then(() => {
-                controller._hasLoadedSnippets = true;
             });
         }
     }
