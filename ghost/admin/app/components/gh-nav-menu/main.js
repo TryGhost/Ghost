@@ -15,7 +15,6 @@ import {task} from 'ember-concurrency';
 @tagName('')
 export default class Main extends Component.extend(ShortcutsMixin) {
     @service billing;
-    @service explore;
     @service config;
     @service customViews;
     @service feature;

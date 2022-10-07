@@ -5,6 +5,6 @@ export default class GhExploreModal extends Component {
     @service explore;
 
     get visibilityClass() {
-        return this.args.exploreWindowOpen ? 'gh-explore' : 'gh-explore closed';
+        return this.explore.exploreWindowOpen ? 'gh-explore' : 'gh-explore closed';
     }
 }

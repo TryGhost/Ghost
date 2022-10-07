@@ -15,7 +15,7 @@ export default class ExploreRoute extends AuthenticatedRoute {
         // older versions of Ghost where the `connect` part lives in the
         // explore route directly. By using the query param, we avoid causing
         // a 404 and handle the redirect here.
-        if (transition.to?.queryParams?.new === 'true' || !this.feature.get('exploreApp')) {
+        if (transition.to?.queryParams?.new === 'true' || !this.feature.exploreApp) {
             this.explore.isIframeTransition = false;
             return this.router.transitionTo('explore.connect');
         }
