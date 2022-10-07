@@ -1054,7 +1054,7 @@ Dashboard Attribution */
 
 .gh-dashboard-attribution-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 2fr 1fr;
     grid-gap: 0;
     position: relative;
 }
@@ -1082,7 +1082,7 @@ Dashboard Attribution */
 }
 
 .gh-dashboard-attribution-list .gh-dashboard-list-header, .gh-dashboard-attribution-list .gh-dashboard-list-item {
-    grid-template-columns: 70% 30%;
+    grid-template-columns: 50% 25% 25%;
 }
 
 .gh-dashboard-attribution-list .gh-dashboard-list-title:not(.sorted-by) {
