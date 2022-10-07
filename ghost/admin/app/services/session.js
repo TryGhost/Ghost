@@ -22,7 +22,6 @@ export default class SessionService extends ESASessionService {
     @tracked user = null;
 
     skipAuthSuccessHandler = false;
-    forceTransition = false;
 
     async populateUser(options = {}) {
         if (this.user) {
