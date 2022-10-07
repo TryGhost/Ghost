@@ -63,7 +63,6 @@ export default class FeatureService extends Service {
     @feature('compExpiring') compExpiring;
     @feature('memberAttribution') memberAttribution;
     @feature('emailAlerts') emailAlerts;
-    @feature('emailClicks') emailClicks;
     @feature('sourceAttribution') sourceAttribution;
     @feature('lexicalEditor') lexicalEditor;
 
