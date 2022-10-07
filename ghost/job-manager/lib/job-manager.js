@@ -84,7 +84,7 @@ class JobManager {
                 });
             }
 
-            // Can potentially standardise the result here
+            // Can potentially standardize the result here
             return result;
         };
     }
@@ -193,7 +193,7 @@ class JobManager {
                     }
                 } catch (err) {
                     // NOTE: each job should be written in a safe way and handle all errors internally
-                    //       if the error is caught here jobs implementaton should be changed
+                    //       if the error is caught here jobs implementation should be changed
                     logging.error(new UnhandledJobError({
                         context: (typeof job === 'function') ? 'function' : job,
                         err
