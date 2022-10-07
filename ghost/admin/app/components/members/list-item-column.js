@@ -2,7 +2,7 @@ import Component from '@glimmer/component';
 import {get} from '@ember/object';
 import {mostRecentlyUpdated} from 'ghost-admin/helpers/most-recently-updated';
 
-export default class GhMembersListItemColumn extends Component {
+export default class MembersListItemColumn extends Component {
     constructor(...args) {
         super(...args);
     }

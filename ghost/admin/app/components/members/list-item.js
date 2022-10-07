@@ -1,7 +1,7 @@
 import Component from '@glimmer/component';
 import {inject as service} from '@ember/service';
 
-export default class GhMembersListItem extends Component {
+export default class MembersListItem extends Component {
     @service store;
 
     constructor(...args) {
