@@ -1,5 +1,5 @@
 import moment from 'moment-timezone';
-import {action, get} from '@ember/object';
+import {action} from '@ember/object';
 import {htmlSafe} from '@ember/template';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -131,7 +131,7 @@ export default class PublishOptions {
 
     get mailgunIsConfigured() {
         return this.settings.mailgunIsConfigured
-            || get(this.config, 'mailgunIsConfigured');
+            || this.config.mailgunIsConfigured;
     }
 
     @action

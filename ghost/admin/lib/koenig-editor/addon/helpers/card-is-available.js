@@ -22,7 +22,7 @@ export default class CardIsAvailableHelper extends Helper {
         }
 
         if (card.developerExperiment) {
-            cardIsAvailable = cardIsAvailable && this.config.get('enableDeveloperExperiments');
+            cardIsAvailable = cardIsAvailable && this.config.enableDeveloperExperiments;
         }
 
         if (postType && card.postType) {

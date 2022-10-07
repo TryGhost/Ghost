@@ -22,7 +22,7 @@ export default class MembersUtilsService extends Service {
      * Note: always use paidMembersEnabled! Only use this getter for the Stripe Connection UI.
      */
     get isStripeEnabled() {
-        const stripeDirect = this.config.get('stripeDirect');
+        const stripeDirect = this.config.stripeDirect;
 
         const hasDirectKeys = !!this.settings.stripeSecretKey && !!this.settings.stripePublishableKey;
         const hasConnectKeys = !!this.settings.stripeConnectSecretKey && !!this.settings.stripeConnectPublishableKey;
@@ -111,7 +111,7 @@ export default class MembersUtilsService extends Service {
             return t.visibility === 'public' && t.type === 'paid';
         }).map(t => t.id);
 
-        const baseUrl = this.config.get('blogUrl');
+        const baseUrl = this.config.blogUrl;
         const portalBase = '/#/portal/preview';
         const settingsParam = new URLSearchParams();
         const signupButtonText = this.settings.portalButtonSignupText || '';
@@ -177,7 +177,7 @@ export default class MembersUtilsService extends Service {
             tierId
         } = overrides;
 
-        const baseUrl = this.config.get('blogUrl');
+        const baseUrl = this.config.blogUrl;
         const portalBase = '/#/portal/preview/offer';
         const settingsParam = new URLSearchParams();
 

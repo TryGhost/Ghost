@@ -38,7 +38,7 @@ export default class ModalPostPreviewEmailComponent extends Component {
     }
 
     get mailgunIsEnabled() {
-        return this.config.get('mailgunIsConfigured') ||
+        return this.config.mailgunIsConfigured ||
             !!(this.settings.mailgunApiKey && this.settings.mailgunDomain && this.settings.mailgunBaseUrl);
     }
 

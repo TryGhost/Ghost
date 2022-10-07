@@ -335,7 +335,7 @@ export default ModalComponent.extend({
             this.set('customIcon', this.settings.portalButtonIcon);
         }
 
-        this.siteUrl = this.config.get('blogUrl');
+        this.siteUrl = this.config.blogUrl;
         this.set('isPreloading', false);
     }),
 

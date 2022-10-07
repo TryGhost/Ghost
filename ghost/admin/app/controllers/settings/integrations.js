@@ -10,7 +10,7 @@ export default class IntegrationsController extends Controller {
     _allIntegrations = this.store.peekAll('integration');
 
     get zapierDisabled() {
-        return this.config.get('hostSettings.limits.customIntegrations.disabled');
+        return this.config.hostSettings?.limits?.customIntegrations?.disabled;
     }
 
     // filter over the live query so that the list is automatically updated

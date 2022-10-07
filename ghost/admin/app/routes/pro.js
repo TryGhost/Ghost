@@ -15,7 +15,7 @@ export default class ProRoute extends AuthenticatedRoute {
         super.beforeModel(...arguments);
 
         // allow non-owner users to access the BMA when we're in a force upgrade state
-        if (!this.session.user.isOwnerOnly && !this.config.get('hostSettings.forceUpgrade')) {
+        if (!this.session.user.isOwnerOnly && !this.config.hostSettings?.forceUpgrade) {
             return this.transitionTo('home');
         }
 

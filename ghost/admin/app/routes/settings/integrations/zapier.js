@@ -18,7 +18,7 @@ export default class ZapierRoute extends AdminRoute {
     beforeModel() {
         super.beforeModel(...arguments);
 
-        if (this.config.get('hostSettings.limits.customIntegrations.disabled')) {
+        if (this.config.hostSettings?.limits?.customIntegrations?.disabled) {
             return this.transitionTo('settings.integrations');
         }
     }

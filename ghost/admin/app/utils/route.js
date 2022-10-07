@@ -12,7 +12,7 @@ Route.reopen({
                 transition.abort();
                 this.upgradeStatus.requireUpgrade();
                 return false;
-            } else if (this.config.get('hostSettings.forceUpgrade')) {
+            } else if (this.config.hostSettings?.forceUpgrade) {
                 // Do not prevent transitions to the BMA or to signout
                 if (transition.to?.name === 'pro.index' || transition.to?.name === 'signout') {
                     return true;

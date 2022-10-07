@@ -19,7 +19,7 @@ export default class BillingService extends Service {
     init() {
         super.init(...arguments);
 
-        if (this.config.get('hostSettings.billing.url')) {
+        if (this.config.hostSettings?.billing?.url) {
             window.addEventListener('message', (event) => {
                 if (event && event.data && event.data.route) {
                     this.handleRouteChangeInIframe(event.data.route);
@@ -46,7 +46,7 @@ export default class BillingService extends Service {
         // initiate getting owner user in the background
         this.getOwnerUser();
 
-        let url = this.config.get('hostSettings.billing.url');
+        let url = this.config.hostSettings?.billing?.url;
 
         if (window.location.hash && window.location.hash.includes(this.billingRouteRoot)) {
             let destinationRoute = window.location.hash.replace(this.billingRouteRoot, '');

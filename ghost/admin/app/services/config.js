@@ -1,26 +1,17 @@
-import Ember from 'ember';
 import RSVP from 'rsvp';
 import Service, {inject as service} from '@ember/service';
-import classic from 'ember-classic-decorator';
 import timezoneData from '@tryghost/timezone-data';
-import {computed} from '@ember/object';
+import {TrackedObject} from 'tracked-built-ins';
+import {tracked} from '@glimmer/tracking';
 
-// ember-cli-shims doesn't export _ProxyMixin
-const {_ProxyMixin} = Ember;
-
-@classic
-export default class ConfigService extends Service.extend(_ProxyMixin) {
+export default class ConfigService extends Service {
     @service ajax;
     @service ghostPaths;
-
     @service session;
 
-    content = null;
+    @tracked content = new TrackedObject();
 
-    init() {
-        super.init(...arguments);
-        this.content = {};
-    }
+    availableTimezones = timezoneData;
 
     fetch() {
         let promises = [];
@@ -34,48 +25,38 @@ export default class ConfigService extends Service.extend(_ProxyMixin) {
         return RSVP.all(promises);
     }
 
-    fetchUnauthenticated() {
-        let siteUrl = this.ghostPaths.url.api('site');
-        return this.ajax.request(siteUrl).then(({site}) => {
-            // normalize url to non-trailing-slash
-            site.blogUrl = site.url.replace(/\/$/, '');
-            site.blogTitle = site.title;
-            delete site.url;
-            delete site.title;
+    async fetchUnauthenticated() {
+        const siteUrl = this.ghostPaths.url.api('site');
+        const {site} = await this.ajax.request(siteUrl);
 
-            Object.assign(this.content, site);
-        }).then(() => {
-            this.notifyPropertyChange('content');
-        });
+        // normalize url to non-trailing-slash
+        site.blogUrl = site.url.replace(/\/$/, '');
+        site.blogTitle = site.title;
+        delete site.url;
+        delete site.title;
+
+        Object.assign(this.content, site);
+        this._defineProperties(site);
     }
 
-    fetchAuthenticated() {
-        let configUrl = this.ghostPaths.url.api('config');
-        return this.ajax.request(configUrl).then(({config}) => {
-            Object.assign(this.content, config);
-        }).then(() => {
-            this.notifyPropertyChange('content');
-        });
+    async fetchAuthenticated() {
+        const configUrl = this.ghostPaths.url.api('config');
+        const {config} = await this.ajax.request(configUrl);
+
+        Object.assign(this.content, config);
+        this._defineProperties(config);
     }
 
-    @computed
-    get availableTimezones() {
-        return RSVP.resolve(timezoneData);
-    }
-
-    @computed('blogUrl')
     get blogDomain() {
-        let blogUrl = this.get('blogUrl');
-        let blogDomain = blogUrl
+        const blogDomain = this.blogUrl
             .replace(/^https?:\/\//, '')
             .replace(/\/?$/, '');
 
         return blogDomain;
     }
 
-    @computed('blogDomain')
     get emailDomain() {
-        let blogDomain = this.blogDomain || '';
+        const blogDomain = this.blogDomain || '';
         const domainExp = blogDomain.match(new RegExp('^([^/:?#]+)(?:[/:?#]|$)', 'i'));
         const domain = (domainExp && domainExp[1]) || '';
         if (domain.startsWith('www.')) {
@@ -85,10 +66,25 @@ export default class ConfigService extends Service.extend(_ProxyMixin) {
     }
 
     getSiteUrl(path) {
-        const siteUrl = new URL(this.get('blogUrl'));
+        const siteUrl = new URL(this.blogUrl);
         const subdir = siteUrl.pathname.endsWith('/') ? siteUrl.pathname : `${siteUrl.pathname}/`;
         const fullPath = `${subdir}${path.replace(/^\//, '')}`;
 
         return `${siteUrl.origin}${fullPath}`;
+    }
+
+    _defineProperties(obj) {
+        for (const name of Object.keys(obj)) {
+            if (!Object.prototype.hasOwnProperty.call(this, name)) {
+                Object.defineProperty(this, name, {
+                    get() {
+                        return this.content[name];
+                    },
+                    set(newValue) {
+                        this.content[name] = newValue;
+                    }
+                });
+            }
+        }
     }
 }

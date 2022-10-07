@@ -107,7 +107,7 @@ export default class ModalTierPrice extends ModalBase {
     }
 
     get siteUrl() {
-        return this.config.get('blogUrl');
+        return this.config.blogUrl;
     }
 
     // eslint-disable-next-line no-dupe-class-members

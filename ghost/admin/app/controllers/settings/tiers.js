@@ -21,7 +21,7 @@ export default class TiersController extends Controller {
     }
 
     setIconStyle() {
-        let icon = this.config.get('icon');
+        let icon = this.config.icon;
         if (icon) {
             return htmlSafe(`background-image: url(${icon})`);
         }

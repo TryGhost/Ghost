@@ -25,7 +25,7 @@ export default class OffersController extends Controller {
     @tracked tiers = [];
     @tracked portalPreviewUrl = '';
 
-    @tracked defaultSiteUrl = this.config.get('blogUrl');
+    @tracked defaultSiteUrl = this.config.blogUrl;
 
     @tracked durations = [
         {
@@ -350,7 +350,7 @@ export default class OffersController extends Controller {
     get offerUrl() {
         const code = this.offer?.code || '';
         if (code) {
-            const siteUrl = this.config.get('blogUrl');
+            const siteUrl = this.config.blogUrl;
             return `${siteUrl}/${slugify(code)}`;
         }
         return '';

@@ -57,7 +57,7 @@ export default class ModalPostPreviewSocialComponent extends Component {
             urlParts.push(canonicalUrl.host);
             urlParts.push(...canonicalUrl.pathname.split('/').reject(p => !p));
         } else {
-            const blogUrl = new URL(this.config.get('blogUrl'));
+            const blogUrl = new URL(this.config.blogUrl);
             urlParts.push(blogUrl.host);
             urlParts.push(...blogUrl.pathname.split('/').reject(p => !p));
             urlParts.push(this.args.post.slug);

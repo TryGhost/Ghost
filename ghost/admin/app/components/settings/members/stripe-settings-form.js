@@ -182,7 +182,7 @@ export default class StripeSettingsForm extends Component {
     @action
     updateStripeDirect() {
         // Allow disabling stripe direct keys if stripe is still enabled, while the config is disabled
-        this.stripeDirect = this.config.get('stripeDirect')
+        this.stripeDirect = this.config.stripeDirect
             || (this.membersUtils.isStripeEnabled && !this.settings.stripeConnectAccountId);
     }
 

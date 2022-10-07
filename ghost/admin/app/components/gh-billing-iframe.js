@@ -89,7 +89,7 @@ export default class GhBillingIframe extends Component {
         this.billing.getBillingIframe().contentWindow.postMessage({
             request: 'forceUpgradeInfo',
             response: {
-                forceUpgrade: this.config.get('hostSettings.forceUpgrade'),
+                forceUpgrade: this.config.hostSettings?.forceUpgrade,
                 isOwner: this.isOwner,
                 ownerUser
             }
@@ -100,11 +100,11 @@ export default class GhBillingIframe extends Component {
         this.billing.set('subscription', data.subscription);
         this.billing.set('checkoutRoute', data?.checkoutRoute || '/plans');
 
-        if (data.subscription.status === 'active' && this.config.get('hostSettings.forceUpgrade')) {
+        if (data.subscription.status === 'active' && this.config.hostSettings?.forceUpgrade) {
             // config might not be updated after a subscription has been set to active.
             // Until then assume the forceUpgrade is over and the subscription
             // was activated successfully.
-            this.config.set('hostSettings.forceUpgrade', false);
+            this.config.hostSettings.forceUpgrade = false;
         }
 
         // Detect if the current subscription is in a grace state and render a notification

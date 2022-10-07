@@ -137,7 +137,7 @@ export default class GhPostSettingsMenu extends Component {
                 // no-op, invalid URL
             }
         } else {
-            const blogUrl = new URL(this.config.get('blogUrl'));
+            const blogUrl = new URL(this.config.blogUrl);
             urlParts.push(blogUrl.host);
             urlParts.push(...blogUrl.pathname.split('/').reject(p => !p));
             urlParts.push(this.post.slug);

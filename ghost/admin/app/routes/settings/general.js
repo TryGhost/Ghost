@@ -11,13 +11,8 @@ export default class GeneralSettingsRoute extends AdminRoute {
 
     model() {
         return RSVP.hash({
-            settings: this.settings.reload(),
-            availableTimezones: this.config.get('availableTimezones')
+            settings: this.settings.reload()
         });
-    }
-
-    setupController(controller, models) {
-        controller.set('availableTimezones', models.availableTimezones);
     }
 
     deactivate() {

@@ -95,7 +95,7 @@ export default class NotificationsService extends Service {
         options = options || {};
 
         if (!options.isApiError && (!options.type || options.type === 'error')) {
-            if (this.config.get('sentry_dsn')) {
+            if (this.config.sentry_dsn) {
                 // message could be a htmlSafe object rather than a string
                 const displayedMessage = message.string || message;
 
@@ -188,7 +188,7 @@ export default class NotificationsService extends Service {
             msg = `${msg} ${resp.context}`;
         }
 
-        if (this.config.get('sentry_dsn')) {
+        if (this.config.sentry_dsn) {
             const reportedError = resp instanceof Error ? resp : msg;
 
             Sentry.captureException(reportedError, {

@@ -8,7 +8,7 @@ export default class AccentColorBackgroundHelper extends Helper {
     @service config;
 
     compute() {
-        const color = this.get('config.accent_color');
+        const color = this.config.accent_color;
         return htmlSafe(`background: ${color};`);
     }
 }

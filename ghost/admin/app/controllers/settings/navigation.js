@@ -28,7 +28,7 @@ export default class NavigationController extends Controller {
 
     @computed('config.blogUrl')
     get blogUrl() {
-        let url = this.get('config.blogUrl');
+        let url = this.config.blogUrl;
 
         return url.slice(-1) !== '/' ? `${url}/` : url;
     }

@@ -43,13 +43,13 @@ export default class SessionService extends ESASessionService {
         await this.frontend.loginIfNeeded();
 
         // update Sentry with the full Ghost version which we only get after authentication
-        if (this.config.get('sentry_dsn')) {
+        if (this.config.sentry_dsn) {
             configureScope((scope) => {
                 scope.addEventProcessor((event) => {
                     return new Promise((resolve) => {
                         resolve({
                             ...event,
-                            release: `ghost@${this.config.get('version')}`
+                            release: `ghost@${this.config.version}`
                         });
                     });
                 });

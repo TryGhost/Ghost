@@ -13,7 +13,7 @@ export default AuthenticatedRoute.extend({
     classNames: ['editor'],
 
     beforeModel() {
-        if (!this.config.get('editor.url')) {
+        if (!this.config.editor?.url) {
             return this.router.transitionTo('posts');
         }
     },
