@@ -17,7 +17,7 @@ export default class TierController extends Controller {
 
     constructor() {
         super(...arguments);
-        this.siteUrl = this.config.get('blogUrl');
+        this.siteUrl = this.config.blogUrl;
     }
 
     get tier() {

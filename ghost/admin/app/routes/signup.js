@@ -72,7 +72,7 @@ export default class SignupRoute extends UnauthenticatedRoute {
                 }
 
                 // set blogTitle, so password validation has access to it
-                signupDetails.blogTitle = this.config.get('blogTitle');
+                signupDetails.blogTitle = this.config.blogTitle;
 
                 resolve(signupDetails);
             }).catch(() => {

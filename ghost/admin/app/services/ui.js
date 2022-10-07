@@ -144,7 +144,7 @@ export default class UiService extends Service {
             currentRoute = currentRoute.parent;
         }
 
-        let blogTitle = this.config.get('blogTitle');
+        let blogTitle = this.config.blogTitle;
 
         if (!isEmpty(tokens)) {
             window.document.title = `${tokens.join(' - ')} - ${blogTitle}`;

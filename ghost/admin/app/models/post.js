@@ -235,7 +235,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     }),
 
     previewUrl: computed('uuid', 'ghostPaths.url', 'config.blogUrl', function () {
-        let blogUrl = this.get('config.blogUrl');
+        let blogUrl = this.config.blogUrl;
         let uuid = this.uuid;
         // routeKeywords.preview: 'p'
         let previewKeyword = 'p';

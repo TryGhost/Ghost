@@ -15,7 +15,7 @@ export default class FrontendService extends Service {
     }
 
     getUrl(path) {
-        const siteUrl = new URL(this.config.get('blogUrl'));
+        const siteUrl = new URL(this.config.blogUrl);
         const subdir = siteUrl.pathname.endsWith('/') ? siteUrl.pathname : `${siteUrl.pathname}/`;
         const fullPath = `${subdir}${path.replace(/^\//, '')}`;
 

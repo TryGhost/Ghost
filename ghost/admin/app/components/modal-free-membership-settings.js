@@ -15,7 +15,7 @@ export default class ModalFreeMembershipSettings extends ModalBase {
     @tracked siteUrl;
     init() {
         super.init(...arguments);
-        this.siteUrl = this.config.get('blogUrl');
+        this.siteUrl = this.config.blogUrl;
     }
 
     @action
