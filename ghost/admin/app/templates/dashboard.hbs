@@ -86,24 +86,26 @@
                 </div>
             {{/if}}
 
-            {{#unless this.isTotalMembersZero}}
-                <div class="gh-dashboard-select">
-                    <PowerSelect
-                        @selected={{this.selectedDaysOption}}
-                        @options={{this.daysOptions}}
-                        @searchEnabled={{false}}
-                        @onChange={{this.onDaysChange}}
-                        @triggerComponent={{component "gh-power-select/trigger"}}
-                        @triggerClass="gh-contentfilter-menu-trigger"
-                        @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
-                        @matchTriggerWidth={{false}}
-                        @horizontalPosition="right"
-                        as |option|
-                    >
-                        {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
-                    </PowerSelect>
-                </div>
-            {{/unless}}
+            {{#if (not (feature 'sourceAttribution'))}}
+                {{#unless this.isTotalMembersZero}}
+                    <div class="gh-dashboard-select">
+                        <PowerSelect
+                            @selected={{this.selectedDaysOption}}
+                            @options={{this.daysOptions}}
+                            @searchEnabled={{false}}
+                            @onChange={{this.onDaysChange}}
+                            @triggerComponent={{component "gh-power-select/trigger"}}
+                            @triggerClass="gh-contentfilter-menu-trigger"
+                            @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
+                            @matchTriggerWidth={{false}}
+                            @horizontalPosition="right"
+                            as |option|
+                        >
+                            {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
+                        </PowerSelect>
+                    </div>
+                {{/unless}}
+            {{/if}}
         </section>
 
         {{#if (enable-developer-experiments)}}
