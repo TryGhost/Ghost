@@ -1045,6 +1045,18 @@ Dashboard Zero */
 /* ---------------------------------
 Dashboard Attribution */
 
+.gh-dashboard .gh-canvas-header.sticky {
+    max-width: 1230px;
+    min-width: 850px;
+    margin: 0 auto;
+    padding: 32px 0;
+}
+
+.gh-dashboard .gh-canvas-header.sticky .gh-dashboard-select {
+    top: 8px !important;
+    right: -6px !important;
+}
+
 .gh-dashboard-select-title-attribution .gh-contentfilter-menu-trigger:hover {
     cursor: pointer;
     color: #394047;
