@@ -340,17 +340,13 @@ module.exports = class MemberRepository {
         if (options?.transacting) {
             // Only dispatch the event after the transaction has finished
             options.transacting.executionPromise.then(async () => {
-                // make sure member exists before inserting event.
-                //its possible that trnx is rolled back, which still triggers the event
-                // https://knexjs.org/guide/transactions.html
-                const createdMember = await this.get({id: member.id});
-                if (createdMember) {
-                    DomainEvents.dispatch(MemberCreatedEvent.create({
-                        memberId: member.id,
-                        attribution: data.attribution,
-                        source
-                    }, eventData.created_at));
-                }
+                DomainEvents.dispatch(MemberCreatedEvent.create({
+                    memberId: member.id,
+                    attribution: data.attribution,
+                    source
+                }, eventData.created_at));
+            }).catch(() => {
+                // ignore errors for transaction rollback and don't dispatch event
             });
         } else {
             DomainEvents.dispatch(MemberCreatedEvent.create({
