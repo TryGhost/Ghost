@@ -80,7 +80,6 @@
     "chalk": "4.1.2",
     "chokidar": "3.5.3",
     "copy-webpack-plugin": "11.0.0",
-    "eslint-plugin-ghost": "2.15.1",
     "minimist": "1.2.6",
     "ora": "5.4.1",
     "rewire": "6.0.0",
