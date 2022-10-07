@@ -91,9 +91,7 @@ export default class SessionService extends ESASessionService {
 
             if (this.user) {
                 await this.setup();
-                this.forceTransition = true;
                 this.notifications.clearAll();
-
                 transition.retry();
             }
         }
