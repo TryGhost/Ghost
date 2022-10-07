@@ -366,7 +366,7 @@ export default class DashboardStatsService extends Service {
         this.siteStatus = {
             hasPaidTiers,
             hasMultipleTiers: hasPaidTiers && this.activePaidTiers.length > 1,
-            newslettersEnabled: this.settings.get('editorDefaultEmailRecipients') !== 'disabled',
+            newslettersEnabled: this.settings.editorDefaultEmailRecipients !== 'disabled',
             membersEnabled: this.membersUtils.isMembersEnabled
         };
     }

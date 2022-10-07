@@ -6,6 +6,6 @@ export default class MomentSiteTz extends Helper {
     @service settings;
 
     compute([date]) {
-        return moment.tz(date, this.settings.get('timezone'));
+        return moment.tz(date, this.settings.timezone);
     }
 }

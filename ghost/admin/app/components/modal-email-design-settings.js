@@ -14,22 +14,22 @@ export default class ModalEmailDesignSettings extends ModalComponent {
     @service session;
     @service settings;
 
-    @tracked headerImage = this.settings.get('newsletterHeaderImage');
-    @tracked showHeaderIcon = this.settings.get('newsletterShowHeaderIcon');
-    @tracked showHeaderTitle = this.settings.get('newsletterShowHeaderTitle');
-    @tracked titleFontCategory = this.settings.get('newsletterTitleFontCategory');
-    @tracked titleAlignment = this.settings.get('newsletterTitleAlignment');
-    @tracked showFeatureImage = this.settings.get('newsletterShowFeatureImage');
-    @tracked bodyFontCategory = this.settings.get('newsletterBodyFontCategory');
-    @tracked footerContent = this.settings.get('newsletterFooterContent');
-    @tracked showBadge = this.settings.get('newsletterShowBadge');
+    @tracked headerImage = this.settings.newsletterHeaderImage;
+    @tracked showHeaderIcon = this.settings.newsletterShowHeaderIcon;
+    @tracked showHeaderTitle = this.settings.newsletterShowHeaderTitle;
+    @tracked titleFontCategory = this.settings.newsletterTitleFontCategory;
+    @tracked titleAlignment = this.settings.newsletterTitleAlignment;
+    @tracked showFeatureImage = this.settings.newsletterShowFeatureImage;
+    @tracked bodyFontCategory = this.settings.newsletterBodyFontCategory;
+    @tracked footerContent = this.settings.newsletterFooterContent;
+    @tracked showBadge = this.settings.newsletterShowBadge;
 
     currentDate = moment().format('D MMM YYYY');
     copyrightYear = new Date().getFullYear();
     imageExtensions = IMAGE_EXTENSIONS;
 
     get showHeader() {
-        return (this.showHeaderIcon && this.settings.get('icon')) || this.showHeaderTitle;
+        return (this.showHeaderIcon && this.settings.icon) || this.showHeaderTitle;
     }
 
     get featureImageUrl() {
@@ -77,15 +77,15 @@ export default class ModalEmailDesignSettings extends ModalComponent {
 
     @task({drop: true})
     *saveSettings() {
-        this.settings.set('newsletterHeaderImage', this.headerImage);
-        this.settings.set('newsletterShowHeaderIcon', this.showHeaderIcon);
-        this.settings.set('newsletterShowHeaderTitle', this.showHeaderTitle);
-        this.settings.set('newsletterTitleFontCategory', this.titleFontCategory);
-        this.settings.set('newsletterTitleAlignment', this.titleAlignment);
-        this.settings.set('newsletterShowFeatureImage', this.showFeatureImage);
-        this.settings.set('newsletterBodyFontCategory', this.bodyFontCategory);
-        this.settings.set('newsletterFooterContent', this.footerContent);
-        this.settings.set('newsletterShowBadge', this.showBadge);
+        this.settings.newsletterHeaderImage = this.headerImage;
+        this.settings.newsletterShowHeaderIcon = this.showHeaderIcon;
+        this.settings.newsletterShowHeaderTitle = this.showHeaderTitle;
+        this.settings.newsletterTitleFontCategory = this.titleFontCategory;
+        this.settings.newsletterTitleAlignment = this.titleAlignment;
+        this.settings.newsletterShowFeatureImage = this.showFeatureImage;
+        this.settings.newsletterBodyFontCategory = this.bodyFontCategory;
+        this.settings.newsletterFooterContent = this.footerContent;
+        this.settings.newsletterShowBadge = this.showBadge;
 
         yield this.settings.save();
         this.closeModal();

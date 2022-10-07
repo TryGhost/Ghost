@@ -35,7 +35,7 @@ export default class SettingsDesignIndexController extends Controller {
     @task
     *saveTask() {
         try {
-            if (this.settings.get('errors').length !== 0) {
+            if (this.settings.errors.length !== 0) {
                 return;
             }
 

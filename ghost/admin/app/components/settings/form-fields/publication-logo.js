@@ -21,7 +21,7 @@ export default class PublicationLogoFormField extends Component {
 
     @action
     update(value) {
-        this.settings.set('logo', value);
+        this.settings.logo = value;
         this.args.didUpdate('logo', value);
     }
 }

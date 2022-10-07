@@ -16,8 +16,8 @@ describe('Integration: Helper: gh-format-post-time', function () {
 
     beforeEach(function () {
         let settings = this.owner.lookup('service:settings');
-        settings.content = {};
-        settings.set('timezone', timezoneForTest);
+        settings.settingsModel = {};
+        settings.timezone = timezoneForTest;
     });
 
     afterEach(function () {

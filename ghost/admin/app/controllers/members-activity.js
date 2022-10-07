@@ -24,7 +24,7 @@ export default class MembersActivityController extends Controller {
             hiddenEvents.push(...EMAIL_EVENTS);
         }
 
-        if (this.settings.get('editorDefaultEmailRecipients') === 'disabled') {
+        if (this.settings.editorDefaultEmailRecipients === 'disabled') {
             hiddenEvents.push(...EMAIL_EVENTS, ...NEWSLETTER_EVENTS);
         }
 

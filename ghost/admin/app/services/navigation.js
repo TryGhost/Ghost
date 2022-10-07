@@ -1,5 +1,5 @@
 import Service, {inject as service} from '@ember/service';
-import {action, set} from '@ember/object';
+import {action} from '@ember/object';
 import {observes} from '@ember-decorators/object';
 import {tracked} from '@glimmer/tracking';
 
@@ -39,10 +39,7 @@ export default class NavigationService extends Service {
             this.settings.expanded = {};
         }
 
-        // set is still needed here because we're not tracking deep keys
-        // and Ember picks up that our templates are dependent on them and
-        // complains. TODO: can we avoid set?
-        set(this.settings.expanded, key, !this.settings.expanded[key]);
+        this.settings.expanded[key] = !this.settings.expanded[key];
 
         return await this._saveNavigationSettings();
     }

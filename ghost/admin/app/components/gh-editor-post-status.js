@@ -32,7 +32,7 @@ export default class GhEditorPostStatusComponent extends Component {
 
         return formatPostTime(
             this.args.post.publishedAtUTC,
-            {timezone: this.settings.get('timezone'), scheduled: true}
+            {timezone: this.settings.timezone, scheduled: true}
         );
     }
 

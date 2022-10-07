@@ -24,7 +24,7 @@ export default class ModalPostPreviewSocialComponent extends Component {
     get _fallbackDescription() {
         return this.args.post.customExcerpt ||
             this.serpDescription ||
-            this.settings.get('description');
+            this.settings.description;
     }
 
     @action
@@ -107,7 +107,7 @@ export default class ModalPostPreviewSocialComponent extends Component {
     }
 
     get facebookImage() {
-        return this.args.post.ogImage || this.args.post.featureImage || this.settings.get('ogImage') || this.settings.get('coverImage');
+        return this.args.post.ogImage || this.args.post.featureImage || this.settings.ogImage || this.settings.coverImage;
     }
 
     @action
@@ -166,7 +166,7 @@ export default class ModalPostPreviewSocialComponent extends Component {
     }
 
     get twitterImage() {
-        return this.args.post.twitterImage || this.args.post.featureImage || this.settings.get('twitterImage') || this.settings.get('coverImage');
+        return this.args.post.twitterImage || this.args.post.featureImage || this.settings.twitterImage || this.settings.coverImage;
     }
 
     @action

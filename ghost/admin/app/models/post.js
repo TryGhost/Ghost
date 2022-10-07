@@ -185,39 +185,39 @@ export default Model.extend(Comparable, ValidationEngine, {
 
     hasBeenEmailed: computed('isPost', 'isSent', 'isPublished', 'email', function () {
         return this.isPost
-            && (this.isSent || this.isPublished) 
+            && (this.isSent || this.isPublished)
             && this.email && this.email.status !== 'failed';
     }),
 
     didEmailFail: computed('isPost', 'isSent', 'isPublished', 'email.status', function () {
         return this.isPost
-            && (this.isSent || this.isPublished) 
+            && (this.isSent || this.isPublished)
             && this.email && this.email.status === 'failed';
     }),
 
     showEmailOpenAnalytics: computed('hasBeenEmailed', 'isSent', 'isPublished', function () {
         return this.hasBeenEmailed
             && !this.session.user.isContributor
-            && this.settings.get('membersSignupAccess') !== 'none'
-            && this.settings.get('editorDefaultEmailRecipients') !== 'disabled'
+            && this.settings.membersSignupAccess !== 'none'
+            && this.settings.editorDefaultEmailRecipients !== 'disabled'
             && this.hasBeenEmailed
             && this.email.trackOpens
-            && this.settings.get('emailTrackOpens');
+            && this.settings.emailTrackOpens;
     }),
 
     showEmailClickAnalytics: computed('hasBeenEmailed', 'isSent', 'isPublished', 'email', function () {
         return this.hasBeenEmailed
             && !this.session.user.isContributor
-            && this.settings.get('membersSignupAccess') !== 'none'
-            && this.settings.get('editorDefaultEmailRecipients') !== 'disabled'
-            && (this.isSent || this.isPublished) 
+            && this.settings.membersSignupAccess !== 'none'
+            && this.settings.editorDefaultEmailRecipients !== 'disabled'
+            && (this.isSent || this.isPublished)
             && this.email.trackClicks
-            && this.settings.get('emailTrackClicks');
+            && this.settings.emailTrackClicks;
     }),
 
     showAttributionAnalytics: computed('isPage', 'emailOnly', 'isPublished', 'membersUtils.isMembersInviteOnly', function () {
-        return (this.isPage || !this.emailOnly) 
-                && this.isPublished 
+        return (this.isPage || !this.emailOnly)
+                && this.isPublished
                 && this.feature.get('memberAttribution')
                 && !this.membersUtils.isMembersInviteOnly
                 && !this.session.user.isContributor;
@@ -233,7 +233,7 @@ export default Model.extend(Comparable, ValidationEngine, {
                 || this.showAttributionAnalytics
             );
     }),
-   
+
     previewUrl: computed('uuid', 'ghostPaths.url', 'config.blogUrl', function () {
         let blogUrl = this.get('config.blogUrl');
         let uuid = this.uuid;
@@ -252,7 +252,7 @@ export default Model.extend(Comparable, ValidationEngine, {
 
     visibilitySegment: computed('visibility', 'isPublic', 'tiers', function () {
         if (this.isPublic) {
-            return this.settings.get('defaultContentVisibility') === 'paid' ? 'status:-free' : 'status:free,status:-free';
+            return this.settings.defaultContentVisibility === 'paid' ? 'status:-free' : 'status:free,status:-free';
         } else {
             if (this.visibility === 'members') {
                 return 'status:free,status:-free';
@@ -321,7 +321,7 @@ export default Model.extend(Comparable, ValidationEngine, {
         let publishedAtUTC = this.publishedAtUTC;
         let publishedAtBlogDate = this.publishedAtBlogDate;
         let publishedAtBlogTime = this.publishedAtBlogTime;
-        let blogTimezone = this.get('settings.timezone');
+        let blogTimezone = this.settings.timezone;
 
         if (!publishedAtUTC && isBlank(publishedAtBlogDate) && isBlank(publishedAtBlogTime)) {
             return null;
@@ -362,7 +362,7 @@ export default Model.extend(Comparable, ValidationEngine, {
 
     _setPublishedAtBlogStrings(momentDate) {
         if (momentDate) {
-            let blogTimezone = this.get('settings.timezone');
+            let blogTimezone = this.settings.timezone;
             let publishedAtBlog = moment.tz(momentDate, blogTimezone);
 
             this.set('publishedAtBlogDate', publishedAtBlog.format('YYYY-MM-DD'));

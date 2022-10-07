@@ -164,7 +164,7 @@ export default class GhMarkdownEditor extends Component.extend(ShortcutsMixin) {
             toolbar.splice(index, 1);
         }
 
-        if (this.get('settings.unsplash')) {
+        if (this.settings.unsplash) {
             let image = toolbar.findBy('name', 'image');
             let index = toolbar.indexOf(image) + 1;
 

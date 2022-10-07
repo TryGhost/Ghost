@@ -20,46 +20,46 @@ export default class Newsletters extends Component {
     mailgunRegions = [US, EU];
 
     get emailNewsletterEnabled() {
-        return this.settings.get('editorDefaultEmailRecipients') !== 'disabled';
+        return this.settings.editorDefaultEmailRecipients !== 'disabled';
     }
 
     get mailgunRegion() {
-        if (!this.settings.get('mailgunBaseUrl')) {
+        if (!this.settings.mailgunBaseUrl) {
             return US;
         }
 
         return [US, EU].find((region) => {
-            return region.baseUrl === this.settings.get('mailgunBaseUrl');
+            return region.baseUrl === this.settings.mailgunBaseUrl;
         });
     }
 
     get mailgunSettings() {
         return {
-            apiKey: this.settings.get('mailgunApiKey') || '',
-            domain: this.settings.get('mailgunDomain') || '',
-            baseUrl: this.settings.get('mailgunBaseUrl') || ''
+            apiKey: this.settings.mailgunApiKey || '',
+            domain: this.settings.mailgunDomain || '',
+            baseUrl: this.settings.mailgunBaseUrl || ''
         };
     }
 
     @action
     setMailgunDomain(event) {
-        this.settings.set('mailgunDomain', event.target.value);
-        if (!this.settings.get('mailgunBaseUrl')) {
-            this.settings.set('mailgunBaseUrl', this.mailgunRegion.baseUrl);
+        this.settings.mailgunDomain = event.target.value;
+        if (!this.settings.mailgunBaseUrl) {
+            this.settings.mailgunBaseUrl = this.mailgunRegion.baseUrl;
         }
     }
 
     @action
     setMailgunApiKey(event) {
-        this.settings.set('mailgunApiKey', event.target.value);
-        if (!this.settings.get('mailgunBaseUrl')) {
-            this.settings.set('mailgunBaseUrl', this.mailgunRegion.baseUrl);
+        this.settings.mailgunApiKey = event.target.value;
+        if (!this.settings.mailgunBaseUrl) {
+            this.settings.mailgunBaseUrl = this.mailgunRegion.baseUrl;
         }
     }
 
     @action
     setMailgunRegion(region) {
-        this.settings.set('mailgunBaseUrl', region.baseUrl);
+        this.settings.mailgunBaseUrl = region.baseUrl;
     }
 
     @action
@@ -67,7 +67,7 @@ export default class Newsletters extends Component {
         if (event) {
             event.preventDefault();
         }
-        this.settings.set('emailTrackOpens', !this.settings.get('emailTrackOpens'));
+        this.settings.emailTrackOpens = !this.settings.emailTrackOpens;
     }
 
     @action
@@ -75,7 +75,7 @@ export default class Newsletters extends Component {
         if (event) {
             event.preventDefault();
         }
-        this.settings.set('emailTrackClicks', !this.settings.get('emailTrackClicks'));
+        this.settings.emailTrackClicks = !this.settings.emailTrackClicks;
     }
 
     @action
@@ -87,10 +87,10 @@ export default class Newsletters extends Component {
         const newsletterEnabled = !this.emailNewsletterEnabled;
 
         if (newsletterEnabled) {
-            this.settings.set('editorDefaultEmailRecipients', 'visibility');
+            this.settings.editorDefaultEmailRecipients = 'visibility';
         } else {
-            this.settings.set('editorDefaultEmailRecipients', 'disabled');
-            this.settings.set('editorDefaultEmailRecipientsFilter', null);
+            this.settings.editorDefaultEmailRecipients = 'disabled';
+            this.settings.editorDefaultEmailRecipientsFilter = null;
         }
 
         this.recipientsSelectValue = this._getDerivedRecipientsSelectValue();
@@ -106,22 +106,22 @@ export default class Newsletters extends Component {
         // Update the underlying setting properties to match the selected recipients option
 
         if (['visibility', 'disabled'].includes(value)) {
-            this.settings.set('editorDefaultEmailRecipients', value);
-            this.settings.set('editorDefaultEmailRecipientsFilter', null);
+            this.settings.editorDefaultEmailRecipients = value;
+            this.settings.editorDefaultEmailRecipientsFilter = null;
         } else {
-            this.settings.set('editorDefaultEmailRecipients', 'filter');
+            this.settings.editorDefaultEmailRecipients = 'filter';
         }
 
         if (value === 'all-members') {
-            this.settings.set('editorDefaultEmailRecipientsFilter', 'status:free,status:-free');
+            this.settings.editorDefaultEmailRecipientsFilter = 'status:free,status:-free';
         }
 
         if (value === 'paid-only') {
-            this.settings.set('editorDefaultEmailRecipientsFilter', 'status:-free');
+            this.settings.editorDefaultEmailRecipientsFilter = 'status:-free';
         }
 
         if (value === 'none') {
-            this.settings.set('editorDefaultEmailRecipientsFilter', null);
+            this.settings.editorDefaultEmailRecipientsFilter = null;
         }
 
         // Update the value used to display the selected recipients option explicitly
@@ -131,12 +131,12 @@ export default class Newsletters extends Component {
 
     @action
     setDefaultEmailRecipientsFilter(filter) {
-        this.settings.set('editorDefaultEmailRecipientsFilter', filter);
+        this.settings.editorDefaultEmailRecipientsFilter = filter;
     }
 
     _getDerivedRecipientsSelectValue() {
-        const defaultEmailRecipients = this.settings.get('editorDefaultEmailRecipients');
-        const defaultEmailRecipientsFilter = this.settings.get('editorDefaultEmailRecipientsFilter');
+        const defaultEmailRecipients = this.settings.editorDefaultEmailRecipients;
+        const defaultEmailRecipientsFilter = this.settings.editorDefaultEmailRecipientsFilter;
 
         if (defaultEmailRecipients === 'filter') {
             if (defaultEmailRecipientsFilter === 'status:free,status:-free') {

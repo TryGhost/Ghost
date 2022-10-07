@@ -3,9 +3,7 @@ import EmberObject, {action} from '@ember/object';
 import Service, {inject as service} from '@ember/service';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import {isArray} from '@ember/array';
-import {observes} from '@ember-decorators/object';
 import {task} from 'ember-concurrency';
-import {tracked} from '@glimmer/tracking';
 
 const VIEW_COLORS = [
     'midgrey',
@@ -108,33 +106,23 @@ export default class CustomViewsService extends Service {
     @service session;
     @service settings;
 
-    @tracked viewList = [];
-
-    constructor() {
-        super(...arguments);
-        this.updateViewList();
-    }
-
-    // eslint-disable-next-line ghost/ember/no-observers
-    @observes('settings.sharedViews', 'session.{isAuthenticated,user}')
-    async updateViewList() {
+    get viewList() {
         let {settings, session} = this;
 
         // avoid fetching user before authenticated otherwise the 403 can fire
         // during authentication and cause errors during setup/signin
         if (!session.isAuthenticated || !session.user) {
-            return;
+            return [];
         }
 
-        let views = JSON.parse(settings.get('sharedViews') || '[]');
+        let views = JSON.parse(settings.sharedViews || '[]');
         views = isArray(views) ? views : [];
 
-        let viewList = [];
+        const viewList = [];
 
         // contributors can only see their own draft posts so it doesn't make
         // sense to show them default views which change the status/type filter
-        let user = await session.user;
-        if (!user.isContributor) {
+        if (!session.user.isContributor) {
             viewList.push(...DEFAULT_VIEWS);
         }
 
@@ -142,15 +130,17 @@ export default class CustomViewsService extends Service {
             return CustomView.create(view);
         }));
 
-        this.viewList = viewList;
+        return viewList;
     }
 
     @task
     *saveViewTask(view) {
         yield view.validate();
 
+        const {viewList} = this;
+
         // perform some ad-hoc validation of duplicate names because ValidationEngine doesn't support it
-        let duplicateView = this.viewList.find((existingView) => {
+        let duplicateView = viewList.find((existingView) => {
             return existingView.route === view.route
                 && existingView.name.trim().toLowerCase() === view.name.trim().toLowerCase()
                 && !isFilterEqual(existingView.filter, view.filter);
@@ -165,15 +155,15 @@ export default class CustomViewsService extends Service {
         // remove an older version of the view from our views list
         // - we don't allow editing the filter and route+filter combos are unique
         // - we create a new instance of a view from an existing one when editing to act as a "scratch" view
-        let matchingView = this.viewList.find(existingView => isViewEqual(existingView, view));
+        let matchingView = viewList.find(existingView => isViewEqual(existingView, view));
         if (matchingView) {
-            this.viewList.replace(this.viewList.indexOf(matchingView), 1, [view]);
+            viewList.replace(viewList.indexOf(matchingView), 1, [view]);
         } else {
-            this.viewList.push(view);
+            viewList.push(view);
         }
 
         // rebuild the "views" array in our user settings json string
-        yield this._saveViewSettings();
+        yield this._saveViewSettings(viewList);
 
         view.set('isNew', false);
         return view;
@@ -181,10 +171,11 @@ export default class CustomViewsService extends Service {
 
     @task
     *deleteViewTask(view) {
-        let matchingView = this.viewList.find(existingView => isViewEqual(existingView, view));
+        const {viewList} = this;
+        let matchingView = viewList.find(existingView => isViewEqual(existingView, view));
         if (matchingView && !matchingView.isDefault) {
-            this.viewList.removeObject(matchingView);
-            yield this._saveViewSettings();
+            viewList.removeObject(matchingView);
+            yield this._saveViewSettings(viewList);
             return true;
         }
     }
@@ -234,9 +225,9 @@ export default class CustomViewsService extends Service {
         });
     }
 
-    async _saveViewSettings() {
-        let sharedViews = this.viewList.reject(view => view.isDefault).map(view => view.toJSON());
-        this.settings.set('sharedViews', JSON.stringify(sharedViews));
+    async _saveViewSettings(viewList) {
+        let sharedViews = viewList.reject(view => view.isDefault).map(view => view.toJSON());
+        this.settings.sharedViews = JSON.stringify(sharedViews);
         return this.settings.save();
     }
 }

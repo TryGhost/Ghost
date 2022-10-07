@@ -58,7 +58,7 @@ export default class MembersEmailLabsRoute extends AdminRoute {
     }
 
     confirmUnsavedChanges() {
-        if (!this.settings.get('hasDirtyAttributes')) {
+        if (!this.settings.hasDirtyAttributes) {
             return Promise.resolve(true);
         }
 

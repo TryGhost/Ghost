@@ -70,7 +70,7 @@ export default class UiService extends Service {
     }
 
     get adjustedAccentColor() {
-        const accentColor = Color(this.settings.get('accentColor'));
+        const accentColor = Color(this.settings.accentColor);
         const backgroundColor = Color(this.backgroundColor);
 
         // WCAG contrast. 1 = lowest contrast, 21 = highest contrast

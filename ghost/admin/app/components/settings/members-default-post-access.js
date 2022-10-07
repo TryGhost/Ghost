@@ -37,22 +37,22 @@ export default class SettingsMembersDefaultPostAccess extends Component {
     }
 
     get hasVisibilityFilter() {
-        return !['public', 'members', 'paid'].includes(this.settings.get('defaultContentVisibility'));
+        return !['public', 'members', 'paid'].includes(this.settings.defaultContentVisibility);
     }
 
     get visibilityTiers() {
-        const visibilityTiersData = this.settings.get('defaultContentVisibilityTiers');
+        const visibilityTiersData = this.settings.defaultContentVisibilityTiers;
         return (visibilityTiersData || []).map((id) => {
             return {id};
         });
     }
 
     get selectedOption() {
-        if (this.settings.get('membersSignupAccess') === 'none') {
+        if (this.settings.membersSignupAccess === 'none') {
             return this.options.find(o => o.value === 'public');
         }
 
-        return this.options.find(o => o.value === this.settings.get('defaultContentVisibility'));
+        return this.options.find(o => o.value === this.settings.defaultContentVisibility);
     }
 
     @action
@@ -61,21 +61,21 @@ export default class SettingsMembersDefaultPostAccess extends Component {
             const tierIds = segment?.map((tier) => {
                 return tier.id;
             });
-            this.settings.set('defaultContentVisibility', 'tiers');
-            this.settings.set('defaultContentVisibilityTiers', tierIds);
+            this.settings.defaultContentVisibility = 'tiers';
+            this.settings.defaultContentVisibilityTiers = tierIds;
             this.showSegmentError = false;
         } else {
-            this.settings.set('defaultContentVisibility', '');
+            this.settings.defaultContentVisibility = '';
             this.showSegmentError = true;
         }
     }
 
     @action
     setDefaultContentVisibility(option) {
-        if (this.settings.get('membersSignupAccess') !== 'none') {
-            this.settings.set('defaultContentVisibility', option.value);
+        if (this.settings.membersSignupAccess !== 'none') {
+            this.settings.defaultContentVisibility = option.value;
             if (option.value === 'tiers') {
-                this.settings.set('defaultContentVisibilityTiers', []);
+                this.settings.defaultContentVisibilityTiers = [];
             }
         }
     }

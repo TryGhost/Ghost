@@ -11,14 +11,14 @@ export default class ModalStripeConnect extends ModalBase {
 
     @action
     setStripeConnectIntegrationTokenSetting(stripeConnectIntegrationToken) {
-        this.settings.set('stripeConnectIntegrationToken', stripeConnectIntegrationToken);
+        this.settings.stripeConnectIntegrationToken = stripeConnectIntegrationToken;
     }
 
     @action
     reset() {
         // stripeConnectIntegrationToken is not a persisted value so we don't want
         // to keep it around across transitions
-        this.settings.set('stripeConnectIntegrationToken', undefined);
+        this.settings.stripeConnectIntegrationToken = undefined;
     }
 
     @action
@@ -36,7 +36,7 @@ export default class ModalStripeConnect extends ModalBase {
     @action
     updateSuccessModifier() {
         // Note, we should also check isStripeEnabled because stripeDirect option might be enabled
-        if (this.membersUtils.get('isStripeEnabled') && this.settings.get('stripeConnectAccountId')) {
+        if (this.membersUtils.get('isStripeEnabled') && this.settings.stripeConnectAccountId) {
             if (this.modifier?.indexOf('stripe-connected') === -1) {
                 this.updateModifier(`${this.modifier} stripe-connected`);
             }
@@ -49,7 +49,7 @@ export default class ModalStripeConnect extends ModalBase {
 
     actions = {
         confirm() {
-            if (this.settings.get('stripeConnectAccountId')) {
+            if (this.settings.stripeConnectAccountId) {
                 return this.confirmAction();
             }
             // noop - enter key shouldn't do anything

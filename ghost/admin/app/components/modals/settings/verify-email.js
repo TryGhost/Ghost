@@ -33,7 +33,7 @@ export default class VerifyEmail extends Component {
 
             yield this.ajax.put(url, {data: {token}});
             yield this.settings.reload();
-            this.email = this.settings.get('membersSupportAddress');
+            this.email = this.settings.membersSupportAddress;
         } catch (e) {
             this.error = e.message;
         }

@@ -36,7 +36,7 @@ export default class SettingsDesignIndexRoute extends AuthenticatedRoute {
     }
 
     confirmUnsavedChanges() {
-        if (!this.settings.get('hasDirtyAttributes') && !this.customThemeSettings.isDirty) {
+        if (!this.settings.hasDirtyAttributes && !this.customThemeSettings.isDirty) {
             return Promise.resolve(true);
         }
 

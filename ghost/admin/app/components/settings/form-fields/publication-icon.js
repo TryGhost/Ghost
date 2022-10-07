@@ -21,7 +21,7 @@ export default class PublicationIconFormField extends Component {
 
     @action
     update(value) {
-        this.settings.set('icon', value);
+        this.settings.icon = value;
         this.args.didUpdate('icon', value);
     }
 }

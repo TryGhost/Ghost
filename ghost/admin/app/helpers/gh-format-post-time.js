@@ -59,6 +59,6 @@ export default class GhFormatPostTimeHelper extends Helper {
     compute([timeago], options) {
         assert('You must pass a time to the gh-format-post-time helper', timeago);
 
-        return formatPostTime(timeago, Object.assign({}, options, {timezone: this.settings.get('timezone')}));
+        return formatPostTime(timeago, Object.assign({}, options, {timezone: this.settings.timezone}));
     }
 }
