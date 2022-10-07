@@ -205,4 +205,57 @@ describe('post.* events', function () {
                 }
             });
     });
+
+    it('post.scheduled event is triggered', async function () {
+        const webhookURL = 'https://test-webhook-receiver.com/post-scheduled/';
+        await webhookMockReceiver.mock(webhookURL);
+        await fixtureManager.insertWebhook({
+            event: 'post.scheduled',
+            url: webhookURL
+        });
+
+        const res = await adminAPIAgent
+            .post('posts/')
+            .body({
+                posts: [{
+                    title: 'Testing post.scheduled webhook',
+                    status: 'draft'
+                }]
+            })
+            .expectStatus(201);
+
+        const id = res.body.posts[0].id;
+        const scheduledPost = res.body.posts[0];
+        scheduledPost.status = 'scheduled';
+        const publishedTime = new Date();
+        publishedTime.setDate(publishedTime.getDate() + 1);
+        scheduledPost.published_at = publishedTime.toISOString();
+
+        await adminAPIAgent
+            .put('posts/' + id)
+            .body({
+                posts: [scheduledPost]
+            })
+            .expectStatus(200);
+
+        await webhookMockReceiver.receivedRequest();
+
+        webhookMockReceiver
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                'content-length': anyNumber,
+                'user-agent': anyGhostAgent
+            })
+            .matchBodySnapshot({
+                post: {
+                    current: buildPostSnapshotWithTiers({
+                        published: true,
+                        tiersCount: 2
+                    }),
+                    previous: buildPreviousPostSnapshotWithTiers({
+                        tiersCount: 2
+                    })
+                }
+            });
+    });
 });
