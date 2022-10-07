@@ -114,7 +114,7 @@ class JobManager {
     }
 
     async _jobErrorHandler(error, jobMeta) {
-        if (this._jobsRepository) {
+        if (this._jobsRepository && jobMeta.name) {
             const job = await this._jobsRepository.read(jobMeta.name);
 
             if (job) {
