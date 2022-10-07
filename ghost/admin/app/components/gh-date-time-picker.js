@@ -103,7 +103,7 @@ export default class GhDateTimePicker extends Component {
         if (!isBlank(date)) {
             console.log('Receiving date', date);
             // Note: input date as a string is expected to be in the blog's timezone
-            this.set('_date', moment.tz(date, blogTimezone).tz(blogTimezone));
+            this.set('_date', moment.tz(date, blogTimezone));
         } else {
             this.set('_date', moment().tz(blogTimezone));
         }
@@ -130,17 +130,17 @@ export default class GhDateTimePicker extends Component {
 
         // unless min/max date is at midnight moment will disable that day
         if (minDate === 'now') {
-            this.set('_minDate', moment(moment().tz(blogTimezone).format(DATE_FORMAT)).tz(blogTimezone).toDate());
+            this.set('_minDate', moment(moment().tz(blogTimezone).format(DATE_FORMAT)).toDate());
         } else if (!isBlank(minDate)) {
-            this.set('_minDate', moment(moment.tz(minDate, blogTimezone).tz(blogTimezone).format(DATE_FORMAT)).tz(blogTimezone).toDate());
+            this.set('_minDate', moment(moment.tz(minDate, blogTimezone).format(DATE_FORMAT)).toDate());
         } else {
             this.set('_minDate', null);
         }
 
         if (maxDate === 'now') {
-            this.set('_maxDate', moment(moment().tz(blogTimezone).format(DATE_FORMAT)).tz(blogTimezone).toDate());
+            this.set('_maxDate', moment(moment().tz(blogTimezone).format(DATE_FORMAT)).toDate());
         } else if (!isBlank(maxDate)) {
-            this.set('_maxDate', moment(moment.tz(maxDate, blogTimezone).tz(blogTimezone).format(DATE_FORMAT)).tz(blogTimezone).toDate());
+            this.set('_maxDate', moment(moment.tz(maxDate, blogTimezone).format(DATE_FORMAT)).toDate());
         } else {
             this.set('_maxDate', null);
         }
