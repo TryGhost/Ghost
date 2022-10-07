@@ -1244,7 +1244,7 @@ Dashboard Attribution */
 }
 
 .gh-all-sources .gh-dashboard-list-body {
-    max-height: calc(100vh - 215px);
+    max-height: calc(100vh - 255px);
     position: relative;
 }
 
