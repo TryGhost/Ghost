@@ -59,7 +59,7 @@ export default class MembersAccessController extends Controller {
     }
 
     get siteUrl() {
-        return this.config.get('blogUrl');
+        return this.config.blogUrl;
     }
 
     get selectedCurrency() {
@@ -67,7 +67,7 @@ export default class MembersAccessController extends Controller {
     }
 
     get isConnectDisallowed() {
-        const siteUrl = this.config.get('blogUrl');
+        const siteUrl = this.config.blogUrl;
         return envConfig.environment !== 'development' && !/^https:/.test(siteUrl);
     }
 
@@ -383,7 +383,7 @@ export default class MembersAccessController extends Controller {
     }
 
     _validateSignupRedirect(url, type) {
-        const siteUrl = this.config.get('blogUrl');
+        const siteUrl = this.config.blogUrl;
         let errMessage = `Please enter a valid URL`;
         this.settings.errors.remove(type);
         this.settings.hasValidated.removeObject(type);

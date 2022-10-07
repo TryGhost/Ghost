@@ -236,7 +236,7 @@ class ajaxService extends AjaxService {
                 const result = await makeRequest(hash);
                 success = true;
 
-                if (attempts !== 0 && this.config.get('sentry_dsn')) {
+                if (attempts !== 0 && this.config.sentry_dsn) {
                     captureMessage('Request took multiple attempts', {extra: getErrorData()});
                 }
 
@@ -254,7 +254,7 @@ class ajaxService extends AjaxService {
                 if (retryErrorChecks.some(check => check(error.response)) && retryingMs <= maxRetryingMs) {
                     await timeout(retryPeriods[attempts] || retryPeriods[retryPeriods.length - 1]);
                     attempts += 1;
-                } else if (attempts > 0 && this.config.get('sentry_dsn')) {
+                } else if (attempts > 0 && this.config.sentry_dsn) {
                     captureMessage('Request failed after multiple attempts', {extra: getErrorData()});
                     throw error;
                 } else {

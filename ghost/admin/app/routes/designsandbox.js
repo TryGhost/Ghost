@@ -7,7 +7,7 @@ export default class DesignsandboxRoute extends Route {
 
     beforeModel() {
         super.beforeModel(...arguments);
-        if (!this.config.get('enableDeveloperExperiments')) {
+        if (!this.config.enableDeveloperExperiments) {
             return this.transitionTo('home');
         }
     }

@@ -54,7 +54,7 @@ export default class GhPortalLinks extends Component {
 
     init() {
         super.init(...arguments);
-        this.siteUrl = this.config.get('blogUrl');
+        this.siteUrl = this.config.blogUrl;
     }
 
     @action

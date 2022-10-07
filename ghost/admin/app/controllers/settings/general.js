@@ -32,13 +32,13 @@ export default class GeneralController extends Controller {
 
     @tracked scratchValues = new TrackedObject();
 
-    availableTimezones = null;
+    availableTimezones = this.config.availableTimezones;
     imageExtensions = IMAGE_EXTENSIONS;
     imageMimeTypes = IMAGE_MIME_TYPES;
 
     @computed('config.blogUrl', 'settings.publicHash')
     get privateRSSUrl() {
-        let blogUrl = this.get('config.blogUrl');
+        let blogUrl = this.config.blogUrl;
         let publicHash = this.settings.publicHash;
 
         return `${blogUrl}/${publicHash}/rss`;
