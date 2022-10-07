@@ -29,7 +29,6 @@ export default class MembersRoute extends AdminRoute {
 
     setupController(controller, member) {
         super.setupController(...arguments);
-        controller.setInitialRelationshipValues();
         if (this._requiresBackgroundRefresh) {
             // `member` is passed directly in `<LinkTo>` so it can be a proxy
             // object used by the sparse list requiring the use of .get()
