@@ -5,38 +5,38 @@ import {isBlank} from '@ember/utils';
 export default BaseValidator.create({
     properties: ['title', 'description', 'password', 'slackUrl'],
     title(model) {
-        let title = model.get('title');
+        let title = model.title;
 
         if (!validator.isLength(title || '', 0, 150)) {
-            model.get('errors').add('title', 'Title is too long');
+            model.errors.add('title', 'Title is too long');
             this.invalidate();
         }
     },
 
     description(model) {
-        let desc = model.get('description');
+        let desc = model.description;
 
         if (!validator.isLength(desc || '', 0, 200)) {
-            model.get('errors').add('description', 'Description is too long');
+            model.errors.add('description', 'Description is too long');
             this.invalidate();
         }
     },
 
     password(model) {
-        let isPrivate = model.get('isPrivate');
-        let password = model.get('password');
+        let isPrivate = model.isPrivate;
+        let password = model.password;
 
         if (isPrivate && password === '') {
-            model.get('errors').add('password', 'Password must be supplied');
+            model.errors.add('password', 'Password must be supplied');
             this.invalidate();
         }
     },
 
     slackUrl(model) {
-        let slackUrl = model.get('slackUrl');
+        let slackUrl = model.slackUrl;
 
         if (!isBlank(slackUrl) && !validator.isURL(slackUrl, {require_protocol: true})) {
-            model.get('errors').add(
+            model.errors.add(
                 'slackUrl',
                 'The URL must be in a format like https://hooks.slack.com/services/<your personal key>'
             );
