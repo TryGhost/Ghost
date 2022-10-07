@@ -111,9 +111,16 @@
           <div class="content" style="box-sizing: border-box; display: block; Margin: 0 auto; max-width: 600px; padding: 30px 20px;">
 
             <!-- START CENTERED CONTAINER -->
-            <span class="preheader" style="color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;">
-              {{#if subscriptionData.cancellationReason}}Reason: {{subscriptionData.cancellationReason}} - {{/if}}
-            </span>
+            {{#> preview}}
+              {{#*inline "content"}}
+                {{#if subscriptionData.cancellationReason}}
+                  Reason: {{subscriptionData.cancellationReason}}
+                {{else}}
+                  A paid member has just canceled their subscription.
+                {{/if}}
+              {{/inline}}
+            {{/preview}}
+
             <table class="main" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background: #ffffff; border-radius: 8px;">
 
               <!-- START MAIN CONTENT AREA -->

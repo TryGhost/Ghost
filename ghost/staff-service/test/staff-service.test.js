@@ -417,6 +417,11 @@ describe('StaffService', function () {
                 mailStub.calledWith(
                     sinon.match.has('html', 'Offer')
                 ).should.be.false();
+
+                // check preview text
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Test Tier: $50.00/month'))
+                ).should.be.true();
             });
 
             it('sends paid subscription start alert with percent offer - first payment', async function () {
@@ -433,6 +438,11 @@ describe('StaffService', function () {
                 ).should.be.true();
                 mailStub.calledWith(
                     sinon.match.has('html', sinon.match('first payment'))
+                ).should.be.true();
+
+                // check preview text
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Test Tier: $50.00/month - Offer: Half price - 50% off, first payment'))
                 ).should.be.true();
             });
 
@@ -561,7 +571,7 @@ describe('StaffService', function () {
                 ).should.be.false();
 
                 mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('Reason: Changed my mind! - '))
+                    sinon.match.has('html', sinon.match('Reason: Changed my mind!'))
                 ).should.be.true();
                 mailStub.calledWith(
                     sinon.match.has('html', sinon.match('Cancellation reason'))
@@ -592,6 +602,11 @@ describe('StaffService', function () {
                 mailStub.calledWith(
                     sinon.match.has('html', sinon.match('Cancellation reason'))
                 ).should.be.false();
+
+                // check preview text
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('A paid member has just canceled their subscription.'))
+                ).should.be.true();
             });
         });
     });
