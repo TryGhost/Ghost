@@ -1,30 +1,19 @@
-import classic from 'ember-classic-decorator';
-import {computed} from '@ember/object';
-import {reads} from '@ember/object/computed';
-import {inject as service} from '@ember/service';
-/* eslint-disable ghost/ember/alias-model-in-controller */
 import Controller from '@ember/controller';
+import {inject as service} from '@ember/service';
 
-@classic
 export default class ApplicationController extends Controller {
     @service billing;
     @service explore;
     @service config;
-    @service dropdown;
-    @service feature;
     @service router;
     @service session;
     @service settings;
     @service ui;
 
-    @reads('config.hostSettings.billing.enabled')
-        showBilling;
+    get showBilling() {
+        return this.config.hostSettings?.billing?.enabled;
+    }
 
-    @computed(
-        'router.currentRouteName',
-        'session.{isAuthenticated,user}',
-        'ui.isFullScreen'
-    )
     get showNavMenu() {
         let {router, session, ui} = this;
 
