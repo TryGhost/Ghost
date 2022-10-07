@@ -52,7 +52,7 @@
     "cli": "^1.17.0"
   },
   "dependencies": {
-    "@sentry/node": "7.14.1",
+    "@sentry/node": "7.14.2",
     "@tryghost/adapter-base-cache": "0.1.2",
     "@tryghost/adapter-manager": "0.0.0",
     "@tryghost/admin-api-schema": "4.2.0",
@@ -129,7 +129,7 @@
     "amperize": "0.6.1",
     "analytics-node": "6.2.0",
     "bluebird": "3.7.2",
-    "body-parser": "1.20.0",
+    "body-parser": "1.20.1",
     "bookshelf": "1.2.0",
     "bookshelf-relations": "2.4.0",
     "brute-knex": "4.0.1",

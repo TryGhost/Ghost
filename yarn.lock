@@ -2274,10 +2274,24 @@
     resolve "^1.20.0"
     semver "^7.3.2"
 
-"@embroider/macros@1.8.3", "@embroider/macros@^0.50.0 || ^1.0.0", "@embroider/macros@^1.0.0", "@embroider/macros@^1.2.0", "@embroider/macros@^1.6.0", "@embroider/macros@^1.8.0":
+"@embroider/macros@1.8.3":
   version "1.8.3"
   resolved "https://registry.yarnpkg.com/@embroider/macros/-/macros-1.8.3.tgz#2f0961ab8871f6ad819630208031d705b357757e"
   integrity sha512-gnIOfTL/pUkoD6oI7JyWOqXlVIUgZM+CnbH10/YNtZr2K0hij9eZQMdgjOZZVgN0rKOFw9dIREqc1ygrJHRYQA==
+  dependencies:
+    "@embroider/shared-internals" "1.8.3"
+    assert-never "^1.2.1"
+    babel-import-util "^1.1.0"
+    ember-cli-babel "^7.26.6"
+    find-up "^5.0.0"
+    lodash "^4.17.21"
+    resolve "^1.20.0"
+    semver "^7.3.2"
+
+"@embroider/macros@1.9.0", "@embroider/macros@^0.50.0 || ^1.0.0", "@embroider/macros@^1.0.0", "@embroider/macros@^1.2.0", "@embroider/macros@^1.6.0", "@embroider/macros@^1.8.0":
+  version "1.9.0"
+  resolved "https://registry.yarnpkg.com/@embroider/macros/-/macros-1.9.0.tgz#0df2a56fdd93f11fddea450b6ca83cc2119b5008"
+  integrity sha512-12ElrRT+mX3aSixGHjHnfsnyoH1hw5nM+P+Ax0ITZdp6TaAvWZ8dENnVHltdnv4ssHiX0EsVEXmqbIIdMN4nLA==
   dependencies:
     "@embroider/shared-internals" "1.8.3"
     assert-never "^1.2.1"
@@ -3363,24 +3377,24 @@
     domhandler "^4.2.0"
     selderee "^0.6.0"
 
-"@sentry/browser@7.14.1":
-  version "7.14.1"
-  resolved "https://registry.yarnpkg.com/@sentry/browser/-/browser-7.14.1.tgz#1327742f8b62c41bd1c1e8b23827aae08aa90dde"
-  integrity sha512-b9nW2+kT9Jl/tfzJmvzpnS6F8ziC62TDx04a7kZDtuaVA5rKKTTlLDg8ZamCRFjjnuwuFhLnzxO34N0KfeTqHg==
+"@sentry/browser@7.14.2":
+  version "7.14.2"
+  resolved "https://registry.yarnpkg.com/@sentry/browser/-/browser-7.14.2.tgz#668359603e3f32e6debf6a139652f5233b4d3e58"
+  integrity sha512-KGAZ+5lK7gIO2CM3/MAQGY8JtNVCWXRi807lAxndJ3E1oIQb9A0x7b+AJNr1+6jlwf6QESblr92MCLKPHDpNbA==
   dependencies:
-    "@sentry/core" "7.14.1"
-    "@sentry/types" "7.14.1"
-    "@sentry/utils" "7.14.1"
+    "@sentry/core" "7.14.2"
+    "@sentry/types" "7.14.2"
+    "@sentry/utils" "7.14.2"
     tslib "^1.9.3"
 
-"@sentry/core@7.14.1":
-  version "7.14.1"
-  resolved "https://registry.yarnpkg.com/@sentry/core/-/core-7.14.1.tgz#6b046181a1c13ed0fbc90d88d9c18ab1d70d98da"
-  integrity sha512-sjk60Gf5o9zynhWe1e0ro9uQO4OrKZ3H9xfgBf2ExgKXeMfKzYp5r2v2OKNevEde36Sr/DzlpiPj8EK67xrWPA==
+"@sentry/core@7.14.2":
+  version "7.14.2"
+  resolved "https://registry.yarnpkg.com/@sentry/core/-/core-7.14.2.tgz#47262aad43d94d8c5fb73b668a7e8e9c4b91c98f"
+  integrity sha512-AXcH6nROugziO5KsKSQ9TmAXq6HJa8Fn+kDqAL/sNY65w6YYlHifMO2xHkSXVJxGw7vx9DYh/5SF+KnLn6NDNA==
   dependencies:
-    "@sentry/hub" "7.14.1"
-    "@sentry/types" "7.14.1"
-    "@sentry/utils" "7.14.1"
+    "@sentry/hub" "7.14.2"
+    "@sentry/types" "7.14.2"
+    "@sentry/utils" "7.14.2"
     tslib "^1.9.3"
 
 "@sentry/core@7.8.1":
@@ -3393,28 +3407,28 @@
     "@sentry/utils" "7.8.1"
     tslib "^1.9.3"
 
-"@sentry/ember@7.14.1":
-  version "7.14.1"
-  resolved "https://registry.yarnpkg.com/@sentry/ember/-/ember-7.14.1.tgz#e7e426470a7b8c5e8c1ec92367f77272a41a1db9"
-  integrity sha512-tpGYMVEFQETMvg/XXHq4mKac3JjnIOHsuCw0LG6b4FQxgBzckNwLc2wjjSZpYz8Fw4T+r4qyfGNgwqiYiRH9cA==
+"@sentry/ember@7.14.2":
+  version "7.14.2"
+  resolved "https://registry.yarnpkg.com/@sentry/ember/-/ember-7.14.2.tgz#edb7f0ac064935c425d24ab18d76303f67deb253"
+  integrity sha512-dmQArlIWa/3t0FBhZUBG8bF8I03NvBOsyHz8Tj5LfgM5YzssZnMHKiv419BVWI8VURshXhe6Q91JU8zAD0JKNw==
   dependencies:
     "@embroider/macros" "1.8.3"
-    "@sentry/browser" "7.14.1"
-    "@sentry/tracing" "7.14.1"
-    "@sentry/types" "7.14.1"
-    "@sentry/utils" "7.14.1"
+    "@sentry/browser" "7.14.2"
+    "@sentry/tracing" "7.14.2"
+    "@sentry/types" "7.14.2"
+    "@sentry/utils" "7.14.2"
     ember-auto-import "~1.12.1 || ~2.2.0"
     ember-cli-babel "~7.26.6"
     ember-cli-htmlbars "^6.0.1"
     ember-cli-typescript "^4.2.1"
 
-"@sentry/hub@7.14.1":
-  version "7.14.1"
-  resolved "https://registry.yarnpkg.com/@sentry/hub/-/hub-7.14.1.tgz#f24d8ac65ff39dab6dbaa859c06a0651359f20d2"
-  integrity sha512-BWh5jUvGmzCsJtYy6EX3qA6gTOxwGhA64IEXHbzwIAnBoG+VWao3addaL77AGR9pIgAqn6ssfkX665OZa+GPGw==
+"@sentry/hub@7.14.2":
+  version "7.14.2"
+  resolved "https://registry.yarnpkg.com/@sentry/hub/-/hub-7.14.2.tgz#b7b4d6e5002cd5abe9a829a84db5f4270689c666"
+  integrity sha512-18cuSesTn9VAF0JC107flLmtCRt/6DBn38uz0G9cPThKtTSNwjGvGZ/ag4J1iq+IDjVS5MA6iTncXOsSpVP2Wg==
   dependencies:
-    "@sentry/types" "7.14.1"
-    "@sentry/utils" "7.14.1"
+    "@sentry/types" "7.14.2"
+    "@sentry/utils" "7.14.2"
     tslib "^1.9.3"
 
 "@sentry/hub@7.8.1":
@@ -3426,15 +3440,15 @@
     "@sentry/utils" "7.8.1"
     tslib "^1.9.3"
 
-"@sentry/node@7.14.1":
-  version "7.14.1"
-  resolved "https://registry.yarnpkg.com/@sentry/node/-/node-7.14.1.tgz#96e0dcafa7b8f2471c9b67ccb4c4a37933914502"
-  integrity sha512-A+FSEjC0BKwSLaEhB3OW6ipPCajAb7aZvHEk7bzHnkPI/ADPzqSZ41C2pr7+F5DZ8FOdE6//fqXAQi+Cn0FGpg==
+"@sentry/node@7.14.2":
+  version "7.14.2"
+  resolved "https://registry.yarnpkg.com/@sentry/node/-/node-7.14.2.tgz#9d599cd7b3ad790cacd56fe9320ee88f87a8f462"
+  integrity sha512-k2MsbF+ddEE8qoweRgrLh5853RqHN1a8MNlgsq8ibr8CKREbMzBvq14oVnvL61F/aojMlSMK2E6Z+SXBs7M6BA==
   dependencies:
-    "@sentry/core" "7.14.1"
-    "@sentry/hub" "7.14.1"
-    "@sentry/types" "7.14.1"
-    "@sentry/utils" "7.14.1"
+    "@sentry/core" "7.14.2"
+    "@sentry/hub" "7.14.2"
+    "@sentry/types" "7.14.2"
+    "@sentry/utils" "7.14.2"
     cookie "^0.4.1"
     https-proxy-agent "^5.0.0"
     lru_map "^0.3.3"
@@ -3454,43 +3468,43 @@
     lru_map "^0.3.3"
     tslib "^1.9.3"
 
-"@sentry/react@7.14.1":
-  version "7.14.1"
-  resolved "https://registry.yarnpkg.com/@sentry/react/-/react-7.14.1.tgz#0b65796094977fcec8102a847b0e1c869508a1e1"
-  integrity sha512-KPfreZ9O63RDlryh1YjYmycDlteulqcXqeRv/OzQCZb08RcSybdho1QyhKU4LeyTc3rCQx4TNo4rSSwgWxKvdg==
+"@sentry/react@7.14.2":
+  version "7.14.2"
+  resolved "https://registry.yarnpkg.com/@sentry/react/-/react-7.14.2.tgz#2c59d09d543246d5228e603bd3af76fb30369b75"
+  integrity sha512-gWPSxOYcAEG/c7Ubuv0yAGMhOvHwMHQ47fEhYa8Be5e/kzXMzc/lQAaoKLNr73BZGvBvY7ghdC53ATGQXLGxpg==
   dependencies:
-    "@sentry/browser" "7.14.1"
-    "@sentry/types" "7.14.1"
-    "@sentry/utils" "7.14.1"
+    "@sentry/browser" "7.14.2"
+    "@sentry/types" "7.14.2"
+    "@sentry/utils" "7.14.2"
     hoist-non-react-statics "^3.3.2"
     tslib "^1.9.3"
 
-"@sentry/tracing@7.14.1":
-  version "7.14.1"
-  resolved "https://registry.yarnpkg.com/@sentry/tracing/-/tracing-7.14.1.tgz#f8d8d8d770e19d5ecc0584b7db18d9a9369beeae"
-  integrity sha512-vs/GXOu3RRT9ethdRXdiXmYF11PFViIo70Nt6RWb/vKEykHTQ0Y5IYc3GtU7aC6DKqpJ1xZkNUfgvV/q3he/Eg==
+"@sentry/tracing@7.14.2":
+  version "7.14.2"
+  resolved "https://registry.yarnpkg.com/@sentry/tracing/-/tracing-7.14.2.tgz#77f36618f10202a502dec4454dff43c6ede832d9"
+  integrity sha512-KCZogsvqUYiR9vNPWXVgSM00CF+yfYJaBd363fN3HUbjya4j96cHJg65zf6oy85Igr6IGclYaTkoEbiZ6xdNDw==
   dependencies:
-    "@sentry/hub" "7.14.1"
-    "@sentry/types" "7.14.1"
-    "@sentry/utils" "7.14.1"
+    "@sentry/hub" "7.14.2"
+    "@sentry/types" "7.14.2"
+    "@sentry/utils" "7.14.2"
     tslib "^1.9.3"
 
-"@sentry/types@7.14.1":
-  version "7.14.1"
-  resolved "https://registry.yarnpkg.com/@sentry/types/-/types-7.14.1.tgz#8d46c41595b2730f3426d54d1d0a9376b8739e33"
-  integrity sha512-PxAfrIwBci6ouHOuRsfVq1B16i92nQNV5IvlqfJIYciazVhDWJvbF52caJAPOFS1WnuQZ4zqBDMYvtnwld3JCA==
+"@sentry/types@7.14.2":
+  version "7.14.2"
+  resolved "https://registry.yarnpkg.com/@sentry/types/-/types-7.14.2.tgz#78e2e2632d1ee10092549ba32efbe2bc288cbf6f"
+  integrity sha512-JzkOtenArOXmJBAk/FBbxKKX7XC650HqkhGL4ugT/f+RyxfiDZ0X1TAYMrvKIe+qpn5Nh7JUBfR+BARKAiu2wQ==
 
 "@sentry/types@7.8.1":
   version "7.8.1"
   resolved "https://registry.yarnpkg.com/@sentry/types/-/types-7.8.1.tgz#c00a1ed02ad8f69d3b94fcda91e2d24e0bb3492a"
   integrity sha512-LOoaeBXVI23Kh5SpIbxSRiJ6+eYZXVOFyPFH1T1mGBj95LPwRMqOdg0lUTmFJGBKbDGDB/YNjNnu1kQ7GrXBXw==
 
-"@sentry/utils@7.14.1":
-  version "7.14.1"
-  resolved "https://registry.yarnpkg.com/@sentry/utils/-/utils-7.14.1.tgz#95f408853129197fce5841ed0c9b2ed87400e183"
-  integrity sha512-CErQFbJMuhnHFKGkfIazQj5ETKoS7hG8PkoQEBt19F5QMh4+sbrJgnpIrIW8fVGtp0qKWKuIxQwD3b+1cFBozA==
+"@sentry/utils@7.14.2":
+  version "7.14.2"
+  resolved "https://registry.yarnpkg.com/@sentry/utils/-/utils-7.14.2.tgz#5af245fc2d72211490cb9aeaf2098e048739120a"
+  integrity sha512-vpZolN+k1IoxWXhKyOVcRl7V1bgww+96gHqTJdcMzOB83x/ofels7L0kqxb03WukKTYcnc7Ep+yBiKi/OYX9og==
   dependencies:
-    "@sentry/types" "7.14.1"
+    "@sentry/types" "7.14.2"
     tslib "^1.9.3"
 
 "@sentry/utils@7.8.1":
@@ -7402,7 +7416,7 @@ bn.js@^5.0.0, bn.js@^5.1.1:
   resolved "https://registry.yarnpkg.com/bn.js/-/bn.js-5.2.1.tgz#0bc527a6a0d18d0aa8d5b0538ce4a77dccfa7b70"
   integrity sha512-eXRvHzWyYPBuB4NBy0cmYQjGitUrtqwbvlzP3G6VFnNRbsZQIxQ10PbKKHt8gZ/HW/D/747aDl+QkDqg3KQLMQ==
 
-body-parser@1.20.0, body-parser@^1.19.0:
+body-parser@1.20.0:
   version "1.20.0"
   resolved "https://registry.yarnpkg.com/body-parser/-/body-parser-1.20.0.tgz#3de69bd89011c11573d7bfee6a64f11b6bd27cc5"
   integrity sha512-DfJ+q6EPcGKZD1QWUjSpqp+Q7bDQTsQIF4zfUAtZ6qk+H/3/QRhg9CEp39ss+/T2vw0+HaidC0ecJj/DRLIaKg==
@@ -7416,6 +7430,24 @@ body-parser@1.20.0, body-parser@^1.19.0:
     iconv-lite "0.4.24"
     on-finished "2.4.1"
     qs "6.10.3"
+    raw-body "2.5.1"
+    type-is "~1.6.18"
+    unpipe "1.0.0"
+
+body-parser@1.20.1, body-parser@^1.19.0:
+  version "1.20.1"
+  resolved "https://registry.yarnpkg.com/body-parser/-/body-parser-1.20.1.tgz#b1812a8912c195cd371a3ee5e66faa2338a5c668"
+  integrity sha512-jWi7abTbYwajOytWCQc37VulmWiRae5RyTpaCyDcS5/lMdtwSz5lOpDE67srw/HYe35f1z3fDQw+3txg7gNtWw==
+  dependencies:
+    bytes "3.1.2"
+    content-type "~1.0.4"
+    debug "2.6.9"
+    depd "2.0.0"
+    destroy "1.2.0"
+    http-errors "2.0.0"
+    iconv-lite "0.4.24"
+    on-finished "2.4.1"
+    qs "6.11.0"
     raw-body "2.5.1"
     type-is "~1.6.18"
     unpipe "1.0.0"
@@ -7661,24 +7693,6 @@ broccoli-concat@4.2.5, broccoli-concat@^4.2.4, broccoli-concat@^4.2.5:
     lodash.merge "^4.6.2"
     lodash.omit "^4.1.0"
     lodash.uniq "^4.2.0"
-
-broccoli-concat@^3.7.4:
-  version "3.7.5"
-  resolved "https://registry.yarnpkg.com/broccoli-concat/-/broccoli-concat-3.7.5.tgz#223beda8c1184252cf08ae020a3d45ffa6a48218"
-  integrity sha512-rDs1Mej3Ej0Cy5yIO9oIQq5+BCv0opAwS2NW7M0BeCsAMeFM42Z/zacDUC6jKc5OV5wiHvGTyCPLnZkMe0h6kQ==
-  dependencies:
-    broccoli-debug "^0.6.5"
-    broccoli-kitchen-sink-helpers "^0.3.1"
-    broccoli-plugin "^1.3.0"
-    ensure-posix-path "^1.0.2"
-    fast-sourcemap-concat "^1.4.0"
-    find-index "^1.1.0"
-    fs-extra "^4.0.3"
-    fs-tree-diff "^0.5.7"
-    lodash.merge "^4.6.2"
-    lodash.omit "^4.1.0"
-    lodash.uniq "^4.2.0"
-    walk-sync "^0.3.2"
 
 broccoli-config-loader@^1.0.1:
   version "1.0.1"
@@ -8143,15 +8157,13 @@ broccoli-string-replace@^0.1.2:
     broccoli-persistent-filter "^1.1.5"
     minimatch "^3.0.3"
 
-broccoli-svg-optimizer@2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/broccoli-svg-optimizer/-/broccoli-svg-optimizer-2.0.0.tgz#22b6920bee5e126e86b95ae0cdf8ad6cc4be3735"
-  integrity sha512-zIbUmBeSxl9r18Mqjl0OArvXyAKuSDd4FFVcH5HmiX2/1SFUofL4JN5g5qhP/GqQnLTEVdwr61LawSGDZHcqOg==
+broccoli-svg-optimizer@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/broccoli-svg-optimizer/-/broccoli-svg-optimizer-2.1.0.tgz#72a5e3138db1d2b897129cd174e6328c66adf35f"
+  integrity sha512-fGB4WUF8R9tHUf6M2t8F38ILLdVy+CQVaOFwHavaaXPD0kkoTsHjBE7erQZuk0PrioqLIoyA9dkeNMlGwohReA==
   dependencies:
-    broccoli-persistent-filter "^2.3.1"
-    json-stable-stringify "^1.0.1"
-    lodash "^4.17.15"
-    rsvp "^4.8.5"
+    broccoli-persistent-filter "^3.1.2"
+    safe-stable-stringify "^2.2.0"
     svgo "1.3.0"
 
 broccoli-templater@^2.0.1:
@@ -8887,7 +8899,7 @@ cheerio@1.0.0-rc.10:
     parse5-htmlparser2-tree-adapter "^6.0.1"
     tslib "^2.2.0"
 
-cheerio@~1.0.0-rc.12:
+cheerio@^1.0.0-rc.12, cheerio@~1.0.0-rc.12:
   version "1.0.0-rc.12"
   resolved "https://registry.yarnpkg.com/cheerio/-/cheerio-1.0.0-rc.12.tgz#788bf7466506b1c6bf5fae51d24a2c4d62e47683"
   integrity sha512-VqR8m68vM46BNnuZ5NtnGBKIE/DfN0cRIzg9n40EIq9NOv90ayxLBXA8fXC5gquFRGJSTRqBq25Jt2ECLR431Q==
@@ -12233,27 +12245,25 @@ ember-style-modifier@^0.8.0:
     ember-cli-babel "^7.26.6"
     ember-modifier "^3.2.7"
 
-ember-svg-jar@2.3.4:
-  version "2.3.4"
-  resolved "https://registry.yarnpkg.com/ember-svg-jar/-/ember-svg-jar-2.3.4.tgz#ed80aa137db8440e51448f58f09afb6c140e9b5f"
-  integrity sha512-EkY7fGeDevLROkDRsN+654THJT2b3cBVi8YH0v9mDofiASPBOlP3NgDs9q1WA1hU6cP68m08vXk/E40ayIVZzQ==
+ember-svg-jar@2.4.0:
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/ember-svg-jar/-/ember-svg-jar-2.4.0.tgz#dba73114b0f60835e76e6a6a96b4d6764503667e"
+  integrity sha512-bkQc1jweoS4sqpx+jaqsZWmY/tFbjq5C5gX93IsZ9lE/sDA5qypvGbXmze9VIQuhIT4viT3T39q1mFoevaW2xw==
   dependencies:
     broccoli-caching-writer "^3.0.3"
-    broccoli-concat "^3.7.4"
-    broccoli-funnel "^2.0.2"
-    broccoli-merge-trees "^3.0.2"
-    broccoli-persistent-filter "^2.3.1"
-    broccoli-plugin "^3.0.0"
+    broccoli-concat "^4.2.5"
+    broccoli-funnel "^3.0.8"
+    broccoli-merge-trees "^4.2.0"
+    broccoli-persistent-filter "^3.1.2"
+    broccoli-plugin "^4.0.7"
     broccoli-string-replace "^0.1.2"
-    broccoli-svg-optimizer "2.0.0"
-    cheerio "^0.22.0"
+    broccoli-svg-optimizer "^2.1.0"
+    cheerio "^1.0.0-rc.12"
     console-ui "^3.1.1"
     ember-cli-babel "^7.26.6"
     ember-cli-htmlbars "^5.7.1"
-    json-stable-stringify "^1.0.1"
     lodash "^4.17.15"
-    mkdirp "^0.5.1"
-    path-posix "^1.0.0"
+    safe-stable-stringify "^2.2.0"
 
 ember-template-imports@^3.1.1:
   version "3.1.1"
@@ -14172,7 +14182,7 @@ fs-monkey@^1.0.3:
   resolved "https://registry.yarnpkg.com/fs-monkey/-/fs-monkey-1.0.3.tgz#ae3ac92d53bb328efe0e9a1d9541f6ad8d48e2d3"
   integrity sha512-cybjIfiiE+pTWicSCLFHSrXZ6EilF30oh91FDP9S2B051prEa7QWfrVTQm10/dDpswBDXZugPa1Ogu8Yh+HV0Q==
 
-fs-tree-diff@^0.5.2, fs-tree-diff@^0.5.3, fs-tree-diff@^0.5.4, fs-tree-diff@^0.5.6, fs-tree-diff@^0.5.7, fs-tree-diff@^0.5.9:
+fs-tree-diff@^0.5.2, fs-tree-diff@^0.5.3, fs-tree-diff@^0.5.4, fs-tree-diff@^0.5.6, fs-tree-diff@^0.5.9:
   version "0.5.9"
   resolved "https://registry.yarnpkg.com/fs-tree-diff/-/fs-tree-diff-0.5.9.tgz#a4ec6182c2f5bd80b9b83c8e23e4522e6f5fd946"
   integrity sha512-872G8ax0kHh01m9n/2KDzgYwouKza0Ad9iFltBpNykvROvf2AGtoOzPJgGx125aolGPER3JuC7uZFrQ7bG1AZw==
@@ -22053,17 +22063,17 @@ qs@6.10.3:
   dependencies:
     side-channel "^1.0.4"
 
-qs@6.9.3:
-  version "6.9.3"
-  resolved "https://registry.yarnpkg.com/qs/-/qs-6.9.3.tgz#bfadcd296c2d549f1dffa560619132c977f5008e"
-  integrity sha512-EbZYNarm6138UKKq46tdx08Yo/q9ZhFoAXAI1meAFd2GtbRDhbZY2WQSICskT0c5q99aFzLG1D4nvTk9tqfXIw==
-
-qs@^6.10.3, qs@^6.11.0, qs@^6.2.0, qs@^6.4.0:
+qs@6.11.0, qs@^6.10.3, qs@^6.11.0, qs@^6.2.0, qs@^6.4.0:
   version "6.11.0"
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.11.0.tgz#fd0d963446f7a65e1367e01abd85429453f0c37a"
   integrity sha512-MvjoMCJwEarSbUYk5O+nmoSzSutSsTwF85zcHPQ9OrlFoZOYIjaqBAJIqIXjptyD5vThxGq52Xu/MaJzRkIk4Q==
   dependencies:
     side-channel "^1.0.4"
+
+qs@6.9.3:
+  version "6.9.3"
+  resolved "https://registry.yarnpkg.com/qs/-/qs-6.9.3.tgz#bfadcd296c2d549f1dffa560619132c977f5008e"
+  integrity sha512-EbZYNarm6138UKKq46tdx08Yo/q9ZhFoAXAI1meAFd2GtbRDhbZY2WQSICskT0c5q99aFzLG1D4nvTk9tqfXIw==
 
 qs@~6.5.2:
   version "6.5.3"
@@ -23230,6 +23240,11 @@ safe-regex@^2.1.1:
   integrity sha512-rx+x8AMzKb5Q5lQ95Zoi6ZbJqwCLkqi3XuJXp5P3rT8OEc6sZCJG5AE5dU3lsgRr/F4Bs31jSlVN+j5KrsGu9A==
   dependencies:
     regexp-tree "~0.1.1"
+
+safe-stable-stringify@^2.2.0:
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/safe-stable-stringify/-/safe-stable-stringify-2.4.0.tgz#95fadb1bcf8057a1363e11052122f5da36a69215"
+  integrity sha512-eehKHKpab6E741ud7ZIMcXhKcP6TSIezPkNZhy5U8xC6+VvrRdUA2tMgxGxaGl4cz7c2Ew5+mg5+wNB16KQqrA==
 
 safe-timers@^1.1.0:
   version "1.1.0"
@@ -26071,7 +26086,7 @@ walk-sync@3.0.0, walk-sync@^3.0.0:
     matcher-collection "^2.0.1"
     minimatch "^3.0.4"
 
-walk-sync@^0.3.0, walk-sync@^0.3.1, walk-sync@^0.3.2, walk-sync@^0.3.3:
+walk-sync@^0.3.0, walk-sync@^0.3.1, walk-sync@^0.3.3:
   version "0.3.4"
   resolved "https://registry.yarnpkg.com/walk-sync/-/walk-sync-0.3.4.tgz#cf78486cc567d3a96b5b2237c6108017a5ffb9a4"
   integrity sha512-ttGcuHA/OBnN2pcM6johpYlEms7XpO5/fyKIr48541xXedan4roO8cS1Q2S/zbbjGH/BarYDAMeS2Mi9HE5Tig==
