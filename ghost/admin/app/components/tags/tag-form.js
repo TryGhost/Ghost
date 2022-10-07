@@ -49,7 +49,7 @@ export default class TagForm extends Component {
     }
 
     get seoURL() {
-        const blogUrl = this.config.get('blogUrl');
+        const blogUrl = this.config.blogUrl;
         const seoSlug = this.args.tag.slug || '';
 
         let seoURL = this.args.tag.canonicalUrl || `${blogUrl}/tag/${seoSlug}`;
