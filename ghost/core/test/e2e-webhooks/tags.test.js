@@ -96,12 +96,7 @@ describe('tag.* events', function () {
             .matchBodySnapshot({
                 tag: {
                     current: {},
-                    previous: {
-                        created_at: anyISODateTime,
-                        description: anyString,
-                        id: anyObjectId,
-                        updated_at: anyISODateTime
-                    }
+                    previous: tagSnapshot
                 }
             });
     });
