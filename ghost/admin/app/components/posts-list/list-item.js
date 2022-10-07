@@ -4,24 +4,48 @@ import {formatPostTime} from 'ghost-admin/helpers/gh-format-post-time';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
-export default class PostsListItem extends Component {
+export default class PostsListItemClicks extends Component {
     @service feature;
     @service session;
     @service settings;
 
     @tracked isHovered = false;
 
+    get post() {
+        return this.args.post;
+    }
+
+    get errorClass() {
+        if (this.post.didEmailFail) {
+            return 'error';
+        }
+        return '';
+    }
+
     get scheduledText() {
-        let {post} = this.args;
         let text = [];
 
         let formattedTime = formatPostTime(
-            post.publishedAtUTC,
+            this.post.publishedAtUTC,
             {timezone: this.settings.get('timezone'), scheduled: true}
         );
         text.push(formattedTime);
 
         return text.join(' ');
+    }
+
+    get routeForLink() {
+        if (this.post.hasAnalyticsPage) {
+            return 'posts.analytics';
+        }
+        return 'editor.edit';
+    }
+
+    get modelsForLink() {
+        if (this.post.hasAnalyticsPage) {
+            return [this.post];
+        }
+        return [this.post.displayName, this.post.id];
     }
 
     @action

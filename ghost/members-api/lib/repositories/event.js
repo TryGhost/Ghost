@@ -46,12 +46,9 @@ module.exports = class EventRepository {
             {type: 'login_event', action: 'getLoginEvents'},
             {type: 'payment_event', action: 'getPaymentEvents'},
             {type: 'signup_event', action: 'getSignupEvents'},
-            {type: 'comment_event', action: 'getCommentEvents'}
+            {type: 'comment_event', action: 'getCommentEvents'},
+            {type: 'click_event', action: 'getClickEvents'}
         ];
-
-        if (this._labsService.isSet('emailClicks')) {
-            pageActions.push({type: 'click_event', action: 'getClickEvents'});
-        }
 
         if (this._EmailRecipient) {
             pageActions.push({type: 'email_delivered_event', action: 'getEmailDeliveredEvents'});

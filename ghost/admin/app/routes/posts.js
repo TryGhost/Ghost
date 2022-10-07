@@ -83,14 +83,6 @@ export default class PostsRoute extends AuthenticatedRoute {
     setupController(controller) {
         super.setupController(...arguments);
 
-        if (this.modelName === 'post') {
-            if (this.feature.get('emailClicks')) {
-                this.templateName = 'posts-clicks';
-            } else {
-                this.templateName = 'posts';
-            }
-        }
-
         if (!controller._hasLoadedTags) {
             this.store.query('tag', {limit: 'all'}).then(() => {
                 controller._hasLoadedTags = true;

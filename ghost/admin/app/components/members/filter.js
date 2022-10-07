@@ -31,9 +31,9 @@ const FILTER_PROPERTIES = [
     {label: 'Emails sent (all time)', name: 'email_count', group: 'Email'},
     {label: 'Emails opened (all time)', name: 'email_opened_count', group: 'Email'},
     {label: 'Open rate (all time)', name: 'email_open_rate', group: 'Email'},
-    {label: 'Received email', name: 'emails.post_id', group: 'Email', valueType: 'array', feature: 'emailClicks'},
-    {label: 'Opened email', name: 'opened_emails.post_id', group: 'Email', valueType: 'array', feature: 'emailClicks'},
-    {label: 'Clicked email', name: 'clicked_links.post_id', group: 'Email', valueType: 'array', feature: 'emailClicks'}
+    {label: 'Received email', name: 'emails.post_id', group: 'Email', valueType: 'array'},
+    {label: 'Opened email', name: 'opened_emails.post_id', group: 'Email', valueType: 'array'},
+    {label: 'Clicked email', name: 'clicked_links.post_id', group: 'Email', valueType: 'array'}
 
     // {label: 'Emails sent (30 days)', name: 'x', group: 'Email'},
     // {label: 'Emails opened (30 days)', name: 'x', group: 'Email'},

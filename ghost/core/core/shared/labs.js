@@ -19,8 +19,7 @@ const GA_FEATURES = [
     'freeTrial',
     'compExpiring',
     'searchHelper',
-    'emailAlerts',
-    'emailClicks'
+    'emailAlerts'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected

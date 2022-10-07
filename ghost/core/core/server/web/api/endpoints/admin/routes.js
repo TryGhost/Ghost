@@ -3,7 +3,6 @@ const api = require('../../../../api').endpoints;
 const {http} = require('@tryghost/api-framework');
 const apiMw = require('../../middleware');
 const mw = require('./middleware');
-const labs = require('../../../../../shared/labs');
 
 const shared = require('../../../shared');
 
@@ -310,7 +309,7 @@ module.exports = function apiRoutes() {
     router.put('/newsletters/verifications/', mw.authAdminApi, http(api.newsletters.verifyPropertyUpdate));
     router.put('/newsletters/:id', mw.authAdminApi, http(api.newsletters.edit));
 
-    router.get('/links', labs.enabledMiddleware('emailClicks'), mw.authAdminApi, http(api.links.browse));
+    router.get('/links', mw.authAdminApi, http(api.links.browse));
 
     return router;
 };
