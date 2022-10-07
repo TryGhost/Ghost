@@ -91,6 +91,19 @@ module.exports = class MemberRepository {
         });
     }
 
+    dispatchEvent(event, options) {
+        if (options?.transacting) {
+            // Only dispatch the event after the transaction has finished
+            options.transacting.executionPromise.then(async () => {
+                DomainEvents.dispatch(event);
+            }).catch(() => {
+                // catches transaction errors/rollback to not dispatch event
+            });
+        } else {
+            DomainEvents.dispatch(event);
+        }
+    }
+
     isActiveSubscriptionStatus(status) {
         return ['active', 'trialing', 'unpaid', 'past_due'].includes(status);
     }
@@ -304,10 +317,10 @@ module.exports = class MemberRepository {
         }
 
         if (newsletters && newsletters.length > 0) {
-            DomainEvents.dispatch(MemberSubscribeEvent.create({
+            this.dispatchEvent(MemberSubscribeEvent.create({
                 memberId: member.id,
                 source: source
-            }, eventData.created_at));
+            }, eventData.created_at), options);
         }
 
         // For paid members created via stripe checkout webhook event, link subscription
@@ -337,24 +350,11 @@ module.exports = class MemberRepository {
                 }
             }
         }
-        if (options?.transacting) {
-            // Only dispatch the event after the transaction has finished
-            options.transacting.executionPromise.then(async () => {
-                DomainEvents.dispatch(MemberCreatedEvent.create({
-                    memberId: member.id,
-                    attribution: data.attribution,
-                    source
-                }, eventData.created_at));
-            }).catch(() => {
-                // ignore errors for transaction rollback and don't dispatch event
-            });
-        } else {
-            DomainEvents.dispatch(MemberCreatedEvent.create({
-                memberId: member.id,
-                attribution: data.attribution,
-                source
-            }, eventData.created_at));
-        }
+        this.dispatchEvent(MemberCreatedEvent.create({
+            memberId: member.id,
+            attribution: data.attribution,
+            source
+        }, eventData.created_at), options);
 
         return member;
     }
@@ -572,10 +572,10 @@ module.exports = class MemberRepository {
         }
 
         if (newslettersToAdd.length > 0 || newslettersToRemove.length > 0) {
-            DomainEvents.dispatch(MemberSubscribeEvent.create({
+            this.dispatchEvent(MemberSubscribeEvent.create({
                 memberId: member.id,
                 source: source
-            }, member.updated_at));
+            }, member.updated_at), sharedOptions);
         }
 
         if (member.attributes.email !== member._previousAttributes.email) {
@@ -1015,16 +1015,7 @@ module.exports = class MemberRepository {
                 offerId: data.offerId,
                 attribution: data.attribution
             });
-
-            if (options?.transacting) {
-                // Only dispatch the event after the transaction has finished
-                // Because else the offer won't be committed to the database yet
-                options.transacting.executionPromise.then(() => {
-                    DomainEvents.dispatch(event);
-                });
-            } else {
-                DomainEvents.dispatch(event);
-            }
+            this.dispatchEvent(event, options);
         }
 
         let memberProducts = (await member.related('products').fetch(options)).toJSON();
@@ -1318,15 +1309,7 @@ module.exports = class MemberRepository {
                     subscriptionId: subscriptionModel.get('id'),
                     tierId: ghostProduct?.get('id')
                 };
-                if (options?.transacting) {
-                    // Only dispatch the event after the transaction has finished
-                    // Because else the offer won't be committed to the database yet
-                    options.transacting.executionPromise.then(() => {
-                        DomainEvents.dispatch(SubscriptionCancelledEvent.create(cancelEventData, cancellationTimestamp));
-                    });
-                } else {
-                    DomainEvents.dispatch(SubscriptionCancelledEvent.create(cancelEventData, cancellationTimestamp));
-                }
+                this.dispatchEvent(SubscriptionCancelledEvent.create(cancelEventData, cancellationTimestamp), options);
             }
         }
     }
