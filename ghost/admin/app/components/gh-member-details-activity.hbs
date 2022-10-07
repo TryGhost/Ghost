@@ -1,0 +1,37 @@
+<section class="gh-member-details-activity" ...attributes>
+    <div class="gh-main-section-block">
+        <div class="gh-main-section-content">
+            <div class="flex items-center">
+                {{#if (or @member.name @member.email)}}
+                    <GhMemberAvatar
+                        @member={{@member}}
+                        @sizeClass={{if @member.name 'f-subheadline fw4 lh-zero tracked-1' 'f-subheadline fw4 lh-zero tracked-1'}}
+                        @containerClass="w20 h20 mr4 gh-member-detail-avatar"
+                    />
+                {{else}}
+                    <div class="flex items-center justify-center br-100 mr4 gh-new-member-avatar">
+                        <span class="gh-member-avatar-label f-subheadline lh-zero tracked-1">N</span>
+                    </div>
+                {{/if}}
+                <div>
+                    <h3>
+                        {{or @member.name @member.email}}
+                        {{#unless (or @member.name @member.email)}}
+                            {{#if @member.isNew}}
+                            <span class="midgrey">New member</span>
+                            {{/if}}
+                        {{/unless}}
+                    </h3>
+                    <p>
+                        {{#if (and @member.name @member.email)}}
+                            {{@member.email}}
+                        {{/if}}
+                    </p>
+                    <p>
+                        <LinkTo class="gh-member-details-activity-link" @route="member" @model={{@member}}>See all details →</LinkTo>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,190 @@
+{
+    "url": "http://localhost:2368",
+    "server": {
+        "host": "127.0.0.1",
+        "port": 2368,
+        "shutdownTimeout": 60000
+    },
+    "admin": {
+        "redirects": true
+    },
+    "updateCheck": {
+        "url": "https://updates.ghost.org",
+        "forceUpdate": false
+    },
+    "privacy": false,
+    "useMinFiles": true,
+    "paths": {
+        "contentPath": "content/",
+        "fixtures": "core/server/data/schema/fixtures/fixtures",
+        "defaultSettings": "core/server/data/schema/default-settings/default-settings",
+        "assetSrc": "core/frontend/src"
+    },
+    "adapters": {
+        "sso": {
+            "active": "Default"
+        },
+        "cache": {
+            "active": "Memory",
+            "settings": {},
+            "imageSizes": {}
+        }
+    },
+    "storage": {
+        "active": "LocalImagesStorage",
+        "media": "LocalMediaStorage",
+        "files": "LocalFilesStorage",
+        "LocalMediaStorage": {},
+        "LocalFilesStorage": {}
+    },
+    "scheduling": {
+        "active": "SchedulingDefault"
+    },
+    "members": {
+        "contentApiAccess": [],
+        "paymentProcessors": [],
+        "emailTemplate": {
+            "showSiteHeader": true,
+            "showPoweredBy": true
+        }
+    },
+    "logging": {
+        "level": "info",
+        "useLocalTime": false,
+        "rotation": {
+            "enabled": false,
+            "period": "1d",
+            "count": 10
+        },
+        "transports": [
+            "stdout"
+        ],
+        "slowHelper": {
+            "level": "warn",
+            "threshold": 200
+        }
+    },
+    "spam": {
+        "user_login": {
+            "minWait": 600000,
+            "maxWait": 604800000,
+            "freeRetries": 4
+        },
+        "user_reset": {
+            "minWait": 3600000,
+            "maxWait": 3600000,
+            "lifetime": 3600,
+            "freeRetries": 4
+        },
+        "global_reset": {
+            "minWait": 3600000,
+            "maxWait": 3600000,
+            "lifetime": 3600,
+            "freeRetries": 4
+        },
+        "global_block": {
+            "minWait": 3600000,
+            "maxWait": 3600000,
+            "lifetime": 3600,
+            "freeRetries": 99
+        },
+        "private_block": {
+            "minWait": 3600000,
+            "maxWait": 3600000,
+            "lifetime": 3600,
+            "freeRetries": 99
+        },
+        "content_api_key": {
+            "minWait": 3600000,
+            "maxWait": 86400000,
+            "lifetime": 3600,
+            "freeRetries": 99
+        },
+        "member_login": {
+            "minWait": 600000,
+            "maxWait": 43200000,
+            "lifetime": 43200,
+            "freeRetries": 8
+        }
+    },
+    "caching": {
+        "frontend": {
+            "maxAge": 0
+        },
+        "publicAssets": {
+            "maxAge": 31536000
+        },
+        "301": {
+            "maxAge": 31536000
+        },
+        "customRedirects": {
+            "maxAge": 31536000
+        },
+        "favicon": {
+            "maxAge": 86400
+        },
+        "sitemap": {
+            "maxAge": 3600
+        },
+        "sitemapXSL": {
+            "maxAge": 86400
+        },
+        "robotstxt": {
+            "maxAge": 3600
+        },
+        "wellKnown": {
+            "maxAge": 86400
+        },
+        "cors": {
+            "maxAge": 86400
+        },
+        "contentAPI": {
+            "maxAge": 0
+        }
+    },
+    "imageOptimization": {
+        "resize": true,
+        "srcsets": true
+    },
+    "compress": true,
+    "preloadHeaders": false,
+    "adminFrameProtection": true,
+    "sendWelcomeEmail": true,
+    "stripeDirect": false,
+    "enableStripePromoCodes": false,
+    "emailAnalytics": true,
+    "backgroundJobs": {
+        "emailAnalytics": true
+    },
+    "portal": {
+        "url": "https://cdn.jsdelivr.net/ghost/portal@~{version}/umd/portal.min.js",
+        "version": "2.14"
+    },
+    "sodoSearch": {
+        "url": "https://cdn.jsdelivr.net/ghost/sodo-search@~{version}/umd/sodo-search.min.js",
+        "styles": "https://cdn.jsdelivr.net/ghost/sodo-search@~{version}/umd/main.css",
+        "version": "1.1"
+    },
+    "comments": {
+        "url": "https://cdn.jsdelivr.net/ghost/comments-ui@~{version}/umd/comments-ui.min.js",
+        "styles": "https://cdn.jsdelivr.net/ghost/comments-ui@~{version}/umd/main.css",
+        "version": "0.10"
+    },
+    "editor": {
+        "url": "https://unpkg.com/@tryghost/koenig-lexical@~{version}/dist/koenig-lexical.umd.js",
+        "version": "0.0"
+    },
+    "tenor": {
+        "googleApiKey": null,
+        "contentFilter": "off"
+    },
+    "opensea": {
+        "privateReadOnlyApiKey": null
+    },
+    "twitter": {
+        "privateReadOnlyToken": null
+    },
+    "gravatar": {
+        "url": "https://www.gravatar.com/avatar/{hash}?s={size}&r={rating}&d={_default}"
+    }
+}

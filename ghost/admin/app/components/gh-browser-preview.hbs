@@ -1,0 +1,23 @@
+{{!-- changes only classes between desktop/mobile to avoid re-rendering yielded contents --}}
+<div class="{{if @isMobilePreview "gh-pe-mobile-container flex justify-center" "gh-browserpreview-previewcontainer"}}" ...attributes>
+    {{#unless @isMobilePreview}}
+        <div class="gh-browserpreview-browser">
+            <div class="tabs">
+                <ul><li></li><li></li><li></li></ul>
+                <div>
+                    {{#if (or @icon this.settings.icon)}}
+                        <span class="favicon"><img src={{or @icon this.settings.icon}} alt="icon"></span>
+                    {{else}}
+                        <span class="favicon default">{{svg-jar "default-favicon"}}</span>
+                    {{/if}}
+                    <span class="site-title">{{or @title this.settings.title}}</span>
+                </div>
+            </div>
+        </div>
+    {{/unless}}
+    <div class="{{if @isMobilePreview "gh-pe-mobile-bezel" "gh-browserpreview-iframecontainer"}}">
+        <div class="{{if @isMobilePreview "gh-pe-mobile-screen"}}">
+            {{yield}}
+        </div>
+    </div>
+</div>

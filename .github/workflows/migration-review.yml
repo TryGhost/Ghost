@@ -3,14 +3,15 @@ on:
   pull_request_target:
     types: [opened]
     paths:
-      - 'core/server/data/schema/**'
-      - 'core/server/data/migrations/versions/**'
+      - 'ghost/core/core/server/data/schema/**'
+      - 'ghost/core/core/server/data/migrations/versions/**'
 jobs:
   createComment:
     runs-on: ubuntu-latest
+    if: github.repository_owner == 'TryGhost'
     name: Create checklist comment
     steps:
-      - uses: peter-evans/create-or-update-comment@ad0c5a210255bfe327cd550bc3f11b49e318be3a
+      - uses: peter-evans/create-or-update-comment@6fcd282399b3c9ad0bd9bd8025b8fb2c18b085dd
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
@@ -31,7 +32,6 @@ jobs:
             ### Schema changes
 
             - [ ]  Both schema change and related migration have been implemented
-            - [ ]  For column changes: indexes have been recreated for sqlite
             - [ ]  For index changes: has been performance tested for large tables
             - [ ]  For new tables/columns: fields use the appropriate predefined field lengths
             - [ ]  For new tables/columns: field names follow the appropriate conventions

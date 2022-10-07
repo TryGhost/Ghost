@@ -1,0 +1,57 @@
+/* Badges
+/* ---------------------------------------------------------- */
+
+.gh-badge {
+    display: inline-block;
+    padding: 3px 9px;
+    color: var(--green-d2);
+    font-size: 1.2rem;
+    line-height: 1em;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    user-select: none;
+    background: color-mod(var(--green) a(20%));
+    border-radius: 999px;
+    text-transform: uppercase;
+}
+
+.gh-badge-blue {
+    background: var(--blue);
+}
+
+.gh-badge-red {
+    color: var(--red);
+    background: color-mod(var(--red) a(20%));
+}
+
+.gh-badge-pink {
+    color: var(--pink);
+    background: color-mod(var(--pink) a(20%));
+}
+
+.gh-badge-black {
+    background: var(--darkgrey);
+    color: var(--white);
+}
+
+.gh-badge-outline {
+    border-color: color-mod(var(--midgrey) l(+35%));
+    color: color-mod(var(--midgrey) l(+25%));
+    font-weight: 400;
+    background: transparent;
+    box-shadow: none;
+    text-shadow: none;
+}
+
+.gh-badge-title {
+    margin-left: 13px;
+    background: transparent;
+    font-weight: 400;
+    color: var(--midlightgrey-d2);
+    border: 1px solid var(--lightgrey-d1);
+    border-radius: 4px;
+    line-height: 25px;
+}

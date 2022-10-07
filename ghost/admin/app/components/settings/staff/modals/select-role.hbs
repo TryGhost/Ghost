@@ -1,0 +1,18 @@
+<div class="modal-content" data-test-modal="select-role">
+    <header class="modal-header">
+        <h1>Change user role</h1>
+    </header>
+    <button type="button" class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+    <div class="modal-body">
+        <GhRoleSelection
+            @selected={{this.role}}
+            @setRole={{fn (mut this.role)}}
+        />
+    </div>
+
+    <div class="modal-footer">
+        <button class="gh-btn" type="button" {{on "click" @close}}><span>Cancel</span></button>
+        <button class="gh-btn gh-btn-black" type="button" {{on "click" (fn @close this.role)}}><span>Change role</span></button>
+    </div>
+</div>

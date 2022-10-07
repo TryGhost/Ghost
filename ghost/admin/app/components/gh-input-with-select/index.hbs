@@ -1,0 +1,72 @@
+{{#let (component (or @powerSelectComponentName "power-select")) as |Select|}}
+    <Select
+        @afterOptionsComponent={{@afterOptionsComponent}}
+        @allowClear={{@allowClear}}
+        @ariaDescribedBy={{@ariaDescribedBy}}
+        @ariaInvalid={{@ariaInvalid}}
+        @ariaLabel={{@ariaLabel}}
+        @ariaLabelledBy={{@ariaLabelledBy}}
+        @beforeOptionsComponent={{this.beforeOptionsComponent}}
+        @buildSelection={{@buildSelection}}
+        @calculatePosition={{@calculatePosition}}
+        @class={{@class}}
+        @closeOnSelect={{@closeOnSelect}}
+        @defaultHighlighted={{@defaultHighlighted}}
+        @destination={{@destination}}
+        @dir={{@dir}}
+        @disabled={{@disabled}}
+        @dropdownClass={{@dropdownClass}}
+        @extra={{assign @extra (hash
+            value=@value
+            autofocus=@autofocus
+            openOnFocus=@openOnFocus
+            closeWhenEmpty=@closeWhenEmpty
+        )}}
+        @groupComponent={{@groupComponent}}
+        @highlightOnHover={{@highlightOnHover}}
+        @horizontalPosition={{@horizontalPosition}}
+        @initiallyOpened={{@initiallyOpened}}
+        @loadingMessage={{@loadingMessage}}
+        @matchTriggerWidth={{@matchTriggerWidth}}
+        @matcher={{this.matcher}}
+        @noMatchesMessage={{or @noMatchesMessage ""}}
+        @onBlur={{@onBlur}}
+        @onChange={{this.selectOrCreate}}
+        @onClose={{@onClose}}
+        @onFocus={{@onFocus}}
+        @onInput={{@onInput}}
+        @onKeydown={{@onKeydown}}
+        @onOpen={{@onOpen}}
+        @options={{@options}}
+        @optionsComponent={{@optionsComponent}}
+        @placeholder={{@placeholder}}
+        @placeholderComponent={{@placeholderComponent}}
+        @preventScroll={{@preventScroll}}
+        @registerAPI={{@registerAPI}}
+        @renderInPlace={{@renderInPlace}}
+        @scrollTo={{@scrollTo}}
+        @search={{this.searchAndSuggest}}
+        @searchEnabled={{false}}
+        @searchField={{or @searchField "name"}}
+        @searchMessage={{@searchMessage}}
+        @searchMessageComponent={{@searchMessageComponent}}
+        @searchPlaceholder={{@searchPlaceholder}}
+        @selected={{@selected}}
+        @selectedItemComponent={{@selectedItemComponent}}
+        @tabindex="-1"
+        @triggerClass="ember-power-select-multiple-trigger gh-input-with-select-trigger {{@triggerClass}}"
+        @triggerComponent={{component (or @triggerComponent "gh-input-with-select/trigger") tabindex=@tabindex}}
+        @triggerId={{@triggerId}}
+        @triggerRole={{@triggerRole}}
+        @typeAheadMatcher={{@typeAheadMatcher}}
+        @verticalPosition={{@verticalPosition}}
+        ...attributes
+        as |option term|
+    >
+        {{#if option.__isSuggestion__}}
+            {{component (or @suggestedOptionComponent "gh-input-with-select/suggested-option") option=option term=term}}
+        {{else}}
+            {{yield option term}}
+        {{/if}}
+    </Select>
+{{/let}}

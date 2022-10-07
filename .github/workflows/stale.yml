@@ -1,12 +1,13 @@
 name: 'Close stale issues and PRs'
 on:
   schedule:
-    - cron: '0 15 * * *'
+    - cron: '0 * * * *'
 jobs:
   stale:
+    if: github.repository_owner == 'TryGhost'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v4
+      - uses: actions/stale@v6
         with:
           stale-issue-message: |
             Our bot has automatically marked this issue as stale because there has not been any activity here in some time.
@@ -21,5 +22,7 @@ jobs:
           exempt-issue-labels: 'feature,pinned'
           exempt-pr-labels: 'feature,pinned'
           days-before-stale: 120
+          days-before-pr-stale: -1
           stale-issue-label: 'stale'
           stale-pr-label: 'stale'
+          close-issue-reason: 'not_planned'

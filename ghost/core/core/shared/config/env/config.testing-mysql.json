@@ -1,0 +1,59 @@
+{
+    "url": "http://127.0.0.1:2369",
+    "server": {
+        "port": 2369
+    },
+    "database": {
+        "client": "mysql",
+        "connection": {
+            "host"     : "127.0.0.1",
+            "user"     : "root",
+            "password" : "",
+            "database" : "ghost_testing"
+        }
+    },
+    "logging": {
+        "level": "fatal"
+    },
+    "spam": {
+        "user_login": {
+            "minWait": 600000,
+            "maxWait": 604800000,
+            "freeRetries": 3
+        },
+        "user_reset": {
+            "minWait": 3600000,
+            "maxWait": 3600000,
+            "lifetime": 3600,
+            "freeRetries": 4
+        },
+        "global_reset": {
+            "minWait": 3600000,
+            "maxWait": 3600000,
+            "lifetime": 3600,
+            "freeRetries":4
+        },
+        "global_block": {
+            "minWait": 3600000,
+            "maxWait": 3600000,
+            "lifetime": 3600,
+            "freeRetries":4
+        },
+        "private_block": {
+            "minWait": 3600000,
+            "maxWait": 3600000,
+            "lifetime": 3600,
+            "freeRetries":99
+        }
+    },
+    "privacy": {
+        "useTinfoil": true,
+        "useStructuredData": true
+    },
+    "useMinFiles": false,
+    "paths": {
+        "fixtures": "test/utils/fixtures/fixtures",
+        "defaultSettings": "test/utils/fixtures/default-settings.json",
+        "urlCache": "test/utils/fixtures/urls"
+    }
+}

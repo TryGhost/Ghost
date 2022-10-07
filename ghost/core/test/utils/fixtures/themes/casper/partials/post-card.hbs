@@ -1,0 +1,61 @@
+{{!-- This is a partial file used to generate a post "card"
+which templates loop over to generate a list of posts. --}}
+
+<article class="post-card {{post_class}} {{#match @custom.feed_layout "!=" "Simple grid"}}{{#is "home, paged"}}{{#match @custom.feed_layout "Dynamic grid"}}{{#has index="0"}}{{#is "home"}}{{#if feature_image}}post-card-large{{/if}}{{/is}}{{/has}}{{else}}post-card-large{{/match}}{{/is}}{{/match}}">
+
+    {{#if feature_image}}
+    <a class="post-card-image-link" href="{{url}}">
+        {{!-- This is a responsive image, it loads different sizes depending on device
+        https://medium.freecodecamp.org/a-guide-to-responsive-images-with-ready-to-use-templates-c400bd65c433 --}}
+        <img class="post-card-image"
+            srcset="{{img_url feature_image size="s"}} 300w,
+                    {{img_url feature_image size="m"}} 600w,
+                    {{img_url feature_image size="l"}} 1000w,
+                    {{img_url feature_image size="xl"}} 2000w"
+            sizes="(max-width: 1000px) 400px, 800px"
+            src="{{img_url feature_image size="m"}}"
+            alt="{{#if feature_image_alt}}{{feature_image_alt}}{{else}}{{title}}{{/if}}"
+            loading="lazy"
+        />
+    </a>
+    {{/if}}
+
+    <div class="post-card-content">
+
+        <a class="post-card-content-link" href="{{url}}">
+            <header class="post-card-header">
+                {{#if primary_tag}}
+                    {{#primary_tag}}
+                    <div class="post-card-primary-tag">{{name}}</div>
+                    {{/primary_tag}}
+                {{/if}}
+                <h2 class="post-card-title">{{title}}</h2>
+            </header>
+            <div class="post-card-excerpt">
+                <p>{{excerpt}}</p>
+            </div>
+        </a>
+
+        <footer class="post-card-meta">
+            <ul class="author-list">
+                {{#foreach authors}}
+                <li class="author-list-item">
+                    {{#if profile_image}}
+                    <a href="{{url}}" class="static-avatar">
+                        <img class="author-profile-image" src="{{img_url profile_image size="xs"}}" alt="{{name}}" loading="lazy" />
+                    </a>
+                    {{else}}
+                    <a href="{{url}}" class="static-avatar author-profile-image">{{> "icons/avatar"}}</a>
+                    {{/if}}
+                </li>
+                {{/foreach}}
+            </ul>
+            <div class="post-card-byline-content">
+                <span class="post-card-byline-author">{{#has author="count:>2"}}Multiple authors{{else}}{{authors}}{{/has}}</span>
+                <span class="post-card-byline-date"><time datetime="{{date format="YYYY-MM-DD"}}">{{date}}</time> <span class="bull">&bull;</span> {{reading_time}}</span>
+            </div>
+        </footer>
+
+    </div>{{!--/.post-card-content--}}
+
+</article>

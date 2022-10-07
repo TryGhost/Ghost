@@ -1,0 +1,244 @@
+/* Tag list
+/* ---------------------------------------------------------- */
+a.gh-tag-list-posts-count:hover {
+    color: color-mod(var(--green) l(-25%) s(+15%));
+}
+
+textarea.gh-tag-details-textarea {
+    max-width: 100%;
+}
+
+.gh-tags-placeholder {
+    width: 60px;
+    fill: var(--lightgrey);
+}
+
+.gh-tag-list-slug {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.gh-tag-list-description {
+    max-width: 320px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Mobile style of tag list */
+@media (max-width: 1000px) {
+    .gh-tags-list-item {
+        display: flex;
+        position: relative;
+        flex-wrap: wrap;
+        border-bottom: 1px solid var(--lightgrey);
+        margin: 0;
+    }
+
+    .gh-tags-list-item:nth-of-type(2) {
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+    }
+
+    .gh-tags-list-item .gh-list-data {
+        border-top: none !important;
+    }
+
+    .gh-tags-list-item:hover {
+        background: var(--whitegrey-l2);
+    }
+
+    .gh-tags-list-item:hover .gh-list-data {
+        background: none !important;
+    }
+
+    .gh-tag-list-title {
+        display: block;
+        flex: 1 1 100%;
+        padding-bottom: 0;
+    }
+
+    .gh-tag-list-slug {
+        display: inline-block;
+        width: unset;
+        padding: 2px 0 20px 16px;
+    }
+
+    .gh-tag-list-posts-count {
+        display: inline-block;
+        flex: 1 1 auto;
+        width: unset;
+        padding: 2px 0 20px 0;
+    }
+
+    .gh-tag-list-slug:after {
+        content: "\2022";
+        display: inline-block;
+        margin-right: 4px;
+        color: var(--midgrey-l2);
+    }
+
+    .gh-tag-list-chevron {
+        display: block;
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+    }
+}
+
+@media (max-width: 450px) {
+    .tags-header {
+        justify-content: flex-end;
+        min-height: 120px;
+    }
+
+    .tags-header .gh-canvas-title {
+        position: absolute;
+        top: 29px;
+        left: 21px;
+    }
+
+    .tags-header .view-actions {
+        flex-direction: column;
+        align-items: flex-end;
+        margin-top: 18px;
+        overflow-y: hidden;
+        width: 100%;
+    }
+
+    .tags-header .view-actions .gh-contentfilter {
+        order: 2;
+        margin: 10px 0 -20px;
+        padding: 6px 0 26px;
+        max-width: calc(100vw - 10px);
+        overflow-x: auto;
+        align-self: stretch;
+    }
+
+    .tags-header .view-actions .gh-contentfilter button {
+        flex: 1 1 50%;
+    }
+
+    .gh-tag-list-description {
+        max-width: 200px;
+    }
+}
+
+/* Tag details
+/* ---------------------------------------------------------- */
+
+.gh-tag-basic-settings-form {
+    display: flex;
+    align-items: flex-start;
+    padding: 20px 0;
+}
+
+.gh-tag-image-uploader .gh-image-uploader {
+    margin: 4px 0 0;
+    background: transparent;
+    border: 1px solid var(--whitegrey-d2);
+    min-height: 147px;
+}
+
+.gh-tag-setting-codeinjection .CodeMirror {
+    padding: 0 !important;
+    min-height: 240px;
+    background: var(--white);
+    color: var(--darkgrey);
+    border: 1px solid var(--whitegrey);
+    border-radius: 4px;
+    margin-bottom: 24px;
+}
+
+.gh-tag-setting-codeinjection .CodeMirror-gutters {
+    background-color: var(--whitegrey-l2);
+    border-right: 1px solid var(--lightgrey);
+}
+
+.gh-tag-setting-codeinjection .CodeMirror-scroll {
+    min-height: 240px;
+}
+
+.gh-tag-setting-codeinjection .CodeMirror-cursor {
+    border: 1px solid var(--midgrey);
+}
+
+label.gh-tag-setting-codeheader {
+    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+}
+
+.gh-tag-settings-multiprop {
+    display: flex;
+    max-width: 620px;
+    width: 100%;
+}
+
+.gh-tag-settings-colorcontainer .input-color input {
+    position: relative;
+    width: 112px;
+    padding: 3px 4px 3px 54px;
+    font-size: 1.3rem;
+}
+
+.gh-tag-settings-colorcontainer .input-color::after {
+    left: 44px;
+}
+
+.gh-tag-settings-colorcontainer .color-picker-horizontal-divider {
+    position: absolute;
+    display: block;
+    content: "";
+    width: 1px;
+    top: 0;
+    left: 37px;
+    bottom: 0;
+    background: var(--input-border-color);
+}
+
+.gh-tag-settings-colorcontainer .input-color input:focus + .color-picker-horizontal-divider {
+    top: 2px;
+    bottom: 2px;
+}
+
+.gh-tag-settings-colorcontainer .color-box-container {
+    height: 32px;
+    width: 32px;
+    position: absolute;
+    overflow: hidden;
+    top: 2px;
+    left: 2px;
+    margin: 1px;
+    border-top-left-radius: 2px;
+    border-bottom-left-radius: 2px;
+}
+
+.gh-tag-settings-colorcontainer .color-box-container .color-picker {
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    border: none;
+    outline: none;
+    padding: 0;
+    margin: 0;
+    width: 50px;
+    height: 50px;
+}
+
+
+.gh-tag-settings-colorcontainer {
+    flex-basis: 112px;
+}
+
+@media (max-width: 1080px) {
+    .gh-tag-settings-multiprop {
+        flex-direction: column;
+    }
+
+    .gh-tag-settings-colorcontainer {
+        flex-basis: unset;
+    }
+}

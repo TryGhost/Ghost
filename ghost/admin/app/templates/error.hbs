@@ -1,0 +1,30 @@
+<div class="gh-view">
+
+    <section class="flex flex-column items-center flex-grow justify-center h-100 nt10">
+        <div class="absolute error-background nudge-right--5">
+            {{svg-jar "desert" class="error-background absolute"}}
+            <div class="traveler-1">{{svg-jar "tumbleweed" class="w6 h6 absolute bouncer-1"}}</div>
+            <div class="traveler-2">{{svg-jar "tumbleweed" class="w11 h11 absolute bouncer-2"}}</div>
+        </div>
+        <div class="mt5 tc">
+            <h1 class="midlightgrey error-code-size fw6">{{this.code}}</h1>
+            <h2 class="midlightgrey f4 fw3">{{this.message}}</h2>
+        </div>
+    </section>
+
+    {{#if this.stack}}
+        <section class="error-stack">
+            <h3>Stack Trace</h3>
+            <p><strong>{{this.message}}</strong></p>
+            <ul class="error-stack-list">
+                {{#each this.stack as |item|}}
+                    <li>
+                        at
+                        {{#if item.function}}<em class="error-stack-function">{{item.function}}</em>{{/if}}
+                        <span class="error-stack-file">({{item.at}})</span>
+                    </li>
+                {{/each}}
+            </ul>
+        </section>
+    {{/if}}
+</div>

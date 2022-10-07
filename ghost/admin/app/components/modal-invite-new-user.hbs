@@ -1,0 +1,59 @@
+{{!-- disable mouseDown so it doesn't trigger focus-out validations --}}
+<a class="close" href role="button" title="Close" {{action "closeModal"}} {{action (optional this.noop) on="mouseDown"}}>
+    {{svg-jar "close"}}<span class="hidden">Close</span>
+</a>
+
+<div class="gh-modal-invite-user">
+    <header class="modal-header" data-test-modal="invite-staff-user">
+        <h1>Invite a new staff user</h1>
+        <p>Send an invitation for a new person to create a staff account on your site, and select a role that matches what you’d like them to be able to do.</p>
+    </header>
+
+    <div class="modal-body">
+        <fieldset>
+            <GhFormGroup @errors={{this.errors}} @hasValidated={{this.hasValidated}} @property="email">
+                <label for="new-user-email">Email address</label>
+                <GhTextInput
+                    @class="email"
+                    @id="new-user-email"
+                    @type="email"
+                    @placeholder="youremail@example.com"
+                    @name="email"
+                    @shouldFocus={{true}}
+                    @autocapitalize="off"
+                    @autocorrect="off"
+                    @value={{readonly this.email}}
+                    @input={{action (mut this.email) value="target.value"}}
+                    @keyEvents={{hash
+                        Enter=(action "confirm")
+                    }}
+                />
+                <GhErrorMessage @errors={{this.errors}} @property="email" />
+            </GhFormGroup>
+
+            <GhRoleSelection
+                @selected={{this.role}}
+                @setRole={{this.setRole}}
+                @onValidationSuccess={{action "roleValidationSucceeded"}}
+                @onValidationFailure={{action "roleValidationFailed"}}
+            />
+        </fieldset>
+    </div>
+    <div class="modal-footer">
+        {{#if this.limitErrorMessage}}
+            <GhTaskButton @buttonText="Upgrade my plan &rarr;"
+                @task={{this.transitionToBilling}}
+                @class="gh-btn gh-btn-green gh-btn-icon"
+                @disableMouseDown="true"
+                data-test-button="upgrade-my-plan" />
+        {{else}}
+            <GhTaskButton @buttonText="Send invitation now &rarr;"
+                @successText="Sent"
+                @task={{this.sendInvitation}}
+                @class="gh-btn gh-btn-black gh-btn-icon"
+                @disabled={{this.fetchRoles.isRunning}}
+                @disableMouseDown="true"
+                data-test-button="send-user-invite" />
+        {{/if}}
+    </div>
+</div>

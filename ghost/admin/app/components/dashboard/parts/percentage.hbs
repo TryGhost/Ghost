@@ -1,0 +1,7 @@
+{{#if (gt @percentage 0) }}
+    <div class="gh-dashboard-percentage is-positive">+{{ @percentage }}%</div>
+{{else if (lt @percentage 0)}}
+    <div class="gh-dashboard-percentage is-negative">{{ @percentage }}%</div>
+{{else}}
+    <div class="gh-dashboard-percentage">0%</div>
+{{/if}}

@@ -1,0 +1,107 @@
+<div class="modal-content" data-test-modal="install-theme">
+    <div class="theme-validation-container">
+        <header class="modal-header">
+            <h1>{{if this.installSuccess "Success" "Install theme"}}</h1>
+        </header>
+        <button type="button" class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+        <div class="modal-body">
+            {{#if this.isConfirming}}
+                <p data-test-state="confirm">
+                    By clicking below, <strong>{{this.themeName}}</strong> will automatically be activated as the theme for your site.
+                </p>
+
+                {{#if this.willOverwriteExisting}}
+                    <p data-test-state="confirm-overwrite">
+                        This will overwrite your existing version of {{this.themeName}}{{if this.willOverwriteExisting.active ", which is your active theme"}}. All custom changes will be lost.
+                    </p>
+                {{/if}}
+            {{/if}}
+
+            {{#if this.installSuccess}}
+                {{#if this.hasWarningsOrErrors}}
+                    <p data-test-state="installed-with-notes">
+                        The theme <strong>"{{this.themeName}}"</strong> was installed successfully but we detected some {{if this.validationErrors "errors" "warnings"}}.
+                    </p>
+                {{else}}
+                    {{!-- Installed with no errors --}}
+                    <p data-test-state="installed-no-notes"><strong>{{this.themeName}}</strong> has been successfully installed and activated as your theme.</p>
+                {{/if}}
+            {{/if}}
+
+            {{#if this.installError}}
+                {{!-- Outright failure - not found, not a theme, server error, etc --}}
+                <p data-test-state="failed-error">{{this.themeName}} failed to install.</p>
+                <p class="error" data-test-text="install-error"><strong class="response">{{this.installError}}</strong></p>
+            {{/if}}
+
+            {{#if this.installFailure}}
+                {{!-- Invalid theme --}}
+                <p data-test-state="failed-invalid">This theme is invalid and cannot be installed. Contact the theme developer.</p>
+            {{/if}}
+
+            {{#if this.fatalValidationErrors}}
+                <div>
+                    <h2 class="mb0 mt4 f5 fw6">Fatal Errors</h2>
+                    <p class="mb2">Must-fix to install theme</p>
+                </div>
+
+                <ul class="pa0">
+                {{#each this.fatalValidationErrors as |error|}}
+                    <li class="theme-validation-item theme-fatal-error">
+                        <GhThemeErrorLi @error={{error}} />
+                    </li>
+                {{/each}}
+                </ul>
+            {{/if}}
+
+            {{#if this.validationErrors}}
+                <div>
+                    <h2 class="mb0 mt4 f5 fw6">Errors</h2>
+                    <p class="mb2">Highly recommended to fix, functionality <strong>could</strong> be restricted</p>
+                </div>
+                <ul class="pa0">
+                {{#each this.validationErrors as |error|}}
+                    <li class="theme-validation-item theme-error">
+                        <GhThemeErrorLi @error={{error}} />
+                    </li>
+                {{/each}}
+                </ul>
+            {{/if}}
+
+            {{#if this.validationWarnings}}
+                <div>
+                    <h2 class="mb0 mt4 f5 fw6">Warnings</h2>
+                </div>
+                <ul class="pa0">
+                {{#each this.validationWarnings as |error|}}
+                    <li class="theme-validation-item theme-warning">
+                        <GhThemeErrorLi @error={{error}} />
+                    </li>
+                {{/each}}
+                </ul>
+            {{/if}}
+        </div>
+
+        <div class="modal-footer">
+            <div class="flex items-center justify-between">
+                <button class="gh-btn" data-test-button="cancel" type="button" {{on "click" (fn @close false)}}>
+                    <span>{{if (or this.installSuccess this.installFailure) "Close" "Cancel"}}</span>
+                </button>
+
+                {{#if this.shouldShowInstall}}
+                    <GhTaskButton
+                        @disabled={{this.refreshThemesTask.isRunning}}
+                        @buttonText={{if this.willOverwriteExisting "Overwrite" "Install"}}
+                        @runningText="Installing"
+                        @successText="Installed"
+                        @task={{this.installThemeTask}}
+                        @unlinkedTask={{true}} {{!-- button will be removed on success so avoid self-cancel warning --}}
+                        @class="gh-btn gh-btn-primary gh-btn-icon"
+                        data-test-button="confirm-install"
+                    />
+                {{/if}}
+            </div>
+        </div>
+    </div>
+</div>

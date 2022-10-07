@@ -1,0 +1,27 @@
+<div class="modal-content" data-test-modal="confirm-newsletter-email">
+    <header class="modal-header">
+        <h1>Confirm newsletter email address</h1>
+    </header>
+    <button type="button" class="close" role="button" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+    <div class="modal-body">
+        <p>
+            We've sent a confirmation email to <strong>{{@data.newEmail}}</strong>.
+            Until the address has been verified newsletters will be sent from the
+            {{if @data.currentEmail "previous" "default"}} email address
+            ({{full-email-address (or @data.currentEmail "noreply")}}).
+        </p>
+    </div>
+
+    <div class="modal-footer">
+        <button
+            type="button"
+            class="gh-btn"
+            data-test-button="confirm-newsletter-email"
+            {{on "click" @close}}
+            {{on-key "Enter"}}
+        >
+            <span>Ok</span>
+        </button>
+    </div>
+</div>
