@@ -5,7 +5,7 @@ import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupRenderingTest} from 'ember-mocha';
 
-describe('Integration: Component: gh-navitem', function () {
+describe('Integration: Component: settings/navigation/nav-item', function () {
     setupRenderingTest();
 
     beforeEach(function () {
@@ -15,7 +15,7 @@ describe('Integration: Component: gh-navitem', function () {
     it('renders', async function () {
         this.set('navItem', NavItem.create({label: 'Test', url: '/url'}));
 
-        await render(hbs`{{gh-navitem navItem=navItem baseUrl=baseUrl}}`);
+        await render(hbs`<Settings::Navigation::NavItem @navItem={{this.navItem}} @baseUrl={{this.baseUrl}} />`);
         let item = find('.gh-blognav-item');
 
         expect(item.querySelector('.gh-blognav-grab')).to.exist;
@@ -32,7 +32,7 @@ describe('Integration: Component: gh-navitem', function () {
     it('doesn\'t show drag handle for new items', async function () {
         this.set('navItem', NavItem.create({label: 'Test', url: '/url', isNew: true}));
 
-        await render(hbs`{{gh-navitem navItem=navItem baseUrl=baseUrl}}`);
+        await render(hbs`<Settings::Navigation::NavItem @navItem={{this.navItem}} @baseUrl={{this.baseUrl}} />`);
         let item = find('.gh-blognav-item');
 
         expect(item.querySelector('.gh-blognav-grab')).to.not.exist;
@@ -41,7 +41,7 @@ describe('Integration: Component: gh-navitem', function () {
     it('shows add button for new items', async function () {
         this.set('navItem', NavItem.create({label: 'Test', url: '/url', isNew: true}));
 
-        await render(hbs`{{gh-navitem navItem=navItem baseUrl=baseUrl}}`);
+        await render(hbs`<Settings::Navigation::NavItem @navItem={{this.navItem}} @baseUrl={{this.baseUrl}} />`);
         let item = find('.gh-blognav-item');
 
         expect(item.querySelector('.gh-blognav-add')).to.exist;
@@ -57,7 +57,7 @@ describe('Integration: Component: gh-navitem', function () {
             deleteActionCallCount += 1;
         });
 
-        await render(hbs`{{gh-navitem navItem=navItem baseUrl=baseUrl deleteItem=(action deleteItem)}}`);
+        await render(hbs`<Settings::Navigation::NavItem @navItem={{this.navItem}} @baseUrl={{this.baseUrl}} @deleteItem={{this.deleteItem}} />`);
         await click('.gh-blognav-delete');
 
         expect(deleteActionCallCount).to.equal(1);
@@ -71,7 +71,7 @@ describe('Integration: Component: gh-navitem', function () {
             addActionCallCount += 1;
         });
 
-        await render(hbs`{{gh-navitem navItem=navItem baseUrl=baseUrl addItem=(action add)}}`);
+        await render(hbs`<Settings::Navigation::NavItem @navItem={{this.navItem}} @baseUrl={{this.baseUrl}} @addItem={{this.add}} />`);
         await click('.gh-blognav-add');
 
         expect(addActionCallCount).to.equal(1);
@@ -86,7 +86,7 @@ describe('Integration: Component: gh-navitem', function () {
             return value;
         });
 
-        await render(hbs`{{gh-navitem navItem=navItem baseUrl=baseUrl updateUrl=(action update)}}`);
+        await render(hbs`<Settings::Navigation::NavItem @navItem={{this.navItem}} @baseUrl={{this.baseUrl}} @updateUrl={{this.update}} />`);
         await triggerEvent('.gh-blognav-url input', 'blur');
 
         expect(updateActionCallCount).to.equal(1);
@@ -101,7 +101,7 @@ describe('Integration: Component: gh-navitem', function () {
             return value;
         });
 
-        await render(hbs`{{gh-navitem navItem=navItem baseUrl=baseUrl updateLabel=(action update)}}`);
+        await render(hbs`<Settings::Navigation::NavItem @navItem={{this.navItem}} @baseUrl={{this.baseUrl}} @updateLabel={{this.update}} />`);
         await triggerEvent('.gh-blognav-label input', 'blur');
 
         expect(updateActionCallCount).to.equal(2);
@@ -111,7 +111,7 @@ describe('Integration: Component: gh-navitem', function () {
         this.set('navItem', NavItem.create({label: '', url: ''}));
         this.navItem.validate();
 
-        await render(hbs`{{gh-navitem navItem=navItem baseUrl=baseUrl}}`);
+        await render(hbs`<Settings::Navigation::NavItem @navItem={{this.navItem}} @baseUrl={{this.baseUrl}} />`);
         let item = find('.gh-blognav-item');
 
         expect(item).to.have.class('gh-blognav-item--error');
