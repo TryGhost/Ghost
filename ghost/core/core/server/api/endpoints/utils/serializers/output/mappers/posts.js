@@ -10,7 +10,6 @@ const extraAttrs = require('../utils/extra-attrs');
 const gating = require('../utils/post-gating');
 const url = require('../utils/url');
 
-const labs = require('../../../../../../../shared/labs');
 const utils = require('../../../index');
 
 const postsMetaSchema = require('../../../../../../data/schema').tables.posts_meta;
