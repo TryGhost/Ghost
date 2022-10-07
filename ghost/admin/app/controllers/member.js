@@ -225,19 +225,19 @@ export default class MemberController extends Controller {
         }
 
         // member.labels is an array so hasDirtyAttributes doesn't pick up
-        // changes unless the array ref is changed
-        let currentLabels = (this._labels || []).join(', ');
-        let previousLabels = (this._previousLabels || []).join(', ');
-        console.log(currentLabels + '==' + previousLabels)
+        // changes unless the array ref is changed.
+        // use sort() to sort of detect same item is re-added
+        let currentLabels = (this._labels.sort() || []).join(', ');
+        let previousLabels = (this._previousLabels.sort() || []).join(', ');
         if (currentLabels !== previousLabels) {
             return true;
         }
 
         // member.newsletters is an array so hasDirtyAttributes doesn't pick up
         // changes unless the array ref is changed
-        let currentNewsletters = (this._newsletters || []).join(', ');
-        let previousNewsletters = (this._previousNewsletters || []).join(', ');
-        console.log(currentNewsletters + '==' + previousNewsletters)
+        // use sort() to sort of detect same item is re-enabled
+        let currentNewsletters = (this._newsletters.sort() || []).join(', ');
+        let previousNewsletters = (this._previousNewsletters.sort() || []).join(', ');
         if (currentNewsletters !== previousNewsletters) {
             return true;
         }
