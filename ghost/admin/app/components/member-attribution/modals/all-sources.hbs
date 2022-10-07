@@ -7,13 +7,11 @@
     <div class="modal-body pa">
         <div>
             <div class="gh-dashboard-list-header">
-                {{#if (eq @data.sortColumn "signups")}} <div class="gh-dashboard-list-title">Sources</div> {{/if}}
+                <div class="gh-dashboard-list-title">Sources</div>
                 <div class="gh-dashboard-list-title">Free signups</div>
-                {{#if (eq @data.sortColumn "paid")}}
                     {{#if this.membersUtils.paidMembersEnabled}}
                         <div class="gh-dashboard-list-title"><span class="hide-when-small">Paid </span>Conversions</div>
                     {{/if}}
-                {{/if}}
             </div>
             <div class="gh-dashboard-list-body">
                 <div class="gh-dashboard-attribution-list-scrollable">
@@ -22,7 +20,6 @@
                             <div class="gh-dashboard-list-item-sub gh-dashboard-list-item-sub-source">
                                 <span class="gh-dashboard-list-text">{{sourceData.source}}<sup>*</sup></span>
                             </div>
-                            {{#if (eq @data.sortColumn "signups")}}
                             <div class="gh-dashboard-list-item-sub">
                                 <span class="gh-dashboard-metric-minivalue">
                                     {{#if sourceData.signups}}
@@ -32,8 +29,6 @@
                                     {{/if}}
                                 </span>
                             </div>
-                            {{/if}}
-                            {{#if (eq @data.sortColumn "paid")}}
                                 {{#if this.membersUtils.paidMembersEnabled}}
                                     <div class="gh-dashboard-list-item-sub">
                                         <span class="gh-dashboard-metric-minivalue">
@@ -45,7 +40,6 @@
                                         </span>
                                     </div>
                                 {{/if}}
-                            {{/if}}
                         </div>
                     {{else}}
                         <div class="gh-dashboard-list-empty">
@@ -57,7 +51,6 @@
         </div>
 
     </div>
-
     <div class="modal-footer">
         <p class="gh-dashboard-attribution-footnote"><sup>*</sup>{{if (eq @data.sortColumn "paid") "Paid subscriptions" "Members"}} created during this time period that do not have attribution data associated with them.</p>
     </div>
