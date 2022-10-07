@@ -23,9 +23,7 @@ export default class OffersRoute extends AdminRoute {
         super.setupController(...arguments);
 
         if (this._requiresBackgroundRefresh) {
-            // `offer` is passed directly in `<LinkTo>` so it can be a proxy
-            // object used by the sparse list requiring the use of .get()
-            controller.fetchOfferTask.perform(offer.get('id'));
+            controller.fetchOfferTask.perform(offer.id);
         }
     }
 

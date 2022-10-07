@@ -68,9 +68,8 @@ export default class MemberController extends Controller {
     }
 
     get subscribedAt() {
-        // member can be a proxy object in a sparse array so .get is required
-        let memberSince = moment(this.member.get('createdAtUTC')).from(moment());
-        let createdDate = moment(this.member.get('createdAtUTC')).format('D MMM YYYY');
+        let memberSince = moment(this.member.createdAtUTC).from(moment());
+        let createdDate = moment(this.member.createdAtUTC).format('D MMM YYYY');
         return `${createdDate} (${memberSince})`;
     }
 
@@ -133,7 +132,7 @@ export default class MemberController extends Controller {
         // if Cmd+S is pressed before the field loses focus make sure we're
         // saving the intended property values
         let scratchProps = scratchMember.getProperties(SCRATCH_PROPS);
-        member.setProperties(scratchProps);
+        Object.assign(member, scratchProps);
 
         try {
             yield member.save();
@@ -178,7 +177,7 @@ export default class MemberController extends Controller {
     // Private -----------------------------------------------------------------
 
     _saveMemberProperty(propKey, newValue) {
-        let currentValue = this.member.get(propKey);
+        let currentValue = this.member[propKey];
 
         if (newValue && typeof newValue === 'string') {
             newValue = newValue.trim();
@@ -189,6 +188,6 @@ export default class MemberController extends Controller {
             return;
         }
 
-        this.member.set(propKey, newValue);
+        this.member[propKey] = newValue;
     }
 }
