@@ -51,7 +51,9 @@
         </div>
 
     </div>
+    {{#if @data.unavailableSource}}
     <div class="modal-footer">
         <p class="gh-dashboard-attribution-footnote"><sup>*</sup>{{if (eq @data.sortColumn "paid") "Paid subscriptions" "Members"}} created during this time period that do not have attribution data associated with them.</p>
     </div>
+    {{/if}}
 </div>
