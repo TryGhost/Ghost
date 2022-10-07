@@ -54,7 +54,7 @@
                         <span class="gh-dashboard-list-text" role="button" aria-label="Show sources"
                     {{on "click" this.openAllSources}}>Other sources <span class="gh-dashboard-list-item-other-source-arrow">→</span></span>
                     </div>
-                        <div class="gh-dashboard-list-item-sub">
+                        <div class="gh-dashboard-list-item-sub gh-dashboard-list-item-sub-other {{if (eq @sortColumn "signups") "sorted-by"}}">
                             {{#if this.others.signups}}
                                 <span class="gh-dashboard-metric-minivalue">
                                     {{format-number this.others.signups}}
@@ -66,7 +66,7 @@
                             {{/if}}
                         </div>
                         {{#if this.membersUtils.paidMembersEnabled}}
-                            <div class="gh-dashboard-list-item-sub">
+                            <div class="gh-dashboard-list-item-sub gh-dashboard-list-item-sub-other {{if (eq @sortColumn "paid") "sorted-by"}}">
                                 {{#if this.others.paidConversions}}
                                     <span class="gh-dashboard-metric-minivalue">
                                         {{format-number this.others.paidConversions}}
