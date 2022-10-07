@@ -1,13 +1,12 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../utils/e2e-framework');
-const {anyGhostAgent, anyObjectId, anyISODateTime, anyUuid, anyString, anyContentVersion, anyNumber, anyLocalURL} = matchers;
+const {anyGhostAgent, anyObjectId, anyISODateTime, anyString, anyContentVersion, anyNumber, anyLocalURL} = matchers;
 
 const tagSnapshot = {
     created_at: anyISODateTime,
     description: anyString,
     id: anyObjectId,
     updated_at: anyISODateTime,
-    url: anyLocalURL,
-    visibility: 'public'
+    url: anyLocalURL
 };
 
 describe('tag.* events', function () {
