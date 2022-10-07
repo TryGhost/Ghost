@@ -18,14 +18,14 @@ export default BaseValidator.create({
             this.invalidate();
         }
 
-        model.get('hasValidated').addObject('name');
+        model.hasValidated.addObject('name');
     },
 
     mobiledoc(model) {
-        if (isBlank(model.get('mobiledoc'))) {
+        if (isBlank(model.mobiledoc)) {
             model.errors.add('mobiledoc', 'Content cannot be blank.');
             this.invalidate();
         }
-        model.get('hasValidated').addObject('mobiledoc');
+        model.hasValidated.addObject('mobiledoc');
     }
 });
