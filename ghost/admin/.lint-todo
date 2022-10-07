@@ -998,3 +998,8 @@ remove|ember-template-lint|no-action|12|36|12|36|796968d082daba388ca19e97d45c727
 remove|ember-template-lint|no-action|15|32|15|32|796968d082daba388ca19e97d45c7278d1076f04|1662681600000|1673053200000|1678237200000|app/templates/posts-loading.hbs
 remove|ember-template-lint|no-action|18|29|18|29|796968d082daba388ca19e97d45c7278d1076f04|1662681600000|1673053200000|1678237200000|app/templates/posts-loading.hbs
 remove|ember-template-lint|no-action|21|31|21|31|796968d082daba388ca19e97d45c7278d1076f04|1662681600000|1673053200000|1678237200000|app/templates/posts-loading.hbs
+remove|ember-template-lint|no-action|4|85|4|85|ef910eebe8656965ebc73588c6f34a6260006b96|1662681600000|1673053200000|1678237200000|app/templates/reset.hbs
+remove|ember-template-lint|no-action|19|35|19|35|8b04fb9251c6a34b6bfc2995b527539bb4106c37|1662681600000|1673053200000|1678237200000|app/templates/reset.hbs
+remove|ember-template-lint|no-action|31|35|31|35|ddfad6e48c0df2368eed5dd9faf83f2a96dc182e|1662681600000|1673053200000|1678237200000|app/templates/reset.hbs
+remove|ember-template-lint|no-passed-in-event-handlers|19|28|19|28|ea0378c5df53f2be82f0fd59e0c538efd7176851|1662681600000|1673053200000|1678237200000|app/templates/reset.hbs
+remove|ember-template-lint|no-passed-in-event-handlers|31|28|31|28|06311a82a9589d4c126863466d56c7c4a76409d0|1662681600000|1673053200000|1678237200000|app/templates/reset.hbs
