@@ -1134,9 +1134,9 @@ Dashboard Attribution */
 }
 
 .gh-dashboard-list-title svg {
-    width: 9px;
+    width: 8px;
     margin-left: 4px;
-    margin-top: -3px;
+    margin-top: -2px;
     vertical-align: middle;
     display: none;
 }
