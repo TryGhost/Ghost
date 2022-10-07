@@ -101,7 +101,6 @@ export default class GhDateTimePicker extends Component {
         let blogTimezone = this.blogTimezone;
 
         if (!isBlank(date)) {
-            console.log('Receiving date', date);
             // Note: input date as a string is expected to be in the blog's timezone
             this.set('_date', moment.tz(date, blogTimezone));
         } else {
