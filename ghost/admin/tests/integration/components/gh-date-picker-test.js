@@ -1,4 +1,3 @@
-// import Service from '@ember/service';
 import hbs from 'htmlbars-inline-precompile';
 import moment from 'moment-timezone';
 import sinon from 'sinon';
@@ -8,23 +7,9 @@ import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupRenderingTest} from 'ember-mocha';
 
-// class SettingsStub extends Service {
-//     timezone = 'Etc/UTC';
-
-//     get(key) {
-//         if (key === 'timezone') {
-//             return this.timezone;
-//         }
-//     }
-// }
-
 describe('Integration: Component: gh-date-picker', function () {
     setupRenderingTest();
     let clock;
-
-    // beforeEach(async function () {
-    //     this.owner.register('service:settings', SettingsStub);
-    // });
 
     afterEach(function () {
         clock?.restore();
@@ -37,53 +22,72 @@ describe('Integration: Component: gh-date-picker', function () {
     });
 
     it('defaults to now when @value is empty', async function () {
+        const momentToTest = moment('2022-02-22 22:22:22.000Z');
         clock = sinon.useFakeTimers({
-            now: moment('2022-02-22 22:22:22.000Z').toDate()
+            now: momentToTest.toDate()
         });
-
         await render(hbs`<GhDatePicker />`);
-        expect(find('[data-test-date-picker-input]'), 'date input').to.have.value('2022-02-22');
+        expect(find('[data-test-date-picker-input]'), 'date input')
+            .to
+            .have
+            .value(momentToTest.format('YYYY-MM-DD'));
     });
 
     it('shows passed in @value value', async function () {
-        this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+        const momentToTest = moment('2022-02-22 22:22:22.000Z');
+
+        this.set('date', momentToTest.toDate());
 
         await render(hbs`<GhDatePicker @value={{this.date}} />`);
-        expect(find('[data-test-date-picker-input]'), 'date input').to.have.value('2022-02-22');
+        expect(find('[data-test-date-picker-input]'), 'date input')
+            .to
+            .have
+            .value(momentToTest.format('YYYY-MM-DD'));
     });
 
     it('updates date via input blur', async function () {
-        this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+        const initialMomentToTest = moment('2022-02-22 22:22:22.000Z');
+        const updatedMomentToTest = moment('2022-02-28').startOf('day');
+
+        this.set('date', initialMomentToTest.toDate());
 
         const changeSpy = sinon.spy();
         this.set('onChange', changeSpy);
 
         await render(hbs`<GhDatePicker @value={{this.date}} @onChange={{this.onChange}} />`);
-        await fillIn('[data-test-date-picker-input]', '2022-02-28');
+        await fillIn('[data-test-date-picker-input]', updatedMomentToTest.format('YYYY-MM-DD'));
         await blur('[data-test-date-picker-input]');
 
         expect(changeSpy.callCount).to.equal(1);
         expect(changeSpy.firstCall.args[0]).to.be.an.instanceof(Date);
-        expect(changeSpy.firstCall.args[0].toISOString()).to.equal(moment('2022-02-28T00:00:00.000Z').toISOString());
+        expect(changeSpy.firstCall.args[0].toISOString()).to.equal(updatedMomentToTest.toISOString());
     });
 
     it('updates date via input Enter keydown', async function () {
-        this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+        const initialMomentToTest = moment('2022-02-22 22:22:22.000Z');
+        const updatedMomentToTest = moment('2022-02-28').startOf('day');
+
+        this.set('date', initialMomentToTest.toDate());
 
         const changeSpy = sinon.spy();
         this.set('onChange', changeSpy);
 
         await render(hbs`<GhDatePicker @value={{this.date}} @onChange={{this.onChange}} />`);
-        await fillIn('[data-test-date-picker-input]', '2022-02-28');
+        await fillIn('[data-test-date-picker-input]', updatedMomentToTest.format('YYYY-MM-DD'));
         await triggerKeyEvent('[data-test-date-picker-input]', 'keydown', 'Enter');
 
         expect(changeSpy.callCount).to.equal(1);
         expect(changeSpy.firstCall.args[0]).to.be.an.instanceof(Date);
-        expect(changeSpy.firstCall.args[0].toISOString()).to.equal(moment('2022-02-28T00:00:00.000Z').toISOString());
+        expect(changeSpy.firstCall.args[0].toISOString())
+            .to
+            .equal(updatedMomentToTest.toISOString());
     });
 
     it('updates date via datepicker selection', async function () {
-        this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+        const initialMomentToTest = moment('2022-02-22 22:22:22.000Z');
+        const updatedMomentToTest = moment('2022-02-27 13:00:00.000Z');
+
+        this.set('date', initialMomentToTest.toDate());
 
         const onChange = (newDate) => {
             this.set('date', newDate);
@@ -92,41 +96,70 @@ describe('Integration: Component: gh-date-picker', function () {
         this.set('onChange', changeSpy);
 
         await render(hbs`<GhDatePicker @value={{this.date}} @onChange={{this.onChange}} />`);
-        await datepickerSelect('[data-test-date-picker-trigger]', moment('2022-02-27T13:00:00.000Z').toDate());
+        await datepickerSelect('[data-test-date-picker-trigger]', updatedMomentToTest.toDate());
 
-        expect(find('[data-test-date-picker-input]')).to.have.value('2022-02-27');
+        expect(find('[data-test-date-picker-input]'))
+            .to
+            .have
+            .value(updatedMomentToTest.format('YYYY-MM-DD'));
 
         expect(changeSpy.callCount).to.equal(1);
         expect(changeSpy.firstCall.args[0]).to.be.an.instanceof(Date);
-        expect(changeSpy.firstCall.args[0].toISOString()).to.equal(moment('2022-02-27T00:00:00.000Z').toISOString());
+        expect(changeSpy.firstCall.args[0].toISOString())
+            .to
+            .equal(updatedMomentToTest.startOf('day').toISOString());
     });
 
     it('updates when @value is changed externally', async function () {
-        this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+        const initialMomentToTest = moment('2022-02-22 22:22:22.000Z');
+        const updatedMomentToTest = moment('2022-02-28 10:00:00.000Z');
+
+        this.set('date', initialMomentToTest.toDate());
 
         await render(hbs`<GhDatePicker @value={{this.date}} />`);
-        expect(find('[data-test-date-picker-input]'), 'date input').to.have.value('2022-02-22');
+        expect(find('[data-test-date-picker-input]'), 'date input')
+            .to
+            .have
+            .value(initialMomentToTest.format('YYYY-MM-DD'));
 
-        this.set('date', moment('2022-02-28 10:00:00.000Z')).toDate();
+        this.set('date', updatedMomentToTest.toDate());
 
-        expect(find('[data-test-date-picker-input]'), 'date input').to.have.value('2022-02-28');
+        expect(find('[data-test-date-picker-input]'), 'date input')
+            .to
+            .have
+            .value(updatedMomentToTest.format('YYYY-MM-DD'));
     });
 
     it('updates when @value is changed externally when we have a scratch date', async function () {
-        this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+        const initialMomentToTest = moment('2022-02-22 22:22:22.000Z');
+        const updatedInputMomentToTest = moment('2022-02-27').startOf('day');
+        const updatedValueMomentToTest = moment('2022-02-28 10:00:00.000Z');
+
+        this.set('date', initialMomentToTest.toDate());
 
         await render(hbs`<GhDatePicker @value={{this.date}} />`);
-        expect(find('[data-test-date-picker-input]'), 'date input').to.have.value('2022-02-22');
+        expect(find('[data-test-date-picker-input]'), 'date input')
+            .to
+            .have
+            .value(initialMomentToTest.format('YYYY-MM-DD'));
 
-        await fillIn('[data-test-date-picker-input]', '2022-02-27');
-        expect(find('[data-test-date-picker-input]'), 'date input').to.have.value('2022-02-27');
+        await fillIn('[data-test-date-picker-input]', updatedInputMomentToTest.format('YYYY-MM-DD'));
+        expect(find('[data-test-date-picker-input]'), 'date input')
+            .to
+            .have
+            .value(updatedInputMomentToTest.format('YYYY-MM-DD'));
 
-        this.set('date', moment('2022-02-28 10:00:00.000Z')).toDate();
-        expect(find('[data-test-date-picker-input]'), 'date input').to.have.value('2022-02-28');
+        this.set('date', updatedValueMomentToTest.toDate());
+        expect(find('[data-test-date-picker-input]'), 'date input')
+            .to
+            .have
+            .value(updatedValueMomentToTest.format('YYYY-MM-DD'));
     });
 
     it('calls @onInput on input events', async function () {
-        this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+        const momentToTest = moment('2022-02-22 22:22:22.000Z');
+
+        this.set('date', momentToTest.toDate());
 
         const inputSpy = sinon.spy();
         this.set('onInput', inputSpy);
@@ -135,11 +168,16 @@ describe('Integration: Component: gh-date-picker', function () {
         await typeIn('[data-test-date-picker-input]', 'lo');
 
         expect(inputSpy.callCount).to.equal(2);
-        expect(inputSpy.firstCall.args[0]).to.be.instanceOf(Event);
+        expect(inputSpy.firstCall.args[0])
+            .to
+            .be
+            .instanceOf(Event);
     });
 
     it('calls @onKeydown on input keydown events', async function () {
-        this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+        const momentToTest = moment('2022-02-22 22:22:22.000Z');
+
+        this.set('date', momentToTest.toDate());
 
         const keydownSpy = sinon.spy();
         this.set('onKeydown', keydownSpy);
@@ -148,11 +186,16 @@ describe('Integration: Component: gh-date-picker', function () {
         await typeIn('[data-test-date-picker-input]', 'lo');
 
         expect(keydownSpy.callCount).to.equal(2);
-        expect(keydownSpy.firstCall.args[0]).to.be.instanceOf(Event);
+        expect(keydownSpy.firstCall.args[0])
+            .to
+            .be
+            .instanceOf(Event);
     });
 
     it('calls @onBlur on input blur events', async function () {
-        this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+        const momentToTest = moment('2022-02-22 22:22:22.000Z');
+
+        this.set('date', momentToTest.toDate());
 
         const blurSpy = sinon.spy();
         this.set('onBlur', blurSpy);
@@ -162,11 +205,16 @@ describe('Integration: Component: gh-date-picker', function () {
         await blur('[data-test-date-picker-input]');
 
         expect(blurSpy.callCount).to.equal(1);
-        expect(blurSpy.firstCall.args[0]).to.be.instanceOf(Event);
+        expect(blurSpy.firstCall.args[0])
+            .to
+            .be
+            .instanceOf(Event);
     });
 
     it('resets input value on Escape', async function () {
-        this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+        const momentToTest = moment('2022-02-22 22:22:22.000Z');
+
+        this.set('date', momentToTest.toDate());
 
         const changeSpy = sinon.spy();
         this.set('onChange', changeSpy);
@@ -176,11 +224,16 @@ describe('Integration: Component: gh-date-picker', function () {
         await triggerKeyEvent('[data-test-date-picker-input]', 'keydown', 'Escape');
 
         expect(changeSpy.callCount).to.equal(0);
-        expect(find('[data-test-date-picker-input]')).to.have.value('2022-02-22');
+        expect(find('[data-test-date-picker-input]'))
+            .to
+            .have
+            .value(momentToTest.format('YYYY-MM-DD'));
     });
 
     it('handles invalid date input', async function () {
-        this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+        const momentToTest = moment('2022-02-22 22:22:22.000Z');
+
+        this.set('date', momentToTest.toDate());
 
         const changeSpy = sinon.spy();
         this.set('onChange', changeSpy);
@@ -192,16 +245,33 @@ describe('Integration: Component: gh-date-picker', function () {
         await fillIn('[data-test-date-picker-input]', '2022-02-31');
         await blur('[data-test-date-picker-input]');
 
-        expect(find('[data-test-date-picker-error]')).to.have.text('Invalid date');
+        expect(find('[data-test-date-picker-error]'))
+            .to
+            .have
+            .text('Invalid date');
 
-        expect(changeSpy.callCount, '@onChange call count').to.equal(0);
-        expect(errorSpy.callCount, '@onError call count').to.equal(1);
-        expect(errorSpy.firstCall.args[0]).to.be.instanceof(Error);
-        expect(errorSpy.firstCall.args[0].message).to.equal('Invalid date');
+        expect(changeSpy.callCount, '@onChange call count')
+            .to
+            .equal(0);
+        
+        expect(errorSpy.callCount, '@onError call count')
+            .to
+            .equal(1);
+
+        expect(errorSpy.firstCall.args[0])
+            .to
+            .be
+            .instanceof(Error);
+
+        expect(errorSpy.firstCall.args[0].message)
+            .to
+            .equal('Invalid date');
     });
 
     it('handles invalid date format input', async function () {
-        this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+        const momentToTest = moment('2022-02-22 22:22:22.000Z');
+
+        this.set('date', momentToTest.toDate());
 
         const changeSpy = sinon.spy();
         this.set('onChange', changeSpy);
@@ -215,10 +285,22 @@ describe('Integration: Component: gh-date-picker', function () {
 
         expect(find('[data-test-date-picker-error]')).to.contain.text('Date must be YYYY-MM-DD');
 
-        expect(changeSpy.callCount, '@onChange call count').to.equal(0);
-        expect(errorSpy.callCount, '@onError call count').to.equal(1);
-        expect(errorSpy.firstCall.args[0]).to.be.instanceof(Error);
-        expect(errorSpy.firstCall.args[0].message).to.contain('Date must be YYYY-MM-DD');
+        expect(changeSpy.callCount, '@onChange call count')
+            .to
+            .equal(0);
+
+        expect(errorSpy.callCount, '@onError call count')
+            .to
+            .equal(1);
+
+        expect(errorSpy.firstCall.args[0])
+            .to
+            .be
+            .instanceof(Error);
+
+        expect(errorSpy.firstCall.args[0].message)
+            .to
+            .contain('Date must be YYYY-MM-DD');
     });
 
     it('clears error on internal change to valid', async function () {
@@ -260,19 +342,25 @@ describe('Integration: Component: gh-date-picker', function () {
 
     describe('min/max', function () {
         it('disables datepicker dates outside of range', async function () {
-            this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+            this.set('date', moment('2022-02-22 22:22:22.000Z').toDate());
             this.set('minDate', moment('2022-02-11 12:00:00.000Z').toDate());
             this.set('maxDate', moment('2022-02-24 12:00:00.000Z').toDate());
 
             await render(hbs`<GhDatePicker @value={{this.date}} @minDate={{this.minDate}} @maxDate={{this.maxDate}} />`);
             await click('[data-test-date-picker-trigger]');
 
-            expect(find('[data-date="2022-02-10"]')).to.have.attribute('disabled');
-            expect(find('[data-date="2022-02-25"]')).to.have.attribute('disabled');
+            expect(find('[data-date="2022-02-10"]'))
+                .to
+                .have.attribute('disabled');
+
+            expect(find('[data-date="2022-02-25"]'))
+                .to
+                .have
+                .attribute('disabled');
         });
 
         it('errors when date input is earlier than min', async function () {
-            this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+            this.set('date', moment('2022-02-22 22:22:22.000Z').toDate());
             this.set('minDate', moment('2022-02-11 12:00:00.000Z').toDate());
 
             const changeSpy = sinon.spy();
@@ -285,17 +373,30 @@ describe('Integration: Component: gh-date-picker', function () {
             await fillIn('[data-test-date-picker-input]', '2022-02-10');
             await blur('[data-test-date-picker-input]');
 
-            expect(find('[data-test-date-picker-error]')).to.have.text('Must be on or after 2022-02-11');
+            expect(find('[data-test-date-picker-error]'))
+                .to
+                .have
+                .text('Must be on or after 2022-02-11');
 
             expect(changeSpy.callCount, '@onChange call count').to.equal(0);
             expect(errorSpy.callCount, '@onError call count').to.equal(1);
-            expect(errorSpy.firstCall.args[0]).to.be.instanceof(Error);
-            expect(errorSpy.firstCall.args[0].message).to.equal('Must be on or after 2022-02-11');
-            expect(errorSpy.firstCall.args[0].date).to.be.equal('2022-02-10');
+            expect(errorSpy.firstCall.args[0])
+                .to
+                .be
+                .instanceof(Error);
+
+            expect(errorSpy.firstCall.args[0].message)
+                .to
+                .equal('Must be on or after 2022-02-11');
+
+            expect(errorSpy.firstCall.args[0].date)
+                .to
+                .be
+                .equal('2022-02-10');
         });
 
         it('allows for min date error override', async function () {
-            this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+            this.set('date', moment('2022-02-22 22:22:22.000Z').toDate());
             this.set('minDate', moment('2022-02-11 12:00:00.000Z').toDate());
 
             await render(hbs`<GhDatePicker @value={{this.date}} @minDate={{this.minDate}} @minDateError="Must be in the future" @onChange={{this.onChange}} />`);
@@ -303,11 +404,14 @@ describe('Integration: Component: gh-date-picker', function () {
             await fillIn('[data-test-date-picker-input]', '2022-02-10');
             await blur('[data-test-date-picker-input]');
 
-            expect(find('[data-test-date-picker-error]')).to.have.text('Must be in the future');
+            expect(find('[data-test-date-picker-error]'))
+                .to
+                .have
+                .text('Must be in the future');
         });
 
         it('errors when date input is later than max', async function () {
-            this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+            this.set('date', moment('2022-02-22 22:22:22.000Z').toDate());
             this.set('maxDate', moment('2022-02-25 12:00:00.000Z').toDate());
 
             const changeSpy = sinon.spy();
@@ -322,15 +426,30 @@ describe('Integration: Component: gh-date-picker', function () {
 
             expect(find('[data-test-date-picker-error]')).to.have.text('Must be on or before 2022-02-25');
 
-            expect(changeSpy.callCount, '@onChange call count').to.equal(0);
-            expect(errorSpy.callCount, '@onError call count').to.equal(1);
-            expect(errorSpy.firstCall.args[0]).to.be.instanceof(Error);
-            expect(errorSpy.firstCall.args[0].message).to.equal('Must be on or before 2022-02-25');
-            expect(errorSpy.firstCall.args[0].date).to.be.equal('2022-02-28');
+            expect(changeSpy.callCount, '@onChange call count')
+                .to
+                .equal(0);
+
+            expect(errorSpy.callCount, '@onError call count')
+                .to
+                .equal(1);
+
+            expect(errorSpy.firstCall.args[0])
+                .to
+                .be.instanceof(Error);
+
+            expect(errorSpy.firstCall.args[0].message)
+                .to
+                .equal('Must be on or before 2022-02-25');
+
+            expect(errorSpy.firstCall.args[0].date)
+                .to
+                .be
+                .equal('2022-02-28');
         });
 
         it('allows for max date error override', async function () {
-            this.set('date', moment('2022-02-22 22:22:22.000Z')).toDate();
+            this.set('date', moment('2022-02-22 22:22:22.000Z').toDate());
             this.set('maxDate', moment('2022-02-25 12:00:00.000Z').toDate());
 
             await render(hbs`<GhDatePicker @value={{this.date}} @maxDate={{this.maxDate}} @maxDateError="Must be in the past" @onChange={{this.onChange}} />`);
@@ -338,7 +457,10 @@ describe('Integration: Component: gh-date-picker', function () {
             await fillIn('[data-test-date-picker-input]', '2022-02-28');
             await blur('[data-test-date-picker-input]');
 
-            expect(find('[data-test-date-picker-error]')).to.have.text('Must be in the past');
+            expect(find('[data-test-date-picker-error]'))
+                .to
+                .have
+                .text('Must be in the past');
         });
     });
 
@@ -356,8 +478,15 @@ describe('Integration: Component: gh-date-picker', function () {
             await click('[data-test-date-picker-trigger]');
 
             // calendar is rendered with the right maxDate value curried
-            expect(find('[data-date="2022-02-10"]')).to.have.attribute('disabled');
-            expect(find('[data-date="2022-02-25"]')).to.have.attribute('disabled');
+            expect(find('[data-date="2022-02-10"]'))
+                .to
+                .have
+                .attribute('disabled');
+
+            expect(find('[data-date="2022-02-25"]'))
+                .to
+                .have
+                .attribute('disabled');
         });
     });
 });
