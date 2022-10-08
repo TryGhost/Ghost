@@ -8,7 +8,7 @@ import {setupRenderingTest} from 'ember-mocha';
 // handled as expected (browser auto-sets the domain when using a.href)
 let currentUrl = `${window.location.protocol}//${window.location.host}/`;
 
-describe('Integration: Component: gh-navitem-url-input', function () {
+describe('Integration: Component: settings/navigation/nav-item-url-input', function () {
     setupRenderingTest();
 
     beforeEach(function () {
@@ -23,7 +23,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
 
     it('renders correctly with blank url', async function () {
         await render(hbs`
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew clearErrors=(action clearErrors)}}
+            <Settings::Navigation::NavItemUrlInput @baseUrl={{this.baseUrl}} @url={{this.url}} @isNew={{this.isNew}} @clearErrors={{this.clearErrors}} />
         `);
 
         expect(findAll('input')).to.have.length(1);
@@ -34,7 +34,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
     it('renders correctly with relative urls', async function () {
         this.set('url', '/about');
         await render(hbs`
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew clearErrors=(action clearErrors)}}
+            <Settings::Navigation::NavItemUrlInput @baseUrl={{this.baseUrl}} @url={{this.url}} @isNew={{this.isNew}} @clearErrors={{this.clearErrors}} />
         `);
 
         expect(find('input')).to.have.value(`${currentUrl}about`);
@@ -46,7 +46,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
     it('renders correctly with absolute urls', async function () {
         this.set('url', 'https://example.com:2368/#test');
         await render(hbs`
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew clearErrors=(action clearErrors)}}
+            <Settings::Navigation::NavItemUrlInput @baseUrl={{this.baseUrl}} @url={{this.url}} @isNew={{this.isNew}} @clearErrors={{this.clearErrors}} />
         `);
 
         expect(find('input')).to.have.value('https://example.com:2368/#test');
@@ -66,7 +66,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
 
     it('deletes base URL on backspace', async function () {
         await render(hbs`
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew clearErrors=(action clearErrors)}}
+            <Settings::Navigation::NavItemUrlInput @baseUrl={{this.baseUrl}} @url={{this.url}} @isNew={{this.isNew}} @clearErrors={{this.clearErrors}} />
         `);
 
         expect(find('input')).to.have.value(currentUrl);
@@ -76,7 +76,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
 
     it('deletes base URL on delete', async function () {
         await render(hbs`
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew clearErrors=(action clearErrors)}}
+            <Settings::Navigation::NavItemUrlInput @baseUrl={{this.baseUrl}} @url={{this.url}} @isNew={{this.isNew}} @clearErrors={{this.clearErrors}} />
         `);
 
         expect(find('input')).to.have.value(currentUrl);
@@ -87,7 +87,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
     it('adds base url to relative urls on blur', async function () {
         this.set('updateUrl', val => val);
         await render(hbs`
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action updateUrl) clearErrors=(action clearErrors)}}
+            <Settings::Navigation::NavItemUrlInput @baseUrl={{this.baseUrl}} @url={{this.url}} @isNew={{this.isNew}} @update={{this.updateUrl}} @clearErrors={{this.clearErrors}} />
         `);
 
         await fillIn('input', '/about');
@@ -99,7 +99,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
     it('adds "mailto:" to email addresses on blur', async function () {
         this.set('updateUrl', val => val);
         await render(hbs`
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action updateUrl) clearErrors=(action clearErrors)}}
+            <Settings::Navigation::NavItemUrlInput @baseUrl={{this.baseUrl}} @url={{this.url}} @isNew={{this.isNew}} @update={{this.updateUrl}} @clearErrors={{this.clearErrors}} />
         `);
 
         await fillIn('input', 'test@example.com');
@@ -115,7 +115,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
     it('doesn\'t add base url to invalid urls on blur', async function () {
         this.set('updateUrl', val => val);
         await render(hbs`
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action updateUrl) clearErrors=(action clearErrors)}}
+            <Settings::Navigation::NavItemUrlInput @baseUrl={{this.baseUrl}} @url={{this.url}} @isNew={{this.isNew}} @update={{this.updateUrl}} @clearErrors={{this.clearErrors}} />
         `);
 
         let changeValue = async (value) => {
@@ -133,7 +133,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
     it('doesn\'t mangle invalid urls on blur', async function () {
         this.set('updateUrl', val => val);
         await render(hbs`
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action updateUrl) clearErrors=(action clearErrors)}}
+            <Settings::Navigation::NavItemUrlInput @baseUrl={{this.baseUrl}} @url={{this.url}} @isNew={{this.isNew}} @update={{this.updateUrl}} @clearErrors={{this.clearErrors}} />
         `);
 
         await fillIn('input', `${currentUrl} /test`);
@@ -149,7 +149,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
         this.set('baseUrl', 'http://exämple.com');
 
         await render(hbs`
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action updateUrl) clearErrors=(action clearErrors)}}
+            <Settings::Navigation::NavItemUrlInput @baseUrl={{this.baseUrl}} @url={{this.url}} @isNew={{this.isNew}} @update={{this.updateUrl}} @clearErrors={{this.clearErrors}} />
         `);
         await fillIn('input', `${currentUrl}/test`);
         await blur('input');
@@ -165,7 +165,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
         });
 
         await render(hbs `
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action updateUrl) clearErrors=(action clearErrors)}}
+            <Settings::Navigation::NavItemUrlInput @baseUrl={{this.baseUrl}} @url={{this.url}} @isNew={{this.isNew}} @update={{this.updateUrl}} @clearErrors={{this.clearErrors}} />
         `);
         await click('input');
         await blur('input');
@@ -181,7 +181,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
         });
 
         await render(hbs `
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action updateUrl) clearErrors=(action clearErrors)}}
+            <Settings::Navigation::NavItemUrlInput @baseUrl={{this.baseUrl}} @url={{this.url}} @isNew={{this.isNew}} @update={{this.updateUrl}} @clearErrors={{this.clearErrors}} />
         `);
         await triggerKeyEvent('input', 'keypress', 13);
 
@@ -196,7 +196,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
         });
 
         await render(hbs `
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action updateUrl) clearErrors=(action clearErrors)}}
+            <Settings::Navigation::NavItemUrlInput @baseUrl={{this.baseUrl}} @url={{this.url}} @isNew={{this.isNew}} @update={{this.updateUrl}} @clearErrors={{this.clearErrors}} />
         `);
         await triggerKeyEvent('input', 'keydown', 83, {
             metaKey: true
@@ -214,7 +214,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
         });
 
         await render(hbs `
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action updateUrl) clearErrors=(action clearErrors)}}
+            <Settings::Navigation::NavItemUrlInput @baseUrl={{this.baseUrl}} @url={{this.url}} @isNew={{this.isNew}} @update={{this.updateUrl}} @clearErrors={{this.clearErrors}} />
         `);
 
         let testUrl = async (url) => {
@@ -243,7 +243,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
         });
 
         await render(hbs `
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action updateUrl) clearErrors=(action clearErrors)}}
+            <Settings::Navigation::NavItemUrlInput @baseUrl={{this.baseUrl}} @url={{this.url}} @isNew={{this.isNew}} @update={{this.updateUrl}} @clearErrors={{this.clearErrors}} />
         `);
 
         let testUrl = async (url) => {
@@ -268,7 +268,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
         });
 
         await render(hbs `
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action updateUrl) clearErrors=(action clearErrors)}}
+            <Settings::Navigation::NavItemUrlInput @baseUrl={{this.baseUrl}} @url={{this.url}} @isNew={{this.isNew}} @update={{this.updateUrl}} @clearErrors={{this.clearErrors}} />
         `);
 
         expectedUrl = 'http://test.example.com/';
@@ -286,7 +286,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
         });
 
         await render(hbs `
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action updateUrl) clearErrors=(action clearErrors)}}
+            <Settings::Navigation::NavItemUrlInput @baseUrl={{this.baseUrl}} @url={{this.url}} @isNew={{this.isNew}} @update={{this.updateUrl}} @clearErrors={{this.clearErrors}} />
         `);
 
         let testUrl = async (url) => {
@@ -308,7 +308,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
         });
 
         await render(hbs `
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action updateUrl) clearErrors=(action clearErrors)}}
+            <Settings::Navigation::NavItemUrlInput @baseUrl={{this.baseUrl}} @url={{this.url}} @isNew={{this.isNew}} @update={{this.updateUrl}} @clearErrors={{this.clearErrors}} />
         `);
 
         let testUrl = async (url) => {
@@ -332,7 +332,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
         });
 
         await render(hbs `
-            {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action updateUrl) clearErrors=(action clearErrors)}}
+            <Settings::Navigation::NavItemUrlInput @baseUrl={{this.baseUrl}} @url={{this.url}} @isNew={{this.isNew}} @update={{this.updateUrl}} @clearErrors={{this.clearErrors}} />
         `);
 
         let testUrl = async (url) => {
@@ -361,7 +361,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
             });
 
             await render(hbs `
-                {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action updateUrl) clearErrors=(action clearErrors)}}
+                <Settings::Navigation::NavItemUrlInput @baseUrl={{this.baseUrl}} @url={{this.url}} @isNew={{this.isNew}} @update={{this.updateUrl}} @clearErrors={{this.clearErrors}} />
             `);
 
             let testUrl = async (url) => {
@@ -384,7 +384,7 @@ describe('Integration: Component: gh-navitem-url-input', function () {
             });
 
             await render(hbs `
-                {{gh-navitem-url-input baseUrl=baseUrl url=url isNew=isNew update=(action updateUrl) clearErrors=(action clearErrors)}}
+                <Settings::Navigation::NavItemUrlInput @baseUrl={{this.baseUrl}} @url={{this.url}} @isNew={{this.isNew}} @update={{this.updateUrl}} @clearErrors={{this.clearErrors}} />
             `);
 
             let testUrl = async (url) => {

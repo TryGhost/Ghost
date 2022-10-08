@@ -1,26 +1,21 @@
 import Controller from '@ember/controller';
-import classic from 'ember-classic-decorator';
-import {computed} from '@ember/object';
-import {readOnly} from '@ember/object/computed';
 
-@classic
 export default class ErrorController extends Controller {
     stack = false;
 
-    @readOnly('model')
-        error;
-
-    @computed('error.status')
-    get code() {
-        return this.get('error.status') > 200 ? this.get('error.status') : 500;
+    get error() {
+        return this.model;
     }
 
-    @computed('error.statusText')
+    get code() {
+        return this.error.status > 200 ? this.error.status : 500;
+    }
+
     get message() {
         if (this.code === 404) {
             return 'Page not found';
         }
 
-        return this.get('error.statusText') !== 'error' ? this.get('error.statusText') : 'Internal Server Error';
+        return this.error.statusText !== 'error' ? this.error.statusText : 'Internal Server Error';
     }
 }
