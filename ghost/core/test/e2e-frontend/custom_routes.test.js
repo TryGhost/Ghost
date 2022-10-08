@@ -73,4 +73,10 @@ describe('Custom Frontend routing', function () {
             .expect(200)
             .expect(assertCorrectFrontendHeaders);
     });
+
+    it('should not serve empty sitemaps', async function () {
+        await request.get('/sitemap-authors.xml')
+            .expect(404)
+            .expect(assertCorrectFrontendHeaders);
+    });
 });
