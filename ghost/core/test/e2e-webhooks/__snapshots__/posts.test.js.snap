@@ -144,6 +144,82 @@ Object {
 }
 `;
 
+exports[`post.* events post.deleted event is triggered 1: [headers] 1`] = `
+Object {
+  "accept-encoding": "gzip, deflate",
+  "content-length": Any<Number>,
+  "content-type": "application/json",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\\\\\.\\\\d\\+\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
+}
+`;
+
+exports[`post.* events post.deleted event is triggered 2: [body] 1`] = `
+Object {
+  "post": Object {
+    "current": Object {},
+    "previous": Object {
+      "authors": Array [
+        Object {
+          "accessibility": null,
+          "bio": "bio",
+          "comment_notifications": true,
+          "cover_image": null,
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "email": "jbloggs@example.com",
+          "facebook": null,
+          "free_member_signup_notification": true,
+          "id": "1",
+          "last_seen": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "location": "location",
+          "meta_description": null,
+          "meta_title": null,
+          "name": "Joe Bloggs",
+          "paid_subscription_canceled_notification": false,
+          "paid_subscription_started_notification": true,
+          "profile_image": "https://example.com/super_photo.jpg",
+          "roles": Array [
+            Object {
+              "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+              "description": "Blog Owner",
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "name": "Owner",
+              "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+            },
+          ],
+          "slug": "joe-bloggs",
+          "status": "active",
+          "tour": null,
+          "twitter": null,
+          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "url": "http://127.0.0.1:2369/author/joe-bloggs/",
+          "website": null,
+        },
+      ],
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "comment_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "custom_excerpt": null,
+      "custom_template": null,
+      "feature_image": null,
+      "featured": false,
+      "html": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"ghostVersion\\":\\"4.0\\",\\"markups\\":[],\\"atoms\\":[],\\"cards\\":[],\\"sections\\":[[1,\\"p\\",[[0,[],0,\\"\\"]]]]}",
+      "published_at": null,
+      "slug": "testing-post-deleted-webhook",
+      "status": "draft",
+      "title": "testing post.deleted webhook",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "public",
+    },
+  },
+}
+`;
+
 exports[`post.* events post.published event is triggered 1: [headers] 1`] = `
 Object {
   "accept-encoding": "gzip, deflate",
