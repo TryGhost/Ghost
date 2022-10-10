@@ -1,3 +1,4 @@
+const moment = require('moment-timezone');
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../utils/e2e-framework');
 const {anyGhostAgent, anyObjectId, anyISODateTime, anyUuid, anyContentVersion, anyNumber, anyLocalURL} = matchers;
 
@@ -227,9 +228,7 @@ describe('post.* events', function () {
         const id = res.body.posts[0].id;
         const scheduledPost = res.body.posts[0];
         scheduledPost.status = 'scheduled';
-        const publishedTime = new Date();
-        publishedTime.setDate(publishedTime.getDate() + 1);
-        scheduledPost.published_at = publishedTime.toISOString();
+        scheduledPost.published_at = moment().add(1, 'days').toISOString();
 
         await adminAPIAgent
             .put('posts/' + id)
