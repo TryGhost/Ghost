@@ -79,7 +79,7 @@ describe('Plus button', async () => {
 
         await page.evaluate(() => document.execCommand('selectAll', false, null));
         await page.keyboard.press('Backspace');
-
-        expect(await page.$('[data-kg-plus-button]')).not.toBeNull();
+        await assertHTML(page, html`<p><br /></p>`);
+        await page.waitForSelector('[data-kg-plus-button]');
     });
 });
