@@ -18,7 +18,7 @@
                     {{#each @data.sources as |sourceData|}}
                         <div class="gh-dashboard-list-item {{if (eq sourceData.source "Unavailable") "gh-dashboard-list-item-deemphasized"}}">
                             <div class="gh-dashboard-list-item-sub gh-dashboard-list-item-sub-source">
-                                <span class="gh-dashboard-list-text">{{sourceData.source}}<sup>*</sup></span>
+                                <span class="gh-dashboard-list-text">{{sourceData.source}}</span>
                             </div>
                             <div class="gh-dashboard-list-item-sub">
                                 <span class="gh-dashboard-metric-minivalue">
@@ -51,9 +51,9 @@
         </div>
 
     </div>
-    {{#if @data.unavailableSource}}
+    {{!-- {{#if @data.unavailableSource}}
     <div class="modal-footer">
         <p class="gh-dashboard-attribution-footnote"><sup>*</sup>{{if (eq @data.sortColumn "paid") "Paid subscriptions" "Members"}} created during this time period that do not have attribution data associated with them.</p>
     </div>
-    {{/if}}
+    {{/if}} --}}
 </div>
