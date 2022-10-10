@@ -110,7 +110,7 @@
                 </h4>
                 <div class="gh-post-analytics-box column">
                     <div class="gh-attribution-box">
-                        <div class="gh-dashboard-select" style="top:40px;right:24px">
+                        {{!-- <div class="gh-dashboard-select" style="top:40px;right:24px">
                             <PowerSelect
                                 @selected={{this.selectedDisplayOption}}
                                 @options={{this.allowedDisplayOptions}}
@@ -127,7 +127,7 @@
                             >
                                 {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
                             </PowerSelect>
-                        </div>
+                        </div> --}}
                         <div class="gh-attribution-table-column">
                             <MemberAttribution::SourceAttributionTable
                                 @sources={{this.sources}}
@@ -135,7 +135,7 @@
                                 @setSortColumn={{this.setSortColumn}}
                             />
                         </div>
-                        <div class="gh-attribution-chart-column">
+                        {{!-- <div class="gh-attribution-chart-column">
                             <div class="gh-attribution-chart-column-inner">
                                 <MemberAttribution::SourceAttributionChart
                                     @sources={{this.sources}}
@@ -147,7 +147,7 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </div> --}}
                     </div>
                 </div>
             {{/if}}
