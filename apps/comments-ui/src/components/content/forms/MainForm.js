@@ -41,6 +41,12 @@ const MainForm = ({commentsCount}) => {
                 return;
             }
 
+            if (event.metaKey || event.ctrlKey) {
+                // CMD on MacOS or CTRL
+                // Don't do anything
+                return;
+            }
+
             let focusedElement = document.activeElement;
             while (focusedElement && focusedElement.tagName === 'IFRAME') {
                 if (!focusedElement.contentDocument) {
