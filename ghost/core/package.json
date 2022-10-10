@@ -52,7 +52,7 @@
     "cli": "^1.17.0"
   },
   "dependencies": {
-    "@sentry/node": "7.14.2",
+    "@sentry/node": "7.15.0",
     "@tryghost/adapter-base-cache": "0.1.2",
     "@tryghost/adapter-manager": "0.0.0",
     "@tryghost/admin-api-schema": "4.2.0",
