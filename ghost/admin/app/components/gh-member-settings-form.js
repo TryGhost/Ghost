@@ -146,6 +146,11 @@ export default class extends Component {
     }
 
     @action
+    updateProperty(event){
+        this.args.setProperty(event.currentTarget.name, event.target.value);
+    }
+
+    @action
     setLabels(labels) {
         this.member.set('labels', labels);
     }
