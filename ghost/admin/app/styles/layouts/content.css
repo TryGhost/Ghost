@@ -928,20 +928,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 }
 
 .gh-attribution-box .gh-dashboard-list-item-sub-source {
-    padding-left: 20px;
     position: relative;
-}
-
-.gh-attribution-box .gh-dashboard-list-item-sub-source:after {
-    content: "";
-    width: 9px;
-    height: 9px;
-    border-radius: 8px;
-    position: absolute;
-    top: 50%;
-    left: 0;
-    transform: translateY(-50%);
-    background: #e6e9eb;
 }
 
 .gh-attribution-chart-column {
@@ -961,6 +948,14 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 .gh-attribution-table-column {
     flex: 1;
     padding: 1rem 0;
+}
+
+.gh-attribution-table-column .gh-attribution-box .gh-dashboard-list-item-sub-source:after {
+    display: none;
+}
+
+.gh-attribution-box .gh-dashboard-list-title:not(.sorted-by) {
+    cursor: pointer;
 }
 
 .gh-links-list {
