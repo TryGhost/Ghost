@@ -423,7 +423,7 @@ module.exports = {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         name: {type: 'string', maxlength: 191, nullable: false},
         slug: {type: 'string', maxlength: 191, nullable: false, unique: true},
-        // @deprecated: use a status enum with isIn validation, not aan ctive boolean
+        // @deprecated: use a status enum with isIn validation, not an `active` boolean
         active: {type: 'boolean', nullable: false, defaultTo: true},
         welcome_page_url: {type: 'string', maxlength: 2000, nullable: true},
         visibility: {
@@ -443,7 +443,7 @@ module.exports = {
     },
     offers: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        // @deprecated: use a status enum with isIn validation, not aan ctive boolean
+        // @deprecated: use a status enum with isIn validation, not an `active` boolean
         active: {type: 'boolean', nullable: false, defaultTo: true},
         name: {type: 'string', maxlength: 191, nullable: false, unique: true},
         code: {type: 'string', maxlength: 191, nullable: false, unique: true},
