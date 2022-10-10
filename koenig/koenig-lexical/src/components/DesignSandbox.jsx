@@ -285,16 +285,51 @@ const DesignSandbox = () => {
 
     function ImageCard() {
         const [isActive, setActive] = useState(false);
+        const [altText, setAltText] = useState(false);
 
-        const toggleClass = () => {
+        const toggleActive = () => {
             setActive(!isActive);
         };
 
-        return (
-            <div className="border-2 border-green">
-                <div className='relative'>
+        const toggleAltText = () => {
+            setAltText(!altText);
+        };
+
+        if (isActive) {
+            return (
+                <div 
+                    className={`border border-transparent ${isActive ? 'shadow-[0_0_0_2px_#30cf43]' : 'hover:shadow-[0_0_0_1px_#30cf43]'}`}
+                    onClick={toggleActive}>
                     <MediaPlaceholder desc="Click to select an image" Icon={ImgPlaceholderIcon} />
+                    <CaptionEditor placeholder="Type caption for image (optional)" />
+                    <button 
+                        className={`absolute bottom-0 right-0 m-3 cursor-pointer rounded border px-1 text-[1.3rem] font-normal leading-7 tracking-wide transition-all duration-100 ${altText ? 'border-green bg-green text-white' : 'border-grey text-grey' } `}
+                        onClick={toggleAltText}>
+                            Alt
+                    </button>           
                 </div>
+            );
+        } 
+        return (
+            <div 
+                className={`border border-transparent ${isActive ? 'shadow-[0_0_0_2px_#30cf43]' : 'hover:shadow-[0_0_0_1px_#30cf43]'}`}
+                onClick={toggleActive}>
+                <MediaPlaceholder desc="Click to select an image" Icon={ImgPlaceholderIcon} />        
+            </div>
+        );
+    }
+
+    function MediaPlaceholder({desc, Icon, ...props}) {
+        return (
+            <div className="relative">
+                <figure className="cursor-pointer border border-transparent" {...props}>
+                    <div className="h-100 relative flex items-center justify-center border border-grey-100 bg-grey-50 before:pb-[62.5%]">
+                        <button className="group flex flex-col items-center justify-center p-20">
+                            <Icon className="h-32 w-32 opacity-80 transition-all ease-linear group-hover:scale-105 group-hover:opacity-100" />
+                            <p className="mt-4 text-sm font-normal text-grey-700 group-hover:text-grey-800">{desc}</p>
+                        </button>
+                    </div>
+                </figure>
                 <form>
                     <input
                         type='file'
@@ -303,26 +338,7 @@ const DesignSandbox = () => {
                         hidden={true}
                     />
                 </form>
-                <CaptionEditor placeholder="Type caption for image (optional)" />
-                <button 
-                    onClick={toggleClass} 
-                    className={`absolute bottom-0 right-0 m-3 cursor-pointer rounded border px-1 text-[1.3rem] font-normal leading-7 tracking-wide transition-all duration-100 ${isActive ? 'border-green bg-green text-white' : 'border-grey text-grey' } `}>
-                        Alt
-                </button>            
             </div>
-        );
-    }
-
-    function MediaPlaceholder({desc, Icon, ...props}) {
-        return (
-            <figure className="cursor-pointer border border-transparent" {...props}>
-                <div className="h-100 relative flex items-center justify-center border border-grey-100 bg-grey-50 before:pb-[62.5%]">
-                    <button className="group flex flex-col items-center justify-center p-20">
-                        <Icon className="h-32 w-32 opacity-80 transition-all ease-linear group-hover:scale-105 group-hover:opacity-100" />
-                        <p className="mt-4 text-sm font-normal text-grey-700 group-hover:text-grey-800">{desc}</p>
-                    </button>
-                </div>
-            </figure>
         );
     }
 
@@ -341,17 +357,7 @@ const DesignSandbox = () => {
     function GalleryCard() {
         return (
             <div className="border-2 border-green">
-                <div className='relative'>
-                    <MediaPlaceholder desc="Click to select up to 9 images" Icon={GalleryPlaceholderIcon} />
-                </div>
-                <form>
-                    <input
-                        type='file'
-                        accept='image/*'
-                        name="image"
-                        hidden={true}
-                    />
-                </form>
+                <MediaPlaceholder desc="Click to select up to 9 images" Icon={GalleryPlaceholderIcon} />
                 <CaptionEditor placeholder="Type caption for gallery (optional)" />
             </div>
         );
