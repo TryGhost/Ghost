@@ -195,7 +195,7 @@
     "c8": "7.12.0",
     "cli-progress": "3.11.2",
     "cssnano": "5.1.13",
-    "eslint": "8.24.0",
+    "eslint": "8.25.0",
     "html-validate": "7.6.0",
     "inquirer": "8.2.4",
     "jwks-rsa": "2.1.4",
