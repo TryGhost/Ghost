@@ -7,25 +7,25 @@ export default class MembersUtilsService extends Service {
     @service store;
 
     get isMembersEnabled() {
-        return this.settings.get('membersEnabled');
+        return this.settings.membersEnabled;
     }
 
     get paidMembersEnabled() {
-        return this.settings.get('paidMembersEnabled');
+        return this.settings.paidMembersEnabled;
     }
 
     get isMembersInviteOnly() {
-        return this.settings.get('membersInviteOnly');
+        return this.settings.membersInviteOnly;
     }
 
     /**
      * Note: always use paidMembersEnabled! Only use this getter for the Stripe Connection UI.
      */
     get isStripeEnabled() {
-        const stripeDirect = this.config.get('stripeDirect');
+        const stripeDirect = this.config.stripeDirect;
 
-        const hasDirectKeys = !!this.settings.get('stripeSecretKey') && !!this.settings.get('stripePublishableKey');
-        const hasConnectKeys = !!this.settings.get('stripeConnectSecretKey') && !!this.settings.get('stripeConnectPublishableKey');
+        const hasDirectKeys = !!this.settings.stripeSecretKey && !!this.settings.stripePublishableKey;
+        const hasConnectKeys = !!this.settings.stripeConnectSecretKey && !!this.settings.stripeConnectPublishableKey;
 
         if (stripeDirect) {
             return hasDirectKeys;
@@ -66,23 +66,23 @@ export default class MembersUtilsService extends Service {
     }
 
     get buttonIcon() {
-        return this.settings.get('portalButtonIcon') || this.defaultIconKeys[0];
+        return this.settings.portalButtonIcon || this.defaultIconKeys[0];
     }
 
     // Plan helpers ------------------------------------------------------------
 
     get isFreeChecked() {
-        const allowedPlans = this.settings.get('portalPlans') || [];
-        return !!(this.settings.get('membersSignupAccess') === 'all' && allowedPlans.includes('free'));
+        const allowedPlans = this.settings.portalPlans || [];
+        return !!(this.settings.membersSignupAccess === 'all' && allowedPlans.includes('free'));
     }
 
     get isMonthlyChecked() {
-        const allowedPlans = this.settings.get('portalPlans') || [];
+        const allowedPlans = this.settings.portalPlans || [];
         return !!(this.isStripeConfigured && allowedPlans.includes('monthly'));
     }
 
     get isYearlyChecked() {
-        const allowedPlans = this.settings.get('portalPlans') || [];
+        const allowedPlans = this.settings.portalPlans || [];
         return !!(this.isStripeConfigured && allowedPlans.includes('yearly'));
     }
 
@@ -92,17 +92,17 @@ export default class MembersUtilsService extends Service {
         let {
             disableBackground = false,
             page = 'signup',
-            button = this.settings.get('portalButton'),
+            button = this.settings.portalButton,
             buttonIcon = this.buttonIcon,
             isFreeChecked = this.isFreeChecked,
             isMonthlyChecked = this.isMonthlyChecked,
             isYearlyChecked = this.isYearlyChecked,
             monthlyPrice,
             yearlyPrice,
-            portalPlans = this.settings.get('portalPlans'),
+            portalPlans = this.settings.portalPlans,
             portalTiers,
             currency,
-            membersSignupAccess = this.settings.get('membersSignupAccess')
+            membersSignupAccess = this.settings.membersSignupAccess
         } = overrides;
 
         const tiers = this.store.peekAll('tier') || [];
@@ -111,14 +111,14 @@ export default class MembersUtilsService extends Service {
             return t.visibility === 'public' && t.type === 'paid';
         }).map(t => t.id);
 
-        const baseUrl = this.config.get('blogUrl');
+        const baseUrl = this.config.blogUrl;
         const portalBase = '/#/portal/preview';
         const settingsParam = new URLSearchParams();
-        const signupButtonText = this.settings.get('portalButtonSignupText') || '';
+        const signupButtonText = this.settings.portalButtonSignupText || '';
         const allowSelfSignup = membersSignupAccess === 'all' && (!this.isStripeEnabled || isFreeChecked);
 
         settingsParam.append('button', button);
-        settingsParam.append('name', this.settings.get('portalName'));
+        settingsParam.append('name', this.settings.portalName);
         settingsParam.append('isFree', isFreeChecked);
         settingsParam.append('isMonthly', isMonthlyChecked);
         settingsParam.append('isYearly', isYearlyChecked);
@@ -136,11 +136,11 @@ export default class MembersUtilsService extends Service {
             settingsParam.append('portalProducts', encodeURIComponent(portalTiers));
         }
 
-        if (this.settings.get('accentColor') === '' || this.settings.get('accentColor')) {
-            settingsParam.append('accentColor', encodeURIComponent(`${this.settings.get('accentColor')}`));
+        if (this.settings.accentColor === '' || this.settings.accentColor) {
+            settingsParam.append('accentColor', encodeURIComponent(`${this.settings.accentColor}`));
         }
-        if (this.settings.get('portalButtonStyle')) {
-            settingsParam.append('buttonStyle', encodeURIComponent(this.settings.get('portalButtonStyle')));
+        if (this.settings.portalButtonStyle) {
+            settingsParam.append('buttonStyle', encodeURIComponent(this.settings.portalButtonStyle));
         }
 
         if (monthlyPrice) {
@@ -177,7 +177,7 @@ export default class MembersUtilsService extends Service {
             tierId
         } = overrides;
 
-        const baseUrl = this.config.get('blogUrl');
+        const baseUrl = this.config.blogUrl;
         const portalBase = '/#/portal/preview/offer';
         const settingsParam = new URLSearchParams();
 

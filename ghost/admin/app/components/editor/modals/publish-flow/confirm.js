@@ -66,7 +66,7 @@ export default class PublishFlowOptions extends Component {
         }
 
         if (this.args.publishOptions.isScheduled) {
-            const scheduleMoment = moment.tz(this.args.publishOptions.scheduledAtUTC, this.settings.get('timezone'));
+            const scheduleMoment = moment.tz(this.args.publishOptions.scheduledAtUTC, this.settings.timezone);
             buttonText += `, on ${scheduleMoment.format('MMMM Do')}`;
         } else {
             buttonText += ', right now';

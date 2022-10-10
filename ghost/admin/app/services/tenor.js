@@ -25,11 +25,11 @@ export default class TenorService extends Service {
     _nextPos = null;
 
     get apiKey() {
-        return this.config.get('tenor.googleApiKey');
+        return this.config.tenor.googleApiKey;
     }
 
     get contentfilter() {
-        return this.config.get('tenor.contentFilter') || 'off';
+        return this.config.tenor.contentFilter || 'off';
     }
 
     get isLoading() {

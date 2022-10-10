@@ -8,7 +8,7 @@ export default class SiteIconStyleHelper extends Helper {
     @service config;
 
     compute() {
-        const icon = this.get('config.icon') || 'https://static.ghost.org/v4.0.0/images/ghost-orb-2.png';
+        const icon = this.config.icon || 'https://static.ghost.org/v4.0.0/images/ghost-orb-2.png';
         return htmlSafe(`background-image: url(${icon})`);
     }
 }

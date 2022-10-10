@@ -86,7 +86,7 @@ export default class ModalTierPrice extends ModalBase {
         if (this.tier.get('trialDays')) {
             this.freeTrialEnabled = true;
         }
-        this.accentColorStyle = htmlSafe(`color: ${this.settings.get('accentColor')}`);
+        this.accentColorStyle = htmlSafe(`color: ${this.settings.accentColor}`);
     }
 
     @action
@@ -107,7 +107,7 @@ export default class ModalTierPrice extends ModalBase {
     }
 
     get siteUrl() {
-        return this.config.get('blogUrl');
+        return this.config.blogUrl;
     }
 
     // eslint-disable-next-line no-dupe-class-members
@@ -179,7 +179,7 @@ export default class ModalTierPrice extends ModalBase {
         }
 
         this.tier.set('benefits', this.benefits.filter(benefit => !benefit.get('isBlank')));
-        
+
         try {
             yield this.tier.save();
             this.hasSaved = true;

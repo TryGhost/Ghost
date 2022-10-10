@@ -37,8 +37,8 @@ const fetchKoenig = function () {
         // required to work around ember-auto-import complaining about an unknown dynamic import
         // during the build step
         const GhostAdmin = window.GhostAdmin || window.Ember.Namespace.NAMESPACES.find(ns => ns.name === 'ghost-admin');
-        const urlTemplate = GhostAdmin.__container__.lookup('service:config').get('editor.url');
-        const urlVersion = GhostAdmin.__container__.lookup('service:config').get('editor.version');
+        const urlTemplate = GhostAdmin.__container__.lookup('service:config').editor?.url;
+        const urlVersion = GhostAdmin.__container__.lookup('service:config').editor?.version;
 
         const url = new URL(urlTemplate.replace('{version}', urlVersion));
 
@@ -96,7 +96,7 @@ export default class KoenigLexicalEditor extends Component {
         // ensure we're still showing errors in development
         console.error(error); // eslint-disable-line
 
-        if (this.config.get('sentry_dsn')) {
+        if (this.config.sentry_dsn) {
             Sentry.captureException(error, {
                 tags: {
                     lexical: true

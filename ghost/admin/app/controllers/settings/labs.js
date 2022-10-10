@@ -119,7 +119,7 @@ export default class LabsController extends Controller {
                 // reload settings
                 return this.settings.reload().then((settings) => {
                     this.feature.fetch();
-                    this.config.set('blogTitle', settings.get('title'));
+                    this.config.set('blogTitle', settings.title);
                 });
             });
         }).catch((response) => {

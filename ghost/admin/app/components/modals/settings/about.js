@@ -21,11 +21,11 @@ export default class AboutModal extends Component {
     get linkToGitHubReleases() {
         // Don't link to GitHub Releases if the version contains the
         // pre-release identifier
-        return !this.config.get('version').includes('-pre.');
+        return !this.config.version.includes('-pre.');
     }
 
     get showSystemInfo() {
-        const isPro = !!this.config.get('hostSettings')?.siteId;
+        const isPro = !!this.config.hostSettings?.siteId;
 
         // Don't show any system info for Pro
         if (isPro) {
@@ -36,8 +36,8 @@ export default class AboutModal extends Component {
     }
 
     get showDatabaseWarning() {
-        const isProduction = !!this.config.get('environment').match?.(/production/i);
-        const database = this.config.get('database');
+        const isProduction = !!this.config.environment.match?.(/production/i);
+        const database = this.config.database;
 
         // Show a warning if we're in production and not using MySQL 8
         if (isProduction && database !== 'mysql8') {

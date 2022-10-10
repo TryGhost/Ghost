@@ -57,20 +57,20 @@ export default class StripeSettingsForm extends Component {
 
     /** OLD **/
     get stripeDirectPublicKey() {
-        return this.settings.get('stripePublishableKey');
+        return this.settings.stripePublishableKey;
     }
     get stripeDirectSecretKey() {
-        return this.settings.settings.get('stripeSecretKey');
+        return this.settings.stripeSecretKey;
     }
 
     get stripeConnectAccountId() {
-        return this.settings.get('stripeConnectAccountId');
+        return this.settings.stripeConnectAccountId;
     }
     get stripeConnectAccountName() {
-        return this.settings.get('stripeConnectDisplayName');
+        return this.settings.stripeConnectDisplayName;
     }
     get stripeConnectLivemode() {
-        return this.settings.get('stripeConnectLivemode');
+        return this.settings.stripeConnectLivemode;
     }
 
     get selectedCurrency() {
@@ -79,7 +79,7 @@ export default class StripeSettingsForm extends Component {
     }
 
     get stripePlans() {
-        const plans = this.settings.get('stripePlans');
+        const plans = this.settings.stripePlans;
         const monthly = plans.find(plan => plan.interval === 'month');
         const yearly = plans.find(plan => plan.interval === 'year' && plan.name !== 'Complimentary');
 
@@ -112,14 +112,14 @@ export default class StripeSettingsForm extends Component {
 
     @action
     setStripeDirectPublicKey(event) {
-        this.settings.set('stripeProductName', this.settings.get('title'));
-        this.settings.set('stripePublishableKey', event.target.value);
+        this.settings.stripeProductName = this.settings.title;
+        this.settings.stripePublishableKey = event.target.value;
     }
 
     @action
     setStripeDirectSecretKey(event) {
-        this.settings.set('stripeProductName', this.settings.get('title'));
-        this.settings.set('stripeSecretKey', event.target.value);
+        this.settings.stripeProductName = this.settings.title;
+        this.settings.stripeSecretKey = event.target.value;
     }
 
     @action
@@ -130,7 +130,7 @@ export default class StripeSettingsForm extends Component {
     @action
     setStripePlansCurrency(event) {
         const newCurrency = event.value;
-        const updatedPlans = this.settings.get('stripePlans').map((plan) => {
+        const updatedPlans = this.settings.stripePlans.map((plan) => {
             if (plan.name !== 'Complimentary') {
                 return Object.assign({}, plan, {
                     currency: newCurrency
@@ -152,7 +152,7 @@ export default class StripeSettingsForm extends Component {
             });
         }
 
-        this.settings.set('stripePlans', updatedPlans);
+        this.settings.stripePlans = updatedPlans;
         this._scratchStripeYearlyAmount = null;
         this._scratchStripeMonthlyAmount = null;
         this.validateStripePlans();
@@ -160,7 +160,7 @@ export default class StripeSettingsForm extends Component {
 
     @action
     setStripeConnectIntegrationToken(event) {
-        this.settings.set('stripeProductName', this.settings.get('title'));
+        this.settings.stripeProductName = this.settings.title;
         this.args.setStripeConnectIntegrationTokenSetting(event.target.value);
     }
 
@@ -182,14 +182,14 @@ export default class StripeSettingsForm extends Component {
     @action
     updateStripeDirect() {
         // Allow disabling stripe direct keys if stripe is still enabled, while the config is disabled
-        this.stripeDirect = this.config.get('stripeDirect')
-            || (this.membersUtils.isStripeEnabled && !this.settings.get('stripeConnectAccountId'));
+        this.stripeDirect = this.config.stripeDirect
+            || (this.membersUtils.isStripeEnabled && !this.settings.stripeConnectAccountId);
     }
 
     @action
     validateStripePlans() {
-        this.settings.get('errors').remove('stripePlans');
-        this.settings.get('hasValidated').removeObject('stripePlans');
+        this.settings.errors.remove('stripePlans');
+        this.settings.hasValidated.removeObject('stripePlans');
 
         if (this._scratchStripeYearlyAmount === null) {
             this._scratchStripeYearlyAmount = this.stripePlans.yearly.amount;
@@ -203,7 +203,7 @@ export default class StripeSettingsForm extends Component {
             const yearlyAmount = parseInt(this._scratchStripeYearlyAmount);
             const monthlyAmount = parseInt(this._scratchStripeMonthlyAmount);
             if (!yearlyAmount || yearlyAmount < 1 || !monthlyAmount || monthlyAmount < 1) {
-                const minimum = Intl.NumberFormat(this.settings.get('locale'), {
+                const minimum = Intl.NumberFormat(this.settings.locale, {
                     currency: selectedCurrency.isoCode,
                     style: 'currency'
                 }).format(1);
@@ -211,7 +211,7 @@ export default class StripeSettingsForm extends Component {
                 throw new TypeError(`Subscription amount must be at least ${minimum}`);
             }
 
-            const updatedPlans = this.settings.get('stripePlans').map((plan) => {
+            const updatedPlans = this.settings.stripePlans.map((plan) => {
                 if (plan.name !== 'Complimentary') {
                     let newAmount;
                     if (plan.interval === 'year') {
@@ -226,11 +226,11 @@ export default class StripeSettingsForm extends Component {
                 return plan;
             });
 
-            this.settings.set('stripePlans', updatedPlans);
+            this.settings.stripePlans = updatedPlans;
         } catch (err) {
-            this.settings.get('errors').add('stripePlans', err.message);
+            this.settings.errors.add('stripePlans', err.message);
         } finally {
-            this.settings.get('hasValidated').pushObject('stripePlans');
+            this.settings.hasValidated.pushObject('stripePlans');
         }
     }
 
@@ -296,12 +296,12 @@ export default class StripeSettingsForm extends Component {
     *saveStripeSettingsTask() {
         this.stripeConnectError = null;
 
-        if (this.settings.get('stripeConnectIntegrationToken')) {
+        if (this.settings.stripeConnectIntegrationToken) {
             try {
                 let response = yield this.settings.save();
 
                 yield this.saveTier.perform();
-                this.settings.set('portalPlans', ['free', 'monthly', 'yearly']);
+                this.settings.portalPlans = ['free', 'monthly', 'yearly'];
 
                 response = yield this.settings.save();
 

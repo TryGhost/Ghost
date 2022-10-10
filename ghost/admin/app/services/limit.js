@@ -31,7 +31,7 @@ export default class LimitsService extends Service {
     constructor() {
         super(...arguments);
 
-        let limits = this.config.get('hostSettings.limits');
+        let limits = this.config.hostSettings?.limits;
 
         this.limiter = new LimitService();
 
@@ -41,10 +41,10 @@ export default class LimitsService extends Service {
 
         let helpLink;
 
-        if (this.config.get('hostSettings.billing.enabled')
-            && this.config.get('hostSettings.billing.enabled') === true
-            && this.config.get('hostSettings.billing.url')) {
-            helpLink = this.config.get('hostSettings.billing.url');
+        if (this.config.hostSettings?.billing?.enabled === true
+            && this.config.hostSettings?.billing?.url
+        ) {
+            helpLink = this.config.hostSettings.billing?.url;
         } else {
             helpLink = 'https://ghost.org/help/';
         }

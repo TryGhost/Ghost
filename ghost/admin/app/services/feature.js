@@ -71,7 +71,7 @@ export default class FeatureService extends Service {
 
     @computed('settings.labs')
     get labs() {
-        let labs = this.get('settings.labs');
+        let labs = this.settings.labs;
 
         try {
             return JSON.parse(labs) || {};

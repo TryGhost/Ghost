@@ -15,7 +15,7 @@ export default class ModalFreeMembershipSettings extends ModalBase {
     @tracked siteUrl;
     init() {
         super.init(...arguments);
-        this.siteUrl = this.config.get('blogUrl');
+        this.siteUrl = this.config.blogUrl;
     }
 
     @action
@@ -30,10 +30,10 @@ export default class ModalFreeMembershipSettings extends ModalBase {
             this.close();
         },
         updateName(value) {
-            this.settings.set('membersFreePriceName', value);
+            this.settings.membersFreePriceName = value;
         },
         updateDescription(value) {
-            this.settings.set('membersFreePriceDescription', value);
+            this.settings.membersFreePriceDescription = value;
         },
         setFreeSignupRedirect(url) {
             this.freeSignupRedirect = url;
@@ -47,7 +47,7 @@ export default class ModalFreeMembershipSettings extends ModalBase {
     *save() {
         try {
             this.send('validateFreeSignupRedirect');
-            if (this.settings.get('errors').length !== 0) {
+            if (this.settings.errors.length !== 0) {
                 return;
             }
             yield this.settings.save();
@@ -61,12 +61,12 @@ export default class ModalFreeMembershipSettings extends ModalBase {
 
     _validateSignupRedirect(url, type) {
         let errMessage = `Please enter a valid URL`;
-        this.settings.get('errors').remove(type);
-        this.settings.get('hasValidated').removeObject(type);
+        this.settings.errors.remove(type);
+        this.settings.hasValidated.removeObject(type);
 
         if (url === null) {
-            this.settings.get('errors').add(type, errMessage);
-            this.settings.get('hasValidated').pushObject(type);
+            this.settings.errors.add(type, errMessage);
+            this.settings.hasValidated.pushObject(type);
             return false;
         }
 
@@ -77,9 +77,9 @@ export default class ModalFreeMembershipSettings extends ModalBase {
 
         if (url.href.startsWith(this.siteUrl)) {
             const path = url.href.replace(this.siteUrl, '');
-            this.settings.set(type, path);
+            this.settings.type = path;
         } else {
-            this.settings.set(type, url.href);
+            this.settings.type = url.href;
         }
     }
 }
