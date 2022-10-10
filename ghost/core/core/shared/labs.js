@@ -34,7 +34,8 @@ const ALPHA_FEATURES = [
     'beforeAfterCard',
     'sourceAttribution',
     'lexicalEditor',
-    'exploreApp'
+    'exploreApp',
+    'audienceFeedback'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
