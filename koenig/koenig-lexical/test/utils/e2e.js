@@ -138,3 +138,15 @@ export async function assertSelection(page, expected) {
         expect(selection.focusOffset).toEqual(expected.focusOffset);
     }
 }
+
+export async function assertPosition(page, selector, expectedBox, {threshold = 0} = {}) {
+    const assertedElem = await page.$(selector);
+    const assertedBox = await assertedElem.boundingBox();
+
+    ['x', 'y'].forEach((boxProperty) => {
+        if (Object.prototype.hasOwnProperty.call(expectedBox, boxProperty)) {
+            expect(assertedBox[boxProperty], boxProperty).toBeGreaterThanOrEqual(expectedBox[boxProperty] - threshold);
+            expect(assertedBox[boxProperty], boxProperty).toBeLessThanOrEqual(expectedBox[boxProperty] + threshold);
+        }
+    });
+}
