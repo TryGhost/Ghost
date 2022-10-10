@@ -1,9 +1,6 @@
 const _ = require('lodash');
-const Promise = require('bluebird');
 const semver = require('semver');
 const {IncorrectUsageError} = require('@tryghost/errors');
-const debug = require('@tryghost/debug')('importer:data');
-const {sequence} = require('@tryghost/promise');
 const models = require('../../../../models');
 const PostsImporter = require('./posts');
 const TagsImporter = require('./tags');
@@ -42,12 +39,10 @@ DataImporter = {
     },
 
     // Allow importing with an options object that is passed through the importer
-    doImport: function doImport(importData, importOptions) {
+    doImport: async function doImport(importData, importOptions) {
         importOptions = importOptions || {};
 
-        const ops = [];
         let errors = [];
-        let results = [];
 
         const modelOptions = {
             importing: true,
@@ -89,112 +84,64 @@ DataImporter = {
 
         this.init(importData);
 
-        return models.Base.transaction(function (transacting) {
+        await models.Base.transaction(async (transacting) => {
             modelOptions.transacting = transacting;
 
-            _.each(importers, function (importer) {
-                ops.push(function doModelImport() {
-                    return importer.fetchExisting(modelOptions, importOptions)
-                        .then(function () {
-                            return importer.beforeImport(modelOptions, importOptions);
-                        })
-                        .then(function () {
-                            if (importer.options.requiredImportedData.length) {
-                                _.each(importer.options.requiredImportedData, (key) => {
-                                    importer.requiredImportedData[key] = importers[key].importedData;
-                                });
-                            }
-
-                            if (importer.options.requiredExistingData.length) {
-                                _.each(importer.options.requiredExistingData, (key) => {
-                                    importer.requiredExistingData[key] = importers[key].existingData;
-                                });
-                            }
-
-                            return importer.replaceIdentifiers(modelOptions, importOptions);
-                        })
-                        .then(function () {
-                            return importer.doImport(modelOptions, importOptions)
-                                .then(function (_results) {
-                                    results = results.concat(_results);
-                                });
-                        });
-                });
-            });
-
-            /**
-             * @TODO: figure out how to fix this properly
-             * fixup the circular reference from
-             * stripe_prices -> stripe_products -> products -> stripe_prices
-             *
-             * Note: the product importer validates that all values are either
-             *   - being imported, or
-             *   - already exist in the db
-             * so we only need to map imported products
-             */
-            ops.push(() => {
-                const importedStripePrices = importers.stripe_prices.importedData;
-                const importedProducts = importers.products.importedData;
-                const productOps = [];
-
-                _.forEach(importedProducts, (importedProduct) => {
-                    return _.forEach(['monthly_price_id', 'yearly_price_id'], (field) => {
-                        const mappedPrice = _.find(importedStripePrices, {originalId: importedProduct[field]});
-                        if (mappedPrice) {
-                            productOps.push(() => {
-                                return models.Product.edit({[field]: mappedPrice.id}, {id: importedProduct.id, transacting});
-                            });
-                        }
+            for (const importer of Object.values(importers)) {
+                await importer.fetchExisting(modelOptions, importOptions);
+                await importer.beforeImport(modelOptions, importOptions);
+                if (importer.options.requiredImportedData.length) {
+                    _.each(importer.options.requiredImportedData, (key) => {
+                        importer.requiredImportedData[key] = importers[key].importedData;
                     });
-                });
-
-                return sequence(productOps);
-            });
-
-            return sequence(ops)
-                .then(function () {
-                    results.forEach(function (promise) {
-                        if (!promise.isFulfilled()) {
-                            errors = errors.concat(promise.reason());
-                        }
-                    });
-
-                    if (errors.length === 0) {
-                        return;
-                    } else {
-                        throw errors;
-                    }
-                });
-        }).then(function () {
-            /**
-             * data: imported data
-             * originalData: data from the json file
-             * problems: warnings
-             */
-            const toReturn = {
-                data: {},
-                originalData: importData.data,
-                problems: []
-            };
-
-            _.each(importers, function (importer) {
-                toReturn.problems = toReturn.problems.concat(importer.problems);
-
-                if (importOptions.returnImportedData) {
-                    toReturn.data[importer.dataKeyToImport] = importer.importedDataToReturn;
                 }
-            });
+                if (importer.options.requiredExistingData.length) {
+                    _.each(importer.options.requiredExistingData, (key) => {
+                        importer.requiredExistingData[key] = importers[key].existingData;
+                    });
+                }
+                await importer.replaceIdentifiers(modelOptions, importOptions);
+                try {
+                    await importer.doImport(modelOptions, importOptions);
+                } catch (_errors) {
+                    errors.push(..._errors);
+                }
+            }
 
-            return toReturn;
-        }).catch(function (err) {
-            debug(err);
-            return Promise.reject(err);
-        }).finally(() => {
-            // release memory
-            importers = {};
-            results = null;
-            importData = null;
+            const importedStripePrices = importers.stripe_prices.importedData;
+            const importedProducts = importers.products.importedData;
+
+            for (const importedProduct of importedProducts) {
+                for (const field of ['monthly_price_id', 'yearly_price_id']) {
+                    const mappedPrice = _.find(importedStripePrices, {originalId: importedProduct[field]});
+                    if (mappedPrice) {
+                        await models.Product.edit({[field]: mappedPrice.id}, {id: importedProduct.id, transacting});
+                    }
+                }
+            }
         });
+
+        if (errors.length > 0) {
+            throw errors;
+        }
+
+        const toReturn = {
+            data: {},
+            originalData: importData.data,
+            problems: []
+        };
+
+        for (const importer of Object.values(importers)) {
+            toReturn.problems = toReturn.problems.concat(importer.problems);
+
+            if (importOptions.returnImportedData) {
+                toReturn.data[importer.dataKeyToImport] = importer.importedDataToReturn;
+            }
+        }
+
+        importers = {};
+
+        return toReturn;
     }
 };
 

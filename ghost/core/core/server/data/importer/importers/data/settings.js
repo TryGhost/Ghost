@@ -252,22 +252,29 @@ class SettingsImporter extends BaseImporter {
         return Promise.resolve();
     }
 
-    doImport(options) {
+    async doImport(options) {
         debug('doImport', this.dataToImport.length);
 
-        let ops = [];
+        const importErrors = [];
 
-        _.each(this.dataToImport, (model) => {
-            ops.push(
-                models.Settings.edit(model, options)
-                    .catch((err) => {
-                        return this.handleError(err, model);
-                    })
-                    .reflect()
-            );
-        });
+        let model = this.dataToImport.shift();
+        while (model) {
+            try {
+                await models.Settings.edit(model, options);
+            } catch (error) {
+                if (error) {
+                    importErrors.push(...this.handleError(error, model));
+                }
+            }
 
-        return Promise.all(ops);
+            model = this.dataToImport.shift();
+        }
+
+        // Ensure array is GCd
+        this.dataToImport = null;
+        if (importErrors.length > 0) {
+            throw importErrors;
+        }
     }
 }
 

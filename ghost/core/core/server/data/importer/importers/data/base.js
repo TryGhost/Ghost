@@ -1,9 +1,7 @@
 const debug = require('@tryghost/debug')('importer:base');
 const _ = require('lodash');
-const Promise = require('bluebird');
 const ObjectId = require('bson-objectid').default;
 const errors = require('@tryghost/errors');
-const {sequence} = require('@tryghost/promise');
 const models = require('../../../../models');
 
 class Base {
@@ -165,11 +163,11 @@ class Base {
             this.problems = this.problems.concat(problems);
             debug('detected problem/warning', problems);
 
-            return Promise.resolve();
+            return [];
         }
 
         debug('err', errorsToReject, obj);
-        return Promise.reject(errorsToReject);
+        return errorsToReject;
     }
 
     /**
@@ -317,50 +315,43 @@ class Base {
         };
     }
 
-    doImport(options, importOptions) {
+    async doImport(options, importOptions) {
         debug('doImport', this.modelName, this.dataToImport.length);
 
-        let ops = [];
+        const importErrors = [];
+        // Use shift to release memory early
+        let obj = this.dataToImport.shift();
+        while (obj) {
+            try {
+                const importedModel = await models[this.modelName].add(obj, options);
 
-        _.each(this.dataToImport, (obj, index) => {
-            ops.push(() => {
-                return models[this.modelName].add(obj, options)
-                    .then((importedModel) => {
-                        obj.model = {
-                            id: importedModel.id
-                        };
+                obj.model = {
+                    id: importedModel.id
+                };
 
-                        if (importOptions.returnImportedData) {
-                            this.importedDataToReturn.push(importedModel.toJSON());
-                        }
+                if (importOptions.returnImportedData) {
+                    this.importedDataToReturn.push(importedModel.toJSON());
+                }
 
-                        // for identifier lookup
-                        this.importedData.push(
-                            this.mapImportedData(obj, importedModel)
-                        );
+                // for identifier lookup
+                this.importedData.push(
+                    this.mapImportedData(obj, importedModel)
+                );
+            } catch (error) {
+                if (error) {
+                    importErrors.push(...this.handleError(error, obj));
+                }
+            }
 
-                        importedModel = null;
-                        this.dataToImport.splice(index, 1);
-                    })
-                    .catch((err) => {
-                        return this.handleError(err, obj);
-                    })
-                    .reflect();
-            });
-        });
+            // Shift next entry
+            obj = this.dataToImport.shift();
+        }
 
-        /**
-         * NOTE: Do not run with Promise.all in this case. With a large import file, we run an enormous
-         *       amount of queries in parallel. Node will very fast eat lot's of memory, because all queries start
-         *       at the same time, but memory can only be released if the query finished.
-         *
-         *       Promise.map(.., {concurrency: Int}) was not really improving the end performance for me.
-         */
-        return sequence(ops).then((response) => {
-            this.dataToImport = null;
-            ops = null;
-            return response;
-        });
+        // Ensure array is GCd
+        this.dataToImport = null;
+        if (importErrors.length > 0) {
+            throw importErrors;
+        }
     }
 }
 

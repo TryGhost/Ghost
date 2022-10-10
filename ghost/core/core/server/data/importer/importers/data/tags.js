@@ -33,45 +33,51 @@ class TagsImporter extends BaseImporter {
      *
      * @TODO: Add a flag to the base implementation e.g. `fetchBeforeAdd`
      */
-    doImport(options, importOptions) {
+    async doImport(options, importOptions) {
         debug('doImport', this.modelName, this.dataToImport.length);
 
-        let ops = [];
+        const importErrors = [];
+        let obj = this.dataToImport.shift();
+        while (obj) {
+            try {
+                const tag = await models[this.modelName].findOne({name: obj.name}, options);
+                if (tag) {
+                    obj = this.dataToImport.shift();
+                    continue;
+                }
 
-        _.each(this.dataToImport, (obj) => {
-            ops.push(models[this.modelName].findOne({name: obj.name}, options)
-                .then((tag) => {
-                    if (tag) {
-                        return Promise.resolve();
-                    }
+                const importedModel = await models[this.modelName].add(obj, options);
 
-                    return models[this.modelName].add(obj, options)
-                        .then((importedModel) => {
-                            obj.model = {
-                                id: importedModel.id
-                            };
+                obj.model = {
+                    id: importedModel.id
+                };
 
-                            if (importOptions.returnImportedData) {
-                                this.importedDataToReturn.push(importedModel.toJSON());
-                            }
+                if (importOptions.returnImportedData) {
+                    this.importedDataToReturn.push(importedModel.toJSON());
+                }
 
-                            // for identifier lookup
-                            this.importedData.push({
-                                id: importedModel.id,
-                                originalId: this.originalIdMap[importedModel.id],
-                                slug: importedModel.get('slug'),
-                                originalSlug: obj.slug
-                            });
+                // for identifier lookup
+                this.importedData.push({
+                    id: importedModel.id,
+                    originalId: this.originalIdMap[importedModel.id],
+                    slug: importedModel.get('slug'),
+                    originalSlug: obj.slug
+                });
+            } catch (error) {
+                if (error) {
+                    importErrors.push(...this.handleError(error, obj));
+                }
+            }
 
-                            return importedModel;
-                        })
-                        .catch((err) => {
-                            return this.handleError(err, obj);
-                        });
-                }).reflect());
-        });
+            // Shift next entry
+            obj = this.dataToImport.shift();
+        }
 
-        return Promise.all(ops);
+        // Ensure array is GCd
+        this.dataToImport = null;
+        if (importErrors.length > 0) {
+            throw importErrors;
+        }
     }
 }
 
