@@ -6,7 +6,7 @@ import {OnChangePlugin} from '@lexical/react/LexicalOnChangePlugin';
 import {ListPlugin} from '@lexical/react/LexicalListPlugin';
 import KoenigBehaviourPlugin from '../plugins/KoenigBehaviourPlugin';
 import MarkdownShortcutPlugin from '../plugins/MarkdownShortcutPlugin';
-import FloatingFormatToolbarPlugin from '../plugins/FloatingFormatToolbar';
+import FloatingFormatToolbarPlugin from '../plugins/FloatingFormatToolbarPlugin';
 import '../styles/index.css';
 
 const KoenigEditor = ({
