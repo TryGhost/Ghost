@@ -5,6 +5,13 @@ const models = require('../../models');
 const urlUtils = require('../../../shared/url-utils');
 const spamPrevention = require('../../web/shared/middleware/api/spam-prevention');
 const {formattedMemberResponse} = require('./utils');
+const errors = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
+
+const messages = {
+    missingUuid: 'Missing uuid.',
+    invalidUuid: 'Invalid uuid.'
+};
 
 // @TODO: This piece of middleware actually belongs to the frontend, not to the member app
 // Need to figure a way to separate these things (e.g. frontend actually talks to members API)
@@ -17,6 +24,38 @@ const loadMemberSession = async function (req, res, next) {
     } catch (err) {
         Object.assign(req, {member: null});
         next();
+    }
+};
+
+/**
+ * Require member authentication, and make it possible to authenticate via uuid.
+ * You can chain this after loadMemberSession to make it possible to authetnicate via both the uuid and the session.
+ */
+const authMemberByUuid = async function (req, res, next) {
+    try {
+        if (res.locals.member && req.member) {
+            // Already authenticated via session
+            return next();
+        }
+
+        const uuid = req.query.uuid;
+        if (!uuid) {
+            throw new errors.UnauthorizedError({
+                messsage: tpl(messages.missingUuid)
+            });
+        }
+
+        const member = await membersService.api.memberBREADService.read({uuid});
+        if (!member) {
+            throw new errors.UnauthorizedError({
+                message: tpl(messages.invalidUuid)
+            });
+        }
+        Object.assign(req, {member});
+        res.locals.member = req.member;
+        next();
+    } catch (err) {
+        next(err);
     }
 };
 
@@ -216,6 +255,7 @@ const createSessionFromMagicLink = async function (req, res, next) {
 // Set req.member & res.locals.member if a cookie is set
 module.exports = {
     loadMemberSession,
+    authMemberByUuid,
     createSessionFromMagicLink,
     getIdentityToken,
     getMemberNewsletters,
