@@ -20,6 +20,7 @@ const BACKUP_TABLES = [
     'webhooks',
     'tokens',
     'sessions',
+    'subscriptions',
     'mobiledoc_revisions',
     'post_revisions',
     'email_batches',
