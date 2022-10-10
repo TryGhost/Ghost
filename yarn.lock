@@ -13379,7 +13379,7 @@ express-unless@^2.0.2:
   resolved "https://registry.yarnpkg.com/express-unless/-/express-unless-2.1.2.tgz#bbd584c6ef4f61c1222e0a6834de65b39201e942"
   integrity sha512-6ZK8+2mCUQwPFZCslGL0F55n6iiVgGw3nBuGT9wnSno7eD2w7KbDo2M7exFGgJZ/DL81xXEbEWy1gqRZRWhUBg==
 
-express@4.18.1, express@^4.10.7, express@^4.17.1, express@^4.17.2, express@^4.17.3:
+express@4.18.1:
   version "4.18.1"
   resolved "https://registry.yarnpkg.com/express/-/express-4.18.1.tgz#7797de8b9c72c857b9cd0e14a5eea80666267caf"
   integrity sha512-zZBcOX9TfehHQhtupq57OF8lFZ3UZi08Y97dwFCkD8p9d/d2Y3M+ykKcwaMDEL+4qyUolgBDX6AblpR3fL212Q==
@@ -13406,6 +13406,43 @@ express@4.18.1, express@^4.10.7, express@^4.17.1, express@^4.17.2, express@^4.17
     path-to-regexp "0.1.7"
     proxy-addr "~2.0.7"
     qs "6.10.3"
+    range-parser "~1.2.1"
+    safe-buffer "5.2.1"
+    send "0.18.0"
+    serve-static "1.15.0"
+    setprototypeof "1.2.0"
+    statuses "2.0.1"
+    type-is "~1.6.18"
+    utils-merge "1.0.1"
+    vary "~1.1.2"
+
+express@4.18.2, express@^4.10.7, express@^4.17.1, express@^4.17.2, express@^4.17.3:
+  version "4.18.2"
+  resolved "https://registry.yarnpkg.com/express/-/express-4.18.2.tgz#3fabe08296e930c796c19e3c516979386ba9fd59"
+  integrity sha512-5/PsL6iGPdfQ/lKM1UuielYgv3BUoJfz1aUwU9vHZ+J7gyvwdQXFEBIEIaxeGf0GIcreATNyBExtalisDbuMqQ==
+  dependencies:
+    accepts "~1.3.8"
+    array-flatten "1.1.1"
+    body-parser "1.20.1"
+    content-disposition "0.5.4"
+    content-type "~1.0.4"
+    cookie "0.5.0"
+    cookie-signature "1.0.6"
+    debug "2.6.9"
+    depd "2.0.0"
+    encodeurl "~1.0.2"
+    escape-html "~1.0.3"
+    etag "~1.8.1"
+    finalhandler "1.2.0"
+    fresh "0.5.2"
+    http-errors "2.0.0"
+    merge-descriptors "1.0.1"
+    methods "~1.1.2"
+    on-finished "2.4.1"
+    parseurl "~1.3.3"
+    path-to-regexp "0.1.7"
+    proxy-addr "~2.0.7"
+    qs "6.11.0"
     range-parser "~1.2.1"
     safe-buffer "5.2.1"
     send "0.18.0"
