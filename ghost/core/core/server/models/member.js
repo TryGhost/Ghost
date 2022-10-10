@@ -158,6 +158,7 @@ const Member = ghostBookshelf.Model.extend({
 
     newsletters() {
         return this.belongsToMany('Newsletter', 'members_newsletters', 'member_id', 'newsletter_id')
+            .query('orderBy', 'sort_order', 'ASC')
             .query((qb) => {
                 // avoids bookshelf adding a `DISTINCT` to the query
                 // we know the result set will already be unique and DISTINCT hurts query performance
