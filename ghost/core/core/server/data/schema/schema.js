@@ -605,6 +605,43 @@ module.exports = {
         updated_at: {type: 'dateTime', nullable: true},
         updated_by: {type: 'string', maxlength: 24, nullable: true}
     },
+    subscriptions: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        type: {
+            type: 'string', maxlength: 50, nullable: false, validations: {
+                isIn: [['free', 'comped', 'paid']]
+            }
+        },
+        status: {
+            type: 'string', maxlength: 50, nullable: false, validations: {
+                isIn: [['active', 'expired', 'cancelled']]
+            }
+        },
+        member_id: {type: 'string', maxlength: 24, nullable: false, unique: false, references: 'members.id', cascadeDelete: true},
+        tier_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'products.id'},
+
+        // These are null if type !== 'paid'
+        cadence: {
+            type: 'string', maxlength: 50, nullable: true, validations: {
+                isIn: [['month', 'year']]
+            }
+        },
+        currency: {type: 'string', maxlength: 50, nullable: true},
+        amount: {type: 'integer', nullable: true},
+
+        // e.g. 'stripe'
+        payment_provider: {type: 'string', maxlength: 50, nullable: true},
+        // e.g. Stripe Subscription Link
+        payment_subscription_url: {type: 'string', maxlength: 2000, nullable: true},
+        // e.g. Stripe Customer Link
+        payment_user_url: {type: 'string', maxlength: 2000, nullable: true},
+
+        offer_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'offers.id'},
+
+        expires_at: {type: 'dateTime', nullable: true},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true}
+    },
     members_stripe_customers_subscriptions: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         customer_id: {type: 'string', maxlength: 255, nullable: false, unique: false, references: 'members_stripe_customers.customer_id', cascadeDelete: true},

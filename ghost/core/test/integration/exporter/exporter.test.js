@@ -75,6 +75,7 @@ describe('Exporter', function () {
                 'products_benefits',
                 'stripe_products',
                 'stripe_prices',
+                'subscriptions',
                 'roles',
                 'roles_users',
                 'sessions',
