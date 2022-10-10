@@ -291,7 +291,8 @@ const DesignSandbox = () => {
             setActive(!isActive);
         };
 
-        const toggleAltText = () => {
+        const toggleAltText = (e) => {
+            e.stopPropagation();
             setAltText(!altText);
         };
 
@@ -304,7 +305,7 @@ const DesignSandbox = () => {
                     <CaptionEditor placeholder="Type caption for image (optional)" />
                     <button 
                         className={`absolute bottom-0 right-0 m-3 cursor-pointer rounded border px-1 text-[1.3rem] font-normal leading-7 tracking-wide transition-all duration-100 ${altText ? 'border-green bg-green text-white' : 'border-grey text-grey' } `}
-                        onClick={toggleAltText}>
+                        onClick={e => toggleAltText(e)}>
                             Alt
                     </button>           
                 </div>
