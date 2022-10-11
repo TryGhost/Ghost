@@ -288,6 +288,7 @@ async function initServices({config}) {
     const memberAttribution = require('./server/services/member-attribution');
     const membersEvents = require('./server/services/members-events');
     const linkTracking = require('./server/services/link-tracking');
+    const audienceFeedback = require('./server/services/audience-feedback');
 
     const urlUtils = require('./shared/url-utils');
 
@@ -315,7 +316,8 @@ async function initServices({config}) {
             apiUrl: urlUtils.urlFor('api', {type: 'admin'}, true)
         }),
         comments.init(),
-        linkTracking.init()
+        linkTracking.init(),
+        audienceFeedback.init()
     ]);
     debug('End: Services');
 
