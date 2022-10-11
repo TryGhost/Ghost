@@ -57,7 +57,7 @@
     "@types/react-dom": "18.0.6",
     "@vitejs/plugin-react": "2.1.0",
     "@vitest/coverage-c8": "0.24.1",
-    "@vitest/ui": "0.24.0",
+    "@vitest/ui": "0.24.1",
     "autoprefixer": "10.4.12",
     "babel-loader": "8.2.5",
     "eslint-config-react-app": "7.0.1",
@@ -72,6 +72,6 @@
     "typescript": "4.8.4",
     "vite": "3.0.8",
     "vite-plugin-svgr": "2.2.1",
-    "vitest": "0.24.0"
+    "vitest": "0.24.1"
   }
 }
