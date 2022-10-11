@@ -603,5 +603,27 @@ describe('Oembed API', function () {
             res.body.url.should.eql('http://example.com');
             res.body.metadata.title.should.eql(utfString);
         });
+
+        it('does not fail on unknown charset', async function () {
+            const pageMock = nock('http://example.com')
+                .get('/')
+                .reply(
+                    200,
+                    '<html><head><title>TESTING</title><meta charset="notacharset"></head><body></body></html>',
+                    {'content-type': 'text/html'}
+                );
+
+            const url = encodeURIComponent(' http://example.com\t '); // Whitespaces are to make sure urls are trimmed
+            const res = await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}&type=bookmark`))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200);
+
+            pageMock.isDone().should.be.true();
+            res.body.type.should.eql('bookmark');
+            res.body.url.should.eql('http://example.com');
+            res.body.metadata.title.should.eql('TESTING');
+        });
     });
 });

@@ -16,7 +16,7 @@ const messages = {
 
 /**
  * @param {string} url
- * @returns {{url: string, provider: boolean} | null}
+ * @returns {{url: string, provider: boolean}}
  */
 const findUrlWithProvider = (url) => {
     let provider;
@@ -39,7 +39,7 @@ const findUrlWithProvider = (url) => {
         }
     }
 
-    return provider ? {url, provider} : null;
+    return {url, provider};
 };
 
 /**
@@ -115,65 +115,94 @@ class OEmbed {
 
     /**
      * @param {string} url
-     * @param {Object} [options]
+     * @param {Object} options
      * 
-     * @returns {Promise<Object>}
+     * @returns {Promise<{url: string, body: any, headers: any}>}
      */
     async fetchPage(url, options) {
         const cookieJar = new CookieJar();
-        // Fetch url and get response as binary buffer to
-        // avoid implicit cast
-        const response = await this.externalRequest(
+        return this.externalRequest(
             url,
             {
                 cookieJar,
                 method: 'GET',
                 timeout: 2 * 1000,
                 followRedirect: true,
-                encoding: 'binary',
-                responseType: 'buffer',
                 ...options
             });
+    }
 
-        // No decoding of json requests
-        if (options && options.json === true) {
-            return {
-                body: response.body,
-                url: response.url
-            };
-        }
+    /**
+     * @param {string} url
+     * 
+     * @returns {Promise<{url: string, body: string}>}
+     */
+    async fetchPageHtml(url) {
+        // Fetch url and get response as binary buffer to
+        // avoid implicit cast
+        const {headers, body, url: responseUrl} = await this.fetchPage(
+            url,
+            {
+                encoding: 'binary',
+                responseType: 'buffer'
+            });
 
         try {
             // Detect page encoding which might not be utf-8
             // and decode content
             const encoding = charset(
-                response.headers,
-                response.body.toString());
+                headers,
+                body);
 
-            const body = iconv.decode(
-                Buffer.from(response.body, 'binary'), encoding);
+            if (encoding === null) {
+                return {
+                    body: body.toString(),
+                    url: responseUrl
+                };
+            }
+
+            const decodedBody = iconv.decode(
+                Buffer.from(body, 'binary'), encoding);
 
             return {
-                body,
-                url: response.url
+                body: decodedBody,
+                url: responseUrl
             };
         } catch (err) {
             logging.error(err);
             //return non decoded body anyway
             return {
-                body: response.body.toString(),
-                url: response.url
+                body: body.toString(),
+                url: responseUrl
             };
         }
     }
 
     /**
      * @param {string} url
-     * @param {Object} pageResponse
+     * 
+     * @returns {Promise<{url: string, body: Object}>}
+     */
+    async fetchPageJson(url) {
+        const {body, url: pageUrl} = await this.fetchPage(
+            url,
+            {
+                json: true
+            });
+
+        return {
+            body,
+            url: pageUrl
+        };
+    }
+    
+    /**
+     * @param {string} url
+     * @param {string} html
      * 
      * @returns {Promise<Object>}
      */
-    async fetchBookmarkData(url, pageResponse) {
+    async fetchBookmarkData(url, html) {
         const metascraper = require('metascraper')([
             require('metascraper-url')(),
             require('metascraper-title')(),
@@ -188,11 +217,7 @@ class OEmbed {
         let scraperResponse;
         
         try {
-            scraperResponse = await metascraper(
-                {
-                    html: pageResponse.body, 
-                    url
-                });
+            scraperResponse = await metascraper({html, url});
         } catch (err) {
             // Log to avoid being blind to errors happenning in metascraper
             logging.error(err);
@@ -251,17 +276,17 @@ class OEmbed {
     }
 
     /**
-     * @param {string} _url
-     * @param {Object} pageResponse
+     * @param {string} url
+     * @param {string} html
      * @param {string} [cardType]
      *
      * @returns {Promise<Object>}
      */
-    async fetchOembedData(url, pageResponse, cardType) {
+    async fetchOembedData(url, html, cardType) {
         // check for <link rel="alternate" type="application/json+oembed"> element
         let oembedUrl;
         try {
-            oembedUrl = cheerio('link[type="application/json+oembed"]', pageResponse.body).attr('href');
+            oembedUrl = cheerio('link[type="application/json+oembed"]', html).attr('href');
         } catch (e) {
             return this.unknownProvider(url);
         }
@@ -274,9 +299,7 @@ class OEmbed {
             }
 
             // fetch oembed response from embedded rel="alternate" url
-            const oembedResponse = await this.fetchPage(oembedUrl, {
-                json: true
-            });
+            const oembedResponse = await this.fetchPageJson(oembedUrl);
 
             // validate the fetched json against the oembed spec to avoid
             // leaking non-oembed responses
@@ -344,36 +367,36 @@ class OEmbed {
             if (type !== 'bookmark') {
                 // if not a bookmark request, first
                 // check against known oembed list
-                const urlWithProvider = findUrlWithProvider(url);
-                if (urlWithProvider) {
-                    return this.knownProvider(urlWithProvider.url);
+                const {url: providerUrl, provider} = findUrlWithProvider(url);
+                if (provider) {
+                    return this.knownProvider(providerUrl);
                 }
             }
 
             // Not in the list, we need to fetch the content
-            const pageResponse = await this.fetchPage(url);
+            const {url: pageUrl, body} = await this.fetchPageHtml(url);
 
             // fetch only bookmark when explicitly requested
             if (type === 'bookmark') {
-                return this.fetchBookmarkData(url, pageResponse);
+                return this.fetchBookmarkData(url, body);
             }
 
             // attempt to fetch oembed
 
             // In case response was a redirect, see if we were 
             // redirected to a known oembed
-            if (pageResponse.url !== url) {
-                const urlWithProvider = findUrlWithProvider(url);
-                if (urlWithProvider) {
-                    return this.knownProvider(urlWithProvider.url);
+            if (pageUrl !== url) {
+                const {url: providerUrl, provider} = findUrlWithProvider(pageUrl);
+                if (provider) {
+                    return this.knownProvider(providerUrl);
                 }
             }
 
-            let data = await this.fetchOembedData(url, pageResponse);
+            let data = await this.fetchOembedData(url, body);
 
             // fallback to bookmark when we can't get oembed
             if (!data && !type) {
-                data = await this.fetchBookmarkData(url, pageResponse);
+                data = await this.fetchBookmarkData(url, body);
             }
 
             // couldn't get anything, throw a validation error
