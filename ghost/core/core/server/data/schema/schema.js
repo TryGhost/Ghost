@@ -13,6 +13,7 @@ module.exports = {
         uuid: {type: 'string', maxlength: 36, nullable: false, unique: true, validations: {isUUID: true}},
         name: {type: 'string', maxlength: 191, nullable: false, unique: true},
         description: {type: 'string', maxlength: 2000, nullable: true},
+        feedback_enabled: {type: 'bool', nullable: false, defaultTo: false},
         slug: {type: 'string', maxlength: 191, nullable: false, unique: true},
         sender_name: {type: 'string', maxlength: 191, nullable: true},
         sender_email: {type: 'string', maxlength: 191, nullable: true},
