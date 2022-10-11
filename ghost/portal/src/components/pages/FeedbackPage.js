@@ -62,7 +62,7 @@ function ErrorPage({error}) {
     );
 }
 
-export default function UnsubscribePage() {
+export default function FeedbackPage() {
     const {site, pageData, brandColor, onAction} = useContext(AppContext);
     const {uuid, postId, score} = pageData;
     const [loading, setLoading] = useState(true);
