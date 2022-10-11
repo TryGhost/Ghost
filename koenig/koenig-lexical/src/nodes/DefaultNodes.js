@@ -4,6 +4,7 @@ import {LinkNode} from '@lexical/link';
 import {AsideNode} from './AsideNode';
 import {HorizontalRuleNode} from './HorizontalRuleNode';
 import {CodeBlockNode} from './CodeBlockNode';
+import {ImageNode} from './ImageNode';
 
 const DEFAULT_NODES = [
     HeadingNode,
@@ -13,7 +14,8 @@ const DEFAULT_NODES = [
     AsideNode,
     LinkNode,
     CodeBlockNode, // TODO: replace with our own card
-    HorizontalRuleNode
+    HorizontalRuleNode,
+    ImageNode
 ];
 
 export default DEFAULT_NODES;

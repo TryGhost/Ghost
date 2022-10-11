@@ -9,6 +9,7 @@ import MarkdownShortcutPlugin from '../plugins/MarkdownShortcutPlugin';
 import PlusCardMenuPlugin from '../plugins/PlusCardMenuPlugin';
 import FloatingFormatToolbarPlugin from '../plugins/FloatingFormatToolbarPlugin';
 import '../styles/index.css';
+import ImagePlugin from '../plugins/ImagePlugin';
 
 const KoenigEditor = ({
     onChange,
@@ -47,6 +48,7 @@ const KoenigEditor = ({
             <MarkdownShortcutPlugin transformers={markdownTransformers} />
             <PlusCardMenuPlugin />
             {floatingAnchorElem && (<FloatingFormatToolbarPlugin anchorElem={floatingAnchorElem} />)}
+            <ImagePlugin />
         </div>
     );
 };

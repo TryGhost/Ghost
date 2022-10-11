@@ -9,6 +9,7 @@ import {
 } from '@lexical/markdown';
 import {$createHorizontalRuleNode, $isHorizontalRuleNode} from '../nodes/HorizontalRuleNode';
 import {$isCodeBlockNode, $createCodeBlockNode, CodeBlockNode} from '../nodes/CodeBlockNode';
+import {$createImageNode, $isImageNode} from '../nodes/ImageNode';
 
 export const HR = {
     dependencies: [], // todo: docs a bit unclear regarding the usage of this property, but required as of 0.4.0 https://github.com/facebook/lexical/pull/2910
@@ -56,13 +57,37 @@ export const CODE_BLOCK = {
     type: 'element'
 };
 
+// render imageNode when writing image!
+// regex that detects exactly the string 'image!'
+
+export const IMAGE = {
+    dependencies: [], // todo: docs a bit unclear regarding the usage of this property, but required as of 0.4.0
+    export: (node) => {
+        if (!$isImageNode(node)){
+            return null;
+        } else {
+            const {src, alt} = node.dataset;
+            return `![${alt}](${src})`;
+        }
+    },
+    regExp: /^image! $/,
+    replace: (parentNode, match, text) => {
+        const alt = '';
+        const src = '';
+        const imageNode = $createImageNode({altText: alt, src});
+        parentNode.replace(imageNode);
+    },
+    type: 'element'
+};
+
 export const ELEMENT_TRANSFORMERS = [
     HEADING,
     QUOTE,
     UNORDERED_LIST,
     ORDERED_LIST,
     HR,
-    CODE_BLOCK
+    CODE_BLOCK,
+    IMAGE
 ];
 
 export const DEFAULT_TRANSFORMERS = [
