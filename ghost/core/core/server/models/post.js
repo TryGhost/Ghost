@@ -1354,6 +1354,30 @@ Post = ghostBookshelf.Model.extend({
                         .whereRaw('posts.id = redirects.post_id')
                         .as('count__clicks');
                 });
+            },
+            sentiment(modelOrCollection) {
+                modelOrCollection.query('columns', 'posts.*', (qb) => {
+                    qb.select(qb.client.raw('ROUND(AVG(score) * 100)'))
+                        .from('members_feedback')
+                        .whereRaw('posts.id = members_feedback.post_id')
+                        .as('count__sentiment');
+                });
+            },
+            negative_feedback(modelOrCollection) {
+                modelOrCollection.query('columns', 'posts.*', (qb) => {
+                    qb.count('*')
+                        .from('members_feedback')
+                        .whereRaw('posts.id = members_feedback.post_id AND members_feedback.score = 0')
+                        .as('count__positive_feedback');
+                });
+            },
+            positive_feedback(modelOrCollection) {
+                modelOrCollection.query('columns', 'posts.*', (qb) => {
+                    qb.sum('score')
+                        .from('members_feedback')
+                        .whereRaw('posts.id = members_feedback.post_id')
+                        .as('count__positive_feedback');
+                });
             }
         };
     }

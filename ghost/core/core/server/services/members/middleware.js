@@ -33,13 +33,13 @@ const loadMemberSession = async function (req, res, next) {
  */
 const authMemberByUuid = async function (req, res, next) {
     try {
-        if (res.locals.member && req.member) {
-            // Already authenticated via session
-            return next();
-        }
-
         const uuid = req.query.uuid;
         if (!uuid) {
+            if (res.locals.member && req.member) {
+                // Already authenticated via session
+                return next();
+            }
+            
             throw new errors.UnauthorizedError({
                 messsage: tpl(messages.missingUuid)
             });

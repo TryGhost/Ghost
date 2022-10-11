@@ -346,6 +346,12 @@ describe('Unit: models/post', function () {
             filter.should.equal('type:post+status:published');
         });
     });
+
+    describe('countRelations', function () {
+        it('can include all count relations', function () {
+            return models.Post.findAll({withRelated: ['count.signups', 'count.paid_conversions', 'count.clicks', 'count.sentiment', 'count.negative_feedback', 'count.positive_feedback']});
+        });
+    });
 });
 
 describe('Unit: models/post: uses database (@TODO: fix me)', function () {

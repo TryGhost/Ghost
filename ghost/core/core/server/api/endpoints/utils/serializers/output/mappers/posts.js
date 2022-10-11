@@ -119,5 +119,13 @@ module.exports = async (model, frame, options = {}) => {
         );
     }
 
+    if (jsonModel.count && !jsonModel.count.sentiment) {
+        jsonModel.count.sentiment = 0;
+    }
+
+    if (jsonModel.count && !jsonModel.count.positive_feedback) {
+        jsonModel.count.positive_feedback = 0;
+    }
+
     return jsonModel;
 };
