@@ -50,7 +50,7 @@ export default class MembersRoute extends AdminRoute {
 
     @action
     async willTransition(transition) {
-        let hasDirtyAttributes = this.controller.model?.hasDirtyAttributes || this.controller.dirtyAttributes;
+        let hasDirtyAttributes = this.controller.dirtyAttributes;
 
         // wait for any existing confirm modal to be closed before allowing transition
         if (this.confirmModal) {
