@@ -49,6 +49,13 @@ const buildPageSnapshotWithTiers = ({
     };
 };
 
+const buildPreviousPageSnapshotWithTiers = ({tiersCount}) => {
+    return {
+        updated_at: anyISODateTime,
+        tiers: new Array(tiersCount).fill(tierSnapshot)
+    };
+};
+
 describe('page.* events', function () {
     let adminAPIAgent;
     let webhookMockReceiver;
@@ -100,6 +107,58 @@ describe('page.* events', function () {
                 page: {
                     current: buildPageSnapshotWithTiers({
                         published: false,
+                        tiersCount: 2
+                    })
+                }
+            });
+    });
+
+    it('page.published event is triggered', async function () {
+        const webhookURL = 'https://test-webhook-receiver.com/page-published/';
+        await webhookMockReceiver.mock(webhookURL);
+        await fixtureManager.insertWebhook({
+            event: 'page.published',
+            url: webhookURL
+        });
+
+        const res = await adminAPIAgent
+            .post('pages/')
+            .body({
+                pages: [
+                    {
+                        title: 'testing page.published webhook',
+                        status: 'draft',
+                        displayName: 'webhookz'
+                    }
+                ]
+            })
+            .expectStatus(201);
+
+        const page = res.body.pages[0];
+        const updatedPage = {...page, status: 'published'};
+
+        await adminAPIAgent
+            .put('pages/' + page.id)
+            .body({
+                pages: [updatedPage]
+            })
+            .expectStatus(200);
+
+        await webhookMockReceiver.receivedRequest();
+
+        webhookMockReceiver
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                'content-length': anyNumber,
+                'user-agent': anyGhostAgent
+            })
+            .matchBodySnapshot({
+                page: {
+                    current: buildPageSnapshotWithTiers({
+                        published: true,
+                        tiersCount: 2
+                    }),
+                    previous: buildPreviousPageSnapshotWithTiers({
                         tiersCount: 2
                     })
                 }
