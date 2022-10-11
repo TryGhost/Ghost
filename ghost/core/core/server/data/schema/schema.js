@@ -850,5 +850,13 @@ module.exports = {
         member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
         redirect_id: {type: 'string', maxlength: 24, nullable: false, references: 'redirects.id', cascadeDelete: true},
         created_at: {type: 'dateTime', nullable: false}
+    },
+    members_feedback: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        score: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
+        member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
+        post_id: {type: 'string', maxlength: 24, nullable: false, references: 'posts.id', cascadeDelete: true},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true}
     }
 };
