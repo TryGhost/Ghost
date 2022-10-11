@@ -3,7 +3,7 @@
 
 [ -n "$CI" ] && exit 0
 
-yarn lint-staged
+yarn lint-staged --relative
 lintStatus=$?
 
 if [ $lintStatus -ne 0 ]; then
