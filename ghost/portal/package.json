@@ -80,7 +80,7 @@
     "chalk": "4.1.2",
     "chokidar": "3.5.3",
     "copy-webpack-plugin": "11.0.0",
-    "minimist": "1.2.6",
+    "minimist": "1.2.7",
     "ora": "5.4.1",
     "rewire": "6.0.0",
     "serve-handler": "6.1.3",
