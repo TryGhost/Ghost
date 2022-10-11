@@ -30,6 +30,7 @@ Object {
           "body_font_category": "sans_serif",
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "description": null,
+          "feedback_enabled": false,
           "footer_content": null,
           "header_image": null,
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
