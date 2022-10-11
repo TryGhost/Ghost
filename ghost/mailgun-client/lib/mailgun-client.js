@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const debug = require('@tryghost/debug');
 const logging = require('@tryghost/logging');
+const metrics = require('@tryghost/metrics');
 
 module.exports = class MailgunClient {
     #config;
@@ -42,6 +43,7 @@ module.exports = class MailgunClient {
 
         let messageData = {};
 
+        let startTime;
         try {
             const bulkEmailConfig = this.#config.get('bulkEmail');
             const messageContent = _.pick(message, 'subject', 'html', 'plaintext');
@@ -85,12 +87,22 @@ module.exports = class MailgunClient {
             }
 
             const mailgunConfig = this.#getConfig();
+            startTime = Date.now();
             const response = await mailgunInstance.messages.create(mailgunConfig.domain, messageData);
+            metrics.metric('mailgun-send-mail', {
+                value: Date.now() - startTime,
+                statusCode: 200
+            });
 
             return {
                 id: response.id
             };
         } catch (error) {
+            logging.error(error);
+            metrics.metric('mailgun-send-mail', {
+                value: Date.now() - startTime,
+                statusCode: error.status
+            });
             return Promise.reject({error, messageData});
         }
     }
@@ -106,34 +118,54 @@ module.exports = class MailgunClient {
 
         debug(`fetchEvents: starting fetching first events page`);
         const mailgunConfig = this.#getConfig();
-        let page = await mailgunInstance.events.get(mailgunConfig.domain, mailgunOptions);
-        let events = page?.items?.map(this.normalizeEvent) || [];
-        debug(`fetchEvents: finished fetching first page with ${events.length} events`);
+        let startTime = Date.now();
+        try {
+            let page = await mailgunInstance.events.get(mailgunConfig.domain, mailgunOptions);
+            metrics.metric('mailgun-get-events', {
+                value: Date.now() - startTime,
+                statusCode: 200
+            });
+            let events = page?.items?.map(this.normalizeEvent) || [];
+            debug(`fetchEvents: finished fetching first page with ${events.length} events`);
 
-        let eventCount = 0;
+            let eventCount = 0;
 
-        pagesLoop:
-        while (events.length !== 0) {
-            const batchResult = await batchHandler(events);
+            pagesLoop:
+            while (events.length !== 0) {
+                const batchResult = await batchHandler(events);
 
-            result = result.concat(batchResult);
-            eventCount += events.length;
+                result = result.concat(batchResult);
+                eventCount += events.length;
 
-            if (eventCount >= maxEvents) {
-                break pagesLoop;
+                if (eventCount >= maxEvents) {
+                    break pagesLoop;
+                }
+
+                const nextPageId = page.pages.next.page;
+                debug(`fetchEvents: starting fetching next page ${nextPageId}`);
+                startTime = Date.now();
+                page = await mailgunInstance.events.get(mailgunConfig.domain, {
+                    page: nextPageId,
+                    ...mailgunOptions
+                });
+                metrics.metric('mailgun-get-events', {
+                    value: Date.now() - startTime,
+                    statusCode: 200
+                });
+                events = page?.items?.map(this.normalizeEvent) || [];
+                debug(`fetchEvents: finished fetching next page with ${events.length} events`);
             }
 
-            const nextPageId = page.pages.next.page;
-            debug(`fetchEvents: starting fetching next page ${nextPageId}`);
-            page = await mailgunInstance.events.get(mailgunConfig.domain, {
-                page: nextPageId,
-                ...mailgunOptions
+            return result;
+        } catch (error) {
+            // Log and re-throw Mailgun errors
+            logging.error(error);
+            metrics.metric('mailgun-get-events', {
+                value: Date.now() - startTime,
+                statusCode: error.status
             });
-            events = page?.items?.map(this.normalizeEvent) || [];
-            debug(`fetchEvents: finished fetching next page with ${events.length} events`);
+            throw error;
         }
-
-        return result;
     }
 
     normalizeEvent(event) {
