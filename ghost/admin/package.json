@@ -67,7 +67,7 @@
     "codemirror": "5.48.2",
     "cssnano": "4.1.10",
     "element-resize-detector": "1.2.4",
-    "ember-ajax": "5.1.1",
+    "ember-ajax": "5.1.2",
     "ember-assign-helper": "0.4.0",
     "ember-auto-import": "2.4.2",
     "ember-classic-decorator": "3.0.0",
