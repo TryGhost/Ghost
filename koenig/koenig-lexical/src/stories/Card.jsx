@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-
+import {ReactComponent as GalleryPlaceholderIcon} from '../assets/icons/kg-gallery-placeholder.svg';
 /**
  * Primary UI component for user interaction
  */
@@ -19,6 +19,7 @@ export const Card = () => {
                     <p className="text-indigo-500 text-xl font-medium">John Doe</p>
                 </div>
             </div>
+            <GalleryPlaceholderIcon />
         </div>
     );
 };
