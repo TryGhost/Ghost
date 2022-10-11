@@ -169,7 +169,6 @@ export class ImageNode extends DecoratorNode {
             altText: this.getAlt(),
             caption: this.__caption.toJSON(),
             src: this.getSrc(),
-            key: this.getKey(),
             type: 'image'
         };
         return dataset;
@@ -218,7 +217,7 @@ export class ImageNode extends DecoratorNode {
 
     decorate() {
         return (
-            <KoenigCardWrapper>
+            <KoenigCardWrapper nodeKey={this.getKey()}>
                 <ImageCard nodeKey={this.getKey()} />
             </KoenigCardWrapper>
         );
