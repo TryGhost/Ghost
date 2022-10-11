@@ -6,6 +6,7 @@ const localUtils = require('../../index');
 const mobiledoc = require('../../../../../lib/mobiledoc');
 const postsMetaSchema = require('../../../../../data/schema').tables.posts_meta;
 const clean = require('./utils/clean');
+const labs = require('../../../../../../shared/labs');
 
 function removeSourceFormats(frame) {
     if (frame.options.formats?.includes('mobiledoc') || frame.options.formats?.includes('lexical')) {
@@ -24,7 +25,11 @@ function defaultRelations(frame) {
         return false;
     }
 
-    frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'email', 'tiers', 'newsletter', 'count.signups', 'count.paid_conversions', 'count.clicks'];
+    if (labs.isSet('audienceFeedback')) {
+        frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'email', 'tiers', 'newsletter', 'count.signups', 'count.paid_conversions', 'count.clicks', 'count.sentiment', 'count.positive_feedback'];
+    } else {
+        frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'email', 'tiers', 'newsletter', 'count.signups', 'count.paid_conversions', 'count.clicks'];
+    }
 }
 
 function setDefaultOrder(frame) {

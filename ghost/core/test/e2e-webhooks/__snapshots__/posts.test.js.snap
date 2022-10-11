@@ -202,6 +202,8 @@ Object {
       "count": Object {
         "clicks": 0,
         "paid_conversions": 0,
+        "positive_feedback": 0,
+        "sentiment": 0,
         "signups": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
