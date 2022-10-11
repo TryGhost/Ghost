@@ -139,6 +139,36 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
         }
     };
 
+    api.feedback = {
+        async add({uuid, postId, score}) {
+            let url = endpointFor({type: 'members', resource: 'feedback'});
+            url = url + `?uuid=${uuid}`;
+
+            const body = {
+                feedback: [
+                    {
+                        post_id: postId,
+                        score
+                    }
+                ]
+            };
+            const res = await makeRequest({
+                url,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify(body)
+            });
+            if (res.ok) {
+                return res.json();
+            } else {
+                throw (await HumanReadableError.fromApiResponse(res)) ?? new Error('Failed to save feedback');
+            }
+        }
+    };
+
     api.member = {
         identity() {
             const url = endpointFor({type: 'members', resource: 'session'});

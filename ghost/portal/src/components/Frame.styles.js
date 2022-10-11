@@ -17,6 +17,7 @@ import {AvatarStyles} from './common/MemberGravatar';
 import {MagicLinkStyles} from './pages/MagicLinkPage';
 import {PopupNotificationStyles} from './common/PopupNotification';
 import {OfferPageStyles} from './pages/OfferPage';
+import {FeedbackPageStyles} from './pages/FeedbackPage';
 
 // Global styles
 const FrameStyles = `
@@ -1171,6 +1172,7 @@ export function getFrameStyles({site}) {
         OfferPageStyles({site}) +
         PopupNotificationStyles +
         MobileStyles +
-        MultipleProductsGlobalStyles;
+        MultipleProductsGlobalStyles +
+        FeedbackPageStyles;
     return FrameStyle;
 }

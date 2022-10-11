@@ -405,6 +405,21 @@ export default class App extends React.Component {
                 }
             };
         }
+
+        if (qParams.get('uuid') && qParams.get('action') === 'feedback' && qParams.get('score') && qParams.get('post')) {
+            const score = parseInt(qParams.get('score'));
+            if (score === 1 || score === 0) {
+                return {
+                    showPopup: true,
+                    page: 'feedback',
+                    pageData: {
+                        uuid: qParams.get('uuid'),
+                        postId: qParams.get('post'),
+                        score
+                    }
+                };
+            }
+        }
         const productMonthlyPriceQueryRegex = /^(?:(\w+?))?\/monthly$/;
         const productYearlyPriceQueryRegex = /^(?:(\w+?))?\/yearly$/;
         const offersRegex = /^offers\/(\w+?)\/?$/;
@@ -673,6 +688,7 @@ export default class App extends React.Component {
         const customMonthlyProductSignup = /^signup\/?(?:\/(\w+?))\/monthly\/?$/;
         const customYearlyProductSignup = /^signup\/?(?:\/(\w+?))\/yearly\/?$/;
         const customOfferRegex = /^offers\/(\w+?)\/?$/;
+
         if (customOfferRegex.test(path)) {
             return {
                 pageQuery: path
