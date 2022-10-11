@@ -24,7 +24,7 @@
     "build:demo": "vite build --config vite.config.demo.js",
     "preview": "vite preview",
     "pretest": "yarn build --config vite.config.test.js",
-    "test": "vitest run --no-threads",
+    "test": "vitest run",
     "pretest:watch": "yarn pretest",
     "test:watch": "vitest",
     "posttest": "yarn lint",
