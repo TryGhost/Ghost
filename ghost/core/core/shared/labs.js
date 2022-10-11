@@ -35,7 +35,8 @@ const ALPHA_FEATURES = [
     'sourceAttribution',
     'lexicalEditor',
     'exploreApp',
-    'audienceFeedback'
+    'audienceFeedback',
+    'fixNewsletterLinks'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
