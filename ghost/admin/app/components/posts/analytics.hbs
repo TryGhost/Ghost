@@ -90,6 +90,13 @@
                 </div>
             {{/if}}
         {{/if}}
+
+        {{#if this.post.showAudienceFeedback }}
+            <div class="gh-post-analytics-item">
+                <h3>{{format-number this.post.count.positive_feedback}}</h3>
+                <p>More like this &mdash; <strong>{{this.post.count.sentiment}}%</strong></p>
+            </div>
+        {{/if}}
     </div>
 
     {{#if this.isLoaded }}
