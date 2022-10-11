@@ -1726,7 +1726,7 @@ describe('Members API', function () {
             }]
         });
 
-        // Wait 5 second sto guarantee event ordering
+        // Wait 5 seconds to guarantee event ordering
         clock.tick(5000);
 
         const after = new Date();
