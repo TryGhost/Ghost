@@ -10936,10 +10936,10 @@ elliptic@^6.5.3, elliptic@^6.5.4:
     minimalistic-assert "^1.0.1"
     minimalistic-crypto-utils "^1.0.1"
 
-ember-ajax@5.1.1:
-  version "5.1.1"
-  resolved "https://registry.yarnpkg.com/ember-ajax/-/ember-ajax-5.1.1.tgz#9407417664d3c5cf089a7832a930d0850dd1cc21"
-  integrity sha512-CqGkiww9X1LfUyD4E9M18Yi8R4QumD7Ix3Cj2A+cf9QWAJ3uB9IquB4FFK5lW0hKbutsvOFxPd3PL+UO8M/1sQ==
+ember-ajax@5.1.2:
+  version "5.1.2"
+  resolved "https://registry.yarnpkg.com/ember-ajax/-/ember-ajax-5.1.2.tgz#75c1f85e5af223d4aadb3e57f6226cfe7c4d08b2"
+  integrity sha512-4pMrrJjZGpEGQEChWZ1+YO9TZocpjUVk2VdNv6nBgkU+C3UOYUkdzyeinWz5JLmRTL0ktrA6/EU9H+H0hsMgsQ==
   dependencies:
     ember-cli-babel "^7.5.0"
     najax "^1.0.7"
