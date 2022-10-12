@@ -11117,10 +11117,10 @@ ember-basic-dropdown@^6.0.0:
     ember-style-modifier "^0.8.0"
     ember-truth-helpers "^2.1.0 || ^3.0.0"
 
-ember-classic-decorator@3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/ember-classic-decorator/-/ember-classic-decorator-3.0.0.tgz#9e31c50c40c060d23d15653cdf260f78b6cdef2a"
-  integrity sha512-nCCO3d06c27l1vj4P54xLYk8AwrzSlFFGX8MZmfFl/xZ9LDY0V8OphAmO9PsaYEbBkjmtUy+h9vG2Lg9qVij+g==
+ember-classic-decorator@3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/ember-classic-decorator/-/ember-classic-decorator-3.0.1.tgz#13acf53e5fdb1f867919765853eb3592380ed1ef"
+  integrity sha512-IoocHPX1cY93Sma7VeDGbF0M1+TkBWDJLus+RD01902eD+KHEL2+diwM+iayCyO+1/xaUzdzNGh35J+i+TCxoA==
   dependencies:
     "@embroider/macros" "^1.0.0"
     babel-plugin-filter-imports "^4.0.0"
