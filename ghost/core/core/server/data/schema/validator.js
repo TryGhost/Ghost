@@ -63,7 +63,7 @@ function validateSchema(tableName, model, options) {
 
         // validate boolean columns
         if (Object.prototype.hasOwnProperty.call(schema[tableName][columnKey], 'type')
-            && (schema[tableName][columnKey].type === 'bool' || schema[tableName][columnKey].type === 'boolean')) {
+            && schema[tableName][columnKey].type === 'boolean') {
             if (!(validator.isBoolean(strVal) || validator.isEmpty(strVal))) {
                 message = tpl(messages.valueMustBeBoolean, {
                     tableName: tableName,

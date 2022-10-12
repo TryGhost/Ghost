@@ -64,16 +64,6 @@ describe('Validate Schema', function () {
             );
         });
 
-        it('transforms 0 and 1 (bool)', function () {
-            const post = models.Post.forge(testUtils.DataGenerator.forKnex.createPost({slug: 'test', featured: 0}));
-            post.get('featured').should.eql(0);
-
-            return validateSchema('posts', post, {method: 'insert'})
-                .then(function () {
-                    post.get('featured').should.eql(false);
-                });
-        });
-
         it('transforms 0 and 1 (boolean)', async function () {
             const user = models.User.forge(testUtils.DataGenerator.forKnex.createUser({email: 'test@example.com', comment_notifications: 0}));
             user.get('comment_notifications').should.eql(0);

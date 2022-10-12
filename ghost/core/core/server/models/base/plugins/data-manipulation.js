@@ -78,7 +78,7 @@ module.exports = function (Bookshelf) {
             _.each(attrs, function each(value, key) {
                 const tableDef = schema.tables[self.tableName];
                 const columnDef = tableDef ? tableDef[key] : null;
-                if (columnDef && (columnDef.type === 'bool' || columnDef.type === 'boolean')) {
+                if (columnDef?.type === 'boolean') {
                     attrs[key] = value ? true : false;
                 }
             });
