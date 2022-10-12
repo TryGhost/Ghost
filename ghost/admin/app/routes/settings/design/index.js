@@ -15,9 +15,9 @@ export default class SettingsDesignIndexRoute extends AuthenticatedRoute {
 
     afterModel() {
         super.afterModel(...arguments);
-        let activeTheme = this.themes.findBy('active', true)
+        let activeTheme = this.themes.findBy('active', true);
         if (typeof activeTheme === 'undefined') {
-           return this.transitionTo('settings.design.no-theme');
+            return this.transitionTo('settings.design.no-theme');
         }
     }
 
