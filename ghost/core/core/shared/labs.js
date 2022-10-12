@@ -26,13 +26,13 @@ const GA_FEATURES = [
 //       input for the "labs" setting value
 const BETA_FEATURES = [
     'activitypub',
+    'sourceAttribution',
     'memberAttribution'
 ];
 
 const ALPHA_FEATURES = [
     'urlCache',
     'beforeAfterCard',
-    'sourceAttribution',
     'lexicalEditor',
     'exploreApp',
     'audienceFeedback',
