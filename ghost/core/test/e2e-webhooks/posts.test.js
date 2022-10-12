@@ -47,6 +47,17 @@ const buildPreviousPostSnapshotWithTiers = ({tiersCount}) => {
     };
 };
 
+const buildPreviousPostSnapshotForDeletedPost = () => {
+    return {
+        id: anyObjectId,
+        uuid: anyUuid,
+        comment_id: anyObjectId,
+        created_at: anyISODateTime,
+        updated_at: anyISODateTime,
+        authors: new Array(1).fill(buildAuthorSnapshot(true))
+    };
+};
+
 describe('post.* events', function () {
     let adminAPIAgent;
     let webhookMockReceiver;
@@ -151,6 +162,46 @@ describe('post.* events', function () {
                         //        see commit message for more context
                         roles: false
                     })
+                }
+            });
+    });
+
+    it('post.deleted event is triggered', async function () {
+        const webhookURL = 'https://test-webhook-receiver.com/post-deleted/';
+        await webhookMockReceiver.mock(webhookURL);
+        await fixtureManager.insertWebhook({
+            event: 'post.deleted',
+            url: webhookURL
+        });
+
+        const res = await adminAPIAgent
+            .post('posts/')
+            .body({
+                posts: [{
+                    title: 'testing post.deleted webhook',
+                    status: 'draft'
+                }]
+            })
+            .expectStatus(201);
+
+        const id = res.body.posts[0].id;
+
+        await adminAPIAgent
+            .delete('posts/' + id)
+            .expectStatus(204);
+
+        await webhookMockReceiver.receivedRequest();
+
+        webhookMockReceiver
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                'content-length': anyNumber,
+                'user-agent': anyGhostAgent
+            })
+            .matchBodySnapshot({
+                post: {
+                    current: {},
+                    previous: buildPreviousPostSnapshotForDeletedPost()
                 }
             });
     });
