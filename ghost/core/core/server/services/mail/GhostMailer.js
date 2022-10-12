@@ -7,6 +7,7 @@ const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const settingsCache = require('../../../shared/settings-cache');
 const urlUtils = require('../../../shared/url-utils');
+const metrics = require('@tryghost/metrics');
 const messages = {
     title: 'Ghost at {domain}',
     checkEmailConfigInstructions: 'Please see {url} for instructions on configuring email.',
@@ -83,7 +84,8 @@ module.exports = class GhostMailer {
         const options = config.get('mail') && _.clone(config.get('mail').options) || {};
 
         this.state = {
-            usingDirect: transport === 'direct'
+            usingDirect: transport === 'direct',
+            usingMailgun: transport === 'mailgun'
         };
         this.transport = nodemailer(transport, options);
     }
@@ -121,10 +123,24 @@ module.exports = class GhostMailer {
     }
 
     async sendMail(message) {
+        const startTime = Date.now();
         try {
             const response = await this.transport.sendMail(message);
+            if (this.state.usingMailgun) {
+                metrics.metric('mailgun-send-transactional-mail', {
+                    value: Date.now() - startTime,
+                    statusCode: 200
+                });
+            }
+
             return response;
         } catch (err) {
+            if (this.state.usingMailgun) {
+                metrics.metric('mailgun-send-transactional-mail', {
+                    value: Date.now() - startTime,
+                    statusCode: err.status
+                });
+            }
             throw createMailError({
                 message: tpl(messages.reason, {reason: err.message || err}),
                 err
