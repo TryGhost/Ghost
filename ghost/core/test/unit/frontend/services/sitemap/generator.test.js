@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const ObjectId = require('bson-objectid');
+const ObjectId = require('bson-objectid').default;
 const _ = require('lodash');
 const testUtils = require('../../../../utils');
 const urlUtils = require('../../../../../core/shared/url-utils');

@@ -1,5 +1,5 @@
 const should = require('should');
-const ObjectID = require('bson-objectid');
+const ObjectID = require('bson-objectid').default;
 const errors = require('../../../../lib/domain/errors');
 const Offer = require('../../../../lib/domain/models/Offer');
 const OfferName = require('../../../../lib/domain/models/OfferName');
