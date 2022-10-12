@@ -225,6 +225,22 @@ describe('Settings API', function () {
                 .expect(422);
         });
 
+        // If this test fails, it can be safely removed
+        // but the front-end should be updated accordingly, 
+        // removing the workaround in place for this specific usecase 
+        it('Cannot send an empty array', async function () {
+            const settingsToChange = {
+                settings: []
+            };
+
+            await request.put(localUtils.API.getApiQuery('settings/'))
+                .set('Origin', config.get('url'))
+                .send(settingsToChange)
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(400);
+        });
+
         it('Cannot edit notifications key through API', async function () {
             await checkCantEdit('notifications', JSON.stringify(['do not touch me']));
         });
