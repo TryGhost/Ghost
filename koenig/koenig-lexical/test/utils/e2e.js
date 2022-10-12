@@ -41,23 +41,25 @@ export async function focusEditor(page, parentSelector = '.koenig-lexical') {
 export async function assertHTML(
     page,
     expectedHtml,
-    {ignoreClasses = true, ignoreInlineStyles = true, ignoreInnerSVG = true} = {}
+    {ignoreClasses = true, ignoreInlineStyles = true, ignoreInnerSVG = true, ignoreBase64String = true} = {}
 ) {
     const actualHtml = await page.$eval('div[contenteditable="true"]', e => e.innerHTML);
     const actual = prettifyHTML(actualHtml.replace(/\n/gm, ''), {
         ignoreClasses,
         ignoreInlineStyles,
-        ignoreInnerSVG
+        ignoreInnerSVG,
+        ignoreBase64String
     });
     const expected = prettifyHTML(expectedHtml.replace(/\n/gm, ''), {
         ignoreClasses,
         ignoreInlineStyles,
-        ignoreInnerSVG
+        ignoreInnerSVG,
+        ignoreBase64String
     });
     expect(actual).toEqual(expected);
 }
 
-export function prettifyHTML(string, {ignoreClasses, ignoreInlineStyles, ignoreInnerSVG} = {}) {
+export function prettifyHTML(string, {ignoreClasses, ignoreInlineStyles, ignoreInnerSVG, ignoreBase64String} = {}) {
     let output = string;
 
     if (ignoreClasses) {
@@ -68,8 +70,11 @@ export function prettifyHTML(string, {ignoreClasses, ignoreInlineStyles, ignoreI
         output = output.replace(/\sstyle="([^"]*)"/g, '');
     }
     if (ignoreInnerSVG) {
-        // ignore content inside <svg> tags
         output = output.replace(/<svg[^>]*>.*<\/svg>/g, '<svg></svg>');
+    }
+
+    if (ignoreBase64String) {
+        output = output.replace(/src="data:image\/png;base64[^"]*"/g, 'src="data:image/png;"');
     }
 
     return prettier

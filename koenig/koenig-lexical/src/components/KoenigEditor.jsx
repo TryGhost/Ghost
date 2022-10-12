@@ -11,9 +11,12 @@ import FloatingFormatToolbarPlugin from '../plugins/FloatingFormatToolbarPlugin'
 import '../styles/index.css';
 import ImagePlugin from '../plugins/ImagePlugin';
 
+export let imageUploader;
+
 const KoenigEditor = ({
     onChange,
-    markdownTransformers
+    markdownTransformers,
+    imageUploadFunc
 }) => {
     const _onChange = React.useCallback((editorState) => {
         const json = editorState.toJSON();
@@ -21,6 +24,7 @@ const KoenigEditor = ({
     }, [onChange]);
 
     const containerRef = React.useRef(null);
+    imageUploader = imageUploadFunc || '';
 
     // we need an element reference for the container element that
     // any floating elements in plugins will be rendered inside
@@ -45,10 +49,12 @@ const KoenigEditor = ({
             <HistoryPlugin /> {/* adds undo/redo */}
             <ListPlugin /> {/* adds indent/outdent/remove etc support */}
             <KoenigBehaviourPlugin containerElem={containerRef} />
-            <MarkdownShortcutPlugin transformers={markdownTransformers} />
+            <MarkdownShortcutPlugin transformers={markdownTransformers} imageUploadFunc={imageUploadFunc} />
             <PlusCardMenuPlugin />
             {floatingAnchorElem && (<FloatingFormatToolbarPlugin anchorElem={floatingAnchorElem} />)}
-            <ImagePlugin />
+            <ImagePlugin 
+                imageUploadFunc={imageUploadFunc}
+            />
         </div>
     );
 };

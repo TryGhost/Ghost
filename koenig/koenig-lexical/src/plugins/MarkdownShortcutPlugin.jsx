@@ -96,6 +96,6 @@ export const DEFAULT_TRANSFORMERS = [
     ...TEXT_MATCH_TRANSFORMERS
 ];
 
-export default function MarkdownShortcutPlugin({transformers = DEFAULT_TRANSFORMERS}) {
+export default function MarkdownShortcutPlugin({transformers = DEFAULT_TRANSFORMERS} = {}) {
     return LexicalMarkdownShortcutPlugin({transformers});
 }

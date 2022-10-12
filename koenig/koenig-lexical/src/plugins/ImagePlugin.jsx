@@ -16,9 +16,8 @@ import {mergeRegister} from '@lexical/utils';
 
 export const INSERT_IMAGE_CMD = createCommand();
 
-export const ImagePlugin = () => {
+export const ImagePlugin = ({imageUploadFunc}) => {
     const [editor] = useLexicalComposerContext();
-
     React.useEffect(() => {
         if (!editor.hasNodes([ImageNode])){
             console.error('ImagePlugin: ImageNode not registered'); // eslint-disable-line no-console
@@ -43,10 +42,10 @@ export const ImagePlugin = () => {
                 return onDragOver(event);
             }, COMMAND_PRIORITY_HIGH),
             editor.registerCommand(DROP_COMMAND, (event) => {
-                return onDragDrop(event, editor);
+                return onDragDrop(event, editor, imageUploadFunc);
             }, COMMAND_PRIORITY_HIGH),
         );
-    }, [editor]);
+    }, [editor, imageUploadFunc]);
 
     return null;
 };
@@ -59,19 +58,12 @@ const onDragOver = (event) => {
     return true;
 };
 
-const onDragDrop = async (event, editor = LexicalEditor) => {
+const onDragDrop = async (event, editor = LexicalEditor, imageUploadFunc) => {
     event.preventDefault();
-    if (event.dataTransfer.files && event.dataTransfer.files[0]) {
-        const reader = new FileReader();
-        const file = event.dataTransfer.files[0];
-        reader.readAsDataURL(file);
-        reader.onload = () => {
-            const dataset = {
-                src: reader.result
-            };
-            editor.dispatchCommand(INSERT_IMAGE_CMD, dataset);
-            return dataset;
-        };
+    const fls = event.dataTransfer.files;
+    const files = await imageUploadFunc(fls);
+    if (files) {
+        editor.dispatchCommand(INSERT_IMAGE_CMD, files);
     }
 };
 

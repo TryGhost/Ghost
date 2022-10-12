@@ -4,6 +4,7 @@ import FloatingButton from './components/FloatingButton';
 import SerializedStateTextarea from './components/SerializedStateTextarea';
 import {useState} from 'react';
 import Watermark from './components/Watermark';
+import {imageUploader} from './utils/imageUploader';
 
 function DemoApp() {
     const [sidebarState, setSidebarState] = useState(false);
@@ -17,8 +18,9 @@ function DemoApp() {
                 <Watermark />
                 <div className="h-full grow overflow-auto">
                     <div className="mx-auto h-full max-w-2xl pt-[15vmin]">
-                        <KoenigEditor>
-                        </KoenigEditor>
+                        <KoenigEditor
+                            imageUploadFunc={imageUploader}
+                        />
                     </div>
                 </div>
                 <div className="flex h-full flex-col items-end">

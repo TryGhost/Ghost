@@ -1,10 +1,27 @@
-import React, {useState} from 'react';
+import React, {useState, useRef} from 'react';
 import {DecoratorNode, createEditor, $getNodeByKey} from 'lexical';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import {ReactComponent as ImgPlaceholderIcon} from '../assets/icons/kg-img-placeholder.svg';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import {imageUploader} from '../components/KoenigEditor';
 
-function MediaCard({payload, uploadImage}) {
+function MediaCard({dataset, editor, nodeKey}) {
+    const {payload, setPayload} = dataset;
+    const uploadRef = useRef(null);
+    const onUploadChange = async (e) => {
+        const fls = e.target.files;
+        const files = await imageUploader(fls);
+        editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            node.setSrc(files.src);
+            setPayload(node.getPayload());
+        });
+    }; 
+
+    const openUpload = () => {
+        uploadRef.current.click();
+    };
+
     if (payload?.__src) {
         return (
             <figure className="kg-card kg-image-card">
@@ -14,15 +31,24 @@ function MediaCard({payload, uploadImage}) {
         );
     } else {
         return (
-            <MediaPlaceholder onClick={uploadImage} desc="Click to select an image" Icon={ImgPlaceholderIcon} /> 
+            <>
+                <MediaPlaceholder onClick={openUpload} desc="Click to select an image" Icon={ImgPlaceholderIcon} />
+                <form onChange={onUploadChange}>
+                    <input
+                        name="image-input"
+                        type='file'
+                        accept='image/*'
+                        ref={uploadRef}
+                        hidden={true}
+                    />
+                </form>
+            </>
         );
     }
 }
 
 function ImageCard({nodeKey}) {
-    const [isActive, setActive] = useState(false);
     const [altText, setAltText] = useState(false);
-    // const [editAlt, setEditAlt] = React.useState(false);
     const [editor] = useLexicalComposerContext();
     const [payload, setPayload] = React.useState({});
 
@@ -34,28 +60,14 @@ function ImageCard({nodeKey}) {
         });
     }, [editor, nodeKey]);
 
-    const toggleActive = () => {
-        setActive(!isActive);
-    };
-
     const toggleAltText = (e) => {
         e.stopPropagation();
         setAltText(!altText);
     };
 
-    const staticImage = 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2370&q=80';
-    const uploadImage = () => {
-        editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
-            node.setSrc(staticImage);
-            setPayload(node.getPayload());
-        });
-    };
     return (
-        <div 
-            className={`border border-transparent ${isActive ? 'shadow-[0_0_0_2px_#30cf43]' : 'hover:shadow-[0_0_0_1px_#30cf43]'}`}
-            onClick={toggleActive}>
-            <MediaCard payload={payload} editor={editor} uploadImage={uploadImage} />
+        <div>
+            <MediaCard dataset={{payload, setPayload}} editor={editor} nodeKey={nodeKey} />
             <CaptionEditor placeholder="Type caption for image (optional)" />     
             <button 
                 className={`absolute bottom-0 right-0 m-3 cursor-pointer rounded border px-1 text-[1.3rem] font-normal leading-7 tracking-wide transition-all duration-100 ${altText ? 'border-green bg-green text-white' : 'border-grey text-grey' } `}
@@ -71,20 +83,12 @@ function MediaPlaceholder({desc, Icon, ...props}) {
         <div className="relative">
             <figure className="cursor-pointer border border-transparent" {...props}>
                 <div className="h-100 relative flex items-center justify-center border border-grey-100 bg-grey-50 before:pb-[62.5%]">
-                    <button className="group flex flex-col items-center justify-center p-20">
+                    <button name="placeholder-button" className="group flex flex-col items-center justify-center p-20">
                         <Icon className="h-32 w-32 opacity-80 transition-all ease-linear group-hover:scale-105 group-hover:opacity-100" />
                         <p className="mt-4 text-sm font-normal text-grey-700 group-hover:text-grey-800">{desc}</p>
                     </button>
                 </div>
             </figure>
-            <form>
-                <input
-                    type='file'
-                    accept='image/*'
-                    name="image"
-                    hidden={true}
-                />
-            </form>
         </div>
     );
 }
