@@ -1,6 +1,6 @@
 const logging = require('@tryghost/logging');
 const {createTransactionalMigration} = require('../../utils');
-const ObjectId = require('bson-objectid');
+const ObjectId = require('bson-objectid').default;
 
 // newsletter_show_header = false ->
 //   newsletter_show_header_title = false

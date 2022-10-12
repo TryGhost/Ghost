@@ -3,7 +3,7 @@ const {anyEtag, anyErrorId} = matchers;
 const assert = require('assert');
 
 // @TODO: factor out these requires
-const ObjectId = require('bson-objectid');
+const ObjectId = require('bson-objectid').default;
 const testUtils = require('../../utils');
 const models = require('../../../core/server/models/index');
 
