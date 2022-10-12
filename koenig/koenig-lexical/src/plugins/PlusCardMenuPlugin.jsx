@@ -3,19 +3,16 @@ import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {ReactComponent as PlusIcon} from '../assets/icons/plus.svg';
 import {$getSelection, $isParagraphNode, $isRangeSelection} from 'lexical';
 import {getSelectedNode} from '../utils/getSelectedNode';
+import CardMenu from '../components/CardMenu';
 
-function PlusButton({topPosition}) {
-    const style = {
-        top: `${topPosition - 2}px`,
-        left: '-66px'
-    };
-
+function PlusButton({onClick}) {
     return (
-        <div className="absolute" style={style} data-kg-plus-button>
+        <div className="absolute top-[-2px] left-[-66px]" data-kg-plus-button>
             <button
                 type="button"
                 aria-label="Add a card"
                 className="group relative flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border border-grey bg-white transition-all ease-linear hover:border-grey-900 md:h-9 md:w-9"
+                onClick={onClick}
             >
                 <PlusIcon className="h-4 w-4 stroke-grey-800 stroke-2 group-hover:stroke-grey-900" />
             </button>
@@ -23,9 +20,20 @@ function PlusButton({topPosition}) {
     );
 }
 
+function PlusMenu() {
+    return (
+        <div className="absolute left-[-16px]" data-kg-plus-menu>
+            <CardMenu />
+        </div>
+    );
+}
+
 function usePlusCardMenu(editor) {
-    const [showButton, setShowButton] = React.useState(false);
+    const [isShowingButton, setIsShowingButton] = React.useState(false);
+    const [isShowingMenu, setIsShowingMenu] = React.useState(false);
     const [topPosition, setTopPosition] = React.useState(0);
+    const [cachedRange, setCachedRange] = React.useState(null);
+    const containerRef = React.useRef(null);
 
     function getTopPosition(elem) {
         const elemRect = elem.getBoundingClientRect();
@@ -33,6 +41,46 @@ function usePlusCardMenu(editor) {
 
         return elemRect.top - containerRect.top;
     }
+
+    function getElementRange(elem) {
+        const range = new Range();
+        range.setStart(elem, 0);
+        range.setEnd(elem, 0);
+        return range;
+    }
+
+    const moveCursorToCachedRange = React.useCallback(() => {
+        if (!cachedRange) {
+            return;
+        }
+        document.getSelection().removeAllRanges();
+        document.getSelection().addRange(cachedRange);
+    }, [cachedRange]);
+
+    const showButton = React.useCallback((elem) => {
+        const range = getElementRange(elem);
+        setCachedRange(range);
+        setIsShowingButton(true);
+    }, [setIsShowingButton, setCachedRange]);
+
+    const hideButton = React.useCallback(() => {
+        setIsShowingButton(false);
+        setIsShowingMenu(false);
+        setCachedRange(null);
+    }, [setIsShowingButton, setIsShowingMenu, setCachedRange]);
+
+    const openMenu = React.useCallback((event) => {
+        event?.preventDefault();
+        moveCursorToCachedRange();
+        setIsShowingMenu(true);
+    }, [moveCursorToCachedRange, setIsShowingMenu]);
+
+    const closeMenu = React.useCallback(({resetCursor = false} = {}) => {
+        if (resetCursor) {
+            moveCursorToCachedRange();
+        }
+        setIsShowingMenu(false);
+    }, [moveCursorToCachedRange, setIsShowingMenu]);
 
     const updateButton = React.useCallback(() => {
         editor.getEditorState().read(() => {
@@ -44,14 +92,14 @@ function usePlusCardMenu(editor) {
             const selection = $getSelection();
 
             if (!$isRangeSelection(selection) || !selection.type === 'text' || !selection.isCollapsed()) {
-                setShowButton(false);
+                hideButton();
                 return;
             }
 
             const node = getSelectedNode(selection);
 
             if (!$isParagraphNode(node) || node.getTextContent() !== '') {
-                setShowButton(false);
+                hideButton();
                 return;
             }
 
@@ -60,14 +108,14 @@ function usePlusCardMenu(editor) {
             const rootElement = editor.getRootElement();
 
             if (p?.tagName !== 'P' || !rootElement.contains(p)) {
-                setShowButton(false);
+                hideButton();
                 return;
             }
 
             setTopPosition(getTopPosition(p));
-            setShowButton(true);
+            showButton(p);
         });
-    }, [editor, setShowButton]);
+    }, [editor, showButton, hideButton]);
 
     React.useEffect(() => {
         return editor.registerUpdateListener(() => {
@@ -79,15 +127,22 @@ function usePlusCardMenu(editor) {
     // editor canvas - any click outside makes a selection so no need for
     // additional mouse tracking for this
     const hideButtonOnOutsideSelection = React.useCallback(() => {
-        if (showButton) {
+        if (isShowingButton) {
             const nativeSelection = window.getSelection();
+
+            // clicking inside the menu changes native selection, we don't want
+            // to close the menu when that occurs
+            if (isShowingMenu && containerRef.current?.contains(nativeSelection.anchorNode)) {
+                return;
+            }
+
             const rootElement = editor.getRootElement();
 
             if (!rootElement.contains(nativeSelection.anchorNode)) {
-                setShowButton(false);
+                hideButton();
             }
         }
-    }, [editor, showButton, setShowButton]);
+    }, [editor, isShowingButton, isShowingMenu, hideButton]);
 
     React.useEffect(() => {
         document.addEventListener('selectionchange', hideButtonOnOutsideSelection);
@@ -98,9 +153,8 @@ function usePlusCardMenu(editor) {
 
     // show or move the button when the mouse moves over a blank paragraph
     const updateButtonOnMousemove = React.useCallback((event) => {
-        // do not show the button if we're dragging a selection
-        if (event.buttons !== 0) {
-            setShowButton(false);
+        // once the menu is open moving the mouse should not have any effect on button/menu positioning
+        if (isShowingMenu) {
             return;
         }
 
@@ -128,13 +182,13 @@ function usePlusCardMenu(editor) {
             if (hoveredElem?.tagName === 'P' && hoveredElem.textContent === '') {
                 // place cursor next to the hovered paragraph
                 setTopPosition(getTopPosition(hoveredElem));
-                setShowButton(true);
+                showButton(hoveredElem);
             } else {
-                // reset cursor based on caret position
+                // reset button based on cursor position
                 updateButton();
             }
         }
-    }, [editor, setTopPosition, setShowButton, updateButton]);
+    }, [editor, isShowingMenu, setTopPosition, showButton, updateButton]);
 
     React.useEffect(() => {
         window.addEventListener('mousemove', updateButtonOnMousemove);
@@ -143,10 +197,54 @@ function usePlusCardMenu(editor) {
         };
     }, [updateButtonOnMousemove]);
 
+    // when menu is open, watch the window for mousedown events so that we can
+    // close it when we detect a click outside
+    const closeMenuOnClickOutside = React.useCallback((event) => {
+        if (isShowingMenu) {
+            if (!containerRef.current?.contains(event.target)) {
+                return closeMenu();
+            }
+        }
+    }, [isShowingMenu, closeMenu]);
+
+    React.useEffect(() => {
+        window.addEventListener('mousedown', closeMenuOnClickOutside);
+        return () => {
+            window.removeEventListener('mousedown', closeMenuOnClickOutside);
+        };
+    }, [closeMenuOnClickOutside]);
+
+    // when menu is open, close it when Escape or arrow keys are pressed
+    const handleKeydown = React.useCallback((event) => {
+        if (isShowingMenu) {
+            if (event.key === 'Escape') {
+                closeMenu({resetCursor: true});
+                return;
+            }
+
+            let arrowKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+            if (arrowKeys.includes(event.key)) {
+                closeMenu();
+            }
+        }
+    }, [isShowingMenu, closeMenu]);
+
+    React.useEffect(() => {
+        window.addEventListener('keydown', handleKeydown);
+        return () => {
+            window.removeEventListener('keydown', handleKeydown);
+        };
+    });
+
+    const style = {
+        top: `${topPosition}px`
+    };
+
     return (
-        <>
-            {showButton && <PlusButton topPosition={topPosition} />}
-        </>
+        <div className="absolute" style={style} ref={containerRef} data-kg-plus-container>
+            {isShowingButton && <PlusButton onClick={openMenu} />}
+            {isShowingMenu && <PlusMenu />}
+        </div>
     );
 }
 

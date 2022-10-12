@@ -190,4 +190,122 @@ describe('Plus button', async () => {
             await assertPosition(page, '[data-kg-plus-button]', {y: pHandle3Box.y}, {threshold: 5});
         });
     });
+
+    describe('menu', function () {
+        it('opens on button click', async function () {
+            await focusEditor(page);
+            expect(await page.$('[data-kg-plus-menu]')).toBeNull();
+            await page.click('[data-kg-plus-button]');
+            expect(await page.$('[data-kg-plus-menu]')).not.toBeNull();
+        });
+
+        it('closes on click outside', async function () {
+            await focusEditor(page);
+            await page.click('[data-kg-plus-button]');
+            expect(await page.$('[data-kg-plus-menu]')).not.toBeNull();
+            await page.click('.koenig-lexical');
+            expect(await page.$('[data-kg-plus-menu]')).toBeNull();
+        });
+
+        it('does not close on click inside', async function () {
+            await focusEditor(page);
+            await page.click('[data-kg-plus-button]');
+            await page.click('[data-kg-plus-menu] > div > div');
+            expect(await page.$('[data-kg-plus-menu]')).not.toBeNull();
+        });
+
+        it('closes on escape', async function () {
+            await focusEditor(page);
+            await page.click('[data-kg-plus-button]');
+            expect(await page.$('[data-kg-plus-menu]')).not.toBeNull();
+            await page.keyboard.press('Escape');
+            expect(await page.$('[data-kg-plus-menu]')).toBeNull();
+        });
+
+        it('does not move on empty p mouseover when open', async function () {
+            await focusEditor(page);
+            await page.keyboard.press('Enter');
+            await page.keyboard.press('Enter');
+
+            const p1 = await page.$('[data-lexical-editor] > p:nth-of-type(1)');
+            const p3 = await page.$('[data-lexical-editor] > p:nth-of-type(3)');
+            const p3Box = await p3.boundingBox();
+
+            await assertPosition(page, '[data-kg-plus-button]', {y: p3Box.y}, {threshold: 5});
+
+            await page.click('[data-kg-plus-button]');
+
+            expect(await page.$('[data-kg-plus-menu]')).not.toBeNull();
+            await assertPosition(page, '[data-kg-plus-menu]', {y: p3Box.y}, {threshold: 5});
+
+            await p1.hover();
+
+            await assertPosition(page, '[data-kg-plus-button]', {y: p3Box.y}, {threshold: 5});
+            await assertPosition(page, '[data-kg-plus-menu]', {y: p3Box.y}, {threshold: 5});
+        });
+
+        it('moves cursor when opening', async function () {
+            await focusEditor(page);
+            await page.keyboard.press('Enter');
+
+            await assertSelection(page, {
+                anchorOffset: 0,
+                anchorPath: [1],
+                focusOffset: 0,
+                focusPath: [1]
+            });
+
+            const p1 = await page.$('[data-lexical-editor] > p:nth-of-type(1)');
+            await p1.hover();
+            await page.click('[data-kg-plus-button]');
+
+            await assertSelection(page, {
+                anchorOffset: 0,
+                anchorPath: [0],
+                focusOffset: 0,
+                focusPath: [0]
+            });
+        });
+
+        it('closes when typing', async function () {
+            await focusEditor(page);
+            await page.click('[data-kg-plus-button]');
+            expect(await page.$('[data-kg-plus-menu]')).not.toBeNull();
+
+            await page.keyboard.type('Test');
+            expect(await page.$('[data-kg-plus-menu]')).toBeNull();
+            expect(await page.$eval('[data-lexical-editor] > p', p => p.innerText))
+                .toBe('Test');
+        });
+
+        it('closes and moves focus on up/down', async function () {
+            await focusEditor(page);
+            await page.keyboard.press('Enter');
+            await page.click('[data-kg-plus-button');
+            expect(await page.$('[data-kg-plus-menu]')).not.toBeNull();
+
+            await assertSelection(page, {
+                anchorOffset: 0,
+                anchorPath: [1],
+                focusOffset: 0,
+                focusPath: [1]
+            });
+
+            await page.keyboard.press('ArrowUp');
+
+            expect(await page.$('[data-kg-plus-menu]')).toBeNull();
+            expect(await page.$('[data-kg-plus-button]')).not.toBeNull();
+
+            await assertSelection(page, {
+                anchorOffset: 0,
+                anchorPath: [0],
+                focusOffset: 0,
+                focusPath: [0]
+            });
+
+            const p1 = await page.$('[data-lexical-editor] > p');
+            const p1Box = await p1.boundingBox();
+            await assertPosition(page, '[data-kg-plus-button]', {y: p1Box.y}, {threshold: 5});
+        });
+    });
 });
