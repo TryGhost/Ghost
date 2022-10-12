@@ -38,12 +38,6 @@ describe('site.* events', function () {
             })
             .expectStatus(201);
 
-        const id = res.body.posts[0].id;
-
-        await adminAPIAgent
-            .delete('posts/' + id)
-            .expectStatus(204);
-
         await webhookMockReceiver.receivedRequest();
 
         webhookMockReceiver
