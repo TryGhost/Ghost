@@ -7,10 +7,6 @@ const VALID_KEYS = {
     bigInteger: [
         'nullable'
     ],
-    bool: [
-        'nullable',
-        'defaultTo'
-    ],
     boolean: [
         'nullable',
         'defaultTo'
