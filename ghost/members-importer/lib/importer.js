@@ -69,7 +69,7 @@ module.exports = class MembersCSVImporter {
      * - Creates a MemberImport Job and associated MemberImportBatch's
      *
      * @param {string} inputFilePath - The path to the CSV to prepare
-     * @param {Object.<string, string>} headerMapping - An object whos keys are headers in the input CSV and values are the header to replace it with
+     * @param {Object.<string, string>} headerMapping - An object whose keys are headers in the input CSV and values are the header to replace it with
      * @param {Array<string>} defaultLabels - A list of labels to apply to every member
      *
      * @returns {Promise<{id: JobID, batches: number, metadata: Object.<string, any>}>} - A promise resolving to the id of the MemberImport Job
