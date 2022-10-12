@@ -3286,13 +3286,13 @@
   resolved "https://registry.yarnpkg.com/@panva/asn1.js/-/asn1.js-1.0.0.tgz#dd55ae7b8129e02049f009408b97c61ccf9032f6"
   integrity sha512-UdkG3mLEqXgnlKsWanWcgb6dOjUzJ+XC5f+aWw30qrtjxeNUSfKX1cd5FBzOaXQumoe9nIqeZUvrRJS03HCCtw==
 
-"@playwright/test@1.27.0":
-  version "1.27.0"
-  resolved "https://registry.yarnpkg.com/@playwright/test/-/test-1.27.0.tgz#a5327a4823837a718ae6fad9b1e5ff520927e834"
-  integrity sha512-L4BswoJvGkFsEHhEgzVNHBnkFB1FbnBQn3QmvTl7+AouoJQ4a8tLwZKvytdovCsNi7B5cXuRo58yGvfM5PnExw==
+"@playwright/test@1.27.1":
+  version "1.27.1"
+  resolved "https://registry.yarnpkg.com/@playwright/test/-/test-1.27.1.tgz#9364d1e02021261211c8ff586d903faa79ce95c4"
+  integrity sha512-mrL2q0an/7tVqniQQF6RBL2saskjljXzqNcCOVMUjRIgE6Y38nCNaP+Dc2FBW06bcpD3tqIws/HT9qiMHbNU0A==
   dependencies:
     "@types/node" "*"
-    playwright-core "1.27.0"
+    playwright-core "1.27.1"
 
 "@pmmmwh/react-refresh-webpack-plugin@^0.5.3":
   version "0.5.7"
@@ -20799,10 +20799,10 @@ pkg-up@^3.1.0:
   dependencies:
     find-up "^3.0.0"
 
-playwright-core@1.27.0:
-  version "1.27.0"
-  resolved "https://registry.yarnpkg.com/playwright-core/-/playwright-core-1.27.0.tgz#e5f9d2bc19ebdd9581a01e74f019bb91aa7cf55d"
-  integrity sha512-VBKaaFUVKDo3akW+o4DwbK1ZyXh46tcSwQKPK3lruh8IJd5feu55XVZx4vOkbb2uqrNdIF51sgsadYT533SdpA==
+playwright-core@1.27.1:
+  version "1.27.1"
+  resolved "https://registry.yarnpkg.com/playwright-core/-/playwright-core-1.27.1.tgz#840ef662e55a3ed759d8b5d3d00a5f885a7184f4"
+  integrity sha512-9EmeXDncC2Pmp/z+teoVYlvmPWUC6ejSSYZUln7YaP89Z6lpAaiaAnqroUt/BoLo8tn7WYShcfaCh+xofZa44Q==
 
 pluralize@8.0.0, pluralize@^8.0.0:
   version "8.0.0"
