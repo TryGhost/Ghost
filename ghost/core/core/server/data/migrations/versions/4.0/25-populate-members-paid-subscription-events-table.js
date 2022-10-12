@@ -1,5 +1,5 @@
 const {chunk} = require('lodash');
-const ObjectID = require('bson-objectid');
+const ObjectID = require('bson-objectid').default;
 const {createTransactionalMigration} = require('../../utils');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');

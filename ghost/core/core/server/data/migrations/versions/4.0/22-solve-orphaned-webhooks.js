@@ -1,6 +1,6 @@
 const {createIrreversibleMigration} = require('../../utils');
 const logging = require('@tryghost/logging');
-const ObjectID = require('bson-objectid');
+const ObjectID = require('bson-objectid').default;
 const security = require('@tryghost/security');
 
 module.exports = createIrreversibleMigration(

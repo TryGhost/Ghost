@@ -1,4 +1,4 @@
-const ObjectId = require('bson-objectid');
+const ObjectId = require('bson-objectid').default;
 const uuid = require('uuid');
 const logging = require('@tryghost/logging');
 const startsWith = require('lodash/startsWith');

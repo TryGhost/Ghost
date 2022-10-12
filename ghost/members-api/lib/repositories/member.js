@@ -4,7 +4,7 @@ const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const DomainEvents = require('@tryghost/domain-events');
 const {MemberCreatedEvent, SubscriptionCreatedEvent, MemberSubscribeEvent, SubscriptionCancelledEvent} = require('@tryghost/member-events');
-const ObjectId = require('bson-objectid');
+const ObjectId = require('bson-objectid').default;
 const {NotFoundError} = require('@tryghost/errors');
 
 const messages = {

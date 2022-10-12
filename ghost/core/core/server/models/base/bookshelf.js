@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const bookshelf = require('bookshelf');
-const ObjectId = require('bson-objectid');
+const ObjectId = require('bson-objectid').default;
 const plugins = require('@tryghost/bookshelf-plugins');
 const Promise = require('bluebird');
 

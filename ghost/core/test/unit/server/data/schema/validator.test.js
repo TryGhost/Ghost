@@ -1,6 +1,6 @@
 const should = require('should');
 const _ = require('lodash');
-const ObjectId = require('bson-objectid');
+const ObjectId = require('bson-objectid').default;
 const testUtils = require('../../../../utils');
 const models = require('../../../../../core/server/models');
 

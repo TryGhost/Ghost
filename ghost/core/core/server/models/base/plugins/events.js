@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('models:base:model-events');
-const ObjectId = require('bson-objectid');
+const ObjectId = require('bson-objectid').default;
 
 const schema = require('../../../data/schema');
 

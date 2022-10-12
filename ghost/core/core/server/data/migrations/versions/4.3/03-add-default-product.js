@@ -1,5 +1,5 @@
 const {createTransactionalMigration} = require('../../utils');
-const ObjectID = require('bson-objectid');
+const ObjectID = require('bson-objectid').default;
 const {slugify} = require('@tryghost/string');
 const logging = require('@tryghost/logging');
 

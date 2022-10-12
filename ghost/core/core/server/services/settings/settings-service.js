@@ -13,7 +13,7 @@ const mail = require('../mail');
 const SingleUseTokenProvider = require('../members/SingleUseTokenProvider');
 const urlUtils = require('../../../shared/url-utils');
 
-const ObjectId = require('bson-objectid');
+const ObjectId = require('bson-objectid').default;
 const settingsHelpers = require('../settings-helpers');
 
 const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;

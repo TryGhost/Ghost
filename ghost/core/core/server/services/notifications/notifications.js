@@ -5,7 +5,7 @@ const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const ghostVersion = require('@tryghost/version');
 const tpl = require('@tryghost/tpl');
-const ObjectId = require('bson-objectid');
+const ObjectId = require('bson-objectid').default;
 
 const messages = {
     noPermissionToDismissNotif: 'You do not have permission to dismiss this notification.',

@@ -1,7 +1,7 @@
 require('should');
 const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
 const moment = require('moment');
-const ObjectId = require('bson-objectid');
+const ObjectId = require('bson-objectid').default;
 const models = require('../../../core/server/models');
 const sinon = require('sinon');
 const assert = require('assert');

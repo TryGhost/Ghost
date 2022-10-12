@@ -3,7 +3,7 @@
  */
 const _ = require('lodash');
 
-const ObjectId = require('bson-objectid');
+const ObjectId = require('bson-objectid').default;
 const db = require('../../../../core/server/data/db');
 const markdownToMobiledoc = require('../data-generator').markdownToMobiledoc;
 const data = {};

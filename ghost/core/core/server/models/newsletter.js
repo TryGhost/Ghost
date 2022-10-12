@@ -1,5 +1,5 @@
 const ghostBookshelf = require('./base');
-const ObjectID = require('bson-objectid');
+const ObjectID = require('bson-objectid').default;
 const uuid = require('uuid');
 const urlUtils = require('../../shared/url-utils');
 

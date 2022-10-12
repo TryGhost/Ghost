@@ -1,6 +1,6 @@
 const debug = require('@tryghost/debug')('themes');
 const fs = require('fs-extra');
-const ObjectID = require('bson-objectid');
+const ObjectID = require('bson-objectid').default;
 
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
