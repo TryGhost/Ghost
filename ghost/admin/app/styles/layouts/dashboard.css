@@ -1108,6 +1108,7 @@ Dashboard Attribution */
 
 .gh-dashboard-attribution .gh-dashboard-list-title-sources {
     opacity: 0;
+    cursor: default !important;
 }
 
 .gh-dashboard-attribution .gh-dashboard-list-item-sub-source {
