@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "@tryghost/domain-events": "0.0.0",
-    "@tryghost/errors": "1.2.17",
+    "@tryghost/errors": "1.2.18",
     "@tryghost/logging": "2.3.2",
     "@tryghost/magic-link": "0.0.0",
     "@tryghost/member-analytics-service": "0.0.0",
