@@ -93,12 +93,28 @@ describe('Generators', function () {
 
         describe('fn: getXml', function () {
             it('default', function () {
+                generator.types.posts.addUrl('http://my-ghost-blog.com/episode-1/', {id: 'identifier1', staticRoute: true});
+                generator.types.pages.addUrl('http://my-ghost-blog.com/home/', {id: 'identifier1', staticRoute: true});
+                generator.types.tags.addUrl('http://my-ghost-blog.com/home/', {id: 'identifier1', staticRoute: true});
+                generator.types.authors.addUrl('http://my-ghost-blog.com/home/', {id: 'identifier1', staticRoute: true});
+    
                 const xml = generator.getXml();
 
                 xml.should.match(/sitemap-tags.xml/);
                 xml.should.match(/sitemap-posts.xml/);
                 xml.should.match(/sitemap-pages.xml/);
                 xml.should.match(/sitemap-authors.xml/);
+            });
+
+            it('does not create entries for pages with no content', function () {
+                generator.types.tags.addUrl('http://my-ghost-blog.com/episode-1/', {id: 'identifier1', staticRoute: true});
+    
+                const xml = generator.getXml();
+
+                xml.should.match(/sitemap-tags.xml/);
+                xml.should.not.match(/sitemap-posts.xml/);
+                xml.should.not.match(/sitemap-pages.xml/);
+                xml.should.not.match(/sitemap-authors.xml/);
             });
 
             it('creates multiple pages when there are too many posts', function () {
