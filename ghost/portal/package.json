@@ -81,7 +81,7 @@
     "chokidar": "3.5.3",
     "copy-webpack-plugin": "11.0.0",
     "minimist": "1.2.7",
-    "ora": "5.4.1",
+    "ora": "6.1.2",
     "rewire": "6.0.0",
     "serve-handler": "6.1.3",
     "source-map-explorer": "2.5.3",
