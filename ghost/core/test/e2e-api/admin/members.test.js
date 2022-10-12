@@ -1,6 +1,6 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyEtag, anyObjectId, anyUuid, anyISODateTime, anyISODate, anyString, anyArray, anyLocationFor, anyContentLength, anyErrorId, anyObject} = matchers;
-const ObjectId = require('bson-objectid');
+const ObjectId = require('bson-objectid').default;
 
 const assert = require('assert');
 const nock = require('nock');
@@ -1726,7 +1726,7 @@ describe('Members API', function () {
             }]
         });
 
-        // Wait 5 second sto guarantee event ordering
+        // Wait 5 seconds to guarantee event ordering
         clock.tick(5000);
 
         const after = new Date();
@@ -1943,6 +1943,106 @@ describe('Members API', function () {
             .matchHeaderSnapshot({
                 etag: anyEtag
             });
+    });
+
+    it('Can edit a subscription', async function () {
+        const memberId = testUtils.DataGenerator.Content.members[1].id;
+        const price = testUtils.DataGenerator.Content.stripe_prices[0];
+        const stripeCustomerId = 'cus_GbEMMOZNVrL450';
+        const stripeSubscriptionId = 'sub_K1cBgJt6sCMu5n';
+
+        const stripeSubscriptionFixture = ({status = 'active'} = {}) => {
+            const now = Math.floor(Date.now() / 1000);
+            return {
+                id: stripeSubscriptionId,
+                customer: stripeCustomerId,
+                cancel_at_period_end: false,
+                items: {
+                    data: [{
+                        price: {
+                            id: price.stripe_price_id,
+                            recurring: {
+                                interval: price.interval
+                            },
+                            unit_amount: price.amount,
+                            currency: price.currency.toLowerCase()
+                        }
+                    }]
+                },
+                status: status,
+                current_period_end: now + 24 * 3600,
+                start_date: now
+            };
+        };
+
+        nock('https://api.stripe.com:443')
+            .post('/v1/customers')
+            .reply(200, {
+                id: `cus_GbEMMOZNVrL450`,
+                email: 'member1@test.com'
+            });
+
+        nock('https://api.stripe.com:443')
+            .get(`/v1/subscriptions/${stripeSubscriptionId}`)
+            .reply(200, stripeSubscriptionFixture());
+
+        nock('https://api.stripe.com:443')
+            .post('/v1/subscriptions')
+            .reply(200, stripeSubscriptionFixture());
+
+        const res = await agent
+            .post(`/members/${memberId}/subscriptions/`)
+            .body({
+                stripe_price_id: price.id
+            })
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: new Array(1).fill({
+                    id: anyObjectId,
+                    uuid: anyUuid,
+                    created_at: anyISODateTime,
+                    updated_at: anyISODateTime,
+                    labels: anyArray,
+                    subscriptions: [subscriptionSnapshot],
+                    newsletters: anyArray
+                })
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+
+        const subscriptionId = res.body.members[0].subscriptions[0].id;
+
+        nock('https://api.stripe.com:443')
+            .delete(`/v1/subscriptions/${stripeSubscriptionId}`)
+            .reply(200, stripeSubscriptionFixture({status: 'canceled'}));
+
+        nock('https://api.stripe.com:443')
+            .get(`/v1/subscriptions/${stripeSubscriptionId}`)
+            .reply(200, stripeSubscriptionFixture({status: 'canceled'}));
+
+        const editRes = await agent
+            .put(`/members/${memberId}/subscriptions/${subscriptionId}`)
+            .body({
+                status: 'canceled'
+            })
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: new Array(1).fill({
+                    id: anyObjectId,
+                    uuid: anyUuid,
+                    created_at: anyISODateTime,
+                    updated_at: anyISODateTime,
+                    labels: anyArray,
+                    subscriptions: [subscriptionSnapshot],
+                    newsletters: anyArray
+                })
+            })
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            });
+
+        assert.equal('canceled', editRes.body.members[0].subscriptions[0].status);
     });
 
     // Delete a member

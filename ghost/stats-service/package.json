@@ -32,6 +32,6 @@
     "sqlite3": "5.1.2"
   },
   "dependencies": {
-    "moment": "^2.29.3"
+    "moment": "2.29.3"
   }
 }

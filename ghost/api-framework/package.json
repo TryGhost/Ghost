@@ -26,8 +26,8 @@
   },
   "dependencies": {
     "@tryghost/debug": "0.1.18",
-    "@tryghost/errors": "1.2.17",
-    "@tryghost/promise": "0.1.21",
+    "@tryghost/errors": "1.2.18",
+    "@tryghost/promise": "0.1.22",
     "@tryghost/tpl": "0.1.18",
     "@tryghost/validator": "0.1.29",
     "jsonpath": "1.1.1",

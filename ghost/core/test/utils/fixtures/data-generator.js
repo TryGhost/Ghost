@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const uuid = require('uuid');
-const ObjectId = require('bson-objectid');
+const ObjectId = require('bson-objectid').default;
 const moment = require('moment');
 const constants = require('@tryghost/constants');
 const DataGenerator = {};

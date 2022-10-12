@@ -13,6 +13,7 @@ module.exports = {
         uuid: {type: 'string', maxlength: 36, nullable: false, unique: true, validations: {isUUID: true}},
         name: {type: 'string', maxlength: 191, nullable: false, unique: true},
         description: {type: 'string', maxlength: 2000, nullable: true},
+        feedback_enabled: {type: 'bool', nullable: false, defaultTo: false},
         slug: {type: 'string', maxlength: 191, nullable: false, unique: true},
         sender_name: {type: 'string', maxlength: 191, nullable: true},
         sender_email: {type: 'string', maxlength: 191, nullable: true},
@@ -619,7 +620,7 @@ module.exports = {
         offer_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'offers.id'},
         trial_start_at: {type: 'dateTime', nullable: true},
         trial_end_at: {type: 'dateTime', nullable: true},
-        /* Below fields are now redundant as we link prie_id to stripe_prices table */
+        /* Below fields are now redundant as we link stripe_price_id to stripe_prices table */
         plan_id: {type: 'string', maxlength: 255, nullable: false, unique: false},
         plan_nickname: {type: 'string', maxlength: 50, nullable: false},
         plan_interval: {type: 'string', maxlength: 50, nullable: false},
@@ -850,5 +851,13 @@ module.exports = {
         member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
         redirect_id: {type: 'string', maxlength: 24, nullable: false, references: 'redirects.id', cascadeDelete: true},
         created_at: {type: 'dateTime', nullable: false}
+    },
+    members_feedback: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        score: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
+        member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
+        post_id: {type: 'string', maxlength: 24, nullable: false, references: 'posts.id', cascadeDelete: true},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true}
     }
 };

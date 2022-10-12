@@ -231,5 +231,9 @@ module.exports = {
 
     get commentsMembers() {
         return apiFramework.pipeline(require('./comments-members'), localUtils, 'members');
-    }
+    },
+
+    get feedbackMembers() {
+        return apiFramework.pipeline(require('./feedback-members'), localUtils, 'members');
+    }   
 };

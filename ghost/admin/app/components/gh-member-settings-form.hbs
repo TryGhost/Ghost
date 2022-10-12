@@ -57,7 +57,7 @@
                             @class="gh-member-details-textarea"
                             @tabindex="3"
                             @value={{this.scratchMember.note}}
-                            @focus-out={{fn this.setProperty "note" this.scratchMember.note}}
+                            {{on "input" this.updateProperty}}
                             data-test-input="member-note"
                         />
                         <GhErrorMessage @errors={{this.member.errors}} @property="note" />

@@ -10,6 +10,8 @@ const shared = require('../shared');
 const labs = require('../../../shared/labs');
 const errorHandler = require('@tryghost/mw-error-handler');
 const config = require('../../../shared/config');
+const {http} = require('@tryghost/api-framework');
+const api = require('../../api').endpoints;
 
 const commentRouter = require('../comments');
 
@@ -64,6 +66,16 @@ module.exports = function setupMembersApp() {
 
     // Comments
     membersApp.use('/api/comments', commentRouter());
+
+    // Feedback
+    membersApp.post(
+        '/api/feedback', 
+        labs.enabledMiddleware('audienceFeedback'), 
+        bodyParser.json({limit: '50mb'}), 
+        middleware.loadMemberSession, 
+        middleware.authMemberByUuid, 
+        http(api.feedbackMembers.add)
+    );
 
     // API error handling
     membersApp.use('/api', errorHandler.resourceNotFound);

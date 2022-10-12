@@ -271,6 +271,32 @@
                         </div>
                     </div>
                 </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Audience Feedback</h4>
+                            <p class="gh-expandable-description">
+                               Allow members to provide feedback in newsletters.
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                           <GhFeatureFlag @flag="audienceFeedback" />
+                        </div>
+                    </div>
+                </div>
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Fix newsletter links</h4>
+                            <p class="gh-expandable-description">
+                               Allow publishers to edit newsletter links after sending.
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                           <GhFeatureFlag @flag="fixNewsletterLinks" />
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         {{/if}}

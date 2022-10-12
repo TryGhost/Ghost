@@ -195,6 +195,10 @@ export default Model.extend(Comparable, ValidationEngine, {
             && this.email && this.email.status === 'failed';
     }),
 
+    showAudienceFeedback: computed('count', function () {
+        return this.feature.get('audienceFeedback') && this.count.sentiment !== undefined;
+    }),
+
     showEmailOpenAnalytics: computed('hasBeenEmailed', 'isSent', 'isPublished', function () {
         return this.hasBeenEmailed
             && !this.session.user.isContributor
