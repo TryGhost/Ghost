@@ -124,6 +124,14 @@ export default class NavigationController extends Controller {
 
         try {
             yield RSVP.all(validationPromises);
+
+            // If some attributes have been changed, rebuild
+            // the model arrays or changes will not be detected
+            if (this.dirtyAttributes) {
+                this.settings.navigation = [...this.settings.navigation];
+                this.settings.secondaryNavigation = [...this.settings.secondaryNavigation];
+            }
+
             this.dirtyAttributes = false;
             return yield this.settings.save();
         } catch (error) {

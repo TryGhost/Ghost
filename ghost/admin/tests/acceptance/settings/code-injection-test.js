@@ -5,7 +5,7 @@ import {
     describe,
     it
 } from 'mocha';
-import {click, currentURL, find, findAll, triggerEvent} from '@ember/test-helpers';
+import {click, currentURL, fillIn, find, findAll, triggerEvent} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -77,13 +77,19 @@ describe('Acceptance: Settings - Code-Injection', function () {
             expect(findAll('#ghost-foot .CodeMirror').length, 'ghost head codemirror element').to.equal(1);
             expect(find('#ghost-foot .CodeMirror'), 'ghost head editor theme').to.have.class('cm-s-xq-light');
 
+            await fillIn('#settings-code #ghost-head textarea', 'Test');
+
             await click('[data-test-save-button]');
 
             let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
             let params = JSON.parse(lastRequest.requestBody);
 
-            expect(params.settings.findBy('key', 'codeinjection_head').value).to.equal(null);
+            expect(params.settings.findBy('key', 'codeinjection_head').value).to.equal('Test');
+            // update should have been partial
+            expect(params.settings.findBy('key', 'navigation')).to.be.undefined;
             expect(find('[data-test-save-button]').textContent.trim(), 'save button text').to.equal('Save');
+
+            await fillIn('#settings-code #ghost-head textarea', '');
 
             // CMD-S shortcut works
             await triggerEvent('.gh-app', 'keydown', {
@@ -91,12 +97,16 @@ describe('Acceptance: Settings - Code-Injection', function () {
                 metaKey: ctrlOrCmd === 'command',
                 ctrlKey: ctrlOrCmd === 'ctrl'
             });
-            // we've already saved in this test so there's no on-screen indication
-            // that we've had another save, check the request was fired instead
+
             let [newRequest] = this.server.pretender.handledRequests.slice(-1);
             params = JSON.parse(newRequest.requestBody);
 
-            expect(params.settings.findBy('key', 'codeinjection_head').value).to.equal(null);
+            expect(params.settings.findBy('key', 'codeinjection_head').value).to.equal('');
+            expect(find('[data-test-save-button]').textContent.trim(), 'save button text').to.equal('Save');
+
+            // Saving when no changed have been made should work
+            // (although no api request is expected)
+            await click('[data-test-save-button]');            
             expect(find('[data-test-save-button]').textContent.trim(), 'save button text').to.equal('Save');
         });
     });

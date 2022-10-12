@@ -8,7 +8,8 @@ export default class Setting extends ApplicationSerializer {
         options.includeId = false;
 
         let root = pluralize(type.modelName);
-        let data = this.serialize(record, options);
+        let data = Object.keys(record.record.changedAttributes()).length > 0 ?
+            this.serialize(record, options) : [];
         let payload = [];
 
         delete data.id;
@@ -19,6 +20,20 @@ export default class Setting extends ApplicationSerializer {
         });
 
         hash[root] = payload;
+    }
+
+    serializeAttribute(snapshot, json, key, attributes) {
+        // Only serialize attributes that have changed and 
+        // send a partial update to the API to avoid conflicts
+        // with different screens using the same model
+        // See https://github.com/TryGhost/Ghost/issues/15470
+        if (
+            !snapshot.record.get('isNew') &&
+            !snapshot.record.changedAttributes()[key]
+        ) {
+            return;
+        }
+        super.serializeAttribute(snapshot, json, key, attributes);
     }
 
     normalizeArrayResponse(store, primaryModelClass, _payload, id, requestType) {
