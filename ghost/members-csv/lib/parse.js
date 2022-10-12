@@ -78,5 +78,3 @@ module.exports = (path, mapping, defaultLabels = []) => {
     });
 };
 
-// @TODO do we need this???
-module.exports.readCSV = ({path, mapping, defaultLabels}) => module.exports(path, mapping, defaultLabels);
