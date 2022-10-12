@@ -100,4 +100,52 @@ describe('tag.* events', function () {
                 }
             });
     });
+
+    it('tag.edited event is triggered', async function () {
+        const webhookURL = 'https://test-webhook-receiver.com/tag-edited/';
+        await webhookMockReceiver.mock(webhookURL);
+        await fixtureManager.insertWebhook({
+            event: 'tag.edited',
+            url: webhookURL
+        });
+    
+        const res = await adminAPIAgent
+            .post('tags/')
+            .body({
+                tags: [{
+                    name: 'Test Tag 3',
+                    slug: 'test-tag-3',
+                    description: 'Test description'
+                }]
+            })
+            .expectStatus(201);
+    
+        const id = res.body.tags[0].id;
+    
+        const updatedTag = res.body.tags[0];
+        updatedTag.name = 'Updated Tag 3';
+        updatedTag.slug = 'updated-tag-3';
+    
+        await adminAPIAgent
+            .put('tags/' + id)
+            .body({
+                tags: [updatedTag]
+            })
+            .expectStatus(200);
+    
+        await webhookMockReceiver.receivedRequest();
+    
+        webhookMockReceiver
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                'content-length': anyNumber,
+                'user-agent': anyGhostAgent
+            })
+            .matchBodySnapshot({
+                tag: {
+                    current: {...tagSnapshot, url: anyLocalURL},
+                    previous: {updated_at: anyISODateTime}
+                }
+            });
+    });
 });
