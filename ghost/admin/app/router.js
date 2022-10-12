@@ -67,6 +67,7 @@ Router.map(function () {
             this.route('view', {path: ':theme_name'});
             this.route('install');
         });
+        this.route('no-theme');
     });
     // redirect for old install route used by ghost.org/marketplace
     this.route('settings.theme-install', {path: '/settings/theme/install'});
