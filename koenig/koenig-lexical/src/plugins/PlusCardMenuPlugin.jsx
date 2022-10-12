@@ -27,14 +27,14 @@ function usePlusCardMenu(editor) {
     const [showButton, setShowButton] = React.useState(false);
     const [topPosition, setTopPosition] = React.useState(0);
 
+    function getTopPosition(elem) {
+        const elemRect = elem.getBoundingClientRect();
+        const containerRect = elem.parentNode.getBoundingClientRect();
+
+        return elemRect.top - containerRect.top;
+    }
+
     const updateButton = React.useCallback(() => {
-        function getTopPosition(elem) {
-            const elemRect = elem.getBoundingClientRect();
-            const containerRect = elem.parentNode.getBoundingClientRect();
-
-            return elemRect.top - containerRect.top;
-        }
-
         editor.getEditorState().read(() => {
             // don't do anything when using IME input
             if (editor.isComposing()) {
@@ -57,9 +57,15 @@ function usePlusCardMenu(editor) {
 
             const nativeSelection = window.getSelection();
             const p = nativeSelection.anchorNode;
+            const rootElement = editor.getRootElement();
 
-            setShowButton(true);
+            if (p?.tagName !== 'P' || !rootElement.contains(p)) {
+                setShowButton(false);
+                return;
+            }
+
             setTopPosition(getTopPosition(p));
+            setShowButton(true);
         });
     }, [editor, setShowButton]);
 
@@ -69,6 +75,9 @@ function usePlusCardMenu(editor) {
         }, [editor, updateButton]);
     });
 
+    // hide the button as soon as there's any selection made outside of the
+    // editor canvas - any click outside makes a selection so no need for
+    // additional mouse tracking for this
     const hideButtonOnOutsideSelection = React.useCallback(() => {
         if (showButton) {
             const nativeSelection = window.getSelection();
@@ -86,6 +95,53 @@ function usePlusCardMenu(editor) {
             document.removeEventListener('selectionchange', hideButtonOnOutsideSelection);
         };
     }, [hideButtonOnOutsideSelection]);
+
+    // show or move the button when the mouse moves over a blank paragraph
+    const updateButtonOnMousemove = React.useCallback((event) => {
+        // do not show the button if we're dragging a selection
+        if (event.buttons !== 0) {
+            setShowButton(false);
+            return;
+        }
+
+        const rootElement = editor.getRootElement();
+        let {pageX, pageY} = event;
+
+        // add a horizontal buffer to the pointer position so that the button
+        // doesn't disappear when moving across the gap between button and paragraph
+        let containerRect = rootElement.getBoundingClientRect();
+        if (pageX < containerRect.left) {
+            pageX = pageX + 40;
+        }
+
+        // use the page coordinates to find the element under the pointer
+
+        // TODO: this basic implementation isn't quite as forgiving as the mobiledoc implementation
+        //   which appears to have a threshold around the point which creates a bigger hit area for
+        //   nearby elements, whereas this removes the button immediately on margin mouseover. See:
+        //   - https://github.com/bustle/mobiledoc-kit/blob/cdd126009cb809e80ff1d0c202198310aaa1ad1a/src/js/editor/editor.ts#L1306
+        //   - https://github.com/bustle/mobiledoc-kit/blob/cdd126009cb809e80ff1d0c202198310aaa1ad1a/src/js/utils/cursor/position.ts#L115
+        //   - https://github.com/bustle/mobiledoc-kit/blob/cdd126009cb809e80ff1d0c202198310aaa1ad1a/src/js/utils/selection-utils.ts#L39-L90
+        const hoveredElem = document.elementFromPoint(pageX, pageY);
+
+        if (rootElement.contains(hoveredElem)) {
+            if (hoveredElem?.tagName === 'P' && hoveredElem.textContent === '') {
+                // place cursor next to the hovered paragraph
+                setTopPosition(getTopPosition(hoveredElem));
+                setShowButton(true);
+            } else {
+                // reset cursor based on caret position
+                updateButton();
+            }
+        }
+    }, [editor, setTopPosition, setShowButton, updateButton]);
+
+    React.useEffect(() => {
+        window.addEventListener('mousemove', updateButtonOnMousemove);
+        return () => {
+            window.removeEventListener('mousemove', updateButtonOnMousemove);
+        };
+    }, [updateButtonOnMousemove]);
 
     return (
         <>
