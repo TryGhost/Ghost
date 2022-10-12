@@ -49,13 +49,6 @@ const buildPageSnapshotWithTiers = ({
     };
 };
 
-const buildPreviousPageSnapshotWithTiers = ({tiersCount}) => {
-    return {
-        updated_at: anyISODateTime,
-        tiers: new Array(tiersCount).fill(tierSnapshot)
-    };
-};
-
 describe('page.* events', function () {
     let adminAPIAgent;
     let webhookMockReceiver;
@@ -158,7 +151,7 @@ describe('page.* events', function () {
                         published: true,
                         tiersCount: 2
                     }),
-                    previous: buildPreviousPageSnapshotWithTiers({
+                    previous: buildPageSnapshotWithTiers({
                         tiersCount: 2
                     })
                 }
