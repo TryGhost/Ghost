@@ -126,7 +126,7 @@ async function dropColumn(tableName, column, transaction = db.knex, columnSpec =
  * Adds an unique index to a table over the given columns.
  *
  * @param {string} tableName - name of the table to add unique constraint to
- * @param {string|[string]} columns - column(s) to form unique constraint with
+ * @param {string|string[]} columns - column(s) to form unique constraint with
  * @param {import('knex')} transaction - connection object containing knex reference
  */
 async function addUnique(tableName, columns, transaction = db.knex) {
@@ -153,7 +153,7 @@ async function addUnique(tableName, columns, transaction = db.knex) {
  * Drops a unique key constraint from a table.
  *
  * @param {string} tableName - name of the table to drop unique constraint from
- * @param {string|[string]} columns - column(s) unique constraint was formed
+ * @param {string|string[]} columns - column(s) unique constraint was formed
  * @param {import('knex')} transaction - connection object containing knex reference
  */
 async function dropUnique(tableName, columns, transaction = db.knex) {
@@ -327,7 +327,7 @@ async function hasPrimaryKeySQLite(tableName, transaction = db.knex) {
  * Adds an primary key index to a table over the given columns.
  *
  * @param {string} tableName - name of the table to add primaykey  constraint to
- * @param {string|[string]} columns - column(s) to form primary key constraint with
+ * @param {string|string[]} columns - column(s) to form primary key constraint with
  * @param {import('knex')} transaction - connection object containing knex reference
  */
 async function addPrimaryKey(tableName, columns, transaction = db.knex) {

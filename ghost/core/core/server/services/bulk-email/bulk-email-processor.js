@@ -208,7 +208,7 @@ module.exports = {
 
     /**
      * @param {Email-like} emailData - The email to send, must be a POJO so emailModel.toJSON() before calling if needed
-     * @param {[EmailRecipient]} recipients - The recipients to send the email to with their associated data
+     * @param {EmailRecipient[]} recipients - The recipients to send the email to with their associated data
      * @param {string?} memberSegment - The member segment of the recipients
      * @returns {Promise<Object>} - {providerId: 'xxx'}
      */
