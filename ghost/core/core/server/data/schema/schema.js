@@ -13,7 +13,7 @@ module.exports = {
         uuid: {type: 'string', maxlength: 36, nullable: false, unique: true, validations: {isUUID: true}},
         name: {type: 'string', maxlength: 191, nullable: false, unique: true},
         description: {type: 'string', maxlength: 2000, nullable: true},
-        feedback_enabled: {type: 'bool', nullable: false, defaultTo: false},
+        feedback_enabled: {type: 'boolean', nullable: false, defaultTo: false},
         slug: {type: 'string', maxlength: 191, nullable: false, unique: true},
         sender_name: {type: 'string', maxlength: 191, nullable: true},
         sender_email: {type: 'string', maxlength: 191, nullable: true},
@@ -25,18 +25,18 @@ module.exports = {
             nullable: false,
             defaultTo: 'members'
         },
-        subscribe_on_signup: {type: 'bool', nullable: false, defaultTo: true},
+        subscribe_on_signup: {type: 'boolean', nullable: false, defaultTo: true},
         sort_order: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
         header_image: {type: 'string', maxlength: 2000, nullable: true},
-        show_header_icon: {type: 'bool', nullable: false, defaultTo: true},
-        show_header_title: {type: 'bool', nullable: false, defaultTo: true},
+        show_header_icon: {type: 'boolean', nullable: false, defaultTo: true},
+        show_header_title: {type: 'boolean', nullable: false, defaultTo: true},
         title_font_category: {type: 'string', maxlength: 191, nullable: false, defaultTo: 'sans_serif', validations: {isIn: [['serif', 'sans_serif']]}},
         title_alignment: {type: 'string', maxlength: 191, nullable: false, defaultTo: 'center', validations: {isIn: [['center', 'left']]}},
-        show_feature_image: {type: 'bool', nullable: false, defaultTo: true},
+        show_feature_image: {type: 'boolean', nullable: false, defaultTo: true},
         body_font_category: {type: 'string', maxlength: 191, nullable: false, defaultTo: 'sans_serif', validations: {isIn: [['serif', 'sans_serif']]}},
         footer_content: {type: 'text', maxlength: 1000000000, nullable: true},
-        show_badge: {type: 'bool', nullable: false, defaultTo: true},
-        show_header_name: {type: 'bool', nullable: false, defaultTo: true},
+        show_badge: {type: 'boolean', nullable: false, defaultTo: true},
+        show_header_name: {type: 'boolean', nullable: false, defaultTo: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
     },
@@ -51,7 +51,7 @@ module.exports = {
         comment_id: {type: 'string', maxlength: 50, nullable: true},
         plaintext: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         feature_image: {type: 'string', maxlength: 2000, nullable: true},
-        featured: {type: 'bool', nullable: false, defaultTo: false},
+        featured: {type: 'boolean', nullable: false, defaultTo: false},
         type: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'post', validations: {isIn: [['post', 'page']]}},
         status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'draft', validations: {isIn: [['published', 'draft', 'scheduled', 'sent']]}},
         // NOTE: unused at the moment and reserved for future features
@@ -103,7 +103,7 @@ module.exports = {
         frontmatter: {type: 'text', maxlength: 65535, nullable: true},
         feature_image_alt: {type: 'string', maxlength: 191, nullable: true, validations: {isLength: {max: 125}}},
         feature_image_caption: {type: 'text', maxlength: 65535, nullable: true},
-        email_only: {type: 'bool', nullable: false, defaultTo: false}
+        email_only: {type: 'boolean', nullable: false, defaultTo: false}
     },
     // NOTE: this is the staff table
     users: {
@@ -607,7 +607,7 @@ module.exports = {
         subscription_id: {type: 'string', maxlength: 255, nullable: false, unique: true},
         stripe_price_id: {type: 'string', maxlength: 255, nullable: false, unique: false, index: true, defaultTo: ''},
         status: {type: 'string', maxlength: 50, nullable: false},
-        cancel_at_period_end: {type: 'bool', nullable: false, defaultTo: false},
+        cancel_at_period_end: {type: 'boolean', nullable: false, defaultTo: false},
         cancellation_reason: {type: 'string', maxlength: 500, nullable: true},
         current_period_end: {type: 'dateTime', nullable: false},
         start_date: {type: 'dateTime', nullable: false},
@@ -653,7 +653,7 @@ module.exports = {
     members_subscribe_events: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         member_id: {type: 'string', maxlength: 24, nullable: false, unique: false, references: 'members.id', cascadeDelete: true},
-        subscribed: {type: 'bool', nullable: false, defaultTo: true},
+        subscribed: {type: 'boolean', nullable: false, defaultTo: true},
         created_at: {type: 'dateTime', nullable: false},
         source: {
             type: 'string', maxlength: 50, nullable: true, validations: {
@@ -673,7 +673,7 @@ module.exports = {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         stripe_price_id: {type: 'string', maxlength: 255, nullable: false, unique: true},
         stripe_product_id: {type: 'string', maxlength: 255, nullable: false, unique: false, references: 'stripe_products.stripe_product_id'},
-        active: {type: 'bool', nullable: false},
+        active: {type: 'boolean', nullable: false},
         nickname: {type: 'string', maxlength: 50, nullable: true},
         currency: {type: 'string', maxLength: 3, nullable: false},
         amount: {type: 'integer', nullable: false},
@@ -723,8 +723,8 @@ module.exports = {
         reply_to: {type: 'string', maxlength: 2000, nullable: true},
         html: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         plaintext: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
-        track_opens: {type: 'bool', nullable: false, defaultTo: false},
-        track_clicks: {type: 'bool', nullable: false, defaultTo: false},
+        track_opens: {type: 'boolean', nullable: false, defaultTo: false},
+        track_clicks: {type: 'boolean', nullable: false, defaultTo: false},
         submitted_at: {type: 'dateTime', nullable: false},
         newsletter_id: {type: 'string', maxlength: 24, nullable: true, references: 'newsletters.id'},
         created_at: {type: 'dateTime', nullable: false},

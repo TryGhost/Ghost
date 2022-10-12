@@ -15,15 +15,15 @@ module.exports = recreateTable('newsletters', {
         nullable: false,
         defaultTo: 'members'
     },
-    subscribe_on_signup: {type: 'bool', nullable: false, defaultTo: true},
+    subscribe_on_signup: {type: 'boolean', nullable: false, defaultTo: true},
     sort_order: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
     header_image: {type: 'string', maxlength: 2000, nullable: true},
-    show_header_icon: {type: 'bool', nullable: false, defaultTo: true},
-    show_header_title: {type: 'bool', nullable: false, defaultTo: true},
+    show_header_icon: {type: 'boolean', nullable: false, defaultTo: true},
+    show_header_title: {type: 'boolean', nullable: false, defaultTo: true},
     title_font_category: {type: 'string', maxlength: 191, nullable: false, defaultTo: 'sans_serif', validations: {isIn: [['serif', 'sans_serif']]}},
     title_alignment: {type: 'string', maxlength: 191, nullable: false, defaultTo: 'center', validations: {isIn: [['center', 'left']]}},
-    show_feature_image: {type: 'bool', nullable: false, defaultTo: true},
+    show_feature_image: {type: 'boolean', nullable: false, defaultTo: true},
     body_font_category: {type: 'string', maxlength: 191, nullable: false, defaultTo: 'sans_serif', validations: {isIn: [['serif', 'sans_serif']]}},
     footer_content: {type: 'text', maxlength: 1000000000, nullable: true},
-    show_badge: {type: 'bool', nullable: false, defaultTo: true}
+    show_badge: {type: 'boolean', nullable: false, defaultTo: true}
 });

@@ -12,7 +12,7 @@ module.exports = addTable('newsletters', {
     sender_name: {type: 'string', maxlength: 191, nullable: false},
     sender_email: {type: 'string', maxlength: 191, nullable: false, validations: {isEmail: true}},
     sender_reply_to: {type: 'string', maxlength: 191, nullable: false, validations: {isEmail: true}},
-    default: {type: 'bool', nullable: false, defaultTo: false},
+    default: {type: 'boolean', nullable: false, defaultTo: false},
     status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'active'},
     recipient_filter: {
         type: 'text',
@@ -20,6 +20,6 @@ module.exports = addTable('newsletters', {
         nullable: false,
         defaultTo: ''
     },
-    subscribe_on_signup: {type: 'bool', nullable: false, defaultTo: false},
+    subscribe_on_signup: {type: 'boolean', nullable: false, defaultTo: false},
     sort_order: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0}
 });
