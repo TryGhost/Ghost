@@ -1,11 +1,22 @@
 const moment = require('moment-timezone');
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../utils/e2e-framework');
-const {anyGhostAgent, anyObjectId, anyISODateTime, anyUuid, anyContentVersion, anyNumber, anyLocalURL} = matchers;
+const {anyGhostAgent, anyObjectId, anyISODateTime, anyUuid, anyContentVersion, anyNumber, anyLocalURL, anyString} = matchers;
 
 const tierSnapshot = {
     id: anyObjectId,
     created_at: anyISODateTime,
     updated_at: anyISODateTime
+};
+
+const tagSnapshot = {
+    created_at: anyISODateTime,
+    description: null,
+    id: anyObjectId,
+    name: anyString,
+    slug: anyString,
+    updated_at: anyISODateTime,
+    url: anyLocalURL,
+    visibility: anyString
 };
 
 const buildAuthorSnapshot = (roles = true) => {
@@ -41,6 +52,23 @@ const buildPostSnapshotWithTiers = ({published, tiersCount, roles = true}) => {
     };
 };
 
+const buildPostSnapshotWithTiersAndTags = ({published, tiersCount, roles = true}) => {
+    return {
+        id: anyObjectId,
+        uuid: anyUuid,
+        comment_id: anyObjectId,
+        published_at: published ? anyISODateTime : null,
+        created_at: anyISODateTime,
+        updated_at: anyISODateTime,
+        url: anyLocalURL,
+        tiers: new Array(tiersCount).fill(tierSnapshot),
+        primary_author: buildAuthorSnapshot(roles),
+        authors: new Array(1).fill(buildAuthorSnapshot(roles)),
+        primary_tag: tagSnapshot,
+        tags: new Array(1).fill(tagSnapshot)
+    };
+};
+
 const buildPreviousPostSnapshotWithTiers = ({tiersCount}) => {
     return {
         updated_at: anyISODateTime,
@@ -56,6 +84,13 @@ const buildPreviousPostSnapshotForDeletedPost = () => {
         created_at: anyISODateTime,
         updated_at: anyISODateTime,
         authors: new Array(1).fill(buildAuthorSnapshot(true))
+    };
+};
+
+const buildPreviousPostSnapshotWithTiersAndTags = ({tiersCount}) => {
+    return {
+        tags: [],
+        tiers: new Array(tiersCount).fill(tierSnapshot)
     };
 };
 
@@ -252,6 +287,57 @@ describe('post.* events', function () {
                         tiersCount: 2
                     }),
                     previous: buildPreviousPostSnapshotWithTiers({
+                        tiersCount: 2
+                    })
+                }
+            });
+    });
+
+    it('post.tag.attached event is triggered', async function () {
+        const webhookURL = 'https://test-webhook-receiver.com/post-tag-attached/';
+        await webhookMockReceiver.mock(webhookURL);
+        await fixtureManager.insertWebhook({
+            event: 'post.tag.attached',
+            url: webhookURL
+        });
+
+        const res = await adminAPIAgent
+            .post('posts/')
+            .body({
+                posts: [{
+                    title: 'test post tag attached webhook',
+                    status: 'draft',
+                    mobiledoc: fixtureManager.get('posts', 1).mobiledoc
+                }]
+            })
+            .expectStatus(201);
+
+        const id = res.body.posts[0].id;
+        const updatedPost = res.body.posts[0];
+        updatedPost.tags = ['Getting Started'];
+
+        await adminAPIAgent
+            .put('posts/' + id)
+            .body({
+                posts: [updatedPost]
+            })
+            .expectStatus(200);
+
+        await webhookMockReceiver.receivedRequest();
+
+        webhookMockReceiver
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                'content-length': anyNumber,
+                'user-agent': anyGhostAgent
+            })
+            .matchBodySnapshot({
+                post: {
+                    current: buildPostSnapshotWithTiersAndTags({
+                        published: false,
+                        tiersCount: 2
+                    }),
+                    previous: buildPreviousPostSnapshotWithTiersAndTags({
                         tiersCount: 2
                     })
                 }
