@@ -20,7 +20,7 @@ module.exports = class MembersCSVImporter {
      * @param {() => Object} options.getMembersApi
      * @param {Function} options.sendEmail - function sending an email
      * @param {(string) => boolean} options.isSet - Method checking if specific feature is enabled
-     * @param {({name, at, job, data, offloaded}) => void} options.addJob - Method registering an async job
+     * @param {({job, offloaded}) => void} options.addJob - Method registering an async job
      * @param {Object} options.knex - An instance of the Ghost Database connection
      * @param {Function} options.urlFor - function generating urls
      * @param {Object} options.context
