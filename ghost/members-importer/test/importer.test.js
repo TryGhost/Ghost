@@ -148,8 +148,8 @@ describe('Importer', function () {
 
             const result = await membersImporter.prepare(`${csvPath}/single-column-with-header.csv`);
 
-            should.exist(result.id);
-            result.id.should.match(/\/members-importer\/test\/fixtures\/Members Import/);
+            should.exist(result.filePath);
+            result.filePath.should.match(/\/members-importer\/test\/fixtures\/Members Import/);
 
             result.batches.should.equal(2);
             should.exist(result.metadata);

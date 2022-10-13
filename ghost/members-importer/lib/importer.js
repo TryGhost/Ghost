@@ -38,28 +38,6 @@ module.exports = class MembersCSVImporter {
     }
 
     /**
-     * @typedef {string} JobID
-     */
-
-    /**
-     * @typedef {Object} Job
-     * @prop {string} filename
-     * @prop {JobID} id
-     */
-
-    /**
-     * Get the Job for a jobCode
-     * @param {JobID} jobId
-     * @returns {Promise<Job>}
-     */
-    async getJob(jobId) {
-        return {
-            id: jobId,
-            filename: jobId
-        };
-    }
-
-    /**
      * Prepares a CSV file for import
      * - Maps headers based on headerMapping, this allows for a non standard CSV
      *   to be imported, so long as a mapping exists between it and a standard CSV
@@ -70,7 +48,7 @@ module.exports = class MembersCSVImporter {
      * @param {Object.<string, string>} headerMapping - An object whose keys are headers in the input CSV and values are the header to replace it with
      * @param {Array<string>} defaultLabels - A list of labels to apply to every member
      *
-     * @returns {Promise<{id: JobID, batches: number, metadata: Object.<string, any>}>} - A promise resolving to the id of the MemberImport Job
+     * @returns {Promise<{filePath: string, batches: number, metadata: Object.<string, any>}>} - A promise resolving to the data including filePath of "prepared" CSV
      */
     async prepare(inputFilePath, headerMapping, defaultLabels) {
         // @NOTE: investigate why is it "1" and do we even need this concept anymore?
@@ -102,7 +80,7 @@ module.exports = class MembersCSVImporter {
         await fs.writeFile(outputFilePath, mappedCSV);
 
         return {
-            id: outputFilePath,
+            filePath: outputFilePath,
             batches: numberOfBatches,
             metadata: {
                 hasStripeData
@@ -113,12 +91,10 @@ module.exports = class MembersCSVImporter {
     /**
      * Performs an import of a CSV file
      *
-     * @param {JobID} id - The id of the job to perform
+     * @param {string} filePath - the path to a "prepared" CSV file
      */
-    async perform(id) {
-        const job = await this.getJob(id);
-
-        const rows = membersCSV.parse(job.filename);
+    async perform(filePath) {
+        const rows = membersCSV.parse(filePath);
 
         const membersApi = await this._getMembersApi();
 
@@ -306,7 +282,7 @@ module.exports = class MembersCSVImporter {
         meta.originalImportSize = job.batches;
 
         if (job.batches <= 500 && !job.metadata.hasStripeData) {
-            const result = await this.perform(job.id);
+            const result = await this.perform(job.filePath);
             const importLabelModel = result.imported ? await LabelModel.findOne(importLabel) : null;
 
             return {
@@ -322,7 +298,7 @@ module.exports = class MembersCSVImporter {
             const emailRecipient = user.email;
             this._addJob({
                 job: async () => {
-                    const result = await this.perform(job.id);
+                    const result = await this.perform(job.filePath);
                     const importLabelModel = result.imported ? await LabelModel.findOne(importLabel) : null;
                     const emailContent = this.generateCompletionEmail(result, {
                         emailRecipient,
