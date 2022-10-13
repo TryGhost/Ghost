@@ -3,6 +3,13 @@ const pump = require('pump');
 const papaparse = require('papaparse');
 const fs = require('fs-extra');
 
+/**
+ * 
+ * @param {string} path - The path to the CSV to prepare
+ * @param {Object.<string, string>} mapping - An object whose keys are headers in the input CSV and values are the header to replace it with
+ * @param {Array<string>} [defaultLabels] - A list of labels to apply to every parsed member row
+ * @returns 
+ */
 module.exports = (path, mapping, defaultLabels = []) => {
     const inputMapping = Object.assign({}, mapping, {
         subscribed_to_emails: 'subscribed'
