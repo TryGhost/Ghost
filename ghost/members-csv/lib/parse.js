@@ -4,18 +4,20 @@ const papaparse = require('papaparse');
 const fs = require('fs-extra');
 
 module.exports = (path, mapping, defaultLabels = []) => {
+    const inputMapping = Object.assign({}, mapping, {
+        subscribed_to_emails: 'subscribed'
+    });
+
     return new Promise(function (resolve, reject) {
         const csvFileStream = fs.createReadStream(path);
         const csvParserStream = papaparse.parse(papaparse.NODE_STREAM_INPUT, {
             header: true,
             transformHeader(_header) {
                 let header = _header;
-                if (mapping && Reflect.has(mapping, _header)) {
-                    header = mapping[_header];
+                if (inputMapping && Reflect.has(inputMapping, _header)) {
+                    header = inputMapping[_header];
                 }
-                if (header === 'subscribed_to_emails') {
-                    return 'subscribed';
-                }
+
                 return header;
             },
             transform(value, header) {
