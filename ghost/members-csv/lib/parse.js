@@ -6,23 +6,19 @@ const fs = require('fs-extra');
 /**
  * 
  * @param {string} path - The path to the CSV to prepare
- * @param {Object.<string, string>} mapping - An object whose keys are headers in the input CSV and values are the header to replace it with
+ * @param {Object.<string, string>} headerMapping - An object whose keys are headers in the input CSV and values are the header to replace it with
  * @param {Array<string>} [defaultLabels] - A list of labels to apply to every parsed member row
  * @returns 
  */
-module.exports = (path, mapping, defaultLabels = []) => {
-    const inputMapping = Object.assign({}, mapping, {
-        subscribed_to_emails: 'subscribed'
-    });
-
+module.exports = (path, headerMapping = {}, defaultLabels = []) => {
     return new Promise(function (resolve, reject) {
         const csvFileStream = fs.createReadStream(path);
         const csvParserStream = papaparse.parse(papaparse.NODE_STREAM_INPUT, {
             header: true,
             transformHeader(_header) {
                 let header = _header;
-                if (inputMapping && Reflect.has(inputMapping, _header)) {
-                    header = inputMapping[_header];
+                if (headerMapping && Reflect.has(headerMapping, _header)) {
+                    header = headerMapping[_header];
                 }
 
                 return header;
