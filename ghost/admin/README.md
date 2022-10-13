@@ -48,7 +48,7 @@ TZ=UTC yarn test 1 --reporter dot  --path="dist-test" -mp=tests/acceptance/setti
 ```
 _Hint: you can easily copy the path of a test in VSCode by right clicking on the test file and choosing `Copy Relative Path`._
 
-To have a full list of the available options, run
+To have a full list of the available options, run:
 ```bash
 ember exam --help
 ```
