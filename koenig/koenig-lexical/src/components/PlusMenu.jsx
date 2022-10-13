@@ -1,4 +1,3 @@
-import CardMenu from './CardMenu';
 import {ReactComponent as PlusIcon} from '../assets/icons/plus.svg';
 
 export function PlusButton({onClick}) {
@@ -16,10 +15,10 @@ export function PlusButton({onClick}) {
     );
 }
 
-export function PlusMenu() {
+export function PlusMenu({children}) {
     return (
         <div className="absolute left-[-16px]" data-kg-plus-menu>
-            <CardMenu />
+            {children}
         </div>
     );
 }

@@ -1,6 +1,7 @@
 import * as React from 'react';
 import {createCommand, DecoratorNode} from 'lexical';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
+import {ReactComponent as DividerCardIcon} from '../assets/icons/kg-card-type-divider.svg';
 
 export const INSERT_HORIZONTAL_RULE_COMMAND = createCommand();
 
@@ -22,6 +23,12 @@ export class HorizontalRuleNode extends DecoratorNode {
     static importJSON(serializedNode) {
         return $createHorizontalRuleNode();
     }
+
+    static kgMenu = {
+        label: 'Divider',
+        desc: 'Insert a dividing line',
+        Icon: DividerCardIcon
+    };
 
     exportJSON() {
         return {

@@ -3,12 +3,14 @@ import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {$getSelection, $isParagraphNode, $isRangeSelection} from 'lexical';
 import {getSelectedNode} from '../utils/getSelectedNode';
 import {PlusButton, PlusMenu} from '../components/PlusMenu';
+import {buildCardMenu} from '../utils/buildCardMenu';
 
 function usePlusCardMenu(editor) {
     const [isShowingButton, setIsShowingButton] = React.useState(false);
     const [isShowingMenu, setIsShowingMenu] = React.useState(false);
     const [topPosition, setTopPosition] = React.useState(0);
     const [cachedRange, setCachedRange] = React.useState(null);
+    const [cardMenu] = React.useState(buildCardMenu(editor));
     const containerRef = React.useRef(null);
 
     function getTopPosition(elem) {
@@ -219,7 +221,7 @@ function usePlusCardMenu(editor) {
     return (
         <div className="absolute" style={style} ref={containerRef} data-kg-plus-container>
             {isShowingButton && <PlusButton onClick={openMenu} />}
-            {isShowingMenu && <PlusMenu />}
+            {isShowingMenu && <PlusMenu>{cardMenu}</PlusMenu>}
         </div>
     );
 }
