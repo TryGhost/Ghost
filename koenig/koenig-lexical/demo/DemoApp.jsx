@@ -1,15 +1,21 @@
 import React from 'react';
 import {KoenigComposer, KoenigEditor} from '../src';
 import FloatingButton from './components/FloatingButton';
-import SerializedStateTextarea from './components/SerializedStateTextarea';
 import {useState} from 'react';
 import Watermark from './components/Watermark';
 import {imageUploader} from './utils/imageUploader';
+import Sidebar from './components/Sidebar';
 
 function DemoApp() {
-    const [sidebarState, setSidebarState] = useState(false);
-    function openSidebar() {
-        setSidebarState(!sidebarState);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [sidebarView, setSidebarView] = useState('json');
+
+    function openSidebar(view = 'json') {
+        if (isSidebarOpen && sidebarView === view) {
+            return setIsSidebarOpen(false);
+        }
+        setSidebarView(view);
+        setIsSidebarOpen(true);
     }
 
     return (
@@ -24,7 +30,7 @@ function DemoApp() {
                     </div>
                 </div>
                 <div className="flex h-full flex-col items-end">
-                    <SerializedStateTextarea toggle={sidebarState} />
+                    <Sidebar isOpen={isSidebarOpen} view={sidebarView} />
                     <FloatingButton onClick={openSidebar} />
                 </div>
             </KoenigComposer>
