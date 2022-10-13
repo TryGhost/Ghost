@@ -1,5 +1,5 @@
-import React, {useState, useRef} from 'react';
-import {DecoratorNode, createEditor, $getNodeByKey} from 'lexical';
+import React, {useState, useRef, useEffect} from 'react';
+import {DecoratorNode, $getNodeByKey} from 'lexical';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import {ReactComponent as ImgPlaceholderIcon} from '../assets/icons/kg-img-placeholder.svg';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
@@ -68,8 +68,9 @@ function ImageCard({nodeKey}) {
     return (
         <div>
             <MediaCard dataset={{payload, setPayload}} editor={editor} nodeKey={nodeKey} />
-            <CaptionEditor placeholder="Type caption for image (optional)" />     
-            <button 
+            <CaptionEditor altText={altText} nodeKey={nodeKey} placeholder={altText ? `Type Alt Text for image (optional)` : `Type caption for image (optional)`} />     
+            <button
+                name="alt-toggle-button" 
                 className={`absolute bottom-0 right-0 m-3 cursor-pointer rounded border px-1 text-[1.3rem] font-normal leading-7 tracking-wide transition-all duration-100 ${altText ? 'border-green bg-green text-white' : 'border-grey text-grey' } `}
                 onClick={e => toggleAltText(e)}>
                         Alt
@@ -93,11 +94,44 @@ function MediaPlaceholder({desc, Icon, ...props}) {
     );
 }
 
-function CaptionEditor({placeholder}) {
+function CaptionEditor({placeholder, nodeKey, altText}) {
+    const [editor] = useLexicalComposerContext();
+    const [captionText, setCaptionText] = useState('');
+    const [altTextValue, setAltTextValue] = useState('');
+    
+    const handleChange = (e) => {
+        if (!altText) {
+            const cap = e.target.value;
+            editor.update(() => {
+                const node = $getNodeByKey(nodeKey);
+                node.setCaption(cap);
+                setCaptionText(cap);
+            });
+        } else {
+            const alt = e.target.value;
+            editor.update(() => {
+                const node = $getNodeByKey(nodeKey);
+                node.setAltText(alt);
+                setAltTextValue(alt);
+            });
+        }
+    };
+
+    useEffect(() => {
+        const editorState = editor.getEditorState();
+        editorState.read(() => {
+            const node = $getNodeByKey(nodeKey);
+            setCaptionText(node.getCaption());
+            setAltTextValue(node.getAltText());
+        });
+    }, [editor, nodeKey]);
+
     return (
-        <input 
+        <input
+            onChange={handleChange}
             className="not-kg-prose w-full p-2 text-center font-sans text-sm font-normal tracking-wide text-grey-900"
             placeholder={placeholder} 
+            value={altText ? altTextValue : captionText}
         />
     );
 }
@@ -130,6 +164,7 @@ export class ImageNode extends DecoratorNode {
             altText,
             caption,
             src
+
         });
         const nestedEditor = node.__caption;
         const editorState = nestedEditor.parseEditorState(caption.editorState);
@@ -144,8 +179,8 @@ export class ImageNode extends DecoratorNode {
         const img = document.createElement('img');
         const figcaption = document.createElement('figcaption');
         img.src = this.getSrc();
-        img.alt = this.getAlt();
-        figcaption.innerHTML = this.getCaptionHtml();
+        // img.alt = this.getAlt();
+        figcaption.innerHTML = this.getCaption();
         element.appendChild(img);
         element.appendChild(figcaption);
         return {element};
@@ -162,10 +197,9 @@ export class ImageNode extends DecoratorNode {
 
     constructor(src, caption, altText, key) {
         super(key);
-        this.__caption = caption || createEditor();
+        this.__caption = caption || '';
         this.__altText = altText || '';
         this.__src = src || '';
-        this.__captionHtml = '';
     }
 
     exportJSON() {
@@ -173,36 +207,16 @@ export class ImageNode extends DecoratorNode {
         const src = this.getSrc();
         const isBlob = src.startsWith('data:');
         const dataset = {
-            altText: this.getAlt(),
-            caption: this.__caption.toJSON(),
+            altText: this.getAltText(),
+            caption: this.getCaption(),
             src: isBlob ? '<base64String>' : this.getSrc(),
             type: 'image'
         };
         return dataset;
     }
 
-    setAlt(alt) {
-        const self = this.getWritable();
-        self.__altText = alt;
-    }
-
-    getAlt() {
-        const self = this.getLatest();
-        return self.__altText;
-    }
-
     getSrc() {
         return this.__src;
-    }
-
-    setCaptionHtml(html) {
-        const self = this.getWritable();
-        self.__captionHtml = html;
-    }
-
-    getCaptionHtml() {
-        const self = this.getLatest();
-        return self.__captionHtml;
     }
 
     getPayload() {
@@ -220,6 +234,24 @@ export class ImageNode extends DecoratorNode {
     setSrc(src) {
         const self = this.getWritable();
         return self.__src = src;
+    }
+
+    setCaption(caption) {
+        const self = this.getWritable();
+        return self.__caption = caption;
+    }
+
+    getCaption() {
+        return this.__caption;
+    }
+
+    setAltText(altText) {
+        const self = this.getWritable();
+        return self.__altText = altText;
+    }
+
+    getAltText() {
+        return this.__altText;
     }
 
     decorate() {

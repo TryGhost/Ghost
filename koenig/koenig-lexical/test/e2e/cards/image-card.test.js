@@ -36,8 +36,8 @@ describe('Image card', async () => {
             </figure>
             </div>
             <form><input name="image-input" type="file" accept="image/*" hidden="" /></form>
-            <input placeholder="Type caption for image (optional)" />
-            <button>Alt</button>
+            <input placeholder="Type caption for image (optional)" value="" />
+            <button name="alt-toggle-button">Alt</button>
             </div>
             </div>
             </div>
@@ -61,8 +61,34 @@ describe('Image card', async () => {
             <img src="data:image/png;" alt="" />
             <figcaption></figcaption>
             </figure>
-            <input placeholder="Type caption for image (optional)">
-            <button>Alt</button>
+            <input placeholder="Type caption for image (optional)" value="" />
+            <button name="alt-toggle-button">Alt</button>
+            </div>
+            </div>
+            </div>
+        `, {ignoreInlineStyles: true, ignoreClasses: true, ignoreInnerSVG: true, ignoreBase64String: true});
+    });
+
+    test('can toggle to alt text', async function () {
+        const filePath = path.relative(process.cwd(), __dirname + '/assets/large.png');
+        await focusEditor(page);
+        await page.keyboard.type('image! ');
+        const [fileChooser] = await Promise.all([
+            page.waitForFileChooser(),
+            await page.click('button[name="placeholder-button"]')
+        ]);
+        await fileChooser.accept([filePath]);
+        await page.click('button[name="alt-toggle-button"]');
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+            <div data-kg-card="true" data-kg-card-selected="true">
+            <div>
+            <figure>
+            <img src="data:image/png;" alt="" />
+            <figcaption></figcaption>
+            </figure>
+            <input placeholder="Type Alt Text for image (optional)" value=""/>
+            <button name="alt-toggle-button">Alt</button>
             </div>
             </div>
             </div>
