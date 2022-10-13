@@ -75,6 +75,7 @@ module.exports = class MembersCSVImporter {
      * @returns {Promise<{id: JobID, batches: number, metadata: Object.<string, any>}>} - A promise resolving to the id of the MemberImport Job
      */
     async prepare(inputFilePath, headerMapping, defaultLabels) {
+        // @NOTE: investigate why is it "1" and do we even need this concept anymore?
         const batchSize = 1;
 
         const siteTimezone = this._getTimezone();
