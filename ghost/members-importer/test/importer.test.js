@@ -11,6 +11,9 @@ const csvPath = path.join(__dirname, '/fixtures/');
 
 describe('Importer', function () {
     let fsWriteSpy;
+    let memberCreateStub;
+    let knexStub;
+    let sendEmailStub;
 
     beforeEach(function () {
         fsWriteSpy = sinon.spy(fs, 'writeFile');
@@ -26,51 +29,58 @@ describe('Importer', function () {
         sinon.restore();
     });
 
+    // @NOTE: this is way too much mocking! the MembersCSVImporter constructor API should be simplified
+    const buildMockImporterInstance = () => {
+        const defaultProduct = {
+            id: 'default_product_id'
+        };
+
+        memberCreateStub = sinon.stub().resolves(null);
+        const membersApi = {
+            productRepository: {
+                list: async () => {
+                    return {
+                        data: [defaultProduct]
+                    };
+                }
+            },
+            members: {
+                get: async () => {
+                    return null;
+                },
+                create: memberCreateStub
+            }
+        };
+
+        knexStub = {
+            transaction: sinon.stub().resolves({
+                rollback: () => {},
+                commit: () => {}
+            })
+        };
+
+        sendEmailStub = sinon.stub();
+
+        return new MembersCSVImporter({
+            storagePath: csvPath,
+            getTimezone: sinon.stub().returns('UTC'),
+            getMembersApi: () => membersApi,
+            sendEmail: sendEmailStub,
+            isSet: sinon.stub(),
+            addJob: sinon.stub(),
+            knex: knexStub,
+            urlFor: sinon.stub(),
+            context: {importer: true}
+        });
+    };
+
     describe('process', function () {
         it('should import a CSV file', async function () {
-            const defaultProduct = {
-                id: 'default_product_id'
-            };
-
-            const memberCreateStub = sinon.stub().resolves(null);
-            const membersApi = {
-                productRepository: {
-                    list: async () => {
-                        return {
-                            data: [defaultProduct]
-                        };
-                    }
-                },
-                members: {
-                    get: async () => {
-                        return null;
-                    },
-                    create: memberCreateStub
-                }
-            };
-
-            const knexStub = {
-                transaction: sinon.stub().resolves({
-                    rollback: () => {},
-                    commit: () => {}
-                })
-            };
-
             const LabelModelStub = {
                 findOne: sinon.stub().resolves(null)
             };
 
-            const importer = new MembersCSVImporter({
-                storagePath: csvPath,
-                getTimezone: sinon.stub().returns('UTC'),
-                getMembersApi: () => membersApi,
-                sendEmail: sinon.stub(),
-                isSet: sinon.stub(),
-                addJob: sinon.stub(),
-                knex: knexStub,
-                urlFor: sinon.stub(),
-                context: {importer: true}
-            });
+            const importer = buildMockImporterInstance();
 
             const result = await importer.process({
                 pathToCSV: `${csvPath}/single-column-with-header.csv`,
@@ -105,47 +115,7 @@ describe('Importer', function () {
 
     describe('sendErrorEmail', function () {
         it('should send email with errors for invalid CSV file', async function () {
-            const defaultProduct = {
-                id: 'default_product_id'
-            };
-
-            const memberCreateStub = sinon.stub().resolves(null);
-            const membersApi = {
-                productRepository: {
-                    list: async () => {
-                        return {
-                            data: [defaultProduct]
-                        };
-                    }
-                },
-                members: {
-                    get: async () => {
-                        return null;
-                    },
-                    create: memberCreateStub
-                }
-            };
-
-            const knexStub = {
-                transaction: sinon.stub().resolves({
-                    rollback: () => {},
-                    commit: () => {}
-                })
-            };
-
-            const sendEmailStub = sinon.stub();
-
-            const importer = new MembersCSVImporter({
-                storagePath: csvPath,
-                getTimezone: sinon.stub().returns('UTC'),
-                getMembersApi: () => membersApi,
-                sendEmail: sendEmailStub,
-                isSet: sinon.stub(),
-                addJob: sinon.stub(),
-                knex: knexStub,
-                urlFor: sinon.stub(),
-                context: {importer: true}
-            });
+            const importer = buildMockImporterInstance();
 
             await importer.sendErrorEmail({
                 emailRecipient: 'test@example.com',
@@ -174,17 +144,7 @@ describe('Importer', function () {
 
     describe('prepare', function () {
         it('processes a basic valid import file for members', async function () {
-            const membersImporter = new MembersCSVImporter({
-                storagePath: csvPath,
-                getTimezone: sinon.stub().returns('UTC'),
-                getMembersApi: sinon.stub(),
-                sendEmail: sinon.stub(),
-                isSet: sinon.stub(),
-                addJob: sinon.stub(),
-                knex: sinon.stub(),
-                urlFor: sinon.stub(),
-                context: {importer: true}
-            });
+            const membersImporter = buildMockImporterInstance();
 
             const result = await membersImporter.prepare(`${csvPath}/single-column-with-header.csv`);
 
@@ -198,17 +158,7 @@ describe('Importer', function () {
         });
 
         it('Does not include columns not in the original CSV or mapped', async function () {
-            const membersImporter = new MembersCSVImporter({
-                storagePath: csvPath,
-                getTimezone: sinon.stub().returns('UTC'),
-                getMembersApi: sinon.stub(),
-                sendEmail: sinon.stub(),
-                isSet: sinon.stub(),
-                addJob: sinon.stub(),
-                knex: sinon.stub(),
-                urlFor: sinon.stub(),
-                context: {importer: true}
-            });
+            const membersImporter = buildMockImporterInstance();
 
             await membersImporter.prepare(`${csvPath}/single-column-with-header.csv`);
 
