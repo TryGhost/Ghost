@@ -94,6 +94,13 @@ class DynamicRedirectManager {
      */
     addRedirect(from, to, options = {}) {
         try {
+            // encode "from" only if it's not a regex
+            try {
+                new RegExp(from);
+            } catch (e) {
+                from = encodeURI(from);
+            }
+
             const fromRegex = this.buildRegex(from);
             const redirectId = from;
 

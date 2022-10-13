@@ -363,6 +363,26 @@ describe('DynamicRedirectManager', function () {
                 should.equal(location, 'https://ghost.org/docs');
             });
         });
+
+        describe('Url with special character redirect', function () {
+            it('redirects urls with special characters', function () {
+                const from = '/joloonii-surgaltuud/а-анлал/';
+                const to = '/joloonii-angilal/а-ангилал';
+
+                manager.addRedirect(from, to);
+
+                req.url = from;
+
+                manager.handleRequest(req, res, function next() {
+                    should.fail(true, false, 'next should NOT have been called');
+                });
+
+                // NOTE: max-age is "0" because it's not a permanent redirect
+                should.equal(headers['Cache-Control'], 'public, max-age=0');
+                should.equal(status, 302);
+                should.equal(location, '/joloonii-angilal/а-ангилал');
+            });
+        });
     });
 
     describe('with subdirectory configuration', function () {
