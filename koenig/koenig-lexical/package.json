@@ -39,8 +39,9 @@
     "@lexical/react": "^0.5.0",
     "@lexical/selection": "^0.5.0",
     "@lexical/utils": "^0.5.0",
-    "@uiw/react-textarea-code-editor": "^2.0.3",
-    "lexical": "^0.5.0",
+    "lexical": "^0.5.0"
+  },
+  "peerDependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
@@ -55,6 +56,7 @@
     "@storybook/testing-library": "0.0.13",
     "@types/react": "18.0.21",
     "@types/react-dom": "18.0.6",
+    "@uiw/react-textarea-code-editor": "^2.0.3",
     "@vitejs/plugin-react": "2.1.0",
     "@vitest/coverage-c8": "0.24.1",
     "@vitest/ui": "0.24.1",
