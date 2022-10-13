@@ -17,7 +17,7 @@ export default class MemberImportValidatorService extends Service {
     }
 
     /**
-     * Method implements foollowing sampling logic:
+     * Method implements following sampling logic:
      * Locate 10 non-empty cells from the start/middle(ish)/end of each column (30 non-empty values in total).
      * If the data contains 30 rows or fewer, all rows should be validated.
      *
