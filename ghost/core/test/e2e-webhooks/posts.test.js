@@ -52,7 +52,7 @@ const buildPostSnapshotWithTiers = ({published, tiersCount, roles = true}) => {
     };
 };
 
-const buildPostSnapshotWithTiersAndTags = ({published, tiersCount, roles = true}) => {
+const buildPostSnapshotWithTiersAndTags = ({published, tiersCount, tags, roles = true}) => {
     return {
         id: anyObjectId,
         uuid: anyUuid,
@@ -64,8 +64,8 @@ const buildPostSnapshotWithTiersAndTags = ({published, tiersCount, roles = true}
         tiers: new Array(tiersCount).fill(tierSnapshot),
         primary_author: buildAuthorSnapshot(roles),
         authors: new Array(1).fill(buildAuthorSnapshot(roles)),
-        primary_tag: tagSnapshot,
-        tags: new Array(1).fill(tagSnapshot)
+        primary_tag: tags ? tagSnapshot : null,
+        tags: tags ? new Array(1).fill(tagSnapshot) : []
     };
 };
 
@@ -87,11 +87,16 @@ const buildPreviousPostSnapshotForDeletedPost = () => {
     };
 };
 
-const buildPreviousPostSnapshotWithTiersAndTags = ({tiersCount}) => {
-    return {
-        tags: [],
-        tiers: new Array(tiersCount).fill(tierSnapshot)
+const buildPreviousPostSnapshotWithTiersAndTags = ({tiersCount, tags}) => {
+    const previousSnapshot = {
+        tags: tags ? new Array(1).fill(tagSnapshot) : []
     };
+
+    if (tiersCount > 0){
+        previousSnapshot.tiers = new Array(tiersCount).fill(tierSnapshot);
+    }
+
+    return previousSnapshot;
 };
 
 describe('post.* events', function () {
@@ -335,10 +340,74 @@ describe('post.* events', function () {
                 post: {
                     current: buildPostSnapshotWithTiersAndTags({
                         published: false,
-                        tiersCount: 2
+                        tiersCount: 2,
+                        tags: true
                     }),
                     previous: buildPreviousPostSnapshotWithTiersAndTags({
-                        tiersCount: 2
+                        tiersCount: 2,
+                        tags: false
+                    })
+                }
+            });
+    });
+
+    it('post.tag.detached event is triggered', async function () {
+        const webhookURL = 'https://test-webhook-receiver.com/post-tag-detached/';
+        await webhookMockReceiver.mock(webhookURL);
+        await fixtureManager.insertWebhook({
+            event: 'post.tag.detached',
+            url: webhookURL
+        });
+
+        const res = await adminAPIAgent
+            .post('posts/')
+            .body({
+                posts: [{
+                    title: 'test post tag detached webhook',
+                    status: 'draft',
+                    mobiledoc: fixtureManager.get('posts', 1).mobiledoc
+                }]
+            })
+            .expectStatus(201);
+
+        const id = res.body.posts[0].id;
+        const updatedPost = res.body.posts[0];
+        updatedPost.tags = ['Getting Started'];
+
+        await adminAPIAgent
+            .put('posts/' + id)
+            .body({
+                posts: [updatedPost]
+            })
+            .expectStatus(200);
+        
+        updatedPost.tags = [];
+
+        await adminAPIAgent
+            .put('posts/' + id)
+            .body({
+                posts: [updatedPost]
+            })
+            .expectStatus(200);
+
+        await webhookMockReceiver.receivedRequest();
+
+        webhookMockReceiver
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                'content-length': anyNumber,
+                'user-agent': anyGhostAgent
+            })
+            .matchBodySnapshot({
+                post: {
+                    current: buildPostSnapshotWithTiersAndTags({
+                        published: false,
+                        tiersCount: 2,
+                        tags: false
+                    }),
+                    previous: buildPreviousPostSnapshotWithTiersAndTags({
+                        tiersCount: 0,
+                        tags: true
                     })
                 }
             });
