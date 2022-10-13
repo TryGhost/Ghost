@@ -279,7 +279,7 @@ User = ghostBookshelf.Model.extend({
             })();
         }
 
-        return Promise.props(tasks);
+        return Promise.all(tasks);
     },
 
     toJSON: function toJSON(unfilteredOptions) {
