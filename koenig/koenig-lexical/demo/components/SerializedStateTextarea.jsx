@@ -6,10 +6,10 @@ import CodeEditor from '@uiw/react-textarea-code-editor';
 const SerializedStateTextarea = (props) => {
     const [editor] = useLexicalComposerContext();
     const [serializedJson, setSerializedJson] = React.useState('{}');
-    const sidebarState = props.toggle;  
+    const sidebarState = props.toggle;
 
     const onChange = () => {
-        setSerializedJson(JSON.stringify(editor.getEditorState().toJSON()));
+        setSerializedJson(JSON.stringify(editor.getEditorState().toJSON(), null, 2));
     };
 
     return (
