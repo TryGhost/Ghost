@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const Promise = require('bluebird');
 const validator = require('@tryghost/validator');
 const ObjectId = require('bson-objectid').default;
 const ghostBookshelf = require('./base');
@@ -670,11 +669,11 @@ User = ghostBookshelf.Model.extend({
 
                 // CASE: it is possible to add roles by name, by id or by object
                 if (_.isString(roles[0]) && !ObjectId.isValid(roles[0])) {
-                    return Promise.map(roles, function (roleName) {
+                    return Promise.all(roles.map(function (roleName) {
                         return ghostBookshelf.model('Role').findOne({
                             name: roleName
                         }, options);
-                    }).then(function (roleModels) {
+                    })).then(function (roleModels) {
                         roles = [];
 
                         _.each(roleModels, function (roleModel) {

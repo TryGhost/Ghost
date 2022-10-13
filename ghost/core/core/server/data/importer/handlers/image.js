@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const Promise = require('bluebird');
 const path = require('path');
 const config = require('../../../../shared/config');
 const urlUtils = require('../../../../shared/url-utils');
@@ -35,14 +34,14 @@ ImageHandler = {
             return file;
         });
 
-        return Promise.map(files, function (image) {
+        return Promise.all(files.map(function (image) {
             return store.getUniqueFileName(image, image.targetDir).then(function (targetFilename) {
                 image.newPath = urlUtils.urlJoin('/', urlUtils.getSubdir(), urlUtils.STATIC_IMAGE_URL_PREFIX,
                     path.relative(config.getContentPath('images'), targetFilename));
 
                 return image;
             });
-        });
+        }));
     }
 };
 
