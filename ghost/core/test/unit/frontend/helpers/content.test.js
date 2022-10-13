@@ -150,6 +150,18 @@ describe('{{content}} helper with no access', function () {
         rendered.string.should.containEql('"background-color: #abcdef"');
         rendered.string.should.containEql('This page is for');
     });
+
+    it('can render default template for upgrade case', function () {
+        // html will be included when there is free content available
+        const html = 'Free content';
+        optionsData.data.member = {
+            id: '123'
+        };
+        const rendered = content.call({html: html, access: false, visibility: 'members'}, optionsData);
+        rendered.string.should.containEql('Free content');
+        rendered.string.should.containEql('Upgrade your account');
+        rendered.string.should.containEql('color:#abcdef');
+    });
 });
 
 describe('{{content}} helper with custom template', function () {
