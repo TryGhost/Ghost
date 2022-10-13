@@ -63,11 +63,15 @@ class CustomThemeSettingsImporter extends BaseImporter {
         });
         
         const opsPromise = Promise.all(ops);
-        
+
+        // activate function is called to refresh cache when importing custom theme settings for active theme
         opsPromise.then(() => {
             models.Settings.findOne({key: 'active_theme'})
                 .then((theme) => {
-                    activate(theme.get('value'));
+                    const currentTheme = theme.get('value');
+                    if (this.dataToImport.some(themeSetting => themeSetting.theme === currentTheme)) {
+                        activate(currentTheme);
+                    }
                 });
         });
 
