@@ -1,3 +1,4 @@
+const moment = require('moment-timezone');
 const {
     agentProvider,
     mockManager,
@@ -20,12 +21,18 @@ const tierSnapshot = {
     updated_at: anyISODateTime
 };
 
+const roleSnapshot = tierSnapshot;
+
 const buildAuthorSnapshot = (roles = false) => {
     const authorSnapshot = {
         last_seen: anyISODateTime,
         created_at: anyISODateTime,
         updated_at: anyISODateTime
     };
+
+    if (roles) {
+        return {...authorSnapshot, roles: Array(1).fill(roleSnapshot)};
+    }
 
     return authorSnapshot;
 };
@@ -46,6 +53,13 @@ const buildPageSnapshotWithTiers = ({
         tiers: new Array(tiersCount).fill(tierSnapshot),
         primary_author: buildAuthorSnapshot(roles),
         authors: new Array(1).fill(buildAuthorSnapshot(roles))
+    };
+};
+
+const buildPreviousPageSnapshotWithTiers = (tiersCount) => {
+    return {
+        tiers: new Array(tiersCount).fill(tierSnapshot),
+        updated_at: anyISODateTime
     };
 };
 
@@ -102,6 +116,58 @@ describe('page.* events', function () {
                         published: false,
                         tiersCount: 2
                     })
+                }
+            });
+    });
+
+    it('page.scheduled event is triggered', async function () {
+        const webhookURL = 'https://test-webhook-receiver.com/page-scheduled/';
+        await webhookMockReceiver.mock(webhookURL);
+        await fixtureManager.insertWebhook({
+            event: 'page.scheduled',
+            url: webhookURL
+        });
+
+        const res = await adminAPIAgent
+            .post('pages/')
+            .body({
+                pages: [
+                    {
+                        title: 'testing page.scheduled webhook',
+                        status: 'draft'
+                    }
+                ]
+            })
+            .expectStatus(201);
+
+        const id = res.body.pages[0].id;
+        const scheduledPage = res.body.pages[0];
+        scheduledPage.status = 'scheduled';
+        scheduledPage.published_at = moment().add(6, 'hours').toISOString();
+
+        await adminAPIAgent
+            .put('pages/' + id)
+            .body({
+                pages: [scheduledPage]
+            })
+            .expectStatus(200);
+
+        await webhookMockReceiver.receivedRequest();
+
+        webhookMockReceiver
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                'content-length': anyNumber,
+                'user-agent': anyGhostAgent
+            })
+            .matchBodySnapshot({
+                page: {
+                    current: buildPageSnapshotWithTiers({
+                        published: true,
+                        tiersCount: 2,
+                        roles: true
+                    }),
+                    previous: buildPreviousPageSnapshotWithTiers(2)
                 }
             });
     });
