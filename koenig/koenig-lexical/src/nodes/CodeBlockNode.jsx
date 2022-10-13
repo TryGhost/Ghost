@@ -23,20 +23,18 @@ function CodeBlockComponent({className, code, language, nodeKey, editor}) {
     };
 
     return (
-        <KoenigCardWrapper className={className} nodeKey={nodeKey} >
-            <code>
-                <textarea
-                    ref={el}
-                    autoCorrect="off"
-                    autoCapitalize="off"
-                    spellCheck="false"
-                    tabIndex="0"
-                    autoFocus
-                    className='min-h-170 w-full bg-grey-50 p-3 text-grey-900'
-                    value={code}
-                    onChange={updateCode} />
-            </code>
-        </KoenigCardWrapper>
+        <code>
+            <textarea
+                ref={el}
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck="false"
+                tabIndex="0"
+                autoFocus
+                className='min-h-170 w-full bg-grey-50 p-3 text-grey-900'
+                value={code}
+                onChange={updateCode} />
+        </code>
     );
 }
 
@@ -112,13 +110,15 @@ export class CodeBlockNode extends DecoratorNode {
         };
 
         return (
-            <CodeBlockComponent
-                className={className}
-                code={this.__code}
-                language={this.__language}
-                nodeKey={this.getKey()}
-                editor={editor}
-            />
+            <KoenigCardWrapper className={className} nodeKey={this.getKey()}>
+                <CodeBlockComponent
+                    className={className}
+                    code={this.__code}
+                    language={this.__language}
+                    nodeKey={this.getKey()}
+                    editor={editor}
+                />
+            </KoenigCardWrapper>
         );
     }
 

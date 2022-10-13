@@ -22,11 +22,9 @@ describe('Renders horizontal line rule', async () => {
         await page.keyboard.type('--- ');
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div>
                     <div data-kg-card="true" data-kg-card-selected="false">
                         <hr>
                     </div>
-                </div>
             </div>
             <p><br></p>
         `);
