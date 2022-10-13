@@ -1,4 +1,5 @@
 const {escapeHtml: escape} = require('@tryghost/string');
+const feedbackButtons = require('./feedback-buttons');
 
 /* eslint indent: warn, no-irregular-whitespace: warn */
 const iff = (cond, yes, no) => (cond ? yes : no);
@@ -68,6 +69,10 @@ table {
     mso-table-lspace: 0pt;
     mso-table-rspace: 0pt;
     width: 100%;
+}
+
+table.inline {
+  width: auto !important;
 }
 
 table td {
@@ -1264,6 +1269,8 @@ ${ templateSettings.showBadge ? `
                         </tr>
 
                         <!-- END MAIN CONTENT AREA -->
+
+                        ${iff(templateSettings.feedbackEnabled, feedbackButtons.getTemplate(templateSettings.accentColor), '')}
 
                         <tr>
                             <td class="wrapper" align="center">

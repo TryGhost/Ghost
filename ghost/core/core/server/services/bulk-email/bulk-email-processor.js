@@ -234,6 +234,9 @@ module.exports = {
                 unsubscribe_url: postEmailSerializer.createUnsubscribeUrl(recipient.member_uuid, {newsletterUuid})
             };
 
+            // create unique urls for every recipient (for example, for feedback buttons)
+            emailData = postEmailSerializer.createUserLinks(emailData, recipient.member_uuid);
+
             // computed properties on recipients - TODO: better way of handling these
             recipient.member_first_name = (recipient.member_name || '').split(' ')[0];
 
