@@ -5,11 +5,14 @@ import CodeEditor from '@uiw/react-textarea-code-editor';
 
 const SerializedStateTextarea = (props) => {
     const [editor] = useLexicalComposerContext();
-    const [serializedJson, setSerializedJson] = React.useState('{}');
+
+    const renderEditorState = () => JSON.stringify(editor.getEditorState().toJSON(), null, 2);
+
+    const [serializedJson, setSerializedJson] = React.useState(renderEditorState());
     const sidebarState = props.toggle;
 
     const onChange = () => {
-        setSerializedJson(JSON.stringify(editor.getEditorState().toJSON(), null, 2));
+        setSerializedJson(renderEditorState());
     };
 
     return (
