@@ -2,6 +2,7 @@
 // const testUtils = require('./utils');
 require('./utils');
 
+const assert = require('assert');
 const fs = require('fs-extra');
 const path = require('path');
 const sinon = require('sinon');
@@ -165,6 +166,18 @@ describe('Importer', function () {
             const fileContents = fsWriteSpy.firstCall.args[1];
 
             fileContents.should.match(/^email,labels\r\n/);
+        });
+    });
+
+    describe('perform', function () {
+        it('performs import on a single csv file', async function () {
+            const importer = buildMockImporterInstance();
+
+            const result = await importer.perform(`${csvPath}/single-column-with-header.csv`);
+
+            assert.equal(result.total, 2);
+            assert.equal(result.imported, 2);
+            assert.equal(result.errors.length, 0);
         });
     });
 });
