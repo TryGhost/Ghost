@@ -7,7 +7,7 @@ const csvPath = path.join(__dirname, '/fixtures/');
 const readCSV = ({filePath, mapping, defaultLabels}) => parse(filePath, mapping, defaultLabels);
 
 describe('parse', function () {
-    it('read csv: empty file', async function () {
+    it('empty file', async function () {
         const result = await readCSV({
             filePath: csvPath + 'empty.csv'
         });
@@ -16,7 +16,7 @@ describe('parse', function () {
         result.length.should.eql(0);
     });
 
-    it('read csv: one column', async function () {
+    it('one column', async function () {
         const result = await readCSV({
             filePath: csvPath + 'single-column-with-header.csv'
         });
@@ -27,7 +27,7 @@ describe('parse', function () {
         result[1].email.should.eql('test@example.com');
     });
 
-    it('read csv: two columns, 1 filter', async function () {
+    it('two columns, 1 filter', async function () {
         const result = await readCSV({
             filePath: csvPath + 'two-columns-with-header.csv'
         });
@@ -38,7 +38,7 @@ describe('parse', function () {
         result[1].email.should.eql('test@example.com');
     });
 
-    it('read csv: two columns, 2 filters', async function () {
+    it('two columns, 2 filters', async function () {
         const result = await readCSV({
             filePath: csvPath + 'two-columns-obscure-header.csv',
             mapping: {
@@ -54,7 +54,7 @@ describe('parse', function () {
         result[1].id.should.eql('2');
     });
 
-    it('read csv: two columns with mapping', async function () {
+    it('two columns with mapping', async function () {
         const result = await readCSV({
             filePath: csvPath + 'two-columns-mapping-header.csv',
             mapping: {
@@ -74,7 +74,7 @@ describe('parse', function () {
         result[1].id.should.eql('2');
     });
 
-    it('read csv: two columns with partial mapping', async function () {
+    it('two columns with partial mapping', async function () {
         const result = await readCSV({
             filePath: csvPath + 'two-columns-mapping-header.csv',
             mapping: {
@@ -93,7 +93,7 @@ describe('parse', function () {
         result[1].id.should.eql('2');
     });
 
-    it('read csv: two columns with empty mapping', async function () {
+    it('two columns with empty mapping', async function () {
         const result = await readCSV({
             filePath: csvPath + 'two-columns-mapping-header.csv',
             mapping: {}
@@ -110,7 +110,7 @@ describe('parse', function () {
         result[1].id.should.eql('2');
     });
 
-    it('read csv: transforms empty values to nulls', async function () {
+    it('transforms empty values to nulls', async function () {
         const result = await readCSV({
             filePath: csvPath + 'multiple-records-with-empty-values.csv'
         });
@@ -124,7 +124,7 @@ describe('parse', function () {
         should.equal(result[1].name, null);
     });
 
-    it('read csv: transforms "subscribed_to_emails" column to "subscribed" property when the mapping is passed in', async function () {
+    it(' transforms "subscribed_to_emails" column to "subscribed" property when the mapping is passed in', async function () {
         const mapping = {
             subscribed_to_emails: 'subscribed'
         };
@@ -142,7 +142,7 @@ describe('parse', function () {
         assert.equal(result[1].subscribed, false);
     });
 
-    it('read csv: DOES NOT transforms "subscribed_to_emails" column to "subscribed" property when the WITHOUT mapping', async function () {
+    it('DOES NOT transforms "subscribed_to_emails" column to "subscribed" property when the WITHOUT mapping', async function () {
         const result = await readCSV({
             filePath: csvPath + 'subscribed-to-emails-header.csv'
         });
