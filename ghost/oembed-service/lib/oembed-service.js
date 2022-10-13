@@ -5,6 +5,8 @@ const {extract, hasProvider} = require('oembed-parser');
 const cheerio = require('cheerio');
 const _ = require('lodash');
 const {CookieJar} = require('tough-cookie');
+const charset = require('charset');
+const iconv = require('iconv-lite');
 
 const messages = {
     noUrlProvided: 'No url provided.',
@@ -111,7 +113,96 @@ class OEmbed {
         }
     }
 
-    async fetchBookmarkData(url) {
+    /**
+     * @param {string} url
+     * @param {Object} options
+     * 
+     * @returns {Promise<{url: string, body: any, headers: any}>}
+     */
+    async fetchPage(url, options) {
+        const cookieJar = new CookieJar();
+        return this.externalRequest(
+            url,
+            {
+                cookieJar,
+                method: 'GET',
+                timeout: 2 * 1000,
+                followRedirect: true,
+                ...options
+            });
+    }
+
+    /**
+     * @param {string} url
+     * 
+     * @returns {Promise<{url: string, body: string}>}
+     */
+    async fetchPageHtml(url) {
+        // Fetch url and get response as binary buffer to
+        // avoid implicit cast
+        const {headers, body, url: responseUrl} = await this.fetchPage(
+            url,
+            {
+                encoding: 'binary',
+                responseType: 'buffer'
+            });
+
+        try {
+            // Detect page encoding which might not be utf-8
+            // and decode content
+            const encoding = charset(
+                headers,
+                body);
+
+            if (encoding === null) {
+                return {
+                    body: body.toString(),
+                    url: responseUrl
+                };
+            }
+
+            const decodedBody = iconv.decode(
+                Buffer.from(body, 'binary'), encoding);
+
+            return {
+                body: decodedBody,
+                url: responseUrl
+            };
+        } catch (err) {
+            logging.error(err);
+            //return non decoded body anyway
+            return {
+                body: body.toString(),
+                url: responseUrl
+            };
+        }
+    }
+
+    /**
+     * @param {string} url
+     * 
+     * @returns {Promise<{url: string, body: Object}>}
+     */
+    async fetchPageJson(url) {
+        const {body, url: pageUrl} = await this.fetchPage(
+            url,
+            {
+                json: true
+            });
+
+        return {
+            body,
+            url: pageUrl
+        };
+    }
+    
+    /**
+     * @param {string} url
+     * @param {string} html
+     * 
+     * @returns {Promise<Object>}
+     */
+    async fetchBookmarkData(url, html) {
         const metascraper = require('metascraper')([
             require('metascraper-url')(),
             require('metascraper-title')(),
@@ -124,11 +215,7 @@ class OEmbed {
         ]);
 
         let scraperResponse;
-
-        const cookieJar = new CookieJar();
-        const response = await this.externalRequest(url, {cookieJar});
-
-        const html = response.body;
+        
         try {
             scraperResponse = await metascraper({html, url});
         } catch (err) {
@@ -189,39 +276,17 @@ class OEmbed {
     }
 
     /**
-     * @param {string} _url
+     * @param {string} url
+     * @param {string} html
      * @param {string} [cardType]
      *
      * @returns {Promise<Object>}
      */
-    async fetchOembedData(_url, cardType) {
-        // check against known oembed list
-        let {url, provider} = findUrlWithProvider(_url);
-        if (provider) {
-            return this.knownProvider(url);
-        }
-
-        // url not in oembed list so fetch it in case it's a redirect or has a
-        // <link rel="alternate" type="application/json+oembed"> element
-        const cookieJar = new CookieJar();
-        const pageResponse = await this.externalRequest(url, {
-            method: 'GET',
-            timeout: 2 * 1000,
-            followRedirect: true,
-            cookieJar
-        });
-        // url changed after fetch, see if we were redirected to a known oembed
-        if (pageResponse.url !== url) {
-            ({url, provider} = findUrlWithProvider(pageResponse.url));
-            if (provider) {
-                return this.knownProvider(url);
-            }
-        }
-
+    async fetchOembedData(url, html, cardType) {
         // check for <link rel="alternate" type="application/json+oembed"> element
         let oembedUrl;
         try {
-            oembedUrl = cheerio('link[type="application/json+oembed"]', pageResponse.body).attr('href');
+            oembedUrl = cheerio('link[type="application/json+oembed"]', html).attr('href');
         } catch (e) {
             return this.unknownProvider(url);
         }
@@ -234,13 +299,8 @@ class OEmbed {
             }
 
             // fetch oembed response from embedded rel="alternate" url
-            const oembedResponse = await this.externalRequest(oembedUrl, {
-                method: 'GET',
-                json: true,
-                timeout: 2 * 1000,
-                followRedirect: true,
-                cookieJar
-            });
+            const oembedResponse = await this.fetchPageJson(oembedUrl);
+
             // validate the fetched json against the oembed spec to avoid
             // leaking non-oembed responses
             const body = oembedResponse.body;
@@ -304,17 +364,39 @@ class OEmbed {
                 }
             }
 
+            if (type !== 'bookmark') {
+                // if not a bookmark request, first
+                // check against known oembed list
+                const {url: providerUrl, provider} = findUrlWithProvider(url);
+                if (provider) {
+                    return this.knownProvider(providerUrl);
+                }
+            }
+
+            // Not in the list, we need to fetch the content
+            const {url: pageUrl, body} = await this.fetchPageHtml(url);
+
             // fetch only bookmark when explicitly requested
             if (type === 'bookmark') {
-                return this.fetchBookmarkData(url);
+                return this.fetchBookmarkData(url, body);
             }
 
             // attempt to fetch oembed
-            let data = await this.fetchOembedData(url);
+
+            // In case response was a redirect, see if we were 
+            // redirected to a known oembed
+            if (pageUrl !== url) {
+                const {url: providerUrl, provider} = findUrlWithProvider(pageUrl);
+                if (provider) {
+                    return this.knownProvider(providerUrl);
+                }
+            }
+
+            let data = await this.fetchOembedData(url, body);
 
             // fallback to bookmark when we can't get oembed
             if (!data && !type) {
-                data = await this.fetchBookmarkData(url);
+                data = await this.fetchBookmarkData(url, body);
             }
 
             // couldn't get anything, throw a validation error
