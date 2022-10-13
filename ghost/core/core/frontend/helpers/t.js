@@ -13,6 +13,15 @@
 const {themeI18n} = require('../services/handlebars');
 
 module.exports = function t(text, options) {
+    // checks for smart apostrophes, eg. https://unicode-table.com/en/201C/
+    const quoteTest = /[\u201C\u201D\u201F]/u;
+
+    if ((quoteTest.test(text)) || (text === undefined && options === undefined)) {
+        throw new errors.IncorrectUsageError({
+            message: tpl(messages.oopsErrorTemplateHasError)
+        });
+    }
+
     const bindings = {};
     let prop;
     for (prop in options.hash) {
