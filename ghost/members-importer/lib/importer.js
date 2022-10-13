@@ -12,6 +12,10 @@ const messages = {
     jobAlreadyComplete: 'Job is already complete.'
 };
 
+const defaultInputCSVHeaderMappings = {
+    subscribed_to_emails: 'subscribed'
+};
+
 module.exports = class MembersCSVImporter {
     /**
      * @param {Object} options
@@ -65,9 +69,7 @@ module.exports = class MembersCSVImporter {
             throw new errors.DataImportError({message: tpl(messages.filenameCollision)});
         }
 
-        const inputMapping = Object.assign({}, headerMapping, {
-            subscribed_to_emails: 'subscribed'
-        });
+        const inputMapping = Object.assign({}, defaultInputCSVHeaderMappings, headerMapping);
         const rows = await membersCSV.parse(inputFilePath, inputMapping, defaultLabels);
         const columns = Object.keys(rows[0]);
         const numberOfBatches = Math.ceil(rows.length / batchSize);
@@ -94,7 +96,7 @@ module.exports = class MembersCSVImporter {
      * @param {string} filePath - the path to a "prepared" CSV file
      */
     async perform(filePath) {
-        const rows = membersCSV.parse(filePath);
+        const rows = membersCSV.parse(filePath, defaultInputCSVHeaderMappings);
 
         const membersApi = await this._getMembersApi();
 

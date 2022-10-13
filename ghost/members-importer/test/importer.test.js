@@ -15,6 +15,7 @@ describe('Importer', function () {
     let memberCreateStub;
     let knexStub;
     let sendEmailStub;
+    let membersApiStub;
 
     beforeEach(function () {
         fsWriteSpy = sinon.spy(fs, 'writeFile');
@@ -37,7 +38,7 @@ describe('Importer', function () {
         };
 
         memberCreateStub = sinon.stub().resolves(null);
-        const membersApi = {
+        membersApiStub = {
             productRepository: {
                 list: async () => {
                     return {
@@ -65,7 +66,7 @@ describe('Importer', function () {
         return new MembersCSVImporter({
             storagePath: csvPath,
             getTimezone: sinon.stub().returns('UTC'),
-            getMembersApi: () => membersApi,
+            getMembersApi: () => membersApiStub,
             sendEmail: sendEmailStub,
             isSet: sinon.stub(),
             addJob: sinon.stub(),
@@ -167,6 +168,16 @@ describe('Importer', function () {
 
             fileContents.should.match(/^email,labels\r\n/);
         });
+
+        it('It supports "subscribed_to_emails" column header ouf of the box', async function (){
+            const membersImporter = buildMockImporterInstance();
+
+            await membersImporter.prepare(`${csvPath}/subscribed-to-emails-header.csv`);
+
+            const fileContents = fsWriteSpy.firstCall.args[1];
+
+            fileContents.should.match(/^email,subscribed_to_emails,labels\r\n/);
+        });
     });
 
     describe('perform', function () {
@@ -174,6 +185,30 @@ describe('Importer', function () {
             const importer = buildMockImporterInstance();
 
             const result = await importer.perform(`${csvPath}/single-column-with-header.csv`);
+
+            assert.equal(membersApiStub.members.create.args[0][0].email, 'jbloggs@example.com');
+            assert.deepEqual(membersApiStub.members.create.args[0][0].labels, []);
+
+            assert.equal(membersApiStub.members.create.args[1][0].email, 'test@example.com');
+            assert.deepEqual(membersApiStub.members.create.args[1][0].labels, []);
+
+            assert.equal(result.total, 2);
+            assert.equal(result.imported, 2);
+            assert.equal(result.errors.length, 0);
+        });
+
+        it('performs import on a csv file  "subscribed_to_emails" column header', async function () {
+            const importer = buildMockImporterInstance();
+
+            const result = await importer.perform(`${csvPath}/subscribed-to-emails-header.csv`);
+
+            assert.equal(membersApiStub.members.create.args[0][0].email, 'jbloggs@example.com');
+            assert.equal(membersApiStub.members.create.args[0][0].subscribed, true);
+            assert.deepEqual(membersApiStub.members.create.args[0][0].labels, []);
+
+            assert.equal(membersApiStub.members.create.args[1][0].email, 'test@example.com');
+            assert.equal(membersApiStub.members.create.args[1][0].subscribed, false);
+            assert.deepEqual(membersApiStub.members.create.args[1][0].labels, []);
 
             assert.equal(result.total, 2);
             assert.equal(result.imported, 2);
