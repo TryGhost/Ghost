@@ -3,6 +3,7 @@ const Promise = require('bluebird');
 const debug = require('@tryghost/debug')('importer:roles');
 const BaseImporter = require('./base');
 const models = require('../../../../models');
+const {activate} = require('../../../../services/themes/activate');
 
 class CustomThemeSettingsImporter extends BaseImporter {
     constructor(allDataFromFile) {
@@ -60,8 +61,17 @@ class CustomThemeSettingsImporter extends BaseImporter {
                 })
                 .reflect());
         });
+        
+        const opsPromise = Promise.all(ops);
+        
+        opsPromise.then(() => {
+            models.Settings.findOne({key: 'active_theme'})
+                .then((theme) => {
+                    activate(theme.get('value'));
+                });
+        });
 
-        return Promise.all(ops);
+        return opsPromise;
     }
 }
 module.exports = CustomThemeSettingsImporter;
