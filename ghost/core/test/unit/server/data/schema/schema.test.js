@@ -23,7 +23,6 @@ const VALID_KEYS = {
     ],
     string: [
         'maxlength',
-        'maxLength', // this is the result of a bug and should NOT be used, will be deleted soon
         'nullable',
         'primary',
         'unique',
