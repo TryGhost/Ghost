@@ -12,13 +12,13 @@ const VISIBILITIES = [
 @classic
 export default class GhPsmVisibilityInput extends Component {
     @service settings;
-    
+
     // public attrs
     post = null;
 
     @computed('post.visibility')
     get selectedVisibility() {
-        return this.get('post.visibility') || this.settings.get('defaultContentVisibility');
+        return this.get('post.visibility') || this.settings.defaultContentVisibility;
     }
 
     init() {

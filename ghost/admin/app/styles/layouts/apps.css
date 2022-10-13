@@ -256,13 +256,29 @@
     opacity: 0.4;
 }
 
+.apps-card-app-disabled .apps-card-app-title-container {
+    display: flex;
+}
+
+.apps-card-app-disabled .apps-card-app-icon {
+    filter:grayscale(1);
+    opacity:0.3;
+}
+
 .apps-card-app-disabled .apps-card-meta svg {
     margin-left: 4px;
     width: 14px;
+    opacity: 0.9;
 }
 
 .apps-card-app-disabled .apps-card-meta path {
     fill: #292d33;
+}
+
+.apps-card-app-disabled .apps-card-app-disabled-cta {
+    color: #30cf43;
+    margin-right: 28px;
+    font-weight: 600;
 }
 
 .apps-card-app-title {
@@ -328,19 +344,18 @@
     justify-content: flex-start;
     align-items: flex-start;
     align-content: flex-start;
-    margin-top: 24px;
 }
 
 .app-icon {
     position: relative;
-    flex: 1 0 56px;
-    width: 56px;
-    min-width: 56px;
-    height: 56px;
+    flex: 1 0 60px;
+    width: 60px;
+    min-width: 60px;
+    height: 60px;
     background-position: center center;
     background-size: cover;
     border-radius: 10%;
-    margin-right: 32px;
+    margin-right: 24px;
 }
 
 .app-icon img {
@@ -348,16 +363,16 @@
 }
 
 .app-cell h3 {
-    margin: 4px 0 0;
+    margin: -2px 0 0;
     color: var(--black);
-    font-size: 2.1rem;
-    font-weight: 600;
+    font-size: 3.2rem;
+    font-weight: 700;
 }
 
 .app-cell p {
     margin: 0;
     margin-bottom: 5px;
-    color: var(--midgrey);
+    color: var(--midgrey-l2);
     font-size: 1.4rem;
     line-height: 1.4em;
 }
@@ -420,7 +435,7 @@
 /* Zapier templates */
 /* ---------------------------------------------------------- */
 .gh-zapier-data-container {
-    margin: 1.6em 0;
+    margin: 1.8em 0;
 }
 
 .gh-zapier-data-container .gh-zapier-data {
@@ -437,9 +452,9 @@
 
 .gh-zapier-data .data-label {
     width: 128px;
-    height: 36px;
-    padding: 8px 8px 8px 0;
-    color: var(--midgrey);
+    height: 28px;
+    padding: 4px 4px 4px 0;
+    color: var(--midgrey-l2);
     font-size: 1.4rem;
     line-height: 1.45;
     font-weight: 400;
@@ -448,8 +463,8 @@
 
 .gh-zapier-data .data {
     width: 100%;
-    height: 36px;
-    padding: 8px;
+    height: 28px;
+    padding: 4px;
     color: var(--darkgrey);
     font-size: 1.4rem;
     line-height: 1.45;

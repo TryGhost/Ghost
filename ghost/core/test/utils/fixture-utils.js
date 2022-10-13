@@ -4,7 +4,7 @@ const _ = require('lodash');
 const path = require('path');
 const fs = require('fs-extra');
 const uuid = require('uuid');
-const ObjectId = require('bson-objectid');
+const ObjectId = require('bson-objectid').default;
 const KnexMigrator = require('knex-migrator');
 const {sequence} = require('@tryghost/promise');
 const knexMigrator = new KnexMigrator();
@@ -643,6 +643,18 @@ const fixtures = {
         }));
     },
 
+    insertRedirects: async function insertClicks() {
+        await Promise.all(DataGenerator.forKnex.redirects.map((click) => {
+            return models.Redirect.add(click, context.internal);
+        }));
+    },
+
+    insertClicks: async function insertClicks() {
+        await Promise.all(DataGenerator.forKnex.members_click_events.map((click) => {
+            return models.MemberClickEvent.add(click, context.internal);
+        }));
+    },
+
     insertSnippets: function insertSnippets() {
         return Promise.map(DataGenerator.forKnex.snippets, function (snippet) {
             return models.Snippet.add(snippet, context.internal);
@@ -776,6 +788,12 @@ const toDoList = {
     },
     comments: function insertComments() {
         return fixtures.insertComments();
+    },
+    redirects: function insertRedirects() {
+        return fixtures.insertRedirects();
+    },
+    clicks: function insertClicks() {
+        return fixtures.insertClicks();
     }
 };
 

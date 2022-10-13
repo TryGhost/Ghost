@@ -1,67 +1,86 @@
 import Controller from '@ember/controller';
-import boundOneWay from 'ghost-admin/utils/bound-one-way';
+import DeleteUserModal from '../../../components/settings/staff/modals/delete-user';
+import RegenerateStaffTokenModal from '../../../components/settings/staff/modals/regenerate-staff-token';
+import SelectRoleModal from '../../../components/settings/staff/modals/select-role';
+import SuspendUserModal from '../../../components/settings/staff/modals/suspend-user';
+import TransferOwnershipModal from '../../../components/settings/staff/modals/transfer-ownership';
+import UnsuspendUserModal from '../../../components/settings/staff/modals/unsuspend-user';
+import UploadImageModal from '../../../components/settings/staff/modals/upload-image';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import isNumber from 'ghost-admin/utils/isNumber';
-import validator from 'validator';
 import windowProxy from 'ghost-admin/utils/window-proxy';
-import {action, computed} from '@ember/object';
-import {alias, and, not, or, readOnly} from '@ember/object/computed';
-import {isArray as isEmberArray} from '@ember/array';
+import {TrackedObject} from 'tracked-built-ins';
+import {action} from '@ember/object';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {task, taskGroup, timeout} from 'ember-concurrency';
+import {tracked} from '@glimmer/tracking';
 
-export default Controller.extend({
-    ajax: service(),
-    config: service(),
-    dropdown: service(),
-    ghostPaths: service(),
-    limit: service(),
-    notifications: service(),
-    session: service(),
-    slugGenerator: service(),
-    utils: service(),
-    membersUtils: service(),
+export default class UserController extends Controller {
+    @service ajax;
+    @service config;
+    @service ghostPaths;
+    @service membersUtils;
+    @service modals;
+    @service notifications;
+    @service session;
+    @service slugGenerator;
+    @service utils;
 
-    personalToken: null,
-    limitErrorMessage: null,
-    personalTokenRegenerated: false,
-    dirtyAttributes: false,
-    showDeleteUserModal: false,
-    showSuspendUserModal: false,
-    showTransferOwnerModal: false,
-    showUploadCoverModal: false,
-    showUploadImageModal: false,
-    showRegenerateTokenModal: false,
-    showRoleSelectionModal: false,
-    _scratchFacebook: null,
-    _scratchTwitter: null,
+    @tracked dirtyAttributes = false;
+    @tracked personalToken = null;
+    @tracked personalTokenRegenerated = false;
+    @tracked scratchValues = new TrackedObject();
+    @tracked slugValue = null; // not set directly on model to avoid URL changing before save
 
-    saveHandlers: taskGroup().enqueue(),
+    get user() {
+        return this.model;
+    }
 
-    user: alias('model'),
-    currentUser: alias('session.user'),
+    get currentUser() {
+        return this.session.user;
+    }
 
-    email: readOnly('user.email'),
-    slugValue: boundOneWay('user.slug'),
+    get isOwnProfile() {
+        return this.currentUser.id === this.user.id;
+    }
 
-    canChangeEmail: not('isAdminUserOnOwnerProfile'),
-    canChangePassword: not('isAdminUserOnOwnerProfile'),
-    canToggleMemberAlerts: or('currentUser.isOwnerOnly', 'isAdminUserOnOwnProfile'),
-    isAdminUserOnOwnProfile: and('currentUser.isAdminOnly', 'isOwnProfile'),
-    canMakeOwner: and('currentUser.isOwnerOnly', 'isNotOwnProfile', 'user.isAdminOnly', 'isNotSuspended'),
-    isAdminUserOnOwnerProfile: and('currentUser.isAdminOnly', 'user.isOwnerOnly'),
-    isNotOwnersProfile: not('user.isOwnerOnly'),
-    isNotSuspended: not('user.isSuspended'),
-    rolesDropdownIsVisible: and('currentUser.isAdmin', 'isNotOwnProfile', 'isNotOwnersProfile'),
-    userActionsAreVisible: or('deleteUserActionIsVisible', 'canMakeOwner'),
+    get isAdminUserOnOwnProfile() {
+        return this.currentUser.isAdminOnly && this.isOwnProfile;
+    }
 
-    isNotOwnProfile: not('isOwnProfile'),
-    isOwnProfile: computed('user.id', 'currentUser.id', function () {
-        return this.get('user.id') === this.get('currentUser.id');
-    }),
+    get isAdminUserOnOwnerProfile() {
+        return this.currentUser.isAdminOnly && this.user.isOwnerOnly;
+    }
 
-    deleteUserActionIsVisible: computed('currentUser.{isAdmin,isEditor}', 'user.{isOwnerOnly,isAuthorOrContributor}', 'isOwnProfile', function () {
+    get canChangeEmail() {
+        return !this.isAdminUserOnOwnerProfile;
+    }
+
+    get canChangePassword() {
+        return !this.isAdminUserOnOwnerProfile;
+    }
+
+    get canMakeOwner() {
+        return this.currentUser.isOwnerOnly
+            && !this.isOwnProfile
+            && this.user.isAdminOnly
+            && !this.user.isSuspended;
+    }
+
+    get canToggleMemberAlerts() {
+        return this.currentUser.isOwnerOnly || this.isAdminUserOnOwnProfile;
+    }
+
+    get rolesDropdownIsVisible() {
+        return this.currentUser.isAdmin && !this.isOwnProfile && !this.user.isOwnerOnly;
+    }
+
+    get userActionsAreVisible() {
+        return this.deleteUserActionIsVisible || this.canMakeOwner;
+    }
+
+    get deleteUserActionIsVisible() {
         // users can't delete themselves
         if (this.isOwnProfile) {
             return false;
@@ -69,290 +88,129 @@ export default Controller.extend({
 
         if (
             // owners/admins can delete any non-owner user
-            (this.currentUser.get('isAdmin') && !this.user.isOwnerOnly) ||
+            (this.currentUser.isAdmin && !this.user.isOwnerOnly) ||
             // editors can delete any author or contributor
-            (this.currentUser.get('isEditor') && this.user.isAuthorOrContributor)
+            (this.currentUser.isEditor && this.user.isAuthorOrContributor)
         ) {
             return true;
         }
 
         return false;
-    }),
+    }
 
-    coverTitle: computed('user.name', function () {
-        return `${this.get('user.name')}'s Cover Image`;
-    }),
+    @action
+    setModelProperty(property, event) {
+        const value = event.target.value;
+        this.user[property] = value;
+    }
 
-    roles: computed(function () {
-        return this.store.query('role', {permissions: 'assign'});
-    }),
+    @action
+    validateModelProperty(property) {
+        this.user.validate({property});
+    }
 
-    actions: {
-        toggleRoleSelectionModal(event) {
-            event?.preventDefault?.();
-            this.toggleProperty('showRoleSelectionModal');
-        },
+    @action
+    clearModelErrors(property) {
+        this.user.hasValidated.removeObject(property);
+        this.user.errors.remove(property);
+    }
 
-        changeRole(newRole) {
-            this.user.set('role', newRole);
-            this.set('dirtyAttributes', true);
-        },
+    @action
+    setSlugValue(event) {
+        this.slugValue = event.target.value;
+    }
 
-        toggleDeleteUserModal() {
-            if (this.deleteUserActionIsVisible) {
-                this.toggleProperty('showDeleteUserModal');
-            }
-        },
+    @action
+    async deleteUser() {
+        await this.modals.open(DeleteUserModal, {
+            user: this.model
+        });
+    }
 
-        suspendUser() {
-            this.user.set('status', 'inactive');
-            return this.save.perform();
-        },
+    @action
+    async suspendUser() {
+        await this.modals.open(SuspendUserModal, {
+            user: this.model,
+            saveTask: this.saveTask
+        });
+    }
 
-        toggleSuspendUserModal() {
-            if (this.deleteUserActionIsVisible) {
-                this.toggleProperty('showSuspendUserModal');
-            }
-        },
+    @action
+    async unsuspendUser() {
+        await this.modals.open(UnsuspendUserModal, {
+            user: this.model,
+            saveTask: this.saveTask
+        });
+    }
 
-        unsuspendUser() {
-            this.user.set('status', 'active');
-            return this.save.perform();
-        },
+    @action
+    async transferOwnership() {
+        await this.modals.open(TransferOwnershipModal, {
+            user: this.model
+        });
+    }
 
-        toggleUnsuspendUserModal() {
-            if (this.deleteUserActionIsVisible) {
-                if (this.user.role.name !== 'Contributor'
-                    && this.limit.limiter
-                    && this.limit.limiter.isLimited('staff')
-                ) {
-                    this.limit.limiter.errorIfWouldGoOverLimit('staff')
-                        .then(() => {
-                            this.toggleProperty('showUnsuspendUserModal');
-                        })
-                        .catch((error) => {
-                            if (error.errorType === 'HostLimitError') {
-                                this.limitErrorMessage = error.message;
-                                this.toggleProperty('showUnsuspendUserModal');
-                            } else {
-                                this.notifications.showAPIError(error, {key: 'staff.limit'});
-                            }
-                        });
-                } else {
-                    this.toggleProperty('showUnsuspendUserModal');
-                }
-            }
-        },
+    @action
+    async regenerateStaffToken() {
+        const apiToken = await this.modals.open(RegenerateStaffTokenModal);
 
-        validateFacebookUrl() {
-            let newUrl = this._scratchFacebook;
-            let oldUrl = this.get('user.facebook');
-            let errMessage = '';
-
-            // reset errors and validation
-            this.get('user.errors').remove('facebook');
-            this.get('user.hasValidated').removeObject('facebook');
-
-            if (newUrl === '') {
-                // Clear out the Facebook url
-                this.set('user.facebook', '');
-                return;
-            }
-
-            // _scratchFacebook will be null unless the user has input something
-            if (!newUrl) {
-                newUrl = oldUrl;
-            }
-
-            try {
-                // strip any facebook URLs out
-                newUrl = newUrl.replace(/(https?:\/\/)?(www\.)?facebook\.com/i, '');
-
-                // don't allow any non-facebook urls
-                if (newUrl.match(/^(http|\/\/)/i)) {
-                    throw 'invalid url';
-                }
-
-                // strip leading / if we have one then concat to full facebook URL
-                newUrl = newUrl.replace(/^\//, '');
-                newUrl = `https://www.facebook.com/${newUrl}`;
-
-                // don't allow URL if it's not valid
-                if (!validator.isURL(newUrl)) {
-                    throw 'invalid url';
-                }
-
-                this.set('user.facebook', '');
-                run.schedule('afterRender', this, function () {
-                    this.set('user.facebook', newUrl);
-                });
-            } catch (e) {
-                if (e === 'invalid url') {
-                    errMessage = 'The URL must be in a format like '
-                               + 'https://www.facebook.com/yourPage';
-                    this.get('user.errors').add('facebook', errMessage);
-                    return;
-                }
-
-                throw e;
-            } finally {
-                this.get('user.hasValidated').pushObject('facebook');
-            }
-        },
-
-        validateTwitterUrl() {
-            let newUrl = this._scratchTwitter;
-            let oldUrl = this.get('user.twitter');
-            let errMessage = '';
-
-            // reset errors and validation
-            this.get('user.errors').remove('twitter');
-            this.get('user.hasValidated').removeObject('twitter');
-
-            if (newUrl === '') {
-                // Clear out the Twitter url
-                this.set('user.twitter', '');
-                return;
-            }
-
-            // _scratchTwitter will be null unless the user has input something
-            if (!newUrl) {
-                newUrl = oldUrl;
-            }
-
-            if (newUrl.match(/(?:twitter\.com\/)(\S+)/) || newUrl.match(/([a-z\d.]+)/i)) {
-                let username = [];
-
-                if (newUrl.match(/(?:twitter\.com\/)(\S+)/)) {
-                    [, username] = newUrl.match(/(?:twitter\.com\/)(\S+)/);
-                } else {
-                    [username] = newUrl.match(/([^/]+)\/?$/mi);
-                }
-
-                // check if username starts with http or www and show error if so
-                if (username.match(/^(http|www)|(\/)/) || !username.match(/^[a-z\d._]{1,15}$/mi)) {
-                    errMessage = !username.match(/^[a-z\d._]{1,15}$/mi) ? 'Your Username is not a valid Twitter Username' : 'The URL must be in a format like https://twitter.com/yourUsername';
-
-                    this.get('user.errors').add('twitter', errMessage);
-                    this.get('user.hasValidated').pushObject('twitter');
-                    return;
-                }
-
-                newUrl = `https://twitter.com/${username}`;
-
-                this.get('user.hasValidated').pushObject('twitter');
-
-                this.set('user.twitter', '');
-                run.schedule('afterRender', this, function () {
-                    this.set('user.twitter', newUrl);
-                });
-            } else {
-                errMessage = 'The URL must be in a format like '
-                           + 'https://twitter.com/yourUsername';
-                this.get('user.errors').add('twitter', errMessage);
-                this.get('user.hasValidated').pushObject('twitter');
-                return;
-            }
-        },
-
-        transferOwnership() {
-            let user = this.user;
-            let url = this.get('ghostPaths.url').api('users', 'owner');
-
-            this.dropdown.closeDropdowns();
-
-            return this.ajax.put(url, {
-                data: {
-                    owner: [{
-                        id: user.get('id')
-                    }]
-                }
-            }).then((response) => {
-                // manually update the roles for the users that just changed roles
-                // because store.pushPayload is not working with embedded relations
-                if (response && isEmberArray(response.users)) {
-                    response.users.forEach((userJSON) => {
-                        let updatedUser = this.store.peekRecord('user', userJSON.id);
-                        let role = this.store.peekRecord('role', userJSON.roles[0].id);
-
-                        updatedUser.set('role', role);
-                    });
-                }
-
-                this.notifications.showAlert(`Ownership successfully transferred to ${user.get('name')}`, {type: 'success', key: 'owner.transfer.success'});
-            }).catch((error) => {
-                this.notifications.showAPIError(error, {key: 'owner.transfer'});
-            });
-        },
-
-        toggleTransferOwnerModal() {
-            if (this.canMakeOwner) {
-                this.toggleProperty('showTransferOwnerModal');
-            }
-        },
-
-        toggleUploadCoverModal() {
-            this.toggleProperty('showUploadCoverModal');
-        },
-
-        toggleUploadImageModal() {
-            this.toggleProperty('showUploadImageModal');
-        },
-
-        // TODO: remove those mutation actions once we have better
-        // inline validations that auto-clear errors on input
-        updatePassword(password) {
-            this.set('user.password', password);
-            this.get('user.hasValidated').removeObject('password');
-            this.get('user.errors').remove('password');
-        },
-
-        updateNewPassword(password) {
-            this.set('user.newPassword', password);
-            this.get('user.hasValidated').removeObject('newPassword');
-            this.get('user.errors').remove('newPassword');
-        },
-
-        updateNe2Password(password) {
-            this.set('user.ne2Password', password);
-            this.get('user.hasValidated').removeObject('ne2Password');
-            this.get('user.errors').remove('ne2Password');
-        },
-
-        confirmRegenerateTokenModal() {
-            this.set('showRegenerateTokenModal', true);
-        },
-
-        cancelRegenerateTokenModal() {
-            this.set('showRegenerateTokenModal', false);
-        },
-
-        regenerateToken() {
-            let url = this.get('ghostPaths.url').api('users', 'me', 'token');
-
-            return this.ajax.put(url, {data: {}}).then(({apiKey}) => {
-                this.set('personalToken', apiKey.id + ':' + apiKey.secret);
-                this.set('personalTokenRegenerated', true);
-            }).catch((error) => {
-                this.notifications.showAPIError(error, {key: 'token.regenerate'});
-            });
+        if (apiToken) {
+            this.personalToken = apiToken;
+            this.personalTokenRegenerated = true;
         }
-    },
+    }
 
-    reset: action(function () {
+    @action
+    async selectRole() {
+        const newRole = await this.modals.open(SelectRoleModal, {
+            currentRole: this.model.role
+        });
+
+        if (newRole) {
+            this.user.role = newRole;
+            this.dirtyAttributes = true;
+        }
+    }
+
+    @action
+    async changeCoverImage() {
+        await this.modals.open(UploadImageModal, {
+            model: this.model,
+            modelProperty: 'coverImage'
+        });
+    }
+
+    @action
+    async changeProfileImage() {
+        await this.modals.open(UploadImageModal, {
+            model: this.model,
+            modelProperty: 'profileImage'
+        });
+    }
+
+    @action
+    setScratchValue(property, value) {
+        this.scratchValues[property] = value;
+    }
+
+    @action
+    reset() {
         this.user.rollbackAttributes();
         this.user.password = '';
         this.user.newPassword = '';
         this.user.ne2Password = '';
-        this.set('slugValue', this.user.slug);
-        this.set('dirtyAttributes', false);
-    }),
+        this.slugValue = this.user.slug;
+        this.dirtyAttributes = false;
+        this.clearScratchValues();
+    }
 
-    toggleCommentNotifications: action(function (event) {
+    @action
+    toggleCommentNotifications(event) {
         this.user.commentNotifications = event.target.checked;
-    }),
+    }
 
-    toggleMemberEmailAlerts: action(function (type, event) {
+    @action
+    toggleMemberEmailAlerts(type, event) {
         if (type === 'free-signup') {
             this.user.freeMemberSignupNotification = event.target.checked;
         } else if (type === 'paid-started') {
@@ -360,30 +218,21 @@ export default Controller.extend({
         } else if (type === 'paid-canceled') {
             this.user.paidSubscriptionCanceledNotification = event.target.checked;
         }
-    }),
+    }
 
-    deleteUser: task(function *() {
-        try {
-            yield this.user.destroyRecord();
+    @taskGroup({enqueue: true}) saveHandlers;
 
-            this.notifications.closeAlerts('user.delete');
-            this.store.unloadAll('post');
-            this.transitionToRoute('settings.staff');
-        } catch (error) {
-            this.notifications.showAlert('The user could not be deleted. Please try again.', {type: 'error', key: 'user.delete.failed'});
-            throw error;
-        }
-    }),
-
-    updateSlug: task(function* (newSlug) {
-        let slug = this.get('user.slug');
+    @task({group: 'saveHandlers'})
+    *updateSlugTask(event) {
+        let newSlug = event.target.value;
+        let slug = this.user.slug;
 
         newSlug = newSlug || slug;
         newSlug = newSlug.trim();
 
         // Ignore unchanged slugs or candidate slugs that are empty
         if (!newSlug || slug === newSlug) {
-            this.set('slugValue', slug);
+            this.slugValue = slug;
 
             return true;
         }
@@ -410,30 +259,33 @@ export default Controller.extend({
         // for the incrementor then the existing slug should be used
         if (isNumber(check) && check > 0) {
             if (slug === slugTokens.join('-') && serverSlug !== newSlug) {
-                this.set('slugValue', slug);
+                this.slugValue = slug;
 
                 return true;
             }
         }
 
-        this.set('slugValue', serverSlug);
-        this.set('dirtyAttributes', true);
+        this.slugValue = serverSlug;
+        this.dirtyAttributes = true;
 
         return true;
-    }).group('saveHandlers'),
+    }
 
-    save: task(function* () {
+    @task({group: 'saveHandlers'})
+    *saveTask() {
         let user = this.user;
         let slugValue = this.slugValue;
         let slugChanged;
 
-        if (user.get('slug') !== slugValue) {
+        if (user.slug !== slugValue) {
             slugChanged = true;
-            user.set('slug', slugValue);
+            user.slug = slugValue;
         }
 
         try {
-            user = yield user.save({format: false});
+            user = yield user.save();
+
+            this.clearScratchValues();
 
             // If the user's slug has changed, change the URL and replace
             // the history so refresh and back button still work
@@ -447,7 +299,7 @@ export default Controller.extend({
                 windowProxy.replaceState({path: newPath}, '', newPath);
             }
 
-            this.set('dirtyAttributes', false);
+            this.dirtyAttributes = false;
             this.notifications.closeAlerts('user.update');
 
             return user;
@@ -458,10 +310,45 @@ export default Controller.extend({
                 this.notifications.showAPIError(error, {key: 'user.update'});
             }
         }
-    }).group('saveHandlers'),
+    }
 
-    copyContentKey: task(function* () {
+    @task
+    *saveNewPasswordTask() {
+        yield this.user.saveNewPasswordTask.perform();
+        document.querySelector('#password-reset')?.reset();
+    }
+
+    @action
+    submitPasswordForm(event) {
+        event.preventDefault();
+        this._blurAndTrigger(() => this.saveNewPasswordTask.perform());
+    }
+
+    @action
+    saveViaKeyboard(event) {
+        event.preventDefault();
+        this._blurAndTrigger(() => this.saveTask.perform());
+    }
+
+    @task
+    *copyContentKeyTask() {
         copyTextToClipboard(this.personalToken);
         yield timeout(this.isTesting ? 50 : 3000);
-    })
-});
+    }
+
+    clearScratchValues() {
+        this.scratchValues = new TrackedObject();
+    }
+
+    _blurAndTrigger(fn) {
+        // trigger any set-on-blur actions
+        const focusedElement = document.activeElement;
+        focusedElement?.blur();
+
+        // schedule save for when set-on-blur actions have finished
+        run.schedule('actions', this, function () {
+            focusedElement?.focus();
+            fn();
+        });
+    }
+}

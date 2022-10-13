@@ -14,6 +14,7 @@ export default class SourceAttributionTable extends Component {
 
         this.modals.open(AllSourcesModal, {
             sources: allSources,
+            unavailableSource: this.unavailableSource,
             sortColumn: this.args.sortColumn
         });
     }
@@ -35,7 +36,7 @@ export default class SourceAttributionTable extends Component {
             return null;
         }
 
-        if (this.sortedSources === 5 && !this.unavailableSource.length) {
+        if (this.sortedSources.length === 5 && !this.unavailableSource.length) {
             return null;
         }
 
@@ -45,8 +46,8 @@ export default class SourceAttributionTable extends Component {
                 paidConversions: acc.paidConversions + source.paidConversions
             };
         }, {
-            signups: this.unavailableSource?.signups ?? 0,
-            paidConversions: this.unavailableSource?.paidConversions ?? 0
+            signups: 0,
+            paidConversions: 0
         });
     }
 

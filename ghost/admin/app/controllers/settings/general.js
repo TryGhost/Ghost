@@ -4,12 +4,14 @@ import {inject as service} from '@ember/service';
 /* eslint-disable ghost/ember/alias-model-in-controller */
 import Controller from '@ember/controller';
 import generatePassword from 'ghost-admin/utils/password-generator';
-import validator from 'validator';
 import {
     IMAGE_EXTENSIONS,
     IMAGE_MIME_TYPES
 } from 'ghost-admin/components/gh-image-uploader';
+import {TrackedObject} from 'tracked-built-ins';
+import {run} from '@ember/runloop';
 import {task} from 'ember-concurrency';
+import {tracked} from '@glimmer/tracking';
 
 function randomPassword() {
     let word = generatePassword(6);
@@ -28,16 +30,16 @@ export default class GeneralController extends Controller {
     @service frontend;
     @service ui;
 
-    availableTimezones = null;
+    @tracked scratchValues = new TrackedObject();
+
+    availableTimezones = this.config.availableTimezones;
     imageExtensions = IMAGE_EXTENSIONS;
     imageMimeTypes = IMAGE_MIME_TYPES;
-    _scratchFacebook = null;
-    _scratchTwitter = null;
 
     @computed('config.blogUrl', 'settings.publicHash')
     get privateRSSUrl() {
-        let blogUrl = this.get('config.blogUrl');
-        let publicHash = this.get('settings.publicHash');
+        let blogUrl = this.config.blogUrl;
+        let publicHash = this.settings.publicHash;
 
         return `${blogUrl}/${publicHash}/rss`;
     }
@@ -49,13 +51,13 @@ export default class GeneralController extends Controller {
 
     @action
     setTimezone(timezone) {
-        this.set('settings.timezone', timezone.name);
+        this.settings.timezone = timezone.name;
     }
 
     @action
     removeImage(image) {
         // setting `null` here will error as the server treats it as "null"
-        this.settings.set(image, '');
+        this.settings[image] = '';
     }
 
     /**
@@ -78,7 +80,7 @@ export default class GeneralController extends Controller {
     @action
     imageUploaded(property, results) {
         if (results[0]) {
-            return this.settings.set(property, results[0].url);
+            return this.settings[property] = results[0].url;
         }
     }
 
@@ -86,127 +88,28 @@ export default class GeneralController extends Controller {
     toggleIsPrivate(isPrivate) {
         let settings = this.settings;
 
-        settings.set('isPrivate', isPrivate);
-        settings.get('errors').remove('password');
+        settings.isPrivate = isPrivate;
+        settings.errors.remove('password');
 
         let changedAttrs = settings.changedAttributes();
 
         // set a new random password when isPrivate is enabled
         if (isPrivate && changedAttrs.isPrivate) {
-            settings.set('password', randomPassword());
+            settings.password = randomPassword();
 
         // reset the password when isPrivate is disabled
         } else if (changedAttrs.password) {
-            settings.set('password', changedAttrs.password[0]);
+            settings.password = changedAttrs.password[0];
         }
     }
 
     @action
-    validateFacebookUrl() {
-        let newUrl = this._scratchFacebook;
-        let oldUrl = this.get('settings.facebook');
-        let errMessage = '';
-
-        // reset errors and validation
-        this.get('settings.errors').remove('facebook');
-        this.get('settings.hasValidated').removeObject('facebook');
-
-        if (newUrl === '') {
-            // Clear out the Facebook url
-            this.set('settings.facebook', '');
-            return;
-        }
-
-        // _scratchFacebook will be null unless the user has input something
-        if (!newUrl) {
-            newUrl = oldUrl;
-        }
-
-        try {
-            // strip any facebook URLs out
-            newUrl = newUrl.replace(/(https?:\/\/)?(www\.)?facebook\.com/i, '');
-
-            // don't allow any non-facebook urls
-            if (newUrl.match(/^(http|\/\/)/i)) {
-                throw 'invalid url';
-            }
-
-            // strip leading / if we have one then concat to full facebook URL
-            newUrl = newUrl.replace(/^\//, '');
-            newUrl = `https://www.facebook.com/${newUrl}`;
-
-            // don't allow URL if it's not valid
-            if (!validator.isURL(newUrl)) {
-                throw 'invalid url';
-            }
-
-            this.settings.set('facebook', newUrl);
-            this.settings.notifyPropertyChange('facebook');
-        } catch (e) {
-            if (e === 'invalid url') {
-                errMessage = 'The URL must be in a format like '
-                           + 'https://www.facebook.com/yourPage';
-                this.get('settings.errors').add('facebook', errMessage);
-                return;
-            }
-
-            throw e;
-        } finally {
-            this.get('settings.hasValidated').pushObject('facebook');
-        }
+    setScratchValue(property, value) {
+        this.scratchValues[property] = value;
     }
 
-    @action
-    validateTwitterUrl() {
-        let newUrl = this._scratchTwitter;
-        let oldUrl = this.get('settings.twitter');
-        let errMessage = '';
-
-        // reset errors and validation
-        this.get('settings.errors').remove('twitter');
-        this.get('settings.hasValidated').removeObject('twitter');
-
-        if (newUrl === '') {
-            // Clear out the Twitter url
-            this.set('settings.twitter', '');
-            return;
-        }
-
-        // _scratchTwitter will be null unless the user has input something
-        if (!newUrl) {
-            newUrl = oldUrl;
-        }
-
-        if (newUrl.match(/(?:twitter\.com\/)(\S+)/) || newUrl.match(/([a-z\d.]+)/i)) {
-            let username = [];
-
-            if (newUrl.match(/(?:twitter\.com\/)(\S+)/)) {
-                [, username] = newUrl.match(/(?:twitter\.com\/)(\S+)/);
-            } else {
-                [username] = newUrl.match(/([^/]+)\/?$/mi);
-            }
-
-            // check if username starts with http or www and show error if so
-            if (username.match(/^(http|www)|(\/)/) || !username.match(/^[a-z\d._]{1,15}$/mi)) {
-                errMessage = !username.match(/^[a-z\d._]{1,15}$/mi) ? 'Your Username is not a valid Twitter Username' : 'The URL must be in a format like https://twitter.com/yourUsername';
-
-                this.get('settings.errors').add('twitter', errMessage);
-                this.get('settings.hasValidated').pushObject('twitter');
-                return;
-            }
-
-            newUrl = `https://twitter.com/${username}`;
-
-            this.settings.get('hasValidated').pushObject('twitter');
-            this.settings.set('twitter', newUrl);
-            this.settings.notifyPropertyChange('twitter');
-        } else {
-            errMessage = 'The URL must be in a format like '
-                       + 'https://twitter.com/yourUsername';
-            this.get('settings.errors').add('twitter', errMessage);
-            this.get('settings.hasValidated').pushObject('twitter');
-            return;
-        }
+    clearScratchValues() {
+        this.scratchValues = new TrackedObject();
     }
 
     _deleteTheme() {
@@ -221,25 +124,23 @@ export default class GeneralController extends Controller {
         });
     }
 
-    @task(function* () {
+    @task
+    *saveTask() {
         let notifications = this.notifications;
         let config = this.config;
-
-        if (this.settings.get('twitter') !== this._scratchTwitter) {
-            this.send('validateTwitterUrl');
-        }
-
-        if (this.settings.get('facebook') !== this._scratchFacebook) {
-            this.send('validateFacebookUrl');
-        }
 
         try {
             let changedAttrs = this.settings.changedAttributes();
             let settings = yield this.settings.save();
-            config.set('blogTitle', settings.get('title'));
+
+            this.clearScratchValues();
+
+            config.set('blogTitle', settings.title);
+
             if (changedAttrs.password) {
                 this.frontend.loginIfNeeded();
             }
+
             // this forces the document title to recompute after a blog title change
             this.ui.updateDocumentTitle();
 
@@ -250,6 +151,20 @@ export default class GeneralController extends Controller {
             }
             throw error;
         }
-    })
-        saveTask;
+    }
+
+    @action
+    saveViaKeyboard(event) {
+        event.preventDefault();
+
+        // trigger any set-on-blur actions
+        const focusedElement = document.activeElement;
+        focusedElement?.blur();
+
+        // schedule save for when set-on-blur actions have finished
+        run.schedule('actions', this, function () {
+            focusedElement?.focus();
+            this.saveTask.perform();
+        });
+    }
 }

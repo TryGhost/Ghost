@@ -20,7 +20,7 @@ module.exports = class MembersCSVImporter {
      * @param {() => Object} options.getMembersApi
      * @param {Function} options.sendEmail - function sending an email
      * @param {(string) => boolean} options.isSet - Method checking if specific feature is enabled
-     * @param {({name, at, job, data, offloaded}) => void} options.addJob - Method registering an async job
+     * @param {({job, offloaded}) => void} options.addJob - Method registering an async job
      * @param {Object} options.knex - An instance of the Ghost Database connection
      * @param {Function} options.urlFor - function generating urls
      * @param {Object} options.context
@@ -69,7 +69,7 @@ module.exports = class MembersCSVImporter {
      * - Creates a MemberImport Job and associated MemberImportBatch's
      *
      * @param {string} inputFilePath - The path to the CSV to prepare
-     * @param {Object.<string, string>} headerMapping - An object whos keys are headers in the input CSV and values are the header to replace it with
+     * @param {Object.<string, string>} headerMapping - An object whose keys are headers in the input CSV and values are the header to replace it with
      * @param {Array<string>} defaultLabels - A list of labels to apply to every member
      *
      * @returns {Promise<{id: JobID, batches: number, metadata: Object.<string, any>}>} - A promise resolving to the id of the MemberImport Job
@@ -134,7 +134,9 @@ module.exports = class MembersCSVImporter {
         const result = await rows.reduce(async (resultPromise, row) => {
             const resultAccumulator = await resultPromise;
 
-            const trx = await this._knex.transaction();
+            // Use doNotReject config to reject `executionPromise` on rollback
+            // https://github.com/knex/knex/blob/master/UPGRADING.md
+            const trx = await this._knex.transaction(undefined, {doNotRejectOnRollback: false});
             const options = {
                 transacting: trx,
                 context: this._context

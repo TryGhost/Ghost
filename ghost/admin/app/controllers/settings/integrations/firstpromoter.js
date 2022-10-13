@@ -9,7 +9,7 @@ export default class FirstpromoterController extends Controller {
 
     @action
     update(value) {
-        this.settings.set('firstpromoter', value);
+        this.settings.firstpromoter = value;
     }
 
     @action

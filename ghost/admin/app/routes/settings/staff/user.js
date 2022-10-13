@@ -15,26 +15,31 @@ export default class UserRoute extends AuthenticatedRoute {
 
         const currentUser = this.session.user;
 
-        let isOwnProfile = user.get('id') === currentUser.get('id');
-        let isAuthorOrContributor = currentUser.get('isAuthorOrContributor');
-        let isEditor = currentUser.get('isEditor');
+        let isOwnProfile = user.id === currentUser.id;
+        let isAuthorOrContributor = currentUser.isAuthorOrContributor;
+        let isEditor = currentUser.isEditor;
 
         if (isAuthorOrContributor && !isOwnProfile) {
             this.transitionTo('settings.staff.user', currentUser);
-        } else if (isEditor && !isOwnProfile && !user.get('isAuthorOrContributor')) {
+        } else if (isEditor && !isOwnProfile && !user.isAuthorOrContributor) {
             this.transitionTo('settings.staff');
         }
 
         if (isOwnProfile) {
             this.store.queryRecord('api-key', {id: 'me'}).then((apiKey) => {
-                this.controller.set('personalToken', apiKey.id + ':' + apiKey.secret);
-                this.controller.set('personalTokenRegenerated', false);
+                this.controller.personalToken = apiKey.id + ':' + apiKey.secret;
+                this.controller.personalTokenRegenerated = false;
             });
         }
     }
 
     serialize(model) {
         return {user_slug: model.get('slug')};
+    }
+
+    setupController(controller, model) {
+        controller.model = model;
+        controller.reset();
     }
 
     @action
@@ -86,11 +91,6 @@ export default class UserRoute extends AuthenticatedRoute {
     @action
     didTransition() {
         this.modelFor('settings.staff.user').get('errors').clear();
-    }
-
-    @action
-    save() {
-        this.controller.save.perform();
     }
 
     buildRouteInfoMetadata() {

@@ -17,7 +17,7 @@ export default class TierController extends Controller {
 
     constructor() {
         super(...arguments);
-        this.siteUrl = this.config.get('blogUrl');
+        this.siteUrl = this.config.blogUrl;
     }
 
     get tier() {
@@ -170,7 +170,7 @@ export default class TierController extends Controller {
         if (this.tier.get('errors').length !== 0) {
             return;
         }
-        if (this.settings.get('errors').length !== 0) {
+        if (this.settings.errors.length !== 0) {
             return;
         }
         yield this.settings.save();
@@ -183,12 +183,12 @@ export default class TierController extends Controller {
 
     _validateSignupRedirect(url, type) {
         let errMessage = `Please enter a valid URL`;
-        this.settings.get('errors').remove(type);
-        this.settings.get('hasValidated').removeObject(type);
+        this.settings.errors.remove(type);
+        this.settings.hasValidated.removeObject(type);
 
         if (url === null) {
-            this.settings.get('errors').add(type, errMessage);
-            this.settings.get('hasValidated').pushObject(type);
+            this.settings.errors.add(type, errMessage);
+            this.settings.hasValidated.pushObject(type);
             return false;
         }
 
@@ -199,9 +199,9 @@ export default class TierController extends Controller {
 
         if (url.href.startsWith(this.siteUrl)) {
             const path = url.href.replace(this.siteUrl, '');
-            this.settings.set(type, path);
+            this.settings[type] = path;
         } else {
-            this.settings.set(type, url.href);
+            this.settings[type] = url.href;
         }
     }
 }

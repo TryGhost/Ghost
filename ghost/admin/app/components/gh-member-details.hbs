@@ -1,5 +1,5 @@
 <section class="gh-member-details" ...attributes>
-    <div class="flex flex-column mt4">
+    <div class="flex flex-column">
         <div class="gh-member-details-identity">
             {{#if (or @member.name @member.email)}}
                 <GhMemberAvatar
@@ -64,21 +64,21 @@
                     {{/if}}
                 </p>
             </div>
-            {{#if (and (feature 'sourceAttribution') @member.attribution)}}
+            {{#if (and (feature 'sourceAttribution') this.showAttribution)}}
                 <div class="gh-member-details-attribution">
                     <h4 class="gh-main-section-header small bn">Attribution</h4>
                     {{#if this.referrerSource}}
                         <p>
                             {{svg-jar "earth"}}
-                            Signup source-&nbsp;<span title="{{this.referrerSource}}">{{this.referrerSource}}</span>
+                            Signup source&nbsp;&mdash;&nbsp;<span title="{{this.referrerSource}}">{{this.referrerSource}}</span>
                         </p>
                     {{/if}}
                     {{#if (and @member.attribution.url @member.attribution.title)}}
                     <p>
                         {{svg-jar "posts"}}
-                        Signup page-&nbsp;<a href="{{@member.attribution.url}}" target="_blank" rel="noopener noreferrer" title="{{ @member.attribution.title }}">{{ @member.attribution.title }}</a>
+                        Signup page&nbsp;&mdash;&nbsp;<a href="{{@member.attribution.url}}" target="_blank" rel="noopener noreferrer" title="{{ @member.attribution.title }}">{{ @member.attribution.title }}</a>
                     </p>
-                    <a href="#" class="gh-member-details-attribution-docs">Learn more →</a>
+                    {{!-- <a href="#" class="gh-member-details-attribution-docs">Learn more →</a> --}}
                     {{/if}}
                 </div>
             {{/if}}

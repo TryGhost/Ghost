@@ -17,7 +17,7 @@
     <a href="https://twitter.com/ghost">Twitter</a>
     <br /><br />
     <a href="https://ghost.org/">
-        <img src="https://img.shields.io/badge/downloads-2M-brightgreen.svg" alt="Downloads" />
+        <img src="https://img.shields.io/badge/downloads-3M-brightgreen.svg" alt="Downloads" />
     </a>
     <a href="https://github.com/TryGhost/Ghost/releases/">
         <img src="https://img.shields.io/github/release/TryGhost/Ghost.svg" alt="Latest release" />
@@ -30,7 +30,7 @@
     </a>
 </p>
 <p align="center">
-  Love open source? <a href="https://careers.ghost.org/product-engineer-node-js/">We're hiring</a> Node.js engineers to work on Ghost full-time.
+  Love open source? <a href="https://careers.ghost.org">We're hiring</a> JavaScript engineers to work on Ghost full-time.
 </p>
 
 &nbsp;
@@ -80,7 +80,7 @@ Check out our [official documentation](https://ghost.org/docs/) for more informa
 
 ### Contributors & advanced developers
 
-For anyone wishing to contribute to Ghost or to hack/customize core files we recommend following our full development setup guides: [Contributor guide](https://ghost.org/docs/contributing/) • [Developer setup](https://ghost.org/docs/install/source/) • [Admin App dev guide](https://ghost.org/docs/install/source/#ghost-admin)
+For anyone wishing to contribute to Ghost or to hack/customize core files we recommend following our full development setup guides: [Contributor guide](https://ghost.org/docs/contributing/) • [Developer setup](https://ghost.org/docs/install/source/)
 
 &nbsp;
 

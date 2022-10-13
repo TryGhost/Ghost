@@ -326,11 +326,6 @@ input:focus,
     border-bottom: 1px solid var(--hairline-color-1);
 }
 
-.gh-main-section.no-heading,
-.gh-main-section.bt {
-    border-top: 1px solid var(--hairline-color-1);
-}
-
 .gh-btn-tabs .gh-btn {
     background: transparent !important;
 }
@@ -1303,6 +1298,10 @@ kbd {
 
 .gh-dashboard-recents .gh-dashboard-list-item:hover, .gh-dashboard-attribution .gh-dashboard-list-item:hover {
     background: linear-gradient(90deg, rgba(21,23,25,0) 0%, rgba(21,23,25,1) 100%);
+}
+
+.gh-all-sources .gh-dashboard-list-body:before, .gh-all-sources .gh-dashboard-list-body:after {
+    background: transparent;
 }
 
 .gh-dashboard-resource .gh-dashboard-list-item:hover {

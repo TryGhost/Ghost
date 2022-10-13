@@ -22,9 +22,10 @@ export default class GhDateTimePicker extends Component {
     timeErrorProperty = null;
     isActive = true;
     _time = '';
+    // _date is always a moment object in the blog's timezone
     _previousTime = '';
-    _minDate = null;
-    _maxDate = null;
+    _minDate = null; // Always set to a Date object
+    _maxDate = null; // Always set to a Date object
     _scratchDate = null;
     _scratchDateError = null;
 
@@ -46,8 +47,14 @@ export default class GhDateTimePicker extends Component {
         if (this._scratchDate !== null) {
             return this._scratchDate;
         } else {
-            return moment(this._date).format(DATE_FORMAT);
+            return this._date?.format(DATE_FORMAT);
         }
+    }
+    
+    @computed('_date')
+    get localDateValue() {
+        // Convert the selected date to a new date in the local timezone, purely to please PowerDatepicker
+        return new Date(this._date.format(DATE_FORMAT));
     }
 
     @computed('blogTimezone')
@@ -94,7 +101,8 @@ export default class GhDateTimePicker extends Component {
         let blogTimezone = this.blogTimezone;
 
         if (!isBlank(date)) {
-            this.set('_date', moment(date));
+            // Note: input date as a string is expected to be in the blog's timezone
+            this.set('_date', moment.tz(date, blogTimezone));
         } else {
             this.set('_date', moment().tz(blogTimezone));
         }
@@ -113,7 +121,7 @@ export default class GhDateTimePicker extends Component {
         this._lastDate = this.date;
 
         if (isBlank(time)) {
-            this.set('_time', moment(this._date).format('HH:mm'));
+            this.set('_time', this._date.format('HH:mm'));
         } else {
             this.set('_time', this.time);
         }
@@ -121,17 +129,17 @@ export default class GhDateTimePicker extends Component {
 
         // unless min/max date is at midnight moment will disable that day
         if (minDate === 'now') {
-            this.set('_minDate', moment(moment().format(DATE_FORMAT)));
+            this.set('_minDate', moment(moment().tz(blogTimezone).format(DATE_FORMAT)).toDate());
         } else if (!isBlank(minDate)) {
-            this.set('_minDate', moment(moment(minDate).format(DATE_FORMAT)));
+            this.set('_minDate', moment(moment.tz(minDate, blogTimezone).format(DATE_FORMAT)).toDate());
         } else {
             this.set('_minDate', null);
         }
 
         if (maxDate === 'now') {
-            this.set('_maxDate', moment(moment().format(DATE_FORMAT)));
+            this.set('_maxDate', moment(moment().tz(blogTimezone).format(DATE_FORMAT)).toDate());
         } else if (!isBlank(maxDate)) {
-            this.set('_maxDate', moment(moment(maxDate).format(DATE_FORMAT)));
+            this.set('_maxDate', moment(moment.tz(maxDate, blogTimezone).format(DATE_FORMAT)).toDate());
         } else {
             this.set('_maxDate', null);
         }
@@ -155,6 +163,19 @@ export default class GhDateTimePicker extends Component {
         }
     }
 
+    /** 
+     * This method is called by `PowerDatepicker` when a user selected a date. It is constructed like
+     * The difference here is that the Date object that is passed contains the date, but only when viewed in the local timezone.
+     * This timezone can differ between the timezone of the blog. We need to convert the date to a new date in the blog's timezone on the same day that was selected.
+     * Example: new Date('2000-01-01') -> a user selected 2000-01-01. In the blog timezone, this could be 1999-12-31 23:00, which is wrong.
+    */
+    @action
+    setLocalDate(date) {
+        // Convert to a date string in the local timezone (moment is in local timezone by default)
+        const dateString = moment(date).format(DATE_FORMAT);
+        this._setDate(dateString);
+    }
+
     @action
     setTimeInternal(time, event) {
         if (time.match(/^\d:\d\d$/)) {
@@ -166,7 +187,7 @@ export default class GhDateTimePicker extends Component {
             this.set('_previousTime', time);
 
             if (isBlank(this.date)) {
-                this.setDate(this._date);
+                this.setDate(this._date.toDate());
             }
         }
     }
@@ -192,7 +213,7 @@ export default class GhDateTimePicker extends Component {
     onDateBlur(event) {
         // make sure we're not doing anything just because the calendar dropdown
         // is opened and clicked
-        if (event.target.value === moment(this._date).format('YYYY-MM-DD')) {
+        if (event.target.value === this._date.format('YYYY-MM-DD')) {
             this._resetScratchDate();
             return;
         }
@@ -258,7 +279,7 @@ export default class GhDateTimePicker extends Component {
             return false;
         }
 
-        let date = moment(dateStr, DATE_FORMAT);
+        let date = moment.tz(dateStr, DATE_FORMAT, this.blogTimezone);
         if (!date.isValid()) {
             this._setScratchDateError('Invalid date');
             return false;

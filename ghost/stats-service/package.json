@@ -28,10 +28,10 @@
     "luxon": "2.5.0",
     "mocha": "10.0.0",
     "should": "13.2.3",
-    "sinon": "14.0.0",
-    "sqlite3": "5.1.1"
+    "sinon": "14.0.1",
+    "sqlite3": "5.1.2"
   },
   "dependencies": {
-    "moment": "^2.29.3"
+    "moment": "2.29.3"
   }
 }

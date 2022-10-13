@@ -1,12 +1,19 @@
 <section class="gh-canvas">
     <GhCanvasHeader class="gh-canvas-header">
-        <h2 class="gh-canvas-title" data-test-screen-title>
+        <div class="flex flex-column">
             {{#unless this.session.user.isEditor}}
-                <LinkTo @route="settings">Settings</LinkTo>
-                <span>{{svg-jar "arrow-right"}}</span>
+                <div class="gh-canvas-breadcrumb">
+                    <LinkTo @route="settings" data-test-breadcrumb>
+                        Settings
+                    </LinkTo>
+                    {{svg-jar "arrow-right-small"}} Staff
+                </div>
             {{/unless}}
-            Staff
-        </h2>
+            <h2 class="gh-canvas-title" data-test-screen-title>
+                Staff
+            </h2>
+        </div>
+
         {{!-- Do not show Invite user button to authors --}}
         {{#unless this.currentUser.isAuthorOrContributor}}
             <section class="view-actions">

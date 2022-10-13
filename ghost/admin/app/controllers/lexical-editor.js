@@ -1035,7 +1035,7 @@ export default class LexicalEditorController extends Controller {
             emailOnly,
             newsletter
         } = this.post;
-        let publishedAtBlogTZ = moment.tz(publishedAtUTC, this.settings.get('timezone'));
+        let publishedAtBlogTZ = moment.tz(publishedAtUTC, this.settings.timezone);
 
         let title = 'Scheduled';
         let description = emailOnly ? ['Will be sent'] : ['Will be published'];

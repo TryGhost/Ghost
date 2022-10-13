@@ -197,6 +197,13 @@ class ajaxService extends AjaxService {
 
         hash.withCredentials = true;
 
+        // mocked routes used in development/testing do not have access to the
+        // test context so we add a header here to give them access to the logged
+        // in user id that can be checked against the mocked database
+        if (this.isTesting) {
+            hash.headers['X-Test-User'] = this.session.user?.id;
+        }
+
         // attempt retries for 15 seconds in two situations:
         // 1. Server Unreachable error from the browser (code 0), typically from short internet blips
         // 2. Maintenance error from Ghost, upgrade in progress so API is temporarily unavailable
@@ -229,7 +236,7 @@ class ajaxService extends AjaxService {
                 const result = await makeRequest(hash);
                 success = true;
 
-                if (attempts !== 0 && this.config.get('sentry_dsn')) {
+                if (attempts !== 0 && this.config.sentry_dsn) {
                     captureMessage('Request took multiple attempts', {extra: getErrorData()});
                 }
 
@@ -247,7 +254,7 @@ class ajaxService extends AjaxService {
                 if (retryErrorChecks.some(check => check(error.response)) && retryingMs <= maxRetryingMs) {
                     await timeout(retryPeriods[attempts] || retryPeriods[retryPeriods.length - 1]);
                     attempts += 1;
-                } else if (attempts > 0 && this.config.get('sentry_dsn')) {
+                } else if (attempts > 0 && this.config.sentry_dsn) {
                     captureMessage('Request failed after multiple attempts', {extra: getErrorData()});
                     throw error;
                 } else {

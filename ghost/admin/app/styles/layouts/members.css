@@ -478,7 +478,7 @@ p.gh-members-list-email {
     }
 
     .members-header .view-actions {
-        margin-top: 30px;
+        margin-top: 2px;
         width: 100%;
     }
 
@@ -681,7 +681,7 @@ label[for="member-description"] + p {
 
 .gh-member-details {
     position: sticky;
-    top: 96px;
+    top: 158px;
     left: 0;
     height: max-content;
 }
@@ -982,6 +982,10 @@ textarea.gh-member-details-textarea {
         position: relative;
         top: unset;
         left: unset;
+    }
+
+    .gh-member-header.sticky {
+        position: relative;
     }
 }
 
@@ -2141,6 +2145,42 @@ p.gh-members-import-errordetail:first-of-type {
     }
 }
 
+.gh-members-emailpreview-feedback {
+    display: grid;
+    gap: 20px;
+    padding: 40px;
+}
+
+.gh-members-emailpreview-feedback-title {
+    text-align: center;
+}
+
+.gh-members-emailpreview-feedback-buttons-group {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+.gh-members-emailpreview-feedback-button {
+    font-weight: bold;
+    border-radius: 22px;
+    pointer-events: none;
+    cursor: default;
+}
+
+.gh-members-emailpreview-feedback-button svg {
+    width: 24px;
+    height: 24px;
+}
+
+.gh-members-emailpreview-feedback-button-body {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    filter: brightness(0.4);
+}
+
 /* Custom tier member details */
 .gh-cp-member-email-name {
     display: grid;
@@ -2414,12 +2454,8 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .gh-members-filter-builder {
-    width: 720px;
-    margin-top: 8px;
-}
-
-.gh-members-filter-builder.feature-memberAttribution {
     width: 780px;
+    margin-top: 8px;
 }
 
 @media (max-width: 980px) {
@@ -2435,8 +2471,7 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 @media (max-width: 690px) {
-    .gh-members-filter-builder,
-    .gh-members-filter-builder.feature-memberAttribution {
+    .gh-members-filter-builder {
         width: calc(100vw - 20px);
         min-width: calc(100vw - 20px);
         max-width: calc(100vw - 20px);

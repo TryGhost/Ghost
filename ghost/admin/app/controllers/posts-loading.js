@@ -1,45 +1,49 @@
 import Controller, {inject as controller} from '@ember/controller';
-import classic from 'ember-classic-decorator';
-import {readOnly} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
-
-/* eslint-disable ghost/ember/alias-model-in-controller */
-@classic
 export default class PostsLoadingController extends Controller {
-    @controller('posts')
-        postsController;
+    @controller('posts') postsController;
 
     @service session;
     @service ui;
     @service config;
 
-    @readOnly('postsController.availableTypes')
-        availableTypes;
+    get availableTypes() {
+        return this.postsController.availableTypes;
+    }
 
-    @readOnly('postsController.selectedType')
-        selectedType;
+    get selectedType() {
+        return this.postsController.selectedType;
+    }
 
-    @readOnly('postsController.selectedVisibility')
-        selectedVisibility;
+    get selectedVisibility() {
+        return this.postsController.selectedVisibility;
+    }
 
-    @readOnly('postsController.availableVisibilities')
-        availableVisibilities;
+    get availableVisibilities() {
+        return this.postsController.availableVisibilities;
+    }
 
-    @readOnly('postsController.availableTags')
-        availableTags;
+    get availableTags() {
+        return this.postsController.availableTags;
+    }
 
-    @readOnly('postsController.selectedTag')
-        selectedTag;
+    get selectedTag() {
+        return this.postsController.selectedTag;
+    }
 
-    @readOnly('postsController.availableAuthors')
-        availableAuthors;
+    get availableAuthors() {
+        return this.postsController.availableAuthors;
+    }
 
-    @readOnly('postsController.selectedAuthor')
-        selectedAuthor;
+    get selectedAuthor() {
+        return this.postsController.selectedAuthor;
+    }
 
-    @readOnly('postsController.availableOrders')
-        availableOrders;
+    get availableOrders() {
+        return this.postsController.availableOrders;
+    }
 
-    @readOnly('postsController.selectedOrder')
-        selectedOrder;
+    get selectedOrder() {
+        return this.postsController.selectedOrder;
+    }
 }

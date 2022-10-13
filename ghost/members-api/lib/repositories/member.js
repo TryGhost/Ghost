@@ -4,7 +4,7 @@ const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const DomainEvents = require('@tryghost/domain-events');
 const {MemberCreatedEvent, SubscriptionCreatedEvent, MemberSubscribeEvent, SubscriptionCancelledEvent} = require('@tryghost/member-events');
-const ObjectId = require('bson-objectid');
+const ObjectId = require('bson-objectid').default;
 const {NotFoundError} = require('@tryghost/errors');
 
 const messages = {
@@ -29,7 +29,7 @@ module.exports = class MemberRepository {
      * @param {object} deps
      * @param {any} deps.Member
      * @param {any} deps.MemberCancelEvent
-     * @param {any} deps.MemberSubscribeEvent
+     * @param {any} deps.MemberSubscribeEventModel
      * @param {any} deps.MemberEmailChangeEvent
      * @param {any} deps.MemberPaidSubscriptionEvent
      * @param {any} deps.MemberStatusEvent
@@ -47,7 +47,7 @@ module.exports = class MemberRepository {
     constructor({
         Member,
         MemberCancelEvent,
-        MemberSubscribeEvent,
+        MemberSubscribeEventModel,
         MemberEmailChangeEvent,
         MemberPaidSubscriptionEvent,
         MemberStatusEvent,
@@ -64,7 +64,7 @@ module.exports = class MemberRepository {
     }) {
         this._Member = Member;
         this._MemberCancelEvent = MemberCancelEvent;
-        this._MemberSubscribeEvent = MemberSubscribeEvent;
+        this._MemberSubscribeEvent = MemberSubscribeEventModel;
         this._MemberEmailChangeEvent = MemberEmailChangeEvent;
         this._MemberPaidSubscriptionEvent = MemberPaidSubscriptionEvent;
         this._MemberStatusEvent = MemberStatusEvent;
@@ -89,6 +89,19 @@ module.exports = class MemberRepository {
                 offer_id: event.data.offerId
             });
         });
+    }
+
+    dispatchEvent(event, options) {
+        if (options?.transacting) {
+            // Only dispatch the event after the transaction has finished
+            options.transacting.executionPromise.then(async () => {
+                DomainEvents.dispatch(event);
+            }).catch(() => {
+                // catches transaction errors/rollback to not dispatch event
+            });
+        } else {
+            DomainEvents.dispatch(event);
+        }
     }
 
     isActiveSubscriptionStatus(status) {
@@ -304,10 +317,10 @@ module.exports = class MemberRepository {
         }
 
         if (newsletters && newsletters.length > 0) {
-            DomainEvents.dispatch(MemberSubscribeEvent.create({
+            this.dispatchEvent(MemberSubscribeEvent.create({
                 memberId: member.id,
                 source: source
-            }, eventData.created_at));
+            }, eventData.created_at), options);
         }
 
         // For paid members created via stripe checkout webhook event, link subscription
@@ -337,12 +350,11 @@ module.exports = class MemberRepository {
                 }
             }
         }
-
-        DomainEvents.dispatch(MemberCreatedEvent.create({
+        this.dispatchEvent(MemberCreatedEvent.create({
             memberId: member.id,
             attribution: data.attribution,
             source
-        }, eventData.created_at));
+        }, eventData.created_at), options);
 
         return member;
     }
@@ -560,10 +572,10 @@ module.exports = class MemberRepository {
         }
 
         if (newslettersToAdd.length > 0 || newslettersToRemove.length > 0) {
-            DomainEvents.dispatch(MemberSubscribeEvent.create({
+            this.dispatchEvent(MemberSubscribeEvent.create({
                 memberId: member.id,
                 source: source
-            }, member.updated_at));
+            }, member.updated_at), sharedOptions);
         }
 
         if (member.attributes.email !== member._previousAttributes.email) {
@@ -931,9 +943,9 @@ module.exports = class MemberRepository {
                 const originalMrrDelta = model.get('mrr');
                 const updatedMrrDelta = updated.get('mrr');
 
-                const getStatus = (model) => {
-                    const status = model.get('status');
-                    const canceled = model.get('cancel_at_period_end');
+                const getStatus = (modelToCheck) => {
+                    const status = modelToCheck.get('status');
+                    const canceled = modelToCheck.get('cancel_at_period_end');
 
                     if (status === 'canceled') {
                         return 'expired';
@@ -979,16 +991,16 @@ module.exports = class MemberRepository {
             }
         } else {
             eventData.created_at = new Date(subscription.start_date * 1000);
-            const model = await this._StripeCustomerSubscription.add(subscriptionData, options);
+            const subscriptionModel = await this._StripeCustomerSubscription.add(subscriptionData, options);
             await this._MemberPaidSubscriptionEvent.add({
                 member_id: member.id,
-                subscription_id: model.id,
+                subscription_id: subscriptionModel.id,
                 type: 'created',
                 source: 'stripe',
                 from_plan: null,
                 to_plan: subscriptionPriceData.id,
                 currency: subscriptionPriceData.currency,
-                mrr_delta: model.get('mrr'),
+                mrr_delta: subscriptionModel.get('mrr'),
                 ...eventData
             }, options);
 
@@ -999,20 +1011,11 @@ module.exports = class MemberRepository {
                 source,
                 tierId: ghostProduct?.get('id'),
                 memberId: member.id,
-                subscriptionId: model.get('id'),
+                subscriptionId: subscriptionModel.get('id'),
                 offerId: data.offerId,
                 attribution: data.attribution
             });
-
-            if (options?.transacting) {
-                // Only dispatch the event after the transaction has finished
-                // Because else the offer won't be committed to the database yet
-                options.transacting.executionPromise.then(() => {
-                    DomainEvents.dispatch(event);
-                });
-            } else {
-                DomainEvents.dispatch(event);
-            }
+            this.dispatchEvent(event, options);
         }
 
         let memberProducts = (await member.related('products').fetch(options)).toJSON();
@@ -1045,10 +1048,10 @@ module.exports = class MemberRepository {
 
                         let activeSubscriptionForChangedProduct = false;
 
-                        for (const subscription of subscriptions.models) {
-                            if (this.isActiveSubscriptionStatus(subscription.get('status'))) {
+                        for (const subscriptionModel of subscriptions.models) {
+                            if (this.isActiveSubscriptionStatus(subscriptionModel.get('status'))) {
                                 try {
-                                    const subscriptionProduct = await this._productRepository.get({stripe_price_id: subscription.get('stripe_price_id')}, options);
+                                    const subscriptionProduct = await this._productRepository.get({stripe_price_id: subscriptionModel.get('stripe_price_id')}, options);
                                     if (subscriptionProduct && changedProduct && subscriptionProduct.id === changedProduct.id) {
                                         activeSubscriptionForChangedProduct = true;
                                     }
@@ -1070,11 +1073,11 @@ module.exports = class MemberRepository {
         } else {
             const subscriptions = await member.related('stripeSubscriptions').fetch(options);
             let activeSubscriptionForGhostProduct = false;
-            for (const subscription of subscriptions.models) {
-                if (this.isActiveSubscriptionStatus(subscription.get('status'))) {
+            for (const subscriptionModel of subscriptions.models) {
+                if (this.isActiveSubscriptionStatus(subscriptionModel.get('status'))) {
                     status = 'paid';
                     try {
-                        const subscriptionProduct = await this._productRepository.get({stripe_price_id: subscription.get('stripe_price_id')}, options);
+                        const subscriptionProduct = await this._productRepository.get({stripe_price_id: subscriptionModel.get('stripe_price_id')}, options);
                         if (subscriptionProduct && ghostProduct && subscriptionProduct.id === ghostProduct.id) {
                             activeSubscriptionForGhostProduct = true;
                         }
@@ -1306,15 +1309,7 @@ module.exports = class MemberRepository {
                     subscriptionId: subscriptionModel.get('id'),
                     tierId: ghostProduct?.get('id')
                 };
-                if (options?.transacting) {
-                    // Only dispatch the event after the transaction has finished
-                    // Because else the offer won't be committed to the database yet
-                    options.transacting.executionPromise.then(() => {
-                        DomainEvents.dispatch(SubscriptionCancelledEvent.create(cancelEventData, cancellationTimestamp));
-                    });
-                } else {
-                    DomainEvents.dispatch(SubscriptionCancelledEvent.create(cancelEventData, cancellationTimestamp));
-                }
+                this.dispatchEvent(SubscriptionCancelledEvent.create(cancelEventData, cancellationTimestamp), options);
             }
         }
     }

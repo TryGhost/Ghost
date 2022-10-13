@@ -8,7 +8,7 @@ export default class EditNewsletterPreview extends Component {
     @service settings;
 
     get showHeader() {
-        return (this.args.newsletter.showHeaderIcon && this.settings.get('icon'))
+        return (this.args.newsletter.showHeaderIcon && this.settings.icon)
             || this.headerTitle;
     }
 
@@ -18,7 +18,7 @@ export default class EditNewsletterPreview extends Component {
 
     get headerTitle() {
         if (this.args.newsletter.showHeaderTitle) {
-            return this.settings.get('title');
+            return this.settings.title;
         } else if (this.args.newsletter.showHeaderName) {
             return this.args.newsletter.name;
         }
@@ -43,5 +43,9 @@ export default class EditNewsletterPreview extends Component {
 
     get featureImageStyle() {
         return htmlSafe(`background-image: url(${this.featureImageUrl})`);
+    }
+
+    get accentColor() {
+        return this.settings.accentColor;
     }
 }

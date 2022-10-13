@@ -193,11 +193,11 @@ export default class ThemeManagementService extends Service {
     get previewData() {
         const params = new URLSearchParams();
 
-        params.append('c', this.settings.get('accentColor') || '#ffffff');
-        params.append('d', this.settings.get('description'));
-        params.append('icon', this.settings.get('icon'));
-        params.append('logo', this.settings.get('logo'));
-        params.append('cover', this.settings.get('coverImage'));
+        params.append('c', this.settings.accentColor || '#ffffff');
+        params.append('d', this.settings.description);
+        params.append('icon', this.settings.icon);
+        params.append('logo', this.settings.logo);
+        params.append('cover', this.settings.coverImage);
 
         params.append('custom', JSON.stringify(this.customThemeSettings.keyValueObject));
 

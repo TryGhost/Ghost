@@ -1,11 +1,18 @@
 <section class="gh-canvas">
     <form class="mb15">
         <GhCanvasHeader class="gh-canvas-header">
-            <h2 class="gh-canvas-title" data-test-screen-title>
-                <LinkTo @route="tags" data-test-link="tags-back">Tags</LinkTo>
-                <span>{{svg-jar "arrow-right"}}</span>
-                {{if this.tag.isNew "New tag" this.tag.name}}
-            </h2>
+            <div class="flex flex-column">
+                <div class="gh-canvas-breadcrumb">
+                    <LinkTo @route="tags" data-test-link="tags-back">
+                        Tags
+                    </LinkTo>
+                    {{svg-jar "arrow-right-small"}} {{if this.tag.isNew "New tag" "Edit tag"}}
+                </div>
+                <h2 class="gh-canvas-title" data-test-screen-title>
+                    {{if this.tag.isNew "New tag" this.tag.name}}
+                </h2>
+            </div>
+
             <section class="view-actions">
                 <GhTaskButton
                     @task={{this.saveTask}}

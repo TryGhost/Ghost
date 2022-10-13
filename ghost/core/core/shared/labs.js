@@ -19,22 +19,24 @@ const GA_FEATURES = [
     'freeTrial',
     'compExpiring',
     'searchHelper',
-    'emailAlerts',
-    'emailClicks'
+    'emailAlerts'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
 //       input for the "labs" setting value
 const BETA_FEATURES = [
     'activitypub',
+    'sourceAttribution',
     'memberAttribution'
 ];
 
 const ALPHA_FEATURES = [
     'urlCache',
     'beforeAfterCard',
-    'sourceAttribution',
-    'lexicalEditor'
+    'lexicalEditor',
+    'exploreApp',
+    'audienceFeedback',
+    'fixNewsletterLinks'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

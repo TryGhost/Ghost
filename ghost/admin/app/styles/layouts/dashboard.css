@@ -754,6 +754,18 @@ Dashboard List */
     overflow: hidden;
 }
 
+.gh-dashboard-list-item sup {
+    display: none;
+}
+
+.gh-dashboard-list-item-deemphasized span {
+    color: var(--midlightgrey);
+}
+
+.gh-dashboard-list-item-deemphasized sup {
+    display: inline;
+}
+
 .gh-dashboard-list-subtext {
     font-weight: 500;
     font-size: 1.4rem;
@@ -1033,6 +1045,18 @@ Dashboard Zero */
 /* ---------------------------------
 Dashboard Attribution */
 
+.gh-dashboard .gh-canvas-header.sticky {
+    max-width: 1230px;
+    min-width: 850px;
+    margin: 0 auto;
+    padding: 32px 0;
+}
+
+.gh-dashboard .gh-canvas-header.sticky .gh-dashboard-select {
+    top: 8px !important;
+    right: -6px !important;
+}
+
 .gh-dashboard-select-title-attribution .gh-contentfilter-menu-trigger:hover {
     cursor: pointer;
     color: #394047;
@@ -1042,7 +1066,7 @@ Dashboard Attribution */
 
 .gh-dashboard-attribution-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 2fr 1fr;
     grid-gap: 0;
     position: relative;
 }
@@ -1070,7 +1094,7 @@ Dashboard Attribution */
 }
 
 .gh-dashboard-attribution-list .gh-dashboard-list-header, .gh-dashboard-attribution-list .gh-dashboard-list-item {
-    grid-template-columns: 70% 30%;
+    grid-template-columns: 50% 25% 25%;
 }
 
 .gh-dashboard-attribution-list .gh-dashboard-list-title:not(.sorted-by) {
@@ -1084,6 +1108,7 @@ Dashboard Attribution */
 
 .gh-dashboard-attribution .gh-dashboard-list-title-sources {
     opacity: 0;
+    cursor: default !important;
 }
 
 .gh-dashboard-attribution .gh-dashboard-list-item-sub-source {
@@ -1106,6 +1131,7 @@ Dashboard Attribution */
 .gh-dashboard-attribution .ember-power-select-trigger[aria-disabled=true], .gh-attribution-box .ember-power-select-trigger[aria-disabled=true] {
     background: transparent;
     opacity: 0.3;
+    cursor: not-allowed;
 }
 
 .gh-dashboard-list-item-other-source {
@@ -1121,9 +1147,8 @@ Dashboard Attribution */
 }
 
 .gh-dashboard-list-title svg {
-    height: 4px;
-    width: 6.11px;
-    margin-left: 2px;
+    width: 8px;
+    margin-left: 4px;
     margin-top: -2px;
     vertical-align: middle;
     display: none;
@@ -1133,8 +1158,20 @@ Dashboard Attribution */
     display: inline;
 }
 
+.gh-dashboard-attribution-chart-label {
+    position: absolute;
+    top: 45%;
+    left: 44%;
+    font-weight: 600;
+    color: var(--midgrey);
+}
+
 .gh-dashboard-list-title svg path {
-    stroke: var(--midgrey);
+    fill: var(--midgrey);
+}
+
+.gh-dashboard-list-item-sub-signup:not(.sorted-by) .gh-dashboard-metric-minivalue, .gh-dashboard-list-item-sub-paid:not(.sorted-by) .gh-dashboard-metric-minivalue, .gh-dashboard-list-item-sub-other:not(.sorted-by) .gh-dashboard-metric-minivalue {
+    color: var(--midlightgrey);
 }
 
 .gh-dashboard-list-item:first-child .gh-dashboard-list-item-sub-source::after {
@@ -1220,20 +1257,18 @@ Dashboard Attribution */
 }
 
 .gh-all-sources .gh-dashboard-list-body {
-    max-height: calc(100vh - 215px);
+    max-height: calc(100vh - 255px);
     position: relative;
 }
 
 .gh-all-sources .gh-dashboard-list-header {
-    grid-template-columns: 70% 30%;
 }
 
 .gh-all-sources .gh-dashboard-list-item {
-    grid-template-columns: 70% 30%;
 }
 
 .gh-all-sources .modal-footer {
-    display: none;
+    margin-top: 0;
 }
 
 .gh-all-sources .gh-dashboard-list-body:after {

@@ -157,11 +157,11 @@ export default Route.extend(ShortcutsRoute, {
 
         // init Sentry here rather than app.js so that we can use API-supplied
         // sentry_dsn and sentry_env rather than building it into release assets
-        if (this.config.get('sentry_dsn')) {
+        if (this.config.sentry_dsn) {
             InitSentryForEmber({
-                dsn: this.config.get('sentry_dsn'),
-                environment: this.config.get('sentry_env'),
-                release: `ghost@${this.config.get('version')}`,
+                dsn: this.config.sentry_dsn,
+                environment: this.config.sentry_env,
+                release: `ghost@${this.config.version}`,
                 beforeSend(event) {
                     event.tags = event.tags || {};
                     event.tags.shown_to_user = event.tags.shown_to_user || false;
@@ -181,7 +181,7 @@ export default Route.extend(ShortcutsRoute, {
             await this.session.postAuthPreparation();
         }
 
-        if (this.config.get('hostSettings.forceUpgrade')) {
+        if (this.config.hostSettings?.forceUpgrade) {
             // enforce opening the BMA in a force upgrade state
             this.billing.openBillingWindow(this.router.currentURL, '/pro');
         }

@@ -100,12 +100,12 @@ const Member = ghostBookshelf.Model.extend({
                 joinFrom: 'member_id'
             },
             clicked_links: {
-                tableName: 'link_redirects',
+                tableName: 'redirects',
                 tableNameAs: 'clicked_links',
                 type: 'manyToMany',
-                joinTable: 'members_link_click_events',
+                joinTable: 'members_click_events',
                 joinFrom: 'member_id',
-                joinTo: 'link_id'
+                joinTo: 'redirect_id'
             },
             emails: {
                 tableName: 'emails',

@@ -28,16 +28,16 @@ export default class SettingsMembersSubscriptionAccess extends Component {
     }
 
     get selectedOption() {
-        return this.options.find(o => o.value === this.settings.get('membersSignupAccess'));
+        return this.options.find(o => o.value === this.settings.membersSignupAccess);
     }
 
     @action
     setSignupAccess(option) {
-        this.settings.set('membersSignupAccess', option.value);
+        this.settings.membersSignupAccess = option.value;
         this.args.onChange?.(option.value);
 
         if (option.value === 'none') {
-            this.settings.set('defaultContentVisibility', 'public');
+            this.settings.defaultContentVisibility = 'public';
         }
     }
 }

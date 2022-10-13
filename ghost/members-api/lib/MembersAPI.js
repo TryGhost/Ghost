@@ -91,7 +91,7 @@ module.exports = function MembersAPI({
         productRepository,
         Member,
         MemberCancelEvent,
-        MemberSubscribeEvent,
+        MemberSubscribeEventModel: MemberSubscribeEvent,
         MemberPaidSubscriptionEvent,
         MemberEmailChangeEvent,
         MemberStatusEvent,
@@ -192,11 +192,21 @@ module.exports = function MembersAPI({
                 type = 'signup';
             }
         }
-        return magicLinkService.sendMagicLink({email, type, tokenData: Object.assign({email}, tokenData), referrer});
+        return magicLinkService.sendMagicLink({email, type, tokenData: Object.assign({email, type}, tokenData), referrer});
     }
 
-    function getMagicLink(email, tokenData = {}) {
-        return magicLinkService.getMagicLink({tokenData: {email, ...tokenData}, type: 'signin'});
+    /**
+     * 
+     * @param {string} email 
+     * @param {'signin'|'signup'} type When you specify 'signin' this will prevent the creation of a new member if no member is found with the provided email
+     * @param {*} [tokenData] Optional token data to add to the token
+     * @returns 
+     */
+    function getMagicLink(email, type, tokenData = {}) {
+        return magicLinkService.getMagicLink({
+            tokenData: {email, ...tokenData}, 
+            type
+        });
     }
 
     async function getTokenDataFromMagicLinkToken(token) {
@@ -204,7 +214,7 @@ module.exports = function MembersAPI({
     }
 
     async function getMemberDataFromMagicLinkToken(token) {
-        const {email, labels = [], name = '', oldEmail, newsletters, attribution, reqIp} = await getTokenDataFromMagicLinkToken(token);
+        const {email, labels = [], name = '', oldEmail, newsletters, attribution, reqIp, type} = await getTokenDataFromMagicLinkToken(token);
         if (!email) {
             return null;
         }
@@ -213,12 +223,19 @@ module.exports = function MembersAPI({
 
         if (member) {
             await MemberLoginEvent.add({member_id: member.id});
-            if (oldEmail) {
+            if (oldEmail && (!type || type === 'updateEmail')) {
                 // user exists but wants to change their email address
                 await users.update({email}, {id: member.id});
                 return getMemberIdentityData(email);
             }
             return member;
+        }
+
+        // Note: old tokens can still have a missing type (we can remove this after a couple of weeks)
+        if (type && !['signup', 'subscribe'].includes(type)) {
+            // Don't allow sign up
+            // Note that we use the type from inside the magic token so this behaviour can't be changed
+            return null;
         }
 
         let geolocation;

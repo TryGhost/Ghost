@@ -7,7 +7,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin: 0 24px;
+    margin: 0 16px;
     padding: 0;
     list-style: none;
 }
@@ -54,7 +54,7 @@
     letter-spacing: 0.2px;
     height: 34px;
     padding: 6px 12px 6px;
-    margin-right: 8px;
+    margin-right: 6px;
     outline: none;
     border: none;
     border-radius: 2px !important;
@@ -122,8 +122,8 @@
     white-space: nowrap;
 }
 
-.gh-contentfilter-sort .gh-contentfilter-menu-trigger .ember-power-select-selected-item::before {
-    content: "Sort by: ";
+.gh-contentfilter-sort .gh-contentfilter-menu-trigger {
+    margin: 0;
 }
 
 .gh-contentfilter-actions svg {
@@ -140,6 +140,7 @@
 .gh-contentfilter-button {
     display: flex;
     height: 33px;
+    margin: 0 0 0 6px;
     line-height: 33px;
     background: color-mod(var(--whitegrey-l1) l(-3%));
 }
@@ -743,19 +744,35 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     animation: .25s fadeIn .5s normal forwards;
 }
 
-.gh-post-analytics-header {
-    position: relative;
-    margin: 0 0 2.4rem;
-    padding: 0 0 1.6rem;
+.gh-post-analytics-header .gh-canvas-header-content {
+    padding-bottom: 1.6rem;
     border-bottom: 1px solid var(--whitegrey);
 }
 
 .gh-canvas-title.gh-post-title {
     max-width: 880px;
     padding: 12px 0 8px;
-    font-size: 3.1rem;
+    font-size: 3.2rem;
     overflow: inherit;
     white-space: inherit;
+}
+
+.post-header .gh-canvas-title.gh-post-title {
+    display: block;
+    padding: 6px 0 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: initial;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+}
+
+@media (max-width: 1280px) {
+    .post-header .gh-canvas-title.gh-post-title {
+        white-space: nowrap;
+        padding: 0;
+    }
 }
 
 .gh-post-analytics-meta {
@@ -767,7 +784,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 }
 
 .gh-post-analytics-meta-text {
-    color: var(--midlightgrey-d2);
+    color: var(--midgrey-l2);
     font-size: 1.35rem;
     display: flex;
     align-items: center;
@@ -911,20 +928,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 }
 
 .gh-attribution-box .gh-dashboard-list-item-sub-source {
-    padding-left: 20px;
     position: relative;
-}
-
-.gh-attribution-box .gh-dashboard-list-item-sub-source:after {
-    content: "";
-    width: 9px;
-    height: 9px;
-    border-radius: 8px;
-    position: absolute;
-    top: 50%;
-    left: 0;
-    transform: translateY(-50%);
-    background: #e6e9eb;
 }
 
 .gh-attribution-chart-column {
@@ -944,6 +948,14 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 .gh-attribution-table-column {
     flex: 1;
     padding: 1rem 0;
+}
+
+.gh-attribution-table-column .gh-attribution-box .gh-dashboard-list-item-sub-source:after {
+    display: none;
+}
+
+.gh-attribution-box .gh-dashboard-list-title:not(.sorted-by) {
+    cursor: pointer;
 }
 
 .gh-links-list {
@@ -1165,6 +1177,11 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 .gh-posts-list-item-labs .gh-content-entry-status .draft .status-dot {
     border-color: var(--pink);
     background: var(--pink);
+}
+
+.gh-posts-list-item-labs .gh-content-entry-status .error {
+    color: var(--red);
+    font-weight: 500;
 }
 
 .gh-posts-list-item-labs .schedule-details {

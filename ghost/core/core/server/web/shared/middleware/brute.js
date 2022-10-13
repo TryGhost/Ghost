@@ -84,6 +84,7 @@ module.exports = {
     },
 
     /**
+     * Block too many password guesses for the same email address
      */
     membersAuth(req, res, next) {
         return spamPrevention.membersAuth().getMiddleware({
@@ -96,5 +97,12 @@ module.exports = {
                 return _next();
             }
         })(req, res, next);
+    },
+
+    /**
+     * Blocks user enumeration
+     */
+    membersAuthEnumeration(req, res, next) {
+        return spamPrevention.membersAuthEnumeration().prevent(req, res, next);
     }
 };

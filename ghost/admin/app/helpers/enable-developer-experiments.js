@@ -5,6 +5,6 @@ export default class EnableDeveloperExperimentsHelper extends Helper {
     @service config;
 
     compute() {
-        return this.config.get('enableDeveloperExperiments');
+        return this.config.enableDeveloperExperiments;
     }
 }

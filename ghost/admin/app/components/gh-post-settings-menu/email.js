@@ -42,7 +42,7 @@ export default class Email extends Component {
         'config.mailgunIsConfigured'
     )
     get mailgunIsEnabled() {
-        return this.get('settings.mailgunApiKey') && this.get('settings.mailgunDomain') && this.get('settings.mailgunBaseUrl') || this.get('config.mailgunIsConfigured');
+        return this.settings.mailgunApiKey && this.settings.mailgunDomain && this.settings.mailgunBaseUrl || this.config.mailgunIsConfigured;
     }
 
     @action

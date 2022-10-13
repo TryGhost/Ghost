@@ -1,12 +1,22 @@
 <section class="gh-canvas gh-members-activity {{if this.memberRecord "gh-members-activity-single"}} {{if (feature "memberAttribution") "feature-memberAttribution"}}">
     <GhCanvasHeader class="gh-canvas-header">
-        <h2 class="gh-canvas-title" data-test-screen-title>
-            <LinkTo @route="members-activity" @query={{reset-query-params "members-activity"}} data-test-link="members-activity-back">Member activity</LinkTo>
-            {{#if this.memberRecord}}
-                <span>{{svg-jar "arrow-right"}}</span>
-                <span class="truncate">{{or this.memberRecord.name this.memberRecord.email}}</span>
-            {{/if}}
-        </h2>
+        {{#if this.memberRecord}}
+            <div class="flex flex-column">
+                <div class="gh-canvas-breadcrumb">
+                    <LinkTo @route="members-activity" @query={{reset-query-params "members-activity"}} data-test-link="members-activity-back">
+                        Member activity
+                    </LinkTo>
+                    {{svg-jar "arrow-right-small"}} Member
+                </div>
+                <h2 class="gh-canvas-title" data-test-screen-title>
+                    {{or this.memberRecord.name this.memberRecord.email}}
+                </h2>
+            </div>
+        {{else}}
+            <h2 class="gh-canvas-title" data-test-screen-title>
+                Member activity
+            </h2>
+        {{/if}}
 
         <div class="view-actions">
             <MembersActivity::EventTypeFilter

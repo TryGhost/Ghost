@@ -11,11 +11,11 @@ export default class FrontendService extends Service {
     _lastPassword = null;
 
     get hasPasswordChanged() {
-        return this._lastPassword !== this.settings.get('password');
+        return this._lastPassword !== this.settings.password;
     }
 
     getUrl(path) {
-        const siteUrl = new URL(this.config.get('blogUrl'));
+        const siteUrl = new URL(this.config.blogUrl);
         const subdir = siteUrl.pathname.endsWith('/') ? siteUrl.pathname : `${siteUrl.pathname}/`;
         const fullPath = `${subdir}${path.replace(/^\//, '')}`;
 
@@ -23,9 +23,9 @@ export default class FrontendService extends Service {
     }
 
     async loginIfNeeded() {
-        if (this.settings.get('isPrivate') && (this.hasPasswordChanged || !this._hasLoggedIn)) {
+        if (this.settings.isPrivate && (this.hasPasswordChanged || !this._hasLoggedIn)) {
             const privateLoginUrl = this.getUrl('/private/?r=%2F');
-            this._lastPassword = this.settings.get('password');
+            this._lastPassword = this.settings.password;
 
             return fetch(privateLoginUrl, {
                 method: 'POST',
