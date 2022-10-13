@@ -7,6 +7,36 @@ const PAGE_SIZE = 5;
 export default class LinksTable extends Component {
     @tracked page = 1;
 
+    @tracked editingLink = false;
+
+    @action
+    blurElement(event) {
+        if (!event.shiftKey) {
+            event.preventDefault();
+            event.target.blur();
+        }
+    }
+
+    @action
+    editLink() {
+        this.editingLink = true;
+    }
+
+    @action
+    cancelEdit(property, event) {
+        event.preventDefault();
+        event.target.value = this.args.post[property];
+        event.target.blur();
+    }
+
+    @action
+    setLink(event) {
+        const title = event.target.value;
+        this.args.post.title = title.trim();
+        this.args.post.save();
+        this.editingLink = false;
+    }
+
     get links() {
         return this.args.links;
     }

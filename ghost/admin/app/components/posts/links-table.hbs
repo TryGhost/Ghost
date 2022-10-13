@@ -14,8 +14,27 @@
         {{#each this.visibleLinks as |link|}}
             <div class="gh-links-list-item">
                 <div class="flex items-center">
-                    <a href="{{link.link.to}}" target="_blank" rel="noopener noreferrer">{{link.link.title}}</a>
-                    <button type="button" class="flex items-center">{{svg-jar "pen"}}</button>
+                    {{#if this.editingLink}}
+                        <input
+                            aria-label="Link"
+                            type="text"
+                            class="gh-input"
+                            placeholder={{link.link.title}}
+                            value={{link.link.title}}
+                            maxlength="300"
+                            {{on "blur" this.setLink}}
+                            {{on-key "Enter" this.blurElement}}
+                            {{on-key "Escape" (fn this.cancelEdit "link.link.title")}}
+                            {{autofocus}}
+                            data-prevent-escape-close-modal="true"
+                        />
+                    {{else}}
+                        <a href="{{link.link.to}}" target="_blank" rel="noopener noreferrer">
+                            {{link.link.title}}
+                        </a>
+                    {{/if}}
+                    {{!-- <a href="{{link.link.to}}" target="_blank" rel="noopener noreferrer">{{link.link.title}}</a> --}}
+                    <button type="button" class="flex items-center" aria-label="Edit link" {{on "click" this.editLink}}>{{svg-jar "pen"}}</button>
                 </div>
                 <p class="gh-links-list-clicks">{{link.count.clicks}}</p>
             </div>
