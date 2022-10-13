@@ -2145,6 +2145,42 @@ p.gh-members-import-errordetail:first-of-type {
     }
 }
 
+.gh-members-emailpreview-feedback {
+    display: grid;
+    gap: 20px;
+    padding: 40px;
+}
+
+.gh-members-emailpreview-feedback-title {
+    text-align: center;
+}
+
+.gh-members-emailpreview-feedback-buttons-group {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+.gh-members-emailpreview-feedback-button {
+    font-weight: bold;
+    border-radius: 22px;
+    pointer-events: none;
+    cursor: default;
+}
+
+.gh-members-emailpreview-feedback-button svg {
+    width: 24px;
+    height: 24px;
+}
+
+.gh-members-emailpreview-feedback-button-body {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    filter: brightness(0.4);
+}
+
 /* Custom tier member details */
 .gh-cp-member-email-name {
     display: grid;

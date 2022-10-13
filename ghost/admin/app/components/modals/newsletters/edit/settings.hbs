@@ -118,5 +118,34 @@
                 </div>
             {{/liquid-if}}
         {{/let}}
+
+        {{#if (feature "audienceFeedback")}}
+            {{#let (eq @openSection "audienceFeedback") as |isOpen|}}
+                <button class="modal-fullsettings-tab {{if isOpen "active"}}" type="button" {{on "click" (fn @toggleSection "audienceFeedback")}} data-test-nav-toggle="general.audienceFeedback">
+                    {{svg-jar "newsletter-analytics"}} Newsletter analytics
+                    <span class="gh-nav-button-expand">{{svg-jar (if isOpen "arrow-up-stroke" "arrow-down-stroke")}}</span>
+                </button>
+                {{#liquid-if isOpen}}
+                    <div class="modal-fullsettings-tab-expanded">
+                        <div class="gh-stack">
+                            <GhFormGroup @classNames="gh-stack-item gh-setting">
+                                <label for="capture-feedback" class="modal-fullsettings-title" data-test-toggle="feedbackEnabled">Capture feedback on your content</label>
+                                <div class="for-switch small">
+                                    <div class="container">
+                                        <input
+                                            type="checkbox"
+                                            id="capture-feedback"
+                                            checked={{@newsletter.feedbackEnabled}}
+                                            {{on "change" (fn this.onCheckboxChange "feedbackEnabled")}}
+                                        >
+                                        <button type="button" class="input-toggle-component" {{on "click" (fn this.toggleProperty "feedbackEnabled")}}></button>
+                                    </div>
+                                </div>
+                            </GhFormGroup>
+                        </div>
+                  </div>
+                {{/liquid-if}}
+            {{/let}}
+        {{/if}}
     </div>
 </fieldset>

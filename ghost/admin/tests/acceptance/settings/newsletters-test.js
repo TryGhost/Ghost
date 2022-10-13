@@ -291,6 +291,10 @@ describe('Acceptance: Settings - Newsletters', function () {
             await openTab('general.member', false);
             await closeTab('general.member', false);
 
+            // todo: uncomment after `audienceFeedback` feature flag will be removed
+            //await openTab('general.audienceFeedback', false);
+            //await closeTab('general.audienceFeedback', false);
+
             await openTab('design.header', false);
             await closeTab('design.header', false);
 
@@ -399,6 +403,12 @@ describe('Acceptance: Settings - Newsletters', function () {
             await doCheck.call(this, 'general.member', {
                 toggle: '[data-test-toggle="subscribeOnSignup"]'
             });
+
+            // Newsletter analytics
+            // todo: uncomment after `audienceFeedback` feature flag will be removed
+            //await doCheck.call(this, 'general.audienceFeedback', {
+            //    toggle: '[data-test-toggle="feedbackEnabled"]'
+            //});
 
             // Design header
             await doCheck.call(this, 'design.header', {
