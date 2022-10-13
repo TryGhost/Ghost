@@ -45,7 +45,6 @@ module.exports = class MembersCSVImporter {
      * @typedef {Object} Job
      * @prop {string} filename
      * @prop {JobID} id
-     * @prop {string} status
      */
 
     /**
@@ -56,8 +55,7 @@ module.exports = class MembersCSVImporter {
     async getJob(jobId) {
         return {
             id: jobId,
-            filename: jobId,
-            status: 'pending'
+            filename: jobId
         };
     }
 
@@ -119,10 +117,6 @@ module.exports = class MembersCSVImporter {
      */
     async perform(id) {
         const job = await this.getJob(id);
-
-        if (job.status === 'complete') {
-            throw new errors.BadRequestError({message: tpl(messages.jobAlreadyComplete)});
-        }
 
         const rows = membersCSV.parse(job.filename);
 
