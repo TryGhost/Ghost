@@ -8799,7 +8799,7 @@ charm@^1.0.0:
   dependencies:
     inherits "^2.0.1"
 
-charset@^1.0.1:
+charset@1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/charset/-/charset-1.0.1.tgz#8d59546c355be61049a8fa9164747793319852bd"
   integrity sha512-6dVyOOYjpfFcL1Y4qChrAoQLRHvj2ziyhcm0QJlhOcAhykL/k1kTUPbeo+87MNRTRdk2OIIsIXbuF3x2wi5EXg==
