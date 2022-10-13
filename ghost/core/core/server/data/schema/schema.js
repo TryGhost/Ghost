@@ -517,7 +517,9 @@ module.exports = {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
         amount: {type: 'integer', nullable: false},
-        currency: {type: 'string', maxLength: 3, nullable: false},
+        // @note: this is longer than originally intended due to a bug - https://github.com/TryGhost/Ghost/pull/15606
+        // so we should decide whether we should reduce it down in the future
+        currency: {type: 'string', maxlength: 191, nullable: false},
         source: {type: 'string', maxlength: 50, nullable: false},
         created_at: {type: 'dateTime', nullable: false}
     },
@@ -566,7 +568,9 @@ module.exports = {
         subscription_id: {type: 'string', maxlength: 24, nullable: true},
         from_plan: {type: 'string', maxlength: 255, nullable: true},
         to_plan: {type: 'string', maxlength: 255, nullable: true},
-        currency: {type: 'string', maxLength: 3, nullable: false},
+        // @note: this is longer than originally intended due to a bug - https://github.com/TryGhost/Ghost/pull/15606
+        // so we should decide whether we should reduce it down in the future
+        currency: {type: 'string', maxlength: 191, nullable: false},
         source: {
             type: 'string', maxlength: 50, nullable: false, validations: {
                 isIn: [['stripe']]
@@ -625,7 +629,9 @@ module.exports = {
         plan_nickname: {type: 'string', maxlength: 50, nullable: false},
         plan_interval: {type: 'string', maxlength: 50, nullable: false},
         plan_amount: {type: 'integer', nullable: false},
-        plan_currency: {type: 'string', maxLength: 3, nullable: false}
+        // @note: this is longer than originally intended due to a bug - https://github.com/TryGhost/Ghost/pull/15606
+        // so we should decide whether we should reduce it down in the future
+        plan_currency: {type: 'string', maxlength: 191, nullable: false}
     },
     members_subscription_created_events: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
@@ -675,7 +681,9 @@ module.exports = {
         stripe_product_id: {type: 'string', maxlength: 255, nullable: false, unique: false, references: 'stripe_products.stripe_product_id'},
         active: {type: 'boolean', nullable: false},
         nickname: {type: 'string', maxlength: 50, nullable: true},
-        currency: {type: 'string', maxLength: 3, nullable: false},
+        // @note: this is longer than originally intended due to a bug - https://github.com/TryGhost/Ghost/pull/15606
+        // so we should decide whether we should reduce it down in the future
+        currency: {type: 'string', maxlength: 191, nullable: false},
         amount: {type: 'integer', nullable: false},
         type: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'recurring', validations: {isIn: [['recurring', 'one_time']]}},
         interval: {type: 'string', maxlength: 50, nullable: true},
