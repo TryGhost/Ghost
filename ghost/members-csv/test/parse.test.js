@@ -1,6 +1,6 @@
 const should = require('should');
 const path = require('path');
-const parse = require('../lib/parse');
+const {parse} = require('../index');
 const csvPath = path.join(__dirname, '/fixtures/');
 
 const readCSV = ({filePath, mapping, defaultLabels}) => parse(filePath, mapping, defaultLabels);
