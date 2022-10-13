@@ -171,4 +171,55 @@ describe('page.* events', function () {
                 }
             });
     });
+
+    it('page.unpublished event is triggered', async function () {
+        const webhookURL = 'https://test-webhook-receiver.com/page-unpublished/';
+        await webhookMockReceiver.mock(webhookURL);
+        await fixtureManager.insertWebhook({
+            event: 'page.unpublished',
+            url: webhookURL
+        });
+
+        const res = await adminAPIAgent
+            .post('pages/')
+            .body({
+                pages: [
+                    {
+                        title: 'testing page.unpublished webhook',
+                        status: 'published'
+                    }
+                ]
+            })
+            .expectStatus(201);
+
+        const id = res.body.pages[0].id;
+        const previouslyPublishedPage = res.body.pages[0];
+        previouslyPublishedPage.status = 'draft';
+
+        await adminAPIAgent
+            .put('pages/' + id)
+            .body({
+                pages: [previouslyPublishedPage]
+            })
+            .expectStatus(200);
+
+        await webhookMockReceiver.receivedRequest();
+
+        webhookMockReceiver
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                'content-length': anyNumber,
+                'user-agent': anyGhostAgent
+            })
+            .matchBodySnapshot({               
+                page: {
+                    current: buildPageSnapshotWithTiers({
+                        published: true,
+                        tiersCount: 2,
+                        roles: true
+                    }),
+                    previous: buildPreviousPageSnapshotWithTiers(2)
+                }
+            });
+    });
 });
