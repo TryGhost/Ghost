@@ -1,5 +1,6 @@
 const should = require('should');
 const path = require('path');
+const assert = require('assert');
 const {parse} = require('../index');
 const csvPath = path.join(__dirname, '/fixtures/');
 
@@ -121,5 +122,19 @@ describe('parse', function () {
 
         result[1].email.should.eql('test@example.com');
         should.equal(result[1].name, null);
+    });
+
+    it('read csv: transforms "subscribed_to_emails" column to "subscribed" property', async function () {
+        const result = await readCSV({
+            filePath: csvPath + 'subscribed-to-emails-header.csv'
+        });
+
+        assert.ok(result);
+        assert.equal(result.length, 2);
+        assert.equal(result[0].email, 'jbloggs@example.com');
+        assert.ok(result[0].subscribed);
+
+        assert.equal(result[1].email, 'test@example.com');
+        assert.equal(result[1].subscribed, false);
     });
 });
