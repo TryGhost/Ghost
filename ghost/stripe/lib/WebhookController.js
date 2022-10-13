@@ -5,8 +5,12 @@ const errors = require('@tryghost/errors');
 module.exports = class WebhookController {
     /**
      * @param {object} deps
+     * @param {import('./StripeAPI')} deps.api
      * @param {import('./WebhookManager')} deps.webhookManager
-     * @param {any} deps.deps.memberRepository
+     * @param {any} deps.eventRepository
+     * @param {any} deps.memberRepository
+     * @param {any} deps.productRepository
+     * @param {any} deps.sendSignupEmail
      */
     constructor(deps) {
         this.deps = deps;

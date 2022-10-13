@@ -8,29 +8,13 @@
                 <p>Once someone signs up, you’ll be able to see where they came from here.</p>
             </div>
         {{else}}
-        <div class="gh-dashboard-select">
-            <PowerSelect
-                @selected={{this.selectedDisplayOption}}
-                @options={{this.allowedDisplayOptions}}
-                @searchEnabled={{false}}
-                @onChange={{this.onDisplayChange}}
-                @triggerComponent={{component "gh-power-select/trigger"}}
-                @triggerClass="gh-contentfilter-menu-trigger"
-                @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
-                @matchTriggerWidth={{false}}
-                @horizontalPosition="right"
-                @disabled={{this.isDropdownDisabled}}
-                as |option|
-            >
-                {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
-            </PowerSelect>
-        </div>
         <div class="gh-dashboard-attribution-grid">
             <div>
                 <h3 class="gh-dashboard-metric-label">Top sources</h3>
                 <MemberAttribution::SourceAttributionTable
                     @sources={{this.sources}}
                     @sortColumn={{this.selectedSortColumn}}
+                    @setSortColumn={{this.setSortColumn}}
                     class="gh-dashboard-attribution-list gh-dashboard-list"
                 />
             </div>
@@ -40,6 +24,7 @@
                         @sources={{this.chartSources}}
                         @sortColumn={{this.selectedSortColumn}}
                     />
+                    <span class="gh-dashboard-attribution-chart-label">{{if (eq this.selectedSortColumn "signups") "Free" "Paid"}}</span>
                 </div>
                 <div id="gh-dashboard-attribution-tooltip" class="gh-dashboard-tooltip">
                     <div class="gh-dashboard-tooltip-value">

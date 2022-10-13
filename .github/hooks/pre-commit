@@ -1,6 +1,16 @@
 #!/bin/bash
 # Modified from https://github.com/chaitanyagupta/gitutils
 
+[ -n "$CI" ] && exit 0
+
+yarn lint-staged --relative
+lintStatus=$?
+
+if [ $lintStatus -ne 0 ]; then
+    echo "❌ Linting failed"
+    exit 1
+fi
+
 green='\033[0;32m'
 no_color='\033[0m'
 grey='\033[0;90m'

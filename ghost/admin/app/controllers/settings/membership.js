@@ -59,7 +59,7 @@ export default class MembersAccessController extends Controller {
     }
 
     get siteUrl() {
-        return this.config.get('blogUrl');
+        return this.config.blogUrl;
     }
 
     get selectedCurrency() {
@@ -67,7 +67,7 @@ export default class MembersAccessController extends Controller {
     }
 
     get isConnectDisallowed() {
-        const siteUrl = this.config.get('blogUrl');
+        const siteUrl = this.config.blogUrl;
         return envConfig.environment !== 'development' && !/^https:/.test(siteUrl);
     }
 
@@ -94,7 +94,7 @@ export default class MembersAccessController extends Controller {
     }
 
     get isDirty() {
-        return this.settings.get('hasDirtyAttributes') || this.hasChangedPrices;
+        return this.settings.hasDirtyAttributes || this.hasChangedPrices;
     }
 
     @action
@@ -239,7 +239,7 @@ export default class MembersAccessController extends Controller {
         // TODO: can these be worked out from settings in membersUtils?
         const monthlyPrice = Math.round(this.stripeMonthlyAmount * 100);
         const yearlyPrice = Math.round(this.stripeYearlyAmount * 100);
-        let portalPlans = this.settings.get('portalPlans') || [];
+        let portalPlans = this.settings.portalPlans || [];
 
         let isMonthlyChecked = portalPlans.includes('monthly');
         let isYearlyChecked = portalPlans.includes('yearly');
@@ -339,11 +339,11 @@ export default class MembersAccessController extends Controller {
 
     @task({drop: true})
     *saveSettingsTask(options) {
-        if (this.settings.get('errors').length !== 0) {
+        if (this.settings.errors.length !== 0) {
             return;
         }
         // When no filer is selected in `Specific tier(s)` option
-        if (!this.settings.get('defaultContentVisibility')) {
+        if (!this.settings.defaultContentVisibility) {
             return;
         }
         const result = yield this.settings.save();
@@ -353,7 +353,7 @@ export default class MembersAccessController extends Controller {
     }
 
     async saveTier() {
-        const paidMembersEnabled = this.settings.get('paidMembersEnabled');
+        const paidMembersEnabled = this.settings.paidMembersEnabled;
         if (this.tier && paidMembersEnabled) {
             const monthlyAmount = Math.round(this.stripeMonthlyAmount * 100);
             const yearlyAmount = Math.round(this.stripeYearlyAmount * 100);
@@ -383,14 +383,14 @@ export default class MembersAccessController extends Controller {
     }
 
     _validateSignupRedirect(url, type) {
-        const siteUrl = this.config.get('blogUrl');
+        const siteUrl = this.config.blogUrl;
         let errMessage = `Please enter a valid URL`;
-        this.settings.get('errors').remove(type);
-        this.settings.get('hasValidated').removeObject(type);
+        this.settings.errors.remove(type);
+        this.settings.hasValidated.removeObject(type);
 
         if (url === null) {
-            this.settings.get('errors').add(type, errMessage);
-            this.settings.get('hasValidated').pushObject(type);
+            this.settings.errors.add(type, errMessage);
+            this.settings.hasValidated.pushObject(type);
             return false;
         }
 
@@ -401,9 +401,9 @@ export default class MembersAccessController extends Controller {
 
         if (url.href.startsWith(siteUrl)) {
             const path = url.href.replace(siteUrl, '');
-            this.settings.set(type, path);
+            this.settings[type] = path;
         } else {
-            this.settings.set(type, url.href);
+            this.settings[type] = url.href;
         }
     }
 }

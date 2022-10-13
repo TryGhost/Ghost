@@ -10,7 +10,6 @@ const extraAttrs = require('../utils/extra-attrs');
 const gating = require('../utils/post-gating');
 const url = require('../utils/url');
 
-const labs = require('../../../../../../../shared/labs');
 const utils = require('../../../index');
 
 const postsMetaSchema = require('../../../../../../data/schema').tables.posts_meta;
@@ -110,20 +109,22 @@ module.exports = async (model, frame, options = {}) => {
         });
     }
 
-    if (labs.isSet('emailClicks')) {
-        if (jsonModel.email && jsonModel.count) {
-            jsonModel.email.opened_count = Math.min(
-                Math.max(
-                    jsonModel.email.opened_count || 0,
-                    jsonModel.count.clicks || 0
-                ),
-                jsonModel.email.email_count
-            );
-        }
+    if (jsonModel.email && jsonModel.count) {
+        jsonModel.email.opened_count = Math.min(
+            Math.max(
+                jsonModel.email.opened_count || 0,
+                jsonModel.count.clicks || 0
+            ),
+            jsonModel.email.email_count
+        );
     }
 
-    if (!labs.isSet('memberAttribution') && !labs.isSet('emailClicks')) {
-        delete jsonModel.count;
+    if (jsonModel.count && !jsonModel.count.sentiment) {
+        jsonModel.count.sentiment = 0;
+    }
+
+    if (jsonModel.count && !jsonModel.count.positive_feedback) {
+        jsonModel.count.positive_feedback = 0;
     }
 
     return jsonModel;

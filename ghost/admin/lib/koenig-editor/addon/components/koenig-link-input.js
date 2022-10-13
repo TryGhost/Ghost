@@ -123,7 +123,7 @@ export default class KoenigLinkInput extends Component {
             // prevent Enter from triggering in the editor and removing text
             event.preventDefault();
 
-            let href = relativeToAbsolute(this._href, this.config.get('blogUrl'));
+            let href = relativeToAbsolute(this._href, this.config.blogUrl);
             this.set('_href', href);
 
             if (this.source === 'direct') {

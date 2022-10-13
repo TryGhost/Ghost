@@ -19,7 +19,7 @@ export default class GhSiteIframeComponent extends Component {
     }
 
     get srcUrl() {
-        const srcUrl = new URL(this.args.src || `${this.config.get('blogUrl')}/`);
+        const srcUrl = new URL(this.args.src || `${this.config.blogUrl}/`);
 
         if (this.args.guid) {
             srcUrl.searchParams.set('v', this.args.guid);

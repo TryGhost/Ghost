@@ -1,14 +1,11 @@
-import classic from 'ember-classic-decorator';
-import {action, computed} from '@ember/object';
-import {inject as service} from '@ember/service';
-/* eslint-disable ghost/ember/alias-model-in-controller */
-import $ from 'jquery';
 import Controller from '@ember/controller';
 import NavigationItem from 'ghost-admin/models/navigation-item';
 import RSVP from 'rsvp';
+import {action} from '@ember/object';
+import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
+import {tracked} from '@glimmer/tracking';
 
-@classic
 export default class NavigationController extends Controller {
     @service config;
     @service ghostPaths;
@@ -16,19 +13,12 @@ export default class NavigationController extends Controller {
     @service session;
     @service settings;
 
-    dirtyAttributes = false;
-    newNavItem = null;
-    newSecondaryNavItem = null;
+    @tracked dirtyAttributes = false;
+    @tracked newNavItem = NavigationItem.create({isNew: true});
+    @tracked newSecondaryNavItem = NavigationItem.create({isNew: true, isSecondary: true});
 
-    init() {
-        super.init(...arguments);
-        this.set('newNavItem', NavigationItem.create({isNew: true}));
-        this.set('newSecondaryNavItem', NavigationItem.create({isNew: true, isSecondary: true}));
-    }
-
-    @computed('config.blogUrl')
     get blogUrl() {
-        let url = this.get('config.blogUrl');
+        let url = this.config.blogUrl;
 
         return url.slice(-1) !== '/' ? `${url}/` : url;
     }
@@ -56,10 +46,10 @@ export default class NavigationController extends Controller {
             return;
         }
 
-        let navItems = item.isSecondary ? this.get('settings.secondaryNavigation') : this.get('settings.navigation');
+        let navItems = item.isSecondary ? this.settings.secondaryNavigation : this.settings.navigation;
 
         navItems.removeObject(item);
-        this.set('dirtyAttributes', true);
+        this.dirtyAttributes = true;
     }
 
     @action
@@ -70,7 +60,7 @@ export default class NavigationController extends Controller {
 
         if (navItem.get('label') !== label) {
             navItem.set('label', label);
-            this.set('dirtyAttributes', true);
+            this.dirtyAttributes = true;
         }
     }
 
@@ -82,7 +72,7 @@ export default class NavigationController extends Controller {
 
         if (navItem.get('url') !== url) {
             navItem.set('url', url);
-            this.set('dirtyAttributes', true);
+            this.dirtyAttributes = true;
         }
 
         return url;
@@ -90,30 +80,28 @@ export default class NavigationController extends Controller {
 
     @action
     reset() {
-        this.set('newNavItem', NavigationItem.create({isNew: true}));
-        this.set('newSecondaryNavItem', NavigationItem.create({isNew: true, isSecondary: true}));
+        this.newNavItem = NavigationItem.create({isNew: true});
+        this.newSecondaryNavItem = NavigationItem.create({isNew: true, isSecondary: true});
     }
 
     addNewNavItem(item) {
-        let navItems = item.isSecondary ? this.get('settings.secondaryNavigation') : this.get('settings.navigation');
+        let navItems = item.isSecondary ? this.settings.secondaryNavigation : this.settings.navigation;
 
         item.set('isNew', false);
         navItems.pushObject(item);
-        this.set('dirtyAttributes', true);
+        this.dirtyAttributes = true;
 
         if (item.isSecondary) {
-            this.set('newSecondaryNavItem', NavigationItem.create({isNew: true, isSecondary: true}));
-            $('.gh-blognav-container:last .gh-blognav-line:last input:first').focus();
+            this.newSecondaryNavItem = NavigationItem.create({isNew: true, isSecondary: true});
         } else {
-            this.set('newNavItem', NavigationItem.create({isNew: true}));
-            $('.gh-blognav-container:first .gh-blognav-line:last input:first').focus();
+            this.newNavItem = NavigationItem.create({isNew: true});
         }
     }
 
     @task
     *saveTask() {
-        let navItems = this.get('settings.navigation');
-        let secondaryNavItems = this.get('settings.secondaryNavigation');
+        let navItems = this.settings.navigation;
+        let secondaryNavItems = this.settings.secondaryNavigation;
 
         let notifications = this.notifications;
         let validationPromises = [];
@@ -136,7 +124,15 @@ export default class NavigationController extends Controller {
 
         try {
             yield RSVP.all(validationPromises);
-            this.set('dirtyAttributes', false);
+
+            // If some attributes have been changed, rebuild
+            // the model arrays or changes will not be detected
+            if (this.dirtyAttributes) {
+                this.settings.navigation = [...this.settings.navigation];
+                this.settings.secondaryNavigation = [...this.settings.secondaryNavigation];
+            }
+
+            this.dirtyAttributes = false;
             return yield this.settings.save();
         } catch (error) {
             if (error) {

@@ -1,6 +1,6 @@
 const should = require('should');
 const _ = require('lodash');
-const ObjectId = require('bson-objectid');
+const ObjectId = require('bson-objectid').default;
 const testUtils = require('../../../../utils');
 const models = require('../../../../../core/server/models');
 
@@ -64,14 +64,12 @@ describe('Validate Schema', function () {
             );
         });
 
-        it('transforms 0 and 1', function () {
-            const post = models.Post.forge(testUtils.DataGenerator.forKnex.createPost({slug: 'test', featured: 0}));
-            post.get('featured').should.eql(0);
+        it('transforms 0 and 1 (boolean)', async function () {
+            const user = models.User.forge(testUtils.DataGenerator.forKnex.createUser({email: 'test@example.com', comment_notifications: 0}));
+            user.get('comment_notifications').should.eql(0);
 
-            return validateSchema('posts', post, {method: 'insert'})
-                .then(function () {
-                    post.get('featured').should.eql(false);
-                });
+            await validateSchema('users', user, {method: 'insert'});
+            user.get('comment_notifications').should.eql(false);
         });
 
         it('keeps true or false', function () {

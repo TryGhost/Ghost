@@ -11,6 +11,12 @@
 // {{tags prefix=(t " on ")}}
 
 const {themeI18n} = require('../services/handlebars');
+const errors = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
+
+const messages = {
+    oopsErrorTemplateHasError: 'Oops, seems there is an error in the template.'
+};
 
 module.exports = function t(text, options) {
     // checks for smart apostrophes, eg. https://unicode-table.com/en/201C/

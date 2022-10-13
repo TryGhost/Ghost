@@ -356,6 +356,10 @@
     color: var(--green-d1);
 }
 
+.gh-btn-editor.midgrey span {
+    color: var(--midgrey-l2);
+}
+
 .gh-editor-wordcount-container {
     position: absolute;
     right: 30px;
@@ -626,6 +630,17 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
 
 .gh-editor-post-status-btn {
     position: relative;
+}
+
+@media (max-width: 720px) {
+    .gh-editor-post-status .newsletter-failed {
+        display: none;
+    }
+}
+
+.gh-retry-trigger {
+    color: var(--red);
+    font-weight: 500;
 }
 
 .gh-lexical-indicator {

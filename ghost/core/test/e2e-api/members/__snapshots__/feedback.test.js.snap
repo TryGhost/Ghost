@@ -1,0 +1,265 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Members Feedback Authentication Allows authentication via session 1: [body] 1`] = `
+Object {
+  "feedback": Array [
+    Object {
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "memberId": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "postId": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "score": 1,
+    },
+  ],
+}
+`;
+
+exports[`Members Feedback Authentication Allows authentication via session 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "132",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/feedback\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members Feedback Can add feedback 1: [body] 1`] = `
+Object {
+  "feedback": Array [
+    Object {
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "memberId": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "postId": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "type": "positive",
+    },
+  ],
+}
+`;
+
+exports[`Members Feedback Can add feedback 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "140",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/feedback\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members Feedback Can add positive feedback 1: [body] 1`] = `
+Object {
+  "feedback": Array [
+    Object {
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "memberId": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "postId": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "score": 1,
+    },
+  ],
+}
+`;
+
+exports[`Members Feedback Can add positive feedback 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "132",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/feedback\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members Feedback Can change existing feedback 1: [body] 1`] = `
+Object {
+  "feedback": Array [
+    Object {
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "memberId": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "postId": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "score": 0,
+    },
+  ],
+}
+`;
+
+exports[`Members Feedback Can change existing feedback 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "132",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/feedback\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members Feedback Can change existing feedback 3: [body] 1`] = `
+Object {
+  "feedback": Array [
+    Object {
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "memberId": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "postId": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "score": 1,
+    },
+  ],
+}
+`;
+
+exports[`Members Feedback Can change existing feedback 4: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "132",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/feedback\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members Feedback Can change existing feedback 5: [body] 1`] = `
+Object {
+  "feedback": Array [
+    Object {
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "memberId": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "postId": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "score": 1,
+    },
+  ],
+}
+`;
+
+exports[`Members Feedback Can change existing feedback 6: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "132",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/feedback\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members Feedback Validation Throws for invalid score 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Invalid feedback score. Only 1 or 0 is currently allowed.",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Validation error, cannot save feedback.",
+      "property": null,
+      "type": "ValidationError",
+    },
+  ],
+}
+`;
+
+exports[`Members Feedback Validation Throws for invalid score type 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Invalid feedback score. Only 1 or 0 is currently allowed.",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Validation error, cannot save feedback.",
+      "property": null,
+      "type": "ValidationError",
+    },
+  ],
+}
+`;
+
+exports[`Members Feedback Validation Throws for invalid type 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Invalid feedback type",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Validation error, cannot save feedback.",
+      "property": null,
+      "type": "ValidationError",
+    },
+  ],
+}
+`;
+
+exports[`Members Feedback Validation Throws for invalid uuid 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": null,
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Invalid uuid.",
+      "property": null,
+      "type": "UnauthorizedError",
+    },
+  ],
+}
+`;
+
+exports[`Members Feedback Validation Throws for nonexisting post 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Post not found.",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Resource not found error, cannot save feedback.",
+      "property": null,
+      "type": "NotFoundError",
+    },
+  ],
+}
+`;
+
+exports[`Members Feedback Validation Throws for nonexisting uuid 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": null,
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Invalid uuid.",
+      "property": null,
+      "type": "UnauthorizedError",
+    },
+  ],
+}
+`;

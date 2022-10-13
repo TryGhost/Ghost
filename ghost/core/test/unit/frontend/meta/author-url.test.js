@@ -1,6 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
-const ObjectId = require('bson-objectid');
+const ObjectId = require('bson-objectid').default;
 const urlService = require('../../../../core/server/services/url');
 const getAuthorUrl = require('../../../../core/frontend/meta/author-url');
 

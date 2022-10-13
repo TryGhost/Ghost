@@ -13,19 +13,19 @@
             </h2>
             <div class="gh-post-analytics-meta">
                 <div class="gh-post-analytics-meta-text">
-                    {{#if
-                        (or this.post.isSent
-                            (and this.post.isPublished this.post.email)
-                            this.post.willEmail
-                        )
-                    }}
+                    {{#if this.post.hasBeenEmailed }}
                         {{#if this.post.emailOnly}}
                             Sent
                         {{else}}
                             Published and sent
                         {{/if}}
                     {{else}}
-                        Published on your site
+                        Published
+                        {{#if @post.didEmailFail}}
+                            but failed to send
+                        {{else}}
+                            on your site
+                        {{/if}}
                     {{/if}}
 
                     {{#let (moment-site-tz this.post.publishedAtUTC) as |publishedAt|}}
@@ -46,7 +46,7 @@
         Engagement
     </h4>
     <div class="gh-post-analytics-box">
-        {{#if (or this.post.isSent (and this.post.isPublished this.post.email))}}
+        {{#if this.post.hasBeenEmailed}}
             <div class="gh-post-analytics-item">
                 <LinkTo @route="members" @query={{hash filterParam=(concat "emails.post_id:[" this.post.id "]") }}>
                     <h3>{{format-number this.post.email.emailCount}}</h3>
@@ -90,6 +90,13 @@
                 </div>
             {{/if}}
         {{/if}}
+
+        {{#if this.post.showAudienceFeedback }}
+            <div class="gh-post-analytics-item">
+                <h3>{{format-number this.post.count.positive_feedback}}</h3>
+                <p>More like this &mdash; <strong>{{this.post.count.sentiment}}%</strong></p>
+            </div>
+        {{/if}}
     </div>
 
     {{#if this.isLoaded }}
@@ -106,46 +113,16 @@
                 {{!-- Empty state --}}
             {{else}}
                 <h4 class="gh-main-section-header small bn">
-                    Source attribution
+                    Growth from this post
                 </h4>
                 <div class="gh-post-analytics-box column">
                     <div class="gh-attribution-box">
-                        <div class="gh-dashboard-select" style="top:40px;right:24px">
-                            <PowerSelect
-                                @selected={{this.selectedDisplayOption}}
-                                @options={{this.allowedDisplayOptions}}
-                                @searchEnabled={{false}}
-                                @onChange={{this.onDisplayChange}}
-                                @triggerComponent={{component "gh-power-select/trigger"}}
-                                @triggerClass="gh-contentfilter-menu-trigger"
-                                @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
-                                @matchTriggerWidth={{false}}
-                                @disabled={{this.isDropdownDisabled}}
-                                @horizontalPosition="right"
-
-                                as |option|
-                            >
-                                {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
-                            </PowerSelect>
-                        </div>
                         <div class="gh-attribution-table-column">
                             <MemberAttribution::SourceAttributionTable
                                 @sources={{this.sources}}
                                 @sortColumn={{this.sortColumn}}
+                                @setSortColumn={{this.setSortColumn}}
                             />
-                        </div>
-                        <div class="gh-attribution-chart-column">
-                            <div class="gh-attribution-chart-column-inner">
-                                <MemberAttribution::SourceAttributionChart
-                                    @sources={{this.sources}}
-                                    @sortColumn={{this.sortColumn}}
-                                />
-                                <div id="gh-dashboard-attribution-tooltip" class="gh-dashboard-tooltip">
-                                    <div class="gh-dashboard-tooltip-value">
-                                        -
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>

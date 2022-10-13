@@ -126,12 +126,19 @@
                             </tr>
                         </thead>
                         <VerticalCollection @tagName="tbody" @items={{this.members}} @key="id" @containerSelector=".gh-list-scrolling" @estimateHeight={{69}} @staticHeight={{true}} @bufferSize={{20}} as |member|>
-                            <GhMembersListItem
-                                @newsletterEnabled={{not-eq this.settings.editorDefaultEmailRecipients "disabled"}}
-                                @member={{member}}
-                                @filterColumns={{this.filterColumns}}
-                                data-test-member={{member.id}}
-                            />
+                            {{#if member.is_loading}}
+                                <Members::ListItemLoading
+                                    @newsletterEnabled={{not-eq this.settings.editorDefaultEmailRecipients "disabled"}}
+                                    @filterColumns={{this.filterColumns}}
+                                />
+                            {{else}}
+                                <Members::ListItem
+                                    @newsletterEnabled={{not-eq this.settings.editorDefaultEmailRecipients "disabled"}}
+                                    @member={{member.content}}
+                                    @filterColumns={{this.filterColumns}}
+                                    data-test-member={{member.id}}
+                                />
+                            {{/if}}
                         </VerticalCollection>
                     </table>
                 </div>

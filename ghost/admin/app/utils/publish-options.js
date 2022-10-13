@@ -1,5 +1,5 @@
 import moment from 'moment-timezone';
-import {action, get} from '@ember/object';
+import {action} from '@ember/object';
 import {htmlSafe} from '@ember/template';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -23,10 +23,14 @@ export default class PublishOptions {
     }
 
     get willEmail() {
-        return this.publishType !== 'publish'
-            && this.recipientFilter
-            && this.post.isDraft
-            && !this.post.email;
+        return (
+            (this.publishType !== 'publish'
+                && this.recipientFilter
+                && this.post.isDraft
+                && !this.post.email
+            )
+                || (this.post.isDraft && this.post.email && this.post.email.status === 'failed')
+        );
     }
 
     get willPublish() {
@@ -109,8 +113,8 @@ export default class PublishOptions {
     }
 
     get emailDisabledInSettings() {
-        return get(this.settings, 'editorDefaultEmailRecipients') === 'disabled'
-            || get(this.settings, 'membersSignupAccess') === 'none';
+        return this.settings.editorDefaultEmailRecipients === 'disabled'
+            || this.settings.membersSignupAccess === 'none';
     }
 
     // publish type dropdown is not shown at all
@@ -126,8 +130,8 @@ export default class PublishOptions {
     }
 
     get mailgunIsConfigured() {
-        return get(this.settings, 'mailgunIsConfigured')
-            || get(this.config, 'mailgunIsConfigured');
+        return this.settings.mailgunIsConfigured
+            || this.config.mailgunIsConfigured;
     }
 
     @action
@@ -164,8 +168,8 @@ export default class PublishOptions {
     }
 
     get defaultRecipientFilter() {
-        const recipients = this.settings.get('editorDefaultEmailRecipients');
-        const filter = this.settings.get('editorDefaultEmailRecipientsFilter');
+        const recipients = this.settings.editorDefaultEmailRecipients;
+        const filter = this.settings.editorDefaultEmailRecipientsFilter;
 
         const usuallyNobody = recipients === 'filter' && filter === null;
 
@@ -250,10 +254,14 @@ export default class PublishOptions {
         // Set publish type to "Publish" but keep email recipients matching post visibility
         // to avoid multiple clicks to turn on emailing
         if (
-            this.settings.get('editorDefaultEmailRecipients') === 'filter' &&
-            this.settings.get('editorDefaultEmailRecipientsFilter') === null
+            this.settings.editorDefaultEmailRecipients === 'filter' &&
+            this.settings.editorDefaultEmailRecipientsFilter === null
         ) {
             this.publishType = 'publish';
+        }
+
+        if (this.post.isSent) {
+            this.publishType = 'send';
         }
     }
 
@@ -374,7 +382,7 @@ export default class PublishOptions {
         try {
             if (this.limit.limiter && this.limit.limiter.isLimited('emails')) {
                 await this.limit.limiter.errorIfWouldGoOverLimit('emails');
-            } else if (get(this.settings, 'emailVerificationRequired')) {
+            } else if (this.settings.emailVerificationRequired) {
                 this.emailDisabledError = 'Email sending is temporarily disabled because your account is currently in review. You should have an email about this from us already, but you can also reach us any time at support@ghost.org.';
             }
         } catch (e) {

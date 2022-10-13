@@ -4,9 +4,9 @@ const OfferCreatedEvent = require('@tryghost/members-offers').events.OfferCreate
 class PaymentsService {
     /**
      * @param {object} deps
-     * @param {any} deps.Offer
+     * @param {import('bookshelf').Model} deps.Offer
      * @param {import('@tryghost/members-offers/lib/application/OffersAPI')} deps.offersAPI
-     * @param {any} deps.stripeAPIService
+     * @param {import('@tryghost/members-stripe-service/lib/StripeAPI')} deps.stripeAPIService
      */
     constructor(deps) {
         /** @private */

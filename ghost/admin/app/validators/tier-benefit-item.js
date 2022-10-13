@@ -5,11 +5,11 @@ export default BaseValidator.create({
     properties: ['name'],
 
     name(model) {
-        let name = model.get('name');
-        let hasValidated = model.get('hasValidated');
+        let name = model.name;
+        let hasValidated = model.hasValidated;
 
         if (isBlank(name)) {
-            model.get('errors').add('name', 'Please enter a benefit');
+            model.errors.add('name', 'Please enter a benefit');
             this.invalidate();
         }
 

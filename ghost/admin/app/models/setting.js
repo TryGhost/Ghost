@@ -1,7 +1,5 @@
-/* eslint-disable camelcase */
 import Model, {attr} from '@ember-data/model';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
-import {and} from '@ember/object/computed';
 
 export default Model.extend(ValidationEngine, {
     validationType: 'setting',
@@ -83,8 +81,6 @@ export default Model.extend(ValidationEngine, {
     editorDefaultEmailRecipients: attr('string'),
     editorDefaultEmailRecipientsFilter: attr('members-segment-string'),
     emailVerificationRequired: attr('boolean'),
-
-    mailgunIsConfigured: and('mailgunApiKey', 'mailgunDomain', 'mailgunBaseUrl'),
 
     // HACK - not a real model attribute but a workaround for Ember Data not
     //        exposing meta from save responses

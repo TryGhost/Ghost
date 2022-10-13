@@ -8,7 +8,7 @@ module.exports = class StripeMigrations {
      * @param {object} params
      *
      * @param {any} params.models
-     * @param {import('../services/stripe-api')} params.stripeAPIService
+     * @param {import('./StripeAPI')} params.api
      */
     constructor({
         models,

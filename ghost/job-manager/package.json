@@ -22,14 +22,14 @@
     "delay": "5.0.0",
     "mocha": "10.0.0",
     "should": "13.2.3",
-    "sinon": "14.0.0"
+    "sinon": "14.0.1"
   },
   "dependencies": {
     "@breejs/later": "4.1.0",
-    "@tryghost/errors": "1.2.17",
+    "@tryghost/errors": "1.2.18",
     "@tryghost/logging": "2.3.2",
     "bree": "6.5.0",
-    "cron-validate": "1.4.3",
+    "cron-validate": "1.4.4",
     "fastq": "1.13.0",
     "p-wait-for": "3.2.0"
   }

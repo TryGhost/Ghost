@@ -271,11 +271,16 @@ export default class DashboardMocksService extends Service {
             });
 
             // More than 5 sources
-            const attributionSources = ['Twitter', 'Ghost Network', 'Product Hunt', 'Direct', 'Ghost Newsletter', 'Rediverge Newsletter', 'Reddit', 'The Lever Newsletter', 'The Browser Newsletter', 'Green Newsletter', 'Yellow Newsletter', 'Brown Newsletter', 'Red Newsletter'];
-            // const attributionSources = ['Twitter', 'Ghost Network', 'Product Hunt', 'Direct'];
+            let attributionSources = ['Twitter', 'Ghost Network', 'Product Hunt', 'Direct', 'Ghost Newsletter', 'Rediverge Newsletter', 'Reddit', 'The Lever Newsletter', 'The Browser Newsletter', 'Green Newsletter', 'Yellow Newsletter', 'Brown Newsletter', 'Red Newsletter'];
             const hasPaidConversions = true;
             const hasFreeSignups = true;
-            const showEmptyState = true;
+            const showEmptyState = false;
+            const hasUnavailableSources = true;
+            const hasExtraSources = true;
+
+            if (!hasExtraSources) {
+                attributionSources = attributionSources.slice(0, 5);
+            }
 
             if (!showEmptyState) {
                 this.memberAttributionStats.push({
@@ -285,13 +290,14 @@ export default class DashboardMocksService extends Service {
                     paidConversions: hasPaidConversions ? Math.floor(Math.random() * 30) : 0
                 });
 
-                // Comment this out to hide Unavailable source
-                this.memberAttributionStats.push({
-                    date: date.toISOString().split('T')[0],
-                    source: null,
-                    signups: hasFreeSignups ? Math.floor(Math.random() * 5) : 0,
-                    paidConversions: hasPaidConversions ? Math.floor(Math.random() * 3) : 0
-                });
+                if (hasUnavailableSources) {
+                    this.memberAttributionStats.push({
+                        date: date.toISOString().split('T')[0],
+                        source: null,
+                        signups: hasFreeSignups ? Math.floor(Math.random() * 5) : 0,
+                        paidConversions: hasPaidConversions ? Math.floor(Math.random() * 3) : 0
+                    });
+                }
             }
         }
 

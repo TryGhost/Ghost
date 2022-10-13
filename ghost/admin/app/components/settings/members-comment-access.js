@@ -28,12 +28,12 @@ export default class SettingsMembersCommentAccess extends Component {
     }
 
     get selectedOption() {
-        return this.options.find(o => o.value === this.settings.get('commentsEnabled'));
+        return this.options.find(o => o.value === this.settings.commentsEnabled);
     }
 
     @action
     setCommentAccess(option) {
-        this.settings.set('commentsEnabled', option.value);
+        this.settings.commentsEnabled = option.value;
         this.args.onChange?.(option.value);
     }
 }
