@@ -219,7 +219,7 @@ function FloatingFormatToolbar({isText, editor, anchorElem, blockType, isBold, i
                     setStickyToolbar(true);
                 }} data-kg-toolbar-button="h3" />
                 <ToolbarMenuSeparator />
-                <ToolbarMenuItem label="Toggle blockquote" isActive={blockType === 'quote' || blockType === 'aside'} Icon={blockType === 'aside' ? 'quoteOne' : 'quoteTwo'} onClick={() => {
+                <ToolbarMenuItem label="Toggle blockquote" isActive={blockType === 'quote' || blockType === 'aside'} icon={blockType === 'aside' ? 'quoteOne' : 'quoteTwo'} onClick={() => {
                     (formatQuote());
                     setStickyToolbar(true);
                 }} data-kg-toolbar-button="quote" />
