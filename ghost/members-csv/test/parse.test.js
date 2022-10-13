@@ -4,22 +4,18 @@ const assert = require('assert');
 const {parse} = require('../index');
 const csvPath = path.join(__dirname, '/fixtures/');
 
-const readCSV = ({filePath, mapping, defaultLabels}) => parse(filePath, mapping, defaultLabels);
-
 describe('parse', function () {
     it('empty file', async function () {
-        const result = await readCSV({
-            filePath: csvPath + 'empty.csv'
-        });
+        const filePath = csvPath + 'empty.csv';
+        const result = await parse(filePath);
 
         should.exist(result);
         result.length.should.eql(0);
     });
 
     it('one column', async function () {
-        const result = await readCSV({
-            filePath: csvPath + 'single-column-with-header.csv'
-        });
+        const filePath = csvPath + 'single-column-with-header.csv';
+        const result = await parse(filePath);
 
         should.exist(result);
         result.length.should.eql(2);
@@ -27,10 +23,17 @@ describe('parse', function () {
         result[1].email.should.eql('test@example.com');
     });
 
+    it('one column without header mapping returns empty result', async function () {
+        const filePath = csvPath + 'single-column-with-header.csv';
+        const result = await parse(filePath);
+
+        should.exist(result);
+        result.length.should.eql(0);
+    });
+
     it('two columns, 1 filter', async function () {
-        const result = await readCSV({
-            filePath: csvPath + 'two-columns-with-header.csv'
-        });
+        const filePath = csvPath + 'two-columns-with-header.csv';
+        const result = await parse(filePath);
 
         should.exist(result);
         result.length.should.eql(2);
@@ -39,12 +42,11 @@ describe('parse', function () {
     });
 
     it('two columns, 2 filters', async function () {
-        const result = await readCSV({
-            filePath: csvPath + 'two-columns-obscure-header.csv',
-            mapping: {
-                'Email Address': 'email'
-            }
-        });
+        const filePath = csvPath + 'two-columns-obscure-header.csv';
+        const mapping = {
+            'Email Address': 'email'
+        };
+        const result = await parse(filePath, mapping);
 
         should.exist(result);
         result.length.should.eql(2);
@@ -55,13 +57,12 @@ describe('parse', function () {
     });
 
     it('two columns with mapping', async function () {
-        const result = await readCSV({
-            filePath: csvPath + 'two-columns-mapping-header.csv',
-            mapping: {
-                correo_electronico: 'email',
-                nombre: 'name'
-            }
-        });
+        const filePath = csvPath + 'two-columns-mapping-header.csv';
+        const mapping = {
+            correo_electronico: 'email',
+            nombre: 'name'
+        };
+        const result = await parse(filePath, mapping);
 
         should.exist(result);
         result.length.should.eql(2);
@@ -75,12 +76,11 @@ describe('parse', function () {
     });
 
     it('two columns with partial mapping', async function () {
-        const result = await readCSV({
-            filePath: csvPath + 'two-columns-mapping-header.csv',
-            mapping: {
-                correo_electronico: 'email'
-            }
-        });
+        const filePath = csvPath + 'two-columns-mapping-header.csv';
+        const mapping = {
+            correo_electronico: 'email'
+        };
+        const result = await parse(filePath, mapping);
 
         should.exist(result);
         result.length.should.eql(2);
@@ -94,10 +94,9 @@ describe('parse', function () {
     });
 
     it('two columns with empty mapping', async function () {
-        const result = await readCSV({
-            filePath: csvPath + 'two-columns-mapping-header.csv',
-            mapping: {}
-        });
+        const filePath = csvPath + 'two-columns-mapping-header.csv';
+        const mapping = {};
+        const result = await parse(filePath, mapping);
 
         should.exist(result);
         result.length.should.eql(2);
@@ -111,9 +110,8 @@ describe('parse', function () {
     });
 
     it('transforms empty values to nulls', async function () {
-        const result = await readCSV({
-            filePath: csvPath + 'multiple-records-with-empty-values.csv'
-        });
+        const filePath = csvPath + 'multiple-records-with-empty-values.csv';
+        const result = await parse(filePath);
 
         should.exist(result);
         result.length.should.eql(2);
@@ -125,13 +123,11 @@ describe('parse', function () {
     });
 
     it(' transforms "subscribed_to_emails" column to "subscribed" property when the mapping is passed in', async function () {
+        const filePath = csvPath + 'subscribed-to-emails-header.csv';
         const mapping = {
             subscribed_to_emails: 'subscribed'
         };
-        const result = await readCSV({
-            filePath: csvPath + 'subscribed-to-emails-header.csv',
-            mapping
-        });
+        const result = await parse(filePath, mapping);
 
         assert.ok(result);
         assert.equal(result.length, 2);
@@ -143,9 +139,8 @@ describe('parse', function () {
     });
 
     it('DOES NOT transforms "subscribed_to_emails" column to "subscribed" property when the WITHOUT mapping', async function () {
-        const result = await readCSV({
-            filePath: csvPath + 'subscribed-to-emails-header.csv'
-        });
+        const filePath = csvPath + 'subscribed-to-emails-header.csv';
+        const result = await parse(filePath);
 
         assert.ok(result);
         assert.equal(result.length, 2);
