@@ -169,10 +169,13 @@ export class ImageNode extends DecoratorNode {
     }
 
     exportJSON() {
+        // checks if src is a data string
+        const src = this.getSrc();
+        const isBlob = src.startsWith('data:');
         const dataset = {
             altText: this.getAlt(),
             caption: this.__caption.toJSON(),
-            src: this.getSrc(),
+            src: isBlob ? '<base64String>' : this.getSrc(),
             type: 'image'
         };
         return dataset;
