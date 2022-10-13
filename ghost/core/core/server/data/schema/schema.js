@@ -614,7 +614,7 @@ module.exports = {
         },
         status: {
             type: 'string', maxlength: 50, nullable: false, validations: {
-                isIn: [['active', 'expired', 'cancelled']]
+                isIn: [['active', 'expired', 'canceled']]
             }
         },
         member_id: {type: 'string', maxlength: 24, nullable: false, unique: false, references: 'members.id', cascadeDelete: true},
