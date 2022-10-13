@@ -1,5 +1,5 @@
 const should = require('should');
-const unparse = require('../lib/unparse');
+const {unparse} = require('../index');
 
 describe('unparse', function () {
     it('serializes json to CSV and adds standard members fields', async function () {
