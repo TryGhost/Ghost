@@ -124,9 +124,13 @@ describe('parse', function () {
         should.equal(result[1].name, null);
     });
 
-    it('read csv: transforms "subscribed_to_emails" column to "subscribed" property', async function () {
+    it('read csv: transforms "subscribed_to_emails" column to "subscribed" property when the mapping is passed in', async function () {
+        const mapping = {
+            subscribed_to_emails: 'subscribed'
+        };
         const result = await readCSV({
-            filePath: csvPath + 'subscribed-to-emails-header.csv'
+            filePath: csvPath + 'subscribed-to-emails-header.csv',
+            mapping
         });
 
         assert.ok(result);
@@ -136,5 +140,19 @@ describe('parse', function () {
 
         assert.equal(result[1].email, 'test@example.com');
         assert.equal(result[1].subscribed, false);
+    });
+
+    it('read csv: DOES NOT transforms "subscribed_to_emails" column to "subscribed" property when the WITHOUT mapping', async function () {
+        const result = await readCSV({
+            filePath: csvPath + 'subscribed-to-emails-header.csv'
+        });
+
+        assert.ok(result);
+        assert.equal(result.length, 2);
+        assert.equal(result[0].email, 'jbloggs@example.com');
+        assert.ok(result[0].subscribed_to_emails);
+
+        assert.equal(result[1].email, 'test@example.com');
+        assert.equal(result[1].subscribed_to_emails, false);
     });
 });
