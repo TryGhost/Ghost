@@ -87,8 +87,10 @@ describe('Image card', async () => {
             <img src="data:image/png;" alt="" />
             <figcaption></figcaption>
             </figure>
+            <div>
             <input placeholder="Type alt text for image (optional)" value=""/>
             <button name="alt-toggle-button">Alt</button>
+            </div>
             </div>
             </div>
             </div>
