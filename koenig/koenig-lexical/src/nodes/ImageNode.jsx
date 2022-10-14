@@ -69,13 +69,15 @@ function ImageCard({nodeKey}) {
     return (
         <div>
             <MediaCard dataset={{payload, setPayload}} editor={editor} nodeKey={nodeKey} />
-            <CaptionEditor altText={altText} nodeKey={nodeKey} placeholder={altText ? `Type Alt Text for image (optional)` : `Type caption for image (optional)`} />
-            <button
-                name="alt-toggle-button"
-                className={`absolute bottom-0 right-0 m-3 cursor-pointer rounded border px-1 text-[1.3rem] font-normal leading-7 tracking-wide transition-all duration-100 ${altText ? 'border-green bg-green text-white' : 'border-grey text-grey' } `}
-                onClick={e => toggleAltText(e)}>
-                        Alt
-            </button>
+            <div className="w-full p-2">
+                <CaptionEditor altText={altText} nodeKey={nodeKey} placeholder={altText ? `Type alt text for image (optional)` : `Type caption for image (optional)`} />
+                <button
+                    name="alt-toggle-button"
+                    className={`absolute bottom-0 right-0 m-2 cursor-pointer rounded border px-1 font-sans text-[1.3rem] font-normal leading-7 tracking-wide transition-all duration-100 ${altText ? 'border-green bg-green text-white' : 'border-grey text-grey' } `}
+                    onClick={e => toggleAltText(e)}>
+                            Alt
+                </button>
+            </div>
         </div>
     );
 }
@@ -87,7 +89,7 @@ function MediaPlaceholder({desc, Icon, ...props}) {
                 <div className="h-100 relative flex items-center justify-center border border-grey-100 bg-grey-50 before:pb-[62.5%]">
                     <button name="placeholder-button" className="group flex flex-col items-center justify-center p-20">
                         <Icon className="h-32 w-32 opacity-80 transition-all ease-linear group-hover:scale-105 group-hover:opacity-100" />
-                        <p className="mt-4 text-sm font-normal text-grey-700 group-hover:text-grey-800">{desc}</p>
+                        <p className="mt-4 font-sans text-sm font-normal text-grey-700 group-hover:text-grey-800">{desc}</p>
                     </button>
                 </div>
             </figure>
@@ -130,7 +132,7 @@ function CaptionEditor({placeholder, nodeKey, altText}) {
     return (
         <input
             onChange={handleChange}
-            className="not-kg-prose w-full p-2 text-center font-sans text-sm font-normal tracking-wide text-grey-900"
+            className="not-kg-prose w-full px-9 text-center font-sans text-sm font-normal leading-8 tracking-wide text-grey-900"
             placeholder={placeholder}
             value={altText ? altTextValue : captionText}
         />

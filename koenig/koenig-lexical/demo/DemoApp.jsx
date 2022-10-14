@@ -23,7 +23,7 @@ function DemoApp() {
             <KoenigComposer>
                 <Watermark />
                 <div className="h-full grow overflow-auto">
-                    <div className="mx-auto h-full max-w-2xl pt-[15vmin]">
+                    <div className="mx-auto h-full max-w-[740px] pt-[15vmin]">
                         <KoenigEditor
                             imageUploadFunc={imageUploader}
                         />
