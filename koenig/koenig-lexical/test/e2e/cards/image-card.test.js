@@ -36,8 +36,10 @@ describe('Image card', async () => {
             </figure>
             </div>
             <form><input name="image-input" type="file" accept="image/*" hidden="" /></form>
+            <div>
             <input placeholder="Type caption for image (optional)" value="" />
             <button name="alt-toggle-button">Alt</button>
+            </div>
             </div>
             </div>
             </div>
@@ -61,8 +63,10 @@ describe('Image card', async () => {
             <img src="data:image/png;" alt="" />
             <figcaption></figcaption>
             </figure>
+            <div>
             <input placeholder="Type caption for image (optional)" value="" />
             <button name="alt-toggle-button">Alt</button>
+            </div>
             </div>
             </div>
             </div>
