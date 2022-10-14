@@ -33,9 +33,9 @@
                         <a href="{{link.link.to}}" target="_blank" rel="noopener noreferrer">
                             {{link.link.title}}
                         </a>
+                        <button type="button" class="flex items-center" aria-label="Edit link" {{on "click" (fn this.editLink link.link.link_id)}}>{{svg-jar "pen"}}</button>
                     {{/if}}
                     {{!-- <a href="{{link.link.to}}" target="_blank" rel="noopener noreferrer">{{link.link.title}}</a> --}}
-                    <button type="button" class="flex items-center" aria-label="Edit link" {{on "click" (fn this.editLink link.link.link_id)}}>{{svg-jar "pen"}}</button>
                 </div>
                 {{else}}
                 <a href="{{link.link.to}}" target="_blank" rel="noopener noreferrer">{{link.link.title}}</a>
