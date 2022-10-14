@@ -11,6 +11,7 @@ const debug = require('@tryghost/debug')('mega');
 const postEmailSerializer = require('../mega/post-email-serializer');
 const configService = require('../../../shared/config');
 const settingsCache = require('../../../shared/settings-cache');
+const labs = require('../../../shared/labs');
 
 const messages = {
     error: 'The email service received an error from mailgun and was unable to send.'
@@ -233,6 +234,11 @@ module.exports = {
                 unique_id: recipient.member_uuid,
                 unsubscribe_url: postEmailSerializer.createUnsubscribeUrl(recipient.member_uuid, {newsletterUuid})
             };
+
+            if (labs.isSet('audienceFeedback')) {
+                // create unique urls for every recipient (for example, for feedback buttons)
+                emailData = postEmailSerializer.createUserLinks(emailData, recipient.member_uuid);
+            }
 
             // computed properties on recipients - TODO: better way of handling these
             recipient.member_first_name = (recipient.member_name || '').split(' ')[0];
