@@ -121,4 +121,55 @@ describe('member.* events', function () {
                 }
             });
     });
+
+    it('member.edited event is triggered', async function () {
+        const webhookURL = 'https://test-webhook-receiver.com/member-edited/';
+        await webhookMockReceiver.mock(webhookURL);
+        await fixtureManager.insertWebhook({
+            event: 'member.edited',
+            url: webhookURL
+        });
+
+        const res = await adminAPIAgent
+            .post('members/')
+            .body({
+                members: [{
+                    name: 'Test Member3',
+                    email: 'testemail3@example.com',
+                    note: 'test note3'
+                }]
+            })
+            .expectStatus(201);
+        
+        const id = res.body.members[0].id;
+
+        const updatedMember = {...res.body.members[0]};
+        updatedMember.name = 'Ghost';
+        updatedMember.email = 'ghost@example.com';
+        updatedMember.note = 'ghost note';
+
+        await adminAPIAgent
+            .put('members/' + id)
+            .body({
+                members: [updatedMember]
+            })
+            .expectStatus(200);
+
+        await webhookMockReceiver.receivedRequest();
+
+        webhookMockReceiver
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                'content-length': anyNumber,
+                'user-agent': anyGhostAgent
+            })
+            .matchBodySnapshot({
+                member: {
+                    current: buildMemberSnapshot(),
+                    previous: {
+                        updated_at: anyISODateTime
+                    }
+                }
+            });
+    });
 });
