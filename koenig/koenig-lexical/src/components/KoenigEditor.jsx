@@ -24,7 +24,10 @@ const KoenigEditor = ({
     }, [onChange]);
 
     const containerRef = React.useRef(null);
-    imageUploader = imageUploadFunc || '';
+    imageUploader = imageUploadFunc || function () {
+        console.error('requires imageUploadFunction to be passed to KoenigEditor'); // eslint-disable-line no-console
+        return;
+    };
 
     // we need an element reference for the container element that
     // any floating elements in plugins will be rendered inside
