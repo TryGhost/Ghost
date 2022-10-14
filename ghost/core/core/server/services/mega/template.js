@@ -1,4 +1,5 @@
 const {escapeHtml: escape} = require('@tryghost/string');
+const feedbackButtons = require('./feedback-buttons');
 
 /* eslint indent: warn, no-irregular-whitespace: warn */
 const iff = (cond, yes, no) => (cond ? yes : no);
@@ -1264,6 +1265,8 @@ ${ templateSettings.showBadge ? `
                         </tr>
 
                         <!-- END MAIN CONTENT AREA -->
+
+                        ${iff(templateSettings.feedbackEnabled, feedbackButtons.getTemplate(templateSettings.accentColor), '')}
 
                         <tr>
                             <td class="wrapper" align="center">
