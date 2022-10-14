@@ -7,6 +7,7 @@ class LexicalHTMLRenderer {
         const {LinkNode} = require('@lexical/link');
         const {HorizontalRuleNode} = require('./nodes/HorizontalRuleNode');
         const {AsideNode} = require('./nodes/AsideNode');
+        const {ImageNode} = require('./nodes/ImageNode');
         const {$convertToHtmlString} = require('./convert-to-html-string');
 
         const defaultOptions = {
@@ -22,6 +23,7 @@ class LexicalHTMLRenderer {
             AsideNode,
             LinkNode,
             HorizontalRuleNode,
+            ImageNode,
             CodeNode // TODO: replace with our own card
         ];
 

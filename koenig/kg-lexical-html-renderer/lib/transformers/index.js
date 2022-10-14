@@ -4,7 +4,8 @@ const elementTransformers = [
     require('./element/list'),
     require('./element/hr'),
     require('./element/blockquote'),
-    require('./element/aside')
+    require('./element/aside'),
+    require('./element/image')
 ];
 
 module.exports = {
