@@ -16,7 +16,7 @@ module.exports = {
             grey: {
                 DEFAULT: '#ABB4BE',
                 50: '#FAFAFB',
-                100: '#F1F3F4',
+                100: '#F4F5F6',
                 200: '#EBEEF0',
                 300: '#DDE1E5',
                 400: '#CED4D9',
@@ -71,6 +71,11 @@ module.exports = {
             lime: {
                 DEFAULT: '#B5FF18'
             }
+        },
+        fontFamily: {
+            sans: 'Inter, -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif',
+            serif: 'Georgia, serif',
+            mono: 'Consolas, Liberation Mono, Menlo, Courier, monospace'
         },
         boxShadow: {
             DEFAULT: '0 0 1px rgba(0,0,0,.05), 0 5px 18px rgba(0,0,0,.08)',
