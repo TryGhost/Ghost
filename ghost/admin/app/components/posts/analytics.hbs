@@ -104,7 +104,7 @@
             {{#if (is-empty this.links) }}
                 {{!-- Empty state --}}
             {{else}}
-                <Posts::LinksTable @links={{this.links}} />
+                <Posts::LinksTable @links={{this.links}} @updateLink={{this.updateLink}} />
             {{/if}}
         {{/if}}
 

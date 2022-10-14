@@ -95,6 +95,23 @@ export default class Analytics extends Component {
     }
 
     @action
+    updateLink(linkId, linkTo) {
+        this.links = this.links?.map((link) => {
+            if (link.link.link_id === linkId) {
+                return {
+                    ...link,
+                    link: {
+                        ...link.link,
+                        to: this.utils.cleanTrackedUrl(linkTo, false),
+                        title: this.utils.cleanTrackedUrl(linkTo, true)
+                    }
+                };
+            }
+            return link;
+        });
+    }
+
+    @action
     loadData() {
         if (this.showSources) {
             this.fetchReferrersStats();
