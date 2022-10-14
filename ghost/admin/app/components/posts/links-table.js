@@ -18,23 +18,27 @@ export default class LinksTable extends Component {
     }
 
     @action
-    editLink() {
-        this.editingLink = true;
+    editLink(linkId) {
+        this.editingLink = linkId;
     }
 
     @action
-    cancelEdit(property, event) {
+    cancelEdit(event) {
         event.preventDefault();
-        event.target.value = this.args.post[property];
-        event.target.blur();
+        this.editingLink = null;
+        // event.target.value = this.args.post[property];
+        // event.target.blur();
     }
 
     @action
     setLink(event) {
-        const title = event.target.value;
-        this.args.post.title = title.trim();
-        this.args.post.save();
-        this.editingLink = false;
+        event.preventDefault();
+        this.args.updateLink(this.editingLink, event.target.value);
+        this.editingLink = null;
+        // const title = event.target.value;
+        // this.args.post.title = title.trim();
+        // this.args.post.save();
+        // this.editingLink = false;
     }
 
     get links() {
@@ -42,7 +46,12 @@ export default class LinksTable extends Component {
     }
 
     get visibleLinks() {
-        return this.links.slice(this.startOffset - 1, this.endOffset);
+        return this.links.slice(this.startOffset - 1, this.endOffset).map((link) => {
+            return {
+                ...link,
+                isEditing: this.editingLink === link.link.link_id
+            };
+        });
     }
 
     get startOffset() {
@@ -72,7 +81,7 @@ export default class LinksTable extends Component {
     get disableNextPage() {
         return this.page === this.totalPages;
     }
-    
+
     @action
     openPreviousPage() {
         if (this.disablePreviousPage) {
