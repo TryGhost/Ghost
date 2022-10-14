@@ -1022,6 +1022,10 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     display: inline;
 }
 
+.gh-links-list-item .gh-input {
+    animation: fade-in .2s ease-in-out;
+}
+
 .gh-links-list-clicks {
     margin: 0;
     color: var(--darkgrey);
