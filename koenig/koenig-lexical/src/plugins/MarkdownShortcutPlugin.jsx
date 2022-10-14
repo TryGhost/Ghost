@@ -1,4 +1,3 @@
-import {MarkdownShortcutPlugin as LexicalMarkdownShortcutPlugin} from '@lexical/react/LexicalMarkdownShortcutPlugin';
 import {
     HEADING,
     ORDERED_LIST,
@@ -7,12 +6,13 @@ import {
     TEXT_FORMAT_TRANSFORMERS,
     TEXT_MATCH_TRANSFORMERS
 } from '@lexical/markdown';
-import {$createHorizontalRuleNode, $isHorizontalRuleNode} from '../nodes/HorizontalRuleNode';
+import {MarkdownShortcutPlugin as LexicalMarkdownShortcutPlugin} from '@lexical/react/LexicalMarkdownShortcutPlugin';
+import {$createHorizontalRuleNode, $isHorizontalRuleNode, HorizontalRuleNode} from '../nodes/HorizontalRuleNode';
 import {$isCodeBlockNode, $createCodeBlockNode, CodeBlockNode} from '../nodes/CodeBlockNode';
-import {$createImageNode, $isImageNode} from '../nodes/ImageNode';
+import {$isImageNode, $createImageNode, ImageNode} from '../nodes/ImageNode';
 
 export const HR = {
-    dependencies: [], // todo: docs a bit unclear regarding the usage of this property, but required as of 0.4.0 https://github.com/facebook/lexical/pull/2910
+    dependencies: [HorizontalRuleNode],
     export: (node) => {
         return $isHorizontalRuleNode(node) ? '---' : null;
     },
@@ -33,7 +33,7 @@ export const HR = {
 };
 
 export const CODE_BLOCK = {
-    dependencies: [CodeBlockNode], // todo: docs a bit unclear regarding the usage of this property, but required as of 0.4.0
+    dependencies: [CodeBlockNode],
     export: (node) => {
         if (!$isCodeBlockNode(node)) {
             return null;
@@ -61,7 +61,7 @@ export const CODE_BLOCK = {
 // regex that detects exactly the string 'image!'
 
 export const IMAGE = {
-    dependencies: [], // todo: docs a bit unclear regarding the usage of this property, but required as of 0.4.0
+    dependencies: [ImageNode],
     export: (node) => {
         if (!$isImageNode(node)){
             return null;

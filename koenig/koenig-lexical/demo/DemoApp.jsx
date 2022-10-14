@@ -20,13 +20,11 @@ function DemoApp() {
 
     return (
         <div className="koenig-lexical top">
-            <KoenigComposer>
+            <KoenigComposer imageUploadFunction={imageUploader}>
                 <Watermark />
                 <div className="h-full grow overflow-auto">
                     <div className="mx-auto h-full max-w-[740px] pt-[15vmin]">
-                        <KoenigEditor
-                            imageUploadFunc={imageUploader}
-                        />
+                        <KoenigEditor />
                     </div>
                 </div>
                 <div className="flex h-full flex-col items-end">

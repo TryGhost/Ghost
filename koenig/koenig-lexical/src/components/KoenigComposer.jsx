@@ -2,6 +2,7 @@ import React from 'react';
 import {LexicalComposer} from '@lexical/react/LexicalComposer';
 import DEFAULT_NODES from '../nodes/DefaultNodes';
 import defaultTheme from '../themes/default';
+import KoenigComposerContext from '../context/KoenigComposerContext';
 
 // Catch any errors that occur during Lexical updates and log them
 // or throw them as needed. If you don't throw them, Lexical will
@@ -19,6 +20,7 @@ const KoenigComposer = ({
     initialEditorState,
     nodes = [...DEFAULT_NODES],
     onError = defaultOnError,
+    imageUploadFunction,
     children
 }) => {
     const initialConfig = React.useMemo(() => {
@@ -29,9 +31,16 @@ const KoenigComposer = ({
         });
     }, [initialEditorState, nodes, onError]);
 
+    const imageUploader = imageUploadFunction || function () {
+        console.error('requires imageUploadFunction to be passed to KoenigEditor'); // eslint-disable-line no-console
+        return;
+    };
+
     return (
         <LexicalComposer initialConfig={initialConfig}>
-            {children}
+            <KoenigComposerContext.Provider value={{imageUploader}}>
+                {children}
+            </KoenigComposerContext.Provider>
         </LexicalComposer>
     );
 };

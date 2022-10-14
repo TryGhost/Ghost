@@ -13,7 +13,7 @@ const DEFAULT_NODES = [
     QuoteNode,
     AsideNode,
     LinkNode,
-    CodeBlockNode, // TODO: replace with our own card
+    CodeBlockNode,
     HorizontalRuleNode,
     ImageNode
 ];

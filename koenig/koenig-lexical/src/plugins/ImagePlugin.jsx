@@ -1,23 +1,26 @@
 import React from 'react';
-import {$createImageNode, ImageNode} from '../nodes/ImageNode';
-import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {
-    $getSelection, 
-    DRAGOVER_COMMAND, 
-    DRAGSTART_COMMAND, 
-    DROP_COMMAND, 
-    COMMAND_PRIORITY_HIGH, 
+    $getSelection,
+    DRAGOVER_COMMAND,
+    DRAGSTART_COMMAND,
+    DROP_COMMAND,
+    COMMAND_PRIORITY_HIGH,
     createCommand,
     $isRangeSelection,
     $isRootNode,
     LexicalEditor
 } from 'lexical';
+import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {mergeRegister} from '@lexical/utils';
+import KoenigComposerContext from '../context/KoenigComposerContext';
+import {$createImageNode, ImageNode} from '../nodes/ImageNode';
 
 export const INSERT_IMAGE_CMD = createCommand();
 
-export const ImagePlugin = ({imageUploadFunc}) => {
+export const ImagePlugin = () => {
     const [editor] = useLexicalComposerContext();
+    const {imageUploader} = React.useContext(KoenigComposerContext);
+
     React.useEffect(() => {
         if (!editor.hasNodes([ImageNode])){
             console.error('ImagePlugin: ImageNode not registered'); // eslint-disable-line no-console
@@ -42,14 +45,14 @@ export const ImagePlugin = ({imageUploadFunc}) => {
                 return onDragOver(event);
             }, COMMAND_PRIORITY_HIGH),
             editor.registerCommand(DROP_COMMAND, (event) => {
-                return onDragDrop(event, editor, imageUploadFunc);
+                return onDragDrop(event, editor, imageUploader);
             }, COMMAND_PRIORITY_HIGH),
         );
-    }, [editor, imageUploadFunc]);
+    }, [editor, imageUploader]);
 
     return null;
 };
-  
+
 const onDragStart = (event) => {
     return true;
 };

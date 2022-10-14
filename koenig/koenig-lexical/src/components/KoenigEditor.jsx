@@ -8,15 +8,14 @@ import KoenigBehaviourPlugin from '../plugins/KoenigBehaviourPlugin';
 import MarkdownShortcutPlugin from '../plugins/MarkdownShortcutPlugin';
 import PlusCardMenuPlugin from '../plugins/PlusCardMenuPlugin';
 import FloatingFormatToolbarPlugin from '../plugins/FloatingFormatToolbarPlugin';
-import '../styles/index.css';
 import ImagePlugin from '../plugins/ImagePlugin';
+import '../styles/index.css';
 
 export let imageUploader;
 
 const KoenigEditor = ({
     onChange,
-    markdownTransformers,
-    imageUploadFunc
+    markdownTransformers
 }) => {
     const _onChange = React.useCallback((editorState) => {
         const json = editorState.toJSON();
@@ -24,10 +23,6 @@ const KoenigEditor = ({
     }, [onChange]);
 
     const containerRef = React.useRef(null);
-    imageUploader = imageUploadFunc || function () {
-        console.error('requires imageUploadFunction to be passed to KoenigEditor'); // eslint-disable-line no-console
-        return;
-    };
 
     // we need an element reference for the container element that
     // any floating elements in plugins will be rendered inside
@@ -52,12 +47,10 @@ const KoenigEditor = ({
             <HistoryPlugin /> {/* adds undo/redo */}
             <ListPlugin /> {/* adds indent/outdent/remove etc support */}
             <KoenigBehaviourPlugin containerElem={containerRef} />
-            <MarkdownShortcutPlugin transformers={markdownTransformers} imageUploadFunc={imageUploadFunc} />
+            <MarkdownShortcutPlugin transformers={markdownTransformers} />
             <PlusCardMenuPlugin />
             {floatingAnchorElem && (<FloatingFormatToolbarPlugin anchorElem={floatingAnchorElem} />)}
-            <ImagePlugin 
-                imageUploadFunc={imageUploadFunc}
-            />
+            <ImagePlugin />
         </div>
     );
 };

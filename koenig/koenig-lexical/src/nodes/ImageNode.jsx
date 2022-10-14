@@ -3,12 +3,13 @@ import {DecoratorNode, $getNodeByKey} from 'lexical';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import {ReactComponent as ImgPlaceholderIcon} from '../assets/icons/kg-img-placeholder.svg';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import {imageUploader} from '../components/KoenigEditor';
 import {ReactComponent as ImageCardIcon} from '../assets/icons/kg-card-type-image.svg';
+import KoenigComposerContext from '../context/KoenigComposerContext';
 import CardContext from '../context/CardContext';
 
 function MediaCard({dataset, editor, nodeKey}) {
     const {payload, setPayload} = dataset;
+    const {imageUploader} = React.useContext(KoenigComposerContext);
 
     const uploadRef = useRef(null);
     const onUploadChange = async (e) => {
