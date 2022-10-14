@@ -872,12 +872,6 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     padding-left: 2rem;
     padding-right: 2rem;
     white-space: nowrap;
-    opacity: 1;
-    transition: opacity .1s linear;
-}
-
-.gh-post-analytics-item:hover {
-    opacity: 0.7;
 }
 
 .gh-post-analytics-item:first-child {
@@ -915,6 +909,15 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 
 .gh-post-analytics-item p:first-letter {
     text-transform: uppercase;
+}
+
+.gh-post-analytics-item > a {
+    opacity: 1;
+    transition: opacity .1s linear;
+}
+
+.gh-post-analytics-item > a:hover {
+    opacity: 0.7;
 }
 
 .gh-attribution-box {
