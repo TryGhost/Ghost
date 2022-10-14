@@ -135,7 +135,9 @@ class UrlGenerator {
 
     /**
      * @description Listener which get's called when a resource was added on runtime.
-     * @param {String} event
+     * @param {Object} event
+     * @param {String} event.type
+     * @param {String} event.id
      * @private
      */
     _onAdded(event) {
@@ -188,7 +190,7 @@ class UrlGenerator {
     }
 
     /**
-     * @description Generate url based on the permlink configuration of the target router.
+     * @description Generate url based on the permalink configuration of the target router.
      *
      * @NOTE We currently generate relative urls (https://github.com/TryGhost/Ghost/commit/7b0d5d465ba41073db0c3c72006da625fa11df32).
      */
