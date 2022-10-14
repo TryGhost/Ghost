@@ -71,16 +71,16 @@ function ImageCard({nodeKey}) {
         });
     }, [editor, nodeKey]);
 
-    const toggleAltText = (e) => {
-        e.stopPropagation();
-        setAltText(!altText);
-    };
+    // const toggleAltText = (e) => {
+    //     e.stopPropagation();
+    //     setAltText(!altText);
+    // };
 
     return (
         <div>
             <MediaCard dataset={{payload, setPayload}} editor={editor} nodeKey={nodeKey} />
             <div className="w-full p-2">
-                <CaptionEditor selected={isSelected} toggleAltText={toggleAltText} wpkey={wpkey} altText={altText} nodeKey={nodeKey} placeholder={altText ? `Type alt text for image (optional)` : `Type caption for image (optional)`} />
+                <CaptionEditor selected={isSelected} toggleAltText={{altText, setAltText}} wpkey={wpkey} nodeKey={nodeKey} placeholder={altText ? `Type alt text for image (optional)` : `Type caption for image (optional)`} />
             </div>
         </div>
     );
@@ -101,10 +101,12 @@ function MediaPlaceholder({desc, Icon, ...props}) {
     );
 }
 
-function CaptionEditor({placeholder, nodeKey, altText, toggleAltText, wpkey, selected}) {
+function CaptionEditor({placeholder, nodeKey, toggleAltText, wpkey, selected}) {
     const [editor] = useLexicalComposerContext();
     const [captionText, setCaptionText] = useState(null);
     const [altTextValue, setAltTextValue] = useState('');
+    const thisCardSelected = (nodeKey === wpkey) && selected;
+    const {altText, setAltText} = toggleAltText;
 
     const handleChange = (e) => {
         if (!altText) {
@@ -133,7 +135,18 @@ function CaptionEditor({placeholder, nodeKey, altText, toggleAltText, wpkey, sel
         });
     }, [editor, nodeKey]);
 
-    if ((wpkey === nodeKey && selected) || captionText) {
+    const tgAltText = (e) => {
+        e.stopPropagation();
+        setAltText(!altText);
+    };
+
+    useEffect(() => {
+        if (!thisCardSelected) {
+            setAltText(false);
+        }
+    }, [thisCardSelected, setAltText]);
+
+    if (thisCardSelected || captionText) {
         return (
             <>
                 <input
@@ -145,7 +158,7 @@ function CaptionEditor({placeholder, nodeKey, altText, toggleAltText, wpkey, sel
                 <button
                     name="alt-toggle-button"
                     className={`absolute bottom-0 right-0 m-2 cursor-pointer rounded border px-1 font-sans text-[1.3rem] font-normal leading-7 tracking-wide transition-all duration-100 ${altText ? 'border-green bg-green text-white' : 'border-grey text-grey' } `}
-                    onClick={e => toggleAltText(e)}>
+                    onClick={e => tgAltText(e)}>
                                 Alt
                 </button>
             </>
