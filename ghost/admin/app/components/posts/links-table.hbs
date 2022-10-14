@@ -13,7 +13,33 @@
         </div>
         {{#each this.visibleLinks as |link|}}
             <div class="gh-links-list-item">
+                {{#if (feature "fixNewsletterLinks")}}
+                <div class="flex items-center">
+                    {{#if link.isEditing}}
+                        <input
+                            aria-label="Link"
+                            type="text"
+                            class="gh-input"
+                            placeholder={{link.link.to}}
+                            value={{link.link.to}}
+                            maxlength="300"
+                            {{on "blur" this.setLink}}
+                            {{on-key "Enter" this.blurElement}}
+                            {{on-key "Escape" this.cancelEdit}}
+                            {{autofocus}}
+                            data-prevent-escape-close-modal="true"
+                        />
+                    {{else}}
+                        <a href="{{link.link.to}}" target="_blank" rel="noopener noreferrer">
+                            {{link.link.title}}
+                        </a>
+                        <button type="button" class="flex items-center" aria-label="Edit link" {{on "click" (fn this.editLink link.link.link_id)}}>{{svg-jar "pen"}}</button>
+                    {{/if}}
+                    {{!-- <a href="{{link.link.to}}" target="_blank" rel="noopener noreferrer">{{link.link.title}}</a> --}}
+                </div>
+                {{else}}
                 <a href="{{link.link.to}}" target="_blank" rel="noopener noreferrer">{{link.link.title}}</a>
+                {{/if}}
                 <p class="gh-links-list-clicks">{{link.count.clicks}}</p>
             </div>
         {{/each}}
