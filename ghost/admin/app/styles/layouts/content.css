@@ -1000,7 +1000,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 
 .gh-links-list-item a {
     margin: 0;
-    padding: 0 32px 0 0;
+    padding: 0;
     color: var(--darkgrey);
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1010,6 +1010,23 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 
 .gh-links-list-item a:hover {
     color: var(--midgrey-d2);
+}
+
+.gh-links-list-item svg {
+    display: none;
+    width: 14px;
+    margin-left: 8px;
+    color: var(--midgrey);
+    cursor: pointer;
+    animation: fade-in 0.3s;
+}
+
+.gh-links-list-item:hover svg {
+    display: inline;
+}
+
+.gh-links-list-item .gh-input {
+    animation: fade-in .2s ease-in-out;
 }
 
 .gh-links-list-clicks {
