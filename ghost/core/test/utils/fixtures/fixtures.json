@@ -8,7 +8,10 @@
                     "slug":             "default-product",
                     "type":             "paid",
                     "active":           true,
-                    "visibility":       "public"
+                    "visibility":       "public",
+                    "currency":         "usd",
+                    "monthly_price":    500,
+                    "yearly_price":     5000
                 },
                 {
                     "name":             "Free",

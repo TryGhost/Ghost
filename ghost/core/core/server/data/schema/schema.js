@@ -435,12 +435,24 @@ module.exports = {
             validations: {isIn: [['public', 'none']]}
         },
         trial_days: {type: 'integer', unsigned: true, nullable: false, defaultTo: 0},
-        monthly_price_id: {type: 'string', maxlength: 24, nullable: true},
-        yearly_price_id: {type: 'string', maxlength: 24, nullable: true},
         description: {type: 'string', maxlength: 191, nullable: true},
-        type: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'paid', validations: {isIn: [['paid', 'free']]}},
+        type: {
+            type: 'string',
+            maxlength: 50,
+            nullable: false,
+            defaultTo: 'paid',
+            validations: {
+                isIn: [['paid', 'free']]
+            }
+        },
+        currency: {type: 'string', maxlength: 50, nullable: true},
+        monthly_price: {type: 'integer', unsigned: true, nullable: true},
+        yearly_price: {type: 'integer', unsigned: true, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
-        updated_at: {type: 'dateTime', nullable: true}
+        updated_at: {type: 'dateTime', nullable: true},
+        // To be removed in future
+        monthly_price_id: {type: 'string', maxlength: 24, nullable: true},
+        yearly_price_id: {type: 'string', maxlength: 24, nullable: true}
     },
     offers: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
