@@ -18,7 +18,7 @@ import {
 import {mergeRegister} from '@lexical/utils';
 import {useLexicalNodeSelection} from '@lexical/react/useLexicalNodeSelection';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import WrapperContext from '../context/WrapperContext';
+import WrapperContext from '../context/CardContext';
 
 const KoenigCardWrapperComponent = ({nodeKey, children}) => {
     const [editor] = useLexicalComposerContext();

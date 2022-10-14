@@ -5,7 +5,7 @@ import {ReactComponent as ImgPlaceholderIcon} from '../assets/icons/kg-img-place
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {imageUploader} from '../components/KoenigEditor';
 import {ReactComponent as ImageCardIcon} from '../assets/icons/kg-card-type-image.svg';
-import WrapperContext from '../context/WrapperContext';
+import CardContext from '../context/CardContext';
 
 function MediaCard({dataset, editor, nodeKey}) {
     const {payload, setPayload} = dataset;
@@ -61,7 +61,7 @@ function ImageCard({nodeKey}) {
     const [altText, setAltText] = useState(false);
     const [editor] = useLexicalComposerContext();
     const [payload, setPayload] = React.useState({});
-    const {isSelected, wpkey} = useContext(WrapperContext);
+    const {isSelected, wpkey} = useContext(CardContext);
 
     React.useEffect(() => {
         const editorState = editor.getEditorState();
