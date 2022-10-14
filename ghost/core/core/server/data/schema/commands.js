@@ -48,6 +48,10 @@ function addTableColumn(tableName, table, columnName, columnSpec = schema[tableN
         // check if table exists?
         column.references(columnSpec.references);
     }
+    if (Object.prototype.hasOwnProperty.call(columnSpec, 'constraintName')) {
+        column.withKeyName(columnSpec.constraintName);
+    }
+
     if (Object.prototype.hasOwnProperty.call(columnSpec, 'cascadeDelete') && columnSpec.cascadeDelete === true) {
         column.onDelete('CASCADE');
     } else if (Object.prototype.hasOwnProperty.call(columnSpec, 'setNullDelete') && columnSpec.setNullDelete === true) {
@@ -103,7 +107,7 @@ async function addColumn(tableName, column, transaction = db.knex, columnSpec) {
 async function dropColumn(tableName, column, transaction = db.knex, columnSpec = {}) {
     if (Object.prototype.hasOwnProperty.call(columnSpec, 'references')) {
         const [toTable, toColumn] = columnSpec.references.split('.');
-        await dropForeign({fromTable: tableName, fromColumn: column, toTable, toColumn, transaction});
+        await dropForeign({fromTable: tableName, fromColumn: column, toTable, toColumn, constraintName: columnSpec.constraintName, transaction});
     }
 
     const dropColumnBuilder = transaction.schema.table(tableName, function (table) {
@@ -215,11 +219,12 @@ async function hasForeignSQLite({fromTable, fromColumn, toTable, toColumn, trans
  * @param {string} configuration.fromColumn - column of the table to add the foreign key to
  * @param {string} configuration.toTable - name of the table to point the foreign key to
  * @param {string} configuration.toColumn - column of the table to point the foreign key to
+ * @param {string} [configuration.constraintName] - name of the FK to create
  * @param {Boolean} [configuration.cascadeDelete] - adds the "on delete cascade" option if true
  * @param {Boolean} [configuration.setNullDelete] - adds the "on delete SET NULL" option if true
  * @param {import('knex')} configuration.transaction - connection object containing knex reference
  */
-async function addForeign({fromTable, fromColumn, toTable, toColumn, cascadeDelete = false, setNullDelete = false, transaction = db.knex}) {
+async function addForeign({fromTable, fromColumn, toTable, toColumn, constraintName, cascadeDelete = false, setNullDelete = false, transaction = db.knex}) {
     if (DatabaseInfo.isSQLite(transaction)) {
         const foreignKeyExists = await hasForeignSQLite({fromTable, fromColumn, toTable, toColumn, transaction});
         if (foreignKeyExists) {
@@ -240,12 +245,18 @@ async function addForeign({fromTable, fromColumn, toTable, toColumn, cascadeDele
         }
 
         await transaction.schema.table(fromTable, function (table) {
+            let fkBuilder;
+
             if (cascadeDelete) {
-                table.foreign(fromColumn).references(`${toTable}.${toColumn}`).onDelete('CASCADE');
+                fkBuilder = table.foreign(fromColumn).references(`${toTable}.${toColumn}`).onDelete('CASCADE');
             } else if (setNullDelete) {
-                table.foreign(fromColumn).references(`${toTable}.${toColumn}`).onDelete('SET NULL');
+                fkBuilder = table.foreign(fromColumn).references(`${toTable}.${toColumn}`).onDelete('SET NULL');
             } else {
-                table.foreign(fromColumn).references(`${toTable}.${toColumn}`);
+                fkBuilder = table.foreign(fromColumn).references(`${toTable}.${toColumn}`);
+            }
+
+            if (constraintName) {
+                fkBuilder.withKeyName(constraintName);
             }
         });
 
@@ -271,9 +282,10 @@ async function addForeign({fromTable, fromColumn, toTable, toColumn, cascadeDele
  * @param {string} configuration.fromColumn - column of the table to add the foreign key to
  * @param {string} configuration.toTable - name of the table to point the foreign key to
  * @param {string} configuration.toColumn - column of the table to point the foreign key to
+ * @param {string} [configuration.constraintName] - name of the FK to delete
  * @param {import('knex')} configuration.transaction - connection object containing knex reference
  */
-async function dropForeign({fromTable, fromColumn, toTable, toColumn, transaction = db.knex}) {
+async function dropForeign({fromTable, fromColumn, toTable, toColumn, constraintName, transaction = db.knex}) {
     if (DatabaseInfo.isSQLite(transaction)) {
         const foreignKeyExists = await hasForeignSQLite({fromTable, fromColumn, toTable, toColumn, transaction});
         if (!foreignKeyExists) {
@@ -294,7 +306,7 @@ async function dropForeign({fromTable, fromColumn, toTable, toColumn, transactio
         }
 
         await transaction.schema.table(fromTable, function (table) {
-            table.dropForeign(fromColumn);
+            table.dropForeign(fromColumn, constraintName);
         });
 
         if (DatabaseInfo.isSQLite(transaction)) {
