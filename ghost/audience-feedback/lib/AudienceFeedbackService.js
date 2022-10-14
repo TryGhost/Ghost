@@ -1,19 +1,27 @@
 class AudienceFeedbackService {
+    /** @type URL */
+    #baseURL;
     /**
-     * @param {string} siteUrl
+     * @param {object} deps
+     * @param {object} deps.config
+     * @param {URL} deps.config.baseURL
+     */
+    constructor(deps) {
+        this.#baseURL = deps.config.baseURL;
+    }
+    /**
      * @param {string} uuid
      * @param {string} postId
      * @param {0 | 1} score
      */
-    buildLink(siteUrl, uuid, postId, score) {
-        const params = new URLSearchParams({
-            action: 'feedback',
-            post: postId,
-            uuid,
-            score
-        });
+    buildLink(uuid, postId, score) {
+        const url = new URL(this.#baseURL);
+        url.searchParams.set('action', 'feedback');
+        url.searchParams.set('post', postId);
+        url.searchParams.set('uuid', uuid);
+        url.searchParams.set('score', `${score}`);
 
-        return new URL(`${siteUrl}?${params.toString()}`);
+        return url;
     }
 }
 

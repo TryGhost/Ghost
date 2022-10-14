@@ -1,5 +1,5 @@
 const {Color} = require('@tryghost/color-utils');
-const urlUtils = require('../../../shared/url-utils');
+const audienceFeedback = require('../audience-feedback');
 
 const templateStrings = {
     like: '%{feedback_button_like}%',
@@ -7,23 +7,19 @@ const templateStrings = {
 };
 
 const generateLinks = (postId, uuid, html) => {
-    const siteUrl = urlUtils.getSiteUrl();
-    const audienceFeedback = require('../audience-feedback');
     const positiveLink = audienceFeedback.service.buildLink(
-        siteUrl,
         uuid,
         postId,
         1
     );
     const negativeLink = audienceFeedback.service.buildLink(
-        siteUrl,
         uuid,
         postId,
         0
     );
 
-    html = html.replace(templateStrings.like, positiveLink);
-    html = html.replace(templateStrings.dislike, negativeLink);
+    html = html.replace(templateStrings.like, positiveLink.href);
+    html = html.replace(templateStrings.dislike, negativeLink.href);
 
     return html;
 };
