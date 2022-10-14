@@ -21,13 +21,11 @@ export const Toolbar = ({selection}) => {
     }
 
     return (
-        <div className="koenig-lexical">
-            <div className="max-w-fit">
-                <ul className="m-0 flex items-center justify-evenly rounded bg-black px-1 py-0 font-sans text-md font-normal text-white">
-                    <ToolbarSelection />
-                </ul>
-            </div>
-        </div>  
+        <div className="max-w-fit">
+            <ul className="m-0 flex items-center justify-evenly rounded bg-black px-1 py-0 font-sans text-md font-normal text-white">
+                <ToolbarSelection />
+            </ul>
+        </div>
     );
 };
 

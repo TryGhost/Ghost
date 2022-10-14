@@ -9,3 +9,13 @@ export const parameters = {
     },
   },
 }
+
+export const decorators = [
+    (Story) => {
+        return (
+            <div className="koenig-lexical">
+                <Story />
+            </div>
+        )
+    }
+];
