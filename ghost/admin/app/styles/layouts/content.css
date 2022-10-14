@@ -968,7 +968,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 
 .gh-links-list-item {
     display: grid;
-    grid-template-columns: 85% 15%;
+    grid-template-columns: auto minmax(min-content,max-content);
     padding: 1.6rem 0;
     border-bottom: 1px solid var(--whitegrey);
     font-size: 1.4rem;
@@ -1016,7 +1016,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 
 .gh-links-list-header {
     display: grid;
-    grid-template-columns: 85% 15%;
+    grid-template-columns: minmax(auto, 85%) minmax(min-content, 15%);
     padding: 0 0 8px;
     border-bottom: 1px solid var(--whitegrey);
 }
