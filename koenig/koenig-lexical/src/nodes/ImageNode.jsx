@@ -71,11 +71,6 @@ function ImageCard({nodeKey}) {
         });
     }, [editor, nodeKey]);
 
-    // const toggleAltText = (e) => {
-    //     e.stopPropagation();
-    //     setAltText(!altText);
-    // };
-
     return (
         <div>
             <MediaCard dataset={{payload, setPayload}} editor={editor} nodeKey={nodeKey} />
@@ -101,11 +96,10 @@ function MediaPlaceholder({desc, Icon, ...props}) {
     );
 }
 
-function CaptionEditor({placeholder, nodeKey, toggleAltText, wpkey, selected}) {
+function CaptionEditor({placeholder, nodeKey, toggleAltText, selected}) {
     const [editor] = useLexicalComposerContext();
     const [captionText, setCaptionText] = useState(null);
     const [altTextValue, setAltTextValue] = useState('');
-    const thisCardSelected = (nodeKey === wpkey) && selected;
     const {altText, setAltText} = toggleAltText;
 
     const handleChange = (e) => {
@@ -141,12 +135,12 @@ function CaptionEditor({placeholder, nodeKey, toggleAltText, wpkey, selected}) {
     };
 
     useEffect(() => {
-        if (!thisCardSelected) {
+        if (!selected) {
             setAltText(false);
         }
-    }, [thisCardSelected, setAltText]);
+    }, [selected, setAltText]);
 
-    if (thisCardSelected || captionText) {
+    if (selected || captionText) {
         return (
             <>
                 <input
@@ -194,13 +188,7 @@ export class ImageNode extends DecoratorNode {
             altText,
             caption,
             src
-
         });
-        const nestedEditor = node.__caption;
-        const editorState = nestedEditor.parseEditorState(caption.editorState);
-        if (!editorState.isEmpty()) {
-            nestedEditor.setEditorState(editorState);
-        }
         return node;
     }
 

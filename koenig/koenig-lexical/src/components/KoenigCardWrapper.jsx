@@ -26,8 +26,6 @@ const KoenigCardWrapperComponent = ({nodeKey, children}) => {
     const [selection, setSelection] = React.useState(null);
     const ref = React.useRef(null);
 
-    // create context provider
-
     React.useEffect(() => {
         return mergeRegister(
             editor.registerUpdateListener(({editorState}) => {
