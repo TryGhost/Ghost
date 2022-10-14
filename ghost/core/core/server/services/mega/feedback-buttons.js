@@ -31,7 +31,7 @@ const getTemplate = (accentColor) => {
     return (`
         <tr>
             <td dir="ltr" width="100%" style="background-color: #ffffff; text-align: center; padding: 40px 4px; border-bottom: 1px solid #e5eff5" align="center">
-                <h3 style="text-align: center; margin-bottom: 22px; font-size: 17px; letter-spacing: -0.2px;">What did you think of this post?</h3>
+                <h3 style="text-align: center; margin-bottom: 22px; font-size: 17px; letter-spacing: -0.2px; margin-top: 0 !important;">What did you think of this post?</h3>
                 <table class="inline" role="presentation" border="0" cellpadding="0" cellspacing="0" style="margin: auto;">
                     <tr>
                         ${likeButtonHtml}
