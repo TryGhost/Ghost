@@ -155,7 +155,7 @@ const KoenigCardWrapperComponent = ({nodeKey, children}) => {
 
     return (
         <div
-            className={`relative caret-grey-800 hover:shadow-[0_0_0_1px] hover:shadow-green ${isFocused ? 'shadow-[0_0_0_1px] shadow-green' : ''}`}
+            className={`relative border border-transparent caret-grey-800 ${isFocused ? 'shadow-[0_0_0_2px] shadow-green' : 'hover:shadow-[0_0_0_1px] hover:shadow-green'}`}
             ref={ref}
             data-kg-card
             data-kg-card-selected={isFocused}
