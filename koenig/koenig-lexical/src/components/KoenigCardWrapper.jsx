@@ -18,12 +18,15 @@ import {
 import {mergeRegister} from '@lexical/utils';
 import {useLexicalNodeSelection} from '@lexical/react/useLexicalNodeSelection';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import WrapperContext from '../context/WrapperContext';
 
 const KoenigCardWrapperComponent = ({nodeKey, children}) => {
     const [editor] = useLexicalComposerContext();
     const [isSelected, setSelected, clearSelected] = useLexicalNodeSelection(nodeKey);
     const [selection, setSelection] = React.useState(null);
     const ref = React.useRef(null);
+
+    // create context provider
 
     React.useEffect(() => {
         return mergeRegister(
@@ -154,14 +157,16 @@ const KoenigCardWrapperComponent = ({nodeKey, children}) => {
     const isFocused = $isNodeSelection(selection) && isSelected;
 
     return (
-        <div
-            className={`relative border border-transparent caret-grey-800 ${isFocused ? 'shadow-[0_0_0_2px] shadow-green' : 'hover:shadow-[0_0_0_1px] hover:shadow-green'}`}
-            ref={ref}
-            data-kg-card
-            data-kg-card-selected={isFocused}
-        >
-            {children}
-        </div>
+        <WrapperContext.Provider value={{isSelected, selection, wpkey: nodeKey}}>
+            <div
+                className={`relative border border-transparent caret-grey-800 ${isFocused ? 'shadow-[0_0_0_2px] shadow-green' : 'hover:shadow-[0_0_0_1px] hover:shadow-green'}`}
+                ref={ref}
+                data-kg-card
+                data-kg-card-selected={isFocused}
+            >
+                {children}
+            </div>
+        </WrapperContext.Provider>
     );
 };
 

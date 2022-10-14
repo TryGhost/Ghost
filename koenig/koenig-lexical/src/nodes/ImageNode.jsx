@@ -1,13 +1,15 @@
-import React, {useState, useRef, useEffect} from 'react';
+import React, {useState, useRef, useEffect, useContext} from 'react';
 import {DecoratorNode, $getNodeByKey} from 'lexical';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import {ReactComponent as ImgPlaceholderIcon} from '../assets/icons/kg-img-placeholder.svg';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {imageUploader} from '../components/KoenigEditor';
 import {ReactComponent as ImageCardIcon} from '../assets/icons/kg-card-type-image.svg';
+import WrapperContext from '../context/WrapperContext';
 
 function MediaCard({dataset, editor, nodeKey}) {
     const {payload, setPayload} = dataset;
+
     const uploadRef = useRef(null);
     const onUploadChange = async (e) => {
         const fls = e.target.files;
@@ -19,6 +21,14 @@ function MediaCard({dataset, editor, nodeKey}) {
         });
     };
 
+    useEffect(() => {
+        const editorState = editor.getEditorState();
+        editorState.read(() => {
+            const node = $getNodeByKey(nodeKey);
+            setPayload(node.getPayload());
+        });
+    }, [editor, nodeKey, setPayload]);
+
     const openUpload = () => {
         uploadRef.current.click();
     };
@@ -27,7 +37,6 @@ function MediaCard({dataset, editor, nodeKey}) {
         return (
             <figure className="kg-card kg-image-card">
                 <img src={payload?.__src} alt={payload?.__altText} />
-                <figcaption className="kg-image-card-caption"></figcaption>
             </figure>
         );
     } else {
@@ -52,6 +61,7 @@ function ImageCard({nodeKey}) {
     const [altText, setAltText] = useState(false);
     const [editor] = useLexicalComposerContext();
     const [payload, setPayload] = React.useState({});
+    const {isSelected, wpkey} = useContext(WrapperContext);
 
     React.useEffect(() => {
         const editorState = editor.getEditorState();
@@ -70,13 +80,7 @@ function ImageCard({nodeKey}) {
         <div>
             <MediaCard dataset={{payload, setPayload}} editor={editor} nodeKey={nodeKey} />
             <div className="w-full p-2">
-                <CaptionEditor altText={altText} nodeKey={nodeKey} placeholder={altText ? `Type alt text for image (optional)` : `Type caption for image (optional)`} />
-                <button
-                    name="alt-toggle-button"
-                    className={`absolute bottom-0 right-0 m-2 cursor-pointer rounded border px-1 font-sans text-[1.3rem] font-normal leading-7 tracking-wide transition-all duration-100 ${altText ? 'border-green bg-green text-white' : 'border-grey text-grey' } `}
-                    onClick={e => toggleAltText(e)}>
-                            Alt
-                </button>
+                <CaptionEditor selected={isSelected} toggleAltText={toggleAltText} wpkey={wpkey} altText={altText} nodeKey={nodeKey} placeholder={altText ? `Type alt text for image (optional)` : `Type caption for image (optional)`} />
             </div>
         </div>
     );
@@ -97,9 +101,9 @@ function MediaPlaceholder({desc, Icon, ...props}) {
     );
 }
 
-function CaptionEditor({placeholder, nodeKey, altText}) {
+function CaptionEditor({placeholder, nodeKey, altText, toggleAltText, wpkey, selected}) {
     const [editor] = useLexicalComposerContext();
-    const [captionText, setCaptionText] = useState('');
+    const [captionText, setCaptionText] = useState(null);
     const [altTextValue, setAltTextValue] = useState('');
 
     const handleChange = (e) => {
@@ -129,14 +133,24 @@ function CaptionEditor({placeholder, nodeKey, altText}) {
         });
     }, [editor, nodeKey]);
 
-    return (
-        <input
-            onChange={handleChange}
-            className="not-kg-prose w-full px-9 text-center font-sans text-sm font-normal leading-8 tracking-wide text-grey-900"
-            placeholder={placeholder}
-            value={altText ? altTextValue : captionText}
-        />
-    );
+    if ((wpkey === nodeKey && selected) || captionText) {
+        return (
+            <>
+                <input
+                    onChange={handleChange}
+                    className="not-kg-prose w-full px-9 text-center font-sans text-sm font-normal leading-8 tracking-wide text-grey-900"
+                    placeholder={placeholder}
+                    value={altText ? altTextValue : captionText}
+                />
+                <button
+                    name="alt-toggle-button"
+                    className={`absolute bottom-0 right-0 m-2 cursor-pointer rounded border px-1 font-sans text-[1.3rem] font-normal leading-7 tracking-wide transition-all duration-100 ${altText ? 'border-green bg-green text-white' : 'border-grey text-grey' } `}
+                    onClick={e => toggleAltText(e)}>
+                                Alt
+                </button>
+            </>
+        );
+    }
 }
 
 function convertImageElement(domNode) {
