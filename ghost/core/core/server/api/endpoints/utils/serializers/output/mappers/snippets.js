@@ -22,8 +22,8 @@ module.exports = (snippet, frame) => {
 /**
  * @typedef {Object} SerializedSnippet
  * @prop {string} id
- * @prop {string=} name
- * @prop {string=} mobiledoc
+ * @prop {string} [name]
+ * @prop {string} [mobiledoc]
  * @prop {string} created_at
  * @prop {string} updated_at
  * @prop {string} created_by

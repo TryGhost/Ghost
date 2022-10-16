@@ -139,7 +139,7 @@ module.exports = class StripeAPI {
      * @param {string} id
      * @param {object} options
      * @param {boolean} options.active
-     * @param {string=} options.nickname
+     * @param {string} [options.nickname]
      *
      * @returns {Promise<IPrice>}
      */
