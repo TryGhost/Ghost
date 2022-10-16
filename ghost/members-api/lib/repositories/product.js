@@ -314,7 +314,7 @@ class ProductRepository {
      * @param {string} data.welcome_page_url
      * @param {BenefitInput[]} data.benefits
      *
-     * @param {StripePriceInput[]=} data.stripe_prices
+     * @param {StripePriceInput[]} [data.stripe_prices]
      * @param {StripePriceInput|null} data.monthly_price
      * @param {StripePriceInput|null} data.yearly_price
      *
