@@ -97,7 +97,7 @@ module.exports = class WebhookManager {
 
     /**
      * @param {object} config
-     * @param {string=} config.webhookSecret An optional webhook secret for use with stripe-cli, passing this will ensure a webhook is not created in Stripe
+     * @param {string} [config.webhookSecret] An optional webhook secret for use with stripe-cli, passing this will ensure a webhook is not created in Stripe
      * @param {string} config.webhookHandlerUrl The URL which the Webhook should hit
      *
      * @returns {Promise<void>}
@@ -111,11 +111,11 @@ module.exports = class WebhookManager {
     }
 
     /**
-     * @param {string=} id
-     * @param {string=} secret
-     * @param {object=} opts
-     * @param {boolean} opts.forceCreate
-     * @param {boolean} opts.skipDelete
+     * @param {string} [id]
+     * @param {string} [secret]
+     * @param {object} [opts]
+     * @param {boolean} [opts.forceCreate]
+     * @param {boolean} [opts.skipDelete]
      *
      * @returns {Promise<Webhook>}
      */
