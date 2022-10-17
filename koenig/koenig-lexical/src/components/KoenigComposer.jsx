@@ -32,7 +32,7 @@ const KoenigComposer = ({
     }, [initialEditorState, nodes, onError]);
 
     const imageUploader = imageUploadFunction || function () {
-        console.error('requires imageUploadFunction to be passed to KoenigEditor'); // eslint-disable-line no-console
+        console.error('requires imageUploadFunction to be passed to KoenigComposer component, eg <KoenigComposer imageUploadFunction={function} />'); // eslint-disable-line no-console
         return;
     };
 

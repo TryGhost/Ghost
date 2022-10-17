@@ -11,10 +11,12 @@ function MediaCard({dataset, editor, nodeKey}) {
     const {payload, setPayload} = dataset;
     const {imageUploader} = React.useContext(KoenigComposerContext);
 
+    // const [uploadPercentage, setUploadPercentage] = useState(0);
+
     const uploadRef = useRef(null);
     const onUploadChange = async (e) => {
         const fls = e.target.files;
-        const files = await imageUploader(fls);
+        const files = await imageUploader.imageUploader(fls); // idea here is to have something like imageUploader.uploadProgressPercentage to pass to the progress bar.
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
             node.setSrc(files.src);
@@ -33,6 +35,14 @@ function MediaCard({dataset, editor, nodeKey}) {
     const openUpload = () => {
         uploadRef.current.click();
     };
+
+    // if (uploadPercentage > 0 && uploadPercentage < 100 && (payload?.__key === nodeKey)) {
+    //     return (
+    //         <figure className="kg-card kg-image-card">
+    //             <p className="text-center">{uploadPercentage}</p>
+    //         </figure>
+    //     );
+    // }
 
     if (payload?.__src) {
         return (
@@ -180,6 +190,7 @@ export class ImageNode extends DecoratorNode {
             node.__caption,
             node.__altText,
             node.__key,
+            node.__uploadProgress
         );
     }
 
@@ -242,6 +253,11 @@ export class ImageNode extends DecoratorNode {
 
     getSrc() {
         return this.__src;
+    }
+
+    setUploadProgress(progress) {
+        this.__uploadProgress = progress;
+        return this.__uploadProgress;
     }
 
     getPayload() {
