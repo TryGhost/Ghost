@@ -307,29 +307,5 @@ describe('Plus button', async () => {
             const p1Box = await p1.boundingBox();
             await assertPosition(page, '[data-kg-plus-button]', {y: p1Box.y}, {threshold: 5});
         });
-
-        it('inserts card and closes menu when card item clicked', async function () {
-            await focusEditor(page);
-            await page.click('[data-kg-plus-button]');
-            await page.click('[data-kg-card-menu-item="Divider"]');
-
-            expect(await page.$('[data-kg-plus-menu]')).toBeNull();
-
-            await assertHTML(page, html`
-                <div data-lexical-decorator="true" contenteditable="false">
-                    <div data-kg-card-selected="false" data-kg-card="horizontalrule">
-                        <hr>
-                    </div>
-                </div>
-                <p><br></p>
-            `);
-
-            await assertSelection(page, {
-                anchorOffset: 0,
-                anchorPath: [1],
-                focusOffset: 0,
-                focusPath: [1]
-            });
-        });
     });
 });
