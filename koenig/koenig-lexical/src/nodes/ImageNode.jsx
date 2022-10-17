@@ -1,11 +1,13 @@
 import React, {useState, useRef, useEffect, useContext} from 'react';
-import {DecoratorNode, $getNodeByKey} from 'lexical';
+import {DecoratorNode, $getNodeByKey, createCommand} from 'lexical';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import {ReactComponent as ImgPlaceholderIcon} from '../assets/icons/kg-img-placeholder.svg';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {ReactComponent as ImageCardIcon} from '../assets/icons/kg-card-type-image.svg';
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import CardContext from '../context/CardContext';
+
+export const INSERT_IMAGE_COMMAND = createCommand();
 
 function MediaCard({dataset, editor, nodeKey}) {
     const {payload, setPayload} = dataset;
@@ -158,7 +160,7 @@ function CaptionEditor({placeholder, nodeKey, toggleAltText, selected}) {
                     onChange={handleChange}
                     className="not-kg-prose w-full px-9 text-center font-sans text-sm font-normal leading-8 tracking-wide text-grey-900"
                     placeholder={placeholder}
-                    value={altText ? altTextValue : captionText}
+                    value={(altText ? altTextValue : captionText) || ''}
                 />
                 <button
                     name="alt-toggle-button"
@@ -207,7 +209,8 @@ export class ImageNode extends DecoratorNode {
     static kgMenu = {
         label: 'Image',
         desc: 'Upload, or embed with /image [url]',
-        Icon: ImageCardIcon
+        Icon: ImageCardIcon,
+        insertCommand: INSERT_IMAGE_COMMAND
     };
 
     exportDOM(){
@@ -304,7 +307,7 @@ export class ImageNode extends DecoratorNode {
     }
 }
 
-export const $createImageNode = ({src, caption, altText}) => {
+export const $createImageNode = ({src, caption, altText} = {}) => {
     const node = new ImageNode(src, caption, altText);
     return node;
 };

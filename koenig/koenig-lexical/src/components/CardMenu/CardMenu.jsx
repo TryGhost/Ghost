@@ -6,9 +6,9 @@ export const CardMenuSection = ({label, ...props}) => {
     );
 };
 
-export const CardMenuItem = ({label, desc, Icon, ...props}) => {
+export const CardMenuItem = ({label, desc, onClick, Icon, ...props}) => {
     return (
-        <div className="flex cursor-pointer flex-row items-center border border-transparent px-4 py-[1rem] text-grey-800 hover:bg-grey-100" {...props}>
+        <button className="flex w-full cursor-pointer flex-row items-center border border-transparent px-4 py-[1rem] text-left text-grey-800 hover:bg-grey-100" onClick={onClick} data-kg-card-menu-item={label} {...props}>
             <div className="flex items-center">
                 <Icon className="h-7 w-7" />
             </div>
@@ -16,7 +16,7 @@ export const CardMenuItem = ({label, desc, Icon, ...props}) => {
                 <div className="m-0 ml-4 truncate text-[1.3rem] font-normal leading-[1.6rem] tracking-[.02rem] text-grey-900">{label}</div>
                 <div className="m-0 ml-4 truncate text-xs font-normal leading-[1.6rem] tracking-[.02rem] text-grey">{desc}</div>
             </div>
-        </div>
+        </button>
     );
 };
 

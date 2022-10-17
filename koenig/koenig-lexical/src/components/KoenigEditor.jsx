@@ -9,6 +9,7 @@ import MarkdownShortcutPlugin from '../plugins/MarkdownShortcutPlugin';
 import PlusCardMenuPlugin from '../plugins/PlusCardMenuPlugin';
 import FloatingFormatToolbarPlugin from '../plugins/FloatingFormatToolbarPlugin';
 import ImagePlugin from '../plugins/ImagePlugin';
+import HorizontalRulePlugin from '../plugins/HorizontalRulePlugin';
 import '../styles/index.css';
 
 export let imageUploader;
@@ -51,6 +52,7 @@ const KoenigEditor = ({
             <PlusCardMenuPlugin />
             {floatingAnchorElem && (<FloatingFormatToolbarPlugin anchorElem={floatingAnchorElem} />)}
             <ImagePlugin />
+            <HorizontalRulePlugin />
         </div>
     );
 };

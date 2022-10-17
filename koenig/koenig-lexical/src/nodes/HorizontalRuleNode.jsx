@@ -27,7 +27,8 @@ export class HorizontalRuleNode extends DecoratorNode {
     static kgMenu = {
         label: 'Divider',
         desc: 'Insert a dividing line',
-        Icon: DividerCardIcon
+        Icon: DividerCardIcon,
+        insertCommand: INSERT_HORIZONTAL_RULE_COMMAND
     };
 
     exportJSON() {

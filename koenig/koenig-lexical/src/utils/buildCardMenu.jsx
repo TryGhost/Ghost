@@ -4,7 +4,7 @@ import {
     CardMenuItem
 } from '../components/CardMenu';
 
-export function buildCardMenu(editor) {
+export function buildCardMenu(editor, {afterInsert} = {}) {
     const menu = new Map();
     menu.set('Primary', []);
 
@@ -33,10 +33,24 @@ export function buildCardMenu(editor) {
 
     const menuComponents = [];
 
+    // browsers will move focus on mouseDown but we don't want that because it
+    // removes focus from the editor meaning key commands don't work as
+    // expected after a card is inserted
+    const preventMouseDown = (event) => {
+        event.preventDefault();
+    };
+
     menu.forEach((items, section) => {
         menuComponents.push(<CardMenuSection key={section} label={section} />);
+
         items.forEach((item) => {
-            menuComponents.push(<CardMenuItem key={`${section}-${item.label}`} label={item.label} desc={item.desc} Icon={item.Icon} />);
+            const onClick = (event) => {
+                event.preventDefault();
+                editor.dispatchCommand(item.insertCommand);
+                afterInsert?.();
+            };
+
+            menuComponents.push(<CardMenuItem key={`${section}-${item.label}`} label={item.label} desc={item.desc} Icon={item.Icon} onMouseDown={preventMouseDown} onClick={onClick} />);
         });
     });
 

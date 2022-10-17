@@ -10,7 +10,7 @@ function usePlusCardMenu(editor) {
     const [isShowingMenu, setIsShowingMenu] = React.useState(false);
     const [topPosition, setTopPosition] = React.useState(0);
     const [cachedRange, setCachedRange] = React.useState(null);
-    const [cardMenu] = React.useState(buildCardMenu(editor));
+    const [cardMenu, setCardMenu] = React.useState([]);
     const containerRef = React.useRef(null);
 
     function getTopPosition(elem) {
@@ -213,6 +213,10 @@ function usePlusCardMenu(editor) {
             window.removeEventListener('keydown', handleKeydown);
         };
     });
+
+    React.useEffect(() => {
+        setCardMenu(buildCardMenu(editor, {afterInsert: closeMenu}));
+    }, [editor, closeMenu]);
 
     const style = {
         top: `${topPosition}px`
