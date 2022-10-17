@@ -89,27 +89,6 @@ const KoenigEditor = (props) => {
     return <_KoenigEditor {...props} />;
 };
 
-async function imageUploader(files) {
-    function uploadToUrl(formData, url) {
-        return new Promise((resolve, reject) => {
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', url);
-            xhr.onload = () => resolve(xhr.response);
-            xhr.onerror = () => reject(xhr.statusText);
-            xhr.send(formData);
-        });
-    }
-    const formData = new FormData();
-    formData.append('file', files[0]);
-    const url = `${ghostPaths().apiRoot}/images/upload/`;
-    const response = await uploadToUrl(formData, url);
-    const dataset = JSON.parse(response);
-    const imageUrl = dataset?.images?.[0].url;
-    return {
-        src: imageUrl
-    };
-}
-
 export default class KoenigLexicalEditor extends Component {
     @service config;
 
@@ -130,6 +109,36 @@ export default class KoenigLexicalEditor extends Component {
     }
 
     ReactComponent = () => {
+        const [uploadProgressPercentage] = React.useState(0); // not in use right now, but will need to decide how to handle the percentage state and pass to the Image Cards
+
+        // const uploadProgress = (event) => {
+        //     const percentComplete = (event.loaded / event.total) * 100;
+        //     setUploadProgressPercentage(percentComplete);
+        // };
+
+        async function imageUploader(files) {
+            function uploadToUrl(formData, url) {
+                return new Promise((resolve, reject) => {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('POST', url);
+                    // xhr.upload.onprogress = (event) => {
+                    //     uploadProgress(event);
+                    // };
+                    xhr.onload = () => resolve(xhr.response);
+                    xhr.onerror = () => reject(xhr.statusText);
+                    xhr.send(formData);
+                });
+            }
+            const formData = new FormData();
+            formData.append('file', files[0]);
+            const url = `${ghostPaths().apiRoot}/images/upload/`;
+            const response = await uploadToUrl(formData, url);
+            const dataset = JSON.parse(response);
+            const imageUrl = dataset?.images?.[0].url;
+            return {
+                src: imageUrl
+            };
+        }
         return (
             <div className={['koenig-react-editor', this.args.className].filter(Boolean).join(' ')}>
                 <ErrorHandler>
@@ -137,7 +146,7 @@ export default class KoenigLexicalEditor extends Component {
                         <KoenigComposer 
                             initialEditorState={this.args.lexical} 
                             onError={this.onError} 
-                            imageUploadFunction={imageUploader} >
+                            imageUploadFunction={{imageUploader, uploadProgressPercentage}} >
                             <KoenigEditor onChange={this.args.onChange} />
                         </KoenigComposer>
                     </Suspense>
