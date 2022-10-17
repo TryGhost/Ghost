@@ -20,7 +20,7 @@
   "devDependencies": {
     "@tryghost/errors": "1.2.18",
     "c8": "7.12.0",
-    "mocha": "10.0.0",
+    "mocha": "10.1.0",
     "sinon": "14.0.1"
   },
   "dependencies": {
