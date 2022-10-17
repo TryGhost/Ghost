@@ -2,6 +2,21 @@ const mapComment = require('./comments');
 const url = require('../utils/url');
 const _ = require('lodash');
 
+const memberFields = [
+    'id',
+    'uuid',
+    'name',
+    'email',
+    'avatar_image'
+];
+
+const postFields = [
+    'id',
+    'uuid',
+    'title',
+    'url'
+];
+
 const commentEventMapper = (json, frame) => {
     return {
         ...json,
@@ -10,24 +25,9 @@ const commentEventMapper = (json, frame) => {
 };
 
 const clickEventMapper = (json, frame) => {
-    const memberFields = [
-        'id',
-        'uuid',
-        'name',
-        'email',
-        'avatar_image'
-    ];
-
     const linkFields = [
         'from',
         'to'
-    ];
-
-    const postFields = [
-        'id',
-        'uuid',
-        'title',
-        'url'
     ];
 
     const data = json.data;
@@ -59,6 +59,35 @@ const clickEventMapper = (json, frame) => {
     };
 };
 
+const feedbackEventMapper = (json, frame) => {
+    const feedbackFields = [
+        'id',
+        'score',
+        'created_at'
+    ];
+
+    const data = json.data;
+    const response = _.pick(data, feedbackFields);
+
+    if (data.post) {
+        url.forPost(data.post.id, data.post, frame);
+        response.post = _.pick(data.post, postFields);
+    } else {
+        response.post = null;
+    }
+    
+    if (data.member) {
+        response.member = _.pick(data.member, memberFields);
+    } else {
+        response.member = null;
+    }
+
+    return {
+        ...json,
+        data: response
+    };
+};
+
 function serializeAttribution(attribution) {
     if (!attribution) {
         return attribution;
@@ -81,6 +110,9 @@ const activityFeedMapper = (event, frame) => {
     }
     if (event.type === 'click_event') {
         return clickEventMapper(event, frame);
+    }
+    if (event.type === 'feedback_event') {
+        return feedbackEventMapper(event, frame);
     }
     if (event.data?.attribution) {
         event.data.attribution = serializeAttribution(event.data.attribution);

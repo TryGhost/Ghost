@@ -12,6 +12,7 @@ module.exports = class EventRepository {
         SubscriptionCreatedEvent,
         MemberPaidSubscriptionEvent,
         MemberLinkClickEvent,
+        MemberFeedback,
         Comment,
         labsService,
         memberAttributionService
@@ -27,6 +28,7 @@ module.exports = class EventRepository {
         this._MemberCreatedEvent = MemberCreatedEvent;
         this._SubscriptionCreatedEvent = SubscriptionCreatedEvent;
         this._MemberLinkClickEvent = MemberLinkClickEvent;
+        this._MemberFeedback = MemberFeedback;
         this._memberAttributionService = memberAttributionService;
     }
 
@@ -54,6 +56,10 @@ module.exports = class EventRepository {
             pageActions.push({type: 'email_delivered_event', action: 'getEmailDeliveredEvents'});
             pageActions.push({type: 'email_opened_event', action: 'getEmailOpenedEvents'});
             pageActions.push({type: 'email_failed_event', action: 'getEmailFailedEvents'});
+        }
+
+        if (this._labsService.isSet('audienceFeedback')) {
+            pageActions.push({type: 'feedback_event', action: 'getFeedbackEvents'});
         }
 
         let filters = this.getNQLSubset(options.filter);
@@ -350,6 +356,35 @@ module.exports = class EventRepository {
         const data = models.map((model) => {
             return {
                 type: 'click_event',
+                data: model.toJSON(options)
+            };
+        });
+
+        return {
+            data,
+            meta
+        };
+    }
+
+    async getFeedbackEvents(options = {}, filters = {}) {
+        options = {
+            ...options,
+            withRelated: ['member', 'post'],
+            filter: []
+        };
+        if (filters['data.created_at']) {
+            options.filter.push(filters['data.created_at'].replace(/data.created_at:/g, 'created_at:'));
+        }
+        if (filters['data.member_id']) {
+            options.filter.push(filters['data.member_id'].replace(/data.member_id:/g, 'member_id:'));
+        }
+        options.filter = options.filter.join('+');
+
+        const {data: models, meta} = await this._MemberFeedback.findPage(options);
+
+        const data = models.map((model) => {
+            return {
+                type: 'feedback_event',
                 data: model.toJSON(options)
             };
         });
