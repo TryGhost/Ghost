@@ -4414,10 +4414,10 @@
     lodash "^4.17.21"
     luxon "^2.1.1"
 
-"@tryghost/kg-lexical-html-renderer@0.0.8":
-  version "0.0.8"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-lexical-html-renderer/-/kg-lexical-html-renderer-0.0.8.tgz#1ebd06874aa7c58d5fa921c22ee60b1e81b31531"
-  integrity sha512-oKUpyDzrYU3WmWr0C7GegAXfYHba5mg8ecacJqJQVn3knTHP47C5GmZ3WZDkHg4ajvEV6vWB9sFCSnSqMwUj8w==
+"@tryghost/kg-lexical-html-renderer@0.0.9":
+  version "0.0.9"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-lexical-html-renderer/-/kg-lexical-html-renderer-0.0.9.tgz#18e3429b2eabdef3298001b87922971643c09431"
+  integrity sha512-HG+M/5iOZq5nCOAzLHpYFMONeAvxUL6fzg4qX8auTRCw+Z+9pzJGlOEeFRhJZW1cckNTzj/ygp30f7VPgs22SQ==
   dependencies:
     "@lexical/clipboard" "^0.5.0"
     "@lexical/code" "^0.5.0"
