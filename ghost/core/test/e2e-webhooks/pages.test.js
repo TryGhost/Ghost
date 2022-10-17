@@ -27,7 +27,8 @@ const buildAuthorSnapshot = (roles = false) => {
     const authorSnapshot = {
         last_seen: anyISODateTime,
         created_at: anyISODateTime,
-        updated_at: anyISODateTime
+        updated_at: anyISODateTime,
+        url: anyLocalURL
     };
 
     if (roles) {
