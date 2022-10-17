@@ -143,15 +143,10 @@ describe('member.* events', function () {
         
         const id = res.body.members[0].id;
 
-        const updatedMember = {...res.body.members[0]};
-        updatedMember.name = 'Ghost';
-        updatedMember.email = 'ghost@example.com';
-        updatedMember.note = 'ghost note';
-
         await adminAPIAgent
             .put('members/' + id)
             .body({
-                members: [updatedMember]
+                members: [{name: 'Ghost'}]
             })
             .expectStatus(200);
 
