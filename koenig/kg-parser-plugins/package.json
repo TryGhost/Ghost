@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/kg-parser-plugins",
-  "version": "2.12.5",
+  "version": "2.12.6",
   "repository": "https://github.com/TryGhost/Koenig/tree/master/packages/kg-parser-plugins",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -42,6 +42,6 @@
     "sinon": "14.0.1"
   },
   "dependencies": {
-    "@tryghost/kg-clean-basic-html": "^2.2.20"
+    "@tryghost/kg-clean-basic-html": "^2.2.21"
   }
 }
