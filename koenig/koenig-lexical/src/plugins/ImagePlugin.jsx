@@ -61,10 +61,10 @@ const onDragOver = (event) => {
     return true;
 };
 
-const onDragDrop = async (event, editor = LexicalEditor, imageUploadFunc) => {
+const onDragDrop = async (event, editor = LexicalEditor, imageUploader) => {
     event.preventDefault();
     const fls = event.dataTransfer.files;
-    const files = await imageUploadFunc(fls);
+    const files = await imageUploader.imageUploader(fls);
     if (files) {
         editor.dispatchCommand(INSERT_IMAGE_CMD, files);
     }
