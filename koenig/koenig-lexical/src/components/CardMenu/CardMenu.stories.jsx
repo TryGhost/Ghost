@@ -8,7 +8,7 @@ import {ReactComponent as DividerCardIcon} from '../../assets/icons/kg-card-type
 import {ReactComponent as ImageCardIcon} from '../../assets/icons/kg-card-type-image.svg';
 
 export default {
-    title: 'CardMenu/Card menu',
+    title: 'Card menu/Card menu',
     component: CardMenu,
     subcomponent: {CardMenuSection, CardMenuItem}
 };
