@@ -1,7 +1,7 @@
 import {preview} from 'vite';
 import {expect} from 'vitest';
 import puppeteer from 'puppeteer';
-import {DOMParser, parseHTML} from 'linkedom';
+import {parseHTML} from 'linkedom';
 import prettier from 'prettier';
 
 export const E2E_PORT = process.env.E2E_PORT || 3000;
