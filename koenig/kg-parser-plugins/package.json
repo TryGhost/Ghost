@@ -35,7 +35,7 @@
     "@tryghost/mobiledoc-kit": "0.11.2-ghost.4",
     "c8": "7.12.0",
     "jsdom": "20.0.1",
-    "mocha": "10.0.0",
+    "mocha": "10.1.0",
     "rollup": "2.79.1",
     "rollup-plugin-babel": "4.4.0",
     "should": "13.2.3",
