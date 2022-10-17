@@ -35,7 +35,7 @@ import {
     ToolbarMenu,
     ToolbarMenuItem,
     ToolbarMenuSeparator
-} from '../components/ToolbarMenu/ToolbarMenu';
+} from '../components/ToolbarMenu';
 
 const blockTypeToBlockName = {
     bullet: 'Bulleted List',

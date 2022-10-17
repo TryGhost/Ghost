@@ -2,7 +2,7 @@ import {
     CardMenu,
     CardMenuSection,
     CardMenuItem
-} from '../components/CardMenu/CardMenu';
+} from '../components/CardMenu';
 
 export function buildCardMenu(editor) {
     const menu = new Map();
