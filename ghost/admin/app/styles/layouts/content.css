@@ -998,6 +998,12 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     border-bottom: 0 none;
 }
 
+.gh-links-list-url {
+    display: flex;
+    align-items: center;
+    padding-right: 32px;
+}
+
 .gh-links-list-item a {
     margin: 0;
     padding: 0;
@@ -1029,6 +1035,10 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     animation: fade-in .2s ease-in-out;
 }
 
+.gh-links-list-input-container {
+    width: 100%;
+}
+
 .gh-links-list-item-success {
     opacity: 0;
     display: flex;
@@ -1036,6 +1046,19 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 
 .gh-links-list-item-success.gh-links-list-item-success-show {
     animation: fade-in-out 3s;
+}
+
+.gh-links-list-item-error {
+    display: none;
+    margin: 6px 0 0;
+    color: var(--red);
+    font-size: 1.25rem;
+    font-weight: 400;
+    line-height: 1;
+}
+
+.error .gh-links-list-item-error {
+    display: block;
 }
 
 @keyframes fade-in-out {
