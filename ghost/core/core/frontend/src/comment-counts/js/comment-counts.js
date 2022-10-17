@@ -76,6 +76,10 @@
             body: JSON.stringify({ids})
         });
 
+        if (rawRes.status !== 200) {
+            return;
+        }
+
         const res = await rawRes.json();
 
         for (const [id, count] of Object.entries(res)) {
