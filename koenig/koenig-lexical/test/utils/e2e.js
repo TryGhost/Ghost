@@ -1,6 +1,7 @@
 import {preview} from 'vite';
 import {expect} from 'vitest';
 import puppeteer from 'puppeteer';
+import {DOMParser, parseHTML} from 'linkedom';
 import prettier from 'prettier';
 
 export const E2E_PORT = process.env.E2E_PORT || 3000;
@@ -41,40 +42,58 @@ export async function focusEditor(page, parentSelector = '.koenig-lexical') {
 export async function assertHTML(
     page,
     expectedHtml,
-    {ignoreClasses = true, ignoreInlineStyles = true, ignoreInnerSVG = true, ignoreBase64String = true} = {}
+    {
+        ignoreClasses = true,
+        ignoreInlineStyles = true,
+        ignoreInnerSVG = true,
+        ignoreBase64String = true,
+        ignoreCardContents = false
+    } = {}
 ) {
     const actualHtml = await page.$eval('div[contenteditable="true"]', e => e.innerHTML);
     const actual = prettifyHTML(actualHtml.replace(/\n/gm, ''), {
         ignoreClasses,
         ignoreInlineStyles,
         ignoreInnerSVG,
-        ignoreBase64String
+        ignoreBase64String,
+        ignoreCardContents
     });
     const expected = prettifyHTML(expectedHtml.replace(/\n/gm, ''), {
         ignoreClasses,
         ignoreInlineStyles,
         ignoreInnerSVG,
-        ignoreBase64String
+        ignoreBase64String,
+        ignoreCardContents
     });
     expect(actual).toEqual(expected);
 }
 
-export function prettifyHTML(string, {ignoreClasses, ignoreInlineStyles, ignoreInnerSVG, ignoreBase64String} = {}) {
+export function prettifyHTML(string, options = {}) {
     let output = string;
 
-    if (ignoreClasses) {
+    if (options.ignoreClasses) {
         output = output.replace(/\sclass="([^"]*)"/g, '');
     }
 
-    if (ignoreInlineStyles) {
+    if (options.ignoreInlineStyles) {
         output = output.replace(/\sstyle="([^"]*)"/g, '');
     }
-    if (ignoreInnerSVG) {
+    if (options.ignoreInnerSVG) {
         output = output.replace(/<svg[^>]*>.*<\/svg>/g, '<svg></svg>');
     }
 
-    if (ignoreBase64String) {
+    if (options.ignoreBase64String) {
         output = output.replace(/src="data:image\/png;base64[^"]*"/g, 'src="data:image/png;"');
+    }
+
+    if (options.ignoreCardContents) {
+        const {document} = parseHTML(output);
+        document.querySelectorAll('[data-kg-card]').forEach((element) => {
+            for (const child of element.childNodes) {
+                child.remove();
+            }
+        });
+        output = document.body.innerHTML;
     }
 
     return prettier
