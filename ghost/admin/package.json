@@ -152,7 +152,7 @@
     "testem": "3.9.0",
     "top-gh-contribs": "2.0.4",
     "tracked-built-ins": "3.1.0",
-    "util": "0.12.4",
+    "util": "0.12.5",
     "validator": "7.2.0",
     "walk-sync": "3.0.0"
   },
