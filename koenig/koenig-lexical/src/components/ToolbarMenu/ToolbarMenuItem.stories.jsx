@@ -10,7 +10,9 @@ export default {
 const Template = (args) => {
     const [isActive, setActive] = React.useState(false);
     return (
-        <ToolbarMenuItem {...args} onClick={() => setActive(!isActive)} isActive={isActive} />
+        <div className="rounded bg-black">
+            <ToolbarMenuItem {...args} onClick={() => setActive(!isActive)} isActive={isActive} />
+        </div>
     );
 };
 
