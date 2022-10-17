@@ -10,7 +10,7 @@ import {HeadingTwo} from './ToolbarMenuItem.stories';
 import {QuoteOne} from './ToolbarMenuItem.stories';
 
 export default {
-    title: 'Generic/Toolbar menu',
+    title: 'Toolbar/Toolbar',
     component: ToolbarMenu,
     subcomponents: {ToolbarMenuSeparator}
 };

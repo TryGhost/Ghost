@@ -3,7 +3,7 @@ import React from 'react';
 import {ToolbarMenuItem} from './ToolbarMenu';
 
 export default {
-    title: 'Generic/Toolbar menu item',
+    title: 'Toolbar/Toolbar buttons',
     component: ToolbarMenuItem
 };
 
