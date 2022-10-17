@@ -190,6 +190,9 @@ describe('MEGA', function () {
                 // Check if the link is a tracked link
                 assert(href.includes('?m=' + memberUuid), href + ' is not tracked');
 
+                // Check if this link is also present in the plaintext version (with the right replacements)
+                assert(emailData.plaintext.includes(href), href + ' is not present in the plaintext version');
+
                 if (!firstLink) {
                     firstLink = new URL(href);
                 }
