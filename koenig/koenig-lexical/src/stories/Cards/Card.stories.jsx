@@ -2,7 +2,7 @@ import React from 'react';
 import {Card} from './Card';
 
 // More on default export: https://storybook.js.org/docs/react/writing-stories/introduction#default-export
-export default {
+const story = {
     title: 'Cards/Card',
     component: Card,
     // More on argTypes: https://storybook.js.org/docs/react/api/argtypes
@@ -10,6 +10,7 @@ export default {
         backgroundColor: {control: 'color'}
     }
 };
+export default story;
 
 const Template = args => <Card {...args} />;
 

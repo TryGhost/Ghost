@@ -2,10 +2,11 @@ import React from 'react';
 
 import {PlusButton} from './PlusMenu';
 
-export default {
+const story = {
     title: 'Card menu/Plus menu',
     component: PlusButton
 };
+export default story;
 
 const Template = args => (
     <div className="relative ml-[66px] mt-[2px]">
@@ -13,4 +14,4 @@ const Template = args => (
     </div>
 );
 
-export const Default = Template.bind({});   
+export const Default = Template.bind({});

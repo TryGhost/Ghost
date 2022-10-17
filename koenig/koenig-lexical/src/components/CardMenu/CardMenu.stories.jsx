@@ -7,11 +7,12 @@ import {CardMenuItem} from './CardMenu';
 import {ReactComponent as DividerCardIcon} from '../../assets/icons/kg-card-type-divider.svg';
 import {ReactComponent as ImageCardIcon} from '../../assets/icons/kg-card-type-image.svg';
 
-export default {
+const story = {
     title: 'Card menu/Card menu',
     component: CardMenu,
     subcomponent: {CardMenuSection, CardMenuItem}
 };
+export default story;
 
 const Template = args => <CardMenu {...args} />;
 

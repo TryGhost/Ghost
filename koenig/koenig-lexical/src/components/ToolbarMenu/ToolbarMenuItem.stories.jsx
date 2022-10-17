@@ -2,10 +2,11 @@ import React from 'react';
 
 import {ToolbarMenuItem} from './ToolbarMenu';
 
-export default {
+const story = {
     title: 'Toolbar/Toolbar buttons',
     component: ToolbarMenuItem
 };
+export default story;
 
 const Template = (args) => {
     const [isActive, setActive] = React.useState(false);
