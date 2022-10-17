@@ -22,6 +22,12 @@ export default class MembersActivityEventTypeFilter extends Component {
         if (this.settings.commentsEnabled !== 'off') {
             extended.push({event: 'comment_event', icon: 'event-comment', name: 'Comments'});
         }
+        if (this.settings.emailTrackClicks) {
+            extended.push({event: 'click_event', icon: 'event-click', name: 'Clicked link'});
+        }
+        if (this.feature.audienceFeedback) {
+            extended.push({event: 'feedback_event', icon: 'event-more-like-this', name: 'Feedback'});
+        }
 
         if (this.args.hiddenEvents?.length) {
             return extended.filter(t => !this.args.hiddenEvents.includes(t.event));
