@@ -26,7 +26,7 @@ function defaultRelations(frame) {
     }
 
     if (labs.isSet('audienceFeedback')) {
-        frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'email', 'tiers', 'newsletter', 'count.signups', 'count.paid_conversions', 'count.clicks', 'count.sentiment', 'count.positive_feedback'];
+        frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'email', 'tiers', 'newsletter', 'count.conversions', 'count.clicks', 'count.sentiment', 'count.positive_feedback'];
     } else {
         frame.options.withRelated = ['tags', 'authors', 'authors.roles', 'email', 'tiers', 'newsletter', 'count.signups', 'count.paid_conversions', 'count.clicks'];
     }

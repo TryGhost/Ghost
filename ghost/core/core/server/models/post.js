@@ -1346,6 +1346,26 @@ Post = ghostBookshelf.Model.extend({
                         .as('count__paid_conversions');
                 });
             },
+            /**
+             * Combination of sigups and paid conversions, but unique per member
+             */
+            conversions(modelOrCollection) {
+                modelOrCollection.query('columns', 'posts.*', (qb) => {
+                    qb.count('*')
+                        .from('k')
+                        .with('k', (q) => {
+                            q.select('member_id')
+                                .from('members_subscription_created_events')
+                                .whereRaw('posts.id = members_subscription_created_events.attribution_id')
+                                .union(function () {
+                                    this.select('member_id')
+                                        .from('members_created_events')
+                                        .whereRaw('posts.id = members_created_events.attribution_id');
+                                });
+                        })
+                        .as('count__conversions');
+                });
+            },
             clicks(modelOrCollection) {
                 modelOrCollection.query('columns', 'posts.*', (qb) => {
                     qb.countDistinct('members_click_events.member_id')
