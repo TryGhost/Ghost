@@ -1,6 +1,7 @@
 import * as Sentry from '@sentry/ember';
 import Component from '@glimmer/component';
 import React, {Suspense} from 'react';
+import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
@@ -88,6 +89,27 @@ const KoenigEditor = (props) => {
     return <_KoenigEditor {...props} />;
 };
 
+async function imageUploader(files) {
+    function uploadToUrl(formData, url) {
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', url);
+            xhr.onload = () => resolve(xhr.response);
+            xhr.onerror = () => reject(xhr.statusText);
+            xhr.send(formData);
+        });
+    }
+    const formData = new FormData();
+    formData.append('file', files[0]);
+    const url = `${ghostPaths().apiRoot}/images/upload/`;
+    const response = await uploadToUrl(formData, url);
+    const dataset = JSON.parse(response);
+    const imageUrl = dataset?.images?.[0].url;
+    return {
+        src: imageUrl
+    };
+}
+
 export default class KoenigLexicalEditor extends Component {
     @service config;
 
@@ -112,7 +134,10 @@ export default class KoenigLexicalEditor extends Component {
             <div className={['koenig-react-editor', this.args.className].filter(Boolean).join(' ')}>
                 <ErrorHandler>
                     <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
-                        <KoenigComposer initialEditorState={this.args.lexical} onError={this.onError}>
+                        <KoenigComposer 
+                            initialEditorState={this.args.lexical} 
+                            onError={this.onError} 
+                            imageUploadFunction={imageUploader} >
                             <KoenigEditor onChange={this.args.onChange} />
                         </KoenigComposer>
                     </Suspense>
