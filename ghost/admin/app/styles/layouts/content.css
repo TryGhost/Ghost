@@ -1012,7 +1012,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     color: var(--midgrey-d2);
 }
 
-.gh-links-list-item svg {
+.gh-links-list-item-edit>svg {
     display: none;
     width: 14px;
     margin-left: 8px;
@@ -1021,12 +1021,37 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     animation: fade-in 0.3s;
 }
 
-.gh-links-list-item:hover svg {
+.gh-links-list-item:hover .gh-links-list-item-edit>svg {
     display: inline;
 }
 
 .gh-links-list-item .gh-input {
     animation: fade-in .2s ease-in-out;
+}
+
+.gh-links-list-item-success {
+    opacity: 0;
+    display: flex;
+}
+
+.gh-links-list-item-success.gh-links-list-item-success-show {
+    animation: fade-in-out 3s;
+}
+
+@keyframes fade-in-out {
+    0% { opacity: 0; }
+    20% { opacity: 1 }
+    95% { opacity: 1; }
+    100% {opacity: 0; }
+  }
+
+.gh-links-list-item-success svg {
+    width: 14px;
+    margin-left: 8px;
+}
+
+.gh-links-list-item-success svg path {
+    stroke: var(--green);
 }
 
 .gh-links-list-clicks {

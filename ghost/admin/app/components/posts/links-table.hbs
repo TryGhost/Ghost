@@ -33,7 +33,8 @@
                         <a href="{{link.link.to}}" target="_blank" rel="noopener noreferrer">
                             {{link.link.title}}
                         </a>
-                        <button type="button" class="flex items-center" aria-label="Edit link" {{on "click" (fn this.editLink link.link.link_id)}}>{{svg-jar "pen"}}</button>
+                        <button type="button" class="flex items-center gh-links-list-item-edit" aria-label="Edit link" {{on "click" (fn this.editLink link.link.link_id)}}>{{svg-jar "pen"}}</button>
+                        <span class="gh-links-list-item-success">{{svg-jar "check-circle"}}</span>
                     {{/if}}
                     {{!-- <a href="{{link.link.to}}" target="_blank" rel="noopener noreferrer">{{link.link.title}}</a> --}}
                 </div>
