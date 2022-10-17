@@ -14,7 +14,9 @@ export const decorators = [
     (Story) => {
         return (
             <div className="koenig-lexical">
+              <div className="flex">
                 <Story />
+              </div>
             </div>
         )
     }

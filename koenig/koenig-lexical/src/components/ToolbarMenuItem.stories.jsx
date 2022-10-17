@@ -7,9 +7,12 @@ export default {
     component: ToolbarMenuItem
 };
 
-const Template = args => (
-    <ToolbarMenuItem {...args} />
-);
+const Template = (args) => {
+    const [isActive, setActive] = React.useState(false);
+    return (
+        <ToolbarMenuItem {...args} onClick={() => setActive(!isActive)} isActive={isActive} />
+    );
+};
 
 export const Bold = Template.bind({});
 Bold.args = {
