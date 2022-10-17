@@ -24,7 +24,7 @@ describe('Image card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card="true" data-kg-card-selected="false">
+                <div data-kg-card-selected="false" data-kg-card="image">
                     <div>
                         <div>
                             <figure>
@@ -58,7 +58,7 @@ describe('Image card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card="true" data-kg-card-selected="true">
+                <div data-kg-card-selected="true" data-kg-card="image">
                     <div>
                         <figure>
                             <img src="data:image/png;" alt="" />
@@ -89,7 +89,7 @@ describe('Image card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card="true" data-kg-card-selected="true">
+                <div data-kg-card-selected="true" data-kg-card="image">
                     <div>
                         <figure>
                             <img src="data:image/png;" alt="" />
@@ -121,7 +121,7 @@ describe('Image card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card="true" data-kg-card-selected="true">
+                <div data-kg-card-selected="true" data-kg-card="image">
                     <div>
                         <figure>
                             <img src="data:image/png;" alt="" />

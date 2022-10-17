@@ -22,7 +22,7 @@ describe('Renders code block node', async () => {
         await page.keyboard.type('```javascript ');
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card="true" data-kg-card-selected="false">
+                <div data-kg-card-selected="false" data-kg-card="codeblock">
                     <code>
                         <textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0">javascript</textarea>
                     </code>

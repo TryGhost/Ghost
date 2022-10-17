@@ -24,7 +24,18 @@ const KoenigCardWrapperComponent = ({nodeKey, children}) => {
     const [editor] = useLexicalComposerContext();
     const [isSelected, setSelected, clearSelected] = useLexicalNodeSelection(nodeKey);
     const [selection, setSelection] = React.useState(null);
+    const [cardType, setCardType] = React.useState(null);
     const ref = React.useRef(null);
+
+    React.useLayoutEffect(() => {
+        editor.getEditorState().read(() => {
+            const cardNode = $getNodeByKey(nodeKey);
+            setCardType(cardNode.getType());
+        });
+
+        // We only do this for init
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     React.useEffect(() => {
         return mergeRegister(
@@ -159,7 +170,7 @@ const KoenigCardWrapperComponent = ({nodeKey, children}) => {
             <div
                 className={`relative border border-transparent caret-grey-800 ${isFocused ? 'shadow-[0_0_0_2px] shadow-green' : 'hover:shadow-[0_0_0_1px] hover:shadow-green'}`}
                 ref={ref}
-                data-kg-card
+                data-kg-card={cardType}
                 data-kg-card-selected={isFocused}
             >
                 {children}
