@@ -31,7 +31,7 @@ class EmailPreview {
         const replacements = postEmailSerializer.parseReplacements(emailContent);
 
         replacements.forEach((replacement) => {
-            emailContent[replacement.format] = emailContent[replacement.format].replace(
+            emailContent[replacement.format] = emailContent[replacement.format].replaceAll(
                 replacement.match,
                 replacement.fallback || ''
             );

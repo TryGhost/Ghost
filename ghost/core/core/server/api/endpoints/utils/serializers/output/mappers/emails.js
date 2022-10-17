@@ -7,7 +7,7 @@ module.exports = (model, frame) => {
     // TODO: extract this to a utility, it's duplicated in the email-preview API controller
     const replacements = mega.postEmailSerializer.parseReplacements(jsonModel);
     replacements.forEach((replacement) => {
-        jsonModel[replacement.format] = jsonModel[replacement.format].replace(
+        jsonModel[replacement.format] = jsonModel[replacement.format].replaceAll(
             replacement.match,
             replacement.fallback || ''
         );

@@ -187,6 +187,11 @@ const PostEmailSerializer = {
             let result;
             while ((result = EMAIL_REPLACEMENT_REGEX.exec(email[format])) !== null) {
                 const [replacementMatch, replacementStr] = result;
+
+                // Did we already found this match and added it to the replacements array?
+                if (replacements.find(r => r.match === replacementMatch && r.format === format)) {
+                    continue;
+                }
                 const match = replacementStr.match(REPLACEMENT_STRING_REGEX);
 
                 if (match) {
