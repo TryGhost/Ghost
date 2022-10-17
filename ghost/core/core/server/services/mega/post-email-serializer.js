@@ -181,6 +181,10 @@ const PostEmailSerializer = {
         const EMAIL_REPLACEMENT_REGEX = /%%(\{.*?\})%%/g;
         const REPLACEMENT_STRING_REGEX = /\{(?<recipientProperty>\w*?)(?:,? *(?:"|&quot;)(?<fallback>.*?)(?:"|&quot;))?\}/;
 
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
         const replacements = [];
 
         ['html', 'plaintext'].forEach((format) => {
@@ -204,6 +208,7 @@ const PostEmailSerializer = {
                             format,
                             id,
                             match: replacementMatch,
+                            regexp: new RegExp(escapeRegExp(replacementMatch), 'g'),
                             recipientProperty: `member_${recipientProperty}`,
                             fallback
                         });

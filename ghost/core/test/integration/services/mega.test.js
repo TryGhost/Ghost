@@ -157,14 +157,14 @@ describe('MEGA', function () {
 
             // Do the actual replacements for the first member, so we don't have to worry about them anymore
             replacements.forEach((replacement) => {
-                emailData[replacement.format] = emailData[replacement.format].replaceAll(
-                    replacement.match,
+                emailData[replacement.format] = emailData[replacement.format].replace(
+                    replacement.regexp,
                     recipient[replacement.id]
                 );
 
                 // Also force Mailgun format
-                emailData[replacement.format] = emailData[replacement.format].replaceAll(
-                    `%recipient.${replacement.id}%`,
+                emailData[replacement.format] = emailData[replacement.format].replace(
+                    new RegExp(`%recipient.${replacement.id}%`, 'g'),
                     recipient[replacement.id]
                 );
             });
