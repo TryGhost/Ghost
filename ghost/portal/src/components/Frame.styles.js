@@ -103,7 +103,7 @@ const FrameStyles = `
     bottom: 0;
     margin: 0 0 -32px;
     padding: 32px 0 32px;
-    background: linear-gradient(0deg, rgba(255,255,255,1) 75%, rgba(255,255,255,0) 100%);
+    background: linear-gradient(0deg, rgba(var(--whitergb),1) 75%, rgba(var(--whitergb),0) 100%);
 }
 
 .gh-portal-btn-container.sticky.m28 {
@@ -255,7 +255,7 @@ const FrameStyles = `
     bottom: 0;
     left: 0;
     animation: fadein 0.2s;
-    background: linear-gradient(315deg , rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.1) 100%);
+    background: linear-gradient(315deg , rgba(var(--blackrgb),0.2) 0%, rgba(var(--blackrgb),0.1) 100%);
     backdrop-filter: blur(2px);
     -webkit-backdrop-filter: blur(2px);
     -webkit-transform: translate3d(0, 0, 0);
@@ -265,7 +265,7 @@ const FrameStyles = `
 }
 
 .gh-portal-popup-background.preview {
-    background: linear-gradient(45deg, rgba(255,255,255,1) 0%, rgba(249,249,250,1) 100%);
+    background: linear-gradient(45deg, rgba(var(--whitergb),1) 0%, rgba(var(--grey13rgb),1) 100%);
     animation: none;
     pointer-events: none;
 }
@@ -317,7 +317,7 @@ const FrameStyles = `
     padding: 32px;
     transform: translateY(0px);
     border-radius: 10px;
-    box-shadow: 0 3.8px 2.2px rgba(0, 0, 0, 0.028), 0 9.2px 5.3px rgba(0, 0, 0, 0.04), 0 17.3px 10px rgba(0, 0, 0, 0.05), 0 30.8px 17.9px rgba(0, 0, 0, 0.06), 0 57.7px 33.4px rgba(0, 0, 0, 0.072), 0 138px 80px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 3.8px 2.2px rgba(var(--blackrgb), 0.028), 0 9.2px 5.3px rgba(var(--blackrgb), 0.04), 0 17.3px 10px rgba(var(--blackrgb), 0.05), 0 30.8px 17.9px rgba(var(--blackrgb), 0.06), 0 57.7px 33.4px rgba(var(--blackrgb), 0.072), 0 138px 80px rgba(var(--blackrgb), 0.1);
     animation: popup 0.25s ease-in-out;
     z-index: 9999;
 }
@@ -394,9 +394,9 @@ const FrameStyles = `
     align-items: center;
     line-height: 0;
     border-radius: 4px;
-    background: #ffffff;
+    background: var(--white);
     padding: 6px 8px 6px 7px;
-    color: #303336;
+    color: var(--grey1);
     font-size: 1.25rem;
     letter-spacing: -0.2px;
     font-weight: 500;
@@ -408,7 +408,7 @@ const FrameStyles = `
 }
 
 .gh-portal-powered a:hover {
-    color: #15171A;
+    color: var(--grey0);
 }
 
 @keyframes powered-fade-in {
@@ -693,7 +693,7 @@ const FrameStyles = `
     letter-spacing: -.1px;
     font-weight: 700;
     text-transform: uppercase;
-    color: #15212a;
+    color: var(--grey0);
     margin-top: 6px;
 }
 
@@ -842,13 +842,13 @@ const MobileStyles = `
 @media (min-width: 520px) {
     .gh-portal-popup-wrapper.full-size .gh-portal-popup-container.preview {
         box-shadow:
-            0 0 0 1px rgba(0,0,0,0.02),
-            0 2.8px 2.2px rgba(0, 0, 0, 0.02),
-            0 6.7px 5.3px rgba(0, 0, 0, 0.028),
-            0 12.5px 10px rgba(0, 0, 0, 0.035),
-            0 22.3px 17.9px rgba(0, 0, 0, 0.042),
-            0 41.8px 33.4px rgba(0, 0, 0, 0.05),
-            0 100px 80px rgba(0, 0, 0, 0.07);
+            0 0 0 1px rgba(var(--blackrgb),0.02),
+            0 2.8px 2.2px rgba(var(--blackrgb), 0.02),
+            0 6.7px 5.3px rgba(var(--blackrgb), 0.028),
+            0 12.5px 10px rgba(var(--blackrgb), 0.035),
+            0 22.3px 17.9px rgba(var(--blackrgb), 0.042),
+            0 41.8px 33.4px rgba(var(--blackrgb), 0.05),
+            0 100px 80px rgba(var(--blackrgb), 0.07);
         animation: none;
         margin: 32px;
         padding: 32px 32px 0;
@@ -1001,7 +1001,7 @@ const MultipleProductsGlobalStyles = `
 /* Multiple product signup/signin-only modifications! */
 .gh-portal-popup-wrapper.multiple-products {
     background: #fff;
-    box-shadow: 0 3.8px 2.2px rgba(0, 0, 0, 0.028), 0 9.2px 5.3px rgba(0, 0, 0, 0.04), 0 17.3px 10px rgba(0, 0, 0, 0.05), 0 30.8px 17.9px rgba(0, 0, 0, 0.06), 0 57.7px 33.4px rgba(0, 0, 0, 0.072), 0 138px 80px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 3.8px 2.2px rgba(var(--blackrgb), 0.028), 0 9.2px 5.3px rgba(var(--blackrgb), 0.04), 0 17.3px 10px rgba(var(--blackrgb), 0.05), 0 30.8px 17.9px rgba(var(--blackrgb), 0.06), 0 57.7px 33.4px rgba(var(--blackrgb), 0.072), 0 138px 80px rgba(var(--blackrgb), 0.1);
     padding: 0;
     border-radius: 5px;
     height: calc(100vh - 64px);

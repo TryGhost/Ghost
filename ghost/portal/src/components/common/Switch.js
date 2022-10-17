@@ -30,7 +30,7 @@ export const SwitchStyles = `
         left: 0;
         right: 0;
         bottom: 0;
-        background: #e9e9e9;
+        background: var(--grey12);
         transition: .3s;
         width: 44px !important;
         height: 26px !important;
@@ -51,7 +51,7 @@ export const SwitchStyles = `
         left: 3px !important;
         height: 20px !important;
         width: 20px !important;
-        background-color: white;
+        background-color: var(--white);
         transition: .3s;
         border-radius: 999px;
     }

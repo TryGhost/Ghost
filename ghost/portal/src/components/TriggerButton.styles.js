@@ -27,7 +27,7 @@ const TriggerButtonStyles = `
         background: var(--brandcolor);
         height: 60px;
         min-width: 60px;
-        box-shadow: rgba(0, 0, 0, 0.24) 0px 8px 16px -2px;
+        box-shadow: rgba(var(--blackrgb), 0.24) 0px 8px 16px -2px;
         border-radius: 999px;
         transition: opacity 0.3s ease;
     }
@@ -40,12 +40,12 @@ const TriggerButtonStyles = `
         bottom: 0;
         left: 0;
         border-radius: 999px;
-        background: rgba(255, 255, 255, 0);
+        background: rgba(var(--whitergb), 0);
         transition: background 0.3s ease;
     }
 
     .gh-portal-triggerbtn-container:hover:before {
-        background: rgba(255, 255, 255, 0.08);
+        background: rgba(var(--whitergb), 0.08);
     }
 
     .gh-portal-triggerbtn-container.halo:before {
@@ -53,7 +53,7 @@ const TriggerButtonStyles = `
         right: -4px;
         bottom: -4px;
         left: -4px;
-        border: 4px solid rgba(255, 255, 255, 0.15);
+        border: 4px solid rgba(var(--whitergb), 0.15);
     }
 
     .gh-portal-triggerbtn-container.with-label {
@@ -62,7 +62,7 @@ const TriggerButtonStyles = `
 
     .gh-portal-triggerbtn-label {
         padding: 8px;
-        color: rgb(255, 255, 255);
+        color: var(--white)
         display: block;
         white-space: nowrap;
         max-width: 380px;
