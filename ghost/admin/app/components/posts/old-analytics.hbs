@@ -76,17 +76,19 @@
         {{#if this.post.showAttributionAnalytics }}
             <div class="gh-post-analytics-item">
                 <LinkTo @route="members" @query={{hash filterParam=(concat "signup:[" this.post.id "]") }}>
-                    <h3>{{format-number this.post.count.conversions}}</h3>
-                    <p>{{gh-pluralize this.post.count.conversions "conversions" without-count=true}}</p>
+                    <h3>{{format-number this.post.count.signups}}</h3>
+                    <p>{{gh-pluralize this.post.count.signups "signup" without-count=true}}</p>
                 </LinkTo>
             </div>
-        {{/if}}
 
-        {{#if this.post.showAudienceFeedback }}
-            <div class="gh-post-analytics-item">
-                <h3>{{format-number this.post.count.positive_feedback}}</h3>
-                <p><span class="hide-when-small">More </span>like<span class="hide-when-small"> this</span> &mdash; <strong>{{this.post.count.sentiment}}%</strong></p>
-            </div>
+            {{#if this.post.showPaidAttributionAnalytics }}
+                <div class="gh-post-analytics-item">
+                    <LinkTo @route="members" @query={{hash filterParam=(concat "conversion:[" this.post.id "]") }}>
+                        <h3>{{format-number this.post.count.paid_conversions}}</h3>
+                        <p><span class="hide-when-small">Paid </span>{{gh-pluralize this.post.count.paid_conversions "conversion" without-count=true}}</p>
+                    </LinkTo>
+                </div>
+            {{/if}}
         {{/if}}
     </div>
 
