@@ -36,6 +36,7 @@ module.exports = class EventRepository {
         if (!options.limit) {
             options.limit = 10;
         }
+        let filters = this.getNQLSubset(options.filter);
 
         // Changing this order might need a change in the query functions
         // because of the different underlying models.
@@ -43,14 +44,20 @@ module.exports = class EventRepository {
 
         // Create a list of all events that can be queried
         const pageActions = [
-            {type: 'newsletter_event', action: 'getNewsletterSubscriptionEvents'},
-            {type: 'subscription_event', action: 'getSubscriptionEvents'},
-            {type: 'login_event', action: 'getLoginEvents'},
-            {type: 'payment_event', action: 'getPaymentEvents'},
-            {type: 'signup_event', action: 'getSignupEvents'},
             {type: 'comment_event', action: 'getCommentEvents'},
-            {type: 'click_event', action: 'getClickEvents'}
+            {type: 'click_event', action: 'getClickEvents'},
+            {type: 'signup_event', action: 'getSignupEvents'},
+            {type: 'subscription_event', action: 'getSubscriptionEvents'}
         ];
+
+        // Some events are not filterable by post_id
+        if (!filters['data.post_id']) {
+            pageActions.push(
+                {type: 'newsletter_event', action: 'getNewsletterSubscriptionEvents'},
+                {type: 'login_event', action: 'getLoginEvents'},
+                {type: 'payment_event', action: 'getPaymentEvents'}
+            );
+        }
 
         if (this._EmailRecipient) {
             pageActions.push({type: 'email_delivered_event', action: 'getEmailDeliveredEvents'});
@@ -62,8 +69,6 @@ module.exports = class EventRepository {
             pageActions.push({type: 'feedback_event', action: 'getFeedbackEvents'});
         }
 
-        let filters = this.getNQLSubset(options.filter);
-
         //Filter events to query
         const filteredPages = filters.type ? pageActions.filter(page => nql(filters.type).queryJSON(page)) : pageActions;
 
@@ -72,14 +77,28 @@ module.exports = class EventRepository {
 
         const allEventPages = await Promise.all(pages);
 
-        const allEvents = allEventPages.reduce((accumulator, page) => accumulator.concat(page.data), []);
+        const allEvents = allEventPages.flatMap(page => page.data);
+        const totalEvents = allEventPages.reduce((accumulator, page) => accumulator + page.meta.pagination.total, 0);
 
-        return allEvents.sort((a, b) => {
-            return new Date(b.data.created_at) - new Date(a.data.created_at);
-        }).reduce((memo, event) => {
-            //disable the event filtering
-            return memo.concat(event);
-        }, []).slice(0, options.limit);
+        return {
+            events: allEvents.sort(
+                (a, b) => {
+                    return new Date(b.data.created_at).getTime() - new Date(a.data.created_at).getTime();
+                }
+            ).slice(0, options.limit),
+            meta: {
+                pagination: {
+                    limit: options.limit,
+                    total: totalEvents,
+                    pages: options.limit > 0 ? Math.ceil(totalEvents / options.limit) : null,
+
+                    // Other values are unavailable (not possible to calculate easily)
+                    page: null,
+                    next: null,
+                    prev: null
+                }
+            }
+        };
     }
 
     async registerPayment(data) {
@@ -161,6 +180,10 @@ module.exports = class EventRepository {
         }
         if (filters['data.member_id']) {
             options.filter.push(filters['data.member_id'].replace(/data.member_id:/g, 'member_id:'));
+        }
+        if (filters['data.post_id']) {
+            options.filter.push(filters['data.post_id'].replace(/data.post_id:/g, 'subscriptionCreatedEvent.attribution_id:'));
+            options.filter.push('subscriptionCreatedEvent.attribution_type:post');
         }
         options.filter = options.filter.join('+');
 
@@ -288,6 +311,10 @@ module.exports = class EventRepository {
         if (filters['data.source']) {
             options.filter.push(filters['data.source'].replace(/data.source:/g, 'source:'));
         }
+        if (filters['data.post_id']) {
+            options.filter.push(filters['data.post_id'].replace(/data.post_id:/g, 'attribution_id:'));
+            options.filter.push('attribution_type:post');
+        }
         options.filter = options.filter.join('+');
 
         const {data: models, meta} = await this._MemberCreatedEvent.findPage(options);
@@ -320,6 +347,9 @@ module.exports = class EventRepository {
         if (filters['data.member_id']) {
             options.filter.push(filters['data.member_id'].replace(/data.member_id:/g, 'member_id:'));
         }
+        if (filters['data.post_id']) {
+            options.filter.push(filters['data.post_id'].replace(/data.post_id:/g, 'post_id:'));
+        }
         options.filter = options.filter.join('+');
 
         const {data: models, meta} = await this._Comment.findPage(options);
@@ -349,6 +379,9 @@ module.exports = class EventRepository {
         if (filters['data.member_id']) {
             options.filter.push(filters['data.member_id'].replace(/data.member_id:/g, 'member_id:'));
         }
+        if (filters['data.post_id']) {
+            options.filter.push(filters['data.post_id'].replace(/data.post_id:/g, 'post_id:'));
+        }
         options.filter = options.filter.join('+');
 
         const {data: models, meta} = await this._MemberLinkClickEvent.findPage(options);
@@ -377,6 +410,9 @@ module.exports = class EventRepository {
         }
         if (filters['data.member_id']) {
             options.filter.push(filters['data.member_id'].replace(/data.member_id:/g, 'member_id:'));
+        }
+        if (filters['data.post_id']) {
+            options.filter.push(filters['data.post_id'].replace(/data.post_id:/g, 'post_id:'));
         }
         options.filter = options.filter.join('+');
 
@@ -519,7 +555,7 @@ module.exports = class EventRepository {
 
         const lex = nql(filter).lex();
 
-        const allowedFilters = ['type','data.created_at','data.member_id'];
+        const allowedFilters = ['type','data.created_at','data.member_id', 'data.post_id'];
         const properties = lex
             .filter(x => x.token === 'PROP')
             .map(x => x.matched.slice(0, -1));

@@ -1659,7 +1659,20 @@ DataGenerator.forKnex = (function () {
     const members_paid_subscription_events = [
         createBasic(DataGenerator.Content.members_paid_subscription_events[0]),
         createBasic(DataGenerator.Content.members_paid_subscription_events[1]),
-        createBasic(DataGenerator.Content.members_paid_subscription_events[2])
+        createBasic(DataGenerator.Content.members_paid_subscription_events[2]),
+        ...members_subscription_created_events.map((e) => {
+            return {
+                id: ObjectId().toHexString(),
+                type: 'created',
+                mrr_delta: 1000,
+                currency: 'usd',
+                source: 'stripe',
+                subscription_id: e.subscription_id,
+                member_id: e.member_id,
+                from_plan: null,
+                to_plan: '173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730bb8'
+            };
+        })
     ];
 
     const redirects = posts.map((post, index) => {
@@ -1678,6 +1691,16 @@ DataGenerator.forKnex = (function () {
             id: ObjectId().toHexString(),
             member_id: members[index].id,
             redirect_id: redirect.id,
+            created_at: new Date()
+        };
+    });
+
+    const members_feedback = posts.map((redirect, index) => {
+        return {
+            id: ObjectId().toHexString(),
+            member_id: members[index].id,
+            post_id: redirect.id,
+            score: index % 2,
             created_at: new Date()
         };
     });
@@ -1761,7 +1784,8 @@ DataGenerator.forKnex = (function () {
         members_paid_subscription_events,
         members_created_events,
         members_subscription_created_events,
-        members_click_events
+        members_click_events,
+        members_feedback
     };
 }());
 
