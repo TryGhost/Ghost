@@ -435,10 +435,7 @@ module.exports = {
             method: 'browse'
         },
         async query(frame) {
-            const events = await membersService.api.events.getEventTimeline(frame.options);
-            return {
-                events
-            };
+            return await membersService.api.events.getEventTimeline(frame.options);
         }
     }
 };

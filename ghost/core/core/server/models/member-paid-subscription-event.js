@@ -25,6 +25,21 @@ const MemberPaidSubscriptionEvent = ghostBookshelf.Model.extend({
                 .groupByRaw('currency, DATE(created_at)')
                 .orderByRaw('DATE(created_at)');
         }
+    },
+
+    filterRelations() {
+        return {
+            subscriptionCreatedEvent: {
+                // Mongo-knex doesn't support belongsTo relations
+                tableName: 'members_subscription_created_events',
+                tableNameAs: 'subscriptionCreatedEvent',
+                type: 'manyToMany',
+                joinTable: 'members_paid_subscription_events',
+                joinFrom: 'id',
+                joinToForeign: 'subscription_id',
+                joinTo: 'subscription_id'
+            }
+        };
     }
 }, {
     permittedOptions(methodName) {
