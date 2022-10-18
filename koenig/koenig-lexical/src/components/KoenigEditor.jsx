@@ -10,6 +10,7 @@ import PlusCardMenuPlugin from '../plugins/PlusCardMenuPlugin';
 import FloatingFormatToolbarPlugin from '../plugins/FloatingFormatToolbarPlugin';
 import ImagePlugin from '../plugins/ImagePlugin';
 import HorizontalRulePlugin from '../plugins/HorizontalRulePlugin';
+import {EditorPlaceholder} from './ui/EditorPlaceholder';
 import '../styles/index.css';
 
 const KoenigEditor = ({
@@ -40,7 +41,7 @@ const KoenigEditor = ({
                         <ContentEditable className="kg-prose" />
                     </div>
                 }
-                placeholder={<div className="pointer-events-none absolute top-0 left-0 min-w-full cursor-text font-serif text-xl text-grey-500">Begin writing your post...</div>}
+                placeholder={<EditorPlaceholder />}
             />
             <OnChangePlugin onChange={_onChange} />
             <HistoryPlugin /> {/* adds undo/redo */}
