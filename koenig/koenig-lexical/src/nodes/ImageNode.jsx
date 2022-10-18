@@ -2,29 +2,46 @@ import React from 'react';
 import {DecoratorNode, createCommand} from 'lexical';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import {ReactComponent as ImageCardIcon} from '../assets/icons/kg-card-type-image.svg';
-import ImageCard from '../components/Cards/ImageCard';
+import {ImageNodeComponent} from './ImageNodeComponent';
 export const INSERT_IMAGE_COMMAND = createCommand();
 
 function convertImageElement(domNode) {
     if (domNode instanceof HTMLImageElement) {
-        const {altText, src} = domNode;
+        const {alt: altText, src} = domNode;
         const node = $createImageNode({altText, src});
         return {node};
     }
+    // TODO: add <figure> and other handling from kg-parser-plugins
     return null;
 }
 
 export class ImageNode extends DecoratorNode {
+    __src;
+    __caption;
+    __altText;
+    // TODO: does this belong on the node? If we're storing progress here because
+    // the node might be re-created whilst uploading then wouldn't we need file
+    // refs too?
+    __uploadProgress;
+
     static getType() {
         return 'image';
     }
+
+    static kgMenu = {
+        label: 'Image',
+        desc: 'Upload, or embed with /image [url]',
+        Icon: ImageCardIcon,
+        insertCommand: INSERT_IMAGE_COMMAND
+    };
+
     static clone(node) {
         return new ImageNode(
             node.__src,
             node.__caption,
             node.__altText,
-            node.__key,
-            node.__uploadProgress
+            node.__uploadProgress,
+            node.__key
         );
     }
 
@@ -38,19 +55,11 @@ export class ImageNode extends DecoratorNode {
         return node;
     }
 
-    static kgMenu = {
-        label: 'Image',
-        desc: 'Upload, or embed with /image [url]',
-        Icon: ImageCardIcon,
-        insertCommand: INSERT_IMAGE_COMMAND
-    };
-
     exportDOM(){
         const element = document.createElement('figure');
         const img = document.createElement('img');
         const figcaption = document.createElement('figcaption');
         img.src = this.getSrc();
-        // img.alt = this.getAlt();
         figcaption.innerHTML = this.getCaption();
         element.appendChild(img);
         element.appendChild(figcaption);
@@ -86,62 +95,68 @@ export class ImageNode extends DecoratorNode {
         return dataset;
     }
 
-    getSrc() {
-        return this.__src;
-    }
-
-    setUploadProgress(progress) {
-        this.__uploadProgress = progress;
-        return this.__uploadProgress;
-    }
-
-    getPayload() {
-        return this.getLatest();
-    }
-
     createDOM() {
         const element = document.createElement('div');
         return element;
     }
+
     updateDOM() {
         return false;
     }
 
-    setSrc(src) {
-        const self = this.getWritable();
-        return self.__src = src;
+    getSrc() {
+        return this.__src;
     }
 
-    setCaption(caption) {
-        const self = this.getWritable();
-        return self.__caption = caption;
+    setSrc(src) {
+        const writable = this.getWritable();
+        return writable.__src = src;
     }
 
     getCaption() {
         return this.__caption;
     }
 
-    setAltText(altText) {
-        const self = this.getWritable();
-        return self.__altText = altText;
+    setCaption(caption) {
+        const writable = this.getWritable();
+        return writable.__caption = caption;
     }
 
     getAltText() {
         return this.__altText;
     }
 
+    setAltText(altText) {
+        const writable = this.getWritable();
+        return writable.__altText = altText;
+    }
+
+    getUploadProgress() {
+        return this.__uploadProgress;
+    }
+
+    setUploadProgress(progress) {
+        const writable = this.getWritable();
+        return writable.__uploadProgress;
+    }
+
     decorate() {
         return (
             <KoenigCardWrapper nodeKey={this.getKey()}>
-                <ImageCard nodeKey={this.getKey()} />
+                <ImageNodeComponent
+                    nodeKey={this.getKey()}
+                    src={this.__src}
+                    altText={this.__altText}
+                    caption={this.__caption}
+                    uploadProgress={this.__uploadProgress}
+                />
             </KoenigCardWrapper>
         );
     }
 }
 
 export const $createImageNode = ({src, caption, altText} = {}) => {
-    const node = new ImageNode(src, caption, altText);
-    return node;
+    return new ImageNode(src, caption, altText);
 };
 
 export function $isImageNode(node) {

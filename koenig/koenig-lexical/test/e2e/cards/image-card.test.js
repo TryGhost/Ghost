@@ -25,20 +25,17 @@ describe('Image card', async () => {
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-selected="false" data-kg-card="image">
-                    <div>
+                    <figure>
                         <div>
-                            <figure>
-                                <div>
-                                    <button name="placeholder-button">
-                                        <svg width="134" height="135" viewBox="0 0 134 135" xmlns="http://www.w3.org/2000/svg"></svg>
-                                        <p>Click to select an image</p>
-                                    </button>
-                                </div>
-                            </figure>
+                            <div>
+                                <button name="placeholder-button">
+                                    <svg width="134" height="135" viewBox="0 0 134 135" xmlns="http://www.w3.org/2000/svg"></svg>
+                                    <p>Click to select an image</p>
+                                </button>
+                            </div>
                         </div>
                         <form><input name="image-input" type="file" accept="image/*" hidden="" /></form>
-                        <div></div>
-                    </div>
+                    </figure>
                 </div>
             </div>
         `);
@@ -59,15 +56,13 @@ describe('Image card', async () => {
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-selected="true" data-kg-card="image">
-                    <div>
-                        <figure>
-                            <img src="data:image/png;" alt="" />
-                        </figure>
-                        <div>
+                    <figure>
+                        <img src="data:image/png;" alt="" />
+                        <figcaption>
                             <input placeholder="Type caption for image (optional)" value="" />
                             <button name="alt-toggle-button">Alt</button>
-                        </div>
-                    </div>
+                        </figcaption>
+                    </figure>
                 </div>
             </div>
         `);
@@ -90,15 +85,13 @@ describe('Image card', async () => {
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-selected="true" data-kg-card="image">
-                    <div>
-                        <figure>
-                            <img src="data:image/png;" alt="" />
-                        </figure>
-                        <div>
+                    <figure>
+                        <img src="data:image/png;" alt="" />
+                        <figcaption>
                             <input placeholder="Type alt text for image (optional)" value=""/>
                             <button name="alt-toggle-button">Alt</button>
-                        </div>
-                    </div>
+                        </figcaption>
+                    </figure>
                 </div>
             </div>
         `);
@@ -122,15 +115,13 @@ describe('Image card', async () => {
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-selected="true" data-kg-card="image">
-                    <div>
-                        <figure>
-                            <img src="data:image/png;" alt="" />
-                        </figure>
-                        <div>
+                    <figure>
+                        <img src="data:image/png;" alt="" />
+                        <figcaption>
                             <input placeholder="Type caption for image (optional)" value="This is a caption" />
                             <button name="alt-toggle-button">Alt</button>
-                        </div>
-                    </div>
+                        </figcaption>
+                    </figure>
                 </div>
             </div>
         `);
