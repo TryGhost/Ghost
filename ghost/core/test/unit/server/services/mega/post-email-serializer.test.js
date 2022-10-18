@@ -385,7 +385,70 @@ describe('Post Email Serializer', function () {
             assert(!output.html.includes('<!-- PAYWALL -->'));
         });
 
-        it('should hide/show feedback buttons depending on feedback_enabled flag', async function () {
+        it('should hide feedback buttons and ignore feedback_enabled if alpha flag disabled', async function () {
+            sinon.stub(labs, 'isSet').returns(false);
+            sinon.stub(_PostEmailSerializer, 'serializePostModel').callsFake(async () => {
+                return {
+                    url: 'https://testpost.com/',
+                    title: 'This is a test',
+                    excerpt: 'This is a test',
+                    authors: 'This is a test',
+                    feature_image_alt: 'This is a test',
+                    feature_image_caption: 'This is a test',
+
+                    // eslint-disable-next-line
+                    mobiledoc: JSON.stringify({"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"p",[[0,[],0,"Free content only"]]]],"ghostVersion":"4.0"})
+                };
+            });
+            const customSettings = {
+                accent_color: '#000099',
+                timezone: 'UTC'
+            };
+
+            const settingsMock = sinon.stub(settingsCache, 'get');
+            settingsMock.callsFake(function (key, options) {
+                if (customSettings[key]) {
+                    return customSettings[key];
+                }
+
+                return settingsMock.wrappedMethod.call(settingsCache, key, options);
+            });
+            const template = {
+                name: 'My newsletter',
+                header_image: '',
+                show_header_icon: true,
+                show_header_title: true,
+                show_feature_image: true,
+                title_font_category: 'sans-serif',
+                title_alignment: 'center',
+                body_font_category: 'serif',
+                show_badge: true,
+                show_header_name: true,
+                feedback_enabled: true,
+                footer_content: 'footer'
+            };
+            const newsletterMock = {
+                get: function (key) {
+                    return template[key];
+                },
+                toJSON: function () {
+                    return template;
+                }
+            };
+
+            const output = await serialize({}, newsletterMock, {isBrowserPreview: false});
+            assert(!output.html.includes('%{feedback_button_like}%'));
+            assert(!output.html.includes('%{feedback_button_dislike}%'));
+
+            template.feedback_enabled = true;
+
+            const outputWithButtons = await serialize({}, newsletterMock, {isBrowserPreview: false});
+            assert(!outputWithButtons.html.includes('%{feedback_button_like}%'));
+            assert(!outputWithButtons.html.includes('%{feedback_button_dislike}%'));
+        });
+
+        /*it('should hide/show feedback buttons depending on feedback_enabled flag', async function () {
+            sinon.stub(labs, 'isSet').returns(true);
             sinon.stub(_PostEmailSerializer, 'serializePostModel').callsFake(async () => {
                 return {
                     url: 'https://testpost.com/',
@@ -444,7 +507,7 @@ describe('Post Email Serializer', function () {
             const outputWithButtons = await serialize({}, newsletterMock, {isBrowserPreview: false});
             assert(outputWithButtons.html.includes('%{feedback_button_like}%'));
             assert(outputWithButtons.html.includes('%{feedback_button_dislike}%'));
-        });
+        });*/
     });
 
     describe('renderEmailForSegment', function () {
