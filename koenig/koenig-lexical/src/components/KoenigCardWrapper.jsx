@@ -19,6 +19,7 @@ import {mergeRegister} from '@lexical/utils';
 import {useLexicalNodeSelection} from '@lexical/react/useLexicalNodeSelection';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import WrapperContext from '../context/CardContext';
+import {CardWrapper} from './ui/CardWrapper';
 
 const KoenigCardWrapperComponent = ({nodeKey, children}) => {
     const [editor] = useLexicalComposerContext();
@@ -173,14 +174,13 @@ const KoenigCardWrapperComponent = ({nodeKey, children}) => {
 
     return (
         <WrapperContext.Provider value={{isSelected, selection, wpkey: nodeKey}}>
-            <div
-                className={`relative border border-transparent caret-grey-800 ${isSelected ? 'shadow-[0_0_0_2px] shadow-green' : 'hover:shadow-[0_0_0_1px] hover:shadow-green'}`}
+            <CardWrapper
+                isSelected={isSelected}
+                cardType={cardType}
                 ref={ref}
-                data-kg-card={cardType}
-                data-kg-card-selected={isSelected}
             >
                 {children}
-            </div>
+            </CardWrapper>
         </WrapperContext.Provider>
     );
 };
