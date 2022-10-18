@@ -310,6 +310,7 @@ module.exports = function apiRoutes() {
     router.put('/newsletters/:id', mw.authAdminApi, http(api.newsletters.edit));
 
     router.get('/links', mw.authAdminApi, http(api.links.browse));
+    router.put('/links/bulk', mw.authAdminApi, http(api.links.bulkEdit));
 
     return router;
 };
