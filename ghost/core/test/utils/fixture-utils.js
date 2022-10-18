@@ -455,6 +455,12 @@ const fixtures = {
         });
     },
 
+    insertLinks: function insertLinks() {
+        return Promise.map(DataGenerator.forKnex.links, function (link) {
+            return models.Redirect.add(link, context.internal);
+        });
+    },
+
     insertEmails: function insertEmails() {
         return Promise.map(DataGenerator.forKnex.emails, function (email) {
             return models.Email.add(email, context.internal);
@@ -803,6 +809,9 @@ const toDoList = {
     },
     feedback: function insertFeedback() {
         return fixtures.insertFeedback();
+    },
+    links: function insertLinks() {
+        return fixtures.insertLinks();
     }
 };
 
