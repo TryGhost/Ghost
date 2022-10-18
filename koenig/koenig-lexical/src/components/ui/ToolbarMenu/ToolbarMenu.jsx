@@ -1,9 +1,9 @@
-import {ReactComponent as BoldIcon} from '../../assets/icons/kg-bold.svg';
-import {ReactComponent as ItalicIcon} from '../../assets/icons/kg-italic.svg';
-import {ReactComponent as HeadingOneIcon} from '../../assets/icons/kg-heading-1.svg';
-import {ReactComponent as HeadingTwoIcon} from '../../assets/icons/kg-heading-2.svg';
-import {ReactComponent as QuoteOneIcon} from '../../assets/icons/kg-quote-1.svg';
-import {ReactComponent as QuoteTwoIcon} from '../../assets/icons/kg-quote-2.svg';
+import {ReactComponent as BoldIcon} from '../../../assets/icons/kg-bold.svg';
+import {ReactComponent as ItalicIcon} from '../../../assets/icons/kg-italic.svg';
+import {ReactComponent as HeadingOneIcon} from '../../../assets/icons/kg-heading-1.svg';
+import {ReactComponent as HeadingTwoIcon} from '../../../assets/icons/kg-heading-2.svg';
+import {ReactComponent as QuoteOneIcon} from '../../../assets/icons/kg-quote-1.svg';
+import {ReactComponent as QuoteTwoIcon} from '../../../assets/icons/kg-quote-2.svg';
 
 export const TOOLBAR_ICONS = {
     bold: BoldIcon,

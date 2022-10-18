@@ -2,7 +2,7 @@ import React from 'react';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {$getSelection, $isParagraphNode, $isRangeSelection} from 'lexical';
 import {getSelectedNode} from '../utils/getSelectedNode';
-import {PlusButton, PlusMenu} from '../components/PlusMenu';
+import {PlusButton, PlusMenu} from '../components/ui/PlusMenu';
 import {buildCardMenu} from '../utils/buildCardMenu';
 
 function usePlusCardMenu(editor) {
