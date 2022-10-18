@@ -1002,6 +1002,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     display: flex;
     align-items: center;
     padding-right: 32px;
+    overflow: hidden;
 }
 
 .gh-links-list-item a {
