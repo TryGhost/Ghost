@@ -630,7 +630,7 @@ module.exports = {
             }
         },
         member_id: {type: 'string', maxlength: 24, nullable: false, unique: false, references: 'members.id', cascadeDelete: true},
-        tier_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'products.id'},
+        tier_id: {type: 'string', maxlength: 24, nullable: false, unique: false, references: 'products.id'},
 
         // These are null if type !== 'paid'
         cadence: {
