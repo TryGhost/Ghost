@@ -11,7 +11,6 @@ const debug = require('@tryghost/debug')('mega');
 const postEmailSerializer = require('../mega/post-email-serializer');
 const configService = require('../../../shared/config');
 const settingsCache = require('../../../shared/settings-cache');
-const labs = require('../../../shared/labs');
 
 const messages = {
     error: 'The email service received an error from mailgun and was unable to send.'
@@ -223,6 +222,10 @@ module.exports = {
         const startTime = Date.now();
         debug(`sending message to ${recipients.length} recipients`);
 
+        // Update email content for this segment before searching replacements
+        emailData = postEmailSerializer.renderEmailForSegment(emailData, memberSegment);
+
+        // Check all the used replacements in this email
         const replacements = postEmailSerializer.parseReplacements(emailData);
 
         // collate static and dynamic data for each recipient ready for provider
@@ -235,11 +238,6 @@ module.exports = {
                 unsubscribe_url: postEmailSerializer.createUnsubscribeUrl(recipient.member_uuid, {newsletterUuid})
             };
 
-            if (labs.isSet('audienceFeedback')) {
-                // create unique urls for every recipient (for example, for feedback buttons)
-                emailData = postEmailSerializer.createUserLinks(emailData, recipient.member_uuid);
-            }
-
             // computed properties on recipients - TODO: better way of handling these
             recipient.member_first_name = (recipient.member_name || '').split(' ')[0];
 
@@ -250,8 +248,6 @@ module.exports = {
 
             recipientData[recipient.member_email] = data;
         });
-
-        emailData = postEmailSerializer.renderEmailForSegment(emailData, memberSegment);
 
         try {
             const response = await mailgunClient.send(emailData, recipientData, replacements);

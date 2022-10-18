@@ -8,7 +8,7 @@ module.exports = (model, frame) => {
     const replacements = mega.postEmailSerializer.parseReplacements(jsonModel);
     replacements.forEach((replacement) => {
         jsonModel[replacement.format] = jsonModel[replacement.format].replace(
-            replacement.match,
+            replacement.regexp,
             replacement.fallback || ''
         );
     });

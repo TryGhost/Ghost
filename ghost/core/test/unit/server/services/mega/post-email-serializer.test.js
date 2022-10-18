@@ -34,6 +34,46 @@ describe('Post Email Serializer', function () {
         assert.equal(replaced[1].recipientProperty, 'member_first_name');
     });
 
+    it('reuses the same replacement pattern when used multiple times', function () {
+        const html = '<html>Hey %%{first_name}%%, what is up? Just repeating %%{first_name}%%</html>';
+        const plaintext = 'Hey %%{first_name}%%, what is up? Just repeating %%{first_name}%%';
+
+        const replaced = parseReplacements({
+            html,
+            plaintext
+        });
+
+        assert.equal(replaced.length, 2);
+        assert.equal(replaced[0].format, 'html');
+        assert.equal(replaced[0].recipientProperty, 'member_first_name');
+
+        assert.equal(replaced[1].format, 'plaintext');
+        assert.equal(replaced[1].recipientProperty, 'member_first_name');
+    });
+
+    it('creates multiple replacement pattern for valid format and value', function () {
+        const html = '<html>Hey %%{first_name}%%, %%{uuid}%% %%{first_name}%% %%{uuid}%%</html>';
+        const plaintext = 'Hey %%{first_name}%%, %%{uuid}%% %%{first_name}%% %%{uuid}%%';
+
+        const replaced = parseReplacements({
+            html,
+            plaintext
+        });
+
+        assert.equal(replaced.length, 4);
+        assert.equal(replaced[0].format, 'html');
+        assert.equal(replaced[0].recipientProperty, 'member_first_name');
+
+        assert.equal(replaced[1].format, 'html');
+        assert.equal(replaced[1].recipientProperty, 'member_uuid');
+
+        assert.equal(replaced[2].format, 'plaintext');
+        assert.equal(replaced[2].recipientProperty, 'member_first_name');
+
+        assert.equal(replaced[3].format, 'plaintext');
+        assert.equal(replaced[3].recipientProperty, 'member_uuid');
+    });
+
     it('does not create replacements for unsupported variable names', function () {
         const html = '<html>Hey %%{last_name}%%, what is up?</html>';
         const plaintext = 'Hey %%{age}%%, what is up?';
