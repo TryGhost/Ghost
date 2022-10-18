@@ -33,11 +33,15 @@
                         <span class="gh-links-list-item-error">Please enter a valid link</span>
                     </div>
                     {{else}}
-                        <a href="{{link.link.to}}" target="_blank" rel="noopener noreferrer">
-                            {{link.link.title}}
-                        </a>
-                        <button type="button" class="flex items-center gh-links-list-item-edit" aria-label="Edit link" {{on "click" (fn this.editLink link.link.link_id)}}>{{svg-jar "pen"}}</button>
-                        <span class="gh-links-list-item-success">{{svg-jar "check-circle"}}</span>
+                    <button type="button" class="gh-btn gh-btn-action-icon gh-btn-icon gh-btn-outline gh-links-list-item-edit icon-only" aria-label="Edit link" {{on "click" (fn this.editLink link.link.link_id)}}>
+                        <span>
+                            {{svg-jar "pen"}}
+                        </span>
+                    </button>
+                    <a href="{{link.link.to}}" target="_blank" rel="noopener noreferrer">
+                        {{link.link.title}}
+                    </a>
+                    <span class="gh-links-list-item-success">{{svg-jar "check-circle"}}</span>
                     {{/if}}
                 </div>
                 {{else}}
@@ -47,7 +51,7 @@
             </div>
         {{/each}}
         {{#if this.showPagination }}
-            <div class="gh-links-pagination" >
+            <div class="gh-links-pagination">
                 <div class="gh-links-pagination-progress">
                     Showing {{this.startOffset}}-{{this.endOffset}} of {{this.totalLinks}}
                 </div>
