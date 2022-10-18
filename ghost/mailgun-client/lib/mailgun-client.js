@@ -51,7 +51,7 @@ module.exports = class MailgunClient {
             // update content to use Mailgun variable syntax for replacements
             replacements.forEach((replacement) => {
                 messageContent[replacement.format] = messageContent[replacement.format].replace(
-                    replacement.match,
+                    replacement.regexp,
                     `%recipient.${replacement.id}%`
                 );
             });

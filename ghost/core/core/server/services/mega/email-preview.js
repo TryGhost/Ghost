@@ -32,7 +32,7 @@ class EmailPreview {
 
         replacements.forEach((replacement) => {
             emailContent[replacement.format] = emailContent[replacement.format].replace(
-                replacement.match,
+                replacement.regexp,
                 replacement.fallback || ''
             );
         });
