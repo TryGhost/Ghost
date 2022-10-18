@@ -94,6 +94,11 @@ const KoenigCardWrapperComponent = ({nodeKey, children}) => {
                     if (isSelected && $isNodeSelection(latestSelection) && latestSelection.getNodes().length === 1) {
                         event.preventDefault();
                         const cardNode = $getNodeByKey(nodeKey);
+                        if (cardNode.getType() === 'image' && event.target.matches('input')) {
+                            const caption = cardNode.getCaption();
+                            const updatedCap = cardNode.setCaption(caption.slice(0, -1));
+                            return updatedCap;
+                        }
                         const previousSibling = cardNode.getPreviousSibling();
                         const nextSibling = cardNode.getNextSibling();
 
