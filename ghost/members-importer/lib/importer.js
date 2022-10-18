@@ -8,8 +8,7 @@ const tpl = require('@tryghost/tpl');
 const emailTemplate = require('./email-template');
 
 const messages = {
-    filenameCollision: 'Filename already exists, please try again.',
-    jobAlreadyComplete: 'Job is already complete.'
+    filenameCollision: 'Filename already exists, please try again.'
 };
 
 const defaultInputCSVHeaderMappings = {
