@@ -231,7 +231,7 @@ const PostEmailSerializer = {
             titleAlignment: newsletter.get('title_alignment'),
             bodyFontCategory: newsletter.get('body_font_category'),
             showBadge: newsletter.get('show_badge'),
-            feedbackEnabled: newsletter.get('feedback_enabled'),
+            feedbackEnabled: newsletter.get('feedback_enabled') && labs.isSet('audienceFeedback'),
             footerContent: newsletter.get('footer_content'),
             showHeaderName: newsletter.get('show_header_name'),
             accentColor,
