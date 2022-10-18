@@ -1102,6 +1102,11 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     padding-right: 2px;
 }
 
+.gh-links-info {
+    color: var(--green);
+    font-weight: 500;
+}
+
 .gh-links-pagination {
     display: flex;
     justify-content: space-between;

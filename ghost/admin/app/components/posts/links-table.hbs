@@ -4,9 +4,15 @@
 <div class="gh-post-analytics-box column">
     <div class="gh-links-list">
         <div class="gh-links-list-header">
+            {{#if (and this.showPagination (feature "fixNewsletterLinks")) }}
+            <div class="gh-links-pagination-progress">
+                Showing {{this.startOffset}}-{{this.endOffset}} of {{this.totalLinks}}
+            </div>
+            {{else}}
             <div class="gh-links-list-title">
                 Link
             </div>
+            {{/if}} 
             <div class="gh-links-list-title">
                 No. of Members
             </div>
@@ -52,9 +58,13 @@
         {{/each}}
         {{#if this.showPagination }}
             <div class="gh-links-pagination">
+                {{#if (feature "fixNewsletterLinks")}}
+                <span class="gh-links-info">&uarr; Sent a broken link? You can update it!</span>
+                {{else}}
                 <div class="gh-links-pagination-progress">
                     Showing {{this.startOffset}}-{{this.endOffset}} of {{this.totalLinks}}
                 </div>
+                {{/if}}
                 <div class="gh-links-pagination-actions">
                     <button type="button" class="gh-links-pagination-action gh-links-pagination-prev {{if this.disablePreviousPage "gh-links-pagination-disabled"}}" {{on "click" this.openPreviousPage}} disabled={{this.disablePreviousPage}}>
                         {{svg-jar "arrow-left-pagination"}}
