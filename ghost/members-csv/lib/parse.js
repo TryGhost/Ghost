@@ -10,18 +10,17 @@ const fs = require('fs-extra');
  * @param {Array<string>} [defaultLabels] - A list of labels to apply to every parsed member row
  * @returns 
  */
-module.exports = (path, headerMapping = {}, defaultLabels = []) => {
+module.exports = (path, headerMapping, defaultLabels = []) => {
     return new Promise(function (resolve, reject) {
         const csvFileStream = fs.createReadStream(path);
         const csvParserStream = papaparse.parse(papaparse.NODE_STREAM_INPUT, {
             header: true,
             transformHeader(_header) {
-                let header = _header;
-                if (headerMapping && Reflect.has(headerMapping, _header)) {
-                    header = headerMapping[_header];
+                if (!headerMapping || !Reflect.has(headerMapping, _header)) {
+                    return undefined;
                 }
 
-                return header;
+                return headerMapping[_header];
             },
             transform(value, header) {
                 if (header === 'labels') {
@@ -73,11 +72,23 @@ module.exports = (path, headerMapping = {}, defaultLabels = []) => {
         });
 
         parsedCSVStream.on('data', (row) => {
+            // unmapped columns end up being assigned to 'undefined' property
+            // in the transformHeader stage, those should be removed completely
+            if (Reflect.has(row, 'undefined')) {
+                delete row.undefined;
+            }
+
+            // skip a rows with no data
+            if (!Object.keys(row).length){
+                return;
+            }
+
             if (row.labels) {
                 row.labels = row.labels.concat(defaultLabels);
             } else {
                 row.labels = defaultLabels;
             }
+
             rows.push(row);
         });
     });
