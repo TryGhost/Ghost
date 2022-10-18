@@ -12,7 +12,8 @@ const {
     anyISODateTime,
     anyObjectId,
     anyContentVersion,
-    anyNumber
+    anyNumber,
+    anyString
 } = matchers;
 
 const tierSnapshot = {
@@ -23,6 +24,17 @@ const tierSnapshot = {
 
 const roleSnapshot = tierSnapshot;
 
+const tagSnapshot = {
+    created_at: anyISODateTime,
+    id: anyObjectId,
+    name: anyString,
+    slug: anyString,
+    description: null,
+    updated_at: anyISODateTime,
+    url: anyLocalURL,
+    visibility: anyString
+};
+
 const buildAuthorSnapshot = (roles = false) => {
     const authorSnapshot = {
         last_seen: anyISODateTime,
@@ -31,7 +43,7 @@ const buildAuthorSnapshot = (roles = false) => {
     };
 
     if (roles) {
-        return {...authorSnapshot, roles: Array(1).fill(roleSnapshot)};
+        return { ...authorSnapshot, roles: Array(1).fill(roleSnapshot) };
     }
 
     return authorSnapshot;
@@ -56,11 +68,45 @@ const buildPageSnapshotWithTiers = ({
     };
 };
 
+const buildPageSnapshotWithTiersAndTags = ({
+    published,
+    tiersCount,
+    tags,
+    roles = true
+}) => {
+    return {
+        id: anyObjectId,
+        uuid: anyUuid,
+        comment_id: anyObjectId,
+        published_at: published ? anyISODateTime : null,
+        created_at: anyISODateTime,
+        updated_at: anyISODateTime,
+        url: anyLocalURL,
+        tiers: new Array(tiersCount).fill(tierSnapshot),
+        primary_author: buildAuthorSnapshot(roles),
+        authors: new Array(1).fill(buildAuthorSnapshot(roles)),
+        primary_tag: tags ? tagSnapshot : null,
+        tags: tags ? new Array(1).fill(tagSnapshot) : []
+    };
+};
+
 const buildPreviousPageSnapshotWithTiers = (tiersCount) => {
     return {
         tiers: new Array(tiersCount).fill(tierSnapshot),
         updated_at: anyISODateTime
     };
+};
+
+const buildPreviousPageSnapshotWithTiersAndTags = ({ tiersCount, tags }) => {
+    const prevSnap = {
+        tags: tags ? new Array(1).fill(tagSnapshot) : []
+    };
+
+    if (tiersCount > 0) {
+        prevSnap.tiers = new Array(tiersCount).fill(tierSnapshot);
+    }
+
+    return prevSnap;
 };
 
 describe('page.* events', function () {
@@ -168,6 +214,63 @@ describe('page.* events', function () {
                         roles: true
                     }),
                     previous: buildPreviousPageSnapshotWithTiers(2)
+                }
+            });
+    });
+
+    it('page.tag.attached event is triggered', async function () {
+        const webhookURL = 'https://test-webhook-receiver.com/page-tag-attached/';
+        await webhookMockReceiver.mock(webhookURL);
+        await fixtureManager.insertWebhook({
+            event: 'page.tag.attached',
+            url: webhookURL
+        });
+
+        const res = await adminAPIAgent
+            .post('pages/')
+            .body({
+                pages: [
+                    {
+                        title: 'test page.tag.attached webhook',
+                        status: 'draft',
+                        
+                    }
+                ]
+            })
+            .expectStatus(201);
+
+            console.log(res);
+
+        const id = res.body.pages[0].id;
+        const pageTagAttached = res.body.pages[0];
+        pageTagAttached.tags = ['Blogs'];
+
+        await adminAPIAgent
+            .put('pages/' + id)
+            .body({
+                pages: [pageTagAttached]
+            })
+            .expectStatus(200);
+
+        await webhookMockReceiver.receivedRequest();
+
+        webhookMockReceiver
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                'content-length': anyNumber,
+                'user-agent': anyGhostAgent
+            })
+            .matchBodySnapshot({
+                page: {
+                    current: buildPageSnapshotWithTiersAndTags({
+                        published: false,
+                        tiersCount: 2,
+                        tags: true
+                    }),
+                    previous: buildPreviousPageSnapshotWithTiersAndTags({
+                        tiersCount: 2,
+                        tags: false
+                    })
                 }
             });
     });
