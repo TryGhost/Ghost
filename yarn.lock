@@ -4267,7 +4267,7 @@
     "@tryghost/root-utils" "^0.3.15"
     debug "^4.3.1"
 
-"@tryghost/debug@0.1.18", "@tryghost/debug@^0.1.13", "@tryghost/debug@^0.1.17", "@tryghost/debug@^0.1.18":
+"@tryghost/debug@0.1.18":
   version "0.1.18"
   resolved "https://registry.yarnpkg.com/@tryghost/debug/-/debug-0.1.18.tgz#b126fedb8f409f44c3082a2c469171940cd6986e"
   integrity sha512-vG9dHuvYn8LlRrWyFUbt4zmsWmPLlZZJn1Qv9ko8uML36nILrpFehTnfda5663cMlwQQWPJ+DL6SCylIbtLWDg==
@@ -4275,7 +4275,7 @@
     "@tryghost/root-utils" "^0.3.16"
     debug "^4.3.1"
 
-"@tryghost/debug@^0.1.19":
+"@tryghost/debug@^0.1.13", "@tryghost/debug@^0.1.17", "@tryghost/debug@^0.1.18", "@tryghost/debug@^0.1.19":
   version "0.1.19"
   resolved "https://registry.yarnpkg.com/@tryghost/debug/-/debug-0.1.19.tgz#8194929559dc3321807142ee6f08691bdd30aa2c"
   integrity sha512-gwJ3S7dq9fgjcoUU8Dz1co/WwolMcKPKz9xq6MTqgwIYrFhsDrNfdS0+sY7x7Hm75EISN49CQsfrdn39jiZK3g==
@@ -4613,15 +4613,7 @@
     got "9.6.0"
     lodash "^4.17.21"
 
-"@tryghost/root-utils@^0.3.15", "@tryghost/root-utils@^0.3.16":
-  version "0.3.16"
-  resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.3.16.tgz#a3dca3c9edccab494ca5968e460af2d49da4ce2b"
-  integrity sha512-+X79NBxHwJW9tiO/B+uJbCmcgv/MotY+g3p/+bwIWjGfuC7VUXBDHNswERtJrx6b374b1N1zXXl1iWJNtSavdg==
-  dependencies:
-    caller "^1.0.1"
-    find-root "^1.1.0"
-
-"@tryghost/root-utils@^0.3.17":
+"@tryghost/root-utils@^0.3.15", "@tryghost/root-utils@^0.3.16", "@tryghost/root-utils@^0.3.17":
   version "0.3.17"
   resolved "https://registry.yarnpkg.com/@tryghost/root-utils/-/root-utils-0.3.17.tgz#942dafe7175fc7e930d4d4e2a5de5c4d65bea1d4"
   integrity sha512-mc/UkX6sNBe+Ela4nkYbxA/Vd8GzZpEvF2fAYdJM3KNDQMmUr70SnGoY1gUVeA0rh7xXHiJs1cxo7E/mIHdWvg==
@@ -4654,14 +4646,14 @@
   resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.2.73.tgz#2a2751124ef7aed187f05537f916ebae386aa184"
   integrity sha512-6YpnQ3youfgUXqfSfMoVm1TV0TzqCWcvTV+9t9vppOOWLspM/IMHjOktMwPAsA2IPxZ3+ZdA2wWct7UZY6RDhw==
 
-"@tryghost/tpl@0.1.18", "@tryghost/tpl@^0.1.18":
+"@tryghost/tpl@0.1.18":
   version "0.1.18"
   resolved "https://registry.yarnpkg.com/@tryghost/tpl/-/tpl-0.1.18.tgz#a4c87e3a82cd75aba72b2325c91d87677cc615f2"
   integrity sha512-frhPu9ScllYof5Xrhn4FrOluBSOEQiAQP67EOiFV6XE8UKJtAYTB48Xf9XtAWm9IfznpOGuy/2w84nK1SN7lvg==
   dependencies:
     lodash.template "^4.5.0"
 
-"@tryghost/tpl@^0.1.19":
+"@tryghost/tpl@^0.1.18", "@tryghost/tpl@^0.1.19":
   version "0.1.19"
   resolved "https://registry.yarnpkg.com/@tryghost/tpl/-/tpl-0.1.19.tgz#2f3883554d23d83e31631625c67c91a7eb9d03fb"
   integrity sha512-0ZOSDx/L75Sai/pea6k9TKnDz8GyyorGR/dtCIKlwd8qJ7oP90XbmTN4PBN+i4oGcZFchf8il9PbzVCoLnG0zA==
@@ -12327,10 +12319,10 @@ ember-template-imports@^3.1.1:
     string.prototype.matchall "^4.0.6"
     validate-peer-dependencies "^1.1.0"
 
-ember-template-lint@4.15.0:
-  version "4.15.0"
-  resolved "https://registry.yarnpkg.com/ember-template-lint/-/ember-template-lint-4.15.0.tgz#0316240076e3e92349dd083ef58ae2fae91f21d7"
-  integrity sha512-+43ka0qcVzA7KUbUby7VJHm/KoKkSQCbEYWdjiKlDaYNEYxjNMOFdPo3AcGJ50RxTx55A74p0RDYdTTxJV7u+A==
+ember-template-lint@4.16.0:
+  version "4.16.0"
+  resolved "https://registry.yarnpkg.com/ember-template-lint/-/ember-template-lint-4.16.0.tgz#ebb1a88e408bb8d328636c3576d66b5e2b2291e9"
+  integrity sha512-nxUORaVKsEADA7CmZmHCFsZ/BJIS1C7rNUwAWyBHhNhIivN0yGHw9woUCcBIbIWGEmdLGwTS69gXXM+SZqp4kA==
   dependencies:
     "@lint-todo/utils" "^13.0.3"
     aria-query "^5.0.2"
