@@ -14,20 +14,26 @@ const messages = {
     noSupportForDatabase: 'No support for database client {client}'
 };
 
-function addTableColumn(tableName, table, columnName, columnSpec = schema[tableName][columnName]) {
+/**
+ * @param {string} tableName
+ * @param {import('knex').knex.TableBuilder} tableBuilder
+ * @param {string} columnName
+ * @param {object} [columnSpec]
+ */
+function addTableColumn(tableName, tableBuilder, columnName, columnSpec = schema[tableName][columnName]) {
     let column;
 
     // creation distinguishes between text with fieldtype, string with maxlength and all others
     if (columnSpec.type === 'text' && Object.prototype.hasOwnProperty.call(columnSpec, 'fieldtype')) {
-        column = table[columnSpec.type](columnName, columnSpec.fieldtype);
+        column = tableBuilder[columnSpec.type](columnName, columnSpec.fieldtype);
     } else if (columnSpec.type === 'string') {
         if (Object.prototype.hasOwnProperty.call(columnSpec, 'maxlength')) {
-            column = table[columnSpec.type](columnName, columnSpec.maxlength);
+            column = tableBuilder[columnSpec.type](columnName, columnSpec.maxlength);
         } else {
-            column = table[columnSpec.type](columnName, 191);
+            column = tableBuilder[columnSpec.type](columnName, 191);
         }
     } else {
-        column = table[columnSpec.type](columnName);
+        column = tableBuilder[columnSpec.type](columnName);
     }
 
     if (Object.prototype.hasOwnProperty.call(columnSpec, 'nullable') && columnSpec.nullable === true) {
@@ -65,12 +71,22 @@ function addTableColumn(tableName, table, columnName, columnSpec = schema[tableN
     }
 }
 
+/**
+ * @param {string} tableName
+ * @param {string} column
+ * @param {import('knex').Knex} [transaction]
+ */
 function setNullable(tableName, column, transaction = db.knex) {
     return transaction.schema.table(tableName, function (table) {
         table.setNullable(column);
     });
 }
 
+/**
+ * @param {string} tableName
+ * @param {string} column
+ * @param {import('knex').Knex} [transaction]
+ */
 function dropNullable(tableName, column, transaction = db.knex) {
     return transaction.schema.table(tableName, function (table) {
         table.dropNullable(column);
@@ -78,7 +94,10 @@ function dropNullable(tableName, column, transaction = db.knex) {
 }
 
 /**
- * @param {string}
+ * @param {string} tableName
+ * @param {string} column
+ * @param {import('knex').Knex.Transaction} [transaction]
+ * @param {object} columnSpec
  */
 async function addColumn(tableName, column, transaction = db.knex, columnSpec) {
     const addColumnBuilder = transaction.schema.table(tableName, function (table) {
@@ -104,6 +123,12 @@ async function addColumn(tableName, column, transaction = db.knex, columnSpec) {
     }
 }
 
+/**
+ * @param {string} tableName
+ * @param {string} column
+ * @param {import('knex').Knex} [transaction]
+ * @param {object} [columnSpec]
+ */
 async function dropColumn(tableName, column, transaction = db.knex, columnSpec = {}) {
     if (Object.prototype.hasOwnProperty.call(columnSpec, 'references')) {
         const [toTable, toColumn] = columnSpec.references.split('.');
@@ -138,7 +163,7 @@ async function dropColumn(tableName, column, transaction = db.knex, columnSpec =
  *
  * @param {string} tableName - name of the table to add unique constraint to
  * @param {string|string[]} columns - column(s) to form unique constraint with
- * @param {import('knex')} transaction - connection object containing knex reference
+ * @param {import('knex').Knex} [transaction] - connection object containing knex reference
  */
 async function addUnique(tableName, columns, transaction = db.knex) {
     try {
@@ -165,7 +190,7 @@ async function addUnique(tableName, columns, transaction = db.knex) {
  *
  * @param {string} tableName - name of the table to drop unique constraint from
  * @param {string|string[]} columns - column(s) unique constraint was formed
- * @param {import('knex')} transaction - connection object containing knex reference
+ * @param {import('knex').Knex} transaction - connection object containing knex reference
  */
 async function dropUnique(tableName, columns, transaction = db.knex) {
     try {
@@ -195,7 +220,7 @@ async function dropUnique(tableName, columns, transaction = db.knex) {
  * @param {string} configuration.fromColumn - column of the table to add the foreign key to
  * @param {string} configuration.toTable - name of the table to point the foreign key to
  * @param {string} configuration.toColumn - column of the table to point the foreign key to
- * @param {import('knex')} configuration.transaction - connection object containing knex reference
+ * @param {import('knex').Knex} [configuration.transaction] - connection object containing knex reference
  */
 async function hasForeignSQLite({fromTable, fromColumn, toTable, toColumn, transaction = db.knex}) {
     if (!DatabaseInfo.isSQLite(transaction)) {
@@ -222,7 +247,7 @@ async function hasForeignSQLite({fromTable, fromColumn, toTable, toColumn, trans
  * @param {string} [configuration.constraintName] - name of the FK to create
  * @param {Boolean} [configuration.cascadeDelete] - adds the "on delete cascade" option if true
  * @param {Boolean} [configuration.setNullDelete] - adds the "on delete SET NULL" option if true
- * @param {import('knex')} configuration.transaction - connection object containing knex reference
+ * @param {import('knex').Knex} [configuration.transaction] - connection object containing knex reference
  */
 async function addForeign({fromTable, fromColumn, toTable, toColumn, constraintName, cascadeDelete = false, setNullDelete = false, transaction = db.knex}) {
     if (DatabaseInfo.isSQLite(transaction)) {
@@ -283,7 +308,7 @@ async function addForeign({fromTable, fromColumn, toTable, toColumn, constraintN
  * @param {string} configuration.toTable - name of the table to point the foreign key to
  * @param {string} configuration.toColumn - column of the table to point the foreign key to
  * @param {string} [configuration.constraintName] - name of the FK to delete
- * @param {import('knex')} configuration.transaction - connection object containing knex reference
+ * @param {import('knex').Knex} [configuration.transaction] - connection object containing knex reference
  */
 async function dropForeign({fromTable, fromColumn, toTable, toColumn, constraintName, transaction = db.knex}) {
     if (DatabaseInfo.isSQLite(transaction)) {
@@ -327,7 +352,7 @@ async function dropForeign({fromTable, fromColumn, toTable, toColumn, constraint
  * Checks if primary key index exists in a table over the given columns.
  *
  * @param {string} tableName - name of the table to check primary key constraint on
- * @param {import('knex')} transaction - connection object containing knex reference
+ * @param {import('knex').Knex} [transaction] - connection object containing knex reference
  */
 async function hasPrimaryKeySQLite(tableName, transaction = db.knex) {
     if (!DatabaseInfo.isSQLite(transaction)){
@@ -347,7 +372,7 @@ async function hasPrimaryKeySQLite(tableName, transaction = db.knex) {
  *
  * @param {string} tableName - name of the table to add primaykey  constraint to
  * @param {string|string[]} columns - column(s) to form primary key constraint with
- * @param {import('knex')} transaction - connection object containing knex reference
+ * @param {import('knex').Knex} [transaction] - connection object containing knex reference
  */
 async function addPrimaryKey(tableName, columns, transaction = db.knex) {
     if (DatabaseInfo.isSQLite(transaction)) {
@@ -378,7 +403,7 @@ async function addPrimaryKey(tableName, columns, transaction = db.knex) {
  * utils if you want that
  *
  * @param {String} table - name of the table to create
- * @param {import('knex').Transaction} transaction - connection to the DB
+ * @param {import('knex').Knex} [transaction] - connection to the DB
  * @param {Object} [tableSpec] - table schema to generate table with
  */
 function createTable(table, transaction = db.knex, tableSpec = schema[table]) {
@@ -396,10 +421,17 @@ function createTable(table, transaction = db.knex, tableSpec = schema[table]) {
     });
 }
 
+/**
+ * @param {string} table
+ * @param {import('knex').Knex} [transaction] - connection to the DB
+ */
 function deleteTable(table, transaction = db.knex) {
     return transaction.schema.dropTableIfExists(table);
 }
 
+/**
+ * @param {import('knex').Knex} [transaction] - connection to the DB
+ */
 function getTables(transaction = db.knex) {
     const client = transaction.client.config.client;
 
@@ -410,6 +442,10 @@ function getTables(transaction = db.knex) {
     return Promise.reject(tpl(messages.noSupportForDatabase, {client: client}));
 }
 
+/**
+ * @param {string} table
+ * @param {import('knex').Knex} [transaction] - connection to the DB
+ */
 function getIndexes(table, transaction = db.knex) {
     const client = transaction.client.config.client;
 
@@ -420,6 +456,10 @@ function getIndexes(table, transaction = db.knex) {
     return Promise.reject(tpl(messages.noSupportForDatabase, {client: client}));
 }
 
+/**
+ * @param {string} table
+ * @param {import('knex').Knex} [transaction] - connection to the DB
+ */
 function getColumns(table, transaction = db.knex) {
     const client = transaction.client.config.client;
 
@@ -460,20 +500,20 @@ function createColumnMigration(...migrations) {
 }
 
 module.exports = {
-    createTable: createTable,
-    deleteTable: deleteTable,
-    getTables: getTables,
-    getIndexes: getIndexes,
-    addUnique: addUnique,
-    dropUnique: dropUnique,
-    addPrimaryKey: addPrimaryKey,
-    addForeign: addForeign,
-    dropForeign: dropForeign,
-    addColumn: addColumn,
-    dropColumn: dropColumn,
-    setNullable: setNullable,
-    dropNullable: dropNullable,
-    getColumns: getColumns,
+    createTable,
+    deleteTable,
+    getTables,
+    getIndexes,
+    addUnique,
+    dropUnique,
+    addPrimaryKey,
+    addForeign,
+    dropForeign,
+    addColumn,
+    dropColumn,
+    setNullable,
+    dropNullable,
+    getColumns,
     createColumnMigration,
     // NOTE: below are exposed for testing purposes only
     _hasForeignSQLite: hasForeignSQLite,
