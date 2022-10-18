@@ -222,12 +222,16 @@ function usePlusCardMenu(editor) {
         top: `${topPosition}px`
     };
 
-    return (
-        <div className="absolute" style={style} ref={containerRef} data-kg-plus-container>
-            {isShowingButton && <PlusButton onClick={openMenu} />}
-            {isShowingMenu && <PlusMenu>{cardMenu}</PlusMenu>}
-        </div>
-    );
+    if (isShowingButton) {
+        return (
+            <div className="absolute" style={style} ref={containerRef} data-kg-plus-container>
+                {isShowingButton && <PlusButton onClick={openMenu} />}
+                {isShowingMenu && <PlusMenu>{cardMenu}</PlusMenu>}
+            </div>
+        );
+    } else {
+        return null;
+    }
 }
 
 export default function PlusCardMenuPlugin() {
