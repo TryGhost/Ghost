@@ -1,4 +1,3 @@
-const should = require('should');
 const path = require('path');
 const assert = require('assert');
 const {parse} = require('../index');
@@ -14,36 +13,36 @@ describe('parse', function () {
         const filePath = csvPath + 'empty.csv';
         const result = await parse(filePath, DEFAULT_HEADER_MAPPING);
 
-        should.exist(result);
-        result.length.should.eql(0);
+        assert.ok(result);
+        assert.equal(result.length, 0);
     });
 
     it('one column', async function () {
         const filePath = csvPath + 'single-column-with-header.csv';
         const result = await parse(filePath, DEFAULT_HEADER_MAPPING);
 
-        should.exist(result);
-        result.length.should.eql(2);
-        result[0].email.should.eql('jbloggs@example.com');
-        result[1].email.should.eql('test@example.com');
+        assert.ok(result);
+        assert.equal(result.length, 2);
+        assert.equal(result[0].email, 'jbloggs@example.com');
+        assert.equal(result[1].email, 'test@example.com');
     });
 
     it('one column without header mapping returns empty result', async function () {
         const filePath = csvPath + 'single-column-with-header.csv';
         const result = await parse(filePath);
 
-        should.exist(result);
-        result.length.should.eql(0);
+        assert.ok(result);
+        assert.equal(result.length, 0);
     });
 
     it('two columns, 1 filter', async function () {
         const filePath = csvPath + 'two-columns-with-header.csv';
         const result = await parse(filePath, DEFAULT_HEADER_MAPPING);
 
-        should.exist(result);
-        result.length.should.eql(2);
-        result[0].email.should.eql('jbloggs@example.com');
-        result[1].email.should.eql('test@example.com');
+        assert.ok(result);
+        assert.equal(result.length, 2);
+        assert.equal(result[0].email, 'jbloggs@example.com');
+        assert.equal(result[1].email, 'test@example.com');
     });
 
     it('two columns, 2 filters', async function () {
@@ -54,12 +53,12 @@ describe('parse', function () {
         };
         const result = await parse(filePath, mapping);
 
-        should.exist(result);
-        result.length.should.eql(2);
-        result[0].email.should.eql('jbloggs@example.com');
-        result[0].id.should.eql('1');
-        result[1].email.should.eql('test@example.com');
-        result[1].id.should.eql('2');
+        assert.ok(result);
+        assert.equal(result.length, 2);
+        assert.equal(result[0].email, 'jbloggs@example.com');
+        assert.equal(result[0].id, '1');
+        assert.equal(result[1].email, 'test@example.com');
+        assert.equal(result[1].id, '2');
     });
 
     it('two columns with mapping', async function () {
@@ -71,15 +70,15 @@ describe('parse', function () {
         };
         const result = await parse(filePath, mapping);
 
-        should.exist(result);
-        result.length.should.eql(2);
-        result[0].email.should.eql('jbloggs@example.com');
-        result[0].name.should.eql('joe');
-        result[0].id.should.eql('1');
+        assert.ok(result);
+        assert.equal(result.length, 2);
+        assert.equal(result[0].email, 'jbloggs@example.com');
+        assert.equal(result[0].name, 'joe');
+        assert.equal(result[0].id, '1');
 
-        result[1].email.should.eql('test@example.com');
-        result[1].name.should.eql('test');
-        result[1].id.should.eql('2');
+        assert.equal(result[1].email, 'test@example.com');
+        assert.equal(result[1].name, 'test');
+        assert.equal(result[1].id, '2');
     });
 
     it('two columns with partial mapping', async function () {
@@ -90,26 +89,26 @@ describe('parse', function () {
         };
         const result = await parse(filePath, mapping);
 
-        should.exist(result);
-        result.length.should.eql(2);
-        result[0].email.should.eql('jbloggs@example.com');
-        result[0].id.should.eql('1');
+        assert.ok(result);
+        assert.equal(result.length, 2);
+        assert.equal(result[0].email, 'jbloggs@example.com');
+        assert.equal(result[0].id, '1');
 
-        result[1].email.should.eql('test@example.com');
-        result[1].id.should.eql('2');
+        assert.equal(result[1].email, 'test@example.com');
+        assert.equal(result[1].id, '2');
     });
 
     it('transforms empty values to nulls', async function () {
         const filePath = csvPath + 'multiple-records-with-empty-values.csv';
         const result = await parse(filePath, DEFAULT_HEADER_MAPPING);
 
-        should.exist(result);
-        result.length.should.eql(2);
-        result[0].email.should.eql('jbloggs@example.com');
-        result[0].name.should.eql('Bob');
+        assert.ok(result);
+        assert.equal(result.length, 2);
+        assert.equal(result[0].email, 'jbloggs@example.com');
+        assert.equal(result[0].name, 'Bob');
 
-        result[1].email.should.eql('test@example.com');
-        should.equal(result[1].name, null);
+        assert.equal(result[1].email, 'test@example.com');
+        assert.equal(result[1].name, null);
     });
 
     it(' transforms "subscribed_to_emails" column to "subscribed" property when the mapping is passed in', async function () {
