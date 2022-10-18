@@ -14,8 +14,9 @@
         {{#each this.visibleLinks as |link|}}
             <div class="gh-links-list-item">
                 {{#if (feature "fixNewsletterLinks")}}
-                <div class="flex items-center">
+                <div class="gh-links-list-url">
                     {{#if link.isEditing}}
+                    <div class="gh-links-list-input-container">
                         <input
                             aria-label="Link"
                             type="text"
@@ -29,13 +30,15 @@
                             {{autofocus}}
                             data-prevent-escape-close-modal="true"
                         />
+                        <span class="gh-links-list-item-error">Please enter a valid link</span>
+                    </div>
                     {{else}}
                         <a href="{{link.link.to}}" target="_blank" rel="noopener noreferrer">
                             {{link.link.title}}
                         </a>
-                        <button type="button" class="flex items-center" aria-label="Edit link" {{on "click" (fn this.editLink link.link.link_id)}}>{{svg-jar "pen"}}</button>
+                        <button type="button" class="flex items-center gh-links-list-item-edit" aria-label="Edit link" {{on "click" (fn this.editLink link.link.link_id)}}>{{svg-jar "pen"}}</button>
+                        <span class="gh-links-list-item-success">{{svg-jar "check-circle"}}</span>
                     {{/if}}
-                    {{!-- <a href="{{link.link.to}}" target="_blank" rel="noopener noreferrer">{{link.link.title}}</a> --}}
                 </div>
                 {{else}}
                 <a href="{{link.link.to}}" target="_blank" rel="noopener noreferrer">{{link.link.title}}</a>
