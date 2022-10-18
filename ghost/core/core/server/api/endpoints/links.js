@@ -21,5 +21,35 @@ module.exports = {
                 }
             };
         }
+    },
+    bulkEdit: {
+        statusCode: 200,
+        headers: {},
+        options: [
+            'filter'
+        ],
+        data: [
+            'action',
+            'meta'
+        ],
+        validation: {
+            data: {
+                action: {
+                    required: true,
+                    values: ['updateLink']
+                }
+            },
+            options: {
+                filter: {
+                    required: true
+                }
+            }
+        },
+        permissions: {
+            method: 'edit'
+        },
+        async query(frame) {
+            return await linkTrackingService.service.bulkEdit(frame.data.bulk, frame.options);
+        }
     }
 };

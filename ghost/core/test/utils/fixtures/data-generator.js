@@ -838,6 +838,30 @@ DataGenerator.Content = {
             parent_id: '6195c6a1e792de832cd08144',
             member_index: 1
         }
+    ],
+
+    links: [
+        {
+            id: ObjectId().toHexString(),
+            from: '/r/70b0129a',
+            to: '__GHOST_URL__/blog/email/01cd4df3-83fa-4921-83be-3bb9a465ef83/?ref=Test-newsletter&attribution_id=6343994e7216ffcbce491716&attribution_type=post',
+            created_at: null,
+            updated_at: null
+        },
+        {
+            id: ObjectId().toHexString(),
+            from: '/r/a0b0129a',
+            to: '__GHOST_URL__/blog/email/01cd4df3-83fa-4921-83be-3bb9a465ef83/?ref=Test-newsletter&attribution_id=6343994e7216ffcbce491716&attribution_type=post',
+            created_at: null,
+            updated_at: null
+        },
+        {
+            id: ObjectId().toHexString(),
+            from: '/r/20b0129a',
+            to: 'https://example.com/subscripe?ref=Test-newsletter',
+            created_at: null,
+            updated_at: null
+        }
     ]
 };
 
@@ -874,6 +898,9 @@ DataGenerator.Content.members_stripe_customers[4].member_id = DataGenerator.Cont
 DataGenerator.Content.members_paid_subscription_events[0].member_id = DataGenerator.Content.members[2].id;
 DataGenerator.Content.members_paid_subscription_events[1].member_id = DataGenerator.Content.members[3].id;
 DataGenerator.Content.members_paid_subscription_events[2].member_id = DataGenerator.Content.members[4].id;
+DataGenerator.Content.links[0].post_id = DataGenerator.Content.posts[0].id;
+DataGenerator.Content.links[1].post_id = DataGenerator.Content.posts[0].id;
+DataGenerator.Content.links[2].post_id = DataGenerator.Content.posts[0].id;
 
 DataGenerator.forKnex = (function () {
     function createBasic(overrides) {
@@ -1265,6 +1292,14 @@ DataGenerator.forKnex = (function () {
             id: ObjectId().toHexString(),
             member_id: DataGenerator.Content.members[memberIndex].id,
             post_id: DataGenerator.Content.posts[0].id
+        });
+    }
+
+    function createLink(overrides) {
+        const newObj = _.cloneDeep(overrides);
+        return _.defaults(newObj, {
+            created_at: new Date(),
+            updated_at: new Date()
         });
     }
 
@@ -1736,6 +1771,12 @@ DataGenerator.forKnex = (function () {
         createComment(DataGenerator.Content.comments[1])
     ];
 
+    const links = [
+        createLink(DataGenerator.Content.links[0]),
+        createLink(DataGenerator.Content.links[1]),
+        createLink(DataGenerator.Content.links[2])
+    ];
+
     return {
         createPost,
         createGenericPost,
@@ -1797,6 +1838,7 @@ DataGenerator.forKnex = (function () {
         custom_theme_settings,
         comments,
         redirects,
+        links,
 
         members_paid_subscription_events,
         members_created_events,

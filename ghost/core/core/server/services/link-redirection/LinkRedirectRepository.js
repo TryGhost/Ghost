@@ -18,7 +18,7 @@ module.exports = class LinkRedirectRepository {
     }
 
     /**
-     * @param {InstanceType<LinkRedirect>} linkRedirect 
+     * @param {InstanceType<LinkRedirect>} linkRedirect
      * @returns {Promise<void>}
      */
     async save(linkRedirect) {
@@ -55,10 +55,17 @@ module.exports = class LinkRedirectRepository {
         return result;
     }
 
+    async getFilteredIds(options) {
+        const linkRows = await this.#LinkRedirect.getFilteredCollectionQuery(options)
+            .select('redirects.id')
+            .distinct();
+        return linkRows.map(row => row.id);
+    }
+
     /**
-     * 
-     * @param {URL} url 
-     * @returns {Promise<InstanceType<LinkRedirect>|undefined>} linkRedirect 
+     *
+     * @param {URL} url
+     * @returns {Promise<InstanceType<LinkRedirect>|undefined>} linkRedirect
      */
     async getByURL(url) {
         // Strip subdirectory from path
