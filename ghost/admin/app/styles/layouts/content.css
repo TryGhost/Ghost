@@ -1018,17 +1018,13 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     color: var(--midgrey-d2);
 }
 
-.gh-links-list-item-edit>svg {
-    display: none;
-    width: 14px;
-    margin-left: 8px;
-    color: var(--midgrey);
-    cursor: pointer;
-    animation: fade-in 0.3s;
+.gh-links-list-item-edit span {
+    padding: 0 10px;
+    height: 24px;
 }
 
-.gh-links-list-item:hover .gh-links-list-item-edit>svg {
-    display: inline;
+.gh-links-list-item-edit span svg {
+    width: 14px;
 }
 
 .gh-links-list-item .gh-input {
