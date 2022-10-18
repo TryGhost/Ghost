@@ -171,15 +171,13 @@ const KoenigCardWrapperComponent = ({nodeKey, children}) => {
         );
     }, [editor, isSelected, setSelected, clearSelected, nodeKey]);
 
-    const isFocused = $isNodeSelection(selection) && isSelected;
-
     return (
         <WrapperContext.Provider value={{isSelected, selection, wpkey: nodeKey}}>
             <div
-                className={`relative border border-transparent caret-grey-800 ${isFocused ? 'shadow-[0_0_0_2px] shadow-green' : 'hover:shadow-[0_0_0_1px] hover:shadow-green'}`}
+                className={`relative border border-transparent caret-grey-800 ${isSelected ? 'shadow-[0_0_0_2px] shadow-green' : 'hover:shadow-[0_0_0_1px] hover:shadow-green'}`}
                 ref={ref}
                 data-kg-card={cardType}
-                data-kg-card-selected={isFocused}
+                data-kg-card-selected={isSelected}
             >
                 {children}
             </div>
