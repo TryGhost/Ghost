@@ -12,8 +12,6 @@ import ImagePlugin from '../plugins/ImagePlugin';
 import HorizontalRulePlugin from '../plugins/HorizontalRulePlugin';
 import '../styles/index.css';
 
-export let imageUploader;
-
 const KoenigEditor = ({
     onChange,
     markdownTransformers

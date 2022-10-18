@@ -9,8 +9,6 @@ function MediaCard({dataset, editor, nodeKey}) {
     const {payload, setPayload} = dataset;
     const {imageUploader} = React.useContext(KoenigComposerContext);
 
-    // const [uploadPercentage, setUploadPercentage] = useState(0);
-
     const uploadRef = useRef(null);
     const onUploadChange = async (e) => {
         const fls = e.target.files;
@@ -99,9 +97,8 @@ function MediaPlaceholder({desc, Icon, ...props}) {
 
 function CaptionEditor({placeholder, nodeKey, toggleAltText, selected}) {
     const [editor] = useLexicalComposerContext();
-    const [captionText, setCaptionText] = useState(null);
-    const [altTextValue, setAltTextValue] = useState('');
     const {altText, setAltText} = toggleAltText;
+    const lexicalState = editor.getEditorState();
 
     const handleChange = (e) => {
         if (!altText) {
@@ -109,26 +106,15 @@ function CaptionEditor({placeholder, nodeKey, toggleAltText, selected}) {
             editor.update(() => {
                 const node = $getNodeByKey(nodeKey);
                 node.setCaption(cap);
-                setCaptionText(cap);
             });
         } else {
             const alt = e.target.value;
             editor.update(() => {
                 const node = $getNodeByKey(nodeKey);
                 node.setAltText(alt);
-                setAltTextValue(alt);
             });
         }
     };
-
-    useEffect(() => {
-        const editorState = editor.getEditorState();
-        editorState.read(() => {
-            const node = $getNodeByKey(nodeKey);
-            setCaptionText(node.getCaption());
-            setAltTextValue(node.getAltText());
-        });
-    }, [editor, nodeKey]);
 
     const tgAltText = (e) => {
         e.stopPropagation();
@@ -141,14 +127,23 @@ function CaptionEditor({placeholder, nodeKey, toggleAltText, selected}) {
         }
     }, [selected, setAltText]);
 
-    if (selected || captionText) {
+    if (selected || lexicalState.read(() => {
+        const node = $getNodeByKey(nodeKey);
+        return node?.getCaption()?.length > 0;
+    })) {
         return (
             <>
                 <input
                     onChange={handleChange}
                     className="not-kg-prose w-full px-9 text-center font-sans text-sm font-normal leading-8 tracking-wide text-grey-900"
                     placeholder={placeholder}
-                    value={(altText ? altTextValue : captionText) || ''}
+                    value={(altText ? lexicalState.read(() => {
+                        const node = $getNodeByKey(nodeKey);
+                        return node.getAltText();
+                    }) : lexicalState.read(() => {
+                        const node = $getNodeByKey(nodeKey);
+                        return node.getCaption();
+                    })) || ''}
                 />
                 <button
                     name="alt-toggle-button"
