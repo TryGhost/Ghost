@@ -158,13 +158,13 @@ describe('MEGA', function () {
             // Do the actual replacements for the first member, so we don't have to worry about them anymore
             replacements.forEach((replacement) => {
                 emailData[replacement.format] = emailData[replacement.format].replace(
-                    replacement.match,
+                    replacement.regexp,
                     recipient[replacement.id]
                 );
 
                 // Also force Mailgun format
                 emailData[replacement.format] = emailData[replacement.format].replace(
-                    `%recipient.${replacement.id}%`,
+                    new RegExp(`%recipient.${replacement.id}%`, 'g'),
                     recipient[replacement.id]
                 );
             });
@@ -189,6 +189,9 @@ describe('MEGA', function () {
 
                 // Check if the link is a tracked link
                 assert(href.includes('?m=' + memberUuid), href + ' is not tracked');
+
+                // Check if this link is also present in the plaintext version (with the right replacements)
+                assert(emailData.plaintext.includes(href), href + ' is not present in the plaintext version');
 
                 if (!firstLink) {
                     firstLink = new URL(href);
