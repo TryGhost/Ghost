@@ -4,17 +4,12 @@ import {
     createCommand,
     DecoratorNode
 } from 'lexical';
-// import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
-import useAutoExpandTextArea from '../utils/autoExpandTextArea';
+import {CodeBlockCard} from '../components/ui/cards/CodeBlockCard';
 
 export const CODE_BLOCK_COMMAND = createCommand();
 
-function CodeBlockComponent({className, code, language, nodeKey, editor}) {
-    const el = React.useRef(null);
-
-    useAutoExpandTextArea({el, value: code});
-
+function CodeBlockComponent({code, language, nodeKey, editor}) {
     const updateCode = (event) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
@@ -22,19 +17,20 @@ function CodeBlockComponent({className, code, language, nodeKey, editor}) {
         });
     };
 
+    const updateLanguage = (event) => {
+        editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            node.setLanguage(event.target.value);
+        });
+    };
+
     return (
-        <code>
-            <textarea
-                ref={el}
-                autoCorrect="off"
-                autoCapitalize="off"
-                spellCheck="false"
-                tabIndex="0"
-                autoFocus
-                className='min-h-170 w-full bg-grey-50 p-3 text-grey-900'
-                value={code}
-                onChange={updateCode} />
-        </code>
+        <CodeBlockCard
+            code={code}
+            updateCode={updateCode}
+            language={language}
+            updateLanguage={updateLanguage}
+        />
     );
 }
 
@@ -103,16 +99,9 @@ export class CodeBlockNode extends DecoratorNode {
     }
 
     decorate(editor, config) {
-        const codeBlockTheme = config.theme.codeBlock || {};
-        const className = {
-            base: codeBlockTheme.base || '',
-            focus: codeBlockTheme.focus || ''
-        };
-
         return (
-            <KoenigCardWrapper className={className} nodeKey={this.getKey()}>
+            <KoenigCardWrapper nodeKey={this.getKey()}>
                 <CodeBlockComponent
-                    className={className}
                     code={this.__code}
                     language={this.__language}
                     nodeKey={this.getKey()}

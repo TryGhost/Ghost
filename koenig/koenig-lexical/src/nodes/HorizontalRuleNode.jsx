@@ -2,14 +2,9 @@ import * as React from 'react';
 import {createCommand, DecoratorNode} from 'lexical';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import {ReactComponent as DividerCardIcon} from '../assets/icons/kg-card-type-divider.svg';
+import {HorizontalRuleCard} from '../components/ui/cards/HorizontalRuleCard';
 
 export const INSERT_HORIZONTAL_RULE_COMMAND = createCommand();
-
-function HorizontalRuleComponent({nodeKey}) {
-    return (
-        <hr className="block h-[1px] border-0 border-t border-grey-300" />
-    );
-}
 
 export class HorizontalRuleNode extends DecoratorNode {
     static getType() {
@@ -58,7 +53,7 @@ export class HorizontalRuleNode extends DecoratorNode {
     decorate() {
         return (
             <KoenigCardWrapper nodeKey={this.getKey()} className="inline-block">
-                <HorizontalRuleComponent nodeKey={this.getKey()} />
+                <HorizontalRuleCard />
             </KoenigCardWrapper>
         );
     }
