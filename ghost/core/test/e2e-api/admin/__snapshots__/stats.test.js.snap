@@ -96,8 +96,8 @@ Object {
       "count": 1,
       "date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
       "negative_delta": 0,
-      "positive_delta": 1,
-      "signups": 1,
+      "positive_delta": 4,
+      "signups": 4,
       "tier": StringMatching /\\[a-f0-9\\]\\{24\\}/,
     },
     Object {

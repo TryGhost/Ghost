@@ -655,6 +655,12 @@ const fixtures = {
         }));
     },
 
+    insertFeedback: async function insertFeedback() {
+        await Promise.all(DataGenerator.forKnex.members_feedback.map((feedback) => {
+            return models.MemberFeedback.add(feedback, context.internal);
+        }));
+    },
+
     insertSnippets: function insertSnippets() {
         return Promise.map(DataGenerator.forKnex.snippets, function (snippet) {
             return models.Snippet.add(snippet, context.internal);
@@ -794,6 +800,9 @@ const toDoList = {
     },
     clicks: function insertClicks() {
         return fixtures.insertClicks();
+    },
+    feedback: function insertFeedback() {
+        return fixtures.insertFeedback();
     }
 };
 

@@ -76,11 +76,12 @@ function bulkAction(bulkActionResult, _apiConfig, frame) {
 
 /**
  *
- * @returns {{events: any[]}}
+ * @returns {{events: any[], meta: any}}
  */
 function activityFeed(data, _apiConfig, frame) {
     return {
-        events: data.events.map(e => mappers.activityFeedEvents(e, frame))
+        events: data.events.map(e => mappers.activityFeedEvents(e, frame)),
+        meta: data.meta
     };
 }
 
