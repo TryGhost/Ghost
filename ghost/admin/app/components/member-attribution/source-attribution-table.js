@@ -36,7 +36,7 @@ export default class SourceAttributionTable extends Component {
             return null;
         }
 
-        if (this.sortedSources.length === 5 && !this.unavailableSource.length) {
+        if (this.sortedSources.length === 5 && !this.unavailableSource?.length) {
             return null;
         }
 
