@@ -1,7 +1,7 @@
 const models = require('../../models');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
-const allowedIncludes = ['tags', 'authors', 'tiers'];
+const allowedIncludes = ['tags', 'authors', 'tiers', 'sentiment'];
 
 const messages = {
     postNotFound: 'Post not found.'
