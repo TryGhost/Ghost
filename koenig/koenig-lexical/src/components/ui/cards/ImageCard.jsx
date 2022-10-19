@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import {CardCaptionEditor} from '../CardCaptionEditor';
 import {MediaPlaceholder} from '../MediaPlaceholder';
 import {ReactComponent as ImgPlaceholderIcon} from '../../../assets/icons/kg-img-placeholder.svg';
@@ -63,3 +64,7 @@ export function ImageCard({
         </figure>
     );
 }
+
+ImageCard.propTypes = {
+    isSelected: PropTypes.bool
+};

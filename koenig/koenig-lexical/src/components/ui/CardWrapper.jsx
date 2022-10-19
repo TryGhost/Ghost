@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 export const CardWrapper = React.forwardRef(({isSelected, cardType, children, ...props}, ref) => {
     return (
@@ -13,3 +14,7 @@ export const CardWrapper = React.forwardRef(({isSelected, cardType, children, ..
         </div>
     );
 });
+
+CardWrapper.propTypes = {
+    isSelected: PropTypes.bool
+};

@@ -14,11 +14,14 @@ export default story;
 
 const Template = args => (
     <div className="w-[740px]">
-        <CardWrapper>
+        <CardWrapper {...args}>
             <ImageCard {...args} />
         </CardWrapper>
     </div>
 );
 
 export const Default = Template.bind({});
+Default.args = {
+    isSelected: false
+};
 
