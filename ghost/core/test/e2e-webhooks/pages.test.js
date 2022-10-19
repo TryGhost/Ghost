@@ -82,6 +82,57 @@ describe('page.* events', function () {
         mockManager.restore();
     });
 
+    it('page.published event is triggered', async function () {
+        const webhookURL = 'https://test-webhook-receiver.com/page-published/';
+        await webhookMockReceiver.mock(webhookURL);
+        await fixtureManager.insertWebhook({
+            event: 'page.published',
+            url: webhookURL
+        });
+
+        const res = await adminAPIAgent
+            .post('pages/')
+            .body({
+                pages: [
+                    {
+                        title: 'testing page.published webhook',
+                        status: 'draft'
+                    }
+                ]
+            })
+            .expectStatus(201);
+
+        const id = res.body.pages[0].id;
+        const publishedPage = res.body.pages[0];
+        publishedPage.status = 'published';
+
+        await adminAPIAgent
+            .put('pages/' + id)
+            .body({
+                pages: [publishedPage]
+            })
+            .expectStatus(200);
+
+        await webhookMockReceiver.receivedRequest();
+
+        webhookMockReceiver
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                'content-length': anyNumber,
+                'user-agent': anyGhostAgent
+            })
+            .matchBodySnapshot({
+                page: {
+                    current: buildPageSnapshotWithTiers({
+                        published: true,
+                        tiersCount: 2,
+                        roles: true
+                    }),
+                    previous: buildPreviousPageSnapshotWithTiers(2)
+                }
+            });
+    });
+
     it('page.added event is triggered', async function () {
         const webhookURL = 'https://test-webhook-receiver.com/page-added/';
         await webhookMockReceiver.mock(webhookURL);
