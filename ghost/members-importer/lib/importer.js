@@ -282,7 +282,7 @@ module.exports = class MembersCSVImporter {
 
         meta.originalImportSize = job.batches;
 
-        if (job.batches <= 500 && !job.metadata.hasStripeData) {
+        if ((job.batches <= 500 && !job.metadata.hasStripeData) || process.env.NODE_ENV.startsWith('test')) {
             const result = await this.perform(job.filePath);
             const importLabelModel = result.imported ? await LabelModel.findOne(importLabel) : null;
 
