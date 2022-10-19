@@ -69,22 +69,22 @@
             {{/if}}
         {{/if}}
 
+        {{#if this.post.showAudienceFeedback }}
+          <tabs.tab>
+            <h3><span class="hide-when-small">More </span><div class="visible-when-small">like</div><span class="hide-when-small"> this</span></h3>
+            <p>{{format-number this.post.count.positive_feedback}} <strong>{{this.post.count.sentiment}}%</strong></p>
+          </tabs.tab>
+
+          <tabs.tabPanel>More like this</tabs.tabPanel>
+        {{/if}}
+
         {{#if this.post.showAttributionAnalytics }}
             <tabs.tab>
-              <h3>{{gh-pluralize this.post.count.conversions "conversions" without-count=true}}</h3>
+              <h3>{{gh-pluralize this.post.count.conversions "Conversions" without-count=true}}</h3>
               <p>{{format-number this.post.count.conversions}}</p>
             </tabs.tab>
 
             <tabs.tabPanel>Conversions</tabs.tabPanel>
-        {{/if}}
-
-        {{#if this.post.showAudienceFeedback }}
-            <tabs.tab>
-                <h3><span class="hide-when-small">More </span><div class="visible-when-small">like</div><span class="hide-when-small"> this</span></h3>
-                <p>{{format-number this.post.count.positive_feedback}} <strong>{{this.post.count.sentiment}}%</strong></p>
-            </tabs.tab>
-
-            <tabs.tabPanel>More like this</tabs.tabPanel>
         {{/if}}
     </Tabs::Tabs>
 
