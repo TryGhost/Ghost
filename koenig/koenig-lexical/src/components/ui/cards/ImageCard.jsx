@@ -19,7 +19,7 @@ function EmptyImageCard({onFileChange}) {
     return (
         <>
             <MediaPlaceholder
-                onClick={openFilePicker}
+                filePicker={openFilePicker}
                 desc="Click to select an image"
                 Icon={ImgPlaceholderIcon}
             />
