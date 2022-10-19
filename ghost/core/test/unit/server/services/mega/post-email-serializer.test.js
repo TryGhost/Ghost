@@ -34,6 +34,46 @@ describe('Post Email Serializer', function () {
         assert.equal(replaced[1].recipientProperty, 'member_first_name');
     });
 
+    it('reuses the same replacement pattern when used multiple times', function () {
+        const html = '<html>Hey %%{first_name}%%, what is up? Just repeating %%{first_name}%%</html>';
+        const plaintext = 'Hey %%{first_name}%%, what is up? Just repeating %%{first_name}%%';
+
+        const replaced = parseReplacements({
+            html,
+            plaintext
+        });
+
+        assert.equal(replaced.length, 2);
+        assert.equal(replaced[0].format, 'html');
+        assert.equal(replaced[0].recipientProperty, 'member_first_name');
+
+        assert.equal(replaced[1].format, 'plaintext');
+        assert.equal(replaced[1].recipientProperty, 'member_first_name');
+    });
+
+    it('creates multiple replacement pattern for valid format and value', function () {
+        const html = '<html>Hey %%{first_name}%%, %%{uuid}%% %%{first_name}%% %%{uuid}%%</html>';
+        const plaintext = 'Hey %%{first_name}%%, %%{uuid}%% %%{first_name}%% %%{uuid}%%';
+
+        const replaced = parseReplacements({
+            html,
+            plaintext
+        });
+
+        assert.equal(replaced.length, 4);
+        assert.equal(replaced[0].format, 'html');
+        assert.equal(replaced[0].recipientProperty, 'member_first_name');
+
+        assert.equal(replaced[1].format, 'html');
+        assert.equal(replaced[1].recipientProperty, 'member_uuid');
+
+        assert.equal(replaced[2].format, 'plaintext');
+        assert.equal(replaced[2].recipientProperty, 'member_first_name');
+
+        assert.equal(replaced[3].format, 'plaintext');
+        assert.equal(replaced[3].recipientProperty, 'member_uuid');
+    });
+
     it('does not create replacements for unsupported variable names', function () {
         const html = '<html>Hey %%{last_name}%%, what is up?</html>';
         const plaintext = 'Hey %%{age}%%, what is up?';
@@ -345,7 +385,70 @@ describe('Post Email Serializer', function () {
             assert(!output.html.includes('<!-- PAYWALL -->'));
         });
 
-        it('should hide/show feedback buttons depending on feedback_enabled flag', async function () {
+        it('should hide feedback buttons and ignore feedback_enabled if alpha flag disabled', async function () {
+            sinon.stub(labs, 'isSet').returns(false);
+            sinon.stub(_PostEmailSerializer, 'serializePostModel').callsFake(async () => {
+                return {
+                    url: 'https://testpost.com/',
+                    title: 'This is a test',
+                    excerpt: 'This is a test',
+                    authors: 'This is a test',
+                    feature_image_alt: 'This is a test',
+                    feature_image_caption: 'This is a test',
+
+                    // eslint-disable-next-line
+                    mobiledoc: JSON.stringify({"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"p",[[0,[],0,"Free content only"]]]],"ghostVersion":"4.0"})
+                };
+            });
+            const customSettings = {
+                accent_color: '#000099',
+                timezone: 'UTC'
+            };
+
+            const settingsMock = sinon.stub(settingsCache, 'get');
+            settingsMock.callsFake(function (key, options) {
+                if (customSettings[key]) {
+                    return customSettings[key];
+                }
+
+                return settingsMock.wrappedMethod.call(settingsCache, key, options);
+            });
+            const template = {
+                name: 'My newsletter',
+                header_image: '',
+                show_header_icon: true,
+                show_header_title: true,
+                show_feature_image: true,
+                title_font_category: 'sans-serif',
+                title_alignment: 'center',
+                body_font_category: 'serif',
+                show_badge: true,
+                show_header_name: true,
+                feedback_enabled: true,
+                footer_content: 'footer'
+            };
+            const newsletterMock = {
+                get: function (key) {
+                    return template[key];
+                },
+                toJSON: function () {
+                    return template;
+                }
+            };
+
+            const output = await serialize({}, newsletterMock, {isBrowserPreview: false});
+            assert(!output.html.includes('%{feedback_button_like}%'));
+            assert(!output.html.includes('%{feedback_button_dislike}%'));
+
+            template.feedback_enabled = true;
+
+            const outputWithButtons = await serialize({}, newsletterMock, {isBrowserPreview: false});
+            assert(!outputWithButtons.html.includes('%{feedback_button_like}%'));
+            assert(!outputWithButtons.html.includes('%{feedback_button_dislike}%'));
+        });
+
+        /*it('should hide/show feedback buttons depending on feedback_enabled flag', async function () {
+            sinon.stub(labs, 'isSet').returns(true);
             sinon.stub(_PostEmailSerializer, 'serializePostModel').callsFake(async () => {
                 return {
                     url: 'https://testpost.com/',
@@ -404,7 +507,7 @@ describe('Post Email Serializer', function () {
             const outputWithButtons = await serialize({}, newsletterMock, {isBrowserPreview: false});
             assert(outputWithButtons.html.includes('%{feedback_button_like}%'));
             assert(outputWithButtons.html.includes('%{feedback_button_dislike}%'));
-        });
+        });*/
     });
 
     describe('renderEmailForSegment', function () {
