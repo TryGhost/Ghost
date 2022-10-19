@@ -1,5 +1,4 @@
 <section class="gh-canvas" {{did-insert this.loadData}}>
-
     <GhCanvasHeader class="gh-canvas-header gh-post-analytics-header">
         <div class="flex flex-column flex-grow-1">
             <div class="gh-canvas-breadcrumb">
@@ -42,53 +41,52 @@
         </div>
     </GhCanvasHeader>
 
-    <h4 class="gh-main-section-header small bn">
-        Engagement
-    </h4>
-    <div class="gh-post-analytics-box">
+    <Tabs::Tabs class="gh-tabs-analytics" as |tabs|>
         {{#if this.post.hasBeenEmailed}}
-            <div class="gh-post-analytics-item">
-                <LinkTo @route="members" @query={{hash filterParam=(concat "emails.post_id:[" this.post.id "]") }}>
-                    <h3>{{format-number this.post.email.emailCount}}</h3>
-                    <p>Sent</p>
-                </LinkTo>
-            </div>
+            <tabs.tab>
+              <h3>Sent</h3>
+              <p>{{format-number this.post.email.emailCount}}</p>
+            </tabs.tab>
+
+            <tabs.tabPanel>Sent</tabs.tabPanel>
 
             {{#if this.post.showEmailOpenAnalytics }}
-                <div class="gh-post-analytics-item">
-                    <LinkTo @route="members" @query={{hash filterParam=(concat "opened_emails.post_id:[" this.post.id "]") }}>
-                        <h3>{{format-number this.post.email.openedCount}}</h3>
-                        <p>Opened &mdash; <strong>{{this.post.email.openRate}}%</strong></p>
-                    </LinkTo>
-                </div>
+                <tabs.tab>
+                  <h3>Opened</h3>
+                  <p>{{format-number this.post.email.openedCount}} <strong>{{this.post.email.openRate}}%</strong></p>
+                </tabs.tab>
+
+                <tabs.tabPanel>Opened</tabs.tabPanel>
             {{/if}}
 
             {{#if this.post.showEmailClickAnalytics }}
-                <div class="gh-post-analytics-item">
-                    <LinkTo @route="members" @query={{hash filterParam=(concat "clicked_links.post_id:[" this.post.id "]") }}>
-                        <h3>{{format-number this.post.count.clicks}}</h3>
-                        <p>Clicked &mdash; <strong>{{this.post.clickRate}}%</strong></p>
-                    </LinkTo>
-                </div>
+                <tabs.tab>
+                  <h3>Clicked</h3>
+                  <p>{{format-number this.post.count.clicks}} <strong>{{this.post.clickRate}}%</strong></p>
+                </tabs.tab>
+
+                <tabs.tabPanel>Clicked</tabs.tabPanel>
             {{/if}}
         {{/if}}
 
-        {{#if this.post.showAttributionAnalytics }}
-            <div class="gh-post-analytics-item">
-                <LinkTo @route="members" @query={{hash filterParam=(concat "signup:[" this.post.id "]") }}>
-                    <h3>{{format-number this.post.count.conversions}}</h3>
-                    <p>{{gh-pluralize this.post.count.conversions "conversions" without-count=true}}</p>
-                </LinkTo>
-            </div>
+        {{#if this.post.showAudienceFeedback }}
+          <tabs.tab>
+            <h3><span class="hide-when-small">More </span><div class="visible-when-small">like</div><span class="hide-when-small"> this</span></h3>
+            <p>{{format-number this.post.count.positive_feedback}} <strong>{{this.post.count.sentiment}}%</strong></p>
+          </tabs.tab>
+
+          <tabs.tabPanel>More like this</tabs.tabPanel>
         {{/if}}
 
-        {{#if this.post.showAudienceFeedback }}
-            <div class="gh-post-analytics-item">
-                <h3>{{format-number this.post.count.positive_feedback}}</h3>
-                <p><span class="hide-when-small">More </span>like<span class="hide-when-small"> this</span> &mdash; <strong>{{this.post.count.sentiment}}%</strong></p>
-            </div>
+        {{#if this.post.showAttributionAnalytics }}
+            <tabs.tab>
+              <h3>{{gh-pluralize this.post.count.conversions "Conversions" without-count=true}}</h3>
+              <p>{{format-number this.post.count.conversions}}</p>
+            </tabs.tab>
+
+            <tabs.tabPanel>Conversions</tabs.tabPanel>
         {{/if}}
-    </div>
+    </Tabs::Tabs>
 
     {{#if this.isLoaded }}
         {{#if this.showLinks }}
