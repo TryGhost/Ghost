@@ -11,10 +11,19 @@ const messages = {
     filenameCollision: 'Filename already exists, please try again.'
 };
 
-const defaultInputCSVHeaderMappings = {
-    subscribed_to_emails: 'subscribed'
+// The key should correspond to a member model field (unless it's a special purpose field like 'complimentary_plan') 
+// the value should represent an allowed field name coming from user input
+const DEFAULT_CSV_HEADER_MAPPING = {
+    email: 'email',
+    name: 'name',
+    note: 'note',
+    subscribed_to_emails: 'subscribed',
+    created_at: 'created_at',
+    complimentary_plan: 'complimentary_plan',
+    stripe_customer_id: 'stripe_customer_id',
+    labels: 'labels',
+    products: 'products'
 };
-
 module.exports = class MembersCSVImporter {
     /**
      * @param {Object} options
@@ -48,12 +57,13 @@ module.exports = class MembersCSVImporter {
      * - Creates a MemberImport Job and associated MemberImportBatch's
      *
      * @param {string} inputFilePath - The path to the CSV to prepare
-     * @param {Object.<string, string>} headerMapping - An object whose keys are headers in the input CSV and values are the header to replace it with
-     * @param {Array<string>} defaultLabels - A list of labels to apply to every member
+     * @param {Object.<string, string>} [headerMapping] - An object whose keys are headers in the input CSV and values are the header to replace it with
+     * @param {Array<string>} [defaultLabels] - A list of labels to apply to every member
      *
      * @returns {Promise<{filePath: string, batches: number, metadata: Object.<string, any>}>} - A promise resolving to the data including filePath of "prepared" CSV
      */
     async prepare(inputFilePath, headerMapping, defaultLabels) {
+        headerMapping = headerMapping || DEFAULT_CSV_HEADER_MAPPING;
         // @NOTE: investigate why is it "1" and do we even need this concept anymore?
         const batchSize = 1;
 
@@ -68,8 +78,8 @@ module.exports = class MembersCSVImporter {
             throw new errors.DataImportError({message: tpl(messages.filenameCollision)});
         }
 
-        const inputMapping = Object.assign({}, defaultInputCSVHeaderMappings, headerMapping);
-        const rows = await membersCSV.parse(inputFilePath, inputMapping, defaultLabels);
+        // completely rely on explicit user input for header mappings
+        const rows = await membersCSV.parse(inputFilePath, headerMapping, defaultLabels);
         const columns = Object.keys(rows[0]);
         const numberOfBatches = Math.ceil(rows.length / batchSize);
         const mappedCSV = membersCSV.unparse(rows, columns);
@@ -95,7 +105,7 @@ module.exports = class MembersCSVImporter {
      * @param {string} filePath - the path to a "prepared" CSV file
      */
     async perform(filePath) {
-        const rows = membersCSV.parse(filePath, defaultInputCSVHeaderMappings);
+        const rows = membersCSV.parse(filePath, DEFAULT_CSV_HEADER_MAPPING);
 
         const membersApi = await this._getMembersApi();
 
@@ -118,7 +128,15 @@ module.exports = class MembersCSVImporter {
             };
 
             try {
-                const existingMember = await membersApi.members.get({email: row.email}, {
+                const memberValues = {
+                    email: row.email,
+                    name: row.name,
+                    note: row.note,
+                    subscribed: row.subscribed,
+                    created_at: row.created_at,
+                    labels: row.labels
+                };
+                const existingMember = await membersApi.members.get({email: memberValues.email}, {
                     ...options,
                     withRelated: ['labels']
                 });
@@ -126,14 +144,14 @@ module.exports = class MembersCSVImporter {
                 if (existingMember) {
                     const existingLabels = existingMember.related('labels') ? existingMember.related('labels').toJSON() : [];
                     member = await membersApi.members.update({
-                        ...row,
-                        labels: existingLabels.concat(row.labels)
+                        ...memberValues,
+                        labels: existingLabels.concat(memberValues.labels)
                     }, {
                         ...options,
                         id: existingMember.id
                     });
                 } else {
-                    member = await membersApi.members.create(row, Object.assign({}, options, {
+                    member = await membersApi.members.create(memberValues, Object.assign({}, options, {
                         context: {
                             import: true
                         }
