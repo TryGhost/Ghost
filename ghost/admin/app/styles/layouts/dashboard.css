@@ -1047,7 +1047,6 @@ Dashboard Attribution */
 
 .gh-dashboard .gh-canvas-header.sticky {
     max-width: 1230px;
-    min-width: 850px;
     margin: 0 auto;
     padding: 32px 0;
 }
