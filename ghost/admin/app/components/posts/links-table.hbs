@@ -12,7 +12,7 @@
             <div class="gh-links-list-title">
                 Link
             </div>
-            {{/if}} 
+            {{/if}}
             <div class="gh-links-list-title">
                 No. of Members
             </div>
@@ -21,8 +21,8 @@
             <div class="gh-links-list-item">
                 {{#if (feature "fixNewsletterLinks")}}
                 <div class="gh-links-list-url">
-                    {{#if link.isEditing}}
-                    <div class="gh-links-list-input-container">
+                    {{#if (eq this.editingLink link.link.link_id)}}
+                    <div class="gh-links-list-input-container {{if (eq this.showError link.link.link_id) "error"}}">
                         <input
                             aria-label="Link"
                             type="text"
@@ -48,7 +48,7 @@
                         {{link.link.title}}
                     </a>
                     <span class="gh-links-list-item-edited">&nbsp;&ndash; edited</span>
-                    <span class="gh-links-list-item-success">{{svg-jar "check-circle"}}</span>
+                    <span class="gh-links-list-item-success {{if (eq @showSuccess link.link.link_id) "gh-links-list-item-success-show"}}">{{svg-jar "check-circle"}}</span>
                     {{/if}}
                 </div>
                 {{else}}

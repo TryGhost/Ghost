@@ -7,7 +7,8 @@ const PAGE_SIZE = 5;
 export default class LinksTable extends Component {
     @tracked page = 1;
 
-    @tracked editingLink = false;
+    @tracked editingLink = null;
+    @tracked showError = null;
 
     @action
     blurElement(event) {
@@ -26,19 +27,26 @@ export default class LinksTable extends Component {
     cancelEdit(event) {
         event.preventDefault();
         this.editingLink = null;
-        // event.target.value = this.args.post[property];
-        // event.target.blur();
+        this.showError = null;
     }
 
     @action
     setLink(event) {
         event.preventDefault();
-        this.args.updateLink(this.editingLink, event.target.value);
-        this.editingLink = null;
-        // const title = event.target.value;
-        // this.args.post.title = title.trim();
-        // this.args.post.save();
-        // this.editingLink = false;
+        try {
+            const newUrl = new URL(event.target.value);
+            const linkObj = this.links.find((_link) => {
+                return _link.link.link_id === this.editingLink;
+            });
+            // Only call update if the new link is different from current link
+            if (linkObj.link.to !== newUrl.href) {
+                this.args.updateLink(this.editingLink, newUrl.href);
+            }
+            this.editingLink = null;
+            this.showError = null;
+        } catch (e) {
+            this.showError = this.editingLink;
+        }
     }
 
     get links() {
@@ -46,12 +54,7 @@ export default class LinksTable extends Component {
     }
 
     get visibleLinks() {
-        return this.links.slice(this.startOffset - 1, this.endOffset).map((link) => {
-            return {
-                ...link,
-                isEditing: this.editingLink === link.link.link_id
-            };
-        });
+        return this.links.slice(this.startOffset - 1, this.endOffset);
     }
 
     get startOffset() {
