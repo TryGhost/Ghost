@@ -1063,6 +1063,16 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     display: block;
 }
 
+.gh-links-list-item-edited {
+    display: none;
+    white-space: nowrap;
+    color: var(--midgrey);
+}
+
+.gh-links-list-item-edited-show {
+    display: inline;
+}
+
 @keyframes fade-in-out {
     0% { opacity: 0; }
     20% { opacity: 1 }
