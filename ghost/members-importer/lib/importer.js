@@ -293,14 +293,15 @@ module.exports = class MembersCSVImporter {
      * @param {Object} config.user
      * @param {String} config.user.email - calling user email
      * @param {Object} config.LabelModel - instance of Ghosts Label model
+     * @param {Boolean} config.forceInline - allows to force performing imports not in a job (used in test environment)
      */
-    async process({pathToCSV, headerMapping, globalLabels, importLabel, user, LabelModel}) {
+    async process({pathToCSV, headerMapping, globalLabels, importLabel, user, LabelModel, forceInline}) {
         const meta = {};
         const job = await this.prepare(pathToCSV, headerMapping, globalLabels);
 
         meta.originalImportSize = job.batches;
 
-        if ((job.batches <= 500 && !job.metadata.hasStripeData) || process.env.NODE_ENV.startsWith('test')) {
+        if ((job.batches <= 500 && !job.metadata.hasStripeData) || forceInline) {
             const result = await this.perform(job.filePath);
             const importLabelModel = result.imported ? await LabelModel.findOne(importLabel) : null;
 

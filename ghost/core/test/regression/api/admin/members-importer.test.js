@@ -97,6 +97,7 @@ describe('Members Importer API', function () {
             .post(localUtils.API.getApiQuery(`members/upload/`))
             .field('mapping[correo_electrpnico]', 'email')
             .field('mapping[nombre]', 'name')
+            .field('mapping[note]', 'note')
             .attach('membersfile', path.join(__dirname, '/../../../utils/fixtures/csv/members-with-mappings.csv'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
@@ -135,7 +136,7 @@ describe('Members Importer API', function () {
                 const importedMember1 = jsonResponse.members[0];
                 should(importedMember1.email).equal('member+mapped_1@example.com');
                 should(importedMember1.name).equal('Hannah');
-                should(importedMember1.note).equal('no need to map me');
+                should(importedMember1.note).equal('do map me');
                 importedMember1.subscribed.should.equal(true);
                 importedMember1.comped.should.equal(false);
                 importedMember1.subscriptions.should.not.be.undefined();

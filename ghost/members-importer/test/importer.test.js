@@ -154,7 +154,8 @@ describe('Importer', function () {
                 user: {
                     email: 'test@example.com'
                 },
-                LabelModel: LabelModelStub
+                LabelModel: LabelModelStub,
+                forceInline: true
             });
 
             should.exist(result.meta);
