@@ -86,7 +86,8 @@ const expectedProperties = {
         'email_only',
         'tiers',
         'newsletter',
-        'count'
+        'count',
+        'sentiment'
     ],
 
     page: [
