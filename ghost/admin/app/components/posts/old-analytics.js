@@ -107,6 +107,7 @@ export default class Analytics extends Component {
                     ...link,
                     link: {
                         ...link.link,
+                        edited: true,
                         to: this.utils.cleanTrackedUrl(linkTo, false),
                         title: this.utils.cleanTrackedUrl(linkTo, true)
                     }
