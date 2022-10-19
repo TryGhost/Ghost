@@ -25,12 +25,9 @@ const tierSnapshot = {
 const roleSnapshot = tierSnapshot;
 
 const tagSnapshot = {
-    created_at: anyISODateTime,
-    id: anyObjectId,
+    ...tierSnapshot,
     name: anyString,
     slug: anyString,
-    description: null,
-    updated_at: anyISODateTime,
     url: anyLocalURL,
     visibility: anyString
 };
@@ -43,7 +40,7 @@ const buildAuthorSnapshot = (roles = false) => {
     };
 
     if (roles) {
-        return { ...authorSnapshot, roles: Array(1).fill(roleSnapshot) };
+        return {...authorSnapshot, roles: Array(1).fill(roleSnapshot)};
     }
 
     return authorSnapshot;
@@ -52,27 +49,8 @@ const buildAuthorSnapshot = (roles = false) => {
 const buildPageSnapshotWithTiers = ({
     published,
     tiersCount,
+    tags = false,
     roles = false
-}) => {
-    return {
-        id: anyObjectId,
-        uuid: anyUuid,
-        comment_id: anyObjectId,
-        published_at: published ? anyISODateTime : null,
-        created_at: anyISODateTime,
-        updated_at: anyISODateTime,
-        url: anyLocalURL,
-        tiers: new Array(tiersCount).fill(tierSnapshot),
-        primary_author: buildAuthorSnapshot(roles),
-        authors: new Array(1).fill(buildAuthorSnapshot(roles))
-    };
-};
-
-const buildPageSnapshotWithTiersAndTags = ({
-    published,
-    tiersCount,
-    tags,
-    roles = true
 }) => {
     return {
         id: anyObjectId,
@@ -86,9 +64,10 @@ const buildPageSnapshotWithTiersAndTags = ({
         primary_author: buildAuthorSnapshot(roles),
         authors: new Array(1).fill(buildAuthorSnapshot(roles)),
         primary_tag: tags ? tagSnapshot : null,
-        tags: tags ? new Array(1).fill(tagSnapshot) : []
+        tags: tags ? new Array(1).fill(tagSnapshot) : []  
     };
 };
+
 
 const buildPreviousPageSnapshotWithTiers = (tiersCount) => {
     return {
@@ -233,13 +212,10 @@ describe('page.* events', function () {
                     {
                         title: 'test page.tag.attached webhook',
                         status: 'draft',
-                        
                     }
                 ]
             })
             .expectStatus(201);
-
-            console.log(res);
 
         const id = res.body.pages[0].id;
         const pageTagAttached = res.body.pages[0];
@@ -262,10 +238,11 @@ describe('page.* events', function () {
             })
             .matchBodySnapshot({
                 page: {
-                    current: buildPageSnapshotWithTiersAndTags({
+                    current: buildPageSnapshotWithTiers({
                         published: false,
                         tiersCount: 2,
-                        tags: true
+                        tags: true,
+                        roles: true
                     }),
                     previous: buildPreviousPageSnapshotWithTiersAndTags({
                         tiersCount: 2,
