@@ -7,6 +7,7 @@ import {ListPlugin} from '@lexical/react/LexicalListPlugin';
 import KoenigBehaviourPlugin from '../plugins/KoenigBehaviourPlugin';
 import MarkdownShortcutPlugin from '../plugins/MarkdownShortcutPlugin';
 import PlusCardMenuPlugin from '../plugins/PlusCardMenuPlugin';
+import SlashCardMenuPlugin from '../plugins/SlashCardMenuPlugin';
 import FloatingFormatToolbarPlugin from '../plugins/FloatingFormatToolbarPlugin';
 import ImagePlugin from '../plugins/ImagePlugin';
 import HorizontalRulePlugin from '../plugins/HorizontalRulePlugin';
@@ -49,6 +50,7 @@ const KoenigEditor = ({
             <KoenigBehaviourPlugin containerElem={containerRef} />
             <MarkdownShortcutPlugin transformers={markdownTransformers} />
             <PlusCardMenuPlugin />
+            <SlashCardMenuPlugin />
             {floatingAnchorElem && (<FloatingFormatToolbarPlugin anchorElem={floatingAnchorElem} />)}
             <ImagePlugin />
             <HorizontalRulePlugin />
