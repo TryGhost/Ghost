@@ -392,6 +392,9 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 }
                 return res.json();
             }).then(function (result) {
+                if (result.url) {
+                    return window.location.assign(result.url);
+                }
                 const stripe = window.Stripe(result.publicKey);
                 return stripe.redirectToCheckout({
                     sessionId: result.sessionId
