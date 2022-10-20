@@ -841,13 +841,10 @@ module.exports = class MemberRepository {
             ghostProduct = await this._productRepository.get({stripe_product_id: subscriptionPriceData.product}, {...options, forUpdate: true});
             // Use first Ghost product as default product in case of missing link
             if (!ghostProduct) {
-                let {data: pageData} = await this._productRepository.list({
-                    limit: 1,
-                    filter: 'type:paid',
-                    ...options,
-                    forUpdate: true
+                ghostProduct = await this._productRepository.getDefaultProduct({
+                    forUpdate: true,
+                    ...options
                 });
-                ghostProduct = (pageData && pageData[0]) || null;
             }
 
             // Link Stripe Product & Price to Ghost Product
@@ -1386,17 +1383,17 @@ module.exports = class MemberRepository {
             return this.isActiveSubscriptionStatus(subscription.get('status'));
         });
 
-        const productPage = await this._productRepository.list({
-            limit: 1,
+        const ghostProductModel = await this._productRepository.getDefaultProduct({
             withRelated: ['stripePrices'],
-            filter: 'type:paid',
             ...options
         });
 
-        const defaultProduct = productPage && productPage.data && productPage.data[0] && productPage.data[0].toJSON();
+        const defaultProduct = ghostProductModel?.toJSON();
 
         if (!defaultProduct) {
-            throw new errors.NotFoundError({message: tpl(messages.productNotFound)});
+            throw new errors.NotFoundError({
+                message: tpl(messages.productNotFound, {id: '"default"'})
+            });
         }
 
         const zeroValuePrices = defaultProduct.stripePrices.filter((price) => {
