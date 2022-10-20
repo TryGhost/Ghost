@@ -59,10 +59,13 @@ module.exports = class Tier {
         this.#status = validateStatus(value);
     }
 
-    /** @type {'public'} */
+    /** @type {'public'|'none'} */
     #visibility;
     get visibility() {
         return this.#visibility;
+    }
+    set visibility(value) {
+        this.#visibility = validateVisibility(value);
     }
 
     /** @type {'paid'|'free'} */
