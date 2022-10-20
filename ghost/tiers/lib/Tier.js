@@ -350,17 +350,17 @@ function validateMonthlyPrice(value, type) {
     }
     if (!Number.isSafeInteger(value)) {
         throw new ValidationError({
-            message: ''
+            message: 'Tier prices must be an integer.'
         });
     }
     if (value < 0) {
         throw new ValidationError({
-            message: ''
+            message: 'Tier prices must not be negative'
         });
     }
     if (value > 9999999999) {
         throw new ValidationError({
-            message: ''
+            message: 'Tier prices may not exceed 999999.99'
         });
     }
     return value;
@@ -377,17 +377,17 @@ function validateYearlyPrice(value, type) {
     }
     if (!Number.isSafeInteger(value)) {
         throw new ValidationError({
-            message: ''
+            message: 'Tier prices must be an integer.'
         });
     }
     if (value < 0) {
         throw new ValidationError({
-            message: ''
+            message: 'Tier prices must not be negative'
         });
     }
     if (value > 9999999999) {
         throw new ValidationError({
-            message: ''
+            message: 'Tier prices may not exceed 999999.99'
         });
     }
     return value;
