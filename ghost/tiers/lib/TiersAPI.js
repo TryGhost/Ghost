@@ -90,10 +90,11 @@ module.exports = class TiersAPI {
             'description',
             'visibility',
             'active',
-            'trial_days',
+            'trialDays',
             'currency',
-            'monthly_price',
-            'yearly_price'
+            'monthlyPrice',
+            'yearlyPrice',
+            'welcomePageURL'
         ];
 
         for (const editableProperty of editableProperties) {
@@ -127,11 +128,11 @@ module.exports = class TiersAPI {
             name: data.name,
             description: data.description,
             benefits: data.benefits,
-            welcome_page_url: data.welcome_page_url,
-            monthly_price: data.monthly_price,
-            yearly_price: data.yearly_price,
+            welcomePageURL: data.welcomePageURL,
+            monthlyPrice: data.monthlyPrice,
+            yearlyPrice: data.yearlyPrice,
             currency: data.currency,
-            trial_days: data.trial_days
+            trialDays: data.trialDays
         });
 
         await this.#repository.save(tier);

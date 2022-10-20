@@ -40,8 +40,8 @@ describe('TiersAPI', function () {
         const tier = await api.add({
             name: 'My testing Tier',
             type: 'paid',
-            monthly_price: 5000,
-            yearly_price: 50000,
+            monthlyPrice: 5000,
+            yearlyPrice: 50000,
             currency: 'usd'
         });
 
@@ -54,8 +54,8 @@ describe('TiersAPI', function () {
         const tier = await api.add({
             name: 'My testing Tier',
             type: 'paid',
-            monthly_price: 5000,
-            yearly_price: 50000,
+            monthlyPrice: 5000,
+            yearlyPrice: 50000,
             currency: 'usd'
         });
 

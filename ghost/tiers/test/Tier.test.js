@@ -20,14 +20,14 @@ const validInput = {
     name: 'Tier Name',
     slug: 'tier-name',
     description: 'My First Tier',
-    welcome_page_url: null,
+    welcomePageURL: null,
     status: 'active',
     visibility: 'public',
     type: 'paid',
-    trial_days: 10,
+    trialDays: 10,
     currency: 'usd',
-    monthly_price: 5000,
-    yearly_price: 50000,
+    monthlyPrice: 5000,
+    yearlyPrice: 50000,
     benefits: []
 };
 
@@ -38,34 +38,34 @@ const invalidInputs = [
     {slug: ('slug').repeat(50)},
     {description: ['whatever?']},
     {description: ('b').repeat(200)},
-    {welcome_page_url: 'hello world'},
+    {welcomePageURL: {cool: 'beans'}},
     {status: 'something random'},
     {visibility: 'highly visible'},
     {type: 'comped'},
-    {trial_days: -10},
-    {trial_days: 10, type: 'free', currency: null, monthly_price: null, yearly_price: null},
+    {trialDays: -10},
+    {trialDays: 10, type: 'free', currency: null, monthlyPrice: null, yearlyPrice: null},
     {currency: 'dollar bills'},
     {currency: 25},
     {currency: 'USD', type: 'free'},
-    {monthly_price: 2000, type: 'free', trial_days: null, currency: null, yearly_price: null},
-    {monthly_price: null},
-    {monthly_price: -20},
-    {monthly_price: 10000000000},
-    {yearly_price: 2000, type: 'free', trial_days: null, monthly_price: null, currency: null},
-    {yearly_price: null},
-    {yearly_price: -20},
-    {yearly_price: 10000000000},
-    {created_at: 'Today'},
-    {updated_at: 'Tomorrow'}
+    {monthlyPrice: 2000, type: 'free', trialDays: null, currency: null, yearlyPrice: null},
+    {monthlyPrice: null},
+    {monthlyPrice: -20},
+    {monthlyPrice: 10000000000},
+    {yearlyPrice: 2000, type: 'free', trialDays: null, monthlyPrice: null, currency: null},
+    {yearlyPrice: null},
+    {yearlyPrice: -20},
+    {yearlyPrice: 10000000000},
+    {createdAt: 'Today'},
+    {updatedAt: 'Tomorrow'}
 ];
 
 const validInputs = [
-    {welcome_page_url: new URL('https://google.com')},
+    {welcomePageURL: 'https://google.com'},
     {id: (new ObjectID()).toHexString()},
     {id: new ObjectID()},
-    {type: 'free', currency: null, monthly_price: null, yearly_price: null, trial_days: null},
-    {created_at: new Date()},
-    {updated_at: new Date()},
+    {type: 'free', currency: null, monthlyPrice: null, yearlyPrice: null, trialDays: null},
+    {createdAt: new Date()},
+    {updatedAt: new Date()},
     {status: undefined},
     {type: undefined},
     {visibility: undefined}
@@ -99,16 +99,16 @@ describe('Tier', function () {
                 'slug',
                 'name',
                 'description',
-                'welcome_page_url',
+                'welcomePageURL',
                 'status',
                 'visibility',
                 'type',
-                'trial_days',
+                'trialDays',
                 'currency',
-                'monthly_price',
-                'yearly_price',
-                'created_at',
-                'updated_at',
+                'monthlyPrice',
+                'yearlyPrice',
+                'createdAt',
+                'updatedAt',
                 'benefits'
             ];
 
@@ -133,7 +133,7 @@ describe('Tier', function () {
             });
 
             assertError(() => {
-                tier.welcome_page_url = 20;
+                tier.welcomePageURL = 20;
             });
 
             assertError(() => {
@@ -145,7 +145,7 @@ describe('Tier', function () {
             });
 
             assertError(() => {
-                tier.trial_days = 'one hundred';
+                tier.trialDays = 'one hundred';
             });
 
             assertError(() => {
@@ -153,11 +153,11 @@ describe('Tier', function () {
             });
 
             assertError(() => {
-                tier.monthly_price = 'one hundred';
+                tier.monthlyPrice = 'one hundred';
             });
 
             assertError(() => {
-                tier.yearly_price = 'one hundred';
+                tier.yearlyPrice = 'one hundred';
             });
         });
     });
