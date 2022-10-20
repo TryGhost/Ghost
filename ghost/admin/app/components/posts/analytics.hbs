@@ -1,4 +1,4 @@
-<section class="gh-canvas" {{did-insert this.loadData}}>
+<section class="gh-canvas {{if (feature "audienceFeedback") "feature-audienceFeedback"}}" {{did-insert this.loadData}}>
     <GhCanvasHeader class="gh-canvas-header gh-post-analytics-header">
         <div class="flex flex-column flex-grow-1">
             <div class="gh-canvas-breadcrumb">
@@ -89,34 +89,35 @@
     </Tabs::Tabs>
 
     {{#if this.isLoaded }}
-        {{#if this.showLinks }}
-            {{#if (is-empty this.links) }}
-                {{!-- Empty state --}}
-            {{else}}
-                <Posts::LinksTable @links={{this.links}} @updateLink={{this.updateLink}} />
-            {{/if}}
-        {{/if}}
-
-        {{#if this.showSources }}
-            {{#if (is-empty this.sources) }}
-                {{!-- Empty state --}}
-            {{else}}
-                <h4 class="gh-main-section-header small bn">
-                    Growth from this post
-                </h4>
-                <div class="gh-post-analytics-box column">
-                    <div class="gh-attribution-box">
-                        <div class="gh-attribution-table-column">
-                            <MemberAttribution::SourceAttributionTable
-                                @sources={{this.sources}}
-                                @sortColumn={{this.sortColumn}}
-                                @setSortColumn={{this.setSortColumn}}
-                            />
+        <div class="gh-post-analytics-split">
+            {{#if this.showSources }}
+                <div class="gh-post-analytics-box column gh-post-analytics-source-attribution">
+                    <h3 class="gh-dashboard-metric-label">Post growth</h3>
+                    {{#if (is-empty this.sources) }}
+                        <div class="attribution-list-empty">
+                            {{svg-jar "members-outline"}}
+                            <h4>No new members for this post</h4>
+                            <p>Once someone signs up, you'll be able to see where they came from here.</p>
                         </div>
-                    </div>
+                    {{else}}
+                        <MemberAttribution::SourceAttributionTable
+                            @sources={{this.sources}}
+                            @sortColumn={{this.sortColumn}}
+                            @setSortColumn={{this.setSortColumn}}
+                            class="gh-dashboard-attribution-list gh-dashboard-list"
+                        />
+                    {{/if}}
                 </div>
             {{/if}}
-        {{/if}}
+
+            {{#if this.showLinks }}
+                {{#if (is-empty this.links) }}
+                    {{!-- Empty state --}}
+                {{else}}
+                    <Posts::LinksTable @links={{this.links}} @updateLink={{this.updateLink}} />
+                {{/if}}
+            {{/if}}
+        </div>
 
         <div class="gh-post-analytics-box resources">
             <a href="https://ghost.org/help/post-analytics/" target="_blank" class="gh-post-analytics-resource" rel="noopener noreferrer">
