@@ -1080,6 +1080,20 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     text-decoration: none;
 }
 
+.gh-links-list-item-edit-mode {
+    padding: 1rem 0;
+}
+
+.gh-links-list-item-edit-mode:first-child {
+    padding: 1rem 0 1rem 0;
+    margin-top: -0.6rem;
+}
+
+.gh-links-list-item-edit-mode:last-child {
+    padding: 1rem 0 1rem 0;
+    margin-bottom: -0.6rem;
+}
+
 .gh-links-list-item .gh-links-list-clicks {
     text-align: right;
     padding-right: 2px;
@@ -1107,7 +1121,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 
 .gh-links-list-item a {
     margin: 0;
-    padding: 0 20px 0 0;
+    padding: 0;
     color: var(--darkgrey);
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1117,10 +1131,6 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 
 .gh-links-list-item a:hover {
     color: var(--midgrey-d2);
-}
-
-.gh-links-list-item-edit-mode {
-    padding: 1rem 0;
 }
 
 .gh-links-list-item-edit span {
