@@ -36,10 +36,14 @@ module.exports = class LinkRedirectRepository {
     }
 
     fromModel(model) {
+        // Store if link has been edited
+        const edited = model.get('created_at')?.getTime() !== model.get('updated_at')?.getTime();
+
         return new LinkRedirect({
             id: model.id,
             from: new URL(this.#trimLeadingSlash(model.get('from')), this.#urlUtils.urlFor('home', true)),
-            to: new URL(model.get('to'))
+            to: new URL(model.get('to')),
+            edited
         });
     }
 
