@@ -81,7 +81,8 @@ module.exports = class TiersAPI {
      * @param {object} data
      * @returns {Promise<Tier>}
      */
-    async edit(id, data) {
+    async edit(idString, data) {
+        const id = ObjectID.createFromHexString(idString);
         const tier = await this.#repository.getById(id);
 
         const editableProperties = [
