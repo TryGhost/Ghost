@@ -12,7 +12,12 @@ describe('TiersAPI', function () {
     before(function () {
         repository = new InMemoryTierRepository();
         api = new TiersAPI({
-            repository
+            repository,
+            slugService: {
+                async generate(input) {
+                    return input;
+                }
+            }
         });
     });
 
