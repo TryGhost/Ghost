@@ -46,7 +46,7 @@ export async function assertHTML(
         ignoreClasses = true,
         ignoreInlineStyles = true,
         ignoreInnerSVG = true,
-        ignoreBase64String = true,
+        getBase64FileFormat = true,
         ignoreCardContents = false
     } = {}
 ) {
@@ -55,14 +55,14 @@ export async function assertHTML(
         ignoreClasses,
         ignoreInlineStyles,
         ignoreInnerSVG,
-        ignoreBase64String,
+        getBase64FileFormat,
         ignoreCardContents
     });
     const expected = prettifyHTML(expectedHtml.replace(/\n/gm, ''), {
         ignoreClasses,
         ignoreInlineStyles,
         ignoreInnerSVG,
-        ignoreBase64String,
+        getBase64FileFormat,
         ignoreCardContents
     });
     expect(actual).toEqual(expected);
@@ -82,7 +82,7 @@ export function prettifyHTML(string, options = {}) {
         output = output.replace(/<svg[^>]*>.*<\/svg>/g, '<svg></svg>');
     }
 
-    if (options.ignoreBase64String) {
+    if (options.getBase64FileFormat) {
         output = output.replace(/(^|[\s">])data:([^;]*);([^"]*),([^"]*)/g, '$1data:$2;$3,BASE64DATA');
     }
 
