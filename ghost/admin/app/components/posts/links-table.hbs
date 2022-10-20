@@ -69,7 +69,7 @@
             </div>
         {{/each}}
         </div>
-        {{#if this.showPagination }}
+        {{#if (or this.showPagination (feature "fixNewsletterLinks")) }}
             <div class="gh-links-pagination">
                 {{#if (feature "fixNewsletterLinks")}}
                 <span class="gh-links-info">&uarr; Sent a broken link? You can update it!</span>
@@ -78,6 +78,7 @@
                     Showing {{this.startOffset}}-{{this.endOffset}} of {{this.totalLinks}}
                 </div>
                 {{/if}}
+                {{#if this.showPagination}}
                 <div class="gh-links-pagination-actions">
                     <button type="button" class="gh-links-pagination-action gh-links-pagination-prev {{if this.disablePreviousPage "gh-links-pagination-disabled"}}" {{on "click" this.openPreviousPage}} disabled={{this.disablePreviousPage}}>
                         {{svg-jar "arrow-left-pagination"}}
@@ -88,6 +89,7 @@
                         {{svg-jar "arrow-right-pagination"}}
                     </button>
                 </div>
+                {{/if}}
             </div>
         {{/if}}
     </div>
