@@ -47,8 +47,7 @@ export async function assertHTML(
         ignoreInlineStyles = true,
         ignoreInnerSVG = true,
         ignoreBase64String = true,
-        ignoreCardContents = false,
-        ignoreImageToolbar = true
+        ignoreCardContents = false
     } = {}
 ) {
     const actualHtml = await page.$eval('div[contenteditable="true"]', e => e.innerHTML);
@@ -57,16 +56,14 @@ export async function assertHTML(
         ignoreInlineStyles,
         ignoreInnerSVG,
         ignoreBase64String,
-        ignoreCardContents,
-        ignoreImageToolbar
+        ignoreCardContents
     });
     const expected = prettifyHTML(expectedHtml.replace(/\n/gm, ''), {
         ignoreClasses,
         ignoreInlineStyles,
         ignoreInnerSVG,
         ignoreBase64String,
-        ignoreCardContents,
-        ignoreImageToolbar
+        ignoreCardContents
     });
     expect(actual).toEqual(expected);
 }
@@ -86,7 +83,7 @@ export function prettifyHTML(string, options = {}) {
     }
 
     if (options.ignoreBase64String) {
-        output = output.replace(/src="data:image\/png;base64[^"]*"/g, 'src="data:image/png;"');
+        output = output.replace(/(^|[\s">])data:([^;]*);([^"]*),([^"]*)/g, '$1data:$2;$3,BASE64DATA');
     }
 
     if (options.ignoreCardContents) {
@@ -97,10 +94,6 @@ export function prettifyHTML(string, options = {}) {
             }
         });
         output = document.body.innerHTML;
-    }
-
-    if (options.ignoreImageToolbar) {
-        output = output.replace(/<span data-kg-image-toolbar="true"[^>]*>.*<\/span>/g, '');
     }
 
     return prettier

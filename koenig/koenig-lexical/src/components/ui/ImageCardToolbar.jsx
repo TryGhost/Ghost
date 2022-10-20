@@ -33,7 +33,7 @@ function ImageCardToolbar({isSelected, fileInputRef, onFileChange, filePicker, f
         opacity: isSelected ? 1 : 0
     };
     return createPortal(
-        <div data-kg-image-toolbar style={toolbarPosition}>
+        <div data-kg-card-toolbar="image" style={toolbarPosition}>
             <ImageUploadForm onFileChange={onFileChange} fileInputRef={fileInputRef} />
             <ToolbarMenu>
                 <ToolbarMenuItem label="Regular" icon="imageRegular" isActive={true} />

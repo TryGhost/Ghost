@@ -1,4 +1,4 @@
-import {afterAll, beforeAll, beforeEach, describe, test} from 'vitest';
+import {afterAll, beforeAll, beforeEach, describe, test, expect} from 'vitest';
 import {startApp, initialize, focusEditor, assertHTML, html} from '../../utils/e2e';
 import path from 'path';
 
@@ -57,7 +57,7 @@ describe('Image card', async () => {
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-selected="true" data-kg-card="image">
                     <figure>
-                        <img src="data:image/png;" alt="" />
+                        <img src="data:image/png;base64,BASE64DATA" alt="" />
                         <figcaption>
                             <input placeholder="Type caption for image (optional)" value="" />
                             <button name="alt-toggle-button">Alt</button>
@@ -86,7 +86,7 @@ describe('Image card', async () => {
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-selected="true" data-kg-card="image">
                     <figure>
-                        <img src="data:image/png;" alt="" />
+                        <img src="data:image/png;base64,BASE64DATA" alt="" />
                         <figcaption>
                             <input placeholder="Type alt text for image (optional)" value=""/>
                             <button name="alt-toggle-button">Alt</button>
@@ -116,9 +116,59 @@ describe('Image card', async () => {
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-selected="true" data-kg-card="image">
                     <figure>
-                        <img src="data:image/png;" alt="" />
+                        <img src="data:image/png;base64,BASE64DATA" alt="" />
                         <figcaption>
                             <input placeholder="Type caption for image (optional)" value="This is a caption" />
+                            <button name="alt-toggle-button">Alt</button>
+                        </figcaption>
+                    </figure>
+                </div>
+            </div>
+        `);
+    });
+
+    test('renders image card toolbar', async function () {
+        const filePath = path.relative(process.cwd(), __dirname + '/assets/large.png');
+
+        await focusEditor(page);
+        await page.keyboard.type('image! ');
+
+        const [fileChooser] = await Promise.all([
+            page.waitForFileChooser(),
+            await page.click('button[name="placeholder-button"]')
+        ]);
+        await fileChooser.accept([filePath]);
+
+        expect(await page.$('[data-kg-card-toolbar="image"]')).not.toBeNull();
+    });
+
+    test('can replace image from image toolbar button', async function () {
+        const filePath = path.relative(process.cwd(), __dirname + '/assets/large.png');
+        const filePath2 = path.relative(process.cwd(), __dirname + '/assets/large.jpeg');
+
+        await focusEditor(page);
+        await page.keyboard.type('image! ');
+
+        const [fileChooser] = await Promise.all([
+            page.waitForFileChooser(),
+            await page.click('button[name="placeholder-button"]')
+        ]);
+        await fileChooser.accept([filePath]);
+
+        expect(await page.$('[data-kg-card-toolbar="image"]')).not.toBeNull();
+
+        const [replacefileChooser] = await Promise.all([
+            page.waitForFileChooser(),
+            await page.click('[data-kg-card-toolbar="image"] button[aria-label="Replace"]')
+        ]);
+        await replacefileChooser.accept([filePath2]);
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div data-kg-card-selected="true" data-kg-card="image">
+                    <figure>
+                        <img src="data:image/jpeg;base64,BASE64DATA" alt="" />
+                        <figcaption>
+                            <input placeholder="Type caption for image (optional)" value="" />
                             <button name="alt-toggle-button">Alt</button>
                         </figcaption>
                     </figure>
