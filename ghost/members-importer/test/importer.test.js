@@ -54,10 +54,8 @@ describe('Importer', function () {
         });
         membersApiStub = {
             productRepository: {
-                list: async () => {
-                    return {
-                        data: [defaultProduct]
-                    };
+                getDefaultProduct: async () => {
+                    return defaultProduct;
                 }
             },
             members: {
