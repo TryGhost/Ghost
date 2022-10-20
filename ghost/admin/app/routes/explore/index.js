@@ -31,7 +31,7 @@ export default class ExploreRoute extends AuthenticatedRoute {
     }
 
     @action
-    willTransition(transition) {
+    async willTransition(transition) {
         let isExploreTransition = false;
 
         if (transition) {
@@ -43,10 +43,23 @@ export default class ExploreRoute extends AuthenticatedRoute {
 
             if (destinationUrl?.includes('/explore')) {
                 isExploreTransition = true;
-                let path = destinationUrl.replace(/explore\//, '');
-                path = path === '/' ? '/explore' : path;
-                // Send the updated route to the iframe
-                this.explore.sendRouteUpdate({path});
+                this.explore.isIframeTransition = isExploreTransition;
+
+                if (destinationUrl?.includes('/explore/submit')) {
+                    // Ensure the model is loaded before sending the controller action
+                    const model = await this.model;
+                    this.controllerFor('explore').submitExploreSite(model);
+                } else {
+                    let path = destinationUrl.replace(/explore\//, '');
+                    path = path === '/' ? '/explore/' : path;
+
+                    if (destinationUrl?.includes('/explore/about')) {
+                        window.open(`${this.explore.exploreUrl}about/`, '_blank').focus();
+                        path = '/explore/';
+                    }
+                    // Send the updated route to the iframe
+                    this.explore.sendRouteUpdate({path});
+                }
             }
         }
 
