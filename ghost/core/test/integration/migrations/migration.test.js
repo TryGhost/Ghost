@@ -45,7 +45,7 @@ describe('Database Migration (special functions)', function () {
             const permissions = this.obj;
 
             // If you have to change this number, please add the relevant `havePermission` checks below
-            permissions.length.should.eql(107);
+            permissions.length.should.eql(108);
 
             permissions.should.havePermission('Export database', ['Administrator', 'DB Backup Integration']);
             permissions.should.havePermission('Import database', ['Administrator', 'DB Backup Integration']);

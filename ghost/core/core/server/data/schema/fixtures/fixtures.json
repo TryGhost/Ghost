@@ -623,6 +623,11 @@
                     "name": "Browse links",
                     "action_type": "browse",
                     "object_type": "link"
+                },
+                {
+                    "name": "Edit links",
+                    "action_type": "edit",
+                    "object_type": "link"
                 }
             ]
         },
