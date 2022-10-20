@@ -1,40 +1,46 @@
 import $ from 'jquery';
-import Ember from 'ember';
 import EmberError from '@ember/error';
 import Service, {inject as service} from '@ember/service';
 import classic from 'ember-classic-decorator';
-import {computed, set} from '@ember/object';
+import {set} from '@ember/object';
 
 export function feature(name, options = {}) {
-    let {user, onChange} = options;
-    let watchedProps = user ? [`accessibility.${name}`] : [`config.${name}`, `labs.${name}`];
+    const {user, onChange} = options;
 
-    return computed.apply(Ember, watchedProps.concat({
-        get() {
-            let enabled = false;
+    return function (target, propertyKey) {
+        const decoratorFn = function () {
+            return {
+                get() {
+                    let enabled = false;
 
-            if (user) {
-                enabled = this.get(`accessibility.${name}`);
-            } else if (this.get(`config.${name}`)) {
-                enabled = this.get(`config.${name}`);
-            } else {
-                enabled = this.get(`labs.${name}`) || false;
-            }
+                    if (user) {
+                        enabled = this.accessibility[propertyKey];
+                    } else if (this.config[propertyKey]) {
+                        enabled = this.config[propertyKey];
+                    } else {
+                        enabled = this.labs[propertyKey] || false;
+                    }
 
-            return enabled;
-        },
-        set(key, value) {
-            this.update(key, value, options);
+                    return enabled;
+                },
+                set(value) {
+                    this.update(propertyKey, value, options);
 
-            if (onChange) {
-                // value must be passed here because the value isn't set until
-                // the setter function returns
-                this.get(onChange).bind(this)(value);
-            }
+                    if (onChange) {
+                        // value must be passed here because the value isn't set until
+                        // the setter function returns
+                        this.get(onChange).bind(this)(value);
+                    }
 
-            return value;
-        }
-    }));
+                    return value;
+                },
+                enumerable: true,
+                configurable: true
+            };
+        };
+
+        return decoratorFn.apply(target);
+    };
 }
 
 @classic
@@ -68,9 +74,11 @@ export default class FeatureService extends Service {
     @feature('audienceFeedback') audienceFeedback;
     @feature('fixNewsletterLinks') fixNewsletterLinks;
 
-    _user = null;
+    // for testing only - avoids need to reopen class in tests because there's
+    // no way to add decorators after the fact with native classes
+    @feature('testFlag') testFlag;
+    @feature('testUserFlag', {user: true}) testUserFlag;
 
-    @computed('settings.labs')
     get labs() {
         let labs = this.settings.labs;
 
@@ -81,9 +89,8 @@ export default class FeatureService extends Service {
         }
     }
 
-    @computed('_user.accessibility')
     get accessibility() {
-        let accessibility = this.get('_user.accessibility');
+        let accessibility = this.session.user?.accessibility;
 
         try {
             return JSON.parse(accessibility) || {};
@@ -94,14 +101,13 @@ export default class FeatureService extends Service {
 
     fetch() {
         return this.settings.fetch().then(() => {
-            this.set('_user', this.session.user);
             return this._setAdminTheme().then(() => true);
         });
     }
 
     update(key, value, options = {}) {
         let serviceProperty = options.user ? 'accessibility' : 'labs';
-        let model = this.get(options.user ? '_user' : 'settings');
+        let model = this.get(options.user ? 'session.user' : 'settings');
         let featureObject = this.get(serviceProperty);
 
         // set the new key value for either the labs property or the accessibility property
@@ -136,7 +142,7 @@ export default class FeatureService extends Service {
         });
     }
 
-    _setAdminTheme(enabled) {
+    async _setAdminTheme(enabled) {
         let nightShift = enabled;
 
         if (typeof nightShift === 'undefined') {
