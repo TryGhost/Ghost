@@ -299,15 +299,15 @@ function validateType(value) {
 
 function validateTrialDays(value, type) {
     if (type === 'free') {
-        if (value !== null) {
+        if (value) {
             throw new ValidationError({
                 message: 'Free Tiers cannot have a trial'
             });
         }
-        return null;
+        return 0;
     }
     if (!value) {
-        return null;
+        return 0;
     }
     if (!Number.isSafeInteger(value) || value < 0) {
         throw new ValidationError({
