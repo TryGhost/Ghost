@@ -3,6 +3,20 @@ const ghostBookshelf = require('./base');
 const EmailRecipient = ghostBookshelf.Model.extend({
     tableName: 'email_recipients',
     hasTimestamps: false,
+    
+    filterRelations: function filterRelations() {
+        return {
+            email: {
+                // Mongo-knex doesn't support belongsTo relations
+                tableName: 'emails',
+                tableNameAs: 'email',
+                type: 'manyToMany',
+                joinTable: 'email_recipients',
+                joinFrom: 'id',
+                joinTo: 'email_id'
+            }
+        };
+    },
 
     email() {
         return this.belongsTo('Email', 'email_id');

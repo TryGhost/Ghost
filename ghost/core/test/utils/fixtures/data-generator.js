@@ -785,6 +785,19 @@ DataGenerator.Content = {
             member_uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b343',
             member_email: 'member1@test.com',
             member_name: 'Mr Egg'
+        },
+        {
+            id: ObjectId().toHexString(),
+            email_id: null, // emails[0] relation added later
+            member_id: null, // members[4] relation added later
+            batch_id: null, // email_batches[0] relation added later
+            processed_at: moment().toDate(),
+            delivered_at: moment().toDate(),
+            opened_at: moment().toDate(),
+            failed_at: null,
+            member_uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b344',
+            member_email: 'member4@test.com',
+            member_name: 'Mr Egg'
         }
     ],
 
@@ -850,6 +863,9 @@ DataGenerator.Content.email_recipients[2].member_id = DataGenerator.Content.memb
 DataGenerator.Content.email_recipients[3].batch_id = DataGenerator.Content.email_batches[0].id;
 DataGenerator.Content.email_recipients[3].email_id = DataGenerator.Content.email_batches[0].email_id;
 DataGenerator.Content.email_recipients[3].member_id = DataGenerator.Content.members[3].id;
+DataGenerator.Content.email_recipients[4].batch_id = DataGenerator.Content.email_batches[0].id;
+DataGenerator.Content.email_recipients[4].email_id = DataGenerator.Content.email_batches[0].email_id;
+DataGenerator.Content.email_recipients[4].member_id = DataGenerator.Content.members[4].id;
 DataGenerator.Content.members_stripe_customers[0].member_id = DataGenerator.Content.members[2].id;
 DataGenerator.Content.members_stripe_customers[1].member_id = DataGenerator.Content.members[3].id;
 DataGenerator.Content.members_stripe_customers[2].member_id = DataGenerator.Content.members[4].id;
@@ -1533,7 +1549,8 @@ DataGenerator.forKnex = (function () {
         createEmailRecipient(DataGenerator.Content.email_recipients[0]),
         createEmailRecipient(DataGenerator.Content.email_recipients[1]),
         createEmailRecipient(DataGenerator.Content.email_recipients[2]),
-        createEmailRecipient(DataGenerator.Content.email_recipients[3])
+        createEmailRecipient(DataGenerator.Content.email_recipients[3]),
+        createEmailRecipient(DataGenerator.Content.email_recipients[4])
     ];
 
     const members = [
