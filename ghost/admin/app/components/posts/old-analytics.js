@@ -120,11 +120,6 @@ export default class Analytics extends Component {
 
     @action
     saveLink(currentLink, newLink) {
-        this.showSuccess = this.updateLinkId;
-        setTimeout(() => {
-            this.showSuccess = null;
-        }, 2000);
-
         if (this._updateLinks.isRunning) {
             return this._updateLinks.last;
         }
