@@ -1,11 +1,21 @@
 const {faker} = require('@faker-js/faker');
 const {slugify} = require('@tryghost/string');
 const TableImporter = require('./base');
+const generateEvents = require('../utils/event-generator');
 
 class PostsImporter extends TableImporter {
     constructor(knex, {newsletters}) {
         super('posts', knex);
         this.newsletters = newsletters;
+    }
+
+    setImportOptions({amount, startTime, endTime}) {
+        this.timestamps = generateEvents({
+            shape: 'flat',
+            startTime,
+            endTime,
+            total: amount
+        });
     }
 
     generate() {
@@ -14,13 +24,13 @@ class PostsImporter extends TableImporter {
             min: 3,
             max: 10
         })).split('\n');
-        const createdAt = faker.date.between(new Date(2016, 0), new Date());
+        const timestamp = this.timestamps.shift();
         return {
             id: faker.database.mongodbObjectId(),
-            created_at: createdAt,
+            created_at: timestamp,
             created_by: 'unused',
-            updated_at: createdAt,
-            published_at: faker.date.soon(5, createdAt),
+            updated_at: timestamp,
+            published_at: faker.date.soon(5, timestamp),
             uuid: faker.datatype.uuid(),
             title: title,
             slug: slugify(title),
@@ -45,7 +55,7 @@ class PostsImporter extends TableImporter {
             }),
             html: content.map(paragraph => `<p>${paragraph}</p>`).join(''),
             email_recipient_filter: 'all',
-            newsletter_id: faker.datatype.boolean() ? this.newsletters[faker.datatype.number(this.newsletters.length - 1)] : undefined
+            newsletter_id: faker.datatype.boolean() ? this.newsletters[faker.datatype.number(this.newsletters.length - 1)].id : undefined
         };
     }
 }

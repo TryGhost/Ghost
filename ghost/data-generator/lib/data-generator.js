@@ -35,20 +35,26 @@ class DataGenerator {
 
         if (!this.eventsOnly) {
             const newsletterImporter = new NewslettersImporter(transaction);
-            const newsletters = await newsletterImporter.import(2);
+            const newsletters = await newsletterImporter.import({amount: 2});
 
             const postImporter = new PostsImporter(transaction, {
                 newsletters
             });
-            const posts = await postImporter.import(100);
+            const twoYearsAgo = new Date();
+            twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
+            const posts = await postImporter.import({
+                amount: 100,
+                startTime: twoYearsAgo,
+                endTime: new Date()
+            });
 
             const userImporter = new UsersImporter(transaction);
-            const users = await userImporter.import(8);
+            const users = await userImporter.import({amount: 8});
 
             const postAuthorImporter = new PostsAuthorsImporter(transaction, {
                 users
             });
-            await postAuthorImporter.import(1, {ids: posts});
+            await postAuthorImporter.importForEach(posts, {amount: 1});
         }
 
         await transaction.commit();

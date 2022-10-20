@@ -9,44 +9,64 @@ class TableImporter {
     }
 
     /**
-     * @typedef {Object} ImportOptions
-     * @property {Array<string>} ids List of ids to generate each new object referencing
+     * @typedef {Object.<string,any>} ImportOptions
+     * @property {number} amount Number of events to generate
+     * @property {Object} [model] Used to reference another object during creation
      */
 
     /**
-     * @param {number} amount Number of items to generate
-     * @param {ImportOptions} [options] Other options
-     * @returns {Promise<Array<string>>}
+     * @param {Array<Object>} models List of models to reference
+     * @param {ImportOptions} [options] Import options
+     * @returns {Promise<Array<Object>>}
      */
-    async import(amount = 0, options) {
-        if (amount === 0) {
-            return;
+    async importForEach(models = [], options) {
+        const results = [];
+        for (const model of models) {
+            results.push(...await this.import(Object.assign({}, options, {model})));
         }
-
-        const data = [];
-        if (options && options.ids) {
-            for (const id of options.ids) {
-                for (let i = 0; i < amount; i++) {
-                    data.push(this.generate(id));
-                }
-            }
-        } else {
-            for (let i = 0; i < amount; i++) {
-                data.push(this.generate());
-            }
-        }
-
-        const objects = await this.knex.insert(data, ['id']).into(this.name);
-        return objects.map(o => o.id);
+        return results;
     }
 
     /**
-     * @params {string} [id]
-     * @returns {Object} Data to import
+     * @param {ImportOptions} options Import options
+     * @returns {Promise<Array<Object>>}
      */
-    generate(id) {
+    async import(options) {
+        if (options.amount === 0) {
+            return;
+        }
+
+        this.setImportOptions(options);
+
+        const data = [];
+        for (let i = 0; i < options.amount; i++) {
+            const model = this.generate();
+            if (model) {
+                // Only push models when one is generated successfully
+                data.push(model);
+            }
+        }
+
+        return await this.knex.insert(data, ['id']).into(this.name);
+    }
+
+    /**
+     *
+     * @param {ImportOptions} options
+     * @returns {void}
+     */
+    // eslint-disable-next-line no-unused-vars
+    setImportOptions(options) {
+        return;
+    }
+
+    /**
+     * Generates the data for a single model to be imported
+     * @returns {Object|null} Data to import, optional
+     */
+    generate() {
         // Should never be called
-        return id;
+        return false;
     }
 }
 
