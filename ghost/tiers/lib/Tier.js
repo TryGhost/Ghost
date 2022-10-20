@@ -41,7 +41,7 @@ module.exports = class Tier {
         this.#description = validateDescription(value);
     }
 
-    /** @type {URL} */
+    /** @type {string} */
     #welcomePageURL;
     get welcomePageURL() {
         return this.#welcomePageURL;
@@ -243,20 +243,15 @@ function validateName(value) {
 }
 
 function validateWelcomePageURL(value) {
-    if (value instanceof URL) {
-        return value;
-    }
     if (!value) {
         return null;
     }
-    try {
-        return new URL(value);
-    } catch (err) {
-        throw new ValidationError({
-            err,
-            message: 'Tier Welcome Page URL must be a URL'
-        });
+    if (value === null || typeof value === 'string') {
+        return value;
     }
+    throw new ValidationError({
+        message: 'Tier Welcome Page URL must be a string'
+    });
 }
 
 function validateDescription(value) {
