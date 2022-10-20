@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import useAutoExpandTextArea from '../../../utils/autoExpandTextArea';
 
 export function CodeBlockCard({code, language, updateCode, updateLanguage}) {
@@ -22,3 +23,7 @@ export function CodeBlockCard({code, language, updateCode, updateLanguage}) {
         </code>
     );
 }
+
+CodeBlockCard.propTypes = {
+    code: PropTypes.string
+};
