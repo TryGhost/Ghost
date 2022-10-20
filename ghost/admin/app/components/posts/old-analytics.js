@@ -119,17 +119,16 @@ export default class Analytics extends Component {
     }
 
     @action
-    saveLink() {
+    saveLink(currentLink, newLink) {
         this.showSuccess = this.updateLinkId;
         setTimeout(() => {
             this.showSuccess = null;
         }, 2000);
 
-        // Temp comment till API changes are merged
-        // if (this._updateLinks.isRunning) {
-        //     return this._updateLinks.last;
-        // }
-        // return this._updateLinks.perform(currentLink, newLink);
+        if (this._updateLinks.isRunning) {
+            return this._updateLinks.last;
+        }
+        return this._updateLinks.perform(currentLink, newLink);
     }
 
     @action
