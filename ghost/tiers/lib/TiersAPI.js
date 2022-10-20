@@ -114,7 +114,7 @@ module.exports = class TiersAPI {
      * @returns {Promise<Tier>}
      */
     async add(data) {
-        if (data.type !== 'paid') {
+        if (data.type === 'free') {
             throw new BadRequestError({
                 message: 'Cannot create free Tier'
             });
