@@ -185,16 +185,16 @@ module.exports = class Tier {
 
         let slug = validateSlug(data.slug);
         let description = validateDescription(data.description);
-        let welcomePageURL = validateWelcomePageURL(data.welcome_page_url);
+        let welcomePageURL = validateWelcomePageURL(data.welcomePageURL);
         let status = validateStatus(data.status || 'active');
         let visibility = validateVisibility(data.visibility || 'public');
         let type = validateType(data.type || 'paid');
         let currency = validateCurrency(data.currency || null, type);
-        let trialDays = validateTrialDays(data.trial_days || null, type);
-        let monthlyPrice = validateMonthlyPrice(data.monthly_price || null, type);
-        let yearlyPrice = validateYearlyPrice(data.yearly_price || null , type);
-        let createdAt = validateCreatedAt(data.created_at);
-        let updatedAt = validateUpdatedAt(data.updated_at);
+        let trialDays = validateTrialDays(data.trialDays || 0, type);
+        let monthlyPrice = validateMonthlyPrice(data.monthlyPrice || null, type);
+        let yearlyPrice = validateYearlyPrice(data.yearlyPrice || null , type);
+        let createdAt = validateCreatedAt(data.createdAt);
+        let updatedAt = validateUpdatedAt(data.updatedAt);
         let benefits = validateBenefits(data.benefits);
 
         return new Tier({
