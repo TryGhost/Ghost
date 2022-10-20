@@ -6,12 +6,19 @@ const matchLink = {
     link: {
         link_id: anyObjectId,
         from: anyString,
-        to: anyString
+        to: anyString,
+        edited: false
     },
     count: {
         clicks: anyNumber
     }
 };
+
+async function sleep(ms) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
+}
 
 describe('Links API', function () {
     let agent;
@@ -41,6 +48,8 @@ describe('Links API', function () {
         const postId = siteLink.post_id;
         const originalTo = siteLink.link.to;
         const filter = `post_id:${postId}+to:'${originalTo}'`;
+        // Sleep ensures the updated time of the link is different than created
+        await sleep(1000);
         await agent
             .put(`links/bulk/?filter=${encodeURIComponent(filter)}`)
             .body({
@@ -83,14 +92,16 @@ describe('Links API', function () {
                         ...matchLink,
                         link: {
                             ...matchLink.link,
-                            to: 'http://127.0.0.1:2369/blog/emails/test?example=1&ref=Test-newsletter&attribution_type=post&attribution_id=618ba1ffbe2896088840a6df'
+                            to: 'http://127.0.0.1:2369/blog/emails/test?example=1&ref=Test-newsletter&attribution_type=post&attribution_id=618ba1ffbe2896088840a6df',
+                            edited: true
                         }
                     },
                     {
                         ...matchLink,
                         link: {
                             ...matchLink.link,
-                            to: 'http://127.0.0.1:2369/blog/emails/test?example=1&ref=Test-newsletter&attribution_type=post&attribution_id=618ba1ffbe2896088840a6df'
+                            to: 'http://127.0.0.1:2369/blog/emails/test?example=1&ref=Test-newsletter&attribution_type=post&attribution_id=618ba1ffbe2896088840a6df',
+                            edited: true
                         }
                     }
                 ]
@@ -105,6 +116,7 @@ describe('Links API', function () {
         const postId = siteLink.post_id;
         const originalTo = siteLink.link.to;
         const filter = `post_id:${postId}+to:'${originalTo}'`;
+        await sleep(1000);
         await agent
             .put(`links/bulk/?filter=${encodeURIComponent(filter)}`)
             .body({
@@ -146,7 +158,8 @@ describe('Links API', function () {
                         ...matchLink,
                         link: {
                             ...matchLink.link,
-                            to: 'https://example.com/subscribe?ref=Test-newsletter'
+                            to: 'https://example.com/subscribe?ref=Test-newsletter',
+                            edited: true
                         }
                     },
                     matchLink,
