@@ -92,9 +92,6 @@ module.exports = class TiersAPI {
             'visibility',
             'active',
             'trialDays',
-            'currency',
-            'monthlyPrice',
-            'yearlyPrice',
             'welcomePageURL'
         ];
 
@@ -103,6 +100,12 @@ module.exports = class TiersAPI {
                 tier[editableProperty] = data[editableProperty];
             }
         }
+
+        tier.updatePricing({
+            currency: data.currency || tier.currency,
+            monthlyPrice: data.monthlyPrice || tier.monthlyPrice,
+            yearlyPrice: data.yearlyPrice || tier.yearlyPrice
+        });
 
         await this.#repository.save(tier);
 

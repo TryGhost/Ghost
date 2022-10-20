@@ -1,7 +1,16 @@
 const ObjectID = require('bson-objectid').default;
 const {ValidationError} = require('@tryghost/errors');
 
+const TierActivatedEvent = require('./TierActivatedEvent');
+const TierArchivedEvent = require('./TierArchivedEvent');
+const TierCreatedEvent = require('./TierCreatedEvent');
+const TierNameChangeEvent = require('./TierNameChangeEvent');
+const TierPriceChangeEvent = require('./TierPriceChangeEvent');
+
 module.exports = class Tier {
+    /** @type {BaseEvent[]} */
+    events = [];
+
     /** @type {ObjectID} */
     #id;
     get id() {
@@ -20,7 +29,12 @@ module.exports = class Tier {
         return this.#name;
     }
     set name(value) {
-        this.#name = validateName(value);
+        const newName = validateName(value);
+        if (newName === this.#name) {
+            return;
+        }
+        this.events.push(TierNameChangeEvent.create({tier: this}));
+        this.#name = newName;
     }
 
     /** @type {string[]} */
@@ -56,7 +70,16 @@ module.exports = class Tier {
         return this.#status;
     }
     set status(value) {
-        this.#status = validateStatus(value);
+        const newStatus = validateStatus(value);
+        if (newStatus === this.#status) {
+            return;
+        }
+        if (newStatus === 'active') {
+            this.events.push(TierActivatedEvent.create({tier: this}));
+        } else {
+            this.events.push(TierArchivedEvent.create({tier: this}));
+        }
+        this.#status = newStatus;
     }
 
     /** @type {'public'|'none'} */
@@ -108,6 +131,30 @@ module.exports = class Tier {
     }
     set yearlyPrice(value) {
         this.#yearlyPrice = validateYearlyPrice(value, this.#type);
+    }
+
+    updatePricing({currency, monthlyPrice, yearlyPrice}) {
+        if (this.#type !== 'paid') {
+            throw new ValidationError({
+                message: 'Cannot set pricing for free tiers'
+            });
+        }
+
+        const newCurrency = validateCurrency(currency, this.#type);
+        const newMonthlyPrice = validateMonthlyPrice(monthlyPrice, this.#type);
+        const newYearlyPrice = validateYearlyPrice(yearlyPrice, this.#type);
+
+        if (newCurrency === this.#currency && newMonthlyPrice === this.#monthlyPrice && newYearlyPrice === this.#yearlyPrice) {
+            return;
+        }
+
+        this.#currency = newCurrency;
+        this.#monthlyPrice = newMonthlyPrice;
+        this.#yearlyPrice = newYearlyPrice;
+
+        this.events.push(TierPriceChangeEvent.create({
+            tier: this
+        }));
     }
 
     /** @type {Date} */
@@ -169,7 +216,9 @@ module.exports = class Tier {
      */
     static async create(data) {
         let id;
+        let isNew = false;
         if (!data.id) {
+            isNew = true;
             id = new ObjectID();
         } else if (typeof data.id === 'string') {
             id = ObjectID.createFromHexString(data.id);
@@ -197,7 +246,7 @@ module.exports = class Tier {
         let updatedAt = validateUpdatedAt(data.updatedAt);
         let benefits = validateBenefits(data.benefits);
 
-        return new Tier({
+        const tier = new Tier({
             id,
             slug,
             name,
@@ -214,6 +263,12 @@ module.exports = class Tier {
             updated_at: updatedAt,
             benefits
         });
+
+        if (isNew) {
+            tier.events.push(TierCreatedEvent.create({tier}));
+        }
+
+        return tier;
     }
 };
 
