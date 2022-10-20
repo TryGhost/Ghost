@@ -41,11 +41,19 @@
                             {{autofocus}}
                             data-prevent-escape-close-modal="true"
                         />
+                        {{#if (eq this.showError link.link.link_id)}}
+                            <GhTaskButton
+                            @buttonText="Retry"
+                            @task={{this.setLink}}
+                            @successText="Link updated"
+                            @class="gh-btn gh-btn-red gh-btn-icon" />
+                        {{else}}
                             <GhTaskButton
                             @buttonText="Update"
                             @task={{this.setLink}}
                             @successText="Link updated"
                             @class="gh-btn gh-btn-green gh-btn-icon" />
+                        {{/if}}
                         </div>
                         <span class="gh-links-list-item-error">Please enter a valid link</span>
                     </div>
