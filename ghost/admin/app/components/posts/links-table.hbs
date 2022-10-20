@@ -23,7 +23,8 @@
                 <div class="gh-links-list-url">
                     {{#if (eq this.editingLink link.link.link_id)}}
                     <div class="gh-links-list-input-container {{if (eq this.showError link.link.link_id) "error"}}">
-                        <input
+                        <div class="gh-input-group">
+                            <input
                             aria-label="Link"
                             type="text"
                             class="gh-input"
@@ -36,6 +37,12 @@
                             {{autofocus}}
                             data-prevent-escape-close-modal="true"
                         />
+                            <GhTaskButton
+                            @buttonText="Update"
+                            @task={{this.setLink}}
+                            @successText="Link updated"
+                            @class="gh-btn gh-btn-green gh-btn-icon" />
+                        </div>
                         <span class="gh-links-list-item-error">Please enter a valid link</span>
                     </div>
                     {{else}}
