@@ -18,7 +18,7 @@
             </div>
         </div>
         {{#each this.visibleLinks as |link|}}
-            <div class="gh-links-list-item">
+            <div class="gh-links-list-item {{if (eq this.editingLink link.link.link_id) "gh-links-list-item-edit-mode"}}">
                 {{#if (feature "fixNewsletterLinks")}}
                 <div class="gh-links-list-url">
                     {{#if (eq this.editingLink link.link.link_id)}}
