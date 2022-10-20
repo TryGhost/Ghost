@@ -13,7 +13,7 @@ export default class MembersEventFilter extends Helper {
 
     compute(
         positionalParams,
-        {excludedEvents = [], member = '', excludeEmailEvents = false}
+        {excludedEvents = [], member = '', post = '', excludeEmailEvents = false}
     ) {
         const excludedEventsSet = new Set();
 
@@ -41,6 +41,10 @@ export default class MembersEventFilter extends Helper {
 
         if (member) {
             filterParts.push(`data.member_id:${member}`);
+        }
+
+        if (post) {
+            filterParts.push(`data.post_id:${post}`);
         }
 
         return filterParts.join('+');
