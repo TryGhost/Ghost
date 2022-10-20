@@ -625,8 +625,8 @@
                     "object_type": "link"
                 },
                 {
-                    "name": "Bulk edit links",
-                    "action_type": "bulkEdit",
+                    "name": "Edit links",
+                    "action_type": "edit",
                     "object_type": "link"
                 }
             ]

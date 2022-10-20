@@ -1,8 +1,8 @@
 const {addPermissionWithRoles} = require('../../utils');
 
 module.exports = addPermissionWithRoles({
-    name: 'Bulk edit links',
-    action: 'bulkEdit',
+    name: 'Edit links',
+    action: 'edit',
     object: 'link'
 }, [
     'Administrator',
