@@ -443,6 +443,9 @@ module.exports = class EventRepository {
         if (filters['data.member_id']) {
             options.filter.push(filters['data.member_id'].replace(/data.member_id:/g, 'member_id:'));
         }
+        if (filters['data.post_id']) {
+            options.filter.push(filters['data.post_id'].replace(/data.post_id:/g, 'email.post_id:'));
+        }
         options.filter = options.filter.join('+');
         options.order = options.order.replace(/created_at/g, 'delivered_at');
 
@@ -480,6 +483,9 @@ module.exports = class EventRepository {
         if (filters['data.member_id']) {
             options.filter.push(filters['data.member_id'].replace(/data.member_id:/g, 'member_id:'));
         }
+        if (filters['data.post_id']) {
+            options.filter.push(filters['data.post_id'].replace(/data.post_id:/g, 'email.post_id:'));
+        }
         options.filter = options.filter.join('+');
         options.order = options.order.replace(/created_at/g, 'opened_at');
 
@@ -516,6 +522,9 @@ module.exports = class EventRepository {
         }
         if (filters['data.member_id']) {
             options.filter.push(filters['data.member_id'].replace(/data.member_id:/g, 'member_id:'));
+        }
+        if (filters['data.post_id']) {
+            options.filter.push(filters['data.post_id'].replace(/data.post_id:/g, 'email.post_id:'));
         }
         options.filter = options.filter.join('+');
         options.order = options.order.replace(/created_at/g, 'failed_at');
