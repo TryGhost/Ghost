@@ -6,7 +6,7 @@ module.exports = {
         options: [
             'filter'
         ],
-        permissions: false,
+        permissions: true,
         async query(frame) {
             const links = await linkTrackingService.service.getLinks(frame.options);
 
