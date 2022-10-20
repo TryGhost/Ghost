@@ -109,12 +109,7 @@ module.exports = class MembersCSVImporter {
 
         const membersApi = await this._getMembersApi();
 
-        const defaultProductPage = await membersApi.productRepository.list({
-            filter: 'type:paid',
-            limit: 1
-        });
-
-        const defaultProduct = defaultProductPage.data[0];
+        const defaultProduct = await membersApi.productRepository.getDefaultProduct();
 
         const result = await rows.reduce(async (resultPromise, row) => {
             const resultAccumulator = await resultPromise;
