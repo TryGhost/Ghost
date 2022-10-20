@@ -1,14 +1,17 @@
 const ObjectID = require('bson-objectid').default;
 const {BadRequestError} = require('@tryghost/errors');
 const Tier = require('./Tier');
-const TierSlugService = require('./TierSlugService');
 
 /**
  * @typedef {object} ITierRepository
  * @prop {(id: ObjectID) => Promise<Tier>} getById
- * @prop {(slug: string) => Promise<Tier>} getBySlug
  * @prop {(tier: Tier) => Promise<void>} save
  * @prop {(options?: {filter?: string}) => Promise<Tier[]>} getAll
+ */
+
+/**
+ * @typedef {object} ISlugService
+ * @prop {(input: string) => Promise<string>} generate
  */
 
 /**
@@ -29,14 +32,12 @@ module.exports = class TiersAPI {
     /** @type {ITierRepository} */
     #repository;
 
-    /** @type {TierSlugService} */
+    /** @type {ISlugService} */
     #slugService;
 
     constructor(deps) {
         this.#repository = deps.repository;
-        this.#slugService = new TierSlugService({
-            repository: deps.repository
-        });
+        this.#slugService = deps.slugService;
     }
 
     /**
@@ -116,7 +117,10 @@ module.exports = class TiersAPI {
                 message: 'Cannot create free Tier'
             });
         }
+
+        const slug = await this.#slugService.generate(data.slug || data.name);
         const tier = await Tier.create({
+            slug,
             type: 'paid',
             status: 'active',
             visibility: data.visibility,
@@ -128,7 +132,7 @@ module.exports = class TiersAPI {
             yearly_price: data.yearly_price,
             currency: data.currency,
             trial_days: data.trial_days
-        }, this.#slugService);
+        });
 
         await this.#repository.save(tier);
 
