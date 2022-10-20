@@ -52,7 +52,7 @@
                 <Posts::PostActivityFeed
                     @postId={{this.post.id}}
                     @eventType="sent"
-                    @linkQuery={{hash filterParam=(concat "emails.post_id:[" this.post.id "]") }}
+                    @linkQuery={{hash filterParam=(concat "emails.post_id:" this.post.id) }}
                     @linkText="See filtered members for sent"
                 />
             </tabs.tabPanel>
@@ -67,7 +67,7 @@
                     <Posts::PostActivityFeed
                         @postId={{this.post.id}}
                         @eventType="opened"
-                        @linkQuery={{hash filterParam=(concat "opened_emails.post_id:[" this.post.id "]") }}
+                        @linkQuery={{hash filterParam=(concat "opened_emails.post_id:" this.post.id) }}
                         @linkText="See filtered members for opened"
                     />
                 </tabs.tabPanel>
@@ -83,7 +83,7 @@
                     <Posts::PostActivityFeed
                         @postId={{this.post.id}}
                         @eventType="clicked"
-                        @linkQuery={{hash filterParam=(concat "clicked_links.post_id:[" this.post.id "]") }}
+                        @linkQuery={{hash filterParam=(concat "clicked_links.post_id:" this.post.id) }}
                         @linkText="See filtered members for clicked"
                     />
                 </tabs.tabPanel>

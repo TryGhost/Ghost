@@ -20,6 +20,7 @@ describe('Acceptance: Members filtering', function () {
     beforeEach(async function () {
         this.server.loadFixtures('configs');
         this.server.loadFixtures('settings');
+        this.server.loadFixtures('newsletters');
         enableStripe(this.server);
         enableNewsletters(this.server, true);
 
@@ -203,6 +204,22 @@ describe('Acceptance: Members filtering', function () {
 
             expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows after delete')
                 .to.equal(7);
+
+            // Can set filter by path
+            await visit('/');
+            await visit('/members?filter=' + encodeURIComponent('subscribed:true'));
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - true - from URL')
+                .to.equal(3);
+            await click('[data-test-button="members-filter-actions"]');
+            expect(find(`${filterSelector} [data-test-select="members-filter-value"]`)).to.have.value('true');
+
+            // Can set filter by path
+            await visit('/');
+            await visit('/members?filter=' + encodeURIComponent('subscribed:false'));
+            expect(findAll('[data-test-list="members-list-item"]').length, '# of filtered member rows - false - from URL')
+                .to.equal(4);
+            await click('[data-test-button="members-filter-actions"]');
+            expect(find(`${filterSelector} [data-test-select="members-filter-value"]`)).to.have.value('false');
         });
 
         it('can filter by member status', async function () {

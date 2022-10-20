@@ -1,14 +1,19 @@
-<GhTokenInput
+<PowerSelect
+    @searchEnabled={{true}}
     @options={{this.options}}
-    @selected={{this.selectedOptions}}
+    @selected={{this.selectedOption}}
+    @onChange={{this.onChange}}
+    @triggerClass="gh-resource-select-trigger"
+    @dropdownClass="gh-resource-select-dropdown"
+    @placeholder={{this.placeholderText}}
+    @renderInPlace={{this.renderInPlace}}
     @disabled={{or @disabled this.fetchOptionsTask.isRunning}}
     @optionsComponent={{component "power-select/options"}}
-    @allowCreation={{false}}
-    @renderInPlace={{this.renderInPlace}}
-    @onChange={{this.onChange}}
-    @class="select-members"
-    @placeholder={{this.placeholderText}}
-    as |resource|
+    @search={{this.searchAndSuggest}}
+    @searchField={{this.searchField}}
+    @searchMessage={{@searchMessage}}
+    @searchPlaceholder={{this.searchPlaceholderText}}
+  as |resource|
 >
-    {{resource.name}}
-</GhTokenInput>
+  {{resource.title}}
+</PowerSelect>

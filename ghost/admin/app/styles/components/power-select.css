@@ -297,6 +297,29 @@
     max-height: unset;
 }
 
+/* Resource input */
+.gh-resource-select-trigger {
+    height: 33px;
+    font-size: 1.35rem;
+    padding: 6px 12px;
+    box-sizing: border-box;
+    line-height: normal;
+    background: #fff;
+    display: flex;
+    align-items: center;
+}
+
+.gh-resource-select-trigger .ember-power-select-placeholder {
+    margin-left: 0;
+}
+
+.gh-resource-select-dropdown  .ember-power-select-search input {
+    border-bottom: 1px solid #dddedf !important;
+    padding: 7px 12px !important;
+    line-height: 1.35em;
+    font-size: 1.4rem;
+}
+
 .ember-power-select-options[role="listbox"] {
     overflow-x: hidden;
 }
