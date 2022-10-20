@@ -67,7 +67,7 @@ export function CardCaptionEditor({
 
     if (isSelected || caption) {
         return (
-            <figcaption className="w-full p-2">
+            <figcaption className="flex w-full p-2">
                 {isEditingAlt
                     ? <AltTextInput value={altText} placeholder={altTextPlaceholder} onChange={setAltText} />
                     : <CaptionInput value={caption} placeholder={captionPlaceholder} onChange={setCaption} /> }

@@ -22,6 +22,9 @@ const Template = args => (
 
 export const Default = Template.bind({});
 Default.args = {
-    isSelected: false
+    isSelected: false,
+    setAltText: true,
+    caption: '',
+    altText: ''
 };
 

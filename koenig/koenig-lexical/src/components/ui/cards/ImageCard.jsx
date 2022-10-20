@@ -66,5 +66,8 @@ export function ImageCard({
 }
 
 ImageCard.propTypes = {
-    isSelected: PropTypes.bool
+    isSelected: PropTypes.bool,
+    setAltText: PropTypes.bool,
+    caption: PropTypes.string,
+    altText: PropTypes.string
 };
