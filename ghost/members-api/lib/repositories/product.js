@@ -129,6 +129,21 @@ class ProductRepository {
     }
 
     /**
+     * Fetches the default product
+     * @param {Object} options
+     * @returns {Promise<ProductModel>}
+     */
+    async getDefaultProduct(options = {}) {
+        const defaultProductPage = await this.list({
+            filter: 'type:paid+active:true',
+            limit: 1,
+            ...options
+        });
+
+        return defaultProductPage.data[0];
+    }
+
+    /**
      * Creates a product from a name
      *
      * @param {object} data
