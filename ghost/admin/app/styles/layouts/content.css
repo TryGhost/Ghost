@@ -860,13 +860,13 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     min-height: 400px;
 }
 
-.gh-post-analytics-header {
+.gh-newsletter-clicks-header {
     align-items: center;
     font-size: 1.55rem;
     font-weight: 700;
     line-height: 1em;
     margin: 0 0 8px;
-    padding: 32px 0;
+    padding: 0;
     color: var(--black);
     white-space: nowrap;
     letter-spacing: -.3px;
