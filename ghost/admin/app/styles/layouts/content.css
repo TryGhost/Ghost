@@ -847,6 +847,14 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     font-weight: 700;
 }
 
+.gh-post-analytics-box h4.gh-main-section-header.small {
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+    color: var(--midgrey);
+    padding: 4px 0 10px;
+}
+
 .gh-post-analytics-resource p {
     font-size: 1.5rem;
     letter-spacing: 0;
