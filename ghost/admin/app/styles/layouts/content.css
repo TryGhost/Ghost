@@ -1113,10 +1113,15 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 }
 
 .gh-links-list-url {
-    display: flex;
+    display: grid;
+    grid-template-columns: min-content minmax(auto,min-content) min-content min-content;
     align-items: center;
     padding-right: 32px;
-    overflow: hidden;
+    /* overflow: hidden; */
+}
+
+.gh-links-list-item-edit-mode .gh-links-list-url {
+    grid-template-columns: auto;
 }
 
 .gh-links-list-item a {
