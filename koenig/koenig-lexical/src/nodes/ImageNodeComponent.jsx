@@ -9,6 +9,7 @@ export function ImageNodeComponent({nodeKey, src, altText, caption}) {
     const [editor] = useLexicalComposerContext();
     const {isSelected} = React.useContext(CardContext);
     const {imageUploader} = React.useContext(KoenigComposerContext);
+    const [toolbarVisible, setToolbarVisible] = React.useState(false);
 
     const onFileChange = async (e) => {
         const fls = e.target.files;
@@ -34,15 +35,26 @@ export function ImageNodeComponent({nodeKey, src, altText, caption}) {
         });
     };
 
+    React.useEffect(() => {
+        if (isSelected && src !== '') {
+            setToolbarVisible(true);
+        } else {
+            setToolbarVisible(false);
+        }
+    }, [isSelected, src]);
+
     return (
-        <ImageCard
-            isSelected={isSelected}
-            onFileChange={onFileChange}
-            src={src}
-            altText={altText}
-            setAltText={setAltText}
-            caption={caption}
-            setCaption={setCaption}
-        />
+        <>  
+            <ImageCard
+                isSelected={isSelected}
+                onFileChange={onFileChange}
+                src={src}
+                altText={altText}
+                setAltText={setAltText}
+                caption={caption}
+                setCaption={setCaption}
+                toolbarVisible={toolbarVisible}
+            />
+        </>
     );
 }

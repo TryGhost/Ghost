@@ -47,7 +47,8 @@ export async function assertHTML(
         ignoreInlineStyles = true,
         ignoreInnerSVG = true,
         ignoreBase64String = true,
-        ignoreCardContents = false
+        ignoreCardContents = false,
+        ignoreImageToolbar = true
     } = {}
 ) {
     const actualHtml = await page.$eval('div[contenteditable="true"]', e => e.innerHTML);
@@ -56,14 +57,16 @@ export async function assertHTML(
         ignoreInlineStyles,
         ignoreInnerSVG,
         ignoreBase64String,
-        ignoreCardContents
+        ignoreCardContents,
+        ignoreImageToolbar
     });
     const expected = prettifyHTML(expectedHtml.replace(/\n/gm, ''), {
         ignoreClasses,
         ignoreInlineStyles,
         ignoreInnerSVG,
         ignoreBase64String,
-        ignoreCardContents
+        ignoreCardContents,
+        ignoreImageToolbar
     });
     expect(actual).toEqual(expected);
 }
@@ -94,6 +97,10 @@ export function prettifyHTML(string, options = {}) {
             }
         });
         output = document.body.innerHTML;
+    }
+
+    if (options.ignoreImageToolbar) {
+        output = output.replace(/<span data-kg-image-toolbar="true"[^>]*>.*<\/span>/g, '');
     }
 
     return prettier
