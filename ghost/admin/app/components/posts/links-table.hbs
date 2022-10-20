@@ -58,7 +58,7 @@
                     <a href="{{link.link.to}}" target="_blank" rel="noopener noreferrer">
                         {{link.link.title}}
                     </a>
-                    <span class="gh-links-list-item-edited {{if link.link.edited "gh-links-list-item-edited-show"}}">&nbsp;&ndash; edited</span>
+                    <span class="gh-links-list-item-edited {{if link.link.edited "gh-links-list-item-edited-show"}}">&nbsp;(edited)</span>
                     <span class="gh-links-list-item-success {{if (eq @showSuccess link.link.link_id) "gh-links-list-item-success-show"}}">{{svg-jar "check-circle"}}</span>
                     {{/if}}
                 </div>
