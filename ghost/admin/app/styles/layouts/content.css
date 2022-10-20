@@ -1235,6 +1235,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 .gh-links-info {
     color: var(--green);
     font-weight: 500;
+    padding-left: 11px;
 }
 
 .gh-links-pagination {
