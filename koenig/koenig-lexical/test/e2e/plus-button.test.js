@@ -210,7 +210,7 @@ describe('Plus button', async () => {
         it('does not close on click inside', async function () {
             await focusEditor(page);
             await page.click('[data-kg-plus-button]');
-            await page.click('[data-kg-plus-menu] > div > div');
+            await page.click('[data-kg-plus-menu] [role="separator"] > span');
             expect(await page.$('[data-kg-plus-menu]')).not.toBeNull();
         });
 

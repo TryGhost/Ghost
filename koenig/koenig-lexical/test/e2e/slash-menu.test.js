@@ -108,7 +108,7 @@ describe('Slash menu', async () => {
         it('does not close on click inside menu', async function () {
             await focusEditor(page);
             await page.keyboard.type('/');
-            await page.click('[data-kg-slash-menu] > div > div'); // better selector for menu headings?
+            await page.click('[data-kg-slash-menu] [role="separator"] > span'); // better selector for menu headings?
 
             expect(await page.$('[data-kg-slash-menu]')).not.toBeNull();
         });

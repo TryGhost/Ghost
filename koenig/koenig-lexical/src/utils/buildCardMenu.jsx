@@ -4,7 +4,7 @@ import {
     CardMenuItem
 } from '../components/ui/CardMenu';
 
-export function buildCardMenu(editor, {afterInsert} = {}) {
+export function buildCardMenu(nodes, {insert} = {}) {
     const menu = new Map();
     menu.set('Primary', []);
 
@@ -18,12 +18,7 @@ export function buildCardMenu(editor, {afterInsert} = {}) {
         }
     }
 
-    const nodes = editor._nodes;
-    for (const [nodeType, {klass}] of nodes) {
-        if (!klass.kgMenu) {
-            continue;
-        }
-
+    for (const [nodeType, klass] of nodes) {
         if (Array.isArray(klass.kgMenu)) {
             klass.kgMenu.forEach(item => addMenuItem({nodeType, ...item}));
         } else {
@@ -41,17 +36,18 @@ export function buildCardMenu(editor, {afterInsert} = {}) {
     };
 
     menu.forEach((items, section) => {
-        menuComponents.push(<CardMenuSection key={section} label={section} />);
+        const itemComponents = [];
 
         items.forEach((item) => {
             const onClick = (event) => {
                 event.preventDefault();
-                editor.dispatchCommand(item.insertCommand);
-                afterInsert?.();
+                insert?.(item.insertCommand);
             };
 
-            menuComponents.push(<CardMenuItem key={`${section}-${item.label}`} label={item.label} desc={item.desc} Icon={item.Icon} onMouseDown={preventMouseDown} onClick={onClick} />);
+            itemComponents.push(<CardMenuItem key={`${section}-${item.label}`} label={item.label} desc={item.desc} Icon={item.Icon} onMouseDown={preventMouseDown} onClick={onClick} />);
         });
+
+        menuComponents.push(<CardMenuSection key={section} label={section}>{itemComponents}</CardMenuSection>);
     });
 
     return (

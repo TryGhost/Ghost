@@ -3,6 +3,7 @@ import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {$getSelection, $isParagraphNode, $isRangeSelection} from 'lexical';
 import {getSelectedNode} from '../utils/getSelectedNode';
 import {PlusButton, PlusMenu} from '../components/ui/PlusMenu';
+import {getEditorCardNodes} from '../utils/getEditorCardNodes';
 import {buildCardMenu} from '../utils/buildCardMenu';
 
 function usePlusCardMenu(editor) {
@@ -215,7 +216,12 @@ function usePlusCardMenu(editor) {
     });
 
     React.useEffect(() => {
-        setCardMenu(buildCardMenu(editor, {afterInsert: closeMenu}));
+        const insert = (insertCommand) => {
+            editor.dispatchCommand(insertCommand);
+            closeMenu();
+        };
+        const cardNodes = getEditorCardNodes(editor);
+        setCardMenu(buildCardMenu(cardNodes, {insert}));
     }, [editor, closeMenu]);
 
     const style = {

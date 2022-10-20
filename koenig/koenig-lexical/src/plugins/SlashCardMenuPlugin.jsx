@@ -3,11 +3,13 @@ import {$getSelection, $isParagraphNode, $isRangeSelection} from 'lexical';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {SlashMenu} from '../components/ui/SlashMenu';
 import {getSelectedNode} from '../utils/getSelectedNode';
+import {getEditorCardNodes} from '../utils/getEditorCardNodes';
 import {buildCardMenu} from '../utils/buildCardMenu';
 
 function useSlashCardMenu(editor) {
     const [isShowingMenu, setIsShowingMenu] = React.useState(false);
     const [topPosition, setTopPosition] = React.useState(0);
+    const [query, setQuery] = React.useState('');
     const [cardMenu, setCardMenu] = React.useState([]);
     const cachedRange = React.useRef(null);
     const containerRef = React.useRef(null);
@@ -36,6 +38,7 @@ function useSlashCardMenu(editor) {
             moveCursorToCachedRange();
         }
         setIsShowingMenu(false);
+        setQuery('');
         cachedRange.current = null;
     }, [setIsShowingMenu]);
 
@@ -76,10 +79,11 @@ function useSlashCardMenu(editor) {
                 // because that will _always_ blur the contenteditable which we don't want
                 cachedRange.current = nativeSelection.getRangeAt(0);
 
-                // TODO: adjust search query
+                // capture text after the / as a query for filtering cards
+                setQuery(node.getTextContent().slice(1));
             });
         });
-    }, [editor, closeMenu]);
+    }, [editor, closeMenu, setQuery]);
 
     // open the menu when / is pressed on a blank paragraph
     React.useEffect(() => {
@@ -182,8 +186,13 @@ function useSlashCardMenu(editor) {
 
     // build up the card menu based on registered nodes and current search
     React.useEffect(() => {
-        setCardMenu(buildCardMenu(editor, {afterInsert: closeMenu}));
-    }, [editor, closeMenu]);
+        const insert = (insertCommand) => {
+            editor.dispatchCommand(insertCommand);
+            closeMenu();
+        };
+        const cardNodes = getEditorCardNodes(editor);
+        setCardMenu(buildCardMenu(cardNodes, {insert}));
+    }, [editor, query, closeMenu]);
 
     const style = {
         top: `${topPosition}px`

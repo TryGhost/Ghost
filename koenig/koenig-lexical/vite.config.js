@@ -13,7 +13,8 @@ export default defineConfig({
         react()
     ],
     define: {
-        'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
+        'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+        'process.env.VITEST_SEGFAULT_RETRY': 3
     },
     build: {
         minify: true,
@@ -41,6 +42,8 @@ export default defineConfig({
         }
     },
     test: {
-        environment: 'jsdom'
+        globals: true, // required for @testing-library/jest-dom extensions
+        environment: 'jsdom',
+        setupFiles: './test/test-setup.js'
     }
 });
