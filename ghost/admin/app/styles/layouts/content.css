@@ -866,7 +866,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     font-weight: 700;
     line-height: 1em;
     margin: 0 0 8px;
-    padding: 0;
+    padding: 32px 0;
     color: var(--black);
     white-space: nowrap;
     letter-spacing: -.3px;
