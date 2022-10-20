@@ -8,6 +8,7 @@ Object {
         "clicks": Any<Number>,
       },
       "link": Object {
+        "edited": false,
         "from": Any<String>,
         "link_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "to": Any<String>,
@@ -19,6 +20,7 @@ Object {
         "clicks": Any<Number>,
       },
       "link": Object {
+        "edited": false,
         "from": Any<String>,
         "link_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "to": Any<String>,
@@ -30,6 +32,7 @@ Object {
         "clicks": Any<Number>,
       },
       "link": Object {
+        "edited": false,
         "from": Any<String>,
         "link_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "to": Any<String>,
@@ -98,7 +101,7 @@ exports[`Links API Can browse all links 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "885",
+  "content-length": "930",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -154,6 +157,7 @@ Object {
         "clicks": Any<Number>,
       },
       "link": Object {
+        "edited": true,
         "from": Any<String>,
         "link_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "to": "https://example.com/subscribe?ref=Test-newsletter",
@@ -165,6 +169,7 @@ Object {
         "clicks": Any<Number>,
       },
       "link": Object {
+        "edited": false,
         "from": Any<String>,
         "link_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "to": Any<String>,
@@ -176,6 +181,7 @@ Object {
         "clicks": Any<Number>,
       },
       "link": Object {
+        "edited": false,
         "from": Any<String>,
         "link_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "to": Any<String>,
@@ -244,7 +250,7 @@ exports[`Links API Can bulk update links with external redirect 4: [headers] 1`]
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "885",
+  "content-length": "929",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -300,6 +306,7 @@ Object {
         "clicks": Any<Number>,
       },
       "link": Object {
+        "edited": false,
         "from": Any<String>,
         "link_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "to": Any<String>,
@@ -311,6 +318,7 @@ Object {
         "clicks": Any<Number>,
       },
       "link": Object {
+        "edited": true,
         "from": Any<String>,
         "link_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "to": "http://127.0.0.1:2369/blog/emails/test?example=1&ref=Test-newsletter&attribution_type=post&attribution_id=618ba1ffbe2896088840a6df",
@@ -322,6 +330,7 @@ Object {
         "clicks": Any<Number>,
       },
       "link": Object {
+        "edited": true,
         "from": Any<String>,
         "link_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "to": "http://127.0.0.1:2369/blog/emails/test?example=1&ref=Test-newsletter&attribution_type=post&attribution_id=618ba1ffbe2896088840a6df",
@@ -390,7 +399,7 @@ exports[`Links API Can bulk update multiple links with same site redirect 4: [he
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "841",
+  "content-length": "884",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -446,6 +455,7 @@ Object {
         "clicks": Any<Number>,
       },
       "link": Object {
+        "edited": false,
         "from": Any<String>,
         "link_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "to": "https://example.com/subscripe?ref=Test-newsletter",
@@ -457,6 +467,7 @@ Object {
         "clicks": Any<Number>,
       },
       "link": Object {
+        "edited": false,
         "from": Any<String>,
         "link_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "to": Any<String>,
@@ -468,6 +479,7 @@ Object {
         "clicks": Any<Number>,
       },
       "link": Object {
+        "edited": false,
         "from": Any<String>,
         "link_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
         "to": Any<String>,
@@ -536,7 +548,7 @@ exports[`Links API Can call bulk update link with 0 matches 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "885",
+  "content-length": "930",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
