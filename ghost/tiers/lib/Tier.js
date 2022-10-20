@@ -162,10 +162,9 @@ module.exports = class Tier {
 
     /**
      * @param {any} data
-     * @param {ISlugService} slugService
      * @returns {Promise<Tier>}
      */
-    static async create(data, slugService) {
+    static async create(data) {
         let id;
         if (!data.id) {
             id = new ObjectID();
@@ -181,13 +180,7 @@ module.exports = class Tier {
 
         let name = validateName(data.name);
 
-        let slug;
-        if (data.slug) {
-            slug = await slugService.validate(data.slug);
-        } else {
-            slug = await slugService.generate(name);
-        }
-
+        let slug = validateSlug(data.slug);
         let description = validateDescription(data.description);
         let welcomePageURL = validateWelcomePageURL(data.welcome_page_url);
         let status = validateStatus(data.status || 'active');
@@ -220,6 +213,15 @@ module.exports = class Tier {
         });
     }
 };
+
+function validateSlug(value) {
+    if (!value || typeof value !== 'string' || value.length > 191) {
+        throw new ValidationError({
+            message: 'Tier slug must be a string with a maximum of 191 characters'
+        });
+    }
+    return value;
+}
 
 function validateName(value) {
     if (typeof value !== 'string') {

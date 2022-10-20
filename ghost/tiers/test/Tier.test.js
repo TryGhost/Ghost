@@ -35,6 +35,7 @@ const invalidInputs = [
     {id: [100]},
     {name: 100},
     {name: ('a').repeat(200)},
+    {slug: ('slug').repeat(50)},
     {description: ['whatever?']},
     {description: ('b').repeat(200)},
     {welcome_page_url: 'hello world'},
@@ -77,7 +78,7 @@ describe('Tier', function () {
                 let input = {};
                 Object.assign(input, validInput, invalidInput);
                 await assertError(async function () {
-                    await Tier.create(input, {validate: x => x, generate: x => x});
+                    await Tier.create(input);
                 });
             }
         });
@@ -86,12 +87,12 @@ describe('Tier', function () {
             for (const validInputItem of validInputs) {
                 let input = {};
                 Object.assign(input, validInput, validInputItem);
-                await Tier.create(input, {validate: x => x, generate: x => x});
+                await Tier.create(input);
             }
         });
 
         it('Can create a Tier with valid input', async function () {
-            const tier = await Tier.create(validInput, {validate: x => x, generate: x => x});
+            const tier = await Tier.create(validInput);
 
             const expectedProps = [
                 'id',
@@ -117,7 +118,7 @@ describe('Tier', function () {
         });
 
         it('Errors when attempting to set invalid properties', async function () {
-            const tier = await Tier.create(validInput, {validate: x => x, generate: x => x});
+            const tier = await Tier.create(validInput);
 
             assertError(() => {
                 tier.name = 20;

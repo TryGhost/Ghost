@@ -48,16 +48,6 @@ class InMemoryTierRepository {
     }
 
     /**
-     * @param {string} slug
-     * @returns {Promise<Tier>}
-     */
-    async getBySlug(slug) {
-        return this.#store.find((item) => {
-            return item.slug === slug;
-        });
-    }
-
-    /**
      * @param {object} [options]
      * @param {string} [options.filter]
      * @returns {Promise<Tier[]>}
