@@ -1,21 +1,11 @@
 const {faker} = require('@faker-js/faker');
 const {slugify} = require('@tryghost/string');
 const TableImporter = require('./base');
-const generateEvents = require('../utils/event-generator');
 
 class PostsImporter extends TableImporter {
     constructor(knex, {newsletters}) {
         super('posts', knex);
         this.newsletters = newsletters;
-    }
-
-    setImportOptions({amount, startTime, endTime}) {
-        this.timestamps = generateEvents({
-            shape: 'flat',
-            startTime,
-            endTime,
-            total: amount
-        });
     }
 
     generate() {
@@ -24,7 +14,11 @@ class PostsImporter extends TableImporter {
             min: 3,
             max: 10
         })).split('\n');
-        const timestamp = this.timestamps.shift();
+        const twoYearsAgo = new Date();
+        twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
+        const twoWeeksAgo = new Date();
+        twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+        const timestamp = faker.date.between(twoYearsAgo, twoWeeksAgo);
         return {
             id: faker.database.mongodbObjectId(),
             created_at: timestamp,
@@ -33,7 +27,7 @@ class PostsImporter extends TableImporter {
             published_at: faker.date.soon(5, timestamp),
             uuid: faker.datatype.uuid(),
             title: title,
-            slug: slugify(title),
+            slug: `${slugify(title)}-${faker.random.numeric(3)}`,
             status: 'published',
             mobiledoc: JSON.stringify({
                 version: '0.3.1',

@@ -17,7 +17,7 @@ class NewslettersImporter extends TableImporter {
             uuid: faker.datatype.uuid(),
             name: name,
             description: `${faker.company.bs()}`,
-            slug: slugify(name),
+            slug: `${slugify(name)}-${faker.random.numeric(3)}`,
             sender_reply_to: 'hello@example.com',
             status: 'active',
             subscribe_on_signup: faker.datatype.boolean(),

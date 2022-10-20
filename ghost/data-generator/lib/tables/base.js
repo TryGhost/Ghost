@@ -9,8 +9,13 @@ class TableImporter {
     }
 
     /**
+     * @typedef {Function} AmountFunction
+     * @returns {number}
+     */
+
+    /**
      * @typedef {Object.<string,any>} ImportOptions
-     * @property {number} amount Number of events to generate
+     * @property {number|AmountFunction} amount Number of events to generate
      * @property {Object} [model] Used to reference another object during creation
      */
 
@@ -38,8 +43,11 @@ class TableImporter {
 
         this.setImportOptions(options);
 
+        // Use dynamic amount if faker function given
+        const amount = (typeof options.amount === 'function') ? options.amount() : options.amount;
+
         const data = [];
-        for (let i = 0; i < options.amount; i++) {
+        for (let i = 0; i < amount; i++) {
             const model = this.generate();
             if (model) {
                 // Only push models when one is generated successfully

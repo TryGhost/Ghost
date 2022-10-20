@@ -2,8 +2,11 @@ const {
     PostsImporter,
     NewslettersImporter,
     UsersImporter,
-    PostsAuthorsImporter
+    PostsAuthorsImporter,
+    TagsImporter,
+    PostsTagsImporter
 } = require('./tables');
+const {faker} = require('@faker-js/faker');
 
 /**
  * @typedef {Object} DataGeneratorOptions
@@ -40,12 +43,8 @@ class DataGenerator {
             const postImporter = new PostsImporter(transaction, {
                 newsletters
             });
-            const twoYearsAgo = new Date();
-            twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
             const posts = await postImporter.import({
-                amount: 100,
-                startTime: twoYearsAgo,
-                endTime: new Date()
+                amount: 100
             });
 
             const userImporter = new UsersImporter(transaction);
@@ -55,6 +54,21 @@ class DataGenerator {
                 users
             });
             await postAuthorImporter.importForEach(posts, {amount: 1});
+
+            const tagImporter = new TagsImporter(transaction, {
+                users
+            });
+            const tags = await tagImporter.import({amount: 20});
+
+            const postTagImporter = new PostsTagsImporter(transaction, {
+                tags
+            });
+            await postTagImporter.importForEach(posts, {
+                amount: () => faker.datatype.number({
+                    min: 1,
+                    max: 3
+                })
+            });
         }
 
         await transaction.commit();
