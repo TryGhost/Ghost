@@ -9,10 +9,10 @@ class UsersImporter extends TableImporter {
     }
 
     generate() {
-        const name = faker.name.fullName();
+        const name = `${faker.name.firstName()} ${faker.name.lastName()}`;
         return {
             id: faker.database.mongodbObjectId(),
-            name: faker.name.fullName(),
+            name: name,
             slug: slugify(name),
             password: security.password.hash(faker.color.human()),
             email: faker.internet.email(name),

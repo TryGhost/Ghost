@@ -52,10 +52,17 @@ class TableImporter {
             if (model) {
                 // Only push models when one is generated successfully
                 data.push(model);
+            } else {
+                // After first null assume that there is no more data
+                break;
             }
         }
 
-        return await this.knex.insert(data, ['id']).into(this.name);
+        const rows = ['id'];
+        if (options && options.rows) {
+            rows.push(...options.rows);
+        }
+        return await this.knex.batchInsert(this.name, data, 500).returning(rows);
     }
 
     /**

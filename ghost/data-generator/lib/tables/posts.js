@@ -1,5 +1,6 @@
 const {faker} = require('@faker-js/faker');
 const {slugify} = require('@tryghost/string');
+const {luck} = require('../utils/random');
 const TableImporter = require('./base');
 
 class PostsImporter extends TableImporter {
@@ -49,7 +50,7 @@ class PostsImporter extends TableImporter {
             }),
             html: content.map(paragraph => `<p>${paragraph}</p>`).join(''),
             email_recipient_filter: 'all',
-            newsletter_id: faker.datatype.boolean() ? this.newsletters[faker.datatype.number(this.newsletters.length - 1)].id : undefined
+            newsletter_id: luck(10) ? this.newsletters[0].id : this.newsletters[1].id
         };
     }
 }
