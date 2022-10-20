@@ -1,6 +1,10 @@
 const assert = require('assert');
 const ObjectID = require('bson-objectid');
 const Tier = require('../lib/Tier');
+const TierActivatedEvent = require('../lib/TierActivatedEvent');
+const TierArchivedEvent = require('../lib/TierArchivedEvent');
+const TierNameChangeEvent = require('../lib/TierNameChangeEvent');
+const TierPriceChangeEvent = require('../lib/TierPriceChangeEvent');
 
 async function assertError(fn, checkError) {
     let error;
@@ -158,6 +162,93 @@ describe('Tier', function () {
 
             assertError(() => {
                 tier.yearlyPrice = 'one hundred';
+            });
+        });
+
+        it('Can change name and adds an event', async function () {
+            const tier = await Tier.create(validInput);
+
+            tier.name = 'New name';
+
+            assert(tier.events.find((event) => {
+                return event instanceof TierNameChangeEvent;
+            }));
+        });
+
+        it('Can update pricing information and adds an event', async function () {
+            const tier = await Tier.create(validInput);
+
+            tier.updatePricing({
+                currency: 'eur',
+                monthlyPrice: 1000,
+                yearlyPrice: 6000
+            });
+
+            assert(tier.currency === 'EUR');
+            assert(tier.monthlyPrice === 1000);
+            assert(tier.yearlyPrice === 6000);
+            assert(tier.events.find((event) => {
+                return event instanceof TierPriceChangeEvent;
+            }));
+        });
+
+        it('Can archive tier and adds an event', async function () {
+            const tier = await Tier.create(validInput);
+
+            tier.status = 'archived';
+            assert(tier.events.find((event) => {
+                return event instanceof TierArchivedEvent;
+            }));
+        });
+
+        it('Can activate tier and adds an event', async function () {
+            const tier = await Tier.create({...validInput, status: 'archived'});
+
+            tier.status = 'active';
+            assert(tier.events.find((event) => {
+                return event instanceof TierActivatedEvent;
+            }));
+        });
+
+        it('Does not add event if values not changed', async function () {
+            const tier = await Tier.create(validInput);
+
+            tier.status = 'active';
+            assert(!tier.events.find((event) => {
+                return event instanceof TierActivatedEvent;
+            }));
+
+            tier.name = 'Tier Name';
+            assert(!tier.events.find((event) => {
+                return event instanceof TierNameChangeEvent;
+            }));
+
+            tier.updatePricing({
+                currency: tier.currency,
+                monthlyPrice: tier.monthlyPrice,
+                yearlyPrice: tier.yearlyPrice
+            });
+            assert(!tier.events.find((event) => {
+                return event instanceof TierPriceChangeEvent;
+            }));
+        });
+
+        it('Cannot set pricing data on a free tier', async function () {
+            const tier = await Tier.create({
+                ...validInput,
+                type: 'free',
+                currency: null,
+                monthlyPrice: null,
+                yearlyPrice: null,
+                trialDays: null
+            });
+
+            assertError(() => {
+                tier.updatePricing({
+                    currency: 'usd',
+                    monthlyPrice: 1000,
+                    yearlyPrice: 10000
+                });
             });
         });
     });
