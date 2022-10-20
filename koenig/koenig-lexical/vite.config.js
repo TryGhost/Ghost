@@ -41,6 +41,6 @@ export default defineConfig({
         }
     },
     test: {
-        exclude: ['vite.config.test.js']
+        environment: 'jsdom'
     }
 });
