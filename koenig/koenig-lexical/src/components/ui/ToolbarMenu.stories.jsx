@@ -7,7 +7,13 @@ import {Bold} from './ToolbarMenuItem.stories';
 import {Italic} from './ToolbarMenuItem.stories';
 import {HeadingOne} from './ToolbarMenuItem.stories';
 import {HeadingTwo} from './ToolbarMenuItem.stories';
-import {QuoteOne} from './ToolbarMenuItem.stories';
+import {Quote} from './ToolbarMenuItem.stories';
+import {Link} from './ToolbarMenuItem.stories';
+import {ImageRegular} from './ToolbarMenuItem.stories';
+import {ImageWide} from './ToolbarMenuItem.stories';
+import {ImageFull} from './ToolbarMenuItem.stories';
+import {ImageReplace} from './ToolbarMenuItem.stories';
+import {Snippet} from './ToolbarMenuItem.stories';
 
 const story = {
     title: 'Toolbar/Toolbar',
@@ -26,6 +32,23 @@ Text.args = {
         <HeadingOne {...HeadingOne.args} />,
         <HeadingTwo {...HeadingTwo.args} />,
         <ToolbarMenuSeparator />,
-        <QuoteOne {...QuoteOne.args} />
+        <Quote {...Quote.args} />,
+        <Link {...Link.args} />,
+        <ToolbarMenuSeparator />,
+        <Snippet {...Snippet.args} />
+    ]
+};
+
+export const Image = Template.bind({});
+Image.args = {
+    children: [
+        <ImageRegular {...ImageRegular.args} />,
+        <ImageWide {...ImageWide.args} />,
+        <ImageFull {...ImageFull.args} />,
+        <ToolbarMenuSeparator />,
+        <Link {...Link.args} />,
+        <ImageReplace {...ImageReplace.args} />,
+        <ToolbarMenuSeparator />,
+        <Snippet {...Snippet.args} />
     ]
 };

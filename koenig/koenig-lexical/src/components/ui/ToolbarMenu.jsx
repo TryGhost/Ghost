@@ -2,25 +2,30 @@ import {ReactComponent as BoldIcon} from '../../assets/icons/kg-bold.svg';
 import {ReactComponent as ItalicIcon} from '../../assets/icons/kg-italic.svg';
 import {ReactComponent as HeadingOneIcon} from '../../assets/icons/kg-heading-1.svg';
 import {ReactComponent as HeadingTwoIcon} from '../../assets/icons/kg-heading-2.svg';
+import {ReactComponent as QuoteIcon} from '../../assets/icons/kg-quote.svg';
 import {ReactComponent as QuoteOneIcon} from '../../assets/icons/kg-quote-1.svg';
 import {ReactComponent as QuoteTwoIcon} from '../../assets/icons/kg-quote-2.svg';
+import {ReactComponent as LinkIcon} from '../../assets/icons/kg-link.svg';
 import {ReactComponent as ImageRegular} from '../../assets/icons/kg-img-regular.svg';
 import {ReactComponent as ImageWide} from '../../assets/icons/kg-img-wide.svg';
 import {ReactComponent as ImageFull} from '../../assets/icons/kg-img-full.svg';
 import {ReactComponent as ImageReplace} from '../../assets/icons/kg-replace.svg';
+import {ReactComponent as SnippetIcon} from '../../assets/icons/kg-snippet.svg';
 
 export const TOOLBAR_ICONS = {
     bold: BoldIcon,
     italic: ItalicIcon,
     headingOne: HeadingOneIcon,
     headingTwo: HeadingTwoIcon,
+    quote: QuoteIcon,
     quoteOne: QuoteOneIcon,
     quoteTwo: QuoteTwoIcon,
+    link: LinkIcon,
     imageRegular: ImageRegular,
     imageWide: ImageWide,
     imageFull: ImageFull,
-    imageReplace: ImageReplace
-
+    imageReplace: ImageReplace,
+    snippet: SnippetIcon
 };
 
 export function ToolbarMenu({children, ...props}) {

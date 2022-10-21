@@ -37,6 +37,11 @@ HeadingTwo.args = {
     icon: 'headingTwo'
 };
 
+export const Quote = Template.bind({});
+Quote.args = {
+    icon: 'quote'
+};
+
 export const QuoteOne = Template.bind({});
 QuoteOne.args = {
     icon: 'quoteOne'
@@ -45,4 +50,34 @@ QuoteOne.args = {
 export const QuoteTwo = Template.bind({});
 QuoteTwo.args = {
     icon: 'quoteTwo'
+};
+
+export const Link = Template.bind({});
+Link.args = {
+    icon: 'link'
+};
+
+export const ImageRegular = Template.bind({});
+ImageRegular.args = {
+    icon: 'imageRegular'
+};
+
+export const ImageWide = Template.bind({});
+ImageWide.args = {
+    icon: 'imageWide'
+};
+
+export const ImageFull = Template.bind({});
+ImageFull.args = {
+    icon: 'imageFull'
+};
+
+export const ImageReplace = Template.bind({});
+ImageReplace.args = {
+    icon: 'imageReplace'
+};
+
+export const Snippet = Template.bind({});
+Snippet.args = {
+    icon: 'snippet'
 };
