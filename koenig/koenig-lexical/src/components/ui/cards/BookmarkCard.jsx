@@ -19,11 +19,14 @@ export function BookmarkCard({
             <>
                 <div className="min-h-[120px] flex w-full rounded border border-grey/30 bg-white font-sans">
                     <div className="flex-col flex p-5">
-                        <div className="text-[1.5rem] font-semibold tracking-normal leading-9 text-grey-900">{bookmarkTitle}</div>
-                        <div className="text-sm font-normal text-grey-800 leading-9 mt-1">{bookmarkDesc}</div>
-                        <div className="text-sm font-medium text-grey-900 leading-9 mt-2 flex items-center">{bookmarkIcon && <BookmarkIcon />}{bookmarkPublisher}</div>
+                        <div className="text-[1.5rem] font-semibold tracking-normal leading-9 text-grey-900 line-clamp-1">{bookmarkTitle}</div>
+                        <div className="text-sm font-normal text-grey-800 leading-9 mt-1 line-clamp-2">{bookmarkDesc}</div>
+                        <div className="text-sm font-medium text-grey-900 leading-9 mt-2 flex items-center">
+                            {bookmarkIcon && <BookmarkIcon />}
+                            <span className="line-clamp-1">{bookmarkPublisher}</span>
+                        </div>
                     </div>
-                    <div className={`${bookmarkThumbnail ? 'grow-1 bg-grey min-w-[33%] rounded-r-[.3rem]' : ''}`}></div>
+                    <div className={`${bookmarkThumbnail ? 'grow-1 bg-grey-300 min-w-[33%] rounded-r-[.3rem]' : ''}`}></div>
                 </div>
                 <CardCaptionEditor
                     caption={caption || ''}
@@ -41,7 +44,7 @@ export function BookmarkCard({
 
 export function BookmarkIcon() {
     return (
-        <div className="w-5 h-5 bg-black rounded-lg mr-2"></div>
+        <div className="w-5 h-5 bg-black rounded-lg mr-2 shrink-0"></div>
     );
 }
 
