@@ -1,5 +1,7 @@
 const DomainEvents = require('@tryghost/domain-events');
+const {TierCreatedEvent, TierPriceChangeEvent, TierNameChangeEvent} = require('@tryghost/tiers');
 const OfferCreatedEvent = require('@tryghost/members-offers').events.OfferCreatedEvent;
+const {BadRequestError} = require('@tryghost/errors');
 
 class PaymentsService {
     /**
@@ -12,6 +14,12 @@ class PaymentsService {
         /** @private */
         this.OfferModel = deps.Offer;
         /** @private */
+        this.StripeProductModel = deps.StripeProduct;
+        /** @private */
+        this.StripePriceModel = deps.StripePrice;
+        /** @private */
+        this.StripeCustomerModel = deps.StripeCustomer;
+        /** @private */
         this.offersAPI = deps.offersAPI;
         /** @private */
         this.stripeAPIService = deps.stripeAPIService;
@@ -19,6 +27,224 @@ class PaymentsService {
         DomainEvents.subscribe(OfferCreatedEvent, async (event) => {
             await this.getCouponForOffer(event.data.offer.id);
         });
+
+        DomainEvents.subscribe(TierCreatedEvent, async (event) => {
+            if (event.data.tier.type === 'paid') {
+                await this.getPriceForTierCadence(event.data.tier, 'month');
+                await this.getPriceForTierCadence(event.data.tier, 'year');
+            }
+        });
+
+        DomainEvents.subscribe(TierPriceChangeEvent, async (event) => {
+            if (event.data.tier.type === 'paid') {
+                await this.getPriceForTierCadence(event.data.tier, 'month');
+                await this.getPriceForTierCadence(event.data.tier, 'year');
+            }
+        });
+
+        DomainEvents.subscribe(TierNameChangeEvent, async (event) => {
+            if (event.data.tier.type === 'paid') {
+                await this.updateNameForTierProducts(event.data.tier);
+            }
+        });
+    }
+
+    /**
+     * @param {object} params
+     * @param {Tier} params.tier
+     * @param {Tier.Cadence} params.cadence
+     * @param {Offer} [params.offer]
+     * @param {Member} [params.member]
+     * @param {Object.<string, any>} [params.metadata]
+     * @param {object} params.options
+     * @param {string} params.options.successUrl
+     * @param {string} params.options.cancelUrl
+     * @param {string} [params.options.email]
+     *
+     * @returns {Promise<URL>}
+     */
+    async getPaymentLink({tier, cadence, offer, member, metadata, options}) {
+        let coupon = null;
+        let trialDays = null;
+        if (offer) {
+            if (offer.tier.id !== tier.id) {
+                throw new BadRequestError({
+                    message: 'This Offer is not valid for the Tier'
+                });
+            }
+            if (offer.type === 'trial') {
+                trialDays = offer.amount;
+            } else {
+                coupon = await this.getCouponForOffer(offer.id);
+            }
+        }
+
+        let customer = null;
+        if (member) {
+            customer = await this.getCustomerForMember(member);
+        }
+
+        const price = await this.getPriceForTierCadence(tier, cadence);
+
+        const session = await this.stripeAPIService.createCheckoutSession(price.id, customer, {
+            metadata,
+            successUrl: options.successUrl,
+            cancelUrl: options.cancelUrl,
+            customerEmail: options.email,
+            trialDays: trialDays ?? tier.trialDays,
+            coupon: coupon?.id
+        });
+
+        return session.url;
+    }
+
+    async getCustomerForMember(member) {
+        const rows = await this.StripeCustomerModel.where({
+            member_id: member.id
+        }).query().select('customer_id');
+
+        for (const row of rows) {
+            const customer = await this.stripeAPIService.getCustomer(row.customer_id);
+            if (!customer.deleted) {
+                return {
+                    id: customer.id
+                };
+            }
+        }
+
+        const customer = await this.createCustomerForMember(member);
+
+        return customer;
+    }
+
+    async createCustomerForMember(member) {
+        const customer = await this.stripeAPIService.createCustomer({
+            email: member.email,
+            name: member.name
+        });
+
+        await this.StripeCustomerModel.add({
+            member_id: member.id,
+            customer_id: customer.id,
+            email: customer.email,
+            name: customer.name
+        });
+
+        return customer;
+    }
+
+    /**
+     * @param {import('@tryghost/tiers').Tier} tier
+     * @returns {Promise<{id: string}>}
+     */
+    async getProductForTier(tier) {
+        const rows = await this.StripeProductModel
+            .where({product_id: tier.id.toHexString()})
+            .query()
+            .select('stripe_product_id');
+
+        for (const row of rows) {
+            const product = await this.stripeAPIService.getProduct(row.stripe_product_id);
+            if (product.active) {
+                return {id: product.id};
+            }
+        }
+
+        const product = await this.createProductForTier(tier);
+
+        return {
+            id: product.id
+        };
+    }
+
+    /**
+     * @param {import('@tryghost/tiers').Tier} tier
+     * @returns {Promise<import('stripe').default.Product>}
+     */
+    async createProductForTier(tier) {
+        const product = await this.stripeAPIService.createProduct({name: tier.name});
+        await this.StripeProductModel.add({
+            product_id: tier.id.toHexString(),
+            stripe_product_id: product.id
+        });
+        return product;
+    }
+
+    /**
+     * @param {import('@tryghost/tiers').Tier} tier
+     * @returns {Promise<void>}
+     */
+    async updateNameForTierProducts(tier) {
+        const rows = await this.StripeProductModel
+            .where({product_id: tier.id.toHexString()})
+            .query()
+            .select('stripe_product_id');
+
+        for (const row of rows) {
+            await this.stripeAPIService.updateProduct(row.stripe_product_id, {
+                name: tier.name
+            });
+        }
+    }
+
+    /**
+     * @param {import('@tryghost/tiers').Tier} tier
+     * @param {'month'|'year'} cadence
+     * @returns {Promise<{id: string}>}
+     */
+    async getPriceForTierCadence(tier, cadence) {
+        const product = await this.getProductForTier(tier);
+        const currency = tier.currency;
+        const amount = tier.getPrice(cadence);
+        const rows = await this.StripePriceModel.where({
+            stripe_product_id: product.id,
+            currency,
+            amount
+        }).query().select('stripe_price_id');
+
+        for (const row of rows) {
+            const price = await this.stripeAPIService.getPrice(row.stripe_price_id);
+            if (price.active && price.currency.toUpperCase() === currency && price.unit_amount === amount) {
+                return {
+                    id: price.id
+                };
+            }
+        }
+
+        const price = await this.createPriceForTierCadence(tier, cadence);
+
+        return {
+            id: price.id
+        };
+    }
+
+    /**
+     * @param {import('@tryghost/tiers').Tier} tier
+     * @param {'month'|'year'} cadence
+     * @returns {Promise<import('stripe').default.Price>}
+     */
+    async createPriceForTierCadence(tier, cadence) {
+        const product = await this.getProductForTier(tier);
+        const price = await this.stripeAPIService.createPrice({
+            product: product.id,
+            interval: cadence,
+            currency: tier.currency,
+            amount: tier.getPrice(cadence),
+            nickname: cadence === 'month' ? 'Monthly' : 'Yearly',
+            type: 'recurring',
+            active: true
+        });
+        await this.StripePriceModel.add({
+            stripe_price_id: price.id,
+            stripe_product_id: product.id,
+            active: price.active,
+            nickname: price.nickname,
+            currency: price.currency,
+            amount: price.unit_amount,
+            type: 'recurring',
+            interval: cadence
+        });
+        return price;
     }
 
     /**

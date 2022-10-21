@@ -158,6 +158,9 @@ module.exports = function MembersAPI({
     });
 
     const paymentsService = new PaymentsService({
+        StripeProduct,
+        StripePrice,
+        StripeCustomer,
         Offer,
         offersAPI,
         stripeAPIService

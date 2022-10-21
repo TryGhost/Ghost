@@ -23,6 +23,8 @@
   },
   "dependencies": {
     "@tryghost/domain-events": "0.0.0",
-    "@tryghost/members-offers": "0.0.0"
+    "@tryghost/errors": "1.2.18",
+    "@tryghost/members-offers": "0.0.0",
+    "@tryghost/tiers": "0.0.0"
   }
 }
