@@ -168,6 +168,59 @@ describe('post.* events', function () {
             });
     });
 
+    it('post.unpublished event is triggered', async function () {
+        const webhookURL = 'https://test-webhook-receiver.com/post-unpublished/';
+        await webhookMockReceiver.mock(webhookURL);
+        await fixtureManager.insertWebhook({
+            event: 'post.unpublished',
+            url: webhookURL
+        });
+
+        const res = await adminAPIAgent
+            .post('posts/')
+            .body({
+                posts: [
+                    {
+                        title: 'webhookz',
+                        status: 'published',
+                        mobiledoc: fixtureManager.get('posts', 1).mobiledoc
+                    }
+                ]
+            })
+            .expectStatus(201);
+
+        const id = res.body.posts[0].id;
+        const updatedPost = res.body.posts[0];
+        updatedPost.status = 'draft';
+
+        await adminAPIAgent
+            .put('posts/' + id)
+            .body({
+                posts: [updatedPost]
+            })
+            .expectStatus(200);
+
+        await webhookMockReceiver.receivedRequest();
+
+        webhookMockReceiver
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                'content-length': anyNumber,
+                'user-agent': anyGhostAgent
+            })
+            .matchBodySnapshot({
+                post: {
+                    current: buildPostSnapshotWithTiers({
+                        published: true,
+                        tiersCount: 2
+                    }),
+                    previous: buildPreviousPostSnapshotWithTiers({
+                        tiersCount: 2
+                    })
+                }
+            });
+    });
+
     it('post.added event is triggered', async function () {
         const webhookURL = 'https://test-webhook-receiver.com/post-added/';
         await webhookMockReceiver.mock(webhookURL);
