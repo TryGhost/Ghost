@@ -25,7 +25,7 @@ Empty.args = {
     isSelected: true,
     value: '',
     valuePlaceholder: 'Callout text...',
-    backgroundColor: 'green'
+    backgroundColor: 'grey'
 };
 
 export const Value = Template.bind({});
@@ -33,6 +33,6 @@ Value.args = {
     isSelected: true,
     value: 'Something to pay attention to.',
     valuePlaceholder: 'Callout text...',
-    backgroundColor: 'green'
+    backgroundColor: 'grey'
 };
 

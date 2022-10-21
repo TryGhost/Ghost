@@ -3,7 +3,7 @@ import React from 'react';
 import {PlusButton} from './PlusMenu';
 
 const story = {
-    title: 'Card menu/Plus menu',
+    title: 'Card menu/Plus button',
     component: PlusButton
 };
 export default story;

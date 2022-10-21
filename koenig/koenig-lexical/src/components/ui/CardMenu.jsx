@@ -28,7 +28,7 @@ export const CardMenuItem = ({label, desc, onClick, Icon, ...props}) => {
 export const CardSnippetItem = ({label, Icon, ...props}) => {
     return (
         <li role="presentation">
-            <button type="button" role="menuitem" className="flex cursor-pointer flex-row items-center border border-transparent px-4 py-[1rem] text-grey-800 hover:bg-grey-100" {...props}>
+            <button type="button" role="menuitem" className="flex w-full cursor-pointer flex-row items-center border border-transparent px-4 py-[1rem] text-grey-800 hover:bg-grey-100" {...props}>
                 <div className="flex items-center">
                     <Icon className="h-7 w-7" />
                 </div>
