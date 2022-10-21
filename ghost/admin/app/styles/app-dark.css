@@ -1296,7 +1296,7 @@ kbd {
     background: #1c1e21;
 }
 
-.gh-dashboard-recents .gh-dashboard-list-item:hover, .gh-dashboard-attribution .gh-dashboard-list-item:hover {
+.gh-dashboard-recents .gh-dashboard-list-item:hover, .gh-dashboard-attribution .gh-dashboard-list-item:hover, .gh-links-list-item:hover {
     background: linear-gradient(90deg, rgba(21,23,25,0) 0%, rgba(21,23,25,1) 100%);
 }
 
