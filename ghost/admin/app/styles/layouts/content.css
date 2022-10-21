@@ -1181,6 +1181,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     display: none;
     white-space: nowrap;
     color: var(--midlightgrey);
+    font-weight: 400;
 }
 
 .gh-links-list-item-edited-show {
