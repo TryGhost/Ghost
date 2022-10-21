@@ -149,4 +149,23 @@ describe('Slash menu', async () => {
             expect(await page.$('[data-kg-slash-menu]')).toBeNull();
         });
     });
+
+    describe('filtering', function () {
+        it('matches text after /', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('/img');
+
+            const $$menuitems = await page.$$('[data-kg-slash-menu] [role="menuitem"]');
+            expect($$menuitems).toHaveLength(1);
+
+            expect(await page.evaluate(el => el.innerText, $$menuitems[0])).toContain('Image');
+        });
+
+        it('shows no menu with no matches', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('/unknown');
+
+            expect(await page.$('[data-kg-slash-menu]')).toBeNull();
+        });
+    });
 });

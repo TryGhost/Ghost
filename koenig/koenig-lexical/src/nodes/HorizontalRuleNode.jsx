@@ -23,7 +23,8 @@ export class HorizontalRuleNode extends DecoratorNode {
         label: 'Divider',
         desc: 'Insert a dividing line',
         Icon: DividerCardIcon,
-        insertCommand: INSERT_HORIZONTAL_RULE_COMMAND
+        insertCommand: INSERT_HORIZONTAL_RULE_COMMAND,
+        matches: ['divider', 'horizontal-rule', 'hr']
     };
 
     exportJSON() {

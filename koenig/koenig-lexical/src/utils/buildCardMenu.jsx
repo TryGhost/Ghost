@@ -4,9 +4,11 @@ import {
     CardMenuItem
 } from '../components/ui/CardMenu';
 
-export function buildCardMenu(nodes, {insert} = {}) {
+export function buildCardMenu(nodes, {insert, query} = {}) {
     const menu = new Map();
     menu.set('Primary', []);
+
+    query = query?.toLowerCase();
 
     function addMenuItem(item) {
         const section = item.section || 'Primary';
@@ -39,6 +41,10 @@ export function buildCardMenu(nodes, {insert} = {}) {
         const itemComponents = [];
 
         items.forEach((item) => {
+            if (query && (!item.matches || !item.matches.find(m => m.startsWith(query)))) {
+                return;
+            }
+
             const onClick = (event) => {
                 event.preventDefault();
                 insert?.(item.insertCommand);
@@ -47,8 +53,14 @@ export function buildCardMenu(nodes, {insert} = {}) {
             itemComponents.push(<CardMenuItem key={`${section}-${item.label}`} label={item.label} desc={item.desc} Icon={item.Icon} onMouseDown={preventMouseDown} onClick={onClick} />);
         });
 
-        menuComponents.push(<CardMenuSection key={section} label={section}>{itemComponents}</CardMenuSection>);
+        if (itemComponents.length > 0) {
+            menuComponents.push(<CardMenuSection key={section} label={section}>{itemComponents}</CardMenuSection>);
+        }
     });
+
+    if (menuComponents.length === 0) {
+        return null;
+    }
 
     return (
         <CardMenu>

@@ -32,7 +32,8 @@ export class ImageNode extends DecoratorNode {
         label: 'Image',
         desc: 'Upload, or embed with /image [url]',
         Icon: ImageCardIcon,
-        insertCommand: INSERT_IMAGE_COMMAND
+        insertCommand: INSERT_IMAGE_COMMAND,
+        matches: ['image', 'img']
     };
 
     static clone(node) {

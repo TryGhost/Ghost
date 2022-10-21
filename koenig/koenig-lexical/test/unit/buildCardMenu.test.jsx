@@ -1,7 +1,8 @@
 import {describe, expect, it} from 'vitest';
 import {getAllByRole, render, screen} from '@testing-library/react';
 import {buildCardMenu} from '../../src/utils/buildCardMenu';
-import {ReactComponent as ImageCardIcon} from '../../src/assets/icons/kg-card-type-image.svg';
+
+const Icon = () => <svg title="icon" />;
 
 describe('buildCardMenu', function () {
     it('renders', async function () {
@@ -9,13 +10,13 @@ describe('buildCardMenu', function () {
             ['one', {kgMenu: {
                 label: 'One',
                 desc: 'Card test one',
-                Icon: ImageCardIcon,
+                Icon,
                 insertCommand: 'insert_card_one'
             }}],
             ['two', {kgMenu: {
                 label: 'Two',
                 desc: 'Card test two',
-                Icon: ImageCardIcon,
+                Icon,
                 insertCommand: 'insert_card_two'
             }}]
         ];
@@ -41,14 +42,14 @@ describe('buildCardMenu', function () {
             ['one', {kgMenu: {
                 label: 'One',
                 desc: 'Card test one',
-                Icon: ImageCardIcon,
+                Icon,
                 insertCommand: 'insert_card_one'
             }}],
             ['two', {kgMenu: {
                 label: 'Two',
                 desc: 'Card test two',
                 section: 'Secondary',
-                Icon: ImageCardIcon,
+                Icon,
                 insertCommand: 'insert_card_two'
             }}]
         ];
@@ -76,12 +77,12 @@ describe('buildCardMenu', function () {
             ['one', {kgMenu: [{
                 label: 'One',
                 desc: 'Card test one',
-                Icon: ImageCardIcon,
+                Icon,
                 insertCommand: 'insert_card_one'
             }, {
                 label: 'Two',
                 desc: 'Card test two',
-                Icon: ImageCardIcon,
+                Icon,
                 insertCommand: 'insert_card_two'
             }]}]
         ];
@@ -97,5 +98,184 @@ describe('buildCardMenu', function () {
         expect(menuitems).toHaveLength(2);
         expect(menuitems[0]).toHaveTextContent('One');
         expect(menuitems[1]).toHaveTextContent('Two');
+    });
+
+    describe('filtering', function () {
+        it('shows all items for blank query', async function () {
+            const nodes = [
+                ['one', {kgMenu: {
+                    label: 'One',
+                    desc: 'Card test one',
+                    Icon,
+                    insertCommand: 'insert_card_one',
+                    matches: ['one']
+                }}],
+                ['two', {kgMenu: {
+                    label: 'Two',
+                    desc: 'Card test two',
+                    Icon,
+                    insertCommand: 'insert_card_two',
+                    matches: ['two']
+                }}]
+            ];
+
+            const cardMenu = buildCardMenu(nodes, {query: ''});
+
+            render(<>{cardMenu}</>);
+
+            const sections = screen.getAllByRole('separator');
+            expect(sections).toHaveLength(1);
+
+            const menuitems = screen.getAllByRole('menuitem');
+            expect(menuitems).toHaveLength(2);
+        });
+
+        it('matches start of strings', async function () {
+            const nodes = [
+                ['one', {kgMenu: {
+                    label: 'One',
+                    desc: 'Card test one',
+                    Icon,
+                    insertCommand: 'insert_card_one',
+                    matches: ['one']
+                }}],
+                ['two', {kgMenu: {
+                    label: 'Two',
+                    desc: 'Card test two',
+                    Icon,
+                    insertCommand: 'insert_card_two',
+                    matches: ['two']
+                }}]
+            ];
+
+            const cardMenu = buildCardMenu(nodes, {query: 't'});
+
+            render(<>{cardMenu}</>);
+
+            const sections = screen.getAllByRole('separator');
+            expect(sections).toHaveLength(1);
+
+            const menuitems = screen.getAllByRole('menuitem');
+            expect(menuitems).toHaveLength(1);
+            expect(menuitems[0]).toHaveTextContent('Two');
+        });
+
+        it('can match against multiple strings', async function () {
+            const nodes = [
+                ['one', {kgMenu: {
+                    label: 'One',
+                    desc: 'Card test one',
+                    Icon,
+                    insertCommand: 'insert_card_one',
+                    matches: ['one']
+                }}],
+                ['two', {kgMenu: {
+                    label: 'Two',
+                    desc: 'Card test two',
+                    Icon,
+                    insertCommand: 'insert_card_two',
+                    matches: ['two', 'multiple']
+                }}]
+            ];
+
+            const cardMenu = buildCardMenu(nodes, {query: 'mul'});
+
+            render(<>{cardMenu}</>);
+
+            const sections = screen.getAllByRole('separator');
+            expect(sections).toHaveLength(1);
+
+            const menuitems = screen.getAllByRole('menuitem');
+            expect(menuitems).toHaveLength(1);
+            expect(menuitems[0]).toHaveTextContent('Two');
+        });
+
+        it('filters all sections', async function () {
+            const nodes = [
+                ['one', {kgMenu: {
+                    label: 'One',
+                    desc: 'Card test one',
+                    Icon,
+                    insertCommand: 'insert_card_one',
+                    matches: ['one']
+                }}],
+                ['two', {kgMenu: {
+                    label: 'Two',
+                    desc: 'Card test two',
+                    section: 'Secondary',
+                    Icon,
+                    insertCommand: 'insert_card_two',
+                    matches: ['two', 'multiple']
+                }}]
+            ];
+
+            const cardMenu = buildCardMenu(nodes, {query: 'mul'});
+
+            render(<>{cardMenu}</>);
+
+            const sections = screen.getAllByRole('separator');
+            expect(sections).toHaveLength(1);
+            expect(sections[0]).toHaveTextContent('Secondary');
+
+            const menuitems = screen.getAllByRole('menuitem');
+            expect(menuitems).toHaveLength(1);
+            expect(menuitems[0]).toHaveTextContent('Two');
+        });
+
+        it('renders nothing with no matches', async function () {
+            const nodes = [
+                ['one', {kgMenu: {
+                    label: 'One',
+                    desc: 'Card test one',
+                    Icon,
+                    insertCommand: 'insert_card_one',
+                    matches: ['one']
+                }}],
+                ['two', {kgMenu: {
+                    label: 'Two',
+                    desc: 'Card test two',
+                    section: 'Secondary',
+                    Icon,
+                    insertCommand: 'insert_card_two',
+                    matches: ['two', 'multiple']
+                }}]
+            ];
+
+            const cardMenu = buildCardMenu(nodes, {query: 'unknown'});
+
+            const {container} = render(<>{cardMenu}</>);
+
+            expect(container.innerHTML).toEqual('');
+        });
+
+        it('is case-insensitive', async function () {
+            const nodes = [
+                ['one', {kgMenu: {
+                    label: 'One',
+                    desc: 'Card test one',
+                    Icon,
+                    insertCommand: 'insert_card_one',
+                    matches: ['one']
+                }}],
+                ['two', {kgMenu: {
+                    label: 'Two',
+                    desc: 'Card test two',
+                    Icon,
+                    insertCommand: 'insert_card_two',
+                    matches: ['two']
+                }}]
+            ];
+
+            const cardMenu = buildCardMenu(nodes, {query: 'Tw'});
+
+            render(<>{cardMenu}</>);
+
+            const sections = screen.getAllByRole('separator');
+            expect(sections).toHaveLength(1);
+
+            const menuitems = screen.getAllByRole('menuitem');
+            expect(menuitems).toHaveLength(1);
+            expect(menuitems[0]).toHaveTextContent('Two');
+        });
     });
 });

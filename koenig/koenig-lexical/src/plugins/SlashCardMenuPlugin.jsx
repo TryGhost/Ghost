@@ -191,14 +191,14 @@ function useSlashCardMenu(editor) {
             closeMenu();
         };
         const cardNodes = getEditorCardNodes(editor);
-        setCardMenu(buildCardMenu(cardNodes, {insert}));
+        setCardMenu(buildCardMenu(cardNodes, {insert, query}));
     }, [editor, query, closeMenu]);
 
     const style = {
         top: `${topPosition}px`
     };
 
-    if (isShowingMenu) {
+    if (isShowingMenu && cardMenu) {
         return (
             <div className="absolute" style={style} ref={containerRef} data-kg-slash-container>
                 <SlashMenu>{cardMenu}</SlashMenu>
