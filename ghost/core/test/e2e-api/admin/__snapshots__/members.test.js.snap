@@ -744,14 +744,14 @@ Object {
           "id": "sub_123",
           "offer": null,
           "plan": Object {
-            "amount": 5000,
+            "amount": 500,
             "currency": "USD",
             "id": "173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730b12",
             "interval": "month",
             "nickname": "month",
           },
           "price": Object {
-            "amount": 5000,
+            "amount": 500,
             "currency": "USD",
             "id": "173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730b12",
             "interval": "month",
@@ -782,7 +782,7 @@ exports[`Members API Can add a subscription 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2510",
+  "content-length": "2508",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -842,14 +842,14 @@ Object {
           "id": "sub_123",
           "offer": null,
           "plan": Object {
-            "amount": 5000,
+            "amount": 500,
             "currency": "USD",
             "id": "173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730b12",
             "interval": "month",
             "nickname": "month",
           },
           "price": Object {
-            "amount": 5000,
+            "amount": 500,
             "currency": "USD",
             "id": "173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730b12",
             "interval": "month",
@@ -880,7 +880,7 @@ exports[`Members API Can add a subscription 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2510",
+  "content-length": "2508",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -2125,14 +2125,14 @@ Object {
           "id": "sub_K1cBgJt6sCMu5n",
           "offer": null,
           "plan": Object {
-            "amount": 5000,
+            "amount": 500,
             "currency": "USD",
             "id": "173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730b12",
             "interval": "month",
             "nickname": "month",
           },
           "price": Object {
-            "amount": 5000,
+            "amount": 500,
             "currency": "USD",
             "id": "173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730b12",
             "interval": "month",
@@ -2163,7 +2163,7 @@ exports[`Members API Can edit a subscription 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2377",
+  "content-length": "2375",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
@@ -2223,14 +2223,14 @@ Object {
           "id": "sub_K1cBgJt6sCMu5n",
           "offer": null,
           "plan": Object {
-            "amount": 5000,
+            "amount": 500,
             "currency": "USD",
             "id": "173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730b12",
             "interval": "month",
             "nickname": "month",
           },
           "price": Object {
-            "amount": 5000,
+            "amount": 500,
             "currency": "USD",
             "id": "173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730b12",
             "interval": "month",
@@ -2261,7 +2261,7 @@ exports[`Members API Can edit a subscription 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2379",
+  "content-length": "2377",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
