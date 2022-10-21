@@ -1,11 +1,6 @@
 //@ts-check
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output:tiers');
 
-const allowedIncludes = ['monthly_price', 'yearly_price'];
-const localUtils = require('../../index');
-const {utils} = require('@tryghost/api-framework');
-const labs = require('../../../../../../shared/labs');
-
 module.exports = {
     browse: createSerializer('browse', paginatedTiers),
     read: createSerializer('read', singleTier),
@@ -49,11 +44,10 @@ function singleTier(model, _apiConfig, frame) {
 /**
  * @param {import('bookshelf').Model} tier
  * @param {object} options
- * @param {object} frame
  *
  * @returns {SerializedTier}
  */
-function serializeTier(tier, options, frame) {
+function serializeTier(tier, options) {
     const json = tier.toJSON(options);
 
     const serialized = {
@@ -61,64 +55,30 @@ function serializeTier(tier, options, frame) {
         name: json.name,
         description: json.description,
         slug: json.slug,
-        active: json.active,
+        active: json.status === 'active',
         type: json.type,
-        welcome_page_url: json.welcome_page_url,
-        created_at: json.created_at,
-        updated_at: json.updated_at,
+        welcome_page_url: json.welcomePageURL,
+        created_at: json.createdAt,
+        updated_at: json.updatedAt,
         visibility: json.visibility,
-        benefits: null
+        benefits: json.benefits,
+        currency: json.currency,
+        monthly_price: json.monthlyPrice,
+        yearly_price: json.yearlyPrice,
+        trial_days: json.trialDays
     };
 
-    if (labs.isSet('freeTrial')) {
-        serialized.trial_days = json.trial_days;
-    }
-
-    if (Array.isArray(json.benefits)) {
-        serialized.benefits = json.benefits.map(benefit => benefit.name);
-    } else {
+    if (!Array.isArray(serialized.benefits)) {
         serialized.benefits = null;
     }
 
-    if (serialized.type === 'paid') {
-        serialized.currency = json.monthlyPrice?.currency;
-        serialized.monthly_price = json.monthlyPrice?.amount;
-        serialized.yearly_price = json.yearlyPrice?.amount;
-    }
-
-    if (!localUtils.isContentAPI(frame)) {
-        const requestedQueryIncludes = frame.original && frame.original.query && frame.original.query.include && frame.original.query.include.split(',') || [];
-        const requestedOptionsIncludes = utils.options.trimAndLowerCase(frame.original && frame.original.options && frame.original.options.include || []);
-
-        return cleanIncludes(
-            allowedIncludes,
-            requestedQueryIncludes.concat(requestedOptionsIncludes),
-            serialized
-        );
+    if (serialized.type === 'free') {
+        delete serialized.currency;
+        delete serialized.monthly_price;
+        delete serialized.yearly_price;
     }
 
     return serialized;
-}
-
-/**
- * @template Data
- *
- * @param {string[]} allowed
- * @param {string[]} requested
- * @param {Data & Object<string, any>} data
- *
- * @returns {Data}
- */
-function cleanIncludes(allowed, requested, data) {
-    const cleaned = {
-        ...data
-    };
-    for (const include of allowed) {
-        if (!requested.includes(include)) {
-            delete cleaned[include];
-        }
-    }
-    return cleaned;
 }
 
 /**

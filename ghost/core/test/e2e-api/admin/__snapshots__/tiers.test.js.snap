@@ -4,7 +4,7 @@ exports[`Tiers API Can browse Tiers 1: [body] 1`] = `
 Object {
   "meta": Object {
     "pagination": Object {
-      "limit": 15,
+      "limit": 2,
       "next": null,
       "page": 1,
       "pages": 1,
@@ -15,7 +15,7 @@ Object {
   "tiers": Array [
     Object {
       "active": true,
-      "benefits": null,
+      "benefits": Array [],
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "description": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -29,10 +29,12 @@ Object {
     },
     Object {
       "active": true,
-      "benefits": null,
+      "benefits": Array [],
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "currency": "USD",
       "description": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "monthly_price": 500,
       "name": "Default Product",
       "slug": "default-product",
       "trial_days": 0,
@@ -40,6 +42,7 @@ Object {
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "visibility": "public",
       "welcome_page_url": "/welcome-paid",
+      "yearly_price": 5000,
     },
   ],
 }
