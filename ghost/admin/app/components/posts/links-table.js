@@ -10,32 +10,40 @@ export default class LinksTable extends Component {
 
     @tracked editingLink = null;
     @tracked showError = null;
+    @tracked _linkValue = '';
 
     @action
-    blurElement(event) {
-        if (!event.shiftKey) {
-            event.preventDefault();
-            event.target.blur();
+    handleBlur(event) {
+        event?.preventDefault();
+        if (!event?.relatedTarget?.matches('.gh-links-list-item-update-button')) {
+            this.cancelEdit();
         }
     }
 
     @action
     editLink(linkId) {
         this.editingLink = linkId;
+        const linkTo = this.links.find(link => link.link.link_id === linkId)?.link?.to;
+        this._linkValue = linkTo || '';
     }
 
     @action
     cancelEdit(event) {
-        event.preventDefault();
+        event?.preventDefault();
         this.editingLink = null;
         this.showError = null;
     }
 
     @action
+    updateLinkValue(event) {
+        this._linkValue = event.target.value;
+    }
+
+    @action
     setLink(event) {
-        event.preventDefault();
+        event?.preventDefault();
         try {
-            const newUrl = new URL(event.target.value);
+            const newUrl = new URL(this._linkValue);
             const linkObj = this.links.find((_link) => {
                 return _link.link.link_id === this.editingLink;
             });
@@ -45,25 +53,6 @@ export default class LinksTable extends Component {
             }
             this.editingLink = null;
             this.showError = null;
-        } catch (e) {
-            this.showError = this.editingLink;
-        }
-    }
-
-    @task
-    *updateLinks() {
-        try {
-            const newUrl = new URL(event.target.value);
-            const linkObj = this.links.find((_link) => {
-                return _link.link.link_id === this.editingLink;
-            });
-            // Only call update if the new link is different from current link
-            if (linkObj.link.to !== newUrl.href) {
-                yield this.args.updateLinkTask.perform(this.editingLink, newUrl.href);
-            }
-            this.editingLink = null;
-            this.showError = null;
-            return true;
         } catch (e) {
             this.showError = this.editingLink;
         }
