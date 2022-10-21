@@ -1177,6 +1177,10 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
     display: inline;
 }
 
+.gh-links-list-item-update-button span {
+    pointer-events: none;
+}
+
 @keyframes fade-in-out {
     0% { opacity: 0; }
     20% { opacity: 1 }

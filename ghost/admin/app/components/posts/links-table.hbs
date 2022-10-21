@@ -35,24 +35,31 @@
                             placeholder={{link.link.to}}
                             value={{link.link.to}}
                             maxlength="300"
-                            {{on "blur" this.setLink}}
-                            {{on-key "Enter" this.blurElement}}
+                            {{on "input" this.updateLinkValue}}
+                            {{on "blur" this.handleBlur}}
+                            {{on-key "Enter" this.setLink}}
                             {{on-key "Escape" this.cancelEdit}}
                             {{autofocus}}
                             data-prevent-escape-close-modal="true"
                         />
                         {{#if (eq this.showError link.link.link_id)}}
-                            <GhTaskButton
-                            @buttonText="Retry"
-                            @task={{this.setLink}}
-                            @successText="Link updated"
-                            @class="gh-btn gh-btn-red gh-btn-icon" />
+                            <button
+                                class="gh-btn gh-btn-red gh-btn-icon gh-links-list-item-update-button"
+                                type="button"
+                                {{on "mouseup" this.setLink}}
+                                data-test-button="cancel-webhook"
+                            >
+                                <span>Retry</span>
+                            </button>
                         {{else}}
-                            <GhTaskButton
-                            @buttonText="Update"
-                            @task={{this.updateLinks}}
-                            @successText="Link updated"
-                            @class="gh-btn gh-btn-green gh-btn-icon" />
+                            <button
+                                class="gh-btn gh-btn-green gh-btn-icon gh-links-list-item-update-button"
+                                type="button"
+                                {{on "mouseup" this.setLink}}
+                                data-test-button="cancel-webhook"
+                            >
+                                <span>Update</span>
+                            </button>
                         {{/if}}
                         </div>
                         <span class="gh-links-list-item-error">Please enter a valid link</span>
