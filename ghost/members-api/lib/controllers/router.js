@@ -1,7 +1,7 @@
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const _ = require('lodash');
-const {BadRequestError, NoPermissionError, NotFoundError, UnauthorizedError} = require('@tryghost/errors');
+const {BadRequestError, NoPermissionError, UnauthorizedError} = require('@tryghost/errors');
 const errors = require('@tryghost/errors');
 
 const messages = {
@@ -24,7 +24,6 @@ module.exports = class RouterController {
      * @param {object} deps
      * @param {any} deps.offersAPI
      * @param {any} deps.paymentsService
-     * @param {any} deps.productRepository
      * @param {any} deps.memberRepository
      * @param {any} deps.StripePrice
      * @param {() => boolean} deps.allowSelfSignup
@@ -38,7 +37,7 @@ module.exports = class RouterController {
     constructor({
         offersAPI,
         paymentsService,
-        productRepository,
+        tiersService,
         memberRepository,
         StripePrice,
         allowSelfSignup,
@@ -51,7 +50,7 @@ module.exports = class RouterController {
     }) {
         this._offersAPI = offersAPI;
         this._paymentsService = paymentsService;
-        this._productRepository = productRepository;
+        this._tiersService = tiersService;
         this._memberRepository = memberRepository;
         this._StripePrice = StripePrice;
         this._allowSelfSignup = allowSelfSignup;
@@ -178,32 +177,45 @@ module.exports = class RouterController {
             });
         }
 
-        let couponId = null;
-        let trialDays;
+        let tier;
+        let offer;
+        let member;
+        let options = {};
+
         if (offerId) {
-            const offer = await this._offersAPI.getOffer({id: offerId});
-            const tier = (await this._productRepository.get(offer.tier)).toJSON();
+            offer = await this._offersAPI.getOffer({id: offerId});
+            tier = await this._tiersService.api.read(offer.tier.id);
+        } else {
+            offer = null;
+            tier = await this._tiersService.api.read(tierId);
+        }
 
-            if (offer.status === 'archived') {
-                throw new NoPermissionError({
-                    message: tpl(messages.offerArchived)
-                });
-            }
+        if (tier.status === 'archived') {
+            throw new NoPermissionError({
+                message: tpl(messages.tierArchived)
+            });
+        }
 
-            if (offer.cadence === 'month') {
-                ghostPriceId = tier.monthly_price_id;
-            } else {
-                ghostPriceId = tier.yearly_price_id;
+        if (identity) {
+            try {
+                const claims = await this._tokenService.decodeToken(identity);
+                const email = claims && claims.sub;
+                if (email) {
+                    member = await this._memberRepository.get({
+                        email
+                    }, {
+                        withRelated: ['stripeCustomers', 'products']
+                    });
+                }
+            } catch (err) {
+                throw new UnauthorizedError({err});
             }
-            // Free trial offers don't have a stripe coupon
-            if (offer.type === 'trial') {
-                trialDays = offer.amount;
-            } else {
-                const coupon = await this._paymentsService.getCouponForOffer(offerId);
-                couponId = coupon.id;
-            }
-
-            metadata.offer = offer.id;
+        } else if (req.body.customerEmail) {
+            member = await this._memberRepository.get({
+                email: req.body.customerEmail
+            }, {
+                withRelated: ['stripeCustomers', 'products']
+            });
         }
 
         // Don't allow to set the source manually
@@ -245,106 +257,25 @@ module.exports = class RouterController {
             }
         }
 
-        if (!ghostPriceId) {
-            const tier = await this._productRepository.get({id: tierId});
-            if (tier) {
-                if (cadence === 'month') {
-                    ghostPriceId = tier.get('monthly_price_id');
-                } else {
-                    ghostPriceId = tier.get('yearly_price_id');
-                }
-            }
-        }
-
-        const price = await this._StripePrice.findOne({
-            id: ghostPriceId
-        });
-
-        if (!price) {
-            throw new NotFoundError({
-                message: tpl(messages.notFound)
-            });
-        }
-
-        const priceId = price.get('stripe_price_id');
-
-        const product = await this._productRepository.get({stripe_price_id: priceId});
-
-        if (this.labsService.isSet('freeTrial') && !trialDays) {
-            trialDays = product.get('trial_days');
-        }
-
-        if (product.get('active') !== true) {
-            throw new NoPermissionError({
-                message: tpl(messages.tierArchived)
-            });
-        }
-
-        let member = null;
-        if (identity) {
-            try {
-                const claims = await this._tokenService.decodeToken(identity);
-                const email = claims && claims.sub;
-                if (email) {
-                    member = await this._memberRepository.get({email}, {withRelated: ['stripeCustomers', 'products']});
-                }
-            } catch (err) {
-                throw new UnauthorizedError({err});
-            }
-        } else if (req.body.customerEmail) {
-            member = await this._memberRepository.get({email: req.body.customerEmail}, {withRelated: ['stripeCustomers', 'products']});
-        }
-
-        let successUrl = req.body.successUrl;
-        let cancelUrl = req.body.cancelUrl;
+        options.successUrl = req.body.successUrl;
+        options.cancelUrl = req.body.cancelUrl;
 
         if (!member && req.body.customerEmail && !req.body.successUrl) {
-            const memberExistsForCustomer = await this._memberRepository.get({email: req.body.customerEmail});
-            if (!memberExistsForCustomer) {
-                successUrl = await this._magicLinkService.getMagicLink({
-                    tokenData: {
-                        email: req.body.customerEmail,
-                        attribution: {
-                            id: metadata.attribution_id ?? null,
-                            type: metadata.attribution_type ?? null,
-                            url: metadata.attribution_url ?? null
-                        }
-                    },
-                    type: 'signup'
-                });
-            }
-        }
-
-        if (!member) {
-            const customer = null;
-            const session = await this._stripeAPIService.createCheckoutSession(priceId, customer, {
-                coupon: couponId,
-                successUrl,
-                cancelUrl,
-                trialDays,
-                customerEmail: req.body.customerEmail,
-                metadata: metadata
+            options.successUrl = await this._magicLinkService.getMagicLink({
+                tokenData: {
+                    email: req.body.customerEmail,
+                    attribution: {
+                        id: metadata.attribution_id ?? null,
+                        type: metadata.attribution_type ?? null,
+                        url: metadata.attribution_url ?? null
+                    }
+                },
+                type: 'signup'
             });
-            const publicKey = this._stripeAPIService.getPublicKey();
-
-            const sessionInfo = {
-                publicKey,
-                sessionId: session.id
-            };
-
-            res.writeHead(200, {
-                'Content-Type': 'application/json'
-            });
-
-            return res.end(JSON.stringify(sessionInfo));
         }
 
-        let restrictCheckout = false;
-        if (!this.labsService.isSet('compExpiring')) {
-            restrictCheckout = member.related('products').length !== 0;
-        } else {
-            restrictCheckout = member.get('status') === 'paid';
-        }
+        const restrictCheckout = member?.get('status') === 'paid';
+
         if (restrictCheckout) {
             if (!identity && req.body.customerEmail) {
                 try {
@@ -359,44 +290,20 @@ module.exports = class RouterController {
             });
         }
 
-        let stripeCustomer;
-
-        for (const customer of member.related('stripeCustomers').models) {
-            try {
-                const fetchedCustomer = await this._stripeAPIService.getCustomer(customer.get('customer_id'));
-                if (!fetchedCustomer.deleted) {
-                    stripeCustomer = fetchedCustomer;
-                    break;
-                }
-            } catch (err) {
-                logging.info('Ignoring error for fetching customer for checkout');
-            }
-        }
-
-        if (!stripeCustomer) {
-            stripeCustomer = await this._stripeAPIService.createCustomer({email: member.get('email')});
-        }
-
         try {
-            const session = await this._stripeAPIService.createCheckoutSession(priceId, stripeCustomer, {
-                coupon: couponId,
-                successUrl,
-                cancelUrl,
-                trialDays,
-                metadata: metadata
+            const paymentLink = await this._paymentsService.getPaymentLink({
+                tier,
+                cadence,
+                offer,
+                member,
+                metadata,
+                options
             });
-            const publicKey = this._stripeAPIService.getPublicKey();
-
-            const sessionInfo = {
-                publicKey,
-                sessionId: session.id
-            };
-
             res.writeHead(200, {
                 'Content-Type': 'application/json'
             });
 
-            return res.end(JSON.stringify(sessionInfo));
+            return res.end(JSON.stringify({url: paymentLink}));
         } catch (err) {
             throw new BadRequestError({
                 err,
@@ -451,7 +358,7 @@ module.exports = class RouterController {
                 tokenData.attribution = await this._memberAttributionService.getAttribution(req.body.urlHistory);
 
                 await this._sendEmailWithMagicLink({email, tokenData, requestedType: emailType, referrer: referer});
-                
+
                 res.writeHead(201);
                 return res.end('Created.');
             }
@@ -464,7 +371,7 @@ module.exports = class RouterController {
                 res.writeHead(201);
                 return res.end('Created.');
             }
-            
+
             throw new errors.BadRequestError({
                 message: this._allowSelfSignup() ? tpl(messages.memberNotFoundSignUp) : tpl(messages.memberNotFound)
             });

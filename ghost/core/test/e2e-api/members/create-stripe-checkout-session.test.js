@@ -62,10 +62,35 @@ describe('Create Stripe Checkout Session', function () {
 
         nock('https://api.stripe.com')
             .persist()
+            .get(/v1\/.*/)
+            .reply((uri, body) => {
+                const [match, resource, id] = uri.match(/\/v1\/(\w+)\/(.+)\/?/) || [null];
+                if (match) {
+                    if (resource === 'products') {
+                        return [200, {
+                            id: id,
+                            active: true
+                        }];
+                    }
+                    if (resource === 'prices') {
+                        return [200, {
+                            id: id,
+                            active: true,
+                            currency: 'usd',
+                            unit_amount: 500
+                        }];
+                    }
+                }
+
+                return [500];
+            });
+
+        nock('https://api.stripe.com')
+            .persist()
             .post(/v1\/.*/)
             .reply((uri, body) => {
                 if (uri === '/v1/checkout/sessions') {
-                    return [200, {id: 'cs_123'}];
+                    return [200, {id: 'cs_123', url: 'https://site.com'}];
                 }
 
                 return [500];
@@ -92,6 +117,31 @@ describe('Create Stripe Checkout Session', function () {
 
             const paidTier = tiers.find(tier => tier.type === 'paid');
 
+            nock('https://api.stripe.com')
+                .persist()
+                .get(/v1\/.*/)
+                .reply((uri, body) => {
+                    const [match, resource, id] = uri.match(/\/v1\/(\w+)\/(.+)\/?/) || [null];
+                    if (match) {
+                        if (resource === 'products') {
+                            return [200, {
+                                id: id,
+                                active: true
+                            }];
+                        }
+                        if (resource === 'prices') {
+                            return [200, {
+                                id: id,
+                                active: true,
+                                currency: 'usd',
+                                unit_amount: 500
+                            }];
+                        }
+                    }
+
+                    return [500];
+                });
+
             const scope = nock('https://api.stripe.com')
                 .persist()
                 .post(/v1\/.*/)
@@ -101,10 +151,11 @@ describe('Create Stripe Checkout Session', function () {
                         should(parsed.get('metadata[attribution_url]')).eql('/test');
                         should(parsed.get('metadata[attribution_type]')).eql('url');
                         should(parsed.get('metadata[attribution_id]')).be.null();
-                        return [200, {id: 'cs_123'}];
+
+                        return [200, {id: 'cs_123', url: 'https://site.com'}];
                     }
 
-                    throw new Error('Should not get called');
+                    return [500];
                 });
 
             await membersAgent.post('/api/create-stripe-checkout-session/')
@@ -136,6 +187,31 @@ describe('Create Stripe Checkout Session', function () {
 
             const paidTier = tiers.find(tier => tier.type === 'paid');
 
+            nock('https://api.stripe.com')
+                .persist()
+                .get(/v1\/.*/)
+                .reply((uri, body) => {
+                    const [match, resource, id] = uri.match(/\/v1\/(\w+)\/(.+)\/?/) || [null];
+                    if (match) {
+                        if (resource === 'products') {
+                            return [200, {
+                                id: id,
+                                active: true
+                            }];
+                        }
+                        if (resource === 'prices') {
+                            return [200, {
+                                id: id,
+                                active: true,
+                                currency: 'usd',
+                                unit_amount: 500
+                            }];
+                        }
+                    }
+
+                    return [500];
+                });
+
             const scope = nock('https://api.stripe.com')
                 .persist()
                 .post(/v1\/.*/)
@@ -145,10 +221,11 @@ describe('Create Stripe Checkout Session', function () {
                         should(parsed.get('metadata[attribution_url]')).eql(url);
                         should(parsed.get('metadata[attribution_type]')).eql('post');
                         should(parsed.get('metadata[attribution_id]')).eql(post.id);
-                        return [200, {id: 'cs_123'}];
+
+                        return [200, {id: 'cs_123', url: 'https://site.com'}];
                     }
 
-                    throw new Error('Should not get called');
+                    return [500];
                 });
 
             await membersAgent.post('/api/create-stripe-checkout-session/')
@@ -177,6 +254,31 @@ describe('Create Stripe Checkout Session', function () {
 
             const paidTier = tiers.find(tier => tier.type === 'paid');
 
+            nock('https://api.stripe.com')
+                .persist()
+                .get(/v1\/.*/)
+                .reply((uri, body) => {
+                    const [match, resource, id] = uri.match(/\/v1\/(\w+)\/(.+)\/?/) || [null];
+                    if (match) {
+                        if (resource === 'products') {
+                            return [200, {
+                                id: id,
+                                active: true
+                            }];
+                        }
+                        if (resource === 'prices') {
+                            return [200, {
+                                id: id,
+                                active: true,
+                                currency: 'usd',
+                                unit_amount: 500
+                            }];
+                        }
+                    }
+
+                    return [500];
+                });
+
             const scope = nock('https://api.stripe.com')
                 .persist()
                 .post(/v1\/.*/)
@@ -186,10 +288,11 @@ describe('Create Stripe Checkout Session', function () {
                         should(parsed.get('metadata[attribution_url]')).be.null();
                         should(parsed.get('metadata[attribution_type]')).be.null();
                         should(parsed.get('metadata[attribution_id]')).be.null();
-                        return [200, {id: 'cs_123'}];
+
+                        return [200, {id: 'cs_123', url: 'https://site.com'}];
                     }
 
-                    throw new Error('Should not get called');
+                    return [500];
                 });
 
             await membersAgent.post('/api/create-stripe-checkout-session/')
