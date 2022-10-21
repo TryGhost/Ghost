@@ -2,7 +2,7 @@ const should = require('should');
 const {unparse} = require('../index');
 
 describe('unparse', function () {
-    it('serializes json to CSV and adds standard members fields', async function () {
+    it('serializes json to CSV and adds standard members fields with no explicit columns parameter', async function () {
         const json = [{
             email: 'email@example.com',
             name: 'Sam Memberino',
@@ -23,7 +23,9 @@ describe('unparse', function () {
             subscribed: false
         }];
 
-        const columns = Object.keys(json[0]);
+        const columns = [
+            'email', 'subscribed'
+        ];
 
         const result = unparse(json, columns);
 
