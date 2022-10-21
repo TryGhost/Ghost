@@ -17,7 +17,7 @@ export const CardMenuItem = ({label, desc, onClick, Icon, ...props}) => {
                     <Icon className="h-7 w-7" />
                 </div>
                 <div className="flex flex-col">
-                    <div className="m-0 ml-4 truncate text-[1.3rem] font-normal leading-[1.6rem] tracking-[.02rem] text-grey-900">{label}</div>
+                    <div className="m-0 ml-4 truncate text-[1.3rem] font-medium leading-[1.6rem] tracking-[.02rem] text-grey-900">{label}</div>
                     <div className="m-0 ml-4 truncate text-xs font-normal leading-[1.6rem] tracking-[.02rem] text-grey">{desc}</div>
                 </div>
             </button>
@@ -33,7 +33,7 @@ export const CardSnippetItem = ({label, Icon, ...props}) => {
                     <Icon className="h-7 w-7" />
                 </div>
                 <div className="flex flex-col">
-                    <div className="m-0 ml-4 truncate text-[1.3rem] font-normal leading-[1.6rem] tracking-[.02rem] text-grey-900">{label}</div>
+                    <div className="m-0 ml-4 truncate text-[1.3rem] font-medium leading-[1.6rem] tracking-[.02rem] text-grey-900">{label}</div>
                 </div>
             </button>
         </li>
