@@ -13,7 +13,7 @@ describe('unparse', function () {
 
         assert.ok(result);
 
-        const expected = `id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers\r\n,email@example.com,Sam Memberino,Early supporter,,,,,,,`;
+        const expected = `id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,products\r\n,email@example.com,Sam Memberino,Early supporter,,,,,,,`;
         assert.equal(result, expected);
     });
 
@@ -31,6 +31,76 @@ describe('unparse', function () {
 
         const expected = `email,subscribed_to_emails\r\ndo-not-email-me@email.com,false`;
 
+        assert.equal(result, expected);
+    });
+
+    it('adds an error column to serialized CSV when present in columns and as a property', function () {
+        const json = [{
+            email: 'member-email@email.com',
+            error: 'things went south here!'
+        }];
+        const columns = [
+            'email', 'error'
+        ];
+
+        const result = unparse(json, columns);
+        const expected = `email,error\r\nmember-email@email.com,things went south here!`;
+        assert.equal(result, expected);
+    });
+
+    it('adds an error column automatically even if not present in columns', function () {
+        const json = [{
+            email: 'member-email@email.com',
+            error: 'things went south here!'
+        }];
+        const columns = [
+            'email'
+        ];
+
+        const result = unparse(json, columns);
+        const expected = `email,error\r\nmember-email@email.com,things went south here!`;
+        assert.equal(result, expected);
+    });
+
+    it('handles labels as strings and as objects', function () {
+        const json = [{
+            email: 'member-email@email.com',
+            labels: 'member-email-label'
+        }, {
+            email: 'second-member-email@email.com',
+            labels: [{
+                name: 'second member label'
+            }]
+        }, {
+            email: 'third-member-email@email.com',
+            labels: ['banana, avocado']
+        }];
+        const columns = [
+            'email', 'labels'
+        ];
+
+        const result = unparse(json, columns);
+        const expected = `email,labels\r
+member-email@email.com,member-email-label\r
+second-member-email@email.com,second member label\r
+third-member-email@email.com,"banana, avocado"`;
+        assert.equal(result, expected);
+    });
+
+    it('handles the tiers to products property serialization', function () {
+        const json = [{
+            email: 'member-email@email.com',
+            tiers: [{
+                name: 'Bronze Level'
+            }]
+        }];
+
+        const columns = [
+            'email', 'products'
+        ];
+
+        const result = unparse(json, columns);
+        const expected = `email,products\r\nmember-email@email.com,Bronze Level`;
         assert.equal(result, expected);
     });
 });
