@@ -31,7 +31,7 @@ export default class ExploreRoute extends AuthenticatedRoute {
     }
 
     @action
-    async willTransition(transition) {
+    willTransition(transition) {
         let isExploreTransition = false;
 
         if (transition) {
@@ -46,9 +46,14 @@ export default class ExploreRoute extends AuthenticatedRoute {
                 this.explore.isIframeTransition = isExploreTransition;
 
                 if (destinationUrl?.includes('/explore/submit')) {
-                    // Ensure the model is loaded before sending the controller action
-                    const model = await this.model;
-                    this.controllerFor('explore').submitExploreSite(model);
+                    // only show the submit page if the site is already submitted
+                    // and redirect to the connect page if not.
+                    if (Object.keys(this?.explore?.siteData).length >= 1) {
+                        this.controllerFor('explore').submitExploreSite();
+                    } else {
+                        transition.abort();
+                        return this.router.transitionTo('explore.connect');
+                    }
                 } else {
                     let path = destinationUrl.replace(/explore\//, '');
                     path = path === '/' ? '/explore/' : path;
