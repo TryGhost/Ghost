@@ -1694,6 +1694,33 @@ a.gh-post-list-cta.stats.is-hovered:hover > * {
     font-size: 1.25rem;
 }
 
+.gh-post-activity-feed .gh-dashboard-list-item {
+    align-items: center;
+}
+
+.gh-post-activity-feed .gh-post-activity-feed-dummy {
+    width: 40%;
+    height: 8px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #F2F6F7 0%, rgba(242, 246, 247, 0.842589) 62.56%, rgba(247, 250, 252, 0.75) 99.36%);
+}
+
+.gh-post-activity-feed .gh-post-activity-feed-dummy:nth-child(2) {
+    width: 30%;
+}
+
+.gh-post-activity-feed .gh-post-activity-feed-dummy:nth-child(3) {
+    width: 10%;
+}
+
+.gh-post-activity-feed-empty {
+    width: 100%;
+    height: 277px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .gh-post-activity-feed-pagination svg {
     width: 7px;
     height: 12px;
@@ -1706,7 +1733,7 @@ a.gh-post-list-cta.stats.is-hovered:hover > * {
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    margin-top: 16px;
+    margin-top: 2px;
     border-top: 1px solid #eceef0;
     padding: 18px 0;
 }
