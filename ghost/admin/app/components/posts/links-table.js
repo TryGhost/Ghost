@@ -1,6 +1,5 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
-import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 const PAGE_SIZE = 5;
