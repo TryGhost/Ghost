@@ -2,8 +2,7 @@
 
 exports[`Create Stripe Checkout Session Does allow to create a checkout session if the customerEmail is not associated with a paid member 1: [body] 1`] = `
 Object {
-  "publicKey": "pk_test_for_stripe",
-  "sessionId": "cs_123",
+  "url": "https://site.com",
 }
 `;
 
@@ -100,8 +99,7 @@ Object {
 
 exports[`Create Stripe Checkout Session Member attribution Does pass post attribution source to session metadata 1: [body] 1`] = `
 Object {
-  "publicKey": "pk_test_for_stripe",
-  "sessionId": "cs_123",
+  "url": "https://site.com",
 }
 `;
 
@@ -117,8 +115,7 @@ Object {
 
 exports[`Create Stripe Checkout Session Member attribution Does pass url attribution source to session metadata 1: [body] 1`] = `
 Object {
-  "publicKey": "pk_test_for_stripe",
-  "sessionId": "cs_123",
+  "url": "https://site.com",
 }
 `;
 
@@ -134,8 +131,7 @@ Object {
 
 exports[`Create Stripe Checkout Session Member attribution Ignores attribution_* values in metadata 1: [body] 1`] = `
 Object {
-  "publicKey": "pk_test_for_stripe",
-  "sessionId": "cs_123",
+  "url": "https://site.com",
 }
 `;
 

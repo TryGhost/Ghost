@@ -61,6 +61,7 @@ module.exports = function MembersAPI({
         Comment,
         MemberFeedback
     },
+    tiersService,
     stripeAPIService,
     offersAPI,
     labsService,
@@ -169,7 +170,7 @@ module.exports = function MembersAPI({
     const routerController = new RouterController({
         offersAPI,
         paymentsService,
-        productRepository,
+        tiersService,
         memberRepository,
         StripePrice,
         allowSelfSignup,
