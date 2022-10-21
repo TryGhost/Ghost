@@ -2,7 +2,7 @@ import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
-export default class ExploreRoute extends AuthenticatedRoute {
+export default class ExploreIndexRoute extends AuthenticatedRoute {
     @service explore;
     @service store;
     @service router;
