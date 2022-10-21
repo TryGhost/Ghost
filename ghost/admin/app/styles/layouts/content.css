@@ -857,7 +857,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 .gh-post-analytics-split {
     display: flex;
     gap: 2.4rem;
-    min-height: 400px;
+    min-height: 440px;
 }
 
 .gh-newsletter-clicks-header {
