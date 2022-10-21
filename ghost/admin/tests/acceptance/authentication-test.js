@@ -1,8 +1,9 @@
+import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import windowProxy from 'ghost-admin/utils/window-proxy';
 import {Response} from 'miragejs';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
-import {click, currentRouteName, currentURL, fillIn, findAll, visit} from '@ember/test-helpers';
+import {currentRouteName, currentURL, fillIn, findAll, triggerKeyEvent, visit} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {run} from '@ember/runloop';
 import {setupApplicationTest} from 'ember-mocha';
@@ -49,7 +50,7 @@ describe('Acceptance: Authentication', function () {
 
         it('invalidates session on 401 API response', async function () {
             // return a 401 when attempting to retrieve users
-            this.server.get('/users/', () => new Response(401, {}, {
+            this.server.get('/users/me', () => new Response(401, {}, {
                 errors: [
                     {message: 'Access denied.', type: 'UnauthorizedError'}
                 ]
@@ -66,6 +67,27 @@ describe('Acceptance: Authentication', function () {
             }
 
             expect(currentURL(), 'url after 401').to.equal('/signin');
+        });
+
+        it('invalidates session on 403 API response', async function () {
+            // return a 401 when attempting to retrieve users
+            this.server.get('/users/me', () => new Response(403, {}, {
+                errors: [
+                    {message: 'Authorization failed', type: 'NoPermissionError'}
+                ]
+            }));
+
+            await authenticateSession();
+            await visit('/settings/staff');
+
+            // running `visit(url)` inside windowProxy.replaceLocation breaks
+            // the async behaviour so we need to run `visit` here to simulate
+            // the browser visiting the new page
+            if (newLocation) {
+                await visit(newLocation);
+            }
+
+            expect(currentURL(), 'url after 403').to.equal('/signin');
         });
 
         it('doesn\'t show navigation menu on invalid url when not authenticated', async function () {
@@ -94,7 +116,7 @@ describe('Acceptance: Authentication', function () {
     });
 
     // TODO: re-enable once modal reappears correctly
-    describe.skip('editor', function () {
+    describe('editor', function () {
         let origDebounce = run.debounce;
         let origThrottle = run.throttle;
 
@@ -107,13 +129,14 @@ describe('Acceptance: Authentication', function () {
         it('displays re-auth modal attempting to save with invalid session', async function () {
             let role = this.server.create('role', {name: 'Administrator'});
             this.server.create('user', {roles: [role]});
+            let testOn = 'save'; // use marker for different type of server.put result
 
             // simulate an invalid session when saving the edited post
-            this.server.put('/posts/:id/', function ({posts}, {params}) {
+            this.server.put('/posts/:id/', function ({posts, db}, {params}) {
                 let post = posts.find(params.id);
-                let attrs = this.normalizedRequestAttrs();
+                let attrs = db.posts.find(params.id); // use attribute from db.posts to avoid hasInverseFor error
 
-                if (attrs.mobiledoc.cards[0][1].markdown === 'Edited post body') {
+                if (testOn === 'edit') {
                     return new Response(401, {}, {
                         errors: [
                             {message: 'Access denied.', type: 'UnauthorizedError'}
@@ -129,9 +152,12 @@ describe('Acceptance: Authentication', function () {
             await visit('/editor');
 
             // create the post
-            await fillIn('#entry-title', 'Test Post');
+            await fillIn('.gh-editor-title', 'Test Post');
             await fillIn('.__mobiledoc-editor', 'Test post body');
-            await click('.js-publish-button');
+            await triggerKeyEvent('.gh-editor-title', 'keydown', 83, {
+                metaKey: ctrlOrCmd === 'command',
+                ctrlKey: ctrlOrCmd === 'ctrl'
+            });
 
             // we shouldn't have a modal at this point
             expect(findAll('.modal-container #login').length, 'modal exists').to.equal(0);
@@ -139,8 +165,12 @@ describe('Acceptance: Authentication', function () {
             expect(findAll('.gh-alert').length, 'no of alerts').to.equal(0);
 
             // update the post
+            testOn = 'edit';
             await fillIn('.__mobiledoc-editor', 'Edited post body');
-            await click('.js-publish-button');
+            await triggerKeyEvent('.gh-editor-title', 'keydown', 83, {
+                metaKey: ctrlOrCmd === 'command',
+                ctrlKey: ctrlOrCmd === 'ctrl'
+            });
 
             // we should see a re-auth modal
             expect(findAll('.fullscreen-modal #login').length, 'modal exists').to.equal(1);
