@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('assert');
 const {unparse} = require('../index');
 
 describe('unparse', function () {
@@ -11,10 +11,10 @@ describe('unparse', function () {
 
         const result = unparse(json);
 
-        should.exist(result);
+        assert.ok(result);
 
-        const expected = `id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,products\r\n,email@example.com,Sam Memberino,Early supporter,,,,,,,`;
-        should.equal(result, expected);
+        const expected = `id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers\r\n,email@example.com,Sam Memberino,Early supporter,,,,,,,`;
+        assert.equal(result, expected);
     });
 
     it('maps the subscribed property to subscribed_to_emails', function () {
@@ -31,6 +31,6 @@ describe('unparse', function () {
 
         const expected = `email,subscribed_to_emails\r\ndo-not-email-me@email.com,false`;
 
-        should.equal(result, expected);
+        assert.equal(result, expected);
     });
 });
