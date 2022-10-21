@@ -14,7 +14,7 @@ export default class LinksTable extends Component {
     @action
     handleBlur(event) {
         event?.preventDefault();
-        if (!event?.relatedTarget?.matches('.gh-links-list-item-update-button')) {
+        if (this.editingLink && !event?.relatedTarget?.matches('.gh-links-list-item-update-button')) {
             this.cancelEdit();
         }
     }
