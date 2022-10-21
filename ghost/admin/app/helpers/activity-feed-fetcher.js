@@ -47,9 +47,7 @@ export default class MembersEventsFetcher extends Resource {
     }
 
     getAmountOfPreviousEvents() {
-        return this.totalEvents > this.args.named.pageSize
-            ? this.shownEvents - this.args.named.pageSize + 1
-            : this.data.length;
+        return this.shownEvents - this.data.length + 1;
     }
 
     async setup() {
@@ -60,6 +58,7 @@ export default class MembersEventsFetcher extends Resource {
             filter += `+${this.args.named.filter}`;
         }
 
+        this.eventsBookmarks.push(currentTime);
         await this.loadEventsTask.perform({filter}, actions.showNext);
     }
 
