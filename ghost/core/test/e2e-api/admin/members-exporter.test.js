@@ -51,7 +51,7 @@ async function testOutput(member, asserts, filters = []) {
                 'content-disposition': anyString
             });
 
-        res.text.should.match(/id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,products/);
+        res.text.should.match(/id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers/);
 
         let csv = Papa.parse(res.text, {header: true});
         let row = csv.data.find(r => r.id === member.id);
@@ -72,8 +72,8 @@ describe('Members API — exportCSV', function () {
         await agent.loginAsOwner();
 
         await models.Product.add({
-            name: 'Extra Paid Product',
-            slug: 'extra-product',
+            name: 'Extra Paid Tier',
+            slug: 'extra-tier',
             type: 'paid',
             active: true,
             visibility: 'public'
@@ -106,8 +106,8 @@ describe('Members API — exportCSV', function () {
         mockManager.restore();
     });
 
-    it('Can export products', async function () {
-        // Create a new member with a product
+    it('Can export tiers', async function () {
+        // Create a new member with a product (to be renamed to "tiers" once the changes is done on model layer)
         const member = await createMember({
             name: 'Test member',
             products: tiers
@@ -119,11 +119,11 @@ describe('Members API — exportCSV', function () {
             basicAsserts(member, row);
             should(row.subscribed_to_emails).eql('false');
             should(row.complimentary_plan).eql('');
-            should(row.products.split(',').sort().join(',')).eql(tiersList);
-        }, [`filter=products:${tiers[0].get('slug')}`, 'filter=subscribed:false']);
+            should(row.tiers.split(',').sort().join(',')).eql(tiersList);
+        }, [`filter=tier:[${tiers[0].get('slug')}]`, 'filter=subscribed:false']);
     });
 
-    it('Can export a member without products', async function () {
+    it('Can export a member without tiers', async function () {
         // Create a new member with a product
         const member = await createMember({
             name: 'Test member 2',
@@ -134,7 +134,7 @@ describe('Members API — exportCSV', function () {
             basicAsserts(member, row);
             should(row.subscribed_to_emails).eql('false');
             should(row.complimentary_plan).eql('');
-            should(row.products).eql('');
+            should(row.tiers).eql('');
         }, ['filter=subscribed:false']);
     });
 
@@ -157,7 +157,7 @@ describe('Members API — exportCSV', function () {
             should(row.subscribed_to_emails).eql('false');
             should(row.complimentary_plan).eql('');
             should(row.labels).eql(labelsList);
-            should(row.products).eql('');
+            should(row.tiers).eql('');
         }, [`filter=label:${labels[0].get('slug')}`, 'filter=subscribed:false']);
     });
 
@@ -174,7 +174,7 @@ describe('Members API — exportCSV', function () {
             should(row.subscribed_to_emails).eql('false');
             should(row.complimentary_plan).eql('true');
             should(row.labels).eql('');
-            should(row.products).eql('');
+            should(row.tiers).eql('');
         }, ['filter=status:comped', 'filter=subscribed:false']);
     });
 
@@ -193,7 +193,7 @@ describe('Members API — exportCSV', function () {
             should(row.subscribed_to_emails).eql('true');
             should(row.complimentary_plan).eql('');
             should(row.labels).eql('');
-            should(row.products).eql('');
+            should(row.tiers).eql('');
         }, ['filter=subscribed:true']);
     });
 
@@ -232,7 +232,7 @@ describe('Members API — exportCSV', function () {
             should(row.subscribed_to_emails).eql('false');
             should(row.complimentary_plan).eql('');
             should(row.labels).eql('');
-            should(row.products).eql('');
+            should(row.tiers).eql('');
             should(row.stripe_customer_id).eql('cus_12345');
         }, ['filter=subscribed:false', 'filter=subscriptions.subscription_id:sub_123']);
     });

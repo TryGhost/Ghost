@@ -13,7 +13,7 @@ describe('unparse', function () {
 
         assert.ok(result);
 
-        const expected = `id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,products\r\n,email@example.com,Sam Memberino,Early supporter,,,,,,,`;
+        const expected = `id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers\r\n,email@example.com,Sam Memberino,Early supporter,,,,,,,`;
         assert.equal(result, expected);
     });
 
@@ -96,11 +96,11 @@ third-member-email@email.com,"banana, avocado"`;
         }];
 
         const columns = [
-            'email', 'products'
+            'email', 'tiers'
         ];
 
         const result = unparse(json, columns);
-        const expected = `email,products\r\nmember-email@email.com,Bronze Level`;
+        const expected = `email,tiers\r\nmember-email@email.com,Bronze Level`;
         assert.equal(result, expected);
     });
 });
