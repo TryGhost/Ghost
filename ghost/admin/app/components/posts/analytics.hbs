@@ -100,7 +100,13 @@
             </tabs.tab>
 
             <tabs.tabPanel>
-                <Posts::PostActivityFeed @postId={{this.post.id}} @eventType="feedback" />
+                <Posts::PostActivityFeed
+                    @postId={{this.post.id}}
+                    @eventType="feedback"
+                    @data={{array this.post.count.positive_feedback this.post.count.negative_feedback}}
+                    @positiveLink={{hash filterParam=(concat "(feedback.post_id:" this.post.id "+feedback.score:1)")}}
+                    @negativeLink={{hash filterParam=(concat "(feedback.post_id:" this.post.id "+feedback.score:0)")}}
+                />
             </tabs.tabPanel>
         {{/if}}
 

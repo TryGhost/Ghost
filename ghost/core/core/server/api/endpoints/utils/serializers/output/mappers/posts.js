@@ -140,5 +140,9 @@ module.exports = async (model, frame, options = {}) => {
         jsonModel.count.positive_feedback = 0;
     }
 
+    if (jsonModel.count && !jsonModel.count.negative_feedback) {
+        jsonModel.count.negative_feedback = 0;
+    }
+
     return jsonModel;
 };

@@ -1399,7 +1399,7 @@ Post = ghostBookshelf.Model.extend({
                     qb.count('*')
                         .from('members_feedback')
                         .whereRaw('posts.id = members_feedback.post_id AND members_feedback.score = 0')
-                        .as('count__positive_feedback');
+                        .as('count__negative_feedback');
                 });
             },
             positive_feedback(modelOrCollection) {
