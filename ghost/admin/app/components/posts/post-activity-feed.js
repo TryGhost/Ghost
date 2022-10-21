@@ -32,6 +32,10 @@ export default class PostActivityFeed extends Component {
         return this._pageSize;
     }
 
+    get eventType() {
+        return this.args.eventType;
+    }
+
     // calculate amount of empty rows which require to keep table height the same for each tab/page
     @action
     getAmountOfStubs({data}) {

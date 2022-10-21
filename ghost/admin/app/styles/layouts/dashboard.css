@@ -1231,6 +1231,8 @@ Dashboard Attribution */
     line-height: 1.45em;
     margin: 0;
     padding: 0;
+    font-size: 1.4rem;
+    font-weight: 500;
 }
 
 .attribution-list-empty svg {
