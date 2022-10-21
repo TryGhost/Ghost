@@ -115,6 +115,21 @@ module.exports = class Tier {
         this.#currency = validateCurrency(value, this.#type);
     }
 
+    /**
+     * @param {'month'|'year'} cadence
+     */
+    getPrice(cadence) {
+        if (cadence === 'month') {
+            return this.monthlyPrice;
+        }
+        if (cadence === 'year') {
+            return this.yearlyPrice;
+        }
+        throw new ValidationError({
+            message: 'Invalid cadence'
+        });
+    }
+
     /** @type {number|null} */
     #monthlyPrice;
     get monthlyPrice() {
@@ -134,7 +149,7 @@ module.exports = class Tier {
     }
 
     updatePricing({currency, monthlyPrice, yearlyPrice}) {
-        if (this.#type !== 'paid') {
+        if (this.#type !== 'paid' && (currency || monthlyPrice || yearlyPrice)) {
             throw new ValidationError({
                 message: 'Cannot set pricing for free tiers'
             });
