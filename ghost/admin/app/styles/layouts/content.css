@@ -1565,7 +1565,6 @@ a.gh-post-list-cta.stats.is-hovered:hover > * {
 }
 
 .gh-tabs-analytics {
-    overflow: hidden;
     margin-bottom: 22px;
     border-radius: 5px;
     border: 1px solid #ECEEF0;
@@ -1690,6 +1689,17 @@ a.gh-post-list-cta.stats.is-hovered:hover > * {
     }
 }
 
+.gh-post-activity-feed {
+    display: grid;
+    grid-template-columns: 1fr auto
+}
+
+@media (max-width: 1150px) {
+    .gh-post-activity-feed {
+        grid-template-columns: unset;
+    }
+}
+
 .gh-post-activity-feed .gh-member-list-avatar {
     font-size: 1.25rem;
 }
@@ -1807,4 +1817,66 @@ a.gh-post-list-cta.stats.is-hovered:hover > * {
         align-items: flex-start;
         padding: 16px 0;
     }
+}
+
+.gh-feedback-events-tooltip {
+    opacity: 0;
+    position: fixed;
+    left: 200px;
+    padding: 16px 12px;
+    background: #FFFFFF;
+    border: 1px solid #E6E6E6;
+    box-shadow: 0px 6px 25px rgba(0, 0, 0, 0.07);
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 1.3rem;
+    line-height: 1.2;
+    color: #909cab;
+}
+
+.gh-feedback-events-tooltip-badge {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin-right: 8px;
+    border-radius: 50%;
+}
+
+.gh-feedback-events-tooltip-metric {
+    margin-left: 16px;
+}
+
+.gh-feedback-events-tooltip-info {
+    margin-right: 4px;
+    font-weight: 700;
+    font-size: 2rem;
+    line-height: 1.2;
+    color: #000000;
+}
+
+.gh-feedback-events-tooltip-footer {
+    margin-top: 12px;
+    padding-top: 12px;
+    white-space: nowrap;
+    border-top: 1px solid #EBEEF0E5;
+}
+
+.gh-feedback-events-tooltip-body {
+    display: flex;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.gh-feedback-events-feed {
+    position: relative;
+    padding: 0 40px 16px;
+}
+
+.gh-feedback-events-feed-container {
+    max-width: 220px;
+    margin: auto;
+}
+
+.gh-post-activity-chart-link[hidden="true"] {
+    display: none;
 }

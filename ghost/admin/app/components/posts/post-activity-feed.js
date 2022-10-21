@@ -21,6 +21,7 @@ const eventTypes = {
 };
 
 export default class PostActivityFeed extends Component {
+    tooltipNode = null;
     _pageSize = 5;
 
     get getEventTypes() {
@@ -30,6 +31,18 @@ export default class PostActivityFeed extends Component {
 
     get pageSize() {
         return this._pageSize;
+    }
+
+    @action
+    onTooltipInsert(node) {
+        this.tooltipNode = node;
+    }
+
+    @action
+    onMouseleave() {
+        this.tooltipNode.style.opacity = '0';
+        this.tooltipNode.style.position = 'fixed';
+        this.tooltipNode.style.left = '2000';
     }
 
     get eventType() {

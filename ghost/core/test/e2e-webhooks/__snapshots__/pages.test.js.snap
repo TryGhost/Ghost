@@ -203,6 +203,7 @@ Object {
       "codeinjection_head": null,
       "comment_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "count": Object {
+        "negative_feedback": 0,
         "paid_conversions": 0,
         "positive_feedback": 0,
         "signups": 0,
@@ -414,6 +415,7 @@ Object {
       "codeinjection_head": null,
       "comment_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "count": Object {
+        "negative_feedback": 0,
         "paid_conversions": 0,
         "positive_feedback": 0,
         "signups": 0,
@@ -625,6 +627,7 @@ Object {
       "codeinjection_head": null,
       "comment_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "count": Object {
+        "negative_feedback": 0,
         "paid_conversions": 0,
         "positive_feedback": 0,
         "signups": 0,
