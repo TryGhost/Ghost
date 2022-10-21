@@ -274,6 +274,7 @@ async function initServices({config}) {
     debug('Begin: Services');
     const stripe = require('./server/services/stripe');
     const members = require('./server/services/members');
+    const tiers = require('./server/services/tiers');
     const permissions = require('./server/services/permissions');
     const xmlrpc = require('./server/services/xmlrpc');
     const slack = require('./server/services/slack');
@@ -304,6 +305,7 @@ async function initServices({config}) {
         memberAttribution.init(),
         staffService.init(),
         members.init(),
+        tiers.init(),
         membersEvents.init(),
         permissions.init(),
         xmlrpc.listen(),
