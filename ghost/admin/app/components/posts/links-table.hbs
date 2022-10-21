@@ -88,22 +88,69 @@
             <div class="gh-links-pagination">
                 {{#if (feature "fixNewsletterLinks")}}
                 <span class="gh-links-info">{{svg-jar "arrow-right-tail"}} Sent a broken link? You can update it!</span>
-                {{else}}
-                <div class="gh-links-pagination-progress">
-                    Showing {{this.startOffset}}-{{this.endOffset}} of {{this.totalLinks}}
-                </div>
+
+                    {{#if (not (feature "audienceFeedback"))}}
+                        <div class="gh-links-pagination-actions">
+                            <button type="button" class="gh-links-pagination-action gh-links-pagination-prev {{if this.disablePreviousPage "gh-links-pagination-disabled"}}" {{on "click" this.openPreviousPage}} disabled={{this.disablePreviousPage}}>
+                                {{svg-jar "arrow-left-pagination"}}
+                                Previous
+                            </button>
+                            <button type="button" class="gh-links-pagination-action gh-links-pagination-next {{if this.disableNextPage "gh-links-pagination-disabled"}}" {{on "click" this.openNextPage}} disabled={{this.disableNextPage}}>
+                                Next
+                                {{svg-jar "arrow-right-pagination"}}
+                            </button>
+                        </div>
+                    {{/if}}
                 {{/if}}
-                {{#if this.showPagination}}
-                <div class="gh-links-pagination-actions">
-                    <button type="button" class="gh-links-pagination-action gh-links-pagination-prev {{if this.disablePreviousPage "gh-links-pagination-disabled"}}" {{on "click" this.openPreviousPage}} disabled={{this.disablePreviousPage}}>
-                        {{svg-jar "arrow-left-pagination"}}
-                        Previous
-                    </button>
-                    <button type="button" class="gh-links-pagination-action gh-links-pagination-next {{if this.disableNextPage "gh-links-pagination-disabled"}}" {{on "click" this.openNextPage}} disabled={{this.disableNextPage}}>
-                        Next
-                        {{svg-jar "arrow-right-pagination"}}
-                    </button>
-                </div>
+
+                {{#if (and (not (feature "fixNewsletterLinks")) (not (feature "audienceFeedback")))}}
+                    <div class="gh-links-pagination-progress">
+                        Showing {{this.startOffset}}-{{this.endOffset}} of {{this.totalLinks}}
+                    </div>
+                    {{#if this.showPagination}}
+                        <div class="gh-links-pagination-actions">
+                            <button type="button" class="gh-links-pagination-action gh-links-pagination-prev {{if this.disablePreviousPage "gh-links-pagination-disabled"}}" {{on "click" this.openPreviousPage}} disabled={{this.disablePreviousPage}}>
+                                {{svg-jar "arrow-left-pagination"}}
+                                Previous
+                            </button>
+                            <button type="button" class="gh-links-pagination-action gh-links-pagination-next {{if this.disableNextPage "gh-links-pagination-disabled"}}" {{on "click" this.openNextPage}} disabled={{this.disableNextPage}}>
+                                Next
+                                {{svg-jar "arrow-right-pagination"}}
+                            </button>
+                        </div>
+                    {{/if}}
+                {{/if}}
+
+                {{#if (feature "audienceFeedback")}}
+                    <div class="gh-post-activity-feed-pagination">
+                        {{#if (feature "fixNewsletterLinks")}}
+                            Showing {{this.startOffset}}-{{this.endOffset}} of {{this.totalLinks}}
+                        {{/if}}
+                        <div class="gh-post-activity-feed-pagination-group">
+                            <button
+                                class="gh-post-activity-feed-pagination-button gh-post-activity-feed-prev-button"
+                                type="button"
+                                title="Previous page"
+                                disabled={{this.disablePreviousPage}}
+                                {{on "click" this.openPreviousPage}}
+                            >
+                                {{svg-jar "arrow-left-pagination"}}
+                            </button>
+
+                            <button
+                                class="gh-post-activity-feed-pagination-button gh-post-activity-feed-next-button"
+                                type="button"
+                                title="Next page"
+                                disabled={{this.disableNextPage}}
+                                {{on "click" this.openNextPage}}
+                            >
+                                {{svg-jar "arrow-right-pagination"}}
+                            </button>
+                        </div>
+                        {{#if (not (feature "fixNewsletterLinks"))}}
+                            Showing {{this.startOffset}}-{{this.endOffset}} of {{this.totalLinks}}
+                        {{/if}}
+                    </div>
                 {{/if}}
             </div>
         {{/if}}
