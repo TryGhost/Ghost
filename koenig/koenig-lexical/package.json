@@ -67,7 +67,7 @@
     "eslint-plugin-jest": "27.1.3",
     "eslint-plugin-tailwindcss": "3.6.2",
     "jsdom": "20.0.1",
-    "linkedom": "0.14.17",
+    "linkedom": "0.14.18",
     "postcss": "8.4.18",
     "postcss-import": "15.0.0",
     "prettier": "2.7.1",
