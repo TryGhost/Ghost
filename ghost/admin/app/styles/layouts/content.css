@@ -1690,6 +1690,10 @@ a.gh-post-list-cta.stats.is-hovered:hover > * {
     }
 }
 
+.gh-post-activity-feed .gh-member-list-avatar {
+    font-size: 1.25rem;
+}
+
 .gh-post-activity-feed-pagination svg {
     width: 7px;
     height: 12px;
