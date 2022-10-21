@@ -24,7 +24,9 @@ module.exports = {
     },
     bulkEdit: {
         statusCode: 200,
-        headers: {},
+        headers: {
+            cacheInvalidate: true
+        },
         options: [
             'filter'
         ],
