@@ -292,6 +292,7 @@ const FILTER_PROPERTIES = [
         valueType: 'string', 
         resource: 'email', 
         relationOptions: FEEDBACK_RELATION_OPTIONS,
+        feature: 'audienceFeedback', 
         buildNqlFilter: (filter) => {
             // Added brackets to make sure we can parse as a single AND filter
             return `(feedback.post_id:${filter.value}+feedback.score:${filter.relation})`;
