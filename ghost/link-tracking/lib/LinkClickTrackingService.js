@@ -6,6 +6,7 @@ const errors = require('@tryghost/errors');
 const nql = require('@tryghost/nql');
 const _ = require('lodash');
 const tpl = require('@tryghost/tpl');
+const moment = require('moment');
 
 /**
  * @typedef {object} ILinkClickRepository
@@ -171,7 +172,7 @@ class LinkClickTrackingService {
         const bulkUpdateOptions = _.pick(options, ['transacting']);
         const updateData = {
             to: this.#urlUtils.absoluteToTransformReady(newRedirectUrl.href),
-            updated_at: new Date()
+            updated_at: moment().format('YYYY-MM-DD HH:mm:ss')
         };
 
         return await this.#postLinkRepository.updateLinks(linkIds, updateData, bulkUpdateOptions);
