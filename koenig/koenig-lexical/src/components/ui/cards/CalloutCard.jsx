@@ -12,10 +12,10 @@ export const CALLOUT_COLORS = {
     purple: 'bg-purple/10 border-transparent'
 };
 
-export function CalloutCard({backgroundColor, value, valuePlaceholder}) {
+export function CalloutCard({backgroundColor, value, valuePlaceholder, isSelected}) {
     return (
         <div className={`flex items-center py-5 px-7 rounded border ${CALLOUT_COLORS[backgroundColor]} `}>
-            <button className="text-xl mr-2 px-2 rounded h-8 hover:bg-grey-300">&#128161;</button>
+            <button className={`text-xl mr-2 px-2 rounded h-8 ${isSelected ? 'hover:bg-grey-500/20' : ''} ` }>&#128161;</button>
             <input className="w-full bg-transparent font-serif font-normal text-xl text-black" value={value} placeholder={valuePlaceholder} />
         </div>
     );
