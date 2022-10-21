@@ -455,6 +455,12 @@ const fixtures = {
         });
     },
 
+    insertLinks: function insertLinks() {
+        return Promise.map(DataGenerator.forKnex.links, function (link) {
+            return models.Redirect.add(link, context.internal);
+        });
+    },
+
     insertEmails: function insertEmails() {
         return Promise.map(DataGenerator.forKnex.emails, function (email) {
             return models.Email.add(email, context.internal);
@@ -655,6 +661,12 @@ const fixtures = {
         }));
     },
 
+    insertFeedback: async function insertFeedback() {
+        await Promise.all(DataGenerator.forKnex.members_feedback.map((feedback) => {
+            return models.MemberFeedback.add(feedback, context.internal);
+        }));
+    },
+
     insertSnippets: function insertSnippets() {
         return Promise.map(DataGenerator.forKnex.snippets, function (snippet) {
             return models.Snippet.add(snippet, context.internal);
@@ -794,6 +806,12 @@ const toDoList = {
     },
     clicks: function insertClicks() {
         return fixtures.insertClicks();
+    },
+    feedback: function insertFeedback() {
+        return fixtures.insertFeedback();
+    },
+    links: function insertLinks() {
+        return fixtures.insertLinks();
     }
 };
 

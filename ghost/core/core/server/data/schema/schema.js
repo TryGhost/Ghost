@@ -630,7 +630,7 @@ module.exports = {
             }
         },
         member_id: {type: 'string', maxlength: 24, nullable: false, unique: false, references: 'members.id', cascadeDelete: true},
-        tier_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'products.id'},
+        tier_id: {type: 'string', maxlength: 24, nullable: false, unique: false, references: 'products.id'},
 
         // These are null if type !== 'paid'
         cadence: {
@@ -657,6 +657,7 @@ module.exports = {
     members_stripe_customers_subscriptions: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         customer_id: {type: 'string', maxlength: 255, nullable: false, unique: false, references: 'members_stripe_customers.customer_id', cascadeDelete: true},
+        ghost_subscription_id: {type: 'string', maxlength: 24, nullable: true, references: 'subscriptions.id', constraintName: 'mscs_ghost_subscription_id_foreign', cascadeDelete: true},
         subscription_id: {type: 'string', maxlength: 255, nullable: false, unique: true},
         stripe_price_id: {type: 'string', maxlength: 255, nullable: false, unique: false, index: true, defaultTo: ''},
         status: {type: 'string', maxlength: 50, nullable: false},

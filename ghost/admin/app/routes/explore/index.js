@@ -2,7 +2,7 @@ import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
-export default class ExploreRoute extends AuthenticatedRoute {
+export default class ExploreIndexRoute extends AuthenticatedRoute {
     @service explore;
     @service store;
     @service router;
@@ -43,10 +43,27 @@ export default class ExploreRoute extends AuthenticatedRoute {
 
             if (destinationUrl?.includes('/explore')) {
                 isExploreTransition = true;
+                this.explore.isIframeTransition = isExploreTransition;
 
-                // Send the updated route to the iframe
-                if (transition?.to?.params?.sub) {
-                    this.explore.sendRouteUpdate({path: transition.to.params.sub});
+                if (destinationUrl?.includes('/explore/submit')) {
+                    // only show the submit page if the site is already submitted
+                    // and redirect to the connect page if not.
+                    if (Object.keys(this?.explore?.siteData).length >= 1) {
+                        this.controllerFor('explore').submitExploreSite();
+                    } else {
+                        transition.abort();
+                        return this.router.transitionTo('explore.connect');
+                    }
+                } else {
+                    let path = destinationUrl.replace(/explore\//, '');
+                    path = path === '/' ? '/explore/' : path;
+
+                    if (destinationUrl?.includes('/explore/about')) {
+                        window.open(`${this.explore.exploreUrl}about/`, '_blank').focus();
+                        path = '/explore/';
+                    }
+                    // Send the updated route to the iframe
+                    this.explore.sendRouteUpdate({path});
                 }
             }
         }

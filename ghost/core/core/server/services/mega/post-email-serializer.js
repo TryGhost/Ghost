@@ -17,6 +17,7 @@ const linkReplacer = require('@tryghost/link-replacer');
 const linkTracking = require('../link-tracking');
 const memberAttribution = require('../member-attribution');
 const feedbackButtons = require('./feedback-buttons');
+const labs = require('../../../shared/labs');
 
 const ALLOWED_REPLACEMENTS = ['first_name', 'uuid'];
 
@@ -109,20 +110,16 @@ const PostEmailSerializer = {
     },
 
     /**
-     * createUserLinks
+     * replaceFeedbackLinks
      *
-     * Generate personalised links for each user
+     * Replace the button template links with real links
      *
-     * @param {string} memberUuid member uuid
-     * @param {Object} email
+     * @param {string} html
+     * @param {string} postId (will be url encoded)
+     * @param {string} memberUuid member uuid to use in the URL (will be url encoded)
      */
-    createUserLinks(email, memberUuid) {
-        const result = {...email};
-
-        result.html = feedbackButtons.generateLinks(result.post.id, memberUuid, result.html);
-        result.plaintext = htmlToPlaintext.email(result.html);
-
-        return result;
+    replaceFeedbackLinks(html, postId, memberUuid) {
+        return feedbackButtons.generateLinks(postId, memberUuid, html);
     },
 
     // NOTE: serialization is needed to make sure we do post transformations such as image URL transformation from relative to absolute
@@ -181,12 +178,21 @@ const PostEmailSerializer = {
         const EMAIL_REPLACEMENT_REGEX = /%%(\{.*?\})%%/g;
         const REPLACEMENT_STRING_REGEX = /\{(?<recipientProperty>\w*?)(?:,? *(?:"|&quot;)(?<fallback>.*?)(?:"|&quot;))?\}/;
 
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
         const replacements = [];
 
         ['html', 'plaintext'].forEach((format) => {
             let result;
             while ((result = EMAIL_REPLACEMENT_REGEX.exec(email[format])) !== null) {
                 const [replacementMatch, replacementStr] = result;
+
+                // Did we already found this match and added it to the replacements array?
+                if (replacements.find(r => r.match === replacementMatch && r.format === format)) {
+                    continue;
+                }
                 const match = replacementStr.match(REPLACEMENT_STRING_REGEX);
 
                 if (match) {
@@ -199,6 +205,7 @@ const PostEmailSerializer = {
                             format,
                             id,
                             match: replacementMatch,
+                            regexp: new RegExp(escapeRegExp(replacementMatch), 'g'),
                             recipientProperty: `member_${recipientProperty}`,
                             fallback
                         });
@@ -224,7 +231,7 @@ const PostEmailSerializer = {
             titleAlignment: newsletter.get('title_alignment'),
             bodyFontCategory: newsletter.get('body_font_category'),
             showBadge: newsletter.get('show_badge'),
-            feedbackEnabled: newsletter.get('feedback_enabled'),
+            feedbackEnabled: newsletter.get('feedback_enabled') && labs.isSet('audienceFeedback'),
             footerContent: newsletter.get('footer_content'),
             showHeaderName: newsletter.get('show_header_name'),
             accentColor,
@@ -395,6 +402,14 @@ const PostEmailSerializer = {
             });
         }
 
+        // Add buttons
+        if (labs.isSet('audienceFeedback')) {
+            // create unique urls for every recipient (for example, for feedback buttons)
+            // Note, we need to use a different member uuid in the links because `%%{uuid}%%` would get escaped by the URL object when set as a search param
+            const urlSafeToken = '--' + new Date().getTime() + 'url-safe-uuid--';
+            result.html = this.replaceFeedbackLinks(result.html, post.id, urlSafeToken).replace(new RegExp(urlSafeToken, 'g'), '%%{uuid}%%');
+        }
+
         // Clean up any unknown replacements strings to get our final content
         const {html, plaintext} = this.normalizeReplacementStrings(result);
         const data = {
@@ -520,7 +535,6 @@ module.exports = {
     serialize: PostEmailSerializer.serialize.bind(PostEmailSerializer),
     createUnsubscribeUrl: PostEmailSerializer.createUnsubscribeUrl.bind(PostEmailSerializer),
     createPostSignupUrl: PostEmailSerializer.createPostSignupUrl.bind(PostEmailSerializer),
-    createUserLinks: PostEmailSerializer.createUserLinks.bind(PostEmailSerializer),
     renderEmailForSegment: PostEmailSerializer.renderEmailForSegment.bind(PostEmailSerializer),
     parseReplacements: PostEmailSerializer.parseReplacements.bind(PostEmailSerializer),
     // Export for tests

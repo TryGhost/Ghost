@@ -1,0 +1,79 @@
+<div class="gh-dashboard-list-body gh-post-activity-feed">
+    {{#let (activity-feed-fetcher filter=(members-event-filter post=@postId excludedEvents=this.getEventTypes) pageSize=this.pageSize) as |eventsFetcher|}}
+        {{#if eventsFetcher.isError}}
+            <div class="gh-dashboard-list-error">
+                <p>There was an error loading events</p>
+                {{#if eventsFetcher.errorMessage}}
+                    <code>{{eventsFetcher.errorMessage}}</code>
+                {{/if}}
+            </div>
+        {{/if}}
+
+        {{#each eventsFetcher.data as |event|}}
+            {{#let (parse-member-event event) as |parsedEvent|}}
+                <div class="gh-dashboard-list-item">
+                    <div class="gh-dashboard-list-item-sub">
+                        <GhMemberAvatar @member={{parsedEvent.member}} @containerClass="w6 h6 mr3 flex-shrink-0" />
+                        <LinkTo class="gh-dashboard-list-text" @route="member" @model="{{parsedEvent.memberId}}">{{parsedEvent.subject}}</LinkTo>
+                    </div>
+                    <div class="gh-dashboard-list-item-sub">
+                        {{svg-jar parsedEvent.icon }}
+                        <span class="gh-dashboard-list-subtext">
+                            <span class="gh-members-activity-description">
+                                <span class="gh-members-activity-event-text">{{capitalize-first-letter parsedEvent.action}}</span>
+                            </span>
+                        </span>
+                    </div>
+                    <div class="gh-dashboard-list-item-sub">
+                        <span class="gh-dashboard-list-subtext">{{moment-from-now parsedEvent.timestamp}}</span>
+                    </div>
+                </div>
+            {{/let}}
+        {{/each}}
+
+        {{#let (compute (fn this.getAmountOfStubs eventsFetcher)) as |stubs|}}
+            {{#each stubs}}
+                <div class="gh-dashboard-list-item"></div>
+            {{/each}}
+        {{/let}}
+
+        <div class="gh-post-activity-feed-footer">
+            <div class="gh-post-activity-feed-pagination">
+                <div class="gh-post-activity-feed-pagination-group">
+                    <button
+                        class="gh-post-activity-feed-pagination-button gh-post-activity-feed-prev-button"
+                        type="button"
+                        title="Previous page"
+                        disabled={{compute (fn this.isPreviousButtonDisabled eventsFetcher)}}
+                        {{on "click" eventsFetcher.loadPreviousPage}}
+                    >
+                        {{svg-jar "arrow-left-pagination"}}
+                    </button>
+
+                    <button
+                        class="gh-post-activity-feed-pagination-button gh-post-activity-feed-next-button"
+                        type="button"
+                        title="Next page"
+                        disabled={{compute (fn this.isNextButtonDisabled eventsFetcher)}}
+                        {{on "click" eventsFetcher.loadNextPage}}
+                    >
+                        {{svg-jar "arrow-right-pagination"}}
+                    </button>
+                </div>
+
+                Showing {{eventsFetcher.previousEvents}} - {{eventsFetcher.shownEvents}} of {{eventsFetcher.totalEvents}}
+            </div>
+
+            {{#if (and @linkQuery @linkText)}}
+                <LinkTo
+                    class="gh-post-activity-feed-pagination-link"
+                    @route="members"
+                    @query={{@linkQuery}}
+                >
+                    {{svg-jar "filter"}}
+                    {{@linkText}}
+                </LinkTo>
+            {{/if}}
+        </div>
+    {{/let}}
+</div>

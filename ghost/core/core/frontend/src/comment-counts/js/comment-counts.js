@@ -63,6 +63,10 @@
         const ids = Array.from(fetchingIds);
         fetchingIds.clear();
 
+        if (!ids.length) {
+            return;
+        }
+
         const rawRes = await fetch(api, {
             method: 'POST',
             headers: {
@@ -71,6 +75,10 @@
             },
             body: JSON.stringify({ids})
         });
+
+        if (rawRes.status !== 200) {
+            return;
+        }
 
         const res = await rawRes.json();
 

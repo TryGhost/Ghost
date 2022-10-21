@@ -29,6 +29,7 @@ const VALID_KEYS = {
         'validations',
         'defaultTo',
         'references',
+        'constraintName',
         'cascadeDelete',
         'setNullDelete',
         'index'

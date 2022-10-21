@@ -1,8 +1,10 @@
 import Controller from '@ember/controller';
+import MemberFetcher from 'ghost-admin/helpers/member-fetcher';
 import {EMAIL_EVENTS, NEWSLETTER_EVENTS} from 'ghost-admin/helpers/members-event-filter';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
+import {use} from 'ember-could-get-used-to-this';
 
 export default class MembersActivityController extends Controller {
     @service router;
@@ -13,6 +15,8 @@ export default class MembersActivityController extends Controller {
 
     @tracked excludedEvents = null;
     @tracked member = null;
+
+    @use memberRecord = new MemberFetcher(() => [this.member]);
 
     // we don't want to show or allow filtering of certain events in some situations
     // - no member selected = don't show email events, they flood the list and the API can't paginate correctly
@@ -33,16 +37,6 @@ export default class MembersActivityController extends Controller {
 
     get fullExcludedEvents() {
         return (this.excludedEvents || '').split(',').concat(this.hiddenEvents);
-    }
-
-    get memberRecord() {
-        if (!this.member) {
-            return null;
-        }
-
-        // TODO: {reload: true} here shouldn't be needed but without it
-        // the template renders nothing if the record is already in the store
-        return this.store.findRecord('member', this.member, {reload: true});
     }
 
     @action
