@@ -857,7 +857,7 @@ a.gh-post-list-signups.active:hover > span, a.gh-post-list-conversions.active:ho
 .gh-post-analytics-split {
     display: flex;
     gap: 2.4rem;
-    min-height: 440px;
+    min-height: 445px;
 }
 
 .gh-newsletter-clicks-header {
@@ -1696,6 +1696,7 @@ a.gh-post-list-cta.stats.is-hovered:hover > * {
     gap: 16px;
     margin-top: 16px;
     border-top: 1px solid #eceef0;
+    padding: 18px 0;
 }
 
 .gh-post-activity-feed-pagination {
