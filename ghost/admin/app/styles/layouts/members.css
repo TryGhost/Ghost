@@ -157,6 +157,18 @@ p.gh-members-list-email {
     min-width: 220px;
 }
 
+.gh-members-list-feedback{
+    display: flex;
+    align-items: center;
+}
+
+.gh-members-list-feedback svg {
+    width: 24px;
+    min-width: 24px;
+    height: 24px;
+    margin-right: 3px;
+}
+
 .gh-member-list-avatar {
     font-size: 1.65rem;
     font-weight: 500;

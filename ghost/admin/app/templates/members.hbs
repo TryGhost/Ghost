@@ -120,7 +120,7 @@
                                 {{/if}}
                                 <th data-test-table-column="location">Location</th>
                                 <th data-test-table-column="created">Created</th>
-                                {{#each this.filterColumnLabels as |column|}}
+                                {{#each this.filterColumns as |column|}}
                                     <th data-test-table-column={{column.name}}>{{column.label}}</th>
                                 {{/each}}
                             </tr>

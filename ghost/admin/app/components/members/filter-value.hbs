@@ -47,47 +47,15 @@
          <GhResourceSelect
             @onChange={{fn this.setResourceFilterValue @filter}}
             @type={{this.resourceFilterType}}
-            @resources={{this.resourceFilterValue}}
+            @resource={{this.resourceFilterValue}}
         />
     </div>
 
-{{else if (eq @filter.type 'subscribed')}}
+{{else if (eq @filter.valueType 'options')}}
     <span class="gh-select">
         <OneWaySelect
             @value={{@filter.value}}
-            @options={{this.availableFilterOptions.subscribed}}
-            @optionValuePath="name"
-            @optionLabelPath="label"
-            @optionTargetPath="name"
-            @update={{fn @setFilterValue @filter}}
-            data-test-select="members-filter-value"
-        />
-        {{svg-jar "arrow-down-small"}}
-    </span>
-
-{{else if (eq @filter.type 'last_seen_at')}}
-    <GhDatePicker
-        @value={{@filter.value}}
-        @maxDate={{now}}
-        @maxDateError="Must be in the past"
-        @onChange={{fn @setFilterValue @filter}}
-        data-test-input="members-filter-value"
-    />
-
-{{else if (eq @filter.type 'created_at')}}
-    <GhDatePicker
-        @value={{@filter.value}}
-        @maxDate={{now}}
-        @maxDateError="Must be in the past"
-        @onChange={{fn @setFilterValue @filter}}
-        data-test-input="members-filter-value"
-    />
-
-{{else if (eq @filter.type 'status')}}
-    <span class="gh-select">
-        <OneWaySelect
-            @value={{@filter.value}}
-            @options={{this.availableFilterOptions.status}}
+            @options={{@filter.options}}
             @optionValuePath="name"
             @optionLabelPath="label"
             @optionTargetPath="name"
@@ -132,46 +100,19 @@
             {{on "input" (fn this.setInputFilterValue @filter)}}
             {{on "blur" (fn this.updateInputFilterValue @filter)}}
             {{on "keypress" (fn this.updateInputFilterValueOnEnter @filter)}}
-        data-test-input="members-filter-value"
+            data-test-input="members-filter-value"
         />
     </div>
-
-{{else if (eq @filter.type 'subscriptions.plan_interval')}}
-    <span class="gh-select">
-        <OneWaySelect
-            @value={{@filter.value}}
-            @options={{this.availableFilterOptions.subscriptionPriceInterval}}
-            @optionValuePath="name"
-            @optionLabelPath="label"
-            @optionTargetPath="name"
-            @update={{fn @setFilterValue @filter}}
-            data-test-select="members-filter-value"
-        />
-        {{svg-jar "arrow-down-small"}}
-    </span>
-
-{{else if (eq @filter.type 'subscriptions.status')}}
-    <span class="gh-select">
-        <OneWaySelect
-            @value={{@filter.value}}
-            @options={{this.availableFilterOptions.subscriptionStripeStatus}}
-            @optionValuePath="name"
-            @optionLabelPath="label"
-            @optionTargetPath="name"
-            @update={{fn @setFilterValue @filter}}
-            data-test-select="members-filter-value"
-        />
-        {{svg-jar "arrow-down-small"}}
-    </span>
-
-{{else if (eq @filter.type 'subscriptions.start_date')}}
+{{else if (or (eq @filter.type 'last_seen_at') (eq @filter.type 'created_at'))}}
     <GhDatePicker
         @value={{@filter.value}}
+        @maxDate={{now}}
+        @maxDateError="Must be in the past"
         @onChange={{fn @setFilterValue @filter}}
         data-test-input="members-filter-value"
     />
 
-{{else if (eq @filter.type 'subscriptions.current_period_end')}}
+{{else if (eq @filter.valueType 'date')}}
     <GhDatePicker
         @value={{@filter.value}}
         @onChange={{fn @setFilterValue @filter}}

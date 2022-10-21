@@ -7,41 +7,9 @@ import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
-const FILTER_PROPERTIES = [
-    // Basic
-    {label: 'Name', name: 'name', group: 'Basic', valueType: 'text'},
-    {label: 'Email', name: 'email', group: 'Basic', valueType: 'text'},
-    // {label: 'Location', name: 'location', group: 'Basic'},
-    {label: 'Label', name: 'label', group: 'Basic', valueType: 'array'},
-    {label: 'Newsletter subscription', name: 'subscribed', group: 'Basic'},
-    {label: 'Last seen', name: 'last_seen_at', group: 'Basic', valueType: 'date'},
-    {label: 'Created', name: 'created_at', group: 'Basic', valueType: 'date'},
-    {label: 'Signed up on post/page', name: 'signup', group: 'Basic', valueType: 'array', feature: 'memberAttribution'},
-
-    // Member subscription
-    {label: 'Membership tier', name: 'tier', group: 'Subscription', valueType: 'array'},
-    {label: 'Member status', name: 'status', group: 'Subscription'},
-    {label: 'Billing period', name: 'subscriptions.plan_interval', group: 'Subscription'},
-    {label: 'Stripe subscription status', name: 'subscriptions.status', group: 'Subscription'},
-    {label: 'Paid start date', name: 'subscriptions.start_date', valueType: 'date', group: 'Subscription'},
-    {label: 'Next billing date', name: 'subscriptions.current_period_end', valueType: 'date', group: 'Subscription'},
-    {label: 'Subscription started on post/page', name: 'conversion', group: 'Subscription', valueType: 'array', feature: 'memberAttribution'},
-
-    // Emails
-    {label: 'Emails sent (all time)', name: 'email_count', group: 'Email'},
-    {label: 'Emails opened (all time)', name: 'email_opened_count', group: 'Email'},
-    {label: 'Open rate (all time)', name: 'email_open_rate', group: 'Email'},
-    {label: 'Received email', name: 'emails.post_id', group: 'Email', valueType: 'array'},
-    {label: 'Opened email', name: 'opened_emails.post_id', group: 'Email', valueType: 'array'},
-    {label: 'Clicked email', name: 'clicked_links.post_id', group: 'Email', valueType: 'array'}
-
-    // {label: 'Emails sent (30 days)', name: 'x', group: 'Email'},
-    // {label: 'Emails opened (30 days)', name: 'x', group: 'Email'},
-    // {label: 'Open rate (30 days)', name: 'x', group: 'Email'},
-    // {label: 'Emails sent (60 days)', name: 'x', group: 'Email'},
-    // {label: 'Emails opened (60 days)', name: 'x', group: 'Email'},
-    // {label: 'Open rate (60 days)', name: 'x', group: 'Email'},
-];
+function escapeNqlString(value) {
+    return '\'' + value.replace(/'/g, '\\\'') + '\'';
+}
 
 const MATCH_RELATION_OPTIONS = [
     {label: 'is', name: 'is'},
@@ -56,13 +24,14 @@ const CONTAINS_RELATION_OPTIONS = [
     {label: 'ends with', name: 'ends-with'}
 ];
 
+const FEEDBACK_RELATION_OPTIONS = [
+    {label: 'More like this', name: 1},
+    {label: 'Less like this', name: 0}
+];
+
 const DATE_RELATION_OPTIONS = [
     {label: 'before', name: 'is-less'},
     {label: 'on or before', name: 'is-or-less'},
-    // TODO: these cause problems because they require multiple NQL statements, eg:
-    // created_at:>='2022-03-02 00:00'+created_at:<'2022-03-03 00:00'
-    // {label: 'on', name: 'is'},
-    // {label: 'not on', name: 'is-not'},
     {label: 'after', name: 'is-greater'},
     {label: 'on or after', name: 'is-or-greater'}
 ];
@@ -73,76 +42,369 @@ const NUMBER_RELATION_OPTIONS = [
     {label: 'is less than', name: 'is-less'}
 ];
 
-const FILTER_RELATIONS_OPTIONS = {
-    name: CONTAINS_RELATION_OPTIONS,
-    email: CONTAINS_RELATION_OPTIONS,
-    label: MATCH_RELATION_OPTIONS,
-    tier: MATCH_RELATION_OPTIONS,
-    subscribed: MATCH_RELATION_OPTIONS,
-    last_seen_at: DATE_RELATION_OPTIONS,
-    created_at: DATE_RELATION_OPTIONS,
-    status: MATCH_RELATION_OPTIONS,
-    'subscriptions.plan_interval': MATCH_RELATION_OPTIONS,
-    'subscriptions.status': MATCH_RELATION_OPTIONS,
-    'subscriptions.start_date': DATE_RELATION_OPTIONS,
-    'subscriptions.current_period_end': DATE_RELATION_OPTIONS,
-    email_count: NUMBER_RELATION_OPTIONS,
-    email_opened_count: NUMBER_RELATION_OPTIONS,
-    email_open_rate: NUMBER_RELATION_OPTIONS,
-    signup: MATCH_RELATION_OPTIONS,
-    conversion: MATCH_RELATION_OPTIONS,
-    'emails.post_id': MATCH_RELATION_OPTIONS,
-    'clicked_links.post_id': MATCH_RELATION_OPTIONS,
-    'opened_emails.post_id': MATCH_RELATION_OPTIONS
+// Ideally we should move all the filter definitions to separate files
+const NAME_FILTER = {
+    label: 'Name', 
+    name: 'name', 
+    group: 'Basic', 
+    valueType: 'string', 
+    relationOptions: CONTAINS_RELATION_OPTIONS
 };
 
-const FILTER_VALUE_OPTIONS = {
-    'subscriptions.plan_interval': [
-        {label: 'Monthly', name: 'month'},
-        {label: 'Yearly', name: 'year'}
-    ],
-    status: [
-        {label: 'Paid', name: 'paid'},
-        {label: 'Free', name: 'free'},
-        {label: 'Complimentary', name: 'comped'}
-    ],
-    subscribed: [
-        {label: 'Subscribed', name: 'true'},
-        {label: 'Unsubscribed', name: 'false'}
-    ],
-    'subscriptions.status': [
-        {label: 'Active', name: 'active'},
-        {label: 'Trialing', name: 'trialing'},
-        {label: 'Canceled', name: 'canceled'},
-        {label: 'Unpaid', name: 'unpaid'},
-        {label: 'Past Due', name: 'past_due'},
-        {label: 'Incomplete', name: 'incomplete'},
-        {label: 'Incomplete - Expired', name: 'incomplete_expired'}
-    ]
-};
+const FILTER_PROPERTIES = [
+    // Basic
+    NAME_FILTER,
+    {
+        label: 'Email', 
+        name: 'email',
+        group: 'Basic', 
+        valueType: 'string', 
+        relationOptions: CONTAINS_RELATION_OPTIONS
+    },
+    {
+        label: 'Label', 
+        name: 'label', 
+        group: 'Basic', 
+        valueType: 'array', 
+        columnLabel: 'Label', 
+        relationOptions: MATCH_RELATION_OPTIONS
+    },
+    {
+        label: 'Newsletter subscription', 
+        name: 'subscribed', 
+        group: 'Basic', 
+        columnLabel: 'Subscribed', 
+        relationOptions: MATCH_RELATION_OPTIONS,
+        valueType: 'options',
+        options: [
+            {label: 'Subscribed', name: 'true'},
+            {label: 'Unsubscribed', name: 'false'}
+        ]
+    },
+    {
+        label: 'Last seen', 
+        name: 'last_seen_at', 
+        group: 'Basic', 
+        valueType: 'date', 
+        columnLabel: 'Last seen at', 
+        relationOptions: DATE_RELATION_OPTIONS
+    },
+    {
+        label: 'Created', 
+        name: 'created_at', 
+        group: 'Basic', 
+        valueType: 'date', 
+        relationOptions: DATE_RELATION_OPTIONS
+    },
+    {
+        label: 'Signed up on post/page', 
+        name: 'signup', 
+        group: 'Basic', 
+        valueType: 'string', 
+        resource: 'post', 
+        feature: 'memberAttribution', 
+        relationOptions: MATCH_RELATION_OPTIONS,
+        getColumns: filter => [
+            {
+                label: 'Signed up on',
+                getValue: () => {
+                    return {
+                        class: '',
+                        text: filter.resource?.title ?? ''
+                    };
+                }
+            }
+        ]
+    },
+
+    // Member subscription
+    {
+        label: 'Membership tier', 
+        name: 'tier', 
+        group: 'Subscription', 
+        valueType: 'array', 
+        columnLabel: 'Membership tier', 
+        relationOptions: MATCH_RELATION_OPTIONS
+    },
+    {
+        label: 'Member status', 
+        name: 'status', 
+        group: 'Subscription', 
+        relationOptions: MATCH_RELATION_OPTIONS,
+        valueType: 'options',
+        options: [
+            {label: 'Paid', name: 'paid'},
+            {label: 'Free', name: 'free'},
+            {label: 'Complimentary', name: 'comped'}
+        ]
+    },
+    {
+        label: 'Billing period', 
+        name: 'subscriptions.plan_interval', 
+        group: 'Subscription', 
+        columnLabel: 'Billing period', 
+        relationOptions: MATCH_RELATION_OPTIONS,
+        valueType: 'options',
+        options: [
+            {label: 'Monthly', name: 'month'},
+            {label: 'Yearly', name: 'year'}
+        ]
+    },
+    {
+        label: 'Stripe subscription status', 
+        name: 'subscriptions.status', 
+        group: 'Subscription', 
+        columnLabel: 'Subscription Status', 
+        relationOptions: MATCH_RELATION_OPTIONS,
+        valueType: 'options',
+        options: [
+            {label: 'Active', name: 'active'},
+            {label: 'Trialing', name: 'trialing'},
+            {label: 'Canceled', name: 'canceled'},
+            {label: 'Unpaid', name: 'unpaid'},
+            {label: 'Past Due', name: 'past_due'},
+            {label: 'Incomplete', name: 'incomplete'},
+            {label: 'Incomplete - Expired', name: 'incomplete_expired'}
+        ]
+    },
+    {
+        label: 'Paid start date', 
+        name: 'subscriptions.start_date', 
+        valueType: 'date', 
+        group: 'Subscription', 
+        columnLabel: 'Paid start date', 
+        relationOptions: DATE_RELATION_OPTIONS
+    },
+    {
+        label: 'Next billing date', 
+        name: 'subscriptions.current_period_end', 
+        valueType: 'date', 
+        group: 'Subscription', 
+        columnLabel: 'Next billing date', 
+        relationOptions: DATE_RELATION_OPTIONS
+    },
+    {
+        label: 'Subscription started on post/page', 
+        name: 'conversion', 
+        group: 'Subscription', 
+        valueType: 'string', 
+        resource: 'post', 
+        feature: 'memberAttribution', 
+        relationOptions: MATCH_RELATION_OPTIONS,
+        getColumns: filter => [
+            {
+                label: 'Subscription started on',
+                getValue: () => {
+                    return {
+                        class: '',
+                        text: filter.resource?.title ?? ''
+                    };
+                }
+            }
+        ]
+    },
+
+    // Emails
+    {
+        label: 'Emails sent (all time)', 
+        name: 'email_count', 
+        group: 'Email', 
+        columnLabel: 'Email count', 
+        valueType: 'number', 
+        relationOptions: NUMBER_RELATION_OPTIONS
+    },
+    {
+        label: 'Emails opened (all time)', 
+        name: 'email_opened_count', 
+        group: 'Email', 
+        columnLabel: 'Email opened count', 
+        valueType: 'number', 
+        relationOptions: NUMBER_RELATION_OPTIONS
+    },
+    {
+        label: 'Open rate (all time)', 
+        name: 'email_open_rate', 
+        group: 'Email', 
+        valueType: 'number', 
+        relationOptions: NUMBER_RELATION_OPTIONS
+    },
+    {
+        label: 'Received email',
+        name: 'emails.post_id', 
+        group: 'Email', 
+        valueType: 'string', 
+        resource: 'email', 
+        relationOptions: MATCH_RELATION_OPTIONS,
+        getColumns: filter => [
+            {
+                label: 'Received email',
+                getValue: () => {
+                    return {
+                        class: '',
+                        text: filter.resource?.title ?? ''
+                    };
+                }
+            }
+        ]
+    },
+    {
+        label: 'Opened email', 
+        name: 'opened_emails.post_id', 
+        group: 'Email', 
+        valueType: 'string', 
+        resource: 'email', 
+        relationOptions: MATCH_RELATION_OPTIONS,
+        getColumns: filter => [
+            {
+                label: 'Opened email',
+                getValue: () => {
+                    return {
+                        class: '',
+                        text: filter.resource?.title ?? ''
+                    };
+                }
+            }
+        ]
+    },
+    {
+        label: 'Clicked email', 
+        name: 'clicked_links.post_id', 
+        group: 'Email', 
+        valueType: 'string', 
+        resource: 'email', 
+        relationOptions: MATCH_RELATION_OPTIONS,
+        getColumns: filter => [
+            {
+                label: 'Clicked email',
+                getValue: () => {
+                    return {
+                        class: '',
+                        text: filter.resource?.title ?? ''
+                    };
+                }
+            }
+        ]
+    },
+    {
+        label: 'Responded with feedback', 
+        name: 'newsletter_feedback', 
+        group: 'Email', 
+        valueType: 'string', 
+        resource: 'email', 
+        relationOptions: FEEDBACK_RELATION_OPTIONS,
+        feature: 'audienceFeedback', 
+        buildNqlFilter: (filter) => {
+            // Added brackets to make sure we can parse as a single AND filter
+            return `(feedback.post_id:${filter.value}+feedback.score:${filter.relation})`;
+        },
+        parseNqlFilter: (filter) => {
+            if (!filter.$and) {
+                return;
+            }
+            if (filter.$and.length === 2) {
+                if (filter.$and[0]['feedback.post_id'] && filter.$and[1]['feedback.score'] !== undefined) {
+                    return {
+                        relation: parseInt(filter.$and[1]['feedback.score']),
+                        value: filter.$and[0]['feedback.post_id']
+                    };
+                }
+            }
+        },
+        getColumns: filter => [
+            {
+                label: 'Email',
+                getValue: () => {
+                    return {
+                        class: '',
+                        text: filter.resource?.title ?? ''
+                    };
+                }
+            },
+            {
+                label: 'Feedback',
+                getValue: () => {
+                    return {
+                        class: 'gh-members-list-feedback',
+                        text: filter.relation === 1 ? 'More like this' : 'Less like this',
+                        icon: filter.relation === 1 ? 'event-more-like-this' : 'event-less-like-this'
+                    };
+                }
+            }
+        ]
+    }
+];
 
 class Filter {
-    @tracked type;
     @tracked value;
     @tracked relation;
-    @tracked relationOptions;
+    @tracked properties;
+    @tracked resource;
 
     constructor(options) {
-        this.type = options.type;
-        this.relation = options.relation;
-        this.relationOptions = options.relationOptions;
-        this.timezone = options.timezone || 'Etc/UTC';
+        this.properties = options.properties;
+        this.timezone = options.timezone ?? 'Etc/UTC';
 
-        const filterProperty = FILTER_PROPERTIES.find(prop => this.type === prop.name);
+        let defaultRelation = options.properties.relationOptions[0].name;
+        if (options.properties.valueType === 'date') {
+            defaultRelation = 'is-or-less';
+        }
+
+        let defaultValue = '';
+        if (options.properties.valueType === 'options' && options.properties.options.length > 0) {
+            defaultValue = options.properties.options[0].name;
+        } else if (options.properties.valueType === 'array') {
+            defaultValue = [];
+        } else if (options.properties.valueType === 'date') {
+            defaultValue = moment(moment.tz(this.timezone).format('YYYY-MM-DD')).toDate();
+        }
+
+        this.relation = options.relation ?? defaultRelation;
 
         // date string values are passed in as UTC strings
         // we need to convert them to the site timezone and make a local date that matches
         // so the date string output in the filter inputs is correct
-        const value = filterProperty.valueType === 'date' && typeof options.value === 'string'
-            ? moment(moment.tz(moment.utc(options.value), this.timezone).format('YYYY-MM-DD')).toDate()
-            : options.value;
+        this.value = options.value ?? defaultValue;
 
-        this.value = value;
+        if (this.properties.valueType === 'date' && typeof this.value === 'string') {
+            // Convert string to Date
+            this.value = moment(moment.tz(moment.utc(options.value), this.timezone).format('YYYY-MM-DD')).toDate();
+        }
+
+        // Validate value
+        if (options.properties.valueType === 'options') {
+            if (!options.properties.options.find(option => option.name === this.value)) {
+                this.value = defaultValue;
+            }
+        }
+
+        this.resource = null;
+    }
+
+    get valueType() {
+        return this.properties.valueType;
+    }
+
+    get type() {
+        return this.properties.name;
+    }
+
+    get isResourceFilter() {
+        return typeof this.properties.resource === 'string' && this.properties.valueType === 'string';
+    }
+
+    get relationOptions() {
+        return this.properties.relationOptions;
+    }
+
+    get options() {
+        return this.properties.options ?? [];
+    }
+
+    get isValid() {
+        if (Array.isArray(this.value)) {
+            return !!this.value.length;
+        }
+        return !!this.value;
     }
 }
 
@@ -154,15 +416,9 @@ export default class MembersFilter extends Component {
 
     @tracked filters = new TrackedArray([
         new Filter({
-            type: 'name',
-            relation: 'is',
-            value: '',
-            relationOptions: FILTER_RELATIONS_OPTIONS.name
+            properties: NAME_FILTER
         })
     ]);
-
-    availableFilterRelationsOptions = FILTER_RELATIONS_OPTIONS;
-    availableFilterValueOptions = FILTER_VALUE_OPTIONS;
 
     get availableFilterProperties() {
         let availableFilters = FILTER_PROPERTIES;
@@ -212,21 +468,24 @@ export default class MembersFilter extends Component {
     @action
     parseDefaultFilters() {
         if (this.args.defaultFilterParam) {
-            this.parseNqlFilter(this.args.defaultFilterParam);
+            // check if it is different before parsing
+            const validFilters = this.validFilters;
+            const currentFilter = this.generateNqlFilter(validFilters);
 
-            // Pass the parsed filter to the parent component
-            // this doesn't start a new network request, and doesn't update filterParam again
-            this.applyParsedFilter();
+            if (currentFilter !== this.args.defaultFilterParam) {
+                this.parseNqlFilterString(this.args.defaultFilterParam);
+
+                // Pass the parsed filter to the parent component
+                // this doesn't start a new network request, and doesn't update filterParam again
+                this.applyParsedFilter();
+            }
         }
     }
 
     @action
     addFilter() {
         this.filters.push(new Filter({
-            type: 'name',
-            relation: 'is',
-            value: '',
-            relationOptions: FILTER_RELATIONS_OPTIONS.name
+            properties: NAME_FILTER
         }));
         this.applySoftFilter();
     }
@@ -241,14 +500,19 @@ export default class MembersFilter extends Component {
 
         let query = '';
         filters.forEach((filter) => {
-            const relationStr = this.getFilterRelationOperator(filter.relation);
             const filterProperty = FILTER_PROPERTIES.find(prop => prop.name === filter.type);
+
+            if (filterProperty.buildNqlFilter) {
+                query += `${filterProperty.buildNqlFilter(filter)}+`;
+                return;
+            }
+            const relationStr = this.getFilterRelationOperator(filter.relation);
 
             if (filterProperty.valueType === 'array' && filter.value?.length) {
                 const filterValue = '[' + filter.value.join(',') + ']';
                 query += `${filter.type}:${relationStr}${filterValue}+`;
-            } else if (filterProperty.valueType === 'text') {
-                const filterValue = '\'' + filter.value.replace(/'/g, '\\\'') + '\'';
+            } else if (filterProperty.valueType === 'string') {
+                let filterValue = escapeNqlString(filter.value);
                 query += `${filter.type}:${relationStr}${filterValue}+`;
             } else if (filterProperty.valueType === 'date') {
                 let filterValue;
@@ -276,6 +540,74 @@ export default class MembersFilter extends Component {
             }
         });
         return query.slice(0, -1);
+    }
+
+    parseNqlFilterString(filterParam) {
+        let filters;
+
+        try {
+            filters = nql.parse(filterParam);
+        } catch (e) {
+            // Invalid nql filter
+            this.filters = new TrackedArray([]);
+            return;
+        }
+        this.filters = new TrackedArray(this.parseNqlFilter(filters));
+    }
+
+    parseNqlFilter(filter) {
+        const parsedFilters = [];
+
+        // Check custom parsing
+        for (const filterProperties of FILTER_PROPERTIES) {
+            if (filterProperties.parseNqlFilter) {
+                // This filter has a custom parsing function
+                const parsedFilter = filterProperties.parseNqlFilter(filter);
+                if (parsedFilter) {
+                    parsedFilters.push(new Filter({
+                        properties: filterProperties,
+                        timezone: this.settings.timezone,
+                        ...parsedFilter
+                    }));
+                    return parsedFilters;
+                }
+            }
+        }
+
+        if (filter.$and) {
+            parsedFilters.push(...this.parseNqlFilters(filter.$and));
+        } else if (filter.yg) {
+            // Single filter grouped in backets
+            parsedFilters.push(...this.parseNqlFilter(filter.yg));
+        } else {
+            const filterKeys = Object.keys(filter);
+            const validKeys = FILTER_PROPERTIES.map(prop => prop.name);
+
+            for (const key of filterKeys) {
+                if (validKeys.includes(key)) {
+                    const parsedFilter = this.parseNqlFilterKey({
+                        [key]: filter[key]
+                    });
+                    if (parsedFilter) {
+                        parsedFilters.push(parsedFilter);
+                    }
+                }
+            }
+        }
+        return parsedFilters;
+    }
+
+    /**
+     * Parses an array of filters
+     */
+    parseNqlFilters(filters) {
+        const parsedFilters = [];
+
+        for (const filter of filters) {
+            parsedFilters.push(...this.parseNqlFilter(filter));
+        }
+
+        return parsedFilters;
     }
 
     parseNqlFilterKey(nqlFilter) {
@@ -359,53 +691,16 @@ export default class MembersFilter extends Component {
         }
 
         if (relation && value) {
-            return new Filter({
-                type: key,
-                relation,
-                relationOptions: FILTER_RELATIONS_OPTIONS[key],
-                value,
-                timezone: this.settings.timezone
-            });
-        }
-    }
-
-    parseNqlFilter(filterParam) {
-        const validKeys = Object.keys(FILTER_RELATIONS_OPTIONS);
-        let filters;
-
-        try {
-            filters = nql.parse(filterParam);
-        } catch (e) {
-            // Invalid nql filter
-            this.filters = new TrackedArray([]);
-            return;
-        }
-
-        const filterKeys = Object.keys(filters);
-
-        let filterData = [];
-
-        if (filterKeys?.length === 1 && validKeys.includes(filterKeys[0])) {
-            const filterObj = this.parseNqlFilterKey(filters);
-            if (filterObj) {
-                filterData = [filterObj];
+            const properties = FILTER_PROPERTIES.find(prop => key === prop.name);
+            if (FILTER_PROPERTIES.find(prop => key === prop.name)) {
+                return new Filter({
+                    properties,
+                    relation,
+                    value,
+                    timezone: this.settings.timezone
+                });
             }
-        } else if (filters?.$and) {
-            const andFilters = filters?.$and || [];
-            filterData = andFilters.filter((nqlFilter) => {
-                const _filterKeys = Object.keys(nqlFilter);
-                if (_filterKeys?.length === 1 && validKeys.includes(_filterKeys[0])) {
-                    return true;
-                }
-                return false;
-            }).map((nqlFilter) => {
-                return this.parseNqlFilterKey(nqlFilter);
-            }).filter((nqlFilter) => {
-                return !!nqlFilter;
-            });
         }
-
-        this.filters = new TrackedArray(filterData);
     }
 
     getFilterRelationOperator(relation) {
@@ -456,40 +751,21 @@ export default class MembersFilter extends Component {
 
         const newProp = FILTER_PROPERTIES.find(prop => prop.name === newType);
 
-        let defaultValue = this.availableFilterValueOptions[newType]
-            ? this.availableFilterValueOptions[newType][0].name
-            : '';
-
-        if (newProp.valueType === 'array' && !defaultValue) {
-            defaultValue = [];
-        }
-
-        if (newProp.valueType === 'date' && !defaultValue) {
-            defaultValue = moment(moment.tz(this.settings.timezone).format('YYYY-MM-DD')).toDate();
-        }
-
-        let defaultRelation = this.availableFilterRelationsOptions[newType][0].name;
-
-        if (newProp.valueType === 'date') {
-            defaultRelation = 'is-or-less';
+        if (!newProp) {
+            // eslint-disable-next-line no-console
+            console.warn('Invalid Filter Type Selected', newType);
+            return;
         }
 
         const newFilter = new Filter({
-            type: newType,
-            relation: defaultRelation,
-            relationOptions: this.availableFilterRelationsOptions[newType],
-            value: defaultValue,
+            properties: newProp,
             timezone: this.settings.timezone
         });
 
         const filterToSwap = this.filters.find(f => f === filter);
         this.filters[this.filters.indexOf(filterToSwap)] = newFilter;
 
-        if (newType !== 'label' && defaultValue) {
-            this.applySoftFilter();
-        }
-
-        if (newType !== 'tier' && defaultValue) {
+        if (newFilter.isValid) {
             this.applySoftFilter();
         }
     }
@@ -503,44 +779,48 @@ export default class MembersFilter extends Component {
     @action
     setFilterValue(filter, newValue) {
         filter.value = newValue;
+        filter.resource = null;
         this.applySoftFilter();
     }
 
     @action
+    setResourceValue(filter, resource) {
+        filter.value = resource.id;
+        filter.resource = resource;
+        this.applySoftFilter();
+    }
+
+    get validFilters() {
+        return this.filters.filter(filter => filter.isValid);
+    }
+
+    @action
     applySoftFilter() {
-        const validFilters = this.filters.filter((filter) => {
-            if (Array.isArray(filter.value)) {
-                return filter.value.length;
-            }
-            return filter.value;
-        });
+        const validFilters = this.validFilters;
         const query = this.generateNqlFilter(validFilters);
         this.args.onApplySoftFilter(query, validFilters);
+        this.fetchFilterResourcesTask.perform();
     }
 
     @action
     applyFilter() {
-        const validFilters = this.filters.filter((filter) => {
-            if (Array.isArray(filter.value)) {
-                return filter.value.length;
-            }
-            return filter.value;
-        });
-
+        const validFilters = this.validFilters;
         const query = this.generateNqlFilter(validFilters);
         this.args.onApplyFilter(query, validFilters);
+        this.fetchFilterResourcesTask.perform();
+    }
+
+    @action 
+    applyFiltersPressed(dropdown) {
+        dropdown?.actions.close();
+        this.applyFilter();
     }
 
     @action
     applyParsedFilter() {
-        const validFilters = this.filters.filter((filter) => {
-            if (Array.isArray(filter.value)) {
-                return filter.value.length;
-            }
-            return filter.value;
-        });
-
+        const validFilters = this.validFilters;
         this.args.onApplyParsedFilter(validFilters);
+        this.fetchFilterResourcesTask.perform();
     }
 
     @action
@@ -548,10 +828,7 @@ export default class MembersFilter extends Component {
         const filters = [];
 
         filters.push(new Filter({
-            type: 'name',
-            relation: 'is',
-            value: '',
-            relationOptions: FILTER_RELATIONS_OPTIONS.name
+            properties: NAME_FILTER
         }));
 
         this.filters = new TrackedArray(filters);
@@ -562,5 +839,33 @@ export default class MembersFilter extends Component {
     *fetchTiers() {
         const response = yield this.store.query('tier', {filter: 'type:paid'});
         this.tiersList = response;
+    }
+
+    @task({restartable: true})
+    *fetchFilterResourcesTask() {
+        const ids = [];
+        for (const filter of this.filters) {
+            if (filter.isResourceFilter) {
+                // for now we only support post filters
+                if (filter.value && !ids.includes(filter.value)) {
+                    ids.push(filter.value);
+                }
+            }
+        }
+        if (ids.length > 0) {
+            const posts = yield this.store.query('post', {limit: 'all', filter: `id:[${ids.join(',')}]`});
+
+            for (const filter of this.filters) {
+                if (filter.isResourceFilter) {
+                    // for now we only support post filters
+                    if (filter.value) {
+                        const post = posts.find(p => p.id === filter.value);
+                        if (post) {
+                            filter.resource = post;
+                        }
+                    }
+                }
+            }
+        }
     }
 }
