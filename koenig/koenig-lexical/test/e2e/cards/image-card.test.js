@@ -142,6 +142,96 @@ describe('Image card', async () => {
         expect(await page.$('[data-kg-card-toolbar="image"]')).not.toBeNull();
     });
 
+    test('image card toolbar has Regular button', async function () {
+        const filePath = path.relative(process.cwd(), __dirname + '/assets/large.png');
+
+        await focusEditor(page);
+        await page.keyboard.type('image! ');
+
+        const [fileChooser] = await Promise.all([
+            page.waitForFileChooser(),
+            await page.click('button[name="placeholder-button"]')
+        ]);
+        await fileChooser.accept([filePath]);
+
+        expect(await page.$('[data-kg-card-toolbar="image"] button[aria-label="Regular"]')).not.toBeNull();
+    });
+
+    test('image card toolbar has Wide button', async function () {
+        const filePath = path.relative(process.cwd(), __dirname + '/assets/large.png');
+
+        await focusEditor(page);
+        await page.keyboard.type('image! ');
+
+        const [fileChooser] = await Promise.all([
+            page.waitForFileChooser(),
+            await page.click('button[name="placeholder-button"]')
+        ]);
+        await fileChooser.accept([filePath]);
+
+        expect(await page.$('[data-kg-card-toolbar="image"] button[aria-label="Wide"]')).not.toBeNull();
+    });
+
+    test('image card toolbar has Full button', async function () {
+        const filePath = path.relative(process.cwd(), __dirname + '/assets/large.png');
+
+        await focusEditor(page);
+        await page.keyboard.type('image! ');
+
+        const [fileChooser] = await Promise.all([
+            page.waitForFileChooser(),
+            await page.click('button[name="placeholder-button"]')
+        ]);
+        await fileChooser.accept([filePath]);
+
+        expect(await page.$('[data-kg-card-toolbar="image"] button[aria-label="Full"]')).not.toBeNull();
+    });
+
+    test('image card toolbar has Link button', async function () {
+        const filePath = path.relative(process.cwd(), __dirname + '/assets/large.png');
+
+        await focusEditor(page);
+        await page.keyboard.type('image! ');
+
+        const [fileChooser] = await Promise.all([
+            page.waitForFileChooser(),
+            await page.click('button[name="placeholder-button"]')
+        ]);
+        await fileChooser.accept([filePath]);
+
+        expect(await page.$('[data-kg-card-toolbar="image"] button[aria-label="Link"]')).not.toBeNull();
+    });
+
+    test('image card toolbar has Replace button', async function () {
+        const filePath = path.relative(process.cwd(), __dirname + '/assets/large.png');
+
+        await focusEditor(page);
+        await page.keyboard.type('image! ');
+
+        const [fileChooser] = await Promise.all([
+            page.waitForFileChooser(),
+            await page.click('button[name="placeholder-button"]')
+        ]);
+        await fileChooser.accept([filePath]);
+
+        expect(await page.$('[data-kg-card-toolbar="image"] button[aria-label="Replace"]')).not.toBeNull();
+    });
+
+    test('image card toolbar has Snippet button', async function () {
+        const filePath = path.relative(process.cwd(), __dirname + '/assets/large.png');
+
+        await focusEditor(page);
+        await page.keyboard.type('image! ');
+
+        const [fileChooser] = await Promise.all([
+            page.waitForFileChooser(),
+            await page.click('button[name="placeholder-button"]')
+        ]);
+        await fileChooser.accept([filePath]);
+
+        expect(await page.$('[data-kg-card-toolbar="image"] button[aria-label="Snippet"]')).not.toBeNull();
+    });
+
     test('can replace image from image toolbar button', async function () {
         const filePath = path.relative(process.cwd(), __dirname + '/assets/large.png');
         const filePath2 = path.relative(process.cwd(), __dirname + '/assets/large.jpeg');
