@@ -44,47 +44,72 @@
     <Tabs::Tabs class="gh-tabs-analytics" as |tabs|>
         {{#if this.post.hasBeenEmailed}}
             <tabs.tab>
-              <h3>Sent</h3>
-              <p>{{format-number this.post.email.emailCount}}</p>
+                <h3>Sent</h3>
+                <p>{{format-number this.post.email.emailCount}}</p>
             </tabs.tab>
 
-            <tabs.tabPanel>Sent</tabs.tabPanel>
+            <tabs.tabPanel>
+                <Posts::PostActivityFeed
+                    @postId={{this.post.id}}
+                    @eventType="sent"
+                    @linkQuery={{hash filterParam=(concat "emails.post_id:[" this.post.id "]") }}
+                    @linkText="See filtered members for sent"
+                />
+            </tabs.tabPanel>
 
             {{#if this.post.showEmailOpenAnalytics }}
                 <tabs.tab>
-                  <h3>Opened</h3>
-                  <p>{{format-number this.post.email.openedCount}} <strong>{{this.post.email.openRate}}%</strong></p>
+                    <h3>Opened</h3>
+                    <p>{{format-number this.post.email.openedCount}} <strong>{{this.post.email.openRate}}%</strong></p>
                 </tabs.tab>
 
-                <tabs.tabPanel>Opened</tabs.tabPanel>
+                <tabs.tabPanel>
+                    <Posts::PostActivityFeed
+                        @postId={{this.post.id}}
+                        @eventType="opened"
+                        @linkQuery={{hash filterParam=(concat "opened_emails.post_id:[" this.post.id "]") }}
+                        @linkText="See filtered members for opened"
+                    />
+                </tabs.tabPanel>
             {{/if}}
 
             {{#if this.post.showEmailClickAnalytics }}
                 <tabs.tab>
-                  <h3>Clicked</h3>
-                  <p>{{format-number this.post.count.clicks}} <strong>{{this.post.clickRate}}%</strong></p>
+                    <h3>Clicked</h3>
+                    <p>{{format-number this.post.count.clicks}} <strong>{{this.post.clickRate}}%</strong></p>
                 </tabs.tab>
 
-                <tabs.tabPanel>Clicked</tabs.tabPanel>
+                <tabs.tabPanel>
+                    <Posts::PostActivityFeed
+                        @postId={{this.post.id}}
+                        @eventType="clicked"
+                        @linkQuery={{hash filterParam=(concat "clicked_links.post_id:[" this.post.id "]") }}
+                        @linkText="See filtered members for clicked"
+                    />
+                </tabs.tabPanel>
             {{/if}}
         {{/if}}
 
         {{#if this.post.showAudienceFeedback }}
-          <tabs.tab>
-            <h3><span class="hide-when-small">More </span><div class="visible-when-small">like</div><span class="hide-when-small"> this</span></h3>
-            <p>{{format-number this.post.count.positive_feedback}} <strong>{{this.post.sentiment}}%</strong></p>
-          </tabs.tab>
+            <tabs.tab>
+                <h3><span class="hide-when-small">More </span><div class="visible-when-small">like</div><span class="hide-when-small"> this</span></h3>
+                <p>{{format-number this.post.count.positive_feedback}} <strong>{{this.post.sentiment}}%</strong></p>
+            </tabs.tab>
 
-          <tabs.tabPanel>More like this</tabs.tabPanel>
+            <tabs.tabPanel>
+                <Posts::PostActivityFeed @postId={{this.post.id}} @eventType="feedback" />
+            </tabs.tabPanel>
         {{/if}}
 
         {{#if this.post.showAttributionAnalytics }}
             <tabs.tab>
-              <h3>{{gh-pluralize this.post.count.conversions "Conversions" without-count=true}}</h3>
-              <p>{{format-number this.post.count.conversions}}</p>
+                <h3>{{gh-pluralize this.post.count.conversions "Conversions" without-count=true}}</h3>
+                <p>{{format-number this.post.count.conversions}}</p>
             </tabs.tab>
 
-            <tabs.tabPanel>Conversions</tabs.tabPanel>
+            <tabs.tabPanel>
+                <Posts::PostActivityFeed @postId={{this.post.id}} @eventType="conversion" />
+            </tabs.tabPanel>
         {{/if}}
     </Tabs::Tabs>
 
@@ -112,7 +137,7 @@
 
             {{#if this.showLinks }}
                 {{#if (is-empty this.links) }}
-                    {{!-- Empty state --}}
+                {{!-- Empty state --}}
                 {{else}}
                     <Posts::LinksTable @links={{this.links}} @updateLink={{this.updateLink}} />
                 {{/if}}

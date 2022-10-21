@@ -118,7 +118,7 @@ module.exports = function (defaults) {
             includePolyfill: false
         },
         'ember-composable-helpers': {
-            only: ['join', 'optional', 'pick', 'toggle', 'toggle-action']
+            only: ['join', 'optional', 'pick', 'toggle', 'toggle-action', 'compute']
         },
         'ember-promise-modals': {
             excludeCSS: true
