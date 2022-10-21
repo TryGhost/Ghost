@@ -7,7 +7,7 @@ import {
     $isDecoratorNode,
     $isNodeSelection,
     $setSelection,
-    BLUR_COMMAND,
+    // BLUR_COMMAND,
     CLICK_COMMAND,
     COMMAND_PRIORITY_EDITOR,
     COMMAND_PRIORITY_LOW,
@@ -56,16 +56,16 @@ const KoenigCardWrapperComponent = ({nodeKey, children}) => {
                 },
                 COMMAND_PRIORITY_LOW
             ),
-            editor.registerCommand(
-                BLUR_COMMAND,
-                (event) => {
-                    if (isSelected && !ref.current.contains(event.relatedTarget)) {
-                        clearSelected();
-                    }
-                    return false;
-                },
-                COMMAND_PRIORITY_LOW
-            ),
+            // editor.registerCommand(
+            //     BLUR_COMMAND,
+            //     (event) => {
+            //         if (isSelected && !ref.current.contains(event.relatedTarget)) {
+            //             clearSelected();
+            //         }
+            //         return false;
+            //     },
+            //     COMMAND_PRIORITY_LOW
+            // ),
             editor.registerCommand(
                 KEY_ENTER_COMMAND,
                 (event) => {

@@ -4,21 +4,26 @@ import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import CardContext from '../context/CardContext';
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import {ImageCard} from '../components/ui/cards/ImageCard';
+import ImageCardToolbar from '../components/ui/ImageCardToolbar';
+import {openFileSelection} from '../utils/openFileSelection';
 
 export function ImageNodeComponent({nodeKey, src, altText, caption}) {
     const [editor] = useLexicalComposerContext();
     const {isSelected} = React.useContext(CardContext);
     const {imageUploader} = React.useContext(KoenigComposerContext);
-    const [toolbarVisible, setToolbarVisible] = React.useState(false);
+    const [figureRef, setFigureRef] = React.useState(null);
+    const fileInputRef = React.useRef(null);
 
     const onFileChange = async (e) => {
         const fls = e.target.files;
         const files = await imageUploader.imageUploader(fls); // idea here is to have something like imageUploader.uploadProgressPercentage to pass to the progress bar.
 
-        editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
-            node.setSrc(files.src);
-        });
+        if (files) {
+            editor.update(() => {
+                const node = $getNodeByKey(nodeKey);
+                node.setSrc(files.src);
+            });
+        }
     };
 
     const setCaption = (newCaption) => {
@@ -35,17 +40,10 @@ export function ImageNodeComponent({nodeKey, src, altText, caption}) {
         });
     };
 
-    React.useEffect(() => {
-        if (isSelected && src !== '') {
-            setToolbarVisible(true);
-        } else {
-            setToolbarVisible(false);
-        }
-    }, [isSelected, src]);
-
     return (
         <>  
             <ImageCard
+                setFigureRef={setFigureRef}
                 isSelected={isSelected}
                 onFileChange={onFileChange}
                 src={src}
@@ -53,7 +51,14 @@ export function ImageNodeComponent({nodeKey, src, altText, caption}) {
                 setAltText={setAltText}
                 caption={caption}
                 setCaption={setCaption}
-                toolbarVisible={toolbarVisible}
+            />
+            <ImageCardToolbar
+                figureRef={figureRef}
+                filePicker={() => openFileSelection({fileInputRef})} 
+                isSelected={isSelected} 
+                fileInputRef={fileInputRef} 
+                onFileChange={onFileChange}
+                src={src}
             />
         </>
     );

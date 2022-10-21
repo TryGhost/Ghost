@@ -3,7 +3,8 @@ import PropTypes from 'prop-types';
 import {CardCaptionEditor} from '../CardCaptionEditor';
 import {MediaPlaceholder} from '../MediaPlaceholder';
 import {ReactComponent as ImgPlaceholderIcon} from '../../../assets/icons/kg-img-placeholder.svg';
-import ImageCardToolbar from '../ImageCardToolbar';
+import {openFileSelection} from '../../../utils/openFileSelection';
+import ImageUploadForm from '../ImageUploadForm';
 
 function PopulatedImageCard({src, alt}) {
     return (
@@ -11,36 +12,17 @@ function PopulatedImageCard({src, alt}) {
     );
 }
 
-function openFilePicker({fileInputRef}) {
-    fileInputRef.current.click();
-}
-
-export function ImageUploadForm({onFileChange, fileInputRef}) {
-    return (
-        <form onChange={onFileChange}>
-            <input
-                name="image-input"
-                type='file'
-                accept='image/*'
-                ref={fileInputRef}
-                hidden={true}
-            />
-        </form>
-    );
-}
-
 function EmptyImageCard({onFileChange}) {
     const fileInputRef = React.useRef(null);
-
     return (
         <>
             <MediaPlaceholder
-                filePicker={() => openFilePicker({fileInputRef})}
+                filePicker={() => openFileSelection({fileInputRef})}
                 desc="Click to select an image"
                 Icon={ImgPlaceholderIcon}
             />
             <ImageUploadForm
-                filePicker={() => openFilePicker({fileInputRef})}
+                filePicker={() => openFileSelection({fileInputRef})}
                 onFileChange={onFileChange}
                 fileInputRef={fileInputRef}
             />
@@ -55,25 +37,19 @@ export function ImageCard({
     caption,
     setCaption,
     altText,
-    setAltText
+    setAltText,
+    setFigureRef
 }) {
     const figureRef = React.useRef(null);
-    const fileInputRef = React.useRef(null);
 
+    React.useEffect(() => {
+        if (setFigureRef) {
+            setFigureRef(figureRef);
+        }
+    }, [figureRef, setFigureRef]);
+    
     return (
         <>
-            {
-                src ?
-                    <>
-                        <ImageCardToolbar
-                            figureRef={figureRef}
-                            filePicker={() => openFilePicker({fileInputRef})} 
-                            isSelected={isSelected} 
-                            fileInputRef={fileInputRef} 
-                            onFileChange={onFileChange} />
-                    </>
-                    : <></>
-            }
             <figure ref={figureRef}>
                 {src
                     ? <PopulatedImageCard src={src} alt={altText} />
@@ -95,7 +71,7 @@ export function ImageCard({
 
 ImageCard.propTypes = {
     isSelected: PropTypes.bool,
-    setAltText: PropTypes.bool,
+    setAltText: PropTypes.func,
     caption: PropTypes.string,
     altText: PropTypes.string
 };

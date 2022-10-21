@@ -1,18 +1,19 @@
 import React from 'react';
 import {ToolbarMenu, ToolbarMenuItem} from './ToolbarMenu';
-import {ImageUploadForm} from './cards/ImageCard';
+import ImageUploadForm from './ImageUploadForm';
 import {createPortal} from 'react-dom';
 
-function ImageCardToolbar({isSelected, fileInputRef, onFileChange, filePicker, figureRef}) {
-    const element = document.querySelector('#koenig');
+function ImageCardToolbar({isSelected, fileInputRef, onFileChange, filePicker, figureRef, src}) {
+    const element = document.querySelector('#koenig') || document.body;
+    const toolbarRef = React.useRef(null);
     const [rect, setRect] = React.useState({
         top: 0,
         left: 0,
         right: 0
     });
-
+    
     React.useEffect(() => {
-        if (isSelected) {
+        if (figureRef && isSelected) {
             const figureRect = figureRef.current.getBoundingClientRect();
             const top = figureRect.top - element.getBoundingClientRect().top;
             setRect({
@@ -26,23 +27,27 @@ function ImageCardToolbar({isSelected, fileInputRef, onFileChange, filePicker, f
     
     const toolbarPosition = {
         position: 'absolute',
-        left: (rect?.right - rect?.left) / 2 || 0,
+        left: (rect?.right - rect?.left) / 2,
         transform: 'translate(-50%, 0)',
-        top: rect?.top - 44 || 0,
-        zIndex: 1000,
-        opacity: isSelected ? 1 : 0
+        top: rect?.top - 44,
+        zIndex: 1000
     };
-    return createPortal(
-        <div data-kg-card-toolbar="image" style={toolbarPosition}>
-            <ImageUploadForm onFileChange={onFileChange} fileInputRef={fileInputRef} />
-            <ToolbarMenu>
-                <ToolbarMenuItem label="Regular" icon="imageRegular" isActive={true} />
-                <ToolbarMenuItem label="Wide" icon="imageWide" isActive={false} />
-                <ToolbarMenuItem label="Full" icon="imageRegular" isActive={false} />
-                <ToolbarMenuItem label="Replace" icon="imageReplace" isActive={false} onClick={filePicker} />
-            </ToolbarMenu>
-        </div>, element
-    );
+
+    if (src && isSelected) {
+        return createPortal(
+            <div ref={toolbarRef} data-kg-card-toolbar="image" style={toolbarPosition}>
+                <ImageUploadForm 
+                    onFileChange={onFileChange}
+                    fileInputRef={fileInputRef} />
+                <ToolbarMenu>
+                    <ToolbarMenuItem label="Regular" icon="imageRegular" isActive={true} />
+                    <ToolbarMenuItem label="Wide" icon="imageWide" isActive={false} />
+                    <ToolbarMenuItem label="Full" icon="imageRegular" isActive={false} />
+                    <ToolbarMenuItem label="Replace" icon="imageReplace" isActive={false} onClick={filePicker} />
+                </ToolbarMenu>
+            </div>, element
+        );
+    }
 }
 
 export default ImageCardToolbar;
