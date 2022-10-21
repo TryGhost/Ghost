@@ -20,6 +20,7 @@ export default class ExploreController extends Controller {
     @action
     closeConnect() {
         if (this.explore.isIframeTransition) {
+            this.explore.sendRouteUpdate({path: '/explore'});
             this.router.transitionTo('/explore');
         } else {
             this.router.transitionTo('/dashboard');
@@ -43,7 +44,6 @@ export default class ExploreController extends Controller {
             // to the submit page and fetch the required site data
             setTimeout(() => {
                 this.explore.toggleExploreWindow(true);
-                this.router.transitionTo('explore');
             }, 500);
         } else {
             // Ghost Explore URL to submit a new site

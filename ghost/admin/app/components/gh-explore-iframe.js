@@ -45,6 +45,6 @@ export default class GhExploreIframe extends Component {
     }
 
     _handleSiteDataUpdate(data) {
-        this.explore.siteData = data.siteData;
+        this.explore.siteData = data?.siteData ?? {};
     }
 }
