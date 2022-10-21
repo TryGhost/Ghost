@@ -114,22 +114,10 @@
                                 </div>
                             </div>
                         </GhFormGroup>
-                    </div>
-                </div>
-            {{/liquid-if}}
-        {{/let}}
 
-        {{#if (feature "audienceFeedback")}}
-            {{#let (eq @openSection "audienceFeedback") as |isOpen|}}
-                <button class="modal-fullsettings-tab {{if isOpen "active"}}" type="button" {{on "click" (fn @toggleSection "audienceFeedback")}} data-test-nav-toggle="general.audienceFeedback">
-                    {{svg-jar "newsletter-analytics"}} Newsletter analytics
-                    <span class="gh-nav-button-expand">{{svg-jar (if isOpen "arrow-up-stroke" "arrow-down-stroke")}}</span>
-                </button>
-                {{#liquid-if isOpen}}
-                    <div class="modal-fullsettings-tab-expanded">
-                        <div class="gh-stack">
+                        {{#if (feature "audienceFeedback")}}
                             <GhFormGroup @classNames="gh-stack-item gh-setting">
-                                <label for="capture-feedback" class="modal-fullsettings-title" data-test-toggle="feedbackEnabled">Capture feedback on your content</label>
+                                <label for="capture-feedback" class="modal-fullsettings-title" data-test-toggle="feedbackEnabled">Ask your readers for feedback</label>
                                 <div class="for-switch small">
                                     <div class="container">
                                         <input
@@ -142,10 +130,11 @@
                                     </div>
                                 </div>
                             </GhFormGroup>
-                        </div>
-                  </div>
-                {{/liquid-if}}
-            {{/let}}
-        {{/if}}
+                        {{/if}}
+                    </div>
+                </div>
+            {{/liquid-if}}
+        {{/let}}
+
     </div>
 </fieldset>
