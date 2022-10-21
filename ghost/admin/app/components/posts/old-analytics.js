@@ -98,32 +98,10 @@ export default class Analytics extends Component {
 
     @action
     updateLink(linkId, linkTo) {
-        this.updateLinkId = linkId;
-        let currentLink;
-        this.links = this.links?.map((link) => {
-            if (link.link.link_id === linkId) {
-                currentLink = new URL(link.link.originalTo);
-                return {
-                    ...link,
-                    link: {
-                        ...link.link,
-                        edited: true,
-                        to: this.utils.cleanTrackedUrl(linkTo, false),
-                        title: this.utils.cleanTrackedUrl(linkTo, true)
-                    }
-                };
-            }
-            return link;
-        });
-        this.saveLink(currentLink.href, new URL(linkTo).href);
-    }
-
-    @action
-    saveLink(currentLink, newLink) {
         if (this._updateLinks.isRunning) {
             return this._updateLinks.last;
         }
-        return this._updateLinks.perform(currentLink, newLink);
+        return this._updateLinks.perform(linkId, linkTo);
     }
 
     @action
@@ -142,20 +120,39 @@ export default class Analytics extends Component {
     }
 
     updateLinkData(linksData) {
-        const links = linksData.map((link) => {
-            return {
-                ...link,
-                link: {
-                    ...link.link,
-                    originalTo: link.link.to,
-                    to: this.utils.cleanTrackedUrl(link.link.to, false),
-                    title: this.utils.cleanTrackedUrl(link.link.to, true)
+        let updatedLinks;
+        if (this.links?.length) {
+            updatedLinks = this.links.map((link) => {
+                let linkData = linksData.find(l => l.link.link_id === link.link.link_id);
+                if (linkData) {
+                    return {
+                        ...linkData,
+                        link: {
+                            ...linkData.link,
+                            originalTo: linkData.link.to,
+                            to: this.utils.cleanTrackedUrl(linkData.link.to, false),
+                            title: this.utils.cleanTrackedUrl(linkData.link.to, true)
+                        }
+                    };
                 }
-            };
-        });
+                return link;
+            });
+        } else {
+            updatedLinks = linksData.map((link) => {
+                return {
+                    ...link,
+                    link: {
+                        ...link.link,
+                        originalTo: link.link.to,
+                        to: this.utils.cleanTrackedUrl(link.link.to, false),
+                        title: this.utils.cleanTrackedUrl(link.link.to, true)
+                    }
+                };
+            });
+        }
 
         // Remove duplicates by title ad merge
-        const linksByTitle = links.reduce((acc, link) => {
+        const linksByTitle = updatedLinks.reduce((acc, link) => {
             if (!acc[link.link.title]) {
                 acc[link.link.title] = link;
             } else {
@@ -182,7 +179,24 @@ export default class Analytics extends Component {
     }
 
     @task
-    *_updateLinks(currentLink, newLink) {
+    *_updateLinks(linkId, newLink) {
+        this.updateLinkId = linkId;
+        let currentLink;
+        this.links = this.links?.map((link) => {
+            if (link.link.link_id === linkId) {
+                currentLink = new URL(link.link.originalTo);
+                return {
+                    ...link,
+                    link: {
+                        ...link.link,
+                        to: this.utils.cleanTrackedUrl(newLink, false),
+                        title: this.utils.cleanTrackedUrl(newLink, true)
+                    }
+                };
+            }
+            return link;
+        });
+
         const filter = `post_id:${this.post.id}+to:'${currentLink}'`;
         let bulkUpdateUrl = this.ghostPaths.url.api(`links/bulk`) + `?filter=${encodeURIComponent(filter)}`;
         yield this.ajax.put(bulkUpdateUrl, {
