@@ -87,7 +87,7 @@
         {{#if (or this.showPagination (feature "fixNewsletterLinks")) }}
             <div class="gh-links-pagination">
                 {{#if (feature "fixNewsletterLinks")}}
-                <span class="gh-links-info">{{svg-jar "info"}} Sent a broken link? You can update it!</span>
+                <span class="gh-links-info">{{svg-jar "arrow-right-tail"}} Sent a broken link? You can update it!</span>
                 {{else}}
                 <div class="gh-links-pagination-progress">
                     Showing {{this.startOffset}}-{{this.endOffset}} of {{this.totalLinks}}
