@@ -1,5 +1,6 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
+import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 const PAGE_SIZE = 5;
@@ -44,6 +45,25 @@ export default class LinksTable extends Component {
             }
             this.editingLink = null;
             this.showError = null;
+        } catch (e) {
+            this.showError = this.editingLink;
+        }
+    }
+
+    @task
+    *updateLinks() {
+        try {
+            const newUrl = new URL(event.target.value);
+            const linkObj = this.links.find((_link) => {
+                return _link.link.link_id === this.editingLink;
+            });
+            // Only call update if the new link is different from current link
+            if (linkObj.link.to !== newUrl.href) {
+                yield this.args.updateLinkTask.perform(this.editingLink, newUrl.href);
+            }
+            this.editingLink = null;
+            this.showError = null;
+            return true;
         } catch (e) {
             this.showError = this.editingLink;
         }
