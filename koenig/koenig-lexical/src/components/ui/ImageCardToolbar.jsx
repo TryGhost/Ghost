@@ -1,5 +1,5 @@
 import React from 'react';
-import {ToolbarMenu, ToolbarMenuItem} from './ToolbarMenu';
+import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from './ToolbarMenu';
 import ImageUploadForm from './ImageUploadForm';
 import {createPortal} from 'react-dom';
 
@@ -42,8 +42,12 @@ function ImageCardToolbar({isSelected, fileInputRef, onFileChange, filePicker, f
                 <ToolbarMenu>
                     <ToolbarMenuItem label="Regular" icon="imageRegular" isActive={true} />
                     <ToolbarMenuItem label="Wide" icon="imageWide" isActive={false} />
-                    <ToolbarMenuItem label="Full" icon="imageRegular" isActive={false} />
+                    <ToolbarMenuItem label="Full" icon="imageFull" isActive={false} />
+                    <ToolbarMenuSeparator />
+                    <ToolbarMenuItem label="Link" icon="link" isActive={false} />
                     <ToolbarMenuItem label="Replace" icon="imageReplace" isActive={false} onClick={filePicker} />
+                    <ToolbarMenuSeparator />
+                    <ToolbarMenuItem label="Snippet" icon="snippet" isActive={false} />
                 </ToolbarMenu>
             </div>, element
         );
