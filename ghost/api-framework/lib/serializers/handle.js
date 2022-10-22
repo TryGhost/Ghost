@@ -1,5 +1,4 @@
 const debug = require('@tryghost/debug')('serializers:handle');
-const Promise = require('bluebird');
 const {sequence} = require('@tryghost/promise');
 const errors = require('@tryghost/errors');
 
