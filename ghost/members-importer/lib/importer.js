@@ -105,7 +105,7 @@ module.exports = class MembersCSVImporter {
      * @param {string} filePath - the path to a "prepared" CSV file
      */
     async perform(filePath) {
-        const rows = membersCSV.parse(filePath, DEFAULT_CSV_HEADER_MAPPING);
+        const rows = await membersCSV.parse(filePath, DEFAULT_CSV_HEADER_MAPPING);
 
         const membersApi = await this._getMembersApi();
 
