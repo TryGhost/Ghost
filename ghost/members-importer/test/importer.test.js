@@ -25,8 +25,7 @@ describe('Importer', function () {
         created_at: 'created_at',
         complimentary_plan: 'complimentary_plan',
         stripe_customer_id: 'stripe_customer_id',
-        labels: 'labels',
-        products: 'products'
+        labels: 'labels'
     };
 
     beforeEach(function () {
@@ -201,7 +200,7 @@ describe('Importer', function () {
             should.equal(membersApiStub.members.linkStripeCustomer.args[0][0].customer_id, 'cus_MdR9tqW6bAreiq');
             should.equal(membersApiStub.members.linkStripeCustomer.args[0][0].member_id, 'test_member_id');
 
-            // products import
+            // complimentary_plan import
             membersApiStub.members.update.calledOnce.should.be.true();
             should.deepEqual(membersApiStub.members.update.args[0][0].products, [{
                 id: 'default_product_id'

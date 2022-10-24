@@ -87,7 +87,7 @@ third-member-email@email.com,"banana, avocado"`;
         assert.equal(result, expected);
     });
 
-    it('handles the tiers to products property serialization', function () {
+    it('handles the tiers property serialization', function () {
         const json = [{
             email: 'member-email@email.com',
             tiers: [{
