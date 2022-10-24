@@ -99,7 +99,6 @@ describe('Tier', function () {
             const tier = await Tier.create(validInput);
 
             const expectedProps = [
-                'id',
                 'slug',
                 'name',
                 'description',
@@ -119,6 +118,7 @@ describe('Tier', function () {
             for (const prop of expectedProps) {
                 assert(tier[prop] === tier.toJSON()[prop]);
             }
+            assert(tier.id.toHexString() === tier.toJSON().id);
         });
 
         it('Errors when attempting to set invalid properties', async function () {
