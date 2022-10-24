@@ -100,14 +100,14 @@
                         Showing {{eventsFetcher.previousEvents}}-{{eventsFetcher.shownEvents}} of {{eventsFetcher.totalEvents}}
                     </div>
 
-                    {{#if (and @linkQuery @linkText)}}
+                    {{#if @linkQuery}}
                         <LinkTo
                             class="gh-post-activity-feed-pagination-link"
                             @route="members"
                             @query={{@linkQuery}}
                         >
                             {{svg-jar "filter"}}
-                            {{@linkText}}
+                            See members
                         </LinkTo>
                     {{/if}}
                 </div>
