@@ -7,6 +7,7 @@ import LoadingPage from './LoadingPage';
 import {HumanReadableError} from '../../utils/errors';
 import {ReactComponent as ThumbUpIcon} from '../../images/icons/thumbs-up.svg';
 import {ReactComponent as ThumbDownIcon} from '../../images/icons/thumbs-down.svg';
+import {ReactComponent as WarningIcon} from '../../images/icons/warning-fill.svg';
 
 const React = require('react');
 
@@ -19,6 +20,12 @@ export const FeedbackPageStyles = `
         padding: 10px 0;
         text-align: center;
         color: var(--brandcolor);
+        width: 48px;
+        margin: 0 auto;
+    }
+
+    .gh-portal-feedback .gh-feedback-icon.gh-feedback-icon-error {
+        color: #f50b23;
     }
 
     .gh-portal-feedback .gh-portal-text-center {
@@ -26,38 +33,30 @@ export const FeedbackPageStyles = `
     }
 `;
 
-function SiteLogo() {
-    const {site} = useContext(AppContext);
-    const siteLogo = site.icon;
-
-    if (siteLogo) {
-        return (
-            <img className='gh-portal-unsubscribe-logo' src={siteLogo} alt={site.title} />
-        );
-    }
-    return (null);
-}
-
-function AccountHeader() {
-    const {site} = useContext(AppContext);
-    const siteTitle = site.title || '';
-    return (
-        <header className='gh-portal-header'>
-            <SiteLogo />
-            <h2 className="gh-portal-publication-title">{siteTitle}</h2>
-        </header>
-    );
-}
-
 function ErrorPage({error}) {
+    const {onAction} = useContext(AppContext);
+
     return (
         <div className='gh-portal-content gh-portal-feedback with-footer'>
             <CloseButton />
-            <AccountHeader />
-            <h1 className="gh-portal-main-title">Saving failed.</h1>
+            <div class="gh-feedback-icon gh-feedback-icon-error">
+                <WarningIcon />
+            </div>
+            <h1 className="gh-portal-main-title">It's not you, it's us</h1>
             <div>
                 <p className="gh-portal-text-center">{error}</p>
             </div>
+            <ActionButton
+                style={{width: '100%'}}
+                retry={false}
+                onClick = {() => onAction('closePopup')}
+                disabled={false}
+                brandColor='#000000'
+                label={'Close'}
+                isRunning={false}
+                tabindex='3'
+                classes={'sticky bottom'}
+            />
         </div>
     );
 }
@@ -76,7 +75,7 @@ export default function FeedbackPage() {
             // Clear query params once finished
             setLoading(false);
         })().catch((e) => {
-            const text = HumanReadableError.getMessageFromError(e, 'There was a problem submitting your feedback');
+            const text = HumanReadableError.getMessageFromError(e, 'There was a problem submitting your feedback. Please try again or contact the site owner.');
             setError(text);
         });
     }, [uuid, postId, score, site.url]);
