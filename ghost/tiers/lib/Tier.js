@@ -186,7 +186,7 @@ module.exports = class Tier {
 
     toJSON() {
         return {
-            id: this.#id,
+            id: this.#id.toHexString(),
             slug: this.#slug,
             name: this.#name,
             description: this.#description,
