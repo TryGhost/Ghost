@@ -27,7 +27,7 @@
     "@tryghost/link-redirects": "0.0.0",
     "bson-objectid": "2.0.3",
     "@tryghost/errors": "1.2.18",
-    "@tryghost/tpl": "0.1.18",
+    "@tryghost/tpl": "0.1.19",
     "@tryghost/nql": "0.9.2",
     "lodash": "4.17.21",
     "moment": "2.29.4"
