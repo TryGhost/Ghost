@@ -109,7 +109,7 @@ module.exports = class MembersCSVImporter {
 
         const membersApi = await this._getMembersApi();
 
-        const defaultProduct = await membersApi.productRepository.getDefaultProduct();
+        const defaultTier = await membersApi.productRepository.getDefaultProduct();
 
         const result = await rows.reduce(async (resultPromise, row) => {
             const resultAccumulator = await resultPromise;
@@ -160,7 +160,7 @@ module.exports = class MembersCSVImporter {
                     }, options);
                 } else if (row.complimentary_plan) {
                     await membersApi.members.update({
-                        products: [{id: defaultProduct.id}]
+                        products: [{id: defaultTier.id}]
                     }, {
                         ...options,
                         id: member.id
