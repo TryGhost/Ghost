@@ -17,7 +17,7 @@ export function BookmarkCard({
     if (urlValue) {
         return (
             <>
-                <div className="min-h-[120px] flex w-full rounded border border-grey/30 bg-white font-sans">
+                <div className="min-h-[120px] flex w-full rounded border border-grey/40 bg-white font-sans">
                     <div className="flex-col flex p-5">
                         <div className="text-[1.5rem] font-semibold tracking-normal leading-9 text-grey-900 line-clamp-1">{bookmarkTitle}</div>
                         <div className="text-sm font-normal text-grey-800 leading-9 mt-1 line-clamp-2">{bookmarkDesc}</div>

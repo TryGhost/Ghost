@@ -27,8 +27,8 @@ Empty.args = {
     buttonPlaceholder: 'Add button text'
 };
 
-export const Value = Template.bind({});
-Value.args = {
+export const WithText = Template.bind({});
+WithText.args = {
     isSelected: true,
     buttonText: 'Subscribe',
     buttonPlaceholder: 'Add button text'

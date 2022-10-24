@@ -20,8 +20,8 @@ Empty.args = {
     valuePlaceholder: 'Add button text'
 };
 
-export const Value = Template.bind({});
-Value.args = {
+export const WithText = Template.bind({});
+WithText.args = {
     value: 'Subscribe',
     valuePlaceholder: 'Add button text'
 };
