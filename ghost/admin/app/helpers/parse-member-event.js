@@ -72,7 +72,7 @@ export default class ParseMemberEventHelper extends Helper {
             icon = 'opened-email';
         }
 
-        if (event.type === 'email_delivered_event') {
+        if (event.type === 'email_delivered_event' || event.type === 'email_sent_event') {
             icon = 'received-email';
         }
 
@@ -149,7 +149,7 @@ export default class ParseMemberEventHelper extends Helper {
             return 'opened email';
         }
 
-        if (event.type === 'email_delivered_event') {
+        if (event.type === 'email_delivered_event' || event.type === 'email_sent_event') {
             return 'received email';
         }
 
