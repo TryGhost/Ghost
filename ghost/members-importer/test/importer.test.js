@@ -44,8 +44,8 @@ describe('Importer', function () {
 
     // @NOTE: this is way too much mocking! the MembersCSVImporter constructor API should be simplified
     const buildMockImporterInstance = () => {
-        const defaultProduct = {
-            id: 'default_product_id'
+        const defaultTier = {
+            id: 'default_tier_id'
         };
 
         memberCreateStub = sinon.stub().resolves({
@@ -54,7 +54,7 @@ describe('Importer', function () {
         membersApiStub = {
             productRepository: {
                 getDefaultProduct: async () => {
-                    return defaultProduct;
+                    return defaultTier;
                 }
             },
             members: {
@@ -203,7 +203,7 @@ describe('Importer', function () {
             // complimentary_plan import
             membersApiStub.members.update.calledOnce.should.be.true();
             should.deepEqual(membersApiStub.members.update.args[0][0].products, [{
-                id: 'default_product_id'
+                id: 'default_tier_id'
             }]);
             should.deepEqual(membersApiStub.members.update.args[0][1].id, 'test_member_id');
         });
