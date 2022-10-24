@@ -351,6 +351,61 @@ describe('post.* events', function () {
             });
     });
 
+    it('post.unscheduled event is triggered', async function () {
+        const webhookURL = 'https://test-webhook-receiver.com/post-unscheduled/';
+        await webhookMockReceiver.mock(webhookURL);
+        await fixtureManager.insertWebhook({
+            event: 'post.unscheduled',
+            url: webhookURL
+        });
+
+        const published_at = moment().add(1, 'days').toISOString();
+        const res = await adminAPIAgent
+            .post('posts/')
+            .body({
+                posts: [{
+                    title: 'Testing post.unscheduled webhook',
+                    status: 'scheduled',
+                    published_at: published_at
+                }]
+            })
+            .expectStatus(201);
+
+        const id = res.body.posts[0].id;
+        const unrescheduledPost = res.body.posts[0];
+        unrescheduledPost.status = 'draft';
+        unrescheduledPost.published_at = null;
+
+        await adminAPIAgent
+            .put('posts/' + id)
+            .body({
+                posts: [unrescheduledPost]
+            })
+            .expectStatus(200);
+
+        await webhookMockReceiver.receivedRequest();
+
+        webhookMockReceiver
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                'content-length': anyNumber,
+                'user-agent': anyGhostAgent
+            })
+            .matchBodySnapshot({
+                post: {
+                    current: buildPostSnapshotWithTiers({
+                        published: false,
+                        tiersCount: 2
+                    }),
+                    previous: {
+                        published_at: anyISODateTime,
+                        updated_at: anyISODateTime,
+                        tiers: new Array(2).fill(tierSnapshot)
+                    }
+                }
+            });
+    });
+
     it('post.tag.attached event is triggered', async function () {
         const webhookURL = 'https://test-webhook-receiver.com/post-tag-attached/';
         await webhookMockReceiver.mock(webhookURL);
