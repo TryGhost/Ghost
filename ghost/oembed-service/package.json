@@ -24,7 +24,7 @@
   "dependencies": {
     "@tryghost/errors": "1.2.18",
     "@tryghost/logging": "2.3.2",
-    "@tryghost/tpl": "0.1.18",
+    "@tryghost/tpl": "0.1.19",
     "charset": "1.0.1",
     "cheerio": "0.22.0",
     "iconv-lite": "0.6.3",
