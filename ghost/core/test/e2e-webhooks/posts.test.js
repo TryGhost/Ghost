@@ -569,4 +569,54 @@ describe('post.* events', function () {
                 }
             });
     });
+
+    it('post.published.edited event is triggered', async function () {
+        const webhookURL = 'https://test-webhook-receiver.com/post-published-edited/';
+        await webhookMockReceiver.mock(webhookURL);
+        await fixtureManager.insertWebhook({
+            event: 'post.published.edited',
+            url: webhookURL
+        });
+
+        const res = await adminAPIAgent
+            .post('posts/')
+            .body({
+                posts: [{
+                    title: 'testing post published edited webhook',
+                    status: 'published'
+                }]
+            })
+            .expectStatus(201);
+
+        const id = res.body.posts[0].id;
+        const updatedPost = res.body.posts[0];
+        updatedPost.title = 'testing post published edited webhook - updated';
+
+        await adminAPIAgent
+            .put('posts/' + id)
+            .body({
+                posts: [updatedPost]
+            })
+            .expectStatus(200);
+
+        await webhookMockReceiver.receivedRequest();
+
+        webhookMockReceiver
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                'content-length': anyNumber,
+                'user-agent': anyGhostAgent
+            })
+            .matchBodySnapshot({
+                post: {
+                    current: buildPostSnapshotWithTiers({
+                        published: true,
+                        tiersCount: 2
+                    }),
+                    previous: buildPreviousPostSnapshotWithTiers({
+                        tiersCount: 2
+                    })
+                }
+            });
+    });
 });
