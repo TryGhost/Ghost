@@ -56,7 +56,7 @@
     "@testing-library/jest-dom": "5.16.5",
     "@testing-library/react": "13.4.0",
     "@types/react": "18.0.22",
-    "@types/react-dom": "18.0.6",
+    "@types/react-dom": "18.0.7",
     "@uiw/react-textarea-code-editor": "2.0.3",
     "@vitejs/plugin-react": "2.1.0",
     "@vitest/coverage-c8": "0.24.3",
