@@ -21,9 +21,9 @@ const DEFAULT_CSV_HEADER_MAPPING = {
     created_at: 'created_at',
     complimentary_plan: 'complimentary_plan',
     stripe_customer_id: 'stripe_customer_id',
-    labels: 'labels',
-    products: 'products'
+    labels: 'labels'
 };
+
 module.exports = class MembersCSVImporter {
     /**
      * @param {Object} options
@@ -159,19 +159,8 @@ module.exports = class MembersCSVImporter {
                         member_id: member.id
                     }, options);
                 } else if (row.complimentary_plan) {
-                    if (!row.products) {
-                        await membersApi.members.update({
-                            products: [{id: defaultProduct.id}]
-                        }, {
-                            ...options,
-                            id: member.id
-                        });
-                    }
-                }
-
-                if (row.products) {
                     await membersApi.members.update({
-                        products: row.products
+                        products: [{id: defaultProduct.id}]
                     }, {
                         ...options,
                         id: member.id
