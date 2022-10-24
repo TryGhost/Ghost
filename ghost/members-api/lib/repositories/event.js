@@ -60,6 +60,7 @@ module.exports = class EventRepository {
         }
 
         if (this._EmailRecipient) {
+            pageActions.push({type: 'email_sent_event', action: 'getEmailSentEvents'});
             pageActions.push({type: 'email_delivered_event', action: 'getEmailDeliveredEvents'});
             pageActions.push({type: 'email_opened_event', action: 'getEmailOpenedEvents'});
             pageActions.push({type: 'email_failed_event', action: 'getEmailFailedEvents'});
@@ -422,6 +423,46 @@ module.exports = class EventRepository {
             return {
                 type: 'feedback_event',
                 data: model.toJSON(options)
+            };
+        });
+
+        return {
+            data,
+            meta
+        };
+    }
+
+    async getEmailSentEvents(options = {}, filters = {}) {
+        options = {
+            ...options,
+            withRelated: ['member', 'email'],
+            filter: ['failed_at:null', 'processed_at:-null']
+        };
+        if (filters['data.created_at']) {
+            options.filter.push(filters['data.created_at'].replace(/data.created_at:/g, 'processed_at:'));
+        }
+        if (filters['data.member_id']) {
+            options.filter.push(filters['data.member_id'].replace(/data.member_id:/g, 'member_id:'));
+        }
+        if (filters['data.post_id']) {
+            options.filter.push(filters['data.post_id'].replace(/data.post_id:/g, 'email.post_id:'));
+        }
+        options.filter = options.filter.join('+');
+        options.order = options.order.replace(/created_at/g, 'processed_at');
+
+        const {data: models, meta} = await this._EmailRecipient.findPage(
+            options
+        );
+
+        const data = models.map((model) => {
+            return {
+                type: 'email_sent_event',
+                data: {
+                    member_id: model.get('member_id'),
+                    created_at: model.get('processed_at'),
+                    member: model.related('member').toJSON(),
+                    email: model.related('email').toJSON()
+                }
             };
         });
 

@@ -126,6 +126,26 @@ describe('Activity Feed API', function () {
             });
     });
 
+    it('Returns email sent events in activity feed', async function () {
+        // Check activity feed
+        await agent
+            .get(`/members/events?filter=type:email_sent_event`)
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                events: new Array(5).fill({
+                    type: anyString,
+                    data: anyObject
+                })
+            })
+            .expect(({body}) => {
+                assert(body.events.find(e => e.type === 'email_sent_event'), 'Expected an email sent event');
+                assert(!body.events.find(e => e.type !== 'email_sent_event'), 'Expected only email sent events');
+            });
+    });
+
     it('Returns email delivered events in activity feed', async function () {
         // Check activity feed
         await agent
@@ -170,13 +190,13 @@ describe('Activity Feed API', function () {
         const postId = fixtureManager.get('posts', 0).id;
 
         await agent
-            .get(`/members/events?filter=data.post_id:${postId}`)
+            .get(`/members/events?filter=data.post_id:${postId}&limit=20`)
             .expectStatus(200)
             .matchHeaderSnapshot({
                 etag: anyEtag
             })
             .matchBodySnapshot({
-                events: new Array(10).fill({
+                events: new Array(15).fill({
                     type: anyString,
                     data: anyObject
                 })
@@ -191,10 +211,11 @@ describe('Activity Feed API', function () {
                 assert(body.events.find(e => e.type === 'signup_event'), 'Expected a signup event');
                 assert(body.events.find(e => e.type === 'subscription_event'), 'Expected a subscription event');
                 assert(body.events.find(e => e.type === 'email_delivered_event'), 'Expected an email delivered event');
+                assert(body.events.find(e => e.type === 'email_sent_event'), 'Expected an email sent event');
                 assert(body.events.find(e => e.type === 'email_opened_event'), 'Expected an email opened event');
 
                 // Assert total is correct
-                assert.equal(body.meta.pagination.total, 10);
+                assert.equal(body.meta.pagination.total, 15);
             });
     });
 
@@ -216,7 +237,7 @@ describe('Activity Feed API', function () {
                 assert(!body.events.find(e => (e.data?.post?.id ?? e.data?.attribution?.id ?? e.data?.email?.post_id) !== postId), 'Should only return events for the post');
 
                 // Assert total is correct
-                assert.equal(body.meta.pagination.total, 10);
+                assert.equal(body.meta.pagination.total, 15);
             });
     });
 });
