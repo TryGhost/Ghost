@@ -1,16 +1,18 @@
 <div class="gh-post-activity-feed">
-    <div class="gh-dashboard-list-body">
-        {{#let (activity-feed-fetcher filter=(members-event-filter post=@postId excludedEvents=this.getEventTypes) pageSize=this.pageSize) as |eventsFetcher|}}
-            {{#if eventsFetcher.isError}}
+    {{#let (activity-feed-fetcher filter=(members-event-filter post=@postId excludedEvents=this.getEventTypes) pageSize=this.pageSize) as |eventsFetcher|}}
+        {{#if eventsFetcher.isError}}
+            <div class="gh-dashboard-list-body">
                 <div class="gh-dashboard-list-error">
                     <p>There was an error loading events</p>
                     {{#if eventsFetcher.errorMessage}}
                         <code>{{eventsFetcher.errorMessage}}</code>
                     {{/if}}
                 </div>
-            {{/if}}
+            </div>
+        {{/if}}
 
-            {{#if (and (not eventsFetcher.data) (not eventsFetcher.isLoading))}}
+        {{#if (and (not eventsFetcher.data) (not eventsFetcher.isLoading))}}
+            <div class="gh-dashboard-list-body">
                 <div class="gh-post-activity-feed-empty">
                     <div class="attribution-list-empty">
                         {{#if (eq this.eventType "sent")}}
@@ -36,7 +38,9 @@
                         {{/if}}
                     </div>
                 </div>
-            {{else}}
+            </div>
+        {{else}}
+            <div class="gh-dashboard-list-body">
                 {{#each eventsFetcher.data as |event|}}
                     {{#let (parse-member-event event) as |parsedEvent|}}
                         <div class="gh-dashboard-list-item">
@@ -107,39 +111,38 @@
                         </LinkTo>
                     {{/if}}
                 </div>
+            </div>
 
+            {{#if (eq @eventType 'feedback')}}
+                <div
+                    class="gh-feedback-events-feed"
+                    id="gh-feedback-events-feed"
+                    {{on "mouseleave" this.onMouseleave}}
+                >
+                    <div class="gh-feedback-events-feed-container">
+                        <Posts::FeedbackEventsChart
+                            @data={{@data}}
+                        />
+                    </div>
+
+                    <div
+                        class="gh-feedback-events-tooltip"
+                        id="gh-feedback-events-tooltip"
+                        {{did-insert this.onTooltipInsert}}
+                    >
+                        <div id="gh-feedback-events-tooltip-body">
+
+                        </div>
+
+                        <div class="gh-feedback-events-tooltip-footer" id="gh-feedback-events-tooltip-footer">
+                            <Posts::FeedbackEventsTooltipTemplate
+                                @positiveLink={{@positiveLink}}
+                                @negativeLink={{@negativeLink}}
+                            />
+                        </div>
+                    </div>
+                </div>
             {{/if}}
-        {{/let}}
-    </div>
-
-    {{#if (eq @eventType 'feedback')}}
-        <div
-            class="gh-feedback-events-feed"
-            id="gh-feedback-events-feed"
-            {{on "mouseleave" this.onMouseleave}}
-        >
-            <div class="gh-feedback-events-feed-container">
-                <Posts::FeedbackEventsChart
-                    @data={{@data}}
-                />
-            </div>
-
-            <div
-                class="gh-feedback-events-tooltip"
-                id="gh-feedback-events-tooltip"
-                {{did-insert this.onTooltipInsert}}
-            >
-                <div id="gh-feedback-events-tooltip-body">
-
-                </div>
-
-                <div class="gh-feedback-events-tooltip-footer" id="gh-feedback-events-tooltip-footer">
-                    <Posts::FeedbackEventsTooltipTemplate
-                        @positiveLink={{@positiveLink}}
-                        @negativeLink={{@negativeLink}}
-                    />
-                </div>
-            </div>
-        </div>
-    {{/if}}
+        {{/if}}
+    {{/let}}
 </div>
