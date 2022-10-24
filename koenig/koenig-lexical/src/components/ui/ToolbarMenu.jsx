@@ -6,10 +6,12 @@ import {ReactComponent as QuoteIcon} from '../../assets/icons/kg-quote.svg';
 import {ReactComponent as QuoteOneIcon} from '../../assets/icons/kg-quote-1.svg';
 import {ReactComponent as QuoteTwoIcon} from '../../assets/icons/kg-quote-2.svg';
 import {ReactComponent as LinkIcon} from '../../assets/icons/kg-link.svg';
-import {ReactComponent as ImageRegular} from '../../assets/icons/kg-img-regular.svg';
-import {ReactComponent as ImageWide} from '../../assets/icons/kg-img-wide.svg';
-import {ReactComponent as ImageFull} from '../../assets/icons/kg-img-full.svg';
-import {ReactComponent as ImageReplace} from '../../assets/icons/kg-replace.svg';
+import {ReactComponent as ImageRegularIcon} from '../../assets/icons/kg-img-regular.svg';
+import {ReactComponent as ImageWideIcon} from '../../assets/icons/kg-img-wide.svg';
+import {ReactComponent as ImageFullIcon} from '../../assets/icons/kg-img-full.svg';
+import {ReactComponent as ImageReplaceIcon} from '../../assets/icons/kg-replace.svg';
+import {ReactComponent as AddIcon} from '../../assets/icons/kg-add.svg';
+import {ReactComponent as EditIcon} from '../../assets/icons/kg-edit.svg';
 import {ReactComponent as SnippetIcon} from '../../assets/icons/kg-snippet.svg';
 
 export const TOOLBAR_ICONS = {
@@ -21,16 +23,18 @@ export const TOOLBAR_ICONS = {
     quoteOne: QuoteOneIcon,
     quoteTwo: QuoteTwoIcon,
     link: LinkIcon,
-    imageRegular: ImageRegular,
-    imageWide: ImageWide,
-    imageFull: ImageFull,
-    imageReplace: ImageReplace,
+    imageRegular: ImageRegularIcon,
+    imageWide: ImageWideIcon,
+    imageFull: ImageFullIcon,
+    imageReplace: ImageReplaceIcon,
+    add: AddIcon,
+    edit: EditIcon,
     snippet: SnippetIcon
 };
 
 export function ToolbarMenu({children, ...props}) {
     return (
-        <ul className="m-0 flex items-center justify-evenly rounded bg-black px-1 py-0 font-sans text-md font-normal text-white" {...props}>
+        <ul className="m-0 relative flex items-center justify-evenly rounded bg-black px-1 py-0 font-sans text-md font-normal text-white after:absolute after:top-[36px] after:left-[calc(50%-8px)] after:w-0 after:border-t-8 after:border-t-black after:border-x-8 after:border-x-transparent" {...props}>
             {children}
         </ul>
     );

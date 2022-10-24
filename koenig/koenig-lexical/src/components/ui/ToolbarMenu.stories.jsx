@@ -13,6 +13,8 @@ import {ImageRegular} from './ToolbarMenuItem.stories';
 import {ImageWide} from './ToolbarMenuItem.stories';
 import {ImageFull} from './ToolbarMenuItem.stories';
 import {ImageReplace} from './ToolbarMenuItem.stories';
+import {Add} from './ToolbarMenuItem.stories';
+import {Edit} from './ToolbarMenuItem.stories';
 import {Snippet} from './ToolbarMenuItem.stories';
 
 const story = {
@@ -49,6 +51,31 @@ Image.args = {
         <Link {...Link.args} />,
         <ImageReplace {...ImageReplace.args} />,
         <ToolbarMenuSeparator />,
+        <Snippet {...Snippet.args} />
+    ]
+};
+
+export const Gallery = Template.bind({});
+Gallery.args = {
+    children: [
+        <Add {...Add.args} />,
+        <ToolbarMenuSeparator />,
+        <Snippet {...Snippet.args} />
+    ]
+};
+
+export const EditableCards = Template.bind({});
+EditableCards.args = {
+    children: [
+        <Edit {...Edit.args} />,
+        <ToolbarMenuSeparator />,
+        <Snippet {...Snippet.args} />
+    ]
+};
+
+export const NonEditableCards = Template.bind({});
+NonEditableCards.args = {
+    children: [
         <Snippet {...Snippet.args} />
     ]
 };

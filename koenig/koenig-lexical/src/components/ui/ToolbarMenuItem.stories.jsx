@@ -77,6 +77,16 @@ ImageReplace.args = {
     icon: 'imageReplace'
 };
 
+export const Add = Template.bind({});
+Add.args = {
+    icon: 'add'
+};
+
+export const Edit = Template.bind({});
+Edit.args = {
+    icon: 'edit'
+};
+
 export const Snippet = Template.bind({});
 Snippet.args = {
     icon: 'snippet'
