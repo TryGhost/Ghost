@@ -1,7 +1,9 @@
 import React from 'react';
-import {$getSelection, $isParagraphNode, $isRangeSelection} from 'lexical';
+import {$getSelection, $isParagraphNode, $isRangeSelection, COMMAND_PRIORITY_HIGH, KEY_ARROW_DOWN_COMMAND, KEY_ARROW_LEFT_COMMAND, KEY_ARROW_RIGHT_COMMAND, KEY_ARROW_UP_COMMAND, KEY_ENTER_COMMAND} from 'lexical';
+import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {SlashMenu} from '../components/ui/SlashMenu';
+import {CardMenu} from '../components/ui/CardMenu';
 import {getSelectedNode} from '../utils/getSelectedNode';
 import {getEditorCardNodes} from '../utils/getEditorCardNodes';
 import {buildCardMenu} from '../utils/buildCardMenu';
@@ -10,7 +12,8 @@ function useSlashCardMenu(editor) {
     const [isShowingMenu, setIsShowingMenu] = React.useState(false);
     const [topPosition, setTopPosition] = React.useState(0);
     const [query, setQuery] = React.useState('');
-    const [cardMenu, setCardMenu] = React.useState([]);
+    const [cardMenu, setCardMenu] = React.useState({});
+    const [selectedItemIndex, setSelectedItemIndex] = React.useState(0);
     const cachedRange = React.useRef(null);
     const containerRef = React.useRef(null);
 
@@ -41,6 +44,15 @@ function useSlashCardMenu(editor) {
         setQuery('');
         cachedRange.current = null;
     }, [setIsShowingMenu]);
+
+    const insert = React.useCallback((insertCommand) => {
+        editor.update(() => {
+            const selection = $getSelection();
+            selection.deleteLine(true);
+            editor.dispatchCommand(insertCommand);
+        });
+        closeMenu();
+    }, [editor, closeMenu]);
 
     // close menu if selection moves out of the slash command
     // update the search query when typing
@@ -184,24 +196,86 @@ function useSlashCardMenu(editor) {
         };
     }, [isShowingMenu, closeMenu]);
 
+    // capture key navigation to move/insert selected card item
+    React.useEffect(() => {
+        if (!isShowingMenu) {
+            return;
+        }
+
+        const moveUp = (event) => {
+            if (selectedItemIndex === 0) {
+                setSelectedItemIndex(cardMenu.maxItemIndex);
+            } else {
+                setSelectedItemIndex(selectedItemIndex - 1);
+            }
+
+            event.preventDefault();
+            return true;
+        };
+
+        const moveDown = (event) => {
+            if (selectedItemIndex === cardMenu.maxItemIndex) {
+                setSelectedItemIndex(0);
+            } else {
+                setSelectedItemIndex(selectedItemIndex + 1);
+            }
+
+            event.preventDefault();
+            return true;
+        };
+
+        const enter = (event) => {
+            document.querySelector(`[data-kg-slash-menu] [data-kg-cardmenu-idx="${selectedItemIndex}"]`)?.click();
+            event.preventDefault();
+            return true;
+        };
+
+        return mergeRegister(
+            editor.registerCommand(
+                KEY_ARROW_DOWN_COMMAND,
+                moveDown,
+                COMMAND_PRIORITY_HIGH
+            ),
+            editor.registerCommand(
+                KEY_ARROW_UP_COMMAND,
+                moveUp,
+                COMMAND_PRIORITY_HIGH
+            ),
+            editor.registerCommand(
+                KEY_ARROW_RIGHT_COMMAND,
+                moveDown,
+                COMMAND_PRIORITY_HIGH
+            ),
+            editor.registerCommand(
+                KEY_ARROW_LEFT_COMMAND,
+                moveUp,
+                COMMAND_PRIORITY_HIGH
+            ),
+            editor.registerCommand(
+                KEY_ENTER_COMMAND,
+                enter,
+                COMMAND_PRIORITY_HIGH
+            )
+        );
+    }, [editor, isShowingMenu, cardMenu, selectedItemIndex]);
+
     // build up the card menu based on registered nodes and current search
     React.useEffect(() => {
-        const insert = (insertCommand) => {
-            editor.dispatchCommand(insertCommand);
-            closeMenu();
-        };
         const cardNodes = getEditorCardNodes(editor);
         setCardMenu(buildCardMenu(cardNodes, {insert, query}));
-    }, [editor, query, closeMenu]);
+        setSelectedItemIndex(0);
+    }, [editor, query, insert, setCardMenu, setSelectedItemIndex]);
 
-    const style = {
-        top: `${topPosition}px`
-    };
+    if (cardMenu.menu?.size === 0) {
+        return null;
+    }
 
-    if (isShowingMenu && cardMenu) {
+    if (isShowingMenu) {
         return (
-            <div className="absolute" style={style} ref={containerRef} data-kg-slash-container>
-                <SlashMenu>{cardMenu}</SlashMenu>
+            <div className="absolute" style={{top: `${topPosition}px`}} ref={containerRef} data-kg-slash-container>
+                <SlashMenu>
+                    <CardMenu menu={cardMenu.menu} selectedItemIndex={selectedItemIndex} insert={insert} />
+                </SlashMenu>
             </div>
         );
     }

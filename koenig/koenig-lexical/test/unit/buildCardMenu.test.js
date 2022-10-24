@@ -1,11 +1,10 @@
 import {describe, expect, it} from 'vitest';
-import {getAllByRole, render, screen} from '@testing-library/react';
 import {buildCardMenu} from '../../src/utils/buildCardMenu';
 
-const Icon = () => <svg title="icon" />;
+const Icon = () => {};
 
 describe('buildCardMenu', function () {
-    it('renders', async function () {
+    it('adds to Primary section by default', async function () {
         const nodes = [
             ['one', {kgMenu: {
                 label: 'One',
@@ -23,18 +22,26 @@ describe('buildCardMenu', function () {
 
         const cardMenu = buildCardMenu(nodes);
 
-        render(<>{cardMenu}</>);
+        expect(cardMenu.menu).deep.equal(new Map([
+            ['Primary', [
+                {
+                    label: 'One',
+                    desc: 'Card test one',
+                    Icon,
+                    insertCommand: 'insert_card_one',
+                    nodeType: 'one'
+                },
+                {
+                    label: 'Two',
+                    desc: 'Card test two',
+                    Icon,
+                    insertCommand: 'insert_card_two',
+                    nodeType: 'two'
+                }
+            ]]
+        ]));
 
-        const sections = screen.getAllByRole('separator');
-
-        expect(sections).toHaveLength(1);
-        expect(sections[0]).toHaveTextContent('Primary');
-
-        const menuitems = getAllByRole(sections[0], 'menuitem');
-
-        expect(menuitems).toHaveLength(2);
-        expect(menuitems[0]).toHaveTextContent('One');
-        expect(menuitems[1]).toHaveTextContent('Two');
+        expect(cardMenu.maxItemIndex).to.equal(1);
     });
 
     it('can add cards to other headers', async function () {
@@ -56,23 +63,32 @@ describe('buildCardMenu', function () {
 
         const cardMenu = buildCardMenu(nodes);
 
-        render(<>{cardMenu}</>);
+        expect(cardMenu.menu).deep.equal(new Map([
+            ['Primary', [
+                {
+                    label: 'One',
+                    desc: 'Card test one',
+                    Icon,
+                    insertCommand: 'insert_card_one',
+                    nodeType: 'one'
+                }
+            ]],
+            ['Secondary', [
+                {
+                    label: 'Two',
+                    desc: 'Card test two',
+                    Icon,
+                    insertCommand: 'insert_card_two',
+                    nodeType: 'two',
+                    section: 'Secondary'
+                }
+            ]]
+        ]));
 
-        const sections = screen.getAllByRole('separator');
-        expect(sections).toHaveLength(2);
-        expect(sections[0]).toHaveTextContent('Primary');
-        expect(sections[1]).toHaveTextContent('Secondary');
-
-        const sectionOneItems = getAllByRole(sections[0], 'menuitem');
-        expect(sectionOneItems).toHaveLength(1);
-        expect(sectionOneItems[0]).toHaveTextContent('One');
-
-        const sectionTwoItems = getAllByRole(sections[1], 'menuitem');
-        expect(sectionTwoItems).toHaveLength(1);
-        expect(sectionTwoItems[0]).toHaveTextContent('Two');
+        expect(cardMenu.maxItemIndex).to.equal(1);
     });
 
-    it('can show multiple items for a single card', async function () {
+    it('can add multiple items for a single card', async function () {
         const nodes = [
             ['one', {kgMenu: [{
                 label: 'One',
@@ -89,19 +105,28 @@ describe('buildCardMenu', function () {
 
         const cardMenu = buildCardMenu(nodes);
 
-        render(<>{cardMenu}</>);
-
-        const sections = screen.getAllByRole('separator');
-        expect(sections).toHaveLength(1);
-
-        const menuitems = getAllByRole(sections[0], 'menuitem');
-        expect(menuitems).toHaveLength(2);
-        expect(menuitems[0]).toHaveTextContent('One');
-        expect(menuitems[1]).toHaveTextContent('Two');
+        expect(cardMenu.menu).deep.equal(new Map([
+            ['Primary', [
+                {
+                    label: 'One',
+                    desc: 'Card test one',
+                    Icon,
+                    insertCommand: 'insert_card_one',
+                    nodeType: 'one'
+                },
+                {
+                    label: 'Two',
+                    desc: 'Card test two',
+                    Icon,
+                    insertCommand: 'insert_card_two',
+                    nodeType: 'one'
+                }
+            ]]
+        ]));
     });
 
     describe('filtering', function () {
-        it('shows all items for blank query', async function () {
+        it('adds all items for blank query', async function () {
             const nodes = [
                 ['one', {kgMenu: {
                     label: 'One',
@@ -121,13 +146,26 @@ describe('buildCardMenu', function () {
 
             const cardMenu = buildCardMenu(nodes, {query: ''});
 
-            render(<>{cardMenu}</>);
-
-            const sections = screen.getAllByRole('separator');
-            expect(sections).toHaveLength(1);
-
-            const menuitems = screen.getAllByRole('menuitem');
-            expect(menuitems).toHaveLength(2);
+            expect(cardMenu.menu).deep.equal(new Map([
+                ['Primary', [
+                    {
+                        label: 'One',
+                        desc: 'Card test one',
+                        Icon,
+                        insertCommand: 'insert_card_one',
+                        matches: ['one'],
+                        nodeType: 'one'
+                    },
+                    {
+                        label: 'Two',
+                        desc: 'Card test two',
+                        Icon,
+                        insertCommand: 'insert_card_two',
+                        matches: ['two'],
+                        nodeType: 'two'
+                    }
+                ]]
+            ]));
         });
 
         it('matches start of strings', async function () {
@@ -150,14 +188,20 @@ describe('buildCardMenu', function () {
 
             const cardMenu = buildCardMenu(nodes, {query: 't'});
 
-            render(<>{cardMenu}</>);
+            expect(cardMenu.menu).deep.equal(new Map([
+                ['Primary', [
+                    {
+                        label: 'Two',
+                        desc: 'Card test two',
+                        Icon,
+                        insertCommand: 'insert_card_two',
+                        matches: ['two'],
+                        nodeType: 'two'
+                    }
+                ]]
+            ]));
 
-            const sections = screen.getAllByRole('separator');
-            expect(sections).toHaveLength(1);
-
-            const menuitems = screen.getAllByRole('menuitem');
-            expect(menuitems).toHaveLength(1);
-            expect(menuitems[0]).toHaveTextContent('Two');
+            expect(cardMenu.maxItemIndex).to.equal(0);
         });
 
         it('can match against multiple strings', async function () {
@@ -180,14 +224,20 @@ describe('buildCardMenu', function () {
 
             const cardMenu = buildCardMenu(nodes, {query: 'mul'});
 
-            render(<>{cardMenu}</>);
+            expect(cardMenu.menu).deep.equal(new Map([
+                ['Primary', [
+                    {
+                        label: 'Two',
+                        desc: 'Card test two',
+                        Icon,
+                        insertCommand: 'insert_card_two',
+                        matches: ['two', 'multiple'],
+                        nodeType: 'two'
+                    }
+                ]]
+            ]));
 
-            const sections = screen.getAllByRole('separator');
-            expect(sections).toHaveLength(1);
-
-            const menuitems = screen.getAllByRole('menuitem');
-            expect(menuitems).toHaveLength(1);
-            expect(menuitems[0]).toHaveTextContent('Two');
+            expect(cardMenu.maxItemIndex).to.equal(0);
         });
 
         it('filters all sections', async function () {
@@ -211,18 +261,22 @@ describe('buildCardMenu', function () {
 
             const cardMenu = buildCardMenu(nodes, {query: 'mul'});
 
-            render(<>{cardMenu}</>);
-
-            const sections = screen.getAllByRole('separator');
-            expect(sections).toHaveLength(1);
-            expect(sections[0]).toHaveTextContent('Secondary');
-
-            const menuitems = screen.getAllByRole('menuitem');
-            expect(menuitems).toHaveLength(1);
-            expect(menuitems[0]).toHaveTextContent('Two');
+            expect(cardMenu.menu).deep.equal(new Map([
+                ['Secondary', [
+                    {
+                        label: 'Two',
+                        desc: 'Card test two',
+                        section: 'Secondary',
+                        Icon,
+                        insertCommand: 'insert_card_two',
+                        matches: ['two', 'multiple'],
+                        nodeType: 'two'
+                    }
+                ]]
+            ]));
         });
 
-        it('renders nothing with no matches', async function () {
+        it('returns empty menu with no matches', async function () {
             const nodes = [
                 ['one', {kgMenu: {
                     label: 'One',
@@ -243,9 +297,8 @@ describe('buildCardMenu', function () {
 
             const cardMenu = buildCardMenu(nodes, {query: 'unknown'});
 
-            const {container} = render(<>{cardMenu}</>);
-
-            expect(container.innerHTML).toEqual('');
+            expect(cardMenu.menu).deep.equal(new Map());
+            expect(cardMenu.maxItemIndex).to.equal(-1);
         });
 
         it('is case-insensitive', async function () {
@@ -268,14 +321,18 @@ describe('buildCardMenu', function () {
 
             const cardMenu = buildCardMenu(nodes, {query: 'Tw'});
 
-            render(<>{cardMenu}</>);
-
-            const sections = screen.getAllByRole('separator');
-            expect(sections).toHaveLength(1);
-
-            const menuitems = screen.getAllByRole('menuitem');
-            expect(menuitems).toHaveLength(1);
-            expect(menuitems[0]).toHaveTextContent('Two');
+            expect(cardMenu.menu).deep.equal(new Map([
+                ['Primary', [
+                    {
+                        label: 'Two',
+                        desc: 'Card test two',
+                        Icon,
+                        insertCommand: 'insert_card_two',
+                        matches: ['two'],
+                        nodeType: 'two'
+                    }
+                ]]
+            ]));
         });
     });
 });

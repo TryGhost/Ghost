@@ -3,6 +3,7 @@ import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {$getSelection, $isParagraphNode, $isRangeSelection} from 'lexical';
 import {getSelectedNode} from '../utils/getSelectedNode';
 import {PlusButton, PlusMenu} from '../components/ui/PlusMenu';
+import {CardMenu} from '../components/ui/CardMenu';
 import {getEditorCardNodes} from '../utils/getEditorCardNodes';
 import {buildCardMenu} from '../utils/buildCardMenu';
 
@@ -11,7 +12,7 @@ function usePlusCardMenu(editor) {
     const [isShowingMenu, setIsShowingMenu] = React.useState(false);
     const [topPosition, setTopPosition] = React.useState(0);
     const [cachedRange, setCachedRange] = React.useState(null);
-    const [cardMenu, setCardMenu] = React.useState([]);
+    const [cardMenu, setCardMenu] = React.useState({});
     const containerRef = React.useRef(null);
 
     function getTopPosition(elem) {
@@ -95,6 +96,11 @@ function usePlusCardMenu(editor) {
             showButton(p);
         });
     }, [editor, showButton, hideButton]);
+
+    const insert = React.useCallback((insertCommand) => {
+        editor.dispatchCommand(insertCommand);
+        closeMenu();
+    }, [editor, closeMenu]);
 
     React.useEffect(() => {
         return editor.registerUpdateListener(() => {
@@ -215,24 +221,25 @@ function usePlusCardMenu(editor) {
         };
     });
 
+    // build up the card menu based on registered nodes and current search
     React.useEffect(() => {
-        const insert = (insertCommand) => {
-            editor.dispatchCommand(insertCommand);
-            closeMenu();
-        };
         const cardNodes = getEditorCardNodes(editor);
         setCardMenu(buildCardMenu(cardNodes, {insert}));
-    }, [editor, closeMenu]);
+    }, [editor, insert, setCardMenu]);
 
     const style = {
         top: `${topPosition}px`
     };
 
+    if (cardMenu.menu?.size === 0) {
+        return null;
+    }
+
     if (isShowingButton) {
         return (
             <div className="absolute" style={style} ref={containerRef} data-kg-plus-container>
                 {isShowingButton && <PlusButton onClick={openMenu} />}
-                {isShowingMenu && <PlusMenu>{cardMenu}</PlusMenu>}
+                {isShowingMenu && <PlusMenu><CardMenu menu={cardMenu.menu} insert={insert} /></PlusMenu>}
             </div>
         );
     } else {

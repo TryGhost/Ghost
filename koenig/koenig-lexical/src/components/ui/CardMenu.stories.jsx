@@ -39,7 +39,7 @@ import {ReactComponent as SnippetCardIcon} from '../../assets/icons/kg-card-type
 const story = {
     title: 'Card menu/Card menu',
     component: CardMenu,
-    subcomponent: {CardMenuSection, CardMenuItem}
+    subcomponent: {CardMenuSection, CardMenuItem, CardSnippetItem}
 };
 export default story;
 
@@ -47,41 +47,41 @@ const Template = args => <CardMenu {...args} />;
 
 export const Default = Template.bind({});
 Default.args = {
-    children: [
-        <CardMenuSection label="Primary">
-            <CardMenuItem label="Image" desc="Upload, or embed with /image [url]" Icon={ImageCardIcon} />
-            <CardMenuItem label="Markdown" desc="Insert a Markdown editor card" Icon={MarkdownCardIcon} />
-            <CardMenuItem label="HTML" desc="Insert a raw HTML card" Icon={HtmlCardIcon} />
-            <CardMenuItem label="Gallery" desc="Create an image gallery" Icon={GalleryCardIcon} />
-            <CardMenuItem label="Divider" desc="Insert a dividing line" Icon={DividerCardIcon} />
-            <CardMenuItem label="Bookmark" desc="Embed a link as a visual bookmark" Icon={BookmarkCardIcon} />
-            <CardMenuItem label="Email content" desc="Only visible when delivered by email" Icon={EmailCardIcon} />
-            <CardMenuItem label="Email CTA" desc="Target free or paid members with a CTA" Icon={EmailCtaCardIcon} />
-            <CardMenuItem label="Public Preview" desc="Attract signups with a public intro" Icon={PreviewCardIcon} />
-            <CardMenuItem label="Button" desc="Add a button to your post" Icon={ButtonCardIcon} />
-            <CardMenuItem label="Callout" desc="Info boxes that stand out" Icon={CalloutCardIcon} />
-            <CardMenuItem label="GIF" desc="Search and embed gifs" Icon={GifCardIcon} />
-            <CardMenuItem label="Toggle" desc="Add collapsible content" Icon={ToggleCardIcon} />
-            <CardMenuItem label="Video" desc="Upload and play a video" Icon={VideoCardIcon} />
-            <CardMenuItem label="Audio" desc="Upload and play an audio file" Icon={AudioCardIcon} />
-            <CardMenuItem label="File" desc="Upload a downloadable file" Icon={FileCardIcon} />
-            <CardMenuItem label="Product" desc="Add a product recommendation" Icon={ProductCardIcon} />
-            <CardMenuItem label="Header" desc="Add a bold section header" Icon={HeaderCardIcon} />
-        </CardMenuSection>,
-        <CardMenuSection label="Embed">
-            <CardMenuItem label="YouTube" desc="/youtube [video url]" Icon={YoutubeCardIcon} />
-            <CardMenuItem label="Twitter" desc="/twitter [tweet url]" Icon={TwitterCardIcon} />
-            <CardMenuItem label="Unsplash" desc="/unsplash [search-term or url]" Icon={UnsplashCardIcon} />
-            <CardMenuItem label="Vimeo" desc="/vimeo [video url]" Icon={VimeoCardIcon} />
-            <CardMenuItem label="CodePen" desc="/codepen [pen url]" Icon={CodePenCardIcon} />
-            <CardMenuItem label="Spotify" desc="/spotify [track or playlist url]" Icon={SpotifyCardIcon} />
-            <CardMenuItem label="SoundCloud" desc="/soundcloud [track or playlist url]" Icon={SoundCloudCardIcon} />
-            <CardMenuItem label="NFT" desc="/nft [opensea url]" Icon={NftCardIcon} />
-            <CardMenuItem label="Other..." desc="/embed [url]" Icon={OtherCardIcon} />
-        </CardMenuSection>,
-        <CardMenuSection label="Snippets">
-            <CardSnippetItem label="Snippet one" Icon={SnippetCardIcon} />
-            <CardSnippetItem label="Snippet two" Icon={SnippetCardIcon} />
-        </CardMenuSection>
-    ]
+    menu: new Map([
+        ['Primary', [
+            {label: 'Image', desc: 'Upload, or embed with /image [url]', Icon: ImageCardIcon},
+            {label: 'Markdown', desc: 'Insert a Markdown editor card', Icon: MarkdownCardIcon},
+            {label: 'HTML', desc: 'Insert a raw HTML card', Icon: HtmlCardIcon},
+            {label: 'Gallery', desc: 'Create an image gallery', Icon: GalleryCardIcon},
+            {label: 'Divider', desc: 'Insert a dividing line', Icon: DividerCardIcon},
+            {label: 'Bookmark', desc: 'Embed a link as a visual bookmark', Icon: BookmarkCardIcon},
+            {label: 'Email content', desc: 'Only visible when delivered by email', Icon: EmailCardIcon},
+            {label: 'Email CTA', desc: 'Target free or paid members with a CTA', Icon: EmailCtaCardIcon},
+            {label: 'Public Preview', desc: 'Attract signups with a public intro', Icon: PreviewCardIcon},
+            {label: 'Button', desc: 'Add a button to your post', Icon: ButtonCardIcon},
+            {label: 'Callout', desc: 'Info boxes that stand out', Icon: CalloutCardIcon},
+            {label: 'GIF', desc: 'Search and embed gifs', Icon: GifCardIcon},
+            {label: 'Toggle', desc: 'Add collapsible content', Icon: ToggleCardIcon},
+            {label: 'Video', desc: 'Upload and play a video', Icon: VideoCardIcon},
+            {label: 'Audio', desc: 'Upload and play an audio file', Icon: AudioCardIcon},
+            {label: 'File', desc: 'Upload a downloadable file', Icon: FileCardIcon},
+            {label: 'Product', desc: 'Add a product recommendation', Icon: ProductCardIcon},
+            {label: 'Header', desc: 'Add a bold section header', Icon: HeaderCardIcon}
+        ]],
+        ['Embed', [
+            {label: 'YouTube', desc: '/youtube [video url]', Icon: YoutubeCardIcon},
+            {label: 'Twitter', desc: '/twitter [tweet url]', Icon: TwitterCardIcon},
+            {label: 'Unsplash', desc: '/unsplash [search-term or url]', Icon: UnsplashCardIcon},
+            {label: 'Vimeo', desc: '/vimeo [video url]', Icon: VimeoCardIcon},
+            {label: 'CodePen', desc: '/codepen [pen url]', Icon: CodePenCardIcon},
+            {label: 'Spotify', desc: '/spotify [track or playlist url]', Icon: SpotifyCardIcon},
+            {label: 'SoundCloud', desc: '/soundcloud [track or playlist url]', Icon: SoundCloudCardIcon},
+            {label: 'NFT', desc: '/nft [opensea url]', Icon: NftCardIcon},
+            {label: 'Other...', desc: '/embed [url]', Icon: OtherCardIcon}
+        ]],
+        ['Snippets', [
+            {type: 'snippet', label: 'Snippet one', Icon: SnippetCardIcon},
+            {type: 'snippet', label: 'Snippet two', Icon: SnippetCardIcon}
+        ]]
+    ])
 };
