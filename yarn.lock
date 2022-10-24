@@ -12262,10 +12262,10 @@ ember-style-modifier@^0.8.0:
     ember-cli-babel "^7.26.6"
     ember-modifier "^3.2.7"
 
-ember-svg-jar@2.4.1:
-  version "2.4.1"
-  resolved "https://registry.yarnpkg.com/ember-svg-jar/-/ember-svg-jar-2.4.1.tgz#03c96a24601683ee5712fe51ae5c40d70c4d5048"
-  integrity sha512-zs5SUUOG/K/PvFIjzG7Rr2HT5go1IPC+TvOdwF/MsguDPREPoVUZMSPEAln/6q8OG8A+3DK/hHk2Q4Ot3KyDBg==
+ember-svg-jar@2.4.2:
+  version "2.4.2"
+  resolved "https://registry.yarnpkg.com/ember-svg-jar/-/ember-svg-jar-2.4.2.tgz#7ea2c987cc188647cdd01842631d6bd0cdbe4f22"
+  integrity sha512-TwtCwlxjp347+v7PK3xWpx7KXV3RDYogFe+WZA1+1ftiZqJfk9NzvXeMFA3thkhXmoT6IOYYnLR2ryjCmDiLsw==
   dependencies:
     broccoli-caching-writer "^3.0.3"
     broccoli-concat "^4.2.5"
