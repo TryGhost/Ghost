@@ -211,7 +211,9 @@ describe('Slash menu', async () => {
             const $$menuitems = await page.$$('[data-kg-slash-menu] [role="menuitem"]');
             expect(await page.evaluate(e => e.dataset.kgCardmenuSelected, $$menuitems[0])).to.equal('true');
         });
+    });
 
+    describe('insertion', function () {
         test('ENTER inserts card', async function () {
             await focusEditor(page);
             await page.keyboard.type('/hr');
@@ -232,6 +234,49 @@ describe('Slash menu', async () => {
             });
 
             expect(await page.$('[data-kg-slash-menu]')).toBeNull();
+        });
+
+        it('has correct order when inserting after text', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('Testing');
+            await page.keyboard.press('Enter');
+            await page.keyboard.type('/hr');
+            await page.keyboard.press('Enter');
+
+            await assertHTML(page, html`
+                <p dir="ltr"><span data-lexical-text="true">Testing</span></p>
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-selected="false" data-kg-card="horizontalrule"><hr /></div>
+                </div>
+                <p dir="ltr"><br /></p>
+            `);
+
+            // HR card puts focus on paragraph after insert
+            await assertSelection(page, {
+                anchorOffset: 0,
+                anchorPath: [2],
+                focusOffset: 0,
+                focusPath: [2]
+            });
+        });
+
+        it('has correct order when inserting after a card', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('/hr');
+            await page.keyboard.press('Enter');
+            await page.keyboard.type('/img');
+            await page.keyboard.press('Enter');
+
+            // image card retains focus after insert
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-selected="false" data-kg-card="horizontalrule"></div>
+                </div>
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-selected="true" data-kg-card="image"></div>
+                </div>
+                <p dir="ltr"><br /></p>
+            `, {ignoreCardContents: true});
         });
     });
 });
