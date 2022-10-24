@@ -21,13 +21,16 @@ class NewslettersService {
      * @param {Object} options.singleUseTokenProvider
      * @param {Object} options.urlUtils
      * @param {ILimitService} options.limitService
+     * @param {Object} options.labs
      */
-    constructor({NewsletterModel, MemberModel, mail, singleUseTokenProvider, urlUtils, limitService}) {
+    constructor({NewsletterModel, MemberModel, mail, singleUseTokenProvider, urlUtils, limitService, labs}) {
         this.NewsletterModel = NewsletterModel;
         this.MemberModel = MemberModel;
         this.urlUtils = urlUtils;
         /** @private */
         this.limitService = limitService;
+        /** @private */
+        this.labs = labs;
 
         /* email verification setup */
 
@@ -248,6 +251,13 @@ class NewslettersService {
             if (await this.requiresEmailVerification({email, hasChanged})) {
                 delete cleanedAttrs[property];
                 emailsToVerify.push({email, property});
+            }
+        }
+
+        if (cleanedAttrs.feedback_enabled) {
+            if (!this.labs.isSet('audienceFeedback')) {
+                // Not allowed to set to true
+                cleanedAttrs.feedback_enabled = false;
             }
         }
 
