@@ -1,5 +1,4 @@
 const debug = require('@tryghost/debug')('pipeline');
-
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const {sequence} = require('@tryghost/promise');
