@@ -11,7 +11,7 @@ const DEFAULT_COLUMNS = [
     'created_at',
     'deleted_at',
     'labels',
-    'products'
+    'tiers'
 ];
 
 const unparse = (members, columns = DEFAULT_COLUMNS.slice()) => {
@@ -54,7 +54,7 @@ const unparse = (members, columns = DEFAULT_COLUMNS.slice()) => {
             created_at: member.created_at,
             deleted_at: member.deleted_at,
             labels: labels,
-            products: tiers,
+            tiers: tiers,
             error: member.error || null
         };
     });

@@ -50,6 +50,7 @@
                                     @index={{index}}
                                     @filter={{filter}}
                                     @setFilterValue={{this.setFilterValue}}
+                                    @setResourceValue={{this.setResourceValue}}
                                     @onLabelEdit={{@onLabelEdit}}
                                 />
                                 <button
@@ -84,7 +85,7 @@
                 </button>
                 <button
                     class="gh-btn gh-btn-primary"
-                    data-test-button="members-apply-filter" type="button" {{on "click" this.applyFilter}} {{on "keyup" this.handleSubmitKeyup}}
+                    data-test-button="members-apply-filter" type="button" {{on "click" (fn this.applyFiltersPressed dd)}} {{on "keyup" this.handleSubmitKeyup}}
                 >
                     <span>Apply filters</span>
                 </button>

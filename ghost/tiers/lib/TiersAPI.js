@@ -1,14 +1,17 @@
 const ObjectID = require('bson-objectid').default;
 const {BadRequestError} = require('@tryghost/errors');
 const Tier = require('./Tier');
-const TierSlugService = require('./TierSlugService');
 
 /**
  * @typedef {object} ITierRepository
  * @prop {(id: ObjectID) => Promise<Tier>} getById
- * @prop {(slug: string) => Promise<Tier>} getBySlug
  * @prop {(tier: Tier) => Promise<void>} save
  * @prop {(options?: {filter?: string}) => Promise<Tier[]>} getAll
+ */
+
+/**
+ * @typedef {object} ISlugService
+ * @prop {(input: string) => Promise<string>} generate
  */
 
 /**
@@ -29,14 +32,12 @@ module.exports = class TiersAPI {
     /** @type {ITierRepository} */
     #repository;
 
-    /** @type {TierSlugService} */
+    /** @type {ISlugService} */
     #slugService;
 
     constructor(deps) {
         this.#repository = deps.repository;
-        this.#slugService = new TierSlugService({
-            repository: deps.repository
-        });
+        this.#slugService = deps.slugService;
     }
 
     /**
@@ -80,7 +81,8 @@ module.exports = class TiersAPI {
      * @param {object} data
      * @returns {Promise<Tier>}
      */
-    async edit(id, data) {
+    async edit(idString, data) {
+        const id = ObjectID.createFromHexString(idString);
         const tier = await this.#repository.getById(id);
 
         const editableProperties = [
@@ -89,10 +91,8 @@ module.exports = class TiersAPI {
             'description',
             'visibility',
             'active',
-            'trial_days',
-            'currency',
-            'monthly_price',
-            'yearly_price'
+            'trialDays',
+            'welcomePageURL'
         ];
 
         for (const editableProperty of editableProperties) {
@@ -100,6 +100,12 @@ module.exports = class TiersAPI {
                 tier[editableProperty] = data[editableProperty];
             }
         }
+
+        tier.updatePricing({
+            currency: data.currency || tier.currency,
+            monthlyPrice: data.monthlyPrice || tier.monthlyPrice,
+            yearlyPrice: data.yearlyPrice || tier.yearlyPrice
+        });
 
         await this.#repository.save(tier);
 
@@ -111,24 +117,27 @@ module.exports = class TiersAPI {
      * @returns {Promise<Tier>}
      */
     async add(data) {
-        if (data.type !== 'paid') {
+        if (data.type === 'free') {
             throw new BadRequestError({
                 message: 'Cannot create free Tier'
             });
         }
+
+        const slug = await this.#slugService.generate(data.slug || data.name);
         const tier = await Tier.create({
+            slug,
             type: 'paid',
             status: 'active',
             visibility: data.visibility,
             name: data.name,
             description: data.description,
             benefits: data.benefits,
-            welcome_page_url: data.welcome_page_url,
-            monthly_price: data.monthly_price,
-            yearly_price: data.yearly_price,
+            welcomePageURL: data.welcomePageURL,
+            monthlyPrice: data.monthlyPrice,
+            yearlyPrice: data.yearlyPrice,
             currency: data.currency,
-            trial_days: data.trial_days
-        }, this.#slugService);
+            trialDays: data.trialDays
+        });
 
         await this.#repository.save(tier);
 

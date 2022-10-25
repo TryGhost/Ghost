@@ -1047,7 +1047,6 @@ Dashboard Attribution */
 
 .gh-dashboard .gh-canvas-header.sticky {
     max-width: 1230px;
-    min-width: 850px;
     margin: 0 auto;
     padding: 32px 0;
 }
@@ -1232,6 +1231,8 @@ Dashboard Attribution */
     line-height: 1.45em;
     margin: 0;
     padding: 0;
+    font-size: 1.4rem;
+    font-weight: 500;
 }
 
 .attribution-list-empty svg {

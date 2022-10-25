@@ -1,7 +1,16 @@
 const ObjectID = require('bson-objectid').default;
 const {ValidationError} = require('@tryghost/errors');
 
+const TierActivatedEvent = require('./TierActivatedEvent');
+const TierArchivedEvent = require('./TierArchivedEvent');
+const TierCreatedEvent = require('./TierCreatedEvent');
+const TierNameChangeEvent = require('./TierNameChangeEvent');
+const TierPriceChangeEvent = require('./TierPriceChangeEvent');
+
 module.exports = class Tier {
+    /** @type {BaseEvent[]} */
+    events = [];
+
     /** @type {ObjectID} */
     #id;
     get id() {
@@ -20,7 +29,12 @@ module.exports = class Tier {
         return this.#name;
     }
     set name(value) {
-        this.#name = validateName(value);
+        const newName = validateName(value);
+        if (newName === this.#name) {
+            return;
+        }
+        this.events.push(TierNameChangeEvent.create({tier: this}));
+        this.#name = newName;
     }
 
     /** @type {string[]} */
@@ -41,7 +55,7 @@ module.exports = class Tier {
         this.#description = validateDescription(value);
     }
 
-    /** @type {URL} */
+    /** @type {string} */
     #welcomePageURL;
     get welcomePageURL() {
         return this.#welcomePageURL;
@@ -56,13 +70,25 @@ module.exports = class Tier {
         return this.#status;
     }
     set status(value) {
-        this.#status = validateStatus(value);
+        const newStatus = validateStatus(value);
+        if (newStatus === this.#status) {
+            return;
+        }
+        if (newStatus === 'active') {
+            this.events.push(TierActivatedEvent.create({tier: this}));
+        } else {
+            this.events.push(TierArchivedEvent.create({tier: this}));
+        }
+        this.#status = newStatus;
     }
 
-    /** @type {'public'} */
+    /** @type {'public'|'none'} */
     #visibility;
     get visibility() {
         return this.#visibility;
+    }
+    set visibility(value) {
+        this.#visibility = validateVisibility(value);
     }
 
     /** @type {'paid'|'free'} */
@@ -105,6 +131,30 @@ module.exports = class Tier {
     }
     set yearlyPrice(value) {
         this.#yearlyPrice = validateYearlyPrice(value, this.#type);
+    }
+
+    updatePricing({currency, monthlyPrice, yearlyPrice}) {
+        if (this.#type !== 'paid') {
+            throw new ValidationError({
+                message: 'Cannot set pricing for free tiers'
+            });
+        }
+
+        const newCurrency = validateCurrency(currency, this.#type);
+        const newMonthlyPrice = validateMonthlyPrice(monthlyPrice, this.#type);
+        const newYearlyPrice = validateYearlyPrice(yearlyPrice, this.#type);
+
+        if (newCurrency === this.#currency && newMonthlyPrice === this.#monthlyPrice && newYearlyPrice === this.#yearlyPrice) {
+            return;
+        }
+
+        this.#currency = newCurrency;
+        this.#monthlyPrice = newMonthlyPrice;
+        this.#yearlyPrice = newYearlyPrice;
+
+        this.events.push(TierPriceChangeEvent.create({
+            tier: this
+        }));
     }
 
     /** @type {Date} */
@@ -162,12 +212,13 @@ module.exports = class Tier {
 
     /**
      * @param {any} data
-     * @param {ISlugService} slugService
      * @returns {Promise<Tier>}
      */
-    static async create(data, slugService) {
+    static async create(data) {
         let id;
+        let isNew = false;
         if (!data.id) {
+            isNew = true;
             id = new ObjectID();
         } else if (typeof data.id === 'string') {
             id = ObjectID.createFromHexString(data.id);
@@ -181,27 +232,21 @@ module.exports = class Tier {
 
         let name = validateName(data.name);
 
-        let slug;
-        if (data.slug) {
-            slug = await slugService.validate(data.slug);
-        } else {
-            slug = await slugService.generate(name);
-        }
-
+        let slug = validateSlug(data.slug);
         let description = validateDescription(data.description);
-        let welcomePageURL = validateWelcomePageURL(data.welcome_page_url);
+        let welcomePageURL = validateWelcomePageURL(data.welcomePageURL);
         let status = validateStatus(data.status || 'active');
         let visibility = validateVisibility(data.visibility || 'public');
         let type = validateType(data.type || 'paid');
         let currency = validateCurrency(data.currency || null, type);
-        let trialDays = validateTrialDays(data.trial_days || null, type);
-        let monthlyPrice = validateMonthlyPrice(data.monthly_price || null, type);
-        let yearlyPrice = validateYearlyPrice(data.yearly_price || null , type);
-        let createdAt = validateCreatedAt(data.created_at);
-        let updatedAt = validateUpdatedAt(data.updated_at);
+        let trialDays = validateTrialDays(data.trialDays || 0, type);
+        let monthlyPrice = validateMonthlyPrice(data.monthlyPrice || null, type);
+        let yearlyPrice = validateYearlyPrice(data.yearlyPrice || null , type);
+        let createdAt = validateCreatedAt(data.createdAt);
+        let updatedAt = validateUpdatedAt(data.updatedAt);
         let benefits = validateBenefits(data.benefits);
 
-        return new Tier({
+        const tier = new Tier({
             id,
             slug,
             name,
@@ -218,8 +263,23 @@ module.exports = class Tier {
             updated_at: updatedAt,
             benefits
         });
+
+        if (isNew) {
+            tier.events.push(TierCreatedEvent.create({tier}));
+        }
+
+        return tier;
     }
 };
+
+function validateSlug(value) {
+    if (!value || typeof value !== 'string' || value.length > 191) {
+        throw new ValidationError({
+            message: 'Tier slug must be a string with a maximum of 191 characters'
+        });
+    }
+    return value;
+}
 
 function validateName(value) {
     if (typeof value !== 'string') {
@@ -238,20 +298,15 @@ function validateName(value) {
 }
 
 function validateWelcomePageURL(value) {
-    if (value instanceof URL) {
-        return value;
-    }
     if (!value) {
         return null;
     }
-    try {
-        return new URL(value);
-    } catch (err) {
-        throw new ValidationError({
-            err,
-            message: 'Tier Welcome Page URL must be a URL'
-        });
+    if (value === null || typeof value === 'string') {
+        return value;
     }
+    throw new ValidationError({
+        message: 'Tier Welcome Page URL must be a string'
+    });
 }
 
 function validateDescription(value) {
@@ -299,15 +354,15 @@ function validateType(value) {
 
 function validateTrialDays(value, type) {
     if (type === 'free') {
-        if (value !== null) {
+        if (value) {
             throw new ValidationError({
                 message: 'Free Tiers cannot have a trial'
             });
         }
-        return null;
+        return 0;
     }
     if (!value) {
-        return null;
+        return 0;
     }
     if (!Number.isSafeInteger(value) || value < 0) {
         throw new ValidationError({
@@ -350,17 +405,17 @@ function validateMonthlyPrice(value, type) {
     }
     if (!Number.isSafeInteger(value)) {
         throw new ValidationError({
-            message: ''
+            message: 'Tier prices must be an integer.'
         });
     }
     if (value < 0) {
         throw new ValidationError({
-            message: ''
+            message: 'Tier prices must not be negative'
         });
     }
     if (value > 9999999999) {
         throw new ValidationError({
-            message: ''
+            message: 'Tier prices may not exceed 999999.99'
         });
     }
     return value;
@@ -377,17 +432,17 @@ function validateYearlyPrice(value, type) {
     }
     if (!Number.isSafeInteger(value)) {
         throw new ValidationError({
-            message: ''
+            message: 'Tier prices must be an integer.'
         });
     }
     if (value < 0) {
         throw new ValidationError({
-            message: ''
+            message: 'Tier prices must not be negative'
         });
     }
     if (value > 9999999999) {
         throw new ValidationError({
-            message: ''
+            message: 'Tier prices may not exceed 999999.99'
         });
     }
     return value;

@@ -20,4 +20,12 @@ export default class MembersListItemColumn extends Component {
     get mostRecentSubscription() {
         return mostRecentlyUpdated(get(this.args.member, 'subscriptions'));
     }
+
+    get columnName() {
+        return this.args.filterColumn.name;
+    }
+
+    get columnValue() {
+        return this.args.filterColumn?.getValue ? this.args.filterColumn?.getValue(this.args.member) : null;
+    }
 }

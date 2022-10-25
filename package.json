@@ -114,7 +114,7 @@
     "*.js": "eslint"
   },
   "devDependencies": {
-    "concurrently": "7.4.0",
+    "concurrently": "7.5.0",
     "eslint-plugin-ghost": "2.16.0",
     "husky": "8.0.1",
     "lint-staged": "13.0.3",

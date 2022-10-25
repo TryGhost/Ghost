@@ -45,7 +45,7 @@ describe('Database Migration (special functions)', function () {
             const permissions = this.obj;
 
             // If you have to change this number, please add the relevant `havePermission` checks below
-            permissions.length.should.eql(106);
+            permissions.length.should.eql(108);
 
             permissions.should.havePermission('Export database', ['Administrator', 'DB Backup Integration']);
             permissions.should.havePermission('Import database', ['Administrator', 'DB Backup Integration']);
@@ -179,6 +179,7 @@ describe('Database Migration (special functions)', function () {
             permissions.should.havePermission('Like comments', ['Administrator', 'Admin Integration']);
             permissions.should.havePermission('Unlike comments', ['Administrator', 'Admin Integration']);
             permissions.should.havePermission('Report comments', ['Administrator', 'Admin Integration']);
+            permissions.should.havePermission('Browse links', ['Administrator', 'Admin Integration']);
         });
 
         describe('Populate', function () {
