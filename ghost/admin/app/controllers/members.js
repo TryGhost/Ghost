@@ -62,6 +62,11 @@ export default class MembersController extends Controller {
 
     @tracked parseFilterParamCounter = 0;
 
+    /**
+     * Flag used to determine if we should return to the analytics page
+     */
+    fromAnalytics = null;
+
     paidParams = PAID_PARAMS;
 
     constructor() {
