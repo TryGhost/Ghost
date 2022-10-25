@@ -18,6 +18,7 @@ export default class ParseMemberEventHelper extends Helper {
         const object = this.getObject(event);
         const url = this.getURL(event);
         const timestamp = moment(event.data.created_at);
+        const source = this.getSource(event);
 
         return {
             memberId: event.data.member_id ?? event.data.member?.id,
@@ -29,6 +30,7 @@ export default class ParseMemberEventHelper extends Helper {
             action,
             join,
             object,
+            source,
             info,
             description,
             url,
@@ -224,6 +226,20 @@ export default class ParseMemberEventHelper extends Helper {
         }
 
         return '';
+    }
+
+    /**
+     * Clickable object, shown between action and info, or in a separate column in some views
+     */
+    getSource(event) {
+        if (event.data?.attribution?.referrer_source) {
+            return {
+                name: event.data.attribution.referrer_source,
+                url: event.data.attribution.referrer_url ?? null
+            };
+        }
+
+        return null;
     }
 
     getInfo(event) {

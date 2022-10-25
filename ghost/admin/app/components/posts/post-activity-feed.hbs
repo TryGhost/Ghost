@@ -58,7 +58,15 @@
                             </div>
                             {{#if (eq this.eventType "conversion")}}
                                 <div class="gh-dashboard-list-item-sub">
-                                    Source
+                                    {{#if parsedEvent.source}}
+                                        {{#if parsedEvent.source.url}}
+                                            <a href={{parsedEvent.source.url}} rel="noopener noreferrer" target="_blank">{{parsedEvent.source.name}}</a>
+                                        {{else}}
+                                            <span>{{parsedEvent.source.name}}</span>
+                                        {{/if}}
+                                    {{else}}
+                                        <span class="midlightgrey">&mdash;</span>
+                                    {{/if}}
                                 </div>
                             {{/if}}
                             <div class="gh-dashboard-list-item-sub">
