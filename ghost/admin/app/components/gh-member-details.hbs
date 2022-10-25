@@ -42,10 +42,12 @@
                         Unknown location
                     {{/if}}
                 </p>
-                <p>
-                    {{svg-jar "member-add"}}
-                    Created on {{moment-format (moment-site-tz @member.createdAtUTC) "D MMM YYYY"}}
-                </p>
+                {{#if (not (feature 'sourceAttribution'))}}
+                    <p>
+                        {{svg-jar "member-add"}}
+                        Created on {{moment-format (moment-site-tz @member.createdAtUTC) "D MMM YYYY"}}
+                    </p>
+                {{/if}}
                 {{#if (feature 'sourceAttribution')}}
                 {{else}}
                     {{#if (and @member.attribution @member.attribution.url @member.attribution.title) }}
@@ -64,19 +66,23 @@
                     {{/if}}
                 </p>
             </div>
-            {{#if (and (feature 'sourceAttribution') this.showAttribution)}}
+            {{#if (feature 'sourceAttribution')}}
                 <div class="gh-member-details-attribution">
-                    <h4 class="gh-main-section-header small bn">Attribution</h4>
+                    <h4 class="gh-main-section-header small bn">Signup info</h4>
+                    <p>
+                        {{svg-jar "member-add"}}
+                        Created&nbsp;&mdash;&nbsp;<span>{{moment-format (moment-site-tz @member.createdAtUTC) "D MMM YYYY"}}</span>
+                    </p>
                     {{#if this.referrerSource}}
                         <p>
                             {{svg-jar "earth"}}
-                            Signup source&nbsp;&mdash;&nbsp;<span title="{{this.referrerSource}}">{{this.referrerSource}}</span>
+                            Source&nbsp;&mdash;&nbsp;<span title="{{this.referrerSource}}">{{this.referrerSource}}</span>
                         </p>
                     {{/if}}
                     {{#if (and @member.attribution.url @member.attribution.title)}}
                     <p>
                         {{svg-jar "posts"}}
-                        Signup page&nbsp;&mdash;&nbsp;<a href="{{@member.attribution.url}}" target="_blank" rel="noopener noreferrer" title="{{ @member.attribution.title }}">{{ @member.attribution.title }}</a>
+                        Page&nbsp;&mdash;&nbsp;<a href="{{@member.attribution.url}}" target="_blank" rel="noopener noreferrer" title="{{ @member.attribution.title }}">{{ @member.attribution.title }}</a>
                     </p>
                     {{!-- <a href="#" class="gh-member-details-attribution-docs">Learn more →</a> --}}
                     {{/if}}

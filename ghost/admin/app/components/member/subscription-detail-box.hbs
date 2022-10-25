@@ -1,50 +1,54 @@
 <button type="button" class="flex pointer flex-row items-center gh-cp-membertier-details {{if this.showDetails "
     rotate"}}" {{on "click" this.toggleSubscriptionExpanded}} role="button" aria-label="Show details">
-    Details {{svg-jar "arrow-right-stroke"}}
+    Subscription details {{svg-jar "arrow-right-stroke"}}
 </button>
 <div class="gh-membertier-advanced {{unless this.showDetails " hide"}}" data-test-subscription={{@index}}>
     <div class="gh-membertier-details-container">
-        {{#if @sub.cancellationReason}}
-        <div class="mb4">
-            <h4>Cancellation reason</h4>
-            <div class="gh-membertier-cancelreason">{{@sub.cancellationReason}}</div>
-        </div>
-        {{/if}}
-        {{#if @sub.offer}}
-        {{#if (eq @sub.offer.type "trial")}}
-        <div class="mb4">
-            <h4>Offer</h4>
-            <span class="gh-cp-membertier-pricelabel"> {{@sub.offer.name}} </span>
-            &ndash; {{@sub.offer.amount}} days free
-        </div>
-        {{else}}
-        <div class="mb4">
-            <h4>Offer</h4>
-            <span class="gh-cp-membertier-pricelabel"> {{@sub.offer.name}} </span>
-            {{#if (eq @sub.offer.type 'fixed')}}
-            &ndash; {{currency-symbol @sub.offer.currency}}{{gh-price-amount @sub.offer.amount}} off
-            {{else}}
-            &ndash; {{@sub.offer.amount}}% off
-            {{/if}}
-        </div>
-        {{/if}}
-        {{/if}}
         <div class="gh-membertier-details">
+            <p>
+                Created&nbsp;&mdash;&nbsp;<span>{{@sub.startDate}}</span>
+            </p>
             {{#if (eq @sub.attribution.referrerSource 'Unknown')}}
             {{else}}
-            <div class="gh-membertier-detail">
-                <h4>Subscription source</h4>
-                <p><span class="fw6">{{@sub.attribution.referrerSource}}</span></p>
-            </div>
+            <p>
+                Source&nbsp;&mdash;&nbsp;<span>{{@sub.attribution.referrerSource}}</span>
+            </p>
             {{/if}}
             {{#if (and @sub.attribution @sub.attribution.url @sub.attribution.title)}}
-            <div class="gh-membertier-detail">
-                <h4>Subscription page</h4>
-                <a href="{{@sub.attribution.url}}" target="_blank" rel="noopener noreferrer">{{ @sub.attribution.title
-                    }}</a>
+            <p>
+                Page&nbsp;&mdash;&nbsp;<a href="{{@sub.attribution.url}}" target="_blank" rel="noopener noreferrer">{{ @sub.attribution.title }}</a>
+            </p>
+            {{/if}}
+        </div>
+        {{#if (or @sub.cancellationReason @sub.offer)}}
+        <div class="gh-membertier-offer-cancellation">
+            {{#if @sub.cancellationReason}}
+            <div>
+                <h4>Cancellation reason</h4>
+                <div class="gh-membertier-cancelreason">{{@sub.cancellationReason}}</div>
             </div>
             {{/if}}
-            <p class="gh-membertier-detail-timestamp">Created on {{@sub.startDate}}</p>
+            {{#if @sub.offer}}
+                {{#if (eq @sub.offer.type "trial")}}
+                <div>
+                    <h4>Offer</h4>
+                    <span class="gh-cp-membertier-pricelabel"> {{@sub.offer.name}} </span>
+                    &ndash; {{@sub.offer.amount}} days free
+                </div>
+                {{else}}
+                <div>
+                    <h4>Offer</h4>
+                    <span class="gh-cp-membertier-pricelabel"> {{@sub.offer.name}}
+                    {{#if (eq @sub.offer.type 'fixed')}}
+                    &ndash; {{currency-symbol @sub.offer.currency}}{{gh-price-amount @sub.offer.amount}} off
+                    {{else}}
+                    &ndash; {{@sub.offer.amount}}% off
+                    {{/if}}
+                    </span>
+                </div>
+                {{/if}}
+            {{/if}}
         </div>
+        {{/if}}
     </div>
 </div>

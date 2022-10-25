@@ -2277,6 +2277,10 @@ p.gh-members-import-errordetail:first-of-type {
     border-top: 1px solid var(--whitegrey);
 }
 
+.gh-membertier-details p {
+    color: var(--darkgrey-l1);
+}
+
 .gh-membertier-details span,
 .gh-membertier-details a {
     display: inline-block;
@@ -2593,16 +2597,16 @@ p.gh-members-import-errordetail:first-of-type {
 }
 
 .gh-cp-membertier-attribution .gh-membertier-advanced h4 {
-    font-size: 1.1rem;
-    text-transform: uppercase;
-    letter-spacing: .03em;
-    font-weight: 500;
-    color: #7F8B99;
+    font-size: 1.4rem;
+    font-weight: 400;
+    color: var(--middarkgrey);
     margin-bottom: 2px;
+    letter-spacing: .01em;
 }
 
 .gh-cp-membertier-attribution .gh-membertier-details p {
     margin: 0;
+    color: var(--middarkgrey);
 }
 
 .gh-cp-membertier-attribution .gh-membertier-detail {
@@ -2611,8 +2615,22 @@ p.gh-members-import-errordetail:first-of-type {
 
 .gh-cp-membertier-attribution .gh-membertier-details span, .gh-cp-membertier-attribution .gh-membertier-details a {
     font-size: 1.4rem;
-    font-weight: 600;
-    color: unset;
+    font-weight: 500;
+    color: var(--darkgrey);
+}
+
+.gh-membertier-offer-cancellation .gh-cp-membertier-pricelabel {
+    font-weight: 500;
+}
+
+.gh-membertier-offer-cancellation {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top:1px solid #ECEEF0;
+}
+
+.gh-membertier-offer-cancellation div + div {
+    margin-top: 16px;
 }
 
 .gh-cp-membertier-attribution .gh-cp-membertier-renewal {
