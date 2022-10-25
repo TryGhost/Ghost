@@ -67,4 +67,9 @@ export default class PostActivityFeed extends Component {
     isNextButtonDisabled({hasReachedEnd, isLoading}) {
         return hasReachedEnd || isLoading;
     }
+
+    @action
+    isPaginationNeeded({totalEvents}) {
+        return (totalEvents <= this._pageSize);
+    }
 }
