@@ -42,10 +42,6 @@ function chainTransformers(...transformers) {
 }
 
 /**
- * If this works well, we can move these helpers to the mongo utils package
- */
-
-/**
  * Returns a list of the keys that are used in this Mongo filter
  */
 function getUsedKeys(filter) {
@@ -76,9 +72,7 @@ function getUsedKeys(filter) {
  * Both the first and second filter can be undefined if no keys are found for them.
  * 
  * @param {*} filter 
- * @param {*} keys
- * @param {*} maxDepth An error is thrown if the key is used deeper than this
- * @param {*} currentDepth 
+ * @param {*} keys 
  */
 function splitFilter(filter, keys) {
     let withKeysFilter = undefined;
@@ -849,86 +843,31 @@ module.exports = class EventRepository {
     }
 
     /**
-     * Extract a subset of NQL.
-     * There are only a few properties allowed.
-     * Parenthesis are forbidden.
-     * Only ANDs are supported when combining properties.
+     * Split the filter in two parts:
+     * - One with 'type' that will be applied to all the pages
+     * - Other filter that will be applied to each individual page
+     * 
+     * Throws if splitting is not possible (e.g. OR'ing type with other filters)
      */
     getNQLSubset(filter) {
         if (!filter) {
             return [undefined, undefined];
         }
 
+        const allowList = ['data.created_at', 'data.member_id', 'data.post_id', 'type'];
         const parsed = nql(filter).parse();
+        const keys = getUsedKeys(parsed);
+
+        for (const key of keys) {
+            if (!allowList.includes(key)) {
+                throw new errors.IncorrectUsageError({
+                    message: 'Cannot filter by ' + key
+                });
+            }
+        }
+
         return splitFilter(parsed, ['type']);
-
-        /*const lex = nql(filter).lex();
-
-        const allowedFilters = ['type','data.created_at','data.member_id', 'data.post_id'];
-        const properties = lex
-            .filter(x => x.token === 'PROP')
-            .map(x => x.matched.slice(0, -1));
-        if (properties.some(prop => !allowedFilters.includes(prop))) {
-            throw new errors.IncorrectUsageError({
-                message: 'The only allowed filters are `type`, `data.created_at` and `data.member_id`'
-            });
-        }
-
-        if (lex.find(x => x.token === 'LPAREN')) {
-            throw new errors.IncorrectUsageError({
-                message: 'The filter can\'t contain parenthesis.'
-            });
-        }
-
-        const jsonFilter = nql(filter).toJSON();
-        const keys = Object.keys(jsonFilter);
-
-        if (keys.length === 1 && keys[0] === '$or') {
-            throw new errors.IncorrectUsageError({
-                message: 'The top level-filters can only combined with ANDs (+) and not ORs (,).'
-            });
-        }
-
-        // The filter is validated, it only contains one level of filters concatenated with `+`
-        const filters = filter.split('+');
-
-        let result = {};
-
-        for (const f of filters) {
-            // dirty way to parse a property, but it works according to https://github.com/NexesJS/NQL-Lang/blob/0e12d799a3a9c4d8651444e9284ce16c19cbc4f0/src/nql.l#L18
-            const key = f.split(':')[0];
-            if (!result[key]) {
-                result[key] = f;
-            } else {
-                result[key] += '+' + f;
-            }
-        }
-
-        return result;*/
     }
-
-    /*async getSubscriptions() {
-        const results = await this._MemberSubscribeEvent.findAll({
-            aggregateSubscriptionDeltas: true
-        });
-
-        const resultsJSON = results.toJSON();
-
-        const cumulativeResults = resultsJSON.reduce((accumulator, result, index) => {
-            if (index === 0) {
-                return [{
-                    date: result.date,
-                    subscribed: result.subscribed_delta
-                }];
-            }
-            return accumulator.concat([{
-                date: result.date,
-                subscribed: result.subscribed_delta + accumulator[index - 1].subscribed
-            }]);
-        }, []);
-
-        return cumulativeResults;
-    }*/
 
     async getMRR() {
         const results = await this._MemberPaidSubscriptionEvent.findAll({
@@ -960,37 +899,6 @@ module.exports = class EventRepository {
 
         return cumulativeResults;
     }
-
-    /*async getVolume() {
-        const results = await this._MemberPaymentEvent.findAll({
-            aggregatePaymentVolume: true
-        });
-
-        const resultsJSON = results.toJSON();
-
-        const cumulativeResults = resultsJSON.reduce((accumulator, result) => {
-            if (!accumulator[result.currency]) {
-                return {
-                    ...accumulator,
-                    [result.currency]: [{
-                        date: result.date,
-                        volume: result.volume_delta,
-                        currency: result.currency
-                    }]
-                };
-            }
-            return {
-                ...accumulator,
-                [result.currency]: accumulator[result.currency].concat([{
-                    date: result.date,
-                    volume: result.volume_delta + accumulator[result.currency].slice(-1)[0].volume,
-                    currency: result.currency
-                }])
-            };
-        }, {});
-
-        return cumulativeResults;
-    }*/
 
     async getStatuses() {
         const results = await this._MemberStatusEvent.findAll({

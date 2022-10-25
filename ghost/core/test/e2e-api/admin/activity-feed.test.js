@@ -146,6 +146,7 @@ describe('Activity Feed API', function () {
                 events: new Array(8).fill({
                     type: anyString,
                     data: {
+                        id: anyObjectId,
                         created_at: anyISODate,
                         member: {
                             id: anyObjectId,
