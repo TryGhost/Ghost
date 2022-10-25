@@ -1669,8 +1669,20 @@ a.gh-post-list-cta.stats.is-hovered:hover > * {
     grid-template-columns: 40% 40% 20%;
 }
 
+.gh-tabs-analytics .gh-dashboard-list-larger-cols .gh-dashboard-list-item {
+    grid-template-columns: 26% 54% 20%;
+}
+
 .gh-tabs-analytics .gh-dashboard-list-four-cols .gh-dashboard-list-item {
     grid-template-columns: 35% 25% 20% 20%;
+}
+
+.gh-post-activity-feed .gh-members-activity-description a {
+    font-weight: 500;
+}
+
+.gh-post-activity-feed .gh-members-activity-description a:hover {
+    color: #697989;
 }
 
 @media (max-width: 1200px) {
