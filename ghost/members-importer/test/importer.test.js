@@ -15,7 +15,7 @@ describe('Importer', function () {
     let memberCreateStub;
     let knexStub;
     let sendEmailStub;
-    let membersApiStub;
+    let membersRepositoryStub;
 
     const defaultAllowedFields = {
         email: 'email',
@@ -42,29 +42,21 @@ describe('Importer', function () {
         sinon.restore();
     });
 
-    // @NOTE: this is way too much mocking! the MembersCSVImporter constructor API should be simplified
     const buildMockImporterInstance = () => {
-        const defaultTier = {
+        const defaultTierDummy = {
             id: 'default_tier_id'
         };
 
         memberCreateStub = sinon.stub().resolves({
             id: `test_member_id`
         });
-        membersApiStub = {
-            productRepository: {
-                getDefaultProduct: async () => {
-                    return defaultTier;
-                }
+        membersRepositoryStub = {
+            get: async () => {
+                return null;
             },
-            members: {
-                get: async () => {
-                    return null;
-                },
-                create: memberCreateStub,
-                update: sinon.stub().resolves(null),
-                linkStripeCustomer: sinon.stub().resolves(null)
-            }
+            create: memberCreateStub,
+            update: sinon.stub().resolves(null),
+            linkStripeCustomer: sinon.stub().resolves(null)
         };
 
         knexStub = {
@@ -79,7 +71,12 @@ describe('Importer', function () {
         return new MembersCSVImporter({
             storagePath: csvPath,
             getTimezone: sinon.stub().returns('UTC'),
-            getMembersApi: () => membersApiStub,
+            getMembersRepository: () => {
+                return membersRepositoryStub;
+            },
+            getDefaultTier: () => {
+                return defaultTierDummy;
+            },
             sendEmail: sendEmailStub,
             isSet: sinon.stub(),
             addJob: sinon.stub(),
@@ -169,43 +166,43 @@ describe('Importer', function () {
             fsWriteSpy.calledOnce.should.be.true();
 
             // member records get inserted
-            membersApiStub.members.create.calledTwice.should.be.true();
+            membersRepositoryStub.create.calledTwice.should.be.true();
 
-            should.equal(membersApiStub.members.create.args[0][1].context.import, true, 'inserts are done in the "import" context');
+            should.equal(membersRepositoryStub.create.args[0][1].context.import, true, 'inserts are done in the "import" context');
 
-            should.deepEqual(Object.keys(membersApiStub.members.create.args[0][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
-            should.equal(membersApiStub.members.create.args[0][0].id, undefined, 'id field should not be taken from the user input');
-            should.equal(membersApiStub.members.create.args[0][0].email, 'member_complimentary_test@example.com');
-            should.equal(membersApiStub.members.create.args[0][0].name, 'bobby tables');
-            should.equal(membersApiStub.members.create.args[0][0].note, 'a note');
-            should.equal(membersApiStub.members.create.args[0][0].subscribed, true);
-            should.equal(membersApiStub.members.create.args[0][0].created_at, '2022-10-18T06:34:08.000Z');
-            should.equal(membersApiStub.members.create.args[0][0].deleted_at, undefined, 'deleted_at field should not be taken from the user input');
-            should.deepEqual(membersApiStub.members.create.args[0][0].labels, [{
+            should.deepEqual(Object.keys(membersRepositoryStub.create.args[0][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            should.equal(membersRepositoryStub.create.args[0][0].id, undefined, 'id field should not be taken from the user input');
+            should.equal(membersRepositoryStub.create.args[0][0].email, 'member_complimentary_test@example.com');
+            should.equal(membersRepositoryStub.create.args[0][0].name, 'bobby tables');
+            should.equal(membersRepositoryStub.create.args[0][0].note, 'a note');
+            should.equal(membersRepositoryStub.create.args[0][0].subscribed, true);
+            should.equal(membersRepositoryStub.create.args[0][0].created_at, '2022-10-18T06:34:08.000Z');
+            should.equal(membersRepositoryStub.create.args[0][0].deleted_at, undefined, 'deleted_at field should not be taken from the user input');
+            should.deepEqual(membersRepositoryStub.create.args[0][0].labels, [{
                 name: 'user import label'
             }]);
 
-            should.deepEqual(Object.keys(membersApiStub.members.create.args[1][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
-            should.equal(membersApiStub.members.create.args[1][0].id, undefined, 'id field should not be taken from the user input');
-            should.equal(membersApiStub.members.create.args[1][0].email, 'member_stripe_test@example.com');
-            should.equal(membersApiStub.members.create.args[1][0].name, 'stirpey beaver');
-            should.equal(membersApiStub.members.create.args[1][0].note, 'testing notes');
-            should.equal(membersApiStub.members.create.args[1][0].subscribed, false);
-            should.equal(membersApiStub.members.create.args[1][0].created_at, '2022-10-18T07:31:57.000Z');
-            should.equal(membersApiStub.members.create.args[1][0].deleted_at, undefined, 'deleted_at field should not be taken from the user input');
-            should.deepEqual(membersApiStub.members.create.args[1][0].labels, [], 'no labels should be assigned');
+            should.deepEqual(Object.keys(membersRepositoryStub.create.args[1][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            should.equal(membersRepositoryStub.create.args[1][0].id, undefined, 'id field should not be taken from the user input');
+            should.equal(membersRepositoryStub.create.args[1][0].email, 'member_stripe_test@example.com');
+            should.equal(membersRepositoryStub.create.args[1][0].name, 'stirpey beaver');
+            should.equal(membersRepositoryStub.create.args[1][0].note, 'testing notes');
+            should.equal(membersRepositoryStub.create.args[1][0].subscribed, false);
+            should.equal(membersRepositoryStub.create.args[1][0].created_at, '2022-10-18T07:31:57.000Z');
+            should.equal(membersRepositoryStub.create.args[1][0].deleted_at, undefined, 'deleted_at field should not be taken from the user input');
+            should.deepEqual(membersRepositoryStub.create.args[1][0].labels, [], 'no labels should be assigned');
 
             // stripe customer import
-            membersApiStub.members.linkStripeCustomer.calledOnce.should.be.true();
-            should.equal(membersApiStub.members.linkStripeCustomer.args[0][0].customer_id, 'cus_MdR9tqW6bAreiq');
-            should.equal(membersApiStub.members.linkStripeCustomer.args[0][0].member_id, 'test_member_id');
+            membersRepositoryStub.linkStripeCustomer.calledOnce.should.be.true();
+            should.equal(membersRepositoryStub.linkStripeCustomer.args[0][0].customer_id, 'cus_MdR9tqW6bAreiq');
+            should.equal(membersRepositoryStub.linkStripeCustomer.args[0][0].member_id, 'test_member_id');
 
             // complimentary_plan import
-            membersApiStub.members.update.calledOnce.should.be.true();
-            should.deepEqual(membersApiStub.members.update.args[0][0].products, [{
+            membersRepositoryStub.update.calledOnce.should.be.true();
+            should.deepEqual(membersRepositoryStub.update.args[0][0].products, [{
                 id: 'default_tier_id'
             }]);
-            should.deepEqual(membersApiStub.members.update.args[0][1].id, 'test_member_id');
+            should.deepEqual(membersRepositoryStub.update.args[0][1].id, 'test_member_id');
         });
     });
 
@@ -280,11 +277,11 @@ describe('Importer', function () {
 
             const result = await importer.perform(`${csvPath}/single-column-with-header.csv`, defaultAllowedFields);
 
-            assert.equal(membersApiStub.members.create.args[0][0].email, 'jbloggs@example.com');
-            assert.deepEqual(membersApiStub.members.create.args[0][0].labels, []);
+            assert.equal(membersRepositoryStub.create.args[0][0].email, 'jbloggs@example.com');
+            assert.deepEqual(membersRepositoryStub.create.args[0][0].labels, []);
 
-            assert.equal(membersApiStub.members.create.args[1][0].email, 'test@example.com');
-            assert.deepEqual(membersApiStub.members.create.args[1][0].labels, []);
+            assert.equal(membersRepositoryStub.create.args[1][0].email, 'test@example.com');
+            assert.deepEqual(membersRepositoryStub.create.args[1][0].labels, []);
 
             assert.equal(result.total, 2);
             assert.equal(result.imported, 2);
@@ -296,13 +293,13 @@ describe('Importer', function () {
 
             const result = await importer.perform(`${csvPath}/subscribed-to-emails-header.csv`);
 
-            assert.equal(membersApiStub.members.create.args[0][0].email, 'jbloggs@example.com');
-            assert.equal(membersApiStub.members.create.args[0][0].subscribed, true);
-            assert.deepEqual(membersApiStub.members.create.args[0][0].labels, []);
+            assert.equal(membersRepositoryStub.create.args[0][0].email, 'jbloggs@example.com');
+            assert.equal(membersRepositoryStub.create.args[0][0].subscribed, true);
+            assert.deepEqual(membersRepositoryStub.create.args[0][0].labels, []);
 
-            assert.equal(membersApiStub.members.create.args[1][0].email, 'test@example.com');
-            assert.equal(membersApiStub.members.create.args[1][0].subscribed, false);
-            assert.deepEqual(membersApiStub.members.create.args[1][0].labels, []);
+            assert.equal(membersRepositoryStub.create.args[1][0].email, 'test@example.com');
+            assert.equal(membersRepositoryStub.create.args[1][0].subscribed, false);
+            assert.deepEqual(membersRepositoryStub.create.args[1][0].labels, []);
 
             assert.equal(result.total, 2);
             assert.equal(result.imported, 2);
