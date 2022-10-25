@@ -854,7 +854,7 @@ module.exports = class EventRepository {
             return [undefined, undefined];
         }
 
-        const allowList = ['data.created_at', 'data.member_id', 'data.post_id', 'type'];
+        const allowList = ['data.created_at', 'data.member_id', 'data.post_id', 'type', 'id'];
         const parsed = nql(filter).parse();
         const keys = getUsedKeys(parsed);
 
