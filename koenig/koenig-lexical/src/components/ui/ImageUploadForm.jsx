@@ -1,4 +1,4 @@
-function ImageUploadForm({onFileChange, fileInputRef}) {
+export function ImageUploadForm({onFileChange, fileInputRef}) {
     return (
         <form onChange={onFileChange}>
             <input

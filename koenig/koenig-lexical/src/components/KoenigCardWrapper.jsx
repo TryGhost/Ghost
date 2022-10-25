@@ -26,7 +26,7 @@ const KoenigCardWrapperComponent = ({nodeKey, children}) => {
     const [isSelected, setSelected, clearSelected] = useLexicalNodeSelection(nodeKey);
     const [selection, setSelection] = React.useState(null);
     const [cardType, setCardType] = React.useState(null);
-    const ref = React.useRef(null);
+    const containerRef = React.useRef(null);
 
     React.useLayoutEffect(() => {
         editor.getEditorState().read(() => {
@@ -46,7 +46,7 @@ const KoenigCardWrapperComponent = ({nodeKey, children}) => {
             editor.registerCommand(
                 CLICK_COMMAND,
                 (event) => {
-                    if (ref.current.contains(event.target)) {
+                    if (containerRef.current.contains(event.target)) {
                         clearSelected();
                         setSelected(true);
                     } else if (isSelected) {
@@ -173,11 +173,11 @@ const KoenigCardWrapperComponent = ({nodeKey, children}) => {
     }, [editor, isSelected, setSelected, clearSelected, nodeKey]);
 
     return (
-        <WrapperContext.Provider value={{isSelected, selection}}>
+        <WrapperContext.Provider value={{isSelected, selection, cardContainerRef: containerRef}}>
             <CardWrapper
                 isSelected={isSelected}
                 cardType={cardType}
-                ref={ref}
+                ref={containerRef}
             >
                 {children}
             </CardWrapper>
