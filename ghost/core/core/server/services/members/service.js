@@ -47,7 +47,14 @@ let verificationTrigger;
 const membersImporter = new MembersCSVImporter({
     storagePath: config.getContentPath('data'),
     getTimezone: () => settingsCache.get('timezone'),
-    getMembersApi: () => module.exports.api,
+    getMembersRepository: async () => {
+        const api = await module.exports.api;
+        return api.members;
+    },
+    getDefaultTier: async () => {
+        const api = await module.exports.api;
+        return api.productRepository.getDefaultProduct;
+    },
     sendEmail: ghostMailer.send.bind(ghostMailer),
     isSet: labsService.isSet.bind(labsService),
     addJob: jobsService.addJob.bind(jobsService),
