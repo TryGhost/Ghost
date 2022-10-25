@@ -265,7 +265,7 @@ const FrameStyles = `
 }
 
 .gh-portal-popup-background.preview {
-    background: linear-gradient(45deg, rgba(var(--whitergb),1) 0%, rgba(var(--grey13rgb),1) 100%);
+    background: linear-gradient(45deg, rgba(255,255,255,1) 0%, rgba(249,249,250,1) 100%);
     animation: none;
     pointer-events: none;
 }
@@ -394,9 +394,9 @@ const FrameStyles = `
     align-items: center;
     line-height: 0;
     border-radius: 4px;
-    background: var(--white);
+    background: #ffffff;
     padding: 6px 8px 6px 7px;
-    color: var(--grey1);
+    color: #303336;
     font-size: 1.25rem;
     letter-spacing: -0.2px;
     font-weight: 500;
@@ -408,7 +408,7 @@ const FrameStyles = `
 }
 
 .gh-portal-powered a:hover {
-    color: var(--grey0);
+    color: #15171A;
 }
 
 @keyframes powered-fade-in {
@@ -693,7 +693,7 @@ const FrameStyles = `
     letter-spacing: -.1px;
     font-weight: 700;
     text-transform: uppercase;
-    color: var(--grey0);
+    color: #15212a;
     margin-top: 6px;
 }
 

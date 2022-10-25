@@ -27,7 +27,7 @@ const TriggerButtonStyles = `
         background: var(--brandcolor);
         height: 60px;
         min-width: 60px;
-        box-shadow: rgba(var(--blackrgb), 0.24) 0px 8px 16px -2px;
+        box-shadow: rgba(0, 0, 0, 0.24) 0px 8px 16px -2px;
         border-radius: 999px;
         transition: opacity 0.3s ease;
     }
@@ -62,7 +62,7 @@ const TriggerButtonStyles = `
 
     .gh-portal-triggerbtn-label {
         padding: 8px;
-        color: var(--white)
+        color: var(--white);
         display: block;
         white-space: nowrap;
         max-width: 380px;
