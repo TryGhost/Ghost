@@ -698,7 +698,13 @@ module.exports = class EventRepository {
             }
         }
 
-        return splitFilter(parsed, ['type']);
+        try {
+            return splitFilter(parsed, ['type']);
+        } catch (e) {
+            throw new errors.IncorrectUsageError({
+                message: e.message
+            });
+        }
     }
 
     async getMRR() {
