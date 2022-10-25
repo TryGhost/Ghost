@@ -7,7 +7,7 @@ function EmptyAudioCard() {
         <MediaPlaceholder
             desc="Click to upload an audio file"
             Icon={AudioPlaceholderIcon}
-            type='audio'
+            size='small'
         />
     );
 }

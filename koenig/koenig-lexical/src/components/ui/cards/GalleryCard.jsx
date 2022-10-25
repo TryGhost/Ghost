@@ -17,7 +17,7 @@ function EmptyGalleryCard({onFileChange}) {
                 filePicker={openFilePicker}
                 desc="Click to select up to 9 images"
                 Icon={GalleryPlaceholderIcon}
-                type='gallery'
+                size='large'
             />
             <form onChange={onFileChange}>
                 <input
