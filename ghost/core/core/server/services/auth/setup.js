@@ -183,7 +183,7 @@ function sendWelcomeEmail(email, mailAPI) {
                     }]
                 };
 
-                return mailAPI.send(payload, {context: {internal: true}})
+                mailAPI.send(payload, {context: {internal: true}})
                     .catch((err) => {
                         err.context = tpl(messages.unableToSendWelcomeEmail);
                         logging.error(err);
